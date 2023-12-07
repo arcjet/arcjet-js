@@ -9,8 +9,8 @@
 
 <p>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/%E2%9C%A6Aj-1.0.0--alpha.1-5C5866?style=flat-square&labelColor=000000">
-    <img src="https://img.shields.io/badge/%E2%9C%A6Aj-1.0.0--alpha.1-ECE6F0?style=flat-square&labelColor=ECE6F0">
+    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/%40arcjet%2Feslint-config?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
+    <img alt="npm badge" src="https://img.shields.io/npm/v/%40arcjet%2Feslint-config?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
   </picture>
 </p>
 
