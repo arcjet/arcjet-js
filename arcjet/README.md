@@ -9,8 +9,8 @@
 
 <p>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/%E2%9C%A6Aj-1.0.0--alpha.0-5C5866?style=flat-square&labelColor=000000">
-    <img src="https://img.shields.io/badge/%E2%9C%A6Aj-1.0.0--alpha.0-ECE6F0?style=flat-square&labelColor=ECE6F0">
+    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/%E2%9C%A6Aj-1.0.0--alpha.1-5C5866?style=flat-square&labelColor=000000">
+    <img src="https://img.shields.io/badge/%E2%9C%A6Aj-1.0.0--alpha.1-ECE6F0?style=flat-square&labelColor=ECE6F0">
   </picture>
 </p>
 
