@@ -25,7 +25,7 @@ import {
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,
   ArcjetRuleToProtocol,
-} from "@arcjet/protocol/convert";
+} from "@arcjet/protocol/convert.js";
 import {
   createPromiseClient,
   Transport,
@@ -34,7 +34,7 @@ import {
   DecideService,
   ReportRequest,
   Timestamp,
-} from "@arcjet/protocol/proto";
+} from "@arcjet/protocol/proto.js";
 import * as analyze from "@arcjet/analyze";
 import { Logger } from "@arcjet/logger";
 
