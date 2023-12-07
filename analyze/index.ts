@@ -3,7 +3,7 @@ import initWasm, {
   generate_fingerprint,
   is_valid_email,
   type EmailValidationConfig,
-} from "./wasm/arcjet_analyze_js_req";
+} from "./wasm/arcjet_analyze_js_req.js";
 
 export { type EmailValidationConfig };
 

@@ -1,5 +1,5 @@
 import { typeid } from "typeid-js";
-import { Reason } from "./gen/es/decide/v1alpha1/decide_pb";
+import { Reason } from "./gen/es/decide/v1alpha1/decide_pb.js";
 
 type ArcjetEnum<T extends string> = { readonly [Key in T]: T };
 

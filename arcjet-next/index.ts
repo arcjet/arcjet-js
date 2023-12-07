@@ -5,7 +5,7 @@ import {
   NextMiddleware,
   NextRequest,
   NextResponse,
-} from "next/server";
+} from "next/server.js";
 import arcjet, {
   ArcjetDecision,
   ArcjetOptions,
@@ -22,7 +22,7 @@ import arcjet, {
   createRemoteClient,
 } from "arcjet";
 import findIP from "@arcjet/ip";
-import { NextMiddlewareResult } from "next/dist/server/web/types";
+import { NextMiddlewareResult } from "next/dist/server/web/types.js";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";

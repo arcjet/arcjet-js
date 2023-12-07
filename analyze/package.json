@@ -33,7 +33,9 @@
   "sideEffects": [
     "./wasm/arcjet_analyze_js_req_bg.js"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@arcjet/logger": "1.0.0-alpha.0"
+  },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.0",
     "@arcjet/rollup-config": "1.0.0-alpha.0",
