@@ -1,0 +1,77 @@
+<a href="https://arcjet.com" target="_arcjet-home">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/arcjet-logo-dark-planet-arrival.svg">
+    <img src="https://arcjet.com/arcjet-logo-light-planet-arrival.svg" alt="Arcjet Logo" height="144" width="auto">
+  </picture>
+</a>
+
+# `@arcjet/analyze`
+
+<p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/%E2%9C%A6Aj-1.0.0--alpha.0-5C5866?style=flat-square&labelColor=000000">
+    <img src="https://img.shields.io/badge/%E2%9C%A6Aj-1.0.0--alpha.0-ECE6F0?style=flat-square&labelColor=ECE6F0">
+  </picture>
+</p>
+
+[Arcjet][arcjet] helps developers protect their apps. Installed as an SDK, it
+provides a set of core primitives such as rate limiting and bot protection.
+These can be used independently or combined to create a set of layered defenses,
+such as signup form protection.
+
+This is the [Arcjet][arcjet] local analysis engine.
+
+## Installation
+
+```shell
+npm install -S @arcjet/analyze
+```
+
+## Example
+
+```ts
+import { generateFingerprint, isValidEmail } from "@arcjet/analyze";
+
+const fingerprint = generateFingerprint("127.0.0.1");
+console.log("fingerprint: ", fingerprint);
+
+const valid = isValidEmail("hello@example.com");
+console.log("is email valid?", valid);
+```
+
+## Implementation
+
+This package provides analyze logic implemented as a WebAssembly module which
+will run local analysis on request details before calling the Arcjet API.
+
+The [arcjet.wasm.js](./wasm/arcjet.wasm.js) file contains the binary inlined as
+a base64 [Data URL][mdn-data-url] with the `application/wasm` MIME type.
+
+This was chosen to save on storage space over inlining the file directly as a
+Uint8Array, which would take up ~3x the space of the Wasm file. See
+[Better Binary Batter: Mixing Base64 and Uint8Array][wasm-base64-blog] for more
+details.
+
+It is then decoded into an ArrayBuffer to be used directly via WebAssembly's
+`compile()` function in our entry point file.
+
+This is all done to avoid trying to read or bundle the Wasm asset in various
+ways based on the platform or bundler a user is targeting. One example being
+that Next.js requires special `asyncWebAssembly` webpack config to load our
+Wasm file if we don't do this.
+
+In the future, we hope to do away with this workaround when all bundlers
+properly support consistent asset bundling techniques.
+
+## API
+
+In progress.
+
+## License
+
+Licensed under the [Apache License, Version 2.0][apache-license].
+
+[arcjet]: https://arcjet.com
+[mdn-data-url]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
+[wasm-base64-blog]: https://blobfolio.com/2019/better-binary-batter-mixing-base64-and-uint8array/
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0

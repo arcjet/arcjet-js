@@ -1,0 +1,50 @@
+{
+  "name": "@arcjet/rollup-config",
+  "version": "1.0.0-alpha.0",
+  "description": "Custom rollup config for Arcjet projects",
+  "license": "Apache-2.0",
+  "homepage": "https://arcjet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "rollup-config"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "*.ts",
+    "!*.config.js"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
+  },
+  "dependencies": {
+    "@rollup/plugin-replace": "5.0.5",
+    "@rollup/plugin-typescript": "11.1.5"
+  },
+  "peerDependencies": {
+    "rollup": "^4"
+  },
+  "devDependencies": {
+    "@arcjet/eslint-config": "1.0.0-alpha.0",
+    "@arcjet/tsconfig": "1.0.0-alpha.0",
+    "@jest/globals": "29.7.0",
+    "@types/node": "18.18.0",
+    "jest": "29.7.0",
+    "rollup": "4.6.1",
+    "typescript": "5.3.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  }
+}

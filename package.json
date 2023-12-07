@@ -1,0 +1,12 @@
+{
+  "name": "arcjet-js",
+  "engines": {
+    "node": ">=18"
+  },
+  "workspaces": [
+    "*"
+  ],
+  "scripts": {
+    "prepare": "npm run build -ws --if-present --foreground-scripts"
+  }
+}

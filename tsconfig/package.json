@@ -1,0 +1,30 @@
+{
+  "name": "@arcjet/tsconfig",
+  "version": "1.0.0-alpha.0",
+  "description": "Custom tsconfig for Arcjet projects",
+  "license": "Apache-2.0",
+  "homepage": "https://arcjet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "tsconfig"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "*.json"
+  ],
+  "scripts": {},
+  "dependencies": {},
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "devDependencies": {},
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  }
+}
