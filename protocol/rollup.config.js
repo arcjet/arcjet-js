@@ -7,13 +7,13 @@ export default createConfig(import.meta.url, {
       // This externalizes the auto-generated protobuf code so it is not
       // processed by rollup
       resolveId(source) {
-        if (source.startsWith("./gen/es/decide/v1alpha1/decide_pb")) {
+        if (source === "./gen/es/decide/v1alpha1/decide_pb.js") {
           return {
             id: "./gen/es/decide/v1alpha1/decide_pb.js",
             external: true,
           };
         }
-        if (source.startsWith("./gen/es/decide/v1alpha1/decide_connect")) {
+        if (source === "./gen/es/decide/v1alpha1/decide_connect.js") {
           return {
             id: "./gen/es/decide/v1alpha1/decide_connect.js",
             external: true,
