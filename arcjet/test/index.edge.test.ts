@@ -18,6 +18,7 @@ describe("Arcjet: Env = Edge runtime", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });

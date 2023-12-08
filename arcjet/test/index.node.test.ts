@@ -117,7 +117,7 @@ class ArcjetInvalidDecision extends ArcjetDecision {
   conclusion: ArcjetConclusion;
 
   constructor() {
-    super({ results: [] });
+    super({ ttl: 0, results: [] });
     // @ts-expect-error
     this.conclusion = "INVALID";
     this.reason = new ArcjetTestReason();
@@ -731,6 +731,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -798,6 +799,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -865,6 +867,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Failure"),
       results: [],
     });
@@ -939,6 +942,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetChallengeDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1070,9 +1074,11 @@ describe("createRemoteClient", () => {
     });
 
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [
         new ArcjetRuleResult({
+          ttl: 0,
           state: "RUN",
           conclusion: "DENY",
           reason: new ArcjetReason(),
@@ -1151,6 +1157,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1213,6 +1220,7 @@ describe("ArcjetHeaders", () => {
 describe("ArcjetDecision", () => {
   test("will default the `id` property if not specified", () => {
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1222,6 +1230,7 @@ describe("ArcjetDecision", () => {
   test("the `id` property if to be specified to the constructor", () => {
     const decision = new ArcjetAllowDecision({
       id: "abc_123",
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1231,6 +1240,7 @@ describe("ArcjetDecision", () => {
   // TODO: This test doesn't make sense anymore
   test("an ERROR decision can be constructed with an Error object", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason(new Error("Foo bar baz")),
       results: [],
     });
@@ -1243,6 +1253,7 @@ describe("ArcjetDecision", () => {
   // TODO: This test doesn't make sense anymore
   test("an ERROR decision can be constructed with a string message", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Boom!"),
       results: [],
     });
@@ -1255,6 +1266,7 @@ describe("ArcjetDecision", () => {
   // TODO: This test doesn't make sense anymore
   test("use an unknown error for an ERROR decision constructed with other types", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason(["not", "valid", "error"]),
       results: [],
     });
@@ -1266,6 +1278,7 @@ describe("ArcjetDecision", () => {
 
   test("`isAllowed()` returns true when type is ALLOW", () => {
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1274,6 +1287,7 @@ describe("ArcjetDecision", () => {
 
   test("`isAllowed()` returns true when type is ERROR (fail open)", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Something"),
       results: [],
     });
@@ -1282,6 +1296,7 @@ describe("ArcjetDecision", () => {
 
   test("`isAllowed()` returns false when type is DENY", () => {
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1290,6 +1305,7 @@ describe("ArcjetDecision", () => {
 
   test("`isDenied()` returns false when type is ALLOW", () => {
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1298,6 +1314,7 @@ describe("ArcjetDecision", () => {
 
   test("`isDenied()` returns false when type is ERROR (fail open)", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Something"),
       results: [],
     });
@@ -1306,6 +1323,7 @@ describe("ArcjetDecision", () => {
 
   test("`isDenied()` returns true when type is DENY", () => {
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1314,6 +1332,7 @@ describe("ArcjetDecision", () => {
 
   test("`isChallenged()` returns true when type is CHALLENGE", () => {
     const decision = new ArcjetChallengeDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1322,6 +1341,7 @@ describe("ArcjetDecision", () => {
 
   test("`isErrored()` returns false when type is ALLOW", () => {
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1330,6 +1350,7 @@ describe("ArcjetDecision", () => {
 
   test("`isErrored()` returns false when type is ERROR", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Something"),
       results: [],
     });
@@ -1338,6 +1359,7 @@ describe("ArcjetDecision", () => {
 
   test("`isErrored()` returns false when type is DENY", () => {
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -2289,6 +2311,7 @@ describe("SDK", () => {
       protect: jest.fn(
         async () =>
           new ArcjetRuleResult({
+            ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
             reason: new ArcjetTestReason(),
@@ -2305,6 +2328,7 @@ describe("SDK", () => {
       protect: jest.fn(
         async () =>
           new ArcjetRuleResult({
+            ttl: 0,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetTestReason(),
@@ -2357,6 +2381,7 @@ describe("SDK", () => {
       validate: jest.fn(),
       protect: jest.fn(async () => {
         return new ArcjetRuleResult({
+          ttl: 0,
           state: "RUN",
           conclusion: "DENY",
           reason: new ArcjetTestReason(),
@@ -2369,6 +2394,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2389,6 +2415,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2423,6 +2450,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2443,6 +2471,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2463,6 +2492,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2495,6 +2525,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2535,6 +2566,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2558,6 +2590,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2580,6 +2613,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2609,6 +2643,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2649,6 +2684,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
@@ -2691,6 +2727,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
@@ -2736,6 +2773,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
@@ -2784,6 +2822,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
@@ -2819,6 +2858,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2865,6 +2905,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetDenyDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2913,6 +2954,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2933,6 +2975,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2975,6 +3018,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -3026,6 +3070,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -3077,6 +3122,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -3122,6 +3168,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -3229,6 +3276,7 @@ describe("Arcjet: Env = Serverless Node runtime on Vercel", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -3245,6 +3293,7 @@ describe("Arcjet: Env = Serverless Node runtime on Vercel", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });

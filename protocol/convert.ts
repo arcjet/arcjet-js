@@ -355,6 +355,7 @@ export function ArcjetRuleResultToProtocol(
 ): RuleResult {
   return new RuleResult({
     ruleId: ruleResult.ruleId,
+    ttl: ruleResult.ttl,
     state: ArcjetRuleStateToProtocol(ruleResult.state),
     conclusion: ArcjetConclusionToProtocol(ruleResult.conclusion),
     reason: ArcjetReasonToProtocol(ruleResult.reason),
@@ -365,6 +366,7 @@ export function ArcjetRuleResultFromProtocol(
   proto: RuleResult,
 ): ArcjetRuleResult {
   return new ArcjetRuleResult({
+    ttl: proto.ttl,
     state: ArcjetRuleStateFromProtocol(proto.state),
     conclusion: ArcjetConclusionFromProtocol(proto.conclusion),
     reason: ArcjetReasonFromProtocol(proto.reason),
@@ -374,6 +376,7 @@ export function ArcjetRuleResultFromProtocol(
 export function ArcjetDecisionToProtocol(decision: ArcjetDecision): Decision {
   return new Decision({
     id: decision.id,
+    ttl: decision.ttl,
     conclusion: ArcjetConclusionToProtocol(decision.conclusion),
     reason: ArcjetReasonToProtocol(decision.reason),
     ruleResults: decision.results.map(ArcjetRuleResultToProtocol),
@@ -386,6 +389,7 @@ export function ArcjetDecisionFromProtocol(
   if (typeof decision === "undefined") {
     return new ArcjetErrorDecision({
       reason: new ArcjetErrorReason("Missing Decision"),
+      ttl: 0,
       results: [],
     });
   }
@@ -396,30 +400,35 @@ export function ArcjetDecisionFromProtocol(
     case Conclusion.ALLOW:
       return new ArcjetAllowDecision({
         id: decision.id,
+        ttl: decision.ttl,
         reason: ArcjetReasonFromProtocol(decision.reason),
         results,
       });
     case Conclusion.DENY:
       return new ArcjetDenyDecision({
         id: decision.id,
+        ttl: decision.ttl,
         reason: ArcjetReasonFromProtocol(decision.reason),
         results,
       });
     case Conclusion.CHALLENGE:
       return new ArcjetChallengeDecision({
         id: decision.id,
+        ttl: decision.ttl,
         reason: ArcjetReasonFromProtocol(decision.reason),
         results,
       });
     case Conclusion.ERROR:
       return new ArcjetErrorDecision({
         id: decision.id,
+        ttl: decision.ttl,
         reason: new ArcjetErrorReason(decision.reason),
         results,
       });
     case Conclusion.UNSPECIFIED:
       return new ArcjetErrorDecision({
         id: decision.id,
+        ttl: decision.ttl,
         reason: new ArcjetErrorReason("Invalid Conclusion"),
         results,
       });

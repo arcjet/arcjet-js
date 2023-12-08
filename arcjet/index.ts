@@ -74,6 +74,10 @@ class Cache<T> {
     this.expires.set(key, Date.now() + ttl);
     this.data.set(key, value);
   }
+
+  ttl(key: string): number {
+    return this.expires.get(key) ?? 0
+  }
 }
 
 function errorMessage(err: unknown): string {
@@ -548,12 +552,14 @@ export function validateEmail(
       ): Promise<ArcjetRuleResult> {
         if (await analyze.isValidEmail(email, analyzeOpts)) {
           return new ArcjetRuleResult({
+            ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
             reason: new ArcjetEmailReason({ emailTypes: [] }),
           });
         } else {
           return new ArcjetRuleResult({
+            ttl: 0,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetEmailReason({
@@ -640,6 +646,7 @@ export function detectBot(
           block.includes(BotType[botResult.bot_type] as ArcjetBotType)
         ) {
           return new ArcjetRuleResult({
+            ttl: 60000,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetBotReason({
@@ -651,6 +658,7 @@ export function detectBot(
           });
         } else {
           return new ArcjetRuleResult({
+            ttl: 60000,
             state: "RUN",
             conclusion: "ALLOW",
             reason: new ArcjetBotReason({
@@ -763,9 +771,6 @@ export default function arcjet<
   // TODO(#132): Support configurable caching
   const blockCache = new Cache<ArcjetReason>();
 
-  // TTL for in-memory caching of decisions (in milliseconds)
-  const blockCacheTimeoutInMs = 60000;
-
   const flatSortedRules = rules.flat(1).sort((a, b) => a.priority - b.priority);
 
   return Object.freeze({
@@ -802,6 +807,7 @@ export default function arcjet<
         log.error("Failure running rules. Only 10 rules may be specified.");
 
         const decision = new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason("Only 10 rules may be specified"),
           // No results because the sorted rules were too long and we don't want
           // to instantiate a ton of NOT_RUN results
@@ -824,6 +830,7 @@ export default function arcjet<
       // Default all rules to NOT_RUN/ALLOW before doing anything
       for (let idx = 0; idx < flatSortedRules.length; idx++) {
         results[idx] = new ArcjetRuleResult({
+          ttl: 0,
           state: "NOT_RUN",
           conclusion: "ALLOW",
           reason: new ArcjetReason(),
@@ -835,7 +842,7 @@ export default function arcjet<
       // some instances where the instance is not recycled immediately. If so, we
       // can take advantage of that.
       log.time("cache");
-      const existingBlockReason = await blockCache.get(fingerprint);
+      const existingBlockReason = blockCache.get(fingerprint);
       log.timeEnd("cache");
 
       // If already blocked then we can async log to the API and return the
@@ -847,6 +854,7 @@ export default function arcjet<
           existingBlockReason,
         });
         const decision = new ArcjetDenyDecision({
+          ttl: blockCache.ttl(fingerprint),
           reason: existingBlockReason,
           // All results will be NOT_RUN because we used a cached decision
           results,
@@ -903,6 +911,7 @@ export default function arcjet<
           );
 
           results[idx] = new ArcjetRuleResult({
+            ttl: 0,
             state: "RUN",
             conclusion: "ERROR",
             reason: new ArcjetErrorReason(err),
@@ -915,8 +924,9 @@ export default function arcjet<
           log.timeEnd("local");
 
           const decision = new ArcjetDenyDecision({
-            results,
+            ttl: results[idx].ttl,
             reason: results[idx].reason,
+            results,
           });
 
           // Only a DENY decision is reported to avoid creating 2 entries for a
@@ -941,7 +951,7 @@ export default function arcjet<
             await blockCache.set(
               fingerprint,
               decision.reason,
-              blockCacheTimeoutInMs,
+              decision.ttl,
             );
 
             return decision;
@@ -986,7 +996,7 @@ export default function arcjet<
           await blockCache.set(
             fingerprint,
             decision.reason,
-            blockCacheTimeoutInMs,
+            decision.ttl,
           );
         }
 
@@ -997,6 +1007,7 @@ export default function arcjet<
           errorMessage(err),
         );
         const decision = new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason(err),
           results,
         });

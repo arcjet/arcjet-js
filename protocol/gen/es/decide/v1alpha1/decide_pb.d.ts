@@ -873,6 +873,14 @@ export declare class RuleResult extends Message<RuleResult> {
    */
   reason?: Reason;
 
+  /**
+   * The duration in milliseconds this result should be considered valid, also
+   * known as time-to-live.
+   *
+   * @generated from field: int32 ttl = 5;
+   */
+  ttl: number;
+
   constructor(data?: PartialMessage<RuleResult>);
 
   static readonly runtime: typeof proto3;
@@ -988,6 +996,14 @@ export declare class Decision extends Message<Decision> {
    * @generated from field: repeated proto.decide.v1alpha1.RuleResult rule_results = 4;
    */
   ruleResults: RuleResult[];
+
+  /**
+   * The duration in milliseconds this decision should be considered valid,
+   * also known as time-to-live.
+   *
+   * @generated from field: int32 ttl = 5;
+   */
+  ttl: number;
 
   constructor(data?: PartialMessage<Decision>);
 
