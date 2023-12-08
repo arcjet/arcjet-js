@@ -7,7 +7,7 @@ export default createConfig(import.meta.url, {
       resolveId(source) {
         // We need to externalize this because otherwise some JS that edge can't
         // understand gets included in the bundle
-        if (source.startsWith("./wasm/arcjet_analyze_js_req")) {
+        if (source === "./wasm/arcjet_analyze_js_req.js") {
           return {
             id: "./wasm/arcjet_analyze_js_req.js",
             external: true,
