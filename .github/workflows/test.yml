@@ -8,7 +8,7 @@ concurrency:
 
 jobs:
   test:
-    name: "Run tests (Node ${{ matrix.node }})"
+    name: "Run tests (OS: ${{matrix.os}}, Node: ${{ matrix.node }})"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
