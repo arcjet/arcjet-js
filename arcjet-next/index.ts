@@ -215,7 +215,7 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
         headers,
         extra,
         // TODO(#220): The generic manipulations get really mad here, so we just cast it
-      } as ArcjetRequest<Rules>);
+      } as ArcjetRequest<ExtraProps<Rules>>);
 
       return decision;
     },
