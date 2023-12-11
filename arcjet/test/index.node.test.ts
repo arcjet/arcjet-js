@@ -2905,7 +2905,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetDenyDecision({
-          ttl: 0,
+          ttl: 5000,
           reason: new ArcjetTestReason(),
           results: [],
         });
