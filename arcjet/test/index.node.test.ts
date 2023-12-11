@@ -170,14 +170,14 @@ describe("createRemoteClient", () => {
   test("allows overriding the sdkStack", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -222,14 +222,14 @@ describe("createRemoteClient", () => {
   test("sets the sdkStack as UNSPECIFIED if invalid", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -275,14 +275,14 @@ describe("createRemoteClient", () => {
   test("calling `decide` will make RPC call with correct message", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -326,14 +326,14 @@ describe("createRemoteClient", () => {
   test("calling `decide` will make RPC with email included", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -378,14 +378,14 @@ describe("createRemoteClient", () => {
   test("calling `decide` will make RPC with rules included", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -435,14 +435,14 @@ describe("createRemoteClient", () => {
   test("calling `decide` creates an ALLOW ArcjetDecision if DecideResponse is allowed", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -477,14 +477,14 @@ describe("createRemoteClient", () => {
   test("calling `decide` creates a DENY ArcjetDecision if DecideResponse is denied", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -518,14 +518,14 @@ describe("createRemoteClient", () => {
   test("calling `decide` creates a CHALLENGE ArcjetDecision if DecideResponse is challenged", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -559,14 +559,14 @@ describe("createRemoteClient", () => {
   test("calling `decide` creates an ERROR ArcjetDecision with default message if DecideResponse is error and no reason", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -603,14 +603,14 @@ describe("createRemoteClient", () => {
   test("calling `decide` creates an ERROR ArcjetDecision with message if DecideResponse if error and reason available", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -653,14 +653,14 @@ describe("createRemoteClient", () => {
   test("calling `decide` creates an ERROR ArcjetDecision if DecideResponse is unspecified", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -695,7 +695,7 @@ describe("createRemoteClient", () => {
   test("calling `report` will make RPC call with ALLOW decision", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
@@ -703,7 +703,7 @@ describe("createRemoteClient", () => {
     };
     const receivedAt = Timestamp.now();
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -763,7 +763,7 @@ describe("createRemoteClient", () => {
   test("calling `report` will make RPC call with DENY decision", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
@@ -771,7 +771,7 @@ describe("createRemoteClient", () => {
     };
     const receivedAt = Timestamp.now();
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -830,7 +830,7 @@ describe("createRemoteClient", () => {
   test("calling `report` will make RPC call with ERROR decision", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
@@ -838,7 +838,7 @@ describe("createRemoteClient", () => {
     };
     const receivedAt = Timestamp.now();
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -904,7 +904,7 @@ describe("createRemoteClient", () => {
   test("calling `report` will make RPC call with CHALLENGE decision", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
@@ -912,7 +912,7 @@ describe("createRemoteClient", () => {
     };
     const receivedAt = Timestamp.now();
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -971,7 +971,7 @@ describe("createRemoteClient", () => {
   test("calling `report` will make RPC call with UNSPECIFIED decision if invalid", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
@@ -979,7 +979,7 @@ describe("createRemoteClient", () => {
     };
     const receivedAt = Timestamp.now();
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1034,7 +1034,7 @@ describe("createRemoteClient", () => {
   test("calling `report` will make RPC with rules included", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
@@ -1042,7 +1042,7 @@ describe("createRemoteClient", () => {
     };
     const receivedAt = Timestamp.now();
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1121,14 +1121,14 @@ describe("createRemoteClient", () => {
   test("calling `report` only logs if it fails", async () => {
     const key = "test-key";
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
     const context = {
       key,
       fingerprint,
       log: new Logger(),
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1464,7 +1464,7 @@ describe("Primitives > detectBot", () => {
 
   test("does not analyze if no headers are specified", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1502,7 +1502,7 @@ describe("Primitives > detectBot", () => {
     };
 
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1550,7 +1550,7 @@ describe("Primitives > detectBot", () => {
     };
 
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1598,7 +1598,7 @@ describe("Primitives > detectBot", () => {
     };
 
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1632,7 +1632,7 @@ describe("Primitives > detectBot", () => {
 
   test("can be configured for invalid bots", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1689,7 +1689,7 @@ describe("Primitives > detectBot", () => {
     };
 
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1731,7 +1731,7 @@ describe("Primitives > detectBot", () => {
     };
 
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -1772,7 +1772,7 @@ describe("Primitives > detectBot", () => {
     };
 
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2001,7 +2001,7 @@ describe("Primitives > validateEmail", () => {
 
   test("allows a valid email", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2026,7 +2026,7 @@ describe("Primitives > validateEmail", () => {
 
   test("denies email with no domain segment", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2051,7 +2051,7 @@ describe("Primitives > validateEmail", () => {
 
   test("denies email with no TLD", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2076,7 +2076,7 @@ describe("Primitives > validateEmail", () => {
 
   test("denies email with no TLD even if some options are specified", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2103,7 +2103,7 @@ describe("Primitives > validateEmail", () => {
 
   test("denies email with empty name segment", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2128,7 +2128,7 @@ describe("Primitives > validateEmail", () => {
 
   test("denies email with domain literal", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2153,7 +2153,7 @@ describe("Primitives > validateEmail", () => {
 
   test("can be configured to allow no TLD", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2180,7 +2180,7 @@ describe("Primitives > validateEmail", () => {
 
   test("can be configured to allow domain literals", async () => {
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2503,7 +2503,7 @@ describe("SDK", () => {
     };
 
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2617,7 +2617,7 @@ describe("SDK", () => {
     };
 
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2660,10 +2660,10 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff", // What we expect it to be
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2702,10 +2702,10 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff", // What we expect it to be
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2747,10 +2747,10 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff", // What we expect it to be
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2793,7 +2793,7 @@ describe("SDK", () => {
 
     const key = "test-key";
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2830,10 +2830,10 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff", // What we expect it to be
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2874,7 +2874,7 @@ describe("SDK", () => {
 
     const key = "test-key";
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2944,10 +2944,10 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff", // What we expect it to be
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -2984,7 +2984,7 @@ describe("SDK", () => {
 
     const key = "test-key";
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -3035,7 +3035,7 @@ describe("SDK", () => {
 
     const key = "test-key";
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -3086,7 +3086,7 @@ describe("SDK", () => {
 
     const key = "test-key";
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -3133,10 +3133,10 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff", // What we expect it to be
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -3179,10 +3179,10 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff", // What we expect it to be
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
     const details = {
-      ip: "100.100.100.100",
+      ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
@@ -3263,8 +3263,8 @@ describe("Arcjet: Env = Serverless Node runtime on Vercel", () => {
       timeout: "10m",
     };
     const fingerprint =
-      "fp_1_1b4d903a6d7936b0c2d8265de71cc7f3ac773eecfcd9b3fe3c40deb1776c01ff"; // What we expect it to be
-    const ip = "100.100.100.100";
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
+    const ip = "172.100.1.1";
     const method = "GET";
     const protocol = "http";
     const host = "example.com";
