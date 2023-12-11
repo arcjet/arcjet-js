@@ -14,7 +14,6 @@ import arcjet, {
   ArcjetHeaders,
   Runtime,
   ArcjetRequest,
-  EmptyObject,
   ExtraProps,
   RemoteClient,
   RemoteClientOptions,
@@ -26,6 +25,43 @@ import { NextMiddlewareResult } from "next/dist/server/web/types.js";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
+
+// Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
+// our use.
+//
+// Simplify:
+// https://github.com/sindresorhus/type-fest/blob/964466c9d59c711da57a5297ad954c13132a0001/source/simplify.d.ts
+// EmptyObject:
+// https://github.com/sindresorhus/type-fest/blob/b9723d4785f01f8d2487c09ee5871a1f615781aa/source/empty-object.d.ts
+//
+// Licensed: MIT License Copyright (c) Sindre Sorhus <sindresorhus@gmail.com>
+// (https://sindresorhus.com)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions: The above copyright
+// notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
+declare const emptyObjectSymbol: unique symbol;
+type WithoutCustomProps = {
+  [emptyObjectSymbol]?: never;
+};
+
+type PlainObject = {
+  [key: string]: unknown;
+};
 
 /**
  * Ensures redirects are followed to properly support the Next.js/Vercel Edge
@@ -86,7 +122,7 @@ export interface ArcjetNextRequest {
   nextUrl?: NextRequest["nextUrl"];
 }
 
-export interface ArcjetNext<Rules extends (Primitive | Product)[]> {
+export interface ArcjetNext<Props extends PlainObject> {
   get runtime(): Runtime;
   /**
    * Protects an API route when running under the default runtime (non-edge).
@@ -102,7 +138,7 @@ export interface ArcjetNext<Rules extends (Primitive | Product)[]> {
     request: ArcjetNextRequest,
     // We use this neat trick from https://stackoverflow.com/a/52318137 to make a single spread parameter
     // that is required if the ExtraProps aren't strictly an empty object
-    ...props: ExtraProps<Rules> extends EmptyObject ? [] : [ExtraProps<Rules>]
+    ...props: Props extends WithoutCustomProps ? [] : [Props]
   ): Promise<ArcjetDecision>;
 }
 
@@ -122,7 +158,7 @@ export interface ArcjetNext<Rules extends (Primitive | Product)[]> {
  */
 export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
   options: ArcjetOptions<Rules>,
-): ArcjetNext<Rules> {
+): ArcjetNext<Simplify<ExtraProps<Rules>>> {
   const client = options.client ?? createNextRemoteClient();
 
   const aj = arcjet({ ...options, client });
@@ -133,7 +169,7 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
     },
     async protect(
       request: ArcjetNextRequest,
-      ...[props]: ExtraProps<Rules> extends EmptyObject
+      ...[props]: ExtraProps<Rules> extends WithoutCustomProps
         ? []
         : [ExtraProps<Rules>]
     ): Promise<ArcjetDecision> {
@@ -187,31 +223,24 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
 }
 
 /**
- * Protects your Next.js application using Arcjet middleware. It will
- * automatically detect if the request is an API request or a page request and
- * return the appropriate response.
+ * Protects your Next.js application using Arcjet middleware.
  *
- * @param key Your Arcjet key.
- * @param options Configuration options.
- * @param options.mode The mode to run in: `dry-run` or `live` (default:
- * `dry-run`). In `dry-run` mode, all requests will be allowed and you can
- * review what the action would have been from your dashboard. In `live` mode,
- * requests will be allowed, challenged or blocked based on the returned
- * decision.
- * @return A `NextResponse` instance that can be passed back to the client.
+ * @param arcjet An instantiated Arcjet SDK
+ * @param middleware Any existing middleware you'd like to be called after
+ * Arcjet decides a request is allowed.
+ * @returns If the request is allowed, the next middleware or handler will be
+ * called. If the request is denied, a `Response` will be returned immediately
+ * and the no further middleware or handlers will be called.
  */
-export function createMiddleware<const Rules extends (Primitive | Product)[]>(
-  // TODO(#221): This type needs to be tightened to only allow Primitives or Products that don't have extra props
-  options: ArcjetOptions<Rules>,
+export function createMiddleware(
+  arcjet: ArcjetNext<WithoutCustomProps>,
   existingMiddleware?: NextMiddleware,
 ): NextMiddleware {
-  const aj = arcjetNext(options);
-
   return async function middleware(
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> {
-    let decision = await aj.protect(request);
+    let decision = await arcjet.protect(request);
 
     if (decision.isDenied()) {
       // TODO(#222): Content type negotiation using `Accept` header
@@ -240,20 +269,14 @@ export function createMiddleware<const Rules extends (Primitive | Product)[]>(
  * Wraps a Next.js page route, edge middleware, or an API route running on the
  * Edge Runtime.
  *
- * @param key Your Arcjet key.
- * @param options Configuration options.
- * @param options.mode The mode to run in: `dry-run` or `live` (default:
- * `dry-run`). In `dry-run` mode, all requests will be allowed and you can
- * review what the action would have been from your dashboard. In `live` mode,
- * requests will be allowed, challenged or blocked based on the returned
- * decision.
- * @returns If the request is allowed, the wrapped handler will be called. If
- * the request is blocked, a `NextApiResponse` instance will be returned based
- * on the configured decision response.
+ * @param arcjet An instantiated Arcjet SDK
+ * @param handler The request handler to wrap
+ * @returns If the request is allowed, the wrapped `handler` will be called. If
+ * the request is denied, a `Response` will be returned based immediately and
+ * the wrapped `handler` will never be called.
  */
 export function withArcjet(
-  // TODO(#221): This type needs to be tightened to only allow Primitives or Products that don't have extra props
-  arcjet: ArcjetNext<(Primitive<EmptyObject> | Product<EmptyObject>)[]>,
+  arcjet: ArcjetNext<WithoutCustomProps>,
   handler: (...args: any[]) => any,
 ) {
   return async (request: ArcjetNextRequest, ...rest: unknown[]) => {
