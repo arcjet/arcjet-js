@@ -217,6 +217,10 @@ export class ArcjetErrorReason extends ArcjetReason {
 
 export class ArcjetRuleResult {
   ruleId: string;
+  /**
+   * The duration in milliseconds this result should be considered valid, also
+   * known as time-to-live.
+   */
   ttl: number;
   state: ArcjetRuleState;
   conclusion: ArcjetConclusion;
@@ -253,13 +257,17 @@ export class ArcjetRuleResult {
  * decision. One of: {@link ArcjetRateLimitReason}, {@link ArcjetEdgeRuleReason},
  * {@link ArcjetBotReason}, {@link ArcjetSuspiciousReason},
  * {@link ArcjetEmailReason}, or {@link ArcjetErrorReason}.
- * @property `ttl` - The length of time a decision should be considered valid,
- * also known as time-to-live.
+ * @property `ttl` - The duration in milliseconds this decision should be
+ * considered valid, also known as time-to-live.
  * @property `results` - Each separate {@link ArcjetRuleResult} can be found here
  * or by logging into the Arcjet dashboard and searching for the decision `id`.
  */
 export abstract class ArcjetDecision {
   id: string;
+  /**
+   * The duration in milliseconds this decision should be considered valid, also
+   * known as time-to-live.
+   */
   ttl: number;
   results: ArcjetRuleResult[];
 
