@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "prepare": "npm run build -ws --if-present --foreground-scripts",
+    "lint": "npm run lint -ws -if-present",
     "test": "npm test -ws --if-present"
   }
 }
