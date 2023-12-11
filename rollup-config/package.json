@@ -32,15 +32,15 @@
     "@rollup/plugin-typescript": "11.1.5"
   },
   "peerDependencies": {
-    "rollup": "^4"
+    "@rollup/wasm-node": "^4"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.2",
     "@arcjet/tsconfig": "1.0.0-alpha.2",
     "@jest/globals": "29.7.0",
     "@types/node": "18.18.0",
+    "@rollup/wasm-node": "4.6.1",
     "jest": "29.7.0",
-    "rollup": "4.6.1",
     "typescript": "5.3.2"
   },
   "publishConfig": {
