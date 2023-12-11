@@ -1,0 +1,44 @@
+name: "Run tests"
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: "Run tests (OS: ${{matrix.os}}, Node: ${{ matrix.node }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # TODO(#496): Figure out why Node 18 is segfaulting
+        node: [20]
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      # Environment security
+      - name: Step Security
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test

@@ -41,7 +41,7 @@ import {
   RuleState,
   SDKStack,
   SuspiciousReason,
-} from "./gen/es/decide/v1alpha1/decide_pb";
+} from "./gen/es/decide/v1alpha1/decide_pb.js";
 
 export function ArcjetModeToProtocol(value: ArcjetMode) {
   switch (value) {

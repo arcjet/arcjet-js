@@ -7,6 +7,7 @@
     "*"
   ],
   "scripts": {
-    "prepare": "npm run build -ws --if-present --foreground-scripts"
+    "prepare": "npm run build -ws --if-present --foreground-scripts",
+    "test": "npm test -ws --if-present"
   }
 }
