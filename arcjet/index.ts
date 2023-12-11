@@ -60,8 +60,8 @@ class Cache<T> {
   }
 
   get(key: string) {
-    const expiresAt = this.expires.get(key);
-    if (typeof expiresAt !== "undefined" && expiresAt > Date.now()) {
+    const ttl = this.ttl(key);
+    if (ttl > 0) {
       return this.data.get(key);
     } else {
       // Cleanup if expired
@@ -76,7 +76,9 @@ class Cache<T> {
   }
 
   ttl(key: string): number {
-    return this.expires.get(key) ?? 0
+    const now = Date.now();
+    const expiresAt = this.expires.get(key) ?? now;
+    return expiresAt - now;
   }
 }
 
