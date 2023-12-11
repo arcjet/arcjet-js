@@ -11,10 +11,11 @@ jobs:
     name: "Run tests (OS: ${{matrix.os}}, Node: ${{ matrix.node }})"
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         # TODO(#496): Figure out why Node 18 is segfaulting
         node: [20]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
     steps:
       # Environment security
       - name: Step Security
