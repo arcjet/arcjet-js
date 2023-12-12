@@ -3,22 +3,6 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      # Our devDependencies can be checked weekly
-      interval: "weekly"
-    assignees:
-      - blaine-arcjet
-    groups:
-      dev-dependencies:
-        dependency-type: "development"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
-
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
       # Our dependencies should be checked daily
       interval: "daily"
     assignees:
@@ -26,3 +10,10 @@ updates:
     groups:
       dependencies:
         dependency-type: "production"
+      dev-dependencies:
+        dependency-type: "development"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
