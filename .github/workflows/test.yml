@@ -13,9 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TODO(#496): Figure out why Node 18 is segfaulting
-        node: [20]
-        os: [ubuntu-latest, macos-latest]
+        node: [18, 20]
+        os: [ubuntu-latest]
     steps:
       # Environment security
       - name: Step Security
