@@ -10,5 +10,5 @@ npm install
 npm run dev
 ```
 
-Then visit `http://localhost:3000/api/ratelimit` and refresh the page to trigger
+Then visit `http://localhost:3000/api/arcjet` and refresh the page to trigger
 the rate limit.
