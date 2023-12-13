@@ -2328,7 +2328,7 @@ describe("SDK", () => {
       protect: jest.fn(
         async () =>
           new ArcjetRuleResult({
-            ttl: 0,
+            ttl: 5000,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetTestReason(),
