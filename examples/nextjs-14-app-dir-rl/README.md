@@ -5,10 +5,18 @@ handler](https://nextjs.org/docs/app/building-your-application/routing/route-han
 
 ## How to use
 
-```bash
-npm install
-npm run dev
-```
+1. From the root of the project, install the dependencies.
 
-Then visit `http://localhost:3000/api/arcjet` and refresh the page to trigger
-the rate limit.
+   ```bash
+   npm ci
+   ```
+
+2. Enter this directory and start the dev server.
+
+   ```bash
+   cd examples/nextjs-14-app-dir-rl
+   npm run dev
+   ```
+
+3. Visit `http://localhost:3000/api/arcjet`.
+4. Refresh the page to trigger the rate limit.
