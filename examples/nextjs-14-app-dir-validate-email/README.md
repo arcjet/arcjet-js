@@ -21,7 +21,7 @@ handler](https://nextjs.org/docs/app/building-your-application/routing/route-han
 2. Enter this directory and start the dev server.
 
    ```bash
-   cd examples/nextjs-14-app-dir-verify-email
+   cd examples/nextjs-14-app-dir-validate-email
    npm run dev
    ```
 
