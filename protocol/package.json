@@ -30,7 +30,7 @@
     "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
     "pretest": "npm run build",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
     "@bufbuild/protobuf": "1.6.0",
