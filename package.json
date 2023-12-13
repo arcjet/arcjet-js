@@ -1,8 +1,7 @@
 {
   "name": "arcjet-js",
   "engines": {
-    "node": ">=18",
-    "npm": ">=10"
+    "node": ">=18"
   },
   "workspaces": [
     "*",

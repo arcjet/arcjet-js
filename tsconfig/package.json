@@ -10,8 +10,7 @@
     "directory": "tsconfig"
   },
   "engines": {
-    "node": ">=18",
-    "npm": ">=10"
+    "node": ">=18"
   },
   "files": [
     "LICENSE",

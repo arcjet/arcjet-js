@@ -10,8 +10,7 @@
     "directory": "rollup-config"
   },
   "engines": {
-    "node": ">=18",
-    "npm": ">=10"
+    "node": ">=18"
   },
   "type": "module",
   "main": "./index.js",
