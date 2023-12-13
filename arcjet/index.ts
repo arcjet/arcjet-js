@@ -941,20 +941,22 @@ export default function arcjet<
             flatSortedRules,
           );
 
-          // If we're not in DRY_RUN mode, we want to cache and return this DENY
-          // decision.
+          // If we're not in DRY_RUN mode, we want to cache non-zero TTL results
+          // and return this DENY decision.
           if (rule.mode !== "DRY_RUN") {
-            log.debug("Caching decision", {
-              fingerprint,
-              conclusion: decision.conclusion,
-              reason: decision.reason,
-            });
+            if (results[idx].ttl > 0) {
+              log.debug("Caching decision for %d milliseconds", decision.ttl, {
+                fingerprint,
+                conclusion: decision.conclusion,
+                reason: decision.reason,
+              });
 
-            await blockCache.set(
-              fingerprint,
-              decision.reason,
-              decision.ttl,
-            );
+              await blockCache.set(
+                fingerprint,
+                decision.reason,
+                decision.ttl,
+              );
+            }
 
             return decision;
           }
@@ -986,14 +988,16 @@ export default function arcjet<
           fingerprint,
           path: details.path,
           runtime: runtime(),
+          ttl: decision.ttl,
           conclusion: decision.conclusion,
           reason: decision.reason,
           ruleResults: decision.results,
         });
 
-        // If the decision is to block, we cache the block locally
-        if (decision.isDenied()) {
-          log.debug("decide: Caching block locally");
+        // If the decision is to block and we have a non-zero TTL, we cache the
+        // block locally
+        if (decision.isDenied() && decision.ttl > 0) {
+          log.debug("decide: Caching block locally for %d milliseconds", decision.ttl);
 
           await blockCache.set(
             fingerprint,
