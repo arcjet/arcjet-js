@@ -10,7 +10,8 @@
     "directory": "ip"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18",
+    "npm": ">=10"
   },
   "type": "module",
   "main": "./index.js",

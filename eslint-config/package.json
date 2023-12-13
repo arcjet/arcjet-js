@@ -10,7 +10,8 @@
     "directory": "eslint-config"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18",
+    "npm": ">=10"
   },
   "type": "commonjs",
   "main": "./index.js",
