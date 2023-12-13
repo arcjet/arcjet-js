@@ -24,4 +24,8 @@
  * properly support consistent asset bundling techniques.
  */
 
-export const wasm: ArrayBuffer;
+/**
+ * Returns an ArrayBuffer for the Arcjet Wasm binary, decoded from a base64 Data
+ * URL.
+ */
+export function wasm(): Promise<ArrayBuffer>;

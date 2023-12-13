@@ -44,21 +44,21 @@ async function init(): Promise<WasmAPI | undefined> {
   }
 
   if (state === "uninitialized") {
-    let wasmModule: WebAssembly.Module;
-    // We use `NEXT_RUNTIME` env var to DCE the Node/Browser code in the `else` block
-    // possible values: "edge" | "nodejs" | undefined
-    if (process.env["NEXT_RUNTIME"] === "edge") {
-      const mod = await import(
-        // @ts-expect-error
-        "./wasm/arcjet_analyze_js_req_bg.wasm?module"
-      );
-      wasmModule = mod.default;
-    } else {
-      const { wasm } = await import("./wasm/arcjet.wasm.js");
-      wasmModule = await WebAssembly.compile(wasm);
-    }
-
     try {
+      let wasmModule: WebAssembly.Module;
+      // We use `NEXT_RUNTIME` env var to DCE the Node/Browser code in the `else` block
+      // possible values: "edge" | "nodejs" | undefined
+      if (process.env["NEXT_RUNTIME"] === "edge") {
+        const mod = await import(
+          // @ts-expect-error
+          "./wasm/arcjet_analyze_js_req_bg.wasm?module"
+        );
+        wasmModule = mod.default;
+      } else {
+        const { wasm } = await import("./wasm/arcjet.wasm.js");
+        wasmModule = await WebAssembly.compile(await wasm());
+      }
+
       await initWasm(wasmModule);
       state = "initialized";
     } catch (err) {
