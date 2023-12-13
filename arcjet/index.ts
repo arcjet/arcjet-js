@@ -951,7 +951,7 @@ export default function arcjet<
                 reason: decision.reason,
               });
 
-              await blockCache.set(
+              blockCache.set(
                 fingerprint,
                 decision.reason,
                 decision.ttl,
@@ -999,7 +999,7 @@ export default function arcjet<
         if (decision.isDenied() && decision.ttl > 0) {
           log.debug("decide: Caching block locally for %d milliseconds", decision.ttl);
 
-          await blockCache.set(
+          blockCache.set(
             fingerprint,
             decision.reason,
             decision.ttl,
