@@ -1,0 +1,13 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "NODE_ENV",
+    "NEXT_RUNTIME",
+    "VERCEL",
+    "VERCEL_GIT_COMMIT_SHA",
+    "ARCJET_BASE_URL",
+    "ARCJET_RUNTIME",
+    "ARCJET_LOG_LEVEL"
+  ],
+  "pipeline": {}
+}
