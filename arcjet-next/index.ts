@@ -251,12 +251,13 @@ export function createMiddleware<const Rules extends (Primitive | Product)[]>(
  * the request is blocked, a `NextApiResponse` instance will be returned based
  * on the configured decision response.
  */
-export function withArcjet(
+export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
   // TODO(#221): This type needs to be tightened to only allow Primitives or Products that don't have extra props
   arcjet: ArcjetNext<(Primitive<EmptyObject> | Product<EmptyObject>)[]>,
-  handler: (...args: any[]) => any,
+  handler: (...args: Args) => Promise<Res>,
 ) {
-  return async (request: ArcjetNextRequest, ...rest: unknown[]) => {
+  return async (...args: Args) => {
+    const request = args[0];
     const decision = await arcjet.protect(request);
     if (decision.isDenied()) {
       // TODO(#222): Content type negotiation using `Accept` header
@@ -272,7 +273,7 @@ export function withArcjet(
         );
       }
     } else {
-      return handler(request, ...rest);
+      return handler(...args);
     }
   };
 }
