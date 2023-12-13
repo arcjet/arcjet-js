@@ -25,11 +25,11 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "eslint-config-next": "14.0.3",
+    "eslint-config-next": "14.0.4",
     "eslint-config-prettier": "9.1.0",
-    "eslint-config-turbo": "1.10.16",
+    "eslint-config-turbo": "1.11.2",
     "eslint-plugin-react": "7.33.2",
-    "next": "14.0.3"
+    "next": "14.0.4"
   },
   "peerDependencies": {
     "eslint": "^8"
