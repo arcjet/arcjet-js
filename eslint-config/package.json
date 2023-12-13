@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/eslint-config",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "Custom eslint config for Arcjet projects",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -10,7 +10,8 @@
     "directory": "eslint-config"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18",
+    "npm": ">=10"
   },
   "type": "commonjs",
   "main": "./index.js",
@@ -20,16 +21,21 @@
     ".eslintrc.js",
     "index.js"
   ],
-  "scripts": {},
-  "dependencies": {},
-  "devDependencies": {
-    "eslint": "8.55.0",
-    "eslint-config-next": "14.0.3",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "eslint-config-next": "14.0.4",
     "eslint-config-prettier": "9.1.0",
-    "eslint-config-turbo": "1.10.16",
+    "eslint-config-turbo": "1.11.2",
     "eslint-plugin-react": "7.33.2",
-    "next": "14.0.3",
-    "typescript": "5.3.2"
+    "next": "14.0.4"
+  },
+  "peerDependencies": {
+    "eslint": "^8"
+  },
+  "devDependencies": {
+    "eslint": "8.55.0"
   },
   "publishConfig": {
     "access": "public",

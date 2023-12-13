@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/tsconfig",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "Custom tsconfig for Arcjet projects",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -10,7 +10,8 @@
     "directory": "tsconfig"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18",
+    "npm": ">=10"
   },
   "files": [
     "LICENSE",
