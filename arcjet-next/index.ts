@@ -145,9 +145,12 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
       const method = request.method ?? "";
       const host = headers.get("host") ?? "";
       let path;
-      // TODO(#224): nextUrl has formatting logic when you `toString` but we don't account for that here
+      // TODO(#36): nextUrl has formatting logic when you `toString` but we don't account for that here
       if (typeof request.nextUrl !== "undefined") {
-        path = request.nextUrl.pathname + "?" + request.nextUrl.search;
+        path = request.nextUrl.pathname;
+        if (request.nextUrl.search !== "") {
+          path += "?" + request.nextUrl.search;
+        }
       } else {
         path = request.url ?? "";
       }
