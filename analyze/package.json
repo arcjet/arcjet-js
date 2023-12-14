@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/analyze",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "Arcjet local analysis engine",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -35,12 +35,12 @@
     "./wasm/arcjet_analyze_js_req_bg.js"
   ],
   "dependencies": {
-    "@arcjet/logger": "1.0.0-alpha.4"
+    "@arcjet/logger": "1.0.0-alpha.5"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.4",
-    "@arcjet/rollup-config": "1.0.0-alpha.4",
-    "@arcjet/tsconfig": "1.0.0-alpha.4",
+    "@arcjet/eslint-config": "1.0.0-alpha.5",
+    "@arcjet/rollup-config": "1.0.0-alpha.5",
+    "@arcjet/tsconfig": "1.0.0-alpha.5",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.8.0",
     "@types/node": "18.18.0",
