@@ -477,6 +477,7 @@ describe("convert", () => {
     expect(
       ArcjetRuleResultToProtocol(
         new ArcjetRuleResult({
+          ttl: 0,
           state: "RUN",
           conclusion: "ALLOW",
           reason: new ArcjetReason(),
@@ -504,6 +505,7 @@ describe("convert", () => {
       ),
     ).toEqual(
       new ArcjetRuleResult({
+        ttl: 0,
         state: "RUN",
         conclusion: "ALLOW",
         reason: new ArcjetReason(),
@@ -516,6 +518,7 @@ describe("convert", () => {
       ArcjetDecisionToProtocol(
         new ArcjetAllowDecision({
           id: "abc123",
+          ttl: 0,
           results: [],
           reason: new ArcjetReason(),
         }),

@@ -449,6 +449,7 @@ export function ArcjetDecisionFromProtocol(
     default:
       const _exhaustive: never = decision.conclusion;
       return new ArcjetErrorDecision({
+        ttl: 0,
         reason: new ArcjetErrorReason("Missing Conclusion"),
         results: [],
       });
