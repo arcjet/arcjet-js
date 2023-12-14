@@ -1459,6 +1459,11 @@ describe("Primitives > detectBot", () => {
   });
 
   test("validates that headers is defined", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       headers: new Headers(),
     };
@@ -1467,11 +1472,16 @@ describe("Primitives > detectBot", () => {
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
     expect(() => {
-      const _ = rule.validate("test-fingerprint", details);
+      const _ = rule.validate(context, details);
     }).not.toThrow();
   });
 
   test("throws via `validate()` if headers is undefined", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       headers: undefined,
     };
@@ -1480,11 +1490,16 @@ describe("Primitives > detectBot", () => {
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
     expect(() => {
-      const _ = rule.validate("test-fingerprint", details);
+      const _ = rule.validate(context, details);
     }).toThrow();
   });
 
   test("does not analyze if no headers are specified", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1498,7 +1513,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot();
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -1522,7 +1537,11 @@ describe("Primitives > detectBot", () => {
         },
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1543,7 +1562,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1570,7 +1589,11 @@ describe("Primitives > detectBot", () => {
         },
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1591,7 +1614,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1618,7 +1641,11 @@ describe("Primitives > detectBot", () => {
         },
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1639,7 +1666,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1653,6 +1680,11 @@ describe("Primitives > detectBot", () => {
   });
 
   test("can be configured for invalid bots", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1687,7 +1719,7 @@ describe("Primitives > detectBot", () => {
     });
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1709,7 +1741,11 @@ describe("Primitives > detectBot", () => {
         ArcjetBotType.LIKELY_NOT_A_BOT,
       ],
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1725,7 +1761,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1751,7 +1787,11 @@ describe("Primitives > detectBot", () => {
         },
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1772,7 +1812,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1792,7 +1832,11 @@ describe("Primitives > detectBot", () => {
         remove: ["^curl"],
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1808,7 +1852,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -1996,6 +2040,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("validates that email is defined", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       email: "abc@example.com",
     };
@@ -2004,11 +2053,16 @@ describe("Primitives > validateEmail", () => {
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
-      const _ = rule.validate("test-fingerprint", details);
+      const _ = rule.validate(context, details);
     }).not.toThrow();
   });
 
   test("throws via `validate()` if email is undefined", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       email: undefined,
     };
@@ -2017,11 +2071,16 @@ describe("Primitives > validateEmail", () => {
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
-      const _ = rule.validate("test-fingerprint", details);
+      const _ = rule.validate(context, details);
     }).toThrow();
   });
 
   test("allows a valid email", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2036,7 +2095,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -2047,6 +2106,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with no domain segment", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2061,7 +2125,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2072,6 +2136,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with no TLD", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2086,7 +2155,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2097,6 +2166,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with no TLD even if some options are specified", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2113,7 +2187,7 @@ describe("Primitives > validateEmail", () => {
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2124,6 +2198,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with empty name segment", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2138,7 +2217,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2149,6 +2228,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with domain literal", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2163,7 +2247,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2174,6 +2258,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("can be configured to allow no TLD", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2190,7 +2279,7 @@ describe("Primitives > validateEmail", () => {
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -2201,6 +2290,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("can be configured to allow domain literals", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2217,7 +2311,7 @@ describe("Primitives > validateEmail", () => {
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -3039,15 +3133,18 @@ describe("SDK", () => {
       },
     };
 
+    let errorLogSpy;
+
     function testRuleLocalThrowString(): ArcjetLocalRule {
       return {
         mode: ArcjetMode.LIVE,
         type: "TEST_RULE_LOCAL_THROW_STRING",
         priority: 1,
         validate: jest.fn(),
-        protect: jest.fn(async () => {
+        async protect(context, req) {
+          errorLogSpy = jest.spyOn(context.log, "error");
           throw "Local rule protect failed";
-        }),
+        },
       };
     }
 
@@ -3057,13 +3154,14 @@ describe("SDK", () => {
       client,
     });
 
-    // TODO: Assert on the error log arguments when we can access the logger in a rule
-    // const errorLogSpy = jest.spyOn(logger, "error");
-
     const _ = await aj.protect(details);
 
-    // expect(errorLogSpy).toHaveBeenCalledTimes(1);
-    // expect(errorLogSpy).toHaveBeenCalledWith("");
+    expect(errorLogSpy).toHaveBeenCalledTimes(1);
+    expect(errorLogSpy).toHaveBeenCalledWith(
+      "Failure running rule: %s due to %s",
+      "TEST_RULE_LOCAL_THROW_STRING",
+      "Local rule protect failed",
+    );
   });
 
   test("correctly logs an error message if a local rule throws a non-error", async () => {
@@ -3091,15 +3189,18 @@ describe("SDK", () => {
       },
     };
 
+    let errorLogSpy;
+
     function testRuleLocalThrowNull(): ArcjetLocalRule {
       return {
         mode: ArcjetMode.LIVE,
         type: "TEST_RULE_LOCAL_THROW_NULL",
         priority: 1,
         validate: jest.fn(),
-        protect: jest.fn(async () => {
+        async protect(context, req) {
+          errorLogSpy = jest.spyOn(context.log, "error");
           throw null;
-        }),
+        },
       };
     }
 
@@ -3109,13 +3210,14 @@ describe("SDK", () => {
       client,
     });
 
-    // TODO: Assert on the error log arguments when we can access the logger in a rule
-    // const errorLogSpy = jest.spyOn(logger, "error");
-
     const _ = await aj.protect(details);
 
-    // expect(errorLogSpy).toHaveBeenCalledTimes(1);
-    // expect(errorLogSpy).toHaveBeenCalledWith("");
+    expect(errorLogSpy).toHaveBeenCalledTimes(1);
+    expect(errorLogSpy).toHaveBeenCalledWith(
+      "Failure running rule: %s due to %s",
+      "TEST_RULE_LOCAL_THROW_NULL",
+      "Unknown problem",
+    );
   });
 
   test("does not return nor cache a deny decision if DENY decision in a dry run local rule", async () => {

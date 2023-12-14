@@ -1,5 +1,6 @@
 import { typeid } from "typeid-js";
 import { Reason } from "./gen/es/decide/v1alpha1/decide_pb.js";
+import type { Logger } from "@arcjet/logger";
 
 type ArcjetEnum<T extends string> = { readonly [Key in T]: T };
 
@@ -227,7 +228,7 @@ export class ArcjetRuleResult {
   reason: ArcjetReason;
 
   constructor(init: {
-    ttl: number,
+    ttl: number;
     state: ArcjetRuleState;
     conclusion: ArcjetConclusion;
     reason: ArcjetReason;
@@ -356,7 +357,7 @@ export class ArcjetErrorDecision extends ArcjetDecision {
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
-    ttl: number,
+    ttl: number;
     reason: ArcjetErrorReason;
   }) {
     super(init);
@@ -386,11 +387,11 @@ export type ArcjetRule<Props extends {} = {}> = {
 export interface ArcjetLocalRule<Props extends { [key: string]: unknown } = {}>
   extends ArcjetRule<Props> {
   validate(
-    fingerprint: string,
+    context: ArcjetContext,
     details: Partial<ArcjetRequestDetails & Props>,
   ): asserts details is ArcjetRequestDetails & Props;
   protect(
-    fingerprint: string,
+    context: ArcjetContext,
     details: ArcjetRequestDetails & Props,
   ): Promise<ArcjetRuleResult>;
 }
@@ -423,3 +424,9 @@ export interface ArcjetBotRule<Props extends {}>
   add: [string, ArcjetBotType][];
   remove: string[];
 }
+
+export type ArcjetContext = {
+  key: string;
+  fingerprint: string;
+  log: Logger;
+};

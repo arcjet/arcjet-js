@@ -32,6 +32,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
+    "@arcjet/logger": "1.0.0-alpha.5",
     "@bufbuild/protobuf": "1.6.0",
     "@connectrpc/connect": "1.1.4",
     "typeid-js": "0.3.0"
