@@ -84,7 +84,7 @@ export interface ArcjetNextRequest {
 
   ip?: string;
 
-  nextUrl?: NextRequest["nextUrl"];
+  nextUrl?: Partial<{ pathname: string, search: string }>;
 }
 
 export interface ArcjetNext<Rules extends (Primitive | Product)[]> {
