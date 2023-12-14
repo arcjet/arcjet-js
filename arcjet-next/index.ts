@@ -1,3 +1,4 @@
+import type { IncomingMessage } from "http";
 import { Interceptor } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import type { NextApiResponse } from "next";
@@ -276,14 +277,17 @@ function isNextApiResponse(val: unknown): val is NextApiResponse {
  * the request is blocked, a `NextApiResponse` instance will be returned based
  * on the configured decision response.
  */
-export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
+export function withArcjet<
+  Req extends IncomingMessage | Request,
+  Rest extends unknown[],
+  Res,
+>(
   // TODO(#221): This type needs to be tightened to only allow Primitives or Products that don't have extra props
   arcjet: ArcjetNext<(Primitive<EmptyObject> | Product<EmptyObject>)[]>,
-  handler: (...args: Args) => Promise<Res>,
+  handler: (request: Req, ...rest: Rest) => Promise<Res>,
 ) {
-  return async (...args: Args) => {
-    const request = args[0];
-    const response = args[1];
+  return async (request: Req, ...rest: Rest) => {
+    const response = rest[0];
     const decision = await arcjet.protect(request);
     if (decision.isDenied()) {
       if (isNextApiResponse(response)) {
@@ -310,7 +314,7 @@ export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
         }
       }
     } else {
-      return handler(...args);
+      return handler(request, ...rest);
     }
   };
 }
