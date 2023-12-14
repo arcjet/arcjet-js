@@ -202,7 +202,7 @@ export function createRemoteClient(
   // The timeout for the Arcjet API in milliseconds. This is set to a low value
   // in production so calls fail open.
   const timeout =
-    options?.timeout ?? process.env["NODE_ENV"] === "production" ? 500 : 1000;
+    options?.timeout ?? (process.env["NODE_ENV"] === "production" ? 500 : 1000);
 
   const sdkStack = ArcjetStackToProtocol(options?.sdkStack ?? "NODEJS");
   const sdkVersion = "__ARCJET_SDK_VERSION__";
