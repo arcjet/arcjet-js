@@ -43,14 +43,14 @@ import {
   SuspiciousReason,
 } from "./gen/es/decide/v1alpha1/decide_pb.js";
 
-export function ArcjetModeToProtocol(value: ArcjetMode) {
-  switch (value) {
+export function ArcjetModeToProtocol(mode: ArcjetMode) {
+  switch (mode) {
     case "LIVE":
       return Mode.LIVE;
     case "DRY_RUN":
       return Mode.DRY_RUN;
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = mode;
       return Mode.UNSPECIFIED;
   }
 }
@@ -68,7 +68,7 @@ export function ArcjetBotTypeToProtocol(botType: ArcjetBotType): BotType {
     case "VERIFIED_BOT":
       return BotType.VERIFIED_BOT;
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = botType;
       return BotType.UNSPECIFIED;
   }
 }
@@ -88,7 +88,7 @@ export function ArcjetBotTypeFromProtocol(botType: BotType): ArcjetBotType {
     case BotType.VERIFIED_BOT:
       return "VERIFIED_BOT";
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = botType;
       throw new Error("Invalid BotType");
   }
 }
@@ -108,13 +108,15 @@ export function ArcjetEmailTypeToProtocol(
     case "INVALID":
       return EmailType.INVALID;
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = emailType;
       return EmailType.UNSPECIFIED;
   }
 }
 
-export function ArcjetEmailTypeFromProtocol(proto: EmailType): ArcjetEmailType {
-  switch (proto) {
+export function ArcjetEmailTypeFromProtocol(
+  emailType: EmailType,
+): ArcjetEmailType {
+  switch (emailType) {
     case EmailType.UNSPECIFIED:
       throw new Error("Invalid EmailType");
     case EmailType.DISPOSABLE:
@@ -128,7 +130,7 @@ export function ArcjetEmailTypeFromProtocol(proto: EmailType): ArcjetEmailType {
     case EmailType.INVALID:
       return "INVALID";
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = emailType;
       throw new Error("Invalid EmailType");
   }
 }
@@ -140,15 +142,13 @@ export function ArcjetStackToProtocol(stack: ArcjetStack): SDKStack {
     case "NEXTJS":
       return SDKStack.SDK_STACK_NEXTJS;
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = stack;
       return SDKStack.SDK_STACK_UNSPECIFIED;
   }
 }
 
-export function ArcjetRuleStateToProtocol(
-  ruleState: ArcjetRuleState,
-): RuleState {
-  switch (ruleState) {
+export function ArcjetRuleStateToProtocol(stack: ArcjetRuleState): RuleState {
+  switch (stack) {
     case "RUN":
       return RuleState.RUN;
     case "NOT_RUN":
@@ -158,13 +158,15 @@ export function ArcjetRuleStateToProtocol(
     case "DRY_RUN":
       return RuleState.DRY_RUN;
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = stack;
       return RuleState.UNSPECIFIED;
   }
 }
 
-export function ArcjetRuleStateFromProtocol(proto: RuleState): ArcjetRuleState {
-  switch (proto) {
+export function ArcjetRuleStateFromProtocol(
+  ruleState: RuleState,
+): ArcjetRuleState {
+  switch (ruleState) {
     case RuleState.UNSPECIFIED:
       throw new Error("Invalid RuleState");
     case RuleState.RUN:
@@ -176,7 +178,7 @@ export function ArcjetRuleStateFromProtocol(proto: RuleState): ArcjetRuleState {
     case RuleState.CACHED:
       return "CACHED";
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = ruleState;
       throw new Error("Invalid RuleState");
   }
 }
@@ -194,15 +196,15 @@ export function ArcjetConclusionToProtocol(
     case "ERROR":
       return Conclusion.ERROR;
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = conclusion;
       return Conclusion.UNSPECIFIED;
   }
 }
 
 export function ArcjetConclusionFromProtocol(
-  proto: Conclusion,
+  conclusion: Conclusion,
 ): ArcjetConclusion {
-  switch (proto) {
+  switch (conclusion) {
     case Conclusion.UNSPECIFIED:
       throw new Error("Invalid Conclusion");
     case Conclusion.ALLOW:
@@ -214,7 +216,7 @@ export function ArcjetConclusionFromProtocol(
     case Conclusion.ERROR:
       return "ERROR";
     default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+      const _exhaustive: never = conclusion;
       throw new Error("Invalid Conclusion");
   }
 }
@@ -222,6 +224,10 @@ export function ArcjetConclusionFromProtocol(
 export function ArcjetReasonFromProtocol(proto?: Reason) {
   if (typeof proto === "undefined") {
     return new ArcjetReason();
+  }
+
+  if (typeof proto !== "object" || typeof proto.reason !== "object") {
+    throw new Error("Invalid Reason");
   }
 
   switch (proto.reason.case) {
@@ -266,9 +272,13 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
       const reason = proto.reason.value;
       return new ArcjetErrorReason(reason.message);
     }
-    default:
-      // TODO(#210): TypeScript exhaustiveness check that doesn't mess up coverage stats
+    case undefined: {
       return new ArcjetReason();
+    }
+    default: {
+      const _exhaustive: never = proto.reason;
+      return new ArcjetReason();
+    }
   }
 }
 
@@ -320,7 +330,9 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
     return new Reason({
       reason: {
         case: "suspicious",
-        value: new SuspiciousReason({}),
+        value: new SuspiciousReason({
+          wafTriggered: reason.wafTriggered,
+        }),
       },
     });
   }
@@ -394,7 +406,9 @@ export function ArcjetDecisionFromProtocol(
     });
   }
 
-  const results = decision.ruleResults.map(ArcjetRuleResultFromProtocol);
+  const results = Array.isArray(decision.ruleResults)
+    ? decision.ruleResults.map(ArcjetRuleResultFromProtocol)
+    : [];
 
   switch (decision.conclusion) {
     case Conclusion.ALLOW:
@@ -431,6 +445,12 @@ export function ArcjetDecisionFromProtocol(
         ttl: decision.ttl,
         reason: new ArcjetErrorReason("Invalid Conclusion"),
         results,
+      });
+    default:
+      const _exhaustive: never = decision.conclusion;
+      return new ArcjetErrorDecision({
+        reason: new ArcjetErrorReason("Missing Conclusion"),
+        results: [],
       });
   }
 }
@@ -473,12 +493,15 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isEmailRule(rule)) {
+    const block = Array.isArray(rule.block)
+      ? rule.block.map(ArcjetEmailTypeToProtocol)
+      : [];
     return new Rule({
       rule: {
         case: "email",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          block: rule.block.map(ArcjetEmailTypeToProtocol),
+          block,
           requireTopLevelDomain: rule.requireTopLevelDomain,
           allowDomainLiteral: rule.allowDomainLiteral,
         },
@@ -487,16 +510,21 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isBotRule(rule)) {
-    const add = rule.add.map(([key, botType]) => [
-      key,
-      ArcjetBotTypeToProtocol(botType),
-    ]);
+    const block = Array.isArray(rule.block)
+      ? rule.block.map(ArcjetBotTypeToProtocol)
+      : [];
+    const add = Array.isArray(rule.add)
+      ? rule.add.map(([key, botType]) => [
+          key,
+          ArcjetBotTypeToProtocol(botType),
+        ])
+      : [];
     return new Rule({
       rule: {
         case: "bots",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          block: rule.block.map(ArcjetBotTypeToProtocol),
+          block,
           patterns: {
             add: Object.fromEntries(add),
             remove: rule.remove,

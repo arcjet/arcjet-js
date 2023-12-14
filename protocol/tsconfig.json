@@ -1,4 +1,4 @@
 {
   "extends": "@arcjet/tsconfig/base",
-  "include": ["*.ts"]
+  "include": ["*.ts", "test/*.ts"]
 }

@@ -8,16 +8,16 @@ export default createConfig(import.meta.url, {
       // processed by rollup
       resolveId(source) {
         if (source === "./gen/es/decide/v1alpha1/decide_pb.js") {
-          return {
-            id: "./gen/es/decide/v1alpha1/decide_pb.js",
-            external: true,
-          };
+          return { id: source, external: true };
+        }
+        if (source === "../gen/es/decide/v1alpha1/decide_pb.js") {
+          return { id: source, external: true };
         }
         if (source === "./gen/es/decide/v1alpha1/decide_connect.js") {
-          return {
-            id: "./gen/es/decide/v1alpha1/decide_connect.js",
-            external: true,
-          };
+          return { id: source, external: true };
+        }
+        if (source === "../gen/es/decide/v1alpha1/decide_connect.js") {
+          return { id: source, external: true };
         }
         return null;
       },
