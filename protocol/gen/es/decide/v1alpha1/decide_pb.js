@@ -287,6 +287,7 @@ export const RuleResult = proto3.makeMessageType(
     { no: 2, name: "state", kind: "enum", T: proto3.getEnumType(RuleState) },
     { no: 3, name: "conclusion", kind: "enum", T: proto3.getEnumType(Conclusion) },
     { no: 4, name: "reason", kind: "message", T: Reason },
+    { no: 5, name: "ttl", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ],
 );
 
@@ -322,6 +323,7 @@ export const Decision = proto3.makeMessageType(
     { no: 2, name: "conclusion", kind: "enum", T: proto3.getEnumType(Conclusion) },
     { no: 3, name: "reason", kind: "message", T: Reason },
     { no: 4, name: "rule_results", kind: "message", T: RuleResult, repeated: true },
+    { no: 5, name: "ttl", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ],
 );
 

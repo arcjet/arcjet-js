@@ -217,11 +217,17 @@ export class ArcjetErrorReason extends ArcjetReason {
 
 export class ArcjetRuleResult {
   ruleId: string;
+  /**
+   * The duration in milliseconds this result should be considered valid, also
+   * known as time-to-live.
+   */
+  ttl: number;
   state: ArcjetRuleState;
   conclusion: ArcjetConclusion;
   reason: ArcjetReason;
 
   constructor(init: {
+    ttl: number,
     state: ArcjetRuleState;
     conclusion: ArcjetConclusion;
     reason: ArcjetReason;
@@ -229,6 +235,7 @@ export class ArcjetRuleResult {
     // TODO(#230): Generated, stable IDs for Rules
     this.ruleId = "";
 
+    this.ttl = init.ttl;
     this.state = init.state;
     this.conclusion = init.conclusion;
     this.reason = init.reason;
@@ -250,17 +257,24 @@ export class ArcjetRuleResult {
  * decision. One of: {@link ArcjetRateLimitReason}, {@link ArcjetEdgeRuleReason},
  * {@link ArcjetBotReason}, {@link ArcjetSuspiciousReason},
  * {@link ArcjetEmailReason}, or {@link ArcjetErrorReason}.
+ * @property `ttl` - The duration in milliseconds this decision should be
+ * considered valid, also known as time-to-live.
  * @property `results` - Each separate {@link ArcjetRuleResult} can be found here
  * or by logging into the Arcjet dashboard and searching for the decision `id`.
  */
 export abstract class ArcjetDecision {
   id: string;
+  /**
+   * The duration in milliseconds this decision should be considered valid, also
+   * known as time-to-live.
+   */
+  ttl: number;
   results: ArcjetRuleResult[];
 
   abstract conclusion: ArcjetConclusion;
   abstract reason: ArcjetReason;
 
-  constructor(init: { id?: string; results: ArcjetRuleResult[] }) {
+  constructor(init: { id?: string; results: ArcjetRuleResult[]; ttl: number }) {
     if (typeof init.id === "string") {
       this.id = init.id;
     } else {
@@ -268,6 +282,7 @@ export abstract class ArcjetDecision {
     }
 
     this.results = init.results;
+    this.ttl = init.ttl;
   }
 
   isAllowed(): this is ArcjetAllowDecision | ArcjetErrorDecision {
@@ -294,6 +309,7 @@ export class ArcjetAllowDecision extends ArcjetDecision {
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
+    ttl: number;
     reason: ArcjetReason;
   }) {
     super(init);
@@ -309,6 +325,7 @@ export class ArcjetDenyDecision extends ArcjetDecision {
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
+    ttl: number;
     reason: ArcjetReason;
   }) {
     super(init);
@@ -323,6 +340,7 @@ export class ArcjetChallengeDecision extends ArcjetDecision {
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
+    ttl: number;
     reason: ArcjetReason;
   }) {
     super(init);
@@ -338,6 +356,7 @@ export class ArcjetErrorDecision extends ArcjetDecision {
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
+    ttl: number,
     reason: ArcjetErrorReason;
   }) {
     super(init);
