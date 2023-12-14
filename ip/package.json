@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/ip",
-  "version": "1.0.0-alpha.3",
+  "version": "1.0.0-alpha.4",
   "description": "Arcjet utilities for finding the originating IP of a request",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -10,8 +10,7 @@
     "directory": "ip"
   },
   "engines": {
-    "node": ">=18",
-    "npm": ">=10"
+    "node": ">=18"
   },
   "type": "module",
   "main": "./index.js",
@@ -33,9 +32,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.3",
-    "@arcjet/rollup-config": "1.0.0-alpha.3",
-    "@arcjet/tsconfig": "1.0.0-alpha.3",
+    "@arcjet/eslint-config": "1.0.0-alpha.4",
+    "@arcjet/rollup-config": "1.0.0-alpha.4",
+    "@arcjet/tsconfig": "1.0.0-alpha.4",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.8.0",
     "@types/node": "18.18.0",
