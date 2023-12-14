@@ -1,11 +1,13 @@
 import { Interceptor } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
+import type { NextApiResponse } from "next";
 import {
-  NextFetchEvent,
-  NextMiddleware,
-  NextRequest,
+  type NextFetchEvent,
+  type NextMiddleware,
+  type NextRequest,
   NextResponse,
 } from "next/server.js";
+import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
 import arcjet, {
   ArcjetDecision,
   ArcjetOptions,
@@ -22,7 +24,6 @@ import arcjet, {
   createRemoteClient,
 } from "arcjet";
 import findIP from "@arcjet/ip";
-import { NextMiddlewareResult } from "next/dist/server/web/types.js";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -236,6 +237,30 @@ export function createMiddleware<const Rules extends (Primitive | Product)[]>(
   };
 }
 
+function isNextApiResponse(val: unknown): val is NextApiResponse {
+  if (val === null) {
+    return false;
+  }
+
+  if (typeof val !== "object") {
+    return false;
+  }
+
+  if (!("status" in val)) {
+    return false;
+  }
+
+  if (!("json" in val)) {
+    return false;
+  }
+
+  if (typeof val.status !== "function" || typeof val.json !== "function") {
+    return false;
+  }
+
+  return true;
+}
+
 /**
  * Wraps a Next.js page route, edge middleware, or an API route running on the
  * Edge Runtime.
@@ -258,19 +283,31 @@ export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
 ) {
   return async (...args: Args) => {
     const request = args[0];
+    const response = args[1];
     const decision = await arcjet.protect(request);
     if (decision.isDenied()) {
-      // TODO(#222): Content type negotiation using `Accept` header
-      if (decision.reason.isRateLimit()) {
-        return NextResponse.json(
-          { code: 429, message: "Too Many Requests" },
-          { status: 429 },
-        );
+      if (isNextApiResponse(response)) {
+        // TODO(#222): Content type negotiation using `Accept` header
+        if (decision.reason.isRateLimit()) {
+          return response
+            .status(429)
+            .json({ code: 429, message: "Too Many Requests" });
+        } else {
+          return response.status(403).json({ code: 403, message: "Forbidden" });
+        }
       } else {
-        return NextResponse.json(
-          { code: 403, message: "Forbidden" },
-          { status: 403 },
-        );
+        // TODO(#222): Content type negotiation using `Accept` header
+        if (decision.reason.isRateLimit()) {
+          return NextResponse.json(
+            { code: 429, message: "Too Many Requests" },
+            { status: 429 },
+          );
+        } else {
+          return NextResponse.json(
+            { code: 403, message: "Forbidden" },
+            { status: 403 },
+          );
+        }
       }
     } else {
       return handler(...args);
