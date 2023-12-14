@@ -156,7 +156,7 @@ describe("createRemoteClient", () => {
   });
 
   test("allows overriding the default timeout", async () => {
-    // TODO(#219): createRouterTransport doesn't seem to handle timeouts/promises correctly
+    // TODO(#32): createRouterTransport doesn't seem to handle timeouts/promises correctly
     const client = createRemoteClient({
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {});
