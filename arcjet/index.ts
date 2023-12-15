@@ -277,7 +277,7 @@ export function createRemoteClient(
       client
         .report(reportRequest, {
           headers: { Authorization: `Bearer ${context.key}` },
-          timeoutMs: 60_000, // 60 seconds
+          timeoutMs: 2_000, // 2 seconds
         })
         .catch((err: unknown) => {
           context.log.log(
