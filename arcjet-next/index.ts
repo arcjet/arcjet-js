@@ -120,7 +120,7 @@ export interface ArcjetNextRequest {
 
   ip?: string;
 
-  nextUrl?: Partial<{ pathname: string, search: string }>;
+  nextUrl?: Partial<{ pathname: string; search: string }>;
 }
 
 export interface ArcjetNext<Props extends PlainObject> {

@@ -794,7 +794,9 @@ export default function arcjet<
     get runtime() {
       return runtime();
     },
-    async protect(request: ArcjetRequest<ExtraProps<Rules>>): Promise<ArcjetDecision> {
+    async protect(
+      request: ArcjetRequest<ExtraProps<Rules>>,
+    ): Promise<ArcjetDecision> {
       // This goes against the type definition above, but users might call
       // `protect()` with no value and we don't want to crash
       if (typeof request === "undefined") {
