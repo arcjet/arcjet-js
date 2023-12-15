@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@arcjet/ip": "1.0.0-alpha.5",
-    "@connectrpc/connect-web": "1.1.4",
+    "@connectrpc/connect-web": "1.2.0",
     "arcjet": "1.0.0-alpha.5",
     "next": "14.0.4"
   },
