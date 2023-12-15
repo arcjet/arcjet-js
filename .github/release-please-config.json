@@ -1,0 +1,91 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "versioning": "prerelease",
+  "release-type": "node",
+  "changelog-path": "CHANGELOG.md",
+  "changelog-sections": [
+    { "type": "feat", "section": "🚀 New Features" },
+    { "type": "fix", "section": "🪲 Bug Fixes" },
+    { "type": "perf", "section": "🏎️ Performance Improvements" },
+    { "type": "deps", "section": "📦 Dependencies" },
+    { "type": "revert", "section": "↩️ Reverts" },
+    { "type": "docs", "section": "📝 Documentation" },
+    { "type": "chore", "section": "🧹 Miscellaneous Chores" },
+    { "type": "refactor", "section": "⌨️ Code Refactoring" },
+    { "type": "test", "section": "📚 Tests" },
+    { "type": "build", "section": "🔨 Build System" },
+    { "type": "ci", "section": "✅ Continuous Integration" }
+  ],
+  "group-pull-request-title-pattern": "chore: Release ${version}",
+  "pull-request-header": "Automatically generated with [Release Please](https://github.com/googleapis/release-please).",
+  "pull-request-footer": "",
+  "include-v-in-tag": true,
+  "bump-minor-pre-major": false,
+  "bump-patch-for-minor-pre-major": false,
+  "draft": false,
+  "prerelease": false,
+  "packages": {
+    ".": {
+      "component": "root",
+      "include-component-in-tag": false
+    },
+    "analyze": {
+      "component": "@arcjet/analyze",
+      "skip-github-release": true
+    },
+    "arcjet": {
+      "component": "arcjet",
+      "skip-github-release": true
+    },
+    "arcjet-next": {
+      "component": "@arcjet/next",
+      "skip-github-release": true
+    },
+    "eslint-config": {
+      "component": "@arcjet/eslint-config",
+      "skip-github-release": true
+    },
+    "ip": {
+      "component": "@arcjet/ip",
+      "skip-github-release": true
+    },
+    "logger": {
+      "component": "@arcjet/logger",
+      "skip-github-release": true
+    },
+    "protocol": {
+      "component": "@arcjet/protocol",
+      "skip-github-release": true
+    },
+    "rollup-config": {
+      "component": "@arcjet/rollup-config",
+      "skip-github-release": true
+    },
+    "tsconfig": {
+      "component": "@arcjet/tsconfig",
+      "skip-github-release": true
+    }
+  },
+  "plugins": [
+    {
+      "type": "node-workspace",
+      "merge": false
+    },
+    {
+      "type": "linked-versions",
+      "groupName": "arcjet-js",
+      "components": [
+        "root",
+        "@arcjet/analyze",
+        "arcjet",
+        "@arjcet/next",
+        "@arcjet/eslint-config",
+        "@arcjet/ip",
+        "@arcjet/logger",
+        "@arcjet/protocol",
+        "@arcjet/rollup-config",
+        "@arcjet/tsconfig"
+      ]
+    }
+  ]
+}
