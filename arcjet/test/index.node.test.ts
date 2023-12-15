@@ -117,7 +117,7 @@ class ArcjetInvalidDecision extends ArcjetDecision {
   conclusion: ArcjetConclusion;
 
   constructor() {
-    super({ results: [] });
+    super({ ttl: 0, results: [] });
     // @ts-expect-error
     this.conclusion = "INVALID";
     this.reason = new ArcjetTestReason();
@@ -156,7 +156,7 @@ describe("createRemoteClient", () => {
   });
 
   test("allows overriding the default timeout", async () => {
-    // TODO(#219): createRouterTransport doesn't seem to handle timeouts/promises correctly
+    // TODO(#32): createRouterTransport doesn't seem to handle timeouts/promises correctly
     const client = createRemoteClient({
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {});
@@ -731,6 +731,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -798,6 +799,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -865,6 +867,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Failure"),
       results: [],
     });
@@ -939,6 +942,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetChallengeDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1070,9 +1074,11 @@ describe("createRemoteClient", () => {
     });
 
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [
         new ArcjetRuleResult({
+          ttl: 0,
           state: "RUN",
           conclusion: "DENY",
           reason: new ArcjetReason(),
@@ -1151,6 +1157,7 @@ describe("createRemoteClient", () => {
       }),
     });
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1213,6 +1220,7 @@ describe("ArcjetHeaders", () => {
 describe("ArcjetDecision", () => {
   test("will default the `id` property if not specified", () => {
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1222,6 +1230,7 @@ describe("ArcjetDecision", () => {
   test("the `id` property if to be specified to the constructor", () => {
     const decision = new ArcjetAllowDecision({
       id: "abc_123",
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1231,6 +1240,7 @@ describe("ArcjetDecision", () => {
   // TODO: This test doesn't make sense anymore
   test("an ERROR decision can be constructed with an Error object", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason(new Error("Foo bar baz")),
       results: [],
     });
@@ -1243,6 +1253,7 @@ describe("ArcjetDecision", () => {
   // TODO: This test doesn't make sense anymore
   test("an ERROR decision can be constructed with a string message", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Boom!"),
       results: [],
     });
@@ -1255,6 +1266,7 @@ describe("ArcjetDecision", () => {
   // TODO: This test doesn't make sense anymore
   test("use an unknown error for an ERROR decision constructed with other types", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason(["not", "valid", "error"]),
       results: [],
     });
@@ -1266,6 +1278,7 @@ describe("ArcjetDecision", () => {
 
   test("`isAllowed()` returns true when type is ALLOW", () => {
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1274,6 +1287,7 @@ describe("ArcjetDecision", () => {
 
   test("`isAllowed()` returns true when type is ERROR (fail open)", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Something"),
       results: [],
     });
@@ -1282,6 +1296,7 @@ describe("ArcjetDecision", () => {
 
   test("`isAllowed()` returns false when type is DENY", () => {
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1290,6 +1305,7 @@ describe("ArcjetDecision", () => {
 
   test("`isDenied()` returns false when type is ALLOW", () => {
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1298,6 +1314,7 @@ describe("ArcjetDecision", () => {
 
   test("`isDenied()` returns false when type is ERROR (fail open)", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Something"),
       results: [],
     });
@@ -1306,6 +1323,7 @@ describe("ArcjetDecision", () => {
 
   test("`isDenied()` returns true when type is DENY", () => {
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1314,6 +1332,7 @@ describe("ArcjetDecision", () => {
 
   test("`isChallenged()` returns true when type is CHALLENGE", () => {
     const decision = new ArcjetChallengeDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1322,6 +1341,7 @@ describe("ArcjetDecision", () => {
 
   test("`isErrored()` returns false when type is ALLOW", () => {
     const decision = new ArcjetAllowDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1330,6 +1350,7 @@ describe("ArcjetDecision", () => {
 
   test("`isErrored()` returns false when type is ERROR", () => {
     const decision = new ArcjetErrorDecision({
+      ttl: 0,
       reason: new ArcjetErrorReason("Something"),
       results: [],
     });
@@ -1338,6 +1359,7 @@ describe("ArcjetDecision", () => {
 
   test("`isErrored()` returns false when type is DENY", () => {
     const decision = new ArcjetDenyDecision({
+      ttl: 0,
       reason: new ArcjetTestReason(),
       results: [],
     });
@@ -1437,6 +1459,11 @@ describe("Primitives > detectBot", () => {
   });
 
   test("validates that headers is defined", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       headers: new Headers(),
     };
@@ -1445,11 +1472,16 @@ describe("Primitives > detectBot", () => {
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
     expect(() => {
-      const _ = rule.validate("test-fingerprint", details);
+      const _ = rule.validate(context, details);
     }).not.toThrow();
   });
 
   test("throws via `validate()` if headers is undefined", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       headers: undefined,
     };
@@ -1458,11 +1490,16 @@ describe("Primitives > detectBot", () => {
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
     expect(() => {
-      const _ = rule.validate("test-fingerprint", details);
+      const _ = rule.validate(context, details);
     }).toThrow();
   });
 
   test("does not analyze if no headers are specified", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1476,7 +1513,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot();
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -1500,7 +1537,11 @@ describe("Primitives > detectBot", () => {
         },
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1521,7 +1562,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1548,7 +1589,11 @@ describe("Primitives > detectBot", () => {
         },
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1569,7 +1614,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1596,7 +1641,11 @@ describe("Primitives > detectBot", () => {
         },
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1617,7 +1666,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1631,6 +1680,11 @@ describe("Primitives > detectBot", () => {
   });
 
   test("can be configured for invalid bots", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1665,7 +1719,7 @@ describe("Primitives > detectBot", () => {
     });
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1687,7 +1741,11 @@ describe("Primitives > detectBot", () => {
         ArcjetBotType.LIKELY_NOT_A_BOT,
       ],
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1703,7 +1761,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1729,7 +1787,11 @@ describe("Primitives > detectBot", () => {
         },
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1750,7 +1812,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -1770,7 +1832,11 @@ describe("Primitives > detectBot", () => {
         remove: ["^curl"],
       },
     };
-
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1786,7 +1852,7 @@ describe("Primitives > detectBot", () => {
     const [rule] = detectBot(options);
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -1974,6 +2040,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("validates that email is defined", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       email: "abc@example.com",
     };
@@ -1982,11 +2053,16 @@ describe("Primitives > validateEmail", () => {
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
-      const _ = rule.validate("test-fingerprint", details);
+      const _ = rule.validate(context, details);
     }).not.toThrow();
   });
 
   test("throws via `validate()` if email is undefined", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       email: undefined,
     };
@@ -1995,11 +2071,16 @@ describe("Primitives > validateEmail", () => {
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
-      const _ = rule.validate("test-fingerprint", details);
+      const _ = rule.validate(context, details);
     }).toThrow();
   });
 
   test("allows a valid email", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2014,7 +2095,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -2025,6 +2106,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with no domain segment", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2039,7 +2125,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2050,6 +2136,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with no TLD", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2064,7 +2155,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2075,6 +2166,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with no TLD even if some options are specified", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2091,7 +2187,7 @@ describe("Primitives > validateEmail", () => {
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2102,6 +2198,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with empty name segment", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2116,7 +2217,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2127,6 +2228,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("denies email with domain literal", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2141,7 +2247,7 @@ describe("Primitives > validateEmail", () => {
     const [rule] = validateEmail();
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "DENY",
@@ -2152,6 +2258,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("can be configured to allow no TLD", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2168,7 +2279,7 @@ describe("Primitives > validateEmail", () => {
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -2179,6 +2290,11 @@ describe("Primitives > validateEmail", () => {
   });
 
   test("can be configured to allow domain literals", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      log: new Logger(),
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -2195,7 +2311,7 @@ describe("Primitives > validateEmail", () => {
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
-    const result = await rule.protect("test-fingerprint", details);
+    const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
       conclusion: "ALLOW",
@@ -2289,6 +2405,7 @@ describe("SDK", () => {
       protect: jest.fn(
         async () =>
           new ArcjetRuleResult({
+            ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
             reason: new ArcjetTestReason(),
@@ -2305,6 +2422,7 @@ describe("SDK", () => {
       protect: jest.fn(
         async () =>
           new ArcjetRuleResult({
+            ttl: 5000,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetTestReason(),
@@ -2357,6 +2475,7 @@ describe("SDK", () => {
       validate: jest.fn(),
       protect: jest.fn(async () => {
         return new ArcjetRuleResult({
+          ttl: 0,
           state: "RUN",
           conclusion: "DENY",
           reason: new ArcjetTestReason(),
@@ -2369,6 +2488,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2389,6 +2509,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2423,6 +2544,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2443,6 +2565,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2463,6 +2586,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2495,6 +2619,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2535,6 +2660,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2558,6 +2684,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2580,6 +2707,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2609,6 +2737,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2649,6 +2778,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
@@ -2691,6 +2821,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
@@ -2736,6 +2867,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
@@ -2784,6 +2916,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetErrorDecision({
+          ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
@@ -2819,6 +2952,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2865,6 +2999,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetDenyDecision({
+          ttl: 5000,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2913,6 +3048,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2933,6 +3069,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2975,6 +3112,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -2995,15 +3133,18 @@ describe("SDK", () => {
       },
     };
 
+    let errorLogSpy;
+
     function testRuleLocalThrowString(): ArcjetLocalRule {
       return {
         mode: ArcjetMode.LIVE,
         type: "TEST_RULE_LOCAL_THROW_STRING",
         priority: 1,
         validate: jest.fn(),
-        protect: jest.fn(async () => {
+        async protect(context, req) {
+          errorLogSpy = jest.spyOn(context.log, "error");
           throw "Local rule protect failed";
-        }),
+        },
       };
     }
 
@@ -3013,19 +3154,21 @@ describe("SDK", () => {
       client,
     });
 
-    // TODO: Assert on the error log arguments when we can access the logger in a rule
-    // const errorLogSpy = jest.spyOn(logger, "error");
-
     const _ = await aj.protect(details);
 
-    // expect(errorLogSpy).toHaveBeenCalledTimes(1);
-    // expect(errorLogSpy).toHaveBeenCalledWith("");
+    expect(errorLogSpy).toHaveBeenCalledTimes(1);
+    expect(errorLogSpy).toHaveBeenCalledWith(
+      "Failure running rule: %s due to %s",
+      "TEST_RULE_LOCAL_THROW_STRING",
+      "Local rule protect failed",
+    );
   });
 
   test("correctly logs an error message if a local rule throws a non-error", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -3046,15 +3189,18 @@ describe("SDK", () => {
       },
     };
 
+    let errorLogSpy;
+
     function testRuleLocalThrowNull(): ArcjetLocalRule {
       return {
         mode: ArcjetMode.LIVE,
         type: "TEST_RULE_LOCAL_THROW_NULL",
         priority: 1,
         validate: jest.fn(),
-        protect: jest.fn(async () => {
+        async protect(context, req) {
+          errorLogSpy = jest.spyOn(context.log, "error");
           throw null;
-        }),
+        },
       };
     }
 
@@ -3064,19 +3210,21 @@ describe("SDK", () => {
       client,
     });
 
-    // TODO: Assert on the error log arguments when we can access the logger in a rule
-    // const errorLogSpy = jest.spyOn(logger, "error");
-
     const _ = await aj.protect(details);
 
-    // expect(errorLogSpy).toHaveBeenCalledTimes(1);
-    // expect(errorLogSpy).toHaveBeenCalledWith("");
+    expect(errorLogSpy).toHaveBeenCalledTimes(1);
+    expect(errorLogSpy).toHaveBeenCalledWith(
+      "Failure running rule: %s due to %s",
+      "TEST_RULE_LOCAL_THROW_NULL",
+      "Unknown problem",
+    );
   });
 
   test("does not return nor cache a deny decision if DENY decision in a dry run local rule", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -3122,6 +3270,7 @@ describe("SDK", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -3229,6 +3378,7 @@ describe("Arcjet: Env = Serverless Node runtime on Vercel", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
@@ -3245,6 +3395,7 @@ describe("Arcjet: Env = Serverless Node runtime on Vercel", () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
+          ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });

@@ -87,12 +87,14 @@ export function createConfig(root, { plugins = [] } = {}) {
         exclude: ["node_modules", "test/*.ts"],
         declaration: true,
         declarationDir: ".",
+        noEmitOnError: true,
       }),
       typescript({
         tsconfig: "./tsconfig.json",
         // Override the `includes` specified in the tsconfig so we don't
         // generate definition files for our tests
         include: "test/*.ts",
+        noEmitOnError: true,
       }),
       ...plugins,
     ],

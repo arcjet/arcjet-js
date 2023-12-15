@@ -13,9 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TODO(#496): Figure out why Node 18 is segfaulting
-        node: [20]
-        os: [ubuntu-latest, macos-latest]
+        node: [18, 20]
+        os: [ubuntu-latest]
     steps:
       # Environment security
       - name: Step Security
@@ -33,7 +32,6 @@ jobs:
         uses: actions/setup-node@v4.0.0
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
 
       # Workflow
 

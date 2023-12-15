@@ -1,11 +1,13 @@
 import { Interceptor } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
+import type { NextApiResponse } from "next";
 import {
-  NextFetchEvent,
-  NextMiddleware,
-  NextRequest,
+  type NextFetchEvent,
+  type NextMiddleware,
+  type NextRequest,
   NextResponse,
 } from "next/server.js";
+import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
 import arcjet, {
   ArcjetDecision,
   ArcjetOptions,
@@ -21,7 +23,6 @@ import arcjet, {
   createRemoteClient,
 } from "arcjet";
 import findIP from "@arcjet/ip";
-import { NextMiddlewareResult } from "next/dist/server/web/types.js";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -119,7 +120,7 @@ export interface ArcjetNextRequest {
 
   ip?: string;
 
-  nextUrl?: NextRequest["nextUrl"];
+  nextUrl?: Partial<{ pathname: string, search: string }>;
 }
 
 export interface ArcjetNext<Props extends PlainObject> {
@@ -180,9 +181,12 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
       const method = request.method ?? "";
       const host = headers.get("host") ?? "";
       let path;
-      // TODO(#224): nextUrl has formatting logic when you `toString` but we don't account for that here
+      // TODO(#36): nextUrl has formatting logic when you `toString` but we don't account for that here
       if (typeof request.nextUrl !== "undefined") {
-        path = request.nextUrl.pathname + "?" + request.nextUrl.search;
+        path = request.nextUrl.pathname;
+        if (request.nextUrl.search !== "") {
+          path += "?" + request.nextUrl.search;
+        }
       } else {
         path = request.url ?? "";
       }
@@ -265,6 +269,30 @@ export function createMiddleware(
   };
 }
 
+function isNextApiResponse(val: unknown): val is NextApiResponse {
+  if (val === null) {
+    return false;
+  }
+
+  if (typeof val !== "object") {
+    return false;
+  }
+
+  if (!("status" in val)) {
+    return false;
+  }
+
+  if (!("json" in val)) {
+    return false;
+  }
+
+  if (typeof val.status !== "function" || typeof val.json !== "function") {
+    return false;
+  }
+
+  return true;
+}
+
 /**
  * Wraps a Next.js page route, edge middleware, or an API route running on the
  * Edge Runtime.
@@ -275,27 +303,41 @@ export function createMiddleware(
  * the request is denied, a `Response` will be returned based immediately and
  * the wrapped `handler` will never be called.
  */
-export function withArcjet(
+export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
+  // TODO(#221): This type needs to be tightened to only allow Primitives or Products that don't have extra props
   arcjet: ArcjetNext<WithoutCustomProps>,
-  handler: (...args: any[]) => any,
+  handler: (...args: Args) => Promise<Res>,
 ) {
-  return async (request: ArcjetNextRequest, ...rest: unknown[]) => {
+  return async (...args: Args) => {
+    const request = args[0];
+    const response = args[1];
     const decision = await arcjet.protect(request);
     if (decision.isDenied()) {
-      // TODO(#222): Content type negotiation using `Accept` header
-      if (decision.reason.isRateLimit()) {
-        return NextResponse.json(
-          { code: 429, message: "Too Many Requests" },
-          { status: 429 },
-        );
+      if (isNextApiResponse(response)) {
+        // TODO(#222): Content type negotiation using `Accept` header
+        if (decision.reason.isRateLimit()) {
+          return response
+            .status(429)
+            .json({ code: 429, message: "Too Many Requests" });
+        } else {
+          return response.status(403).json({ code: 403, message: "Forbidden" });
+        }
       } else {
-        return NextResponse.json(
-          { code: 403, message: "Forbidden" },
-          { status: 403 },
-        );
+        // TODO(#222): Content type negotiation using `Accept` header
+        if (decision.reason.isRateLimit()) {
+          return NextResponse.json(
+            { code: 429, message: "Too Many Requests" },
+            { status: 429 },
+          );
+        } else {
+          return NextResponse.json(
+            { code: 403, message: "Forbidden" },
+            { status: 403 },
+          );
+        }
       }
     } else {
-      return handler(request, ...rest);
+      return handler(...args);
     }
   };
 }
