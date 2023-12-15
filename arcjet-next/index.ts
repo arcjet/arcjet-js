@@ -304,7 +304,6 @@ function isNextApiResponse(val: unknown): val is NextApiResponse {
  * the wrapped `handler` will never be called.
  */
 export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
-  // TODO(#221): This type needs to be tightened to only allow Primitives or Products that don't have extra props
   arcjet: ArcjetNext<WithoutCustomProps>,
   handler: (...args: Args) => Promise<Res>,
 ) {
