@@ -235,12 +235,27 @@ export function createRemoteClient(
         rules: rules.map(ArcjetRuleToProtocol),
       });
 
+      context.log.debug("Decide request to %s", baseUrl);
+
       const response = await client.decide(decideRequest, {
         headers: { Authorization: `Bearer ${context.key}` },
         timeoutMs: timeout,
       });
 
-      return ArcjetDecisionFromProtocol(response.decision);
+      const decision = ArcjetDecisionFromProtocol(response.decision);
+
+      context.log.debug("Decide response", {
+        id: decision.id,
+        fingerprint: context.fingerprint,
+        path: details.path,
+        runtime: runtime(),
+        ttl: decision.ttl,
+        conclusion: decision.conclusion,
+        reason: decision.reason,
+        ruleResults: decision.results,
+      });
+
+      return decision;
     },
 
     report(
@@ -271,13 +286,22 @@ export function createRemoteClient(
         receivedAt: Timestamp.now(),
       });
 
-      context.log.debug("report: ", baseUrl);
+      context.log.debug("Report request to %s", baseUrl);
 
       // We use the promise API directly to avoid returning a promise from this function so execution can't be paused with `await`
       client
         .report(reportRequest, {
           headers: { Authorization: `Bearer ${context.key}` },
           timeoutMs: timeout,
+        })
+        .then((response) => {
+          context.log.debug("Report response", {
+            id: response.decision?.id,
+            fingerprint: context.fingerprint,
+            path: details.path,
+            runtime: runtime(),
+            ttl: decision.ttl,
+          });
         })
         .catch((err: unknown) => {
           context.log.log(
@@ -982,17 +1006,6 @@ export default function arcjet<
           flatSortedRules,
         );
         log.timeEnd("decideApi");
-
-        log.debug("remote rule result:", {
-          id: decision.id,
-          fingerprint,
-          path: details.path,
-          runtime: runtime(),
-          ttl: decision.ttl,
-          conclusion: decision.conclusion,
-          reason: decision.reason,
-          ruleResults: decision.results,
-        });
 
         // If the decision is to block and we have a non-zero TTL, we cache the
         // block locally
