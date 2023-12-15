@@ -1,4 +1,5 @@
 import {
+  ArcjetContext,
   ArcjetBotReason,
   ArcjetBotType,
   ArcjetEmailReason,
@@ -150,22 +151,16 @@ export type UnionToIntersection<Union> =
       Intersection & Union
     : never;
 
-export type RemoteClientContext = {
-  key: string;
-  fingerprint: string;
-  log: Logger;
-};
-
 export interface RemoteClient {
   decide(
-    context: RemoteClientContext,
+    context: ArcjetContext,
     details: Partial<ArcjetRequestDetails>,
     rules: ArcjetRule[],
   ): Promise<ArcjetDecision>;
   // Call the Arcjet Log Decision API with details of the request and decision
   // made so we can log it.
   report(
-    context: RemoteClientContext,
+    context: ArcjetContext,
     request: Partial<ArcjetRequestDetails>,
     decision: ArcjetDecision,
     rules: ArcjetRule[],
@@ -211,7 +206,7 @@ export function createRemoteClient(
 
   return Object.freeze({
     async decide(
-      context: RemoteClientContext,
+      context: ArcjetContext,
       details: ArcjetRequestDetails,
       rules: ArcjetRule[],
     ): Promise<ArcjetDecision> {
@@ -235,16 +230,31 @@ export function createRemoteClient(
         rules: rules.map(ArcjetRuleToProtocol),
       });
 
+      context.log.debug("Decide request to %s", baseUrl);
+
       const response = await client.decide(decideRequest, {
         headers: { Authorization: `Bearer ${context.key}` },
         timeoutMs: timeout,
       });
 
-      return ArcjetDecisionFromProtocol(response.decision);
+      const decision = ArcjetDecisionFromProtocol(response.decision);
+
+      context.log.debug("Decide response", {
+        id: decision.id,
+        fingerprint: context.fingerprint,
+        path: details.path,
+        runtime: runtime(),
+        ttl: decision.ttl,
+        conclusion: decision.conclusion,
+        reason: decision.reason,
+        ruleResults: decision.results,
+      });
+
+      return decision;
     },
 
     report(
-      context: RemoteClientContext,
+      context: ArcjetContext,
       details: ArcjetRequestDetails,
       decision: ArcjetDecision,
       rules: ArcjetRule[],
@@ -271,13 +281,22 @@ export function createRemoteClient(
         receivedAt: Timestamp.now(),
       });
 
-      context.log.debug("report: ", baseUrl);
+      context.log.debug("Report request to %s", baseUrl);
 
       // We use the promise API directly to avoid returning a promise from this function so execution can't be paused with `await`
       client
         .report(reportRequest, {
           headers: { Authorization: `Bearer ${context.key}` },
           timeoutMs: timeout,
+        })
+        .then((response) => {
+          context.log.debug("Report response", {
+            id: response.decision?.id,
+            fingerprint: context.fingerprint,
+            path: details.path,
+            runtime: runtime(),
+            ttl: decision.ttl,
+          });
         })
         .catch((err: unknown) => {
           context.log.log(
@@ -539,7 +558,7 @@ export function validateEmail(
       allowDomainLiteral,
 
       validate(
-        fingerprint: string,
+        context: ArcjetContext,
         details: Partial<ArcjetRequestDetails & { email: string }>,
       ): asserts details is ArcjetRequestDetails & { email: string } {
         assert(
@@ -549,7 +568,7 @@ export function validateEmail(
       },
 
       async protect(
-        fingerprint: string,
+        context: ArcjetContext,
         { email }: ArcjetRequestDetails & { email: string },
       ): Promise<ArcjetRuleResult> {
         if (await analyze.isValidEmail(email, analyzeOpts)) {
@@ -607,7 +626,7 @@ export function detectBot(
       remove,
 
       validate(
-        fingerprint: string,
+        context: ArcjetContext,
         details: Partial<ArcjetRequestDetails>,
       ): asserts details is ArcjetRequestDetails {
         assert(
@@ -620,7 +639,7 @@ export function detectBot(
        * Attempts to call the bot detection on the headers.
        */
       async protect(
-        fingerprint: string,
+        context: ArcjetContext,
         { headers }: ArcjetRequestDetails,
       ): Promise<ArcjetRuleResult> {
         const headersKV: Record<string, string> = {};
@@ -805,6 +824,8 @@ export default function arcjet<
       log.debug("fingerprint (%s): %s", runtime(), fingerprint);
       log.timeEnd("fingerprint");
 
+      const context: ArcjetContext = { key, fingerprint, log };
+
       if (flatSortedRules.length > 10) {
         log.error("Failure running rules. Only 10 rules may be specified.");
 
@@ -817,7 +838,7 @@ export default function arcjet<
         });
 
         client.report(
-          { key, fingerprint, log },
+          context,
           details,
           decision,
           // No rules because we've determined they were too long and we don't
@@ -862,12 +883,7 @@ export default function arcjet<
           results,
         });
 
-        client.report(
-          { key, fingerprint, log },
-          details,
-          decision,
-          flatSortedRules,
-        );
+        client.report(context, details, decision, flatSortedRules);
 
         log.debug("decide: already blocked", {
           id: decision.id,
@@ -893,8 +909,8 @@ export default function arcjet<
         log.time(rule.type);
 
         try {
-          localRule.validate(fingerprint, details);
-          results[idx] = await localRule.protect(fingerprint, details);
+          localRule.validate(context, details);
+          results[idx] = await localRule.protect(context, details);
 
           log.debug("Local rule result:", {
             id: results[idx].ruleId,
@@ -934,12 +950,7 @@ export default function arcjet<
           // Only a DENY decision is reported to avoid creating 2 entries for a
           // request. Upon ALLOW, the `decide` call will create an entry for the
           // request.
-          client.report(
-            { key, fingerprint, log },
-            details,
-            decision,
-            flatSortedRules,
-          );
+          client.report(context, details, decision, flatSortedRules);
 
           // If we're not in DRY_RUN mode, we want to cache non-zero TTL results
           // and return this DENY decision.
@@ -951,11 +962,7 @@ export default function arcjet<
                 reason: decision.reason,
               });
 
-              blockCache.set(
-                fingerprint,
-                decision.reason,
-                decision.ttl,
-              );
+              blockCache.set(fingerprint, decision.reason, decision.ttl);
             }
 
             return decision;
@@ -976,34 +983,18 @@ export default function arcjet<
       // fail open.
       try {
         log.time("decideApi");
-        const decision = await client.decide(
-          { key, fingerprint, log },
-          details,
-          flatSortedRules,
-        );
+        const decision = await client.decide(context, details, flatSortedRules);
         log.timeEnd("decideApi");
-
-        log.debug("remote rule result:", {
-          id: decision.id,
-          fingerprint,
-          path: details.path,
-          runtime: runtime(),
-          ttl: decision.ttl,
-          conclusion: decision.conclusion,
-          reason: decision.reason,
-          ruleResults: decision.results,
-        });
 
         // If the decision is to block and we have a non-zero TTL, we cache the
         // block locally
         if (decision.isDenied() && decision.ttl > 0) {
-          log.debug("decide: Caching block locally for %d milliseconds", decision.ttl);
-
-          blockCache.set(
-            fingerprint,
-            decision.reason,
+          log.debug(
+            "decide: Caching block locally for %d milliseconds",
             decision.ttl,
           );
+
+          blockCache.set(fingerprint, decision.reason, decision.ttl);
         }
 
         return decision;

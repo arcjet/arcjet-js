@@ -32,8 +32,9 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
+    "@arcjet/logger": "1.0.0-alpha.5",
     "@bufbuild/protobuf": "1.6.0",
-    "@connectrpc/connect": "1.1.4",
+    "@connectrpc/connect": "1.2.0",
     "typeid-js": "0.3.0"
   },
   "devDependencies": {
@@ -41,7 +42,7 @@
     "@arcjet/rollup-config": "1.0.0-alpha.5",
     "@arcjet/tsconfig": "1.0.0-alpha.5",
     "@jest/globals": "29.7.0",
-    "@rollup/wasm-node": "4.8.0",
+    "@rollup/wasm-node": "4.9.0",
     "@types/node": "18.18.0",
     "jest": "29.7.0",
     "typescript": "5.3.3"
