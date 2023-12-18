@@ -1,12 +1,12 @@
 {
-  ".": "1.0.0-alpha.5",
-  "analyze": "1.0.0-alpha.5",
-  "arcjet": "1.0.0-alpha.5",
-  "arcjet-next": "1.0.0-alpha.5",
-  "eslint-config": "1.0.0-alpha.5",
-  "ip": "1.0.0-alpha.5",
-  "logger": "1.0.0-alpha.5",
-  "protocol": "1.0.0-alpha.5",
-  "rollup-config": "1.0.0-alpha.5",
-  "tsconfig": "1.0.0-alpha.5"
+  ".": "1.0.0-alpha.6",
+  "analyze": "1.0.0-alpha.6",
+  "arcjet": "1.0.0-alpha.6",
+  "arcjet-next": "1.0.0-alpha.6",
+  "eslint-config": "1.0.0-alpha.6",
+  "ip": "1.0.0-alpha.6",
+  "logger": "1.0.0-alpha.6",
+  "protocol": "1.0.0-alpha.6",
+  "rollup-config": "1.0.0-alpha.6",
+  "tsconfig": "1.0.0-alpha.6"
 }
