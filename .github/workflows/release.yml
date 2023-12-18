@@ -1,0 +1,17 @@
+name: "Create release"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release Please
+        uses: google-github-actions/release-please-action@a2d8d683f209466ee8c695cd994ae2cf08b1642d
+        with:
+          token: ${{ secrets.ARCJET_JS_RELEASE_PLEASE }}
+          config-file: .github/release-please-config.json
+          manifest-file: .github/.release-please-manifest.json
