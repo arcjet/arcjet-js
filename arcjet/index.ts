@@ -101,13 +101,11 @@ function errorMessage(err: unknown): string {
   return "Unknown problem";
 }
 
-// Simplify, EmptyObject, and UnionToIntersection from
-// https://github.com/sindresorhus/type-fest
+// Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
+// our use.
 //
 // Simplify:
 // https://github.com/sindresorhus/type-fest/blob/964466c9d59c711da57a5297ad954c13132a0001/source/simplify.d.ts
-// EmptyObject:
-// https://github.com/sindresorhus/type-fest/blob/b9723d4785f01f8d2487c09ee5871a1f615781aa/source/empty-object.d.ts
 // UnionToIntersection:
 // https://github.com/sindresorhus/type-fest/blob/017bf38ebb52df37c297324d97bcc693ec22e920/source/union-to-intersection.d.ts
 //
@@ -130,10 +128,8 @@ function errorMessage(err: unknown): string {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-export type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
-declare const emptyObjectSymbol: unique symbol;
-export type EmptyObject = { [emptyObjectSymbol]?: never };
-export type UnionToIntersection<Union> =
+type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
+type UnionToIntersection<Union> =
   // `extends unknown` is always going to be the case and is used to convert the
   // `Union` into a [distributive conditional
   // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
@@ -479,8 +475,8 @@ export type ExtraProps<Rules> = Rules extends []
       ? UnionToIntersection<PropsForRule<Rules[number]>>
       : never;
 
-export type ArcjetRequest<Rules> = Simplify<
-  Partial<ArcjetRequestDetails & ExtraProps<Rules>>
+export type ArcjetRequest<Props extends PlainObject> = Simplify<
+  Partial<ArcjetRequestDetails & Props>
 >;
 
 // Primitives and Products are the external names for Rules even though they are defined the same
@@ -748,7 +744,7 @@ export interface ArcjetOptions<Rules extends [...(Primitive | Product)[]]> {
  * The Arcjet client provides a public `protect()` method to
  * make a decision about how a request should be handled.
  */
-export interface Arcjet<Rules extends [...(Primitive | Product)[]]> {
+export interface Arcjet<Props extends PlainObject> {
   get runtime(): Runtime;
   /**
    * Make a decision about how to handle a request. This will analyze the
@@ -765,7 +761,7 @@ export interface Arcjet<Rules extends [...(Primitive | Product)[]]> {
    *
    * @returns An {@link ArcjetDecision} indicating Arcjet's decision about the request.
    */
-  protect(request: ArcjetRequest<Rules>): Promise<ArcjetDecision>;
+  protect(request: ArcjetRequest<Props>): Promise<ArcjetDecision>;
 }
 
 /**
@@ -775,7 +771,7 @@ export interface Arcjet<Rules extends [...(Primitive | Product)[]]> {
  */
 export default function arcjet<
   const Rules extends [...(Primitive | Product)[]] = [],
->(options: ArcjetOptions<Rules>): Arcjet<Rules> {
+>(options: ArcjetOptions<Rules>): Arcjet<Simplify<ExtraProps<Rules>>> {
   const log = new Logger();
 
   // We destructure here to make the function signature neat when viewed by consumers
@@ -798,7 +794,9 @@ export default function arcjet<
     get runtime() {
       return runtime();
     },
-    async protect(request: ArcjetRequest<Rules>): Promise<ArcjetDecision> {
+    async protect(
+      request: ArcjetRequest<ExtraProps<Rules>>,
+    ): Promise<ArcjetDecision> {
       // This goes against the type definition above, but users might call
       // `protect()` with no value and we don't want to crash
       if (typeof request === "undefined") {
