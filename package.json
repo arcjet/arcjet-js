@@ -1,5 +1,7 @@
 {
   "name": "arcjet-js",
+  "version": "1.0.0-alpha.5",
+  "private": true,
   "engines": {
     "node": ">=18"
   },

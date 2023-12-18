@@ -7,6 +7,11 @@ updates:
       interval: "daily"
     assignees:
       - blaine-arcjet
+    reviewers:
+      - blaine-arcjet
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps(dev)"
     groups:
       dependencies:
         dependency-type: "production"
