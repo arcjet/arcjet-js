@@ -5,13 +5,20 @@ on:
     branches:
       - main
 
+# Release Please creates a Pull Request with changes to files
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Release Please is very fast, so we set a tiny timeout
+    timeout-minutes: 1
     steps:
       - name: Release Please
         uses: google-github-actions/release-please-action@a2d8d683f209466ee8c695cd994ae2cf08b1642d
         with:
-          token: ${{ secrets.ARCJET_JS_RELEASE_PLEASE }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           config-file: .github/release-please-config.json
           manifest-file: .github/.release-please-manifest.json
