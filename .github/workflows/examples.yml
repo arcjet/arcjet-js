@@ -31,6 +31,9 @@ jobs:
       # Workflow
 
       - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
         working-directory: examples/nextjs-13-pages-wrap
         run: npm ci
 
@@ -62,6 +65,9 @@ jobs:
       # Workflow
 
       - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
         working-directory: examples/nextjs-14-app-dir-rl
         run: npm ci
 
@@ -93,6 +99,9 @@ jobs:
       # Workflow
 
       - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
         working-directory: examples/nextjs-14-app-dir-validate-email
         run: npm ci
 
@@ -124,6 +133,9 @@ jobs:
       # Workflow
 
       - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
         working-directory: examples/nextjs-14-pages-wrap
         run: npm ci
 
