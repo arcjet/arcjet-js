@@ -12,11 +12,6 @@ updates:
     commit-message:
       prefix: "deps"
       prefix-development: "deps(dev)"
-    groups:
-      dependencies:
-        dependency-type: "production"
-      dev-dependencies:
-        dependency-type: "development"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
