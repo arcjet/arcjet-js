@@ -171,10 +171,23 @@ export type RemoteClientOptions = {
   sdkVersion?: string;
 };
 
+const baseUrlAllowed = [
+  "https://decide.arcjet.com",
+  "https://decide.arcjettest.com",
+  "https://decide.arcjet.orb.local:4082",
+];
+
 export function defaultBaseUrl() {
-  return process.env["ARCJET_BASE_URL"]
-    ? process.env["ARCJET_BASE_URL"] // If ARCJET_BASE_URL is set, use it
-    : "https://decide.arcjet.com"; // Otherwise use the default
+  // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
+  // use the hardcoded default.
+  if (
+    typeof process.env["ARCJET_BASE_URL"] === "string" &&
+    baseUrlAllowed.includes(process.env["ARCJET_BASE_URL"])
+  ) {
+    return process.env["ARCJET_BASE_URL"];
+  } else {
+    return "https://decide.arcjet.com";
+  }
 }
 
 export function createRemoteClient(
