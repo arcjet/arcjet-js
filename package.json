@@ -6,8 +6,7 @@
     "node": ">=18"
   },
   "workspaces": [
-    "*",
-    "examples/*"
+    "*"
   ],
   "scripts": {
     "prepare": "npm run build -ws --if-present --foreground-scripts",
