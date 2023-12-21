@@ -12,16 +12,16 @@ handler](https://nextjs.org/docs/app/building-your-application/routing/route-han
 
 ## How to use
 
-1. From the root of the project, install the dependencies.
-
-   ```bash
-   npm ci
-   ```
-
-2. Enter this directory and start the dev server.
+1. Enter this directory and install the dependencies.
 
    ```bash
    cd examples/nextjs-14-app-dir-rl
+   npm ci
+   ```
+
+2. Start the dev server.
+
+   ```bash
    npm run dev
    ```
 

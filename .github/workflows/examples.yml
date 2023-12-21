@@ -1,0 +1,132 @@
+name: "Build examples"
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  nextjs-13-pages-wrap:
+    name: "Next.js 13 + Page Router + withArcjet"
+    runs-on: ubuntu-latest
+    steps:
+      # Environment security
+      - name: Step Security
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        working-directory: examples/nextjs-13-pages-wrap
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-13-pages-wrap
+        run: npm run build
+
+  nextjs-14-app-dir-rl:
+    name: "Next.js 14 + App Router + Rate Limit"
+    runs-on: ubuntu-latest
+    steps:
+      # Environment security
+      - name: Step Security
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        working-directory: examples/nextjs-14-app-dir-rl
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-14-app-dir-rl
+        run: npm run build
+
+  nextjs-14-app-dir-validate-email:
+    name: "Next.js 14 + App Router + Validate Email"
+    runs-on: ubuntu-latest
+    steps:
+      # Environment security
+      - name: Step Security
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        working-directory: examples/nextjs-14-app-dir-validate-email
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-14-app-dir-validate-email
+        run: npm run build
+
+  nextjs-14-pages-wrap:
+    name: "Next.js 14 + Page Router + withArcjet"
+    runs-on: ubuntu-latest
+    steps:
+      # Environment security
+      - name: Step Security
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        working-directory: examples/nextjs-14-pages-wrap
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-14-pages-wrap
+        run: npm run build
