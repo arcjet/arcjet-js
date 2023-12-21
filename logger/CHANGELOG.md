@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.6...@arcjet/logger-v1.0.0-alpha.7) (2023-12-21)
+
+
+### 📦 Dependencies
+
+* **dev:** Bump the dev-dependencies group with 5 updates ([#82](https://github.com/arcjet/arcjet-js/issues/82)) ([a67be47](https://github.com/arcjet/arcjet-js/commit/a67be47b76e623f1aef6687f9dcc87de8eb2f1da))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.6 to 1.0.0-alpha.7
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.6 to 1.0.0-alpha.7
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.6 to 1.0.0-alpha.7
+
 ## [1.0.0-alpha.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.5...@arcjet/logger-v1.0.0-alpha.6) (2023-12-18)
 
 

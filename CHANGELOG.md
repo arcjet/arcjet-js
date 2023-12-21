@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0-alpha.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.6...v1.0.0-alpha.7) (2023-12-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* Reorganize SDK types to tighten helpers around custom props ([#18](https://github.com/arcjet/arcjet-js/issues/18))
+
+### 🪲 Bug Fixes
+
+* Reorganize SDK types to tighten helpers around custom props ([#18](https://github.com/arcjet/arcjet-js/issues/18)) ([3b0c1fb](https://github.com/arcjet/arcjet-js/commit/3b0c1fb5a19f5c6d15a0b83bdd24db0192aa9e49))
+
+
+### 📦 Dependencies
+
+* **dev:** Bump the dev-dependencies group with 5 updates ([#82](https://github.com/arcjet/arcjet-js/issues/82)) ([a67be47](https://github.com/arcjet/arcjet-js/commit/a67be47b76e623f1aef6687f9dcc87de8eb2f1da))
+
+
+### ✅ Continuous Integration
+
+* Switch to github token ([#81](https://github.com/arcjet/arcjet-js/issues/81)) ([cfc382a](https://github.com/arcjet/arcjet-js/commit/cfc382a1652358a2e8f1035f6baa78c509f846f4))
+
 ## [1.0.0-alpha.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.5...v1.0.0-alpha.6) (2023-12-18)
 
 
