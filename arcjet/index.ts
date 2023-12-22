@@ -178,15 +178,22 @@ const baseUrlAllowed = [
 ];
 
 export function defaultBaseUrl() {
-  // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
-  // use the hardcoded default.
-  if (
-    typeof process.env["ARCJET_BASE_URL"] === "string" &&
-    baseUrlAllowed.includes(process.env["ARCJET_BASE_URL"])
-  ) {
-    return process.env["ARCJET_BASE_URL"];
+  // TODO(#90): Remove this production conditional before 1.0.0
+  if (process.env["NODE_ENV"] === "production") {
+    // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
+    // use the hardcoded default.
+    if (
+      typeof process.env["ARCJET_BASE_URL"] === "string" &&
+      baseUrlAllowed.includes(process.env["ARCJET_BASE_URL"])
+    ) {
+      return process.env["ARCJET_BASE_URL"];
+    } else {
+      return "https://decide.arcjet.com";
+    }
   } else {
-    return "https://decide.arcjet.com";
+    return process.env["ARCJET_BASE_URL"]
+      ? process.env["ARCJET_BASE_URL"]
+      : "https://decide.arcjet.com";
   }
 }
 
