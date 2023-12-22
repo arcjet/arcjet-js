@@ -14,7 +14,7 @@ export function detect_bot(headers: string, patterns_add: string, patterns_remov
 export function generate_fingerprint(ip: string): string;
 /**
 * @param {string} candidate
-* @param {EmailValidationConfig | undefined} options
+* @param {EmailValidationConfig | undefined} [options]
 * @returns {boolean}
 */
 export function is_valid_email(candidate: string, options?: EmailValidationConfig): boolean;
@@ -46,7 +46,6 @@ export interface InitOutput {
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
-  readonly __wbindgen_exn_store: (a: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;
