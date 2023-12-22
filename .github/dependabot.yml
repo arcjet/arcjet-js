@@ -77,6 +77,24 @@ updates:
         versions: [">18.18"]
 
   - package-ecosystem: "npm"
+    directory: "/examples/nextjs-14-openai"
+    schedule:
+      # Our dependencies should be checked daily
+      interval: "daily"
+    assignees:
+      - blaine-arcjet
+    reviewers:
+      - blaine-arcjet
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps(dev)"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+
+  - package-ecosystem: "npm"
     directory: "/examples/nextjs-14-pages-wrap"
     schedule:
       # Our dependencies should be checked daily
