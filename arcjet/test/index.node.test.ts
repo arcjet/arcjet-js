@@ -125,19 +125,48 @@ class ArcjetInvalidDecision extends ArcjetDecision {
 }
 
 describe("defaultBaseUrl", () => {
-  test("uses process.env.ARCJET_BASE_URL if set", () => {
+  test("uses process.env.ARCJET_BASE_URL if set and allowed", () => {
     jest.replaceProperty(process, "env", {
+      NODE_ENV: "production",
+      ARCJET_BASE_URL: "https://decide.arcjet.orb.local:4082",
+    });
+    expect(defaultBaseUrl()).toEqual("https://decide.arcjet.orb.local:4082");
+  });
+
+  test("does not use process.env.ARCJET_BASE_URL if not allowed", () => {
+    jest.replaceProperty(process, "env", {
+      NODE_ENV: "production",
+      ARCJET_BASE_URL: "http://localhost:1234",
+    });
+    expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
+  });
+
+  test("does not use process.env.ARCJET_BASE_URL if empty string", () => {
+    jest.replaceProperty(process, "env", {
+      NODE_ENV: "production",
+      ARCJET_BASE_URL: "",
+    });
+    expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
+  });
+
+  test("uses production url if process.env.ARCJET_BASE_URL not set", () => {
+    expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
+  });
+
+  // TODO(#90): Remove these tests once production conditional is removed
+  test("uses process.env.ARCJET_BASE_URL if set (in development)", () => {
+    jest.replaceProperty(process, "env", {
+      NODE_ENV: "development",
       ARCJET_BASE_URL: "http://localhost:1234",
     });
     expect(defaultBaseUrl()).toEqual("http://localhost:1234");
   });
 
-  test("does not use process.env.ARCJET_BASE_URL if empty string", () => {
-    jest.replaceProperty(process, "env", { ARCJET_BASE_URL: "" });
-    expect(defaultBaseUrl()).not.toEqual("");
-  });
-
-  test("uses production url if process.env.ARCJET_BASE_URL not set", () => {
+  test("does not use process.env.ARCJET_BASE_URL if empty string (in development)", () => {
+    jest.replaceProperty(process, "env", {
+      NODE_ENV: "development",
+      ARCJET_BASE_URL: "",
+    });
     expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
   });
 });
