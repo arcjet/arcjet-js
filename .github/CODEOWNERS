@@ -1,0 +1,4 @@
+# These owners will be the default owners for everything in the repo. Unless a
+# later match takes precedence, @arcjet/js-sdk-team will be required to approve
+# a pull request before it can be merged.
+*   @arcjet/js-sdk-team
