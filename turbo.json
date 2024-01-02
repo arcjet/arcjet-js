@@ -7,7 +7,8 @@
     "VERCEL_GIT_COMMIT_SHA",
     "ARCJET_BASE_URL",
     "ARCJET_RUNTIME",
-    "ARCJET_LOG_LEVEL"
+    "ARCJET_LOG_LEVEL",
+    "OPENAI_API_KEY"
   ],
   "pipeline": {}
 }
