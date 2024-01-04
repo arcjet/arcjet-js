@@ -34,7 +34,7 @@
   "dependencies": {
     "@arcjet/logger": "1.0.0-alpha.7",
     "@bufbuild/protobuf": "1.6.0",
-    "@connectrpc/connect": "1.2.0",
+    "@connectrpc/connect": "1.2.1",
     "typeid-js": "0.3.0"
   },
   "devDependencies": {
