@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
-    "ai": "^2.2.29",
+    "ai": "^2.2.31",
     "next": "14.0.4",
     "openai": "^4.24.0",
     "openai-chat-tokens": "^0.2.8",
