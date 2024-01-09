@@ -41,6 +41,7 @@ lint:
         - analyze/wasm/**
         - protocol/gen/**
         - "**/LICENSE"
+        - "**/CHANGELOG.md"
         - .github/CODEOWNERS
         - examples/**
   threshold:

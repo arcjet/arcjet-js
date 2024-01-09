@@ -8,3 +8,13 @@ line_length: false
 spaces: false
 url: false
 whitespace: false
+
+# Override individual rules based on our README files
+first-line-heading: false
+no-inline-html:
+  allowed_elements:
+    - a
+    - picture
+    - source
+    - img
+    - p
