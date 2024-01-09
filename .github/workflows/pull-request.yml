@@ -1,0 +1,19 @@
+name: Pull Request
+
+on:
+  pull_request:
+    # Recommended by Graphite: https://graphite.dev/docs/github-configuration-guidelines#github-actions
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run tests
+    uses: ./.github/workflows/reusable-test.yml
+
+  examples:
+    name: Build examples
+    uses: ./.github/workflows/reusable-examples.yml

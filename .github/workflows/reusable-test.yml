@@ -1,10 +1,8 @@
-name: "Run tests"
+# Our reusable workflow files only use the `workflow_call` event and don't
+# specify a `concurrency` limit so those things can be managed by the caller.
+name: Reusable test workflow
 
-on: [push, pull_request]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+on: [workflow_call]
 
 jobs:
   test:
