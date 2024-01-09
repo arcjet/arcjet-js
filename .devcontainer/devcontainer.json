@@ -1,0 +1,29 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node
+{
+  "name": "arcjet-js",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye",
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2.3.2": {},
+    "ghcr.io/trunk-io/devcontainer-feature/trunk:1.1.0": {}
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+
+  // Install trunk tools inside the container
+  // Uses array syntax to skip the shell: https://containers.dev/implementors/json_reference/#formatting-string-vs-array-properties
+  "updateContentCommand": ["trunk", "install"],
+
+  // Install npm dependencies within the container
+  // Uses array syntax to skip the shell: https://containers.dev/implementors/json_reference/#formatting-string-vs-array-properties
+  "postCreateCommand": ["npm", "ci"]
+
+  // Configure tool-specific properties.
+  // "customizations": {},
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
+}
