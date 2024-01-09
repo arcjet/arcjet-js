@@ -34,6 +34,10 @@ updates:
     commit-message:
       prefix: "deps"
       prefix-development: "deps(dev)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
@@ -52,6 +56,10 @@ updates:
     commit-message:
       prefix: "deps"
       prefix-development: "deps(dev)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
@@ -70,6 +78,10 @@ updates:
     commit-message:
       prefix: "deps"
       prefix-development: "deps(dev)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
@@ -88,6 +100,10 @@ updates:
     commit-message:
       prefix: "deps"
       prefix-development: "deps(dev)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
@@ -106,6 +122,10 @@ updates:
     commit-message:
       prefix: "deps"
       prefix-development: "deps(dev)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
