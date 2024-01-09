@@ -32,8 +32,12 @@ updates:
     reviewers:
       - blaine-arcjet
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps(dev)"
+      prefix: "deps(example)"
+      prefix-development: "deps(example)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
@@ -50,8 +54,12 @@ updates:
     reviewers:
       - blaine-arcjet
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps(dev)"
+      prefix: "deps(example)"
+      prefix-development: "deps(example)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
@@ -68,8 +76,12 @@ updates:
     reviewers:
       - blaine-arcjet
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps(dev)"
+      prefix: "deps(example)"
+      prefix-development: "deps(example)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
@@ -86,8 +98,12 @@ updates:
     reviewers:
       - blaine-arcjet
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps(dev)"
+      prefix: "deps(example)"
+      prefix-development: "deps(example)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
@@ -104,8 +120,12 @@ updates:
     reviewers:
       - blaine-arcjet
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps(dev)"
+      prefix: "deps(example)"
+      prefix-development: "deps(example)"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
     ignore:
       # Ignore updates to the @types/node package due to conflict between
       # Headers in DOM.
