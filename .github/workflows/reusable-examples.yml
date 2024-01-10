@@ -1,14 +1,12 @@
-name: "Build examples"
+# Our reusable workflow files only use the `workflow_call` event and don't
+# specify a `concurrency` limit so those things can be managed by the caller.
+name: Reusable examples workflow
 
-on: [push, pull_request]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+on: [workflow_call]
 
 jobs:
   nextjs-13-pages-wrap:
-    name: "Next.js 13 + Page Router + withArcjet"
+    name: Next.js 13 + Page Router + withArcjet
     runs-on: ubuntu-latest
     steps:
       # Environment security
@@ -42,7 +40,7 @@ jobs:
         run: npm run build
 
   nextjs-14-app-dir-rl:
-    name: "Next.js 14 + App Router + Rate Limit"
+    name: Next.js 14 + App Router + Rate Limit
     runs-on: ubuntu-latest
     steps:
       # Environment security
@@ -76,7 +74,7 @@ jobs:
         run: npm run build
 
   nextjs-14-app-dir-validate-email:
-    name: "Next.js 14 + App Router + Validate Email"
+    name: Next.js 14 + App Router + Validate Email
     runs-on: ubuntu-latest
     steps:
       # Environment security
@@ -110,7 +108,7 @@ jobs:
         run: npm run build
 
   nextjs-14-openai:
-    name: "Next.js 14 + OpenAI"
+    name: Next.js 14 + OpenAI
     runs-on: ubuntu-latest
     steps:
       # Environment security
@@ -144,7 +142,7 @@ jobs:
         run: npm run build
 
   nextjs-14-pages-wrap:
-    name: "Next.js 14 + Page Router + withArcjet"
+    name: Next.js 14 + Page Router + withArcjet
     runs-on: ubuntu-latest
     steps:
       # Environment security

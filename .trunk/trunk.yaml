@@ -53,3 +53,13 @@ actions:
     - trunk-check-pre-push
     - trunk-announce
     - trunk-upgrade-available
+merge:
+  required_statuses:
+    - Trunk Check
+    - "Run tests / Run tests (OS: ubuntu-latest, Node: 18)"
+    - "Run tests / Run tests (OS: ubuntu-latest, Node: 20)"
+    - Build examples / Next.js 13 + Page Router + withArcjet
+    - Build examples / Next.js 14 + App Router + Rate Limit
+    - Build examples / Next.js 14 + App Router + Validate Email
+    - Build examples / Next.js 14 + OpenAI
+    - Build examples / Next.js 14 + Page Router + withArcjet
