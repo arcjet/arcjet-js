@@ -43,6 +43,7 @@ lint:
         - "**/LICENSE"
         - "**/CHANGELOG.md"
         - .github/CODEOWNERS
+        - .github/.release-please-manifest.json
         - examples/**
   threshold:
     - linters: [markdownlint]
