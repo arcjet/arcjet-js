@@ -25,9 +25,10 @@ uses the OpenAI chat API.
    npm ci
    ```
 
-3. Add your OpenAI key to `.env.local`
+3. Add your Arcjet & OpenAI keys to `.env.local`
 
    ```env
+   AJ_KEY=
    OPENAI_API_KEY=
    ```
 

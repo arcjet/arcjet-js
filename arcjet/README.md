@@ -43,7 +43,10 @@ import arcjet, { createRemoteClient, defaultBaseUrl } from "arcjet";
 import { createConnectTransport } from "@connectrpc/connect-node";
 
 const aj = arcjet({
-  key: "ajkey_mykey",
+  // Get your site key from https://app.arcjet.com
+  // and set it as an environment variable rather than hard coding.
+  // See: https://www.npmjs.com/package/dotenv
+  key: process.env.AJ_KEY,
   rules: [],
   client: createRemoteClient({
     transport: createConnectTransport({
