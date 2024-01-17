@@ -7,8 +7,10 @@ export const config = {
 };
 
 const aj = arcjet({
-  // mark
-  key: "ajkey_yourkey",
+  // Get your site key from https://app.arcjet.com
+  // and set it as an environment variable rather than hard coding.
+  // See: https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables
+  key: process.env.AJ_KEY!,
   rules: [
     rateLimit({
       mode: "LIVE",

@@ -25,11 +25,17 @@ handler](https://nextjs.org/docs/app/building-your-application/routing/route-han
    npm ci
    ```
 
-3. Start the dev server.
+3. Add your Arcjet key to `.env.local`
+
+   ```env
+   AJ_KEY=
+   ```
+
+4. Start the dev server.
 
    ```bash
    npm run dev
    ```
 
-4. Visit `http://localhost:3000/api/arcjet`.
-5. Refresh the page to trigger the rate limit.
+5. Visit `http://localhost:3000/api/arcjet`.
+6. Refresh the page to trigger the rate limit.
