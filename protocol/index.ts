@@ -159,12 +159,12 @@ export class ArcjetEdgeRuleReason extends ArcjetReason {
 export class ArcjetSuspiciousReason extends ArcjetReason {
   type: "SUSPICIOUS" = "SUSPICIOUS";
 
-  wafTriggered: boolean;
+  shieldTriggered: boolean;
 
-  constructor(init: { wafTriggered?: boolean }) {
+  constructor(init: { shieldTriggered?: boolean }) {
     super();
 
-    this.wafTriggered = init.wafTriggered ?? false;
+    this.shieldTriggered = init.shieldTriggered ?? false;
   }
 }
 

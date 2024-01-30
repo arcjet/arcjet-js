@@ -259,7 +259,7 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
     case "suspicious": {
       const reason = proto.reason.value;
       return new ArcjetSuspiciousReason({
-        wafTriggered: reason.wafTriggered,
+        shieldTriggered: reason.shieldTriggered,
       });
     }
     case "email": {
@@ -331,7 +331,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
       reason: {
         case: "suspicious",
         value: new SuspiciousReason({
-          wafTriggered: reason.wafTriggered,
+          shieldTriggered: reason.shieldTriggered,
         }),
       },
     });

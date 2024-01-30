@@ -317,7 +317,7 @@ describe("convert", () => {
           reason: {
             case: "suspicious",
             value: {
-              wafTriggered: true,
+              shieldTriggered: true,
             },
           },
         }),
@@ -433,14 +433,14 @@ describe("convert", () => {
     );
     expect(
       ArcjetReasonToProtocol(
-        new ArcjetSuspiciousReason({ wafTriggered: true }),
+        new ArcjetSuspiciousReason({ shieldTriggered: true }),
       ),
     ).toEqual(
       new Reason({
         reason: {
           case: "suspicious",
           value: {
-            wafTriggered: true,
+            shieldTriggered: true,
           },
         },
       }),
