@@ -47,7 +47,7 @@ import {
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
-  ArcjetSuspiciousReason,
+  ArcjetShieldReason,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
 
@@ -315,14 +315,14 @@ describe("convert", () => {
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
-            case: "suspicious",
+            case: "shield",
             value: {
               shieldTriggered: true,
             },
           },
         }),
       ),
-    ).toBeInstanceOf(ArcjetSuspiciousReason);
+    ).toBeInstanceOf(ArcjetShieldReason);
     expect(ArcjetReasonFromProtocol(new Reason())).toBeInstanceOf(ArcjetReason);
     expect(
       ArcjetReasonFromProtocol(
@@ -432,13 +432,11 @@ describe("convert", () => {
       }),
     );
     expect(
-      ArcjetReasonToProtocol(
-        new ArcjetSuspiciousReason({ shieldTriggered: true }),
-      ),
+      ArcjetReasonToProtocol(new ArcjetShieldReason({ shieldTriggered: true })),
     ).toEqual(
       new Reason({
         reason: {
-          case: "suspicious",
+          case: "shield",
           value: {
             shieldTriggered: true,
           },

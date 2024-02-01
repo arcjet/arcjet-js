@@ -10,7 +10,7 @@ import {
   ArcjetErrorReason,
   ArcjetRateLimitReason,
   ArcjetRuleResult,
-  ArcjetSuspiciousReason,
+  ArcjetShieldReason,
   ArcjetBotType,
   ArcjetConclusion,
   ArcjetDecision,
@@ -40,7 +40,7 @@ import {
   RuleResult,
   RuleState,
   SDKStack,
-  SuspiciousReason,
+  ShieldReason,
 } from "./gen/es/decide/v1alpha1/decide_pb.js";
 
 export function ArcjetModeToProtocol(mode: ArcjetMode) {
@@ -256,9 +256,9 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
     case "edgeRule": {
       return new ArcjetEdgeRuleReason();
     }
-    case "suspicious": {
+    case "shield": {
       const reason = proto.reason.value;
-      return new ArcjetSuspiciousReason({
+      return new ArcjetShieldReason({
         shieldTriggered: reason.shieldTriggered,
       });
     }
@@ -326,11 +326,11 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
     });
   }
 
-  if (reason.isSuspicious()) {
+  if (reason.isShield()) {
     return new Reason({
       reason: {
-        case: "suspicious",
-        value: new SuspiciousReason({
+        case: "shield",
+        value: new ShieldReason({
           shieldTriggered: reason.shieldTriggered,
         }),
       },

@@ -327,13 +327,12 @@ export declare class Reason extends Message<Reason> {
     case: "bot";
   } | {
     /**
-     * Contains details about why the request was considered suspicious
-     * when the decision was based on a Shield rule.
+     * Contains details about why Arcjet Shield was triggered.
      *
-     * @generated from field: proto.decide.v1alpha1.SuspiciousReason suspicious = 4;
+     * @generated from field: proto.decide.v1alpha1.ShieldReason shield = 4;
      */
-    value: SuspiciousReason;
-    case: "suspicious";
+    value: ShieldReason;
+    case: "shield";
   } | {
     /**
      * Contains details about the email when the decision was made based
@@ -518,11 +517,11 @@ export declare class BotReason extends Message<BotReason> {
 }
 
 /**
- * Details of why we consider the request suspicious.
+ * Details of an Arcjet Shield decision.
  *
- * @generated from message proto.decide.v1alpha1.SuspiciousReason
+ * @generated from message proto.decide.v1alpha1.ShieldReason
  */
-export declare class SuspiciousReason extends Message<SuspiciousReason> {
+export declare class ShieldReason extends Message<ShieldReason> {
   /**
    * Whether Arcjet Shield was triggered. Log into the Arcjet dashboard and
    * search for the decision ID to find more details about which rules were
@@ -532,19 +531,27 @@ export declare class SuspiciousReason extends Message<SuspiciousReason> {
    */
   shieldTriggered: boolean;
 
-  constructor(data?: PartialMessage<SuspiciousReason>);
+  /**
+   * Whether the request was considered suspicious based on background
+   * analysis of the request
+   *
+   * @generated from field: bool suspicious = 2;
+   */
+  suspicious: boolean;
+
+  constructor(data?: PartialMessage<ShieldReason>);
 
   static readonly runtime: typeof proto3;
-  static readonly typeName = "proto.decide.v1alpha1.SuspiciousReason";
+  static readonly typeName = "proto.decide.v1alpha1.ShieldReason";
   static readonly fields: FieldList;
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SuspiciousReason;
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ShieldReason;
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SuspiciousReason;
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ShieldReason;
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SuspiciousReason;
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ShieldReason;
 
-  static equals(a: SuspiciousReason | PlainMessage<SuspiciousReason> | undefined, b: SuspiciousReason | PlainMessage<SuspiciousReason> | undefined): boolean;
+  static equals(a: ShieldReason | PlainMessage<ShieldReason> | undefined, b: ShieldReason | PlainMessage<ShieldReason> | undefined): boolean;
 }
 
 /**
