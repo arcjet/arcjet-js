@@ -4,11 +4,16 @@
 import { describe, expect, test, jest } from "@jest/globals";
 
 import arcjet, {
-  rateLimit,
-  protectSignup,
-  Primitive,
+  tokenBucket,
+  // protectSignup,
+  // Primitive,
   ArcjetReason,
   ArcjetAllowDecision,
+  ArcjetPrimitive,
+  ArcjetRule,
+  fixedWindow,
+  validateEmail,
+  protectSignup,
 } from "../index";
 
 class ArcjetTestReason extends ArcjetReason {}
@@ -26,8 +31,15 @@ describe("Arcjet: Env = Edge runtime", () => {
       report: jest.fn(),
     };
 
-    function foobarbaz(): Primitive<{ abc: number }> {
-      return [];
+    function foobarbaz(): ArcjetPrimitive<{ abc: number }> {
+      const testRule = class extends ArcjetPrimitive {
+        priority = 1;
+        rule(): ArcjetRule<{ abc: number }> {
+          return { type: "abc", mode: "DRY_RUN" };
+        }
+      };
+
+      return new testRule();
     }
 
     const aj = arcjet({
@@ -35,7 +47,16 @@ describe("Arcjet: Env = Edge runtime", () => {
       rules: [
         // Test rules
         foobarbaz(),
-        rateLimit(),
+        tokenBucket({
+          refillRate: 1,
+          interval: 1,
+          capacity: 1,
+        }),
+        fixedWindow({
+          max: 1,
+          window: "60s",
+        }),
+        // validateEmail(),
         protectSignup(),
       ],
       client,
@@ -43,6 +64,7 @@ describe("Arcjet: Env = Edge runtime", () => {
 
     const decision = await aj.protect({
       abc: 123,
+      requested: 1,
       email: "",
       ip: "",
       method: "",

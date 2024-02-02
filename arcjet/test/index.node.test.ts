@@ -51,7 +51,10 @@ import arcjet, {
   ArcjetEmailReason,
   ArcjetBotReason,
   ArcjetRateLimitReason,
+  ArcjetPrimitive,
   ArcjetLocalRule,
+  ArcjetContext,
+  ArcjetRequestDetails,
 } from "../index";
 
 // Instances of Headers contain symbols that may be different depending
@@ -444,7 +447,6 @@ describe("createRemoteClient", () => {
     const rule: ArcjetRule = {
       type: "TEST_RULE",
       mode: "DRY_RUN",
-      priority: 1,
     };
     const _ = await client.decide(context, details, [rule]);
 
@@ -1117,7 +1119,6 @@ describe("createRemoteClient", () => {
     const rule: ArcjetRule = {
       type: "TEST_RULE",
       mode: "LIVE",
-      priority: 1,
     };
     client.report(context, details, decision, [rule]);
 
@@ -1398,7 +1399,6 @@ describe("ArcjetDecision", () => {
   test("`isRateLimit()` returns true when reason is RATE_LIMIT", () => {
     const reason = new ArcjetRateLimitReason({
       max: 0,
-      count: 0,
       remaining: 0,
     });
     expect(reason.isRateLimit()).toEqual(true);
@@ -1423,22 +1423,22 @@ describe("ArcjetDecision", () => {
 });
 
 describe("Primitives > detectBot", () => {
-  test("provides a default rule with no options specified", async () => {
-    const [rule] = detectBot();
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
-    expect(rule).toHaveProperty("block", ["AUTOMATED"]);
-    expect(rule).toHaveProperty("add", []);
-    expect(rule).toHaveProperty("remove", []);
+  test("provides a default primitive with no options specified", async () => {
+    const [primitive] = detectBot();
+    expect(primitive).toHaveProperty("priority", 2);
+    expect(primitive).toHaveProperty("rule");
+    expect(primitive).toHaveProperty("mode", "DRY_RUN");
+    expect(primitive).toHaveProperty("block", ["AUTOMATED"]);
+    expect(primitive).toHaveProperty("add", []);
+    expect(primitive).toHaveProperty("remove", []);
   });
 
   test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
-    const [rule] = detectBot({
+    const [primitive] = detectBot({
       // @ts-expect-error
       mode: "INVALID",
     });
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+    expect(primitive).toHaveProperty("mode", "DRY_RUN");
   });
 
   test("allows specifying BotTypes to block", async () => {
@@ -1451,9 +1451,8 @@ describe("Primitives > detectBot", () => {
       ],
     };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("block", [
+    const [primitive] = detectBot(options);
+    expect(primitive).toHaveProperty("block", [
       "LIKELY_AUTOMATED",
       "LIKELY_NOT_A_BOT",
       "NOT_ANALYZED",
@@ -1470,9 +1469,8 @@ describe("Primitives > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("add", [["safari", "LIKELY_AUTOMATED"]]);
+    const [primitive] = detectBot(options);
+    expect(primitive).toHaveProperty("add", [["safari", "LIKELY_AUTOMATED"]]);
   });
 
   test("allows specifying `remove` patterns", async () => {
@@ -1482,9 +1480,8 @@ describe("Primitives > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("remove", ["^curl"]);
+    const [primitive] = detectBot(options);
+    expect(primitive).toHaveProperty("remove", ["^curl"]);
   });
 
   test("validates that headers is defined", () => {
@@ -1497,8 +1494,8 @@ describe("Primitives > detectBot", () => {
       headers: new Headers(),
     };
 
-    const [rule] = detectBot();
-    expect(rule.type).toEqual("BOT");
+    const [primitive] = detectBot();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     expect(() => {
       const _ = rule.validate(context, details);
@@ -1515,8 +1512,8 @@ describe("Primitives > detectBot", () => {
       headers: undefined,
     };
 
-    const [rule] = detectBot();
-    expect(rule.type).toEqual("BOT");
+    const [primitive] = detectBot();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     expect(() => {
       const _ = rule.validate(context, details);
@@ -1539,8 +1536,8 @@ describe("Primitives > detectBot", () => {
       extra: {},
     };
 
-    const [rule] = detectBot();
-    expect(rule.type).toEqual("BOT");
+    const [primitive] = detectBot();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -1588,8 +1585,8 @@ describe("Primitives > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
+    const [primitive] = detectBot(options);
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -1640,8 +1637,8 @@ describe("Primitives > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
+    const [primitive] = detectBot(options);
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -1692,8 +1689,8 @@ describe("Primitives > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
+    const [primitive] = detectBot(options);
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -1731,7 +1728,7 @@ describe("Primitives > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot({
+    const [primitive] = detectBot({
       mode: ArcjetMode.LIVE,
       block: [
         // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
@@ -1746,7 +1743,7 @@ describe("Primitives > detectBot", () => {
         },
       },
     });
-    expect(rule.type).toEqual("BOT");
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -1787,8 +1784,8 @@ describe("Primitives > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
+    const [primitive] = detectBot(options);
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -1838,8 +1835,8 @@ describe("Primitives > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
+    const [primitive] = detectBot(options);
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -1878,8 +1875,8 @@ describe("Primitives > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
+    const [primitive] = detectBot(options);
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -1894,13 +1891,13 @@ describe("Primitives > detectBot", () => {
 });
 
 describe("Primitive > rateLimit", () => {
-  test("provides no rules if no `options` specified", () => {
-    const rules = rateLimit();
-    expect(rules).toHaveLength(0);
+  test("provides no primitives if no `options` specified", () => {
+    const primitives = rateLimit();
+    expect(primitives).toHaveLength(0);
   });
 
   test("sets mode as `DRY_RUN` if not 'LIVE' or 'DRY_RUN'", async () => {
-    const [rule] = rateLimit({
+    const [primitive] = rateLimit({
       // @ts-expect-error
       mode: "INVALID",
       match: "/test",
@@ -1909,68 +1906,60 @@ describe("Primitive > rateLimit", () => {
       max: 1,
       timeout: "10m",
     });
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+    expect(primitive).toHaveProperty("mode", "DRY_RUN");
   });
 
-  test("produces a rules based on single `limit` specified", async () => {
+  test("produces a primitive based on single `limit` specified", async () => {
     const options = {
       match: "/test",
       characteristics: ["ip.src"],
       window: "1h",
       max: 1,
-      timeout: "10m",
     };
 
-    const rules = rateLimit(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("mode", "DRY_RUN");
-    expect(rules[0]).toHaveProperty("match", "/test");
-    expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
-    expect(rules[0]).toHaveProperty("window", "1h");
-    expect(rules[0]).toHaveProperty("max", 1);
-    expect(rules[0]).toHaveProperty("timeout", "10m");
+    const primitives = rateLimit(options);
+    expect(primitives).toHaveLength(1);
+    expect(primitives[0]).toHaveProperty("mode", "DRY_RUN");
+    expect(primitives[0]).toHaveProperty("match", "/test");
+    expect(primitives[0]).toHaveProperty("characteristics", ["ip.src"]);
+    expect(primitives[0]).toHaveProperty("window", "1h");
+    expect(primitives[0]).toHaveProperty("max", 1);
   });
 
-  test("produces a multiple rules based on multiple `limit` specified", async () => {
+  test("produces a multiple primitives based on multiple `limit` specified", async () => {
     const options = [
       {
         match: "/test",
         characteristics: ["ip.src"],
         window: "1h",
         max: 1,
-        timeout: "10m",
       },
       {
         match: "/test-double",
         characteristics: ["ip.src"],
         window: "2h",
         max: 2,
-        timeout: "20m",
       },
     ];
 
-    const rules = rateLimit(...options);
-    expect(rules).toHaveLength(2);
-    expect(rules).toEqual([
+    const primitives = rateLimit(...options);
+    expect(primitives).toHaveLength(2);
+    expect(primitives).toEqual([
       expect.objectContaining({
-        type: "RATE_LIMIT",
+        priority: 1,
         mode: "DRY_RUN",
         match: "/test",
         characteristics: ["ip.src"],
         window: "1h",
         max: 1,
-        timeout: "10m",
       }),
       expect.objectContaining({
-        type: "RATE_LIMIT",
+        priority: 1,
         mode: "DRY_RUN",
         match: "/test-double",
         characteristics: ["ip.src"],
         window: "2h",
         max: 2,
-        timeout: "20m",
       }),
     ]);
   });
@@ -1982,10 +1971,9 @@ describe("Primitive > rateLimit", () => {
       timeout: "10m",
     };
 
-    const [rule] = rateLimit(options);
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("match", undefined);
-    expect(rule).toHaveProperty("characteristics", undefined);
+    const [primitives] = rateLimit(options);
+    expect(primitives).toHaveProperty("match", undefined);
+    expect(primitives).toHaveProperty("characteristics", undefined);
   });
 
   test("does not default `match` or `characteristics` if not specified in array `limit`", async () => {
@@ -2002,48 +1990,43 @@ describe("Primitive > rateLimit", () => {
       },
     ];
 
-    const rules = rateLimit(...options);
-    expect(rules).toEqual([
+    const primitives = rateLimit(...options);
+    expect(primitives).toEqual([
       expect.objectContaining({
-        type: "RATE_LIMIT",
+        priority: 1,
         mode: "DRY_RUN",
         match: undefined,
         characteristics: undefined,
         window: "1h",
         max: 1,
-        timeout: "10m",
       }),
       expect.objectContaining({
-        type: "RATE_LIMIT",
+        priority: 1,
         mode: "DRY_RUN",
         match: undefined,
         characteristics: undefined,
         window: "2h",
         max: 2,
-        timeout: "20m",
       }),
     ]);
   });
 });
 
 describe("Primitives > validateEmail", () => {
-  test("provides a default rule with no options specified", async () => {
-    const [rule] = validateEmail();
-    expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
-    expect(rule).toHaveProperty("block", []);
-    expect(rule).toHaveProperty("requireTopLevelDomain", true);
-    expect(rule).toHaveProperty("allowDomainLiteral", false);
-    assertIsLocalRule(rule);
+  test("provides a default primitive with no options specified", async () => {
+    const [primitive] = validateEmail();
+    expect(primitive).toHaveProperty("mode", "DRY_RUN");
+    expect(primitive).toHaveProperty("block", []);
+    expect(primitive).toHaveProperty("requireTopLevelDomain", true);
+    expect(primitive).toHaveProperty("allowDomainLiteral", false);
   });
 
   test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
-    const [rule] = validateEmail({
+    const [primitive] = validateEmail({
       // @ts-expect-error
       mode: "INVALID",
     });
-    expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+    expect(primitive).toHaveProperty("mode", "DRY_RUN");
   });
 
   test("allows specifying EmailTypes to block", async () => {
@@ -2057,9 +2040,8 @@ describe("Primitives > validateEmail", () => {
       ],
     };
 
-    const [rule] = validateEmail(options);
-    expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("block", [
+    const [primitive] = validateEmail(options);
+    expect(primitive).toHaveProperty("block", [
       "DISPOSABLE",
       "FREE",
       "NO_GRAVATAR",
@@ -2078,8 +2060,8 @@ describe("Primitives > validateEmail", () => {
       email: "abc@example.com",
     };
 
-    const [rule] = validateEmail();
-    expect(rule.type).toEqual("EMAIL");
+    const [primitive] = validateEmail();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     expect(() => {
       const _ = rule.validate(context, details);
@@ -2096,8 +2078,8 @@ describe("Primitives > validateEmail", () => {
       email: undefined,
     };
 
-    const [rule] = validateEmail();
-    expect(rule.type).toEqual("EMAIL");
+    const [primitive] = validateEmail();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     expect(() => {
       const _ = rule.validate(context, details);
@@ -2121,8 +2103,8 @@ describe("Primitives > validateEmail", () => {
       email: "foobarbaz@example.com",
     };
 
-    const [rule] = validateEmail();
-    expect(rule.type).toEqual("EMAIL");
+    const [primitive] = validateEmail();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -2151,8 +2133,8 @@ describe("Primitives > validateEmail", () => {
       email: "foobarbaz",
     };
 
-    const [rule] = validateEmail();
-    expect(rule.type).toEqual("EMAIL");
+    const [primitive] = validateEmail();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -2181,8 +2163,8 @@ describe("Primitives > validateEmail", () => {
       email: "foobarbaz@localhost",
     };
 
-    const [rule] = validateEmail();
-    expect(rule.type).toEqual("EMAIL");
+    const [primitive] = validateEmail();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -2211,10 +2193,10 @@ describe("Primitives > validateEmail", () => {
       email: "foobarbaz@localhost",
     };
 
-    const [rule] = validateEmail({
+    const [primitive] = validateEmail({
       block: [],
     });
-    expect(rule.type).toEqual("EMAIL");
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -2243,8 +2225,8 @@ describe("Primitives > validateEmail", () => {
       email: "@example.com",
     };
 
-    const [rule] = validateEmail();
-    expect(rule.type).toEqual("EMAIL");
+    const [primitive] = validateEmail();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -2273,8 +2255,8 @@ describe("Primitives > validateEmail", () => {
       email: "foobarbaz@[127.0.0.1]",
     };
 
-    const [rule] = validateEmail();
-    expect(rule.type).toEqual("EMAIL");
+    const [primitive] = validateEmail();
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -2303,10 +2285,10 @@ describe("Primitives > validateEmail", () => {
       email: "foobarbaz@localhost",
     };
 
-    const [rule] = validateEmail({
+    const [primitive] = validateEmail({
       requireTopLevelDomain: false,
     });
-    expect(rule.type).toEqual("EMAIL");
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -2335,10 +2317,10 @@ describe("Primitives > validateEmail", () => {
       email: "foobarbaz@[127.0.0.1]",
     };
 
-    const [rule] = validateEmail({
+    const [primitive] = validateEmail({
       allowDomainLiteral: true,
     });
-    expect(rule.type).toEqual("EMAIL");
+    const rule = primitive.rule(context, details);
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
@@ -2358,9 +2340,8 @@ describe("Products > protectSignup", () => {
         mode: ArcjetMode.DRY_RUN,
         match: "/test",
         characteristics: ["ip.src"],
-        window: "1h",
+        interval: 60 /* minutes */ * 60 /* seconds */,
         max: 1,
-        timeout: "10m",
       },
       bots: {
         mode: ArcjetMode.DRY_RUN,
@@ -2379,16 +2360,14 @@ describe("Products > protectSignup", () => {
           mode: ArcjetMode.DRY_RUN,
           match: "/test",
           characteristics: ["ip.src"],
-          window: "1h",
+          interval: 60 /* minutes */ * 60 /* seconds */,
           max: 1,
-          timeout: "10m",
         },
         {
           match: "/test",
           characteristics: ["ip.src"],
-          window: "2h",
+          interval: 2 /* hours */ * 60 /* minutes */ * 60 /* seconds */,
           max: 2,
-          timeout: "20m",
         },
       ],
     });
@@ -2425,92 +2404,91 @@ describe("Products > protectSignup", () => {
 });
 
 describe("SDK", () => {
-  function testRuleLocalAllowed(): ArcjetLocalRule {
-    return {
-      mode: ArcjetMode.LIVE,
-      type: "TEST_RULE_LOCAL_ALLOWED",
-      priority: 1,
-      validate: jest.fn(),
-      protect: jest.fn(
-        async () =>
-          new ArcjetRuleResult({
-            ttl: 0,
-            state: "RUN",
-            conclusion: "ALLOW",
-            reason: new ArcjetTestReason(),
-          }),
-      ),
-    };
-  }
-  function testRuleLocalDenied(): ArcjetLocalRule {
-    return {
-      mode: ArcjetMode.LIVE,
-      type: "TEST_RULE_LOCAL_DENIED",
-      priority: 1,
-      validate: jest.fn(),
-      protect: jest.fn(
-        async () =>
-          new ArcjetRuleResult({
-            ttl: 5000,
-            state: "RUN",
-            conclusion: "DENY",
-            reason: new ArcjetTestReason(),
-          }),
-      ),
-    };
-  }
-
-  function testRuleRemote(): ArcjetRule {
-    return {
-      mode: "LIVE",
-      type: "TEST_RULE_REMOTE",
-      priority: 1,
-    };
-  }
-
-  function testRuleMultiple(): ArcjetRule[] {
-    return [
-      { mode: "LIVE", type: "TEST_RULE_MULTIPLE", priority: 1 },
-      { mode: "LIVE", type: "TEST_RULE_MULTIPLE", priority: 1 },
-      { mode: "LIVE", type: "TEST_RULE_MULTIPLE", priority: 1 },
-    ];
-  }
-
-  function testRuleInvalidType(): ArcjetRule {
-    return {
-      mode: ArcjetMode.LIVE,
-      type: "TEST_RULE_INVALID_TYPE",
-      priority: 1,
-    };
-  }
-
-  function testRuleLocalThrow(): ArcjetLocalRule {
-    return {
-      mode: ArcjetMode.LIVE,
-      type: "TEST_RULE_LOCAL_THROW",
-      priority: 1,
-      validate: jest.fn(),
-      protect: jest.fn(async () => {
-        throw new Error("Local rule protect failed");
-      }),
-    };
-  }
-
-  function testRuleLocalDryRun(): ArcjetLocalRule {
-    return {
-      mode: ArcjetMode.DRY_RUN,
-      type: "TEST_RULE_LOCAL_DRY_RUN",
-      priority: 1,
-      validate: jest.fn(),
-      protect: jest.fn(async () => {
-        return new ArcjetRuleResult({
+  class TestPrimitiveLocalAllowed extends ArcjetPrimitive {
+    priority = 1;
+    type = "TEST_RULE_LOCAL_ALLOWED";
+    mode = ArcjetMode.LIVE;
+    validate = jest.fn();
+    protect = jest.fn(
+      async () =>
+        new ArcjetRuleResult({
           ttl: 0,
+          state: "RUN",
+          conclusion: "ALLOW",
+          reason: new ArcjetTestReason(),
+        }),
+    );
+    rule(): ArcjetRule<{}> {
+      return this;
+    }
+  }
+
+  class TestPrimitiveLocalDenied extends ArcjetPrimitive {
+    priority = 1;
+    type = "TEST_RULE_LOCAL_DENIED";
+    mode = ArcjetMode.LIVE;
+    validate = jest.fn();
+    protect = jest.fn(
+      async () =>
+        new ArcjetRuleResult({
+          ttl: 5000,
           state: "RUN",
           conclusion: "DENY",
           reason: new ArcjetTestReason(),
-        });
-      }),
-    };
+        }),
+    );
+    rule() {
+      return this;
+    }
+  }
+
+  class TestPrimitiveRemote extends ArcjetPrimitive {
+    priority = 1;
+    type = "TEST_RULE_REMOTE";
+    mode = ArcjetMode.LIVE;
+    rule() {
+      return this;
+    }
+  }
+
+  class TestPrimitiveInvalidType extends ArcjetPrimitive {
+    priority = 1;
+    type = "TEST_RULE_INVALID_TYPE";
+    mode = ArcjetMode.LIVE;
+    rule() {
+      return this;
+    }
+  }
+
+  class TestPrimitiveLocalThrow extends ArcjetPrimitive {
+    priority = 1;
+    type = "TEST_RULE_LOCAL_THROW";
+    mode = ArcjetMode.LIVE;
+    validate = jest.fn();
+    protect = jest.fn(async () => {
+      throw new Error("Local rule protect failed");
+    });
+    rule() {
+      return this;
+    }
+  }
+
+  class TestPrimitiveLocalDryRun extends ArcjetPrimitive {
+    priority = 1;
+    mode = ArcjetMode.DRY_RUN;
+    type = "TEST_RULE_LOCAL_DRY_RUN";
+    validate = jest.fn();
+    protect = jest.fn(async () => {
+      return new ArcjetRuleResult({
+        ttl: 0,
+        state: "RUN",
+        conclusion: "DENY",
+        reason: new ArcjetTestReason(),
+      });
+    });
+    rule() {
+      return this;
+    }
   }
 
   test("creates a new Arcjet SDK with no rules", () => {
@@ -2583,7 +2561,7 @@ describe("SDK", () => {
 
     const aj = arcjet({
       key: "test-key",
-      rules: [[testRuleLocalAllowed(), testRuleLocalDenied()]],
+      rules: [new TestPrimitiveLocalAllowed(), new TestPrimitiveLocalDenied()],
       client,
     });
     expect(aj).toHaveProperty("protect");
@@ -2604,7 +2582,7 @@ describe("SDK", () => {
 
     const aj = arcjet({
       key: "test-key",
-      rules: [[testRuleRemote()]],
+      rules: [new TestPrimitiveRemote()],
       client,
     });
     expect(aj).toHaveProperty("protect");
@@ -2626,7 +2604,9 @@ describe("SDK", () => {
     const aj = arcjet({
       key: "test-key",
       rules: [
-        [testRuleLocalAllowed(), testRuleLocalDenied(), testRuleRemote()],
+        new TestPrimitiveLocalAllowed(),
+        new TestPrimitiveLocalDenied(),
+        new TestPrimitiveRemote(),
       ],
       client,
     });
@@ -2667,12 +2647,12 @@ describe("SDK", () => {
         "extra-test": "extra-test-value",
       },
     };
-    const allowed = testRuleLocalAllowed();
-    const denied = testRuleLocalDenied();
+    const allowed = new TestPrimitiveLocalAllowed();
+    const denied = new TestPrimitiveLocalDenied();
 
     const aj = arcjet({
       key: "test-key",
-      rules: [[allowed, denied]],
+      rules: [allowed, denied],
       client,
     });
 
@@ -2746,10 +2726,9 @@ describe("SDK", () => {
 
     const details = {};
 
-    const rules: ArcjetRule[][] = [];
-    // We only iterate 4 times because `testRuleMultiple` generates 3 rules
-    for (let idx = 0; idx < 4; idx++) {
-      rules.push(testRuleMultiple());
+    const rules: ArcjetPrimitive[] = [];
+    for (let idx = 0; idx < 11; idx++) {
+      rules.push(new TestPrimitiveRemote());
     }
 
     const aj = arcjet({
@@ -2785,12 +2764,12 @@ describe("SDK", () => {
         "extra-test": "extra-test-value",
       },
     };
-    const allowed = testRuleLocalAllowed();
-    const denied = testRuleLocalDenied();
+    const allowed = new TestPrimitiveLocalAllowed();
+    const denied = new TestPrimitiveLocalDenied();
 
     const aj = arcjet({
       key: "test-key",
-      rules: [[denied, allowed]],
+      rules: [denied, allowed],
       client,
     });
 
@@ -2832,7 +2811,7 @@ describe("SDK", () => {
         "extra-test": "extra-test-value",
       },
     };
-    const allowed = testRuleLocalAllowed();
+    const allowed = new TestPrimitiveLocalAllowed();
 
     const aj = arcjet({
       key,
@@ -2875,7 +2854,7 @@ describe("SDK", () => {
         "extra-test": "extra-test-value",
       },
     };
-    const rule = testRuleLocalAllowed();
+    const rule = new TestPrimitiveLocalAllowed();
 
     const aj = arcjet({
       key,
@@ -2921,7 +2900,7 @@ describe("SDK", () => {
         "extra-test": "extra-test-value",
       },
     };
-    const rule = testRuleLocalDenied();
+    const rule = new TestPrimitiveLocalDenied();
 
     const aj = arcjet({
       key,
@@ -2965,7 +2944,7 @@ describe("SDK", () => {
         "extra-test": "extra-test-value",
       },
     };
-    const denied = testRuleLocalDenied();
+    const denied = new TestPrimitiveLocalDenied();
 
     const aj = arcjet({
       key,
@@ -3088,7 +3067,7 @@ describe("SDK", () => {
     expect(() => {
       const aj = arcjet({
         key: "test-key",
-        rules: [[testRuleInvalidType()]],
+        rules: [new TestPrimitiveInvalidType()],
         client,
       });
     }).not.toThrow("Unknown Rule type");
@@ -3126,7 +3105,7 @@ describe("SDK", () => {
 
     const aj = arcjet({
       key,
-      rules: [[testRuleLocalThrow()]],
+      rules: [new TestPrimitiveLocalThrow()],
       client,
     });
 
@@ -3164,22 +3143,23 @@ describe("SDK", () => {
 
     let errorLogSpy;
 
-    function testRuleLocalThrowString(): ArcjetLocalRule {
-      return {
-        mode: ArcjetMode.LIVE,
-        type: "TEST_RULE_LOCAL_THROW_STRING",
-        priority: 1,
-        validate: jest.fn(),
-        async protect(context, req) {
-          errorLogSpy = jest.spyOn(context.log, "error");
-          throw "Local rule protect failed";
-        },
-      };
+    class TestPrimitiveLocalThrowString extends ArcjetPrimitive {
+      mode = ArcjetMode.LIVE;
+      type = "TEST_RULE_LOCAL_THROW_STRING";
+      priority = 1;
+      validate = jest.fn();
+      async protect(context: ArcjetContext) {
+        errorLogSpy = jest.spyOn(context.log, "error");
+        throw "Local rule protect failed";
+      }
+      rule() {
+        return this;
+      }
     }
 
     const aj = arcjet({
       key,
-      rules: [[testRuleLocalThrowString()]],
+      rules: [new TestPrimitiveLocalThrowString()],
       client,
     });
 
@@ -3220,22 +3200,23 @@ describe("SDK", () => {
 
     let errorLogSpy;
 
-    function testRuleLocalThrowNull(): ArcjetLocalRule {
-      return {
-        mode: ArcjetMode.LIVE,
-        type: "TEST_RULE_LOCAL_THROW_NULL",
-        priority: 1,
-        validate: jest.fn(),
-        async protect(context, req) {
-          errorLogSpy = jest.spyOn(context.log, "error");
-          throw null;
-        },
-      };
+    class TestPrimitiveLocalThrowNull extends ArcjetPrimitive {
+      mode = ArcjetMode.LIVE;
+      type = "TEST_RULE_LOCAL_THROW_NULL";
+      priority = 1;
+      validate = jest.fn();
+      async protect(context: ArcjetContext) {
+        errorLogSpy = jest.spyOn(context.log, "error");
+        throw null;
+      }
+      rule() {
+        return this;
+      }
     }
 
     const aj = arcjet({
       key,
-      rules: [[testRuleLocalThrowNull()]],
+      rules: [new TestPrimitiveLocalThrowNull()],
       client,
     });
 
@@ -3276,7 +3257,7 @@ describe("SDK", () => {
 
     const aj = arcjet({
       key,
-      rules: [[testRuleLocalDryRun()]],
+      rules: [new TestPrimitiveLocalDryRun()],
       client,
     });
 
@@ -3325,7 +3306,7 @@ describe("SDK", () => {
       },
     };
 
-    const rule = testRuleRemote();
+    const rule = new TestPrimitiveRemote();
 
     const aj = arcjet({
       key,

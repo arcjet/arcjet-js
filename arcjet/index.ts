@@ -18,6 +18,11 @@ import {
   ArcjetRule,
   ArcjetLocalRule,
   ArcjetRequestDetails,
+  ArcjetPrimitive,
+  ArcjetProduct,
+  ArcjetTokenBucketRateLimitRule,
+  ArcjetFixedWindowRateLimitRule,
+  ArcjetSlidingWindowRateLimitRule,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
@@ -371,13 +376,29 @@ function runtime(): Runtime {
   }
 }
 
-export type RateLimitOptions = {
+type TokenBucketRateLimitOptions = {
+  mode?: ArcjetMode;
+  match?: string;
+  characteristics?: string[];
+  refillRate: number;
+  interval: number;
+  capacity: number;
+};
+
+type FixedWindowRateLimitOptions = {
   mode?: ArcjetMode;
   match?: string;
   characteristics?: string[];
   window: string;
   max: number;
-  timeout: string;
+};
+
+type SlidingWindowRateLimitOptions = {
+  mode?: ArcjetMode;
+  match?: string;
+  characteristics?: string[];
+  interval: number;
+  max: number;
 };
 
 /**
@@ -482,27 +503,32 @@ const Priority = {
 
 type PlainObject = { [key: string]: unknown };
 
-type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
+// Primitives and Products can be specified in a variety of ways and are
+// externally grouped as `rules`
+// See ExtraRules below for further explanation on why we define them like this.
+type PrimitivesOrProduct<Props extends {} = {}> =
+  | ArcjetPrimitive<Props>
+  | ArcjetPrimitive<Props>[]
+  | ArcjetProduct<Props>;
+
+type PropsForRule<R> = R extends PrimitivesOrProduct<infer Props>[]
+  ? Props
+  : R extends PrimitivesOrProduct<infer Props>
+    ? Props
+    : {};
 // We theoretically support an arbitrary amount of rule flattening,
 // but one level seems to be easiest; however, this puts a constraint of
 // the definition of `Product` such that they need to spread each `Primitive`
 // they are re-exporting.
 export type ExtraProps<Rules> = Rules extends []
   ? {}
-  : Rules extends ArcjetRule[][]
-    ? UnionToIntersection<PropsForRule<Rules[number][number]>>
-    : Rules extends ArcjetRule[]
-      ? UnionToIntersection<PropsForRule<Rules[number]>>
-      : never;
+  : Rules extends PrimitivesOrProduct[]
+    ? UnionToIntersection<PropsForRule<Rules[number]>>
+    : never;
 
 export type ArcjetRequest<Props extends PlainObject> = Simplify<
-  Partial<ArcjetRequestDetails & Props>
+  Partial<ArcjetRequestDetails> & Props
 >;
-
-// Primitives and Products are the external names for Rules even though they are defined the same
-// See ArcjetRequest above for the explanation on why we define them like this.
-export type Primitive<Props extends PlainObject = {}> = ArcjetRule<Props>[];
-export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 
 function isLocalRule<Props extends PlainObject>(
   rule: ArcjetRule<Props>,
@@ -515,63 +541,227 @@ function isLocalRule<Props extends PlainObject>(
   );
 }
 
-export function rateLimit(
-  options?: RateLimitOptions,
-  ...additionalOptions: RateLimitOptions[]
-): Primitive {
-  // TODO(#195): We should also have a local rate limit using an in-memory data
-  // structure if the environment supports it
+class ArcjetTokenBucketRateLimitPrimitive extends ArcjetPrimitive<{
+  requested: number;
+}> {
+  priority = Priority.RateLimit;
 
-  const rules: ArcjetRateLimitRule<{}>[] = [];
+  mode: ArcjetMode;
+  match?: string;
+  characteristics?: string[];
+  refillRate: number;
+  interval: number;
+  capacity: number;
+
+  constructor(options: TokenBucketRateLimitOptions) {
+    super();
+
+    this.mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    this.match = options.match;
+    this.characteristics = options.characteristics;
+
+    this.refillRate = options.refillRate;
+    this.interval = options.interval;
+    this.capacity = options.capacity;
+  }
+
+  rule(
+    context: ArcjetContext,
+    details: Partial<ArcjetRequestDetails & { requested: number }>,
+  ): ArcjetTokenBucketRateLimitRule<{ requested: number }> {
+    return {
+      type: "RATE_LIMIT",
+      mode: this.mode,
+      match: this.match,
+      characteristics: this.characteristics,
+      algorithm: "TOKEN_BUCKET",
+      refillRate: this.refillRate,
+      interval: this.interval,
+      capacity: this.capacity,
+      requested: typeof details.requested === "number" ? details.requested : 1,
+    };
+  }
+}
+
+class ArcjetFixedWindowRateLimitPrimitive extends ArcjetPrimitive {
+  priority = Priority.RateLimit;
+
+  mode: ArcjetMode;
+  match?: string;
+  characteristics?: string[];
+
+  max: number;
+  window: string;
+
+  constructor(options: FixedWindowRateLimitOptions) {
+    super();
+
+    this.mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    this.match = options.match;
+    this.characteristics = options.characteristics;
+
+    this.max = options.max;
+    this.window = options.window;
+  }
+
+  rule(
+    context: ArcjetContext,
+    details: Partial<ArcjetRequestDetails>,
+  ): ArcjetFixedWindowRateLimitRule<{}> {
+    return {
+      type: "RATE_LIMIT",
+      mode: this.mode,
+      match: this.match,
+      characteristics: this.characteristics,
+      algorithm: "FIXED_WINDOW",
+      max: this.max,
+      window: this.window,
+    };
+  }
+}
+
+class ArcjetSlidingWindowRateLimitPrimitive extends ArcjetPrimitive {
+  priority = Priority.RateLimit;
+
+  mode: ArcjetMode;
+  match?: string;
+  characteristics?: string[];
+
+  max: number;
+  interval: number;
+
+  constructor(options: SlidingWindowRateLimitOptions) {
+    super();
+
+    this.mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    this.match = options.match;
+    this.characteristics = options.characteristics;
+
+    this.max = options.max;
+    this.interval = options.interval;
+  }
+
+  rule(
+    context: ArcjetContext,
+    details: Partial<ArcjetRequestDetails>,
+  ): ArcjetSlidingWindowRateLimitRule<{}> {
+    return {
+      type: "RATE_LIMIT",
+      mode: this.mode,
+      match: this.match,
+      characteristics: this.characteristics,
+      algorithm: "SLIDING_WINDOW",
+      max: this.max,
+      interval: this.interval,
+    };
+  }
+}
+
+export function tokenBucket(
+  options?: TokenBucketRateLimitOptions,
+  ...additionalOptions: TokenBucketRateLimitOptions[]
+) {
+  const primitives: ArcjetTokenBucketRateLimitPrimitive[] = [];
 
   if (typeof options === "undefined") {
-    return rules;
+    return primitives;
   }
 
   for (const opt of [options, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-
-    rules.push({
-      type: "RATE_LIMIT",
-      priority: Priority.RateLimit,
-      mode,
-      match: opt.match,
-      characteristics: opt.characteristics,
-      window: opt.window,
-      max: opt.max,
-      timeout: opt.timeout,
-    });
+    primitives.push(new ArcjetTokenBucketRateLimitPrimitive(opt));
   }
 
-  return rules;
+  return primitives;
 }
 
-export function validateEmail(
-  options?: EmailOptions,
-  ...additionalOptions: EmailOptions[]
-): Primitive<{ email: string }> {
-  const rules: ArcjetEmailRule<{ email: string }>[] = [];
+export function fixedWindow(
+  options?: FixedWindowRateLimitOptions,
+  ...additionalOptions: FixedWindowRateLimitOptions[]
+) {
+  const primitives: ArcjetFixedWindowRateLimitPrimitive[] = [];
 
-  // Always create at least one EMAIL rule
-  for (const opt of [options ?? {}, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  if (typeof options === "undefined") {
+    return primitives;
+  }
+
+  for (const opt of [options, ...additionalOptions]) {
+    primitives.push(new ArcjetFixedWindowRateLimitPrimitive(opt));
+  }
+
+  return primitives;
+}
+
+// This is currently kept for backwards compatibility but should be removed in
+// favor of the fixedWindow primitive.
+export function rateLimit(
+  options?: FixedWindowRateLimitOptions,
+  ...additionalOptions: FixedWindowRateLimitOptions[]
+) {
+  const primitives: ArcjetFixedWindowRateLimitPrimitive[] = [];
+
+  if (typeof options === "undefined") {
+    return primitives;
+  }
+
+  for (const opt of [options, ...additionalOptions]) {
+    primitives.push(new ArcjetFixedWindowRateLimitPrimitive(opt));
+  }
+
+  return primitives;
+}
+
+export function slidingWindow(
+  options?: SlidingWindowRateLimitOptions,
+  ...additionalOptions: SlidingWindowRateLimitOptions[]
+) {
+  const primitives: ArcjetSlidingWindowRateLimitPrimitive[] = [];
+
+  if (typeof options === "undefined") {
+    return primitives;
+  }
+
+  for (const opt of [options, ...additionalOptions]) {
+    primitives.push(new ArcjetSlidingWindowRateLimitPrimitive(opt));
+  }
+
+  return primitives;
+}
+
+class ArcjetValidateEmailPrimitive extends ArcjetPrimitive<{ email: string }> {
+  priority = Priority.EmailValidation;
+
+  mode: ArcjetMode;
+  block: ArcjetEmailType[];
+
+  requireTopLevelDomain: boolean;
+  allowDomainLiteral: boolean;
+
+  constructor(options: EmailOptions) {
+    super();
+
+    this.mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
     // TODO: Filter invalid email types (or error??)
-    const block = opt.block ?? [];
-    const requireTopLevelDomain = opt.requireTopLevelDomain ?? true;
-    const allowDomainLiteral = opt.allowDomainLiteral ?? false;
+    this.block = options.block ?? [];
 
+    this.requireTopLevelDomain = options.requireTopLevelDomain ?? true;
+    this.allowDomainLiteral = options.allowDomainLiteral ?? false;
+  }
+
+  rule(
+    context: ArcjetContext,
+    details: Partial<ArcjetRequestDetails & { email: string }>,
+  ): ArcjetEmailRule<{ email: string }> {
     const analyzeOpts = {
-      requireTopLevelDomain,
-      allowDomainLiteral,
+      requireTopLevelDomain: this.requireTopLevelDomain,
+      allowDomainLiteral: this.allowDomainLiteral,
     };
 
-    rules.push({
+    return {
       type: "EMAIL",
-      priority: Priority.EmailValidation,
-      mode,
-      block,
-      requireTopLevelDomain,
-      allowDomainLiteral,
+      mode: this.mode,
+      block: this.block,
+      requireTopLevelDomain: this.requireTopLevelDomain,
+      allowDomainLiteral: this.allowDomainLiteral,
 
       validate(
         context: ArcjetContext,
@@ -605,41 +795,60 @@ export function validateEmail(
           });
         }
       },
-    });
+    };
   }
-
-  return rules;
 }
 
-export function detectBot(
-  options?: BotOptions,
-  ...additionalOptions: BotOptions[]
-): Primitive {
-  const rules: ArcjetBotRule<{}>[] = [];
+export function validateEmail(
+  options?: EmailOptions,
+  ...additionalOptions: EmailOptions[]
+) {
+  const primitives: ArcjetValidateEmailPrimitive[] = [];
 
-  // Always create at least one BOT rule
+  // Always create at least one EMAIL rule
   for (const opt of [options ?? {}, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    primitives.push(new ArcjetValidateEmailPrimitive(opt));
+  }
+
+  return primitives;
+}
+
+class ArcjetDetectBotPrimitive extends ArcjetPrimitive {
+  priority = Priority.BotDetection;
+
+  mode: ArcjetMode;
+  block: ArcjetBotType[];
+  add: [string, ArcjetBotType][];
+  remove: string[];
+
+  constructor(options: BotOptions) {
+    super();
+
+    this.mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
     // TODO: Filter invalid email types (or error??)
-    const block = Array.isArray(opt.block)
-      ? opt.block
+    this.block = Array.isArray(options.block)
+      ? options.block
       : [ArcjetBotType.AUTOMATED];
     // TODO: Does this avoid prototype pollution by putting in a Map first?
-    const addMap = new Map();
-    for (const [key, value] of Object.entries(opt.patterns?.add ?? {})) {
+    const addMap = new Map<string, ArcjetBotType>();
+    for (const [key, value] of Object.entries(options.patterns?.add ?? {})) {
       addMap.set(key, value);
     }
     // TODO(#217): Additional validation on these `patterns` options
-    const add = Array.from(addMap.entries());
-    const remove = opt.patterns?.remove ?? [];
+    this.add = Array.from(addMap.entries());
+    this.remove = options.patterns?.remove ?? [];
+  }
 
-    rules.push({
+  rule(
+    context: ArcjetContext,
+    details: Partial<ArcjetRequestDetails>,
+  ): ArcjetBotRule<{}> {
+    return {
       type: "BOT",
-      priority: Priority.BotDetection,
-      mode,
-      block,
-      add,
-      remove,
+      mode: this.mode,
+      block: this.block,
+      add: this.add,
+      remove: this.remove,
 
       validate(
         context: ArcjetContext,
@@ -668,19 +877,19 @@ export function detectBot(
           JSON.stringify(headersKV),
           JSON.stringify(
             Object.fromEntries(
-              add.map(([key, botType]) => [
+              this.add.map(([key, botType]) => [
                 key,
                 ArcjetBotTypeToProtocol(botType),
               ]),
             ),
           ),
-          JSON.stringify(remove),
+          JSON.stringify(this.remove),
         );
 
         // If this is a bot and of a type that we want to block, then block!
         if (
           botResult.bot_score !== 0 &&
-          block.includes(BotType[botResult.bot_type] as ArcjetBotType)
+          this.block.includes(BotType[botResult.bot_type] as ArcjetBotType)
         ) {
           return new ArcjetRuleResult({
             ttl: 60000,
@@ -705,46 +914,62 @@ export function detectBot(
           });
         }
       },
-    });
+    };
+  }
+}
+
+export function detectBot(
+  options?: BotOptions,
+  ...additionalOptions: BotOptions[]
+) {
+  const primitives: ArcjetDetectBotPrimitive[] = [];
+
+  // Always create at least one BOT rule
+  for (const opt of [options ?? {}, ...additionalOptions]) {
+    primitives.push(new ArcjetDetectBotPrimitive(opt));
   }
 
-  return rules;
+  return primitives;
 }
 
 export type ProtectSignupOptions = {
-  rateLimit?: RateLimitOptions | RateLimitOptions[];
+  rateLimit?: SlidingWindowRateLimitOptions | SlidingWindowRateLimitOptions[];
   bots?: BotOptions | BotOptions[];
   email?: EmailOptions | EmailOptions[];
 };
 
 export function protectSignup(
   options?: ProtectSignupOptions,
-): Product<{ email: string }> {
-  let rateLimitRules: Primitive<{}> = [];
+): ArcjetProduct<{ email: string }> {
+  let slidingWindowPrimitives: ArcjetSlidingWindowRateLimitPrimitive[] = [];
   if (Array.isArray(options?.rateLimit)) {
-    rateLimitRules = rateLimit(...options.rateLimit);
+    slidingWindowPrimitives = slidingWindow(...options.rateLimit);
   } else {
-    rateLimitRules = rateLimit(options?.rateLimit);
+    slidingWindowPrimitives = slidingWindow(options?.rateLimit);
   }
 
-  let botRules: Primitive<{}> = [];
+  let detectBotPrimitives: ArcjetDetectBotPrimitive[] = [];
   if (Array.isArray(options?.bots)) {
-    botRules = detectBot(...options.bots);
+    detectBotPrimitives = detectBot(...options.bots);
   } else {
-    botRules = detectBot(options?.bots);
+    detectBotPrimitives = detectBot(options?.bots);
   }
 
-  let emailRules: Primitive<{}> = [];
+  let emailPrimitives: ArcjetValidateEmailPrimitive[] = [];
   if (Array.isArray(options?.email)) {
-    emailRules = validateEmail(...options.email);
+    emailPrimitives = validateEmail(...options.email);
   } else {
-    emailRules = validateEmail(options?.email);
+    emailPrimitives = validateEmail(options?.email);
   }
 
-  return [...rateLimitRules, ...botRules, ...emailRules];
+  return [
+    ...slidingWindowPrimitives,
+    ...detectBotPrimitives,
+    ...emailPrimitives,
+  ];
 }
 
-export interface ArcjetOptions<Rules extends [...(Primitive | Product)[]]> {
+export interface ArcjetOptions<Rules extends [...PrimitivesOrProduct[]]> {
   /**
    * The API key to identify the site in Arcjet.
    */
@@ -789,9 +1014,9 @@ export interface Arcjet<Props extends PlainObject> {
  *
  * @param options {ArcjetOptions} Arcjet configuration options.
  */
-export default function arcjet<
-  const Rules extends [...(Primitive | Product)[]] = [],
->(options: ArcjetOptions<Rules>): Arcjet<Simplify<ExtraProps<Rules>>> {
+export default function arcjet<const P extends [...PrimitivesOrProduct[]] = []>(
+  options: ArcjetOptions<P>,
+): Arcjet<Simplify<ExtraProps<P>>> {
   const log = new Logger();
 
   // We destructure here to make the function signature neat when viewed by consumers
@@ -808,14 +1033,20 @@ export default function arcjet<
   // TODO(#132): Support configurable caching
   const blockCache = new Cache<ArcjetReason>();
 
-  const flatSortedRules = rules.flat(1).sort((a, b) => a.priority - b.priority);
+  // However, we like the user-facing concept of `rules` specified as options to
+  // avoid the need for a distinction between primitives and products. However,
+  // we map the `rules` option to primitives internally because we still need to
+  // call `primitive.rule(context, details)` to produce the actual rule.
+  const flatSortedPrimitives = rules
+    .flat(1)
+    .sort((a, b) => a.priority - b.priority);
 
   return Object.freeze({
     get runtime() {
       return runtime();
     },
     async protect(
-      request: ArcjetRequest<ExtraProps<Rules>>,
+      request: ArcjetRequest<ExtraProps<P>>,
     ): Promise<ArcjetDecision> {
       // This goes against the type definition above, but users might call
       // `protect()` with no value and we don't want to crash
@@ -844,7 +1075,7 @@ export default function arcjet<
 
       const context: ArcjetContext = { key, fingerprint, log };
 
-      if (flatSortedRules.length > 10) {
+      if (flatSortedPrimitives.length > 10) {
         log.error("Failure running rules. Only 10 rules may be specified.");
 
         const decision = new ArcjetErrorDecision({
@@ -867,9 +1098,14 @@ export default function arcjet<
         return decision;
       }
 
+      const rules: ArcjetRule[] = [];
+      for (const primitive of flatSortedPrimitives) {
+        rules.push(primitive.rule(context, details));
+      }
+
       const results: ArcjetRuleResult[] = [];
       // Default all rules to NOT_RUN/ALLOW before doing anything
-      for (let idx = 0; idx < flatSortedRules.length; idx++) {
+      for (let idx = 0; idx < rules.length; idx++) {
         results[idx] = new ArcjetRuleResult({
           ttl: 0,
           state: "NOT_RUN",
@@ -901,7 +1137,7 @@ export default function arcjet<
           results,
         });
 
-        client.report(context, details, decision, flatSortedRules);
+        client.report(context, details, decision, rules);
 
         log.debug("decide: already blocked", {
           id: decision.id,
@@ -914,7 +1150,7 @@ export default function arcjet<
         return decision;
       }
 
-      for (const [idx, rule] of flatSortedRules.entries()) {
+      for (const [idx, rule] of rules.entries()) {
         // This re-assignment is a workaround to a TypeScript error with
         // assertions where the name was introduced via a destructure
         let localRule: ArcjetLocalRule;
@@ -968,7 +1204,7 @@ export default function arcjet<
           // Only a DENY decision is reported to avoid creating 2 entries for a
           // request. Upon ALLOW, the `decide` call will create an entry for the
           // request.
-          client.report(context, details, decision, flatSortedRules);
+          client.report(context, details, decision, rules);
 
           // If we're not in DRY_RUN mode, we want to cache non-zero TTL results
           // and return this DENY decision.
@@ -1001,7 +1237,7 @@ export default function arcjet<
       // fail open.
       try {
         log.time("decideApi");
-        const decision = await client.decide(context, details, flatSortedRules);
+        const decision = await client.decide(context, details, rules);
         log.timeEnd("decideApi");
 
         // If the decision is to block and we have a non-zero TTL, we cache the
@@ -1027,12 +1263,7 @@ export default function arcjet<
           results,
         });
 
-        client.report(
-          { key, fingerprint, log },
-          details,
-          decision,
-          flatSortedRules,
-        );
+        client.report({ key, fingerprint, log }, details, decision, rules);
 
         return decision;
       } finally {

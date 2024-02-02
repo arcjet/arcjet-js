@@ -287,6 +287,31 @@ export declare enum SDKStack {
 }
 
 /**
+ * @generated from enum proto.decide.v1alpha1.RateLimitAlgorithm
+ */
+export declare enum RateLimitAlgorithm {
+  /**
+   * @generated from enum value: RATE_LIMIT_ALGORITHM_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: RATE_LIMIT_ALGORITHM_TOKEN_BUCKET = 1;
+   */
+  TOKEN_BUCKET = 1,
+
+  /**
+   * @generated from enum value: RATE_LIMIT_ALGORITHM_FIXED_WINDOW = 2;
+   */
+  FIXED_WINDOW = 2,
+
+  /**
+   * @generated from enum value: RATE_LIMIT_ALGORITHM_SLIDING_WINDOW = 3;
+   */
+  SLIDING_WINDOW = 3,
+}
+
+/**
  * The reason for the decision. This is populated based on the selected rules
  * for deny or challenge responses. Additional details can be found in the
  * field and by logging into the Arcjet dashboard and searching for the
@@ -377,21 +402,23 @@ export declare class RateLimitReason extends Message<RateLimitReason> {
   /**
    * The configured maximum number of requests allowed in the current window.
    *
-   * @generated from field: int32 max = 1;
+   * @generated from field: uint32 max = 1;
    */
   max: number;
 
   /**
-   * The number of requests which have been made in the current window.
+   * Deprecated: Always empty. Previously, the number of requests which have
+   * been made in the current window.
    *
-   * @generated from field: int32 count = 2;
+   * @generated from field: int32 count = 2 [deprecated = true];
+   * @deprecated
    */
   count: number;
 
   /**
    * The number of requests remaining in the current window.
    *
-   * @generated from field: int32 remaining = 3;
+   * @generated from field: uint32 remaining = 3;
    */
   remaining: number;
 
@@ -646,10 +673,12 @@ export declare class RateLimitRule extends Message<RateLimitRule> {
   window: string;
 
   /**
-   * The maximum number of requests allowed in the time period. This is an
-   * integer value e.g. 100.
+   * The maximum number of requests allowed in the time period. This is a
+   * positive integer value e.g. 100.
    *
-   * @generated from field: int32 max = 5;
+   * Required by "fixed window", "sliding window", and unspecified algorithms.
+   *
+   * @generated from field: uint32 max = 5;
    */
   max: number;
 
@@ -665,6 +694,51 @@ export declare class RateLimitRule extends Message<RateLimitRule> {
    * @generated from field: string timeout = 6;
    */
   timeout: string;
+
+  /**
+   * The algorithm to use for rate limiting a request. If unspecified, we will
+   * fallback to the "fixed window" algorithm. The chosen algorithm will
+   * affect which other fields must be specified to be a valid configuration.
+   *
+   * @generated from field: proto.decide.v1alpha1.RateLimitAlgorithm algorithm = 7;
+   */
+  algorithm: RateLimitAlgorithm;
+
+  /**
+   * The amount of tokens that are refilled at the provided interval.
+   *
+   * Required by "token bucket" algorithm.
+   *
+   * @generated from field: uint32 refill_rate = 8;
+   */
+  refillRate: number;
+
+  /**
+   * The interval in which a rate limit is applied or tokens refilled.
+   *
+   * Required by "token bucket" and "sliding window" algorithms.
+   *
+   * @generated from field: uint32 interval = 9;
+   */
+  interval: number;
+
+  /**
+   * The maximum number of tokens that can exist in a token bucket.
+   *
+   * Required by "token bucket" algorithm.
+   *
+   * @generated from field: uint32 capacity = 10;
+   */
+  capacity: number;
+
+  /**
+   * The number of tokens to attempt to consume from a token bucket.
+   *
+   * Required by "token bucket" algorithm.
+   *
+   * @generated from field: uint32 requested = 11;
+   */
+  requested: number;
 
   constructor(data?: PartialMessage<RateLimitRule>);
 
@@ -946,6 +1020,21 @@ export declare class RequestDetails extends Message<RequestDetails> {
    * @generated from field: string email = 9;
    */
   email: string;
+
+  /**
+   * The string representing semicolon-separated Cookies for a request.
+   *
+   * @generated from field: string cookies = 10;
+   */
+  cookies: string;
+
+  /**
+   * The `?`-prefixed string representing the Query for a request. Commonly
+   * referred to as a "querystring".
+   *
+   * @generated from field: string query = 11;
+   */
+  query: string;
 
   constructor(data?: PartialMessage<RequestDetails>);
 

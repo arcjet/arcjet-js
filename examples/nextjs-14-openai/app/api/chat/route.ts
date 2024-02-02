@@ -1,5 +1,5 @@
 // This example is adapted from https://sdk.vercel.ai/docs/guides/frameworks/nextjs-app
-import arcjet, { rateLimit } from "@arcjet/next";
+import arcjet, { rateLimit, tokenBucket } from "@arcjet/next";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import OpenAI from "openai";
 import { promptTokensEstimate } from "openai-chat-tokens";
@@ -11,12 +11,12 @@ const aj = arcjet({
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
   key: process.env.AJ_KEY!,
   rules: [
-    rateLimit({
+    tokenBucket({
       mode: "LIVE",
       characteristics: ["ip.src"],
-      window: "1m",
-      max: 60,
-      timeout: "10m",
+      refillRate: 1,
+      interval: 60,
+      capacity: 1,
     }),
   ],
 });
@@ -29,12 +29,20 @@ const openai = new OpenAI({
 export const runtime = "edge";
 
 export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const estimate = promptTokensEstimate({
+    messages,
+  });
+
+  console.log("Token estimate", estimate);
+
   // Protect the route with Arcjet
-  const decision = await aj.protect(req);
+  const decision = await aj.protect(req, { requested: estimate });
   console.log("Arcjet decision", decision.conclusion);
 
   if (decision.reason.isRateLimit()) {
-    console.log("Request count", decision.reason.count);
+    // console.log("Request count", decision.reason.count);
     console.log("Requests remaining", decision.reason.remaining);
   }
 
@@ -52,14 +60,6 @@ export async function POST(req: Request) {
   }
 
   // If the request is allowed, continue to use OpenAI
-  const { messages } = await req.json();
-
-  const estimate = promptTokensEstimate({
-    messages,
-  });
-
-  console.log("Token estimate", estimate);
-
   // Ask OpenAI for a streaming chat completion given the prompt
   const response = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",

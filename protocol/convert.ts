@@ -23,6 +23,9 @@ import {
   ArcjetRateLimitRule,
   ArcjetBotRule,
   ArcjetEmailRule,
+  ArcjetTokenBucketRateLimitRule,
+  ArcjetFixedWindowRateLimitRule,
+  ArcjetSlidingWindowRateLimitRule,
 } from "./index";
 import {
   BotReason,
@@ -34,6 +37,7 @@ import {
   EmailType,
   ErrorReason,
   Mode,
+  RateLimitAlgorithm,
   RateLimitReason,
   Reason,
   Rule,
@@ -235,7 +239,7 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
       const reason = proto.reason.value;
       return new ArcjetRateLimitReason({
         max: reason.max,
-        count: reason.count,
+        // count: reason.count,
         remaining: reason.remaining,
         resetTime: reason.resetTime?.toDate(),
       });
@@ -289,7 +293,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         case: "rateLimit",
         value: new RateLimitReason({
           max: reason.max,
-          count: reason.count,
+          // count: reason.count,
           remaining: reason.remaining,
           resetTime: reason.resetTime
             ? Timestamp.fromDate(reason.resetTime)
@@ -462,6 +466,22 @@ function isRateLimitRule<Props extends {}>(
   return rule.type === "RATE_LIMIT";
 }
 
+function isTokenBucketRule<Props extends {}>(
+  rule: ArcjetRule<Props>,
+): rule is ArcjetTokenBucketRateLimitRule<Props> {
+  return isRateLimitRule(rule) && rule.algorithm === "TOKEN_BUCKET";
+}
+function isFixedWindowRule<Props extends {}>(
+  rule: ArcjetRule<Props>,
+): rule is ArcjetFixedWindowRateLimitRule<Props> {
+  return isRateLimitRule(rule) && rule.algorithm === "FIXED_WINDOW";
+}
+function isSlidingWindowRule<Props extends {}>(
+  rule: ArcjetRule<Props>,
+): rule is ArcjetSlidingWindowRateLimitRule<Props> {
+  return isRateLimitRule(rule) && rule.algorithm === "SLIDING_WINDOW";
+}
+
 function isBotRule<Props extends {}>(
   rule: ArcjetRule<Props>,
 ): rule is ArcjetBotRule<Props> {
@@ -477,7 +497,7 @@ function isEmailRule<Props extends { email: string }>(
 export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   rule: ArcjetRule<Props>,
 ): Rule {
-  if (isRateLimitRule(rule)) {
+  if (isTokenBucketRule(rule)) {
     return new Rule({
       rule: {
         case: "rateLimit",
@@ -485,9 +505,43 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
           mode: ArcjetModeToProtocol(rule.mode),
           match: rule.match,
           characteristics: rule.characteristics,
-          window: rule.window,
+          algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
+          refillRate: rule.refillRate,
+          interval: rule.interval,
+          capacity: rule.capacity,
+          requested: rule.requested,
+        },
+      },
+    });
+  }
+
+  if (isFixedWindowRule(rule)) {
+    return new Rule({
+      rule: {
+        case: "rateLimit",
+        value: {
+          mode: ArcjetModeToProtocol(rule.mode),
+          match: rule.match,
+          characteristics: rule.characteristics,
+          algorithm: RateLimitAlgorithm.FIXED_WINDOW,
           max: rule.max,
-          timeout: rule.timeout,
+          window: rule.window,
+        },
+      },
+    });
+  }
+
+  if (isSlidingWindowRule(rule)) {
+    return new Rule({
+      rule: {
+        case: "rateLimit",
+        value: {
+          mode: ArcjetModeToProtocol(rule.mode),
+          match: rule.match,
+          characteristics: rule.characteristics,
+          algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
+          max: rule.max,
+          interval: rule.interval,
         },
       },
     });

@@ -106,6 +106,19 @@ export const SDKStack = proto3.makeEnum(
 );
 
 /**
+ * @generated from enum proto.decide.v1alpha1.RateLimitAlgorithm
+ */
+export const RateLimitAlgorithm = proto3.makeEnum(
+  "proto.decide.v1alpha1.RateLimitAlgorithm",
+  [
+    {no: 0, name: "RATE_LIMIT_ALGORITHM_UNSPECIFIED", localName: "UNSPECIFIED"},
+    {no: 1, name: "RATE_LIMIT_ALGORITHM_TOKEN_BUCKET", localName: "TOKEN_BUCKET"},
+    {no: 2, name: "RATE_LIMIT_ALGORITHM_FIXED_WINDOW", localName: "FIXED_WINDOW"},
+    {no: 3, name: "RATE_LIMIT_ALGORITHM_SLIDING_WINDOW", localName: "SLIDING_WINDOW"},
+  ],
+);
+
+/**
  * The reason for the decision. This is populated based on the selected rules
  * for deny or challenge responses. Additional details can be found in the
  * field and by logging into the Arcjet dashboard and searching for the
@@ -133,9 +146,9 @@ export const Reason = proto3.makeMessageType(
 export const RateLimitReason = proto3.makeMessageType(
   "proto.decide.v1alpha1.RateLimitReason",
   () => [
-    { no: 1, name: "max", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 1, name: "max", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 2, name: "count", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 3, name: "remaining", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "remaining", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 4, name: "reset_time", kind: "message", T: Timestamp },
   ],
 );
@@ -217,8 +230,13 @@ export const RateLimitRule = proto3.makeMessageType(
     { no: 2, name: "match", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "characteristics", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 4, name: "window", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "max", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 5, name: "max", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 6, name: "timeout", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "algorithm", kind: "enum", T: proto3.getEnumType(RateLimitAlgorithm) },
+    { no: 8, name: "refill_rate", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 9, name: "interval", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 10, name: "capacity", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 11, name: "requested", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
   ],
 );
 
@@ -308,6 +326,8 @@ export const RequestDetails = proto3.makeMessageType(
     { no: 7, name: "body", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
     { no: 8, name: "extra", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
     { no: 9, name: "email", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "cookies", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "query", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ],
 );
 
