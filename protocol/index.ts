@@ -67,7 +67,7 @@ export const ArcjetRuleType: ArcjetEnum<ArcjetRuleType> = Object.freeze({
 });
 
 export class ArcjetReason {
-  type?: "RATE_LIMIT" | "BOT" | "EDGE_RULE" | "SUSPICIOUS" | "EMAIL" | "ERROR";
+  type?: "RATE_LIMIT" | "BOT" | "EDGE_RULE" | "SHIELD" | "EMAIL" | "ERROR";
 
   isRateLimit(): this is ArcjetRateLimitReason {
     return this.type === "RATE_LIMIT";
@@ -81,8 +81,8 @@ export class ArcjetReason {
     return this.type === "EDGE_RULE";
   }
 
-  isSuspicious(): this is ArcjetSuspiciousReason {
-    return this.type === "SUSPICIOUS";
+  isShield(): this is ArcjetShieldReason {
+    return this.type === "SHIELD";
   }
 
   isEmail(): this is ArcjetEmailReason {
@@ -156,15 +156,15 @@ export class ArcjetEdgeRuleReason extends ArcjetReason {
   type: "EDGE_RULE" = "EDGE_RULE";
 }
 
-export class ArcjetSuspiciousReason extends ArcjetReason {
-  type: "SUSPICIOUS" = "SUSPICIOUS";
+export class ArcjetShieldReason extends ArcjetReason {
+  type: "SHIELD" = "SHIELD";
 
-  wafTriggered: boolean;
+  shieldTriggered: boolean;
 
-  constructor(init: { wafTriggered?: boolean }) {
+  constructor(init: { shieldTriggered?: boolean }) {
     super();
 
-    this.wafTriggered = init.wafTriggered ?? false;
+    this.shieldTriggered = init.shieldTriggered ?? false;
   }
 }
 
@@ -256,7 +256,7 @@ export class ArcjetRuleResult {
  * one of `"ALLOW"`, `"DENY"`, `"CHALLENGE"`, or `"ERROR"`.
  * @property `reason` - A structured data type about the reason for the
  * decision. One of: {@link ArcjetRateLimitReason}, {@link ArcjetEdgeRuleReason},
- * {@link ArcjetBotReason}, {@link ArcjetSuspiciousReason},
+ * {@link ArcjetBotReason}, {@link ArcjetShieldReason},
  * {@link ArcjetEmailReason}, or {@link ArcjetErrorReason}.
  * @property `ttl` - The duration in milliseconds this decision should be
  * considered valid, also known as time-to-live.
