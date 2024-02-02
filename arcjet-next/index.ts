@@ -11,8 +11,6 @@ import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
 import arcjet, {
   ArcjetDecision,
   ArcjetOptions,
-  Primitive,
-  Product,
   ArcjetHeaders,
   Runtime,
   ArcjetRequest,
@@ -21,6 +19,8 @@ import arcjet, {
   RemoteClientOptions,
   defaultBaseUrl,
   createRemoteClient,
+  ArcjetPrimitive,
+  ArcjetProduct,
 } from "arcjet";
 import findIP from "@arcjet/ip";
 
@@ -63,6 +63,14 @@ type WithoutCustomProps = {
 type PlainObject = {
   [key: string]: unknown;
 };
+
+// Primitives and Products can be specified in a variety of ways and are
+// externally grouped as `rules`
+// See ExtraRules below for further explanation on why we define them like this.
+type PrimitivesOrProduct<Props extends {} = {}> =
+  | ArcjetPrimitive<Props>
+  | ArcjetPrimitive<Props>[]
+  | ArcjetProduct<Props>;
 
 /**
  * Ensures redirects are followed to properly support the Next.js/Vercel Edge
@@ -157,7 +165,7 @@ export interface ArcjetNext<Props extends PlainObject> {
  * These can be overriden on a per-request basis by providing them to the
  * `protect()` or `protectApi` methods.
  */
-export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
+export default function arcjetNext<const Rules extends PrimitivesOrProduct[]>(
   options: ArcjetOptions<Rules>,
 ): ArcjetNext<Simplify<ExtraProps<Rules>>> {
   const client = options.client ?? createNextRemoteClient();
