@@ -212,9 +212,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const router = {
@@ -238,7 +236,15 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledTimes(1);
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
-        details: { ...details, headers: { "user-agent": "curl/8.1.2" } },
+        details: {
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
+          headers: { "user-agent": "curl/8.1.2" },
+        },
         fingerprint,
         rules: [],
         sdkStack: SDKStack.SDK_STACK_NEXTJS,
@@ -264,9 +270,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const router = {
@@ -291,7 +295,15 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledTimes(1);
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
-        details: { ...details, headers: { "user-agent": "curl/8.1.2" } },
+        details: {
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
+          headers: { "user-agent": "curl/8.1.2" },
+        },
         fingerprint,
         rules: [],
         sdkStack: SDKStack.SDK_STACK_UNSPECIFIED,
@@ -317,9 +329,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const router = {
@@ -342,7 +352,15 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledTimes(1);
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
-        details: { ...details, headers: { "user-agent": "curl/8.1.2" } },
+        details: {
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
+          headers: { "user-agent": "curl/8.1.2" },
+        },
         fingerprint,
         rules: [],
         sdkStack: SDKStack.SDK_STACK_NODEJS,
@@ -368,9 +386,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
       email: "abc@example.com",
     };
 
@@ -394,7 +410,16 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledTimes(1);
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
-        details: { ...details, headers: { "user-agent": "curl/8.1.2" } },
+        details: {
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
+          headers: { "user-agent": "curl/8.1.2" },
+          email: details.email,
+        },
         fingerprint,
         rules: [],
         sdkStack: SDKStack.SDK_STACK_NODEJS,
@@ -420,9 +445,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
       email: "abc@example.com",
     };
 
@@ -451,7 +474,16 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledTimes(1);
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
-        details: { ...details, headers: { "user-agent": "curl/8.1.2" } },
+        details: {
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
+          headers: { "user-agent": "curl/8.1.2" },
+          email: details.email,
+        },
         fingerprint,
         rules: [new Rule()],
         sdkStack: SDKStack.SDK_STACK_NODEJS,
@@ -477,9 +509,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const router = {
@@ -519,9 +549,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const router = {
@@ -560,9 +588,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const router = {
@@ -601,9 +627,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const router = {
@@ -645,9 +669,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const router = {
@@ -695,9 +717,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const router = {
@@ -738,11 +758,8 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
       email: "test@example.com",
-      receivedAt,
     };
 
     const [promise, resolve] = deferred();
@@ -775,8 +792,14 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ...details,
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
           headers: { "user-agent": "curl/8.1.2" },
+          email: details.email,
         },
         decision: {
           id: decision.id,
@@ -807,10 +830,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-      receivedAt,
+      "extra-test": "extra-test-value",
     };
 
     const [promise, resolve] = deferred();
@@ -843,7 +863,12 @@ describe("createRemoteClient", () => {
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
         details: {
-          ...details,
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
           headers: { "user-agent": "curl/8.1.2" },
         },
         decision: {
@@ -875,10 +900,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-      receivedAt,
+      "extra-test": "extra-test-value",
     };
 
     const [promise, resolve] = deferred();
@@ -911,7 +933,12 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ...details,
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
           headers: { "user-agent": "curl/8.1.2" },
         },
         decision: {
@@ -950,10 +977,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-      receivedAt,
+      "extra-test": "extra-test-value",
     };
 
     const [promise, resolve] = deferred();
@@ -986,7 +1010,12 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ...details,
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
           headers: { "user-agent": "curl/8.1.2" },
         },
         decision: {
@@ -1018,9 +1047,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const [promise, resolve] = deferred();
@@ -1049,7 +1076,12 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ...details,
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
           headers: { "user-agent": "curl/8.1.2" },
         },
         decision: {
@@ -1081,9 +1113,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
       email: "abc@example.com",
     };
 
@@ -1130,8 +1160,14 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ...details,
+          ip: details.ip,
+          method: details.method,
+          protocol: details.protocol,
+          host: details.host,
+          path: details.path,
+          extra: { "extra-test": details["extra-test"] },
           headers: { "user-agent": "curl/8.1.2" },
+          email: details.email,
         },
         decision: {
           id: decision.id,
@@ -1169,9 +1205,7 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const [promise, resolve] = deferred();
@@ -1583,9 +1617,7 @@ describe("Primitives > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const [rule] = detectBot(options);
@@ -1635,9 +1667,7 @@ describe("Primitives > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const [rule] = detectBot(options);
@@ -1687,9 +1717,7 @@ describe("Primitives > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const [rule] = detectBot(options);
@@ -1726,9 +1754,7 @@ describe("Primitives > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const [rule] = detectBot({
@@ -1782,9 +1808,7 @@ describe("Primitives > detectBot", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const [rule] = detectBot(options);
@@ -1833,9 +1857,7 @@ describe("Primitives > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const [rule] = detectBot(options);
@@ -1873,9 +1895,7 @@ describe("Primitives > detectBot", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const [rule] = detectBot(options);
@@ -2663,9 +2683,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
     const allowed = testRuleLocalAllowed();
     const denied = testRuleLocalDenied();
@@ -2781,9 +2799,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
     const allowed = testRuleLocalAllowed();
     const denied = testRuleLocalDenied();
@@ -2828,9 +2844,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
     const allowed = testRuleLocalAllowed();
 
@@ -2871,9 +2885,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
     const rule = testRuleLocalAllowed();
 
@@ -2917,9 +2929,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
     const rule = testRuleLocalDenied();
 
@@ -2961,9 +2971,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
     const denied = testRuleLocalDenied();
 
@@ -3002,9 +3010,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const aj = arcjet({
@@ -3044,9 +3050,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const aj = arcjet({
@@ -3119,9 +3123,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const aj = arcjet({
@@ -3157,9 +3159,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     let errorLogSpy;
@@ -3213,9 +3213,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     let errorLogSpy;
@@ -3269,9 +3267,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const aj = arcjet({
@@ -3320,9 +3316,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const rule = testRuleRemote();
@@ -3366,9 +3360,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
+      "extra-test": "extra-test-value",
     };
 
     const aj = arcjet({
@@ -3449,9 +3441,6 @@ describe("Arcjet: Env = Serverless Node runtime on Vercel", () => {
     const protocol = "http";
     const host = "example.com";
     const path = "/";
-    const extra: { [key: string]: string } = {
-      "extra-test": "extra-test-value",
-    };
     const headers = new Headers();
     headers.append("User-Agent", "Mozilla/5.0");
 
@@ -3467,7 +3456,7 @@ describe("Arcjet: Env = Serverless Node runtime on Vercel", () => {
       host,
       path,
       headers,
-      extra,
+      "extra-test": "extra-test-value",
     });
 
     // If this fails, check the console an error related to the args passed to

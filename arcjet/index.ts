@@ -197,6 +197,49 @@ export function defaultBaseUrl() {
   }
 }
 
+const knownFields = [
+  "ip",
+  "method",
+  "protocol",
+  "host",
+  "path",
+  "headers",
+  "body",
+  "email",
+  "cookies",
+  "query",
+];
+
+function isUnknownRequestProperty(key: string) {
+  return !knownFields.includes(key);
+}
+
+function toString(value: unknown) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return `${value}`;
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+
+  return "<unsupported type>";
+}
+
+function extraProps(details: ArcjetRequestDetails): Record<string, string> {
+  const extra: Map<string, string> = new Map();
+  for (const [key, value] of Object.entries(details)) {
+    if (isUnknownRequestProperty(key)) {
+      extra.set(key, toString(value));
+    }
+  }
+  return Object.fromEntries(extra.entries());
+}
+
 export function createRemoteClient(
   options?: RemoteClientOptions,
 ): RemoteClient {
@@ -240,7 +283,7 @@ export function createRemoteClient(
           headers: Object.fromEntries(details.headers.entries()),
           // TODO(#208): Re-add body
           // body: details.body,
-          extra: details.extra,
+          extra: extraProps(details),
           email: typeof details.email === "string" ? details.email : undefined,
         },
         rules: rules.map(ArcjetRuleToProtocol),
@@ -289,7 +332,7 @@ export function createRemoteClient(
           headers: Object.fromEntries(details.headers.entries()),
           // TODO(#208): Re-add body
           // body: details.body,
-          extra: details.extra,
+          extra: extraProps(details),
           email: typeof details.email === "string" ? details.email : undefined,
         },
         decision: ArcjetDecisionToProtocol(decision),
@@ -482,6 +525,12 @@ const Priority = {
 
 type PlainObject = { [key: string]: unknown };
 
+// Primitives and Products external names for Rules even though they are defined
+// the same.
+// See ExtraProps below for further explanation on why we define them like this.
+export type Primitive<Props extends PlainObject = {}> = ArcjetRule<Props>[];
+export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
+
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 // We theoretically support an arbitrary amount of rule flattening,
 // but one level seems to be easiest; however, this puts a constraint of
@@ -495,14 +544,21 @@ export type ExtraProps<Rules> = Rules extends []
       ? UnionToIntersection<PropsForRule<Rules[number]>>
       : never;
 
+/**
+ * @property {string} ip - The IP address of the client.
+ * @property {string} method - The HTTP method of the request.
+ * @property {string} protocol - The protocol of the request.
+ * @property {string} host - The host of the request.
+ * @property {string} path - The path of the request.
+ * @property {Headers} headers - The headers of the request.
+ * @property {string} cookies - The string representing semicolon-separated Cookies for a request.
+ * @property {string} query - The `?`-prefixed string representing the Query for a request. Commonly referred to as a "querystring".
+ * @property {string} email - An email address related to the request.
+ * @property ...extra - Extra data that might be useful for Arcjet. For example, requested tokens are specified as the `requested` property.
+ */
 export type ArcjetRequest<Props extends PlainObject> = Simplify<
   Partial<ArcjetRequestDetails & Props>
 >;
-
-// Primitives and Products are the external names for Rules even though they are defined the same
-// See ArcjetRequest above for the explanation on why we define them like this.
-export type Primitive<Props extends PlainObject = {}> = ArcjetRule<Props>[];
-export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 
 function isLocalRule<Props extends PlainObject>(
   rule: ArcjetRule<Props>,
@@ -770,15 +826,7 @@ export interface Arcjet<Props extends PlainObject> {
    * Make a decision about how to handle a request. This will analyze the
    * request locally where possible and call the Arcjet decision API.
    *
-   * @param {ArcjetRequest} request - The details about the request that Arcjet needs to make a decision.
-   * @param {string} request.ip - The IP address of the client.
-   * @param {string} request.method - The HTTP method of the request.
-   * @param {string} request.protocol - The protocol of the request.
-   * @param {string} request.host - The host of the request.
-   * @param {string} request.path - The path of the request.
-   * @param {Headers} request.headers - The headers of the request.
-   * @param request.extra - Extra data to send to the Arcjet API.
-   *
+   * @param {ArcjetRequest} request - Details about the {@link ArcjetRequest} that Arcjet needs to make a decision.
    * @returns An {@link ArcjetDecision} indicating Arcjet's decision about the request.
    */
   protect(request: ArcjetRequest<Props>): Promise<ArcjetDecision>;
