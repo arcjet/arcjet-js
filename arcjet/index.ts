@@ -496,7 +496,7 @@ export type ExtraProps<Rules> = Rules extends []
       : never;
 
 export type ArcjetRequest<Props extends PlainObject> = Simplify<
-  Partial<ArcjetRequestDetails & Props>
+  Partial<ArcjetRequestDetails> & Props
 >;
 
 // Primitives and Products are the external names for Rules even though they are defined the same
