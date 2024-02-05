@@ -404,7 +404,6 @@ export interface ArcjetRateLimitRule<Props extends {}>
   characteristics?: string[];
   window: string;
   max: number;
-  timeout: string;
 }
 
 export interface ArcjetEmailRule<Props extends { email: string }>

@@ -487,7 +487,6 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
           characteristics: rule.characteristics,
           window: rule.window,
           max: rule.max,
-          timeout: rule.timeout,
         },
       },
     });
