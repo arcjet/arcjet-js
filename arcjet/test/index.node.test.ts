@@ -1948,6 +1948,36 @@ describe("Primitive > tokenBucket", () => {
     expect(rule).toHaveProperty("mode", "LIVE");
   });
 
+  test("can specify interval as a string duration", async () => {
+    const options = {
+      refillRate: 60,
+      interval: "60s",
+      capacity: 120,
+    };
+
+    const rules = tokenBucket(options);
+    expect(rules).toHaveLength(1);
+    expect(rules[0].type).toEqual("RATE_LIMIT");
+    expect(rules[0]).toHaveProperty("refillRate", 60);
+    expect(rules[0]).toHaveProperty("interval", 60);
+    expect(rules[0]).toHaveProperty("capacity", 120);
+  });
+
+  test("can specify interval as an integer duration", async () => {
+    const options = {
+      refillRate: 60,
+      interval: 60,
+      capacity: 120,
+    };
+
+    const rules = tokenBucket(options);
+    expect(rules).toHaveLength(1);
+    expect(rules[0].type).toEqual("RATE_LIMIT");
+    expect(rules[0]).toHaveProperty("refillRate", 60);
+    expect(rules[0]).toHaveProperty("interval", 60);
+    expect(rules[0]).toHaveProperty("capacity", 120);
+  });
+
   test("produces a rules based on single `limit` specified", async () => {
     const options = {
       match: "/test",
@@ -2096,6 +2126,32 @@ describe("Primitive > fixedWindow", () => {
     expect(rule).toHaveProperty("mode", "LIVE");
   });
 
+  test("can specify window as a string duration", async () => {
+    const options = {
+      window: "60s",
+      max: 1,
+    };
+
+    const rules = fixedWindow(options);
+    expect(rules).toHaveLength(1);
+    expect(rules[0].type).toEqual("RATE_LIMIT");
+    expect(rules[0]).toHaveProperty("window", 60);
+    expect(rules[0]).toHaveProperty("max", 1);
+  });
+
+  test("can specify window as an integer duration", async () => {
+    const options = {
+      window: 60,
+      max: 1,
+    };
+
+    const rules = fixedWindow(options);
+    expect(rules).toHaveLength(1);
+    expect(rules[0].type).toEqual("RATE_LIMIT");
+    expect(rules[0]).toHaveProperty("window", 60);
+    expect(rules[0]).toHaveProperty("max", 1);
+  });
+
   test("produces a rules based on single `limit` specified", async () => {
     const options = {
       match: "/test",
@@ -2111,7 +2167,7 @@ describe("Primitive > fixedWindow", () => {
     expect(rules[0]).toHaveProperty("match", "/test");
     expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
     expect(rules[0]).toHaveProperty("algorithm", "FIXED_WINDOW");
-    expect(rules[0]).toHaveProperty("window", "1h");
+    expect(rules[0]).toHaveProperty("window", 3600);
     expect(rules[0]).toHaveProperty("max", 1);
   });
 
@@ -2140,7 +2196,7 @@ describe("Primitive > fixedWindow", () => {
         match: "/test",
         characteristics: ["ip.src"],
         algorithm: "FIXED_WINDOW",
-        window: "1h",
+        window: 3600,
         max: 1,
       }),
       expect.objectContaining({
@@ -2149,7 +2205,7 @@ describe("Primitive > fixedWindow", () => {
         match: "/test-double",
         characteristics: ["ip.src"],
         algorithm: "FIXED_WINDOW",
-        window: "2h",
+        window: 7200,
         max: 2,
       }),
     ]);
@@ -2187,7 +2243,7 @@ describe("Primitive > fixedWindow", () => {
         match: undefined,
         characteristics: undefined,
         algorithm: "FIXED_WINDOW",
-        window: "1h",
+        window: 3600,
         max: 1,
       }),
       expect.objectContaining({
@@ -2196,7 +2252,7 @@ describe("Primitive > fixedWindow", () => {
         match: undefined,
         characteristics: undefined,
         algorithm: "FIXED_WINDOW",
-        window: "2h",
+        window: 7200,
         max: 2,
       }),
     ]);
@@ -2232,6 +2288,32 @@ describe("Primitive > slidingWindow", () => {
     });
     expect(rule.type).toEqual("RATE_LIMIT");
     expect(rule).toHaveProperty("mode", "LIVE");
+  });
+
+  test("can specify interval as a string duration", async () => {
+    const options = {
+      interval: "60s",
+      max: 1,
+    };
+
+    const rules = slidingWindow(options);
+    expect(rules).toHaveLength(1);
+    expect(rules[0].type).toEqual("RATE_LIMIT");
+    expect(rules[0]).toHaveProperty("interval", 60);
+    expect(rules[0]).toHaveProperty("max", 1);
+  });
+
+  test("can specify interval as an integer duration", async () => {
+    const options = {
+      interval: 60,
+      max: 1,
+    };
+
+    const rules = slidingWindow(options);
+    expect(rules).toHaveLength(1);
+    expect(rules[0].type).toEqual("RATE_LIMIT");
+    expect(rules[0]).toHaveProperty("interval", 60);
+    expect(rules[0]).toHaveProperty("max", 1);
   });
 
   test("produces a rules based on single `limit` specified", async () => {
@@ -2390,7 +2472,7 @@ describe("Primitive > rateLimit", () => {
     expect(rules[0]).toHaveProperty("match", "/test");
     expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
     expect(rules[0]).toHaveProperty("algorithm", "FIXED_WINDOW");
-    expect(rules[0]).toHaveProperty("window", "1h");
+    expect(rules[0]).toHaveProperty("window", 3600);
     expect(rules[0]).toHaveProperty("max", 1);
   });
 
@@ -2419,7 +2501,7 @@ describe("Primitive > rateLimit", () => {
         match: "/test",
         characteristics: ["ip.src"],
         algorithm: "FIXED_WINDOW",
-        window: "1h",
+        window: 3600,
         max: 1,
       }),
       expect.objectContaining({
@@ -2428,7 +2510,7 @@ describe("Primitive > rateLimit", () => {
         match: "/test-double",
         characteristics: ["ip.src"],
         algorithm: "FIXED_WINDOW",
-        window: "2h",
+        window: 7200,
         max: 2,
       }),
     ]);
@@ -2466,7 +2548,7 @@ describe("Primitive > rateLimit", () => {
         match: undefined,
         characteristics: undefined,
         algorithm: "FIXED_WINDOW",
-        window: "1h",
+        window: 3600,
         max: 1,
       }),
       expect.objectContaining({
@@ -2475,7 +2557,7 @@ describe("Primitive > rateLimit", () => {
         match: undefined,
         characteristics: undefined,
         algorithm: "FIXED_WINDOW",
-        window: "2h",
+        window: 7200,
         max: 2,
       }),
     ]);
