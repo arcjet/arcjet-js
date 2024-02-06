@@ -16,7 +16,6 @@ const aj = arcjet({
       characteristics: ["ip.src"],
       window: "1m",
       max: 60,
-      timeout: "10m",
     }),
   ],
 });

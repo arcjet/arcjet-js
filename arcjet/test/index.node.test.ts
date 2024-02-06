@@ -1926,7 +1926,6 @@ describe("Primitive > rateLimit", () => {
       characteristics: ["ip.src"],
       window: "1h",
       max: 1,
-      timeout: "10m",
     });
     expect(rule.type).toEqual("RATE_LIMIT");
     expect(rule).toHaveProperty("mode", "DRY_RUN");
@@ -1938,7 +1937,6 @@ describe("Primitive > rateLimit", () => {
       characteristics: ["ip.src"],
       window: "1h",
       max: 1,
-      timeout: "10m",
     };
 
     const rules = rateLimit(options);
@@ -1949,7 +1947,6 @@ describe("Primitive > rateLimit", () => {
     expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
     expect(rules[0]).toHaveProperty("window", "1h");
     expect(rules[0]).toHaveProperty("max", 1);
-    expect(rules[0]).toHaveProperty("timeout", "10m");
   });
 
   test("produces a multiple rules based on multiple `limit` specified", async () => {
@@ -1959,14 +1956,12 @@ describe("Primitive > rateLimit", () => {
         characteristics: ["ip.src"],
         window: "1h",
         max: 1,
-        timeout: "10m",
       },
       {
         match: "/test-double",
         characteristics: ["ip.src"],
         window: "2h",
         max: 2,
-        timeout: "20m",
       },
     ];
 
@@ -1980,7 +1975,6 @@ describe("Primitive > rateLimit", () => {
         characteristics: ["ip.src"],
         window: "1h",
         max: 1,
-        timeout: "10m",
       }),
       expect.objectContaining({
         type: "RATE_LIMIT",
@@ -1989,7 +1983,6 @@ describe("Primitive > rateLimit", () => {
         characteristics: ["ip.src"],
         window: "2h",
         max: 2,
-        timeout: "20m",
       }),
     ]);
   });
@@ -1998,7 +1991,6 @@ describe("Primitive > rateLimit", () => {
     const options = {
       window: "1h",
       max: 1,
-      timeout: "10m",
     };
 
     const [rule] = rateLimit(options);
@@ -2012,12 +2004,10 @@ describe("Primitive > rateLimit", () => {
       {
         window: "1h",
         max: 1,
-        timeout: "10m",
       },
       {
         window: "2h",
         max: 2,
-        timeout: "20m",
       },
     ];
 
@@ -2030,7 +2020,6 @@ describe("Primitive > rateLimit", () => {
         characteristics: undefined,
         window: "1h",
         max: 1,
-        timeout: "10m",
       }),
       expect.objectContaining({
         type: "RATE_LIMIT",
@@ -2039,7 +2028,6 @@ describe("Primitive > rateLimit", () => {
         characteristics: undefined,
         window: "2h",
         max: 2,
-        timeout: "20m",
       }),
     ]);
   });
@@ -2379,7 +2367,6 @@ describe("Products > protectSignup", () => {
         characteristics: ["ip.src"],
         window: "1h",
         max: 1,
-        timeout: "10m",
       },
       bots: {
         mode: ArcjetMode.DRY_RUN,
@@ -2400,14 +2387,12 @@ describe("Products > protectSignup", () => {
           characteristics: ["ip.src"],
           window: "1h",
           max: 1,
-          timeout: "10m",
         },
         {
           match: "/test",
           characteristics: ["ip.src"],
           window: "2h",
           max: 2,
-          timeout: "20m",
         },
       ],
     });
@@ -3431,7 +3416,6 @@ describe("Arcjet: Env = Serverless Node runtime on Vercel", () => {
       characteristics: ["ip.src"],
       window: "1h",
       max: 1,
-      timeout: "10m",
     };
     const fingerprint =
       "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";

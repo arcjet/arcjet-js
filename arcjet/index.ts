@@ -420,7 +420,6 @@ export type RateLimitOptions = {
   characteristics?: string[];
   window: string;
   max: number;
-  timeout: string;
 };
 
 /**
@@ -595,7 +594,6 @@ export function rateLimit(
       characteristics: opt.characteristics,
       window: opt.window,
       max: opt.max,
-      timeout: opt.timeout,
     });
   }
 
