@@ -41,6 +41,10 @@
       "component": "@arcjet/next",
       "skip-github-release": true
     },
+    "duration": {
+      "component": "@arcjet/duration",
+      "skip-github-release": true
+    },
     "eslint-config": {
       "component": "@arcjet/eslint-config",
       "skip-github-release": true
@@ -79,6 +83,7 @@
         "@arcjet/analyze",
         "arcjet",
         "@arjcet/next",
+        "@arjcet/duration",
         "@arcjet/eslint-config",
         "@arcjet/ip",
         "@arcjet/logger",
