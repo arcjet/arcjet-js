@@ -1,5 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import arcjet, { rateLimit, withArcjet } from "@arcjet/next";
+import arcjet, { fixedWindow, withArcjet } from "@arcjet/next";
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
@@ -12,7 +12,7 @@ const aj = arcjet({
   // See: https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables
   key: process.env.AJ_KEY!,
   rules: [
-    rateLimit({
+    fixedWindow({
       mode: "LIVE",
       // Limiting by ip.src is the default if not specified
       //characteristics: ["ip.src"],

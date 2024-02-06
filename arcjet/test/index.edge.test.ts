@@ -5,6 +5,7 @@ import { describe, expect, test, jest } from "@jest/globals";
 
 import arcjet, {
   rateLimit,
+  tokenBucket,
   protectSignup,
   Primitive,
   ArcjetReason,
@@ -35,7 +36,15 @@ describe("Arcjet: Env = Edge runtime", () => {
       rules: [
         // Test rules
         foobarbaz(),
-        rateLimit(),
+        tokenBucket({
+          refillRate: 1,
+          interval: 1,
+          capacity: 1,
+        }),
+        rateLimit({
+          max: 1,
+          window: "60s",
+        }),
         protectSignup(),
       ],
       client,
@@ -43,6 +52,7 @@ describe("Arcjet: Env = Edge runtime", () => {
 
     const decision = await aj.protect({
       abc: 123,
+      requested: 1,
       email: "",
       ip: "",
       method: "",

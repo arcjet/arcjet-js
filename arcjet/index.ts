@@ -13,11 +13,13 @@ import {
   ArcjetDecision,
   ArcjetDenyDecision,
   ArcjetErrorDecision,
-  ArcjetRateLimitRule,
   ArcjetBotRule,
   ArcjetRule,
   ArcjetLocalRule,
   ArcjetRequestDetails,
+  ArcjetTokenBucketRateLimitRule,
+  ArcjetFixedWindowRateLimitRule,
+  ArcjetSlidingWindowRateLimitRule,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
@@ -414,11 +416,28 @@ function runtime(): Runtime {
   }
 }
 
-export type RateLimitOptions = {
+type TokenBucketRateLimitOptions = {
+  mode?: ArcjetMode;
+  match?: string;
+  characteristics?: string[];
+  refillRate: number;
+  interval: number;
+  capacity: number;
+};
+
+type FixedWindowRateLimitOptions = {
   mode?: ArcjetMode;
   match?: string;
   characteristics?: string[];
   window: string;
+  max: number;
+};
+
+type SlidingWindowRateLimitOptions = {
+  mode?: ArcjetMode;
+  match?: string;
+  characteristics?: string[];
+  interval: number;
   max: number;
 };
 
@@ -570,14 +589,11 @@ function isLocalRule<Props extends PlainObject>(
   );
 }
 
-export function rateLimit(
-  options?: RateLimitOptions,
-  ...additionalOptions: RateLimitOptions[]
-): Primitive {
-  // TODO(#195): We should also have a local rate limit using an in-memory data
-  // structure if the environment supports it
-
-  const rules: ArcjetRateLimitRule<{}>[] = [];
+export function tokenBucket(
+  options?: TokenBucketRateLimitOptions,
+  ...additionalOptions: TokenBucketRateLimitOptions[]
+): Primitive<{ requested: number }> {
+  const rules: ArcjetTokenBucketRateLimitRule<{ requested: number }>[] = [];
 
   if (typeof options === "undefined") {
     return rules;
@@ -585,15 +601,100 @@ export function rateLimit(
 
   for (const opt of [options, ...additionalOptions]) {
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    const match = opt.match;
+    const characteristics = opt.characteristics;
+
+    const refillRate = opt.refillRate;
+    const interval = opt.interval;
+    const capacity = opt.capacity;
 
     rules.push({
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
-      match: opt.match,
-      characteristics: opt.characteristics,
-      window: opt.window,
-      max: opt.max,
+      match,
+      characteristics,
+      algorithm: "TOKEN_BUCKET",
+      refillRate,
+      interval,
+      capacity,
+    });
+  }
+
+  return rules;
+}
+
+export function fixedWindow(
+  options?: FixedWindowRateLimitOptions,
+  ...additionalOptions: FixedWindowRateLimitOptions[]
+): Primitive {
+  const rules: ArcjetFixedWindowRateLimitRule<{}>[] = [];
+
+  if (typeof options === "undefined") {
+    return rules;
+  }
+
+  for (const opt of [options, ...additionalOptions]) {
+    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    const match = opt.match;
+    const characteristics = opt.characteristics;
+
+    const max = opt.max;
+    const window = opt.window;
+
+    rules.push({
+      type: "RATE_LIMIT",
+      priority: Priority.RateLimit,
+      mode,
+      match,
+      characteristics,
+      algorithm: "FIXED_WINDOW",
+      max,
+      window,
+    });
+  }
+
+  return rules;
+}
+
+// This is currently kept for backwards compatibility but should be removed in
+// favor of the fixedWindow primitive.
+export function rateLimit(
+  options?: FixedWindowRateLimitOptions,
+  ...additionalOptions: FixedWindowRateLimitOptions[]
+): Primitive {
+  // TODO(#195): We should also have a local rate limit using an in-memory data
+  // structure if the environment supports it
+  return fixedWindow(options, ...additionalOptions);
+}
+
+export function slidingWindow(
+  options?: SlidingWindowRateLimitOptions,
+  ...additionalOptions: SlidingWindowRateLimitOptions[]
+): Primitive {
+  const rules: ArcjetSlidingWindowRateLimitRule<{}>[] = [];
+
+  if (typeof options === "undefined") {
+    return rules;
+  }
+
+  for (const opt of [options, ...additionalOptions]) {
+    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    const match = opt.match;
+    const characteristics = opt.characteristics;
+
+    const max = opt.max;
+    const interval = opt.interval;
+
+    rules.push({
+      type: "RATE_LIMIT",
+      priority: Priority.RateLimit,
+      mode,
+      match,
+      characteristics,
+      algorithm: "SLIDING_WINDOW",
+      max,
+      interval,
     });
   }
 
@@ -674,7 +775,7 @@ export function detectBot(
   // Always create at least one BOT rule
   for (const opt of [options ?? {}, ...additionalOptions]) {
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    // TODO: Filter invalid email types (or error??)
+    // TODO: Filter invalid bot types (or error??)
     const block = Array.isArray(opt.block)
       ? opt.block
       : [ArcjetBotType.AUTOMATED];
@@ -766,7 +867,7 @@ export function detectBot(
 }
 
 export type ProtectSignupOptions = {
-  rateLimit?: RateLimitOptions | RateLimitOptions[];
+  rateLimit?: SlidingWindowRateLimitOptions | SlidingWindowRateLimitOptions[];
   bots?: BotOptions | BotOptions[];
   email?: EmailOptions | EmailOptions[];
 };
@@ -776,9 +877,9 @@ export function protectSignup(
 ): Product<{ email: string }> {
   let rateLimitRules: Primitive<{}> = [];
   if (Array.isArray(options?.rateLimit)) {
-    rateLimitRules = rateLimit(...options.rateLimit);
+    rateLimitRules = slidingWindow(...options.rateLimit);
   } else {
-    rateLimitRules = rateLimit(options?.rateLimit);
+    rateLimitRules = slidingWindow(options?.rateLimit);
   }
 
   let botRules: Primitive<{}> = [];
@@ -788,7 +889,7 @@ export function protectSignup(
     botRules = detectBot(options?.bots);
   }
 
-  let emailRules: Primitive<{}> = [];
+  let emailRules: Primitive<{ email: string }> = [];
   if (Array.isArray(options?.email)) {
     emailRules = validateEmail(...options.email);
   } else {

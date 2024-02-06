@@ -10,6 +10,17 @@ export const ArcjetMode: ArcjetEnum<ArcjetMode> = Object.freeze({
   DRY_RUN: "DRY_RUN",
 });
 
+export type ArcjetRateLimitAlgorithm =
+  | "TOKEN_BUCKET"
+  | "FIXED_WINDOW"
+  | "SLIDING_WINDOW";
+export const ArcjetRateLimitAlgorithm: ArcjetEnum<ArcjetRateLimitAlgorithm> =
+  Object.freeze({
+    TOKEN_BUCKET: "TOKEN_BUCKET",
+    FIXED_WINDOW: "FIXED_WINDOW",
+    SLIDING_WINDOW: "SLIDING_WINDOW",
+  });
+
 export type ArcjetBotType =
   | "NOT_ANALYZED"
   | "AUTOMATED"
@@ -376,6 +387,9 @@ export type ArcjetRule<Props extends {} = {}> = {
   priority: number;
 };
 
+// An ArcjetLocalRule provides additional `validate` and `protect` functions
+// which are used to provide local protections before requesting protections
+// from the Arcjet service.
 export interface ArcjetLocalRule<Props extends { [key: string]: unknown } = {}>
   extends ArcjetRule<Props> {
   validate(
@@ -391,11 +405,38 @@ export interface ArcjetLocalRule<Props extends { [key: string]: unknown } = {}>
 export interface ArcjetRateLimitRule<Props extends {}>
   extends ArcjetRule<Props> {
   type: "RATE_LIMIT";
+  algorithm: ArcjetRateLimitAlgorithm;
+}
+
+export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
+  extends ArcjetRateLimitRule<Props> {
+  algorithm: "TOKEN_BUCKET";
 
   match?: string;
   characteristics?: string[];
-  window: string;
+  refillRate: number;
+  interval: number;
+  capacity: number;
+}
+
+export interface ArcjetFixedWindowRateLimitRule<Props extends {}>
+  extends ArcjetRateLimitRule<Props> {
+  algorithm: "FIXED_WINDOW";
+
+  match?: string;
+  characteristics?: string[];
   max: number;
+  window: string;
+}
+
+export interface ArcjetSlidingWindowRateLimitRule<Props extends {}>
+  extends ArcjetRateLimitRule<Props> {
+  algorithm: "SLIDING_WINDOW";
+
+  match?: string;
+  characteristics?: string[];
+  max: number;
+  interval: number;
 }
 
 export interface ArcjetEmailRule<Props extends { email: string }>

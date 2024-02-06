@@ -27,6 +27,7 @@ import {
   Decision,
   EmailType,
   Mode,
+  RateLimitAlgorithm,
   Reason,
   Rule,
   RuleResult,
@@ -48,6 +49,9 @@ import {
   ArcjetReason,
   ArcjetRuleResult,
   ArcjetShieldReason,
+  ArcjetTokenBucketRateLimitRule,
+  ArcjetFixedWindowRateLimitRule,
+  ArcjetSlidingWindowRateLimitRule,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
 
@@ -583,10 +587,11 @@ describe("convert", () => {
       }),
     ).toEqual(new Rule({}));
     expect(
-      ArcjetRuleToProtocol({
+      ArcjetRuleToProtocol(<ArcjetTokenBucketRateLimitRule<{}>>{
         type: "RATE_LIMIT",
         mode: "DRY_RUN",
         priority: 1,
+        algorithm: "TOKEN_BUCKET",
       }),
     ).toEqual(
       new Rule({
@@ -594,6 +599,43 @@ describe("convert", () => {
           case: "rateLimit",
           value: {
             mode: Mode.DRY_RUN,
+            algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
+          },
+        },
+      }),
+    );
+    expect(
+      ArcjetRuleToProtocol(<ArcjetFixedWindowRateLimitRule<{}>>{
+        type: "RATE_LIMIT",
+        mode: "DRY_RUN",
+        priority: 1,
+        algorithm: "FIXED_WINDOW",
+      }),
+    ).toEqual(
+      new Rule({
+        rule: {
+          case: "rateLimit",
+          value: {
+            mode: Mode.DRY_RUN,
+            algorithm: RateLimitAlgorithm.FIXED_WINDOW,
+          },
+        },
+      }),
+    );
+    expect(
+      ArcjetRuleToProtocol(<ArcjetSlidingWindowRateLimitRule<{}>>{
+        type: "RATE_LIMIT",
+        mode: "DRY_RUN",
+        priority: 1,
+        algorithm: "SLIDING_WINDOW",
+      }),
+    ).toEqual(
+      new Rule({
+        rule: {
+          case: "rateLimit",
+          value: {
+            mode: Mode.DRY_RUN,
+            algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
           },
         },
       }),
