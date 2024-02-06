@@ -522,7 +522,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
           characteristics: rule.characteristics,
           algorithm: RateLimitAlgorithm.FIXED_WINDOW,
           max: rule.max,
-          window: rule.window,
+          windowInSeconds: rule.window,
         },
       },
     });
