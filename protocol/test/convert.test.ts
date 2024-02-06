@@ -599,7 +599,7 @@ describe("convert", () => {
           case: "rateLimit",
           value: {
             mode: Mode.DRY_RUN,
-            algorithm: RateLimitAlgorithm.TOKEN_BUCKET
+            algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
           },
         },
       }),
@@ -617,7 +617,7 @@ describe("convert", () => {
           case: "rateLimit",
           value: {
             mode: Mode.DRY_RUN,
-            algorithm: RateLimitAlgorithm.FIXED_WINDOW
+            algorithm: RateLimitAlgorithm.FIXED_WINDOW,
           },
         },
       }),
@@ -635,7 +635,7 @@ describe("convert", () => {
           case: "rateLimit",
           value: {
             mode: Mode.DRY_RUN,
-            algorithm: RateLimitAlgorithm.SLIDING_WINDOW
+            algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
           },
         },
       }),
