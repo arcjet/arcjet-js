@@ -557,7 +557,7 @@ export type ExtraProps<Rules> = Rules extends []
  * @property ...extra - Extra data that might be useful for Arcjet. For example, requested tokens are specified as the `requested` property.
  */
 export type ArcjetRequest<Props extends PlainObject> = Simplify<
-  Partial<ArcjetRequestDetails & Props>
+  Partial<ArcjetRequestDetails> & Props
 >;
 
 function isLocalRule<Props extends PlainObject>(
