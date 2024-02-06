@@ -679,12 +679,12 @@ export function slidingWindow(
   }
 
   for (const opt of [options, ...additionalOptions]) {
-    const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    const match = options.match;
-    const characteristics = options.characteristics;
+    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    const match = opt.match;
+    const characteristics = opt.characteristics;
 
-    const max = options.max;
-    const interval = options.interval;
+    const max = opt.max;
+    const interval = opt.interval;
 
     rules.push({
       type: "RATE_LIMIT",
