@@ -354,7 +354,6 @@ describe("convert", () => {
       ArcjetReasonToProtocol(
         new ArcjetRateLimitReason({
           max: 1,
-          count: 2,
           remaining: -1,
         }),
       ),
@@ -364,7 +363,6 @@ describe("convert", () => {
           case: "rateLimit",
           value: {
             max: 1,
-            count: 2,
             remaining: -1,
           },
         },
@@ -375,7 +373,6 @@ describe("convert", () => {
       ArcjetReasonToProtocol(
         new ArcjetRateLimitReason({
           max: 1,
-          count: 2,
           remaining: -1,
           resetTime,
         }),
@@ -386,7 +383,6 @@ describe("convert", () => {
           case: "rateLimit",
           value: {
             max: 1,
-            count: 2,
             remaining: -1,
             resetTime: Timestamp.fromDate(resetTime),
           },

@@ -34,7 +34,6 @@ export async function POST(req: Request) {
   console.log("Arcjet decision", decision.conclusion);
 
   if (decision.reason.isRateLimit()) {
-    console.log("Request count", decision.reason.count);
     console.log("Requests remaining", decision.reason.remaining);
   }
 

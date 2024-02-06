@@ -235,7 +235,6 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
       const reason = proto.reason.value;
       return new ArcjetRateLimitReason({
         max: reason.max,
-        count: reason.count,
         remaining: reason.remaining,
         resetTime: reason.resetTime?.toDate(),
       });
@@ -289,7 +288,6 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         case: "rateLimit",
         value: new RateLimitReason({
           max: reason.max,
-          count: reason.count,
           remaining: reason.remaining,
           resetTime: reason.resetTime
             ? Timestamp.fromDate(reason.resetTime)

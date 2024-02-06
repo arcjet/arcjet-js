@@ -1432,7 +1432,6 @@ describe("ArcjetDecision", () => {
   test("`isRateLimit()` returns true when reason is RATE_LIMIT", () => {
     const reason = new ArcjetRateLimitReason({
       max: 0,
-      count: 0,
       remaining: 0,
     });
     expect(reason.isRateLimit()).toEqual(true);
