@@ -191,7 +191,7 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
         path = request.url ?? "";
       }
 
-      let extra: { [key: string]: string } = {};
+      const extra: { [key: string]: string } = {};
 
       // If we're running on Vercel, we can add some extra information
       if (process.env["VERCEL"]) {
@@ -217,7 +217,7 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
         host,
         path,
         headers,
-        extra,
+        ...extra,
         // TODO(#220): The generic manipulations get really mad here, so we just cast it
       } as ArcjetRequest<ExtraProps<Rules>>);
 

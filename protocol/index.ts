@@ -375,7 +375,6 @@ export interface ArcjetRequestDetails {
   path: string;
   // TODO(#215): Allow `Record<string, string>` and `Record<string, string[]>`?
   headers: Headers;
-  extra: Record<string, string>;
 }
 
 export type ArcjetRule<Props extends {} = {}> = {
