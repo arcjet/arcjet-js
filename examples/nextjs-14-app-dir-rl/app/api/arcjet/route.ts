@@ -1,4 +1,4 @@
-import arcjet, { rateLimit } from "@arcjet/next";
+import arcjet, { fixedWindow } from "@arcjet/next";
 import { NextResponse } from "next/server";
 
 const aj = arcjet({
@@ -7,7 +7,7 @@ const aj = arcjet({
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
   key: process.env.AJ_KEY!,
   rules: [
-    rateLimit({
+    fixedWindow({
       mode: "LIVE",
       characteristics: ["ip.src"],
       window: "1h",
