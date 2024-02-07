@@ -2224,6 +2224,34 @@ describe("Primitive > fixedWindow", () => {
     expect(rules[0]).toHaveProperty("max", 1);
   });
 
+  test("can specify user-defined characteristics which are reflected in required props", async () => {
+    const rules = fixedWindow({
+      characteristics: ["userId"],
+      window: "1h",
+      max: 1,
+    });
+    type Test = Assert<
+      RequiredProps<typeof rules, { userId: string | number | boolean }>
+    >;
+  });
+
+  test("well-known characteristics don't affect the required props", async () => {
+    const rules = fixedWindow({
+      characteristics: [
+        "ip.src",
+        "http.host",
+        "http.method",
+        "http.request.uri.path",
+        `http.request.headers["abc"]`,
+        `http.request.cookie["xyz"]`,
+        `http.request.uri.args["foobar"]`,
+      ],
+      window: "1h",
+      max: 1,
+    });
+    type Test = Assert<RequiredProps<typeof rules, {}>>;
+  });
+
   test("produces a rules based on single `limit` specified", async () => {
     const options = {
       match: "/test",
@@ -2386,6 +2414,34 @@ describe("Primitive > slidingWindow", () => {
     expect(rules[0].type).toEqual("RATE_LIMIT");
     expect(rules[0]).toHaveProperty("interval", 60);
     expect(rules[0]).toHaveProperty("max", 1);
+  });
+
+  test("can specify user-defined characteristics which are reflected in required props", async () => {
+    const rules = slidingWindow({
+      characteristics: ["userId"],
+      interval: "1h",
+      max: 1,
+    });
+    type Test = Assert<
+      RequiredProps<typeof rules, { userId: string | number | boolean }>
+    >;
+  });
+
+  test("well-known characteristics don't affect the required props", async () => {
+    const rules = slidingWindow({
+      characteristics: [
+        "ip.src",
+        "http.host",
+        "http.method",
+        "http.request.uri.path",
+        `http.request.headers["abc"]`,
+        `http.request.cookie["xyz"]`,
+        `http.request.uri.args["foobar"]`,
+      ],
+      interval: "1h",
+      max: 1,
+    });
+    type Test = Assert<RequiredProps<typeof rules, {}>>;
   });
 
   test("produces a rules based on single `limit` specified", async () => {
