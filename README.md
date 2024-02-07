@@ -48,6 +48,8 @@ find a specific one through the categories and descriptions below.
   into the Arcjet protocol.
 - [`@arcjet/logger`](./logger/README.md): Logging interface which mirrors the
   console interface but allows log levels.
+- [`@arcjet/duration`](./duration/README.md): Utilities for parsing duration
+  strings into seconds integers.
 
 ### Internal development
 

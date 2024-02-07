@@ -15,7 +15,7 @@ const aj = arcjet({
       mode: "LIVE",
       characteristics: ["ip.src"],
       refillRate: 40_000,
-      interval: 1 /* day */ * 24 /* hours */ * 60 /* minutes */ * 60 /* seconds */,
+      interval: "1d",
       capacity: 40_000,
     }),
   ],

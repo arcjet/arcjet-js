@@ -426,7 +426,7 @@ export interface ArcjetFixedWindowRateLimitRule<Props extends {}>
   match?: string;
   characteristics?: string[];
   max: number;
-  window: string;
+  window: number;
 }
 
 export interface ArcjetSlidingWindowRateLimitRule<Props extends {}>

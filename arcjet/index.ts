@@ -39,6 +39,7 @@ import {
   Timestamp,
 } from "@arcjet/protocol/proto.js";
 import * as analyze from "@arcjet/analyze";
+import * as duration from "@arcjet/duration";
 import { Logger } from "@arcjet/logger";
 
 export * from "@arcjet/protocol";
@@ -421,7 +422,7 @@ type TokenBucketRateLimitOptions = {
   match?: string;
   characteristics?: string[];
   refillRate: number;
-  interval: number;
+  interval: string | number;
   capacity: number;
 };
 
@@ -429,7 +430,7 @@ type FixedWindowRateLimitOptions = {
   mode?: ArcjetMode;
   match?: string;
   characteristics?: string[];
-  window: string;
+  window: string | number;
   max: number;
 };
 
@@ -437,7 +438,7 @@ type SlidingWindowRateLimitOptions = {
   mode?: ArcjetMode;
   match?: string;
   characteristics?: string[];
-  interval: number;
+  interval: string | number;
   max: number;
 };
 
@@ -605,7 +606,7 @@ export function tokenBucket(
     const characteristics = opt.characteristics;
 
     const refillRate = opt.refillRate;
-    const interval = opt.interval;
+    const interval = duration.parse(opt.interval);
     const capacity = opt.capacity;
 
     rules.push({
@@ -640,7 +641,7 @@ export function fixedWindow(
     const characteristics = opt.characteristics;
 
     const max = opt.max;
-    const window = opt.window;
+    const window = duration.parse(opt.window);
 
     rules.push({
       type: "RATE_LIMIT",
@@ -684,7 +685,7 @@ export function slidingWindow(
     const characteristics = opt.characteristics;
 
     const max = opt.max;
-    const interval = opt.interval;
+    const interval = duration.parse(opt.interval);
 
     rules.push({
       type: "RATE_LIMIT",

@@ -673,9 +673,12 @@ export declare class RateLimitRule extends Message<RateLimitRule> {
    * The time window the rate limit applies to. This is a string value with a
    * sequence of decimal numbers, each with an optional fraction and a unit
    * suffix e.g. 1s for 1 second, 1h45m for 1 hour and 45 minutes, 1d for 1
-   * day. Valid time units are ns, us (or µs), ms, s, m, h, d, w, y.
+   * day. Valid time units are ns, us (or µs), ms, s, m, h.
    *
-   * @generated from field: string window = 4;
+   * Deprecated: Use the window_in_seconds field instead.
+   *
+   * @generated from field: string window = 4 [deprecated = true];
+   * @deprecated
    */
   window: string;
 
@@ -737,6 +740,16 @@ export declare class RateLimitRule extends Message<RateLimitRule> {
    * @generated from field: uint32 capacity = 10;
    */
   capacity: number;
+
+  /**
+   * The time window the rate limit applies to. This is an unsigned 32-bit
+   * integer value representing a number of seconds.
+   *
+   * Required by "fixed window" and unspecified algorithms.
+   *
+   * @generated from field: uint32 window_in_seconds = 12;
+   */
+  windowInSeconds: number;
 
   constructor(data?: PartialMessage<RateLimitRule>);
 

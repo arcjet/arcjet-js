@@ -237,6 +237,7 @@ export const RateLimitRule = proto3.makeMessageType(
     { no: 8, name: "refill_rate", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 9, name: "interval", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 10, name: "capacity", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 12, name: "window_in_seconds", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
   ],
 );
 

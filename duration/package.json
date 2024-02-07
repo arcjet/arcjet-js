@@ -1,13 +1,13 @@
 {
-  "name": "arcjet",
+  "name": "@arcjet/duration",
   "version": "1.0.0-alpha.7",
-  "description": "Arcjet TypeScript and JavaScript SDK core",
+  "description": "Arcjet utilities for parsing duration strings",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "arcjet"
+    "directory": "ip"
   },
   "engines": {
     "node": ">=18"
@@ -30,17 +30,11 @@
     "pretest": "npm run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
-  "dependencies": {
-    "@arcjet/analyze": "1.0.0-alpha.7",
-    "@arcjet/duration": "1.0.0-alpha.7",
-    "@arcjet/logger": "1.0.0-alpha.7",
-    "@arcjet/protocol": "1.0.0-alpha.7"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.7",
     "@arcjet/rollup-config": "1.0.0-alpha.7",
     "@arcjet/tsconfig": "1.0.0-alpha.7",
-    "@edge-runtime/jest-environment": "2.3.8",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.9.6",
     "@types/node": "18.18.0",
