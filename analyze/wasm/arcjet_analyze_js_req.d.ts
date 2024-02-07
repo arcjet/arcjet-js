@@ -42,10 +42,10 @@ export interface InitOutput {
   readonly detect_bot: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly generate_fingerprint: (a: number, b: number, c: number) => void;
   readonly is_valid_email: (a: number, b: number, c: number, d: number) => void;
-  readonly __wbindgen_malloc: (a: number, b: number) => number;
-  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_export_0: (a: number, b: number) => number;
+  readonly __wbindgen_export_1: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly __wbindgen_export_2: (a: number, b: number, c: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;

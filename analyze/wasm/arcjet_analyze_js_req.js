@@ -120,6 +120,7 @@ function passStringToWasm0(arg, malloc, realloc) {
         const ret = encodeString(arg, view);
 
         offset += ret.written;
+        ptr = realloc(ptr, len, offset, 1) >>> 0;
     }
 
     WASM_VECTOR_LEN = offset;
@@ -197,11 +198,11 @@ function debugString(val) {
 * @returns {any}
 */
 export function detect_bot(headers, patterns_add, patterns_remove) {
-    const ptr0 = passStringToWasm0(headers, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const ptr0 = passStringToWasm0(headers, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
     const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(patterns_add, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const ptr1 = passStringToWasm0(patterns_add, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
     const len1 = WASM_VECTOR_LEN;
-    const ptr2 = passStringToWasm0(patterns_remove, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const ptr2 = passStringToWasm0(patterns_remove, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
     const len2 = WASM_VECTOR_LEN;
     const ret = wasm.detect_bot(ptr0, len0, ptr1, len1, ptr2, len2);
     return takeObject(ret);
@@ -216,7 +217,7 @@ export function generate_fingerprint(ip) {
     let deferred2_1;
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        const ptr0 = passStringToWasm0(ip, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const ptr0 = passStringToWasm0(ip, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
         const len0 = WASM_VECTOR_LEN;
         wasm.generate_fingerprint(retptr, ptr0, len0);
         var r0 = getInt32Memory0()[retptr / 4 + 0];
@@ -226,7 +227,7 @@ export function generate_fingerprint(ip) {
         return getStringFromWasm0(r0, r1);
     } finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        wasm.__wbindgen_export_2(deferred2_0, deferred2_1, 1);
     }
 }
 
@@ -238,7 +239,7 @@ export function generate_fingerprint(ip) {
 export function is_valid_email(candidate, options) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        const ptr0 = passStringToWasm0(candidate, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const ptr0 = passStringToWasm0(candidate, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
         const len0 = WASM_VECTOR_LEN;
         wasm.is_valid_email(retptr, ptr0, len0, isLikeNone(options) ? 0 : addHeapObject(options));
         var r0 = getInt32Memory0()[retptr / 4 + 0];
@@ -300,48 +301,16 @@ function __wbg_get_imports() {
         takeObject(arg0);
     };
     imports.wbg.__wbg_debug_7e9ed5702b51be77 = function(arg0, arg1) {
-        let deferred0_0;
-        let deferred0_1;
-        try {
-            deferred0_0 = arg0;
-            deferred0_1 = arg1;
-            default1.debug(getStringFromWasm0(arg0, arg1));
-        } finally {
-            wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
-        }
+        default1.debug(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_log_fc3cba5e8688f22a = function(arg0, arg1) {
-        let deferred0_0;
-        let deferred0_1;
-        try {
-            deferred0_0 = arg0;
-            deferred0_1 = arg1;
-            default1.log(getStringFromWasm0(arg0, arg1));
-        } finally {
-            wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
-        }
+        default1.log(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_warn_dcd6c1e84a04cb1d = function(arg0, arg1) {
-        let deferred0_0;
-        let deferred0_1;
-        try {
-            deferred0_0 = arg0;
-            deferred0_1 = arg1;
-            default1.warn(getStringFromWasm0(arg0, arg1));
-        } finally {
-            wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
-        }
+        default1.warn(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_error_247913e0efe0890e = function(arg0, arg1) {
-        let deferred0_0;
-        let deferred0_1;
-        try {
-            deferred0_0 = arg0;
-            deferred0_1 = arg1;
-            default1.error(getStringFromWasm0(arg0, arg1));
-        } finally {
-            wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
-        }
+        default1.error(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbindgen_is_object = function(arg0) {
         const val = getObject(arg0);
@@ -373,7 +342,7 @@ function __wbg_get_imports() {
     imports.wbg.__wbindgen_string_get = function(arg0, arg1) {
         const obj = getObject(arg1);
         const ret = typeof(obj) === 'string' ? obj : undefined;
-        var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
         var len1 = WASM_VECTOR_LEN;
         getInt32Memory0()[arg0 / 4 + 1] = len1;
         getInt32Memory0()[arg0 / 4 + 0] = ptr1;
@@ -438,7 +407,7 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
         const ret = debugString(getObject(arg1));
-        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_export_0, wasm.__wbindgen_export_1);
         const len1 = WASM_VECTOR_LEN;
         getInt32Memory0()[arg0 / 4 + 1] = len1;
         getInt32Memory0()[arg0 / 4 + 0] = ptr1;
