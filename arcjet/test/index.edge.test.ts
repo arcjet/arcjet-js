@@ -36,11 +36,28 @@ describe("Arcjet: Env = Edge runtime", () => {
       rules: [
         // Test rules
         foobarbaz(),
-        tokenBucket({
-          refillRate: 1,
-          interval: 1,
-          capacity: 1,
-        }),
+        tokenBucket(
+          {
+            characteristics: [
+              "ip.src",
+              "http.host",
+              "http.method",
+              "http.request.uri.path",
+              `http.request.headers["abc"]`,
+              `http.request.cookie["xyz"]`,
+              `http.request.uri.args["foobar"]`,
+            ],
+            refillRate: 1,
+            interval: 1,
+            capacity: 1,
+          },
+          {
+            characteristics: ["userId"],
+            refillRate: 1,
+            interval: 1,
+            capacity: 1,
+          },
+        ),
         rateLimit({
           max: 1,
           window: "60s",
@@ -61,6 +78,8 @@ describe("Arcjet: Env = Edge runtime", () => {
       path: "",
       headers: new Headers(),
       extra: {},
+      userId: "user123",
+      foobar: 123,
     });
 
     expect(decision.isErrored()).toBe(false);
