@@ -35,29 +35,27 @@ npm install -S @arcjet/next
 
 ```ts
 import arcjet from "@arcjet/next";
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 
 const aj = arcjet({
   // Get your site key from https://app.arcjet.com
   // and set it as an environment variable rather than hard coding.
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
-  key: process.env.AJ_KEY,
+  key: process.env.ARCJET_KEY,
   rules: [],
 });
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+export async function GET(req: Request) {
   const decision = await aj.protect(req);
 
   if (decision.isDenied()) {
-    return res
-      .status(403)
-      .json({ error: "Forbidden", reason: decision.reason });
+    return NextResponse.json(
+      { error: "Too Many Requests", reason: decision.reason },
+      { status: 429 },
+    );
   }
 
-  res.status(200).json({ name: "Hello world" });
+  return NextResponse.json({ message: "Hello world" });
 }
 ```
 

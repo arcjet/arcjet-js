@@ -28,7 +28,7 @@ uses the OpenAI chat API.
 3. Add your Arcjet & OpenAI keys to `.env.local`
 
    ```env
-   AJ_KEY=
+   ARCJET_KEY=
    OPENAI_API_KEY=
    ```
 
