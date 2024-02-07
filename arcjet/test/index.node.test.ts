@@ -55,7 +55,46 @@ import arcjet, {
   fixedWindow,
   tokenBucket,
   slidingWindow,
+  Primitive,
 } from "../index";
+
+// Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
+// our use.
+//
+// IsEqual:
+// https://github.com/sindresorhus/type-fest/blob/e02f228f6391bb2b26c32a55dfe1e3aa2386d515/source/is-equal.d.ts
+//
+// Licensed: MIT License Copyright (c) Sindre Sorhus <sindresorhus@gmail.com>
+// (https://sindresorhus.com)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions: The above copyright
+// notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+type IsEqual<A, B> = (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B
+  ? 1
+  : 2
+  ? true
+  : false;
+
+// Type testing utilities
+type Assert<T extends true> = T;
+type Props<P extends Primitive> = P extends Primitive<infer Props>
+  ? Props
+  : never;
+type RequiredProps<P extends Primitive, E> = IsEqual<Props<P>, E>;
 
 // Instances of Headers contain symbols that may be different depending
 // on if they have been iterated or not, so we need this equality tester
@@ -1976,6 +2015,39 @@ describe("Primitive > tokenBucket", () => {
     expect(rules[0]).toHaveProperty("refillRate", 60);
     expect(rules[0]).toHaveProperty("interval", 60);
     expect(rules[0]).toHaveProperty("capacity", 120);
+  });
+
+  test("can specify user-defined characteristics which are reflected in required props", async () => {
+    const rules = tokenBucket({
+      characteristics: ["userId"],
+      refillRate: 60,
+      interval: 60,
+      capacity: 120,
+    });
+    type Test = Assert<
+      RequiredProps<
+        typeof rules,
+        { requested: number; userId: string | number | boolean }
+      >
+    >;
+  });
+
+  test("well-known characteristics don't affect the required props", async () => {
+    const rules = tokenBucket({
+      characteristics: [
+        "ip.src",
+        "http.host",
+        "http.method",
+        "http.request.uri.path",
+        `http.request.headers["abc"]`,
+        `http.request.cookie["xyz"]`,
+        `http.request.uri.args["foobar"]`,
+      ],
+      refillRate: 60,
+      interval: 60,
+      capacity: 120,
+    });
+    type Test = Assert<RequiredProps<typeof rules, { requested: number }>>;
   });
 
   test("produces a rules based on single `limit` specified", async () => {

@@ -639,8 +639,10 @@ export function tokenBucket<
   options?: TokenBucketRateLimitOptions<Characteristics>,
   ...additionalOptions: TokenBucketRateLimitOptions<Characteristics>[]
 ): Primitive<
-  UnionToIntersection<
-    { requested: number } | PropsForCharacteristic<Characteristics[number]>
+  Simplify<
+    UnionToIntersection<
+      { requested: number } | PropsForCharacteristic<Characteristics[number]>
+    >
   >
 > {
   const rules: ArcjetTokenBucketRateLimitRule<{ requested: number }>[] = [];
@@ -682,7 +684,7 @@ export function fixedWindow<
   options?: FixedWindowRateLimitOptions<Characteristics>,
   ...additionalOptions: FixedWindowRateLimitOptions<Characteristics>[]
 ): Primitive<
-  UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>
+  Simplify<UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>>
 > {
   const rules: ArcjetFixedWindowRateLimitRule<{}>[] = [];
 
@@ -721,7 +723,7 @@ export function rateLimit<const Characteristics extends readonly string[] = []>(
   options?: FixedWindowRateLimitOptions<Characteristics>,
   ...additionalOptions: FixedWindowRateLimitOptions<Characteristics>[]
 ): Primitive<
-  UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>
+  Simplify<UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>>
 > {
   // TODO(#195): We should also have a local rate limit using an in-memory data
   // structure if the environment supports it
@@ -734,7 +736,7 @@ export function slidingWindow<
   options?: SlidingWindowRateLimitOptions<Characteristics>,
   ...additionalOptions: SlidingWindowRateLimitOptions<Characteristics>[]
 ): Primitive<
-  UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>
+  Simplify<UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>>
 > {
   const rules: ArcjetSlidingWindowRateLimitRule<{}>[] = [];
 
