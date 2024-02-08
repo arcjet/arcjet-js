@@ -250,7 +250,7 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
           } catch {
             // If the parsing above fails, just set the path as whatever url we
             // received.
-            // TODO: Maybe add some local logging
+            // TODO(#216): Add logging to arcjet-next
             path = request.url ?? "";
           }
         } else {
