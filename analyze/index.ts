@@ -4,6 +4,11 @@ import initWasm, {
   is_valid_email,
   type EmailValidationConfig,
 } from "./wasm/arcjet_analyze_js_req.js";
+import * as rateLimit from "./wasm/rate-limit/arcjet_analyze_bindings_rate_limit.component.js";
+import type {
+  Root as RateLimitAPI,
+  ImportObject as RateLimitImports,
+} from "./wasm/rate-limit/arcjet_analyze_bindings_rate_limit.component.js";
 
 export { type EmailValidationConfig };
 
@@ -161,5 +166,215 @@ export async function detectBot(
       bot_type: 1, // NOT_ANALYZED
       bot_score: 0,
     };
+  }
+}
+
+function nowInSeconds(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
+class Cache<T> {
+  expires: Map<string, number>;
+  data: Map<string, T>;
+
+  constructor() {
+    this.expires = new Map();
+    this.data = new Map();
+  }
+
+  get(key: string) {
+    const ttl = this.ttl(key);
+    if (ttl > 0) {
+      return this.data.get(key);
+    } else {
+      // Cleanup if expired
+      this.expires.delete(key);
+      this.data.delete(key);
+    }
+  }
+
+  set(key: string, value: T, expireAt: number) {
+    this.expires.set(key, expireAt);
+    this.data.set(key, value);
+  }
+
+  ttl(key: string): number {
+    const now = nowInSeconds();
+    const expiresAt = this.expires.get(key) ?? now;
+    return expiresAt - now;
+  }
+}
+
+const rateLimitCache = new Cache<string>();
+
+const wasmCache = new Map<string, WebAssembly.Module>();
+
+async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
+  const cachedModule = wasmCache.get(path);
+  if (typeof cachedModule !== "undefined") {
+    return cachedModule;
+  }
+
+  if (process.env["NEXT_RUNTIME"] === "edge") {
+    if (path === "arcjet_analyze_bindings_rate_limit.component.core.wasm") {
+      const mod = await import(
+        // @ts-expect-error
+        "./wasm/rate-limit/arcjet_analyze_bindings_rate_limit.component.core.wasm?module"
+      );
+      wasmCache.set(path, mod.default);
+      return mod.default;
+    }
+    if (path === "arcjet_analyze_bindings_rate_limit.component.core2.wasm") {
+      const mod = await import(
+        // @ts-expect-error
+        "./wasm/rate-limit/arcjet_analyze_bindings_rate_limit.component.core2.wasm?module"
+      );
+      wasmCache.set(path, mod.default);
+      return mod.default;
+    }
+    if (path === "arcjet_analyze_bindings_rate_limit.component.core3.wasm") {
+      const mod = await import(
+        // @ts-expect-error
+        "./wasm/rate-limit/arcjet_analyze_bindings_rate_limit.component.core3.wasm?module"
+      );
+      wasmCache.set(path, mod.default);
+      return mod.default;
+    }
+  } else {
+    if (path === "arcjet_analyze_bindings_rate_limit.component.core.wasm") {
+      const { wasm } = await import(
+        "./wasm/rate-limit/arcjet_analyze_bindings_rate_limit.component.core.js"
+      );
+      const mod = await WebAssembly.compile(await wasm());
+      wasmCache.set(path, mod);
+      return mod;
+    }
+    if (path === "arcjet_analyze_bindings_rate_limit.component.core2.wasm") {
+      const { wasm } = await import(
+        "./wasm/rate-limit/arcjet_analyze_bindings_rate_limit.component.core2.js"
+      );
+      const mod = await WebAssembly.compile(await wasm());
+      wasmCache.set(path, mod);
+      return mod;
+    }
+    if (path === "arcjet_analyze_bindings_rate_limit.component.core3.wasm") {
+      const { wasm } = await import(
+        "./wasm/rate-limit/arcjet_analyze_bindings_rate_limit.component.core3.js"
+      );
+      const mod = await WebAssembly.compile(await wasm());
+      wasmCache.set(path, mod);
+      return mod;
+    }
+  }
+
+  throw new Error(`Unknown path: ${path}`);
+}
+
+const rateLimitImports: RateLimitImports = {
+  "arcjet:rate-limit/storage": {
+    get(key) {
+      return rateLimitCache.get(key);
+    },
+    set(key, value, expiresAt) {
+      rateLimitCache.set(key, value, expiresAt);
+    },
+  },
+  "arcjet:rate-limit/time": {
+    now() {
+      return Math.floor(Date.now() / 1000);
+    },
+  },
+};
+
+async function initRateLimit(): Promise<RateLimitAPI | undefined> {
+  try {
+    return rateLimit.instantiate(moduleFromPath, rateLimitImports);
+  } catch {
+    // TODO: Log unsupported wasm error
+  }
+}
+
+export async function tokenBucket(
+  config: {
+    key: string;
+    characteristics?: string[];
+    refill_rate: number;
+    interval: number;
+    capacity: number;
+  },
+  request: unknown,
+): Promise<
+  | {
+      allowed: boolean;
+      max: number;
+      remaining: number;
+      reset: number;
+    }
+  | undefined
+> {
+  const rl = await initRateLimit();
+
+  if (typeof rl !== "undefined") {
+    const configJson = JSON.stringify(config);
+    const requestJson = JSON.stringify(request);
+    const resultJson = rl.tokenBucket(configJson, requestJson);
+    // TODO: Try/catch and Validate
+    return JSON.parse(resultJson);
+  }
+}
+
+export async function fixedWindow(
+  config: {
+    key: string;
+    characteristics?: string[];
+    max: number;
+    window: number;
+  },
+  request: unknown,
+): Promise<
+  | {
+      allowed: boolean;
+      max: number;
+      remaining: number;
+      reset: number;
+    }
+  | undefined
+> {
+  const rl = await initRateLimit();
+
+  if (typeof rl !== "undefined") {
+    const configJson = JSON.stringify(config);
+    const requestJson = JSON.stringify(request);
+    const resultJson = rl.fixedWindow(configJson, requestJson);
+    // TODO: Try/catch and Validate
+    return JSON.parse(resultJson);
+  }
+}
+
+export async function slidingWindow(
+  config: {
+    key: string;
+    characteristics?: string[];
+    max: number;
+    interval: number;
+  },
+  request: unknown,
+): Promise<
+  | {
+      allowed: boolean;
+      max: number;
+      remaining: number;
+      reset: number;
+    }
+  | undefined
+> {
+  const rl = await initRateLimit();
+
+  if (typeof rl !== "undefined") {
+    const configJson = JSON.stringify(config);
+    const requestJson = JSON.stringify(request);
+    const resultJson = rl.slidingWindow(configJson, requestJson);
+    // TODO: Try/catch and Validate
+    return JSON.parse(resultJson);
   }
 }
