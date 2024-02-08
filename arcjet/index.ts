@@ -1210,7 +1210,11 @@ export default function arcjet<
                 reason: decision.reason,
               });
 
-              blockCache.set(fingerprint, decision.reason, nowInSeconds() + decision.ttl);
+              blockCache.set(
+                fingerprint,
+                decision.reason,
+                nowInSeconds() + decision.ttl,
+              );
             }
 
             return decision;
@@ -1242,7 +1246,11 @@ export default function arcjet<
             decision.ttl,
           );
 
-          blockCache.set(fingerprint, decision.reason, nowInSeconds() + decision.ttl);
+          blockCache.set(
+            fingerprint,
+            decision.reason,
+            nowInSeconds() + decision.ttl,
+          );
         }
 
         return decision;
