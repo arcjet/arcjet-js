@@ -708,7 +708,7 @@ export function tokenBucket<
             characteristics,
             refill_rate: refillRate,
             interval,
-            capacity
+            capacity,
           },
           {
             ip: details.ip,
