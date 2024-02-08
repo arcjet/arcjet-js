@@ -106,7 +106,7 @@ export function createNextRemoteClient(
 export interface ArcjetNextRequest {
   headers?: Record<string, string | string[] | undefined> | Headers;
 
-  socket?: Partial<{ remoteAddress: string }>;
+  socket?: Partial<{ remoteAddress: string; encrypted: boolean }>;
 
   info?: Partial<{ remoteAddress: string }>;
 
@@ -120,7 +120,44 @@ export interface ArcjetNextRequest {
 
   ip?: string;
 
-  nextUrl?: Partial<{ pathname: string; search: string }>;
+  nextUrl?: Partial<{ pathname: string; search: string; protocol: string }>;
+
+  cookies?:
+    | {
+        [Symbol.iterator](): IterableIterator<
+          [string, { name: string; value: string }]
+        >;
+      }
+    | Partial<{ [key: string]: string }>;
+}
+
+function isIterable(val: any): val is Iterable<any> {
+  return typeof val?.[Symbol.iterator] === "function";
+}
+
+function cookiesToArray(
+  cookies?: ArcjetNextRequest["cookies"],
+): { name: string; value: string }[] {
+  if (typeof cookies === "undefined") {
+    return [];
+  }
+
+  if (isIterable(cookies)) {
+    return Array.from(cookies).map(([_, cookie]) => cookie);
+  } else {
+    return Object.entries(cookies).map(([name, value]) => ({
+      name,
+      value: value ?? "",
+    }));
+  }
+}
+
+function cookiesToString(cookies?: ArcjetNextRequest["cookies"]): string {
+  // This is essentially the implementation of `RequestCookies#toString` in
+  // Next.js but normalized for NextApiRequest cookies object
+  return cookiesToArray(cookies)
+    .map((v) => `${v.name}=${encodeURIComponent(v.value)}`)
+    .join("; ");
 }
 
 export interface ArcjetNext<Props extends PlainObject> {
@@ -180,16 +217,47 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
       const ip = findIP(request, headers);
       const method = request.method ?? "";
       const host = headers.get("host") ?? "";
-      let path;
-      // TODO(#36): nextUrl has formatting logic when you `toString` but we don't account for that here
+      let path = "";
+      let query = "";
+      let protocol = "";
+      // TODO(#36): nextUrl has formatting logic when you `toString` but
+      // we don't account for that here
       if (typeof request.nextUrl !== "undefined") {
-        path = request.nextUrl.pathname;
-        if (request.nextUrl.search !== "") {
-          path += "?" + request.nextUrl.search;
+        path = request.nextUrl.pathname ?? "";
+        if (typeof request.nextUrl.search !== "undefined") {
+          query = request.nextUrl.search;
+        }
+        if (typeof request.nextUrl.protocol !== "undefined") {
+          protocol = request.nextUrl.protocol;
         }
       } else {
-        path = request.url ?? "";
+        if (typeof request.socket?.encrypted !== "undefined") {
+          protocol = request.socket.encrypted ? "https:" : "http:";
+        } else {
+          protocol = "http:";
+        }
+        // Do some very simple validation, but also try/catch around URL parsing
+        if (
+          typeof request.url !== "undefined" &&
+          request.url !== "" &&
+          host !== ""
+        ) {
+          try {
+            const url = new URL(request.url, `${protocol}//${host}`);
+            path = url.pathname;
+            query = url.search;
+            protocol = url.protocol;
+          } catch {
+            // If the parsing above fails, just set the path as whatever url we
+            // received.
+            // TODO: Maybe add some local logging
+            path = request.url ?? "";
+          }
+        } else {
+          path = request.url ?? "";
+        }
       }
+      const cookies = cookiesToString(request.cookies);
 
       const extra: { [key: string]: string } = {};
 
@@ -213,10 +281,12 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
         ...props,
         ip,
         method,
-        protocol: "",
+        protocol,
         host,
         path,
         headers,
+        cookies,
+        query,
         ...extra,
         // TODO(#220): The generic manipulations get really mad here, so we just cast it
       } as ArcjetRequest<ExtraProps<Rules>>);
