@@ -223,8 +223,8 @@ export class ArcjetErrorReason extends ArcjetReason {
 export class ArcjetRuleResult {
   ruleId: string;
   /**
-   * The duration in milliseconds this result should be considered valid, also
-   * known as time-to-live.
+   * The duration in seconds this result should be considered valid, also known
+   * as time-to-live.
    */
   ttl: number;
   state: ArcjetRuleState;
