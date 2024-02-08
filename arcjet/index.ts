@@ -54,6 +54,10 @@ function isIterable(val: any): val is Iterable<any> {
   return typeof val?.[Symbol.iterator] === "function";
 }
 
+function nowInSeconds(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
 class Cache<T> {
   expires: Map<string, number>;
   data: Map<string, T>;
@@ -75,12 +79,12 @@ class Cache<T> {
   }
 
   set(key: string, value: T, ttl: number) {
-    this.expires.set(key, Date.now() + ttl);
+    this.expires.set(key, nowInSeconds() + ttl);
     this.data.set(key, value);
   }
 
   ttl(key: string): number {
-    const now = Date.now();
+    const now = nowInSeconds();
     const expiresAt = this.expires.get(key) ?? now;
     return expiresAt - now;
   }
@@ -906,7 +910,7 @@ export function detectBot(
           block.includes(BotType[botResult.bot_type] as ArcjetBotType)
         ) {
           return new ArcjetRuleResult({
-            ttl: 60000,
+            ttl: 60,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetBotReason({
@@ -918,7 +922,7 @@ export function detectBot(
           });
         } else {
           return new ArcjetRuleResult({
-            ttl: 60000,
+            ttl: 60,
             state: "RUN",
             conclusion: "ALLOW",
             reason: new ArcjetBotReason({
@@ -1197,7 +1201,7 @@ export default function arcjet<
           // and return this DENY decision.
           if (rule.mode !== "DRY_RUN") {
             if (results[idx].ttl > 0) {
-              log.debug("Caching decision for %d milliseconds", decision.ttl, {
+              log.debug("Caching decision for %d seconds", decision.ttl, {
                 fingerprint,
                 conclusion: decision.conclusion,
                 reason: decision.reason,
@@ -1231,7 +1235,7 @@ export default function arcjet<
         // block locally
         if (decision.isDenied() && decision.ttl > 0) {
           log.debug(
-            "decide: Caching block locally for %d milliseconds",
+            "decide: Caching block locally for %d seconds",
             decision.ttl,
           );
 
