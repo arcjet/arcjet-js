@@ -1611,6 +1611,8 @@ describe("Primitive > detectBot", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
+      cookies: "",
+      query: "",
       extra: {},
     };
 
@@ -1658,6 +1660,8 @@ describe("Primitive > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
+      cookies: "",
+      query: "",
       "extra-test": "extra-test-value",
     };
 
@@ -1708,6 +1712,8 @@ describe("Primitive > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
+      cookies: "",
+      query: "",
       "extra-test": "extra-test-value",
     };
 
@@ -1758,6 +1764,8 @@ describe("Primitive > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
+      cookies: "",
+      query: "",
       "extra-test": "extra-test-value",
     };
 
@@ -1795,6 +1803,8 @@ describe("Primitive > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
+      cookies: "",
+      query: "",
       "extra-test": "extra-test-value",
     };
 
@@ -1849,6 +1859,8 @@ describe("Primitive > detectBot", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
       "extra-test": "extra-test-value",
     };
 
@@ -1898,6 +1910,8 @@ describe("Primitive > detectBot", () => {
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
         ],
       ]),
+      cookies: "",
+      query: "",
       "extra-test": "extra-test-value",
     };
 
@@ -1936,6 +1950,8 @@ describe("Primitive > detectBot", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
       "extra-test": "extra-test-value",
     };
 
@@ -2783,7 +2799,8 @@ describe("Primitive > validateEmail", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
-      extra: {},
+      cookies: "",
+      query: "",
       email: "foobarbaz@example.com",
     };
 
@@ -2813,7 +2830,8 @@ describe("Primitive > validateEmail", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
-      extra: {},
+      cookies: "",
+      query: "",
       email: "foobarbaz",
     };
 
@@ -2843,7 +2861,8 @@ describe("Primitive > validateEmail", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
-      extra: {},
+      cookies: "",
+      query: "",
       email: "foobarbaz@localhost",
     };
 
@@ -2873,7 +2892,8 @@ describe("Primitive > validateEmail", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
-      extra: {},
+      cookies: "",
+      query: "",
       email: "foobarbaz@localhost",
     };
 
@@ -2905,7 +2925,8 @@ describe("Primitive > validateEmail", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
-      extra: {},
+      cookies: "",
+      query: "",
       email: "@example.com",
     };
 
@@ -2935,7 +2956,8 @@ describe("Primitive > validateEmail", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
-      extra: {},
+      cookies: "",
+      query: "",
       email: "foobarbaz@[127.0.0.1]",
     };
 
@@ -2965,7 +2987,8 @@ describe("Primitive > validateEmail", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
-      extra: {},
+      cookies: "",
+      query: "",
       email: "foobarbaz@localhost",
     };
 
@@ -2997,7 +3020,8 @@ describe("Primitive > validateEmail", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
-      extra: {},
+      cookies: "",
+      query: "",
       email: "foobarbaz@[127.0.0.1]",
     };
 

@@ -311,6 +311,8 @@ export function createRemoteClient(
           host: details.host,
           path: details.path,
           headers: Object.fromEntries(details.headers.entries()),
+          cookies: details.cookies,
+          query: details.query,
           // TODO(#208): Re-add body
           // body: details.body,
           extra: extraProps(details),
