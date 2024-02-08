@@ -20,6 +20,7 @@ import {
   ArcjetTokenBucketRateLimitRule,
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
+  ArcjetRateLimitReason,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
@@ -678,6 +679,89 @@ export function tokenBucket<
       refillRate,
       interval,
       capacity,
+
+      validate(
+        ctx: ArcjetContext,
+        details: ArcjetRequestDetails & { requested: number },
+      ) {
+        assert(
+          typeof details.requested !== "undefined",
+          "TokenBucket requires `requested` to be set.",
+        );
+        assert(
+          details.requested > 0,
+          "TokenBucket requires `requested` to be greater than 0.",
+        );
+        // Other validation of the request occurs when generating the identifier
+        // since it needs to be matched against the characteristics.
+        // TODO: We might want to expose a `validate` function from the
+        // WebAssembly to pre-validate here.
+      },
+
+      async protect(
+        ctx: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const result = await analyze.tokenBucket(
+          {
+            key: ctx.key,
+            characteristics,
+            refill_rate: refillRate,
+            interval,
+            capacity
+          },
+          {
+            ip: details.ip,
+            method: details.method,
+            protocol: details.protocol,
+            host: details.host,
+            path: details.path,
+            headers: Object.fromEntries(details.headers.entries()),
+            cookies: details.cookies,
+            query: details.query,
+            extra: extraProps(details),
+          },
+        );
+
+        // An undefined result likely means we didn't have access to WebAssembly
+        // so this rate limit rule did not run.
+        if (typeof result === "undefined") {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "NOT_RUN",
+            conclusion: "ALLOW",
+            reason: new ArcjetReason(),
+          });
+        }
+
+        // We never want the ttl calculation to drop below 0 because we send u32
+        // on the wire.
+        const ttl = Math.max(0, result.reset - nowInSeconds());
+
+        if (result.allowed) {
+          return new ArcjetRuleResult({
+            ttl,
+            state: "RUN",
+            conclusion: "ALLOW",
+            reason: new ArcjetRateLimitReason({
+              max: result.max,
+              remaining: result.remaining,
+              resetTime: new Date(result.reset * 1000),
+            }),
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ttl,
+            state: "RUN",
+            conclusion: "DENY",
+            reason: new ArcjetRateLimitReason({
+              max: result.max,
+              remaining: result.remaining,
+              resetTime: new Date(result.reset * 1000),
+            }),
+          });
+        }
+      },
     });
   }
 
@@ -717,6 +801,78 @@ export function fixedWindow<
       algorithm: "FIXED_WINDOW",
       max,
       window,
+
+      validate(ctx: ArcjetContext, details: ArcjetRequestDetails) {
+        // FixedWindow doesn't require any special request properties.
+        // Other validation of the request occurs when generating the identifier
+        // since it needs to be matched against the characteristics.
+        // TODO: We might want to expose a `validate` function from the
+        // WebAssembly to pre-validate here.
+      },
+
+      async protect(
+        ctx: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const result = await analyze.fixedWindow(
+          {
+            key: ctx.key,
+            characteristics,
+            max,
+            window,
+          },
+          {
+            ip: details.ip,
+            method: details.method,
+            protocol: details.protocol,
+            host: details.host,
+            path: details.path,
+            headers: Object.fromEntries(details.headers.entries()),
+            cookies: details.cookies,
+            query: details.query,
+            extra: extraProps(details),
+          },
+        );
+
+        // An undefined result likely means we didn't have access to WebAssembly
+        // so this rate limit rule did not run.
+        if (typeof result === "undefined") {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "NOT_RUN",
+            conclusion: "ALLOW",
+            reason: new ArcjetReason(),
+          });
+        }
+
+        // We never want the ttl calculation to drop below 0 because we send u32
+        // on the wire.
+        const ttl = Math.max(0, result.reset - nowInSeconds());
+
+        if (result.allowed) {
+          return new ArcjetRuleResult({
+            ttl,
+            state: "RUN",
+            conclusion: "ALLOW",
+            reason: new ArcjetRateLimitReason({
+              max: result.max,
+              remaining: result.remaining,
+              resetTime: new Date(result.reset * 1000),
+            }),
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ttl,
+            state: "RUN",
+            conclusion: "DENY",
+            reason: new ArcjetRateLimitReason({
+              max: result.max,
+              remaining: result.remaining,
+              resetTime: new Date(result.reset * 1000),
+            }),
+          });
+        }
+      },
     });
   }
 
@@ -769,6 +925,78 @@ export function slidingWindow<
       algorithm: "SLIDING_WINDOW",
       max,
       interval,
+
+      validate(ctx: ArcjetContext, details: ArcjetRequestDetails) {
+        // SlidingWindow doesn't require any special request properties.
+        // Other validation of the request occurs when generating the identifier
+        // since it needs to be matched against the characteristics.
+        // TODO: We might want to expose a `validate` function from the
+        // WebAssembly to pre-validate here.
+      },
+
+      async protect(
+        ctx: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const result = await analyze.slidingWindow(
+          {
+            key: ctx.key,
+            characteristics,
+            max,
+            interval,
+          },
+          {
+            ip: details.ip,
+            method: details.method,
+            protocol: details.protocol,
+            host: details.host,
+            path: details.path,
+            headers: Object.fromEntries(details.headers.entries()),
+            cookies: details.cookies,
+            query: details.query,
+            extra: extraProps(details),
+          },
+        );
+
+        // An undefined result likely means we didn't have access to WebAssembly
+        // so this rate limit rule did not run.
+        if (typeof result === "undefined") {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "NOT_RUN",
+            conclusion: "ALLOW",
+            reason: new ArcjetReason(),
+          });
+        }
+
+        // We never want the ttl calculation to drop below 0 because we send u32
+        // on the wire.
+        const ttl = Math.max(0, result.reset - nowInSeconds());
+
+        if (result.allowed) {
+          return new ArcjetRuleResult({
+            ttl,
+            state: "RUN",
+            conclusion: "ALLOW",
+            reason: new ArcjetRateLimitReason({
+              max: result.max,
+              remaining: result.remaining,
+              resetTime: new Date(result.reset * 1000),
+            }),
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ttl,
+            state: "RUN",
+            conclusion: "DENY",
+            reason: new ArcjetRateLimitReason({
+              max: result.max,
+              remaining: result.remaining,
+              resetTime: new Date(result.reset * 1000),
+            }),
+          });
+        }
+      },
     });
   }
 

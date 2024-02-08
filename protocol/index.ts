@@ -405,7 +405,7 @@ export interface ArcjetLocalRule<Props extends { [key: string]: unknown } = {}>
 }
 
 export interface ArcjetRateLimitRule<Props extends {}>
-  extends ArcjetRule<Props> {
+  extends ArcjetLocalRule<Props> {
   type: "RATE_LIMIT";
   algorithm: ArcjetRateLimitAlgorithm;
 }
