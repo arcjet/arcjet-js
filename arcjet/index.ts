@@ -78,8 +78,8 @@ class Cache<T> {
     }
   }
 
-  set(key: string, value: T, ttl: number) {
-    this.expires.set(key, nowInSeconds() + ttl);
+  set(key: string, value: T, expiresAt: number) {
+    this.expires.set(key, expiresAt);
     this.data.set(key, value);
   }
 
@@ -1165,6 +1165,7 @@ export default function arcjet<
             fingerprint,
             path: details.path,
             runtime: runtime(),
+            ttl: results[idx].ttl,
             conclusion: results[idx].conclusion,
             reason: results[idx].reason,
           });
@@ -1209,7 +1210,11 @@ export default function arcjet<
                 reason: decision.reason,
               });
 
-              blockCache.set(fingerprint, decision.reason, decision.ttl);
+              blockCache.set(
+                fingerprint,
+                decision.reason,
+                nowInSeconds() + decision.ttl,
+              );
             }
 
             return decision;
@@ -1241,7 +1246,11 @@ export default function arcjet<
             decision.ttl,
           );
 
-          blockCache.set(fingerprint, decision.reason, decision.ttl);
+          blockCache.set(
+            fingerprint,
+            decision.reason,
+            nowInSeconds() + decision.ttl,
+          );
         }
 
         return decision;
