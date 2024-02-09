@@ -1,5 +1,51 @@
 # Changelog
 
+## [1.0.0-alpha.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.7...@arcjet/next-v1.0.0-alpha.8) (2024-02-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* Build extra field from unknown request properties ([#179](https://github.com/arcjet/arcjet-js/issues/179))
+
+### 🚀 New Features
+
+* Build extra field from unknown request properties ([#179](https://github.com/arcjet/arcjet-js/issues/179)) ([2576341](https://github.com/arcjet/arcjet-js/commit/257634154328a96d47969a58b389c0e9aacf59bc))
+* Support cookies and query via the protocol ([#214](https://github.com/arcjet/arcjet-js/issues/214)) ([ca0cd64](https://github.com/arcjet/arcjet-js/commit/ca0cd64ca2576eeec7f44dfe7e4f413427d5eea2))
+
+
+### 📦 Dependencies
+
+* Bump `@connectrpc/connect-web` from 1.2.0 to 1.2.1 ([#101](https://github.com/arcjet/arcjet-js/issues/101)) ([28f4a50](https://github.com/arcjet/arcjet-js/commit/28f4a50f4f951cf33c21365ed11d8aa40d5ce0ad))
+* Bump `@connectrpc/connect-web` from 1.2.1 to 1.3.0 ([#120](https://github.com/arcjet/arcjet-js/issues/120)) ([289446d](https://github.com/arcjet/arcjet-js/commit/289446d482cc9521572b076d329964bb1ec253cc))
+* bump next from 14.0.4 to 14.1.0 ([#148](https://github.com/arcjet/arcjet-js/issues/148)) ([6753117](https://github.com/arcjet/arcjet-js/commit/6753117c3f5900513b083fec4ec80e56d0c3de41))
+* **dev:** bump @rollup/wasm-node from 4.9.1 to 4.9.2 ([#97](https://github.com/arcjet/arcjet-js/issues/97)) ([eff4226](https://github.com/arcjet/arcjet-js/commit/eff4226ad0581dd7c5dff69bd3f259f058679f6e))
+* **dev:** bump @rollup/wasm-node from 4.9.2 to 4.9.4 ([#119](https://github.com/arcjet/arcjet-js/issues/119)) ([ec50b96](https://github.com/arcjet/arcjet-js/commit/ec50b96ed3e96735d80a8f556d5a1cd8a68287c5))
+* **dev:** bump @rollup/wasm-node from 4.9.4 to 4.9.5 ([#131](https://github.com/arcjet/arcjet-js/issues/131)) ([9fff856](https://github.com/arcjet/arcjet-js/commit/9fff856af1291bd05f7d5b6a02e007f5619e73c9))
+* **dev:** bump @rollup/wasm-node from 4.9.5 to 4.9.6 ([#152](https://github.com/arcjet/arcjet-js/issues/152)) ([3e54cff](https://github.com/arcjet/arcjet-js/commit/3e54cffa4419470fdfc52712a34a20b919189fc5))
+
+
+### 📝 Documentation
+
+* Rename AJ_KEY to ARCJET_KEY & switch to next.js app dir example ([#201](https://github.com/arcjet/arcjet-js/issues/201)) ([9c4da7b](https://github.com/arcjet/arcjet-js/commit/9c4da7bc53fe7803046a40531db4976c70cb0449))
+* Update Arcjet description ([#122](https://github.com/arcjet/arcjet-js/issues/122)) ([c011bc2](https://github.com/arcjet/arcjet-js/commit/c011bc262159c8f09fadff381ea71f475fed0b16))
+
+
+### 🧹 Miscellaneous Chores
+
+* **examples:** Encourage use of environment variables for keys ([#139](https://github.com/arcjet/arcjet-js/issues/139)) ([290a1b2](https://github.com/arcjet/arcjet-js/commit/290a1b2b7eb0cd42fd7c7b979b6f7f5004cae918))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/ip bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+    * arcjet bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+
 ## [1.0.0-alpha.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.6...@arcjet/next-v1.0.0-alpha.7) (2023-12-21)
 
 

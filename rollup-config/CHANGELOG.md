@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.7...@arcjet/rollup-config-v1.0.0-alpha.8) (2024-02-09)
+
+
+### 📦 Dependencies
+
+* bump @rollup/plugin-typescript from 11.1.5 to 11.1.6 ([#127](https://github.com/arcjet/arcjet-js/issues/127)) ([8f9e34a](https://github.com/arcjet/arcjet-js/commit/8f9e34abb44d51c0d746081c6c148621f13c73f6))
+* **dev:** bump @rollup/wasm-node from 4.9.1 to 4.9.2 ([#97](https://github.com/arcjet/arcjet-js/issues/97)) ([eff4226](https://github.com/arcjet/arcjet-js/commit/eff4226ad0581dd7c5dff69bd3f259f058679f6e))
+* **dev:** bump @rollup/wasm-node from 4.9.2 to 4.9.4 ([#119](https://github.com/arcjet/arcjet-js/issues/119)) ([ec50b96](https://github.com/arcjet/arcjet-js/commit/ec50b96ed3e96735d80a8f556d5a1cd8a68287c5))
+* **dev:** bump @rollup/wasm-node from 4.9.4 to 4.9.5 ([#131](https://github.com/arcjet/arcjet-js/issues/131)) ([9fff856](https://github.com/arcjet/arcjet-js/commit/9fff856af1291bd05f7d5b6a02e007f5619e73c9))
+* **dev:** bump @rollup/wasm-node from 4.9.5 to 4.9.6 ([#152](https://github.com/arcjet/arcjet-js/issues/152)) ([3e54cff](https://github.com/arcjet/arcjet-js/commit/3e54cffa4419470fdfc52712a34a20b919189fc5))
+
+
+### 🧹 Miscellaneous Chores
+
+* **rollup:** Externalize all imports that end with `.wasm?module` ([#217](https://github.com/arcjet/arcjet-js/issues/217)) ([ee6f387](https://github.com/arcjet/arcjet-js/commit/ee6f387d517eb78e974a92e7e39f60e7f1d3231c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+
 ## [1.0.0-alpha.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.6...@arcjet/rollup-config-v1.0.0-alpha.7) (2023-12-21)
 
 

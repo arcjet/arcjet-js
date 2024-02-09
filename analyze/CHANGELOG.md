@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.0.0-alpha.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.7...@arcjet/analyze-v1.0.0-alpha.8) (2024-02-09)
+
+
+### 📦 Dependencies
+
+* **dev:** bump @rollup/wasm-node from 4.9.1 to 4.9.2 ([#97](https://github.com/arcjet/arcjet-js/issues/97)) ([eff4226](https://github.com/arcjet/arcjet-js/commit/eff4226ad0581dd7c5dff69bd3f259f058679f6e))
+* **dev:** bump @rollup/wasm-node from 4.9.2 to 4.9.4 ([#119](https://github.com/arcjet/arcjet-js/issues/119)) ([ec50b96](https://github.com/arcjet/arcjet-js/commit/ec50b96ed3e96735d80a8f556d5a1cd8a68287c5))
+* **dev:** bump @rollup/wasm-node from 4.9.4 to 4.9.5 ([#131](https://github.com/arcjet/arcjet-js/issues/131)) ([9fff856](https://github.com/arcjet/arcjet-js/commit/9fff856af1291bd05f7d5b6a02e007f5619e73c9))
+* **dev:** bump @rollup/wasm-node from 4.9.5 to 4.9.6 ([#152](https://github.com/arcjet/arcjet-js/issues/152)) ([3e54cff](https://github.com/arcjet/arcjet-js/commit/3e54cffa4419470fdfc52712a34a20b919189fc5))
+
+
+### 📝 Documentation
+
+* Update Arcjet description ([#122](https://github.com/arcjet/arcjet-js/issues/122)) ([c011bc2](https://github.com/arcjet/arcjet-js/commit/c011bc262159c8f09fadff381ea71f475fed0b16))
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze:** Regenerate WebAssembly and bindings ([#92](https://github.com/arcjet/arcjet-js/issues/92)) ([b10ce31](https://github.com/arcjet/arcjet-js/commit/b10ce310c3a0170000c362510e785d81506e5b88))
+* **rollup:** Externalize all imports that end with `.wasm?module` ([#217](https://github.com/arcjet/arcjet-js/issues/217)) ([ee6f387](https://github.com/arcjet/arcjet-js/commit/ee6f387d517eb78e974a92e7e39f60e7f1d3231c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/logger bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.7 to 1.0.0-alpha.8
+
 ## [1.0.0-alpha.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.6...@arcjet/analyze-v1.0.0-alpha.7) (2023-12-21)
 
 
