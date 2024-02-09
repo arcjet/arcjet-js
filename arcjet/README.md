@@ -61,11 +61,16 @@ const server = http.createServer(async function (
   res: http.ServerResponse,
 ) {
   // Construct an object with Arcjet request details
+  const path = new URL(req.url || "", `http://${req.headers.host}`);
   const details = {
     ip: req.socket.remoteAddress,
+    method: req.method,
+    host: req.headers.host,
+    path: path.pathname,
   };
 
   const decision = await aj.protect(details);
+  console.log(decision);
 
   if (decision.isDenied()) {
     res.writeHead(403, { "Content-Type": "application/json" });
