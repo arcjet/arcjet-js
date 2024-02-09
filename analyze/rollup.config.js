@@ -13,12 +13,6 @@ export default createConfig(import.meta.url, {
             external: true,
           };
         }
-        if (source === "./wasm/arcjet_analyze_js_req_bg.wasm?module") {
-          return {
-            id: "./wasm/arcjet_analyze_js_req_bg.wasm?module",
-            external: true,
-          };
-        }
         // TODO: Generation of this file can be handled via rollup plugin so we
         // wouldn't need to externalize here
         if (source === "./wasm/arcjet.wasm.js") {

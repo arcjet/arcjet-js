@@ -96,6 +96,19 @@ export function createConfig(root, { plugins = [] } = {}) {
         include: "test/*.ts",
         noEmitOnError: true,
       }),
+      {
+        name: "externalize-edge-wasm",
+        resolveId(id) {
+          // Cloudflare uses the `.wasm?module` suffix to make WebAssembly
+          // available in their Workers product. This is documented at
+          // https://developers.cloudflare.com/workers/runtime-apis/webassembly/javascript/#bundling
+          // Next.js supports the same syntax, but it is undocumented.
+          if (id.endsWith(".wasm?module")) {
+            return { id, external: true };
+          }
+          return null;
+        },
+      },
       ...plugins,
     ],
   };
