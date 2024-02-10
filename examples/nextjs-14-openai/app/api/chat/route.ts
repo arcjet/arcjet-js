@@ -38,7 +38,7 @@ const aj = arcjet({
 
 // OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY ?? "OPENAI_KEY_MISSING",
 });
 
 // Edge runtime allows for streaming responses
