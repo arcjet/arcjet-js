@@ -10,10 +10,11 @@
  a token bucket rate limit algorithm to limit the number of tokens consumed,
  keeping costs under control.
 
- The IP address is used to track tokens used, which could be used to provide a
- free service to users with a limited number of tokens. Arcjet also supports
- adding custom characteristics so you could use a user ID to track authenticated
- users instead. See the `chat_userid` example for an example of this.
+ A custom user identifier is used to track tokens used by a user regardless of
+ which device or IP they are using. This can be used to apply a quota for each
+ user. Custom characteristics are defined with a string key when configuring the
+ rate limit rule. The value is then passed as a string, number or boolean when
+ calling the protect method. You can use any string value for the key.
 */
 import arcjet, { tokenBucket } from "@arcjet/next";
 import { OpenAIStream, StreamingTextResponse } from "ai";
@@ -28,7 +29,7 @@ const aj = arcjet({
   rules: [
     tokenBucket({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      characteristics: ["ip.src"], // track requests by IP address
+      characteristics: ["userId"], // track requests by user ID
       refillRate: 2_000, // fill the bucket up by 2,000 tokens
       interval: "1h", // every hour
       capacity: 5_000, // up to 5,000 tokens
@@ -45,6 +46,10 @@ const openai = new OpenAI({
 export const runtime = "edge";
 
 export async function POST(req: Request) {
+  // This userId is hard coded for the example, but this is where you would do a
+  // session lookup and get the user ID.
+  const userId = "totoro"
+
   const { messages } = await req.json();
 
    // Estimate the number of tokens required to process the request
@@ -55,7 +60,7 @@ export async function POST(req: Request) {
   console.log("Token estimate", estimate);
 
   // Withdraw tokens from the token bucket
-  const decision = await aj.protect(req, { requested: estimate });
+  const decision = await aj.protect(req, { requested: estimate, userId });
   console.log("Arcjet decision", decision.conclusion);
 
   if (decision.reason.isRateLimit()) {
