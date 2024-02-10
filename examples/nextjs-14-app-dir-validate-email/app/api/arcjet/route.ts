@@ -8,8 +8,8 @@ const aj = arcjet({
   key: process.env.ARCJET_KEY,
   rules: [
     validateEmail({
-      mode: "LIVE",
-      block: ["NO_MX_RECORDS"],
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      block: ["NO_MX_RECORDS"], // block email addresses with no MX records
     }),
   ],
 });
