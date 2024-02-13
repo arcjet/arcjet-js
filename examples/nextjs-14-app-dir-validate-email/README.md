@@ -25,11 +25,7 @@ handler](https://nextjs.org/docs/app/building-your-application/routing/route-han
    npm ci
    ```
 
-3. Add your Arcjet key to `.env.local`
-
-   ```env
-   ARCJET_KEY=
-   ```
+3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
 
 4. Start the dev server.
 
