@@ -51,7 +51,7 @@ const aj = arcjet({
   client: createRemoteClient({
     transport: createConnectTransport({
       baseUrl: defaultBaseUrl(),
-      httpVersion: "1.1",
+      httpVersion: "2",
     }),
   }),
 });
