@@ -260,7 +260,9 @@ function toString(value: unknown) {
   return "<unsupported type>";
 }
 
-function extraProps(details: ArcjetRequestDetails): Record<string, string> {
+function extraProps<Props extends PlainObject>(
+  details: ArcjetRequest<Props>,
+): Record<string, string> {
   const extra: Map<string, string> = new Map();
   for (const [key, value] of Object.entries(details)) {
     if (isUnknownRequestProperty(key)) {
@@ -315,7 +317,7 @@ export function createRemoteClient(
           query: details.query,
           // TODO(#208): Re-add body
           // body: details.body,
-          extra: extraProps(details),
+          extra: details.extra,
           email: typeof details.email === "string" ? details.email : undefined,
         },
         rules: rules.map(ArcjetRuleToProtocol),
@@ -364,7 +366,7 @@ export function createRemoteClient(
           headers: Object.fromEntries(details.headers.entries()),
           // TODO(#208): Re-add body
           // body: details.body,
-          extra: extraProps(details),
+          extra: details.extra,
           email: typeof details.email === "string" ? details.email : undefined,
         },
         decision: ArcjetDecisionToProtocol(decision),
@@ -625,7 +627,17 @@ export type ExtraProps<Rules> = Rules extends []
  * @property ...extra - Extra data that might be useful for Arcjet. For example, requested tokens are specified as the `requested` property.
  */
 export type ArcjetRequest<Props extends PlainObject> = Simplify<
-  Partial<ArcjetRequestDetails> & Props
+  {
+    [key: string]: unknown;
+    ip?: string;
+    method?: string;
+    protocol?: string;
+    host?: string;
+    path?: string;
+    headers?: Headers | Record<string, string | string[] | undefined>;
+    cookies?: string;
+    query?: string;
+  } & Props
 >;
 
 function isLocalRule<Props extends PlainObject>(
@@ -1052,9 +1064,19 @@ export default function arcjet<
         request = {} as typeof request;
       }
 
-      const details = Object.freeze({
-        ...request,
+      const details: Partial<ArcjetRequestDetails> = Object.freeze({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
         headers: new ArcjetHeaders(request.headers),
+        cookies: request.cookies,
+        query: request.query,
+        // TODO(#208): Re-add body
+        // body: request.body,
+        extra: extraProps(request),
+        email: typeof request.email === "string" ? request.email : undefined,
       });
 
       log.time("local");
