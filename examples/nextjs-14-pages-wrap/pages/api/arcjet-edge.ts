@@ -12,12 +12,14 @@ const aj = arcjet({
   // See: https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables
   key: process.env.ARCJET_KEY!,
   rules: [
+    // Fixed window rate limit. Arcjet also supports sliding window and token
+    // bucket.
     fixedWindow({
-      mode: "LIVE",
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
       // Limiting by ip.src is the default if not specified
       //characteristics: ["ip.src"],
-      window: "1m",
-      max: 1,
+      window: "1m", // 1 min fixed window
+      max: 1, // allow a single request (for demo purposes)
     }),
   ],
 });
