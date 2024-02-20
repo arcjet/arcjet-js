@@ -131,3 +131,6 @@ dist
 
 # One-off scripts
 *.sh
+
+# macOS
+.DS_Store
