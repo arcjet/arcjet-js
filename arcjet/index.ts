@@ -257,7 +257,7 @@ function toString(value: unknown) {
     return value ? "true" : "false";
   }
 
-  return "<unsupported type>";
+  return "<unsupported value>";
 }
 
 function extraProps<Props extends PlainObject>(
