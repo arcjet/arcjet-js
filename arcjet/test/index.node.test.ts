@@ -83,17 +83,15 @@ import arcjet, {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-type IsEqual<A, B> = (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B
-  ? 1
-  : 2
-  ? true
-  : false;
+type IsEqual<A, B> =
+  (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2
+    ? true
+    : false;
 
 // Type testing utilities
 type Assert<T extends true> = T;
-type Props<P extends Primitive> = P extends Primitive<infer Props>
-  ? Props
-  : never;
+type Props<P extends Primitive> =
+  P extends Primitive<infer Props> ? Props : never;
 type RequiredProps<P extends Primitive, E> = IsEqual<Props<P>, E>;
 
 // Instances of Headers contain symbols that may be different depending

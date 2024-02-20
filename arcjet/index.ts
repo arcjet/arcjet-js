@@ -168,13 +168,14 @@ type LiteralCheck<
     | boolean
     | symbol
     | bigint,
-> = IsNever<T> extends false // Must be wider than `never`
-  ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
-    ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
-      ? false
-      : true
-    : false
-  : false;
+> =
+  IsNever<T> extends false // Must be wider than `never`
+    ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
+      ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
+        ? false
+        : true
+      : false
+    : false;
 type IsStringLiteral<T> = LiteralCheck<T, string>;
 
 export interface RemoteClient {
@@ -586,20 +587,21 @@ export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 // Note: If a user doesn't provide the object literal to our primitives
 // directly, we fallback to no required props. They can opt-in by adding the
 // `as const` suffix to the characteristics array.
-type PropsForCharacteristic<T> = IsStringLiteral<T> extends true
-  ? T extends
-      | "ip.src"
-      | "http.host"
-      | "http.method"
-      | "http.request.uri.path"
-      | `http.request.headers["${string}"]`
-      | `http.request.cookie["${string}"]`
-      | `http.request.uri.args["${string}"]`
-    ? {}
-    : T extends string
-      ? Record<T, string | number | boolean>
-      : never
-  : {};
+type PropsForCharacteristic<T> =
+  IsStringLiteral<T> extends true
+    ? T extends
+        | "ip.src"
+        | "http.host"
+        | "http.method"
+        | "http.request.uri.path"
+        | `http.request.headers["${string}"]`
+        | `http.request.cookie["${string}"]`
+        | `http.request.uri.args["${string}"]`
+      ? {}
+      : T extends string
+        ? Record<T, string | number | boolean>
+        : never
+    : {};
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 // We theoretically support an arbitrary amount of rule flattening,
