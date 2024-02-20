@@ -8,7 +8,19 @@
 # Arcjet rate limit OpenAI chat route with Next.js 14
 
 This example shows how to implement a rate limit on a Next.js 14 API route which
-uses the OpenAI chat API.
+uses the OpenAI chat API. It uses the [openai-chat-tokens
+library](https://github.com/hmarr/openai-chat-tokens) to track the number of
+tokens used by a `gpt-3.5-turbo` AI chatbot.
+
+There are 2 example routes:
+
+1. `/api/chat` is the default route that tracks the user by IP address. It
+applies a limit of 2,000 tokens per hour with a maximum of 5,000 tokens in the
+bucket. This allows for a reasonable conversation length without consuming too
+many tokens.
+
+2. `/api/chat_userid` is a route that tracks the user by a unique identifier.
+   You could use this to track a quota per authenticated user.
 
 ## How to use
 
@@ -25,12 +37,8 @@ uses the OpenAI chat API.
    npm ci
    ```
 
-3. Add your Arcjet & OpenAI keys to `.env.local`
-
-   ```env
-   ARCJET_KEY=
-   OPENAI_API_KEY=
-   ```
+3. Rename `.env.local.example` to `.env.local` and add your Arcjet & OpenAI
+   keys.
 
 4. Start the dev server.
 
