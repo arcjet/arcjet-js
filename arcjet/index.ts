@@ -1062,7 +1062,10 @@ export default function arcjet<
     .flat(1)
     .sort((a, b) => a.priority - b.priority);
 
-  async function protect<Props extends PlainObject>(rules: ArcjetRule[], request: ArcjetRequest<Props>) {
+  async function protect<Props extends PlainObject>(
+    rules: ArcjetRule[],
+    request: ArcjetRequest<Props>,
+  ) {
     // This goes against the type definition above, but users might call
     // `protect()` with no value and we don't want to crash
     if (typeof request === "undefined") {
@@ -1262,11 +1265,7 @@ export default function arcjet<
     // fail open.
     try {
       log.time("decideApi");
-      const decision = await remoteClient.decide(
-        context,
-        details,
-        rules,
-      );
+      const decision = await remoteClient.decide(context, details, rules);
       log.timeEnd("decideApi");
 
       // If the decision is to block and we have a non-zero TTL, we cache the
@@ -1293,12 +1292,7 @@ export default function arcjet<
         results,
       });
 
-      remoteClient.report(
-        { key, fingerprint, log },
-        details,
-        decision,
-        rules,
-      );
+      remoteClient.report({ key, fingerprint, log }, details, decision, rules);
 
       return decision;
     } finally {
@@ -1308,12 +1302,6 @@ export default function arcjet<
 
   // This is a separate function so it can be called recursively
   function withRule<Rule extends Primitive | Product>(rule: Rule) {
-    // TODO(#207): Remove this when we can default the transport so client is not required
-    // It is currently optional in the options so the Next SDK can override it for the user
-    if (typeof client === "undefined") {
-      throw new Error("Client is required");
-    }
-
     const rules = [...rootRules, rule]
       .flat(1)
       .sort((a, b) => a.priority - b.priority);
