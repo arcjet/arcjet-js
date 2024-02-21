@@ -35,7 +35,7 @@ describe("Arcjet: Env = Edge runtime", () => {
       key: "1234",
       rules: [
         // Test rules
-        foobarbaz(),
+        // foobarbaz(),
         tokenBucket(
           {
             characteristics: [
@@ -67,7 +67,9 @@ describe("Arcjet: Env = Edge runtime", () => {
       client,
     });
 
-    const decision = await aj.protect({
+    const aj2 = aj.withRule(foobarbaz());
+
+    const decision = await aj2.protect({
       abc: 123,
       requested: 1,
       email: "",
