@@ -83,17 +83,15 @@ import arcjet, {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-type IsEqual<A, B> = (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B
-  ? 1
-  : 2
-  ? true
-  : false;
+type IsEqual<A, B> =
+  (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2
+    ? true
+    : false;
 
 // Type testing utilities
 type Assert<T extends true> = T;
-type Props<P extends Primitive> = P extends Primitive<infer Props>
-  ? Props
-  : never;
+type Props<P extends Primitive> =
+  P extends Primitive<infer Props> ? Props : never;
 type RequiredProps<P extends Primitive, E> = IsEqual<Props<P>, E>;
 
 // Instances of Headers contain symbols that may be different depending
@@ -254,7 +252,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const router = {
@@ -279,12 +279,7 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
         fingerprint,
@@ -312,7 +307,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const router = {
@@ -338,12 +335,7 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
         fingerprint,
@@ -371,7 +363,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const router = {
@@ -395,12 +389,7 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
         fingerprint,
@@ -428,7 +417,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
       email: "abc@example.com",
     };
 
@@ -453,14 +444,8 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
-          email: details.email,
         },
         fingerprint,
         rules: [],
@@ -487,7 +472,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
       email: "abc@example.com",
     };
 
@@ -517,14 +504,8 @@ describe("createRemoteClient", () => {
     expect(router.decide).toHaveBeenCalledWith(
       new DecideRequest({
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
-          email: details.email,
         },
         fingerprint,
         rules: [new Rule()],
@@ -551,7 +532,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const router = {
@@ -591,7 +574,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const router = {
@@ -630,7 +615,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const router = {
@@ -669,7 +656,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const router = {
@@ -711,7 +700,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const router = {
@@ -759,7 +750,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const router = {
@@ -800,7 +793,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
       email: "test@example.com",
     };
 
@@ -834,14 +829,8 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
-          email: details.email,
         },
         decision: {
           id: decision.id,
@@ -872,7 +861,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [promise, resolve] = deferred();
@@ -905,12 +896,7 @@ describe("createRemoteClient", () => {
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
         decision: {
@@ -942,7 +928,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [promise, resolve] = deferred();
@@ -975,12 +963,7 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
         decision: {
@@ -1019,7 +1002,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [promise, resolve] = deferred();
@@ -1052,12 +1037,7 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
         decision: {
@@ -1089,7 +1069,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [promise, resolve] = deferred();
@@ -1118,12 +1100,7 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
         decision: {
@@ -1155,7 +1132,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
       email: "abc@example.com",
     };
 
@@ -1202,14 +1181,8 @@ describe("createRemoteClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
         fingerprint,
         details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          extra: { "extra-test": details["extra-test"] },
+          ...details,
           headers: { "user-agent": "curl/8.1.2" },
-          email: details.email,
         },
         decision: {
           id: decision.id,
@@ -1247,7 +1220,9 @@ describe("createRemoteClient", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [promise, resolve] = deferred();
@@ -1662,7 +1637,9 @@ describe("Primitive > detectBot", () => {
       ]),
       cookies: "",
       query: "",
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [rule] = detectBot(options);
@@ -1714,7 +1691,9 @@ describe("Primitive > detectBot", () => {
       ]),
       cookies: "",
       query: "",
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [rule] = detectBot(options);
@@ -1766,7 +1745,9 @@ describe("Primitive > detectBot", () => {
       ]),
       cookies: "",
       query: "",
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [rule] = detectBot(options);
@@ -1805,7 +1786,9 @@ describe("Primitive > detectBot", () => {
       ]),
       cookies: "",
       query: "",
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [rule] = detectBot({
@@ -1861,7 +1844,9 @@ describe("Primitive > detectBot", () => {
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       cookies: "",
       query: "",
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [rule] = detectBot(options);
@@ -1912,7 +1897,9 @@ describe("Primitive > detectBot", () => {
       ]),
       cookies: "",
       query: "",
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [rule] = detectBot(options);
@@ -1952,7 +1939,9 @@ describe("Primitive > detectBot", () => {
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       cookies: "",
       query: "",
-      "extra-test": "extra-test-value",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
     };
 
     const [rule] = detectBot(options);
@@ -2802,6 +2791,7 @@ describe("Primitive > validateEmail", () => {
       cookies: "",
       query: "",
       email: "foobarbaz@example.com",
+      extra: {},
     };
 
     const [rule] = validateEmail();
@@ -2833,6 +2823,7 @@ describe("Primitive > validateEmail", () => {
       cookies: "",
       query: "",
       email: "foobarbaz",
+      extra: {},
     };
 
     const [rule] = validateEmail();
@@ -2864,6 +2855,7 @@ describe("Primitive > validateEmail", () => {
       cookies: "",
       query: "",
       email: "foobarbaz@localhost",
+      extra: {},
     };
 
     const [rule] = validateEmail();
@@ -2895,6 +2887,7 @@ describe("Primitive > validateEmail", () => {
       cookies: "",
       query: "",
       email: "foobarbaz@localhost",
+      extra: {},
     };
 
     const [rule] = validateEmail({
@@ -2928,6 +2921,7 @@ describe("Primitive > validateEmail", () => {
       cookies: "",
       query: "",
       email: "@example.com",
+      extra: {},
     };
 
     const [rule] = validateEmail();
@@ -2959,6 +2953,7 @@ describe("Primitive > validateEmail", () => {
       cookies: "",
       query: "",
       email: "foobarbaz@[127.0.0.1]",
+      extra: {},
     };
 
     const [rule] = validateEmail();
@@ -2990,6 +2985,7 @@ describe("Primitive > validateEmail", () => {
       cookies: "",
       query: "",
       email: "foobarbaz@localhost",
+      extra: {},
     };
 
     const [rule] = validateEmail({
@@ -3023,6 +3019,7 @@ describe("Primitive > validateEmail", () => {
       cookies: "",
       query: "",
       email: "foobarbaz@[127.0.0.1]",
+      extra: {},
     };
 
     const [rule] = validateEmail({
@@ -3343,7 +3340,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3361,7 +3358,7 @@ describe("SDK", () => {
       client,
     });
 
-    const decision = await aj.protect(details);
+    const decision = await aj.protect(request);
     expect(decision.conclusion).toEqual("DENY");
 
     expect(allowed.validate).toHaveBeenCalledTimes(1);
@@ -3370,7 +3367,7 @@ describe("SDK", () => {
     expect(denied.protect).toHaveBeenCalledTimes(1);
   });
 
-  test("works with an empty details object", async () => {
+  test("works with an empty request object", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3382,7 +3379,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const details = {};
+    const request = {};
 
     const aj = arcjet({
       key: "test-key",
@@ -3390,11 +3387,11 @@ describe("SDK", () => {
       client,
     });
 
-    const decision = await aj.protect(details);
+    const decision = await aj.protect(request);
     expect(decision.conclusion).toEqual("ALLOW");
   });
 
-  test("does not crash with no details object", async () => {
+  test("does not crash with no request object", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3429,7 +3426,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const details = {};
+    const request = {};
 
     const rules: ArcjetRule[][] = [];
     // We only iterate 4 times because `testRuleMultiple` generates 3 rules
@@ -3443,7 +3440,7 @@ describe("SDK", () => {
       client,
     });
 
-    const decision = await aj.protect(details);
+    const decision = await aj.protect(request);
     expect(decision.conclusion).toEqual("ERROR");
   });
 
@@ -3459,7 +3456,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3477,13 +3474,181 @@ describe("SDK", () => {
       client,
     });
 
-    const decision = await aj.protect(details);
+    const decision = await aj.protect(request);
     expect(decision.conclusion).toEqual("DENY");
 
     expect(denied.validate).toHaveBeenCalledTimes(1);
     expect(denied.protect).toHaveBeenCalledTimes(1);
     expect(allowed.validate).toHaveBeenCalledTimes(0);
     expect(allowed.protect).toHaveBeenCalledTimes(0);
+  });
+
+  test("accepts plain object of headers", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const key = "test-key";
+    const context = {
+      key,
+      fingerprint:
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+    };
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: { "User-Agent": "curl/8.1.2" },
+      "extra-test": "extra-test-value",
+    };
+
+    const aj = arcjet({
+      key: "test-key",
+      rules: [],
+      client,
+    });
+
+    const decision = await aj.protect(request);
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.objectContaining(context),
+      expect.objectContaining({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
+        headers: new Headers(Object.entries(request.headers)),
+        extra: {
+          "extra-test": "extra-test-value",
+        },
+      }),
+      [],
+    );
+  });
+
+  test("accepts plain object of `raw` headers", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const key = "test-key";
+    const context = {
+      key,
+      fingerprint:
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+    };
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: { "User-Agent": ["curl/8.1.2", "something"] },
+      "extra-test": "extra-test-value",
+    };
+
+    const aj = arcjet({
+      key: "test-key",
+      rules: [],
+      client,
+    });
+
+    const decision = await aj.protect(request);
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.objectContaining(context),
+      expect.objectContaining({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
+        headers: new Headers([
+          ["user-agent", "curl/8.1.2"],
+          ["user-agent", "something"],
+        ]),
+        extra: {
+          "extra-test": "extra-test-value",
+        },
+      }),
+      [],
+    );
+  });
+
+  test("converts extra keys with non-string values to string values", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const key = "test-key";
+    const context = {
+      key,
+      fingerprint:
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+    };
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: { "User-Agent": "curl/8.1.2" },
+      "extra-number": 123,
+      "extra-false": false,
+      "extra-true": true,
+      "extra-unsupported": new Date(),
+    };
+
+    const aj = arcjet({
+      key: "test-key",
+      rules: [],
+      client,
+    });
+
+    const decision = await aj.protect(request);
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.objectContaining(context),
+      expect.objectContaining({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
+        headers: new Headers(Object.entries(request.headers)),
+        extra: {
+          "extra-number": "123",
+          "extra-false": "false",
+          "extra-true": "true",
+          "extra-unsupported": "<unsupported value>",
+        },
+      }),
+      [],
+    );
   });
 
   test("does not call `client.report()` if the local decision is ALLOW", async () => {
@@ -3498,13 +3663,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
-    };
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3516,12 +3675,12 @@ describe("SDK", () => {
     const allowed = testRuleLocalAllowed();
 
     const aj = arcjet({
-      key,
+      key: "test-key",
       rules: [[allowed]],
       client,
     });
 
-    const _ = await aj.protect(details);
+    const _ = await aj.protect(request);
     expect(client.report).toHaveBeenCalledTimes(0);
     expect(client.decide).toHaveBeenCalledTimes(1);
     // TODO: Validate correct `ruleResults` are sent with `decide` when available
@@ -3545,7 +3704,7 @@ describe("SDK", () => {
       fingerprint:
         "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3562,11 +3721,21 @@ describe("SDK", () => {
       client,
     });
 
-    const decision = await aj.protect(details);
+    const decision = await aj.protect(request);
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.objectContaining(context),
-      expect.objectContaining(details),
+      expect.objectContaining({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
+        headers: request.headers,
+        extra: {
+          "extra-test": "extra-test-value",
+        },
+      }),
       [rule],
     );
   });
@@ -3589,7 +3758,7 @@ describe("SDK", () => {
       fingerprint:
         "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3606,11 +3775,21 @@ describe("SDK", () => {
       client,
     });
 
-    const _ = await aj.protect(details);
+    const _ = await aj.protect(request);
     expect(client.report).toHaveBeenCalledTimes(1);
     expect(client.report).toHaveBeenCalledWith(
       expect.objectContaining(context),
-      expect.objectContaining(details),
+      expect.objectContaining({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
+        headers: request.headers,
+        extra: {
+          "extra-test": "extra-test-value",
+        },
+      }),
       expect.objectContaining({
         conclusion: "DENY",
       }),
@@ -3630,8 +3809,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const key = "test-key";
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3643,12 +3821,12 @@ describe("SDK", () => {
     const denied = testRuleLocalDenied();
 
     const aj = arcjet({
-      key,
+      key: "test-key",
       rules: [[denied]],
       client,
     });
 
-    const _ = await aj.protect(details);
+    const _ = await aj.protect(request);
     expect(client.decide).toHaveBeenCalledTimes(0);
   });
 
@@ -3670,7 +3848,7 @@ describe("SDK", () => {
       fingerprint:
         "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3686,13 +3864,23 @@ describe("SDK", () => {
       client,
     });
 
-    const _ = await aj.protect(details);
+    const _ = await aj.protect(request);
 
     expect(client.report).toHaveBeenCalledTimes(0);
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.objectContaining(context),
-      expect.objectContaining(details),
+      expect.objectContaining({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
+        headers: request.headers,
+        extra: {
+          "extra-test": "extra-test-value",
+        },
+      }),
       [],
     );
   });
@@ -3709,8 +3897,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const key = "test-key";
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3721,12 +3908,12 @@ describe("SDK", () => {
     };
 
     const aj = arcjet({
-      key,
+      key: "test-key",
       rules: [],
       client,
     });
 
-    const decision = await aj.protect(details);
+    const decision = await aj.protect(request);
 
     expect(decision.isErrored()).toBe(false);
 
@@ -3735,7 +3922,7 @@ describe("SDK", () => {
 
     expect(decision.conclusion).toEqual("DENY");
 
-    const decision2 = await aj.protect(details);
+    const decision2 = await aj.protect(request);
 
     expect(decision2.isErrored()).toBe(false);
     expect(client.decide).toHaveBeenCalledTimes(1);
@@ -3777,13 +3964,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
-    };
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3794,12 +3975,12 @@ describe("SDK", () => {
     };
 
     const aj = arcjet({
-      key,
+      key: "test-key",
       rules: [[testRuleLocalThrow()]],
       client,
     });
 
-    const _ = await aj.protect(details);
+    const _ = await aj.protect(request);
 
     expect(client.report).toHaveBeenCalledTimes(0);
     expect(client.decide).toHaveBeenCalledTimes(1);
@@ -3818,8 +3999,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const key = "test-key";
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3837,7 +4017,7 @@ describe("SDK", () => {
         type: "TEST_RULE_LOCAL_THROW_STRING",
         priority: 1,
         validate: jest.fn(),
-        async protect(context, req) {
+        async protect(context, details) {
           errorLogSpy = jest.spyOn(context.log, "error");
           throw "Local rule protect failed";
         },
@@ -3845,12 +4025,12 @@ describe("SDK", () => {
     }
 
     const aj = arcjet({
-      key,
+      key: "test-key",
       rules: [[testRuleLocalThrowString()]],
       client,
     });
 
-    const _ = await aj.protect(details);
+    const _ = await aj.protect(request);
 
     expect(errorLogSpy).toHaveBeenCalledTimes(1);
     expect(errorLogSpy).toHaveBeenCalledWith(
@@ -3872,8 +4052,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const key = "test-key";
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3891,7 +4070,7 @@ describe("SDK", () => {
         type: "TEST_RULE_LOCAL_THROW_NULL",
         priority: 1,
         validate: jest.fn(),
-        async protect(context, req) {
+        async protect(context, details) {
           errorLogSpy = jest.spyOn(context.log, "error");
           throw null;
         },
@@ -3899,12 +4078,12 @@ describe("SDK", () => {
     }
 
     const aj = arcjet({
-      key,
+      key: "test-key",
       rules: [[testRuleLocalThrowNull()]],
       client,
     });
 
-    const _ = await aj.protect(details);
+    const _ = await aj.protect(request);
 
     expect(errorLogSpy).toHaveBeenCalledTimes(1);
     expect(errorLogSpy).toHaveBeenCalledWith(
@@ -3926,8 +4105,7 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const key = "test-key";
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3938,19 +4116,19 @@ describe("SDK", () => {
     };
 
     const aj = arcjet({
-      key,
+      key: "test-key",
       rules: [[testRuleLocalDryRun()]],
       client,
     });
 
-    const decision = await aj.protect(details);
+    const decision = await aj.protect(request);
 
     expect(decision.isDenied()).toBe(false);
 
     expect(client.decide).toBeCalledTimes(1);
     expect(client.report).toBeCalledTimes(1);
 
-    const decision2 = await aj.protect(details);
+    const decision2 = await aj.protect(request);
 
     expect(decision2.isDenied()).toBe(false);
 
@@ -3976,7 +4154,7 @@ describe("SDK", () => {
       fingerprint:
         "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -3994,14 +4172,24 @@ describe("SDK", () => {
       client,
     });
 
-    const decision = await aj.protect(details);
+    const decision = await aj.protect(request);
 
     expect(decision.isErrored()).toBe(false);
 
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.objectContaining(context),
-      expect.objectContaining(details),
+      expect.objectContaining({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
+        headers: request.headers,
+        extra: {
+          "extra-test": "extra-test-value",
+        },
+      }),
       [rule],
     );
   });
@@ -4020,7 +4208,7 @@ describe("SDK", () => {
       fingerprint:
         "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
     };
-    const details = {
+    const request = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
@@ -4036,7 +4224,7 @@ describe("SDK", () => {
       client,
     });
 
-    const decision = await aj.protect(details);
+    const decision = await aj.protect(request);
 
     expect(decision.isErrored()).toBe(true);
 
@@ -4044,7 +4232,17 @@ describe("SDK", () => {
     expect(client.report).toHaveBeenCalledTimes(1);
     expect(client.report).toHaveBeenCalledWith(
       expect.objectContaining(context),
-      expect.objectContaining(details),
+      expect.objectContaining({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
+        headers: request.headers,
+        extra: {
+          "extra-test": "extra-test-value",
+        },
+      }),
       expect.objectContaining({
         conclusion: "ERROR",
       }),

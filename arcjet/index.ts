@@ -168,13 +168,14 @@ type LiteralCheck<
     | boolean
     | symbol
     | bigint,
-> = IsNever<T> extends false // Must be wider than `never`
-  ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
-    ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
-      ? false
-      : true
-    : false
-  : false;
+> =
+  IsNever<T> extends false // Must be wider than `never`
+    ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
+      ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
+        ? false
+        : true
+      : false
+    : false;
 type IsStringLiteral<T> = LiteralCheck<T, string>;
 
 export interface RemoteClient {
@@ -257,10 +258,12 @@ function toString(value: unknown) {
     return value ? "true" : "false";
   }
 
-  return "<unsupported type>";
+  return "<unsupported value>";
 }
 
-function extraProps(details: ArcjetRequestDetails): Record<string, string> {
+function extraProps<Props extends PlainObject>(
+  details: ArcjetRequest<Props>,
+): Record<string, string> {
   const extra: Map<string, string> = new Map();
   for (const [key, value] of Object.entries(details)) {
     if (isUnknownRequestProperty(key)) {
@@ -315,7 +318,7 @@ export function createRemoteClient(
           query: details.query,
           // TODO(#208): Re-add body
           // body: details.body,
-          extra: extraProps(details),
+          extra: details.extra,
           email: typeof details.email === "string" ? details.email : undefined,
         },
         rules: rules.map(ArcjetRuleToProtocol),
@@ -364,7 +367,7 @@ export function createRemoteClient(
           headers: Object.fromEntries(details.headers.entries()),
           // TODO(#208): Re-add body
           // body: details.body,
-          extra: extraProps(details),
+          extra: details.extra,
           email: typeof details.email === "string" ? details.email : undefined,
         },
         decision: ArcjetDecisionToProtocol(decision),
@@ -584,20 +587,21 @@ export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 // Note: If a user doesn't provide the object literal to our primitives
 // directly, we fallback to no required props. They can opt-in by adding the
 // `as const` suffix to the characteristics array.
-type PropsForCharacteristic<T> = IsStringLiteral<T> extends true
-  ? T extends
-      | "ip.src"
-      | "http.host"
-      | "http.method"
-      | "http.request.uri.path"
-      | `http.request.headers["${string}"]`
-      | `http.request.cookie["${string}"]`
-      | `http.request.uri.args["${string}"]`
-    ? {}
-    : T extends string
-      ? Record<T, string | number | boolean>
-      : never
-  : {};
+type PropsForCharacteristic<T> =
+  IsStringLiteral<T> extends true
+    ? T extends
+        | "ip.src"
+        | "http.host"
+        | "http.method"
+        | "http.request.uri.path"
+        | `http.request.headers["${string}"]`
+        | `http.request.cookie["${string}"]`
+        | `http.request.uri.args["${string}"]`
+      ? {}
+      : T extends string
+        ? Record<T, string | number | boolean>
+        : never
+    : {};
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 // We theoretically support an arbitrary amount of rule flattening,
@@ -625,7 +629,17 @@ export type ExtraProps<Rules> = Rules extends []
  * @property ...extra - Extra data that might be useful for Arcjet. For example, requested tokens are specified as the `requested` property.
  */
 export type ArcjetRequest<Props extends PlainObject> = Simplify<
-  Partial<ArcjetRequestDetails> & Props
+  {
+    [key: string]: unknown;
+    ip?: string;
+    method?: string;
+    protocol?: string;
+    host?: string;
+    path?: string;
+    headers?: Headers | Record<string, string | string[] | undefined>;
+    cookies?: string;
+    query?: string;
+  } & Props
 >;
 
 function isLocalRule<Props extends PlainObject>(
@@ -1052,9 +1066,19 @@ export default function arcjet<
         request = {} as typeof request;
       }
 
-      const details = Object.freeze({
-        ...request,
+      const details: Partial<ArcjetRequestDetails> = Object.freeze({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
         headers: new ArcjetHeaders(request.headers),
+        cookies: request.cookies,
+        query: request.query,
+        // TODO(#208): Re-add body
+        // body: request.body,
+        extra: extraProps(request),
+        email: typeof request.email === "string" ? request.email : undefined,
       });
 
       log.time("local");

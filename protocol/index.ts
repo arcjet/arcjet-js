@@ -371,16 +371,17 @@ export class ArcjetErrorDecision extends ArcjetDecision {
 }
 
 export interface ArcjetRequestDetails {
-  [key: string]: unknown;
   ip: string;
   method: string;
   protocol: string;
   host: string;
   path: string;
-  // TODO(#215): Allow `Record<string, string>` and `Record<string, string[]>`?
   headers: Headers;
   cookies: string;
   query: string;
+  extra: { [key: string]: string };
+  // TODO: Consider moving email to `extra` map
+  email?: string;
 }
 
 export type ArcjetRule<Props extends {} = {}> = {
