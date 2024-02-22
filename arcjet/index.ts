@@ -1309,8 +1309,9 @@ export default function arcjet<
 
   // This is a separate function so it can be called recursively
   function withRule<Rule extends Primitive | Product>(rule: Rule) {
-    const rules = [...rootRules, ...rule]
-      .sort((a, b) => a.priority - b.priority);
+    const rules = [...rootRules, ...rule].sort(
+      (a, b) => a.priority - b.priority,
+    );
 
     return Object.freeze({
       get runtime() {

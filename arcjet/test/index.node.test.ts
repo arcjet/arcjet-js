@@ -3199,7 +3199,7 @@ describe("SDK", () => {
     };
   }
 
-  function testRuleProps(): Primitive<{abc: number}> {
+  function testRuleProps(): Primitive<{ abc: number }> {
     return [];
   }
 
@@ -3328,11 +3328,11 @@ describe("SDK", () => {
       >
     >;
 
-    const aj3 = aj2.withRule(testRuleProps())
+    const aj3 = aj2.withRule(testRuleProps());
     type WithRuleTestTwo = Assert<
       SDKProps<
         typeof aj3,
-        { requested: number; userId: string | number | boolean, abc: number }
+        { requested: number; userId: string | number | boolean; abc: number }
       >
     >;
   });
@@ -3371,13 +3371,8 @@ describe("SDK", () => {
       >
     >;
 
-    const aj3 = aj.withRule(testRuleProps())
-    type WithRuleTestTwo = Assert<
-      SDKProps<
-        typeof aj3,
-        { abc: number }
-      >
-    >;
+    const aj3 = aj.withRule(testRuleProps());
+    type WithRuleTestTwo = Assert<SDKProps<typeof aj3, { abc: number }>>;
   });
 
   test("augment SDK still has the `runtime` property", async () => {
