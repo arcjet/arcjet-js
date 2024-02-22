@@ -56,6 +56,7 @@ import arcjet, {
   tokenBucket,
   slidingWindow,
   Primitive,
+  Arcjet,
 } from "../index";
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -92,7 +93,8 @@ type IsEqual<A, B> =
 type Assert<T extends true> = T;
 type Props<P extends Primitive> =
   P extends Primitive<infer Props> ? Props : never;
-type RequiredProps<P extends Primitive, E> = IsEqual<Props<P>, E>;
+type RuleProps<P extends Primitive, E> = IsEqual<Props<P>, E>;
+type SDKProps<SDK, E> = IsEqual<SDK extends Arcjet<infer P> ? P : never, E>;
 
 // Instances of Headers contain symbols that may be different depending
 // on if they have been iterated or not, so we need this equality tester
@@ -2030,7 +2032,7 @@ describe("Primitive > tokenBucket", () => {
       capacity: 120,
     });
     type Test = Assert<
-      RequiredProps<
+      RuleProps<
         typeof rules,
         { requested: number; userId: string | number | boolean }
       >
@@ -2052,7 +2054,7 @@ describe("Primitive > tokenBucket", () => {
       interval: 60,
       capacity: 120,
     });
-    type Test = Assert<RequiredProps<typeof rules, { requested: number }>>;
+    type Test = Assert<RuleProps<typeof rules, { requested: number }>>;
   });
 
   test("produces a rules based on single `limit` specified", async () => {
@@ -2236,7 +2238,7 @@ describe("Primitive > fixedWindow", () => {
       max: 1,
     });
     type Test = Assert<
-      RequiredProps<typeof rules, { userId: string | number | boolean }>
+      RuleProps<typeof rules, { userId: string | number | boolean }>
     >;
   });
 
@@ -2254,7 +2256,7 @@ describe("Primitive > fixedWindow", () => {
       window: "1h",
       max: 1,
     });
-    type Test = Assert<RequiredProps<typeof rules, {}>>;
+    type Test = Assert<RuleProps<typeof rules, {}>>;
   });
 
   test("produces a rules based on single `limit` specified", async () => {
@@ -2428,7 +2430,7 @@ describe("Primitive > slidingWindow", () => {
       max: 1,
     });
     type Test = Assert<
-      RequiredProps<typeof rules, { userId: string | number | boolean }>
+      RuleProps<typeof rules, { userId: string | number | boolean }>
     >;
   });
 
@@ -2446,7 +2448,7 @@ describe("Primitive > slidingWindow", () => {
       interval: "1h",
       max: 1,
     });
-    type Test = Assert<RequiredProps<typeof rules, {}>>;
+    type Test = Assert<RuleProps<typeof rules, {}>>;
   });
 
   test("produces a rules based on single `limit` specified", async () => {
@@ -3197,6 +3199,10 @@ describe("SDK", () => {
     };
   }
 
+  function testRuleProps(): Primitive<{abc: number}> {
+    return [];
+  }
+
   test("creates a new Arcjet SDK with no rules", () => {
     const client = {
       decide: jest.fn(async () => {
@@ -3251,6 +3257,157 @@ describe("SDK", () => {
     expect(() => {
       const _ = aj.runtime;
     }).toThrow();
+  });
+
+  test("can augment rules via `withRule` API", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const aj = arcjet({
+      key: "test-key",
+      rules: [],
+      client,
+    });
+    type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
+
+    const aj2 = aj.withRule(
+      tokenBucket({
+        characteristics: ["userId"],
+        refillRate: 60,
+        interval: 60,
+        capacity: 120,
+      }),
+    );
+    type WithRuleTest = Assert<
+      SDKProps<
+        typeof aj2,
+        { requested: number; userId: string | number | boolean }
+      >
+    >;
+  });
+
+  test("can chain new rules via multiple `withRule` calls", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const aj = arcjet({
+      key: "test-key",
+      rules: [],
+      client,
+    });
+    type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
+
+    const aj2 = aj.withRule(
+      tokenBucket({
+        characteristics: ["userId"],
+        refillRate: 60,
+        interval: 60,
+        capacity: 120,
+      }),
+    );
+    type WithRuleTestOne = Assert<
+      SDKProps<
+        typeof aj2,
+        { requested: number; userId: string | number | boolean }
+      >
+    >;
+
+    const aj3 = aj2.withRule(testRuleProps())
+    type WithRuleTestTwo = Assert<
+      SDKProps<
+        typeof aj3,
+        { requested: number; userId: string | number | boolean, abc: number }
+      >
+    >;
+  });
+
+  test("creates different augmented clients when `withRule` not chained", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const aj = arcjet({
+      key: "test-key",
+      rules: [],
+      client,
+    });
+    type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
+
+    const aj2 = aj.withRule(
+      tokenBucket({
+        characteristics: ["userId"],
+        refillRate: 60,
+        interval: 60,
+        capacity: 120,
+      }),
+    );
+    type WithRuleTestOne = Assert<
+      SDKProps<
+        typeof aj2,
+        { requested: number; userId: string | number | boolean }
+      >
+    >;
+
+    const aj3 = aj.withRule(testRuleProps())
+    type WithRuleTestTwo = Assert<
+      SDKProps<
+        typeof aj3,
+        { abc: number }
+      >
+    >;
+  });
+
+  test("augment SDK still has the `runtime` property", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const aj = arcjet({
+      key: "test-key",
+      rules: [],
+      client,
+    });
+
+    const aj2 = aj.withRule(
+      tokenBucket({
+        characteristics: ["userId"],
+        refillRate: 60,
+        interval: 60,
+        capacity: 120,
+      }),
+    );
+
+    expect(aj2).toHaveProperty("runtime", Runtime.Node);
   });
 
   test("creates a new Arcjet SDK with only local rules", () => {
