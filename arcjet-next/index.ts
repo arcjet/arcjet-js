@@ -307,9 +307,10 @@ function withClient<const Rules extends (Primitive | Product)[]>(
 }
 
 /**
- * Create a new Arcjet Next client. Always build your initial client outside of
- * a request handler so it persists across requests. If you need to augment a
- * client inside a handler, call the `withRule()` function on the base client.
+ * Create a new {@link ArcjetNext} client. Always build your initial client
+ * outside of a request handler so it persists across requests. If you need to
+ * augment a client inside a handler, call the `withRule()` function on the base
+ * client.
  *
  * @param options - Arcjet configuration options to apply to all requests.
  */
