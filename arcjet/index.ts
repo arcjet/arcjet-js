@@ -1026,6 +1026,13 @@ export interface Arcjet<Props extends PlainObject> {
    */
   protect(request: ArcjetRequest<Props>): Promise<ArcjetDecision>;
 
+  /**
+   * Augments the client with another rule. Useful for varying rules based on
+   * criteria in your handler—e.g. different rate limit for logged in users.
+   *
+   * @param rule The rule to add to this execution.
+   * @returns An augmented {@link Arcjet} client.
+   */
   withRule<Rule extends Primitive | Product>(
     rule: Rule,
   ): Arcjet<Simplify<Props & ExtraProps<Rule>>>;
