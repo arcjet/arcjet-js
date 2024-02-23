@@ -110,13 +110,23 @@ export class ArcjetRateLimitReason extends ArcjetReason {
 
   max: number;
   remaining: number;
+  reset: number;
+  window: number;
   resetTime?: Date;
 
-  constructor(init: { max: number; remaining: number; resetTime?: Date }) {
+  constructor(init: {
+    max: number;
+    remaining: number;
+    reset: number;
+    window: number;
+    resetTime?: Date;
+  }) {
     super();
 
     this.max = init.max;
     this.remaining = init.remaining;
+    this.reset = init.reset;
+    this.window = init.window;
     this.resetTime = init.resetTime;
   }
 }

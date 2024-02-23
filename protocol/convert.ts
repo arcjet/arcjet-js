@@ -240,6 +240,8 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
       return new ArcjetRateLimitReason({
         max: reason.max,
         remaining: reason.remaining,
+        reset: reason.resetInSeconds,
+        window: reason.windowInSeconds,
         resetTime: reason.resetTime?.toDate(),
       });
     }
@@ -293,6 +295,8 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         value: new RateLimitReason({
           max: reason.max,
           remaining: reason.remaining,
+          resetInSeconds: reason.reset,
+          windowInSeconds: reason.window,
           resetTime: reason.resetTime
             ? Timestamp.fromDate(reason.resetTime)
             : undefined,
