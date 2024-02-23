@@ -1,14 +1,16 @@
-import arcjet, { ArcjetDecision, tokenBucket } from "@arcjet/next";
+import arcjet, { ArcjetDecision, tokenBucket, detectBot } from "@arcjet/next";
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs";
 
 // The root Arcjet client is created outside of the handler.
 const aj = arcjet({
-  // Get your site key from https://app.arcjet.com
-  // and set it as an environment variable rather than hard coding.
-  // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
-  key: process.env.ARCJET_KEY!,
-  rules: [],
+  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  rules: [
+    detectBot({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      block: ["AUTOMATED"], // blocks all automated clients
+    }),
+  ],
 });
 
 export async function GET(req: Request) {
@@ -20,14 +22,10 @@ export async function GET(req: Request) {
   if (user) {
     // Allow higher limits for signed in users.
     const rl = aj.withRule(
-      // Create a token bucket rate limit. Fixed and sliding window rate limits
-      // are also supported. See https://docs.arcjet.com/rate-limiting/algorithms
+      // Create a token bucket rate limit. Other algorithms are supported.
       tokenBucket({
-        mode: "LIVE", // will block requests at the limit. Use "DRY_RUN" to log only
-        // Rate limit based on the Clerk userId
-        // See https://clerk.com/docs/references/nextjs/authentication-object
-        // See https://docs.arcjet.com/rate-limiting/configuration#characteristics
-        characteristics: ["userId"],
+        mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+        characteristics: ["userId"], // Rate limit based on the Clerk userId
         refillRate: 20, // refill 20 tokens per interval
         interval: 10, // refill every 10 seconds
         capacity: 100, // bucket maximum capacity of 100 tokens
@@ -35,17 +33,14 @@ export async function GET(req: Request) {
     );
 
     // Deduct 5 tokens from the token bucket
-    decision = await rl.protect(req, { userId: user.id, requested: 5 } );
+    decision = await rl.protect(req, { userId: user.id, requested: 5 });
   } else {
     // Limit the amount of requests for anonymous users.
     const rl = aj.withRule(
-      // Create a token bucket rate limit. Fixed and sliding window rate limits
-      // are also supported. See https://docs.arcjet.com/rate-limiting/algorithms
+      // Create a token bucket rate limit. Other algorithms are supported.
       tokenBucket({
-        mode: "LIVE", // will block requests at the limit. Use "DRY_RUN" to log only
-        // Use the built in ip.src characteristic
-        // See https://docs.arcjet.com/rate-limiting/configuration#characteristics
-        characteristics: ["ip.src"],
+        mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+        characteristics: ["ip.src"], // Use the built in ip.src characteristic
         refillRate: 5, // refill 5 tokens per interval
         interval: 10, // refill every 10 seconds
         capacity: 10, // bucket maximum capacity of 10 tokens
@@ -53,19 +48,32 @@ export async function GET(req: Request) {
     );
 
     // Deduct 5 tokens from the token bucket
-    decision = await rl.protect(req, { requested: 5 })
+    decision = await rl.protect(req, { requested: 5 });
   }
 
   if (decision.isDenied()) {
-    return NextResponse.json(
-      {
-        error: "Too Many Requests",
-        reason: decision.reason,
-      },
-      {
-        status: 429,
-      }
-    );
+    if (decision.reason.isRateLimit()) {
+      return NextResponse.json(
+        {
+          error: "Too Many Requests",
+          reason: decision.reason,
+        },
+        {
+          status: 429,
+        }
+      );
+    } else {
+      // Detected a bot
+      return NextResponse.json(
+        {
+          error: "Forbidden",
+          reason: decision.reason,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
   }
 
   return NextResponse.json({ message: "Hello World" });

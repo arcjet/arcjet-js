@@ -15,6 +15,7 @@ It sets up the `/api/arcjet` route.
 * Unauthenticated users receive a low rate limit based on the user IP address.
 * Users authenticated with Clerk have a higher rate limit based on the Clerk
   user ID.
+* A bot detection rule is also added to check all requests.
 
 ## How to use
 
