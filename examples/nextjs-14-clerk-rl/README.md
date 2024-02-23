@@ -10,12 +10,12 @@
 This example shows how to use an Arcjet rate limit with a user ID from [Clerk
 authentication and Next.js](https://clerk.com/docs/quickstarts/nextjs).
 
-It sets up 2 API routes:
+It sets up the `/api/arcjet` route.
 
-* `/api/public` does not require authentication and has a low rate limit based
-  on the user IP address.
-* `/api/private` uses Clerk authentication and has a higher rate limit based on
-  the Clerk user ID.
+* Unauthenticated users receive a low rate limit based on the user IP address.
+* Users authenticated with Clerk have a higher rate limit based on the Clerk
+  user ID.
+* A bot detection rule is also added to check all requests.
 
 ## How to use
 

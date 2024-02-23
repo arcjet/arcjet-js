@@ -5,22 +5,19 @@ export default function Home() {
         <div>
           <h1>Arcjet Rate Limit / Clerk Authentication Example</h1>
           <p>
-            These two API routes are both protected with an Arcjet rate limit:
+            This API route is protected with an Arcjet rate limit.
+            <a href="/api/arcjet">
+              <code>/api/arcjet</code>
+            </a>
           </p>
           <ul>
             <li>
-              <a href="/api/public">
-                <code>/api/public</code>
-              </a>{" "}
-              does not require authentication and has a low rate limit based on
-              the user IP address.
+              Unauthenticated users receive a low rate limit based on the user
+              IP address.
             </li>
             <li>
-              <a href="/api/private">
-                <code>/api/private</code>
-              </a>{" "}
-              uses Clerk authentication and has a higher rate limit based on the
-              Clerk user ID.
+              Users authenticated with Clerk have a higher rate limit based on
+              the Clerk user ID.
             </li>
           </ul>
 
@@ -39,8 +36,8 @@ export default function Home() {
             </li>
             <li>
               Visit{" "}
-              <a href="/api/private">
-                <code>/api/private</code>
+              <a href="/api/arcjet">
+                <code>/api/arcjet</code>
               </a>{" "}
               in your browser or use the token to send several <code>curl</code>{" "}
               requests to <code>/api/private</code>
@@ -48,7 +45,7 @@ export default function Home() {
           </ol>
 
           <pre>
-            curl -v http://localhost:3000/api/private -H "Authorization: Bearer
+            curl -v http://localhost:3000/api/arcjet -H "Authorization: Bearer
             TOKENHERE"
           </pre>
         </div>
