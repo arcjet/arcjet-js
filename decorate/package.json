@@ -31,6 +31,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
+    "@arcjet/logger": "1.0.0-alpha.8",
     "@arcjet/protocol": "1.0.0-alpha.8"
   },
   "devDependencies": {

@@ -1,3 +1,4 @@
+import logger from "@arcjet/logger";
 import {
   ArcjetDecision,
   ArcjetRateLimitReason,
@@ -14,6 +15,7 @@ interface ResponseLike {
 interface OutgoingMessageLike {
   headersSent: boolean;
   hasHeader: (name: string) => boolean;
+  getHeader: (name: string) => number | string | string[] | undefined;
   setHeader: (
     name: string,
     value: number | string | ReadonlyArray<string>,
@@ -29,6 +31,7 @@ export interface ArcjetResponse {
   // to use these values.
   headersSent?: boolean;
   hasHeader?: (name: string) => boolean;
+  getHeader?: (name: string) => number | string | string[] | undefined;
   setHeader?: (
     name: string,
     value: number | string | ReadonlyArray<string>,
@@ -60,6 +63,10 @@ function isOutgoingMessageLike(
   }
 
   if (typeof response.hasHeader !== "function") {
+    return false;
+  }
+
+  if (typeof response.getHeader !== "function") {
     return false;
   }
 
@@ -118,12 +125,8 @@ function nearestLimit(
     return current;
   }
 
-  if (current.max > next.max) {
-    return next;
-  }
-
-  // If all else is equal, just return the current reason
-  return current;
+  // All else equal, just return the next item in the list
+  return next;
 }
 
 /**
@@ -143,16 +146,22 @@ export function setRateLimitHeaders(
     .map(extractReason)
     .filter(isRateLimitReason);
 
+  if (rateLimitReasons.length === 0) {
+    return;
+  }
+
   const policies = new Map<number, number>();
   for (const reason of rateLimitReasons) {
     if (policies.has(reason.max)) {
-      // TODO: Warn? Or does it make sense to bail since there is conflicting policies?
-      continue;
+      logger.error(
+        "Invalid rate limit policy—two policies should not share the same limit",
+      );
+      return;
     }
 
     if (typeof reason.max !== "number" || typeof reason.window !== "number") {
-      // TODO: Warn? Or should this bail since the reasons were corrupted?
-      continue;
+      logger.error("Invalid rate limit encountered: %s");
+      return;
     }
 
     policies.set(reason.max, reason.window);
@@ -170,7 +179,7 @@ export function setRateLimitHeaders(
     typeof rl.remaining !== "number" ||
     typeof rl.reset !== "number"
   ) {
-    // TODO: Warn
+    logger.error("Invalid rate limit enountered: %s", rl);
     return;
   }
 
@@ -178,12 +187,18 @@ export function setRateLimitHeaders(
 
   if (isResponseLike(response)) {
     if (response.headers.has("RateLimit")) {
-      // TODO: Warn
-      return;
+      logger.warn(
+        "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
+        response.headers.get("RateLimit"),
+        limit,
+      );
     }
     if (response.headers.has("RateLimit-Policy")) {
-      // TODO: Warn
-      return;
+      logger.warn(
+        "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
+        response.headers.get("RateLimit-Policy"),
+        limit,
+      );
     }
 
     response.headers.set("RateLimit", limit);
@@ -192,21 +207,33 @@ export function setRateLimitHeaders(
 
   if (isOutgoingMessageLike(response)) {
     if (response.headersSent) {
-      // TODO: Warn
+      logger.error(
+        "Headers have already been sent—cannot set RateLimit header",
+      );
       return;
     }
 
     if (response.hasHeader("RateLimit")) {
-      // TODO: Warn
-      return;
+      logger.warn(
+        "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
+        response.getHeader("RateLimit"),
+        limit,
+      );
     }
 
     if (response.hasHeader("RateLimit-Policy")) {
-      // TODO: Warn
-      return;
+      logger.warn(
+        "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
+        response.getHeader("RateLimit-Policy"),
+        limit,
+      );
     }
 
     response.setHeader("RateLimit", limit);
     response.setHeader("RateLimit-Policy", policy);
   }
+
+  logger.debug(
+    "Cannot determine if response is Response or OutgoingMessage type",
+  );
 }
