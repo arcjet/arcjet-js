@@ -9,6 +9,15 @@
     "url": "git+https://github.com/arcjet/arcjet-js.git",
     "directory": "analyze"
   },
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
   "engines": {
     "node": ">=18"
   },
