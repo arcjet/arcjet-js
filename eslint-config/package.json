@@ -9,6 +9,15 @@
     "url": "git+https://github.com/arcjet/arcjet-js.git",
     "directory": "eslint-config"
   },
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
   "engines": {
     "node": ">=18"
   },
@@ -34,7 +43,7 @@
     "eslint": "^8"
   },
   "devDependencies": {
-    "eslint": "8.56.0"
+    "eslint": "8.57.0"
   },
   "publishConfig": {
     "access": "public",
