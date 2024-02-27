@@ -88,6 +88,18 @@ function toPolicyString([max, window]: [number, number]) {
   return `${max};w=${window}`;
 }
 
+function toLimitString({
+  max,
+  remaining,
+  reset,
+}: {
+  max: number;
+  remaining: number;
+  reset: number;
+}) {
+  return `limit=${max}, remaining=${remaining}, reset=${reset}`;
+}
+
 function extractReason(result: ArcjetRuleResult): ArcjetReason {
   return result.reason;
 }
@@ -171,14 +183,13 @@ export function setRateLimitHeaders(
       policies.set(reason.max, reason.window);
     }
 
+    const rl = rateLimitReasons.reduce(nearestLimit);
+
+    limit = toLimitString(rl);
     policy = Array.from(policies.entries())
       .sort(sortByLowestMax)
       .map(toPolicyString)
       .join(", ");
-
-    const rl = rateLimitReasons.reduce(nearestLimit);
-
-    limit = `limit=${rl.max}, remaining=${rl.remaining}, reset=${rl.reset}`;
   } else {
     // For cached decisions, we may not have rule results, but we'd still have
     // the top-level reason.
@@ -193,8 +204,8 @@ export function setRateLimitHeaders(
         return;
       }
 
+      limit = toLimitString(decision.reason);
       policy = toPolicyString([decision.reason.max, decision.reason.window]);
-      limit = `limit=${decision.reason.max}, remaining=${decision.reason.remaining}, reset=${decision.reason.reset}`;
     } else {
       return;
     }
