@@ -1452,6 +1452,8 @@ describe("ArcjetDecision", () => {
     const reason = new ArcjetRateLimitReason({
       max: 0,
       remaining: 0,
+      reset: 100,
+      window: 100,
     });
     expect(reason.isRateLimit()).toEqual(true);
   });
