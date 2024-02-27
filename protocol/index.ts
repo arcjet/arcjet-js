@@ -1,6 +1,5 @@
 import { typeid } from "typeid-js";
 import { Reason } from "./gen/es/decide/v1alpha1/decide_pb.js";
-import type { Logger } from "@arcjet/logger";
 
 type ArcjetEnum<T extends string> = { readonly [Key in T]: T };
 
@@ -463,5 +462,4 @@ export interface ArcjetBotRule<Props extends {}>
 export type ArcjetContext = {
   key: string;
   fingerprint: string;
-  log: Logger;
 };

@@ -24,7 +24,7 @@ import {
   RuleResult,
   RuleState,
 } from "@arcjet/protocol/proto";
-import { Logger } from "@arcjet/logger";
+import logger from "@arcjet/logger";
 
 import arcjet, {
   ArcjetDecision,
@@ -245,7 +245,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -300,7 +299,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -356,7 +354,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -410,7 +407,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -465,7 +461,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -525,7 +520,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -567,7 +561,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -608,7 +601,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -649,7 +641,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -693,7 +684,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -743,7 +733,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -785,7 +774,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -853,7 +841,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -920,7 +907,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -994,7 +980,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1061,7 +1046,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1124,7 +1108,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1213,7 +1196,6 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1229,7 +1211,7 @@ describe("createRemoteClient", () => {
 
     const [promise, resolve] = deferred();
 
-    const logSpy = jest.spyOn(context.log, "log").mockImplementation(() => {
+    const logSpy = jest.spyOn(logger, "log").mockImplementation(() => {
       resolve();
     });
 
@@ -1543,7 +1525,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       headers: new Headers(),
@@ -1561,7 +1542,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       headers: undefined,
@@ -1579,7 +1559,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1623,7 +1602,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1677,7 +1655,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1731,7 +1708,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1772,7 +1748,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1835,7 +1810,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1883,7 +1857,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1930,7 +1903,6 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -2745,7 +2717,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       email: "abc@example.com",
@@ -2763,7 +2734,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       email: undefined,
@@ -2781,7 +2751,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -2813,7 +2782,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -2845,7 +2813,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -2877,7 +2844,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -2911,7 +2877,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -2943,7 +2908,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -2975,7 +2939,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -3009,7 +2972,6 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
-      log: new Logger(),
     };
     const details = {
       ip: "172.100.1.1",
@@ -4161,7 +4123,7 @@ describe("SDK", () => {
       "extra-test": "extra-test-value",
     };
 
-    let errorLogSpy;
+    const errorLogSpy = jest.spyOn(logger, "error");
 
     function testRuleLocalThrowString(): ArcjetLocalRule {
       return {
@@ -4170,7 +4132,6 @@ describe("SDK", () => {
         priority: 1,
         validate: jest.fn(),
         async protect(context, details) {
-          errorLogSpy = jest.spyOn(context.log, "error");
           throw "Local rule protect failed";
         },
       };
@@ -4214,7 +4175,7 @@ describe("SDK", () => {
       "extra-test": "extra-test-value",
     };
 
-    let errorLogSpy;
+    const errorLogSpy = jest.spyOn(logger, "error");
 
     function testRuleLocalThrowNull(): ArcjetLocalRule {
       return {
@@ -4223,7 +4184,6 @@ describe("SDK", () => {
         priority: 1,
         validate: jest.fn(),
         async protect(context, details) {
-          errorLogSpy = jest.spyOn(context.log, "error");
           throw null;
         },
       };
