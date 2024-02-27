@@ -218,6 +218,9 @@ export function setRateLimitHeaders(
 
     response.headers.set("RateLimit", limit);
     response.headers.set("RateLimit-Policy", policy);
+
+    // The response was handled
+    return;
   }
 
   if (isOutgoingMessageLike(response)) {
@@ -246,6 +249,9 @@ export function setRateLimitHeaders(
 
     response.setHeader("RateLimit", limit);
     response.setHeader("RateLimit-Policy", policy);
+
+    // The response was handled
+    return;
   }
 
   logger.debug(
