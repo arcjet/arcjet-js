@@ -146,44 +146,59 @@ export function setRateLimitHeaders(
     .map(extractReason)
     .filter(isRateLimitReason);
 
-  if (rateLimitReasons.length === 0) {
-    return;
-  }
+  let policy: string;
+  let limit: string;
+  if (rateLimitReasons.length > 0) {
+    const policies = new Map<number, number>();
+    for (const reason of rateLimitReasons) {
+      if (policies.has(reason.max)) {
+        logger.error(
+          "Invalid rate limit policy—two policies should not share the same limit",
+        );
+        return;
+      }
 
-  const policies = new Map<number, number>();
-  for (const reason of rateLimitReasons) {
-    if (policies.has(reason.max)) {
-      logger.error(
-        "Invalid rate limit policy—two policies should not share the same limit",
-      );
-      return;
+      if (
+        typeof reason.max !== "number" ||
+        typeof reason.window !== "number" ||
+        typeof reason.remaining !== "number" ||
+        typeof reason.reset !== "number"
+      ) {
+        logger.error("Invalid rate limit encountered: %s", reason);
+        return;
+      }
+
+      policies.set(reason.max, reason.window);
     }
 
-    if (typeof reason.max !== "number" || typeof reason.window !== "number") {
-      logger.error("Invalid rate limit encountered: %s");
+    policy = Array.from(policies.entries())
+      .sort(sortByLowestMax)
+      .map(toPolicyString)
+      .join(", ");
+
+    const rl = rateLimitReasons.reduce(nearestLimit);
+
+    limit = `limit=${rl.max}, remaining=${rl.remaining}, reset=${rl.reset}`;
+  } else {
+    // For cached decisions, we may not have rule results, but we'd still have
+    // the top-level reason.
+    if (isRateLimitReason(decision.reason)) {
+      if (
+        typeof decision.reason.max !== "number" ||
+        typeof decision.reason.window !== "number" ||
+        typeof decision.reason.remaining !== "number" ||
+        typeof decision.reason.reset !== "number"
+      ) {
+        logger.error("Invalid rate limit encountered: %s", decision.reason);
+        return;
+      }
+
+      policy = toPolicyString([decision.reason.max, decision.reason.window]);
+      limit = `limit=${decision.reason.max}, remaining=${decision.reason.remaining}, reset=${decision.reason.reset}`;
+    } else {
       return;
     }
-
-    policies.set(reason.max, reason.window);
   }
-
-  const policy = Array.from(policies.entries())
-    .sort(sortByLowestMax)
-    .map(toPolicyString)
-    .join(", ");
-
-  const rl = rateLimitReasons.reduce(nearestLimit);
-
-  if (
-    typeof rl.max !== "number" ||
-    typeof rl.remaining !== "number" ||
-    typeof rl.reset !== "number"
-  ) {
-    logger.error("Invalid rate limit enountered: %s", rl);
-    return;
-  }
-
-  const limit = `limit=${rl.max}, remaining=${rl.remaining}, reset=${rl.reset}`;
 
   if (isResponseLike(response)) {
     if (response.headers.has("RateLimit")) {

@@ -272,6 +272,125 @@ describe("setRateLimitHeaders", () => {
       expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
     });
 
+    test("adds rate limit headers when only top-level reason exists", () => {
+      const resp = new Response();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            remaining: 0,
+            reset: 100,
+            window: 100,
+          }),
+        }),
+      );
+      expect(resp.headers.has("RateLimit")).toEqual(true);
+      expect(resp.headers.get("RateLimit")).toEqual(
+        "limit=1, remaining=0, reset=100",
+      );
+      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
+      expect(resp.headers.get("RateLimit-Policy")).toEqual("1;w=100");
+    });
+
+    test("invalid rate limit reason `max` does not set headers", () => {
+      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+
+      const resp = new Response();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            // @ts-expect-error
+            max: { abc: "xyz" },
+            remaining: 0,
+            reset: 100,
+            window: 100,
+          }),
+        }),
+      );
+
+      expect(errorLogSpy).toHaveBeenCalled();
+      expect(resp.headers.has("RateLimit")).toEqual(false);
+      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+    });
+
+    test("invalid rate limit reason `window` does not set headers", () => {
+      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+
+      const resp = new Response();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            remaining: 0,
+            reset: 100,
+            // @ts-expect-error
+            window: { abc: "xyz" },
+          }),
+        }),
+      );
+
+      expect(errorLogSpy).toHaveBeenCalled();
+      expect(resp.headers.has("RateLimit")).toEqual(false);
+      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+    });
+
+    test("invalid rate limit reason `remaining` does not set headers", () => {
+      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+
+      const resp = new Response();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            // @ts-expect-error
+            remaining: { abc: "xyz" },
+            reset: 100,
+            window: 100,
+          }),
+        }),
+      );
+
+      expect(errorLogSpy).toHaveBeenCalled();
+      expect(resp.headers.has("RateLimit")).toEqual(false);
+      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+    });
+
+    test("invalid rate limit reason `reset` does not set headers", () => {
+      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+
+      const resp = new Response();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            remaining: 0,
+            // @ts-expect-error
+            reset: { abc: "xyz" },
+            window: 100,
+          }),
+        }),
+      );
+
+      expect(errorLogSpy).toHaveBeenCalled();
+      expect(resp.headers.has("RateLimit")).toEqual(false);
+      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+    });
+
     test("adds rate limit headers when result exists", () => {
       const resp = new Response();
       setRateLimitHeaders(
@@ -956,6 +1075,125 @@ describe("setRateLimitHeaders", () => {
           ],
           ttl: 0,
           reason: new ArcjetReason(),
+        }),
+      );
+
+      expect(errorLogSpy).toHaveBeenCalled();
+      expect(resp.hasHeader("RateLimit")).toEqual(false);
+      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+    });
+
+    test("adds rate limit headers when only top-level reason exists", () => {
+      const resp = new OutgoingMessage();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            remaining: 0,
+            reset: 100,
+            window: 100,
+          }),
+        }),
+      );
+      expect(resp.hasHeader("RateLimit")).toEqual(true);
+      expect(resp.getHeader("RateLimit")).toEqual(
+        "limit=1, remaining=0, reset=100",
+      );
+      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
+      expect(resp.getHeader("RateLimit-Policy")).toEqual("1;w=100");
+    });
+
+    test("invalid rate limit reason `max` does not set headers", () => {
+      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+
+      const resp = new OutgoingMessage();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            // @ts-expect-error
+            max: { abc: "xyz" },
+            remaining: 0,
+            reset: 100,
+            window: 100,
+          }),
+        }),
+      );
+
+      expect(errorLogSpy).toHaveBeenCalled();
+      expect(resp.hasHeader("RateLimit")).toEqual(false);
+      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+    });
+
+    test("invalid rate limit reason `window` does not set headers", () => {
+      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+
+      const resp = new OutgoingMessage();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            remaining: 0,
+            reset: 100,
+            // @ts-expect-error
+            window: { abc: "xyz" },
+          }),
+        }),
+      );
+
+      expect(errorLogSpy).toHaveBeenCalled();
+      expect(resp.hasHeader("RateLimit")).toEqual(false);
+      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+    });
+
+    test("invalid rate limit reason `remaining` does not set headers", () => {
+      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+
+      const resp = new OutgoingMessage();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            // @ts-expect-error
+            remaining: { abc: "xyz" },
+            reset: 100,
+            window: 100,
+          }),
+        }),
+      );
+
+      expect(errorLogSpy).toHaveBeenCalled();
+      expect(resp.hasHeader("RateLimit")).toEqual(false);
+      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+    });
+
+    test("invalid rate limit reason `reset` does not set headers", () => {
+      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+
+      const resp = new OutgoingMessage();
+      setRateLimitHeaders(
+        resp,
+        new ArcjetAllowDecision({
+          results: [],
+          ttl: 0,
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            remaining: 0,
+            // @ts-expect-error
+            reset: { abc: "xyz" },
+            window: 100,
+          }),
         }),
       );
 
