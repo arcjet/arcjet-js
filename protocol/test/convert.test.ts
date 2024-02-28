@@ -294,6 +294,8 @@ describe("convert", () => {
               max: 1,
               count: 2,
               remaining: -1,
+              resetInSeconds: 1000,
+              windowInSeconds: 1000,
               resetTime: undefined,
             },
           },
@@ -309,6 +311,8 @@ describe("convert", () => {
               max: 1,
               count: 2,
               remaining: -1,
+              resetInSeconds: 1000,
+              windowInSeconds: 1000,
               resetTime: Timestamp.now(),
             },
           },
@@ -359,6 +363,8 @@ describe("convert", () => {
         new ArcjetRateLimitReason({
           max: 1,
           remaining: -1,
+          reset: 100,
+          window: 100,
         }),
       ),
     ).toEqual(
@@ -368,6 +374,8 @@ describe("convert", () => {
           value: {
             max: 1,
             remaining: -1,
+            resetInSeconds: 100,
+            windowInSeconds: 100,
           },
         },
       }),
@@ -378,6 +386,8 @@ describe("convert", () => {
         new ArcjetRateLimitReason({
           max: 1,
           remaining: -1,
+          reset: 100,
+          window: 100,
           resetTime,
         }),
       ),
@@ -388,6 +398,8 @@ describe("convert", () => {
           value: {
             max: 1,
             remaining: -1,
+            resetInSeconds: 100,
+            windowInSeconds: 100,
             resetTime: Timestamp.fromDate(resetTime),
           },
         },

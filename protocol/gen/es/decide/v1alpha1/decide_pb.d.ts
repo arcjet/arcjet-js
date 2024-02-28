@@ -424,9 +424,26 @@ export declare class RateLimitReason extends Message<RateLimitReason> {
   /**
    * The time at which the rate limit window will reset.
    *
-   * @generated from field: google.protobuf.Timestamp reset_time = 4;
+   * Deprecated: Use `reset_in_seconds` instead.
+   *
+   * @generated from field: google.protobuf.Timestamp reset_time = 4 [deprecated = true];
+   * @deprecated
    */
   resetTime?: Timestamp;
+
+  /**
+   * The duration in seconds until this rate limit window will reset.
+   *
+   * @generated from field: uint32 reset_in_seconds = 5;
+   */
+  resetInSeconds: number;
+
+  /**
+   * The time window in seconds of this rate limit.
+   *
+   * @generated from field: uint32 window_in_seconds = 6;
+   */
+  windowInSeconds: number;
 
   constructor(data?: PartialMessage<RateLimitReason>);
 
@@ -959,10 +976,10 @@ export declare class RuleResult extends Message<RuleResult> {
   reason?: Reason;
 
   /**
-   * The duration in milliseconds this result should be considered valid, also
+   * The duration in seconds this result should be considered valid, also
    * known as time-to-live.
    *
-   * @generated from field: int32 ttl = 5;
+   * @generated from field: uint32 ttl = 5;
    */
   ttl: number;
 
@@ -1098,10 +1115,10 @@ export declare class Decision extends Message<Decision> {
   ruleResults: RuleResult[];
 
   /**
-   * The duration in milliseconds this decision should be considered valid,
+   * The duration in seconds this decision should be considered valid,
    * also known as time-to-live.
    *
-   * @generated from field: int32 ttl = 5;
+   * @generated from field: uint32 ttl = 5;
    */
   ttl: number;
 

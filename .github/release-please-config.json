@@ -41,6 +41,10 @@
       "component": "@arcjet/next",
       "skip-github-release": true
     },
+    "decorate": {
+      "component": "@arcjet/decorate",
+      "skip-github-release": true
+    },
     "duration": {
       "component": "@arcjet/duration",
       "skip-github-release": true

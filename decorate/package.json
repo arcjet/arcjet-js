@@ -1,13 +1,13 @@
 {
-  "name": "@arcjet/duration",
+  "name": "@arcjet/decorate",
   "version": "1.0.0-alpha.8",
-  "description": "Arcjet utilities for parsing duration strings",
+  "description": "Arcjet utilities for decorating responses with information",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "duration"
+    "directory": "decorate"
   },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
@@ -39,7 +39,10 @@
     "pretest": "npm run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@arcjet/logger": "1.0.0-alpha.8",
+    "@arcjet/protocol": "1.0.0-alpha.8"
+  },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.8",
     "@arcjet/rollup-config": "1.0.0-alpha.8",

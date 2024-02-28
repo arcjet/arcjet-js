@@ -5,7 +5,7 @@
   </picture>
 </a>
 
-# `@arcjet/ip`
+# `@arcjet/duration`
 
 <p>
   <a href="https://www.npmjs.com/package/@arcjet/duration">
