@@ -23,24 +23,22 @@ const aj = arcjet({
 export async function GET(req: Request) {
   const decision = await aj.protect(req);
 
-  let response: NextResponse;
+  const headers = new Headers();
+
+  setRateLimitHeaders(headers, decision);
+
   if (decision.isDenied()) {
-    response = NextResponse.json(
+    return NextResponse.json(
       {
         error: "Too Many Requests",
         reason: decision.reason,
       },
       {
         status: 429,
+        headers
       },
     );
-  } else {
-    response = NextResponse.json({
-      message: "Hello World"
-    });
   }
 
-  setRateLimitHeaders(response, decision);
-
-  return response;
+  return NextResponse.json({ message: "Hello World" }, { headers });
 }

@@ -6,10 +6,16 @@ import {
   ArcjetRuleResult,
 } from "@arcjet/protocol";
 
+interface HeaderLike {
+  has(name: string): boolean;
+  get(name: string): string | null;
+  set(name: string, value: string): void;
+}
+
 interface ResponseLike {
   // If this is defined, we can expect to be working with a `Response` or
   // `NextResponse`.
-  headers: Headers;
+  headers: HeaderLike;
 }
 
 interface OutgoingMessageLike {
@@ -22,10 +28,15 @@ interface OutgoingMessageLike {
   ) => unknown;
 }
 
-export interface ArcjetResponse {
+export interface ArcjetCanDecorate {
+  // If these are defined, we can expect to be working with `Headers` directly
+  has?: (name: string) => boolean;
+  get?: (name: string) => string | null;
+  set?: (name: string, value: string) => void;
+
   // If this is defined, we can expect to be working with a `Response` or
   // `NextResponse`.
-  headers?: Headers;
+  headers?: HeaderLike;
 
   // Otherwise, we'll be working with an `http.OutgoingMessage` and we'll need
   // to use these values.
@@ -38,16 +49,14 @@ export interface ArcjetResponse {
   ) => unknown;
 }
 
-function isResponseLike(response: ArcjetResponse): response is ResponseLike {
-  if (typeof response.headers === "undefined") {
-    return false;
-  }
-
+function isHeaderLike(value: ArcjetCanDecorate): value is HeaderLike {
   if (
-    "has" in response.headers &&
-    typeof response.headers.has === "function" &&
-    "set" in response.headers &&
-    typeof response.headers.set === "function"
+    "has" in value &&
+    typeof value.has === "function" &&
+    "get" in value &&
+    typeof value.get === "function" &&
+    "set" in value &&
+    typeof value.set === "function"
   ) {
     return true;
   }
@@ -55,8 +64,16 @@ function isResponseLike(response: ArcjetResponse): response is ResponseLike {
   return false;
 }
 
+function isResponseLike(value: ArcjetCanDecorate): value is ResponseLike {
+  if (typeof value.headers === "undefined") {
+    return false;
+  }
+
+  return isHeaderLike(value.headers);
+}
+
 function isOutgoingMessageLike(
-  response: ArcjetResponse,
+  response: ArcjetCanDecorate,
 ): response is OutgoingMessageLike {
   if (typeof response.headersSent !== "boolean") {
     return false;
@@ -142,16 +159,17 @@ function nearestLimit(
 }
 
 /**
- * Decorates a response with `RateLimit` and `RateLimit-Policy` headers based
+ * Decorates an object with `RateLimit` and `RateLimit-Policy` headers based
  * on an {@link ArcjetDecision} and conforming to the [Rate Limit fields for
  * HTTP](https://ietf-wg-httpapi.github.io/ratelimit-headers/draft-ietf-httpapi-ratelimit-headers.html)
  * draft specification.
  *
- * @param response The response to decorate—must be similar to a DOM Response or node's OutgoingMessage.
+ * @param value The object to decorate—must be similar to {@link Headers}, {@link Response} or
+ * {@link OutgoingMessage}.
  * @param decision The {@link ArcjetDecision} that was made by calling `protect()` on the SDK.
  */
 export function setRateLimitHeaders(
-  response: ArcjetResponse,
+  value: ArcjetCanDecorate,
   decision: ArcjetDecision,
 ) {
   const rateLimitReasons = decision.results
@@ -211,55 +229,78 @@ export function setRateLimitHeaders(
     }
   }
 
-  if (isResponseLike(response)) {
-    if (response.headers.has("RateLimit")) {
+  if (isHeaderLike(value)) {
+    if (value.has("RateLimit")) {
       logger.warn(
         "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
-        response.headers.get("RateLimit"),
+        value.get("RateLimit"),
         limit,
       );
     }
-    if (response.headers.has("RateLimit-Policy")) {
+    if (value.has("RateLimit-Policy")) {
       logger.warn(
         "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
-        response.headers.get("RateLimit-Policy"),
+        value.get("RateLimit-Policy"),
         limit,
       );
     }
 
-    response.headers.set("RateLimit", limit);
-    response.headers.set("RateLimit-Policy", policy);
+    value.set("RateLimit", limit);
+    value.set("RateLimit-Policy", policy);
 
     // The response was handled
     return;
   }
 
-  if (isOutgoingMessageLike(response)) {
-    if (response.headersSent) {
+  if (isResponseLike(value)) {
+    if (value.headers.has("RateLimit")) {
+      logger.warn(
+        "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
+        value.headers.get("RateLimit"),
+        limit,
+      );
+    }
+    if (value.headers.has("RateLimit-Policy")) {
+      logger.warn(
+        "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
+        value.headers.get("RateLimit-Policy"),
+        limit,
+      );
+    }
+
+    value.headers.set("RateLimit", limit);
+    value.headers.set("RateLimit-Policy", policy);
+
+    // The response was handled
+    return;
+  }
+
+  if (isOutgoingMessageLike(value)) {
+    if (value.headersSent) {
       logger.error(
         "Headers have already been sent—cannot set RateLimit header",
       );
       return;
     }
 
-    if (response.hasHeader("RateLimit")) {
+    if (value.hasHeader("RateLimit")) {
       logger.warn(
         "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
-        response.getHeader("RateLimit"),
+        value.getHeader("RateLimit"),
         limit,
       );
     }
 
-    if (response.hasHeader("RateLimit-Policy")) {
+    if (value.hasHeader("RateLimit-Policy")) {
       logger.warn(
         "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
-        response.getHeader("RateLimit-Policy"),
+        value.getHeader("RateLimit-Policy"),
         limit,
       );
     }
 
-    response.setHeader("RateLimit", limit);
-    response.setHeader("RateLimit-Policy", policy);
+    value.setHeader("RateLimit", limit);
+    value.setHeader("RateLimit-Policy", policy);
 
     // The response was handled
     return;
