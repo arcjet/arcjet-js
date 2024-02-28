@@ -40,7 +40,7 @@ import {
 } from "@arcjet/protocol/proto.js";
 import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
-import { Logger } from "@arcjet/logger";
+import logger from "@arcjet/logger";
 
 export * from "@arcjet/protocol";
 
@@ -324,7 +324,7 @@ export function createRemoteClient(
         rules: rules.map(ArcjetRuleToProtocol),
       });
 
-      context.log.debug("Decide request to %s", baseUrl);
+      logger.debug("Decide request to %s", baseUrl);
 
       const response = await client.decide(decideRequest, {
         headers: { Authorization: `Bearer ${context.key}` },
@@ -333,7 +333,7 @@ export function createRemoteClient(
 
       const decision = ArcjetDecisionFromProtocol(response.decision);
 
-      context.log.debug("Decide response", {
+      logger.debug("Decide response", {
         id: decision.id,
         fingerprint: context.fingerprint,
         path: details.path,
@@ -375,7 +375,7 @@ export function createRemoteClient(
         receivedAt: Timestamp.now(),
       });
 
-      context.log.debug("Report request to %s", baseUrl);
+      logger.debug("Report request to %s", baseUrl);
 
       // We use the promise API directly to avoid returning a promise from this function so execution can't be paused with `await`
       client
@@ -384,7 +384,7 @@ export function createRemoteClient(
           timeoutMs: 2_000, // 2 seconds
         })
         .then((response) => {
-          context.log.debug("Report response", {
+          logger.debug("Report response", {
             id: response.decision?.id,
             fingerprint: context.fingerprint,
             path: details.path,
@@ -393,7 +393,7 @@ export function createRemoteClient(
           });
         })
         .catch((err: unknown) => {
-          context.log.log(
+          logger.log(
             "Encountered problem sending report: %s",
             errorMessage(err),
           );
@@ -1046,8 +1046,6 @@ export interface Arcjet<Props extends PlainObject> {
 export default function arcjet<
   const Rules extends [...(Primitive | Product)[]] = [],
 >(options: ArcjetOptions<Rules>): Arcjet<Simplify<ExtraProps<Rules>>> {
-  const log = new Logger();
-
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules, client } = options;
 
@@ -1094,24 +1092,24 @@ export default function arcjet<
       email: typeof request.email === "string" ? request.email : undefined,
     });
 
-    log.time("local");
+    logger.time("local");
 
-    log.time("fingerprint");
+    logger.time("fingerprint");
     let ip = "";
     if (typeof details.ip === "string") {
       ip = details.ip;
     }
     if (details.ip === "") {
-      log.warn("generateFingerprint: ip is empty");
+      logger.warn("generateFingerprint: ip is empty");
     }
     const fingerprint = await analyze.generateFingerprint(ip);
-    log.debug("fingerprint (%s): %s", runtime(), fingerprint);
-    log.timeEnd("fingerprint");
+    logger.debug("fingerprint (%s): %s", runtime(), fingerprint);
+    logger.timeEnd("fingerprint");
 
-    const context: ArcjetContext = { key, fingerprint, log };
+    const context: ArcjetContext = { key, fingerprint };
 
     if (rules.length > 10) {
-      log.error("Failure running rules. Only 10 rules may be specified.");
+      logger.error("Failure running rules. Only 10 rules may be specified.");
 
       const decision = new ArcjetErrorDecision({
         ttl: 0,
@@ -1148,15 +1146,15 @@ export default function arcjet<
     // serverless environments where every request is isolated, but there may be
     // some instances where the instance is not recycled immediately. If so, we
     // can take advantage of that.
-    log.time("cache");
+    logger.time("cache");
     const existingBlockReason = blockCache.get(fingerprint);
-    log.timeEnd("cache");
+    logger.timeEnd("cache");
 
     // If already blocked then we can async log to the API and return the
     // decision immediately.
     if (existingBlockReason) {
-      log.timeEnd("local");
-      log.debug("decide: alreadyBlocked", {
+      logger.timeEnd("local");
+      logger.debug("decide: alreadyBlocked", {
         fingerprint,
         existingBlockReason,
       });
@@ -1169,7 +1167,7 @@ export default function arcjet<
 
       remoteClient.report(context, details, decision, rules);
 
-      log.debug("decide: already blocked", {
+      logger.debug("decide: already blocked", {
         id: decision.id,
         conclusion: decision.conclusion,
         fingerprint,
@@ -1190,13 +1188,13 @@ export default function arcjet<
         continue;
       }
 
-      log.time(rule.type);
+      logger.time(rule.type);
 
       try {
         localRule.validate(context, details);
         results[idx] = await localRule.protect(context, details);
 
-        log.debug("Local rule result:", {
+        logger.debug("Local rule result:", {
           id: results[idx].ruleId,
           rule: rule.type,
           fingerprint,
@@ -1207,7 +1205,7 @@ export default function arcjet<
           reason: results[idx].reason,
         });
       } catch (err) {
-        log.error(
+        logger.error(
           "Failure running rule: %s due to %s",
           rule.type,
           errorMessage(err),
@@ -1221,10 +1219,10 @@ export default function arcjet<
         });
       }
 
-      log.timeEnd(rule.type);
+      logger.timeEnd(rule.type);
 
       if (results[idx].isDenied()) {
-        log.timeEnd("local");
+        logger.timeEnd("local");
 
         const decision = new ArcjetDenyDecision({
           ttl: results[idx].ttl,
@@ -1241,7 +1239,7 @@ export default function arcjet<
         // and return this DENY decision.
         if (rule.mode !== "DRY_RUN") {
           if (results[idx].ttl > 0) {
-            log.debug("Caching decision for %d seconds", decision.ttl, {
+            logger.debug("Caching decision for %d seconds", decision.ttl, {
               fingerprint,
               conclusion: decision.conclusion,
               reason: decision.reason,
@@ -1257,7 +1255,7 @@ export default function arcjet<
           return decision;
         }
 
-        log.warn(
+        logger.warn(
           `Dry run mode is enabled for "%s" rule. Overriding decision. Decision was: %s`,
           rule.type,
           decision.conclusion,
@@ -1265,20 +1263,23 @@ export default function arcjet<
       }
     }
 
-    log.timeEnd("local");
-    log.time("remote");
+    logger.timeEnd("local");
+    logger.time("remote");
 
     // With no cached values, we take a decision remotely. We use a timeout to
     // fail open.
     try {
-      log.time("decideApi");
+      logger.time("decideApi");
       const decision = await remoteClient.decide(context, details, rules);
-      log.timeEnd("decideApi");
+      logger.timeEnd("decideApi");
 
       // If the decision is to block and we have a non-zero TTL, we cache the
       // block locally
       if (decision.isDenied() && decision.ttl > 0) {
-        log.debug("decide: Caching block locally for %d seconds", decision.ttl);
+        logger.debug(
+          "decide: Caching block locally for %d seconds",
+          decision.ttl,
+        );
 
         blockCache.set(
           fingerprint,
@@ -1289,7 +1290,7 @@ export default function arcjet<
 
       return decision;
     } catch (err) {
-      log.error(
+      logger.error(
         "Encountered problem getting remote decision: %s",
         errorMessage(err),
       );
@@ -1299,11 +1300,11 @@ export default function arcjet<
         results,
       });
 
-      remoteClient.report({ key, fingerprint, log }, details, decision, rules);
+      remoteClient.report(context, details, decision, rules);
 
       return decision;
     } finally {
-      log.timeEnd("remote");
+      logger.timeEnd("remote");
     }
   }
 
