@@ -41,6 +41,10 @@
       "component": "@arcjet/next",
       "skip-github-release": true
     },
+    "arcjet-node": {
+      "component": "@arcjet/node",
+      "skip-github-release": true
+    },
     "decorate": {
       "component": "@arcjet/decorate",
       "skip-github-release": true
@@ -87,6 +91,8 @@
         "@arcjet/analyze",
         "arcjet",
         "@arjcet/next",
+        "@arjcet/node",
+        "@arjcet/decorate",
         "@arjcet/duration",
         "@arcjet/eslint-config",
         "@arcjet/ip",
