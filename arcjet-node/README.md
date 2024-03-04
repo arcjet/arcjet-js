@@ -22,10 +22,6 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Node.js][node-js].
 
-## Getting started
-
-Visit [docs.arcjet.com][get-started-docs] to get started.
-
 ## Installation
 
 ```shell
@@ -39,8 +35,6 @@ bucket rate limit rule to a route where we identify the user based on their ID
 e.g. if they are logged in. The bucket is configured with a maximum capacity of
 10 tokens and refills by 5 tokens every 10 seconds. Each request consumes 5
 tokens.
-
-See the [Arcjet rate limit documentation][node-rate-limit-docs] for details.
 
 ```ts
 import arcjet, { tokenBucket } from "@arcjet/node";
@@ -88,8 +82,6 @@ server.listen(8000);
 attacks, including the OWASP Top 10. It’s enabled by default and runs on every
 request with negligible performance impact.
 
-See the [Arcjet Shield documentation][node-shield-quick-start-docs] for details.
-
 ```ts
 import arcjet from "@arcjet/node";
 import http from "node:http";
@@ -120,20 +112,12 @@ const server = http.createServer(async function (
 server.listen(8000);
 ```
 
-## API
-
-Reference documentation is available at [docs.arcjet.com][node-sdk-docs].
-
 ## License
 
 Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
 [node-js]: https://nodejs.org/
-[get-started-docs]: https://docs.arcjet.com/get-started/nodejs
 [rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
 [shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
-[node-sdk-docs]: https://docs.arcjet.com/reference/nodejs
-[node-rate-limit-docs]: https://docs.arcjet.com/rate-limiting/quick-start/nodejs
-[node-shield-quick-start-docs]: https://docs.arcjet.com/shield/quick-start/nodejs
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
