@@ -23,8 +23,13 @@ for TypeScript and JavaScript.
 
 ## Usage
 
-Please refer to [docs.arcjet.com][arcjet-docs] for the most accurate
-documentation in consuming our published packages.
+**Using Next.js?** Use the
+[`@arcjet/next`](https://www.npmjs.com/package/@arcjet/next) package.
+
+**Using Node.js?** Use the
+[`@arcjet/node`](https://www.npmjs.com/package/@arcjet/node) package.
+
+See our docs at [docs.arcjet.com][arcjet-docs].
 
 ## Packages
 
@@ -33,8 +38,8 @@ find a specific one through the categories and descriptions below.
 
 ### SDKs
 
-- [`arcjet`](./arcjet/README.md): TypeScript and JavaScript SDK core.
 - [`@arcjet/next`](./arcjet-next/README.md): SDK for the Next.js framework.
+- [`@arcjet/node`](./arcjet-node/README.md): SDK for Node.js.
 
 ### Analysis
 
@@ -44,6 +49,7 @@ find a specific one through the categories and descriptions below.
 
 ### Utilities
 
+- [`arcjet`](./arcjet/README.md): TypeScript and JavaScript SDK core.
 - [`@arcjet/protocol`](./protocol/README.md): TypeScript & JavaScript interface
   into the Arcjet protocol.
 - [`@arcjet/logger`](./logger/README.md): Logging interface which mirrors the
