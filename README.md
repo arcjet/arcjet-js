@@ -23,8 +23,13 @@ for TypeScript and JavaScript.
 
 ## Usage
 
-Please refer to [docs.arcjet.com][arcjet-docs] for the most accurate
-documentation in consuming our published packages.
+**Using Next.js?** Use the
+[`@arcjet/next`](https://www.npmjs.com/package/@arcjet/next) package.
+
+**Using Node.js?** Use the
+[`@arcjet/node`](https://www.npmjs.com/package/@arcjet/node) package.
+
+See our docs at [docs.arcjet.com][arcjet-docs].
 
 ## Packages
 

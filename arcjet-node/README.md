@@ -22,6 +22,9 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Node.js][node-js].
 
+**Looking for our Next.js framework SDK?** Check out the
+[`@arcjet/next`](https://www.npmjs.com/package/@arcjet/next) package.
+
 ## Installation
 
 ```shell
