@@ -1,5 +1,51 @@
 # Changelog
 
+## [1.0.0-alpha.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.8...arcjet-v1.0.0-alpha.9) (2024-03-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove logger from context and leverage singleton logger instead ([#260](https://github.com/arcjet/arcjet-js/issues/260))
+* Separate ArcjetRequest and ArcjetRequestDetails types to accept record of headers ([#228](https://github.com/arcjet/arcjet-js/issues/228))
+
+### 🚀 New Features
+
+* Add `withRule` API for adding adhoc rules ([#245](https://github.com/arcjet/arcjet-js/issues/245)) ([f8ebbdc](https://github.com/arcjet/arcjet-js/commit/f8ebbdc7198010c4aa942255a76e65537c73f807)), closes [#193](https://github.com/arcjet/arcjet-js/issues/193)
+* Add decorate package to set rate limit headers ([#247](https://github.com/arcjet/arcjet-js/issues/247)) ([232750d](https://github.com/arcjet/arcjet-js/commit/232750df8cf99378407e9c88e9d64d4b7a9410a4))
+* Separate ArcjetRequest and ArcjetRequestDetails types to accept record of headers ([#228](https://github.com/arcjet/arcjet-js/issues/228)) ([4950364](https://github.com/arcjet/arcjet-js/commit/4950364be1f895fc8bb782950b20623fc8324ceb)), closes [#33](https://github.com/arcjet/arcjet-js/issues/33)
+
+
+### 📦 Dependencies
+
+* **dev:** Bump @edge-runtime/jest-environment from 2.3.9 to 2.3.10 ([#229](https://github.com/arcjet/arcjet-js/issues/229)) ([6f3a070](https://github.com/arcjet/arcjet-js/commit/6f3a0706ccd7cc9c3fd80f554b4229f4b11767cb))
+* **dev:** Bump @rollup/wasm-node from 4.10.0 to 4.12.0 ([#235](https://github.com/arcjet/arcjet-js/issues/235)) ([cf7ffc2](https://github.com/arcjet/arcjet-js/commit/cf7ffc2ae35d75884a04c88818f8c780ca7af223))
+* **dev:** Bump @rollup/wasm-node from 4.9.6 to 4.10.0 ([#223](https://github.com/arcjet/arcjet-js/issues/223)) ([47c24b4](https://github.com/arcjet/arcjet-js/commit/47c24b40a8419f1dabcf8607c90dfcb97f6a4195))
+
+
+### 📝 Documentation
+
+* Update HTTP version ([#227](https://github.com/arcjet/arcjet-js/issues/227)) ([c102c64](https://github.com/arcjet/arcjet-js/commit/c102c64246020cfa247327fe646c62e36a43a62f))
+
+
+### 🧹 Miscellaneous Chores
+
+* Add bugs and author info & update readme ([#254](https://github.com/arcjet/arcjet-js/issues/254)) ([9b0d2fc](https://github.com/arcjet/arcjet-js/commit/9b0d2fc674fdc1ddf9952b9a2ef3f5f3c860d41a))
+* Remove logger from context and leverage singleton logger instead ([#260](https://github.com/arcjet/arcjet-js/issues/260)) ([c93a2e1](https://github.com/arcjet/arcjet-js/commit/c93a2e11d550651ddbc3d9256facba59d4d4d965))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+    * @arcjet/duration bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+    * @arcjet/logger bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+    * @arcjet/protocol bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+
 ## [1.0.0-alpha.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.7...arcjet-v1.0.0-alpha.8) (2024-02-09)
 
 
