@@ -45,8 +45,8 @@ export default function Home() {
           </ol>
 
           <pre>
-            curl -v http://localhost:3000/api/arcjet -H "Authorization: Bearer
-            TOKENHERE"
+            curl -v http://localhost:3000/api/arcjet -H &quot;Authorization: Bearer
+            TOKENHERE&quot;
           </pre>
         </div>
       </main>
