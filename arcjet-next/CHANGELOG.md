@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.0.0-alpha.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.8...@arcjet/next-v1.0.0-alpha.9) (2024-03-04)
+
+
+### 🚀 New Features
+
+* Add `withRule` API for adding adhoc rules ([#245](https://github.com/arcjet/arcjet-js/issues/245)) ([f8ebbdc](https://github.com/arcjet/arcjet-js/commit/f8ebbdc7198010c4aa942255a76e65537c73f807)), closes [#193](https://github.com/arcjet/arcjet-js/issues/193)
+
+
+### 📦 Dependencies
+
+* Bump next from 14.1.0 to 14.1.1 ([#281](https://github.com/arcjet/arcjet-js/issues/281)) ([c568890](https://github.com/arcjet/arcjet-js/commit/c5688900ae5fed526dce7956793628f8a1cdd9af))
+* **dev:** Bump @rollup/wasm-node from 4.10.0 to 4.12.0 ([#235](https://github.com/arcjet/arcjet-js/issues/235)) ([cf7ffc2](https://github.com/arcjet/arcjet-js/commit/cf7ffc2ae35d75884a04c88818f8c780ca7af223))
+* **dev:** Bump @rollup/wasm-node from 4.9.6 to 4.10.0 ([#223](https://github.com/arcjet/arcjet-js/issues/223)) ([47c24b4](https://github.com/arcjet/arcjet-js/commit/47c24b40a8419f1dabcf8607c90dfcb97f6a4195))
+
+
+### 📝 Documentation
+
+* Add node SDK and move core to utility section ([#290](https://github.com/arcjet/arcjet-js/issues/290)) ([b6683a5](https://github.com/arcjet/arcjet-js/commit/b6683a594edfaed17e675bc26bec51f735769b55))
+
+
+### 🧹 Miscellaneous Chores
+
+* Add bugs and author info & update readme ([#254](https://github.com/arcjet/arcjet-js/issues/254)) ([9b0d2fc](https://github.com/arcjet/arcjet-js/commit/9b0d2fc674fdc1ddf9952b9a2ef3f5f3c860d41a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/ip bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+    * arcjet bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.8 to 1.0.0-alpha.9
+
 ## [1.0.0-alpha.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.7...@arcjet/next-v1.0.0-alpha.8) (2024-02-09)
 
 

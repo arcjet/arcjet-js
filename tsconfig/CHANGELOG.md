@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-alpha.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.8...@arcjet/tsconfig-v1.0.0-alpha.9) (2024-03-04)
+
+
+### 🧹 Miscellaneous Chores
+
+* Add bugs and author info & update readme ([#254](https://github.com/arcjet/arcjet-js/issues/254)) ([9b0d2fc](https://github.com/arcjet/arcjet-js/commit/9b0d2fc674fdc1ddf9952b9a2ef3f5f3c860d41a))
+
 ## [1.0.0-alpha.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.7...@arcjet/tsconfig-v1.0.0-alpha.8) (2024-02-09)
 
 
