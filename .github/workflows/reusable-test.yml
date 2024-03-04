@@ -13,12 +13,18 @@ jobs:
       matrix:
         node: [18, 20]
         os: [ubuntu-latest]
+    permissions:
+      contents: read
     steps:
       # Environment security
-      - name: Step Security
-        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+      - name: Harden Runner
+        uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            registry.npmjs.org:443
 
       # Checkout
       # Most toolchains require checkout first
