@@ -92,6 +92,8 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
 
@@ -132,6 +134,8 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
 
@@ -172,6 +176,8 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
 
