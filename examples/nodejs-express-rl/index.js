@@ -1,5 +1,8 @@
 import arcjet, { fixedWindow } from "@arcjet/node";
-import * as http from "node:http";
+import express from "express";
+
+const app = express();
+const port = 3000;
 
 const aj = arcjet({
   // Get your site key from https://app.arcjet.com and set it as an environment
@@ -18,7 +21,7 @@ const aj = arcjet({
   ],
 });
 
-const server = http.createServer(async function (req, res) {
+app.get('/', async (req, res) => {
   const decision = await aj.protect(req);
 
   if (decision.isDenied()) {
@@ -28,6 +31,8 @@ const server = http.createServer(async function (req, res) {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Hello World" }));
   }
-});
+})
 
-server.listen(3000);
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})

@@ -5,9 +5,10 @@
   </picture>
 </a>
 
-# Arcjet Rate Limit with Node.js
+# Arcjet Rate Limit with Express for Node.js
 
-This example shows how to use Arcjet with a Node.js server.
+This example shows how to use Arcjet with a Node.js
+[Express](https://expressjs.com/) server.
 
 ## How to use
 
@@ -20,7 +21,7 @@ This example shows how to use Arcjet with a Node.js server.
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/nodejs-rl
+   cd examples/nodejs-express
    npm ci
    ```
 
