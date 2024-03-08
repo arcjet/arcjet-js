@@ -27,6 +27,7 @@
   "files": [
     "LICENSE",
     "README.md",
+    "_virtual/",
     "wasm/",
     "*.js",
     "*.d.ts",
@@ -35,7 +36,8 @@
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "rollup --config rollup.config.js",
+    "jco": "jco transpile wasm/arcjet_analyze_js_req.component.wasm --no-wasi-shim --instantiation async -o wasm",
+    "build": "npm run jco; rollup --config rollup.config.js",
     "lint": "eslint .",
     "pretest": "npm run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
@@ -50,6 +52,7 @@
     "@arcjet/eslint-config": "1.0.0-alpha.9",
     "@arcjet/rollup-config": "1.0.0-alpha.9",
     "@arcjet/tsconfig": "1.0.0-alpha.9",
+    "@bytecodealliance/jco": "1.0.2",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.12.1",
     "@types/node": "18.18.0",
