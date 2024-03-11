@@ -97,21 +97,35 @@ export async function generateFingerprint(ip: string): Promise<string> {
     if (typeof analyze !== "undefined") {
       const fingerprint = analyze.fingerprint(ip);
       return fingerprint;
-    } else {
-      // Conditional import because it's not available in some runtimes, we know
-      // it is when running on Vercel serverless functions.
-      // TODO(#180): Avoid nodejs-specific import
-      const createHash = await import("crypto");
+    }
 
+    if (hasSubtleCryptoDigest()) {
       // Fingerprint v1 is just the IP address
       const fingerprintRaw = `fp_1_${ip}`;
 
-      const fingerprint = createHash
-        .createHash("sha256")
-        .update(fingerprintRaw)
-        .digest("hex");
+      // Based on MDN example at
+      // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest#converting_a_digest_to_a_hex_string
+
+      // Encode the raw fingerprint into a utf-8 Uint8Array
+      const fingerprintUint8 = new TextEncoder().encode(fingerprintRaw);
+      // Hash the message with SHA-256
+      const fingerprintArrayBuffer = await crypto.subtle.digest(
+        "SHA-256",
+        fingerprintUint8,
+      );
+      // Convert the ArrayBuffer to a byte array
+      const fingerprintArray = Array.from(
+        new Uint8Array(fingerprintArrayBuffer),
+      );
+      // Convert the bytes to a hex string
+      const fingerprint = fingerprintArray
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+
       return fingerprint;
     }
+
+    return "";
   }
 }
 
@@ -162,4 +176,25 @@ export async function detectBot(
       bot_score: 0,
     };
   }
+}
+
+function hasSubtleCryptoDigest() {
+  if (typeof crypto === "undefined") {
+    return false;
+  }
+
+  if (!("subtle" in crypto)) {
+    return false;
+  }
+  if (typeof crypto.subtle === "undefined") {
+    return false;
+  }
+  if (!("digest" in crypto.subtle)) {
+    return false;
+  }
+  if (typeof crypto.subtle.digest !== "function") {
+    return false;
+  }
+
+  return true;
 }
