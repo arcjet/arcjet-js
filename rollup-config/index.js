@@ -20,6 +20,7 @@ export function createConfig(root, { plugins = [] } = {}) {
   const pkg = JSON.parse(fs.readFileSync(packageJson));
   const dependencies = Object.keys(pkg.dependencies ?? {});
   const devDependencies = Object.keys(pkg.devDependencies ?? {});
+  const peerDependencies = Object.keys(pkg.peerDependencies ?? {});
 
   function isDependency(id) {
     return dependencies.some((dep) => id.startsWith(dep));
@@ -27,6 +28,10 @@ export function createConfig(root, { plugins = [] } = {}) {
 
   function isDevDependency(id) {
     return devDependencies.some((dep) => id.startsWith(dep));
+  }
+
+  function isPeerDependency(id) {
+    return peerDependencies.some((dep) => id.startsWith(dep));
   }
 
   const rootDir = fileURLToPath(new URL(".", root));
@@ -67,7 +72,12 @@ export function createConfig(root, { plugins = [] } = {}) {
       preserveModules: true,
     },
     external(id) {
-      return isBuiltin(id) || isDependency(id) || isDevDependency(id);
+      return (
+        isBuiltin(id) ||
+        isDependency(id) ||
+        isDevDependency(id) ||
+        isPeerDependency(id)
+      );
     },
     plugins: [
       // Replace always comes first to ensure the replaced values exist for all
