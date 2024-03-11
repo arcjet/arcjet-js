@@ -19,7 +19,7 @@ const aj = arcjet({
 });
 
 app.post('/', async (req, res) => {
-  console.log("Email received: ", req.body.email )
+  console.log("Email received: ", req.body.email)
 
   const decision = await aj.protect(req, {
     email: req.body.email,
