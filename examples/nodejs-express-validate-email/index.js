@@ -1,11 +1,10 @@
 import arcjet, { validateEmail } from "@arcjet/node";
-import bodyParser from "body-parser";
 import express from "express";
 
 const app = express();
 const port = 3000;
 
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
+app.use(express.urlencoded({ extended: false }));
 
 const aj = arcjet({
   // Get your site key from https://app.arcjet.com and set it as an environment
@@ -19,7 +18,7 @@ const aj = arcjet({
   ],
 });
 
-app.post('/', urlencodedParser, async (req, res) => {
+app.post('/', async (req, res) => {
   console.log("Email received: ", req.body.email )
 
   const decision = await aj.protect(req, {
