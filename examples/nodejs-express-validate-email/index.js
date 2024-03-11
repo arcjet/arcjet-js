@@ -32,7 +32,7 @@ app.post('/', urlencodedParser, async (req, res) => {
     res.end(JSON.stringify({ error: "Forbidden" }));
   } else {
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Hello World", email }));
+    res.end(JSON.stringify({ message: "Hello World", email: req.body.email }));
   }
 })
 
