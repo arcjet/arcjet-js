@@ -24,7 +24,6 @@ import {
 import {
   ArcjetBotTypeToProtocol,
   ArcjetStackToProtocol,
-  ArcjetBotTypeFromProtocol,
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,
   ArcjetRuleToProtocol,
@@ -32,7 +31,6 @@ import {
 import {
   createPromiseClient,
   Transport,
-  BotType,
   DecideRequest,
   DecideService,
   ReportRequest,
@@ -854,6 +852,35 @@ export function validateEmail(
   return rules;
 }
 
+// This is an unfortunate requirement of the jco translations. We could align
+// all our SDK enums as lowercase with dashes so we wouldn't need this
+// translation.
+function translateBotType(botType: analyze.BotType): ArcjetBotType | undefined {
+  switch (botType) {
+    case "unspecified": {
+      return;
+    }
+    case "not-analyzed": {
+      return "NOT_ANALYZED";
+    }
+    case "automated": {
+      return "AUTOMATED";
+    }
+    case "likely-automated": {
+      return "LIKELY_AUTOMATED";
+    }
+    case "likely-not-a-bot": {
+      return "LIKELY_NOT_A_BOT";
+    }
+    case "verified-bot": {
+      return "VERIFIED_BOT";
+    }
+    default: {
+      return;
+    }
+  }
+}
+
 export function detectBot(
   options?: BotOptions,
   ...additionalOptions: BotOptions[]
@@ -920,19 +947,25 @@ export function detectBot(
           JSON.stringify(remove),
         );
 
+        const botType = translateBotType(botResult.botType);
+        if (typeof botType === "undefined") {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "RUN",
+            conclusion: "ERROR",
+            reason: new ArcjetErrorReason("Could not determine bot type"),
+          });
+        }
+
         // If this is a bot and of a type that we want to block, then block!
-        if (
-          botResult.bot_score !== 0 &&
-          block.includes(BotType[botResult.bot_type] as ArcjetBotType)
-        ) {
+        if (botResult.botScore !== 0 && block.includes(botType)) {
           return new ArcjetRuleResult({
             ttl: 60,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetBotReason({
-              // TODO: Make the Wasm SDK return string variants
-              botType: ArcjetBotTypeFromProtocol(botResult.bot_type),
-              botScore: botResult.bot_score,
+              botType,
+              botScore: botResult.botScore,
               userAgentMatch: true,
             }),
           });
@@ -942,8 +975,7 @@ export function detectBot(
             state: "RUN",
             conclusion: "ALLOW",
             reason: new ArcjetBotReason({
-              // TODO: Make the Wasm SDK return string variants
-              botType: ArcjetBotTypeFromProtocol(botResult.bot_type),
+              botType,
             }),
           });
         }
