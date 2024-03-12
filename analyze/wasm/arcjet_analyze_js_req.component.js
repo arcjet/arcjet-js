@@ -53,6 +53,7 @@ async function instantiate(getCoreModule, imports, instantiateCore = WebAssembly
   const { debug, error } = imports['arcjet:js-req/logger'];
   let exports0;
   let exports1;
+  let memory0;
   
   function trampoline0(arg0, arg1) {
     var ptr0 = arg0;
@@ -60,7 +61,6 @@ async function instantiate(getCoreModule, imports, instantiateCore = WebAssembly
     var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
     debug(result0);
   }
-  let memory0;
   
   function trampoline1(arg0, arg1) {
     var ptr0 = arg0;
