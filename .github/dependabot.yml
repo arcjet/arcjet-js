@@ -43,6 +43,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # Ignore updates to the next package since example is for v13
+      - dependency-name: next
+        versions: [">=14"]
 
   - package-ecosystem: "npm"
     directory: /examples/nextjs-14-app-dir-rl
