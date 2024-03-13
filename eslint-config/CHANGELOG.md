@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.0-alpha.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.9...@arcjet/eslint-config-v1.0.0-alpha.10) (2024-03-13)
+
+
+### 📦 Dependencies
+
+* Bump eslint-config-next from 14.1.1 to 14.1.3 ([#322](https://github.com/arcjet/arcjet-js/issues/322)) ([9b99345](https://github.com/arcjet/arcjet-js/commit/9b99345dc8bf9511e991746d3e9e7e3e9fb1c9bc))
+* Bump eslint-config-turbo from 1.12.4 to 1.12.5 ([#340](https://github.com/arcjet/arcjet-js/issues/340)) ([3d28dd9](https://github.com/arcjet/arcjet-js/commit/3d28dd9f2aef87bd7aba64a06413f543a21e45b0))
+
+
+### 🧹 Miscellaneous Chores
+
+* Make next a peerDep in our eslint package ([#344](https://github.com/arcjet/arcjet-js/issues/344)) ([89de5a8](https://github.com/arcjet/arcjet-js/commit/89de5a8b7461a4bb94a8c624ae9aa766e2594c18))
+
 ## [1.0.0-alpha.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.8...@arcjet/eslint-config-v1.0.0-alpha.9) (2024-03-04)
 
 
