@@ -1,0 +1,102 @@
+import arcjet, { ArcjetDecision, tokenBucket, detectBot} from "@arcjet/next";
+import { getServerSession } from "next-auth";
+import GithubProvider from "next-auth/providers/github";
+import { NextResponse } from "next/server";
+
+export const authOptions = {
+  // Configure one or more authentication providers
+  // See https://next-auth.js.org/configuration/initialization#route-handlers-app
+  providers: [
+    GithubProvider({
+      clientId: process.env.GITHUB_ID!,
+      clientSecret: process.env.GITHUB_SECRET!,
+    }),
+  ],
+};
+
+// The arcjet instance is created outside of the handler
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  rules: [
+    detectBot({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      block: ["AUTOMATED"], // blocks all automated clients
+    }),
+  ],
+});
+
+export async function GET(req: Request, res: Response) {
+  // Get the current user from NextAuth
+  const session = await getServerSession(authOptions);
+  console.log("Session", session)
+
+  let decision: ArcjetDecision;
+  if (session && session.user && session.user!.email) {
+    // A very simple hash to avoid sending PII to Arcjet. You may wish to add a
+  // unique salt prefix to protect against reverse lookups.
+  const email = session.user!.email;
+  const emailHash = require("crypto")
+    .createHash("sha256")
+    .update(email)
+    .digest("hex");
+
+    // Allow higher limits for signed in users.
+    const rl = aj.withRule(
+      // Create a token bucket rate limit. Other algorithms are supported.
+      tokenBucket({
+        mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+        characteristics: ["user"], // Rate limit based on the GitHub email
+        refillRate: 20, // refill 20 tokens per interval
+        interval: 10, // refill every 10 seconds
+        capacity: 100, // bucket maximum capacity of 100 tokens
+      })
+    );
+
+    // Deduct 5 tokens from the token bucket
+    decision = await rl.protect(req, { user: emailHash, requested: 5 });
+    console.log("Arcjet logged in decision", decision)
+  } else {
+    // Limit the amount of requests for anonymous users.
+    const rl = aj.withRule(
+      // Create a token bucket rate limit. Other algorithms are supported.
+      tokenBucket({
+        mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+        characteristics: ["ip.src"], // Use the built in ip.src characteristic
+        refillRate: 5, // refill 5 tokens per interval
+        interval: 10, // refill every 10 seconds
+        capacity: 10, // bucket maximum capacity of 10 tokens
+      })
+    );
+
+    // Deduct 5 tokens from the token bucket
+    decision = await rl.protect(req, { requested: 5 });
+    console.log("Arcjet logged out decision", decision)
+  }
+
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      return NextResponse.json(
+        {
+          error: "Too Many Requests",
+          reason: decision.reason,
+        },
+        {
+          status: 429,
+        }
+      );
+    } else {
+      // Detected a bot
+      return NextResponse.json(
+        {
+          error: "Forbidden",
+          reason: decision.reason,
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+  }
+
+  return NextResponse.json({ message: "Hello World" });
+}
