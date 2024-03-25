@@ -92,6 +92,28 @@ updates:
         versions: [">18.18"]
 
   - package-ecosystem: npm
+    directory: /examples/nextjs-14-authjs-5
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+    reviewers:
+      - blaine-arcjet
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+
+  - package-ecosystem: npm
     directory: /examples/nextjs-14-clerk-rl
     schedule:
       # Our dependencies should be checked daily
