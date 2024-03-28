@@ -66,5 +66,6 @@ merge:
     - Build examples / Next.js 14 + Clerk + Rate Limit
     - Build examples / Next.js 14 + Clerk + Shield
     - Build examples / Next.js 14 + Decorate
+    - Build examples / Next.js 14 + NextAuth 4
     - Build examples / Next.js 14 + OpenAI
     - Build examples / Next.js 14 + Page Router + withArcjet
