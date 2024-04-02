@@ -145,7 +145,8 @@ export const config = {
       return token
     },
   },
-  secret: process.env.AUTH_SECRET,
+  // This prevents the secret being empty during builds
+  secret: process.env.NODE_ENV === "production" ? process.env.SECRET : "TEST_SECRET",
 } satisfies NextAuthConfig
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config)
