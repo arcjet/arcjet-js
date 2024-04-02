@@ -145,8 +145,6 @@ export const config = {
       return token
     },
   },
-  // This prevents the secret being empty during builds
-  secret: process.env.CI ? "CI_SECRET" : process.env.AUTH_SECRET,
-} satisfies NextAuthConfig
+  satisfies NextAuthConfig
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config)
