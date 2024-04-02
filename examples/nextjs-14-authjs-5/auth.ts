@@ -145,6 +145,6 @@ export const config = {
       return token
     },
   },
-  satisfies NextAuthConfig
+} satisfies NextAuthConfig
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config)
