@@ -145,6 +145,7 @@ export const config = {
       return token
     },
   },
+  secret: process.env.AUTH_SECRET,
 } satisfies NextAuthConfig
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config)
