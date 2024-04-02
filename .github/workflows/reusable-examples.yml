@@ -163,6 +163,8 @@ jobs:
 
       - name: Build
         working-directory: examples/nextjs-14-authjs-5
+        env:
+          AUTH_SECRET: TEST_SECRET
         run: npm run build
 
   nextjs-14-clerk-rl:
