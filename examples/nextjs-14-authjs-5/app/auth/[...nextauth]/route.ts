@@ -1,4 +1,3 @@
-export { handlers } from "auth";
 import arcjet, { detectBot, slidingWindow } from "@arcjet/next";
 import { handlers } from "auth";
 import { NextRequest, NextResponse } from "next/server";
