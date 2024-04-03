@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import { NextResponse } from "next/server";
 
-export const authOptions = {
+const authOptions = {
   // Configure one or more authentication providers
   // See https://next-auth.js.org/configuration/initialization#route-handlers-app
   providers: [
