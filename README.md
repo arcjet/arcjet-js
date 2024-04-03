@@ -5,7 +5,7 @@
   </picture>
 </a>
 
-# Arcjet - TypeScript & JavaScript packages
+# Arcjet - JS SDK
 
 <p>
   <picture>
@@ -19,17 +19,124 @@ code. Implement rate limiting, bot protection, email verification & defend
 against common attacks.
 
 This is the monorepo containing various [Arcjet][arcjet] open source packages
-for TypeScript and JavaScript.
+for JS.
+
+## Quick start
+
+- **Next.js?** Use the
+  [`@arcjet/next`](https://www.npmjs.com/package/@arcjet/next) package with our
+  [Next.js quick start guide](https://docs.arcjet.com/get-started/nextjs).
+- **Node.js?** Use the
+  [`@arcjet/node`](https://www.npmjs.com/package/@arcjet/node) package with our
+  [Node.js quick start guide](https://docs.arcjet.com/get-started/nodejs).
+
+## Get help
+
+[Join our Discord server](https://discord.gg/TPra6jqZDC) or [reach out for
+support](https://docs.arcjet.com/support).
+
+## Examples
+
+- [Next.js rate limits](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-app-dir-rl)
+- [Next.js email validation](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-app-dir-validate-email)
+- [Protect NextAuth login routes](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-nextauth-4)
+- [OpenAI chatbot protection](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-openai)
+- [Express.js rate limits](https://github.com/arcjet/arcjet-js/tree/main/examples/nodejs-express-rl)
+- ... [more examples](https://github.com/arcjet/arcjet-js/tree/main/examples)
 
 ## Usage
 
-**Using Next.js?** Use the
-[`@arcjet/next`](https://www.npmjs.com/package/@arcjet/next) package.
+Read the docs at [docs.arcjet.com][arcjet-docs].
 
-**Using Node.js?** Use the
-[`@arcjet/node`](https://www.npmjs.com/package/@arcjet/node) package.
+### Next.js rate limit example
 
-See our docs at [docs.arcjet.com][arcjet-docs].
+The [Arcjet rate
+limit](https://docs.arcjet.com/rate-limiting/concepts) example below
+applies a token bucket rate limit rule to a route where we identify the user
+based on their ID e.g. if they are logged in. The bucket is configured with a
+maximum capacity of 10 tokens and refills by 5 tokens every 10 seconds. Each
+request consumes 5 tokens.
+
+See the [Arcjet Next.js rate limit
+documentation](https://docs.arcjet.com/rate-limiting/quick-start/nextjs) for
+details.
+
+```ts
+import arcjet, { tokenBucket } from "@arcjet/next";
+import { NextResponse } from "next/server";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  rules: [
+    // Create a token bucket rate limit. Other algorithms are supported.
+    tokenBucket({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      characteristics: ["userId"], // track requests by a custom user ID
+      refillRate: 5, // refill 5 tokens per interval
+      interval: 10, // refill every 10 seconds
+      capacity: 10, // bucket maximum capacity of 10 tokens
+    }),
+  ],
+});
+
+export async function GET(req: Request) {
+  const userId = "user123"; // Replace with your authenticated user ID
+  const decision = await aj.protect(req, { userId, requested: 5 }); // Deduct 5 tokens from the bucket
+  console.log("Arcjet decision", decision);
+
+  if (decision.isDenied()) {
+    return NextResponse.json(
+      { error: "Too Many Requests", reason: decision.reason },
+      { status: 429 },
+    );
+  }
+
+  return NextResponse.json({ message: "Hello world" });
+}
+```
+
+### Node.js bot protection example
+
+The [Arcjet bot protection](https://docs.arcjet.com/bot-protection/concepts)
+example below will return a 403 Forbidden response for all requests from clients
+we are sure are automated.
+
+See the [Arcjet Node.js bot protection
+documentation](https://docs.arcjet.com/bot-protection/quick-start/nodejs) for
+details.
+
+```ts
+import arcjet, { detectBot } from "@arcjet/node";
+import http from "node:http";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  rules: [
+    detectBot({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      block: ["AUTOMATED"], // blocks all automated clients
+    }),
+  ],
+});
+
+const server = http.createServer(async function (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+) {
+  const decision = await aj.protect(req);
+  console.log("Arcjet decision", decision);
+
+  if (decision.isDenied()) {
+    res.writeHead(403, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Forbidden" }));
+  } else {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ message: "Hello world" }));
+  }
+});
+
+server.listen(8000);
+```
 
 ## Packages
 
@@ -49,8 +156,8 @@ find a specific one through the categories and descriptions below.
 
 ### Utilities
 
-- [`arcjet`](./arcjet/README.md): TypeScript and JavaScript SDK core.
-- [`@arcjet/protocol`](./protocol/README.md): TypeScript & JavaScript interface
+- [`arcjet`](./arcjet/README.md): JS SDK core.
+- [`@arcjet/protocol`](./protocol/README.md): JS interface
   into the Arcjet protocol.
 - [`@arcjet/logger`](./logger/README.md): Logging interface which mirrors the
   console interface but allows log levels.
