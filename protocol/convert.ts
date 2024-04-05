@@ -26,6 +26,7 @@ import {
   ArcjetTokenBucketRateLimitRule,
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
+  ArcjetIpDetails,
 } from "./index";
 import {
   BotReason,
@@ -36,6 +37,7 @@ import {
   EmailReason,
   EmailType,
   ErrorReason,
+  IpDetails,
   Mode,
   RateLimitAlgorithm,
   RateLimitReason,
@@ -401,6 +403,57 @@ export function ArcjetDecisionToProtocol(decision: ArcjetDecision): Decision {
   });
 }
 
+export function ArcjetIpDetailsFromProtocol(
+  ipDetails?: IpDetails,
+): ArcjetIpDetails {
+  if (!ipDetails) {
+    return new ArcjetIpDetails();
+  }
+
+  // A default value from the Decide service means we don't have data for the
+  // field so we translate to `undefined`. Some fields have interconnected logic
+  // that determines if the default value can be provided to users.
+  return new ArcjetIpDetails({
+    // If we have a non-0 latitude, or a 0 latitude with a non-0 accuracy radius
+    // then we have a latitude from the Decide service
+    latitude:
+      ipDetails.latitude || ipDetails.accuracyRadius
+        ? ipDetails.latitude
+        : undefined,
+    // If we have a non-0 longitude, or a 0 longitude with a non-0 accuracy
+    // radius then we have a longitude from the Decide service
+    longitude:
+      ipDetails.longitude || ipDetails.accuracyRadius
+        ? ipDetails.longitude
+        : undefined,
+    // If we have a non-0 latitude/longitude/accuracyRadius, we assume that the
+    // accuracyRadius value was set
+    accuracyRadius:
+      ipDetails.longitude || ipDetails.latitude || ipDetails.accuracyRadius
+        ? ipDetails.accuracyRadius
+        : undefined,
+    timezone: ipDetails.timezone !== "" ? ipDetails.timezone : undefined,
+    postalCode: ipDetails.postalCode !== "" ? ipDetails.postalCode : undefined,
+    city: ipDetails.city !== "" ? ipDetails.city : undefined,
+    region: ipDetails.region !== "" ? ipDetails.region : undefined,
+    country: ipDetails.country !== "" ? ipDetails.country : undefined,
+    countryName: ipDetails.countryName !== "" ? ipDetails.countryName : undefined,
+    continent: ipDetails.continent !== "" ? ipDetails.continent : undefined,
+    continentName: ipDetails.continentName !== "" ? ipDetails.continentName : undefined,
+    asn: ipDetails.asn !== "" ? ipDetails.asn : undefined,
+    asnName: ipDetails.asnName !== "" ? ipDetails.asnName : undefined,
+    asnDomain: ipDetails.asnDomain !== "" ? ipDetails.asnDomain : undefined,
+    asnType: ipDetails.asnType !== "" ? ipDetails.asnType : undefined,
+    asnCountry: ipDetails.asnCountry !== "" ? ipDetails.asnCountry : undefined,
+    service: ipDetails.service !== "" ? ipDetails.service : undefined,
+    isHosting: ipDetails.isHosting,
+    isVpn: ipDetails.isVpn,
+    isProxy: ipDetails.isProxy,
+    isTor: ipDetails.isTor,
+    isRelay: ipDetails.isRelay,
+  });
+}
+
 export function ArcjetDecisionFromProtocol(
   decision?: Decision,
 ): ArcjetDecision {
@@ -409,6 +462,7 @@ export function ArcjetDecisionFromProtocol(
       reason: new ArcjetErrorReason("Missing Decision"),
       ttl: 0,
       results: [],
+      ip: new ArcjetIpDetails(),
     });
   }
 
@@ -423,6 +477,7 @@ export function ArcjetDecisionFromProtocol(
         ttl: decision.ttl,
         reason: ArcjetReasonFromProtocol(decision.reason),
         results,
+        ip: ArcjetIpDetailsFromProtocol(decision.ipDetails),
       });
     case Conclusion.DENY:
       return new ArcjetDenyDecision({
@@ -430,6 +485,7 @@ export function ArcjetDecisionFromProtocol(
         ttl: decision.ttl,
         reason: ArcjetReasonFromProtocol(decision.reason),
         results,
+        ip: ArcjetIpDetailsFromProtocol(decision.ipDetails),
       });
     case Conclusion.CHALLENGE:
       return new ArcjetChallengeDecision({
@@ -437,6 +493,7 @@ export function ArcjetDecisionFromProtocol(
         ttl: decision.ttl,
         reason: ArcjetReasonFromProtocol(decision.reason),
         results,
+        ip: ArcjetIpDetailsFromProtocol(decision.ipDetails),
       });
     case Conclusion.ERROR:
       return new ArcjetErrorDecision({
@@ -444,6 +501,7 @@ export function ArcjetDecisionFromProtocol(
         ttl: decision.ttl,
         reason: new ArcjetErrorReason(decision.reason),
         results,
+        ip: ArcjetIpDetailsFromProtocol(decision.ipDetails),
       });
     case Conclusion.UNSPECIFIED:
       return new ArcjetErrorDecision({
@@ -451,6 +509,7 @@ export function ArcjetDecisionFromProtocol(
         ttl: decision.ttl,
         reason: new ArcjetErrorReason("Invalid Conclusion"),
         results,
+        ip: ArcjetIpDetailsFromProtocol(decision.ipDetails),
       });
     default:
       const _exhaustive: never = decision.conclusion;
@@ -458,6 +517,7 @@ export function ArcjetDecisionFromProtocol(
         ttl: 0,
         reason: new ArcjetErrorReason("Missing Conclusion"),
         results: [],
+        ip: ArcjetIpDetailsFromProtocol(decision.ipDetails),
       });
   }
 }

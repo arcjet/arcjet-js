@@ -52,6 +52,7 @@ import {
   ArcjetTokenBucketRateLimitRule,
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
+  ArcjetIpDetails,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
 
@@ -531,6 +532,7 @@ describe("convert", () => {
           ttl: 0,
           results: [],
           reason: new ArcjetReason(),
+          ip: new ArcjetIpDetails(),
         }),
       ),
     ).toEqual(
