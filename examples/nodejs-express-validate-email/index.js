@@ -19,8 +19,6 @@ const aj = arcjet({
 });
 
 app.post('/', async (req, res) => {
-  console.log("Email received: ", req.body.email)
-
   const decision = await aj.protect(req, {
     email: req.body.email,
   });
@@ -33,8 +31,8 @@ app.post('/', async (req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Hello World", email: req.body.email }));
   }
-})
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
-})
+});
