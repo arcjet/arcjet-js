@@ -1,6 +1,8 @@
 import { typeid } from "typeid-js";
 import { Reason } from "./gen/es/decide/v1alpha1/decide_pb.js";
 
+type RequiredProps<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
+
 type ArcjetEnum<T extends string> = { readonly [Key in T]: T };
 
 export type ArcjetMode = "LIVE" | "DRY_RUN";
@@ -260,6 +262,258 @@ export class ArcjetRuleResult {
   }
 }
 
+export class ArcjetIpDetails {
+  /**
+   * The estimated latitude of the IP address within the `accuracyRadius` margin
+   * of error.
+   */
+  latitude?: number;
+  /**
+   * The estimated longitude of the IP address - see accuracy_radius for the
+   * margin of error.
+   */
+  longitude?: number;
+  /**
+   * The accuracy radius of the IP address location in kilometers.
+   */
+  accuracyRadius?: number;
+  /**
+   * The timezone of the IP address.
+   */
+  timezone?: string;
+  /**
+   * The postal code of the IP address.
+   */
+  postalCode?: string;
+  /**
+   * The city the IP address is located in.
+   */
+  city?: string;
+  /**
+   * The region the IP address is located in.
+   */
+  region?: string;
+  /**
+   * The country code the IP address is located in.
+   */
+  country?: string;
+  /**
+   * The country name the IP address is located in.
+   */
+  countryName?: string;
+  /**
+   * The continent code the IP address is located in.
+   */
+  continent?: string;
+  /**
+   * The continent name the IP address is located in.
+   */
+  continentName?: string;
+  /**
+   * The AS number the IP address belongs to.
+   */
+  asn?: string;
+  /**
+   * The AS name the IP address belongs to.
+   */
+  asnName?: string;
+  /**
+   * The AS domain the IP address belongs to.
+   */
+  asnDomain?: string;
+  /**
+   * The ASN type: ISP, hosting, business, or education
+   */
+  asnType?: string;
+  /**
+   * The ASN country code the IP address belongs to.
+   */
+  asnCountry?: string;
+  /**
+   * The name of the service the IP address belongs to.
+   */
+  service?: string;
+
+  constructor(
+    init: {
+      latitude?: number;
+      longitude?: number;
+      accuracyRadius?: number;
+      timezone?: string;
+      postalCode?: string;
+      city?: string;
+      region?: string;
+      country?: string;
+      countryName?: string;
+      continent?: string;
+      continentName?: string;
+      asn?: string;
+      asnName?: string;
+      asnDomain?: string;
+      asnType?: string;
+      asnCountry?: string;
+      service?: string;
+      isHosting?: boolean;
+      isVpn?: boolean;
+      isProxy?: boolean;
+      isTor?: boolean;
+      isRelay?: boolean;
+    } = {},
+  ) {
+    this.latitude = init.latitude;
+    this.longitude = init.longitude;
+    this.accuracyRadius = init.accuracyRadius;
+    this.timezone = init.timezone;
+    this.postalCode = init.postalCode;
+    this.city = init.city;
+    this.region = init.region;
+    this.country = init.country;
+    this.countryName = init.countryName;
+    this.continent = init.continent;
+    this.continentName = init.continentName;
+    this.asn = init.asn;
+    this.asnName = init.asnName;
+    this.asnDomain = init.asnDomain;
+    this.asnType = init.asnType;
+    this.asnCountry = init.asnCountry;
+    this.service = init.service;
+    // TypeScript creates symbols on the class when using `private` or `#`
+    // identifiers for tracking these properties. We don't want to end up with
+    // the same issues as Next.js with private symbols so we use
+    // `Object.defineProperties` here and then `@ts-expect-error` when we access
+    // the values. This is mostly to improve the editor experience, as props
+    // starting with `_` are sorted to the top of autocomplete.
+    Object.defineProperties(this, {
+      _isHosting: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isHosting ?? false,
+      },
+      _isVpn: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isVpn ?? false,
+      },
+      _isProxy: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isProxy ?? false,
+      },
+      _isTor: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isTor ?? false,
+      },
+      _isRelay: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isRelay ?? false,
+      },
+    });
+  }
+
+  hasLatitude(): this is RequiredProps<this, "latitude" | "accuracyRadius"> {
+    return typeof this.latitude !== "undefined";
+  }
+
+  hasLongitude(): this is RequiredProps<this, "longitude" | "accuracyRadius"> {
+    return typeof this.longitude !== "undefined";
+  }
+
+  hasAccuracyRadius(): this is RequiredProps<
+    this,
+    "latitude" | "longitude" | "accuracyRadius"
+  > {
+    return typeof this.accuracyRadius !== "undefined";
+  }
+
+  hasTimezone(): this is RequiredProps<this, "timezone"> {
+    return typeof this.timezone !== "undefined";
+  }
+
+  hasPostalCode(): this is RequiredProps<this, "postalCode"> {
+    return typeof this.postalCode !== "undefined";
+  }
+
+  // TODO: If we have city, what other data are we sure to have?
+  hasCity(): this is RequiredProps<this, "city"> {
+    return typeof this.city !== "undefined";
+  }
+
+  // TODO: If we have region, what other data are we sure to have?
+  hasRegion(): this is RequiredProps<this, "region"> {
+    return typeof this.region !== "undefined";
+  }
+
+  // If we have country, we should have country name
+  // TODO: If we have country, should we also have continent?
+  hasCountry(): this is RequiredProps<this, "country" | "countryName"> {
+    return typeof this.country !== "undefined";
+  }
+
+  // If we have continent, we should have continent name
+  hasContintent(): this is RequiredProps<this, "continent" | "continentName"> {
+    return typeof this.continent !== "undefined";
+  }
+
+  // If we have ASN, we should have every piece of ASN information.
+  hasASN(): this is RequiredProps<
+    this,
+    "asn" | "asnName" | "asnDomain" | "asnType" | "asnCountry"
+  > {
+    return typeof this.asn !== "undefined";
+  }
+
+  hasService(): this is RequiredProps<this, "service"> {
+    return typeof this.service !== "undefined";
+  }
+
+  /**
+   * @returns `true` if the IP address belongs to a hosting provider.
+   */
+  isHosting(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
+    return this._isHosting;
+  }
+
+  /**
+   * @returns `true` if the IP address belongs to a VPN provider.
+   */
+  isVpn(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
+    return this._isVpn;
+  }
+
+  /**
+   * @returns `true` if the IP address belongs to a proxy provider.
+   */
+  isProxy(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
+    return this._isProxy;
+  }
+
+  /**
+   * @returns `true` if the IP address belongs to a Tor node.
+   */
+  isTor(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
+    return this._isTor;
+  }
+
+  /**
+   * @returns `true` if the the IP address belongs to a relay service.
+   */
+  isRelay(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
+    return this._isRelay;
+  }
+}
+
 /**
  * Represents a decision returned by the Arcjet SDK.
  *
@@ -285,10 +539,20 @@ export abstract class ArcjetDecision {
   ttl: number;
   results: ArcjetRuleResult[];
 
+  /**
+   * Details about the IP address that informed the `conclusion`.
+   */
+  ip: ArcjetIpDetails;
+
   abstract conclusion: ArcjetConclusion;
   abstract reason: ArcjetReason;
 
-  constructor(init: { id?: string; results: ArcjetRuleResult[]; ttl: number }) {
+  constructor(init: {
+    id?: string;
+    results: ArcjetRuleResult[];
+    ttl: number;
+    ip?: ArcjetIpDetails;
+  }) {
     if (typeof init.id === "string") {
       this.id = init.id;
     } else {
@@ -297,6 +561,7 @@ export abstract class ArcjetDecision {
 
     this.results = init.results;
     this.ttl = init.ttl;
+    this.ip = init.ip ?? new ArcjetIpDetails();
   }
 
   isAllowed(): this is ArcjetAllowDecision | ArcjetErrorDecision {
@@ -325,6 +590,7 @@ export class ArcjetAllowDecision extends ArcjetDecision {
     results: ArcjetRuleResult[];
     ttl: number;
     reason: ArcjetReason;
+    ip?: ArcjetIpDetails;
   }) {
     super(init);
 
@@ -341,6 +607,7 @@ export class ArcjetDenyDecision extends ArcjetDecision {
     results: ArcjetRuleResult[];
     ttl: number;
     reason: ArcjetReason;
+    ip?: ArcjetIpDetails;
   }) {
     super(init);
 
@@ -356,6 +623,7 @@ export class ArcjetChallengeDecision extends ArcjetDecision {
     results: ArcjetRuleResult[];
     ttl: number;
     reason: ArcjetReason;
+    ip?: ArcjetIpDetails;
   }) {
     super(init);
 
@@ -372,6 +640,7 @@ export class ArcjetErrorDecision extends ArcjetDecision {
     results: ArcjetRuleResult[];
     ttl: number;
     reason: ArcjetErrorReason;
+    ip?: ArcjetIpDetails;
   }) {
     super(init);
 

@@ -293,6 +293,48 @@ jobs:
         working-directory: examples/nextjs-14-decorate
         run: npm run build
 
+  nextjs-14-ip-details:
+    name: Next.js 14 + IP Details
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-14-ip-details
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-14-ip-details
+        run: npm run build
+
   nextjs-14-nextauth-4:
     name: Next.js 14 + NextAuth 4
     runs-on: ubuntu-latest
