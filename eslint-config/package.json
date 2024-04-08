@@ -43,7 +43,7 @@
     "next": ">=14"
   },
   "devDependencies": {
-    "eslint": "8.57.0"
+    "eslint": "9.0.0"
   },
   "publishConfig": {
     "access": "public",
