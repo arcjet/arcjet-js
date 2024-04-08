@@ -34,16 +34,5 @@ export async function GET(req: Request) {
     );
   }
 
-  if (decision.ip.hasCountry() && decision.ip.country !== "US") {
-    return NextResponse.json(
-      {
-        error: "Unavailable For Legal Reasons",
-      },
-      {
-        status: 451
-      }
-    );
-  }
-
   return NextResponse.json({ message: "Hello World" });
 }
