@@ -1,5 +1,59 @@
 # Changelog
 
+## [1.0.0-alpha.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.10...v1.0.0-alpha.11) (2024-04-08)
+
+
+### 🚀 New Features
+
+* Add ArcjetIpDetails to an ArcjetDecision ([#510](https://github.com/arcjet/arcjet-js/issues/510)) ([0642c51](https://github.com/arcjet/arcjet-js/commit/0642c5184272d8cc855cffa84491b1b7e75f1465)), closes [#474](https://github.com/arcjet/arcjet-js/issues/474)
+
+
+### 📦 Dependencies
+
+* Bump @bufbuild/protobuf from 1.7.2 to 1.8.0 ([#377](https://github.com/arcjet/arcjet-js/issues/377)) ([5253740](https://github.com/arcjet/arcjet-js/commit/5253740ba485e9fbacd627a0baf1bb54df5a56fc))
+* Bump eslint-config-next from 14.1.3 to 14.1.4 ([#403](https://github.com/arcjet/arcjet-js/issues/403)) ([119245b](https://github.com/arcjet/arcjet-js/commit/119245bdc97d5df7ad345fbf8c384057c46a0472))
+* Bump eslint-config-turbo from 1.12.5 to 1.13.2 ([#488](https://github.com/arcjet/arcjet-js/issues/488)) ([b6ab105](https://github.com/arcjet/arcjet-js/commit/b6ab1058af6d1801e6c4a2259155f7921be90a9e))
+* Bump eslint-plugin-react from 7.34.0 to 7.34.1 ([#388](https://github.com/arcjet/arcjet-js/issues/388)) ([5ff4950](https://github.com/arcjet/arcjet-js/commit/5ff4950e05573a9079ac9b90b0dc04cff89f6150))
+* Bump undici from 5.28.3 to 5.28.4 ([#505](https://github.com/arcjet/arcjet-js/issues/505)) ([0ffa608](https://github.com/arcjet/arcjet-js/commit/0ffa608264aa86614dcb91995a69f2f0d6b28d84))
+* **dev:** Bump @bytecodealliance/jco from 1.0.3 to 1.1.1 ([#473](https://github.com/arcjet/arcjet-js/issues/473)) ([4584fe4](https://github.com/arcjet/arcjet-js/commit/4584fe43af549d4ec42565276f2fcf64cfdf3e57))
+* **dev:** Bump @rollup/wasm-node from 4.13.0 to 4.13.2 ([#472](https://github.com/arcjet/arcjet-js/issues/472)) ([0268e51](https://github.com/arcjet/arcjet-js/commit/0268e51eb8967b2379014c1d16c65d1fbca13186))
+* **dev:** Bump @rollup/wasm-node from 4.13.2 to 4.14.0 ([#493](https://github.com/arcjet/arcjet-js/issues/493)) ([ac14f3f](https://github.com/arcjet/arcjet-js/commit/ac14f3fb12157f9b2306ce2e703f80c081dcd9bc))
+* **dev:** Bump @rollup/wasm-node from 4.14.0 to 4.14.1 ([#519](https://github.com/arcjet/arcjet-js/issues/519)) ([f859c0e](https://github.com/arcjet/arcjet-js/commit/f859c0eb071fcd83c68c8c94b60071217a600b3a))
+* **dev:** Bump typescript from 5.4.2 to 5.4.3 ([#412](https://github.com/arcjet/arcjet-js/issues/412)) ([a69b76b](https://github.com/arcjet/arcjet-js/commit/a69b76b011a58bad21dc0763661927003c6b2a2e))
+* **dev:** Bump typescript from 5.4.3 to 5.4.4 ([#509](https://github.com/arcjet/arcjet-js/issues/509)) ([8976fb1](https://github.com/arcjet/arcjet-js/commit/8976fb1b49f06b50b2a1d52b8a4619548993c737))
+* **example:** Bump express from 4.18.3 to 4.19.2 in /examples/nodejs-express-rl ([#459](https://github.com/arcjet/arcjet-js/issues/459)) ([ee1af9d](https://github.com/arcjet/arcjet-js/commit/ee1af9d070e9ef9a2231f3131c74860f5d33882a))
+* **example:** Bump express from 4.18.3 to 4.19.2 in /examples/nodejs-express-validate-email ([#461](https://github.com/arcjet/arcjet-js/issues/461)) ([d45953e](https://github.com/arcjet/arcjet-js/commit/d45953eee58e81fdfbd0a9b6aff9e3089754a7ff))
+* **example:** Bump the dependencies group in /examples/nextjs-13-pages-wrap with 2 updates ([#504](https://github.com/arcjet/arcjet-js/issues/504)) ([ebe7548](https://github.com/arcjet/arcjet-js/commit/ebe75484c84b82cbc525bbcacb753d93256d076c))
+* **example:** Bump the dependencies group in /examples/nextjs-13-pages-wrap with 6 updates ([#462](https://github.com/arcjet/arcjet-js/issues/462)) ([7e7affe](https://github.com/arcjet/arcjet-js/commit/7e7affefbdbfd6431fab097f7b3b571d53cd438f))
+* **example:** Bump the dependencies group in /examples/nextjs-14-app-dir-rl with 2 updates ([#498](https://github.com/arcjet/arcjet-js/issues/498)) ([c30357f](https://github.com/arcjet/arcjet-js/commit/c30357f8cd81584e61590944341906217112d4b2))
+* **example:** Bump the dependencies group in /examples/nextjs-14-app-dir-rl with 7 updates ([#463](https://github.com/arcjet/arcjet-js/issues/463)) ([6181c38](https://github.com/arcjet/arcjet-js/commit/6181c3886deaa317373c248bbe562e29d03a7099))
+* **example:** Bump the dependencies group in /examples/nextjs-14-app-dir-validate-email with 2 updates ([#496](https://github.com/arcjet/arcjet-js/issues/496)) ([67031c3](https://github.com/arcjet/arcjet-js/commit/67031c3fd903cbd050b4fc5869ccf477f92a9d15))
+* **example:** Bump the dependencies group in /examples/nextjs-14-app-dir-validate-email with 7 updates ([#466](https://github.com/arcjet/arcjet-js/issues/466)) ([3a45ae4](https://github.com/arcjet/arcjet-js/commit/3a45ae4c57960b575ab303c7bc99528fc27f520e))
+* **example:** Bump the dependencies group in /examples/nextjs-14-authjs-5 with 4 updates ([#495](https://github.com/arcjet/arcjet-js/issues/495)) ([b9b3c3b](https://github.com/arcjet/arcjet-js/commit/b9b3c3b2ba340da0eadc7dda6f92c319df28eb8a))
+* **example:** Bump the dependencies group in /examples/nextjs-14-clerk-rl with 8 updates ([#506](https://github.com/arcjet/arcjet-js/issues/506)) ([3635c13](https://github.com/arcjet/arcjet-js/commit/3635c13991ff3f7b1672c06136e32f1fd7b4ae19))
+* **example:** Bump the dependencies group in /examples/nextjs-14-clerk-shield with 8 updates ([#507](https://github.com/arcjet/arcjet-js/issues/507)) ([f2c5c94](https://github.com/arcjet/arcjet-js/commit/f2c5c94c71e9f487b2a351b0e5235229f1736828))
+* **example:** Bump the dependencies group in /examples/nextjs-14-decorate with 2 updates ([#500](https://github.com/arcjet/arcjet-js/issues/500)) ([8bb40cc](https://github.com/arcjet/arcjet-js/commit/8bb40cc4b58094f99a7278a7435b2544838cdce2))
+* **example:** Bump the dependencies group in /examples/nextjs-14-decorate with 7 updates ([#465](https://github.com/arcjet/arcjet-js/issues/465)) ([b13a8e6](https://github.com/arcjet/arcjet-js/commit/b13a8e666108f270a56f850e7101c3e6953d5a57))
+* **example:** Bump the dependencies group in /examples/nextjs-14-nextauth-4 with 2 updates ([#502](https://github.com/arcjet/arcjet-js/issues/502)) ([f4b24b5](https://github.com/arcjet/arcjet-js/commit/f4b24b5cccd8f8ba37e352af9386e229b0578856))
+* **example:** Bump the dependencies group in /examples/nextjs-14-nextauth-4 with 7 updates ([#468](https://github.com/arcjet/arcjet-js/issues/468)) ([6ab6cdb](https://github.com/arcjet/arcjet-js/commit/6ab6cdb81f5866e0d5ae656ca9816dcc850db956))
+* **example:** Bump the dependencies group in /examples/nextjs-14-openai with 4 updates ([#501](https://github.com/arcjet/arcjet-js/issues/501)) ([cde203b](https://github.com/arcjet/arcjet-js/commit/cde203b52230f5174c38c0f3c40f31496ca54d11))
+* **example:** Bump the dependencies group in /examples/nextjs-14-openai with 9 updates ([#467](https://github.com/arcjet/arcjet-js/issues/467)) ([f3d785e](https://github.com/arcjet/arcjet-js/commit/f3d785e1de81d078e3685560d6944855a8df31ec))
+* **example:** Bump the dependencies group in /examples/nextjs-14-pages-wrap with 7 updates ([#503](https://github.com/arcjet/arcjet-js/issues/503)) ([cfb84e1](https://github.com/arcjet/arcjet-js/commit/cfb84e1a7e18c93ebb7b9fa66b9cf2a612c1ca68))
+* **example:** Bump the dependencies group in /examples/nextjs-example with 1 update ([#402](https://github.com/arcjet/arcjet-js/issues/402)) ([79911af](https://github.com/arcjet/arcjet-js/commit/79911affe2f18cbdadff0dc45b717ad48acd2aee))
+* **example:** Bump the dependencies group in /examples/nodejs-express-rl with 1 update ([#438](https://github.com/arcjet/arcjet-js/issues/438)) ([da12423](https://github.com/arcjet/arcjet-js/commit/da124235d74abd62b18113e40042e95d7d3b95e8))
+
+
+### 📝 Documentation
+
+* **examples:** Added Auth.js 5 example app ([#432](https://github.com/arcjet/arcjet-js/issues/432)) ([b7a1901](https://github.com/arcjet/arcjet-js/commit/b7a1901876507a792a088c74395b7b323969e429))
+* **examples:** Added NextAuth 4 example app ([#423](https://github.com/arcjet/arcjet-js/issues/423)) ([b218ebd](https://github.com/arcjet/arcjet-js/commit/b218ebd4d13eeb2705ead070aff2775a9093c847))
+
+
+### 🧹 Miscellaneous Chores
+
+* **ci:** Add the NextAuth 4 example to CI ([#471](https://github.com/arcjet/arcjet-js/issues/471)) ([a3ad83a](https://github.com/arcjet/arcjet-js/commit/a3ad83a4bc6a145cb546f385746e6fc778180353))
+* Refresh root README + LICENSE ([#494](https://github.com/arcjet/arcjet-js/issues/494)) ([6f6da30](https://github.com/arcjet/arcjet-js/commit/6f6da3041cfb7feb80867d68cd93629093f372f8))
+
 ## [1.0.0-alpha.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.9...v1.0.0-alpha.10) (2024-03-13)
 
 
