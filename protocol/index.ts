@@ -474,7 +474,7 @@ export class ArcjetIpDetails {
   }
 
   /**
-   * Returns whether the IP address belongs to a hosting provider.
+   * @returns `true` if the IP address belongs to a hosting provider.
    */
   isHosting(): boolean {
     // @ts-expect-error because we attach this with Object.defineProperties
@@ -482,7 +482,7 @@ export class ArcjetIpDetails {
   }
 
   /**
-   * Returns `true` if the IP address belongs to a VPN provider.
+   * @returns `true` if the IP address belongs to a VPN provider.
    */
   isVpn(): boolean {
     // @ts-expect-error because we attach this with Object.defineProperties
@@ -490,7 +490,7 @@ export class ArcjetIpDetails {
   }
 
   /**
-   * Returns `true` if the IP address belongs to a proxy provider.
+   * @returns `true` if the IP address belongs to a proxy provider.
    */
   isProxy(): boolean {
     // @ts-expect-error because we attach this with Object.defineProperties
@@ -498,7 +498,7 @@ export class ArcjetIpDetails {
   }
 
   /**
-   * Returns `true` if the IP address belongs to a Tor node.
+   * @returns `true` if the IP address belongs to a Tor node.
    */
   isTor(): boolean {
     // @ts-expect-error because we attach this with Object.defineProperties
@@ -506,7 +506,7 @@ export class ArcjetIpDetails {
   }
 
   /**
-   * Returns `true` if the the IP address belongs to a relay service.
+   * @returns `true` if the the IP address belongs to a relay service.
    */
   isRelay(): boolean {
     // @ts-expect-error because we attach this with Object.defineProperties
