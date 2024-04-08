@@ -334,16 +334,6 @@ export class ArcjetIpDetails {
    */
   service?: string;
 
-  // TODO: TypeScript got really upset with `private` or `#` identifiers here
-  // presumably due to our workspace but I'm not sure.
-  // TODO: Figure out a better way to store these booleans that still allows the
-  // functions to be defined as `isHosting()`, etc.
-  _isHosting: boolean;
-  _isVpn: boolean;
-  _isProxy: boolean;
-  _isTor: boolean;
-  _isRelay: boolean;
-
   constructor(
     init: {
       latitude?: number;
@@ -387,11 +377,44 @@ export class ArcjetIpDetails {
     this.asnType = init.asnType;
     this.asnCountry = init.asnCountry;
     this.service = init.service;
-    this._isHosting = init.isHosting ?? false;
-    this._isVpn = init.isVpn ?? false;
-    this._isProxy = init.isProxy ?? false;
-    this._isTor = init.isTor ?? false;
-    this._isRelay = init.isRelay ?? false;
+    // TypeScript creates symbols on the class when using `private` or `#`
+    // identifiers for tracking these properties. We don't want to end up with
+    // the same issues as Next.js with private symbols so we use
+    // `Object.defineProperties` here and then `@ts-expect-error` when we access
+    // the values. This is mostly to improve the editor experience, as props
+    // starting with `_` are sorted to the top of autocomplete.
+    Object.defineProperties(this, {
+      _isHosting: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isHosting ?? false,
+      },
+      _isVpn: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isVpn ?? false,
+      },
+      _isProxy: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isProxy ?? false,
+      },
+      _isTor: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isTor ?? false,
+      },
+      _isRelay: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isRelay ?? false,
+      },
+    });
   }
 
   hasLatitude(): this is RequiredProps<this, "latitude" | "accuracyRadius"> {
@@ -451,37 +474,42 @@ export class ArcjetIpDetails {
   }
 
   /**
-   * Whether the IP address belongs to a hosting provider.
+   * Returns whether the IP address belongs to a hosting provider.
    */
-  isHosting() {
+  isHosting(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
     return this._isHosting;
   }
 
   /**
-   * Whether the IP address belongs to a VPN provider.
+   * Returns `true` if the IP address belongs to a VPN provider.
    */
-  isVpn() {
+  isVpn(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
     return this._isVpn;
   }
 
   /**
-   * Whether the IP address belongs to a proxy provider.
+   * Returns `true` if the IP address belongs to a proxy provider.
    */
-  isProxy() {
+  isProxy(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
     return this._isProxy;
   }
 
   /**
-   * Whether the IP address belongs to a Tor node.
+   * Returns `true` if the IP address belongs to a Tor node.
    */
-  isTor() {
+  isTor(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
     return this._isTor;
   }
 
   /**
-   * Whether the IP address belongs to a relay service.
+   * Returns `true` if the the IP address belongs to a relay service.
    */
-  isRelay() {
+  isRelay(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
     return this._isRelay;
   }
 }
