@@ -437,9 +437,11 @@ export function ArcjetIpDetailsFromProtocol(
     city: ipDetails.city !== "" ? ipDetails.city : undefined,
     region: ipDetails.region !== "" ? ipDetails.region : undefined,
     country: ipDetails.country !== "" ? ipDetails.country : undefined,
-    countryName: ipDetails.countryName !== "" ? ipDetails.countryName : undefined,
+    countryName:
+      ipDetails.countryName !== "" ? ipDetails.countryName : undefined,
     continent: ipDetails.continent !== "" ? ipDetails.continent : undefined,
-    continentName: ipDetails.continentName !== "" ? ipDetails.continentName : undefined,
+    continentName:
+      ipDetails.continentName !== "" ? ipDetails.continentName : undefined,
     asn: ipDetails.asn !== "" ? ipDetails.asn : undefined,
     asnName: ipDetails.asnName !== "" ? ipDetails.asnName : undefined,
     asnDomain: ipDetails.asnDomain !== "" ? ipDetails.asnDomain : undefined,

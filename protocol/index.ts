@@ -439,7 +439,6 @@ export class ArcjetIpDetails {
   }
 
   // If we have ASN, we should have every piece of ASN information.
-  // TODO: Verify the above comment and implementation below
   hasASN(): this is RequiredProps<
     this,
     "asn" | "asnName" | "asnDomain" | "asnType" | "asnCountry"
