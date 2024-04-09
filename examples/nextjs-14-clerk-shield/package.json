@@ -10,14 +10,14 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
-    "@clerk/nextjs": "^4.29.11",
+    "@clerk/nextjs": "^4.29.12",
     "next": "^14.1.4",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "18.2.74",
+    "@types/react": "18.2.75",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.19",
     "eslint": "^8",
