@@ -69,3 +69,4 @@ merge:
     - Build examples / Next.js 14 + NextAuth 4
     - Build examples / Next.js 14 + OpenAI
     - Build examples / Next.js 14 + Page Router + withArcjet
+    - Build examples / Node.js + Hono + Rate Limit
