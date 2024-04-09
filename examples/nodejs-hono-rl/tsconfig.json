@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "target": "ES2022"
+    },
+    "include": ["index.ts"],
+    "exclude": ["node_modules"]
+}
