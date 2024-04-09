@@ -19,6 +19,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   # Dependencies in our examples
 
@@ -46,6 +49,9 @@ updates:
       # Ignore updates to the next package since example is for v13
       - dependency-name: next
         versions: [">=14"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: "npm"
     directory: /examples/nextjs-14-app-dir-rl
@@ -68,6 +74,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-app-dir-validate-email
@@ -90,6 +99,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-authjs-5
@@ -112,6 +124,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-clerk-rl
@@ -134,6 +149,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-clerk-shield
@@ -156,6 +174,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-decorate
@@ -178,6 +199,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-ip-details
@@ -200,6 +224,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-nextauth-4
@@ -222,6 +249,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-openai
@@ -244,6 +274,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-pages-wrap
@@ -266,6 +299,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-example
@@ -288,6 +324,9 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nodejs-express-rl
