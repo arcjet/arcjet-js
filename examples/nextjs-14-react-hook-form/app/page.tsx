@@ -40,6 +40,14 @@ export default function IndexPage() {
         >
           Arcjet Documentation
         </Link>
+        <Link
+          href="https://app.arcjet.com"
+          target="_blank"
+          rel="noreferrer"
+          className={buttonVariants({ variant: "outline" })}
+        >
+          Arcjet Dashboard
+        </Link>
       </div>
       <h2 className="text-xl font-bold">Sign up for our newsletter</h2>
       <div className="flex gap-4">
