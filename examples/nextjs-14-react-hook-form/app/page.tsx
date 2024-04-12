@@ -9,10 +9,27 @@ export default function IndexPage() {
         <h1 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
           Protecting a Next.js React Hook Form with Arcjet.
         </h1>
-        <p className="max-w-[700px] text-lg text-muted-foreground">
-          An example of how to protect your forms from abuse & spam signups with{" "}
-          <Link href="https://arcjet.com">Arcjet</Link>.
+        <p className="max-w-[700px]">
+          This form uses{" "}
+          <Link href="https://docs.arcjet.com/signup-protection/quick-start/nextjs" className="underline">
+            Arcjet's signup form protection
+          </Link>{" "}
+          which includes:
         </p>
+        <ul className="max-w-[700px] list-disc list-outside ms-8">
+          <li>
+            Server-side email verification with Arcjet to check if the email is
+            from a disposable provider and that the domain has a valid MX
+            record.
+          </li>
+          <li>
+            Rate limiting set to 5 requests over a 10 minute sliding window - a
+            reasonable limit for a signup form, but easily configurable.
+          </li>
+          <li>
+            Bot protection to stop automated clients from submitting the form.
+          </li>
+        </ul>
       </div>
       <div className="flex gap-4">
         <Link
