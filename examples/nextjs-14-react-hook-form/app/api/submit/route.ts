@@ -8,6 +8,10 @@ const aj = arcjet({
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
   key: process.env.ARCJET_KEY,
   rules: [
+    // Arcjet's protectSignup rule is a combination of email validation, bot
+    // protection and rate limiting. Each of these can also be used separately
+    // on other routes e.g. rate limiting on a login route. See
+    // https://docs.arcjet.com/get-started
     protectSignup({
       email: {
         mode: "LIVE", // will block requests. Use "DRY_RUN" to log only

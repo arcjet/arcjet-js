@@ -30,6 +30,10 @@ This includes:
   Arcjet](https://docs.arcjet.com/bot-protection/quick-start/nextjs) to stop
   automated clients from submitting the form.
 
+These are all combined using the Arcjet `protectSignup` rule
+([docs](https://docs.arcjet.com/signup-protection/concepts)), but they can also
+be used separately on different routes.
+
 ## How to use
 
 1. From the root of the project, install the SDK dependencies.
