@@ -7,7 +7,7 @@
 
 # Protecting a Next.js React Hook Form with Arcjet
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Farcjet%2Farcjet-js%2Ftree%2Fdavid%2Fexamples-react-hook-form%2Fexamples%2Fnextjs-14-react-hook-form&project-name=aj-react-hook-form&repository-name=aj-react-hook-form&redirect-url=https%3A%2F%2Fapp.arcjet.com%2Fintegrations%2Fvercel&developer-id=oac_1GEcKBuKBilVnjToj1QUwdb8&integration-ids=oac_1GEcKBuKBilVnjToj1QUwdb8)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Farcjet%2Farcjet-js%2Ftree%main%2Fexamples%2Fnextjs-14-react-hook-form&project-name=aj-react-hook-form&repository-name=aj-react-hook-form&redirect-url=https%3A%2F%2Fapp.arcjet.com%2Fintegrations%2Fvercel&developer-id=oac_1GEcKBuKBilVnjToj1QUwdb8&integration-ids=oac_1GEcKBuKBilVnjToj1QUwdb8)
 
 This example shows how to protect a Next.js React Hook Form with [Arcjet signup
 form protection](https://docs.arcjet.com/signup-protection/concepts). It uses
@@ -36,27 +36,21 @@ be used separately on different routes.
 
 ## How to use
 
-1. From the root of the project, install the SDK dependencies.
-
-   ```bash
-   npm ci
-   ```
-
-2. Enter this directory and install the example's dependencies.
+1. Enter this directory and install the example's dependencies.
 
    ```bash
    cd examples/nextjs-14-react-hook-form
    npm ci
    ```
 
-3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
+2. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
 
-4. Start the dev server.
+3. Start the dev server.
 
    ```bash
    npm run dev
    ```
 
-5. Visit `http://localhost:3000`.
-6. Submit the form with the example non-existent email to show the errors.
+4. Visit `http://localhost:3000`.
+5. Submit the form with the example non-existent email to show the errors.
    Submit it more than 5 times to trigger the rate limit.
