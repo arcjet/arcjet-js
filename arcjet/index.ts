@@ -1140,6 +1140,13 @@ export default function arcjet<
 
     const context: ArcjetContext = { key, fingerprint };
 
+    if (rules.length < 1) {
+      // TODO(#607): Error if no rules configured after deprecation period
+      logger.warn(
+        "Calling `protect()` with no rules is deprecated. Did you mean to configure the Shield rule?",
+      );
+    }
+
     if (rules.length > 10) {
       logger.error("Failure running rules. Only 10 rules may be specified.");
 
