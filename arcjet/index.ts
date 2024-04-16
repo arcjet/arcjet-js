@@ -304,7 +304,6 @@ export function createRemoteClient(
       const decideRequest = new DecideRequest({
         sdkStack,
         sdkVersion,
-        fingerprint: context.fingerprint,
         details: {
           ip: details.ip,
           method: details.method,
@@ -355,7 +354,6 @@ export function createRemoteClient(
       const reportRequest = new ReportRequest({
         sdkStack,
         sdkVersion,
-        fingerprint: context.fingerprint,
         details: {
           ip: details.ip,
           method: details.method,

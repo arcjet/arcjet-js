@@ -833,7 +833,7 @@ export declare class ErrorReason extends Message<ErrorReason> {
 }
 
 /**
- * The rate limit configuration for a path.
+ * The configuration for a rate limit rule.
  *
  * @generated from message proto.decide.v1alpha1.RateLimitRule
  */
@@ -961,7 +961,7 @@ export declare class RateLimitRule extends Message<RateLimitRule> {
 }
 
 /**
- * The bot detection configuration.
+ * The configuration for a bot rule.
  *
  * @generated from message proto.decide.v1alpha1.BotRule
  */
@@ -1033,7 +1033,7 @@ export declare class BotRule_Patterns extends Message<BotRule_Patterns> {
 }
 
 /**
- * The signup protection configuration.
+ * The configuration for an email rule.
  *
  * @generated from message proto.decide.v1alpha1.EmailRule
  */
@@ -1077,6 +1077,37 @@ export declare class EmailRule extends Message<EmailRule> {
 }
 
 /**
+ * The configuration for a shield rule.
+ *
+ * @generated from message proto.decide.v1alpha1.ShieldRule
+ */
+export declare class ShieldRule extends Message<ShieldRule> {
+  /**
+   * @generated from field: proto.decide.v1alpha1.Mode mode = 1;
+   */
+  mode: Mode;
+
+  /**
+   * @generated from field: bool auto_added = 2;
+   */
+  autoAdded: boolean;
+
+  constructor(data?: PartialMessage<ShieldRule>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.ShieldRule";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ShieldRule;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ShieldRule;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ShieldRule;
+
+  static equals(a: ShieldRule | PlainMessage<ShieldRule> | undefined, b: ShieldRule | PlainMessage<ShieldRule> | undefined): boolean;
+}
+
+/**
  * The configuration for Arcjet.
  *
  * @generated from message proto.decide.v1alpha1.Rule
@@ -1103,6 +1134,12 @@ export declare class Rule extends Message<Rule> {
      */
     value: EmailRule;
     case: "email";
+  } | {
+    /**
+     * @generated from field: proto.decide.v1alpha1.ShieldRule shield = 4;
+     */
+    value: ShieldRule;
+    case: "shield";
   } | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<Rule>);
@@ -1338,13 +1375,6 @@ export declare class DecideRequest extends Message<DecideRequest> {
   sdkVersion: string;
 
   /**
-   * The fingerprint of the request
-   *
-   * @generated from field: string fingerprint = 3;
-   */
-  fingerprint: string;
-
-  /**
    * The information provided via an SDK about a request under investigation.
    *
    * @generated from field: proto.decide.v1alpha1.RequestDetails details = 4;
@@ -1423,13 +1453,6 @@ export declare class ReportRequest extends Message<ReportRequest> {
    * @generated from field: string sdk_version = 2;
    */
   sdkVersion: string;
-
-  /**
-   * The fingerprint of the request.
-   *
-   * @generated from field: string fingerprint = 3;
-   */
-  fingerprint: string;
 
   /**
    * The information provided via an SDK about a request under investigation.
