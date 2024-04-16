@@ -304,6 +304,31 @@ updates:
         versions: [">=9"]
 
   - package-ecosystem: npm
+    directory: /examples/nextjs-14-react-hook-form
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+    reviewers:
+      - blaine-arcjet
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
     directory: /examples/nextjs-example
     schedule:
       # Our dependencies should be checked daily
