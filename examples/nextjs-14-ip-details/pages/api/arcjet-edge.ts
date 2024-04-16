@@ -1,5 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import arcjet from "@arcjet/next";
+import arcjet, { shield } from "@arcjet/next";
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
@@ -11,7 +11,12 @@ const aj = arcjet({
   // and set it as an environment variable rather than hard coding.
   // See: https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables
   key: process.env.ARCJET_KEY!,
-  rules: [],
+  rules: [
+    // Protect against common attacks with Arcjet Shield
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
+  ],
 });
 
 export default async function handler(req: NextRequest) {

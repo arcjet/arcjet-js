@@ -1,5 +1,5 @@
 // This example is for NextAuth 4, the current stable version
-import arcjet, { detectBot, slidingWindow } from "@arcjet/next";
+import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/next";
 import NextAuth from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import { NextResponse } from "next/server";
@@ -20,6 +20,10 @@ const handler = NextAuth(authOptions);
 const aj = arcjet({
   key: process.env.ARCJET_KEY,
   rules: [
+    // Protect against common attacks with Arcjet Shield
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
     slidingWindow({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
       interval: 60, // tracks requests across a 60 second sliding window

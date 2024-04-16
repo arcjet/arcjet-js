@@ -1,4 +1,4 @@
-import arcjet, { ArcjetDecision, tokenBucket, detectBot} from "@arcjet/next";
+import arcjet, { ArcjetDecision, tokenBucket, detectBot, shield} from "@arcjet/next";
 import { getServerSession } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import { NextResponse } from "next/server";
@@ -18,6 +18,10 @@ const authOptions = {
 const aj = arcjet({
   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
   rules: [
+    // Protect against common attacks with Arcjet Shield
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
     detectBot({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
       block: ["AUTOMATED"], // blocks all automated clients

@@ -1,4 +1,4 @@
-import arcjet, { fixedWindow } from "@arcjet/node";
+import arcjet, { fixedWindow, shield } from "@arcjet/node";
 import * as http from "node:http";
 
 const aj = arcjet({
@@ -6,6 +6,10 @@ const aj = arcjet({
   // variable rather than hard coding.
   key: process.env.ARCJET_KEY,
   rules: [
+    // Protect against common attacks with Arcjet Shield
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
     // Fixed window rate limit. Arcjet also supports sliding window and token
     // bucket.
     fixedWindow({

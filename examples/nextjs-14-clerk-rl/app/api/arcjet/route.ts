@@ -1,4 +1,4 @@
-import arcjet, { ArcjetDecision, tokenBucket, detectBot } from "@arcjet/next";
+import arcjet, { ArcjetDecision, tokenBucket, detectBot, shield } from "@arcjet/next";
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs";
 
@@ -6,6 +6,9 @@ import { currentUser } from "@clerk/nextjs";
 const aj = arcjet({
   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
   rules: [
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
     detectBot({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
       block: ["AUTOMATED"], // blocks all automated clients
