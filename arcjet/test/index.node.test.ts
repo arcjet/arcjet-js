@@ -57,6 +57,7 @@ import arcjet, {
   slidingWindow,
   Primitive,
   Arcjet,
+  shield,
 } from "../index";
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -2990,6 +2991,31 @@ describe("Primitive > validateEmail", () => {
         emailTypes: [],
       }),
     });
+  });
+});
+
+describe("Primitive > shield", () => {
+  test("provides a default rule with no options specified", async () => {
+    const [rule] = shield();
+    expect(rule.type).toEqual("SHIELD");
+    expect(rule).toHaveProperty("mode", "DRY_RUN");
+  });
+
+  test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
+    const [rule] = shield({
+      // @ts-expect-error
+      mode: "INVALID",
+    });
+    expect(rule.type).toEqual("SHIELD");
+    expect(rule).toHaveProperty("mode", "DRY_RUN");
+  });
+
+  test("sets mode as `LIVE` if specified", async () => {
+    const [rule] = shield({
+      mode: "LIVE",
+    });
+    expect(rule.type).toEqual("SHIELD");
+    expect(rule).toHaveProperty("mode", "LIVE");
   });
 });
 

@@ -663,7 +663,7 @@ export interface ArcjetRequestDetails {
 }
 
 export type ArcjetRule<Props extends {} = {}> = {
-  type: "RATE_LIMIT" | "BOT" | "EMAIL" | string;
+  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | string;
   mode: ArcjetMode;
   priority: number;
 };
@@ -736,6 +736,10 @@ export interface ArcjetBotRule<Props extends {}>
   block: ArcjetBotType[];
   add: [string, ArcjetBotType][];
   remove: string[];
+}
+
+export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {
+  type: "SHIELD";
 }
 
 export type ArcjetContext = {

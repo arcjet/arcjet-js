@@ -53,6 +53,7 @@ import {
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
   ArcjetIpDetails,
+  ArcjetShieldRule,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
 
@@ -729,6 +730,23 @@ describe("convert", () => {
               },
               remove: [],
             },
+          },
+        },
+      }),
+    );
+    expect(
+      ArcjetRuleToProtocol(<ArcjetShieldRule<{}>>{
+        type: "SHIELD",
+        mode: "DRY_RUN",
+        priority: 1,
+      }),
+    ).toEqual(
+      new Rule({
+        rule: {
+          case: "shield",
+          value: {
+            mode: Mode.DRY_RUN,
+            autoAdded: false,
           },
         },
       }),

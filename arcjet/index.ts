@@ -20,6 +20,7 @@ import {
   ArcjetTokenBucketRateLimitRule,
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
+  ArcjetShieldRule,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
@@ -566,9 +567,10 @@ export class ArcjetHeaders extends Headers {
 }
 
 const Priority = {
-  RateLimit: 1,
-  BotDetection: 2,
-  EmailValidation: 3,
+  Shield: 1,
+  RateLimit: 2,
+  BotDetection: 3,
+  EmailValidation: 4,
 };
 
 type PlainObject = { [key: string]: unknown };
@@ -978,6 +980,29 @@ export function detectBot(
           });
         }
       },
+    });
+  }
+
+  return rules;
+}
+
+export type ShieldOptions = {
+  mode?: ArcjetMode;
+};
+
+export function shield(
+  options?: ShieldOptions,
+  ...additionalOptions: ShieldOptions[]
+): Primitive {
+  const rules: ArcjetShieldRule<{}>[] = [];
+
+  // Always create at least one Shield rule
+  for (const opt of [options ?? {}, ...additionalOptions]) {
+    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    rules.push({
+      type: "SHIELD",
+      priority: Priority.Shield,
+      mode,
     });
   }
 
