@@ -57,6 +57,7 @@ import arcjet, {
   slidingWindow,
   Primitive,
   Arcjet,
+  shield,
 } from "../index";
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -283,7 +284,6 @@ describe("createRemoteClient", () => {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
-        fingerprint,
         rules: [],
         sdkStack: SDKStack.SDK_STACK_NEXTJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -338,7 +338,6 @@ describe("createRemoteClient", () => {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
-        fingerprint,
         rules: [],
         sdkStack: SDKStack.SDK_STACK_UNSPECIFIED,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -391,7 +390,6 @@ describe("createRemoteClient", () => {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
-        fingerprint,
         rules: [],
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -445,7 +443,6 @@ describe("createRemoteClient", () => {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
-        fingerprint,
         rules: [],
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -504,7 +501,6 @@ describe("createRemoteClient", () => {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
-        fingerprint,
         rules: [new Rule()],
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -817,7 +813,6 @@ describe("createRemoteClient", () => {
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
-        fingerprint,
         details: {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
@@ -881,7 +876,6 @@ describe("createRemoteClient", () => {
     expect(router.report).toHaveBeenCalledTimes(1);
     expect(router.report).toHaveBeenCalledWith(
       new ReportRequest({
-        fingerprint,
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
         details: {
@@ -949,7 +943,6 @@ describe("createRemoteClient", () => {
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
-        fingerprint,
         details: {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
@@ -1022,7 +1015,6 @@ describe("createRemoteClient", () => {
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
-        fingerprint,
         details: {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
@@ -1084,7 +1076,6 @@ describe("createRemoteClient", () => {
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
-        fingerprint,
         details: {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
@@ -1164,7 +1155,6 @@ describe("createRemoteClient", () => {
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
-        fingerprint,
         details: {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
@@ -3001,6 +2991,31 @@ describe("Primitive > validateEmail", () => {
         emailTypes: [],
       }),
     });
+  });
+});
+
+describe("Primitive > shield", () => {
+  test("provides a default rule with no options specified", async () => {
+    const [rule] = shield();
+    expect(rule.type).toEqual("SHIELD");
+    expect(rule).toHaveProperty("mode", "DRY_RUN");
+  });
+
+  test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
+    const [rule] = shield({
+      // @ts-expect-error
+      mode: "INVALID",
+    });
+    expect(rule.type).toEqual("SHIELD");
+    expect(rule).toHaveProperty("mode", "DRY_RUN");
+  });
+
+  test("sets mode as `LIVE` if specified", async () => {
+    const [rule] = shield({
+      mode: "LIVE",
+    });
+    expect(rule.type).toEqual("SHIELD");
+    expect(rule).toHaveProperty("mode", "LIVE");
   });
 });
 

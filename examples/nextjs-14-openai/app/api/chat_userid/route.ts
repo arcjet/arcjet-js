@@ -16,7 +16,7 @@
  rate limit rule. The value is then passed as a string, number or boolean when
  calling the protect method. You can use any string value for the key.
 */
-import arcjet, { tokenBucket } from "@arcjet/next";
+import arcjet, { shield, tokenBucket } from "@arcjet/next";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import OpenAI from "openai";
 import { promptTokensEstimate } from "openai-chat-tokens";
@@ -27,6 +27,9 @@ const aj = arcjet({
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
   key: process.env.ARCJET_KEY,
   rules: [
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
     tokenBucket({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
       characteristics: ["userId"], // track requests by user ID

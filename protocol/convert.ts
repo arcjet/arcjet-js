@@ -27,6 +27,7 @@ import {
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
   ArcjetIpDetails,
+  ArcjetShieldRule,
 } from "./index";
 import {
   BotReason,
@@ -558,6 +559,12 @@ function isEmailRule<Props extends { email: string }>(
   return rule.type === "EMAIL";
 }
 
+function isShieldRule<Props extends { email: string }>(
+  rule: ArcjetRule<Props>,
+): rule is ArcjetShieldRule<Props> {
+  return rule.type === "SHIELD";
+}
+
 export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   rule: ArcjetRule<Props>,
 ): Rule {
@@ -647,6 +654,18 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
             add: Object.fromEntries(add),
             remove: rule.remove,
           },
+        },
+      },
+    });
+  }
+
+  if (isShieldRule(rule)) {
+    return new Rule({
+      rule: {
+        case: "shield",
+        value: {
+          mode: ArcjetModeToProtocol(rule.mode),
+          autoAdded: false,
         },
       },
     });

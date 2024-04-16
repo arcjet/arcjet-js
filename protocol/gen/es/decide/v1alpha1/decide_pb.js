@@ -255,7 +255,7 @@ export const ErrorReason = /*@__PURE__*/ proto3.makeMessageType(
 );
 
 /**
- * The rate limit configuration for a path.
+ * The configuration for a rate limit rule.
  *
  * @generated from message proto.decide.v1alpha1.RateLimitRule
  */
@@ -277,7 +277,7 @@ export const RateLimitRule = /*@__PURE__*/ proto3.makeMessageType(
 );
 
 /**
- * The bot detection configuration.
+ * The configuration for a bot rule.
  *
  * @generated from message proto.decide.v1alpha1.BotRule
  */
@@ -303,7 +303,7 @@ export const BotRule_Patterns = /*@__PURE__*/ proto3.makeMessageType(
 );
 
 /**
- * The signup protection configuration.
+ * The configuration for an email rule.
  *
  * @generated from message proto.decide.v1alpha1.EmailRule
  */
@@ -318,6 +318,19 @@ export const EmailRule = /*@__PURE__*/ proto3.makeMessageType(
 );
 
 /**
+ * The configuration for a shield rule.
+ *
+ * @generated from message proto.decide.v1alpha1.ShieldRule
+ */
+export const ShieldRule = /*@__PURE__*/ proto3.makeMessageType(
+  "proto.decide.v1alpha1.ShieldRule",
+  () => [
+    { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
+    { no: 2, name: "auto_added", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ],
+);
+
+/**
  * The configuration for Arcjet.
  *
  * @generated from message proto.decide.v1alpha1.Rule
@@ -328,6 +341,7 @@ export const Rule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 1, name: "rate_limit", kind: "message", T: RateLimitRule, oneof: "rule" },
     { no: 2, name: "bots", kind: "message", T: BotRule, oneof: "rule" },
     { no: 3, name: "email", kind: "message", T: EmailRule, oneof: "rule" },
+    { no: 4, name: "shield", kind: "message", T: ShieldRule, oneof: "rule" },
   ],
 );
 
@@ -394,7 +408,6 @@ export const DecideRequest = /*@__PURE__*/ proto3.makeMessageType(
   () => [
     { no: 1, name: "sdk_stack", kind: "enum", T: proto3.getEnumType(SDKStack) },
     { no: 2, name: "sdk_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "fingerprint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "details", kind: "message", T: RequestDetails },
     { no: 5, name: "rules", kind: "message", T: Rule, repeated: true },
   ],
@@ -423,7 +436,6 @@ export const ReportRequest = /*@__PURE__*/ proto3.makeMessageType(
   () => [
     { no: 1, name: "sdk_stack", kind: "enum", T: proto3.getEnumType(SDKStack) },
     { no: 2, name: "sdk_version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "fingerprint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "details", kind: "message", T: RequestDetails },
     { no: 5, name: "decision", kind: "message", T: Decision },
     { no: 6, name: "rules", kind: "message", T: Rule, repeated: true },

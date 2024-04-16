@@ -1,10 +1,14 @@
-import arcjet, { tokenBucket } from "@arcjet/node";
+import arcjet, { shield, tokenBucket } from "@arcjet/node";
 import { serve, type HttpBindings } from "@hono/node-server";
 import { Hono } from "hono";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
+    // Protect against common attacks with Arcjet Shield
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
     // Create a token bucket rate limit. Other algorithms are supported.
     tokenBucket({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only

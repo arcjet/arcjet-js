@@ -1,10 +1,13 @@
-import arcjet, { detectBot, slidingWindow } from "@arcjet/next";
+import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/next";
 import { handlers } from "auth";
 import { NextRequest, NextResponse } from "next/server";
 
 const aj = arcjet({
     key: process.env.ARCJET_KEY,
     rules: [
+      shield({
+        mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      }),
       slidingWindow({
         mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
         interval: 60, // tracks requests across a 60 second sliding window

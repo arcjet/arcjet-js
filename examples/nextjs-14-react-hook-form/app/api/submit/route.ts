@@ -1,5 +1,5 @@
 import { formSchema } from "@/lib/formSchema";
-import arcjet, { protectSignup } from "@arcjet/next";
+import arcjet, { protectSignup, shield } from "@arcjet/next";
 import { NextResponse } from "next/server";
 
 const aj = arcjet({
@@ -8,6 +8,10 @@ const aj = arcjet({
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
   key: process.env.ARCJET_KEY,
   rules: [
+    // Protect against common attacks with Arcjet Shield
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
     // Arcjet's protectSignup rule is a combination of email validation, bot
     // protection and rate limiting. Each of these can also be used separately
     // on other routes e.g. rate limiting on a login route. See

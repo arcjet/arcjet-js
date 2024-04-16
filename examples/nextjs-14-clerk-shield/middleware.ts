@@ -1,5 +1,5 @@
 import { authMiddleware } from "@clerk/nextjs";
-import arcjet, { createMiddleware } from "@arcjet/next";
+import arcjet, { createMiddleware, shield } from "@arcjet/next";
 
 export const config = {
   // Protects all routes, including api/trpc.
@@ -19,9 +19,12 @@ const aj = arcjet({
   // and set it as an environment variable rather than hard coding.
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
   key: process.env.ARCJET_KEY!,
-  // No rules are required for Arcjet Shield - it runs on every request.
-  // You can also add other rules, such as bot protection, here.
-  rules: [],
+  rules: [
+    // Protect against common attacks with Arcjet Shield
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
+  ],
 });
 
 // Clerk middleware will run after the Arcjet middleware. You could also use

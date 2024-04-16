@@ -1,4 +1,4 @@
-import arcjet, { tokenBucket } from "@arcjet/next";
+import arcjet, { shield, tokenBucket } from "@arcjet/next";
 import { NextResponse } from "next/server";
 
 const aj = arcjet({
@@ -8,6 +8,10 @@ const aj = arcjet({
   // Arcjet supports multiple rules including bot protection and email
   // validation. See https://docs.arcjet.com
   rules: [
+    // Protect against common attacks with Arcjet Shield
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
     // Create a token bucket rate limit. Fixed and sliding window rate limits
     // are also supported. See https://docs.arcjet.com/rate-limiting/algorithms
     tokenBucket({
