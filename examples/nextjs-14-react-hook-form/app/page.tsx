@@ -12,7 +12,7 @@ export default function IndexPage() {
         <p className="max-w-[700px]">
           This form uses{" "}
           <Link href="https://docs.arcjet.com/signup-protection/quick-start/nextjs" className="underline">
-            Arcjet's signup form protection
+            Arcjet&apos;s signup form protection
           </Link>{" "}
           which includes:
         </p>
