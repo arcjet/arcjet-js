@@ -7,7 +7,7 @@
 
 # Protecting a Next.js React Hook Form with Arcjet
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Farcjet%2Farcjet-js%2Ftree%2Fmain%2Fexamples%2Fnextjs-14-react-hook-form&project-name=aj-react-hook-form&repository-name=aj-react-hook-form&redirect-url=https%3A%2F%2Fapp.arcjet.com%2Fintegrations%2Fvercel&developer-id=oac_1GEcKBuKBilVnjToj1QUwdb8&integration-ids=oac_1GEcKBuKBilVnjToj1QUwdb8)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-react-hook-form&project-name=aj-react-hook-form&repository-name=aj-react-hook-form&redirect-url=https://app.arcjet.com/teams&developer-id=oac_1GEcKBuKBilVnjToj1QUwdb8&integration-ids=oac_1GEcKBuKBilVnjToj1QUwdb8&demo-title=Protect React Hook Form&demo-description=Protect a Next.js React Hook Form with Arcjet signup form protection.&demo-url=https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-react-hook-form&demo-image=https://app.arcjet.com/img/example-apps/vercel/demo-image.jpg&external-id=aj-react-hook-form)
 
 This example shows how to protect a Next.js React Hook Form with [Arcjet signup
 form protection](https://docs.arcjet.com/signup-protection/concepts). It uses
