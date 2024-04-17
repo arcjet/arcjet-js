@@ -6,7 +6,7 @@ export default function WelcomePage() {
           Thanks!
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground">
-          You're all signed up.
+          You&apos;re all signed up.
         </p>
       </div>
     </section>
