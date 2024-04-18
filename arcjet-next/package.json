@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/next",
-  "version": "1.0.0-alpha.11",
+  "version": "1.0.0-alpha.12",
   "description": "Arcjet SDK for the Next.js framework",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -40,17 +40,17 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "dependencies": {
-    "@arcjet/ip": "1.0.0-alpha.11",
+    "@arcjet/ip": "1.0.0-alpha.12",
     "@connectrpc/connect-web": "1.4.0",
-    "arcjet": "1.0.0-alpha.11"
+    "arcjet": "1.0.0-alpha.12"
   },
   "peerDependencies": {
     "next": ">=13"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.11",
-    "@arcjet/rollup-config": "1.0.0-alpha.11",
-    "@arcjet/tsconfig": "1.0.0-alpha.11",
+    "@arcjet/eslint-config": "1.0.0-alpha.12",
+    "@arcjet/rollup-config": "1.0.0-alpha.12",
+    "@arcjet/tsconfig": "1.0.0-alpha.12",
     "@jest/globals": "29.7.0",
     "@types/node": "18.18.0",
     "@rollup/wasm-node": "4.14.3",

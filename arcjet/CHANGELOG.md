@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.0.0-alpha.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.11...arcjet-v1.0.0-alpha.12) (2024-04-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* Deprecate calling `protect()` with no rules ([#608](https://github.com/arcjet/arcjet-js/issues/608))
+
+### 🚀 New Features
+
+* Add configurable shield rule ([#609](https://github.com/arcjet/arcjet-js/issues/609)) ([a5717a1](https://github.com/arcjet/arcjet-js/commit/a5717a1183945d0cf1b06450b813fcd154a367a3)), closes [#606](https://github.com/arcjet/arcjet-js/issues/606)
+* Add urls for Arcjet fly.io deployments ([#554](https://github.com/arcjet/arcjet-js/issues/554)) ([27d946b](https://github.com/arcjet/arcjet-js/commit/27d946b1f4adf00ab2c3ac931381d003771758df))
+
+
+### 📦 Dependencies
+
+* **dev:** Bump @rollup/wasm-node from 4.14.1 to 4.14.3 ([#597](https://github.com/arcjet/arcjet-js/issues/597)) ([598adf0](https://github.com/arcjet/arcjet-js/commit/598adf0b3d61b9e9bce046c7c3e8ddef2802a37c))
+* **dev:** Bump typescript from 5.4.4 to 5.4.5 ([#557](https://github.com/arcjet/arcjet-js/issues/557)) ([16af391](https://github.com/arcjet/arcjet-js/commit/16af3914d66f05eb3b0d79a9623d2c5ade52bddd))
+
+
+### 🧹 Miscellaneous Chores
+
+* Deprecate calling `protect()` with no rules ([#608](https://github.com/arcjet/arcjet-js/issues/608)) ([57a8f6b](https://github.com/arcjet/arcjet-js/commit/57a8f6ba933b769cf7531f27ca36c08ecf74ea80))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+    * @arcjet/duration bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+    * @arcjet/logger bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+    * @arcjet/protocol bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+
 ## [1.0.0-alpha.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.10...arcjet-v1.0.0-alpha.11) (2024-04-08)
 
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.11...@arcjet/rollup-config-v1.0.0-alpha.12) (2024-04-18)
+
+
+### 📦 Dependencies
+
+* **dev:** Bump @rollup/wasm-node from 4.14.1 to 4.14.3 ([#597](https://github.com/arcjet/arcjet-js/issues/597)) ([598adf0](https://github.com/arcjet/arcjet-js/commit/598adf0b3d61b9e9bce046c7c3e8ddef2802a37c))
+* **dev:** Bump typescript from 5.4.4 to 5.4.5 ([#557](https://github.com/arcjet/arcjet-js/issues/557)) ([16af391](https://github.com/arcjet/arcjet-js/commit/16af3914d66f05eb3b0d79a9623d2c5ade52bddd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+
 ## [1.0.0-alpha.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.10...@arcjet/rollup-config-v1.0.0-alpha.11) (2024-04-08)
 
 
