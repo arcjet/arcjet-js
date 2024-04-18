@@ -204,6 +204,8 @@ export type RemoteClientOptions = {
 const baseUrlAllowed = [
   "https://decide.arcjet.com",
   "https://decide.arcjettest.com",
+  "https://fly.decide.arcjet.com",
+  "https://fly.decide.arcjettest.com",
   "https://decide.arcjet.orb.local:4082",
 ];
 
@@ -217,13 +219,33 @@ export function defaultBaseUrl() {
       baseUrlAllowed.includes(process.env["ARCJET_BASE_URL"])
     ) {
       return process.env["ARCJET_BASE_URL"];
-    } else {
-      return "https://decide.arcjet.com";
     }
+
+    // If we're running on fly.io, use the Arcjet Decide Service hosted on fly
+    // Ref: https://fly.io/docs/machines/runtime-environment/#environment-variables
+    if (
+      typeof process.env["FLY_APP_NAME"] === "string" &&
+      process.env["FLY_APP_NAME"] !== ""
+    ) {
+      return "https://fly.decide.arcjet.com";
+    }
+
+    return "https://decide.arcjet.com";
   } else {
-    return process.env["ARCJET_BASE_URL"]
-      ? process.env["ARCJET_BASE_URL"]
-      : "https://decide.arcjet.com";
+    if (process.env["ARCJET_BASE_URL"]) {
+      return process.env["ARCJET_BASE_URL"];
+    }
+
+    // If we're running on fly.io, use the Arcjet Decide Service hosted on fly
+    // Ref: https://fly.io/docs/machines/runtime-environment/#environment-variables
+    if (
+      typeof process.env["FLY_APP_NAME"] === "string" &&
+      process.env["FLY_APP_NAME"] !== ""
+    ) {
+      return "https://fly.decide.arcjet.com";
+    }
+
+    return "https://decide.arcjet.com";
   }
 }
 
