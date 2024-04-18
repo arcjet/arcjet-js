@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0-alpha.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.11...@arcjet/eslint-config-v1.0.0-alpha.12) (2024-04-18)
+
+
+### 📦 Dependencies
+
+* Bump eslint-config-next from 14.1.4 to 14.2.1 ([#585](https://github.com/arcjet/arcjet-js/issues/585)) ([b92474b](https://github.com/arcjet/arcjet-js/commit/b92474bd8b67820a098f2d126e0659960d07873d))
+* Bump eslint-config-next from 14.2.1 to 14.2.2 ([#621](https://github.com/arcjet/arcjet-js/issues/621)) ([3268a70](https://github.com/arcjet/arcjet-js/commit/3268a70eb214fb84465a625f26a3a3d45300e911))
+
 ## [1.0.0-alpha.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.10...@arcjet/eslint-config-v1.0.0-alpha.11) (2024-04-08)
 
 

@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.11...@arcjet/protocol-v1.0.0-alpha.12) (2024-04-18)
+
+
+### 🚀 New Features
+
+* Add configurable shield rule ([#609](https://github.com/arcjet/arcjet-js/issues/609)) ([a5717a1](https://github.com/arcjet/arcjet-js/commit/a5717a1183945d0cf1b06450b813fcd154a367a3)), closes [#606](https://github.com/arcjet/arcjet-js/issues/606)
+
+
+### 📦 Dependencies
+
+* Bump typeid-js from 0.5.0 to 0.6.0 ([#566](https://github.com/arcjet/arcjet-js/issues/566)) ([b6dcaeb](https://github.com/arcjet/arcjet-js/commit/b6dcaeb1667e082ed03a077b6a4b15e0e212ace7))
+* Bump typeid-js from 0.6.0 to 0.7.0 ([#620](https://github.com/arcjet/arcjet-js/issues/620)) ([8b09974](https://github.com/arcjet/arcjet-js/commit/8b099749c656149b4bd947f14d79023e2a578a62))
+* **dev:** Bump @rollup/wasm-node from 4.14.1 to 4.14.3 ([#597](https://github.com/arcjet/arcjet-js/issues/597)) ([598adf0](https://github.com/arcjet/arcjet-js/commit/598adf0b3d61b9e9bce046c7c3e8ddef2802a37c))
+* **dev:** Bump typescript from 5.4.4 to 5.4.5 ([#557](https://github.com/arcjet/arcjet-js/issues/557)) ([16af391](https://github.com/arcjet/arcjet-js/commit/16af3914d66f05eb3b0d79a9623d2c5ade52bddd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.11 to 1.0.0-alpha.12
+
 ## [1.0.0-alpha.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.10...@arcjet/protocol-v1.0.0-alpha.11) (2024-04-08)
 
 
