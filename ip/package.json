@@ -45,7 +45,7 @@
     "@arcjet/rollup-config": "1.0.0-alpha.12",
     "@arcjet/tsconfig": "1.0.0-alpha.12",
     "@jest/globals": "29.7.0",
-    "@rollup/wasm-node": "4.14.3",
+    "@rollup/wasm-node": "4.16.3",
     "@types/node": "18.18.0",
     "jest": "29.7.0",
     "typescript": "5.4.5"
