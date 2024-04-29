@@ -1,6 +1,6 @@
 import arcjet, { ArcjetDecision, tokenBucket, detectBot, shield } from "@arcjet/next";
 import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 
 // The root Arcjet client is created outside of the handler.
 const aj = arcjet({
@@ -8,10 +8,6 @@ const aj = arcjet({
   rules: [
     shield({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-    }),
-    detectBot({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      block: ["AUTOMATED"], // blocks all automated clients
     }),
   ],
 });

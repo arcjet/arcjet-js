@@ -2,7 +2,7 @@
  * This retrieves the Clerk JWT token for the current user so you can test the
  * private API route.
  */
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(req: Request) {
   const { userId, getToken } = auth();
