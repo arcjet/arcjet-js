@@ -59,8 +59,6 @@ merge:
     - Trunk Check
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 18)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 20)"
-    # Next.js 13 is flakey when it downloads swc so we don't require this
-    # - Build examples / Next.js 13 + Page Router + withArcjet
     - Build examples / Next.js 14 + App Router + Rate Limit
     - Build examples / Next.js 14 + App Router + Validate Email
     - Build examples / Next.js 14 + Clerk + Rate Limit
