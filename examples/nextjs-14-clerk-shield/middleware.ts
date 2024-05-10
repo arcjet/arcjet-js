@@ -1,17 +1,22 @@
-import { authMiddleware } from "@clerk/nextjs";
 import arcjet, { createMiddleware, shield } from "@arcjet/next";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 export const config = {
   // Protects all routes, including api/trpc.
-  // See https://clerk.com/docs/references/nextjs/auth-middleware
+  // See https://clerk.com/docs/references/nextjs/clerk-middleware
   // for more information about configuring your Middleware
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };
- 
-const clerkMiddleware = authMiddleware({
-  // Routes that can be accessed while signed out
-  publicRoutes: ["/"],
-  apiRoutes: ["/api/private"],
+
+const isProtectedRoute = createRouteMatcher(["/api/private"]);
+
+const clerk = clerkMiddleware((auth, request) => {
+  if (isProtectedRoute(request)) {
+    auth().protect();
+  }
+
+  return NextResponse.next();
 });
 
 const aj = arcjet({
@@ -30,4 +35,4 @@ const aj = arcjet({
 // Clerk middleware will run after the Arcjet middleware. You could also use
 // Clerk's beforeAuth options to run Arcjet first. See
 // https://clerk.com/docs/references/nextjs/auth-middleware#use-before-auth-to-execute-middleware-before-authentication
-export default createMiddleware(aj, clerkMiddleware);
+export default createMiddleware(aj, clerk);
