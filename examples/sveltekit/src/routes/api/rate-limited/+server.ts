@@ -12,7 +12,7 @@ export async function GET(event: RequestEvent) {
             })
         );
 
-    const decision = await aj.protect(event.locals.arcjetDetails);
+    const decision = await aj.protect(event.locals.arcjetRequest);
 
     if (decision.isDenied()) {
         return new Response("Forbidden", {

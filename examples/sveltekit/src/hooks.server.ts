@@ -21,7 +21,7 @@ const aj = arcjet({
 
 export async function handle({ event, resolve }) {
     event.locals.arcjet = aj;
-    event.locals.arcjetDetails = {
+    event.locals.arcjetRequest = {
         ip: event.getClientAddress(),
         method: event.request.method,
         host: event.url.host,
