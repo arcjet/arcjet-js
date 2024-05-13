@@ -637,6 +637,13 @@ function findIP(request: RequestLike, headers: Headers): string {
     return trueClientIP;
   }
 
+  // Fly.io
+  // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
+  const flyClientIP = headers.get("fly-client-ip");
+  if (isGlobalIP(flyClientIP)) {
+    return flyClientIP;
+  }
+
   // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies
   // X-Real-IP
   const xRealIP = headers.get("x-real-ip");
