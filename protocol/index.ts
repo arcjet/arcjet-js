@@ -50,10 +50,11 @@ export const ArcjetEmailType: ArcjetEnum<ArcjetEmailType> = {
   INVALID: "INVALID",
 };
 
-export type ArcjetStack = "NODEJS" | "NEXTJS";
+export type ArcjetStack = "NODEJS" | "NEXTJS" | "BUN";
 export const ArcjetStack: ArcjetEnum<ArcjetStack> = {
   NODEJS: "NODEJS",
   NEXTJS: "NEXTJS",
+  BUN: "BUN",
 };
 
 export type ArcjetRuleState = "RUN" | "NOT_RUN" | "CACHED" | "DRY_RUN";

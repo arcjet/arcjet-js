@@ -162,6 +162,7 @@ describe("convert", () => {
   test("ArcjetStackToProtocol", () => {
     expect(ArcjetStackToProtocol("NODEJS")).toEqual(SDKStack.SDK_STACK_NODEJS);
     expect(ArcjetStackToProtocol("NEXTJS")).toEqual(SDKStack.SDK_STACK_NEXTJS);
+    expect(ArcjetStackToProtocol("BUN")).toEqual(SDKStack.SDK_STACK_BUN);
     expect(
       ArcjetStackToProtocol(
         // @ts-expect-error
