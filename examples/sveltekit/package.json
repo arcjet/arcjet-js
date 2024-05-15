@@ -34,7 +34,6 @@
 	"type": "module",
 	"dependencies": {
 		"@connectrpc/connect-node": "^1.4.0",
-		"arcjet": "^1.0.0-alpha.12",
-		"dotenv": "^16.4.5"
+		"arcjet": "^1.0.0-alpha.12"
 	}
 }

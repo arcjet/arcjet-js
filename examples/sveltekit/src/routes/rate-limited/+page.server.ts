@@ -1,21 +1,21 @@
 import { slidingWindow } from "arcjet";
 import { error, type RequestEvent } from '@sveltejs/kit';
+import { aj, transformEvent } from '$lib/server/arcjet';
 
 export async function load(event: RequestEvent) {
 
-    const aj = event.locals.arcjet
+    const decision = await aj
         .withRule(
             slidingWindow({
                 mode: "LIVE",
                 interval: "10s",
                 max: 5,
             })
-        );
-
-    const decision = await aj.protect(event.locals.arcjetRequest);
+        )
+        .protect(transformEvent(event));
 
     if (decision.isDenied()) {
-        error(403, 'Forbidden')
+        return error(403, 'Forbidden')
     }
 
     return {};

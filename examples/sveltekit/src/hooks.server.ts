@@ -1,34 +1,22 @@
-import arcjet, { createRemoteClient, defaultBaseUrl, shield } from "arcjet";
-import { createConnectTransport } from "@connectrpc/connect-node";
+import { aj, transformEvent } from '$lib/server/arcjet';
+import { error } from '@sveltejs/kit';
+import type { RequestEvent } from "@sveltejs/kit";
 
-import dotenv from 'dotenv';
-dotenv.config();
+export async function handle({ event, resolve }: { event: RequestEvent; resolve: (event: RequestEvent) => Response | Promise<Response> }): Promise<Response> {
 
-const aj = arcjet({
-    key: process.env.ARCJET_KEY!,
-    rules: [
-        shield({
-            mode: "LIVE",
-        }),
-    ],
-    client: createRemoteClient({
-        transport: createConnectTransport({
-            baseUrl: defaultBaseUrl(),
-            httpVersion: "2",
-        }),
-    }),
-});
-
-export async function handle({ event, resolve }) {
-    event.locals.arcjet = aj;
-    event.locals.arcjetRequest = {
-        ip: event.getClientAddress(),
-        method: event.request.method,
-        host: event.url.host,
-        path: event.url.pathname,
-        headers: Object.fromEntries(event.request.headers),
+    // Ignore routes that extend the Arcjet rules - they will call `.protect` themselves
+    const filteredRoutes = ['/api/rate-limited', '/rate-limited'];
+    if (filteredRoutes.includes(event.url.pathname)) {
+        // return - route will handle protecttion
+        return resolve(event);
     }
 
-    const response = await resolve(event);
-    return response;
+    // Ensure every other route is protected with shield
+    const decision = await aj.protect(transformEvent(event));
+    if (decision.isDenied()) {
+        return error(403, 'Forbidden')
+    }
+
+    // Continue with the route
+    return resolve(event);
 }
