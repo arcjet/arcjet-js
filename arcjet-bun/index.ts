@@ -1,3 +1,4 @@
+/// <reference types="bun-types/bun.d.ts" />
 import { createConnectTransport } from "@connectrpc/connect-node";
 import core, {
   ArcjetDecision,

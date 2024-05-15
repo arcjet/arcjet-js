@@ -1,7 +1,7 @@
 import arcjet, { fixedWindow, shield } from "@arcjet/bun"
 
 const aj = arcjet({
-    key: process.env.ARCJET_KEY!,
+    key: Bun.env.ARCJET_KEY!,
     rules: [
       shield({ mode: "LIVE" }),
       fixedWindow({
