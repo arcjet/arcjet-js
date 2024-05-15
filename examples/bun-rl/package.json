@@ -1,5 +1,6 @@
 {
   "name": "bun-rl",
+  "private": true,
   "module": "index.ts",
   "type": "module",
   "workspaces": [
