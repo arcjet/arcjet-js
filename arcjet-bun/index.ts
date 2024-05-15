@@ -117,11 +117,19 @@ export interface ArcjetBun<Props extends PlainObject> {
    * Wraps the Bun.sh `fetch` handler to provide additional Request details
    * when calling the SDK's `protect()` function.
    *
-   * @param handler: The user provided `fetch` handler
+   * @param fetch: The user provided `fetch` handler
    */
-  wrap(
-    handler: (request: Request, server: Server) => Response | Promise<Response>,
-  ): (request: Request, server: Server) => Promise<Response>;
+  handler(
+    fetch: (
+      this: Server,
+      request: Request,
+      server: Server,
+    ) => Response | Promise<Response>,
+  ): (
+    this: Server,
+    request: Request,
+    server: Server,
+  ) => Response | Promise<Response>;
 }
 
 // This is provided with an `ipCache` where it attempts to lookup the IP. This
@@ -190,8 +198,9 @@ function withClient<const Rules extends (Primitive | Product)[]>(
 
       return aj.protect(req);
     },
-    wrap(
-      handler: (
+    handler(
+      fetch: (
+        this: Server,
         request: Request,
         server: Server,
       ) => Response | Promise<Response>,
@@ -205,7 +214,7 @@ function withClient<const Rules extends (Primitive | Product)[]>(
           ipCache.set(request, socketAddress.address);
         }
 
-        return handler(request, server);
+        return fetch.call(server, request, server);
       };
     },
   });

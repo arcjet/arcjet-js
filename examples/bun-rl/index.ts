@@ -15,7 +15,7 @@ const aj = arcjet({
 // Exporting a server
 export default {
   port: 3000,
-  fetch: aj.wrap(async (req) => {
+  fetch: aj.handler(async (req) => {
     const decision = await aj.protect(req);
 
     if (decision.isDenied()) {
@@ -29,7 +29,7 @@ export default {
 // Or using the `Bun.serve()` API
 // const server = Bun.serve({
 //   port: 3000,
-//   fetch: aj.wrap(async (req) => {
+//   fetch: aj.handler(async (req) => {
 //     const decision = await aj.protect(req);
 
 //     if (decision.isDenied()) {
