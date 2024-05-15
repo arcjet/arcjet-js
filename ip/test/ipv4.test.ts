@@ -206,6 +206,7 @@ describe("find public IPv4", () => {
   headerSuite("CF-Connecting-IP");
   headerSuite("DO-Connecting-IP");
   headerSuite("Fastly-Client-IP");
+  headerSuite("Fly-Client-IP");
   headerSuite("True-Client-IP");
   headerSuite("X-Real-IP");
   headerSuite("X-Cluster-Client-IP");
