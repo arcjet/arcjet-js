@@ -45,6 +45,7 @@ function utf8Encode(s, realloc, memory) {
   return ptr;
 }
 
+
 async function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.instantiate) {
   const module0 = getCoreModule('arcjet_analyze_js_req.component.core.wasm');
   const module1 = getCoreModule('arcjet_analyze_js_req.component.core2.wasm');
