@@ -7,12 +7,12 @@
   ],
   "dependencies": {
     "@arcjet/bun": "workspace:*",
-    "@connectrpc/connect-node": "^1.4.0"
+    "@connectrpc/connect-node": "1.4.0"
   },
   "devDependencies": {
     "@types/bun": "1.1.2"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "5.4.5"
   }
 }
