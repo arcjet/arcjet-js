@@ -1,10 +1,10 @@
 import arcjet, { createRemoteClient, defaultBaseUrl, shield } from "arcjet";
 import { createConnectTransport } from "@connectrpc/connect-node";
-import { ARCJET_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { RequestEvent } from "@sveltejs/kit";
 
 const aj = arcjet({
-    key: ARCJET_KEY,
+    key: env.ARCJET_KEY!,
     rules: [
         shield({
             mode: "LIVE",
