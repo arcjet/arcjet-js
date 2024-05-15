@@ -1,15 +1,15 @@
 import arcjet, { fixedWindow, shield } from "@arcjet/bun"
 
 const aj = arcjet({
-    key: Bun.env.ARCJET_KEY!,
-    rules: [
-      shield({ mode: "LIVE" }),
-      fixedWindow({
-        mode: "LIVE",
-        max: 1,
-        window: "1m",
-      }),
-    ],
+  key: Bun.env.ARCJET_KEY!,
+  rules: [
+    shield({ mode: "LIVE" }),
+    fixedWindow({
+      mode: "LIVE",
+      max: 1,
+      window: "1m",
+    }),
+  ],
 });
 
 // Exporting a server
