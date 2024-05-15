@@ -409,3 +409,7 @@ updates:
       dependencies:
         patterns:
           - "*"
+    ignore:
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
