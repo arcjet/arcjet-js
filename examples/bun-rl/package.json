@@ -6,8 +6,7 @@
     "../../*"
   ],
   "dependencies": {
-    "@arcjet/bun": "workspace:*",
-    "@connectrpc/connect-node": "1.4.0"
+    "@arcjet/bun": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "1.1.2"
