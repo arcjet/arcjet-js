@@ -33,14 +33,13 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "eslint-config-next": "14.2.3",
+    "@typescript-eslint/eslint-plugin": "7.9.0",
+    "@typescript-eslint/parser": "7.9.0",
     "eslint-config-prettier": "9.1.0",
-    "eslint-config-turbo": "1.13.3",
-    "eslint-plugin-react": "7.34.1"
+    "eslint-config-turbo": "1.13.3"
   },
   "peerDependencies": {
-    "eslint": "^8",
-    "next": ">=14"
+    "eslint": "^8"
   },
   "devDependencies": {
     "eslint": "8.57.0"
