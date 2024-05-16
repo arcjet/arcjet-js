@@ -147,6 +147,7 @@ find a specific one through the categories and descriptions below.
 
 - [`@arcjet/next`](./arcjet-next/README.md): SDK for the Next.js framework.
 - [`@arcjet/node`](./arcjet-node/README.md): SDK for Node.js.
+- [`@arcjet/bun`](./arcjet-bun/README.md): SDK for Bun.sh.
 
 ### Analysis
 
