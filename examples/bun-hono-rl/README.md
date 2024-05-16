@@ -30,7 +30,7 @@ This example shows how to use Arcjet with a Bun.sh
 4. Start the server.
 
    ```bash
-   bun run index.ts
+   bun run --hot index.ts
    ```
 
 5. Visit `http://localhost:3000/`.
