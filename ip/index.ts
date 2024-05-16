@@ -134,7 +134,7 @@ class Parser {
       let digitCount = 0;
       const hasLeadingZero = p.peakChar() === "0";
 
-      let nextCharAsDigit = () => {
+      function nextCharAsDigit() {
         return p.readAtomically((p) => {
           const c = p.readChar();
           if (c) {
@@ -144,7 +144,7 @@ class Parser {
             }
           }
         });
-      };
+      }
 
       for (
         let digit = nextCharAsDigit();
@@ -205,7 +205,7 @@ class Parser {
         if (i < limit - 1) {
           const ipv4 = p.readSeparator(":", i, (p) => p.readIPv4Address());
           if (isIPv4Tuple(ipv4)) {
-            let [one, two, three, four] = ipv4;
+            const [one, two, three, four] = ipv4;
             groups[i + 0] = u16FromBytes([one, two]);
             groups[i + 1] = u16FromBytes([three, four]);
             return [i + 2, true];

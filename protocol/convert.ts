@@ -56,9 +56,10 @@ export function ArcjetModeToProtocol(mode: ArcjetMode) {
       return Mode.LIVE;
     case "DRY_RUN":
       return Mode.DRY_RUN;
-    default:
+    default: {
       const _exhaustive: never = mode;
       return Mode.UNSPECIFIED;
+    }
   }
 }
 
@@ -74,9 +75,10 @@ export function ArcjetBotTypeToProtocol(botType: ArcjetBotType): BotType {
       return BotType.LIKELY_NOT_A_BOT;
     case "VERIFIED_BOT":
       return BotType.VERIFIED_BOT;
-    default:
+    default: {
       const _exhaustive: never = botType;
       return BotType.UNSPECIFIED;
+    }
   }
 }
 
@@ -94,9 +96,10 @@ export function ArcjetBotTypeFromProtocol(botType: BotType): ArcjetBotType {
       return "LIKELY_NOT_A_BOT";
     case BotType.VERIFIED_BOT:
       return "VERIFIED_BOT";
-    default:
+    default: {
       const _exhaustive: never = botType;
       throw new Error("Invalid BotType");
+    }
   }
 }
 
@@ -114,9 +117,10 @@ export function ArcjetEmailTypeToProtocol(
       return EmailType.NO_GRAVATAR;
     case "INVALID":
       return EmailType.INVALID;
-    default:
+    default: {
       const _exhaustive: never = emailType;
       return EmailType.UNSPECIFIED;
+    }
   }
 }
 
@@ -136,9 +140,10 @@ export function ArcjetEmailTypeFromProtocol(
       return "NO_GRAVATAR";
     case EmailType.INVALID:
       return "INVALID";
-    default:
+    default: {
       const _exhaustive: never = emailType;
       throw new Error("Invalid EmailType");
+    }
   }
 }
 
@@ -148,9 +153,10 @@ export function ArcjetStackToProtocol(stack: ArcjetStack): SDKStack {
       return SDKStack.SDK_STACK_NODEJS;
     case "NEXTJS":
       return SDKStack.SDK_STACK_NEXTJS;
-    default:
+    default: {
       const _exhaustive: never = stack;
       return SDKStack.SDK_STACK_UNSPECIFIED;
+    }
   }
 }
 
@@ -164,9 +170,10 @@ export function ArcjetRuleStateToProtocol(stack: ArcjetRuleState): RuleState {
       return RuleState.CACHED;
     case "DRY_RUN":
       return RuleState.DRY_RUN;
-    default:
+    default: {
       const _exhaustive: never = stack;
       return RuleState.UNSPECIFIED;
+    }
   }
 }
 
@@ -184,9 +191,10 @@ export function ArcjetRuleStateFromProtocol(
       return "DRY_RUN";
     case RuleState.CACHED:
       return "CACHED";
-    default:
+    default: {
       const _exhaustive: never = ruleState;
       throw new Error("Invalid RuleState");
+    }
   }
 }
 
@@ -202,9 +210,10 @@ export function ArcjetConclusionToProtocol(
       return Conclusion.CHALLENGE;
     case "ERROR":
       return Conclusion.ERROR;
-    default:
+    default: {
       const _exhaustive: never = conclusion;
       return Conclusion.UNSPECIFIED;
+    }
   }
 }
 
@@ -222,9 +231,10 @@ export function ArcjetConclusionFromProtocol(
       return "CHALLENGE";
     case Conclusion.ERROR:
       return "ERROR";
-    default:
+    default: {
       const _exhaustive: never = conclusion;
       throw new Error("Invalid Conclusion");
+    }
   }
 }
 
@@ -514,7 +524,7 @@ export function ArcjetDecisionFromProtocol(
         results,
         ip: ArcjetIpDetailsFromProtocol(decision.ipDetails),
       });
-    default:
+    default: {
       const _exhaustive: never = decision.conclusion;
       return new ArcjetErrorDecision({
         ttl: 0,
@@ -522,6 +532,7 @@ export function ArcjetDecisionFromProtocol(
         results: [],
         ip: ArcjetIpDetailsFromProtocol(decision.ipDetails),
       });
+    }
   }
 }
 

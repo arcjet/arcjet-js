@@ -342,7 +342,7 @@ export function createMiddleware(
     request: NextRequest,
     event: NextFetchEvent,
   ): Promise<NextMiddlewareResult> {
-    let decision = await arcjet.protect(request);
+    const decision = await arcjet.protect(request);
 
     if (decision.isDenied()) {
       // TODO(#222): Content type negotiation using `Accept` header
