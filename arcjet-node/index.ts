@@ -139,6 +139,9 @@ function toArcjetRequest<Props extends PlainObject>(
   request: ArcjetNodeRequest,
   props: Props,
 ): ArcjetRequest<Props> {
+  // We pull the cookies from the request before wrapping them in ArcjetHeaders
+  const cookies = cookiesToString(request.headers?.cookie);
+
   // We construct an ArcjetHeaders to normalize over Headers
   const headers = new ArcjetHeaders(request.headers);
 
@@ -171,8 +174,6 @@ function toArcjetRequest<Props extends PlainObject>(
   } else {
     path = request.url ?? "";
   }
-
-  const cookies = cookiesToString(request.headers?.cookie);
 
   return {
     ...props,

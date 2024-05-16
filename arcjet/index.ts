@@ -586,6 +586,34 @@ export class ArcjetHeaders extends Headers {
       }
     }
   }
+
+  /**
+   * Append a key and value to the headers, while filtering any key named
+   * `cookie`.
+   *
+   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/append)
+   *
+   * @param key The key to append in the headers
+   * @param value The value to append for the key in the headers
+   */
+  append(key: string, value: string): void {
+    if (key.toLowerCase() !== "cookie") {
+      super.append(key, value);
+    }
+  }
+  /**
+   * Set a key and value in the headers, but filtering any key named `cookie`.
+   *
+   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/set)
+   *
+   * @param key The key to set in the headers
+   * @param value The value to set for the key in the headers
+   */
+  set(key: string, value: string): void {
+    if (key.toLowerCase() !== "cookie") {
+      super.set(key, value);
+    }
+  }
 }
 
 const Priority = {
