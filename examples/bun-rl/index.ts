@@ -1,4 +1,4 @@
-import arcjet, { fixedWindow, shield } from "@arcjet/bun"
+import arcjet, { fixedWindow, shield } from "@arcjet/bun";
 
 const aj = arcjet({
   key: Bun.env.ARCJET_KEY!,
@@ -17,6 +17,8 @@ export default {
   port: 3000,
   fetch: aj.handler(async (req) => {
     const decision = await aj.protect(req);
+    console.log("Arcjet request ID", decision.id);
+    console.log("Arcjet decision", decision.conclusion);
 
     if (decision.isDenied()) {
       return new Response("Blocked", { status: 403 });
