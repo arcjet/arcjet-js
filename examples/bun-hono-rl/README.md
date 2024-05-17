@@ -33,5 +33,6 @@ This example shows how to use Arcjet with a Bun.sh
    bun run --hot index.ts
    ```
 
-5. Visit `http://localhost:3000/`.
+5. Visit `http://localhost:3000/`. Note: If you load this in a browser, you will
+   see 2 requests - one for the page and one for a favicon.
 6. Refresh the page to trigger the rate limit.
