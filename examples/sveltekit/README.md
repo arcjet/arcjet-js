@@ -42,12 +42,10 @@ This example shows how to use Arcjet to protect [SvelteKit](https://kit.svelte.d
 
 ## How it works
 
-This example uses the generic [`arcjet`](https://www.npmjs.com/package/arcjet) package.
-
-The `arcjet` instance is created in `/src/lib/server/arcjet.ts` and is configured to enable [Shield](https://docs.arcjet.com/shield) by default. This server-only module also provides a `transformEvent()` method that takes a Svelte event and transforms it into the format required by the `arcjet` package.
+The `arcjet` instance is created in the server-only module `/src/lib/server/arcjet.ts` and is configured to enable [Shield](https://docs.arcjet.com/shield) by default.
 
 `/src/hooks.server.ts` imports the `arcjet` instance and runs the `protect()` method on all requests. The only exception is any requests who's pathanme is listed in `filteredRoutes`, in which case protection is left to that route's server code.
 
-The rate-limited page has a server-side script file at `/src/routes/rate-limited/+page.server.ts`, which retrieves the `arcjet` instance, and then applies extra rate-limiting rules before calling the `protect()` method.
+The rate-limited page has a server-side script file at `/src/routes/rate-limited/+page.server.ts`, which imports the `arcjet` instance, and then applies extra rate-limiting rules before calling the `protect()` method.
 
 Finally, the rate-limited API end-point performs the same augmentation of the rules as the rate-limted web page, as can be seen in `/src/routes/api/rate-limited/+server.ts`.
