@@ -39,6 +39,7 @@ tokens.
 ```ts
 // In your `+page.server.ts` file
 import arcjet, { tokenBucket } from "@arcjet/sveltekit";
+import { error, type RequestEvent } from "@sveltejs/kit";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
@@ -76,6 +77,7 @@ request with negligible performance impact.
 ```ts
 // In your `hooks.server.ts` file
 import arcjet from "@arcjet/sveltekit";
+import { error, type RequestEvent } from "@sveltejs/kit";
 
 const aj = arcjet({
   // Get your site key from https://app.arcjet.com
