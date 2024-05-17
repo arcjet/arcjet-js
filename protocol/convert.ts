@@ -153,6 +153,8 @@ export function ArcjetStackToProtocol(stack: ArcjetStack): SDKStack {
       return SDKStack.SDK_STACK_NODEJS;
     case "NEXTJS":
       return SDKStack.SDK_STACK_NEXTJS;
+    case "BUN":
+      return SDKStack.SDK_STACK_BUN;
     default: {
       const _exhaustive: never = stack;
       return SDKStack.SDK_STACK_UNSPECIFIED;

@@ -284,6 +284,16 @@ export declare enum SDKStack {
    * @generated from enum value: SDK_STACK_DJANGO = 4;
    */
   SDK_STACK_DJANGO = 4,
+
+  /**
+   * @generated from enum value: SDK_STACK_BUN = 5;
+   */
+  SDK_STACK_BUN = 5,
+
+  /**
+   * @generated from enum value: SDK_STACK_DENO = 6;
+   */
+  SDK_STACK_DENO = 6,
 }
 
 /**
