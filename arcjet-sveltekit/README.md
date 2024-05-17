@@ -82,7 +82,7 @@ import { error, type RequestEvent } from "@sveltejs/kit";
 import { env } from "$env/dynamic/private";
 
 const aj = arcjet({
-  key: env.ARCJET_KEY!,  // Get your site key from https://app.arcjet.com
+  key: env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
   rules: [
     shield({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
