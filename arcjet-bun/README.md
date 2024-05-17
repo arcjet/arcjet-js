@@ -40,7 +40,7 @@ tokens.
 import arcjet, { tokenBucket } from "@arcjet/bun";
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  key: Bun.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
   rules: [
     // Create a token bucket rate limit. Other algorithms are supported.
     tokenBucket({
@@ -82,10 +82,7 @@ request with negligible performance impact.
 import arcjet, { shield } from "@arcjet/bun";
 
 const aj = arcjet({
-  // Get your site key from https://app.arcjet.com
-  // and set it as an environment variable rather than hard coding.
-  // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
-  key: process.env.ARCJET_KEY,
+  key: Bun.env.ARCJET_KEY, // Get your site key from https://app.arcjet.com
   rules: [
     shield({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
