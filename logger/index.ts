@@ -38,9 +38,10 @@ export class Logger {
       case "ERROR":
         this.#logLevel = 3;
         break;
-      default:
+      default: {
         const _exhaustiveCheck: never = levelStr;
         throw new Error(`Unknown log level: ${levelStr}`);
+      }
     }
   }
 

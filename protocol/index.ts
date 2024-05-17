@@ -107,7 +107,7 @@ export class ArcjetReason {
 }
 
 export class ArcjetRateLimitReason extends ArcjetReason {
-  type: "RATE_LIMIT" = "RATE_LIMIT";
+  type = "RATE_LIMIT" as const;
 
   max: number;
   remaining: number;
@@ -133,7 +133,7 @@ export class ArcjetRateLimitReason extends ArcjetReason {
 }
 
 export class ArcjetBotReason extends ArcjetReason {
-  type: "BOT" = "BOT";
+  type = "BOT" as const;
 
   botType: ArcjetBotType;
   botScore: number;
@@ -168,11 +168,11 @@ export class ArcjetBotReason extends ArcjetReason {
 }
 
 export class ArcjetEdgeRuleReason extends ArcjetReason {
-  type: "EDGE_RULE" = "EDGE_RULE";
+  type = "EDGE_RULE" as const;
 }
 
 export class ArcjetShieldReason extends ArcjetReason {
-  type: "SHIELD" = "SHIELD";
+  type = "SHIELD" as const;
 
   shieldTriggered: boolean;
 
@@ -184,7 +184,7 @@ export class ArcjetShieldReason extends ArcjetReason {
 }
 
 export class ArcjetEmailReason extends ArcjetReason {
-  type: "EMAIL" = "EMAIL";
+  type = "EMAIL" as const;
 
   emailTypes: ArcjetEmailType[];
 
@@ -199,7 +199,7 @@ export class ArcjetEmailReason extends ArcjetReason {
 }
 
 export class ArcjetErrorReason extends ArcjetReason {
-  type: "ERROR" = "ERROR";
+  type = "ERROR" as const;
 
   message: string;
 
@@ -582,7 +582,7 @@ export abstract class ArcjetDecision {
 }
 
 export class ArcjetAllowDecision extends ArcjetDecision {
-  conclusion: "ALLOW" = "ALLOW";
+  conclusion = "ALLOW" as const;
   reason: ArcjetReason;
 
   constructor(init: {
@@ -599,7 +599,7 @@ export class ArcjetAllowDecision extends ArcjetDecision {
 }
 
 export class ArcjetDenyDecision extends ArcjetDecision {
-  conclusion: "DENY" = "DENY";
+  conclusion = "DENY" as const;
   reason: ArcjetReason;
 
   constructor(init: {
@@ -615,7 +615,7 @@ export class ArcjetDenyDecision extends ArcjetDecision {
   }
 }
 export class ArcjetChallengeDecision extends ArcjetDecision {
-  conclusion: "CHALLENGE" = "CHALLENGE";
+  conclusion = "CHALLENGE" as const;
   reason: ArcjetReason;
 
   constructor(init: {
@@ -632,7 +632,7 @@ export class ArcjetChallengeDecision extends ArcjetDecision {
 }
 
 export class ArcjetErrorDecision extends ArcjetDecision {
-  conclusion: "ERROR" = "ERROR";
+  conclusion = "ERROR" as const;
   reason: ArcjetErrorReason;
 
   constructor(init: {

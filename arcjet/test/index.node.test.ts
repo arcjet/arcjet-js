@@ -144,7 +144,7 @@ function assertIsLocalRule(rule: ArcjetRule): asserts rule is ArcjetLocalRule {
 function deferred(): [Promise<void>, () => void, (reason?: unknown) => void] {
   let resolve: () => void;
   let reject: (reason?: unknown) => void;
-  let promise = new Promise<void>((res, rej) => {
+  const promise = new Promise<void>((res, rej) => {
     resolve = res;
     reject = rej;
   });
