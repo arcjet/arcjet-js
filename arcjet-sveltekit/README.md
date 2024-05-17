@@ -40,9 +40,10 @@ tokens.
 // In your `+page.server.ts` file
 import arcjet, { tokenBucket } from "@arcjet/sveltekit";
 import { error, type RequestEvent } from "@sveltejs/kit";
+import { env } from "$env/dynamic/private";
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  key: env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
   rules: [
     // Create a token bucket rate limit. Other algorithms are supported.
     tokenBucket({
@@ -78,12 +79,10 @@ request with negligible performance impact.
 // In your `hooks.server.ts` file
 import arcjet from "@arcjet/sveltekit";
 import { error, type RequestEvent } from "@sveltejs/kit";
+import { env } from "$env/dynamic/private";
 
 const aj = arcjet({
-  // Get your site key from https://app.arcjet.com
-  // and set it as an environment variable rather than hard coding.
-  // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
-  key: process.env.ARCJET_KEY!,
+  key: env.ARCJET_KEY!,  // Get your site key from https://app.arcjet.com
   rules: [
     shield({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
