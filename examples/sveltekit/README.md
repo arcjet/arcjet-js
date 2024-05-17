@@ -34,11 +34,11 @@ This example shows how to use Arcjet to protect [SvelteKit](https://kit.svelte.d
 
 5. Visit `http://localhost:5173/` in a browser and follow the links to test the various examples.
 
-7. Test shield by making this request:
+6. Test shield by making this request:
 
-    ```bash
-    curl -v -H "x-arcjet-suspicious: true" http://localhost:5173
-    ```
+   ```bash
+   curl -v -H "x-arcjet-suspicious: true" http://localhost:5173
+   ```
 
 ## How it works
 
