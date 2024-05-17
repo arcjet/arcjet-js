@@ -42,6 +42,7 @@
   "dependencies": {
     "@arcjet/ip": "1.0.0-alpha.12",
     "@connectrpc/connect-node": "1.4.0",
+    "@connectrpc/connect-web": "1.4.0",
     "arcjet": "1.0.0-alpha.12"
   },
   "devDependencies": {
