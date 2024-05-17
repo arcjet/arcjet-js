@@ -18,23 +18,27 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   }
 
   if (process.env["NEXT_RUNTIME"] === "edge") {
+    const wasmPrefix = "arcjet_analyze_js_req.component";
     if (path === "arcjet_analyze_js_req.component.core.wasm") {
       const mod = await import(
-        "./wasm/arcjet_analyze_js_req.component.core.wasm?module"
+        /* @vite-ignore */
+        `./wasm/${wasmPrefix}.core.wasm?module`
       );
       wasmCache.set(path, mod.default);
       return mod.default;
     }
     if (path === "arcjet_analyze_js_req.component.core2.wasm") {
       const mod = await import(
-        "./wasm/arcjet_analyze_js_req.component.core2.wasm?module"
+        /* @vite-ignore */
+        `./wasm/${wasmPrefix}.core2.wasm?module`
       );
       wasmCache.set(path, mod.default);
       return mod.default;
     }
     if (path === "arcjet_analyze_js_req.component.core3.wasm") {
       const mod = await import(
-        "./wasm/arcjet_analyze_js_req.component.core3.wasm?module"
+        /* @vite-ignore */
+        `./wasm/${wasmPrefix}.core3.wasm?module`
       );
       wasmCache.set(path, mod.default);
       return mod.default;
