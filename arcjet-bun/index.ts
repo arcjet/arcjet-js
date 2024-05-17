@@ -169,8 +169,9 @@ function toArcjetRequest<Props extends PlainObject>(
 function withClient<const Rules extends (Primitive | Product)[]>(
   aj: Arcjet<ExtraProps<Rules>>,
 ): ArcjetBun<ExtraProps<Rules>> {
-  // Assuming the `wrap()` function was used around the handler, this WeakMap
-  // should be populated with IP addresses inspected via `server.requestIP()`
+  // Assuming the `handler()` function was used around Bun's fetch handler
+  // this WeakMap should be populated with IP addresses inspected via
+  // `server.requestIP()`
   const ipCache = new WeakMap<Request, string>();
 
   return Object.freeze({
