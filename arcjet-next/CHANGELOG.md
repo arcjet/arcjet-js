@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/next-v1.0.0-alpha.13) (2024-05-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* **eslint-config:** Update linting rules ([#774](https://github.com/arcjet/arcjet-js/issues/774))
+
+### 📦 Dependencies
+
+* **dev:** Bump @rollup/wasm-node from 4.14.3 to 4.17.2 ([#708](https://github.com/arcjet/arcjet-js/issues/708)) ([6e548bf](https://github.com/arcjet/arcjet-js/commit/6e548bf30743d06615dc9a0b46b3cbdabd6a89e4))
+
+
+### 🧹 Miscellaneous Chores
+
+* **eslint-config:** Update linting rules ([#774](https://github.com/arcjet/arcjet-js/issues/774)) ([c223ba0](https://github.com/arcjet/arcjet-js/commit/c223ba061f27c786159fb6224341d162ef15bf0f)), closes [#337](https://github.com/arcjet/arcjet-js/issues/337)
+* **next:** Inline redirect interceptor to drop type import ([#785](https://github.com/arcjet/arcjet-js/issues/785)) ([e613372](https://github.com/arcjet/arcjet-js/commit/e613372fc7d7043aadcada090715fb43018c6a55))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/ip bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * arcjet bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+
 ## [1.0.0-alpha.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.11...@arcjet/next-v1.0.0-alpha.12) (2024-04-18)
 
 
