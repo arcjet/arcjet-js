@@ -37,12 +37,20 @@
       "component": "arcjet",
       "skip-github-release": true
     },
+    "arcjet-bun": {
+      "component": "@arcjet/bun",
+      "skip-github-release": true
+    },
     "arcjet-next": {
       "component": "@arcjet/next",
       "skip-github-release": true
     },
     "arcjet-node": {
       "component": "@arcjet/node",
+      "skip-github-release": true
+    },
+    "arcjet-sveltekit": {
+      "component": "@arcjet/sveltekit",
       "skip-github-release": true
     },
     "decorate": {
@@ -90,8 +98,10 @@
         "root",
         "@arcjet/analyze",
         "arcjet",
+        "@arjcet/bun",
         "@arjcet/next",
         "@arjcet/node",
+        "@arjcet/sveltekit",
         "@arjcet/decorate",
         "@arjcet/duration",
         "@arcjet/eslint-config",
