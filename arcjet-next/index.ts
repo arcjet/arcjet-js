@@ -1,4 +1,3 @@
-import { Interceptor } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import type { NextApiResponse } from "next";
 import {
@@ -65,17 +64,6 @@ type PlainObject = {
   [key: string]: unknown;
 };
 
-/**
- * Ensures redirects are followed to properly support the Next.js/Vercel Edge
- * Runtime.
- * @see
- * https://github.com/connectrpc/connect-es/issues/749#issuecomment-1693507516
- */
-const followRedirectsInterceptor: Interceptor = (next) => (req) => {
-  req.init.redirect = "follow";
-  return next(req);
-};
-
 export function createNextRemoteClient(
   options?: RemoteClientOptions,
 ): RemoteClient {
@@ -90,7 +78,18 @@ export function createNextRemoteClient(
     options?.transport ??
     createConnectTransport({
       baseUrl,
-      interceptors: [followRedirectsInterceptor],
+      interceptors: [
+        /**
+         * Ensures redirects are followed to properly support the Next.js/Vercel Edge
+         * Runtime.
+         * @see
+         * https://github.com/connectrpc/connect-es/issues/749#issuecomment-1693507516
+         */
+        (next) => (req) => {
+          req.init.redirect = "follow";
+          return next(req);
+        },
+      ],
       fetch,
     });
 
