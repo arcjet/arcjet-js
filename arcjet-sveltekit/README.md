@@ -1,0 +1,126 @@
+<a href="https://arcjet.com" target="_arcjet-home">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/arcjet-logo-dark-planet-arrival.svg">
+    <img src="https://arcjet.com/arcjet-logo-light-planet-arrival.svg" alt="Arcjet Logo" height="144" width="auto">
+  </picture>
+</a>
+
+# `@arcjet/sveltekit`
+
+<p>
+  <a href="https://www.npmjs.com/package/@arcjet/sveltekit">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/%40arcjet%2Fsveltekit?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
+      <img alt="npm badge" src="https://img.shields.io/npm/v/%40arcjet%2Fsveltekit?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
+    </picture>
+  </a>
+</p>
+
+[Arcjet][arcjet] helps developers protect their apps in just a few lines of
+code. Implement rate limiting, bot protection, email verification & defense
+against common attacks.
+
+This is the [Arcjet][arcjet] SDK for [SvelteKit][sveltekit].
+
+## Installation
+
+```shell
+npm install -S @arcjet/sveltekit
+```
+
+## Rate limit example
+
+The [Arcjet rate limit][rate-limit-concepts-docs] example below applies a token
+bucket rate limit rule to a route where we identify the user based on their ID
+e.g. if they are logged in. The bucket is configured with a maximum capacity of
+10 tokens and refills by 5 tokens every 10 seconds. Each request consumes 5
+tokens.
+
+```ts
+// In your `+page.server.ts` file
+import arcjet, { tokenBucket } from "@arcjet/sveltekit";
+import { error, type RequestEvent } from "@sveltejs/kit";
+import { env } from "$env/dynamic/private";
+
+const aj = arcjet({
+  key: env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  rules: [
+    // Create a token bucket rate limit. Other algorithms are supported.
+    tokenBucket({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      characteristics: ["userId"], // track requests by a custom user ID
+      refillRate: 5, // refill 5 tokens per interval
+      interval: 10, // refill every 10 seconds
+      capacity: 10, // bucket maximum capacity of 10 tokens
+    }),
+  ],
+});
+
+export async function load(event: RequestEvent) {
+  const userId = "user123"; // Replace with your authenticated user ID
+  const decision = await aj.protect(event, { userId, requested: 5 }); // Deduct 5 tokens from the bucket
+  console.log("Arcjet decision", decision);
+
+  if (decision.isDenied()) {
+    return error(429, "Too Many Requests");
+  }
+
+  return { message: "Hello world" };
+}
+```
+
+## Shield example
+
+[Arcjet Shield][shield-concepts-docs] protects your application against common
+attacks, including the OWASP Top 10. It’s enabled by default and runs on every
+request with negligible performance impact.
+
+```ts
+// In your `hooks.server.ts` file
+import arcjet from "@arcjet/sveltekit";
+import { error, type RequestEvent } from "@sveltejs/kit";
+import { env } from "$env/dynamic/private";
+
+const aj = arcjet({
+  key: env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  rules: [
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
+  ],
+});
+
+export async function handle({
+  event,
+  resolve,
+}: {
+  event: RequestEvent;
+  resolve(event: RequestEvent): Response | Promise<Response>;
+}): Promise<Response> {
+  // Ignore routes that extend the Arcjet rules - they will call `.protect` themselves
+  const filteredRoutes = ["/api/rate-limited", "/rate-limited"];
+  if (filteredRoutes.includes(event.url.pathname)) {
+    // The route will handle calling `aj.protect()`
+    return resolve(event);
+  }
+
+  // Ensure every other route is protected with shield
+  const decision = await aj.protect(event);
+  if (decision.isDenied()) {
+    return error(403, "Forbidden");
+  }
+
+  // Continue with the route
+  return resolve(event);
+}
+```
+
+## License
+
+Licensed under the [Apache License, Version 2.0][apache-license].
+
+[arcjet]: https://arcjet.com
+[sveltekit]: https://kit.svelte.dev/
+[rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
+[shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0

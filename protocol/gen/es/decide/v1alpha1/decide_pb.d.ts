@@ -294,6 +294,26 @@ export declare enum SDKStack {
    * @generated from enum value: SDK_STACK_DENO = 6;
    */
   SDK_STACK_DENO = 6,
+
+  /**
+   * @generated from enum value: SDK_STACK_SVELTEKIT = 7;
+   */
+  SDK_STACK_SVELTEKIT = 7,
+
+  /**
+   * @generated from enum value: SDK_STACK_HONO = 8;
+   */
+  SDK_STACK_HONO = 8,
+
+  /**
+   * @generated from enum value: SDK_STACK_NUXT = 9;
+   */
+  SDK_STACK_NUXT = 9,
+
+  /**
+   * @generated from enum value: SDK_STACK_NESTJS = 10;
+   */
+  SDK_STACK_NESTJS = 10,
 }
 
 /**
