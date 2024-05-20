@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/analyze-v1.0.0-alpha.13) (2024-05-20)
+
+
+### 🪲 Bug Fixes
+
+* **analyze:** Leverage string interpolation to import Wasm files on edge runtime ([#784](https://github.com/arcjet/arcjet-js/issues/784)) ([9b85908](https://github.com/arcjet/arcjet-js/commit/9b8590817091971581735c39406fe6cf40472e5b))
+
+
+### 📦 Dependencies
+
+* **dev:** Bump @bytecodealliance/jco from 1.1.1 to 1.2.2 ([#707](https://github.com/arcjet/arcjet-js/issues/707)) ([39989b8](https://github.com/arcjet/arcjet-js/commit/39989b8278fa9329b4e2a2a6d3326b5f37e573e4))
+* **dev:** Bump @bytecodealliance/jco from 1.2.2 to 1.2.4 ([#725](https://github.com/arcjet/arcjet-js/issues/725)) ([7c43124](https://github.com/arcjet/arcjet-js/commit/7c431248ffc99e3a59688264ec4c2876ab113000))
+* **dev:** Bump @rollup/wasm-node from 4.14.3 to 4.17.2 ([#708](https://github.com/arcjet/arcjet-js/issues/708)) ([6e548bf](https://github.com/arcjet/arcjet-js/commit/6e548bf30743d06615dc9a0b46b3cbdabd6a89e4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/logger bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+
 ## [1.0.0-alpha.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.11...@arcjet/analyze-v1.0.0-alpha.12) (2024-04-18)
 
 

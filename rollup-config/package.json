@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/rollup-config",
-  "version": "1.0.0-alpha.12",
+  "version": "1.0.0-alpha.13",
   "description": "Custom rollup config for Arcjet projects",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -44,8 +44,8 @@
     "@rollup/wasm-node": "^4"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.12",
-    "@arcjet/tsconfig": "1.0.0-alpha.12",
+    "@arcjet/eslint-config": "1.0.0-alpha.13",
+    "@arcjet/tsconfig": "1.0.0-alpha.13",
     "@jest/globals": "29.7.0",
     "@types/node": "18.18.0",
     "@rollup/wasm-node": "4.17.2",

@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/ip-v1.0.0-alpha.13) (2024-05-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* **eslint-config:** Update linting rules ([#774](https://github.com/arcjet/arcjet-js/issues/774))
+
+### 🚀 New Features
+
+* **ip:** Detect Fly-Client-IP header when available ([#751](https://github.com/arcjet/arcjet-js/issues/751)) ([73359f6](https://github.com/arcjet/arcjet-js/commit/73359f63c69f19d10443d1c2dc113e714a004be9))
+
+
+### 📦 Dependencies
+
+* **dev:** Bump @rollup/wasm-node from 4.14.3 to 4.17.2 ([#708](https://github.com/arcjet/arcjet-js/issues/708)) ([6e548bf](https://github.com/arcjet/arcjet-js/commit/6e548bf30743d06615dc9a0b46b3cbdabd6a89e4))
+
+
+### 🧹 Miscellaneous Chores
+
+* **eslint-config:** Update linting rules ([#774](https://github.com/arcjet/arcjet-js/issues/774)) ([c223ba0](https://github.com/arcjet/arcjet-js/commit/c223ba061f27c786159fb6224341d162ef15bf0f)), closes [#337](https://github.com/arcjet/arcjet-js/issues/337)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+
 ## [1.0.0-alpha.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.11...@arcjet/ip-v1.0.0-alpha.12) (2024-04-18)
 
 

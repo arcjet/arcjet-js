@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/node-v1.0.0-alpha.13) (2024-05-20)
+
+
+### 🚀 New Features
+
+* Filter cookie headers when normalizing with ArcjetHeaders ([#773](https://github.com/arcjet/arcjet-js/issues/773)) ([99b3e1f](https://github.com/arcjet/arcjet-js/commit/99b3e1fd1f104824642817e2f22bc78d308e2fb1))
+
+
+### 📦 Dependencies
+
+* **dev:** Bump @rollup/wasm-node from 4.14.3 to 4.17.2 ([#708](https://github.com/arcjet/arcjet-js/issues/708)) ([6e548bf](https://github.com/arcjet/arcjet-js/commit/6e548bf30743d06615dc9a0b46b3cbdabd6a89e4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/ip bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * arcjet bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.12 to 1.0.0-alpha.13
+
 ## [1.0.0-alpha.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.11...@arcjet/node-v1.0.0-alpha.12) (2024-04-18)
 
 

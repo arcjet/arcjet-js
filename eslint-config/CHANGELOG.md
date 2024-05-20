@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/eslint-config-v1.0.0-alpha.13) (2024-05-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* **eslint-config:** Update linting rules ([#774](https://github.com/arcjet/arcjet-js/issues/774))
+
+### 📦 Dependencies
+
+* Bump eslint-config-next from 14.2.2 to 14.2.3 ([#670](https://github.com/arcjet/arcjet-js/issues/670)) ([8d7ff7e](https://github.com/arcjet/arcjet-js/commit/8d7ff7e04cc23b65c220682c0e037e67fc9ec669))
+* Bump eslint-config-turbo from 1.13.2 to 1.13.3 ([#686](https://github.com/arcjet/arcjet-js/issues/686)) ([1b9b68e](https://github.com/arcjet/arcjet-js/commit/1b9b68e6169575b6759dcbb61ddd5d1230ab0724))
+
+
+### 🧹 Miscellaneous Chores
+
+* **eslint-config:** Update linting rules ([#774](https://github.com/arcjet/arcjet-js/issues/774)) ([c223ba0](https://github.com/arcjet/arcjet-js/commit/c223ba061f27c786159fb6224341d162ef15bf0f)), closes [#337](https://github.com/arcjet/arcjet-js/issues/337)
+
 ## [1.0.0-alpha.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.11...@arcjet/eslint-config-v1.0.0-alpha.12) (2024-04-18)
 
 
