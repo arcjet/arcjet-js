@@ -91,7 +91,7 @@ export interface ArcjetBun<Props extends PlainObject> {
    * analyzed and then a decision made on whether to allow, deny, or challenge
    * the request.
    *
-   * @param req - An `IncomingMessage` provided to the request handler.
+   * @param request - A `Request` provided to the fetch handler.
    * @param props - Additonal properties required for running rules against a request.
    * @returns An {@link ArcjetDecision} indicating Arcjet's decision about the request.
    */
