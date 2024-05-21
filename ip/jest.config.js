@@ -11,6 +11,9 @@ const config = {
   coverageProvider: "v8",
   verbose: true,
   testEnvironment: "node",
+  globals: {
+    navigator: {},
+  },
 };
 
 export default config;

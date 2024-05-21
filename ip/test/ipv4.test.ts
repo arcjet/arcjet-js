@@ -1,10 +1,30 @@
 /**
  * @jest-environment node
  */
-import { describe, expect, test, afterEach, jest } from "@jest/globals";
+import {
+  describe,
+  expect,
+  test,
+  beforeEach,
+  afterEach,
+  jest,
+} from "@jest/globals";
 import ip, { RequestLike } from "../index";
 
 type MakeTest = (ip: unknown) => [RequestLike, Headers];
+
+beforeEach(() => {
+  jest.replaceProperty(process, "env", {
+    ...process.env,
+    FLY_APP_NAME: "testing",
+  });
+  // We inject an empty `navigator` object via jest.config.js to act like
+  // Cloudflare Workers
+  jest.replaceProperty(globalThis, "navigator", {
+    ...globalThis.navigator,
+    userAgent: "Cloudflare-Workers",
+  });
+});
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -214,39 +234,38 @@ describe("find public IPv4", () => {
   headerSuite("Forwarded-For");
   headerSuite("Forwarded");
   headerSuite("X-Appengine-User-IP");
-  headerSuite("CF-Pseudo-IPv4");
 
   describe("X-Forwarded-For with multiple IP", () => {
-    test("returns the first public IP", () => {
+    test("returns the last public IP", () => {
       const request = {};
       const headers = new Headers([
         ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3"],
       ]);
-      expect(ip(request, headers)).toEqual("1.1.1.1");
+      expect(ip(request, headers)).toEqual("3.3.3.3");
     });
 
     test("skips any `unknown` IP", () => {
       const request = {};
       const headers = new Headers([
-        ["X-Forwarded-For", "unknown, 1.1.1.1, 2.2.2.2, 3.3.3.3"],
+        ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3, unknown"],
       ]);
-      expect(ip(request, headers)).toEqual("1.1.1.1");
+      expect(ip(request, headers)).toEqual("3.3.3.3");
     });
 
     test("skips any private IP (in production)", () => {
       jest.replaceProperty(process.env, "NODE_ENV", "production");
       const request = {};
       const headers = new Headers([
-        ["X-Forwarded-For", "127.0.0.1, 1.1.1.1, 2.2.2.2, 3.3.3.3"],
+        ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3, 127.0.0.1"],
       ]);
-      expect(ip(request, headers)).toEqual("1.1.1.1");
+      expect(ip(request, headers)).toEqual("3.3.3.3");
     });
 
     test("returns the loopback IP (in development)", () => {
       jest.replaceProperty(process.env, "NODE_ENV", "development");
       const request = {};
       const headers = new Headers([
-        ["X-Forwarded-For", "127.0.0.1, 1.1.1.1, 2.2.2.2, 3.3.3.3"],
+        ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3, 127.0.0.1"],
       ]);
       expect(ip(request, headers)).toEqual("127.0.0.1");
     });

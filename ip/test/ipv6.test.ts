@@ -1,10 +1,23 @@
 /**
  * @jest-environment node
  */
-import { describe, expect, test, afterEach, jest } from "@jest/globals";
+import { describe, expect, test, beforeEach, afterEach, jest } from "@jest/globals";
 import ip, { RequestLike } from "../index";
 
 type MakeTest = (ip: unknown) => [RequestLike, Headers];
+
+beforeEach(() => {
+  jest.replaceProperty(process, "env", {
+    ...process.env,
+    FLY_APP_NAME: "testing",
+  });
+  // We inject an empty `navigator` object via jest.config.js to act like
+  // Cloudflare Workers
+  jest.replaceProperty(globalThis, "navigator", {
+    ...globalThis.navigator,
+    userAgent: "Cloudflare-Workers",
+  });
+});
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -158,7 +171,7 @@ function headerSuite(key: string) {
   });
 }
 
-describe("find public IPv4", () => {
+describe("find public IPv6", () => {
   requestSuite("ip");
   requestSuite("socket", "remoteAddress");
   requestSuite("info", "remoteAddress");
@@ -166,6 +179,7 @@ describe("find public IPv4", () => {
 
   headerSuite("X-Client-IP");
   headerSuite("X-Forwarded-For");
+  headerSuite("CF-Connecting-IPv6");
   headerSuite("CF-Connecting-IP");
   headerSuite("DO-Connecting-IP");
   headerSuite("Fastly-Client-IP");
@@ -177,13 +191,12 @@ describe("find public IPv4", () => {
   headerSuite("Forwarded-For");
   headerSuite("Forwarded");
   headerSuite("X-Appengine-User-IP");
-  headerSuite("CF-Pseudo-IPv4");
 
   describe("X-Forwarded-For with multiple IP", () => {
     test("returns the first public IP", () => {
       const request = {};
       const headers = new Headers([
-        ["X-Forwarded-For", "abcd::, e123::, 3.3.3.3"],
+        ["X-Forwarded-For", "e123::, 3.3.3.3, abcd::"],
       ]);
       expect(ip(request, headers)).toEqual("abcd::");
     });
@@ -191,7 +204,7 @@ describe("find public IPv4", () => {
     test("skips any `unknown` IP", () => {
       const request = {};
       const headers = new Headers([
-        ["X-Forwarded-For", "unknown, abcd::, e123::, 3.3.3.3"],
+        ["X-Forwarded-For", "e123::, 3.3.3.3, abcd::, unknown"],
       ]);
       expect(ip(request, headers)).toEqual("abcd::");
     });
@@ -200,7 +213,7 @@ describe("find public IPv4", () => {
       jest.replaceProperty(process.env, "NODE_ENV", "production");
       const request = {};
       const headers = new Headers([
-        ["X-Forwarded-For", "::1, abcd::, e123::, 3.3.3.3"],
+        ["X-Forwarded-For", "e123::, 3.3.3.3, abcd::, ::1"],
       ]);
       expect(ip(request, headers)).toEqual("abcd::");
     });
@@ -209,7 +222,7 @@ describe("find public IPv4", () => {
       jest.replaceProperty(process.env, "NODE_ENV", "development");
       const request = {};
       const headers = new Headers([
-        ["X-Forwarded-For", "::1, abcd::, e123::, 3.3.3.3"],
+        ["X-Forwarded-For", "abcd::, e123::, 3.3.3.3, ::1"],
       ]);
       expect(ip(request, headers)).toEqual("::1");
     });
