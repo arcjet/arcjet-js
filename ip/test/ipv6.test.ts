@@ -1,7 +1,14 @@
 /**
  * @jest-environment node
  */
-import { describe, expect, test, beforeEach, afterEach, jest } from "@jest/globals";
+import {
+  describe,
+  expect,
+  test,
+  beforeEach,
+  afterEach,
+  jest,
+} from "@jest/globals";
 import ip, { RequestLike } from "../index";
 
 type MakeTest = (ip: unknown) => [RequestLike, Headers];
