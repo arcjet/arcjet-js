@@ -75,8 +75,8 @@ export default {
 ## Shield example
 
 [Arcjet Shield][shield-concepts-docs] protects your application against common
-attacks, including the OWASP Top 10. It’s enabled by default and runs on every
-request with negligible performance impact.
+attacks, including the OWASP Top 10. You can run Shield on every request with
+negligible performance impact.
 
 ```ts
 import arcjet, { shield } from "@arcjet/bun";

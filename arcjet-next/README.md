@@ -86,22 +86,23 @@ export async function GET(req: Request) {
 ## Shield example
 
 [Arcjet Shield](https://docs.arcjet.com/shield/concepts) protects your
-application against common attacks, including the OWASP Top 10. It’s enabled by
-default and runs on every request with negligible performance impact.
+application against common attacks, including the OWASP Top 10. You can run
+Shield on every request with negligible performance impact.
 
 See the [Arcjet Shield
 documentation](https://docs.arcjet.com/shield/quick-start/nextjs) for details.
 
 ```ts
-import arcjet from "@arcjet/next";
+import arcjet, { shield } from "@arcjet/next";
 import { NextResponse } from "next/server";
 
 const aj = arcjet({
-  // Get your site key from https://app.arcjet.com
-  // and set it as an environment variable rather than hard coding.
-  // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
-  key: process.env.ARCJET_KEY,
-  rules: [], // Shield requires no rule configuration
+  key: process.env.ARCJET_KEY, // Get your site key from https://app.arcjet.com
+  rules: [
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
+  ],
 });
 
 export async function GET(req: Request) {
@@ -109,8 +110,8 @@ export async function GET(req: Request) {
 
   if (decision.isDenied()) {
     return NextResponse.json(
-      { error: "Too Many Requests", reason: decision.reason },
-      { status: 429 },
+      { error: "Forbidden", reason: decision.reason },
+      { status: 403 },
     );
   }
 
