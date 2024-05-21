@@ -15,7 +15,7 @@
 </p>
 
 [Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Implement rate limiting, bot protection, email verification & defend
+code. Implement rate limiting, bot protection, email verification & defense
 against common attacks.
 
 This is the monorepo containing various [Arcjet][arcjet] open source packages
@@ -23,12 +23,17 @@ for JS.
 
 ## Quick start
 
+- **Bun?** Use the [`@arcjet/bun`](https://www.npmjs.com/package/@arcjet/bun)
+  package.
 - **Next.js?** Use the
   [`@arcjet/next`](https://www.npmjs.com/package/@arcjet/next) package with our
   [Next.js quick start guide](https://docs.arcjet.com/get-started/nextjs).
 - **Node.js?** Use the
   [`@arcjet/node`](https://www.npmjs.com/package/@arcjet/node) package with our
   [Node.js quick start guide](https://docs.arcjet.com/get-started/nodejs).
+- **SvelteKit?** Use the
+  [`@arcjet/sveltekit`](https://www.npmjs.com/package/@arcjet/sveltekit)
+  package.
 
 ## Get help
 
@@ -145,9 +150,10 @@ find a specific one through the categories and descriptions below.
 
 ### SDKs
 
+- [`@arcjet/bun`](./arcjet-bun/README.md): SDK for Bun.sh.
 - [`@arcjet/next`](./arcjet-next/README.md): SDK for the Next.js framework.
 - [`@arcjet/node`](./arcjet-node/README.md): SDK for Node.js.
-- [`@arcjet/bun`](./arcjet-bun/README.md): SDK for Bun.sh.
+- [`@arcjet/sveltekit`](./arcjet-sveltekit/README.md): SDK for SvelteKit.
 
 ### Analysis
 

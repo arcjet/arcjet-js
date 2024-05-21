@@ -42,7 +42,7 @@ This example shows how to use Arcjet to protect [SvelteKit](https://kit.svelte.d
 
 ## How it works
 
-The `arcjet` instance is created in the server-only module `/src/lib/server/arcjet.ts` and is configured to enable [Shield](https://docs.arcjet.com/shield) by default.
+The `arcjet` instance is created in the server-only module `/src/lib/server/arcjet.ts` and is configured to enable [Shield](https://docs.arcjet.com/shield).
 
 `/src/hooks.server.ts` imports the `arcjet` instance and runs the `protect()` method on all requests. The only exception is any requests who's pathanme is listed in `filteredRoutes`, in which case protection is left to that route's server code.
 

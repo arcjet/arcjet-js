@@ -17,7 +17,7 @@
 </p>
 
 [Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Implement rate limiting, bot protection, email verification & defend
+code. Implement rate limiting, bot protection, email verification & defense
 against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Node.js][node-js].
@@ -82,19 +82,20 @@ server.listen(8000);
 ## Shield example
 
 [Arcjet Shield][shield-concepts-docs] protects your application against common
-attacks, including the OWASP Top 10. It’s enabled by default and runs on every
-request with negligible performance impact.
+attacks, including the OWASP Top 10. You can run Shield on every request with
+negligible performance impact.
 
 ```ts
-import arcjet from "@arcjet/node";
+import arcjet, { shield } from "@arcjet/node";
 import http from "node:http";
 
 const aj = arcjet({
-  // Get your site key from https://app.arcjet.com
-  // and set it as an environment variable rather than hard coding.
-  // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
-  key: process.env.ARCJET_KEY,
-  rules: [], // Shield requires no rule configuration
+  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  rules: [
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
+  ],
 });
 
 const server = http.createServer(async function (

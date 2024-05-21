@@ -7,8 +7,8 @@ This example uses the [Arcjet](https://arcjet.com/) SDK to implement a token
 bucket rate limit for API routes. It does not require any additional
 infrastructure e.g. Redis.
 
-The Arcjet SDK allows you to Implement rate limiting, bot protection, email
-verification & defend against common attacks. See [the
+The Arcjet SDK allows you to implement rate limiting, bot protection, email
+verification & defense against common attacks. See [the
 docs](https://docs.arcjet.com/) for details.
 
 ## Deploy your own
