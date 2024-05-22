@@ -583,8 +583,57 @@ export interface RequestLike {
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 function findIP(request: RequestLike, headers: Headers): string {
+  // Prefer anything available via the platform over headers since headers can
+  // be set by users. Only if we don't have an IP available in `request` do we
+  // search the `headers`.
   if (isGlobalIP(request.ip)) {
     return request.ip;
+  }
+
+  const socketRemoteAddress = request.socket?.remoteAddress;
+  if (isGlobalIP(socketRemoteAddress)) {
+    return socketRemoteAddress;
+  }
+
+  const infoRemoteAddress = request.info?.remoteAddress;
+  if (isGlobalIP(infoRemoteAddress)) {
+    return infoRemoteAddress;
+  }
+
+  // AWS Api Gateway + Lambda
+  const requestContextIdentitySourceIP =
+    request.requestContext?.identity?.sourceIp;
+  if (isGlobalIP(requestContextIdentitySourceIP)) {
+    return requestContextIdentitySourceIP;
+  }
+
+  // Platform-specific headers should only be accepted when we can determine
+  // that we are running on that platform. For example, the `CF-Connecting-IP`
+  // header should only be accepted when running on Cloudflare; otherwise, it
+  // can be spoofed.
+
+  // Cloudflare: https://developers.cloudflare.com/workers/configuration/compatibility-dates/#global-navigator
+  if (globalThis.navigator?.userAgent === "Cloudflare-Workers") {
+    // CF-Connecting-IPv6: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ipv6
+    const cfConnectingIPv6 = headers.get("cf-connecting-ipv6");
+    if (isGlobalIPv6(cfConnectingIPv6)) {
+      return cfConnectingIPv6;
+    }
+
+    // CF-Connecting-IP: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ip
+    const cfConnectingIP = headers.get("cf-connecting-ip");
+    if (isGlobalIP(cfConnectingIP)) {
+      return cfConnectingIP;
+    }
+  }
+
+  // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
+  if (process.env["FLY_APP_NAME"] !== "") {
+    // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
+    const flyClientIP = headers.get("fly-client-ip");
+    if (isGlobalIP(flyClientIP)) {
+      return flyClientIP;
+    }
   }
 
   // Standard headers used by Amazon EC2, Heroku, and others.
@@ -598,23 +647,14 @@ function findIP(request: RequestLike, headers: Headers): string {
   const xForwardedForItems = parseXForwardedFor(xForwardedFor);
   // As per MDN X-Forwarded-For Headers documentation at
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
-  // We may find more than one IP in the `x-forwarded-for` header. We want to
-  // iterate left-to-right, since left-most IP will be closest to the client,
-  // and we'll return the first public IP in the list.
-  for (const item of xForwardedForItems) {
+  // We may find more than one IP in the `x-forwarded-for` header. Since the
+  // first IP will be closest to the user (and the most likely to be spoofed),
+  // we want to iterate tail-to-head so we reverse the list.
+  for (const item of xForwardedForItems.reverse()) {
     if (isGlobalIP(item)) {
       return item;
     }
   }
-
-  // Cloudflare.
-  // CF-Connecting-IP: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ip
-  const cfConnectingIP = headers.get("cf-connecting-ip");
-  if (isGlobalIP(cfConnectingIP)) {
-    return cfConnectingIP;
-  }
-
-  // TODO: CF-Connecting-IPv6: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ipv6
 
   // DigitalOcean.
   // DO-Connecting-IP: https://www.digitalocean.com/community/questions/app-platform-client-ip
@@ -630,18 +670,11 @@ function findIP(request: RequestLike, headers: Headers): string {
     return fastlyClientIP;
   }
 
-  // Akamai and Cloudflare
+  // Akamai
   // True-Client-IP
   const trueClientIP = headers.get("true-client-ip");
   if (isGlobalIP(trueClientIP)) {
     return trueClientIP;
-  }
-
-  // Fly.io
-  // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
-  const flyClientIP = headers.get("fly-client-ip");
-  if (isGlobalIP(flyClientIP)) {
-    return flyClientIP;
   }
 
   // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies
@@ -677,30 +710,6 @@ function findIP(request: RequestLike, headers: Headers): string {
   const xAppEngineUserIP = headers.get("x-appengine-user-ip");
   if (isGlobalIP(xAppEngineUserIP)) {
     return xAppEngineUserIP;
-  }
-
-  const socketRemoteAddress = request.socket?.remoteAddress;
-  if (isGlobalIP(socketRemoteAddress)) {
-    return socketRemoteAddress;
-  }
-
-  const infoRemoteAddress = request.info?.remoteAddress;
-  if (isGlobalIP(infoRemoteAddress)) {
-    return infoRemoteAddress;
-  }
-
-  // AWS Api Gateway + Lambda
-  const requestContextIdentitySourceIP =
-    request.requestContext?.identity?.sourceIp;
-  if (isGlobalIP(requestContextIdentitySourceIP)) {
-    return requestContextIdentitySourceIP;
-  }
-
-  // Cloudflare fallback
-  // Cf-Pseudo-IPv4: https://blog.cloudflare.com/eliminating-the-last-reasons-to-not-enable-ipv6/#introducingpseudoipv4
-  const cfPseudoIPv4 = headers.get("cf-pseudo-ipv4");
-  if (isGlobalIP(cfPseudoIPv4)) {
-    return cfPseudoIPv4;
   }
 
   return "";
