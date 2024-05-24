@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "npm:@arcjet/deno": ["../../arcjet-deno/index"],
+      "arcjet": ["../../arcjet/index"]
+    }
+  }
+}

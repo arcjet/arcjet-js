@@ -40,6 +40,10 @@
       "component": "@arcjet/bun",
       "skip-github-release": true
     },
+    "arcjet-deno": {
+      "component": "@arcjet/deno",
+      "skip-github-release": true
+    },
     "arcjet-next": {
       "component": "@arcjet/next",
       "skip-github-release": true
@@ -130,6 +134,7 @@
         "@arcjet/analyze",
         "arcjet",
         "@arcjet/bun",
+        "@arcjet/deno",
         "@arcjet/next",
         "@arcjet/node",
         "@arcjet/sveltekit",
