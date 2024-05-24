@@ -4,9 +4,8 @@ This directory contains examples of how to use Arcjet.
 
 ## Example app
 
-Try an Arcjet protected app live at
-[https://example.arcjet.com](https://example.arcjet.com) ([source
-code](https://github.com/arcjet/arcjet-js-example)).
+Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
+([source code][example-source]).
 
 ## Arcjet development
 
@@ -17,3 +16,6 @@ export ARCJET_LOG_LEVEL=DEBUG
 export ARCJET_BASE_URL=https://decide.arcjet.orb.local:4082
 export NODE_TLS_REJECT_UNAUTHORIZED=0 # Allows local self-signed certs
 ```
+
+[example-url]: https://example.arcjet.com
+[example-source]: https://github.com/arcjet/arcjet-js-example
