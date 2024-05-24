@@ -22,19 +22,17 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework.
 
-**Looking for our Node.js SDK?** Check out the
-[`@arcjet/node`](https://www.npmjs.com/package/@arcjet/node) package.
+**Looking for our Node.js SDK?** Check out the [`@arcjet/node`][alt-sdk]
+package.
 
 ## Getting started
 
-Visit [docs.arcjet.com](https://docs.arcjet.com/get-started/nextjs) to get
-started.
+Visit [docs.arcjet.com][next-sdk-docs] to get started.
 
 ## Example app
 
-Try an Arcjet protected app live at
-[https://example.arcjet.com](https://example.arcjet.com) ([source
-code](https://github.com/arcjet/arcjet-js-example)).
+Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
+([source code][example-source]).
 
 ## Installation
 
@@ -44,16 +42,13 @@ npm install -S @arcjet/next
 
 ## Rate limit example
 
-The [Arcjet rate
-limit](https://docs.arcjet.com/rate-limiting/concepts) example below
-applies a token bucket rate limit rule to a route where we identify the user
-based on their ID e.g. if they are logged in. The bucket is configured with a
-maximum capacity of 10 tokens and refills by 5 tokens every 10 seconds. Each
-request consumes 5 tokens.
+The [Arcjet rate limit][rate-limit-concepts-docs] example below applies a token
+bucket rate limit rule to a route where we identify the user based on their ID
+e.g. if they are logged in. The bucket is configured with a maximum capacity of
+10 tokens and refills by 5 tokens every 10 seconds. Each request consumes 5
+tokens.
 
-See the [Arcjet rate limit
-documentation](https://docs.arcjet.com/rate-limiting/quick-start/nextjs) for
-details.
+See the [Arcjet rate limit documentation][rate-limit-quick-start] for details.
 
 ```ts
 import arcjet, { tokenBucket } from "@arcjet/next";
@@ -91,12 +86,11 @@ export async function GET(req: Request) {
 
 ## Shield example
 
-[Arcjet Shield](https://docs.arcjet.com/shield/concepts) protects your
-application against common attacks, including the OWASP Top 10. You can run
-Shield on every request with negligible performance impact.
+[Arcjet Shield][shield-concepts-docs] protects your application against common
+attacks, including the OWASP Top 10. You can run Shield on every request with
+negligible performance impact.
 
-See the [Arcjet Shield
-documentation](https://docs.arcjet.com/shield/quick-start/nextjs) for details.
+See the [Arcjet Shield documentation][shield-quick-start] for details.
 
 ```ts
 import arcjet, { shield } from "@arcjet/next";
@@ -135,5 +129,12 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
 [next-js]: https://nextjs.org/
+[alt-sdk]: https://www.npmjs.com/package/@arcjet/node
 [next-sdk-docs]: https://docs.arcjet.com/reference/nextjs
+[example-url]: https://example.arcjet.com
+[example-source]: https://github.com/arcjet/arcjet-js-example
+[rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
+[rate-limit-quick-start]: https://docs.arcjet.com/rate-limiting/quick-start/nextjs
+[shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
+[shield-quick-start]: https://docs.arcjet.com/shield/quick-start/nextjs
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
