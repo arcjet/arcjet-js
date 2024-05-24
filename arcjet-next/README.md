@@ -30,6 +30,12 @@ This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework.
 Visit [docs.arcjet.com](https://docs.arcjet.com/get-started/nextjs) to get
 started.
 
+## Example app
+
+Try an Arcjet protected app live at
+[https://example.arcjet.com](https://example.arcjet.com) ([source
+code](https://github.com/arcjet/arcjet-js-example)).
+
 ## Installation
 
 ```shell

@@ -22,6 +22,12 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Bun.sh][bun-sh].
 
+## Example app
+
+Try an Arcjet protected app live at
+[https://example.arcjet.com](https://example.arcjet.com) ([source
+code](https://github.com/arcjet/arcjet-js-example)).
+
 ## Installation
 
 ```shell

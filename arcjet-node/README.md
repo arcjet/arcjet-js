@@ -25,6 +25,12 @@ This is the [Arcjet][arcjet] SDK for [Node.js][node-js].
 **Looking for our Next.js framework SDK?** Check out the
 [`@arcjet/next`](https://www.npmjs.com/package/@arcjet/next) package.
 
+## Example app
+
+Try an Arcjet protected app live at
+[https://example.arcjet.com](https://example.arcjet.com) ([source
+code](https://github.com/arcjet/arcjet-js-example)).
+
 ## Installation
 
 ```shell

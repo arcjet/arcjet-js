@@ -44,10 +44,19 @@ support](https://docs.arcjet.com/support).
 
 - [Next.js rate limits](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-app-dir-rl)
 - [Next.js email validation](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-app-dir-validate-email)
+- [Bun rate
+  limits](https://github.com/arcjet/arcjet-js/tree/main/examples/bun-rl)
 - [Protect NextAuth login routes](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-nextauth-4)
 - [OpenAI chatbot protection](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-openai)
 - [Express.js rate limits](https://github.com/arcjet/arcjet-js/tree/main/examples/nodejs-express-rl)
+- [SvelteKit](https://github.com/arcjet/arcjet-js/tree/main/examples/sveltekit)
 - ... [more examples](https://github.com/arcjet/arcjet-js/tree/main/examples)
+
+### Example app
+
+Try an Arcjet protected app live at
+[https://example.arcjet.com](https://example.arcjet.com) ([source
+code](https://github.com/arcjet/arcjet-js-example)).
 
 ## Usage
 
