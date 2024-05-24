@@ -23,40 +23,32 @@ for JS.
 
 ## Quick start
 
-- **Bun?** Use the [`@arcjet/bun`](https://www.npmjs.com/package/@arcjet/bun)
-  package.
-- **Next.js?** Use the
-  [`@arcjet/next`](https://www.npmjs.com/package/@arcjet/next) package with our
-  [Next.js quick start guide](https://docs.arcjet.com/get-started/nextjs).
-- **Node.js?** Use the
-  [`@arcjet/node`](https://www.npmjs.com/package/@arcjet/node) package with our
-  [Node.js quick start guide](https://docs.arcjet.com/get-started/nodejs).
-- **SvelteKit?** Use the
-  [`@arcjet/sveltekit`](https://www.npmjs.com/package/@arcjet/sveltekit)
-  package.
+- **Bun?** Use the [`@arcjet/bun`][npm-bun] package.
+- **Next.js?** Use the [`@arcjet/next`][npm-next] package with our [Next.js
+  quick start guide][next-quick-start].
+- **Node.js?** Use the [`@arcjet/node`][npm-node] package with our [Node.js
+  quick start guide][node-quick-start].
+- **SvelteKit?** Use the [`@arcjet/sveltekit`][npm-sveltekit] package.
 
 ## Get help
 
-[Join our Discord server](https://discord.gg/TPra6jqZDC) or [reach out for
-support](https://docs.arcjet.com/support).
+[Join our Discord server][discord-invite] or [reach out for support][support].
 
 ## Examples
 
-- [Next.js rate limits](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-app-dir-rl)
-- [Next.js email validation](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-app-dir-validate-email)
-- [Bun rate
-  limits](https://github.com/arcjet/arcjet-js/tree/main/examples/bun-rl)
-- [Protect NextAuth login routes](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-nextauth-4)
-- [OpenAI chatbot protection](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-14-openai)
-- [Express.js rate limits](https://github.com/arcjet/arcjet-js/tree/main/examples/nodejs-express-rl)
-- [SvelteKit](https://github.com/arcjet/arcjet-js/tree/main/examples/sveltekit)
-- ... [more examples](https://github.com/arcjet/arcjet-js/tree/main/examples)
+- [Next.js rate limits](./examples/nextjs-14-app-dir-rl)
+- [Next.js email validation](./examples/nextjs-14-app-dir-validate-email)
+- [Bun rate limits](./examples/bun-rl)
+- [Protect NextAuth login routes](./examples/nextjs-14-nextauth-4)
+- [OpenAI chatbot protection](./examples/nextjs-14-openai)
+- [Express.js rate limits](./examples/nodejs-express-rl)
+- [SvelteKit](./examples/sveltekit)
+- ... [more examples](./examples)
 
 ### Example app
 
-Try an Arcjet protected app live at
-[https://example.arcjet.com](https://example.arcjet.com) ([source
-code](https://github.com/arcjet/arcjet-js-example)).
+Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
+([source code][example-source]).
 
 ## Usage
 
@@ -64,16 +56,14 @@ Read the docs at [docs.arcjet.com][arcjet-docs].
 
 ### Next.js rate limit example
 
-The [Arcjet rate
-limit](https://docs.arcjet.com/rate-limiting/concepts) example below
+The [Arcjet rate limit][rate-limit-concepts-docs] example below
 applies a token bucket rate limit rule to a route where we identify the user
 based on their ID e.g. if they are logged in. The bucket is configured with a
 maximum capacity of 10 tokens and refills by 5 tokens every 10 seconds. Each
 request consumes 5 tokens.
 
-See the [Arcjet Next.js rate limit
-documentation](https://docs.arcjet.com/rate-limiting/quick-start/nextjs) for
-details.
+See the [Arcjet Next.js rate limit documentation][next-rate-limit-quick-start]
+for details.
 
 ```ts
 import arcjet, { tokenBucket } from "@arcjet/next";
@@ -111,12 +101,11 @@ export async function GET(req: Request) {
 
 ### Node.js bot protection example
 
-The [Arcjet bot protection](https://docs.arcjet.com/bot-protection/concepts)
-example below will return a 403 Forbidden response for all requests from clients
-we are sure are automated.
+The [Arcjet bot protection][bot-protection-concepts-docs] example below will
+return a 403 Forbidden response for all requests from clients we are sure are
+automated.
 
-See the [Arcjet Node.js bot protection
-documentation](https://docs.arcjet.com/bot-protection/quick-start/nodejs) for
+See the [Arcjet Node.js bot protection documentation][node-bot-quick-start] for
 details.
 
 ```ts
@@ -203,6 +192,20 @@ This repository follows the [Arcjet Security Policy][arcjet-security].
 Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
+[npm-bun]: https://www.npmjs.com/package/@arcjet/bun
+[npm-next]: https://www.npmjs.com/package/@arcjet/next
+[next-quick-start]: https://docs.arcjet.com/get-started/nextjs
+[npm-node]: https://www.npmjs.com/package/@arcjet/node
+[node-quick-start]: https://docs.arcjet.com/get-started/nodejs
+[npm-sveltekit]: https://www.npmjs.com/package/@arcjet/sveltekit
+[discord-invite]: https://discord.gg/TPra6jqZDC
+[support]: https://docs.arcjet.com/support
+[example-url]: https://example.arcjet.com
+[example-source]: https://github.com/arcjet/arcjet-js-example
+[rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
+[next-rate-limit-quick-start]: https://docs.arcjet.com/rate-limiting/quick-start/nextjs
+[bot-protection-concepts-docs]: https://docs.arcjet.com/bot-protection/concepts
+[node-bot-quick-start]: https://docs.arcjet.com/bot-protection/quick-start/nodejs
 [arcjet-docs]: https://docs.arcjet.com/
 [arcjet-support]: https://docs.arcjet.com/support
 [arcjet-security]: https://docs.arcjet.com/security
