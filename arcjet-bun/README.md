@@ -22,6 +22,11 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Bun.sh][bun-sh].
 
+## Example app
+
+Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
+([source code][example-source]).
+
 ## Installation
 
 ```shell
@@ -110,6 +115,8 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
 [bun-sh]: https://bun.sh/
+[example-url]: https://example.arcjet.com
+[example-source]: https://github.com/arcjet/arcjet-js-example
 [rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
 [shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
