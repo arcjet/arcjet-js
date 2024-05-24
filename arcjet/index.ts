@@ -40,6 +40,7 @@ import {
 import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import logger from "@arcjet/logger";
+import ArcjetHeaders from "@arcjet/headers";
 
 export * from "@arcjet/protocol";
 
@@ -47,10 +48,6 @@ function assert(condition: boolean, msg: string) {
   if (!condition) {
     throw new Error(msg);
   }
-}
-
-function isIterable(val: any): val is Iterable<any> {
-  return typeof val?.[Symbol.iterator] === "function";
 }
 
 function nowInSeconds(): number {
@@ -556,65 +553,6 @@ export type EmailOptions = {
   requireTopLevelDomain?: boolean;
   allowDomainLiteral?: boolean;
 };
-
-export class ArcjetHeaders extends Headers {
-  constructor(
-    init?: HeadersInit | Record<string, string | string[] | undefined>,
-  ) {
-    super();
-    if (typeof init !== "undefined") {
-      if (isIterable(init)) {
-        for (const [key, value] of init) {
-          this.append(key, value);
-        }
-      } else {
-        for (const [key, value] of Object.entries(
-          init as Record<string, string | string[] | undefined>,
-        )) {
-          if (typeof value === "undefined") {
-            continue;
-          }
-
-          if (Array.isArray(value)) {
-            for (const singleValue of value) {
-              this.append(key, singleValue);
-            }
-          } else {
-            this.append(key, value);
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Append a key and value to the headers, while filtering any key named
-   * `cookie`.
-   *
-   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/append)
-   *
-   * @param key The key to append in the headers
-   * @param value The value to append for the key in the headers
-   */
-  append(key: string, value: string): void {
-    if (key.toLowerCase() !== "cookie") {
-      super.append(key, value);
-    }
-  }
-  /**
-   * Set a key and value in the headers, but filtering any key named `cookie`.
-   *
-   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/set)
-   *
-   * @param key The key to set in the headers
-   * @param value The value to set for the key in the headers
-   */
-  set(key: string, value: string): void {
-    if (key.toLowerCase() !== "cookie") {
-      super.set(key, value);
-    }
-  }
-}
 
 const Priority = {
   Shield: 1,
