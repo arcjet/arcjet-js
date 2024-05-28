@@ -156,6 +156,8 @@ find a specific one through the categories and descriptions below.
 ### Analysis
 
 - [`@arcjet/analyze`](./analyze/README.md): Local analysis engine.
+- [`@arcjet/headers`](./headers/README.md): Arcjet extension of the Headers
+  class.
 - [`@arcjet/ip`](./ip/README.md): Utilities for finding the originating IP of a
   request.
 
