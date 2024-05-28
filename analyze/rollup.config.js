@@ -37,8 +37,9 @@ const wasmBase64 = "data:application/wasm;base64,${wasm.toString("base64")}";
  */
 // TODO: Switch back to top-level await when our platforms all support it
 export async function wasm() {
-  // This uses fetch to decode the wasm data url
-  const wasmDecode = await fetch(wasmBase64);
+  // This uses fetch to decode the wasm data url, but disabling cache so files
+  // larger than 2mb don't fail to parse in the Next.js App Router
+  const wasmDecode = await fetch(wasmBase64, { cache: "no-store" });
   const buf = await wasmDecode.arrayBuffer();
   // And then we return it as a WebAssembly.Module
   return WebAssembly.compile(buf);
