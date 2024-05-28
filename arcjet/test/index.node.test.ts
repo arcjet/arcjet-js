@@ -33,7 +33,6 @@ import arcjet, {
   rateLimit,
   ArcjetRule,
   defaultBaseUrl,
-  ArcjetHeaders,
   Runtime,
   validateEmail,
   protectSignup,
@@ -1220,54 +1219,6 @@ describe("createRemoteClient", () => {
     await promise;
 
     expect(logSpy).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe("ArcjetHeaders", () => {
-  test("can be constructed no initializer", () => {
-    const headers = new ArcjetHeaders();
-    expect(headers).toBeInstanceOf(ArcjetHeaders);
-    expect(headers).toBeInstanceOf(Headers);
-  });
-
-  test("can be constructed with a Headers instance", () => {
-    const init = new Headers();
-    init.set("foobar", "baz");
-    const headers = new ArcjetHeaders(init);
-    expect(headers.get("foobar")).toEqual("baz");
-  });
-
-  test("can be constructed with an ArcjetHeaders instance", () => {
-    const init = new ArcjetHeaders();
-    init.set("foobar", "baz");
-    const headers = new ArcjetHeaders(init);
-    expect(headers.get("foobar")).toEqual("baz");
-  });
-
-  test("can be constructed with an array of tuples", () => {
-    const headers = new ArcjetHeaders([["foobar", "baz"]]);
-    expect(headers.get("foobar")).toEqual("baz");
-  });
-
-  test("can be constructed with an object", () => {
-    const headers = new ArcjetHeaders({
-      foobar: "baz",
-    });
-    expect(headers.get("foobar")).toEqual("baz");
-  });
-
-  test("filters undefined values in an object", () => {
-    const headers = new ArcjetHeaders({
-      foobar: undefined,
-    });
-    expect(headers.has("foobar")).toEqual(false);
-  });
-
-  test("combines array values in an object", () => {
-    const headers = new ArcjetHeaders({
-      foo: ["bar", "baz"],
-    });
-    expect(headers.get("foo")).toEqual("bar, baz");
   });
 });
 

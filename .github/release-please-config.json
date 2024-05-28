@@ -65,6 +65,10 @@
       "component": "@arcjet/eslint-config",
       "skip-github-release": true
     },
+    "headers": {
+      "component": "@arcjet/headers",
+      "skip-github-release": true
+    },
     "ip": {
       "component": "@arcjet/ip",
       "skip-github-release": true
@@ -105,6 +109,7 @@
         "@arjcet/decorate",
         "@arjcet/duration",
         "@arcjet/eslint-config",
+        "@arcjet/headers",
         "@arcjet/ip",
         "@arcjet/logger",
         "@arcjet/protocol",

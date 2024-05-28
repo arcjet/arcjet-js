@@ -4,7 +4,6 @@ import core, {
   ArcjetOptions,
   Primitive,
   Product,
-  ArcjetHeaders,
   Runtime,
   ArcjetRequest,
   ExtraProps,
@@ -15,6 +14,7 @@ import core, {
   Arcjet,
 } from "arcjet";
 import findIP from "@arcjet/ip";
+import ArcjetHeaders from "@arcjet/headers";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
