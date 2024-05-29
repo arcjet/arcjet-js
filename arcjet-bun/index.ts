@@ -197,7 +197,7 @@ function withClient<const Rules extends (Primitive | Product)[]>(
         props ?? {},
       ) as ArcjetRequest<ExtraProps<Rules>>;
 
-      return aj.protect(req);
+      return aj.protect({}, req);
     },
     handler(
       fetch: (

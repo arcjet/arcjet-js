@@ -62,6 +62,10 @@ const server = http.createServer(async function (
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ) {
+  // Any sort of additional context that might want to be included for the
+  // execution of `protect()`. This is mostly only useful for writing adapters.
+  const ctx = {};
+
   // Construct an object with Arcjet request details
   const path = new URL(req.url || "", `http://${req.headers.host}`);
   const details = {
@@ -71,7 +75,7 @@ const server = http.createServer(async function (
     path: path.pathname,
   };
 
-  const decision = await aj.protect(details);
+  const decision = await aj.protect(ctx, details);
   console.log(decision);
 
   if (decision.isDenied()) {
