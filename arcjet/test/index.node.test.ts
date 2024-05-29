@@ -4274,6 +4274,64 @@ describe("SDK", () => {
     );
   });
 
+  test("overrides `key` with custom context", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const key = "test-key";
+    const context = {
+      key,
+      fingerprint:
+        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+    };
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
+      "extra-test": "extra-test-value",
+    };
+
+    const rule = testRuleRemote();
+
+    const aj = arcjet({
+      key,
+      rules: [[rule]],
+      client,
+    });
+
+    const decision = await aj.protect({ key: "overridden-key" }, request);
+
+    expect(decision.isErrored()).toBe(false);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.objectContaining({ ...context, key: "overridden-key" }),
+      expect.objectContaining({
+        ip: request.ip,
+        method: request.method,
+        protocol: request.protocol,
+        host: request.host,
+        path: request.path,
+        headers: request.headers,
+        extra: {
+          "extra-test": "extra-test-value",
+        },
+      }),
+      [rule],
+    );
+  });
+
   test("reports and returns an ERROR decision if a `client.decide()` fails", async () => {
     const client = {
       decide: jest.fn(async () => {
