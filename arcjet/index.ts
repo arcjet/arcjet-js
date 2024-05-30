@@ -603,6 +603,14 @@ export type ExtraProps<Rules> = Rules extends []
       : never;
 
 /**
+ * Additional context that can be provided by adapters.
+ *
+ * Among other things, this could include the Arcjet API Key if it were only
+ * available in a runtime handler or IP details provided by a platform.
+ */
+export type ArcjetAdapterContext = Record<string, unknown>;
+
+/**
  * @property {string} ip - The IP address of the client.
  * @property {string} method - The HTTP method of the request.
  * @property {string} protocol - The protocol of the request.
@@ -1064,10 +1072,14 @@ export interface Arcjet<Props extends PlainObject> {
    * Make a decision about how to handle a request. This will analyze the
    * request locally where possible and call the Arcjet decision API.
    *
+   * @param {ArcjetAdapterContext} ctx - Additional context for this function call.
    * @param {ArcjetRequest} request - Details about the {@link ArcjetRequest} that Arcjet needs to make a decision.
    * @returns An {@link ArcjetDecision} indicating Arcjet's decision about the request.
    */
-  protect(request: ArcjetRequest<Props>): Promise<ArcjetDecision>;
+  protect(
+    ctx: ArcjetAdapterContext,
+    request: ArcjetRequest<Props>,
+  ): Promise<ArcjetDecision>;
 
   /**
    * Augments the client with another rule. Useful for varying rules based on
@@ -1112,6 +1124,7 @@ export default function arcjet<
 
   async function protect<Props extends PlainObject>(
     rules: ArcjetRule[],
+    ctx: ArcjetAdapterContext,
     request: ArcjetRequest<Props>,
   ) {
     // This goes against the type definition above, but users might call
@@ -1149,7 +1162,7 @@ export default function arcjet<
     logger.debug("fingerprint (%s): %s", runtime(), fingerprint);
     logger.timeEnd("fingerprint");
 
-    const context: ArcjetContext = { key, fingerprint };
+    const context: ArcjetContext = { key, ...ctx, fingerprint };
 
     if (rules.length < 1) {
       // TODO(#607): Error if no rules configured after deprecation period
@@ -1372,9 +1385,10 @@ export default function arcjet<
         return withRule(rule);
       },
       async protect(
+        ctx: ArcjetContext,
         request: ArcjetRequest<ExtraProps<typeof rules>>,
       ): Promise<ArcjetDecision> {
-        return protect(rules, request);
+        return protect(rules, ctx, request);
       },
     });
   }
@@ -1387,9 +1401,10 @@ export default function arcjet<
       return withRule(rule);
     },
     async protect(
+      ctx: ArcjetContext,
       request: ArcjetRequest<ExtraProps<typeof rootRules>>,
     ): Promise<ArcjetDecision> {
-      return protect(rootRules, request);
+      return protect(rootRules, ctx, request);
     },
   });
 }

@@ -69,20 +69,23 @@ describe("Arcjet: Env = Edge runtime", () => {
 
     const aj2 = aj.withRule(foobarbaz());
 
-    const decision = await aj2.protect({
-      abc: 123,
-      requested: 1,
-      email: "",
-      ip: "",
-      method: "",
-      protocol: "",
-      host: "",
-      path: "",
-      headers: new Headers(),
-      extra: {},
-      userId: "user123",
-      foobar: 123,
-    });
+    const decision = await aj2.protect(
+      {},
+      {
+        abc: 123,
+        requested: 1,
+        email: "",
+        ip: "",
+        method: "",
+        protocol: "",
+        host: "",
+        path: "",
+        headers: new Headers(),
+        extra: {},
+        userId: "user123",
+        foobar: 123,
+      },
+    );
 
     expect(decision.isErrored()).toBe(false);
   });

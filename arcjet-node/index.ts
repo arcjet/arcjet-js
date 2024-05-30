@@ -212,7 +212,7 @@ function withClient<const Rules extends (Primitive | Product)[]>(
         ExtraProps<Rules>
       >;
 
-      return aj.protect(req);
+      return aj.protect({}, req);
     },
   });
 }

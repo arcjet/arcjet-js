@@ -745,6 +745,7 @@ export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {
 }
 
 export type ArcjetContext = {
+  [key: string]: unknown;
   key: string;
   fingerprint: string;
 };
