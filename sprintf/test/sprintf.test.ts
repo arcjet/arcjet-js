@@ -47,11 +47,18 @@ function makeObjectSuite(sequence) {
     expect(sprintf(`${sequence}`, () => {})).toEqual(`<anonymous>`);
   });
 
-  test(`replaces ${sequence} with [Circular] on failure to JSON.stringify`, () => {
+  test(`replaces ${sequence} with [Circular] on failure to JSON.stringify on circular data`, () => {
     const o = {};
     // @ts-expect-error
     o.o = o;
     expect(sprintf(`${sequence}`, o)).toEqual(`[Circular]`);
+  });
+
+  test(`replaces ${sequence} with [BigInt] on failure to JSON.stringify on BigInt data`, () => {
+    const o = {
+      abc: 0n
+    };
+    expect(sprintf(`${sequence}`, o)).toEqual(`[BigInt]`);
   });
 
   test(`does not replace ${sequence} if replacement is missing`, () => {

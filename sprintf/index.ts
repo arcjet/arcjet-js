@@ -2,6 +2,17 @@ function tryStringify(o: unknown) {
   try {
     return JSON.stringify(o);
   } catch (e) {
+    if (
+      typeof e === "object" &&
+      e !== null &&
+      "message" in e &&
+      typeof e.message === "string" &&
+      // TODO: Verify if all engines put BigInt in the error message
+      e.message.includes("BigInt")
+    ) {
+      return "[BigInt]";
+    }
+
     return "[Circular]";
   }
 }
