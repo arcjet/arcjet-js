@@ -1,5 +1,4 @@
-// TODO(#180): Implement our own format utility
-import { format } from "util";
+import format from "@arcjet/sprintf";
 
 export type LogLevel = "DEBUG" | "LOG" | "WARN" | "ERROR";
 
