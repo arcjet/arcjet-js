@@ -56,7 +56,7 @@ function makeObjectSuite(sequence) {
 
   test(`replaces ${sequence} with [BigInt] on JSON.stringify on BigInt data`, () => {
     expect(sprintf(`${sequence}`, 0n)).toEqual(`"[BigInt]"`);
-    expect(sprintf(`${sequence}`, { abc: 0n })).toEqual(`{"abc":"[BigInt]"}`)
+    expect(sprintf(`${sequence}`, { abc: 0n })).toEqual(`{"abc":"[BigInt]"}`);
   });
 
   test(`does not replace ${sequence} if replacement is missing`, () => {

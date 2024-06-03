@@ -117,7 +117,7 @@ export default function sprintf(str: string, ...args: unknown[]): string {
             i++;
             break;
           }
-          if (typeof arg === 'bigint') {
+          if (typeof arg === "bigint") {
             output += `"[BigInt]"`;
             lastPosition = i + 2;
             i++;
