@@ -1,19 +1,17 @@
+function bigintReplacer(key: string, value: unknown) {
+  if (typeof value === "bigint") {
+    return "[BigInt]";
+  }
+
+  return value;
+}
+
+// TODO: Deduplicate this and logger implementation
 function tryStringify(o: unknown) {
   try {
-    return JSON.stringify(o);
+    return JSON.stringify(o, bigintReplacer);
   } catch (e) {
-    if (
-      typeof e === "object" &&
-      e !== null &&
-      "message" in e &&
-      typeof e.message === "string" &&
-      // TODO: Verify if all engines put BigInt in the error message
-      e.message.includes("BigInt")
-    ) {
-      return "[BigInt]";
-    }
-
-    return "[Circular]";
+    return `"[Circular]"`;
   }
 }
 
@@ -115,6 +113,12 @@ export default function sprintf(str: string, ...args: unknown[]): string {
           }
           if (typeof arg === "string") {
             output += `'${arg}'`;
+            lastPosition = i + 2;
+            i++;
+            break;
+          }
+          if (typeof arg === 'bigint') {
+            output += `"[BigInt]"`;
             lastPosition = i + 2;
             i++;
             break;

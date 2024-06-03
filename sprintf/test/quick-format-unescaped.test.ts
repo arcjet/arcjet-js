@@ -84,9 +84,10 @@ describe("quick-format-unescaped", () => {
     //   }),
     //   "foo REPLACED",
     // );
-    // const circularObject = {};
-    // circularObject.foo = circularObject;
-    // assert.equal(format("foo %j", [circularObject]), 'foo "[Circular]"');
+    const circularObject = {};
+    // @ts-expect-error
+    circularObject.foo = circularObject;
+    assert.equal(format("foo %j", [circularObject]), 'foo "[Circular]"');
 
     // // assert.equal(format(['%%%s%%', 'hi']), '%hi%');
     // // assert.equal(format(['%%%s%%%%', 'hi']), '%hi%%');

@@ -51,14 +51,12 @@ function makeObjectSuite(sequence) {
     const o = {};
     // @ts-expect-error
     o.o = o;
-    expect(sprintf(`${sequence}`, o)).toEqual(`[Circular]`);
+    expect(sprintf(`${sequence}`, o)).toEqual(`"[Circular]"`);
   });
 
-  test(`replaces ${sequence} with [BigInt] on failure to JSON.stringify on BigInt data`, () => {
-    const o = {
-      abc: 0n
-    };
-    expect(sprintf(`${sequence}`, o)).toEqual(`[BigInt]`);
+  test(`replaces ${sequence} with [BigInt] on JSON.stringify on BigInt data`, () => {
+    expect(sprintf(`${sequence}`, 0n)).toEqual(`"[BigInt]"`);
+    expect(sprintf(`${sequence}`, { abc: 0n })).toEqual(`{"abc":"[BigInt]"}`)
   });
 
   test(`does not replace ${sequence} if replacement is missing`, () => {
