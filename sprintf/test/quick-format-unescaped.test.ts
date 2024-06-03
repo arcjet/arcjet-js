@@ -5,7 +5,7 @@ import { describe, test } from "@jest/globals";
 import assert from "node:assert";
 import sprintf from "../index";
 
-// This translates the 2nd argument ot a spread
+// This translates the 2nd argument to a spread
 function format(str, args) {
   return sprintf(str, ...args);
 }
