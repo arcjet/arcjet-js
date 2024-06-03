@@ -16,7 +16,9 @@ function makeDigitSuite(sequence) {
   });
 
   test(`does not replace ${sequence} if replacement is missing`, () => {
-    expect(sprintf(`%s ${sequence}`, "missing:")).toEqual(`missing: ${sequence}`);
+    expect(sprintf(`%s ${sequence}`, "missing:")).toEqual(
+      `missing: ${sequence}`,
+    );
   });
 
   test(`does not replace ${sequence} with non-number`, () => {
