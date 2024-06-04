@@ -18,6 +18,8 @@
 
 [Arcjet][arcjet] platform-independent replacement for [util.format][node-util].
 
+This package is platform-independent in order to support multiple runtimes in varying environments, such as Edge Runtime, Node.js, Bun, Deno, and Cloudflare Workers.
+
 ## Installation
 
 ```shell
