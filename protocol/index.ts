@@ -760,7 +760,8 @@ export interface ArcjetLogger {
   error(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
 }
 
-export interface ArcjetContext {
+export type ArcjetContext = {
+  [key: string]: unknown;
   key: string;
   fingerprint: string;
   runtime: string;
