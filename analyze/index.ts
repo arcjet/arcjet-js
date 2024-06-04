@@ -162,7 +162,7 @@ export async function generateFingerprint(
 export async function isValidEmail(
   context: ArcjetContext,
   candidate: string,
-  options: EmailValidationConfig = {},
+  options?: EmailValidationConfig,
 ) {
   const analyze = await init(context);
 
