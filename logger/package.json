@@ -39,7 +39,9 @@
     "pretest": "npm run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@arcjet/sprintf": "1.0.0-alpha.13"
+  },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.13",
     "@arcjet/rollup-config": "1.0.0-alpha.13",
