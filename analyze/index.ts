@@ -1,4 +1,4 @@
-import type { ArcjetContext } from "@arcjet/protocol";
+import type { ArcjetLogger } from "@arcjet/protocol";
 
 import * as core from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
@@ -7,6 +7,10 @@ import type {
   BotDetectionResult,
   BotType,
 } from "./wasm/arcjet_analyze_js_req.component.js";
+
+interface AnalyzeContext {
+  log: ArcjetLogger
+}
 
 // TODO: Do we actually need this wasmCache or does `import` cache correctly?
 const wasmCache = new Map<string, WebAssembly.Module>();
@@ -73,7 +77,7 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-async function init(context: Omit<ArcjetContext, "fingerprint" | "key">) {
+async function init(context: AnalyzeContext) {
   const { log } = context;
 
   const coreImports: ImportObject = {
@@ -119,7 +123,7 @@ export {
  * @returns A SHA-256 string fingerprint.
  */
 export async function generateFingerprint(
-  context: Omit<ArcjetContext, "fingerprint">,
+  context: AnalyzeContext,
   ip: string,
 ): Promise<string> {
   if (ip == "") {
@@ -160,7 +164,7 @@ export async function generateFingerprint(
 }
 
 export async function isValidEmail(
-  context: ArcjetContext,
+  context: AnalyzeContext,
   candidate: string,
   options?: EmailValidationConfig,
 ) {
@@ -175,7 +179,7 @@ export async function isValidEmail(
 }
 
 export async function detectBot(
-  context: ArcjetContext,
+  context: AnalyzeContext,
   headers: string,
   patterns_add: string,
   patterns_remove: string,
