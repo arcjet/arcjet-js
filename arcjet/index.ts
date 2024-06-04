@@ -1146,7 +1146,7 @@ export default function arcjet<
       log.warn("generateFingerprint: ip is empty");
     }
 
-    const baseContext: Omit<ArcjetContext, "fingerprint"> = {
+    const baseContext = {
       key,
       log,
       ...ctx,
