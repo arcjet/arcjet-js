@@ -1148,8 +1148,8 @@ export default function arcjet<
 
     const baseContext: Omit<ArcjetContext, "fingerprint"> = {
       key,
-      ...ctx,
       log,
+      ...ctx,
     };
 
     const fingerprint = await analyze.generateFingerprint(baseContext, ip);
