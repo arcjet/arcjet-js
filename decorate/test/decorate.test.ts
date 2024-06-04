@@ -9,7 +9,6 @@ import {
   ArcjetReason,
   ArcjetRuleResult,
 } from "@arcjet/protocol";
-import logger from "@arcjet/logger";
 import { OutgoingMessage } from "http";
 
 afterEach(() => {
@@ -147,7 +146,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("duplicate rate limit policies do not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const headers = new Headers();
       setRateLimitHeaders(
@@ -188,7 +187,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `max` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const headers = new Headers();
       setRateLimitHeaders(
@@ -219,7 +218,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `window` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const headers = new Headers();
       setRateLimitHeaders(
@@ -250,7 +249,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `remaining` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const headers = new Headers();
       setRateLimitHeaders(
@@ -281,7 +280,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `reset` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const headers = new Headers();
       setRateLimitHeaders(
@@ -335,7 +334,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `max` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const headers = new Headers();
       setRateLimitHeaders(
@@ -359,7 +358,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `window` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const headers = new Headers();
       setRateLimitHeaders(
@@ -383,7 +382,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `remaining` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const headers = new Headers();
       setRateLimitHeaders(
@@ -407,7 +406,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `reset` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const headers = new Headers();
       setRateLimitHeaders(
@@ -707,7 +706,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("warns but adds the rate limit header if RateLimit already exists", () => {
-      const warnLogSpy = jest.spyOn(logger, "warn").mockImplementation(noop);
+      const warnLogSpy = jest.spyOn(console, "warn").mockImplementation(noop);
 
       const headers = new Headers();
       headers.set("RateLimit", "abcXYZ");
@@ -741,7 +740,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("warns but adds the rate limit header if RateLimit-Policy already exists", () => {
-      const warnLogSpy = jest.spyOn(logger, "warn").mockImplementation(noop);
+      const warnLogSpy = jest.spyOn(console, "warn").mockImplementation(noop);
 
       const headers = new Headers();
       headers.set("RateLimit-Policy", "abcXYZ");
@@ -863,7 +862,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("duplicate rate limit policies do not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new Response();
       setRateLimitHeaders(
@@ -904,7 +903,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `max` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new Response();
       setRateLimitHeaders(
@@ -935,7 +934,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `window` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new Response();
       setRateLimitHeaders(
@@ -966,7 +965,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `remaining` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new Response();
       setRateLimitHeaders(
@@ -997,7 +996,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `reset` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new Response();
       setRateLimitHeaders(
@@ -1051,7 +1050,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `max` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new Response();
       setRateLimitHeaders(
@@ -1075,7 +1074,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `window` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new Response();
       setRateLimitHeaders(
@@ -1099,7 +1098,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `remaining` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new Response();
       setRateLimitHeaders(
@@ -1123,7 +1122,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `reset` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new Response();
       setRateLimitHeaders(
@@ -1435,7 +1434,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("warns but adds the rate limit header if RateLimit already exists", () => {
-      const warnLogSpy = jest.spyOn(logger, "warn").mockImplementation(noop);
+      const warnLogSpy = jest.spyOn(console, "warn").mockImplementation(noop);
 
       const resp = new Response();
       resp.headers.set("RateLimit", "abcXYZ");
@@ -1469,7 +1468,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("warns but adds the rate limit header if RateLimit-Policy already exists", () => {
-      const warnLogSpy = jest.spyOn(logger, "warn").mockImplementation(noop);
+      const warnLogSpy = jest.spyOn(console, "warn").mockImplementation(noop);
 
       const resp = new Response();
       resp.headers.set("RateLimit-Policy", "abcXYZ");
@@ -1550,7 +1549,7 @@ describe("setRateLimitHeaders", () => {
         },
         setHeader(name: string, value: string | number | readonly string[]) {},
       };
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       setRateLimitHeaders(
         resp,
@@ -1674,7 +1673,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("duplicate rate limit policies do not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
@@ -1715,7 +1714,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `max` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
@@ -1746,7 +1745,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `window` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
@@ -1777,7 +1776,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `remaining` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
@@ -1808,7 +1807,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit result `reset` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
@@ -1862,7 +1861,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `max` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
@@ -1886,7 +1885,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `window` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
@@ -1910,7 +1909,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `remaining` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
@@ -1934,7 +1933,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("invalid rate limit reason `reset` does not set headers", () => {
-      const errorLogSpy = jest.spyOn(logger, "error").mockImplementation(noop);
+      const errorLogSpy = jest.spyOn(console, "error").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
@@ -2242,7 +2241,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("warns but adds the rate limit header if RateLimit already exists", () => {
-      const warnLogSpy = jest.spyOn(logger, "warn").mockImplementation(noop);
+      const warnLogSpy = jest.spyOn(console, "warn").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       resp.setHeader("RateLimit", "abcXYZ");
@@ -2276,7 +2275,7 @@ describe("setRateLimitHeaders", () => {
     });
 
     test("warns but adds the rate limit header if RateLimit-Policy already exists", () => {
-      const warnLogSpy = jest.spyOn(logger, "warn").mockImplementation(noop);
+      const warnLogSpy = jest.spyOn(console, "warn").mockImplementation(noop);
 
       const resp = new OutgoingMessage();
       resp.setHeader("RateLimit-Policy", "abcXYZ");
