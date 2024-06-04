@@ -9,7 +9,7 @@ import type {
 } from "./wasm/arcjet_analyze_js_req.component.js";
 
 interface AnalyzeContext {
-  log: ArcjetLogger
+  log: ArcjetLogger;
 }
 
 // TODO: Do we actually need this wasmCache or does `import` cache correctly?
