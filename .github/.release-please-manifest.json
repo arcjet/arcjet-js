@@ -14,5 +14,6 @@
   "logger": "1.0.0-alpha.13",
   "protocol": "1.0.0-alpha.13",
   "rollup-config": "1.0.0-alpha.13",
+  "sprintf": "1.0.0-alpha.13",
   "tsconfig": "1.0.0-alpha.13"
 }
