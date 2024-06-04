@@ -1,4 +1,4 @@
-import logger from "@arcjet/logger";
+import type { ArcjetContext } from "@arcjet/protocol";
 
 import * as core from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
@@ -73,22 +73,24 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-const coreImports: ImportObject = {
-  "arcjet:js-req/logger": {
-    debug(msg) {
-      logger.debug(msg);
-    },
-    error(msg) {
-      logger.error(msg);
-    },
-  },
-};
+async function init(context: Omit<ArcjetContext, "fingerprint" | "key">) {
+  const { log } = context;
 
-async function init() {
+  const coreImports: ImportObject = {
+    "arcjet:js-req/logger": {
+      debug(msg) {
+        log.debug(msg);
+      },
+      error(msg) {
+        log.error(msg);
+      },
+    },
+  };
+
   try {
     return core.instantiate(moduleFromPath, coreImports);
   } catch {
-    logger.debug("WebAssembly is not supported in this runtime");
+    log.debug("WebAssembly is not supported in this runtime");
   }
 }
 
@@ -116,12 +118,15 @@ export {
  * @param ip - The IP address of the client.
  * @returns A SHA-256 string fingerprint.
  */
-export async function generateFingerprint(ip: string): Promise<string> {
+export async function generateFingerprint(
+  context: Omit<ArcjetContext, "fingerprint">,
+  ip: string,
+): Promise<string> {
   if (ip == "") {
     return "";
   }
 
-  const analyze = await init();
+  const analyze = await init(context);
 
   if (typeof analyze !== "undefined") {
     return analyze.generateFingerprint(ip);
@@ -155,10 +160,11 @@ export async function generateFingerprint(ip: string): Promise<string> {
 }
 
 export async function isValidEmail(
+  context: ArcjetContext,
   candidate: string,
-  options?: EmailValidationConfig,
+  options: EmailValidationConfig = {},
 ) {
-  const analyze = await init();
+  const analyze = await init(context);
 
   if (typeof analyze !== "undefined") {
     return analyze.isValidEmail(candidate, options);
@@ -169,11 +175,12 @@ export async function isValidEmail(
 }
 
 export async function detectBot(
+  context: ArcjetContext,
   headers: string,
   patterns_add: string,
   patterns_remove: string,
 ): Promise<BotDetectionResult> {
-  const analyze = await init();
+  const analyze = await init(context);
 
   if (typeof analyze !== "undefined") {
     return analyze.detectBot(headers, patterns_add, patterns_remove);
