@@ -1,4 +1,4 @@
-import logger from "@arcjet/logger";
+import format from "@arcjet/sprintf";
 import {
   ArcjetDecision,
   ArcjetRateLimitReason,
@@ -182,7 +182,7 @@ export function setRateLimitHeaders(
     const policies = new Map<number, number>();
     for (const reason of rateLimitReasons) {
       if (policies.has(reason.max)) {
-        logger.error(
+        console.error(
           "Invalid rate limit policy—two policies should not share the same limit",
         );
         return;
@@ -194,7 +194,7 @@ export function setRateLimitHeaders(
         typeof reason.remaining !== "number" ||
         typeof reason.reset !== "number"
       ) {
-        logger.error("Invalid rate limit encountered: %s", reason);
+        console.error(format("Invalid rate limit encountered: %o", reason));
         return;
       }
 
@@ -218,7 +218,9 @@ export function setRateLimitHeaders(
         typeof decision.reason.remaining !== "number" ||
         typeof decision.reason.reset !== "number"
       ) {
-        logger.error("Invalid rate limit encountered: %s", decision.reason);
+        console.error(
+          format("Invalid rate limit encountered: %o", decision.reason),
+        );
         return;
       }
 
@@ -231,17 +233,21 @@ export function setRateLimitHeaders(
 
   if (isHeaderLike(value)) {
     if (value.has("RateLimit")) {
-      logger.warn(
-        "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
-        value.get("RateLimit"),
-        limit,
+      console.warn(
+        format(
+          "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
+          value.get("RateLimit"),
+          limit,
+        ),
       );
     }
     if (value.has("RateLimit-Policy")) {
-      logger.warn(
-        "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
-        value.get("RateLimit-Policy"),
-        limit,
+      console.warn(
+        format(
+          "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
+          value.get("RateLimit-Policy"),
+          limit,
+        ),
       );
     }
 
@@ -254,17 +260,21 @@ export function setRateLimitHeaders(
 
   if (isResponseLike(value)) {
     if (value.headers.has("RateLimit")) {
-      logger.warn(
-        "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
-        value.headers.get("RateLimit"),
-        limit,
+      console.warn(
+        format(
+          "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
+          value.headers.get("RateLimit"),
+          limit,
+        ),
       );
     }
     if (value.headers.has("RateLimit-Policy")) {
-      logger.warn(
-        "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
-        value.headers.get("RateLimit-Policy"),
-        limit,
+      console.warn(
+        format(
+          "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
+          value.headers.get("RateLimit-Policy"),
+          limit,
+        ),
       );
     }
 
@@ -277,25 +287,29 @@ export function setRateLimitHeaders(
 
   if (isOutgoingMessageLike(value)) {
     if (value.headersSent) {
-      logger.error(
+      console.error(
         "Headers have already been sent—cannot set RateLimit header",
       );
       return;
     }
 
     if (value.hasHeader("RateLimit")) {
-      logger.warn(
-        "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
-        value.getHeader("RateLimit"),
-        limit,
+      console.warn(
+        format(
+          "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
+          value.getHeader("RateLimit"),
+          limit,
+        ),
       );
     }
 
     if (value.hasHeader("RateLimit-Policy")) {
-      logger.warn(
-        "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
-        value.getHeader("RateLimit-Policy"),
-        limit,
+      console.warn(
+        format(
+          "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
+          value.getHeader("RateLimit-Policy"),
+          limit,
+        ),
       );
     }
 
@@ -306,7 +320,7 @@ export function setRateLimitHeaders(
     return;
   }
 
-  logger.debug(
+  console.debug(
     "Cannot determine if response is Response or OutgoingMessage type",
   );
 }

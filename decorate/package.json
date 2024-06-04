@@ -40,8 +40,8 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@arcjet/logger": "1.0.0-alpha.13",
-    "@arcjet/protocol": "1.0.0-alpha.13"
+    "@arcjet/protocol": "1.0.0-alpha.13",
+    "@arcjet/sprintf": "1.0.0-alpha.13"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.13",
