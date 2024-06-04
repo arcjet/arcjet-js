@@ -40,7 +40,7 @@ import {
 } from "@arcjet/protocol/proto.js";
 import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
-import { LogLevel, Logger } from "@arcjet/logger";
+import { Logger, type LogLevel } from "@arcjet/logger";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 
