@@ -29,11 +29,7 @@ function getTimeLabel(label: string) {
   return `${PREFIX} LATENCY ${label}`;
 }
 
-function getMessage(
-  obj: unknown,
-  msg: unknown,
-  args: unknown[],
-) {
+function getMessage(obj: unknown, msg: unknown, args: unknown[]) {
   // The first argument was the message
   if (typeof obj === "string") {
     return format(obj, ...args);
