@@ -244,6 +244,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -297,6 +298,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -351,6 +353,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -403,6 +406,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -456,6 +460,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -514,6 +519,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -555,6 +561,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -595,6 +602,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -635,6 +643,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -678,6 +687,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -727,6 +737,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -768,6 +779,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -834,6 +846,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -899,6 +912,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -971,6 +985,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1036,6 +1051,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1097,6 +1113,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1184,6 +1201,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1467,6 +1485,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       headers: new Headers(),
@@ -1484,6 +1503,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       headers: undefined,
@@ -1501,6 +1521,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1544,6 +1565,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1597,6 +1619,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1650,6 +1673,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1690,6 +1714,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1752,6 +1777,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1799,6 +1825,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1845,6 +1872,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2659,6 +2687,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       email: "abc@example.com",
@@ -2676,6 +2705,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       email: undefined,
@@ -2693,6 +2723,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2724,6 +2755,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2755,6 +2787,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2786,6 +2819,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2819,6 +2853,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2850,6 +2885,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2881,6 +2917,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2914,6 +2951,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
