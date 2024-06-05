@@ -17,10 +17,14 @@
 </p>
 
 [Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Implement rate limiting, bot protection, email verification & defense
+code. Implement rate limiting, bot protection, email verification, and defend
 against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Bun.sh][bun-sh].
+
+## Getting started
+
+Visit the [quick start guide][quick-start] to get started.
 
 ## Example app
 
@@ -116,6 +120,7 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [arcjet]: https://arcjet.com
 [bun-sh]: https://bun.sh/
 [example-url]: https://example.arcjet.com
+[quick-start]: https://docs.arcjet.com/get-started/bun
 [example-source]: https://github.com/arcjet/arcjet-js-example
 [rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
 [shield-concepts-docs]: https://docs.arcjet.com/shield/concepts

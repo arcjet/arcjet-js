@@ -17,7 +17,7 @@
 </p>
 
 [Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Implement rate limiting, bot protection, email verification & defense
+code. Implement rate limiting, bot protection, email verification, and defend
 against common attacks.
 
 This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework.
@@ -27,7 +27,7 @@ package.
 
 ## Getting started
 
-Visit [docs.arcjet.com][next-sdk-docs] to get started.
+Visit the [quick start guide][quick-start] to get started.
 
 ## Example app
 
@@ -130,6 +130,7 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [arcjet]: https://arcjet.com
 [next-js]: https://nextjs.org/
 [alt-sdk]: https://www.npmjs.com/package/@arcjet/node
+[quick-start]: https://docs.arcjet.com/get-started/nextjs
 [next-sdk-docs]: https://docs.arcjet.com/reference/nextjs
 [example-url]: https://example.arcjet.com
 [example-source]: https://github.com/arcjet/arcjet-js-example

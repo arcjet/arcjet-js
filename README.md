@@ -15,7 +15,7 @@
 </p>
 
 [Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Implement rate limiting, bot protection, email verification & defense
+code. Implement rate limiting, bot protection, email verification, and defend
 against common attacks.
 
 This is the monorepo containing various [Arcjet][arcjet] open source packages
@@ -23,12 +23,14 @@ for JS.
 
 ## Quick start
 
-- **Bun?** Use the [`@arcjet/bun`][npm-bun] package.
+- **Bun?** Use the [`@arcjet/bun`][npm-bun] package with our [Bun quick start
+  guide][bun-quick-start].
 - **Next.js?** Use the [`@arcjet/next`][npm-next] package with our [Next.js
   quick start guide][next-quick-start].
 - **Node.js?** Use the [`@arcjet/node`][npm-node] package with our [Node.js
   quick start guide][node-quick-start].
-- **SvelteKit?** Use the [`@arcjet/sveltekit`][npm-sveltekit] package.
+- **SvelteKit?** Use the [`@arcjet/sveltekit`][npm-sveltekit] package with our
+  [SvelteKit quick start guide][sveltekit-quick-start].
 
 ## Get help
 
@@ -198,9 +200,11 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [arcjet]: https://arcjet.com
 [npm-bun]: https://www.npmjs.com/package/@arcjet/bun
 [npm-next]: https://www.npmjs.com/package/@arcjet/next
+[bun-quick-start]: https://docs.arcjet.com/get-started/bun
 [next-quick-start]: https://docs.arcjet.com/get-started/nextjs
 [npm-node]: https://www.npmjs.com/package/@arcjet/node
 [node-quick-start]: https://docs.arcjet.com/get-started/nodejs
+[sveltekit-quick-start]: https://docs.arcjet.com/get-started/sveltekit
 [npm-sveltekit]: https://www.npmjs.com/package/@arcjet/sveltekit
 [discord-invite]: https://discord.gg/TPra6jqZDC
 [support]: https://docs.arcjet.com/support
