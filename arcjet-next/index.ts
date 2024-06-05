@@ -12,7 +12,6 @@ import arcjet, {
   ArcjetOptions,
   Primitive,
   Product,
-  Runtime,
   ArcjetRequest,
   ExtraProps,
   RemoteClient,
@@ -165,7 +164,6 @@ function cookiesToString(cookies?: ArcjetNextRequest["cookies"]): string {
  * make a decision about how a Next.js request should be handled.
  */
 export interface ArcjetNext<Props extends PlainObject> {
-  get runtime(): Runtime;
   /**
    * Protects an API route when running under the default runtime (non-edge).
    * For API routes running on the Edge Runtime, use `protect()`. The request is
@@ -280,9 +278,6 @@ function withClient<const Rules extends (Primitive | Product)[]>(
   aj: Arcjet<ExtraProps<Rules>>,
 ): ArcjetNext<ExtraProps<Rules>> {
   return Object.freeze({
-    get runtime() {
-      return aj.runtime;
-    },
     withRule(rule: Primitive | Product) {
       const client = aj.withRule(rule);
       return withClient(client);

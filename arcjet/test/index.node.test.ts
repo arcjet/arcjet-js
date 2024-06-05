@@ -33,7 +33,6 @@ import arcjet, {
   rateLimit,
   ArcjetRule,
   defaultBaseUrl,
-  Runtime,
   validateEmail,
   protectSignup,
   createRemoteClient,
@@ -3154,41 +3153,6 @@ describe("SDK", () => {
     expect(typeof aj.protect).toEqual("function");
   });
 
-  test("provides the runtime", () => {
-    const client = {
-      decide: jest.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetTestReason(),
-          results: [],
-        });
-      }),
-      report: jest.fn(),
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-    });
-
-    jest.replaceProperty(process, "env", { NEXT_RUNTIME: "edge" });
-    expect(aj.runtime).toEqual(Runtime.Edge);
-    jest.replaceProperty(process, "env", { VERCEL: "1" });
-    expect(aj.runtime).toEqual(Runtime.Node_NoWASM);
-
-    jest.replaceProperty(process, "env", { ARCJET_RUNTIME: "node" });
-    expect(aj.runtime).toEqual(Runtime.Node);
-    jest.replaceProperty(process, "env", { ARCJET_RUNTIME: "node_nowasm" });
-    expect(aj.runtime).toEqual(Runtime.Node_NoWASM);
-    jest.replaceProperty(process, "env", { ARCJET_RUNTIME: "edge" });
-    expect(aj.runtime).toEqual(Runtime.Edge);
-    jest.replaceProperty(process, "env", { ARCJET_RUNTIME: "INVALID" });
-    expect(() => {
-      const _ = aj.runtime;
-    }).toThrow();
-  });
-
   test("can augment rules via `withRule` API", async () => {
     const client = {
       decide: jest.fn(async () => {
@@ -3303,36 +3267,6 @@ describe("SDK", () => {
 
     const aj3 = aj.withRule(testRuleProps());
     type WithRuleTestTwo = Assert<SDKProps<typeof aj3, { abc: number }>>;
-  });
-
-  test("augment SDK still has the `runtime` property", async () => {
-    const client = {
-      decide: jest.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetTestReason(),
-          results: [],
-        });
-      }),
-      report: jest.fn(),
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-    });
-
-    const aj2 = aj.withRule(
-      tokenBucket({
-        characteristics: ["userId"],
-        refillRate: 60,
-        interval: 60,
-        capacity: 120,
-      }),
-    );
-
-    expect(aj2).toHaveProperty("runtime", Runtime.Node);
   });
 
   test("creates a new Arcjet SDK with only local rules", () => {

@@ -41,6 +41,7 @@ import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import logger from "@arcjet/logger";
 import ArcjetHeaders from "@arcjet/headers";
+import { runtime } from "@arcjet/runtime";
 
 export * from "@arcjet/protocol";
 
@@ -354,7 +355,7 @@ export function createRemoteClient(
         id: decision.id,
         fingerprint: context.fingerprint,
         path: details.path,
-        runtime: runtime(),
+        runtime: context.runtime,
         ttl: decision.ttl,
         conclusion: decision.conclusion,
         reason: decision.reason,
@@ -404,7 +405,7 @@ export function createRemoteClient(
             id: response.decision?.id,
             fingerprint: context.fingerprint,
             path: details.path,
-            runtime: runtime(),
+            runtime: context.runtime,
             ttl: decision.ttl,
           });
         })
@@ -416,53 +417,6 @@ export function createRemoteClient(
         });
     },
   });
-}
-
-/**
- * Represents the runtime that the client is running in. This is used to bring
- * in the appropriate libraries for the runtime e.g. the WASM module.
- */
-export enum Runtime {
-  /**
-   * Running in a Node.js runtime
-   */
-  Node = "node",
-  /**
-   * Running in a Node.js runtime without WASM support e.g. Vercel serverless
-   * functions
-   * @see
-   * https://vercel.com/docs/concepts/functions/serverless-functions/runtimes/node-js
-   */
-  Node_NoWASM = "node_nowasm",
-  /**
-   * Running in an Edge runtime
-   * @see https://edge-runtime.vercel.app/
-   * @see https://vercel.com/docs/concepts/functions/edge-functions/edge-runtime
-   */
-  Edge = "edge",
-}
-
-function runtime(): Runtime {
-  if (typeof process.env["ARCJET_RUNTIME"] === "string") {
-    switch (process.env["ARCJET_RUNTIME"]) {
-      case "edge":
-        return Runtime.Edge;
-      case "node":
-        return Runtime.Node;
-      case "node_nowasm":
-        return Runtime.Node_NoWASM;
-      default:
-        throw new Error("Unknown ARCJET_RUNTIME specified!");
-    }
-  } else {
-    if (process.env["NEXT_RUNTIME"] === "edge") {
-      return Runtime.Edge;
-    } else if (process.env["VERCEL"] === "1") {
-      return Runtime.Node_NoWASM;
-    } else {
-      return Runtime.Node;
-    }
-  }
 }
 
 type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
@@ -1067,7 +1021,6 @@ export interface ArcjetOptions<Rules extends [...(Primitive | Product)[]]> {
  * make a decision about how a request should be handled.
  */
 export interface Arcjet<Props extends PlainObject> {
-  get runtime(): Runtime;
   /**
    * Make a decision about how to handle a request. This will analyze the
    * request locally where possible and call the Arcjet decision API.
@@ -1103,6 +1056,8 @@ export default function arcjet<
 >(options: ArcjetOptions<Rules>): Arcjet<Simplify<ExtraProps<Rules>>> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules, client } = options;
+
+  const rt = runtime();
 
   // TODO(#207): Remove this when we can default the transport so client is not required
   // It is currently optional in the options so the Next SDK can override it for the user
@@ -1159,10 +1114,10 @@ export default function arcjet<
       logger.warn("generateFingerprint: ip is empty");
     }
     const fingerprint = await analyze.generateFingerprint(ip);
-    logger.debug("fingerprint (%s): %s", runtime(), fingerprint);
+    logger.debug("fingerprint (%s): %s", rt, fingerprint);
     logger.timeEnd("fingerprint");
 
-    const context: ArcjetContext = { key, ...ctx, fingerprint };
+    const context: ArcjetContext = { key, ...ctx, fingerprint, runtime: rt };
 
     if (rules.length < 1) {
       // TODO(#607): Error if no rules configured after deprecation period
