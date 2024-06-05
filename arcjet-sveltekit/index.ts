@@ -15,6 +15,7 @@ import core, {
 } from "arcjet";
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
+import { runtime } from "@arcjet/runtime";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -59,7 +60,7 @@ type PlainObject = {
 // The Vercel Adapter for SvelteKit could run on the Edge runtime, so we need to
 // conditionally default the transport.
 function defaultTransport(baseUrl: string) {
-  if (process.env["NEXT_RUNTIME"] === "edge") {
+  if (runtime() === "edge-light") {
     return createConnectTransportWeb({
       baseUrl,
       interceptors: [
