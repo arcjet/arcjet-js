@@ -1190,7 +1190,7 @@ export default function arcjet<
         conclusion: decision.conclusion,
         fingerprint,
         reason: existingBlockReason,
-        runtime: runtime(),
+        runtime: rt,
       });
 
       return decision;
@@ -1217,7 +1217,7 @@ export default function arcjet<
           rule: rule.type,
           fingerprint,
           path: details.path,
-          runtime: runtime(),
+          runtime: rt,
           ttl: results[idx].ttl,
           conclusion: results[idx].conclusion,
           reason: results[idx].reason,
@@ -1333,9 +1333,6 @@ export default function arcjet<
     );
 
     return Object.freeze({
-      get runtime() {
-        return runtime();
-      },
       withRule(rule: Primitive | Product) {
         return withRule(rule);
       },
@@ -1349,9 +1346,6 @@ export default function arcjet<
   }
 
   return Object.freeze({
-    get runtime() {
-      return runtime();
-    },
     withRule(rule: Primitive | Product) {
       return withRule(rule);
     },
