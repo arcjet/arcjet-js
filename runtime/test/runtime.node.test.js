@@ -1,5 +1,5 @@
 /**
-  * @jest-environment node
+ * @jest-environment node
  */
 
 // These tests are written in JS because otherwise the jest-environment pragma
