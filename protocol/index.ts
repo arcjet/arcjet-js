@@ -744,9 +744,26 @@ export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {
   type: "SHIELD";
 }
 
+export interface ArcjetLogger {
+  // Latency logs will be emitted if `time` and `timeEnd` calls exist on the
+  // logger interface, but they are optional since Pino doesn't have them.
+  time?(label: string): void;
+  timeEnd?(label: string): void;
+  // Pino-compatible logging functions are required.
+  debug(msg: string, ...args: unknown[]): void;
+  debug(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
+  info(msg: string, ...args: unknown[]): void;
+  info(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
+  warn(msg: string, ...args: unknown[]): void;
+  warn(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
+  error(msg: string, ...args: unknown[]): void;
+  error(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
+}
+
 export type ArcjetContext = {
   [key: string]: unknown;
   key: string;
   fingerprint: string;
   runtime: string;
+  log: ArcjetLogger;
 };

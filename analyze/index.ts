@@ -1,4 +1,4 @@
-import logger from "@arcjet/logger";
+import type { ArcjetLogger } from "@arcjet/protocol";
 
 import * as core from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
@@ -7,6 +7,10 @@ import type {
   BotDetectionResult,
   BotType,
 } from "./wasm/arcjet_analyze_js_req.component.js";
+
+interface AnalyzeContext {
+  log: ArcjetLogger;
+}
 
 // TODO: Do we actually need this wasmCache or does `import` cache correctly?
 const wasmCache = new Map<string, WebAssembly.Module>();
@@ -73,22 +77,24 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-const coreImports: ImportObject = {
-  "arcjet:js-req/logger": {
-    debug(msg) {
-      logger.debug(msg);
-    },
-    error(msg) {
-      logger.error(msg);
-    },
-  },
-};
+async function init(context: AnalyzeContext) {
+  const { log } = context;
 
-async function init() {
+  const coreImports: ImportObject = {
+    "arcjet:js-req/logger": {
+      debug(msg) {
+        log.debug(msg);
+      },
+      error(msg) {
+        log.error(msg);
+      },
+    },
+  };
+
   try {
     return core.instantiate(moduleFromPath, coreImports);
   } catch {
-    logger.debug("WebAssembly is not supported in this runtime");
+    log.debug("WebAssembly is not supported in this runtime");
   }
 }
 
@@ -116,12 +122,15 @@ export {
  * @param ip - The IP address of the client.
  * @returns A SHA-256 string fingerprint.
  */
-export async function generateFingerprint(ip: string): Promise<string> {
+export async function generateFingerprint(
+  context: AnalyzeContext,
+  ip: string,
+): Promise<string> {
   if (ip == "") {
     return "";
   }
 
-  const analyze = await init();
+  const analyze = await init(context);
 
   if (typeof analyze !== "undefined") {
     return analyze.generateFingerprint(ip);
@@ -155,10 +164,11 @@ export async function generateFingerprint(ip: string): Promise<string> {
 }
 
 export async function isValidEmail(
+  context: AnalyzeContext,
   candidate: string,
   options?: EmailValidationConfig,
 ) {
-  const analyze = await init();
+  const analyze = await init(context);
 
   if (typeof analyze !== "undefined") {
     return analyze.isValidEmail(candidate, options);
@@ -169,11 +179,12 @@ export async function isValidEmail(
 }
 
 export async function detectBot(
+  context: AnalyzeContext,
   headers: string,
   patterns_add: string,
   patterns_remove: string,
 ): Promise<BotDetectionResult> {
-  const analyze = await init();
+  const analyze = await init(context);
 
   if (typeof analyze !== "undefined") {
     return analyze.detectBot(headers, patterns_add, patterns_remove);

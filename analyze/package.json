@@ -46,7 +46,7 @@
     "./wasm/arcjet_analyze_js_req_bg.js"
   ],
   "dependencies": {
-    "@arcjet/logger": "1.0.0-alpha.13"
+    "@arcjet/protocol": "1.0.0-alpha.13"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.13",
