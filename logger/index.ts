@@ -36,7 +36,8 @@ function getMessage(obj: unknown, msg: unknown, args: unknown[]) {
     msg = obj;
   }
 
-  // The second argument was the message
+  // Prefer a string message over `obj.msg`, as per Pino:
+  // https://github.com/pinojs/pino/blob/8db130eba0439e61c802448d31eb1998cebfbc98/docs/api.md#message-string
   if (typeof msg === "string") {
     return format(msg, ...args);
   }
