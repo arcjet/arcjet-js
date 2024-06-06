@@ -172,6 +172,7 @@ find a specific one through the categories and descriptions below.
   with information.
 - [`@arcjet/duration`](./duration/README.md): Utilities for parsing duration
   strings into seconds integers.
+- [`@arcjet/runtime`](./runtime/README.md): Runtime detection.
 - [`@arcjet/sprintf`](./sprintf/README.md): Platform-independent replacement for
   `util.format`.
 

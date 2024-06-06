@@ -5,7 +5,6 @@ import core, {
   ArcjetOptions,
   Primitive,
   Product,
-  Runtime,
   ArcjetRequest,
   ExtraProps,
   RemoteClient,
@@ -85,7 +84,6 @@ export function createBunRemoteClient(
  * make a decision about how a Bun.sh request should be handled.
  */
 export interface ArcjetBun<Props extends PlainObject> {
-  get runtime(): Runtime;
   /**
    * Runs a request through the configured protections. The request is
    * analyzed and then a decision made on whether to allow, deny, or challenge
@@ -175,9 +173,6 @@ function withClient<const Rules extends (Primitive | Product)[]>(
   const ipCache = new WeakMap<Request, string>();
 
   return Object.freeze({
-    get runtime() {
-      return aj.runtime;
-    },
     withRule(rule: Primitive | Product) {
       const client = aj.withRule(rule);
       return withClient(client);

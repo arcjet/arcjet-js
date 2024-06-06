@@ -748,4 +748,5 @@ export type ArcjetContext = {
   [key: string]: unknown;
   key: string;
   fingerprint: string;
+  runtime: string;
 };

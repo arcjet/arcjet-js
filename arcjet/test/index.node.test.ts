@@ -33,7 +33,6 @@ import arcjet, {
   rateLimit,
   ArcjetRule,
   defaultBaseUrl,
-  Runtime,
   validateEmail,
   protectSignup,
   createRemoteClient,
@@ -245,6 +244,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -298,6 +298,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -352,6 +353,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -404,6 +406,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -457,6 +460,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -515,6 +519,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -556,6 +561,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -596,6 +602,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -636,6 +643,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -679,6 +687,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -728,6 +737,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -769,6 +779,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -835,6 +846,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -900,6 +912,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -972,6 +985,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1037,6 +1051,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1098,6 +1113,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1185,6 +1201,7 @@ describe("createRemoteClient", () => {
     const context = {
       key,
       fingerprint,
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1468,6 +1485,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       headers: new Headers(),
@@ -1485,6 +1503,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       headers: undefined,
@@ -1502,6 +1521,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1545,6 +1565,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1598,6 +1619,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1651,6 +1673,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1691,6 +1714,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1753,6 +1777,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1800,6 +1825,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -1846,6 +1872,7 @@ describe("Primitive > detectBot", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2660,6 +2687,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       email: "abc@example.com",
@@ -2677,6 +2705,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       email: undefined,
@@ -2694,6 +2723,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2725,6 +2755,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2756,6 +2787,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2787,6 +2819,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2820,6 +2853,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2851,6 +2885,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2882,6 +2917,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -2915,6 +2951,7 @@ describe("Primitive > validateEmail", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
+      runtime: "test",
     };
     const details = {
       ip: "172.100.1.1",
@@ -3154,41 +3191,6 @@ describe("SDK", () => {
     expect(typeof aj.protect).toEqual("function");
   });
 
-  test("provides the runtime", () => {
-    const client = {
-      decide: jest.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetTestReason(),
-          results: [],
-        });
-      }),
-      report: jest.fn(),
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-    });
-
-    jest.replaceProperty(process, "env", { NEXT_RUNTIME: "edge" });
-    expect(aj.runtime).toEqual(Runtime.Edge);
-    jest.replaceProperty(process, "env", { VERCEL: "1" });
-    expect(aj.runtime).toEqual(Runtime.Node_NoWASM);
-
-    jest.replaceProperty(process, "env", { ARCJET_RUNTIME: "node" });
-    expect(aj.runtime).toEqual(Runtime.Node);
-    jest.replaceProperty(process, "env", { ARCJET_RUNTIME: "node_nowasm" });
-    expect(aj.runtime).toEqual(Runtime.Node_NoWASM);
-    jest.replaceProperty(process, "env", { ARCJET_RUNTIME: "edge" });
-    expect(aj.runtime).toEqual(Runtime.Edge);
-    jest.replaceProperty(process, "env", { ARCJET_RUNTIME: "INVALID" });
-    expect(() => {
-      const _ = aj.runtime;
-    }).toThrow();
-  });
-
   test("can augment rules via `withRule` API", async () => {
     const client = {
       decide: jest.fn(async () => {
@@ -3303,36 +3305,6 @@ describe("SDK", () => {
 
     const aj3 = aj.withRule(testRuleProps());
     type WithRuleTestTwo = Assert<SDKProps<typeof aj3, { abc: number }>>;
-  });
-
-  test("augment SDK still has the `runtime` property", async () => {
-    const client = {
-      decide: jest.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetTestReason(),
-          results: [],
-        });
-      }),
-      report: jest.fn(),
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-    });
-
-    const aj2 = aj.withRule(
-      tokenBucket({
-        characteristics: ["userId"],
-        refillRate: 60,
-        interval: 60,
-        capacity: 120,
-      }),
-    );
-
-    expect(aj2).toHaveProperty("runtime", Runtime.Node);
   });
 
   test("creates a new Arcjet SDK with only local rules", () => {
@@ -4386,92 +4358,5 @@ describe("SDK", () => {
       }),
       [],
     );
-  });
-});
-
-describe("Arcjet: Env = Serverless Node runtime on Vercel", () => {
-  beforeEach(() => {
-    process.env["VERCEL"] = "1";
-  });
-
-  afterEach(() => {
-    delete process.env["VERCEL"];
-  });
-
-  test("should create a new instance", () => {
-    const client = {
-      decide: jest.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetTestReason(),
-          results: [],
-        });
-      }),
-      report: jest.fn(),
-    };
-
-    const aj = arcjet({ key: "test-key", rules: [], client });
-    expect(aj).toHaveProperty("protect");
-    expect(typeof aj.protect).toEqual("function");
-  });
-
-  test("should make a call to the Decide API", async () => {
-    const client = {
-      decide: jest.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetTestReason(),
-          results: [],
-        });
-      }),
-      report: jest.fn(),
-    };
-
-    // Set call args
-    const key = "test-key";
-    const config = {
-      mode: ArcjetMode.LIVE,
-      match: "/test",
-      characteristics: ["ip.src"],
-      window: "1h",
-      max: 1,
-    };
-    const fingerprint =
-      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-    const ip = "172.100.1.1";
-    const method = "GET";
-    const protocol = "http";
-    const host = "example.com";
-    const path = "/";
-    const headers = new Headers();
-    headers.append("User-Agent", "Mozilla/5.0");
-
-    const aj = arcjet({
-      key,
-      rules: [rateLimit(config)],
-      client,
-    });
-    const decision = await aj.protect(
-      {},
-      {
-        ip,
-        method,
-        protocol,
-        host,
-        path,
-        headers,
-        "extra-test": "extra-test-value",
-      },
-    );
-
-    // If this fails, check the console an error related to the args passed to
-    // the mocked decide service method above.
-    expect(decision).toBeDefined();
-
-    // Make sure the methods were called
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.report).toHaveBeenCalledTimes(0);
-
-    expect(decision.conclusion).toEqual("ALLOW");
   });
 });
