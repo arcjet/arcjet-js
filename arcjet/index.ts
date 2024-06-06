@@ -1153,7 +1153,7 @@ export default function arcjet<
     };
 
     const fingerprint = await analyze.generateFingerprint(baseContext, ip);
-    log.debug("fingerprint (%s): %s", runtime(), fingerprint);
+    log.debug("fingerprint (%s): %s", rt, fingerprint);
     log.timeEnd?.("fingerprint");
 
     const context: ArcjetContext = { ...baseContext, fingerprint, runtime: rt };

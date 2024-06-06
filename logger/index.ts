@@ -30,9 +30,10 @@ function getTimeLabel(label: string) {
 }
 
 function getMessage(obj: unknown, msg: unknown, args: unknown[]) {
-  // The first argument was the message
+  // The first argument was the message so juggle the args
   if (typeof obj === "string") {
-    return format(obj, ...args);
+    args = [msg, ...args];
+    msg = obj;
   }
 
   // The second argument was the message
@@ -46,7 +47,7 @@ function getMessage(obj: unknown, msg: unknown, args: unknown[]) {
     "msg" in obj &&
     typeof obj.msg === "string"
   ) {
-    return format(obj.msg, ...args);
+    return format(obj.msg, [msg, ...args]);
   }
 }
 
