@@ -59,7 +59,7 @@ function getOutput(obj: unknown, msg: unknown, args: unknown[]) {
 
   if (typeof obj === "object" && obj !== null) {
     for (const [key, value] of Object.entries(obj)) {
-      output += `\n    ${key}: ${tryStringify(value)}`;
+      output += `\n      ${key}: ${tryStringify(value)}`;
     }
   }
 
