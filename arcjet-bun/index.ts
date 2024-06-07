@@ -131,6 +131,12 @@ export interface ArcjetBun<Props extends PlainObject> {
   ) => Response | Promise<Response>;
 }
 
+function detectPlatform() {
+  if (typeof env["FLY_APP_NAME"] === "string" && env["FLY_APP_NAME"] !== "") {
+    return "fly-io" as const;
+  }
+}
+
 // This is provided with an `ipCache` where it attempts to lookup the IP. This
 // is primarily a workaround to the API design in Bun that requires access to
 // the `Server` to lookup an IP.
@@ -150,6 +156,7 @@ function toArcjetRequest<Props extends PlainObject>(
       ip: ipCache.get(request),
     },
     headers,
+    { platform: detectPlatform() },
   );
   if (ip === "") {
     // If the `ip` is empty but we're in development mode, we default the IP

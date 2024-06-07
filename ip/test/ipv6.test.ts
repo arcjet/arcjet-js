@@ -1,127 +1,102 @@
 /**
  * @jest-environment node
  */
-import {
-  describe,
-  expect,
-  test,
-  beforeEach,
-  afterEach,
-  jest,
-} from "@jest/globals";
-import ip, { RequestLike } from "../index";
+import { describe, expect, test } from "@jest/globals";
+import ip, { Options, RequestLike } from "../index";
 
-type MakeTest = (ip: unknown) => [RequestLike, Headers];
-
-beforeEach(() => {
-  jest.replaceProperty(process, "env", {
-    ...process.env,
-    FLY_APP_NAME: "testing",
-  });
-  // We inject an empty `navigator` object via jest.config.js to act like
-  // Cloudflare Workers
-  jest.replaceProperty(globalThis, "navigator", {
-    ...globalThis.navigator,
-    userAgent: "Cloudflare-Workers",
-  });
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-  jest.restoreAllMocks();
-});
+type MakeTest = (ip: unknown) => [RequestLike, Headers, Options | undefined];
 
 function suite(make: MakeTest) {
   test("returns empty string if unspecified", () => {
-    const [request, headers] = make("::");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("::");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if loopback address", () => {
-    const [request, headers] = make("::1");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("::1");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if ipv4 mapped address", () => {
-    const [request, headers] = make("::ffff:127.0.0.1");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("::ffff:127.0.0.1");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if ipv4-ipv6 translat range", () => {
-    const [request, headers] = make("64:ff9b:1::");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("64:ff9b:1::");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if discard range", () => {
-    const [request, headers] = make("100::");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("100::");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if documentation range", () => {
-    const [request, headers] = make("2001:db8::");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("2001:db8::");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if benchmarking range", () => {
-    const [request, headers] = make("2001:2::");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("2001:2::");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if unique local range", () => {
-    const [request, headers] = make("fc02::");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("fc02::");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if unicast link local range", () => {
-    const [request, headers] = make("fe80::");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("fe80::");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if the ip address is too short", () => {
-    const [request, headers] = make("ffff:ffff:");
-    expect(ip(request, headers)).toEqual("");
+    const [request, headers, options] = make("ffff:ffff:");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns empty string if the ip address is too long", () => {
-    const [request, headers] = make(
+    const [request, headers, options] = make(
       "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
     );
-    expect(ip(request, headers)).toEqual("");
+    expect(ip(request, headers, options)).toEqual("");
   });
 
   test("returns the ip if it is 'Port Control Protocol Anycast' address", () => {
-    const [request, headers] = make("2001:1::1");
-    expect(ip(request, headers)).toEqual("2001:1::1");
+    const [request, headers, options] = make("2001:1::1");
+    expect(ip(request, headers, options)).toEqual("2001:1::1");
   });
 
   test("returns the ip if it is 'Traversal Using Relays around NAT Anycast' address", () => {
-    const [request, headers] = make("2001:1::2");
-    expect(ip(request, headers)).toEqual("2001:1::2");
+    const [request, headers, options] = make("2001:1::2");
+    expect(ip(request, headers, options)).toEqual("2001:1::2");
   });
 
   test("returns the ip if it is 'AMT' address", () => {
-    const [request, headers] = make("2001:3::");
-    expect(ip(request, headers)).toEqual("2001:3::");
+    const [request, headers, options] = make("2001:3::");
+    expect(ip(request, headers, options)).toEqual("2001:3::");
   });
 
   test("returns the ip if it is 'AS112-v6' address", () => {
-    const [request, headers] = make("2001:4:112::");
-    expect(ip(request, headers)).toEqual("2001:4:112::");
+    const [request, headers, options] = make("2001:4:112::");
+    expect(ip(request, headers, options)).toEqual("2001:4:112::");
   });
 
   test("returns the ip if it is 'ORCHIDv2' address", () => {
-    const [request, headers] = make("2001:20::");
-    expect(ip(request, headers)).toEqual("2001:20::");
+    const [request, headers, options] = make("2001:20::");
+    expect(ip(request, headers, options)).toEqual("2001:20::");
   });
 
   test("returns the ip if valid", () => {
-    const [request, headers] = make("::abcd:c00a:2ff");
-    expect(ip(request, headers)).toEqual("::abcd:c00a:2ff");
+    const [request, headers, options] = make("::abcd:c00a:2ff");
+    expect(ip(request, headers, options)).toEqual("::abcd:c00a:2ff");
   });
 
   test("returns the ip if valid, after ignoring scope", () => {
-    const [request, headers] = make("::abcd:c00a:2ff%1");
-    expect(ip(request, headers)).toEqual("::abcd:c00a:2ff%1");
+    const [request, headers, options] = make("::abcd:c00a:2ff%1");
+    expect(ip(request, headers, options)).toEqual("::abcd:c00a:2ff%1");
   });
 }
 
@@ -138,16 +113,16 @@ function requestSuite(...keys: string[]) {
       }
 
       const req = nested(keys);
-      return [req, new Headers()];
+      return [req, new Headers(), undefined];
     });
   });
 }
 
-function headerSuite(key: string) {
+function headerSuite(key: string, options?: Options) {
   describe(`header: ${key}`, () => {
     suite((ip: unknown) => {
       if (typeof ip === "string") {
-        return [{}, new Headers([[key, ip]])];
+        return [{}, new Headers([[key, ip]]), options];
       } else {
         return [
           {},
@@ -158,6 +133,7 @@ function headerSuite(key: string) {
               ip,
             ],
           ]),
+          options,
         ];
       }
     });
@@ -172,11 +148,11 @@ describe("find public IPv6", () => {
 
   headerSuite("X-Client-IP");
   headerSuite("X-Forwarded-For");
-  headerSuite("CF-Connecting-IPv6");
-  headerSuite("CF-Connecting-IP");
+  headerSuite("CF-Connecting-IPv6", { platform: "cloudflare" });
+  headerSuite("CF-Connecting-IP", { platform: "cloudflare" });
   headerSuite("DO-Connecting-IP");
   headerSuite("Fastly-Client-IP");
-  headerSuite("Fly-Client-IP");
+  headerSuite("Fly-Client-IP", { platform: "fly-io" });
   headerSuite("True-Client-IP");
   headerSuite("X-Real-IP");
   headerSuite("X-Cluster-Client-IP");

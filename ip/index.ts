@@ -553,6 +553,12 @@ export interface RequestLike {
   requestContext?: PartialRequestContext;
 }
 
+export type Platform = "cloudflare" | "fly-io";
+
+export interface Options {
+  platform?: Platform;
+}
+
 // Heavily based on https://github.com/pbojinov/request-ip
 //
 // Licensed: The MIT License (MIT) Copyright (c) 2022 Petar Bojinov -
@@ -574,7 +580,11 @@ export interface RequestLike {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-function findIP(request: RequestLike, headers: Headers): string {
+function findIP(
+  request: RequestLike,
+  headers: Headers,
+  options: Options = {},
+): string {
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.
@@ -604,8 +614,9 @@ function findIP(request: RequestLike, headers: Headers): string {
   // header should only be accepted when running on Cloudflare; otherwise, it
   // can be spoofed.
 
-  // Cloudflare: https://developers.cloudflare.com/workers/configuration/compatibility-dates/#global-navigator
-  if (globalThis.navigator?.userAgent === "Cloudflare-Workers") {
+  const { platform } = options;
+
+  if (platform === "cloudflare") {
     // CF-Connecting-IPv6: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ipv6
     const cfConnectingIPv6 = headers.get("cf-connecting-ipv6");
     if (isGlobalIPv6(cfConnectingIPv6)) {
@@ -620,7 +631,7 @@ function findIP(request: RequestLike, headers: Headers): string {
   }
 
   // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
-  if (process.env["FLY_APP_NAME"] !== "") {
+  if (platform === "fly-io") {
     // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
     const flyClientIP = headers.get("fly-client-ip");
     if (isGlobalIP(flyClientIP)) {

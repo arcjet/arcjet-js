@@ -193,6 +193,15 @@ export interface ArcjetNext<Props extends PlainObject> {
   ): ArcjetNext<Simplify<Props & ExtraProps<Rule>>>;
 }
 
+function detectPlatform() {
+  if (
+    typeof process.env["FLY_APP_NAME"] === "string" &&
+    process.env["FLY_APP_NAME"] !== ""
+  ) {
+    return "fly-io" as const;
+  }
+}
+
 function toArcjetRequest<Props extends PlainObject>(
   request: ArcjetNextRequest,
   props: Props,
@@ -200,7 +209,7 @@ function toArcjetRequest<Props extends PlainObject>(
   // We construct an ArcjetHeaders to normalize over Headers
   const headers = new ArcjetHeaders(request.headers);
 
-  let ip = findIP(request, headers);
+  let ip = findIP(request, headers, { platform: detectPlatform() });
   if (ip === "") {
     // If the `ip` is empty but we're in development mode, we default the IP
     // so the request doesn't fail.

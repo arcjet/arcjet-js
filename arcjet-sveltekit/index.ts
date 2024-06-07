@@ -157,6 +157,12 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
   ): ArcjetSvelteKit<Simplify<Props & ExtraProps<Rule>>>;
 }
 
+function detectPlatform() {
+  if (typeof env["FLY_APP_NAME"] === "string" && env["FLY_APP_NAME"] !== "") {
+    return "fly-io" as const;
+  }
+}
+
 function toArcjetRequest<Props extends PlainObject>(
   event: ArcjetSvelteKitRequestEvent,
   props: Props,
@@ -171,6 +177,7 @@ function toArcjetRequest<Props extends PlainObject>(
       ip: event.getClientAddress(),
     },
     headers,
+    { platform: detectPlatform() },
   );
   if (ip === "") {
     // If the `ip` is empty but we're in development mode, we default the IP
