@@ -40,8 +40,10 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "dependencies": {
+    "@arcjet/env": "1.0.0-alpha.13",
     "@arcjet/headers": "1.0.0-alpha.13",
     "@arcjet/ip": "1.0.0-alpha.13",
+    "@arcjet/logger": "1.0.0-alpha.13",
     "@connectrpc/connect-node": "1.4.0",
     "arcjet": "1.0.0-alpha.13"
   },

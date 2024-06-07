@@ -61,6 +61,10 @@
       "component": "@arcjet/duration",
       "skip-github-release": true
     },
+    "env": {
+      "component": "@arcjet/env",
+      "skip-github-release": true
+    },
     "eslint-config": {
       "component": "@arcjet/eslint-config",
       "skip-github-release": true

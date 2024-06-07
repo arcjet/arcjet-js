@@ -32,7 +32,6 @@ import arcjet, {
   detectBot,
   rateLimit,
   ArcjetRule,
-  defaultBaseUrl,
   validateEmail,
   protectSignup,
   createRemoteClient,
@@ -167,60 +166,64 @@ class ArcjetInvalidDecision extends ArcjetDecision {
 
 const log = new Logger({ level: "info" });
 
-describe("defaultBaseUrl", () => {
-  test("uses process.env.ARCJET_BASE_URL if set and allowed", () => {
-    jest.replaceProperty(process, "env", {
-      NODE_ENV: "production",
-      ARCJET_BASE_URL: "https://decide.arcjet.orb.local:4082",
-    });
-    expect(defaultBaseUrl()).toEqual("https://decide.arcjet.orb.local:4082");
-  });
+// describe("defaultBaseUrl", () => {
+//   test("uses process.env.ARCJET_BASE_URL if set and allowed", () => {
+//     jest.replaceProperty(process, "env", {
+//       NODE_ENV: "production",
+//       ARCJET_BASE_URL: "https://decide.arcjet.orb.local:4082",
+//     });
+//     expect(defaultBaseUrl()).toEqual("https://decide.arcjet.orb.local:4082");
+//   });
 
-  test("does not use process.env.ARCJET_BASE_URL if not allowed", () => {
-    jest.replaceProperty(process, "env", {
-      NODE_ENV: "production",
-      ARCJET_BASE_URL: "http://localhost:1234",
-    });
-    expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
-  });
+//   test("does not use process.env.ARCJET_BASE_URL if not allowed", () => {
+//     jest.replaceProperty(process, "env", {
+//       NODE_ENV: "production",
+//       ARCJET_BASE_URL: "http://localhost:1234",
+//     });
+//     expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
+//   });
 
-  test("does not use process.env.ARCJET_BASE_URL if empty string", () => {
-    jest.replaceProperty(process, "env", {
-      NODE_ENV: "production",
-      ARCJET_BASE_URL: "",
-    });
-    expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
-  });
+//   test("does not use process.env.ARCJET_BASE_URL if empty string", () => {
+//     jest.replaceProperty(process, "env", {
+//       NODE_ENV: "production",
+//       ARCJET_BASE_URL: "",
+//     });
+//     expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
+//   });
 
-  test("uses production url if process.env.ARCJET_BASE_URL not set", () => {
-    expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
-  });
+//   test("uses production url if process.env.ARCJET_BASE_URL not set", () => {
+//     expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
+//   });
 
-  // TODO(#90): Remove these tests once production conditional is removed
-  test("uses process.env.ARCJET_BASE_URL if set (in development)", () => {
-    jest.replaceProperty(process, "env", {
-      NODE_ENV: "development",
-      ARCJET_BASE_URL: "http://localhost:1234",
-    });
-    expect(defaultBaseUrl()).toEqual("http://localhost:1234");
-  });
+//   // TODO(#90): Remove these tests once production conditional is removed
+//   test("uses process.env.ARCJET_BASE_URL if set (in development)", () => {
+//     jest.replaceProperty(process, "env", {
+//       NODE_ENV: "development",
+//       ARCJET_BASE_URL: "http://localhost:1234",
+//     });
+//     expect(defaultBaseUrl()).toEqual("http://localhost:1234");
+//   });
 
-  test("does not use process.env.ARCJET_BASE_URL if empty string (in development)", () => {
-    jest.replaceProperty(process, "env", {
-      NODE_ENV: "development",
-      ARCJET_BASE_URL: "",
-    });
-    expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
-  });
-});
+//   test("does not use process.env.ARCJET_BASE_URL if empty string (in development)", () => {
+//     jest.replaceProperty(process, "env", {
+//       NODE_ENV: "development",
+//       ARCJET_BASE_URL: "",
+//     });
+//     expect(defaultBaseUrl()).toEqual("https://decide.arcjet.com");
+//   });
+// });
 
 describe("createRemoteClient", () => {
-  test("throws if called without a transport", () => {
-    expect(createRemoteClient).toThrow("Transport must be defined");
-  });
+  const defaultRemoteClientOptions = {
+    baseUrl: "",
+    timeout: 0,
+    sdkStack: "NODEJS" as const,
+    sdkVersion: "__ARCJET_SDK_VERSION__",
+  };
 
   test("can be called with only a transport", () => {
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(() => {}),
     });
     expect(typeof client.decide).toEqual("function");
@@ -230,6 +233,7 @@ describe("createRemoteClient", () => {
   test("allows overriding the default timeout", async () => {
     // TODO(#32): createRouterTransport doesn't seem to handle timeouts/promises correctly
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {});
       }),
@@ -272,6 +276,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -327,6 +332,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -383,6 +389,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -438,6 +445,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -493,6 +501,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -552,6 +561,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -595,6 +605,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -637,6 +648,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -679,6 +691,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -730,6 +743,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -775,6 +789,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -819,6 +834,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -886,6 +902,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -953,6 +970,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -1027,6 +1045,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -1094,6 +1113,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -1158,6 +1178,7 @@ describe("createRemoteClient", () => {
     };
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, router);
       }),
@@ -1242,6 +1263,7 @@ describe("createRemoteClient", () => {
     });
 
     const client = createRemoteClient({
+      ...defaultRemoteClientOptions,
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {});
       }),
@@ -3226,6 +3248,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
     expect(aj).toHaveProperty("protect");
     expect(typeof aj.protect).toEqual("function");
@@ -3247,6 +3270,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
@@ -3282,6 +3306,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
@@ -3325,6 +3350,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
@@ -3363,6 +3389,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[testRuleLocalAllowed(), testRuleLocalDenied()]],
       client,
+      log,
     });
     expect(aj).toHaveProperty("protect");
     expect(typeof aj.protect).toEqual("function");
@@ -3384,6 +3411,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[testRuleRemote()]],
       client,
+      log,
     });
     expect(aj).toHaveProperty("protect");
     expect(typeof aj.protect).toEqual("function");
@@ -3407,6 +3435,7 @@ describe("SDK", () => {
         [testRuleLocalAllowed(), testRuleLocalDenied(), testRuleRemote()],
       ],
       client,
+      log,
     });
     expect(aj).toHaveProperty("protect");
     expect(typeof aj.protect).toEqual("function");
@@ -3418,6 +3447,28 @@ describe("SDK", () => {
       const aj = arcjet({
         key: "test-key",
         rules: [],
+        log,
+      });
+    }).toThrow();
+  });
+
+  test("throws if no log is specified", () => {
+    expect(() => {
+      const client = {
+        decide: jest.fn(async () => {
+          return new ArcjetAllowDecision({
+            ttl: 0,
+            reason: new ArcjetTestReason(),
+            results: [],
+          });
+        }),
+        report: jest.fn(),
+      };
+
+      const aj = arcjet({
+        key: "test-key",
+        rules: [],
+        client,
       });
     }).toThrow();
   });
@@ -3450,6 +3501,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[allowed, denied]],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -3479,6 +3531,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -3501,6 +3554,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
 
     // @ts-expect-error
@@ -3532,6 +3586,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: rules,
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -3566,6 +3621,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[denied, allowed]],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -3609,6 +3665,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -3662,6 +3719,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -3721,6 +3779,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -3772,6 +3831,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[allowed]],
       client,
+      log,
     });
 
     const _ = await aj.protect({}, request);
@@ -3813,6 +3873,7 @@ describe("SDK", () => {
       key,
       rules: [[rule]],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -3867,6 +3928,7 @@ describe("SDK", () => {
       key,
       rules: [[rule]],
       client,
+      log,
     });
 
     const _ = await aj.protect({}, request);
@@ -3918,6 +3980,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[denied]],
       client,
+      log,
     });
 
     const _ = await aj.protect({}, request);
@@ -3956,6 +4019,7 @@ describe("SDK", () => {
       key,
       rules: [],
       client,
+      log,
     });
 
     const _ = await aj.protect({}, request);
@@ -4005,6 +4069,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -4042,6 +4107,7 @@ describe("SDK", () => {
         key: "test-key",
         rules: [[testRuleInvalidType()]],
         client,
+        log,
       });
     }).not.toThrow("Unknown Rule type");
   });
@@ -4072,6 +4138,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[testRuleLocalThrow()]],
       client,
+      log,
     });
 
     const _ = await aj.protect({}, request);
@@ -4213,6 +4280,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[testRuleLocalDryRun()]],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -4264,6 +4332,7 @@ describe("SDK", () => {
       key,
       rules: [[rule]],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
@@ -4322,6 +4391,7 @@ describe("SDK", () => {
       key,
       rules: [[rule]],
       client,
+      log,
     });
 
     const decision = await aj.protect({ key: "overridden-key" }, request);
@@ -4374,6 +4444,7 @@ describe("SDK", () => {
       key,
       rules: [],
       client,
+      log,
     });
 
     const decision = await aj.protect({}, request);
