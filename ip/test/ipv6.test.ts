@@ -37,14 +37,12 @@ function suite(make: MakeTest) {
     expect(ip(request, headers)).toEqual("");
   });
 
-  test("returns empty string if loopback address (in production)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "production");
+  test("returns empty string if loopback address", () => {
     const [request, headers] = make("::1");
     expect(ip(request, headers)).toEqual("");
   });
 
-  test("returns empty string if ipv4 mapped address (in production)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "production");
+  test("returns empty string if ipv4 mapped address", () => {
     const [request, headers] = make("::ffff:127.0.0.1");
     expect(ip(request, headers)).toEqual("");
   });
@@ -204,8 +202,7 @@ describe("find public IPv6", () => {
       expect(ip(request, headers)).toEqual("abcd::");
     });
 
-    test("skips any private IP (in production)", () => {
-      jest.replaceProperty(process.env, "NODE_ENV", "production");
+    test("skips any private IP", () => {
       const request = {};
       const headers = new Headers([
         ["X-Forwarded-For", "e123::, 3.3.3.3, abcd::, ::1"],

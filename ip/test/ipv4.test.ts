@@ -87,8 +87,7 @@ function suite(make: MakeTest) {
     expect(ip(request, headers)).toEqual("");
   });
 
-  test("returns empty string if loopback (in production)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "production");
+  test("returns empty string if loopback", () => {
     const [request, headers] = make("127.0.0.1");
     expect(ip(request, headers)).toEqual("");
   });
@@ -118,20 +117,17 @@ function suite(make: MakeTest) {
     expect(ip(request, headers)).toEqual("");
   });
 
-  test("returns empty string if in the 10.x.x.x private range (in production)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "production");
+  test("returns empty string if in the 10.x.x.x private range", () => {
     const [request, headers] = make("10.1.1.1");
     expect(ip(request, headers)).toEqual("");
   });
 
-  test("returns empty string if in the 172.16.x.x-172.31.x.x private range (in production)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "production");
+  test("returns empty string if in the 172.16.x.x-172.31.x.x private range", () => {
     const [request, headers] = make("172.18.1.1");
     expect(ip(request, headers)).toEqual("");
   });
 
-  test("returns empty string if in the 192.168.x.x private range (in production)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "production");
+  test("returns empty string if in the 192.168.x.x private range", () => {
     const [request, headers] = make("192.168.1.1");
     expect(ip(request, headers)).toEqual("");
   });
@@ -228,8 +224,7 @@ describe("find public IPv4", () => {
       expect(ip(request, headers)).toEqual("3.3.3.3");
     });
 
-    test("skips any private IP (in production)", () => {
-      jest.replaceProperty(process.env, "NODE_ENV", "production");
+    test("skips any private IP", () => {
       const request = {};
       const headers = new Headers([
         ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3, 127.0.0.1"],
