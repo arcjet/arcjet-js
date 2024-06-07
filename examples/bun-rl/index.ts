@@ -1,13 +1,17 @@
-import arcjet, { fixedWindow, shield } from "@arcjet/bun";
+import arcjet, { shield, tokenBucket } from "@arcjet/bun";
 
 const aj = arcjet({
-  key: Bun.env.ARCJET_KEY!,
+  key: Bun.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
   rules: [
+    // Shield protects your app from common attacks like SQL injection
     shield({ mode: "LIVE" }),
-    fixedWindow({
-      mode: "LIVE",
-      max: 1,
-      window: "1m",
+    // Create a token bucket rate limit. Other algorithms are supported.
+    tokenBucket({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      characteristics: ["userId"], // track requests by a custom user ID
+      refillRate: 5, // refill 5 tokens per interval
+      interval: 10, // refill every 10 seconds
+      capacity: 10, // bucket maximum capacity of 10 tokens
     }),
   ],
 });
@@ -16,12 +20,17 @@ const aj = arcjet({
 export default {
   port: 3000,
   fetch: aj.handler(async (req) => {
-    const decision = await aj.protect(req);
+    const userId = "user123"; // Replace with your authenticated user ID
+    const decision = await aj.protect(req, { userId, requested: 5 }); // Deduct 5 tokens from the bucket
     console.log("Arcjet request ID", decision.id);
     console.log("Arcjet decision", decision.conclusion);
 
     if (decision.isDenied()) {
-      return new Response("Blocked", { status: 403 });
+      if (decision.reason.isRateLimit()) {
+        return new Response("Too many requests", { status: 429 });
+      } else {
+        return new Response("Forbidden", { status: 403 });
+      }
     }
 
     return new Response("Hello world");
@@ -29,17 +38,26 @@ export default {
 };
 
 // Or using the `Bun.serve()` API
-// const server = Bun.serve({
-//   port: 3000,
-//   fetch: aj.handler(async (req) => {
-//     const decision = await aj.protect(req);
+/*
+const server = Bun.serve({
+  port: 3000,
+  fetch: aj.handler(async (req) => {
+    const userId = "user123"; // Replace with your authenticated user ID
+    const decision = await aj.protect(req, { userId, requested: 5 }); // Deduct 5 tokens from the bucket
+    console.log("Arcjet request ID", decision.id);
+    console.log("Arcjet decision", decision.conclusion);
 
-//     if (decision.isDenied()) {
-//       return new Response("Blocked", { status: 403 });
-//     }
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        return new Response("Too many requests", { status: 429 });
+      } else {
+        return new Response("Forbidden", { status: 403 });
+      }
+    }
 
-//     return new Response("Hello world");
-//   }),
-// });
+    return new Response("Hello world");
+  }),
+});
 
-// console.log(`Listening on ${server.url}`);
+console.log(`Listening on ${server.url}`);
+*/

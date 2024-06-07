@@ -1,7 +1,7 @@
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/arcjet-logo-minimal-dark-mark-all.svg">
-    <img src="https://arcjet.com/arcjet-logo-minimal-light-mark-all.svg" alt="Arcjet Logo" height="128" width="auto">
+    <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
+    <img src="https://arcjet.com/logo/arcjet-light-lockup-voyage-horizontal.svg" alt="Arcjet Logo" height="128" width="auto">
   </picture>
 </a>
 
@@ -17,7 +17,7 @@
 </p>
 
 [Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Implement rate limiting, bot protection, email verification & defense
+code. Implement rate limiting, bot protection, email verification, and defense
 against common attacks.
 
 This is the [Arcjet][arcjet] TypeScript and JavaScript SDK core.

@@ -1,7 +1,7 @@
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/arcjet-logo-dark-planet-arrival.svg">
-    <img src="https://arcjet.com/arcjet-logo-light-planet-arrival.svg" alt="Arcjet Logo" height="144" width="auto">
+    <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
+    <img src="https://arcjet.com/logo/arcjet-light-lockup-voyage-horizontal.svg" alt="Arcjet Logo" height="128" width="auto">
   </picture>
 </a>
 
@@ -17,13 +17,17 @@
 </p>
 
 [Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Implement rate limiting, bot protection, email verification & defense
+code. Implement rate limiting, bot protection, email verification, and defense
 against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Node.js][node-js].
 
 **Looking for our Next.js framework SDK?** Check out the
 [`@arcjet/next`][alt-sdk] package.
+
+## Getting started
+
+Visit the [quick start guide][quick-start] to get started.
 
 ## Example app
 
@@ -129,6 +133,7 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [node-js]: https://nodejs.org/
 [alt-sdk]: https://www.npmjs.com/package/@arcjet/next
 [example-url]: https://example.arcjet.com
+[quick-start]: https://docs.arcjet.com/get-started/nodejs
 [example-source]: https://github.com/arcjet/arcjet-js-example
 [rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
 [shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
