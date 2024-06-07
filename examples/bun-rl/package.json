@@ -4,7 +4,19 @@
   "module": "index.ts",
   "type": "module",
   "workspaces": [
-    "../../*"
+    "../../analyze",
+    "../../arcjet",
+    "../../arcjet-bun",
+    "../../duration",
+    "../../eslint-config",
+    "../../headers",
+    "../../ip",
+    "../../logger",
+    "../../protocol",
+    "../../rollup-config",
+    "../../runtime",
+    "../../sprintf",
+    "../../tsconfig"
   ],
   "dependencies": {
     "@arcjet/bun": "workspace:*"
