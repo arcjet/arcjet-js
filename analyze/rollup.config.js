@@ -53,12 +53,14 @@ function wasmToModule() {
   return {
     name: "base64-wasm",
     resolveId(source) {
-      if (source.endsWith(".wasm")) {
+      if (source.endsWith(".wasm?js")) {
+        // Slice off the `?js` to make it a valid path
+        const filepath = source.slice(0, -3);
         // Create a "virtual module", prefixed with `\0` as per the Rollup docs,
         // for our replacement import
-        const id = `\0${source.replace(/\.wasm$/, ".js")}`;
+        const id = `\0${filepath.replace(/\.wasm$/, ".js")}`;
         // Store the actual Wasm path against the virtual module ID.
-        idToWasmPath.set(id, source);
+        idToWasmPath.set(id, filepath);
         return id;
       }
 
