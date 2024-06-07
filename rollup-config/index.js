@@ -107,13 +107,18 @@ export function createConfig(root, { plugins = [] } = {}) {
         noEmitOnError: true,
       }),
       {
-        name: "externalize-edge-wasm",
+        name: "externalize-wasm",
         resolveId(id) {
-          // Cloudflare uses the `.wasm?module` suffix to make WebAssembly
-          // available in their Workers product. This is documented at
+          // Vercel uses the `.wasm?module` suffix to make WebAssembly available
+          // in their Vercel Functions product.
+          // https://vercel.com/docs/functions/wasm#using-a-webassembly-file
+          //
+          // The Cloudflare docs say they support the `.wasm?module` suffix, but
+          // that seems to no longer be the case with Wrangler 2 so we need to
+          // have separate imports for just the `.wasm` files.
+          //
           // https://developers.cloudflare.com/workers/runtime-apis/webassembly/javascript/#bundling
-          // Next.js supports the same syntax, but it is undocumented.
-          if (id.endsWith(".wasm?module")) {
+          if (id.endsWith(".wasm") || id.endsWith(".wasm?module")) {
             return { id, external: true };
           }
           return null;

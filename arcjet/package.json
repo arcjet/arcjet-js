@@ -44,7 +44,8 @@
     "@arcjet/duration": "1.0.0-alpha.13",
     "@arcjet/headers": "1.0.0-alpha.13",
     "@arcjet/logger": "1.0.0-alpha.13",
-    "@arcjet/protocol": "1.0.0-alpha.13"
+    "@arcjet/protocol": "1.0.0-alpha.13",
+    "@arcjet/runtime": "1.0.0-alpha.13"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.13",

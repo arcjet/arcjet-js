@@ -1,45 +1,95 @@
 import format from "@arcjet/sprintf";
 
-export type LogLevel = "DEBUG" | "LOG" | "WARN" | "ERROR";
+function bigintReplacer(key: string, value: unknown) {
+  if (typeof value === "bigint") {
+    return "[BigInt]";
+  }
 
-function getEnvLogLevel(): LogLevel | undefined {
-  const level = process.env["ARCJET_LOG_LEVEL"];
-  switch (level) {
-    case "DEBUG":
-    case "LOG":
-    case "WARN":
-    case "ERROR":
-      return level;
-    default:
-      return undefined;
+  return value;
+}
+
+// TODO: Deduplicate this and sprintf implementation
+function tryStringify(o: unknown) {
+  try {
+    return JSON.stringify(o, bigintReplacer);
+  } catch (e) {
+    return "[Circular]";
   }
 }
 
+export type LogLevel = "debug" | "info" | "warn" | "error";
+
+export interface LoggerOptions {
+  level: LogLevel;
+}
+
+const PREFIX = "✦Aj";
+
 function getTimeLabel(label: string) {
-  return `✦Aj Latency ${label}`;
+  return `${PREFIX} LATENCY ${label}`;
+}
+
+function getMessage(obj: unknown, msg: unknown, args: unknown[]) {
+  // The first argument was the message so juggle the args
+  if (typeof obj === "string") {
+    args = [msg, ...args];
+    msg = obj;
+  }
+
+  // Prefer a string message over `obj.msg`, as per Pino:
+  // https://github.com/pinojs/pino/blob/8db130eba0439e61c802448d31eb1998cebfbc98/docs/api.md#message-string
+  if (typeof msg === "string") {
+    return format(msg, ...args);
+  }
+
+  if (
+    typeof obj === "object" &&
+    obj !== null &&
+    "msg" in obj &&
+    typeof obj.msg === "string"
+  ) {
+    return format(obj.msg, [msg, ...args]);
+  }
+}
+
+function getOutput(obj: unknown, msg: unknown, args: unknown[]) {
+  let output = getMessage(obj, msg, args);
+  if (typeof output !== "string") {
+    return;
+  }
+
+  if (typeof obj === "object" && obj !== null) {
+    for (const [key, value] of Object.entries(obj)) {
+      output += `\n      ${key}: ${tryStringify(value)}`;
+    }
+  }
+
+  return output;
 }
 
 export class Logger {
   #logLevel: number;
 
-  constructor() {
-    const levelStr = getEnvLogLevel() ?? "WARN";
-    switch (levelStr) {
-      case "DEBUG":
+  constructor(opts: LoggerOptions) {
+    if (typeof opts.level !== "string") {
+      throw new Error(`Invalid log level`);
+    }
+
+    switch (opts.level) {
+      case "debug":
         this.#logLevel = 0;
         break;
-      case "LOG":
+      case "info":
         this.#logLevel = 1;
         break;
-      case "WARN":
+      case "warn":
         this.#logLevel = 2;
         break;
-      case "ERROR":
+      case "error":
         this.#logLevel = 3;
         break;
       default: {
-        const _exhaustiveCheck: never = levelStr;
-        throw new Error(`Unknown log level: ${levelStr}`);
+        throw new Error(`Unknown log level: ${opts.level}`);
       }
     }
   }
@@ -56,31 +106,47 @@ export class Logger {
     }
   }
 
-  debug(msg: string, ...details: unknown[]) {
+  debug(msg: string, ...args: unknown[]): void;
+  debug(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
+  debug(obj: unknown, msg?: unknown, ...args: unknown[]): void {
     if (this.#logLevel <= 0) {
-      console.debug("✦Aj %s", format(msg, ...details));
+      const output = getOutput(obj, msg, args);
+      if (typeof output !== "undefined") {
+        console.debug(`${PREFIX} DEBUG ${output}`);
+      }
     }
   }
 
-  log(msg: string, ...details: unknown[]) {
+  info(msg: string, ...args: unknown[]): void;
+  info(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
+  info(obj: unknown, msg?: unknown, ...args: unknown[]): void {
     if (this.#logLevel <= 1) {
-      console.log("✦Aj %s", format(msg, ...details));
+      const output = getOutput(obj, msg, args);
+      if (typeof output !== "undefined") {
+        console.info(`${PREFIX} INFO ${output}`);
+      }
     }
   }
 
-  warn(msg: string, ...details: unknown[]) {
+  warn(msg: string, ...args: unknown[]): void;
+  warn(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
+  warn(obj: unknown, msg?: unknown, ...args: unknown[]): void {
     if (this.#logLevel <= 2) {
-      console.warn("✦Aj %s", format(msg, ...details));
+      const output = getOutput(obj, msg, args);
+      if (typeof output !== "undefined") {
+        console.warn(`${PREFIX} WARN ${output}`);
+      }
     }
   }
 
-  error(msg: string, ...details: unknown[]) {
+  error(msg: string, ...args: unknown[]): void;
+  error(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
+  error(obj: unknown, msg?: unknown, ...args: unknown[]): void {
     if (this.#logLevel <= 3) {
-      console.error("✦Aj %s", format(msg, ...details));
+      const output = getOutput(obj, msg, args);
+      if (typeof output !== "undefined") {
+        console.error(`${PREFIX} ERROR ${output}`);
+      }
     }
   }
 }
-
-// Singleton logger that only accounts for `process.env["ARCJET_LOG_LEVEL"]` at module-load time
-const logger = new Logger();
-export default logger;

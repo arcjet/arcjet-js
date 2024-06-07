@@ -85,6 +85,10 @@
       "component": "@arcjet/rollup-config",
       "skip-github-release": true
     },
+    "runtime": {
+      "component": "@arcjet/runtime",
+      "skip-github-release": true
+    },
     "sprintf": {
       "component": "@arcjet/sprintf",
       "skip-github-release": true

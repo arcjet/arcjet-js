@@ -5,7 +5,6 @@ import core, {
   ArcjetOptions,
   Primitive,
   Product,
-  Runtime,
   ArcjetRequest,
   ExtraProps,
   RemoteClient,
@@ -16,6 +15,7 @@ import core, {
 } from "arcjet";
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
+import { runtime } from "@arcjet/runtime";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -60,7 +60,7 @@ type PlainObject = {
 // The Vercel Adapter for SvelteKit could run on the Edge runtime, so we need to
 // conditionally default the transport.
 function defaultTransport(baseUrl: string) {
-  if (process.env["NEXT_RUNTIME"] === "edge") {
+  if (runtime() === "edge-light") {
     return createConnectTransportWeb({
       baseUrl,
       interceptors: [
@@ -128,7 +128,6 @@ function cookiesToString(
  * make a decision about how a SvelteKit request should be handled.
  */
 export interface ArcjetSvelteKit<Props extends PlainObject> {
-  get runtime(): Runtime;
   /**
    * Runs a `RequestEvent` through the configured protections. The request is
    * analyzed and then a decision made on whether to allow, deny, or challenge
@@ -195,9 +194,6 @@ function withClient<const Rules extends (Primitive | Product)[]>(
   aj: Arcjet<ExtraProps<Rules>>,
 ): ArcjetSvelteKit<ExtraProps<Rules>> {
   return Object.freeze({
-    get runtime() {
-      return aj.runtime;
-    },
     withRule(rule: Primitive | Product) {
       const client = aj.withRule(rule);
       return withClient(client);

@@ -8,37 +8,23 @@ import type {
   BotType,
 } from "./wasm/arcjet_analyze_js_req.component.js";
 
-import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.component.core.wasm?js";
-import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_js_req.component.core2.wasm?js";
-import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_js_req.component.core3.wasm?js";
+import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm";
+import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm";
+import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm";
 
 interface AnalyzeContext {
   log: ArcjetLogger;
 }
 
-// TODO: Do we actually need this wasmCache or does `import` cache correctly?
-const wasmCache = new Map<string, WebAssembly.Module>();
-
 async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
-  const cachedModule = wasmCache.get(path);
-  if (typeof cachedModule !== "undefined") {
-    return cachedModule;
-  }
-
   if (path === "arcjet_analyze_js_req.component.core.wasm") {
-    const mod = await componentCoreWasm();
-    wasmCache.set(path, mod);
-    return mod;
+    return componentCoreWasm;
   }
   if (path === "arcjet_analyze_js_req.component.core2.wasm") {
-    const mod = await componentCore2Wasm();
-    wasmCache.set(path, mod);
-    return mod;
+    return componentCore2Wasm;
   }
   if (path === "arcjet_analyze_js_req.component.core3.wasm") {
-    const mod = await componentCore3Wasm();
-    wasmCache.set(path, mod);
-    return mod;
+    return componentCore3Wasm;
   }
 
   throw new Error(`Unknown path: ${path}`);
