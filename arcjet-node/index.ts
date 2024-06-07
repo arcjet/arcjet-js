@@ -151,6 +151,8 @@ function toArcjetRequest<Props extends PlainObject>(
       process.env["NODE_ENV"] === "development" ||
       process.env["ARCJET_ENV"] === "development"
     ) {
+      // TODO: Log that the fingerprint is being overridden once the adapter
+      // constructs the logger
       ip = "127.0.0.1";
     }
   }

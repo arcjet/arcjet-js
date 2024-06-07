@@ -176,6 +176,8 @@ function toArcjetRequest<Props extends PlainObject>(
     // If the `ip` is empty but we're in development mode, we default the IP
     // so the request doesn't fail.
     if (env.NODE_ENV === "development" || env.ARCJET_ENV === "development") {
+      // TODO: Log that the fingerprint is being overridden once the adapter
+      // constructs the logger
       ip = "127.0.0.1";
     }
   }
