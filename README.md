@@ -168,8 +168,8 @@ find a specific one through the categories and descriptions below.
 - [`arcjet`](./arcjet/README.md): JS SDK core.
 - [`@arcjet/protocol`](./protocol/README.md): JS interface
   into the Arcjet protocol.
-- [`@arcjet/logger`](./logger/README.md): Logging interface which mirrors the
-  console interface but allows log levels.
+- [`@arcjet/logger`](./logger/README.md): Lightweight logger which mirrors the
+  Pino structured logger interface.
 - [`@arcjet/decorate`](./decorate/README.md): Utilities for decorating responses
   with information.
 - [`@arcjet/duration`](./duration/README.md): Utilities for parsing duration

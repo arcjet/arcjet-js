@@ -16,8 +16,8 @@
   </a>
 </p>
 
-[Arcjet][arcjet] logging interface which mirrors the `console` interface but
-allows log levels.
+[Arcjet][arcjet] lightweight logger which mirrors the [Pino][pino-api]
+structured logger interface.
 
 ## Installation
 
@@ -47,4 +47,5 @@ to one of: `"DEBUG"`, `"LOG"`, `"WARN"`, or `"ERROR"`.
 Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
+[pino-api]: https://github.com/pinojs/pino/blob/8db130eba0439e61c802448d31eb1998cebfbc98/docs/api.md#logger
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

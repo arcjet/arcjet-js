@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/logger",
   "version": "1.0.0-alpha.13",
-  "description": "Arcjet logging interface which mirrors the console interface but allows log levels",
+  "description": "Arcjet lightweight logger which mirrors the Pino structured logger interface",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
