@@ -200,7 +200,19 @@ function toArcjetRequest<Props extends PlainObject>(
   // We construct an ArcjetHeaders to normalize over Headers
   const headers = new ArcjetHeaders(request.headers);
 
-  const ip = findIP(request, headers);
+  let ip = findIP(request, headers);
+  if (ip === "") {
+    // If the `ip` is empty but we're in development mode, we default the IP
+    // so the request doesn't fail.
+    if (
+      process.env["NODE_ENV"] === "development" ||
+      process.env["ARCJET_ENV"] === "development"
+    ) {
+      // TODO: Log that the fingerprint is being overridden once the adapter
+      // constructs the logger
+      ip = "127.0.0.1";
+    }
+  }
   const method = request.method ?? "";
   const host = headers.get("host") ?? "";
   let path = "";

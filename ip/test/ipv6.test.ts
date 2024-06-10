@@ -37,28 +37,14 @@ function suite(make: MakeTest) {
     expect(ip(request, headers)).toEqual("");
   });
 
-  test("returns empty string if loopback address (in production)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "production");
+  test("returns empty string if loopback address", () => {
     const [request, headers] = make("::1");
     expect(ip(request, headers)).toEqual("");
   });
 
-  test("returns the loopback address (in development)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "development");
-    const [request, headers] = make("::1");
-    expect(ip(request, headers)).toEqual("::1");
-  });
-
-  test("returns empty string if ipv4 mapped address (in production)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "production");
+  test("returns empty string if ipv4 mapped address", () => {
     const [request, headers] = make("::ffff:127.0.0.1");
     expect(ip(request, headers)).toEqual("");
-  });
-
-  test("returns an address if ipv4 mapped address (in development)", () => {
-    jest.replaceProperty(process.env, "NODE_ENV", "development");
-    const [request, headers] = make("::ffff:192.168.0.1");
-    expect(ip(request, headers)).toEqual("::ffff:192.168.0.1");
   });
 
   test("returns empty string if ipv4-ipv6 translat range", () => {
@@ -216,22 +202,12 @@ describe("find public IPv6", () => {
       expect(ip(request, headers)).toEqual("abcd::");
     });
 
-    test("skips any private IP (in production)", () => {
-      jest.replaceProperty(process.env, "NODE_ENV", "production");
+    test("skips any private IP", () => {
       const request = {};
       const headers = new Headers([
         ["X-Forwarded-For", "e123::, 3.3.3.3, abcd::, ::1"],
       ]);
       expect(ip(request, headers)).toEqual("abcd::");
-    });
-
-    test("returns the loopback IP (in development)", () => {
-      jest.replaceProperty(process.env, "NODE_ENV", "development");
-      const request = {};
-      const headers = new Headers([
-        ["X-Forwarded-For", "abcd::, e123::, 3.3.3.3, ::1"],
-      ]);
-      expect(ip(request, headers)).toEqual("::1");
     });
   });
 });

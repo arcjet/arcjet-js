@@ -304,24 +304,20 @@ function isGlobalIPv4(s?: unknown): s is string {
     return false;
   }
 
-  // TODO: Evaluate if we need to allow other IPv4 addresses in development,
-  // such as "This network"
-  if (process.env["NODE_ENV"] === "production") {
-    // Private IPv4 address ranges
-    if (octets[0] === 10) {
-      return false;
-    }
-    if (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) {
-      return false;
-    }
-    if (octets[0] === 192 && octets[1] === 168) {
-      return false;
-    }
+  // Private IPv4 address ranges
+  if (octets[0] === 10) {
+    return false;
+  }
+  if (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) {
+    return false;
+  }
+  if (octets[0] === 192 && octets[1] === 168) {
+    return false;
+  }
 
-    // Loopback address
-    if (octets[0] === 127) {
-      return false;
-    }
+  // Loopback address
+  if (octets[0] === 127) {
+    return false;
   }
 
   // Shared range
@@ -411,34 +407,30 @@ function isGlobalIPv6(s?: unknown): s is string {
     return false;
   }
 
-  // TODO: Evaluate if we need to allow other IPv6 addresses in development,
-  // such as "Unique local range" or "Unspecified address"
-  if (process.env["NODE_ENV"] === "production") {
-    // Loopback address
-    if (
-      segments[0] === 0 &&
-      segments[1] === 0 &&
-      segments[2] === 0 &&
-      segments[3] === 0 &&
-      segments[4] === 0 &&
-      segments[5] === 0 &&
-      segments[6] === 0 &&
-      segments[7] === 0x1
-    ) {
-      return false;
-    }
+  // Loopback address
+  if (
+    segments[0] === 0 &&
+    segments[1] === 0 &&
+    segments[2] === 0 &&
+    segments[3] === 0 &&
+    segments[4] === 0 &&
+    segments[5] === 0 &&
+    segments[6] === 0 &&
+    segments[7] === 0x1
+  ) {
+    return false;
+  }
 
-    // IPv4-mapped Address (`::ffff:0:0/96`)
-    if (
-      segments[0] === 0 &&
-      segments[1] === 0 &&
-      segments[2] === 0 &&
-      segments[3] === 0 &&
-      segments[4] === 0 &&
-      segments[5] === 0xffff
-    ) {
-      return false;
-    }
+  // IPv4-mapped Address (`::ffff:0:0/96`)
+  if (
+    segments[0] === 0 &&
+    segments[1] === 0 &&
+    segments[2] === 0 &&
+    segments[3] === 0 &&
+    segments[4] === 0 &&
+    segments[5] === 0xffff
+  ) {
+    return false;
   }
 
   // IPv4-IPv6 Translat. (`64:ff9b:1::/48`)

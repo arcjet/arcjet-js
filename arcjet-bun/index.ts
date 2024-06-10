@@ -16,6 +16,7 @@ import core, {
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
 import type { Server } from "bun";
+import { env } from "bun";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -144,12 +145,21 @@ function toArcjetRequest<Props extends PlainObject>(
   const headers = new ArcjetHeaders(request.headers);
 
   const url = new URL(request.url);
-  const ip = findIP(
+  let ip = findIP(
     {
       ip: ipCache.get(request),
     },
     headers,
   );
+  if (ip === "") {
+    // If the `ip` is empty but we're in development mode, we default the IP
+    // so the request doesn't fail.
+    if (env.NODE_ENV === "development" || env.ARCJET_ENV === "development") {
+      // TODO: Log that the fingerprint is being overridden once the adapter
+      // constructs the logger
+      ip = "127.0.0.1";
+    }
+  }
 
   return {
     ...props,
