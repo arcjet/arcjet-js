@@ -12,5 +12,5 @@
     "OPENAI_API_KEY",
     "FLY_APP_NAME"
   ],
-  "pipeline": {}
+  "tasks": {}
 }
