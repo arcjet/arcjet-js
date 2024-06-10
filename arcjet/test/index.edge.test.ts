@@ -11,8 +11,11 @@ import arcjet, {
   ArcjetReason,
   ArcjetAllowDecision,
 } from "../index";
+import { Logger } from "@arcjet/logger";
 
 class ArcjetTestReason extends ArcjetReason {}
+
+const log = new Logger({ level: "info" });
 
 describe("Arcjet: Env = Edge runtime", () => {
   test("should create a new instance", async () => {
@@ -65,6 +68,7 @@ describe("Arcjet: Env = Edge runtime", () => {
         protectSignup(),
       ],
       client,
+      log,
     });
 
     const aj2 = aj.withRule(foobarbaz());

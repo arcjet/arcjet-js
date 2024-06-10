@@ -40,7 +40,6 @@ import {
 } from "@arcjet/protocol/proto.js";
 import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
-import { Logger, type LogLevel } from "@arcjet/logger";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 
@@ -193,60 +192,12 @@ export interface RemoteClient {
 }
 
 export type RemoteClientOptions = {
-  transport?: Transport;
-  baseUrl?: string;
-  timeout?: number;
-  sdkStack?: ArcjetStack;
-  sdkVersion?: string;
+  transport: Transport;
+  baseUrl: string;
+  timeout: number;
+  sdkStack: ArcjetStack;
+  sdkVersion: string;
 };
-
-const baseUrlAllowed = [
-  "https://decide.arcjet.com",
-  "https://decide.arcjettest.com",
-  "https://fly.decide.arcjet.com",
-  "https://fly.decide.arcjettest.com",
-  "https://decide.arcjet.orb.local:4082",
-];
-
-export function defaultBaseUrl() {
-  // TODO(#90): Remove this production conditional before 1.0.0
-  if (process.env["NODE_ENV"] === "production") {
-    // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
-    // use the hardcoded default.
-    if (
-      typeof process.env["ARCJET_BASE_URL"] === "string" &&
-      baseUrlAllowed.includes(process.env["ARCJET_BASE_URL"])
-    ) {
-      return process.env["ARCJET_BASE_URL"];
-    }
-
-    // If we're running on fly.io, use the Arcjet Decide Service hosted on fly
-    // Ref: https://fly.io/docs/machines/runtime-environment/#environment-variables
-    if (
-      typeof process.env["FLY_APP_NAME"] === "string" &&
-      process.env["FLY_APP_NAME"] !== ""
-    ) {
-      return "https://fly.decide.arcjet.com";
-    }
-
-    return "https://decide.arcjet.com";
-  } else {
-    if (process.env["ARCJET_BASE_URL"]) {
-      return process.env["ARCJET_BASE_URL"];
-    }
-
-    // If we're running on fly.io, use the Arcjet Decide Service hosted on fly
-    // Ref: https://fly.io/docs/machines/runtime-environment/#environment-variables
-    if (
-      typeof process.env["FLY_APP_NAME"] === "string" &&
-      process.env["FLY_APP_NAME"] !== ""
-    ) {
-      return "https://fly.decide.arcjet.com";
-    }
-
-    return "https://decide.arcjet.com";
-  }
-}
 
 const knownFields = [
   "ip",
@@ -293,28 +244,12 @@ function extraProps<Props extends PlainObject>(
   return Object.fromEntries(extra.entries());
 }
 
-export function createRemoteClient(
-  options?: RemoteClientOptions,
-): RemoteClient {
-  // TODO(#207): Remove this when we can default the transport
-  if (typeof options?.transport === "undefined") {
-    throw new Error("Transport must be defined");
-  }
+export function createRemoteClient(options: RemoteClientOptions): RemoteClient {
+  const { transport, sdkVersion, baseUrl, timeout } = options;
 
-  // The base URL for the Arcjet API. Will default to the standard production
-  // API unless environment variable `ARCJET_BASE_URL` is set.
-  // TODO(#207): This is unused until we can default the transport
-  const baseUrl = options?.baseUrl ?? defaultBaseUrl();
+  const sdkStack = ArcjetStackToProtocol(options.sdkStack);
 
-  // The timeout for the Arcjet API in milliseconds. This is set to a low value
-  // in production so calls fail open.
-  const timeout =
-    options?.timeout ?? (process.env["NODE_ENV"] === "production" ? 500 : 1000);
-
-  const sdkStack = ArcjetStackToProtocol(options?.sdkStack ?? "NODEJS");
-  const sdkVersion = "__ARCJET_SDK_VERSION__";
-
-  const client = createPromiseClient(DecideService, options.transport);
+  const client = createPromiseClient(DecideService, transport);
 
   return Object.freeze({
     async decide(
@@ -1059,20 +994,6 @@ export interface Arcjet<Props extends PlainObject> {
   ): Arcjet<Simplify<Props & ExtraProps<Rule>>>;
 }
 
-function getEnvLogLevel(): LogLevel {
-  const level = process.env["ARCJET_LOG_LEVEL"];
-  switch (level) {
-    case "debug":
-    case "info":
-    case "warn":
-    case "error":
-      return level;
-    default:
-      // Default to warn if not set
-      return "warn";
-  }
-}
-
 /**
  * Create a new Arcjet client with the specified {@link ArcjetOptions}.
  *
@@ -1082,23 +1003,23 @@ export default function arcjet<
   const Rules extends [...(Primitive | Product)[]] = [],
 >(options: ArcjetOptions<Rules>): Arcjet<Simplify<ExtraProps<Rules>>> {
   // We destructure here to make the function signature neat when viewed by consumers
-  const { key, rules, client } = options;
+  const { key, rules } = options;
 
   const rt = runtime();
-  const log = options.log
-    ? options.log
-    : new Logger({
-        level: getEnvLogLevel(),
-      });
+
+  // TODO: Separate the ArcjetOptions from the SDK Options
+  // It is currently optional in the options so users can override it via an SDK
+  if (typeof options.log === "undefined") {
+    throw new Error("Log is required");
+  }
+  const log = options.log;
 
   // TODO(#207): Remove this when we can default the transport so client is not required
   // It is currently optional in the options so the Next SDK can override it for the user
-  if (typeof client === "undefined") {
+  if (typeof options.client === "undefined") {
     throw new Error("Client is required");
   }
-  // This is reassigned to help TypeScript's type inference, as it loses the
-  // type narrowing of the above `if` statement when using from inside `protect`
-  const remoteClient = client;
+  const client = options.client;
 
   // A local cache of block decisions. Might be emphemeral per request,
   // depending on the way the runtime works, but it's worth a try.
@@ -1176,7 +1097,7 @@ export default function arcjet<
         results: [],
       });
 
-      remoteClient.report(
+      client.report(
         context,
         details,
         decision,
@@ -1225,7 +1146,7 @@ export default function arcjet<
         results,
       });
 
-      remoteClient.report(context, details, decision, rules);
+      client.report(context, details, decision, rules);
 
       log.debug(
         {
@@ -1299,7 +1220,7 @@ export default function arcjet<
         // Only a DENY decision is reported to avoid creating 2 entries for a
         // request. Upon ALLOW, the `decide` call will create an entry for the
         // request.
-        remoteClient.report(context, details, decision, rules);
+        client.report(context, details, decision, rules);
 
         // If we're not in DRY_RUN mode, we want to cache non-zero TTL results
         // and return this DENY decision.
@@ -1340,7 +1261,7 @@ export default function arcjet<
     // fail open.
     try {
       log.time?.("decideApi");
-      const decision = await remoteClient.decide(context, details, rules);
+      const decision = await client.decide(context, details, rules);
       log.timeEnd?.("decideApi");
 
       // If the decision is to block and we have a non-zero TTL, we cache the
@@ -1367,7 +1288,7 @@ export default function arcjet<
         results,
       });
 
-      remoteClient.report(context, details, decision, rules);
+      client.report(context, details, decision, rules);
 
       return decision;
     } finally {

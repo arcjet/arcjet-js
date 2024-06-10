@@ -16,12 +16,19 @@ import arcjet, {
   ExtraProps,
   RemoteClient,
   RemoteClientOptions,
-  defaultBaseUrl,
   createRemoteClient,
   Arcjet,
 } from "arcjet";
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
+import {
+  baseUrl,
+  isDevelopment,
+  isProduction,
+  logLevel,
+  platform,
+} from "@arcjet/env";
+import { Logger } from "@arcjet/logger";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -64,11 +71,15 @@ type PlainObject = {
 };
 
 export function createNextRemoteClient(
-  options?: RemoteClientOptions,
+  options?: Partial<RemoteClientOptions>,
 ): RemoteClient {
   // The base URL for the Arcjet API. Will default to the standard production
   // API unless environment variable `ARCJET_BASE_URL` is set.
-  const baseUrl = options?.baseUrl ?? defaultBaseUrl();
+  const url = options?.baseUrl ?? baseUrl(process.env);
+
+  // The timeout for the Arcjet API in milliseconds. This is set to a low value
+  // in production so calls fail open.
+  const timeout = options?.timeout ?? (isProduction(process.env) ? 500 : 1000);
 
   // Transport is the HTTP client that the client uses to make requests.
   // The Connect Node client doesn't work on edge runtimes: https://github.com/bufbuild/connect-es/pull/589
@@ -76,7 +87,7 @@ export function createNextRemoteClient(
   const transport =
     options?.transport ??
     createConnectTransport({
-      baseUrl,
+      baseUrl: url,
       interceptors: [
         /**
          * Ensures redirects are followed to properly support the Next.js/Vercel Edge
@@ -92,11 +103,17 @@ export function createNextRemoteClient(
       fetch,
     });
 
-  // TODO(#223): Do we want to allow overrides to either of these? If not, we should probably define a separate type for `options`
+  // TODO(#223): Create separate options type to exclude these
   const sdkStack = "NEXTJS";
   const sdkVersion = "__ARCJET_SDK_VERSION__";
 
-  return createRemoteClient({ ...options, transport, sdkStack, sdkVersion });
+  return createRemoteClient({
+    transport,
+    baseUrl: url,
+    timeout,
+    sdkStack,
+    sdkVersion,
+  });
 }
 
 // Interface of fields that the Arcjet Next.js SDK expects on `Request` objects.
@@ -193,15 +210,6 @@ export interface ArcjetNext<Props extends PlainObject> {
   ): ArcjetNext<Simplify<Props & ExtraProps<Rule>>>;
 }
 
-function detectPlatform() {
-  if (
-    typeof process.env["FLY_APP_NAME"] === "string" &&
-    process.env["FLY_APP_NAME"] !== ""
-  ) {
-    return "fly-io" as const;
-  }
-}
-
 function toArcjetRequest<Props extends PlainObject>(
   request: ArcjetNextRequest,
   props: Props,
@@ -209,14 +217,11 @@ function toArcjetRequest<Props extends PlainObject>(
   // We construct an ArcjetHeaders to normalize over Headers
   const headers = new ArcjetHeaders(request.headers);
 
-  let ip = findIP(request, headers, { platform: detectPlatform() });
+  let ip = findIP(request, headers, { platform: platform(process.env) });
   if (ip === "") {
     // If the `ip` is empty but we're in development mode, we default the IP
     // so the request doesn't fail.
-    if (
-      process.env["NODE_ENV"] === "development" ||
-      process.env["ARCJET_ENV"] === "development"
-    ) {
+    if (isDevelopment(process.env)) {
       // TODO: Log that the fingerprint is being overridden once the adapter
       // constructs the logger
       ip = "127.0.0.1";
@@ -334,7 +339,13 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
 ): ArcjetNext<Simplify<ExtraProps<Rules>>> {
   const client = options.client ?? createNextRemoteClient();
 
-  const aj = arcjet({ ...options, client });
+  const log = options.log
+    ? options.log
+    : new Logger({
+        level: logLevel(process.env),
+      });
+
+  const aj = arcjet({ ...options, client, log });
 
   return withClient(aj);
 }

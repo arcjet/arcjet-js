@@ -9,7 +9,6 @@ import core, {
   ExtraProps,
   RemoteClient,
   RemoteClientOptions,
-  defaultBaseUrl,
   createRemoteClient,
   Arcjet,
 } from "arcjet";
@@ -17,6 +16,14 @@ import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
 import type { Server } from "bun";
 import { env } from "bun";
+import {
+  baseUrl,
+  isDevelopment,
+  isProduction,
+  logLevel,
+  platform,
+} from "@arcjet/env";
+import { Logger } from "@arcjet/logger";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -59,25 +66,35 @@ type PlainObject = {
 };
 
 export function createBunRemoteClient(
-  options?: RemoteClientOptions,
+  options?: Partial<RemoteClientOptions>,
 ): RemoteClient {
   // The base URL for the Arcjet API. Will default to the standard production
   // API unless environment variable `ARCJET_BASE_URL` is set.
-  const baseUrl = options?.baseUrl ?? defaultBaseUrl();
+  const url = options?.baseUrl ?? baseUrl(env);
+
+  // The timeout for the Arcjet API in milliseconds. This is set to a low value
+  // in production so calls fail open.
+  const timeout = options?.timeout ?? (isProduction(env) ? 500 : 1000);
 
   // Transport is the HTTP client that the client uses to make requests.
   const transport =
     options?.transport ??
     createConnectTransport({
-      baseUrl,
+      baseUrl: url,
       httpVersion: "1.1",
     });
 
-  // TODO(#223): Do we want to allow overrides to either of these? If not, we should probably define a separate type for `options`
+  // TODO(#223): Create separate options type to exclude these
   const sdkStack = "BUN";
   const sdkVersion = "__ARCJET_SDK_VERSION__";
 
-  return createRemoteClient({ ...options, transport, sdkStack, sdkVersion });
+  return createRemoteClient({
+    transport,
+    baseUrl: url,
+    timeout,
+    sdkStack,
+    sdkVersion,
+  });
 }
 
 /**
@@ -131,12 +148,6 @@ export interface ArcjetBun<Props extends PlainObject> {
   ) => Response | Promise<Response>;
 }
 
-function detectPlatform() {
-  if (typeof env["FLY_APP_NAME"] === "string" && env["FLY_APP_NAME"] !== "") {
-    return "fly-io" as const;
-  }
-}
-
 // This is provided with an `ipCache` where it attempts to lookup the IP. This
 // is primarily a workaround to the API design in Bun that requires access to
 // the `Server` to lookup an IP.
@@ -156,12 +167,12 @@ function toArcjetRequest<Props extends PlainObject>(
       ip: ipCache.get(request),
     },
     headers,
-    { platform: detectPlatform() },
+    { platform: platform(env) },
   );
   if (ip === "") {
     // If the `ip` is empty but we're in development mode, we default the IP
     // so the request doesn't fail.
-    if (env.NODE_ENV === "development" || env.ARCJET_ENV === "development") {
+    if (isDevelopment(env)) {
       // TODO: Log that the fingerprint is being overridden once the adapter
       // constructs the logger
       ip = "127.0.0.1";
@@ -246,7 +257,13 @@ export default function arcjet<const Rules extends (Primitive | Product)[]>(
 ): ArcjetBun<Simplify<ExtraProps<Rules>>> {
   const client = options.client ?? createBunRemoteClient();
 
-  const aj = core({ ...options, client });
+  const log = options.log
+    ? options.log
+    : new Logger({
+        level: logLevel(env),
+      });
+
+  const aj = core({ ...options, client, log });
 
   return withClient(aj);
 }

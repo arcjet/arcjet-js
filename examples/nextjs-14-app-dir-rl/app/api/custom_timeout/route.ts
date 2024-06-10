@@ -1,12 +1,12 @@
 import arcjet, {
   validateEmail,
   createNextRemoteClient,
-  defaultBaseUrl,
 } from "@arcjet/next";
+import { baseUrl } from "@arcjet/env";
 import { NextResponse } from "next/server";
 
 const client = createNextRemoteClient({
-  baseUrl: defaultBaseUrl(),
+  baseUrl: baseUrl(process.env),
   timeout: 10,
 });
 
