@@ -18,6 +18,19 @@
 
 [Arcjet][arcjet] environment detection.
 
+Currently operates on an environment object with the type:
+
+```ts
+type Env = {
+  FLY_APP_NAME?: string;
+  NODE_ENV?: string;
+  ARCJET_KEY?: string;
+  ARCJET_ENV?: string;
+  ARCJET_LOG_LEVEL?: string;
+  ARCJET_BASE_URL?: string;
+};
+```
+
 ## Installation
 
 ```shell
@@ -27,7 +40,32 @@ npm install -S @arcjet/env
 ## Example
 
 ```ts
+import * as env from "@arcjet/env";
 
+env.platform({ FLY_APP_NAME: "foobar" }) === "fly-io";
+env.platform({}) === undefined;
+
+env.isProduction({ NODE_ENV: "production" }) === true;
+env.isProduction({ NODE_ENV: "development" }) === false;
+env.isProduction({ ARCJET_ENV: "production" }) === true;
+env.isProduction({ ARCJET_ENV: "development" }) === false;
+
+env.isDevelopment({ NODE_ENV: "production" }) === false;
+env.isDevelopment({ NODE_ENV: "development" }) === true;
+env.isDevelopment({ ARCJET_ENV: "production" }) === false;
+env.isDevelopment({ ARCJET_ENV: "development" }) === true;
+
+env.logLevel({ ARCJET_LOG_LEVEL: "debug" }) === "debug";
+env.logLevel({ ARCJET_LOG_LEVEL: "info" }) === "info";
+env.logLevel({ ARCJET_LOG_LEVEL: "warn" }) === "warn";
+env.logLevel({ ARCJET_LOG_LEVEL: "error" }) === "error";
+env.logLevel({ ARCJET_LOG_LEVEL: "" }) === "warn"; // default
+
+// Will use various environment variables to detect the proper base URL
+env.baseUrl(process.env);
+
+env.apiKey({ ARCJET_KEY: "ajkey_abc123" }) === "ajkey_abc123";
+env.apiKey({ ARCJET_KEY: "invalid" }) === undefined;
 ```
 
 ## License
