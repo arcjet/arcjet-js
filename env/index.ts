@@ -2,6 +2,7 @@ export type Env = {
   [key: string]: unknown;
   FLY_APP_NAME?: string;
   NODE_ENV?: string;
+  ARCJET_KEY?: string;
   ARCJET_ENV?: string;
   ARCJET_LOG_LEVEL?: string;
   ARCJET_BASE_URL?: string;
@@ -75,4 +76,9 @@ export function baseUrl(env: Env) {
 
     return "https://decide.arcjet.com";
   }
+}
+
+export function apiKey(env: Env) {
+  const key = env["ARCJET_KEY"];
+  return typeof key === "string" && key.startsWith("ajkey_");
 }
