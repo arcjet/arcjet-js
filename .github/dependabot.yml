@@ -25,45 +25,43 @@ updates:
 
   # Dependencies in our examples
 
-  # Bun isn't supported by Dependabot so any changes to a Bun example require us
-  # to run `bun install` within the Dependabot branch to update the lockfile.
+  # Bun isn't supported by Dependabot
   # Ref: https://github.com/dependabot/dependabot-core/issues/6528
-  - package-ecosystem: npm
-    directory: /examples/bun-hono-rl
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
+  # - package-ecosystem: npm
+  #   directory: /examples/bun-hono-rl
+  #   schedule:
+  #     # Our dependencies should be checked daily
+  #     interval: daily
+  #   assignees:
+  #     - blaine-arcjet
+  #   reviewers:
+  #     - blaine-arcjet
+  #   commit-message:
+  #     prefix: deps(example)
+  #     prefix-development: deps(example)
+  #   groups:
+  #     dependencies:
+  #       patterns:
+  #         - "*"
 
-  # Bun isn't supported by Dependabot so any changes to a Bun example require us
-  # to run `bun install` within the Dependabot branch to update the lockfile.
+  # Bun isn't supported by Dependabot
   # Ref: https://github.com/dependabot/dependabot-core/issues/6528
-  - package-ecosystem: npm
-    directory: /examples/bun-rl
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
+  # - package-ecosystem: npm
+  #   directory: /examples/bun-rl
+  #   schedule:
+  #     # Our dependencies should be checked daily
+  #     interval: daily
+  #   assignees:
+  #     - blaine-arcjet
+  #   reviewers:
+  #     - blaine-arcjet
+  #   commit-message:
+  #     prefix: deps(example)
+  #     prefix-development: deps(example)
+  #   groups:
+  #     dependencies:
+  #       patterns:
+  #         - "*"
 
   - package-ecosystem: "npm"
     directory: /examples/nextjs-14-app-dir-rl
