@@ -41,7 +41,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "1.9.0",
+    "@bufbuild/protobuf": "1.10.0",
     "@connectrpc/connect": "1.4.0",
     "typeid-js": "0.7.0"
   },
