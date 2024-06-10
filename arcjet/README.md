@@ -41,7 +41,8 @@ npm install -S arcjet
 
 ```ts
 import http from "http";
-import arcjet, { createRemoteClient, defaultBaseUrl } from "arcjet";
+import arcjet, { createRemoteClient } from "arcjet";
+import { baseUrl } from "@arcjet/env";
 import { createConnectTransport } from "@connectrpc/connect-node";
 
 const aj = arcjet({
@@ -52,7 +53,7 @@ const aj = arcjet({
   rules: [],
   client: createRemoteClient({
     transport: createConnectTransport({
-      baseUrl: defaultBaseUrl(),
+      baseUrl: baseUrl(process.env),
       httpVersion: "2",
     }),
   }),

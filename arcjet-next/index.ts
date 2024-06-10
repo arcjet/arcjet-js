@@ -71,7 +71,7 @@ type PlainObject = {
 };
 
 export function createNextRemoteClient(
-  options?: RemoteClientOptions,
+  options?: Partial<RemoteClientOptions>,
 ): RemoteClient {
   // The base URL for the Arcjet API. Will default to the standard production
   // API unless environment variable `ARCJET_BASE_URL` is set.
