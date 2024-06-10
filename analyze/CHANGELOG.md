@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...@arcjet/analyze-v1.0.0-alpha.14) (2024-06-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **analyze:** Leverage conditional exports to load Wasm appropriately ([#887](https://github.com/arcjet/arcjet-js/issues/887))
+* **logger:** Align logger with Pino API ([#858](https://github.com/arcjet/arcjet-js/issues/858))
+
+### 🚀 New Features
+
+* **logger:** Align logger with Pino API ([#858](https://github.com/arcjet/arcjet-js/issues/858)) ([1806b94](https://github.com/arcjet/arcjet-js/commit/1806b94d7f7d0a7fd052e3121892d4dc1fdb719b)), closes [#822](https://github.com/arcjet/arcjet-js/issues/822) [#855](https://github.com/arcjet/arcjet-js/issues/855)
+
+
+### 🪲 Bug Fixes
+
+* **analyze:** Disable cache during base64 decode ([#838](https://github.com/arcjet/arcjet-js/issues/838)) ([72fb961](https://github.com/arcjet/arcjet-js/commit/72fb9610aa2ead7bf26121bb793ec2086b8d4f70))
+
+
+### 📦 Dependencies
+
+* **dev:** Bump @rollup/wasm-node from 4.17.2 to 4.18.0 ([#803](https://github.com/arcjet/arcjet-js/issues/803)) ([e6321af](https://github.com/arcjet/arcjet-js/commit/e6321afbad7127442d78b9c760c0e4c1ef73a77c))
+
+
+### 📝 Documentation
+
+* Add quick start links & update Bun example ([#870](https://github.com/arcjet/arcjet-js/issues/870)) ([ee3079f](https://github.com/arcjet/arcjet-js/commit/ee3079f21484ed3b5cf67ae03a45cb9d07b3d911))
+* Remove wording that implies is Shield is added by default ([#796](https://github.com/arcjet/arcjet-js/issues/796)) ([a85d18c](https://github.com/arcjet/arcjet-js/commit/a85d18ca6f6da589cfad58d3167b1c8a4b1edc55))
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze:** Leverage conditional exports to load Wasm appropriately ([#887](https://github.com/arcjet/arcjet-js/issues/887)) ([d7a698f](https://github.com/arcjet/arcjet-js/commit/d7a698f136e93dc927c0cb9a9a8c48d15ed48f83))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+
 ## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/analyze-v1.0.0-alpha.13) (2024-05-20)
 
 

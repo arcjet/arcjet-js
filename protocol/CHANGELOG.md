@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...@arcjet/protocol-v1.0.0-alpha.14) (2024-06-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **logger:** Align logger with Pino API ([#858](https://github.com/arcjet/arcjet-js/issues/858))
+* Create runtime package and remove from SDK ([#871](https://github.com/arcjet/arcjet-js/issues/871))
+* Allow ArcjetContext extension via new argument to core `protect()` ([#841](https://github.com/arcjet/arcjet-js/issues/841))
+
+### 🚀 New Features
+
+* Allow ArcjetContext extension via new argument to core `protect()` ([#841](https://github.com/arcjet/arcjet-js/issues/841)) ([96bbe94](https://github.com/arcjet/arcjet-js/commit/96bbe941b2f1613bc870e8f6073db919c1f41a7e))
+* Create runtime package and remove from SDK ([#871](https://github.com/arcjet/arcjet-js/issues/871)) ([4e9e216](https://github.com/arcjet/arcjet-js/commit/4e9e2169e587ab010ff587a915ae8e1416c9b8f5))
+* **logger:** Align logger with Pino API ([#858](https://github.com/arcjet/arcjet-js/issues/858)) ([1806b94](https://github.com/arcjet/arcjet-js/commit/1806b94d7f7d0a7fd052e3121892d4dc1fdb719b)), closes [#822](https://github.com/arcjet/arcjet-js/issues/822) [#855](https://github.com/arcjet/arcjet-js/issues/855)
+
+
+### 📦 Dependencies
+
+* Bump @bufbuild/protobuf from 1.9.0 to 1.10.0 ([#847](https://github.com/arcjet/arcjet-js/issues/847)) ([de8266f](https://github.com/arcjet/arcjet-js/commit/de8266f53beb66d0e4770b82cb0c372715704993))
+* **dev:** Bump @rollup/wasm-node from 4.17.2 to 4.18.0 ([#803](https://github.com/arcjet/arcjet-js/issues/803)) ([e6321af](https://github.com/arcjet/arcjet-js/commit/e6321afbad7127442d78b9c760c0e4c1ef73a77c))
+
+
+### 📝 Documentation
+
+* Add quick start links & update Bun example ([#870](https://github.com/arcjet/arcjet-js/issues/870)) ([ee3079f](https://github.com/arcjet/arcjet-js/commit/ee3079f21484ed3b5cf67ae03a45cb9d07b3d911))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+
 ## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/protocol-v1.0.0-alpha.13) (2024-05-20)
 
 

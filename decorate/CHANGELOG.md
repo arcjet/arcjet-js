@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...@arcjet/decorate-v1.0.0-alpha.14) (2024-06-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **decorate:** Use console to log instead of Arcjet logger ([#865](https://github.com/arcjet/arcjet-js/issues/865))
+
+### 📦 Dependencies
+
+* **dev:** Bump @rollup/wasm-node from 4.17.2 to 4.18.0 ([#803](https://github.com/arcjet/arcjet-js/issues/803)) ([e6321af](https://github.com/arcjet/arcjet-js/commit/e6321afbad7127442d78b9c760c0e4c1ef73a77c))
+
+
+### 📝 Documentation
+
+* Add quick start links & update Bun example ([#870](https://github.com/arcjet/arcjet-js/issues/870)) ([ee3079f](https://github.com/arcjet/arcjet-js/commit/ee3079f21484ed3b5cf67ae03a45cb9d07b3d911))
+
+
+### 🧹 Miscellaneous Chores
+
+* **decorate:** Use console to log instead of Arcjet logger ([#865](https://github.com/arcjet/arcjet-js/issues/865)) ([39bfcfc](https://github.com/arcjet/arcjet-js/commit/39bfcfc1017c25a1ce283d0604b491432deb8e8d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+    * @arcjet/sprintf bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+
 ## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/decorate-v1.0.0-alpha.13) (2024-05-20)
 
 

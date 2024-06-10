@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...@arcjet/eslint-config-v1.0.0-alpha.14) (2024-06-10)
+
+
+### 📦 Dependencies
+
+* Bump @typescript-eslint/eslint-plugin from 7.12.0 to 7.13.0 ([#918](https://github.com/arcjet/arcjet-js/issues/918)) ([bbd72a5](https://github.com/arcjet/arcjet-js/commit/bbd72a5c007a40ee31ed72b9ff145d24bef4274c))
+* Bump @typescript-eslint/eslint-plugin from 7.9.0 to 7.12.0 ([#862](https://github.com/arcjet/arcjet-js/issues/862)) ([51330b7](https://github.com/arcjet/arcjet-js/commit/51330b77852e51704e2cffc9994115f24f4fae17))
+* Bump @typescript-eslint/parser from 7.12.0 to 7.13.0 ([#917](https://github.com/arcjet/arcjet-js/issues/917)) ([cfe0c14](https://github.com/arcjet/arcjet-js/commit/cfe0c147a209828be7555f4d3781213d3e8e0edb))
+* Bump @typescript-eslint/parser from 7.9.0 to 7.12.0 ([#861](https://github.com/arcjet/arcjet-js/issues/861)) ([eaf8c26](https://github.com/arcjet/arcjet-js/commit/eaf8c26c81bb202a9417c993f37e336b91b871b0))
+* Bump eslint-config-turbo from 1.13.3 to 2.0.3 ([#893](https://github.com/arcjet/arcjet-js/issues/893)) ([97525af](https://github.com/arcjet/arcjet-js/commit/97525af1ae3f9395e403113733419ab9fbdf5f12))
+
+
+### 📝 Documentation
+
+* Add quick start links & update Bun example ([#870](https://github.com/arcjet/arcjet-js/issues/870)) ([ee3079f](https://github.com/arcjet/arcjet-js/commit/ee3079f21484ed3b5cf67ae03a45cb9d07b3d911))
+
 ## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/eslint-config-v1.0.0-alpha.13) (2024-05-20)
 
 

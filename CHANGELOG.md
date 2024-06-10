@@ -1,5 +1,87 @@
 # Changelog
 
+## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...v1.0.0-alpha.14) (2024-06-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* Move all environment lookup into separate package ([#897](https://github.com/arcjet/arcjet-js/issues/897))
+* **ip:** Allow platform to be specified when looking up IP ([#896](https://github.com/arcjet/arcjet-js/issues/896))
+* Add fallback IP in each adapter ([#895](https://github.com/arcjet/arcjet-js/issues/895))
+* **analyze:** Leverage conditional exports to load Wasm appropriately ([#887](https://github.com/arcjet/arcjet-js/issues/887))
+* **logger:** Align logger with Pino API ([#858](https://github.com/arcjet/arcjet-js/issues/858))
+* Create runtime package and remove from SDK ([#871](https://github.com/arcjet/arcjet-js/issues/871))
+* **decorate:** Use console to log instead of Arcjet logger ([#865](https://github.com/arcjet/arcjet-js/issues/865))
+* **logger:** Replace nodejs util import with our sprintf library ([#857](https://github.com/arcjet/arcjet-js/issues/857))
+* Allow ArcjetContext extension via new argument to core `protect()` ([#841](https://github.com/arcjet/arcjet-js/issues/841))
+* Separate `@arcjet/headers` package from core ([#824](https://github.com/arcjet/arcjet-js/issues/824))
+* **ip:** Rework priority of IP detection ([#799](https://github.com/arcjet/arcjet-js/issues/799))
+
+### 🚀 New Features
+
+* Add fallback IP in each adapter ([#895](https://github.com/arcjet/arcjet-js/issues/895)) ([0f23cff](https://github.com/arcjet/arcjet-js/commit/0f23cff62214462504a21b84e00b258721e31ead)), closes [#51](https://github.com/arcjet/arcjet-js/issues/51) [#885](https://github.com/arcjet/arcjet-js/issues/885)
+* Allow ArcjetContext extension via new argument to core `protect()` ([#841](https://github.com/arcjet/arcjet-js/issues/841)) ([96bbe94](https://github.com/arcjet/arcjet-js/commit/96bbe941b2f1613bc870e8f6073db919c1f41a7e))
+* Create runtime package and remove from SDK ([#871](https://github.com/arcjet/arcjet-js/issues/871)) ([4e9e216](https://github.com/arcjet/arcjet-js/commit/4e9e2169e587ab010ff587a915ae8e1416c9b8f5))
+* Create sprintf package to replace util.format ([#856](https://github.com/arcjet/arcjet-js/issues/856)) ([160a16e](https://github.com/arcjet/arcjet-js/commit/160a16e94da1a2cd40ea7db0d339d68beed1c20d))
+* **ip:** Allow platform to be specified when looking up IP ([#896](https://github.com/arcjet/arcjet-js/issues/896)) ([c9f54bb](https://github.com/arcjet/arcjet-js/commit/c9f54bbe0561b13dbb2dbc6f58087a1b25218504))
+* **logger:** Align logger with Pino API ([#858](https://github.com/arcjet/arcjet-js/issues/858)) ([1806b94](https://github.com/arcjet/arcjet-js/commit/1806b94d7f7d0a7fd052e3121892d4dc1fdb719b)), closes [#822](https://github.com/arcjet/arcjet-js/issues/822) [#855](https://github.com/arcjet/arcjet-js/issues/855)
+* Move all environment lookup into separate package ([#897](https://github.com/arcjet/arcjet-js/issues/897)) ([a5bb8ca](https://github.com/arcjet/arcjet-js/commit/a5bb8ca6bad9d831b3f67f12b3ef87048ced25bb))
+* Separate `@arcjet/headers` package from core ([#824](https://github.com/arcjet/arcjet-js/issues/824)) ([c8364f4](https://github.com/arcjet/arcjet-js/commit/c8364f464b99b5b66749ea776e29c728257a2d74))
+
+
+### 🪲 Bug Fixes
+
+* **analyze:** Disable cache during base64 decode ([#838](https://github.com/arcjet/arcjet-js/issues/838)) ([72fb961](https://github.com/arcjet/arcjet-js/commit/72fb9610aa2ead7bf26121bb793ec2086b8d4f70))
+* **ip:** Rework priority of IP detection ([#799](https://github.com/arcjet/arcjet-js/issues/799)) ([1df6291](https://github.com/arcjet/arcjet-js/commit/1df62917c934feba4f3ce76054817058f5cfadd9))
+
+
+### 📦 Dependencies
+
+* Bump @bufbuild/protobuf from 1.9.0 to 1.10.0 ([#847](https://github.com/arcjet/arcjet-js/issues/847)) ([de8266f](https://github.com/arcjet/arcjet-js/commit/de8266f53beb66d0e4770b82cb0c372715704993))
+* Bump @rollup/plugin-replace from 5.0.5 to 5.0.7 ([#920](https://github.com/arcjet/arcjet-js/issues/920)) ([176170b](https://github.com/arcjet/arcjet-js/commit/176170b600790bb2198d49c30e16096de60553c5))
+* Bump @typescript-eslint/eslint-plugin from 7.12.0 to 7.13.0 ([#918](https://github.com/arcjet/arcjet-js/issues/918)) ([bbd72a5](https://github.com/arcjet/arcjet-js/commit/bbd72a5c007a40ee31ed72b9ff145d24bef4274c))
+* Bump @typescript-eslint/eslint-plugin from 7.9.0 to 7.12.0 ([#862](https://github.com/arcjet/arcjet-js/issues/862)) ([51330b7](https://github.com/arcjet/arcjet-js/commit/51330b77852e51704e2cffc9994115f24f4fae17))
+* Bump @typescript-eslint/parser from 7.12.0 to 7.13.0 ([#917](https://github.com/arcjet/arcjet-js/issues/917)) ([cfe0c14](https://github.com/arcjet/arcjet-js/commit/cfe0c147a209828be7555f4d3781213d3e8e0edb))
+* Bump @typescript-eslint/parser from 7.9.0 to 7.12.0 ([#861](https://github.com/arcjet/arcjet-js/issues/861)) ([eaf8c26](https://github.com/arcjet/arcjet-js/commit/eaf8c26c81bb202a9417c993f37e336b91b871b0))
+* Bump eslint-config-turbo from 1.13.3 to 2.0.3 ([#893](https://github.com/arcjet/arcjet-js/issues/893)) ([97525af](https://github.com/arcjet/arcjet-js/commit/97525af1ae3f9395e403113733419ab9fbdf5f12))
+* **dev:** Bump @rollup/wasm-node from 4.17.2 to 4.18.0 ([#803](https://github.com/arcjet/arcjet-js/issues/803)) ([e6321af](https://github.com/arcjet/arcjet-js/commit/e6321afbad7127442d78b9c760c0e4c1ef73a77c))
+* **dev:** Bump bun-types from 1.1.8 to 1.1.12 ([#853](https://github.com/arcjet/arcjet-js/issues/853)) ([a42fbd3](https://github.com/arcjet/arcjet-js/commit/a42fbd3c6c1e718343c579cbfd893f07a1859da3))
+* **example:** Bump @types/bun from 1.1.2 to 1.1.3 in /examples/bun-hono-rl in the dependencies group ([#804](https://github.com/arcjet/arcjet-js/issues/804)) ([ecada7f](https://github.com/arcjet/arcjet-js/commit/ecada7fd3ba29b90819d3dc1f9a7b4280dfb1f43))
+* **example:** Bump @types/bun from 1.1.2 to 1.1.3 in /examples/bun-rl in the dependencies group ([#800](https://github.com/arcjet/arcjet-js/issues/800)) ([de15757](https://github.com/arcjet/arcjet-js/commit/de157578743e9ef4f6860a1cd598420eccdf3db0))
+* **example:** Bump ai from 3.1.30 to 3.1.31 in /examples/nextjs-14-openai in the dependencies group ([#915](https://github.com/arcjet/arcjet-js/issues/915)) ([84510a8](https://github.com/arcjet/arcjet-js/commit/84510a827ed07ad7b378778a121fd6c4782dc1ae))
+* **example:** Bump lucide-react from 0.390.0 to 0.394.0 in /examples/nextjs-14-authjs-5 in the dependencies group ([#916](https://github.com/arcjet/arcjet-js/issues/916)) ([0414404](https://github.com/arcjet/arcjet-js/commit/04144047ba9894375202b17bb1db4feebb0cef43))
+* **example:** Bump the dependencies group across 1 directory with 12 updates ([#921](https://github.com/arcjet/arcjet-js/issues/921)) ([2e373c4](https://github.com/arcjet/arcjet-js/commit/2e373c458125075db9430e120969bbf330b9bdcd))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#872](https://github.com/arcjet/arcjet-js/issues/872)) ([2e8257d](https://github.com/arcjet/arcjet-js/commit/2e8257d9cde6a48bef3bb2bbe1373cc5e2af17d7))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#876](https://github.com/arcjet/arcjet-js/issues/876)) ([e35a61a](https://github.com/arcjet/arcjet-js/commit/e35a61a5303eb2bfbd8e35e03ed8a9aa72e4d29b))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#877](https://github.com/arcjet/arcjet-js/issues/877)) ([37b268f](https://github.com/arcjet/arcjet-js/commit/37b268f4d3192bc676cfc08596795a7bec4801e8))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#878](https://github.com/arcjet/arcjet-js/issues/878)) ([03e8f0a](https://github.com/arcjet/arcjet-js/commit/03e8f0a48b21eeaee10d8184a7e68432f2998aea))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#881](https://github.com/arcjet/arcjet-js/issues/881)) ([f37d892](https://github.com/arcjet/arcjet-js/commit/f37d892eed7245caf932327e2839b5ad02ff894e))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#883](https://github.com/arcjet/arcjet-js/issues/883)) ([22b4792](https://github.com/arcjet/arcjet-js/commit/22b47920fcead6c706f476d6d0858c7c5b1a072f))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#888](https://github.com/arcjet/arcjet-js/issues/888)) ([6d5b708](https://github.com/arcjet/arcjet-js/commit/6d5b708dae0cbe6c702124088b09270fefe4b35b))
+* **example:** Bump the dependencies group across 1 directory with 3 updates ([#875](https://github.com/arcjet/arcjet-js/issues/875)) ([a7b541e](https://github.com/arcjet/arcjet-js/commit/a7b541eed02b1b2cb7dc4e381763c0114a01c6a7))
+* **example:** Bump the dependencies group across 1 directory with 3 updates ([#882](https://github.com/arcjet/arcjet-js/issues/882)) ([1b38026](https://github.com/arcjet/arcjet-js/commit/1b3802631e8bd479758c4bcd2eb01c9f684baef6))
+* **example:** Bump the dependencies group across 1 directory with 4 updates ([#892](https://github.com/arcjet/arcjet-js/issues/892)) ([4dddd0c](https://github.com/arcjet/arcjet-js/commit/4dddd0c4d9261acda832b80f32d54adf1603cc43))
+* **example:** Bump the dependencies group across 1 directory with 4 updates ([#899](https://github.com/arcjet/arcjet-js/issues/899)) ([99886d1](https://github.com/arcjet/arcjet-js/commit/99886d1ac68dbe255254b2cd4cfb69cb9b9301ae))
+* **example:** Bump the dependencies group across 1 directory with 9 updates ([#889](https://github.com/arcjet/arcjet-js/issues/889)) ([a5f9db6](https://github.com/arcjet/arcjet-js/commit/a5f9db6a731c8e01b197c4a29be7c7ade69d2b1e))
+* **example:** Bump the dependencies group in /examples/nextjs-14-react-hook-form with 2 updates ([#919](https://github.com/arcjet/arcjet-js/issues/919)) ([391f3fc](https://github.com/arcjet/arcjet-js/commit/391f3fc253f5575fc4a010a0a628ab2dd2ee5c68))
+
+
+### 📝 Documentation
+
+* Add headers package to root readme ([#837](https://github.com/arcjet/arcjet-js/issues/837)) ([d1089ad](https://github.com/arcjet/arcjet-js/commit/d1089add5222eab3e968ad0c759d7a08a70ff6e0))
+* Add quick start links & update Bun example ([#870](https://github.com/arcjet/arcjet-js/issues/870)) ([ee3079f](https://github.com/arcjet/arcjet-js/commit/ee3079f21484ed3b5cf67ae03a45cb9d07b3d911))
+* Remove wording that implies is Shield is added by default ([#796](https://github.com/arcjet/arcjet-js/issues/796)) ([a85d18c](https://github.com/arcjet/arcjet-js/commit/a85d18ca6f6da589cfad58d3167b1c8a4b1edc55))
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze:** Leverage conditional exports to load Wasm appropriately ([#887](https://github.com/arcjet/arcjet-js/issues/887)) ([d7a698f](https://github.com/arcjet/arcjet-js/commit/d7a698f136e93dc927c0cb9a9a8c48d15ed48f83))
+* **ci:** Avoid dependabot for bun examples ([#914](https://github.com/arcjet/arcjet-js/issues/914)) ([09391f7](https://github.com/arcjet/arcjet-js/commit/09391f74de11aa92676fc0ad4385685b5050d992))
+* **decorate:** Use console to log instead of Arcjet logger ([#865](https://github.com/arcjet/arcjet-js/issues/865)) ([39bfcfc](https://github.com/arcjet/arcjet-js/commit/39bfcfc1017c25a1ce283d0604b491432deb8e8d))
+* **docs:** Add live example app to READMEs ([#823](https://github.com/arcjet/arcjet-js/issues/823)) ([8b1c811](https://github.com/arcjet/arcjet-js/commit/8b1c81188b0035cfde810917239ea584e6ce3b3d))
+* **logger:** Replace nodejs util import with our sprintf library ([#857](https://github.com/arcjet/arcjet-js/issues/857)) ([edd99a1](https://github.com/arcjet/arcjet-js/commit/edd99a11ca80a36115e9977b13039b4c3b0e761a))
+* **logger:** Update description to match implementation ([#907](https://github.com/arcjet/arcjet-js/issues/907)) ([0840358](https://github.com/arcjet/arcjet-js/commit/0840358a00d70ff573c7a9f14bdc38623fad0f0d))
+
 ## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...v1.0.0-alpha.13) (2024-05-20)
 
 
