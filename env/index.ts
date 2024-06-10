@@ -80,5 +80,7 @@ export function baseUrl(env: Env) {
 
 export function apiKey(env: Env) {
   const key = env["ARCJET_KEY"];
-  return typeof key === "string" && key.startsWith("ajkey_");
+  if (typeof key === "string" && key.startsWith("ajkey_")) {
+    return key;
+  }
 }
