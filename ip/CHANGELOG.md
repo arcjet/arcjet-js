@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...@arcjet/ip-v1.0.0-alpha.14) (2024-06-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ip:** Allow platform to be specified when looking up IP ([#896](https://github.com/arcjet/arcjet-js/issues/896))
+* Add fallback IP in each adapter ([#895](https://github.com/arcjet/arcjet-js/issues/895))
+* **ip:** Rework priority of IP detection ([#799](https://github.com/arcjet/arcjet-js/issues/799))
+
+### 🚀 New Features
+
+* Add fallback IP in each adapter ([#895](https://github.com/arcjet/arcjet-js/issues/895)) ([0f23cff](https://github.com/arcjet/arcjet-js/commit/0f23cff62214462504a21b84e00b258721e31ead)), closes [#51](https://github.com/arcjet/arcjet-js/issues/51) [#885](https://github.com/arcjet/arcjet-js/issues/885)
+* **ip:** Allow platform to be specified when looking up IP ([#896](https://github.com/arcjet/arcjet-js/issues/896)) ([c9f54bb](https://github.com/arcjet/arcjet-js/commit/c9f54bbe0561b13dbb2dbc6f58087a1b25218504))
+
+
+### 🪲 Bug Fixes
+
+* **ip:** Rework priority of IP detection ([#799](https://github.com/arcjet/arcjet-js/issues/799)) ([1df6291](https://github.com/arcjet/arcjet-js/commit/1df62917c934feba4f3ce76054817058f5cfadd9))
+
+
+### 📦 Dependencies
+
+* **dev:** Bump @rollup/wasm-node from 4.17.2 to 4.18.0 ([#803](https://github.com/arcjet/arcjet-js/issues/803)) ([e6321af](https://github.com/arcjet/arcjet-js/commit/e6321afbad7127442d78b9c760c0e4c1ef73a77c))
+
+
+### 📝 Documentation
+
+* Add quick start links & update Bun example ([#870](https://github.com/arcjet/arcjet-js/issues/870)) ([ee3079f](https://github.com/arcjet/arcjet-js/commit/ee3079f21484ed3b5cf67ae03a45cb9d07b3d911))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.13 to 1.0.0-alpha.14
+
 ## [1.0.0-alpha.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.12...@arcjet/ip-v1.0.0-alpha.13) (2024-05-20)
 
 
