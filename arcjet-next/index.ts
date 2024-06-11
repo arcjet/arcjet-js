@@ -14,9 +14,6 @@ import arcjet, {
   Product,
   ArcjetRequest,
   ExtraProps,
-  RemoteClient,
-  RemoteClientOptions,
-  createRemoteClient,
   Arcjet,
 } from "arcjet";
 import findIP from "@arcjet/ip";
@@ -29,6 +26,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
+import { createClient } from "@arcjet/protocol/client.js";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -70,9 +68,12 @@ type PlainObject = {
   [key: string]: unknown;
 };
 
-export function createNextRemoteClient(
-  options?: Partial<RemoteClientOptions>,
-): RemoteClient {
+export type RemoteClientOptions = {
+  baseUrl?: string;
+  timeout?: number;
+};
+
+export function createRemoteClient(options?: RemoteClientOptions) {
   // The base URL for the Arcjet API. Will default to the standard production
   // API unless environment variable `ARCJET_BASE_URL` is set.
   const url = options?.baseUrl ?? baseUrl(process.env);
@@ -84,30 +85,27 @@ export function createNextRemoteClient(
   // Transport is the HTTP client that the client uses to make requests.
   // The Connect Node client doesn't work on edge runtimes: https://github.com/bufbuild/connect-es/pull/589
   // so set the transport using connect-web. The interceptor is required for it work in the edge runtime.
-  const transport =
-    options?.transport ??
-    createConnectTransport({
-      baseUrl: url,
-      interceptors: [
-        /**
-         * Ensures redirects are followed to properly support the Next.js/Vercel Edge
-         * Runtime.
-         * @see
-         * https://github.com/connectrpc/connect-es/issues/749#issuecomment-1693507516
-         */
-        (next) => (req) => {
-          req.init.redirect = "follow";
-          return next(req);
-        },
-      ],
-      fetch,
-    });
+  const transport = createConnectTransport({
+    baseUrl: url,
+    interceptors: [
+      /**
+       * Ensures redirects are followed to properly support the Next.js/Vercel Edge
+       * Runtime.
+       * @see
+       * https://github.com/connectrpc/connect-es/issues/749#issuecomment-1693507516
+       */
+      (next) => (req) => {
+        req.init.redirect = "follow";
+        return next(req);
+      },
+    ],
+    fetch,
+  });
 
-  // TODO(#223): Create separate options type to exclude these
   const sdkStack = "NEXTJS";
   const sdkVersion = "__ARCJET_SDK_VERSION__";
 
-  return createRemoteClient({
+  return createClient({
     transport,
     baseUrl: url,
     timeout,
@@ -337,7 +335,7 @@ function withClient<const Rules extends (Primitive | Product)[]>(
 export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
   options: ArcjetOptions<Rules>,
 ): ArcjetNext<Simplify<ExtraProps<Rules>>> {
-  const client = options.client ?? createNextRemoteClient();
+  const client = options.client ?? createRemoteClient();
 
   const log = options.log
     ? options.log

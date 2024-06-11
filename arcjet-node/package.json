@@ -44,6 +44,7 @@
     "@arcjet/headers": "1.0.0-alpha.14",
     "@arcjet/ip": "1.0.0-alpha.14",
     "@arcjet/logger": "1.0.0-alpha.14",
+    "@arcjet/protocol": "1.0.0-alpha.14",
     "@connectrpc/connect-node": "1.4.0",
     "arcjet": "1.0.0-alpha.14"
   },

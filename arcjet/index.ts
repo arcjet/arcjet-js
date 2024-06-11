@@ -9,7 +9,6 @@ import {
   ArcjetMode,
   ArcjetReason,
   ArcjetRuleResult,
-  ArcjetStack,
   ArcjetDecision,
   ArcjetDenyDecision,
   ArcjetErrorDecision,
@@ -23,21 +22,8 @@ import {
   ArcjetShieldRule,
   ArcjetLogger,
 } from "@arcjet/protocol";
-import {
-  ArcjetBotTypeToProtocol,
-  ArcjetStackToProtocol,
-  ArcjetDecisionFromProtocol,
-  ArcjetDecisionToProtocol,
-  ArcjetRuleToProtocol,
-} from "@arcjet/protocol/convert.js";
-import {
-  createPromiseClient,
-  Transport,
-  DecideRequest,
-  DecideService,
-  ReportRequest,
-  Timestamp,
-} from "@arcjet/protocol/proto.js";
+import { ArcjetBotTypeToProtocol } from "@arcjet/protocol/convert.js";
+import { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
@@ -175,30 +161,6 @@ type LiteralCheck<
     : false;
 type IsStringLiteral<T> = LiteralCheck<T, string>;
 
-export interface RemoteClient {
-  decide(
-    context: ArcjetContext,
-    details: Partial<ArcjetRequestDetails>,
-    rules: ArcjetRule[],
-  ): Promise<ArcjetDecision>;
-  // Call the Arcjet Log Decision API with details of the request and decision
-  // made so we can log it.
-  report(
-    context: ArcjetContext,
-    request: Partial<ArcjetRequestDetails>,
-    decision: ArcjetDecision,
-    rules: ArcjetRule[],
-  ): void;
-}
-
-export type RemoteClientOptions = {
-  transport: Transport;
-  baseUrl: string;
-  timeout: number;
-  sdkStack: ArcjetStack;
-  sdkVersion: string;
-};
-
 const knownFields = [
   "ip",
   "method",
@@ -242,124 +204,6 @@ function extraProps<Props extends PlainObject>(
     }
   }
   return Object.fromEntries(extra.entries());
-}
-
-export function createRemoteClient(options: RemoteClientOptions): RemoteClient {
-  const { transport, sdkVersion, baseUrl, timeout } = options;
-
-  const sdkStack = ArcjetStackToProtocol(options.sdkStack);
-
-  const client = createPromiseClient(DecideService, transport);
-
-  return Object.freeze({
-    async decide(
-      context: ArcjetContext,
-      details: ArcjetRequestDetails,
-      rules: ArcjetRule[],
-    ): Promise<ArcjetDecision> {
-      const { log } = context;
-
-      // Build the request object from the Protobuf generated class.
-      const decideRequest = new DecideRequest({
-        sdkStack,
-        sdkVersion,
-        details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          headers: Object.fromEntries(details.headers.entries()),
-          cookies: details.cookies,
-          query: details.query,
-          // TODO(#208): Re-add body
-          // body: details.body,
-          extra: details.extra,
-          email: typeof details.email === "string" ? details.email : undefined,
-        },
-        rules: rules.map(ArcjetRuleToProtocol),
-      });
-
-      log.debug("Decide request to %s", baseUrl);
-
-      const response = await client.decide(decideRequest, {
-        headers: { Authorization: `Bearer ${context.key}` },
-        timeoutMs: timeout,
-      });
-
-      const decision = ArcjetDecisionFromProtocol(response.decision);
-
-      log.debug(
-        {
-          id: decision.id,
-          fingerprint: context.fingerprint,
-          path: details.path,
-          runtime: context.runtime,
-          ttl: decision.ttl,
-          conclusion: decision.conclusion,
-          reason: decision.reason,
-          ruleResults: decision.results,
-        },
-        "Decide response",
-      );
-
-      return decision;
-    },
-
-    report(
-      context: ArcjetContext,
-      details: ArcjetRequestDetails,
-      decision: ArcjetDecision,
-      rules: ArcjetRule[],
-    ): void {
-      const { log } = context;
-
-      // Build the request object from the Protobuf generated class.
-      const reportRequest = new ReportRequest({
-        sdkStack,
-        sdkVersion,
-        details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          headers: Object.fromEntries(details.headers.entries()),
-          // TODO(#208): Re-add body
-          // body: details.body,
-          extra: details.extra,
-          email: typeof details.email === "string" ? details.email : undefined,
-        },
-        decision: ArcjetDecisionToProtocol(decision),
-        rules: rules.map(ArcjetRuleToProtocol),
-        receivedAt: Timestamp.now(),
-      });
-
-      log.debug("Report request to %s", baseUrl);
-
-      // We use the promise API directly to avoid returning a promise from this function so execution can't be paused with `await`
-      client
-        .report(reportRequest, {
-          headers: { Authorization: `Bearer ${context.key}` },
-          timeoutMs: 2_000, // 2 seconds
-        })
-        .then((response) => {
-          log.debug(
-            {
-              id: response.decision?.id,
-              fingerprint: context.fingerprint,
-              path: details.path,
-              runtime: context.runtime,
-              ttl: decision.ttl,
-            },
-            "Report response",
-          );
-        })
-        .catch((err: unknown) => {
-          log.info("Encountered problem sending report: %s", errorMessage(err));
-        });
-    },
-  });
 }
 
 type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
@@ -957,7 +801,7 @@ export interface ArcjetOptions<Rules extends [...(Primitive | Product)[]]> {
    * The client used to make requests to the Arcjet API. This must be set
    * when creating the SDK, such as inside @arcjet/next or mocked in tests.
    */
-  client?: RemoteClient;
+  client?: Client;
   /**
    * The logger used to emit useful information from the SDK.
    */
