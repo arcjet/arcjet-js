@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, jest, test } from "@jest/globals";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test,
+} from "@jest/globals";
 import { createClient } from "../client.js";
 import { createRouterTransport } from "@connectrpc/connect";
 import { DecideService } from "../gen/es/decide/v1alpha1/decide_connect.js";
