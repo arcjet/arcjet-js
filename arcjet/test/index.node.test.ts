@@ -24,7 +24,6 @@ import {
   RuleResult,
   RuleState,
 } from "@arcjet/protocol/proto";
-import { Logger } from "@arcjet/logger";
 
 import arcjet, {
   ArcjetDecision,
@@ -164,7 +163,14 @@ class ArcjetInvalidDecision extends ArcjetDecision {
   }
 }
 
-const log = new Logger({ level: "info" });
+const log = {
+  time: jest.fn(),
+  timeEnd: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
 
 describe("createRemoteClient", () => {
   const defaultRemoteClientOptions = {
@@ -4123,8 +4129,6 @@ describe("SDK", () => {
       "extra-test": "extra-test-value",
     };
 
-    const errorLogSpy = jest.spyOn(log, "error");
-
     function testRuleLocalThrowString(): ArcjetLocalRule {
       return {
         mode: ArcjetMode.LIVE,
@@ -4146,8 +4150,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect({}, request);
 
-    expect(errorLogSpy).toHaveBeenCalledTimes(1);
-    expect(errorLogSpy).toHaveBeenCalledWith(
+    expect(log.error).toHaveBeenCalledTimes(1);
+    expect(log.error).toHaveBeenCalledWith(
       "Failure running rule: %s due to %s",
       "TEST_RULE_LOCAL_THROW_STRING",
       "Local rule protect failed",
@@ -4176,8 +4180,6 @@ describe("SDK", () => {
       "extra-test": "extra-test-value",
     };
 
-    const errorLogSpy = jest.spyOn(log, "error");
-
     function testRuleLocalThrowNull(): ArcjetLocalRule {
       return {
         mode: ArcjetMode.LIVE,
@@ -4199,8 +4201,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect({}, request);
 
-    expect(errorLogSpy).toHaveBeenCalledTimes(1);
-    expect(errorLogSpy).toHaveBeenCalledWith(
+    expect(log.error).toHaveBeenCalledTimes(1);
+    expect(log.error).toHaveBeenCalledWith(
       "Failure running rule: %s due to %s",
       "TEST_RULE_LOCAL_THROW_NULL",
       "Unknown problem",

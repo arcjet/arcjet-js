@@ -1,7 +1,14 @@
 /**
  * @jest-environment @edge-runtime/jest-environment
  */
-import { describe, expect, test, jest } from "@jest/globals";
+import {
+  describe,
+  expect,
+  test,
+  jest,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 
 import arcjet, {
   rateLimit,
@@ -11,11 +18,28 @@ import arcjet, {
   ArcjetReason,
   ArcjetAllowDecision,
 } from "../index";
-import { Logger } from "@arcjet/logger";
+
+beforeEach(() => {
+  jest.useFakeTimers();
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+  jest.clearAllTimers();
+  jest.clearAllMocks();
+  jest.restoreAllMocks();
+});
 
 class ArcjetTestReason extends ArcjetReason {}
 
-const log = new Logger({ level: "info" });
+const log = {
+  time: jest.fn(),
+  timeEnd: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
 
 describe("Arcjet: Env = Edge runtime", () => {
   test("should create a new instance", async () => {
