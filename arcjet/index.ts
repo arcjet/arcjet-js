@@ -1077,7 +1077,7 @@ export default function arcjet<
     log.debug("fingerprint (%s): %s", rt, fingerprint);
     log.timeEnd?.("fingerprint");
 
-    const context: ArcjetContext = { ...baseContext, fingerprint, runtime: rt };
+    const context: ArcjetContext = Object.freeze({ ...baseContext, fingerprint, runtime: rt });
 
     if (rules.length < 1) {
       // TODO(#607): Error if no rules configured after deprecation period
