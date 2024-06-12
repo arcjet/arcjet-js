@@ -20,7 +20,7 @@ This example shows how to use Arcjet to protect [SvelteKit](https://kit.svelte.d
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/svelte
+   cd examples/sveltekit
    npm ci
    ```
 

@@ -132,6 +132,8 @@ dist
 # Generated files
 index.js
 index.d.ts
+client.js
+client.d.ts
 convert.js
 convert.d.ts
 proto.js

@@ -6,9 +6,6 @@ import core, {
   Product,
   ArcjetRequest,
   ExtraProps,
-  RemoteClient,
-  RemoteClientOptions,
-  createRemoteClient,
   Arcjet,
 } from "arcjet";
 import findIP from "@arcjet/ip";
@@ -21,6 +18,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
+import { createClient } from "@arcjet/protocol/client.js";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -62,9 +60,12 @@ type PlainObject = {
   [key: string]: unknown;
 };
 
-export function createNodeRemoteClient(
-  options?: Partial<RemoteClientOptions>,
-): RemoteClient {
+export type RemoteClientOptions = {
+  baseUrl?: string;
+  timeout?: number;
+};
+
+export function createRemoteClient(options?: RemoteClientOptions) {
   // The base URL for the Arcjet API. Will default to the standard production
   // API unless environment variable `ARCJET_BASE_URL` is set.
   const url = options?.baseUrl ?? baseUrl(process.env);
@@ -74,18 +75,15 @@ export function createNodeRemoteClient(
   const timeout = options?.timeout ?? (isProduction(process.env) ? 500 : 1000);
 
   // Transport is the HTTP client that the client uses to make requests.
-  const transport =
-    options?.transport ??
-    createConnectTransport({
-      baseUrl: url,
-      httpVersion: "2",
-    });
+  const transport = createConnectTransport({
+    baseUrl: url,
+    httpVersion: "2",
+  });
 
-  // TODO(#223): Create separate options type to exclude these
   const sdkStack = "NODEJS";
   const sdkVersion = "__ARCJET_SDK_VERSION__";
 
-  return createRemoteClient({
+  return createClient({
     transport,
     baseUrl: url,
     timeout,
@@ -249,7 +247,7 @@ function withClient<const Rules extends (Primitive | Product)[]>(
 export default function arcjet<const Rules extends (Primitive | Product)[]>(
   options: ArcjetOptions<Rules>,
 ): ArcjetNode<Simplify<ExtraProps<Rules>>> {
-  const client = options.client ?? createNodeRemoteClient();
+  const client = options.client ?? createRemoteClient();
 
   const log = options.log
     ? options.log
