@@ -34,6 +34,14 @@ export function createConfig(root, { plugins = [] } = {}) {
     return peerDependencies.some((dep) => id.startsWith(dep));
   }
 
+  function isBunBuiltin(id) {
+    return id === "bun";
+  }
+
+  function isSvelteKitBuiltin(id) {
+    return id === "$env/dynamic/private";
+  }
+
   const rootDir = fileURLToPath(new URL(".", root));
   const testDir = fileURLToPath(new URL("test/", root));
 
@@ -76,7 +84,9 @@ export function createConfig(root, { plugins = [] } = {}) {
         isBuiltin(id) ||
         isDependency(id) ||
         isDevDependency(id) ||
-        isPeerDependency(id)
+        isPeerDependency(id) ||
+        isBunBuiltin(id) ||
+        isSvelteKitBuiltin(id)
       );
     },
     plugins: [
