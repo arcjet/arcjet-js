@@ -120,12 +120,15 @@
         "@arjcet/sveltekit",
         "@arjcet/decorate",
         "@arjcet/duration",
+        "@arjcet/env",
         "@arcjet/eslint-config",
         "@arcjet/headers",
         "@arcjet/ip",
         "@arcjet/logger",
         "@arcjet/protocol",
         "@arcjet/rollup-config",
+        "@arcjet/runtime",
+        "@arcjet/sprintf",
         "@arcjet/tsconfig"
       ]
     }
