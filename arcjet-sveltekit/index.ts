@@ -7,9 +7,6 @@ import core, {
   Product,
   ArcjetRequest,
   ExtraProps,
-  RemoteClient,
-  RemoteClientOptions,
-  createRemoteClient,
   Arcjet,
 } from "arcjet";
 import findIP from "@arcjet/ip";
@@ -24,6 +21,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
+import { createClient } from "@arcjet/protocol/client.js";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -93,9 +91,12 @@ function defaultTransport(baseUrl: string) {
   }
 }
 
-export function createSvelteKitRemoteClient(
-  options?: Partial<RemoteClientOptions>,
-): RemoteClient {
+export type RemoteClientOptions = {
+  baseUrl?: string;
+  timeout?: number;
+};
+
+export function createRemoteClient(options?: RemoteClientOptions) {
   // The base URL for the Arcjet API. Will default to the standard production
   // API unless environment variable `ARCJET_BASE_URL` is set.
   const url = options?.baseUrl ?? baseUrl(env);
@@ -105,13 +106,13 @@ export function createSvelteKitRemoteClient(
   const timeout = options?.timeout ?? (isProduction(env) ? 500 : 1000);
 
   // Transport is the HTTP client that the client uses to make requests.
-  const transport = options?.transport ?? defaultTransport(url);
+  const transport = defaultTransport(url);
 
   // TODO(#223): Create separate options type to exclude these
   const sdkStack = "SVELTEKIT";
   const sdkVersion = "__ARCJET_SDK_VERSION__";
 
-  return createRemoteClient({
+  return createClient({
     transport,
     baseUrl: url,
     timeout,
@@ -255,7 +256,7 @@ function withClient<const Rules extends (Primitive | Product)[]>(
 export default function arcjet<const Rules extends (Primitive | Product)[]>(
   options: ArcjetOptions<Rules>,
 ): ArcjetSvelteKit<Simplify<ExtraProps<Rules>>> {
-  const client = options.client ?? createSvelteKitRemoteClient();
+  const client = options.client ?? createRemoteClient();
 
   const log = options.log
     ? options.log
