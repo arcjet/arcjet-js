@@ -43,7 +43,6 @@
     "@arcjet/analyze": "1.0.0-alpha.14",
     "@arcjet/duration": "1.0.0-alpha.14",
     "@arcjet/headers": "1.0.0-alpha.14",
-    "@arcjet/logger": "1.0.0-alpha.14",
     "@arcjet/protocol": "1.0.0-alpha.14",
     "@arcjet/runtime": "1.0.0-alpha.14"
   },
