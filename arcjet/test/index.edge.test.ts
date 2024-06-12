@@ -11,7 +11,7 @@ import {
 } from "@jest/globals";
 
 import arcjet, {
-  rateLimit,
+  fixedWindow,
   tokenBucket,
   protectSignup,
   Primitive,
@@ -85,7 +85,7 @@ describe("Arcjet: Env = Edge runtime", () => {
             capacity: 1,
           },
         ),
-        rateLimit({
+        fixedWindow({
           max: 1,
           window: "60s",
         }),
