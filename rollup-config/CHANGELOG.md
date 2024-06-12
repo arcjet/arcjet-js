@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0-alpha.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.14...@arcjet/rollup-config-v1.0.0-alpha.15) (2024-06-12)
+
+
+### 🧹 Miscellaneous Chores
+
+* **rollup-config:** Allow more builtins to avoid warnings ([#933](https://github.com/arcjet/arcjet-js/issues/933)) ([2d6f4a0](https://github.com/arcjet/arcjet-js/commit/2d6f4a0c4bbab46eb79f96270abdc5a48dbc616b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+
 ## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...@arcjet/rollup-config-v1.0.0-alpha.14) (2024-06-10)
 
 

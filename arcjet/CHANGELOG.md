@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.0.0-alpha.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.14...arcjet-v1.0.0-alpha.15) (2024-06-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove rateLimit alias for fixedWindow rule ([#964](https://github.com/arcjet/arcjet-js/issues/964))
+* Remove logger dependency from core ([#929](https://github.com/arcjet/arcjet-js/issues/929))
+* Move client into protocol and rename builders in adapters ([#932](https://github.com/arcjet/arcjet-js/issues/932))
+* Freeze the ArcjetContext before using it ([#934](https://github.com/arcjet/arcjet-js/issues/934))
+
+### 🧹 Miscellaneous Chores
+
+* Freeze the ArcjetContext before using it ([#934](https://github.com/arcjet/arcjet-js/issues/934)) ([6720504](https://github.com/arcjet/arcjet-js/commit/672050415e4c73027be44238abbd9c7312519978))
+* Move client into protocol and rename builders in adapters ([#932](https://github.com/arcjet/arcjet-js/issues/932)) ([ea1c2b2](https://github.com/arcjet/arcjet-js/commit/ea1c2b25d146be10056cbc616180abeac75f9a01))
+* Remove logger dependency from core ([#929](https://github.com/arcjet/arcjet-js/issues/929)) ([8c15961](https://github.com/arcjet/arcjet-js/commit/8c15961dfbb7f193f93a5036b26f181fc2ae7ec7))
+* Remove rateLimit alias for fixedWindow rule ([#964](https://github.com/arcjet/arcjet-js/issues/964)) ([320d67c](https://github.com/arcjet/arcjet-js/commit/320d67c8c45ac381811615a10c86286057192291))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/duration bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/headers bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/protocol bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/runtime bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+
 ## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...arcjet-v1.0.0-alpha.14) (2024-06-10)
 
 

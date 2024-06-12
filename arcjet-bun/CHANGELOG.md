@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.0.0-alpha.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.14...@arcjet/bun-v1.0.0-alpha.15) (2024-06-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* Move client into protocol and rename builders in adapters ([#932](https://github.com/arcjet/arcjet-js/issues/932))
+
+### 📦 Dependencies
+
+* **dev:** Bump bun-types from 1.1.12 to 1.1.13 ([#947](https://github.com/arcjet/arcjet-js/issues/947)) ([bbf996d](https://github.com/arcjet/arcjet-js/commit/bbf996d6d2134fecee25eb218e9534b0550691fd))
+
+
+### 🧹 Miscellaneous Chores
+
+* Move client into protocol and rename builders in adapters ([#932](https://github.com/arcjet/arcjet-js/issues/932)) ([ea1c2b2](https://github.com/arcjet/arcjet-js/commit/ea1c2b25d146be10056cbc616180abeac75f9a01))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/headers bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/ip bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/logger bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/protocol bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * arcjet bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+
 ## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...@arcjet/bun-v1.0.0-alpha.14) (2024-06-10)
 
 
