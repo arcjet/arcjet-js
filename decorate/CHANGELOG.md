@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0-alpha.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.14...@arcjet/decorate-v1.0.0-alpha.15) (2024-06-12)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/decorate:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/sprintf bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.14 to 1.0.0-alpha.15
+
 ## [1.0.0-alpha.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.13...@arcjet/decorate-v1.0.0-alpha.14) (2024-06-10)
 
 
