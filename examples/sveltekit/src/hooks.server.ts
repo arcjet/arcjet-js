@@ -12,7 +12,7 @@ export async function handle({
   // Ignore routes that extend the Arcjet rules - they will call `.protect` themselves
   const filteredRoutes = ["/api/rate-limited", "/rate-limited"];
   if (filteredRoutes.includes(event.url.pathname)) {
-    // return - route will handle protecttion
+    // return - route will handle protection
     return resolve(event);
   }
 
