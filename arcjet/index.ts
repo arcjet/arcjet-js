@@ -472,19 +472,6 @@ export function fixedWindow<
   return rules;
 }
 
-// This is currently kept for backwards compatibility but should be removed in
-// favor of the fixedWindow primitive.
-export function rateLimit<const Characteristics extends readonly string[] = []>(
-  options?: FixedWindowRateLimitOptions<Characteristics>,
-  ...additionalOptions: FixedWindowRateLimitOptions<Characteristics>[]
-): Primitive<
-  Simplify<UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>>
-> {
-  // TODO(#195): We should also have a local rate limit using an in-memory data
-  // structure if the environment supports it
-  return fixedWindow(options, ...additionalOptions);
-}
-
 export function slidingWindow<
   const Characteristics extends readonly string[] = [],
 >(
