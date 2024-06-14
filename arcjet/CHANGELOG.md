@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-alpha.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.15...arcjet-v1.0.0-alpha.16) (2024-06-14)
+
+
+### 🪲 Bug Fixes
+
+* Ensure withRule always contains previous rules in the same chain ([#981](https://github.com/arcjet/arcjet-js/issues/981)) ([2ee6581](https://github.com/arcjet/arcjet-js/commit/2ee658188c8b423988c8e549f219c545103412d0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/duration bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/headers bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/protocol bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/runtime bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+
 ## [1.0.0-alpha.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.14...arcjet-v1.0.0-alpha.15) (2024-06-12)
 
 

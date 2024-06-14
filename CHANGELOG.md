@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-alpha.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.15...v1.0.0-alpha.16) (2024-06-14)
+
+
+### 🪲 Bug Fixes
+
+* Ensure withRule always contains previous rules in the same chain ([#981](https://github.com/arcjet/arcjet-js/issues/981)) ([2ee6581](https://github.com/arcjet/arcjet-js/commit/2ee658188c8b423988c8e549f219c545103412d0))
+
+
+### 📦 Dependencies
+
+* **example:** Bump @arcjet/next from 1.0.0-alpha.14 to 1.0.0-alpha.15 in /examples/nextjs-14-react-hook-form in the dependencies group ([#967](https://github.com/arcjet/arcjet-js/issues/967)) ([bba6546](https://github.com/arcjet/arcjet-js/commit/bba654610a71902875dd529db0f53899f5573c04))
+* **example:** Bump ai from 3.1.33 to 3.1.35 in /examples/nextjs-14-openai in the dependencies group ([#975](https://github.com/arcjet/arcjet-js/issues/975)) ([d9f7fcf](https://github.com/arcjet/arcjet-js/commit/d9f7fcfa6a957c37f916289fdb68c68e73bf1315))
+* **example:** Bump lucide-react from 0.394.0 to 0.395.0 in /examples/nextjs-14-authjs-5 in the dependencies group ([#978](https://github.com/arcjet/arcjet-js/issues/978)) ([3fee58d](https://github.com/arcjet/arcjet-js/commit/3fee58dcd2c35bfbedd16012212d4221c00cf2a1))
+* **example:** Bump lucide-react from 0.394.0 to 0.395.0 in /examples/nextjs-14-react-hook-form in the dependencies group ([#979](https://github.com/arcjet/arcjet-js/issues/979)) ([8ee8c3c](https://github.com/arcjet/arcjet-js/commit/8ee8c3c4ae7e210d385b9e5a463cb94c2ecc87c0))
+* **example:** Bump the dependencies group across 1 directory with 4 updates ([#980](https://github.com/arcjet/arcjet-js/issues/980)) ([cd4621e](https://github.com/arcjet/arcjet-js/commit/cd4621ebee759e4c46bd83f4ac75c3a754c8b03b))
+* **example:** Bump the dependencies group in /examples/nextjs-14-openai with 2 updates ([#968](https://github.com/arcjet/arcjet-js/issues/968)) ([f563848](https://github.com/arcjet/arcjet-js/commit/f56384885d88abe93e3576ec1eebd74f6ef2705a))
+* **example:** Bump the dependencies group in /examples/nodejs-hono-rl with 2 updates ([#974](https://github.com/arcjet/arcjet-js/issues/974)) ([a6ee6af](https://github.com/arcjet/arcjet-js/commit/a6ee6af593772da726609e7a54f356413e0c89fd))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps:** Upgrade Trunk ([#976](https://github.com/arcjet/arcjet-js/issues/976)) ([e1e867e](https://github.com/arcjet/arcjet-js/commit/e1e867e92c6b4d173135849f9740a8760214b576))
+* **examples:** Add ARCJET_ENV to Bun and SvelteKit env files ([#970](https://github.com/arcjet/arcjet-js/issues/970)) ([8a20d30](https://github.com/arcjet/arcjet-js/commit/8a20d305b5460d3744dceb4bd2e1f605ab188a8f))
+* Update logo in examples ([#977](https://github.com/arcjet/arcjet-js/issues/977)) ([4d394a8](https://github.com/arcjet/arcjet-js/commit/4d394a83edc5b382fa48b59dfa1b3b93efa16dab))
+
 ## [1.0.0-alpha.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.14...v1.0.0-alpha.15) (2024-06-12)
 
 

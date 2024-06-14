@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-alpha.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.15...@arcjet/bun-v1.0.0-alpha.16) (2024-06-14)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/bun:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/headers bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/ip bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/logger bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/protocol bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * arcjet bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+
 ## [1.0.0-alpha.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.14...@arcjet/bun-v1.0.0-alpha.15) (2024-06-12)
 
 
