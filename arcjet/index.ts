@@ -1132,14 +1132,17 @@ export default function arcjet<
   }
 
   // This is a separate function so it can be called recursively
-  function withRule<Rule extends Primitive | Product>(rule: Rule) {
-    const rules = [...rootRules, ...rule].sort(
+  function withRule<Rule extends Primitive | Product>(
+    baseRules: ArcjetRule[],
+    rule: Rule,
+  ) {
+    const rules = [...baseRules, ...rule].sort(
       (a, b) => a.priority - b.priority,
     );
 
     return Object.freeze({
       withRule(rule: Primitive | Product) {
-        return withRule(rule);
+        return withRule(rules, rule);
       },
       async protect(
         ctx: ArcjetAdapterContext,
@@ -1152,7 +1155,7 @@ export default function arcjet<
 
   return Object.freeze({
     withRule(rule: Primitive | Product) {
-      return withRule(rule);
+      return withRule(rootRules, rule);
     },
     async protect(
       ctx: ArcjetAdapterContext,
