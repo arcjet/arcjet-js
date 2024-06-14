@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.15...@arcjet/env-v1.0.0-alpha.16) (2024-06-14)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/env:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.15 to 1.0.0-alpha.16
+
 ## [1.0.0-alpha.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.14...@arcjet/env-v1.0.0-alpha.15) (2024-06-12)
 
 
