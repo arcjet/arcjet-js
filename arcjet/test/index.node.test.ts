@@ -1973,28 +1973,49 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
+    const key = "test-key";
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: { "User-Agent": "curl/8.1.2" },
+      "extra-test": "extra-test-value",
+      userId: "abc123",
+      requested: 1,
+    };
+
     const aj = arcjet({
-      key: "test-key",
+      key,
       rules: [],
       client,
       log,
     });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
-    const aj2 = aj.withRule(
-      tokenBucket({
-        characteristics: ["userId"],
-        refillRate: 60,
-        interval: 60,
-        capacity: 120,
-      }),
-    );
+    const tokenBucketRule = tokenBucket({
+      characteristics: ["userId"],
+      refillRate: 60,
+      interval: 60,
+      capacity: 120,
+    });
+
+    const aj2 = aj.withRule(tokenBucketRule);
     type WithRuleTest = Assert<
       SDKProps<
         typeof aj2,
         { requested: number; userId: string | number | boolean }
       >
     >;
+
+    const _ = await aj2.protect({}, request);
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [...tokenBucketRule],
+    );
   });
 
   test("can chain new rules via multiple `withRule` calls", async () => {
@@ -2009,22 +2030,36 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
+    const key = "test-key";
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: { "User-Agent": "curl/8.1.2" },
+      "extra-test": "extra-test-value",
+      userId: "abc123",
+      requested: 1,
+      abc: 123,
+    };
+
     const aj = arcjet({
-      key: "test-key",
+      key,
       rules: [],
       client,
       log,
     });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
-    const aj2 = aj.withRule(
-      tokenBucket({
-        characteristics: ["userId"],
-        refillRate: 60,
-        interval: 60,
-        capacity: 120,
-      }),
-    );
+    const tokenBucketRule = tokenBucket({
+      characteristics: ["userId"],
+      refillRate: 60,
+      interval: 60,
+      capacity: 120,
+    });
+
+    const aj2 = aj.withRule(tokenBucketRule);
     type WithRuleTestOne = Assert<
       SDKProps<
         typeof aj2,
@@ -2032,13 +2067,23 @@ describe("SDK", () => {
       >
     >;
 
-    const aj3 = aj2.withRule(testRuleProps());
+    const testRule = testRuleProps();
+
+    const aj3 = aj2.withRule(testRule);
     type WithRuleTestTwo = Assert<
       SDKProps<
         typeof aj3,
         { requested: number; userId: string | number | boolean; abc: number }
       >
     >;
+
+    const _ = await aj3.protect({}, request);
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [...tokenBucketRule, ...testRule],
+    );
   });
 
   test("creates different augmented clients when `withRule` not chained", async () => {
@@ -2053,22 +2098,36 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
+    const key = "test-key";
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: { "User-Agent": "curl/8.1.2" },
+      "extra-test": "extra-test-value",
+      userId: "abc123",
+      requested: 1,
+      abc: 123,
+    };
+
     const aj = arcjet({
-      key: "test-key",
+      key,
       rules: [],
       client,
       log,
     });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
-    const aj2 = aj.withRule(
-      tokenBucket({
-        characteristics: ["userId"],
-        refillRate: 60,
-        interval: 60,
-        capacity: 120,
-      }),
-    );
+    const tokenBucketRule = tokenBucket({
+      characteristics: ["userId"],
+      refillRate: 60,
+      interval: 60,
+      capacity: 120,
+    });
+
+    const aj2 = aj.withRule(tokenBucketRule);
     type WithRuleTestOne = Assert<
       SDKProps<
         typeof aj2,
@@ -2076,8 +2135,18 @@ describe("SDK", () => {
       >
     >;
 
-    const aj3 = aj.withRule(testRuleProps());
+    const testRule = testRuleProps();
+
+    const aj3 = aj.withRule(testRule);
     type WithRuleTestTwo = Assert<SDKProps<typeof aj3, { abc: number }>>;
+
+    const _ = await aj3.protect({}, request);
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [...testRule],
+    );
   });
 
   test("creates a new Arcjet SDK with only local rules", () => {
