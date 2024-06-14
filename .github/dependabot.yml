@@ -63,7 +63,7 @@ updates:
   #       patterns:
   #         - "*"
 
-  - package-ecosystem: "npm"
+  - package-ecosystem: npm
     directory: /examples/nextjs-14-app-dir-rl
     schedule:
       # Our dependencies should be checked daily
