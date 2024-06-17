@@ -13,11 +13,10 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "arcjet": "file:../../arcjet-sveltekit"
+    "@arcjet/sveltekit": "file:../../arcjet-sveltekit"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.2.2",
-    "@sveltejs/adapter-node": "^5.1.0",
     "@sveltejs/kit": "^2.5.11",
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
     "@types/eslint": "^8.56.0",
