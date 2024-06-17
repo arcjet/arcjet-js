@@ -12,7 +12,6 @@ import core, {
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
-import { env } from "$env/dynamic/private";
 import {
   baseUrl,
   isDevelopment,
@@ -99,11 +98,11 @@ export type RemoteClientOptions = {
 export function createRemoteClient(options?: RemoteClientOptions) {
   // The base URL for the Arcjet API. Will default to the standard production
   // API unless environment variable `ARCJET_BASE_URL` is set.
-  const url = options?.baseUrl ?? baseUrl(env);
+  const url = options?.baseUrl ?? baseUrl(process.env);
 
   // The timeout for the Arcjet API in milliseconds. This is set to a low value
   // in production so calls fail open.
-  const timeout = options?.timeout ?? (isProduction(env) ? 500 : 1000);
+  const timeout = options?.timeout ?? (isProduction(process.env) ? 500 : 1000);
 
   // Transport is the HTTP client that the client uses to make requests.
   const transport = defaultTransport(url);
@@ -189,12 +188,12 @@ function toArcjetRequest<Props extends PlainObject>(
       ip: event.getClientAddress(),
     },
     headers,
-    { platform: platform(env) },
+    { platform: platform(process.env) },
   );
   if (ip === "") {
     // If the `ip` is empty but we're in development mode, we default the IP
     // so the request doesn't fail.
-    if (isDevelopment(env)) {
+    if (isDevelopment(process.env)) {
       // TODO: Log that the fingerprint is being overridden once the adapter
       // constructs the logger
       ip = "127.0.0.1";
@@ -261,7 +260,7 @@ export default function arcjet<const Rules extends (Primitive | Product)[]>(
   const log = options.log
     ? options.log
     : new Logger({
-        level: logLevel(env),
+        level: logLevel(process.env),
       });
 
   const aj = core({ ...options, client, log });
