@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-alpha.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.16...@arcjet/eslint-config-v1.0.0-alpha.17) (2024-06-17)
+
+
+### 📦 Dependencies
+
+* Bump eslint-config-turbo from 2.0.3 to 2.0.4 ([#983](https://github.com/arcjet/arcjet-js/issues/983)) ([8383a31](https://github.com/arcjet/arcjet-js/commit/8383a31ff7188da653c879dcb3128b4cf2ab8e1d))
+
 ## [1.0.0-alpha.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.15...@arcjet/eslint-config-v1.0.0-alpha.16) (2024-06-14)
 
 

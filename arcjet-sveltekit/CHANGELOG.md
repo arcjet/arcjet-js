@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.16...@arcjet/sveltekit-v1.0.0-alpha.17) (2024-06-17)
+
+
+### 🪲 Bug Fixes
+
+* **sveltekit:** Load environment variables from process.env ([#989](https://github.com/arcjet/arcjet-js/issues/989)) ([375eaa9](https://github.com/arcjet/arcjet-js/commit/375eaa9d41e2aa3e8534cdc826429b3a3f8e6909)), closes [#982](https://github.com/arcjet/arcjet-js/issues/982)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+    * @arcjet/headers bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+    * @arcjet/ip bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+    * @arcjet/logger bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+    * @arcjet/protocol bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+    * @arcjet/runtime bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+    * arcjet bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.16 to 1.0.0-alpha.17
+
 ## [1.0.0-alpha.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.15...@arcjet/sveltekit-v1.0.0-alpha.16) (2024-06-14)
 
 
