@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.0-alpha.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.16...v1.0.0-alpha.17) (2024-06-17)
+
+
+### 🪲 Bug Fixes
+
+* **sveltekit:** Load environment variables from process.env ([#989](https://github.com/arcjet/arcjet-js/issues/989)) ([375eaa9](https://github.com/arcjet/arcjet-js/commit/375eaa9d41e2aa3e8534cdc826429b3a3f8e6909)), closes [#982](https://github.com/arcjet/arcjet-js/issues/982)
+
+
+### 📦 Dependencies
+
+* Bump eslint-config-turbo from 2.0.3 to 2.0.4 ([#983](https://github.com/arcjet/arcjet-js/issues/983)) ([8383a31](https://github.com/arcjet/arcjet-js/commit/8383a31ff7188da653c879dcb3128b4cf2ab8e1d))
+* **example:** Bump ai from 3.1.35 to 3.1.36 in /examples/nextjs-14-openai in the dependencies group ([#984](https://github.com/arcjet/arcjet-js/issues/984)) ([08d4b57](https://github.com/arcjet/arcjet-js/commit/08d4b576f31c5e439cec7e4bca1384244816ce89))
+* **example:** Bump the dependencies group across 1 directory with 5 updates ([#991](https://github.com/arcjet/arcjet-js/issues/991)) ([593833d](https://github.com/arcjet/arcjet-js/commit/593833dbab8f66a2e6d038d30f4c402424f2615e))
+* **example:** Bump the dependencies group in /examples/nextjs-14-react-hook-form with 2 updates ([#985](https://github.com/arcjet/arcjet-js/issues/985)) ([c259fb3](https://github.com/arcjet/arcjet-js/commit/c259fb3ccc1281f70f530b84747f0d31b97cd69d))
+
+
+### 🧹 Miscellaneous Chores
+
+* **examples:** Update .env file with ARCJET_ENV when NODE_ENV isn't set ([#988](https://github.com/arcjet/arcjet-js/issues/988)) ([6f7ca62](https://github.com/arcjet/arcjet-js/commit/6f7ca62d14b15acad25578676b010b8586d00f4a))
+
 ## [1.0.0-alpha.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.15...v1.0.0-alpha.16) (2024-06-14)
 
 
