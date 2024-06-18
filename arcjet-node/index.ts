@@ -210,8 +210,8 @@ export default function arcjet<const Rules extends (Primitive | Product)[]>(
       } catch {
         // If the parsing above fails, just set the path as whatever url we
         // received.
-        // TODO(#216): Add logging to arcjet-node
         path = request.url ?? "";
+        log.warn('Unable to parse URL. Using "%s" as `path`.', path);
       }
     } else {
       path = request.url ?? "";
