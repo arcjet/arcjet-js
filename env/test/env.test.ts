@@ -28,53 +28,51 @@ describe("env", () => {
 
   test("baseUrl", () => {
     // dev
-    expect(env.baseUrl({})).toEqual("https://decide.arcjet.com");
-    expect(env.baseUrl({ ARCJET_BASE_URL: "anything-in-dev" })).toEqual(
-      "anything-in-dev",
-    );
-    expect(env.baseUrl({ FLY_APP_NAME: "" })).toEqual(
-      "https://decide.arcjet.com",
-    );
-    expect(env.baseUrl({ FLY_APP_NAME: "foobar" })).toEqual(
-      "https://fly.decide.arcjet.com",
-    );
-    // prod
-    expect(env.baseUrl({ NODE_ENV: "production" })).toEqual(
+    expect(env.baseUrl({ NODE_ENV: "development" })).toEqual(
       "https://decide.arcjet.com",
     );
     expect(
       env.baseUrl({
-        NODE_ENV: "production",
+        NODE_ENV: "development",
+        ARCJET_BASE_URL: "anything-in-dev",
+      }),
+    ).toEqual("anything-in-dev");
+    expect(env.baseUrl({ NODE_ENV: "development", FLY_APP_NAME: "" })).toEqual(
+      "https://decide.arcjet.com",
+    );
+    expect(
+      env.baseUrl({ NODE_ENV: "development", FLY_APP_NAME: "foobar" }),
+    ).toEqual("https://fly.decide.arcjet.com");
+    // prod
+    expect(env.baseUrl({})).toEqual("https://decide.arcjet.com");
+    expect(
+      env.baseUrl({
         ARCJET_BASE_URL: "https://decide.arcjet.com",
       }),
     ).toEqual("https://decide.arcjet.com");
     expect(
       env.baseUrl({
-        NODE_ENV: "production",
         ARCJET_BASE_URL: "https://decide.arcjettest.com",
       }),
     ).toEqual("https://decide.arcjettest.com");
     expect(
       env.baseUrl({
-        NODE_ENV: "production",
         ARCJET_BASE_URL: "https://fly.decide.arcjet.com",
       }),
     ).toEqual("https://fly.decide.arcjet.com");
     expect(
       env.baseUrl({
-        NODE_ENV: "production",
         ARCJET_BASE_URL: "https://fly.decide.arcjettest.com",
       }),
     ).toEqual("https://fly.decide.arcjettest.com");
     expect(
       env.baseUrl({
-        NODE_ENV: "production",
         ARCJET_BASE_URL: "https://decide.arcjet.orb.local:4082",
       }),
     ).toEqual("https://decide.arcjet.orb.local:4082");
-    expect(
-      env.baseUrl({ NODE_ENV: "production", FLY_APP_NAME: "foobar" }),
-    ).toEqual("https://fly.decide.arcjet.com");
+    expect(env.baseUrl({ FLY_APP_NAME: "foobar" })).toEqual(
+      "https://fly.decide.arcjet.com",
+    );
   });
 
   test("apiKey", () => {
