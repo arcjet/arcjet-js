@@ -18,10 +18,6 @@ export function isDevelopment(env: Env) {
   return env.NODE_ENV === "development" || env.ARCJET_ENV === "development";
 }
 
-export function isProduction(env: Env) {
-  return env.NODE_ENV === "production" || env.ARCJET_ENV === "production";
-}
-
 export function logLevel(env: Env) {
   const level = env["ARCJET_LOG_LEVEL"];
   switch (level) {
@@ -45,14 +41,9 @@ const baseUrlAllowed = [
 ];
 
 export function baseUrl(env: Env) {
-  // TODO(#90): Remove this production conditional before 1.0.0
-  if (isProduction(env)) {
-    // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
-    // use the hardcoded default.
-    if (
-      typeof env["ARCJET_BASE_URL"] === "string" &&
-      baseUrlAllowed.includes(env["ARCJET_BASE_URL"])
-    ) {
+  // TODO(#90): Remove this conditional before 1.0.0
+  if (isDevelopment(env)) {
+    if (env["ARCJET_BASE_URL"]) {
       return env["ARCJET_BASE_URL"];
     }
 
@@ -64,7 +55,12 @@ export function baseUrl(env: Env) {
 
     return "https://decide.arcjet.com";
   } else {
-    if (env["ARCJET_BASE_URL"]) {
+    // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
+    // use the hardcoded default.
+    if (
+      typeof env["ARCJET_BASE_URL"] === "string" &&
+      baseUrlAllowed.includes(env["ARCJET_BASE_URL"])
+    ) {
       return env["ARCJET_BASE_URL"];
     }
 

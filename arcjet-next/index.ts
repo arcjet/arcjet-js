@@ -18,13 +18,7 @@ import arcjet, {
 } from "arcjet";
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
-import {
-  baseUrl,
-  isDevelopment,
-  isProduction,
-  logLevel,
-  platform,
-} from "@arcjet/env";
+import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 
@@ -80,7 +74,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
 
   // The timeout for the Arcjet API in milliseconds. This is set to a low value
   // in production so calls fail open.
-  const timeout = options?.timeout ?? (isProduction(process.env) ? 500 : 1000);
+  const timeout = options?.timeout ?? (isDevelopment(process.env) ? 1000 : 500);
 
   // Transport is the HTTP client that the client uses to make requests.
   // The Connect Node client doesn't work on edge runtimes: https://github.com/bufbuild/connect-es/pull/589

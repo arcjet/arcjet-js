@@ -16,14 +16,6 @@ describe("env", () => {
     expect(env.isDevelopment({ ARCJET_ENV: "development" })).toEqual(true);
   });
 
-  test("isProduction", () => {
-    expect(env.isProduction({})).toEqual(false);
-    expect(env.isProduction({ NODE_ENV: "production" })).toEqual(true);
-    expect(env.isProduction({ NODE_ENV: "development" })).toEqual(false);
-    expect(env.isProduction({ ARCJET_ENV: "production" })).toEqual(true);
-    expect(env.isProduction({ ARCJET_ENV: "development" })).toEqual(false);
-  });
-
   test("logLevel", () => {
     expect(env.logLevel({})).toEqual("warn");
     expect(env.logLevel({ ARCJET_LOG_LEVEL: "" })).toEqual("warn");
