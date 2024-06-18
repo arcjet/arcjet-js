@@ -101,7 +101,6 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   // Transport is the HTTP client that the client uses to make requests.
   const transport = defaultTransport(url);
 
-  // TODO(#223): Create separate options type to exclude these
   const sdkStack = "SVELTEKIT";
   const sdkVersion = "__ARCJET_SDK_VERSION__";
 
@@ -207,9 +206,12 @@ export default function arcjet<const Rules extends (Primitive | Product)[]>(
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
       if (isDevelopment(process.env)) {
-        // TODO: Log that the fingerprint is being overridden once the adapter
-        // constructs the logger
+        log.warn("Using 127.0.0.1 as IP address in development mode");
         ip = "127.0.0.1";
+      } else {
+        log.warn(
+          "Empty IP address in non-development mode. Did you mean to set ARCJET_ENV=development?",
+        );
       }
     }
     const method = event.request.method;

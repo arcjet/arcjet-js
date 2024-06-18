@@ -188,9 +188,12 @@ export default function arcjet<const Rules extends (Primitive | Product)[]>(
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
       if (isDevelopment(env)) {
-        // TODO: Log that the fingerprint is being overridden once the adapter
-        // constructs the logger
+        log.warn("Using 127.0.0.1 as IP address in development mode");
         ip = "127.0.0.1";
+      } else {
+        log.warn(
+          "Empty IP address in non-development mode. Did you mean to set ARCJET_ENV=development?",
+        );
       }
     }
 
