@@ -45,11 +45,6 @@ import * as env from "@arcjet/env";
 env.platform({ FLY_APP_NAME: "foobar" }) === "fly-io";
 env.platform({}) === undefined;
 
-env.isProduction({ NODE_ENV: "production" }) === true;
-env.isProduction({ NODE_ENV: "development" }) === false;
-env.isProduction({ ARCJET_ENV: "production" }) === true;
-env.isProduction({ ARCJET_ENV: "development" }) === false;
-
 env.isDevelopment({ NODE_ENV: "production" }) === false;
 env.isDevelopment({ NODE_ENV: "development" }) === true;
 env.isDevelopment({ ARCJET_ENV: "production" }) === false;
