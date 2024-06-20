@@ -136,6 +136,4 @@ client.js
 client.d.ts
 convert.js
 convert.d.ts
-proto.js
-proto.d.ts
 test/*.js
