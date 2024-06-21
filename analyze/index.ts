@@ -1,4 +1,4 @@
-import type { ArcjetLogger } from "@arcjet/protocol";
+import type { ArcjetLogger, ArcjetRequestDetails } from "@arcjet/protocol";
 
 import * as core from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
@@ -14,6 +14,7 @@ import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_js_req.compone
 
 interface AnalyzeContext {
   log: ArcjetLogger;
+  characteristics: string[];
 }
 
 // TODO: Do we actually need this wasmCache or does `import` cache correctly?
@@ -86,45 +87,18 @@ export {
 /**
  * Generate a fingerprint for the client. This is used to identify the client
  * across multiple requests.
- * @param ip - The IP address of the client.
+ * @param context - The Arcjet Analyze context.
+ * @param request - The request to fingerprint.
  * @returns A SHA-256 string fingerprint.
  */
 export async function generateFingerprint(
   context: AnalyzeContext,
-  ip: string,
+  request: Partial<ArcjetRequestDetails>,
 ): Promise<string> {
-  if (ip == "") {
-    return "";
-  }
-
   const analyze = await init(context);
 
   if (typeof analyze !== "undefined") {
-    return analyze.generateFingerprint(ip);
-  }
-
-  if (hasSubtleCryptoDigest()) {
-    // Fingerprint v1 is just the IP address
-    const fingerprintRaw = `fp_1_${ip}`;
-
-    // Based on MDN example at
-    // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest#converting_a_digest_to_a_hex_string
-
-    // Encode the raw fingerprint into a utf-8 Uint8Array
-    const fingerprintUint8 = new TextEncoder().encode(fingerprintRaw);
-    // Hash the message with SHA-256
-    const fingerprintArrayBuffer = await crypto.subtle.digest(
-      "SHA-256",
-      fingerprintUint8,
-    );
-    // Convert the ArrayBuffer to a byte array
-    const fingerprintArray = Array.from(new Uint8Array(fingerprintArrayBuffer));
-    // Convert the bytes to a hex string
-    const fingerprint = fingerprintArray
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-
-    return fingerprint;
+    return analyze.generateFingerprint(JSON.stringify(request), context.characteristics);
   }
 
   return "";
@@ -162,25 +136,4 @@ export async function detectBot(
       botScore: 0,
     };
   }
-}
-
-function hasSubtleCryptoDigest() {
-  if (typeof crypto === "undefined") {
-    return false;
-  }
-
-  if (!("subtle" in crypto)) {
-    return false;
-  }
-  if (typeof crypto.subtle === "undefined") {
-    return false;
-  }
-  if (!("digest" in crypto.subtle)) {
-    return false;
-  }
-  if (typeof crypto.subtle.digest !== "function") {
-    return false;
-  }
-
-  return true;
 }

@@ -689,6 +689,7 @@ export interface ArcjetRateLimitRule<Props extends {}>
   extends ArcjetRule<Props> {
   type: "RATE_LIMIT";
   algorithm: ArcjetRateLimitAlgorithm;
+  characteristics?: string[];
 }
 
 export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
@@ -696,7 +697,6 @@ export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
   algorithm: "TOKEN_BUCKET";
 
   match?: string;
-  characteristics?: string[];
   refillRate: number;
   interval: number;
   capacity: number;
@@ -707,7 +707,6 @@ export interface ArcjetFixedWindowRateLimitRule<Props extends {}>
   algorithm: "FIXED_WINDOW";
 
   match?: string;
-  characteristics?: string[];
   max: number;
   window: number;
 }
@@ -717,7 +716,6 @@ export interface ArcjetSlidingWindowRateLimitRule<Props extends {}>
   algorithm: "SLIDING_WINDOW";
 
   match?: string;
-  characteristics?: string[];
   max: number;
   interval: number;
 }
@@ -766,4 +764,5 @@ export type ArcjetContext = {
   fingerprint: string;
   runtime: string;
   log: ArcjetLogger;
+  characteristics: string[];
 };

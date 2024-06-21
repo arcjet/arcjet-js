@@ -118,6 +118,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -174,6 +175,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -231,6 +233,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -286,6 +289,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -342,6 +346,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -403,6 +408,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -447,6 +453,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -490,6 +497,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -533,6 +541,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -579,6 +588,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -631,6 +641,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -675,6 +686,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -744,6 +756,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -812,6 +825,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -887,6 +901,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -955,6 +970,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1019,6 +1035,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1109,6 +1126,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",

@@ -21,6 +21,7 @@ import {
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
   ArcjetLogger,
+  ArcjetRateLimitRule,
 } from "@arcjet/protocol";
 import { ArcjetBotTypeToProtocol } from "@arcjet/protocol/convert.js";
 import { Client } from "@arcjet/protocol/client.js";
@@ -28,6 +29,7 @@ import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
+import { RateLimitRule } from "@arcjet/protocol/gen/es/decide/v1alpha1/decide_pb";
 
 export * from "@arcjet/protocol";
 
@@ -129,36 +131,36 @@ type UnionToIntersection<Union> =
   // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
   (
     Union extends unknown
-      ? // The union type is used as the only argument to a function since the union
-        // of function arguments is an intersection.
-        (distributedUnion: Union) => void
-      : // This won't happen.
-        never
+    ? // The union type is used as the only argument to a function since the union
+    // of function arguments is an intersection.
+    (distributedUnion: Union) => void
+    : // This won't happen.
+    never
   ) extends // Infer the `Intersection` type since TypeScript represents the positional
   // arguments of unions of functions as an intersection of the union.
   (mergedIntersection: infer Intersection) => void
-    ? // The `& Union` is to allow indexing by the resulting type
-      Intersection & Union
-    : never;
+  ? // The `& Union` is to allow indexing by the resulting type
+  Intersection & Union
+  : never;
 type IsNever<T> = [T] extends [never] ? true : false;
 type LiteralCheck<
   T,
   LiteralType extends
-    | null
-    | undefined
-    | string
-    | number
-    | boolean
-    | symbol
-    | bigint,
+  | null
+  | undefined
+  | string
+  | number
+  | boolean
+  | symbol
+  | bigint,
 > =
   IsNever<T> extends false // Must be wider than `never`
-    ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
-      ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
-        ? false
-        : true
-      : false
-    : false;
+  ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
+  ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
+  ? false
+  : true
+  : false
+  : false;
 type IsStringLiteral<T> = LiteralCheck<T, string>;
 
 const knownFields = [
@@ -316,19 +318,19 @@ export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 // `as const` suffix to the characteristics array.
 type PropsForCharacteristic<T> =
   IsStringLiteral<T> extends true
-    ? T extends
-        | "ip.src"
-        | "http.host"
-        | "http.method"
-        | "http.request.uri.path"
-        | `http.request.headers["${string}"]`
-        | `http.request.cookie["${string}"]`
-        | `http.request.uri.args["${string}"]`
-      ? {}
-      : T extends string
-        ? Record<T, string | number | boolean>
-        : never
-    : {};
+  ? T extends
+  | "ip.src"
+  | "http.host"
+  | "http.method"
+  | "http.request.uri.path"
+  | `http.request.headers["${string}"]`
+  | `http.request.cookie["${string}"]`
+  | `http.request.uri.args["${string}"]`
+  ? {}
+  : T extends string
+  ? Record<T, string | number | boolean>
+  : never
+  : {};
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 // We theoretically support an arbitrary amount of rule flattening,
@@ -338,10 +340,10 @@ type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 export type ExtraProps<Rules> = Rules extends []
   ? {}
   : Rules extends ArcjetRule[][]
-    ? UnionToIntersection<PropsForRule<Rules[number][number]>>
-    : Rules extends ArcjetRule[]
-      ? UnionToIntersection<PropsForRule<Rules[number]>>
-      : never;
+  ? UnionToIntersection<PropsForRule<Rules[number][number]>>
+  : Rules extends ArcjetRule[]
+  ? UnionToIntersection<PropsForRule<Rules[number]>>
+  : never;
 
 /**
  * Additional context that can be provided by adapters.
@@ -736,8 +738,8 @@ export function shield(
 
 export type ProtectSignupOptions<Characteristics extends string[]> = {
   rateLimit?:
-    | SlidingWindowRateLimitOptions<Characteristics>
-    | SlidingWindowRateLimitOptions<Characteristics>[];
+  | SlidingWindowRateLimitOptions<Characteristics>
+  | SlidingWindowRateLimitOptions<Characteristics>[];
   bots?: BotOptions | BotOptions[];
   email?: EmailOptions | EmailOptions[];
 };
@@ -784,6 +786,10 @@ export interface ArcjetOptions<Rules extends [...(Primitive | Product)[]]> {
    * Rules to apply when protecting a request.
    */
   rules: readonly [...Rules];
+  /**
+   * Characteristics to be used to uniquely identify clients.
+   */
+  characteristics?: string[];
   /**
    * The client used to make requests to the Arcjet API. This must be set
    * when creating the SDK, such as inside @arcjet/next or mocked in tests.
@@ -890,21 +896,17 @@ export default function arcjet<
     log.time?.("local");
 
     log.time?.("fingerprint");
-    let ip = "";
-    if (typeof details.ip === "string") {
-      ip = details.ip;
-    }
-    if (details.ip === "") {
-      log.warn("generateFingerprint: ip is empty");
-    }
+
+    const characteristics = options.characteristics ? options.characteristics : [];
 
     const baseContext = {
       key,
       log,
+      characteristics,
       ...ctx,
     };
 
-    const fingerprint = await analyze.generateFingerprint(baseContext, ip);
+    const fingerprint = await analyze.generateFingerprint(baseContext, details);
     log.debug("fingerprint (%s): %s", rt, fingerprint);
     log.timeEnd?.("fingerprint");
 
@@ -945,14 +947,24 @@ export default function arcjet<
     }
 
     const results: ArcjetRuleResult[] = [];
-    // Default all rules to NOT_RUN/ALLOW before doing anything
     for (let idx = 0; idx < rules.length; idx++) {
+      // Default all rules to NOT_RUN/ALLOW before doing anything
       results[idx] = new ArcjetRuleResult({
         ttl: 0,
         state: "NOT_RUN",
         conclusion: "ALLOW",
         reason: new ArcjetReason(),
       });
+
+      // Add top-level characteristics to all Rate Limit rules that don't already have
+      // their own set of characteristics.
+      if (rules[idx].type === "RATE_LIMIT") {
+        const rate_limit_rule = rules[idx] as ArcjetRateLimitRule<Props>;
+        if (typeof rate_limit_rule.characteristics === 'undefined') {
+          rate_limit_rule.characteristics = characteristics;
+          rules[idx] = rate_limit_rule;
+        }
+      }
     }
 
     // We have our own local cache which we check first. This doesn't work in

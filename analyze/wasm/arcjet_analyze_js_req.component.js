@@ -163,15 +163,25 @@ async function instantiate(getCoreModule, imports, instantiateCore = WebAssembly
     return variant5.val;
   }
   
-  function generateFingerprint(arg0) {
+  function generateFingerprint(arg0, arg1) {
     var ptr0 = utf8Encode(arg0, realloc0, memory0);
     var len0 = utf8EncodedLen;
-    const ret = exports1['generate-fingerprint'](ptr0, len0);
-    var ptr1 = dataView(memory0).getInt32(ret + 0, true);
-    var len1 = dataView(memory0).getInt32(ret + 4, true);
-    var result1 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr1, len1));
+    var vec2 = arg1;
+    var len2 = vec2.length;
+    var result2 = realloc0(0, 0, 4, len2 * 8);
+    for (let i = 0; i < vec2.length; i++) {
+      const e = vec2[i];
+      const base = result2 + i * 8;var ptr1 = utf8Encode(e, realloc0, memory0);
+      var len1 = utf8EncodedLen;
+      dataView(memory0).setInt32(base + 4, len1, true);
+      dataView(memory0).setInt32(base + 0, ptr1, true);
+    }
+    const ret = exports1['generate-fingerprint'](ptr0, len0, result2, len2);
+    var ptr3 = dataView(memory0).getInt32(ret + 0, true);
+    var len3 = dataView(memory0).getInt32(ret + 4, true);
+    var result3 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr3, len3));
     postReturn1(ret);
-    return result1;
+    return result3;
   }
   
   function isValidEmail(arg0, arg1) {

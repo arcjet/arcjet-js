@@ -28,7 +28,7 @@ export interface ImportObject {
 }
 export interface Root {
   detectBot(headers: string, patternsAdd: string, patternsRemove: string): BotDetectionResult,
-  generateFingerprint(ip: string): string,
+  generateFingerprint(request: string, characteristics: string[]): string,
   isValidEmail(candidate: string, options: EmailValidationConfig | undefined): boolean,
 }
 
