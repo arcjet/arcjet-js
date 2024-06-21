@@ -64,8 +64,8 @@ import arcjet, {
 // SOFTWARE.
 type IsEqual<A, B> =
   (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2
-  ? true
-  : false;
+    ? true
+    : false;
 
 // Type testing utilities
 type Assert<T extends true> = T;
@@ -118,7 +118,7 @@ function assertIsLocalRule(rule: ArcjetRule): asserts rule is ArcjetLocalRule {
   expect("protect" in rule && typeof rule.protect === "function").toEqual(true);
 }
 
-class ArcjetTestReason extends ArcjetReason { }
+class ArcjetTestReason extends ArcjetReason {}
 
 const log = {
   time: jest.fn(),
@@ -3280,16 +3280,14 @@ describe("SDK", () => {
     const rateLimitRule = fixedWindow({
       mode: "LIVE",
       window: "1h",
-      max: 60
+      max: 60,
     });
 
     const globalCharacteristics = ["someAdditionalCharacteristic"];
     const aj = arcjet({
       key: "test-key",
       characteristics: globalCharacteristics,
-      rules: [
-        rateLimitRule,
-      ],
+      rules: [rateLimitRule],
       client,
       log,
     });
@@ -3309,10 +3307,12 @@ describe("SDK", () => {
     expect(client.decide).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      [{
-        characteristics: globalCharacteristics,
-        ...rateLimitRule[0]
-      }],
+      [
+        {
+          characteristics: globalCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
     );
   });
 
@@ -3339,9 +3339,7 @@ describe("SDK", () => {
     const aj = arcjet({
       key: "test-key",
       characteristics: ["someAdditionalCharacteristic"],
-      rules: [
-        rateLimitRule,
-      ],
+      rules: [rateLimitRule],
       client,
       log,
     });
@@ -3361,10 +3359,12 @@ describe("SDK", () => {
     expect(client.decide).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      [{
-        characteristics: fixedWindowCharacteristics,
-        ...rateLimitRule[0]
-      }],
+      [
+        {
+          characteristics: fixedWindowCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
     );
   });
 
@@ -3383,16 +3383,14 @@ describe("SDK", () => {
     const rateLimitRule = slidingWindow({
       mode: "LIVE",
       interval: "1h",
-      max: 60
+      max: 60,
     });
 
     const globalCharacteristics = ["someAdditionalCharacteristic"];
     const aj = arcjet({
       key: "test-key",
       characteristics: globalCharacteristics,
-      rules: [
-        rateLimitRule,
-      ],
+      rules: [rateLimitRule],
       client,
       log,
     });
@@ -3412,10 +3410,12 @@ describe("SDK", () => {
     expect(client.decide).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      [{
-        characteristics: globalCharacteristics,
-        ...rateLimitRule[0]
-      }],
+      [
+        {
+          characteristics: globalCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
     );
   });
 
@@ -3442,9 +3442,7 @@ describe("SDK", () => {
     const aj = arcjet({
       key: "test-key",
       characteristics: ["someAdditionalCharacteristic"],
-      rules: [
-        rateLimitRule,
-      ],
+      rules: [rateLimitRule],
       client,
       log,
     });
@@ -3464,10 +3462,12 @@ describe("SDK", () => {
     expect(client.decide).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      [{
-        characteristics: fixedWindowCharacteristics,
-        ...rateLimitRule[0]
-      }],
+      [
+        {
+          characteristics: fixedWindowCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
     );
   });
 
@@ -3494,9 +3494,7 @@ describe("SDK", () => {
     const aj = arcjet({
       key: "test-key",
       characteristics: globalCharacteristics,
-      rules: [
-        rateLimitRule,
-      ],
+      rules: [rateLimitRule],
       client,
       log,
     });
@@ -3517,10 +3515,12 @@ describe("SDK", () => {
     expect(client.decide).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      [{
-        characteristics: globalCharacteristics,
-        ...rateLimitRule[0]
-      }],
+      [
+        {
+          characteristics: globalCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
     );
   });
 
@@ -3548,9 +3548,7 @@ describe("SDK", () => {
     const aj = arcjet({
       key: "test-key",
       characteristics: ["someAdditionalCharacteristic"],
-      rules: [
-        rateLimitRule,
-      ],
+      rules: [rateLimitRule],
       client,
       log,
     });
@@ -3571,10 +3569,12 @@ describe("SDK", () => {
     expect(client.decide).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
-      [{
-        characteristics: fixedWindowCharacteristics,
-        ...rateLimitRule[0]
-      }],
+      [
+        {
+          characteristics: fixedWindowCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
     );
   });
 });

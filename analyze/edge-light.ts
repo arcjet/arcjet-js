@@ -85,7 +85,10 @@ export async function generateFingerprint(
   const analyze = await init(context);
 
   if (typeof analyze !== "undefined") {
-    return analyze.generateFingerprint(JSON.stringify(request), context.characteristics);
+    return analyze.generateFingerprint(
+      JSON.stringify(request),
+      context.characteristics,
+    );
   }
 
   return "";
