@@ -75,7 +75,6 @@ export {
  * across multiple requests.
  * @param context - The Arcjet Analyze context.
  * @param request - The request to fingerprint.
- * @param characteristics - The characteristics on which to fingerprint the request.
  * @returns A SHA-256 string fingerprint.
  */
 export async function generateFingerprint(
