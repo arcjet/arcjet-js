@@ -210,7 +210,7 @@ export default function arcjet<const Rules extends (Primitive | Product)[]>(
         ip = "127.0.0.1";
       } else {
         log.warn(
-          "Empty IP address in non-development mode. Did you mean to set ARCJET_ENV=development?",
+          `Client IP address is missing. If this is a dev environment set the ARCJET_ENV env var to "development"`,
         );
       }
     }
