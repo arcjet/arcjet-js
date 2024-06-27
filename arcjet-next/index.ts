@@ -7,7 +7,7 @@ import {
   NextResponse,
 } from "next/server.js";
 import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
-import arcjet, {
+import core, {
   ArcjetDecision,
   ArcjetOptions,
   Primitive,
@@ -202,122 +202,6 @@ export interface ArcjetNext<Props extends PlainObject> {
   ): ArcjetNext<Simplify<Props & ExtraProps<Rule>>>;
 }
 
-function toArcjetRequest<Props extends PlainObject>(
-  request: ArcjetNextRequest,
-  props: Props,
-): ArcjetRequest<Props> {
-  // We construct an ArcjetHeaders to normalize over Headers
-  const headers = new ArcjetHeaders(request.headers);
-
-  let ip = findIP(request, headers, { platform: platform(process.env) });
-  if (ip === "") {
-    // If the `ip` is empty but we're in development mode, we default the IP
-    // so the request doesn't fail.
-    if (isDevelopment(process.env)) {
-      // TODO: Log that the fingerprint is being overridden once the adapter
-      // constructs the logger
-      ip = "127.0.0.1";
-    }
-  }
-  const method = request.method ?? "";
-  const host = headers.get("host") ?? "";
-  let path = "";
-  let query = "";
-  let protocol = "";
-  // TODO(#36): nextUrl has formatting logic when you `toString` but
-  // we don't account for that here
-  if (typeof request.nextUrl !== "undefined") {
-    path = request.nextUrl.pathname ?? "";
-    if (typeof request.nextUrl.search !== "undefined") {
-      query = request.nextUrl.search;
-    }
-    if (typeof request.nextUrl.protocol !== "undefined") {
-      protocol = request.nextUrl.protocol;
-    }
-  } else {
-    if (typeof request.socket?.encrypted !== "undefined") {
-      protocol = request.socket.encrypted ? "https:" : "http:";
-    } else {
-      protocol = "http:";
-    }
-    // Do some very simple validation, but also try/catch around URL parsing
-    if (
-      typeof request.url !== "undefined" &&
-      request.url !== "" &&
-      host !== ""
-    ) {
-      try {
-        const url = new URL(request.url, `${protocol}//${host}`);
-        path = url.pathname;
-        query = url.search;
-        protocol = url.protocol;
-      } catch {
-        // If the parsing above fails, just set the path as whatever url we
-        // received.
-        // TODO(#216): Add logging to arcjet-next
-        path = request.url ?? "";
-      }
-    } else {
-      path = request.url ?? "";
-    }
-  }
-  const cookies = cookiesToString(request.cookies);
-
-  const extra: { [key: string]: string } = {};
-
-  // If we're running on Vercel, we can add some extra information
-  if (process.env["VERCEL"]) {
-    // Vercel ID https://vercel.com/docs/concepts/edge-network/headers
-    extra["vercel-id"] = headers.get("x-vercel-id") ?? "";
-    // Vercel deployment URL
-    // https://vercel.com/docs/concepts/edge-network/headers
-    extra["vercel-deployment-url"] =
-      headers.get("x-vercel-deployment-url") ?? "";
-    // Vercel git commit SHA
-    // https://vercel.com/docs/concepts/projects/environment-variables/system-environment-variables
-    extra["vercel-git-commit-sha"] = process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
-    extra["vercel-git-commit-sha"] = process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
-  }
-  return {
-    ...props,
-    ...extra,
-    ip,
-    method,
-    protocol,
-    host,
-    path,
-    headers,
-    cookies,
-    query,
-  };
-}
-
-function withClient<const Rules extends (Primitive | Product)[]>(
-  aj: Arcjet<ExtraProps<Rules>>,
-): ArcjetNext<ExtraProps<Rules>> {
-  return Object.freeze({
-    withRule(rule: Primitive | Product) {
-      const client = aj.withRule(rule);
-      return withClient(client);
-    },
-    async protect(
-      request: ArcjetNextRequest,
-      ...[props]: ExtraProps<Rules> extends WithoutCustomProps
-        ? []
-        : [ExtraProps<Rules>]
-    ): Promise<ArcjetDecision> {
-      // TODO(#220): The generic manipulations get really mad here, so we cast
-      // Further investigation makes it seem like it has something to do with
-      // the definition of `props` in the signature but it's hard to track down
-      const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-        ExtraProps<Rules>
-      >;
-
-      return aj.protect({}, req);
-    },
-  });
-}
-
 /**
  * Create a new {@link ArcjetNext} client. Always build your initial client
  * outside of a request handler so it persists across requests. If you need to
@@ -326,7 +210,7 @@ function withClient<const Rules extends (Primitive | Product)[]>(
  *
  * @param options - Arcjet configuration options to apply to all requests.
  */
-export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
+export default function arcjet<const Rules extends (Primitive | Product)[]>(
   options: ArcjetOptions<Rules>,
 ): ArcjetNext<Simplify<ExtraProps<Rules>>> {
   const client = options.client ?? createRemoteClient();
@@ -337,7 +221,128 @@ export default function arcjetNext<const Rules extends (Primitive | Product)[]>(
         level: logLevel(process.env),
       });
 
-  const aj = arcjet({ ...options, client, log });
+  function toArcjetRequest<Props extends PlainObject>(
+    request: ArcjetNextRequest,
+    props: Props,
+  ): ArcjetRequest<Props> {
+    // We construct an ArcjetHeaders to normalize over Headers
+    const headers = new ArcjetHeaders(request.headers);
+
+    let ip = findIP(request, headers, { platform: platform(process.env) });
+    if (ip === "") {
+      // If the `ip` is empty but we're in development mode, we default the IP
+      // so the request doesn't fail.
+      if (isDevelopment(process.env)) {
+        log.warn("Using 127.0.0.1 as IP address in development mode");
+        ip = "127.0.0.1";
+      } else {
+        log.warn(
+          `Client IP address is missing. If this is a dev environment set the ARCJET_ENV env var to "development"`,
+        );
+      }
+    }
+    const method = request.method ?? "";
+    const host = headers.get("host") ?? "";
+    let path = "";
+    let query = "";
+    let protocol = "";
+    // TODO(#36): nextUrl has formatting logic when you `toString` but
+    // we don't account for that here
+    if (typeof request.nextUrl !== "undefined") {
+      path = request.nextUrl.pathname ?? "";
+      if (typeof request.nextUrl.search !== "undefined") {
+        query = request.nextUrl.search;
+      }
+      if (typeof request.nextUrl.protocol !== "undefined") {
+        protocol = request.nextUrl.protocol;
+      }
+    } else {
+      if (typeof request.socket?.encrypted !== "undefined") {
+        protocol = request.socket.encrypted ? "https:" : "http:";
+      } else {
+        protocol = "http:";
+      }
+      // Do some very simple validation, but also try/catch around URL parsing
+      if (
+        typeof request.url !== "undefined" &&
+        request.url !== "" &&
+        host !== ""
+      ) {
+        try {
+          const url = new URL(request.url, `${protocol}//${host}`);
+          path = url.pathname;
+          query = url.search;
+          protocol = url.protocol;
+        } catch {
+          // If the parsing above fails, just set the path as whatever url we
+          // received.
+          path = request.url ?? "";
+          log.warn('Unable to parse URL. Using "%s" as `path`.', path);
+        }
+      } else {
+        path = request.url ?? "";
+      }
+    }
+    const cookies = cookiesToString(request.cookies);
+
+    const extra: { [key: string]: string } = {};
+
+    // If we're running on Vercel, we can add some extra information
+    if (process.env["VERCEL"]) {
+      // Vercel ID https://vercel.com/docs/concepts/edge-network/headers
+      extra["vercel-id"] = headers.get("x-vercel-id") ?? "";
+      // Vercel deployment URL
+      // https://vercel.com/docs/concepts/edge-network/headers
+      extra["vercel-deployment-url"] =
+        headers.get("x-vercel-deployment-url") ?? "";
+      // Vercel git commit SHA
+      // https://vercel.com/docs/concepts/projects/environment-variables/system-environment-variables
+      extra["vercel-git-commit-sha"] =
+        process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
+      extra["vercel-git-commit-sha"] =
+        process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
+    }
+    return {
+      ...props,
+      ...extra,
+      ip,
+      method,
+      protocol,
+      host,
+      path,
+      headers,
+      cookies,
+      query,
+    };
+  }
+
+  function withClient<const Rules extends (Primitive | Product)[]>(
+    aj: Arcjet<ExtraProps<Rules>>,
+  ): ArcjetNext<ExtraProps<Rules>> {
+    return Object.freeze({
+      withRule(rule: Primitive | Product) {
+        const client = aj.withRule(rule);
+        return withClient(client);
+      },
+      async protect(
+        request: ArcjetNextRequest,
+        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
+          ? []
+          : [ExtraProps<Rules>]
+      ): Promise<ArcjetDecision> {
+        // TODO(#220): The generic manipulations get really mad here, so we cast
+        // Further investigation makes it seem like it has something to do with
+        // the definition of `props` in the signature but it's hard to track down
+        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
+          ExtraProps<Rules>
+        >;
+
+        return aj.protect({}, req);
+      },
+    });
+  }
+
+  const aj = core({ ...options, client, log });
 
   return withClient(aj);
 }

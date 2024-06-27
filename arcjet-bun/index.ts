@@ -140,102 +140,6 @@ export interface ArcjetBun<Props extends PlainObject> {
   ) => Response | Promise<Response>;
 }
 
-// This is provided with an `ipCache` where it attempts to lookup the IP. This
-// is primarily a workaround to the API design in Bun that requires access to
-// the `Server` to lookup an IP.
-function toArcjetRequest<Props extends PlainObject>(
-  ipCache: WeakMap<Request, string>,
-  request: Request,
-  props: Props,
-): ArcjetRequest<Props> {
-  const cookies = request.headers.get("cookie") ?? undefined;
-
-  // We construct an ArcjetHeaders to normalize over Headers
-  const headers = new ArcjetHeaders(request.headers);
-
-  const url = new URL(request.url);
-  let ip = findIP(
-    {
-      ip: ipCache.get(request),
-    },
-    headers,
-    { platform: platform(env) },
-  );
-  if (ip === "") {
-    // If the `ip` is empty but we're in development mode, we default the IP
-    // so the request doesn't fail.
-    if (isDevelopment(env)) {
-      // TODO: Log that the fingerprint is being overridden once the adapter
-      // constructs the logger
-      ip = "127.0.0.1";
-    }
-  }
-
-  return {
-    ...props,
-    ip,
-    method: request.method,
-    protocol: url.protocol,
-    host: url.host,
-    path: url.pathname,
-    headers,
-    cookies,
-    query: url.search,
-  };
-}
-
-function withClient<const Rules extends (Primitive | Product)[]>(
-  aj: Arcjet<ExtraProps<Rules>>,
-): ArcjetBun<ExtraProps<Rules>> {
-  // Assuming the `handler()` function was used around Bun's fetch handler
-  // this WeakMap should be populated with IP addresses inspected via
-  // `server.requestIP()`
-  const ipCache = new WeakMap<Request, string>();
-
-  return Object.freeze({
-    withRule(rule: Primitive | Product) {
-      const client = aj.withRule(rule);
-      return withClient(client);
-    },
-    async protect(
-      request: Request,
-      ...[props]: ExtraProps<Rules> extends WithoutCustomProps
-        ? []
-        : [ExtraProps<Rules>]
-    ): Promise<ArcjetDecision> {
-      // TODO(#220): The generic manipulations get really mad here, so we cast
-      // Further investigation makes it seem like it has something to do with
-      // the definition of `props` in the signature but it's hard to track down
-      const req = toArcjetRequest(
-        ipCache,
-        request,
-        props ?? {},
-      ) as ArcjetRequest<ExtraProps<Rules>>;
-
-      return aj.protect({}, req);
-    },
-    handler(
-      fetch: (
-        this: Server,
-        request: Request,
-        server: Server,
-      ) => Response | Promise<Response>,
-    ) {
-      return async function (
-        request: Request,
-        server: Server,
-      ): Promise<Response> {
-        const socketAddress = server.requestIP(request);
-        if (socketAddress) {
-          ipCache.set(request, socketAddress.address);
-        }
-
-        return fetch.call(server, request, server);
-      };
-    },
-  });
-}
-
 /**
  * Create a new {@link ArcjetBun} client. Always build your initial client
  * outside of a request handler so it persists across requests. If you need to
@@ -249,11 +153,107 @@ export default function arcjet<const Rules extends (Primitive | Product)[]>(
 ): ArcjetBun<Simplify<ExtraProps<Rules>>> {
   const client = options.client ?? createRemoteClient();
 
+  // Assuming the `handler()` function was used around Bun's fetch handler this
+  // WeakMap should be populated with IP addresses inspected via
+  // `server.requestIP()`
+  const ipCache = new WeakMap<Request, string>();
+
   const log = options.log
     ? options.log
     : new Logger({
         level: logLevel(env),
       });
+
+  function toArcjetRequest<Props extends PlainObject>(
+    request: Request,
+    props: Props,
+  ): ArcjetRequest<Props> {
+    const cookies = request.headers.get("cookie") ?? undefined;
+
+    // We construct an ArcjetHeaders to normalize over Headers
+    const headers = new ArcjetHeaders(request.headers);
+
+    const url = new URL(request.url);
+    let ip = findIP(
+      {
+        // This attempts to lookup the IP in the `ipCache`. This is primarily a
+        // workaround to the API design in Bun that requires access to the
+        // `Server` to lookup an IP.
+        ip: ipCache.get(request),
+      },
+      headers,
+      { platform: platform(env) },
+    );
+    if (ip === "") {
+      // If the `ip` is empty but we're in development mode, we default the IP
+      // so the request doesn't fail.
+      if (isDevelopment(env)) {
+        log.warn("Using 127.0.0.1 as IP address in development mode");
+        ip = "127.0.0.1";
+      } else {
+        log.warn(
+          `Client IP address is missing. If this is a dev environment set the ARCJET_ENV env var to "development"`,
+        );
+      }
+    }
+
+    return {
+      ...props,
+      ip,
+      method: request.method,
+      protocol: url.protocol,
+      host: url.host,
+      path: url.pathname,
+      headers,
+      cookies,
+      query: url.search,
+    };
+  }
+
+  function withClient<const Rules extends (Primitive | Product)[]>(
+    aj: Arcjet<ExtraProps<Rules>>,
+  ): ArcjetBun<ExtraProps<Rules>> {
+    return Object.freeze({
+      withRule(rule: Primitive | Product) {
+        const client = aj.withRule(rule);
+        return withClient(client);
+      },
+      async protect(
+        request: Request,
+        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
+          ? []
+          : [ExtraProps<Rules>]
+      ): Promise<ArcjetDecision> {
+        // TODO(#220): The generic manipulations get really mad here, so we cast
+        // Further investigation makes it seem like it has something to do with
+        // the definition of `props` in the signature but it's hard to track down
+        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
+          ExtraProps<Rules>
+        >;
+
+        return aj.protect({}, req);
+      },
+      handler(
+        fetch: (
+          this: Server,
+          request: Request,
+          server: Server,
+        ) => Response | Promise<Response>,
+      ) {
+        return async function (
+          request: Request,
+          server: Server,
+        ): Promise<Response> {
+          const socketAddress = server.requestIP(request);
+          if (socketAddress) {
+            ipCache.set(request, socketAddress.address);
+          }
+
+          return fetch.call(server, request, server);
+        };
+      },
+    });
+  }
 
   const aj = core({ ...options, client, log });
 

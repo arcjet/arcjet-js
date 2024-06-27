@@ -142,94 +142,6 @@ export interface ArcjetNode<Props extends PlainObject> {
   ): ArcjetNode<Simplify<Props & ExtraProps<Rule>>>;
 }
 
-function toArcjetRequest<Props extends PlainObject>(
-  request: ArcjetNodeRequest,
-  props: Props,
-): ArcjetRequest<Props> {
-  // We pull the cookies from the request before wrapping them in ArcjetHeaders
-  const cookies = cookiesToString(request.headers?.cookie);
-
-  // We construct an ArcjetHeaders to normalize over Headers
-  const headers = new ArcjetHeaders(request.headers);
-
-  let ip = findIP(request, headers, { platform: platform(process.env) });
-  if (ip === "") {
-    // If the `ip` is empty but we're in development mode, we default the IP
-    // so the request doesn't fail.
-    if (isDevelopment(process.env)) {
-      // TODO: Log that the fingerprint is being overridden once the adapter
-      // constructs the logger
-      ip = "127.0.0.1";
-    }
-  }
-  const method = request.method ?? "";
-  const host = headers.get("host") ?? "";
-  let path = "";
-  let query = "";
-  let protocol = "";
-
-  if (typeof request.socket?.encrypted !== "undefined") {
-    protocol = request.socket.encrypted ? "https:" : "http:";
-  } else {
-    protocol = "http:";
-  }
-
-  // Do some very simple validation, but also try/catch around URL parsing
-  if (typeof request.url !== "undefined" && request.url !== "" && host !== "") {
-    try {
-      const url = new URL(request.url, `${protocol}//${host}`);
-      path = url.pathname;
-      query = url.search;
-      protocol = url.protocol;
-    } catch {
-      // If the parsing above fails, just set the path as whatever url we
-      // received.
-      // TODO(#216): Add logging to arcjet-node
-      path = request.url ?? "";
-    }
-  } else {
-    path = request.url ?? "";
-  }
-
-  return {
-    ...props,
-    ip,
-    method,
-    protocol,
-    host,
-    path,
-    headers,
-    cookies,
-    query,
-  };
-}
-
-function withClient<const Rules extends (Primitive | Product)[]>(
-  aj: Arcjet<ExtraProps<Rules>>,
-): ArcjetNode<ExtraProps<Rules>> {
-  return Object.freeze({
-    withRule(rule: Primitive | Product) {
-      const client = aj.withRule(rule);
-      return withClient(client);
-    },
-    async protect(
-      request: ArcjetNodeRequest,
-      ...[props]: ExtraProps<Rules> extends WithoutCustomProps
-        ? []
-        : [ExtraProps<Rules>]
-    ): Promise<ArcjetDecision> {
-      // TODO(#220): The generic manipulations get really mad here, so we cast
-      // Further investigation makes it seem like it has something to do with
-      // the definition of `props` in the signature but it's hard to track down
-      const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-        ExtraProps<Rules>
-      >;
-
-      return aj.protect({}, req);
-    },
-  });
-}
-
 /**
  * Create a new {@link ArcjetNode} client. Always build your initial client
  * outside of a request handler so it persists across requests. If you need to
@@ -248,6 +160,101 @@ export default function arcjet<const Rules extends (Primitive | Product)[]>(
     : new Logger({
         level: logLevel(process.env),
       });
+
+  function toArcjetRequest<Props extends PlainObject>(
+    request: ArcjetNodeRequest,
+    props: Props,
+  ): ArcjetRequest<Props> {
+    // We pull the cookies from the request before wrapping them in ArcjetHeaders
+    const cookies = cookiesToString(request.headers?.cookie);
+
+    // We construct an ArcjetHeaders to normalize over Headers
+    const headers = new ArcjetHeaders(request.headers);
+
+    let ip = findIP(request, headers, { platform: platform(process.env) });
+    if (ip === "") {
+      // If the `ip` is empty but we're in development mode, we default the IP
+      // so the request doesn't fail.
+      if (isDevelopment(process.env)) {
+        log.warn("Using 127.0.0.1 as IP address in development mode");
+        ip = "127.0.0.1";
+      } else {
+        log.warn(
+          `Client IP address is missing. If this is a dev environment set the ARCJET_ENV env var to "development"`,
+        );
+      }
+    }
+    const method = request.method ?? "";
+    const host = headers.get("host") ?? "";
+    let path = "";
+    let query = "";
+    let protocol = "";
+
+    if (typeof request.socket?.encrypted !== "undefined") {
+      protocol = request.socket.encrypted ? "https:" : "http:";
+    } else {
+      protocol = "http:";
+    }
+
+    // Do some very simple validation, but also try/catch around URL parsing
+    if (
+      typeof request.url !== "undefined" &&
+      request.url !== "" &&
+      host !== ""
+    ) {
+      try {
+        const url = new URL(request.url, `${protocol}//${host}`);
+        path = url.pathname;
+        query = url.search;
+        protocol = url.protocol;
+      } catch {
+        // If the parsing above fails, just set the path as whatever url we
+        // received.
+        path = request.url ?? "";
+        log.warn('Unable to parse URL. Using "%s" as `path`.', path);
+      }
+    } else {
+      path = request.url ?? "";
+    }
+
+    return {
+      ...props,
+      ip,
+      method,
+      protocol,
+      host,
+      path,
+      headers,
+      cookies,
+      query,
+    };
+  }
+
+  function withClient<const Rules extends (Primitive | Product)[]>(
+    aj: Arcjet<ExtraProps<Rules>>,
+  ): ArcjetNode<ExtraProps<Rules>> {
+    return Object.freeze({
+      withRule(rule: Primitive | Product) {
+        const client = aj.withRule(rule);
+        return withClient(client);
+      },
+      async protect(
+        request: ArcjetNodeRequest,
+        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
+          ? []
+          : [ExtraProps<Rules>]
+      ): Promise<ArcjetDecision> {
+        // TODO(#220): The generic manipulations get really mad here, so we cast
+        // Further investigation makes it seem like it has something to do with
+        // the definition of `props` in the signature but it's hard to track down
+        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
+          ExtraProps<Rules>
+        >;
+
+        return aj.protect({}, req);
+      },
+    });
+  }
 
   const aj = core({ ...options, client, log });
 

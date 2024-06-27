@@ -101,7 +101,6 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   // Transport is the HTTP client that the client uses to make requests.
   const transport = defaultTransport(url);
 
-  // TODO(#223): Create separate options type to exclude these
   const sdkStack = "SVELTEKIT";
   const sdkVersion = "__ARCJET_SDK_VERSION__";
 
@@ -168,76 +167,6 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
   ): ArcjetSvelteKit<Simplify<Props & ExtraProps<Rule>>>;
 }
 
-function toArcjetRequest<Props extends PlainObject>(
-  event: ArcjetSvelteKitRequestEvent,
-  props: Props,
-): ArcjetRequest<Props> {
-  const cookies = cookiesToString(event.cookies.getAll());
-
-  // We construct an ArcjetHeaders to normalize over Headers
-  const headers = new ArcjetHeaders(event.request.headers);
-
-  let ip = findIP(
-    {
-      ip: event.getClientAddress(),
-    },
-    headers,
-    { platform: platform(process.env) },
-  );
-  if (ip === "") {
-    // If the `ip` is empty but we're in development mode, we default the IP
-    // so the request doesn't fail.
-    if (isDevelopment(process.env)) {
-      // TODO: Log that the fingerprint is being overridden once the adapter
-      // constructs the logger
-      ip = "127.0.0.1";
-    }
-  }
-  const method = event.request.method;
-  const host = headers.get("host") ?? "";
-  const path = event.url.pathname;
-  const query = event.url.search;
-  const protocol = event.url.protocol;
-
-  return {
-    ...props,
-    ip,
-    method,
-    protocol,
-    host,
-    path,
-    headers,
-    cookies,
-    query,
-  };
-}
-
-function withClient<const Rules extends (Primitive | Product)[]>(
-  aj: Arcjet<ExtraProps<Rules>>,
-): ArcjetSvelteKit<ExtraProps<Rules>> {
-  return Object.freeze({
-    withRule(rule: Primitive | Product) {
-      const client = aj.withRule(rule);
-      return withClient(client);
-    },
-    async protect(
-      request: ArcjetSvelteKitRequestEvent,
-      ...[props]: ExtraProps<Rules> extends WithoutCustomProps
-        ? []
-        : [ExtraProps<Rules>]
-    ): Promise<ArcjetDecision> {
-      // TODO(#220): The generic manipulations get really mad here, so we cast
-      // Further investigation makes it seem like it has something to do with
-      // the definition of `props` in the signature but it's hard to track down
-      const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-        ExtraProps<Rules>
-      >;
-
-      return aj.protect({}, req);
-    },
-  });
-}
-
 /**
  * Create a new {@link ArcjetSvelteKit} client. Always build your initial client
  * outside of a request handler so it persists across requests. If you need to
@@ -256,6 +185,79 @@ export default function arcjet<const Rules extends (Primitive | Product)[]>(
     : new Logger({
         level: logLevel(process.env),
       });
+
+  function toArcjetRequest<Props extends PlainObject>(
+    event: ArcjetSvelteKitRequestEvent,
+    props: Props,
+  ): ArcjetRequest<Props> {
+    const cookies = cookiesToString(event.cookies.getAll());
+
+    // We construct an ArcjetHeaders to normalize over Headers
+    const headers = new ArcjetHeaders(event.request.headers);
+
+    let ip = findIP(
+      {
+        ip: event.getClientAddress(),
+      },
+      headers,
+      { platform: platform(process.env) },
+    );
+    if (ip === "") {
+      // If the `ip` is empty but we're in development mode, we default the IP
+      // so the request doesn't fail.
+      if (isDevelopment(process.env)) {
+        log.warn("Using 127.0.0.1 as IP address in development mode");
+        ip = "127.0.0.1";
+      } else {
+        log.warn(
+          `Client IP address is missing. If this is a dev environment set the ARCJET_ENV env var to "development"`,
+        );
+      }
+    }
+    const method = event.request.method;
+    const host = headers.get("host") ?? "";
+    const path = event.url.pathname;
+    const query = event.url.search;
+    const protocol = event.url.protocol;
+
+    return {
+      ...props,
+      ip,
+      method,
+      protocol,
+      host,
+      path,
+      headers,
+      cookies,
+      query,
+    };
+  }
+
+  function withClient<const Rules extends (Primitive | Product)[]>(
+    aj: Arcjet<ExtraProps<Rules>>,
+  ): ArcjetSvelteKit<ExtraProps<Rules>> {
+    return Object.freeze({
+      withRule(rule: Primitive | Product) {
+        const client = aj.withRule(rule);
+        return withClient(client);
+      },
+      async protect(
+        request: ArcjetSvelteKitRequestEvent,
+        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
+          ? []
+          : [ExtraProps<Rules>]
+      ): Promise<ArcjetDecision> {
+        // TODO(#220): The generic manipulations get really mad here, so we cast
+        // Further investigation makes it seem like it has something to do with
+        // the definition of `props` in the signature but it's hard to track down
+        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
+          ExtraProps<Rules>
+        >;
+
+        return aj.protect({}, req);
+      },
+    });
+  }
 
   const aj = core({ ...options, client, log });
 
