@@ -21,8 +21,12 @@ import {
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
   ArcjetLogger,
+  ArcjetRateLimitRule,
 } from "@arcjet/protocol";
-import { ArcjetBotTypeToProtocol } from "@arcjet/protocol/convert.js";
+import {
+  ArcjetBotTypeToProtocol,
+  isRateLimitRule,
+} from "@arcjet/protocol/convert.js";
 import { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
@@ -785,6 +789,10 @@ export interface ArcjetOptions<Rules extends [...(Primitive | Product)[]]> {
    */
   rules: readonly [...Rules];
   /**
+   * Characteristics to be used to uniquely identify clients.
+   */
+  characteristics?: string[];
+  /**
    * The client used to make requests to the Arcjet API. This must be set
    * when creating the SDK, such as inside @arcjet/next or mocked in tests.
    */
@@ -890,21 +898,19 @@ export default function arcjet<
     log.time?.("local");
 
     log.time?.("fingerprint");
-    let ip = "";
-    if (typeof details.ip === "string") {
-      ip = details.ip;
-    }
-    if (details.ip === "") {
-      log.warn("generateFingerprint: ip is empty");
-    }
+
+    const characteristics = options.characteristics
+      ? options.characteristics
+      : [];
 
     const baseContext = {
       key,
       log,
+      characteristics,
       ...ctx,
     };
 
-    const fingerprint = await analyze.generateFingerprint(baseContext, ip);
+    const fingerprint = await analyze.generateFingerprint(baseContext, details);
     log.debug("fingerprint (%s): %s", rt, fingerprint);
     log.timeEnd?.("fingerprint");
 
@@ -945,14 +951,24 @@ export default function arcjet<
     }
 
     const results: ArcjetRuleResult[] = [];
-    // Default all rules to NOT_RUN/ALLOW before doing anything
     for (let idx = 0; idx < rules.length; idx++) {
+      // Default all rules to NOT_RUN/ALLOW before doing anything
       results[idx] = new ArcjetRuleResult({
         ttl: 0,
         state: "NOT_RUN",
         conclusion: "ALLOW",
         reason: new ArcjetReason(),
       });
+
+      // Add top-level characteristics to all Rate Limit rules that don't already have
+      // their own set of characteristics.
+      const candidate_rule = rules[idx];
+      if (isRateLimitRule(candidate_rule)) {
+        if (typeof candidate_rule.characteristics === "undefined") {
+          candidate_rule.characteristics = characteristics;
+          rules[idx] = candidate_rule;
+        }
+      }
     }
 
     // We have our own local cache which we check first. This doesn't work in

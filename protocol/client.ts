@@ -81,6 +81,7 @@ export function createClient(options: ClientOptions): Client {
       const decideRequest = new DecideRequest({
         sdkStack,
         sdkVersion,
+        characteristics: context.characteristics,
         details: {
           ip: details.ip,
           method: details.method,
@@ -136,6 +137,7 @@ export function createClient(options: ClientOptions): Client {
       const reportRequest = new ReportRequest({
         sdkStack,
         sdkVersion,
+        characteristics: context.characteristics,
         details: {
           ip: details.ip,
           method: details.method,

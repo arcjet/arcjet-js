@@ -377,6 +377,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       headers: new Headers(),
@@ -396,6 +397,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       headers: undefined,
@@ -415,6 +417,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -460,6 +463,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -515,6 +519,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -570,6 +575,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -612,6 +618,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -676,6 +683,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -725,6 +733,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -773,6 +782,7 @@ describe("Primitive > detectBot", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -1448,6 +1458,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       email: "abc@example.com",
@@ -1467,6 +1478,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       email: undefined,
@@ -1486,6 +1498,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -1519,6 +1532,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -1552,6 +1566,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -1585,6 +1600,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -1620,6 +1636,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -1653,6 +1670,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -1686,6 +1704,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -1721,6 +1740,7 @@ describe("Primitive > validateEmail", () => {
       fingerprint: "test-fingerprint",
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -2425,7 +2445,7 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     };
     const request = {
       ip: "172.100.1.1",
@@ -2479,7 +2499,7 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     };
     const request = {
       ip: "172.100.1.1",
@@ -2536,7 +2556,7 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     };
     const request = {
       ip: "172.100.1.1",
@@ -2632,7 +2652,7 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     };
     const request = {
       ip: "172.100.1.1",
@@ -2687,7 +2707,7 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     };
     const request = {
       ip: "172.100.1.1",
@@ -2779,7 +2799,7 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     };
     const request = {
       ip: "172.100.1.1",
@@ -3086,7 +3106,7 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     };
     const request = {
       ip: "172.100.1.1",
@@ -3145,7 +3165,7 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     };
     const request = {
       ip: "172.100.1.1",
@@ -3200,7 +3220,7 @@ describe("SDK", () => {
     const context = {
       key,
       fingerprint:
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c",
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     };
     const request = {
       ip: "172.100.1.1",
@@ -3242,6 +3262,319 @@ describe("SDK", () => {
         conclusion: "ERROR",
       }),
       [],
+    );
+  });
+
+  test("additional characteristics are propagated to fixedWindow if they aren't separately specified in fixedWindow", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const rateLimitRule = fixedWindow({
+      mode: "LIVE",
+      window: "1h",
+      max: 60,
+    });
+
+    const localCharacteristics = ["someAdditionalCharacteristic"];
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: localCharacteristics,
+      rules: [rateLimitRule],
+      client,
+      log,
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+    };
+
+    const _ = await aj.protect({}, request);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [
+        {
+          characteristics: localCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
+    );
+  });
+
+  test("Additional characteristics aren't propagated to fixedWindow if they are separately specified in fixedWindow", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const localCharacteristics = ["someLocalCharacteristic"];
+    const rateLimitRule = fixedWindow({
+      mode: "LIVE",
+      window: "1h",
+      max: 60,
+      characteristics: localCharacteristics,
+    });
+
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: ["someAdditionalCharacteristic"],
+      rules: [rateLimitRule],
+      client,
+      log,
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+    };
+
+    const _ = await aj.protect({}, request);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [
+        {
+          characteristics: localCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
+    );
+  });
+
+  test("Additional characteristics are propagated to slidingWindow if they aren't separately specified in slidingWindow", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const rateLimitRule = slidingWindow({
+      mode: "LIVE",
+      interval: "1h",
+      max: 60,
+    });
+
+    const globalCharacteristics = ["someAdditionalCharacteristic"];
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [rateLimitRule],
+      client,
+      log,
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+    };
+
+    const _ = await aj.protect({}, request);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [
+        {
+          characteristics: globalCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
+    );
+  });
+
+  test("Additional characteristics aren't propagated to slidingWindow if they are separately specified in slidingWindow", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const localCharacteristics = ["someLocalCharacteristic"];
+    const rateLimitRule = slidingWindow({
+      mode: "LIVE",
+      interval: "1h",
+      max: 60,
+      characteristics: localCharacteristics,
+    });
+
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: ["someAdditionalCharacteristic"],
+      rules: [rateLimitRule],
+      client,
+      log,
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+    };
+
+    const _ = await aj.protect({}, request);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [
+        {
+          characteristics: localCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
+    );
+  });
+
+  test("Additional characteristics are propagated to tokenBucket if they aren't separately specified in tokenBucket", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const rateLimitRule = tokenBucket({
+      mode: "LIVE",
+      interval: "1h",
+      refillRate: 1,
+      capacity: 10,
+    });
+
+    const globalCharacteristics = ["someAdditionalCharacteristic"];
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [rateLimitRule],
+      client,
+      log,
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      requested: 1,
+    };
+
+    const _ = await aj.protect({}, request);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [
+        {
+          characteristics: globalCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
+    );
+  });
+
+  test("additional characteristics aren't propagated to tokenBucket if they are separately specified in tokenBucket", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const localCharacteristics = ["someLocalCharacteristic"];
+    const rateLimitRule = tokenBucket({
+      mode: "LIVE",
+      interval: "1h",
+      refillRate: 1,
+      capacity: 10,
+      characteristics: localCharacteristics,
+    });
+
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: ["someAdditionalCharacteristic"],
+      rules: [rateLimitRule],
+      client,
+      log,
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      requested: 1,
+    };
+
+    const _ = await aj.protect({}, request);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [
+        {
+          characteristics: localCharacteristics,
+          ...rateLimitRule[0],
+        },
+      ],
     );
   });
 });

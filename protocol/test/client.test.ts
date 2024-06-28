@@ -118,6 +118,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -174,6 +175,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -231,6 +233,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -286,6 +289,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -342,6 +346,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -403,6 +408,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -447,6 +453,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -490,6 +497,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -533,6 +541,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -579,6 +588,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -631,6 +641,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -675,6 +686,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -744,6 +756,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -812,6 +825,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -887,6 +901,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -955,6 +970,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1019,6 +1035,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1109,6 +1126,7 @@ describe("createClient", () => {
       fingerprint,
       runtime: "test",
       log,
+      characteristics: [],
     };
     const details = {
       ip: "172.100.1.1",
@@ -1144,5 +1162,150 @@ describe("createClient", () => {
     await promise;
 
     expect(logSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test("calling `decide` will make RPC with top level characteristics included", async () => {
+    const key = "test-key";
+    const fingerprint =
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
+    const context = {
+      key,
+      fingerprint,
+      runtime: "test",
+      log,
+      characteristics: ["src.ip"],
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      email: "abc@example.com",
+    };
+
+    const router = {
+      decide: jest.fn((args) => {
+        return new DecideResponse({
+          decision: {
+            conclusion: Conclusion.ALLOW,
+          },
+        });
+      }),
+    };
+
+    const client = createClient({
+      ...defaultRemoteClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, router);
+      }),
+    });
+    const _ = await client.decide(context, details, []);
+
+    expect(router.decide).toHaveBeenCalledTimes(1);
+    expect(router.decide).toHaveBeenCalledWith(
+      new DecideRequest({
+        details: {
+          ...details,
+          headers: { "user-agent": "curl/8.1.2" },
+        },
+        characteristics: ["src.ip"],
+        rules: [],
+        sdkStack: SDKStack.SDK_STACK_NODEJS,
+        sdkVersion: "__ARCJET_SDK_VERSION__",
+      }),
+      expect.anything(),
+    );
+  });
+
+  test("calling `report` will make RPC with top level characteristics included", async () => {
+    const key = "test-key";
+    const fingerprint =
+      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
+    const context = {
+      key,
+      fingerprint,
+      runtime: "test",
+      log,
+      characteristics: ["ip.src"],
+    };
+    const receivedAt = Timestamp.now();
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      email: "abc@example.com",
+    };
+
+    const [promise, resolve] = deferred();
+
+    const router = {
+      report: jest.fn((args) => {
+        resolve();
+        return new ReportResponse({});
+      }),
+    };
+
+    const client = createClient({
+      ...defaultRemoteClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, router);
+      }),
+    });
+
+    const decision = new ArcjetDenyDecision({
+      ttl: 0,
+      reason: new ArcjetTestReason(),
+      results: [
+        new ArcjetRuleResult({
+          ttl: 0,
+          state: "RUN",
+          conclusion: "DENY",
+          reason: new ArcjetReason(),
+        }),
+      ],
+    });
+    client.report(context, details, decision, []);
+
+    await promise;
+
+    expect(router.report).toHaveBeenCalledTimes(1);
+    expect(router.report).toHaveBeenCalledWith(
+      new ReportRequest({
+        sdkStack: SDKStack.SDK_STACK_NODEJS,
+        sdkVersion: "__ARCJET_SDK_VERSION__",
+        details: {
+          ...details,
+          headers: { "user-agent": "curl/8.1.2" },
+        },
+        decision: {
+          id: decision.id,
+          conclusion: Conclusion.DENY,
+          reason: new Reason(),
+          ruleResults: [
+            new RuleResult({
+              ruleId: "",
+              state: RuleState.RUN,
+              conclusion: Conclusion.DENY,
+              reason: new Reason(),
+            }),
+          ],
+        },
+        rules: [],
+        receivedAt,
+        characteristics: ["ip.src"],
+      }),
+      expect.anything(),
+    );
   });
 });

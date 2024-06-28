@@ -540,7 +540,7 @@ export function ArcjetDecisionFromProtocol(
   }
 }
 
-function isRateLimitRule<Props extends {}>(
+export function isRateLimitRule<Props extends {}>(
   rule: ArcjetRule<Props>,
 ): rule is ArcjetRateLimitRule<Props> {
   return rule.type === "RATE_LIMIT";
