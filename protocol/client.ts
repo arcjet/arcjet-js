@@ -13,11 +13,11 @@ import {
   ArcjetRule,
   ArcjetStack,
 } from "./index.js";
-import { DecideService } from "./gen/es/decide/v1alpha1/decide_connect.js";
+import { DecideService } from "./proto/decide/v1alpha1/decide_connect.js";
 import {
   DecideRequest,
   ReportRequest,
-} from "./gen/es/decide/v1alpha1/decide_pb.js";
+} from "./proto/decide/v1alpha1/decide_pb.js";
 
 // TODO: Dedupe with `errorMessage` in core
 function errorMessage(err: unknown): string {

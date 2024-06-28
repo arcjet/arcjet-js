@@ -33,7 +33,7 @@ import {
   RuleResult,
   RuleState,
   SDKStack,
-} from "../gen/es/decide/v1alpha1/decide_pb.js";
+} from "../proto/decide/v1alpha1/decide_pb.js";
 import {
   ArcjetAllowDecision,
   ArcjetBotReason,

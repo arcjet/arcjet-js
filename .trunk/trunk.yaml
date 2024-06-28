@@ -39,7 +39,7 @@ lint:
     - linters: [ALL]
       paths:
         - analyze/wasm/**
-        - protocol/gen/**
+        - protocol/proto/**
         - "**/LICENSE"
         - "**/CHANGELOG.md"
         - .github/CODEOWNERS

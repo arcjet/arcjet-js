@@ -8,7 +8,7 @@ import {
 } from "@jest/globals";
 import { createClient } from "../client.js";
 import { createRouterTransport } from "@connectrpc/connect";
-import { DecideService } from "../gen/es/decide/v1alpha1/decide_connect.js";
+import { DecideService } from "../proto/decide/v1alpha1/decide_connect.js";
 import {
   Conclusion,
   DecideRequest,
@@ -20,7 +20,7 @@ import {
   RuleResult,
   RuleState,
   SDKStack,
-} from "../gen/es/decide/v1alpha1/decide_pb.js";
+} from "../proto/decide/v1alpha1/decide_pb.js";
 import {
   ArcjetAllowDecision,
   ArcjetChallengeDecision,

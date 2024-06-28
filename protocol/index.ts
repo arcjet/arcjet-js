@@ -1,5 +1,5 @@
 import { typeid } from "typeid-js";
-import { Reason } from "./gen/es/decide/v1alpha1/decide_pb.js";
+import { Reason } from "./proto/decide/v1alpha1/decide_pb.js";
 
 type RequiredProps<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
 
