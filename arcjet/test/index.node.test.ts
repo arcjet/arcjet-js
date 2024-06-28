@@ -3419,7 +3419,7 @@ describe("SDK", () => {
     );
   });
 
-  test("Additional characteristics aren't propagated to fixedWindow if they are separately specified in fixedWindow", async () => {
+  test("Additional characteristics aren't propagated to slidingWindow if they are separately specified in slidingWindow", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
