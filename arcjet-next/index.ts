@@ -7,7 +7,8 @@ import {
   NextResponse,
 } from "next/server.js";
 import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
-import core, {
+import core from "arcjet";
+import type {
   ArcjetDecision,
   ArcjetOptions,
   Primitive,
@@ -15,6 +16,7 @@ import core, {
   ArcjetRequest,
   ExtraProps,
   Arcjet,
+  PropsForCharacteristic,
 } from "arcjet";
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
@@ -210,9 +212,14 @@ export interface ArcjetNext<Props extends PlainObject> {
  *
  * @param options - Arcjet configuration options to apply to all requests.
  */
-export default function arcjet<const Rules extends (Primitive | Product)[]>(
-  options: ArcjetOptions<Rules>,
-): ArcjetNext<Simplify<ExtraProps<Rules>>> {
+export default function arcjet<
+  const Rules extends (Primitive | Product)[],
+  const Characteristics extends readonly string[],
+>(
+  options: ArcjetOptions<Rules, Characteristics>,
+): ArcjetNext<
+  Simplify<ExtraProps<Rules> & PropsForCharacteristic<Characteristics[number]>>
+> {
   const client = options.client ?? createRemoteClient();
 
   const log = options.log

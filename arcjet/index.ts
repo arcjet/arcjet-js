@@ -318,7 +318,7 @@ export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 // Note: If a user doesn't provide the object literal to our primitives
 // directly, we fallback to no required props. They can opt-in by adding the
 // `as const` suffix to the characteristics array.
-type PropsForCharacteristic<T> =
+export type PropsForCharacteristic<T> =
   IsStringLiteral<T> extends true
     ? T extends
         | "ip.src"
@@ -779,7 +779,10 @@ export function protectSignup<const Characteristics extends string[] = []>(
   return [...rateLimitRules, ...botRules, ...emailRules];
 }
 
-export interface ArcjetOptions<Rules extends [...(Primitive | Product)[]]> {
+export interface ArcjetOptions<
+  Rules extends [...(Primitive | Product)[]],
+  Characteristics extends readonly string[],
+> {
   /**
    * The API key to identify the site in Arcjet.
    */
@@ -791,7 +794,7 @@ export interface ArcjetOptions<Rules extends [...(Primitive | Product)[]]> {
   /**
    * Characteristics to be used to uniquely identify clients.
    */
-  characteristics?: string[];
+  characteristics?: Characteristics;
   /**
    * The client used to make requests to the Arcjet API. This must be set
    * when creating the SDK, such as inside @arcjet/next or mocked in tests.
@@ -840,7 +843,12 @@ export interface Arcjet<Props extends PlainObject> {
  */
 export default function arcjet<
   const Rules extends [...(Primitive | Product)[]] = [],
->(options: ArcjetOptions<Rules>): Arcjet<Simplify<ExtraProps<Rules>>> {
+  const Characteristics extends readonly string[] = [],
+>(
+  options: ArcjetOptions<Rules, Characteristics>,
+): Arcjet<
+  Simplify<ExtraProps<Rules> & PropsForCharacteristic<Characteristics[number]>>
+> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
 
@@ -900,7 +908,7 @@ export default function arcjet<
     log.time?.("fingerprint");
 
     const characteristics = options.characteristics
-      ? options.characteristics
+      ? [...options.characteristics]
       : [];
 
     const baseContext = {
