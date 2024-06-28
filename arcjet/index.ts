@@ -23,13 +23,15 @@ import {
   ArcjetLogger,
   ArcjetRateLimitRule,
 } from "@arcjet/protocol";
-import { ArcjetBotTypeToProtocol } from "@arcjet/protocol/convert.js";
+import {
+  ArcjetBotTypeToProtocol,
+  isRateLimitRule,
+} from "@arcjet/protocol/convert.js";
 import { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
-import { RateLimitRule } from "@arcjet/protocol/gen/es/decide/v1alpha1/decide_pb";
 
 export * from "@arcjet/protocol";
 
@@ -960,11 +962,11 @@ export default function arcjet<
 
       // Add top-level characteristics to all Rate Limit rules that don't already have
       // their own set of characteristics.
-      if (rules[idx].type === "RATE_LIMIT") {
-        const rate_limit_rule = rules[idx] as ArcjetRateLimitRule<Props>;
-        if (typeof rate_limit_rule.characteristics === "undefined") {
-          rate_limit_rule.characteristics = characteristics;
-          rules[idx] = rate_limit_rule;
+      const candidate_rule = rules[idx];
+      if (isRateLimitRule(candidate_rule)) {
+        if (typeof candidate_rule.characteristics === "undefined") {
+          candidate_rule.characteristics = characteristics;
+          rules[idx] = candidate_rule;
         }
       }
     }

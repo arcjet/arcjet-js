@@ -3265,7 +3265,7 @@ describe("SDK", () => {
     );
   });
 
-  test("Additional characteristics are propegated to fixedWindow if they aren't seperately specified in fixedWindow", async () => {
+  test("additional characteristics are propagated to fixedWindow if they aren't separately specified in fixedWindow", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3283,10 +3283,10 @@ describe("SDK", () => {
       max: 60,
     });
 
-    const globalCharacteristics = ["someAdditionalCharacteristic"];
+    const localCharacteristics = ["someAdditionalCharacteristic"];
     const aj = arcjet({
       key: "test-key",
-      characteristics: globalCharacteristics,
+      characteristics: localCharacteristics,
       rules: [rateLimitRule],
       client,
       log,
@@ -3309,14 +3309,14 @@ describe("SDK", () => {
       expect.anything(),
       [
         {
-          characteristics: globalCharacteristics,
+          characteristics: localCharacteristics,
           ...rateLimitRule[0],
         },
       ],
     );
   });
 
-  test("Additional characteristics aren't propegated to fixedWindow if they are seperately specified in fixedWindow", async () => {
+  test("Additional characteristics aren't propagated to fixedWindow if they are separately specified in fixedWindow", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3328,12 +3328,12 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const fixedWindowCharacteristics = ["someLocalCharacteristic"];
+    const localCharacteristics = ["someLocalCharacteristic"];
     const rateLimitRule = fixedWindow({
       mode: "LIVE",
       window: "1h",
       max: 60,
-      characteristics: fixedWindowCharacteristics,
+      characteristics: localCharacteristics,
     });
 
     const aj = arcjet({
@@ -3361,14 +3361,14 @@ describe("SDK", () => {
       expect.anything(),
       [
         {
-          characteristics: fixedWindowCharacteristics,
+          characteristics: localCharacteristics,
           ...rateLimitRule[0],
         },
       ],
     );
   });
 
-  test("Additional characteristics are propegated to slidingWindow if they aren't seperately specified in slidingWindow", async () => {
+  test("Additional characteristics are propagated to slidingWindow if they aren't separately specified in slidingWindow", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3419,7 +3419,7 @@ describe("SDK", () => {
     );
   });
 
-  test("Additional characteristics aren't propegated to fixedWindow if they are seperately specified in fixedWindow", async () => {
+  test("Additional characteristics aren't propagated to fixedWindow if they are separately specified in fixedWindow", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3431,12 +3431,12 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const fixedWindowCharacteristics = ["someLocalCharacteristic"];
+    const localCharacteristics = ["someLocalCharacteristic"];
     const rateLimitRule = slidingWindow({
       mode: "LIVE",
       interval: "1h",
       max: 60,
-      characteristics: fixedWindowCharacteristics,
+      characteristics: localCharacteristics,
     });
 
     const aj = arcjet({
@@ -3464,14 +3464,14 @@ describe("SDK", () => {
       expect.anything(),
       [
         {
-          characteristics: fixedWindowCharacteristics,
+          characteristics: localCharacteristics,
           ...rateLimitRule[0],
         },
       ],
     );
   });
 
-  test("Additional characteristics are propegated to tokenBucket if they aren't seperately specified in tokenBucket", async () => {
+  test("Additional characteristics are propagated to tokenBucket if they aren't separately specified in tokenBucket", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3524,7 +3524,7 @@ describe("SDK", () => {
     );
   });
 
-  test("Additional characteristics aren't propegated to tokenBucket if they are seperately specified in tokenBucket", async () => {
+  test("additional characteristics aren't propagated to tokenBucket if they are separately specified in tokenBucket", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3536,13 +3536,13 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const fixedWindowCharacteristics = ["someLocalCharacteristic"];
+    const localCharacteristics = ["someLocalCharacteristic"];
     const rateLimitRule = tokenBucket({
       mode: "LIVE",
       interval: "1h",
       refillRate: 1,
       capacity: 10,
-      characteristics: fixedWindowCharacteristics,
+      characteristics: localCharacteristics,
     });
 
     const aj = arcjet({
@@ -3571,7 +3571,7 @@ describe("SDK", () => {
       expect.anything(),
       [
         {
-          characteristics: fixedWindowCharacteristics,
+          characteristics: localCharacteristics,
           ...rateLimitRule[0],
         },
       ],
