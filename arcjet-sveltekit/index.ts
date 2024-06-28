@@ -9,7 +9,7 @@ import type {
   ArcjetRequest,
   ExtraProps,
   Arcjet,
-  PropsForCharacteristic,
+  CharacteristicProps,
 } from "arcjet";
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
@@ -183,7 +183,7 @@ export default function arcjet<
 >(
   options: ArcjetOptions<Rules, Characteristics>,
 ): ArcjetSvelteKit<
-  Simplify<ExtraProps<Rules> & PropsForCharacteristic<Characteristics[number]>>
+  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>
 > {
   const client = options.client ?? createRemoteClient();
 
