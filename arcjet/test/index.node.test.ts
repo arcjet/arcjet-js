@@ -3554,7 +3554,7 @@ describe("SDK", () => {
           refillRate: 1,
           capacity: 10,
           characteristics: localCharacteristics,
-        })
+        }),
       ],
       client,
       log,
