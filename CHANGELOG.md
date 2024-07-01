@@ -1,5 +1,66 @@
 # Changelog
 
+## [1.0.0-alpha.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.17...v1.0.0-alpha.18) (2024-07-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Move generated protobuf to default buf file path ([#1009](https://github.com/arcjet/arcjet-js/issues/1009))
+
+### 🚀 New Features
+
+* Allow characteristics to be specified on the SDK for fingerprint generation & propagate to rate limit rule ([#1016](https://github.com/arcjet/arcjet-js/issues/1016)) ([6b692da](https://github.com/arcjet/arcjet-js/commit/6b692da8e6da506a977ec5617a223b6512035a19)), closes [#1015](https://github.com/arcjet/arcjet-js/issues/1015)
+
+
+### 🪲 Bug Fixes
+
+* **env:** Always rely on isDevelopment & remove isProduction helper ([#998](https://github.com/arcjet/arcjet-js/issues/998)) ([43423c6](https://github.com/arcjet/arcjet-js/commit/43423c650cb5b6f2e992af961faad52a4fcdd24f))
+* **sdk:** Inform type signature of protect via global characteristics ([#1043](https://github.com/arcjet/arcjet-js/issues/1043)) ([1ae4a89](https://github.com/arcjet/arcjet-js/commit/1ae4a89637c02dffd7801becdf519ce4f911dc6d)), closes [#1042](https://github.com/arcjet/arcjet-js/issues/1042)
+
+
+### 📦 Dependencies
+
+* Bump @typescript-eslint/eslint-plugin from 7.13.0 to 7.13.1 ([#994](https://github.com/arcjet/arcjet-js/issues/994)) ([9481c7f](https://github.com/arcjet/arcjet-js/commit/9481c7f599a725875a9f84693933238ae168611c))
+* Bump @typescript-eslint/eslint-plugin from 7.13.1 to 7.14.1 ([#1025](https://github.com/arcjet/arcjet-js/issues/1025)) ([7e8cc60](https://github.com/arcjet/arcjet-js/commit/7e8cc6020e3cb384fca039f68efccc019ba5b0d3))
+* Bump @typescript-eslint/parser from 7.13.0 to 7.13.1 ([#993](https://github.com/arcjet/arcjet-js/issues/993)) ([d15a09d](https://github.com/arcjet/arcjet-js/commit/d15a09d9d4661e2227a8b80dd22b05cae3c66f85))
+* Bump @typescript-eslint/parser from 7.13.1 to 7.14.1 ([#1024](https://github.com/arcjet/arcjet-js/issues/1024)) ([ee81b09](https://github.com/arcjet/arcjet-js/commit/ee81b0905901cf390bbccb8995c99812d7711336))
+* Bump eslint-config-turbo from 2.0.4 to 2.0.5 ([#1023](https://github.com/arcjet/arcjet-js/issues/1023)) ([aaaf17c](https://github.com/arcjet/arcjet-js/commit/aaaf17c421f560cb7da83ae9187091e67795c168))
+* Bump eslint-config-turbo from 2.0.5 to 2.0.6 ([#1052](https://github.com/arcjet/arcjet-js/issues/1052)) ([e1d3cd3](https://github.com/arcjet/arcjet-js/commit/e1d3cd347226a9403e4b7f37256aa5467e716e51))
+* **dev:** Bump bun-types from 1.1.13 to 1.1.17 ([#1022](https://github.com/arcjet/arcjet-js/issues/1022)) ([3aa7181](https://github.com/arcjet/arcjet-js/commit/3aa718110537a5c26a267b4db2b57c5b50af6bf2))
+* **dev:** Bump typescript from 5.4.5 to 5.5.2 ([#1011](https://github.com/arcjet/arcjet-js/issues/1011)) ([c17a101](https://github.com/arcjet/arcjet-js/commit/c17a101c5729db44ddf8a7e14d5e4184dcf38949))
+* **example:** Bump @clerk/nextjs from 5.1.5 to 5.1.6 in /examples/nextjs-14-clerk-rl in the dependencies group ([#1013](https://github.com/arcjet/arcjet-js/issues/1013)) ([8bed1dc](https://github.com/arcjet/arcjet-js/commit/8bed1dcd321093ad9f60742b28a6982bb3b42fc7))
+* **example:** Bump @clerk/nextjs from 5.1.5 to 5.1.6 in /examples/nextjs-14-clerk-shield in the dependencies group ([#1012](https://github.com/arcjet/arcjet-js/issues/1012)) ([c4bcde8](https://github.com/arcjet/arcjet-js/commit/c4bcde837dc2d333eaa23ef89539ce4b80a806be))
+* **example:** Bump @sveltejs/kit from 2.5.17 to 2.5.18 in /examples/sveltekit in the dependencies group ([#1046](https://github.com/arcjet/arcjet-js/issues/1046)) ([ebab7de](https://github.com/arcjet/arcjet-js/commit/ebab7de82a481616e33308726d9dfaed5a729cab))
+* **example:** Bump ai from 3.1.36 to 3.1.37 in /examples/nextjs-14-openai in the dependencies group ([#995](https://github.com/arcjet/arcjet-js/issues/995)) ([b43827b](https://github.com/arcjet/arcjet-js/commit/b43827bb3a2fef6396e7c89ae019bdef0325a502))
+* **example:** Bump hono from 4.4.9 to 4.4.10 in /examples/nodejs-hono-rl in the dependencies group ([#1048](https://github.com/arcjet/arcjet-js/issues/1048)) ([6e7c1fe](https://github.com/arcjet/arcjet-js/commit/6e7c1fe0e56b51d726614e8954a404c779884813))
+* **example:** Bump lucide-react from 0.396.0 to 0.399.0 in /examples/nextjs-14-authjs-5 in the dependencies group across 1 directory ([#1040](https://github.com/arcjet/arcjet-js/issues/1040)) ([ea96487](https://github.com/arcjet/arcjet-js/commit/ea964878f7ec1ef3de586b45a7d1982ac52f39de))
+* **example:** Bump lucide-react from 0.396.0 to 0.399.0 in /examples/nextjs-14-react-hook-form in the dependencies group across 1 directory ([#1039](https://github.com/arcjet/arcjet-js/issues/1039)) ([334ff9e](https://github.com/arcjet/arcjet-js/commit/334ff9ef520aa8723b1922a576d85be1a04c861a))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-app-dir-rl in the dependencies group ([#1051](https://github.com/arcjet/arcjet-js/issues/1051)) ([ac24a0b](https://github.com/arcjet/arcjet-js/commit/ac24a0b0d6c9ef5fde71766d8c0c37b084e0114e))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-app-dir-validate-email in the dependencies group ([#1045](https://github.com/arcjet/arcjet-js/issues/1045)) ([290bc49](https://github.com/arcjet/arcjet-js/commit/290bc49b2ac7744dbb039ae91d6fc6ee5fd21420))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-authjs-5 in the dependencies group ([#1056](https://github.com/arcjet/arcjet-js/issues/1056)) ([e2343f0](https://github.com/arcjet/arcjet-js/commit/e2343f012a8e1bc4962f6dd10d67f3c405276baa))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-clerk-rl in the dependencies group ([#1058](https://github.com/arcjet/arcjet-js/issues/1058)) ([422b320](https://github.com/arcjet/arcjet-js/commit/422b3204890059cbf125f9044b81c1a3e83d0844))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-clerk-shield in the dependencies group ([#1044](https://github.com/arcjet/arcjet-js/issues/1044)) ([b6b891f](https://github.com/arcjet/arcjet-js/commit/b6b891fc06b308e0336ef5289390b7f5e41515d9))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-decorate in the dependencies group ([#1049](https://github.com/arcjet/arcjet-js/issues/1049)) ([43523a5](https://github.com/arcjet/arcjet-js/commit/43523a502f5ba7783c3239f648954ce62d6ca129))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-ip-details in the dependencies group ([#1047](https://github.com/arcjet/arcjet-js/issues/1047)) ([1fe6a05](https://github.com/arcjet/arcjet-js/commit/1fe6a05d7b25b18c89e4857066dab21d605a5976))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-nextauth-4 in the dependencies group ([#1054](https://github.com/arcjet/arcjet-js/issues/1054)) ([caff3dc](https://github.com/arcjet/arcjet-js/commit/caff3dc68924d93d359e1ff501dd681aa438b4fa))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-pages-wrap in the dependencies group ([#1055](https://github.com/arcjet/arcjet-js/issues/1055)) ([90e04f5](https://github.com/arcjet/arcjet-js/commit/90e04f521cec56ee9d35c81c3b250433c35a642b))
+* **example:** Bump postcss from 8.4.38 to 8.4.39 in /examples/nextjs-14-react-hook-form in the dependencies group ([#1050](https://github.com/arcjet/arcjet-js/issues/1050)) ([21e1108](https://github.com/arcjet/arcjet-js/commit/21e1108cb0fe709dbdc3e8c118a665872d83f103))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#1006](https://github.com/arcjet/arcjet-js/issues/1006)) ([0578cb2](https://github.com/arcjet/arcjet-js/commit/0578cb2ae9ff46663e753d96b8702ed6ae9f30c6))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#1019](https://github.com/arcjet/arcjet-js/issues/1019)) ([a15df12](https://github.com/arcjet/arcjet-js/commit/a15df125d5accfa926e46861e4aca6215c68a91e))
+* **example:** Bump the dependencies group across 1 directory with 6 updates ([#1017](https://github.com/arcjet/arcjet-js/issues/1017)) ([fb43c78](https://github.com/arcjet/arcjet-js/commit/fb43c78b9a9505e3687aae04b70b30049365d349))
+* **example:** Bump the dependencies group across 1 directory with 7 updates ([#1028](https://github.com/arcjet/arcjet-js/issues/1028)) ([a3693d0](https://github.com/arcjet/arcjet-js/commit/a3693d0cff1567c8d28cb1ab22a51f53ce399ade))
+* **example:** Bump the dependencies group across 1 directory with 7 updates ([#1036](https://github.com/arcjet/arcjet-js/issues/1036)) ([4e2bfe9](https://github.com/arcjet/arcjet-js/commit/4e2bfe9b9240b025d49ce7aca6a7f9901e751014))
+* **example:** Bump the dependencies group in /examples/nextjs-14-openai with 2 updates ([#1057](https://github.com/arcjet/arcjet-js/issues/1057)) ([5df2e47](https://github.com/arcjet/arcjet-js/commit/5df2e47c57758466ffcd2dc80313e0c85d331be0))
+* **example:** Bump the dependencies group in /examples/nextjs-14-react-hook-form with 2 updates ([#996](https://github.com/arcjet/arcjet-js/issues/996)) ([988dbf3](https://github.com/arcjet/arcjet-js/commit/988dbf3ad0e438029525b0710d08b64d70d59ad1))
+* **example:** Bump the dependencies group in /examples/nodejs-hono-rl with 2 updates ([#1007](https://github.com/arcjet/arcjet-js/issues/1007)) ([c36b9f3](https://github.com/arcjet/arcjet-js/commit/c36b9f358dad057c69665f7ae16e546e9b84c28a))
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze:** Regenerate WebAssembly ([#1041](https://github.com/arcjet/arcjet-js/issues/1041)) ([a45faa3](https://github.com/arcjet/arcjet-js/commit/a45faa3e39005bf089b7c37c7a5a15f1951c6529))
+* Move generated protobuf to default buf file path ([#1009](https://github.com/arcjet/arcjet-js/issues/1009)) ([6800a00](https://github.com/arcjet/arcjet-js/commit/6800a003d9d2e1ba356408328f33d8f19e0d89c7))
+* Warn when IP is empty, even if we override it in development ([#1000](https://github.com/arcjet/arcjet-js/issues/1000)) ([da14bcb](https://github.com/arcjet/arcjet-js/commit/da14bcb67f3bd5ffff9cc17bdbac4d2217a1bf36)), closes [#987](https://github.com/arcjet/arcjet-js/issues/987) [#216](https://github.com/arcjet/arcjet-js/issues/216)
+
 ## [1.0.0-alpha.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.16...v1.0.0-alpha.17) (2024-06-17)
 
 

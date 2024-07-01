@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.0.0-alpha.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.17...@arcjet/protocol-v1.0.0-alpha.18) (2024-07-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Move generated protobuf to default buf file path ([#1009](https://github.com/arcjet/arcjet-js/issues/1009))
+
+### 🚀 New Features
+
+* Allow characteristics to be specified on the SDK for fingerprint generation & propagate to rate limit rule ([#1016](https://github.com/arcjet/arcjet-js/issues/1016)) ([6b692da](https://github.com/arcjet/arcjet-js/commit/6b692da8e6da506a977ec5617a223b6512035a19)), closes [#1015](https://github.com/arcjet/arcjet-js/issues/1015)
+
+
+### 📦 Dependencies
+
+* **dev:** Bump typescript from 5.4.5 to 5.5.2 ([#1011](https://github.com/arcjet/arcjet-js/issues/1011)) ([c17a101](https://github.com/arcjet/arcjet-js/commit/c17a101c5729db44ddf8a7e14d5e4184dcf38949))
+
+
+### 🧹 Miscellaneous Chores
+
+* Move generated protobuf to default buf file path ([#1009](https://github.com/arcjet/arcjet-js/issues/1009)) ([6800a00](https://github.com/arcjet/arcjet-js/commit/6800a003d9d2e1ba356408328f33d8f19e0d89c7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.17 to 1.0.0-alpha.18
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.17 to 1.0.0-alpha.18
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.17 to 1.0.0-alpha.18
+
 ## [1.0.0-alpha.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.16...@arcjet/protocol-v1.0.0-alpha.17) (2024-06-17)
 
 

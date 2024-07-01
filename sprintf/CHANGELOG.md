@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.17...@arcjet/sprintf-v1.0.0-alpha.18) (2024-07-01)
+
+
+### 📦 Dependencies
+
+* **dev:** Bump typescript from 5.4.5 to 5.5.2 ([#1011](https://github.com/arcjet/arcjet-js/issues/1011)) ([c17a101](https://github.com/arcjet/arcjet-js/commit/c17a101c5729db44ddf8a7e14d5e4184dcf38949))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.17 to 1.0.0-alpha.18
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.17 to 1.0.0-alpha.18
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.17 to 1.0.0-alpha.18
+
 ## [1.0.0-alpha.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.16...@arcjet/sprintf-v1.0.0-alpha.17) (2024-06-17)
 
 
