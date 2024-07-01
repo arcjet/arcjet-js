@@ -1,6 +1,7 @@
 /// <reference types="bun-types/bun.d.ts" />
 import { createConnectTransport } from "@connectrpc/connect-node";
-import core, {
+import core from "arcjet";
+import type {
   ArcjetDecision,
   ArcjetOptions,
   Primitive,
@@ -8,6 +9,7 @@ import core, {
   ArcjetRequest,
   ExtraProps,
   Arcjet,
+  CharacteristicProps,
 } from "arcjet";
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
@@ -148,9 +150,14 @@ export interface ArcjetBun<Props extends PlainObject> {
  *
  * @param options - Arcjet configuration options to apply to all requests.
  */
-export default function arcjet<const Rules extends (Primitive | Product)[]>(
-  options: ArcjetOptions<Rules>,
-): ArcjetBun<Simplify<ExtraProps<Rules>>> {
+export default function arcjet<
+  const Rules extends (Primitive | Product)[],
+  const Characteristics extends readonly string[],
+>(
+  options: ArcjetOptions<Rules, Characteristics>,
+): ArcjetBun<
+  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>
+> {
   const client = options.client ?? createRemoteClient();
 
   // Assuming the `handler()` function was used around Bun's fetch handler this

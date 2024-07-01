@@ -3265,7 +3265,7 @@ describe("SDK", () => {
     );
   });
 
-  test("additional characteristics are propagated to fixedWindow if they aren't separately specified in fixedWindow", async () => {
+  test("global characteristics are propagated if they aren't separately specified in fixedWindow", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3277,120 +3277,17 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const rateLimitRule = fixedWindow({
-      mode: "LIVE",
-      window: "1h",
-      max: 60,
-    });
-
-    const localCharacteristics = ["someAdditionalCharacteristic"];
-    const aj = arcjet({
-      key: "test-key",
-      characteristics: localCharacteristics,
-      rules: [rateLimitRule],
-      client,
-      log,
-    });
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers(),
-    };
-
-    const _ = await aj.protect({}, request);
-
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      [
-        {
-          characteristics: localCharacteristics,
-          ...rateLimitRule[0],
-        },
-      ],
-    );
-  });
-
-  test("Additional characteristics aren't propagated to fixedWindow if they are separately specified in fixedWindow", async () => {
-    const client = {
-      decide: jest.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetTestReason(),
-          results: [],
-        });
-      }),
-      report: jest.fn(),
-    };
-
-    const localCharacteristics = ["someLocalCharacteristic"];
-    const rateLimitRule = fixedWindow({
-      mode: "LIVE",
-      window: "1h",
-      max: 60,
-      characteristics: localCharacteristics,
-    });
-
-    const aj = arcjet({
-      key: "test-key",
-      characteristics: ["someAdditionalCharacteristic"],
-      rules: [rateLimitRule],
-      client,
-      log,
-    });
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers(),
-    };
-
-    const _ = await aj.protect({}, request);
-
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      [
-        {
-          characteristics: localCharacteristics,
-          ...rateLimitRule[0],
-        },
-      ],
-    );
-  });
-
-  test("Additional characteristics are propagated to slidingWindow if they aren't separately specified in slidingWindow", async () => {
-    const client = {
-      decide: jest.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetTestReason(),
-          results: [],
-        });
-      }),
-      report: jest.fn(),
-    };
-
-    const rateLimitRule = slidingWindow({
-      mode: "LIVE",
-      interval: "1h",
-      max: 60,
-    });
-
-    const globalCharacteristics = ["someAdditionalCharacteristic"];
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
     const aj = arcjet({
       key: "test-key",
       characteristics: globalCharacteristics,
-      rules: [rateLimitRule],
+      rules: [
+        fixedWindow({
+          mode: "LIVE",
+          window: "1h",
+          max: 60,
+        }),
+      ],
       client,
       log,
     });
@@ -3402,6 +3299,7 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
+      someGlobalCharacteristic: "test",
     };
 
     const _ = await aj.protect({}, request);
@@ -3411,15 +3309,14 @@ describe("SDK", () => {
       expect.anything(),
       expect.anything(),
       [
-        {
+        expect.objectContaining({
           characteristics: globalCharacteristics,
-          ...rateLimitRule[0],
-        },
+        }),
       ],
     );
   });
 
-  test("Additional characteristics aren't propagated to slidingWindow if they are separately specified in slidingWindow", async () => {
+  test("local characteristics are prefered on fixedWindow over global characteristics", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3431,18 +3328,19 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const localCharacteristics = ["someLocalCharacteristic"];
-    const rateLimitRule = slidingWindow({
-      mode: "LIVE",
-      interval: "1h",
-      max: 60,
-      characteristics: localCharacteristics,
-    });
-
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const localCharacteristics = ["someLocalCharacteristic"] as const;
     const aj = arcjet({
       key: "test-key",
-      characteristics: ["someAdditionalCharacteristic"],
-      rules: [rateLimitRule],
+      characteristics: globalCharacteristics,
+      rules: [
+        fixedWindow({
+          mode: "LIVE",
+          window: "1h",
+          max: 60,
+          characteristics: localCharacteristics,
+        }),
+      ],
       client,
       log,
     });
@@ -3454,6 +3352,8 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers(),
+      someGlobalCharacteristic: "test",
+      someLocalCharacteristic: "test",
     };
 
     const _ = await aj.protect({}, request);
@@ -3463,15 +3363,14 @@ describe("SDK", () => {
       expect.anything(),
       expect.anything(),
       [
-        {
+        expect.objectContaining({
           characteristics: localCharacteristics,
-          ...rateLimitRule[0],
-        },
+        }),
       ],
     );
   });
 
-  test("Additional characteristics are propagated to tokenBucket if they aren't separately specified in tokenBucket", async () => {
+  test("global characteristics are propagated if they aren't separately specified in slidingWindow", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3483,18 +3382,124 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const rateLimitRule = tokenBucket({
-      mode: "LIVE",
-      interval: "1h",
-      refillRate: 1,
-      capacity: 10,
-    });
-
-    const globalCharacteristics = ["someAdditionalCharacteristic"];
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
     const aj = arcjet({
       key: "test-key",
       characteristics: globalCharacteristics,
-      rules: [rateLimitRule],
+      rules: [
+        slidingWindow({
+          mode: "LIVE",
+          interval: "1h",
+          max: 60,
+        }),
+      ],
+      client,
+      log,
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      someGlobalCharacteristic: "test",
+    };
+
+    const _ = await aj.protect({}, request);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [
+        expect.objectContaining({
+          characteristics: globalCharacteristics,
+        }),
+      ],
+    );
+  });
+
+  test("local characteristics are prefered on slidingWindow over global characteristics", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const localCharacteristics = ["someLocalCharacteristic"] as const;
+
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [
+        slidingWindow({
+          mode: "LIVE",
+          interval: "1h",
+          max: 60,
+          characteristics: localCharacteristics,
+        }),
+      ],
+      client,
+      log,
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      someGlobalCharacteristic: "test",
+      someLocalCharacteristic: "test",
+    };
+
+    const _ = await aj.protect({}, request);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [
+        expect.objectContaining({
+          characteristics: localCharacteristics,
+        }),
+      ],
+    );
+  });
+
+  test("global characteristics are propagated if they aren't separately specified in tokenBucket", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [
+        tokenBucket({
+          mode: "LIVE",
+          interval: "1h",
+          refillRate: 1,
+          capacity: 10,
+        }),
+      ],
       client,
       log,
     });
@@ -3507,6 +3512,7 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers(),
       requested: 1,
+      someGlobalCharacteristic: "test",
     };
 
     const _ = await aj.protect({}, request);
@@ -3516,15 +3522,14 @@ describe("SDK", () => {
       expect.anything(),
       expect.anything(),
       [
-        {
+        expect.objectContaining({
           characteristics: globalCharacteristics,
-          ...rateLimitRule[0],
-        },
+        }),
       ],
     );
   });
 
-  test("additional characteristics aren't propagated to tokenBucket if they are separately specified in tokenBucket", async () => {
+  test("local characteristics are prefered on tokenBucket over global characteristics", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -3536,19 +3541,21 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const localCharacteristics = ["someLocalCharacteristic"];
-    const rateLimitRule = tokenBucket({
-      mode: "LIVE",
-      interval: "1h",
-      refillRate: 1,
-      capacity: 10,
-      characteristics: localCharacteristics,
-    });
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const localCharacteristics = ["someLocalCharacteristic"] as const;
 
     const aj = arcjet({
       key: "test-key",
-      characteristics: ["someAdditionalCharacteristic"],
-      rules: [rateLimitRule],
+      characteristics: globalCharacteristics,
+      rules: [
+        tokenBucket({
+          mode: "LIVE",
+          interval: "1h",
+          refillRate: 1,
+          capacity: 10,
+          characteristics: localCharacteristics,
+        }),
+      ],
       client,
       log,
     });
@@ -3561,6 +3568,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers(),
       requested: 1,
+      someGlobalCharacteristic: "test",
+      someLocalCharacteristic: "test",
     };
 
     const _ = await aj.protect({}, request);
@@ -3570,10 +3579,9 @@ describe("SDK", () => {
       expect.anything(),
       expect.anything(),
       [
-        {
+        expect.objectContaining({
           characteristics: localCharacteristics,
-          ...rateLimitRule[0],
-        },
+        }),
       ],
     );
   });
