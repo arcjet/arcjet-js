@@ -9,7 +9,7 @@
   "dependencies": {
     "@arcjet/node": "file:../../arcjet-node",
     "@hono/node-server": "^1.11.4",
-    "hono": "^4.4.9"
+    "hono": "^4.4.10"
   },
   "devDependencies": {
     "@types/node": "^20",
