@@ -66,7 +66,7 @@ async function getClient() {
 export async function GET(req: NextRequest) {
   // Get the user's ID if they are logged in, otherwise use their IP address as a fingerprint
   const user = await currentUser();
-  const fingerprint: any = user ? user.id : req.ip;
+  const fingerprint: string | number = user ? user.id : req.ip;
 
   // Get the Arcjet client and request a decision
   const aj = await getClient();
