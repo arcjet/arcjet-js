@@ -1,0 +1,226 @@
+:root {
+  --max-width: 1100px;
+  --border-radius: 12px;
+  --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
+    "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro",
+    "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
+
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+
+  --primary-glow: conic-gradient(
+    from 180deg at 50% 50%,
+    #16abff33 0deg,
+    #0885ff33 55deg,
+    #54d6ff33 120deg,
+    #0071ff33 160deg,
+    transparent 360deg
+  );
+  --secondary-glow: radial-gradient(
+    rgba(255, 255, 255, 1),
+    rgba(255, 255, 255, 0)
+  );
+
+  --tile-start-rgb: 239, 245, 249;
+  --tile-end-rgb: 228, 232, 233;
+  --tile-border: conic-gradient(
+    #00000080,
+    #00000040,
+    #00000030,
+    #00000020,
+    #00000010,
+    #00000010,
+    #00000080
+  );
+
+  --callout-rgb: 238, 240, 241;
+  --callout-border-rgb: 172, 175, 176;
+  --card-rgb: 180, 185, 188;
+  --card-border-rgb: 131, 134, 135;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 40, 40, 40;
+
+    --primary-glow: radial-gradient(rgba(1, 65, 255, 0.4), rgba(1, 65, 255, 0));
+    --secondary-glow: linear-gradient(
+      to bottom right,
+      rgba(1, 65, 255, 0),
+      rgba(1, 65, 255, 0),
+      rgba(1, 65, 255, 0.3)
+    );
+
+    --tile-start-rgb: 2, 13, 46;
+    --tile-end-rgb: 2, 5, 19;
+    --tile-border: conic-gradient(
+      #ffffff80,
+      #ffffff40,
+      #ffffff30,
+      #ffffff20,
+      #ffffff10,
+      #ffffff10,
+      #ffffff80
+    );
+
+    --callout-rgb: 40, 40, 40;
+    --callout-border-rgb: 108, 108, 108;
+    --card-rgb: 100, 100, 100;
+    --card-border-rgb: 200, 200, 200;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+main {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+
+  ul {
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    list-style: none;
+  }
+
+  a {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background-color: rgb(var(--callout-rgb));
+    box-shadow: 0 0 10px rgba(var(--foreground-rgb), 0.1);
+    border: 1px solid rgba(var(--callout-border-rgb), 0.5);
+    cursor: pointer;
+
+    &.active {
+      background-color: rgb(var(--card-rgb));
+    }
+
+    &:hover {
+      background-color: rgb(var(--card-rgb));
+    }
+  }
+
+  @media (max-width: 440px) {
+    padding-top: 0;
+    flex-direction: column;
+    row-gap: 0;
+
+    ul {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    a {
+      display: block;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+  }
+}
+
+.intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem 0;
+
+  .feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: rgb(var(--callout-rgb));
+
+    .imageContainer {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+  }
+
+  @media (max-width: 550px) {
+    grid-template-columns: auto;
+
+    .feature {
+      flex-direction: row;
+
+      .imageContainer {
+        width: 100px;
+        min-width: 100px;
+        height: 100px;
+      }
+    }
+  }
+}
+
+.notice {
+  padding: 0 1rem;
+  border-radius: 8px;
+  background-color: rgb(var(--callout-rgb));
+  box-shadow: 0 0 10px inset rgba(var(--foreground-rgb), 0.1);
+  border: 1px solid rgba(var(--callout-border-rgb), 0.5);
+}
+
+.behind-the-scenes {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 1rem;
+  padding: 1rem 0;
+
+  @media screen and (max-width: 550px) {
+    grid-template-columns: auto;
+  }
+}
+
+h1 button {
+  float: right;
+}
