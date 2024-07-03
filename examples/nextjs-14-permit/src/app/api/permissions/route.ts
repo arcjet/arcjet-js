@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { detectBot, slidingWindow } from "@arcjet/next";
 import { currentUser } from "@clerk/nextjs/server";
-import { aj } from "@/lib/arcjet";
+import { arcjet } from "@/lib/arcjet";
 import { permit } from "@/lib/permit";
+
+const aj = arcjet
+    // Add a sliding window to limit requests to 2 per second
+    .withRule(slidingWindow({ mode: "LIVE", max: 2, interval: 1 }))
+    // Add bot detection to block automated requests
+    .withRule(detectBot({ mode: "LIVE", block: ["AUTOMATED"] }));
 
 export async function GET(req: Request) {
   let user = await currentUser();
@@ -10,13 +16,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ canUpdate: false });
   }
 
-  const decision = await aj
-    // Add a sliding window rule to limit the number of requests to 2 per second
-    .withRule(slidingWindow({ mode: "LIVE", max: 2, interval: 1 }))
-    // Add bot detection to block automated requests
-    .withRule(detectBot({ mode: "LIVE", block: ["AUTOMATED"] }))
-    // Request a decision from Arcjet with the user's ID as a fingerprint
-    .protect(req, { fingerprint: user.id });
+  // Request a decision from Arcjet with the user's ID as a fingerprint
+  const decision = await aj.protect(req, { fingerprint: user.id });
 
   // If the decision is denied then return an error response
   if (decision.isDenied()) {

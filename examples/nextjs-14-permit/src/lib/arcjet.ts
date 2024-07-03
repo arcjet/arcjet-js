@@ -1,6 +1,6 @@
-import arcjet, { shield } from "@arcjet/next";
+import _arcjet, { shield } from "@arcjet/next";
 
-export const aj = arcjet({
+export const arcjet = _arcjet({
   // Get your site key from https://app.arcjet.com
   // and set it as an environment variable rather than hard coding.
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables

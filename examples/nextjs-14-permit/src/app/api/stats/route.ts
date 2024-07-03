@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { detectBot, slidingWindow } from "@arcjet/next";
 import { currentUser } from "@clerk/nextjs/server";
-import { aj } from "@/lib/arcjet";
+import { arcjet } from "@/lib/arcjet";
 import { permit } from "@/lib/permit";
 import { getLastFriday } from "@/lib/dateHelper";
 import { getOrderCount, getToppings } from "@/data/stats";
@@ -13,8 +13,8 @@ async function getClient() {
   const user = await currentUser();
   if (!user) {
     return (
-      aj
-        // Add a sliding window rule to limit the number of requests to 5 per minute
+      arcjet
+        // Add a sliding window to limit requests to 5 per minute
         .withRule(slidingWindow({ mode: "LIVE", max: 5, interval: 60 }))
         // Add bot detection to block automated requests
         .withRule(detectBot({ mode: "LIVE", block: ["AUTOMATED"] }))
@@ -25,18 +25,21 @@ async function getClient() {
   // then give them a medium rate limit.
   const canUpdate = await permit.check(user.id, "update", "stats");
   if (!canUpdate) {
-    return aj.withRule(
-      // Add a sliding window rule to limit the number of requests to 10 per minute
-      slidingWindow({ mode: "LIVE", max: 10, interval: 60 })
+    return (
+      arcjet
+        // Add a sliding window to limit requests to 10 per minute
+        .withRule(slidingWindow({ mode: "LIVE", max: 10, interval: 60 }))
     );
   }
 
-  // User is logged in and has permission to update stats, so give them no rate limit
-  return aj;
+  // User is logged in and has permission to update stats,
+  // so give them no rate limit
+  return arcjet;
 }
 
 export async function GET(req: NextRequest) {
-  // Get the user's ID if they are logged in, otherwise use their IP address as a fingerprint
+  // Get the user's ID if they are logged in, otherwise use
+  // their IP address as a fingerprint
   const user = await currentUser();
   const fingerprint: string = user ? user.id : req.ip!;
 
