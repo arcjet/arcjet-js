@@ -10,7 +10,7 @@ export const aj = arcjet({
   // Define the global rules that we want to run on every request
   rules: [
     // Shield detects suspicious behavior, such as SQL injection and cross-site
-    // scripting attacks. We want to ru nit on every request
+    // scripting attacks. We want to run it on every request
     shield({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
     }),
