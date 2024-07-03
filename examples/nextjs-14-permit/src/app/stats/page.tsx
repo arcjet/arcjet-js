@@ -37,7 +37,7 @@ export default function Stats() {
       .then((res) => res.json())
       .then((data) => {
         if (data.stats) setStats(data.stats);
-        if (data.reason) setRatelimitData(data.reason);
+        if (data.ratelimitData) setRatelimitData(data.ratelimitData);
       });
   };
 
@@ -55,8 +55,8 @@ export default function Stats() {
       </h1>
 
       <p>
-        This page renders for everyone, but the response from the API call for
-        the data below depends on your logged-in status.
+        This page renders for everyone, but the rate-limit on the API call
+        depends on your logged-in status.
       </p>
 
       {user.isLoaded && !user.isSignedIn && <GuestNotice />}
@@ -65,9 +65,8 @@ export default function Stats() {
       {stats && (
         <>
           <h3>{stats.title}</h3>
-          <p>Week: {stats.week}</p>
+          <p>Week ending {stats.week}</p>
           <p>Total Orders: {stats.total_orders}</p>
-          <h2>Toppings (by count descending):</h2>
           <ul>
             {stats.toppings
               .sort((a, b) => b.orders - a.orders)

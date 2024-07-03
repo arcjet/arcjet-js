@@ -18,14 +18,6 @@ export default function Nav({ activeMenu: active }: { activeMenu: string }) {
               Stats
             </Link>
           </li>
-          <li>
-            <Link
-              href="/settings"
-              className={active === "settings" ? "active" : ""}
-            >
-              Settings
-            </Link>
-          </li>
         </ul>
         <SignedOut>
           <SignInButton>

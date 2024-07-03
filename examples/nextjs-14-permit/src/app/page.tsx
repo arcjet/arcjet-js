@@ -9,7 +9,7 @@ export default function Home() {
   const [permitLogo, setPermitLogo] = useState("/permit-logo.png");
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-color-scheme: dark)")) {
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
       setArcjetLogo("/arcjet-logo-dark.png");
       setClerkLogo("/clerk-logo-dark.png");
       // Permit logo works for light and dark mode
@@ -47,7 +47,14 @@ export default function Home() {
           </p>
         </div>
       </div>
-      <p>Navigate using the menu above to see various settings.</p>
+      <p>
+        Check out the{" "}
+        <a href="https://blog.arcjet.com/permissions-based-security-in-nextjs-with-arcjet-and-permitio/">
+          Permissions-Based Security in Next.js Apps: A Practical Guide with
+          Arcjet and Permit.io
+        </a>{" "}
+        article on our blog for the writeup.
+      </p>
     </main>
   );
 }

@@ -1,41 +1,8 @@
 import { NextResponse } from "next/server";
-import arcjet, {
-  detectBot,
-  shield,
-  slidingWindow,
-} from "@arcjet/next";
+import { detectBot, slidingWindow } from "@arcjet/next";
 import { currentUser } from "@clerk/nextjs/server";
-import { Permit } from "permitio";
-
-const aj = arcjet({
-  // Get your site key from https://app.arcjet.com
-  // and set it as an environment variable rather than hard coding.
-  // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
-  key: process.env.ARCJET_KEY!,
-  // Define a global characteristic that we can use to identify users
-  characteristics: ["fingerprint"],
-  rules: [
-    // Shield detects suspicious behavior, such as SQL injection and cross-site
-    // scripting attacks. We want to ru nit on every request
-    shield({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-    }),
-    slidingWindow({
-      mode: "LIVE",
-      max: 2,
-      interval: 1,
-    }),
-    detectBot({
-      mode: "LIVE",
-      block: ["AUTOMATED"],
-    }),
-  ],
-});
-
-const permit = new Permit({
-  pdp: process.env.PERMIT_PDP!,
-  token: process.env.PERMIT_TOKEN!,
-});
+import { aj } from "@/lib/arcjet";
+import { permit } from "@/lib/permit";
 
 export async function GET(req: Request) {
   let user = await currentUser();
@@ -43,32 +10,30 @@ export async function GET(req: Request) {
     return NextResponse.json({ canUpdate: false });
   }
 
-  const decision = await aj.protect(req, { fingerprint: user.id });
+  const decision = await aj
+    // Add a sliding window rule to limit the number of requests to 2 per second
+    .withRule(slidingWindow({ mode: "LIVE", max: 2, interval: 1 }))
+    // Add bot detection to block automated requests
+    .withRule(detectBot({ mode: "LIVE", block: ["AUTOMATED"] }))
+    // Request a decision from Arcjet with the user's ID as a fingerprint
+    .protect(req, { fingerprint: user.id });
 
+  // If the decision is denied then return an error response
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {
       return NextResponse.json(
-        {
-          error: "Too Many Requests",
-          reason: decision.reason,
-        },
-        {
-          status: 429,
-        }
+        { error: "Too Many Requests", reason: decision.reason },
+        { status: 429 }
       );
     } else {
       return NextResponse.json(
-        {
-          error: "Suspicious Activity Detected",
-          reason: decision.reason,
-        },
-        {
-          status: 403,
-        }
+        { error: "Suspicious Activity Detected", reason: decision.reason },
+        { status: 403 }
       );
     }
   }
 
+  // Check with Permit.io if the user has permission to update stats
   const canUpdate = await permit.check(user.id, "update", "stats");
 
   return NextResponse.json({ canUpdate });
