@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
-    "@clerk/nextjs": "^5.1.6",
+    "@clerk/nextjs": "^5.2.1",
     "next": "^14.2.4",
     "react": "^18",
     "react-dom": "^18"
