@@ -1,0 +1,37 @@
+{
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:8080" }],
+  "item": [
+    {
+      "name": "/api/high-rate-limit",
+      "item": [
+        {
+          "name": "Test high rate limit",
+          "request": {
+            "url": "{{baseUrl}}/api/high-rate-limit",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('returns proper status based on iteration', () => pm.response.to.have.status(iteration < 50 ? 200 : 429))"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": []
+}
