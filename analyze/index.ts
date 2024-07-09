@@ -6,6 +6,7 @@ import type {
   EmailValidationConfig,
   BotDetectionResult,
   BotType,
+  EmailValidationResult,
 } from "./wasm/arcjet_analyze_js_req.component.js";
 
 import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.component.core.wasm?js";
@@ -55,6 +56,31 @@ async function init(context: AnalyzeContext) {
       },
       error(msg) {
         log.error(msg);
+      },
+    },
+    "arcjet:js-req/email-validator-overrides": {
+      isFreeEmail(domain) {
+        if (
+          [
+            "gmail.com",
+            "yahoo.com",
+            "hotmail.com",
+            "aol.com",
+            "hotmail.co.uk",
+          ].includes(domain)
+        ) {
+          return "yes";
+        }
+        return "unknown";
+      },
+      isDisposableEmail() {
+        return "unknown";
+      },
+      hasMxRecords() {
+        return "unknown";
+      },
+      hasGravatar() {
+        return "unknown";
       },
     },
   };
@@ -111,14 +137,22 @@ export async function isValidEmail(
   context: AnalyzeContext,
   candidate: string,
   options?: EmailValidationConfig,
-) {
+): Promise<EmailValidationResult> {
   const analyze = await init(context);
+  const optionsOrDefault = options || {
+    requireTopLevelDomain: true,
+    allowDomainLiteral: false,
+    blockedEmails: [],
+  };
 
   if (typeof analyze !== "undefined") {
-    return analyze.isValidEmail(candidate, options);
+    return analyze.isValidEmail(candidate, optionsOrDefault);
   } else {
     // TODO: Fallback to JS if we don't have WASM?
-    return true;
+    return {
+      validity: "valid",
+      blocked: [],
+    };
   }
 }
 
