@@ -5,7 +5,7 @@
   </picture>
 </a>
 
-# Arcjet Dynamic Configuration via LaunchDarkly Feature Flags (with Express for Node.js)
+# Arcjet Dynamic Configuration via LaunchDarkly Feature Flags
 
 This example shows how to dynamically configure Arcjet via
 [LaunchDarkly](https://launchdarkly.com) feature flags. It is implemented with a Node.js
