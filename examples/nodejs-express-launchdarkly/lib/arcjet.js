@@ -10,22 +10,19 @@ const aj = _arcjet({
   rules: [],
 });
 
-
 // This function will return an Arcjet instance with the latest rules
 const arcjet = async () => {
   // Get the latest configuration from LaunchDarkly
   const newConfig = await getArcjetConfig();
 
-    // Return the Arcjet instance with the latest rules
-    return aj
-      .withRule(shield({ mode: currentConfig.shieldMode }))
-      .withRule(
-        slidingWindow({
-          mode: currentConfig.slidingWindowMode,
-          max: currentConfig.slidingWindowMax,
-          interval: currentConfig.slidingWindowInterval,
-        })
-      );
+  // Return the Arcjet instance with the latest rules
+  return aj.withRule(shield({ mode: currentConfig.shieldMode })).withRule(
+    slidingWindow({
+      mode: currentConfig.slidingWindowMode,
+      max: currentConfig.slidingWindowMax,
+      interval: currentConfig.slidingWindowInterval,
+    })
+  );
 };
 
 export default arcjet;
