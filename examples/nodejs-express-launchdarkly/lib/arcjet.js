@@ -16,11 +16,8 @@ const arcjet = async () => {
   // Get the latest configuration from LaunchDarkly
   const newConfig = await getArcjetConfig();
 
-  // If the configuration has changed, update the Arcjet rules
-  if (JSON.stringify(newConfig) !== JSON.stringify(currentConfig)) {
-    console.log("info: [Arcjet-Example] Updating configuration:", JSON.stringify(newConfig));
-    currentConfig = newConfig;
-    ajWithRules = aj
+    // Return the Arcjet instance with the latest rules
+    return aj
       .withRule(shield({ mode: currentConfig.shieldMode }))
       .withRule(
         slidingWindow({
@@ -29,10 +26,6 @@ const arcjet = async () => {
           interval: currentConfig.slidingWindowInterval,
         })
       );
-  }
-
-  // Return the Arcjet instance with the latest rules
-  return ajWithRules;
 };
 
 export default arcjet;
