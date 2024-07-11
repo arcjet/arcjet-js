@@ -10,13 +10,6 @@ const aj = _arcjet({
   rules: [],
 });
 
-// We don't want to reinitialize Arcjet unless the configuration changes
-// Let's create a global instance of Arcjet with the rules applied
-// On first load, we'll use the default Arcjet instance without rules
-let ajWithRules = aj;
-
-// We'll store the current LaunchDarkly configuration here
-let currentConfig = {};
 
 // This function will return an Arcjet instance with the latest rules
 const arcjet = async () => {
