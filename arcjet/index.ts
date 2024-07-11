@@ -182,6 +182,16 @@ function isUnknownRequestProperty(key: string) {
   return !knownFields.includes(key);
 }
 
+function isEmailType(type: string): type is ArcjetEmailType {
+  return (
+    type === "FREE" ||
+    type === "DISPOSABLE" ||
+    type === "NO_MX_RECORDS" ||
+    type === "NO_GRAVATAR" ||
+    type === "INVALID"
+  );
+}
+
 function toString(value: unknown) {
   if (typeof value === "string") {
     return value;
@@ -556,7 +566,6 @@ export function validateEmail(
         { email }: ArcjetRequestDetails & { email: string },
       ): Promise<ArcjetRuleResult> {
         const result = await analyze.isValidEmail(context, email, emailOpts);
-        console.log(result);
         if (result.validity === "valid") {
           return new ArcjetRuleResult({
             ttl: 0,
@@ -565,17 +574,7 @@ export function validateEmail(
             reason: new ArcjetEmailReason({ emailTypes: [] }),
           });
         } else {
-          const typedEmailTypes = result.blocked.filter(
-            (type): type is ArcjetEmailType => {
-              return (
-                type === "FREE" ||
-                type === "DISPOSABLE" ||
-                type === "NO_MX_RECORDS" ||
-                type === "NO_GRAVATAR" ||
-                type === "INVALID"
-              );
-            },
-          );
+          const typedEmailTypes = result.blocked.filter(isEmailType);
 
           return new ArcjetRuleResult({
             ttl: 0,

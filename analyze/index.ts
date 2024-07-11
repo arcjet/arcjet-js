@@ -13,6 +13,14 @@ import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.componen
 import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_js_req.component.core2.wasm?js";
 import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_js_req.component.core3.wasm?js";
 
+const FREE_EMAIL_PROVIDERS = [
+  "gmail.com",
+  "yahoo.com",
+  "hotmail.com",
+  "aol.com",
+  "hotmail.co.uk",
+];
+
 interface AnalyzeContext {
   log: ArcjetLogger;
   characteristics: string[];
@@ -60,15 +68,7 @@ async function init(context: AnalyzeContext) {
     },
     "arcjet:js-req/email-validator-overrides": {
       isFreeEmail(domain) {
-        if (
-          [
-            "gmail.com",
-            "yahoo.com",
-            "hotmail.com",
-            "aol.com",
-            "hotmail.co.uk",
-          ].includes(domain)
-        ) {
+        if (FREE_EMAIL_PROVIDERS.includes(domain)) {
           return "yes";
         }
         return "unknown";
@@ -139,16 +139,17 @@ export async function isValidEmail(
   options?: EmailValidationConfig,
 ): Promise<EmailValidationResult> {
   const analyze = await init(context);
-  const optionsOrDefault = options || {
+  const optionsOrDefault = {
     requireTopLevelDomain: true,
     allowDomainLiteral: false,
     blockedEmails: [],
+    ...options,
   };
 
   if (typeof analyze !== "undefined") {
     return analyze.isValidEmail(candidate, optionsOrDefault);
   } else {
-    // TODO: Fallback to JS if we don't have WASM?
+    // Skip the local evaluation of the rule if WASM is not available
     return {
       validity: "valid",
       blocked: [],
