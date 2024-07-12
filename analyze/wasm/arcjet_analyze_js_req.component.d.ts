@@ -18,18 +18,33 @@ export interface BotDetectionResult {
   botType: BotType,
   botScore: number,
 }
-export interface EmailValidationConfig {
-  requireTopLevelDomain?: boolean,
-  allowDomainLiteral?: boolean,
+/**
+* # Variants
+* 
+* ## `"valid"`
+* 
+* ## `"invalid"`
+*/
+export type EmailValidity = 'valid' | 'invalid';
+export interface EmailValidationResult {
+  validity: EmailValidity,
+  blocked: string[],
 }
+export interface EmailValidationConfig {
+  requireTopLevelDomain: boolean,
+  allowDomainLiteral: boolean,
+  blockedEmails: string[],
+}
+import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
 import { ArcjetJsReqLogger } from './interfaces/arcjet-js-req-logger.js';
 export interface ImportObject {
+  'arcjet:js-req/email-validator-overrides': typeof ArcjetJsReqEmailValidatorOverrides,
   'arcjet:js-req/logger': typeof ArcjetJsReqLogger,
 }
 export interface Root {
   detectBot(headers: string, patternsAdd: string, patternsRemove: string): BotDetectionResult,
   generateFingerprint(request: string, characteristics: string[]): string,
-  isValidEmail(candidate: string, options: EmailValidationConfig | undefined): boolean,
+  isValidEmail(candidate: string, options: EmailValidationConfig): EmailValidationResult,
 }
 
 /**
