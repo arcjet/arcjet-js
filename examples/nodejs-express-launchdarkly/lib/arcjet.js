@@ -11,7 +11,7 @@ const aj = _arcjet({
 });
 
 // This function will return an Arcjet instance with the latest rules
-const arcjet = async () => {
+export default async () => {
   // Get the latest configuration from LaunchDarkly
   const config = await getArcjetConfig();
 
@@ -24,5 +24,3 @@ const arcjet = async () => {
     })
   );
 };
-
-export default arcjet;
