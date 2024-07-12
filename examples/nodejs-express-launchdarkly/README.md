@@ -80,7 +80,11 @@ keys](https://app.launchdarkly.com/settings/projects)).
          * Serve when targeting is ON: `Regular`
          * Serve when targeting is OFF: `Clamped Down`
 
-5. Start the server.
+5. For each of the flags you just created, open them, toggle the “Off/On”
+switch at the top of the page to the "On" position, click “Review and save”,
+and “Save changes”.
+
+6. Start the server.
 
    ```bash
    npm start
@@ -91,14 +95,14 @@ keys](https://app.launchdarkly.com/settings/projects)).
    version of Node.js, you can use a package like
    [dotenv](https://www.npmjs.com/package/dotenv) to load the environment file.
 
-6. Visit `http://localhost:3000/`.
+7. Visit `http://localhost:3000/`.
 
-7. Refresh the page about 5-10 times. The rate-limit should not be hit.
+8. Refresh the page about 5-10 times. The rate-limit should not be hit.
 
-8. Go to the "Contexts" section in the LaunchDarkly dashboard and click on "guest".
+9. Go to the "Contexts" section in the LaunchDarkly dashboard and click on "guest".
 
-9. Change the `slidingWindowMax` and `slidingWindowInterval` to `Clamped Down`,
+10. Change the `slidingWindowMax` and `slidingWindowInterval` to `Clamped Down`,
 click "Review and save", then "Save changes" in the modeal that appears.
 
-10. Refresh your web application and note the new configuration is announced in
+11. Refresh your web application and note the new configuration is announced in
 the terminal. Refresh another few times to see the rate-limit take effect.

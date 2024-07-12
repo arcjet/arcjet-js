@@ -5,7 +5,7 @@ const client = ld.init(process.env.LAUNCHDARKLY_SDK_KEY);
 
 export const getArcjetConfig = async () => {
   // Wait for the LaunchDarkly client to be initialized
-  await client.waitForInitialization({ timeout: 500 });
+  await client.waitForInitialization({ timeout: 1 });
 
   // Set the user context for LaunchDarkly - in this example, every user is treated the same.
   const context = { key: "guest" };
