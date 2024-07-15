@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.0.0-alpha.19](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.18...arcjet-v1.0.0-alpha.19) (2024-07-15)
+
+
+### 🚀 New Features
+
+* detect common free/disposable email providers locally ([#1096](https://github.com/arcjet/arcjet-js/issues/1096)) ([115d016](https://github.com/arcjet/arcjet-js/commit/115d01662d4ff456cf4d81825338ef1099626fdf)), closes [#1095](https://github.com/arcjet/arcjet-js/issues/1095)
+
+
+### 📦 Dependencies
+
+* **dev:** Bump @edge-runtime/jest-environment from 2.3.10 to 3.0.0 ([#1087](https://github.com/arcjet/arcjet-js/issues/1087)) ([1e6eb00](https://github.com/arcjet/arcjet-js/commit/1e6eb004ecb052f82d1a72772c0a1c99a8002965))
+* **dev:** bump @edge-runtime/jest-environment from 3.0.0 to 3.0.1 ([#1123](https://github.com/arcjet/arcjet-js/issues/1123)) ([9064240](https://github.com/arcjet/arcjet-js/commit/90642400a22a13ca21bbe28380bc2beaad06c235))
+* **dev:** Bump @rollup/wasm-node from 4.18.0 to 4.18.1 ([#1092](https://github.com/arcjet/arcjet-js/issues/1092)) ([ffc298a](https://github.com/arcjet/arcjet-js/commit/ffc298ad030721519af02c6c2da26fd2bd3fbdbd))
+* **dev:** Bump typescript from 5.5.2 to 5.5.3 ([#1065](https://github.com/arcjet/arcjet-js/issues/1065)) ([ef05395](https://github.com/arcjet/arcjet-js/commit/ef053953cf4a6cba621b778cba2e0dd4e114b626))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+    * @arcjet/duration bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+    * @arcjet/headers bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+    * @arcjet/protocol bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+    * @arcjet/runtime bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+
 ## [1.0.0-alpha.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.17...arcjet-v1.0.0-alpha.18) (2024-07-01)
 
 
