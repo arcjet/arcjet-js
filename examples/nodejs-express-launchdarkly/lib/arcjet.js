@@ -1,8 +1,8 @@
-import _arcjet, { shield, slidingWindow } from "@arcjet/node";
+import arcjet, { shield, slidingWindow } from "@arcjet/node";
 import { getArcjetConfig } from "./launchdarkly.js";
 
 // Initialize Arcjet with your site key and rules
-const aj = _arcjet({
+const aj = arcjet({
   // Get your site key from https://app.arcjet.com
   // and set it as an environment variable rather than hard coding.
   // See: https://www.npmjs.com/package/dotenv
