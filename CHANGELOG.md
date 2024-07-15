@@ -1,5 +1,72 @@
 # Changelog
 
+## [1.0.0-alpha.19](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.18...v1.0.0-alpha.19) (2024-07-15)
+
+
+### 🚀 New Features
+
+* detect common free/disposable email providers locally ([#1096](https://github.com/arcjet/arcjet-js/issues/1096)) ([115d016](https://github.com/arcjet/arcjet-js/commit/115d01662d4ff456cf4d81825338ef1099626fdf)), closes [#1095](https://github.com/arcjet/arcjet-js/issues/1095)
+
+
+### 📦 Dependencies
+
+* Bump @typescript-eslint/eslint-plugin from 7.14.1 to 7.15.0 ([#1063](https://github.com/arcjet/arcjet-js/issues/1063)) ([d4a1cfe](https://github.com/arcjet/arcjet-js/commit/d4a1cfedd1fe144560589d05d05a26e8eb724870))
+* Bump @typescript-eslint/eslint-plugin from 7.15.0 to 7.16.0 ([#1091](https://github.com/arcjet/arcjet-js/issues/1091)) ([6bbcbe6](https://github.com/arcjet/arcjet-js/commit/6bbcbe6531e6f0e9f70cacebe252ed7845e75e6a))
+* bump @typescript-eslint/eslint-plugin from 7.16.0 to 7.16.1 ([#1135](https://github.com/arcjet/arcjet-js/issues/1135)) ([6f4495a](https://github.com/arcjet/arcjet-js/commit/6f4495a94c0a6ba867dec550077600ace581ad1c))
+* Bump @typescript-eslint/parser from 7.14.1 to 7.15.0 ([#1064](https://github.com/arcjet/arcjet-js/issues/1064)) ([b6e2b0f](https://github.com/arcjet/arcjet-js/commit/b6e2b0f4d076d3fa1f61b883e886bfd741353920))
+* Bump @typescript-eslint/parser from 7.15.0 to 7.16.0 ([#1090](https://github.com/arcjet/arcjet-js/issues/1090)) ([c31957f](https://github.com/arcjet/arcjet-js/commit/c31957fbcd0c2e30ebea6d23d3d69cd5d2afa7d2))
+* bump @typescript-eslint/parser from 7.16.0 to 7.16.1 ([#1132](https://github.com/arcjet/arcjet-js/issues/1132)) ([3feb40a](https://github.com/arcjet/arcjet-js/commit/3feb40a01f1274ee311909fcc0a6d0c0c138a7a5))
+* Bump typeid-js from 0.7.0 to 1.0.0 ([#1079](https://github.com/arcjet/arcjet-js/issues/1079)) ([fa276c5](https://github.com/arcjet/arcjet-js/commit/fa276c508f9881287f519a3e9d0513ec6b4558f1))
+* **dev:** Bump @edge-runtime/jest-environment from 2.3.10 to 3.0.0 ([#1087](https://github.com/arcjet/arcjet-js/issues/1087)) ([1e6eb00](https://github.com/arcjet/arcjet-js/commit/1e6eb004ecb052f82d1a72772c0a1c99a8002965))
+* **dev:** bump @edge-runtime/jest-environment from 3.0.0 to 3.0.1 ([#1123](https://github.com/arcjet/arcjet-js/issues/1123)) ([9064240](https://github.com/arcjet/arcjet-js/commit/90642400a22a13ca21bbe28380bc2beaad06c235))
+* **dev:** Bump @rollup/wasm-node from 4.18.0 to 4.18.1 ([#1092](https://github.com/arcjet/arcjet-js/issues/1092)) ([ffc298a](https://github.com/arcjet/arcjet-js/commit/ffc298ad030721519af02c6c2da26fd2bd3fbdbd))
+* **dev:** Bump bun-types from 1.1.17 to 1.1.18 ([#1080](https://github.com/arcjet/arcjet-js/issues/1080)) ([6bb3483](https://github.com/arcjet/arcjet-js/commit/6bb34832c80ec0ef1403e6836de693a1ff91973b))
+* **dev:** bump bun-types from 1.1.18 to 1.1.20 ([#1118](https://github.com/arcjet/arcjet-js/issues/1118)) ([dbf3826](https://github.com/arcjet/arcjet-js/commit/dbf3826f68af03d5ae06c0302b1894e4facec9d6))
+* **dev:** Bump typescript from 5.5.2 to 5.5.3 ([#1065](https://github.com/arcjet/arcjet-js/issues/1065)) ([ef05395](https://github.com/arcjet/arcjet-js/commit/ef053953cf4a6cba621b778cba2e0dd4e114b626))
+* **example:** Bump @clerk/nextjs from 5.1.6 to 5.2.2 in /examples/nextjs-14-clerk-rl in the dependencies group across 1 directory ([#1082](https://github.com/arcjet/arcjet-js/issues/1082)) ([7ac1236](https://github.com/arcjet/arcjet-js/commit/7ac12360e4e3a586ec101de6cd378bcbbc029b2b))
+* **example:** Bump @clerk/nextjs from 5.1.6 to 5.2.2 in /examples/nextjs-14-clerk-shield in the dependencies group across 1 directory ([#1081](https://github.com/arcjet/arcjet-js/issues/1081)) ([9b89f9b](https://github.com/arcjet/arcjet-js/commit/9b89f9bb120dcaded3bb41f72523f5be9e8eb5e4))
+* **example:** bump @clerk/nextjs from 5.2.2 to 5.2.3 in /examples/nextjs-14-clerk-rl in the dependencies group ([#1119](https://github.com/arcjet/arcjet-js/issues/1119)) ([5fe9ef0](https://github.com/arcjet/arcjet-js/commit/5fe9ef0a1ed23e989cf002a5f2e3aa2212e4b91b))
+* **example:** bump @clerk/nextjs from 5.2.2 to 5.2.3 in /examples/nextjs-14-clerk-shield in the dependencies group ([#1121](https://github.com/arcjet/arcjet-js/issues/1121)) ([baf55e0](https://github.com/arcjet/arcjet-js/commit/baf55e09b9743c70e006041c145c2e62d9d112c7))
+* **example:** Bump hono from 4.4.11 to 4.4.12 in /examples/nodejs-hono-rl in the dependencies group ([#1085](https://github.com/arcjet/arcjet-js/issues/1085)) ([3782001](https://github.com/arcjet/arcjet-js/commit/378200141ce9c664b6c60119b4f355f61ba1ba9a))
+* **example:** Bump hono from 4.4.12 to 4.4.13 in /examples/nodejs-hono-rl in the dependencies group ([#1112](https://github.com/arcjet/arcjet-js/issues/1112)) ([49f8721](https://github.com/arcjet/arcjet-js/commit/49f87210d539081edff038769fdfc371a4b40189))
+* **example:** Bump lucide-react from 0.399.0 to 0.400.0 in /examples/nextjs-14-authjs-5 in the dependencies group ([#1066](https://github.com/arcjet/arcjet-js/issues/1066)) ([b44dd6a](https://github.com/arcjet/arcjet-js/commit/b44dd6a3ec5ded8665f1b3d4132cc98ded10cb6d))
+* **example:** bump lucide-react from 0.407.0 to 0.408.0 in /examples/nextjs-14-authjs-5 in the dependencies group ([#1116](https://github.com/arcjet/arcjet-js/issues/1116)) ([84bd181](https://github.com/arcjet/arcjet-js/commit/84bd1810c23646860c5fe01a55d778daeddafc99))
+* **example:** bump tailwindcss from 3.4.4 to 3.4.5 in /examples/nextjs-14-app-dir-rl in the dependencies group ([#1124](https://github.com/arcjet/arcjet-js/issues/1124)) ([c73e955](https://github.com/arcjet/arcjet-js/commit/c73e9553edc61da6a41ea8f63942ab85f2c74217))
+* **example:** bump tailwindcss from 3.4.4 to 3.4.5 in /examples/nextjs-14-authjs-5 in the dependencies group ([#1129](https://github.com/arcjet/arcjet-js/issues/1129)) ([74adca7](https://github.com/arcjet/arcjet-js/commit/74adca7ad833c03117a45bc79e940035eba6ca58))
+* **example:** bump tailwindcss from 3.4.4 to 3.4.5 in /examples/nextjs-14-clerk-rl in the dependencies group ([#1125](https://github.com/arcjet/arcjet-js/issues/1125)) ([8aa2f53](https://github.com/arcjet/arcjet-js/commit/8aa2f53be8d8d64f05f781cb0b1c047d0ab73f01))
+* **example:** bump tailwindcss from 3.4.4 to 3.4.5 in /examples/nextjs-14-clerk-shield in the dependencies group ([#1130](https://github.com/arcjet/arcjet-js/issues/1130)) ([6f76186](https://github.com/arcjet/arcjet-js/commit/6f761867cfcfd6594791530a97b0d08654fcb8e4))
+* **example:** bump tailwindcss from 3.4.4 to 3.4.5 in /examples/nextjs-14-decorate in the dependencies group ([#1126](https://github.com/arcjet/arcjet-js/issues/1126)) ([b2d9a81](https://github.com/arcjet/arcjet-js/commit/b2d9a81d4d30cc85929a778c193e88552867cf8f))
+* **example:** bump tailwindcss from 3.4.4 to 3.4.5 in /examples/nextjs-14-ip-details in the dependencies group ([#1127](https://github.com/arcjet/arcjet-js/issues/1127)) ([0251e74](https://github.com/arcjet/arcjet-js/commit/0251e74685fbe57370563fab25c97d3e8897c918))
+* **example:** bump tailwindcss from 3.4.4 to 3.4.5 in /examples/nextjs-14-nextauth-4 in the dependencies group ([#1128](https://github.com/arcjet/arcjet-js/issues/1128)) ([b7f0028](https://github.com/arcjet/arcjet-js/commit/b7f0028b97fb856c1a35f902ed15500cbd397532))
+* **example:** bump tailwindcss from 3.4.4 to 3.4.5 in /examples/nextjs-14-pages-wrap in the dependencies group ([#1131](https://github.com/arcjet/arcjet-js/issues/1131)) ([af3f8d6](https://github.com/arcjet/arcjet-js/commit/af3f8d66b16e3f3c89fe3505a38fe046a2dcef57))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#1068](https://github.com/arcjet/arcjet-js/issues/1068)) ([bc86928](https://github.com/arcjet/arcjet-js/commit/bc86928a0a3a3771ceb19e3539323316cd5e08b3))
+* **example:** Bump the dependencies group across 1 directory with 2 updates ([#1071](https://github.com/arcjet/arcjet-js/issues/1071)) ([75df78a](https://github.com/arcjet/arcjet-js/commit/75df78a3df1b6cd350ef37faacc270745f03d18d))
+* **example:** bump the dependencies group across 1 directory with 2 updates ([#1117](https://github.com/arcjet/arcjet-js/issues/1117)) ([306d4f1](https://github.com/arcjet/arcjet-js/commit/306d4f1bd9f146c4c3bdcf06666517bcd4284c25))
+* **example:** Bump the dependencies group across 1 directory with 3 updates ([#1072](https://github.com/arcjet/arcjet-js/issues/1072)) ([937b184](https://github.com/arcjet/arcjet-js/commit/937b184a87a30c5133e71095d4207c01817f3b18))
+* **example:** Bump the dependencies group across 1 directory with 3 updates ([#1108](https://github.com/arcjet/arcjet-js/issues/1108)) ([3714941](https://github.com/arcjet/arcjet-js/commit/37149419968667402c809927cbb9bba36deafc96))
+* **example:** Bump the dependencies group across 1 directory with 4 updates ([#1106](https://github.com/arcjet/arcjet-js/issues/1106)) ([caaea7a](https://github.com/arcjet/arcjet-js/commit/caaea7a16da8f7e4994745c9872504785bd47235))
+* **example:** Bump the dependencies group across 1 directory with 6 updates ([#1109](https://github.com/arcjet/arcjet-js/issues/1109)) ([c877b39](https://github.com/arcjet/arcjet-js/commit/c877b3976f477bb6b162a89882ab8308bae8c795))
+* **example:** Bump the dependencies group in /examples/nextjs-14-app-dir-rl with 2 updates ([#1104](https://github.com/arcjet/arcjet-js/issues/1104)) ([8cbde05](https://github.com/arcjet/arcjet-js/commit/8cbde05f930220a5439f4c65a0fe3664bb5f0ade))
+* **example:** Bump the dependencies group in /examples/nextjs-14-app-dir-validate-email with 2 updates ([#1107](https://github.com/arcjet/arcjet-js/issues/1107)) ([298a70b](https://github.com/arcjet/arcjet-js/commit/298a70b387bab0628551b215fac7424edb60e560))
+* **example:** Bump the dependencies group in /examples/nextjs-14-clerk-rl with 2 updates ([#1102](https://github.com/arcjet/arcjet-js/issues/1102)) ([f1e7a4c](https://github.com/arcjet/arcjet-js/commit/f1e7a4ccfe6e58e35696ff0ac458f7de11d282d1))
+* **example:** Bump the dependencies group in /examples/nextjs-14-clerk-shield with 2 updates ([#1101](https://github.com/arcjet/arcjet-js/issues/1101)) ([10184f9](https://github.com/arcjet/arcjet-js/commit/10184f991fb84cd2b346899898572d22d020cdaf))
+* **example:** Bump the dependencies group in /examples/nextjs-14-decorate with 2 updates ([#1111](https://github.com/arcjet/arcjet-js/issues/1111)) ([52394af](https://github.com/arcjet/arcjet-js/commit/52394aff747f9a1d0210da2faf8cb12ba0460a7c))
+* **example:** Bump the dependencies group in /examples/nextjs-14-ip-details with 2 updates ([#1105](https://github.com/arcjet/arcjet-js/issues/1105)) ([5127321](https://github.com/arcjet/arcjet-js/commit/5127321429a15d52d8592672a7c219bb6e3ae270))
+* **example:** Bump the dependencies group in /examples/nextjs-14-nextauth-4 with 2 updates ([#1103](https://github.com/arcjet/arcjet-js/issues/1103)) ([8ef993f](https://github.com/arcjet/arcjet-js/commit/8ef993fab5da47046d64547e1fd1308b6457f354))
+* **example:** Bump the dependencies group in /examples/nextjs-14-openai with 2 updates ([#1113](https://github.com/arcjet/arcjet-js/issues/1113)) ([89b3ccb](https://github.com/arcjet/arcjet-js/commit/89b3ccbefaf785ce7d32a11807128a7b86f9539b))
+* **example:** bump the dependencies group in /examples/nextjs-14-openai with 2 updates ([#1133](https://github.com/arcjet/arcjet-js/issues/1133)) ([d2ac694](https://github.com/arcjet/arcjet-js/commit/d2ac694c537cdc4971612eb225034a83308ccc08))
+* **example:** Bump the dependencies group in /examples/nextjs-14-pages-wrap with 2 updates ([#1110](https://github.com/arcjet/arcjet-js/issues/1110)) ([fb05224](https://github.com/arcjet/arcjet-js/commit/fb052242fa45949fa897b6be353a3cbf67a69d5b))
+* **example:** bump the dependencies group in /examples/nextjs-14-react-hook-form with 2 updates ([#1120](https://github.com/arcjet/arcjet-js/issues/1120)) ([729c886](https://github.com/arcjet/arcjet-js/commit/729c88670529fb20da135261f817e34ca1d2eae1))
+* **example:** bump the dependencies group in /examples/nextjs-14-react-hook-form with 2 updates ([#1134](https://github.com/arcjet/arcjet-js/issues/1134)) ([2fbe4d6](https://github.com/arcjet/arcjet-js/commit/2fbe4d6c239182c0c12f99f6b9d88184e65826d2))
+* **example:** Bump the dependencies group in /examples/sveltekit with 2 updates ([#1093](https://github.com/arcjet/arcjet-js/issues/1093)) ([009591a](https://github.com/arcjet/arcjet-js/commit/009591ac7a5159f161f6cbfbece1fd7ea8c81f69))
+* **example:** bump the dependencies group in /examples/sveltekit with 2 updates ([#1136](https://github.com/arcjet/arcjet-js/issues/1136)) ([c93a9eb](https://github.com/arcjet/arcjet-js/commit/c93a9ebeb0f08f5b27fe56305bb8cd24afb072e3))
+
+
+### 🧹 Miscellaneous Chores
+
+* **examples:** Add example of testing APIs with Newman ([#1083](https://github.com/arcjet/arcjet-js/issues/1083)) ([6b2ccf0](https://github.com/arcjet/arcjet-js/commit/6b2ccf09775fc1222ac5ed0830c63ec266f96f87))
+* **examples:** Show dynamic feature flags with LaunchDarkly ([#1100](https://github.com/arcjet/arcjet-js/issues/1100)) ([d3bf356](https://github.com/arcjet/arcjet-js/commit/d3bf35640bc09eac581092b1df7f3dbf48148305))
+
 ## [1.0.0-alpha.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.17...v1.0.0-alpha.18) (2024-07-01)
 
 
