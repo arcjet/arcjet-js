@@ -36,7 +36,7 @@
     "@typescript-eslint/eslint-plugin": "7.16.1",
     "@typescript-eslint/parser": "7.16.1",
     "eslint-config-prettier": "9.1.0",
-    "eslint-config-turbo": "2.0.6"
+    "eslint-config-turbo": "2.0.9"
   },
   "peerDependencies": {
     "eslint": "^8"
