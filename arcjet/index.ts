@@ -182,6 +182,16 @@ function isUnknownRequestProperty(key: string) {
   return !knownFields.includes(key);
 }
 
+function isEmailType(type: string): type is ArcjetEmailType {
+  return (
+    type === "FREE" ||
+    type === "DISPOSABLE" ||
+    type === "NO_MX_RECORDS" ||
+    type === "NO_GRAVATAR" ||
+    type === "INVALID"
+  );
+}
+
 function toString(value: unknown) {
   if (typeof value === "string") {
     return value;
@@ -527,9 +537,10 @@ export function validateEmail(
     const requireTopLevelDomain = opt.requireTopLevelDomain ?? true;
     const allowDomainLiteral = opt.allowDomainLiteral ?? false;
 
-    const analyzeOpts = {
+    const emailOpts = {
       requireTopLevelDomain,
       allowDomainLiteral,
+      blockedEmails: block,
     };
 
     rules.push({
@@ -554,7 +565,8 @@ export function validateEmail(
         context: ArcjetContext,
         { email }: ArcjetRequestDetails & { email: string },
       ): Promise<ArcjetRuleResult> {
-        if (await analyze.isValidEmail(context, email, analyzeOpts)) {
+        const result = await analyze.isValidEmail(context, email, emailOpts);
+        if (result.validity === "valid") {
           return new ArcjetRuleResult({
             ttl: 0,
             state: "RUN",
@@ -562,12 +574,14 @@ export function validateEmail(
             reason: new ArcjetEmailReason({ emailTypes: [] }),
           });
         } else {
+          const typedEmailTypes = result.blocked.filter(isEmailType);
+
           return new ArcjetRuleResult({
             ttl: 0,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetEmailReason({
-              emailTypes: ["INVALID"],
+              emailTypes: typedEmailTypes,
             }),
           });
         }

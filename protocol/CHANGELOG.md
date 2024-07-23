@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-alpha.19](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.18...@arcjet/protocol-v1.0.0-alpha.19) (2024-07-15)
+
+
+### 📦 Dependencies
+
+* Bump typeid-js from 0.7.0 to 1.0.0 ([#1079](https://github.com/arcjet/arcjet-js/issues/1079)) ([fa276c5](https://github.com/arcjet/arcjet-js/commit/fa276c508f9881287f519a3e9d0513ec6b4558f1))
+* **dev:** Bump @rollup/wasm-node from 4.18.0 to 4.18.1 ([#1092](https://github.com/arcjet/arcjet-js/issues/1092)) ([ffc298a](https://github.com/arcjet/arcjet-js/commit/ffc298ad030721519af02c6c2da26fd2bd3fbdbd))
+* **dev:** Bump typescript from 5.5.2 to 5.5.3 ([#1065](https://github.com/arcjet/arcjet-js/issues/1065)) ([ef05395](https://github.com/arcjet/arcjet-js/commit/ef053953cf4a6cba621b778cba2e0dd4e114b626))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.18 to 1.0.0-alpha.19
+
 ## [1.0.0-alpha.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.17...@arcjet/protocol-v1.0.0-alpha.18) (2024-07-01)
 
 

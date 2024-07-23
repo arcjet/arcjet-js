@@ -14,10 +14,6 @@ class ComponentError extends Error {
 let dv = new DataView(new ArrayBuffer());
 const dataView = mem => dv.buffer === mem.buffer ? dv : dv = new DataView(mem.buffer);
 
-function throwInvalidBool() {
-  throw new TypeError('invalid variant discriminant for bool');
-}
-
 const utf8Decoder = new TextDecoder();
 
 const utf8Encoder = new TextEncoder();
@@ -51,6 +47,7 @@ async function instantiate(getCoreModule, imports, instantiateCore = WebAssembly
   const module1 = getCoreModule('arcjet_analyze_js_req.component.core2.wasm');
   const module2 = getCoreModule('arcjet_analyze_js_req.component.core3.wasm');
   
+  const { hasGravatar, hasMxRecords, isDisposableEmail, isFreeEmail } = imports['arcjet:js-req/email-validator-overrides'];
   const { debug, error } = imports['arcjet:js-req/logger'];
   let exports0;
   let exports1;
@@ -69,12 +66,143 @@ async function instantiate(getCoreModule, imports, instantiateCore = WebAssembly
     var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
     error(result0);
   }
+  
+  function trampoline2(arg0, arg1) {
+    var ptr0 = arg0;
+    var len0 = arg1;
+    var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+    const ret = isFreeEmail(result0);
+    var val1 = ret;
+    let enum1;
+    switch (val1) {
+      case 'yes': {
+        enum1 = 0;
+        break;
+      }
+      case 'no': {
+        enum1 = 1;
+        break;
+      }
+      case 'unknown': {
+        enum1 = 2;
+        break;
+      }
+      default: {
+        if ((ret) instanceof Error) {
+          console.error(ret);
+        }
+        
+        throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
+      }
+    }
+    return enum1;
+  }
+  
+  function trampoline3(arg0, arg1) {
+    var ptr0 = arg0;
+    var len0 = arg1;
+    var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+    const ret = isDisposableEmail(result0);
+    var val1 = ret;
+    let enum1;
+    switch (val1) {
+      case 'yes': {
+        enum1 = 0;
+        break;
+      }
+      case 'no': {
+        enum1 = 1;
+        break;
+      }
+      case 'unknown': {
+        enum1 = 2;
+        break;
+      }
+      default: {
+        if ((ret) instanceof Error) {
+          console.error(ret);
+        }
+        
+        throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
+      }
+    }
+    return enum1;
+  }
+  
+  function trampoline4(arg0, arg1) {
+    var ptr0 = arg0;
+    var len0 = arg1;
+    var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+    const ret = hasMxRecords(result0);
+    var val1 = ret;
+    let enum1;
+    switch (val1) {
+      case 'yes': {
+        enum1 = 0;
+        break;
+      }
+      case 'no': {
+        enum1 = 1;
+        break;
+      }
+      case 'unknown': {
+        enum1 = 2;
+        break;
+      }
+      default: {
+        if ((ret) instanceof Error) {
+          console.error(ret);
+        }
+        
+        throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
+      }
+    }
+    return enum1;
+  }
+  
+  function trampoline5(arg0, arg1) {
+    var ptr0 = arg0;
+    var len0 = arg1;
+    var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+    const ret = hasGravatar(result0);
+    var val1 = ret;
+    let enum1;
+    switch (val1) {
+      case 'yes': {
+        enum1 = 0;
+        break;
+      }
+      case 'no': {
+        enum1 = 1;
+        break;
+      }
+      case 'unknown': {
+        enum1 = 2;
+        break;
+      }
+      default: {
+        if ((ret) instanceof Error) {
+          console.error(ret);
+        }
+        
+        throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
+      }
+    }
+    return enum1;
+  }
   let realloc0;
   let postReturn0;
   let postReturn1;
+  let postReturn2;
   Promise.all([module0, module1, module2]).catch(() => {});
   ({ exports: exports0 } = await instantiateCore(await module1));
   ({ exports: exports1 } = await instantiateCore(await module0, {
+    'arcjet:js-req/email-validator-overrides': {
+      'has-gravatar': exports0['5'],
+      'has-mx-records': exports0['4'],
+      'is-disposable-email': exports0['3'],
+      'is-free-email': exports0['2'],
+    },
     'arcjet:js-req/logger': {
       debug: exports0['0'],
       error: exports0['1'],
@@ -86,11 +214,16 @@ async function instantiate(getCoreModule, imports, instantiateCore = WebAssembly
       $imports: exports0.$imports,
       '0': trampoline0,
       '1': trampoline1,
+      '2': trampoline2,
+      '3': trampoline3,
+      '4': trampoline4,
+      '5': trampoline5,
     },
   }));
   realloc0 = exports1.cabi_realloc;
   postReturn0 = exports1['cabi_post_detect-bot'];
   postReturn1 = exports1['cabi_post_generate-fingerprint'];
+  postReturn2 = exports1['cabi_post_is-valid-email'];
   
   function detectBot(arg0, arg1, arg2) {
     var ptr0 = utf8Encode(arg0, realloc0, memory0);
@@ -187,67 +320,61 @@ async function instantiate(getCoreModule, imports, instantiateCore = WebAssembly
   function isValidEmail(arg0, arg1) {
     var ptr0 = utf8Encode(arg0, realloc0, memory0);
     var len0 = utf8EncodedLen;
-    var variant4 = arg1;
-    let variant4_0;
-    let variant4_1;
-    let variant4_2;
-    let variant4_3;
-    let variant4_4;
-    if (variant4 === null || variant4=== undefined) {
-      variant4_0 = 0;
-      variant4_1 = 0;
-      variant4_2 = 0;
-      variant4_3 = 0;
-      variant4_4 = 0;
-    } else {
-      const e = variant4;
-      var {requireTopLevelDomain: v1_0, allowDomainLiteral: v1_1 } = e;
-      var variant2 = v1_0;
-      let variant2_0;
-      let variant2_1;
-      if (variant2 === null || variant2=== undefined) {
-        variant2_0 = 0;
-        variant2_1 = 0;
-      } else {
-        const e = variant2;
-        variant2_0 = 1;
-        variant2_1 = e ? 1 : 0;
-      }
-      var variant3 = v1_1;
-      let variant3_0;
-      let variant3_1;
-      if (variant3 === null || variant3=== undefined) {
-        variant3_0 = 0;
-        variant3_1 = 0;
-      } else {
-        const e = variant3;
-        variant3_0 = 1;
-        variant3_1 = e ? 1 : 0;
-      }
-      variant4_0 = 1;
-      variant4_1 = variant2_0;
-      variant4_2 = variant2_1;
-      variant4_3 = variant3_0;
-      variant4_4 = variant3_1;
+    var {requireTopLevelDomain: v1_0, allowDomainLiteral: v1_1, blockedEmails: v1_2 } = arg1;
+    var vec3 = v1_2;
+    var len3 = vec3.length;
+    var result3 = realloc0(0, 0, 4, len3 * 8);
+    for (let i = 0; i < vec3.length; i++) {
+      const e = vec3[i];
+      const base = result3 + i * 8;var ptr2 = utf8Encode(e, realloc0, memory0);
+      var len2 = utf8EncodedLen;
+      dataView(memory0).setInt32(base + 4, len2, true);
+      dataView(memory0).setInt32(base + 0, ptr2, true);
     }
-    const ret = exports1['is-valid-email'](ptr0, len0, variant4_0, variant4_1, variant4_2, variant4_3, variant4_4);
-    let variant7;
+    const ret = exports1['is-valid-email'](ptr0, len0, v1_0 ? 1 : 0, v1_1 ? 1 : 0, result3, len3);
+    let variant8;
     switch (dataView(memory0).getUint8(ret + 0, true)) {
       case 0: {
-        var bool5 = dataView(memory0).getUint8(ret + 4, true);
-        variant7= {
+        let enum4;
+        switch (dataView(memory0).getUint8(ret + 4, true)) {
+          case 0: {
+            enum4 = 'valid';
+            break;
+          }
+          case 1: {
+            enum4 = 'invalid';
+            break;
+          }
+          default: {
+            throw new TypeError('invalid discriminant specified for EmailValidity');
+          }
+        }
+        var len6 = dataView(memory0).getInt32(ret + 12, true);
+        var base6 = dataView(memory0).getInt32(ret + 8, true);
+        var result6 = [];
+        for (let i = 0; i < len6; i++) {
+          const base = base6 + i * 8;
+          var ptr5 = dataView(memory0).getInt32(base + 0, true);
+          var len5 = dataView(memory0).getInt32(base + 4, true);
+          var result5 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr5, len5));
+          result6.push(result5);
+        }
+        variant8= {
           tag: 'ok',
-          val: bool5 == 0 ? false : (bool5 == 1 ? true : throwInvalidBool())
+          val: {
+            validity: enum4,
+            blocked: result6,
+          }
         };
         break;
       }
       case 1: {
-        var ptr6 = dataView(memory0).getInt32(ret + 4, true);
-        var len6 = dataView(memory0).getInt32(ret + 8, true);
-        var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
-        variant7= {
+        var ptr7 = dataView(memory0).getInt32(ret + 4, true);
+        var len7 = dataView(memory0).getInt32(ret + 8, true);
+        var result7 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr7, len7));
+        variant8= {
           tag: 'err',
-          val: result6
+          val: result7
         };
         break;
       }
@@ -255,11 +382,11 @@ async function instantiate(getCoreModule, imports, instantiateCore = WebAssembly
         throw new TypeError('invalid variant discriminant for expected');
       }
     }
-    postReturn0(ret);
-    if (variant7.tag === 'err') {
-      throw new ComponentError(variant7.val);
+    postReturn2(ret);
+    if (variant8.tag === 'err') {
+      throw new ComponentError(variant8.val);
     }
-    return variant7.val;
+    return variant8.val;
   }
   
   return { detectBot, generateFingerprint, isValidEmail,  };

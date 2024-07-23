@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.0-alpha.19](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.18...@arcjet/eslint-config-v1.0.0-alpha.19) (2024-07-15)
+
+
+### 📦 Dependencies
+
+* Bump @typescript-eslint/eslint-plugin from 7.14.1 to 7.15.0 ([#1063](https://github.com/arcjet/arcjet-js/issues/1063)) ([d4a1cfe](https://github.com/arcjet/arcjet-js/commit/d4a1cfedd1fe144560589d05d05a26e8eb724870))
+* Bump @typescript-eslint/eslint-plugin from 7.15.0 to 7.16.0 ([#1091](https://github.com/arcjet/arcjet-js/issues/1091)) ([6bbcbe6](https://github.com/arcjet/arcjet-js/commit/6bbcbe6531e6f0e9f70cacebe252ed7845e75e6a))
+* bump @typescript-eslint/eslint-plugin from 7.16.0 to 7.16.1 ([#1135](https://github.com/arcjet/arcjet-js/issues/1135)) ([6f4495a](https://github.com/arcjet/arcjet-js/commit/6f4495a94c0a6ba867dec550077600ace581ad1c))
+* Bump @typescript-eslint/parser from 7.14.1 to 7.15.0 ([#1064](https://github.com/arcjet/arcjet-js/issues/1064)) ([b6e2b0f](https://github.com/arcjet/arcjet-js/commit/b6e2b0f4d076d3fa1f61b883e886bfd741353920))
+* Bump @typescript-eslint/parser from 7.15.0 to 7.16.0 ([#1090](https://github.com/arcjet/arcjet-js/issues/1090)) ([c31957f](https://github.com/arcjet/arcjet-js/commit/c31957fbcd0c2e30ebea6d23d3d69cd5d2afa7d2))
+* bump @typescript-eslint/parser from 7.16.0 to 7.16.1 ([#1132](https://github.com/arcjet/arcjet-js/issues/1132)) ([3feb40a](https://github.com/arcjet/arcjet-js/commit/3feb40a01f1274ee311909fcc0a6d0c0c138a7a5))
+
 ## [1.0.0-alpha.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.17...@arcjet/eslint-config-v1.0.0-alpha.18) (2024-07-01)
 
 
