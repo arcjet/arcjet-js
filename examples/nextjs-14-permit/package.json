@@ -9,10 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@arcjet/next": "^1.0.0-alpha.18",
-    "@clerk/nextjs": "^5.1.6",
-    "next": "14.2.4",
-    "permitio": "^2.5.1",
+    "@arcjet/next": "file:../../arcjet-next",
+    "@clerk/nextjs": "^5.2.5",
+    "next": "14.2.5",
+    "permitio": "^2.5.2",
     "react": "^18",
     "react-dom": "^18"
   },
@@ -20,8 +20,8 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "eslint": "^9",
-    "eslint-config-next": "14.2.4",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5",
     "typescript": "^5"
   }
 }
