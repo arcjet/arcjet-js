@@ -39,7 +39,3 @@ This example shows how to use [Arcjet](https://arcjet.com/) with a permissions s
 6. Visit `http://localhost:3000/stats` in a browser and refresh the page to trigger the rate limit.
 
 7. Try logging in, changing your user's role in Permit.io, and see how that affects the rate limit.
-
-## How it works
-
-(To be completed)
