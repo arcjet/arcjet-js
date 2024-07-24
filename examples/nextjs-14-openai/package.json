@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
-    "ai": "^3.2.24",
+    "ai": "^3.2.34",
     "next": "^14.2.5",
-    "openai": "^4.52.7",
+    "openai": "^4.53.0",
     "openai-chat-tokens": "^0.2.8",
     "react": "^18",
     "react-dom": "^18"
@@ -25,7 +25,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8",
-    "tailwindcss": "^3.4.5",
+    "tailwindcss": "^3.4.6",
     "typescript": "^5"
   }
 }
