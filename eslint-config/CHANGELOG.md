@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.0-alpha.20](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.19...@arcjet/eslint-config-v1.0.0-alpha.20) (2024-07-24)
+
+
+### 📦 Dependencies
+
+* bump @typescript-eslint/eslint-plugin from 7.16.1 to 7.17.0 ([#1164](https://github.com/arcjet/arcjet-js/issues/1164)) ([06344e7](https://github.com/arcjet/arcjet-js/commit/06344e78111a3de8a1f22afd899ced9cd4e702e1))
+* bump @typescript-eslint/parser from 7.16.1 to 7.17.0 ([#1165](https://github.com/arcjet/arcjet-js/issues/1165)) ([40adc5b](https://github.com/arcjet/arcjet-js/commit/40adc5bd6490d18a2f801f1c9b8663c2eb1bda2a))
+* bump eslint-config-turbo from 2.0.6 to 2.0.9 ([#1159](https://github.com/arcjet/arcjet-js/issues/1159)) ([1e7a59f](https://github.com/arcjet/arcjet-js/commit/1e7a59f52d756d44e0637ca6b904aff12c5ac016))
+
 ## [1.0.0-alpha.19](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.18...@arcjet/eslint-config-v1.0.0-alpha.19) (2024-07-15)
 
 

@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.20](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.19...@arcjet/next-v1.0.0-alpha.20) (2024-07-24)
+
+
+### 📦 Dependencies
+
+* **dev:** bump @rollup/wasm-node from 4.18.1 to 4.19.0 ([#1160](https://github.com/arcjet/arcjet-js/issues/1160)) ([7062ca0](https://github.com/arcjet/arcjet-js/commit/7062ca00012dd73b2e80f0679609be6e45ec5f5d))
+* **dev:** bump typescript from 5.5.3 to 5.5.4 ([#1166](https://github.com/arcjet/arcjet-js/issues/1166)) ([644e3a6](https://github.com/arcjet/arcjet-js/commit/644e3a6e69d092626fdf4f356aaa8e8f974ae46b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.19 to 1.0.0-alpha.20
+    * @arcjet/headers bumped from 1.0.0-alpha.19 to 1.0.0-alpha.20
+    * @arcjet/ip bumped from 1.0.0-alpha.19 to 1.0.0-alpha.20
+    * @arcjet/logger bumped from 1.0.0-alpha.19 to 1.0.0-alpha.20
+    * @arcjet/protocol bumped from 1.0.0-alpha.19 to 1.0.0-alpha.20
+    * arcjet bumped from 1.0.0-alpha.19 to 1.0.0-alpha.20
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.19 to 1.0.0-alpha.20
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.19 to 1.0.0-alpha.20
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.19 to 1.0.0-alpha.20
+
 ## [1.0.0-alpha.19](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.18...@arcjet/next-v1.0.0-alpha.19) (2024-07-15)
 
 
