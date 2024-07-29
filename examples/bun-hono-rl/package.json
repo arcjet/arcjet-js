@@ -8,6 +8,7 @@
     "../../arcjet",
     "../../arcjet-bun",
     "../../duration",
+    "../../env",
     "../../eslint-config",
     "../../headers",
     "../../ip",
