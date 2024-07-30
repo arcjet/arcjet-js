@@ -71,7 +71,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   const timeout = options?.timeout ?? (isDevelopment(process.env) ? 1000 : 500);
 
   // Transport is the HTTP client that the client uses to make requests.
-  const transport = createTransport(url)
+  const transport = createTransport(url);
 
   const sdkStack = "NODEJS";
   const sdkVersion = "__ARCJET_SDK_VERSION__";
