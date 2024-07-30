@@ -166,8 +166,10 @@ find a specific one through the categories and descriptions below.
 ### Utilities
 
 - [`arcjet`](./arcjet/README.md): JS SDK core.
-- [`@arcjet/protocol`](./protocol/README.md): JS interface
-  into the Arcjet protocol.
+- [`@arcjet/protocol`](./protocol/README.md): JS interface into the Arcjet
+  protocol.
+- [`@arcjet/transport`](./transport/README.md): Transport mechanisms for the
+  Arcjet protocol.
 - [`@arcjet/logger`](./logger/README.md): Lightweight logger which mirrors the
   Pino structured logger interface.
 - [`@arcjet/decorate`](./decorate/README.md): Utilities for decorating responses

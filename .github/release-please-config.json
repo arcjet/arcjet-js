@@ -96,6 +96,10 @@
       "component": "@arcjet/sprintf",
       "skip-github-release": true
     },
+    "transport": {
+      "component": "@arcjet/transport",
+      "skip-github-release": true
+    },
     "tsconfig": {
       "component": "@arcjet/tsconfig",
       "skip-github-release": true
@@ -128,6 +132,7 @@
         "@arcjet/rollup-config",
         "@arcjet/runtime",
         "@arcjet/sprintf",
+        "@arcjet/transport",
         "@arcjet/tsconfig"
       ]
     }

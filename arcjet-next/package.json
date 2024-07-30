@@ -45,7 +45,7 @@
     "@arcjet/ip": "1.0.0-alpha.20",
     "@arcjet/logger": "1.0.0-alpha.20",
     "@arcjet/protocol": "1.0.0-alpha.20",
-    "@connectrpc/connect-web": "1.4.0",
+    "@arcjet/transport": "1.0.0-alpha.20",
     "arcjet": "1.0.0-alpha.20"
   },
   "peerDependencies": {
