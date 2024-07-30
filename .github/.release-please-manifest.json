@@ -17,5 +17,6 @@
   "rollup-config": "1.0.0-alpha.20",
   "runtime": "1.0.0-alpha.20",
   "sprintf": "1.0.0-alpha.20",
+  "transport": "1.0.0-alpha.20",
   "tsconfig": "1.0.0-alpha.20"
 }

@@ -1,4 +1,3 @@
-import { createConnectTransport } from "@connectrpc/connect-web";
 import type { NextApiResponse } from "next";
 import {
   type NextFetchEvent,
@@ -23,6 +22,7 @@ import ArcjetHeaders from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
+import { createTransport } from "@arcjet/transport";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -79,24 +79,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   const timeout = options?.timeout ?? (isDevelopment(process.env) ? 1000 : 500);
 
   // Transport is the HTTP client that the client uses to make requests.
-  // The Connect Node client doesn't work on edge runtimes: https://github.com/bufbuild/connect-es/pull/589
-  // so set the transport using connect-web. The interceptor is required for it work in the edge runtime.
-  const transport = createConnectTransport({
-    baseUrl: url,
-    interceptors: [
-      /**
-       * Ensures redirects are followed to properly support the Next.js/Vercel Edge
-       * Runtime.
-       * @see
-       * https://github.com/connectrpc/connect-es/issues/749#issuecomment-1693507516
-       */
-      (next) => (req) => {
-        req.init.redirect = "follow";
-        return next(req);
-      },
-    ],
-    fetch,
-  });
+  const transport = createTransport(url);
 
   const sdkStack = "NEXTJS";
   const sdkVersion = "__ARCJET_SDK_VERSION__";

@@ -1,5 +1,3 @@
-import { createConnectTransport as createConnectTransportNode } from "@connectrpc/connect-node";
-import { createConnectTransport as createConnectTransportWeb } from "@connectrpc/connect-web";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -13,10 +11,10 @@ import type {
 } from "arcjet";
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
-import { runtime } from "@arcjet/runtime";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
+import { createTransport } from "@arcjet/transport";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -58,34 +56,6 @@ type PlainObject = {
   [key: string]: unknown;
 };
 
-// The Vercel Adapter for SvelteKit could run on the Edge runtime, so we need to
-// conditionally default the transport.
-function defaultTransport(baseUrl: string) {
-  if (runtime() === "edge-light") {
-    return createConnectTransportWeb({
-      baseUrl,
-      interceptors: [
-        /**
-         * Ensures redirects are followed to properly support the Next.js/Vercel Edge
-         * Runtime.
-         * @see
-         * https://github.com/connectrpc/connect-es/issues/749#issuecomment-1693507516
-         */
-        (next) => (req) => {
-          req.init.redirect = "follow";
-          return next(req);
-        },
-      ],
-      fetch,
-    });
-  } else {
-    return createConnectTransportNode({
-      baseUrl,
-      httpVersion: "2",
-    });
-  }
-}
-
 export type RemoteClientOptions = {
   baseUrl?: string;
   timeout?: number;
@@ -101,7 +71,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   const timeout = options?.timeout ?? (isDevelopment(process.env) ? 1000 : 500);
 
   // Transport is the HTTP client that the client uses to make requests.
-  const transport = defaultTransport(url);
+  const transport = createTransport(url);
 
   const sdkStack = "SVELTEKIT";
   const sdkVersion = "__ARCJET_SDK_VERSION__";

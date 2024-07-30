@@ -17,6 +17,7 @@
     "../../rollup-config",
     "../../runtime",
     "../../sprintf",
+    "../../transport",
     "../../tsconfig"
   ],
   "dependencies": {

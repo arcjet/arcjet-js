@@ -1,5 +1,4 @@
 /// <reference types="bun-types/bun.d.ts" />
-import { createConnectTransport } from "@connectrpc/connect-node";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -18,6 +17,7 @@ import { env } from "bun";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
+import { createTransport } from "@arcjet/transport";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -74,10 +74,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   const timeout = options?.timeout ?? (isDevelopment(env) ? 1000 : 500);
 
   // Transport is the HTTP client that the client uses to make requests.
-  const transport = createConnectTransport({
-    baseUrl: url,
-    httpVersion: "1.1",
-  });
+  const transport = createTransport(url);
 
   const sdkStack = "BUN";
   const sdkVersion = "__ARCJET_SDK_VERSION__";
