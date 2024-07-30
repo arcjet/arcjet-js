@@ -1,5 +1,19 @@
 version: 2
 updates:
+  # Dependencies in our CI
+  - package-ecosystem: github-actions
+    # Workflow files stored in the default location of `.github/workflows`. (You
+    # don't need to specify `/.github/workflows` for `directory`. You can use
+    # `directory: "/"`.)
+    directory: /
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+    reviewers:
+      - blaine-arcjet
+
   # Dependencies in our packages
 
   - package-ecosystem: npm
