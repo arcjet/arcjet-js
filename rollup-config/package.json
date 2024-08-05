@@ -48,7 +48,7 @@
     "@arcjet/tsconfig": "1.0.0-alpha.20",
     "@jest/globals": "29.7.0",
     "@types/node": "18.18.0",
-    "@rollup/wasm-node": "4.19.1",
+    "@rollup/wasm-node": "4.20.0",
     "jest": "29.7.0",
     "typescript": "5.5.4"
   },
