@@ -39,6 +39,10 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
+      - dependency-name: "@typescript-eslint/parser"
+        versions: [">=8"]
+      - dependency-name: "@typescript-eslint/eslint-plugin"
+        versions: [">=8"]
 
   # Dependencies in our examples
 
@@ -379,6 +383,10 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
+      - dependency-name: "@typescript-eslint/parser"
+        versions: [">=8"]
+      - dependency-name: "@typescript-eslint/eslint-plugin"
+        versions: [">=8"]
 
   - package-ecosystem: npm
     directory: /examples/nodejs-express-rl
@@ -485,3 +493,7 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
+      - dependency-name: "@typescript-eslint/parser"
+        versions: [">=8"]
+      - dependency-name: "@typescript-eslint/eslint-plugin"
+        versions: [">=8"]
