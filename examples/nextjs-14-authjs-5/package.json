@@ -15,7 +15,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.417.0",
+    "lucide-react": "^0.424.0",
     "next": "latest",
     "next-auth": "beta",
     "react": "^18.3.1",
@@ -27,7 +27,7 @@
     "@types/node": "^18",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "autoprefixer": "^10.4.15",
+    "autoprefixer": "^10.4.20",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7",
     "typescript": "^5.2.2"
