@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/next",
-  "version": "1.0.0-alpha.20",
+  "version": "1.0.0-alpha.21",
   "description": "Arcjet SDK for the Next.js framework",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -40,21 +40,21 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "dependencies": {
-    "@arcjet/env": "1.0.0-alpha.20",
-    "@arcjet/headers": "1.0.0-alpha.20",
-    "@arcjet/ip": "1.0.0-alpha.20",
-    "@arcjet/logger": "1.0.0-alpha.20",
-    "@arcjet/protocol": "1.0.0-alpha.20",
-    "@arcjet/transport": "1.0.0-alpha.20",
-    "arcjet": "1.0.0-alpha.20"
+    "@arcjet/env": "1.0.0-alpha.21",
+    "@arcjet/headers": "1.0.0-alpha.21",
+    "@arcjet/ip": "1.0.0-alpha.21",
+    "@arcjet/logger": "1.0.0-alpha.21",
+    "@arcjet/protocol": "1.0.0-alpha.21",
+    "@arcjet/transport": "1.0.0-alpha.21",
+    "arcjet": "1.0.0-alpha.21"
   },
   "peerDependencies": {
     "next": ">=13"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.20",
-    "@arcjet/rollup-config": "1.0.0-alpha.20",
-    "@arcjet/tsconfig": "1.0.0-alpha.20",
+    "@arcjet/eslint-config": "1.0.0-alpha.21",
+    "@arcjet/rollup-config": "1.0.0-alpha.21",
+    "@arcjet/tsconfig": "1.0.0-alpha.21",
     "@jest/globals": "29.7.0",
     "@types/node": "18.18.0",
     "@rollup/wasm-node": "4.20.0",

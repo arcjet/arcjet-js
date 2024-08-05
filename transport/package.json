@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/transport",
-  "version": "1.0.0-alpha.20",
+  "version": "1.0.0-alpha.21",
   "description": "Transport mechanisms for the Arcjet protocol",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -49,9 +49,9 @@
     "@connectrpc/connect-web": "1.4.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.20",
-    "@arcjet/rollup-config": "1.0.0-alpha.20",
-    "@arcjet/tsconfig": "1.0.0-alpha.20",
+    "@arcjet/eslint-config": "1.0.0-alpha.21",
+    "@arcjet/rollup-config": "1.0.0-alpha.21",
+    "@arcjet/tsconfig": "1.0.0-alpha.21",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.20.0",
     "@types/node": "18.18.0",

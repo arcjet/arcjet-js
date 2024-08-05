@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-alpha.21](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.20...@arcjet/tsconfig-v1.0.0-alpha.21) (2024-08-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/tsconfig:** Synchronize arcjet-js versions
+
 ## [1.0.0-alpha.20](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.19...@arcjet/tsconfig-v1.0.0-alpha.20) (2024-07-24)
 
 

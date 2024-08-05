@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.0-alpha.21](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.20...v1.0.0-alpha.21) (2024-08-05)
+
+
+### 🚀 New Features
+
+* Abstract transports into package to leverage conditional exports ([#1221](https://github.com/arcjet/arcjet-js/issues/1221)) ([27776f7](https://github.com/arcjet/arcjet-js/commit/27776f742ef94212ac4164d3feb21b5b5f1681db))
+* Attempt to warm http2 connection upon SDK startup ([#1201](https://github.com/arcjet/arcjet-js/issues/1201)) ([a5c2571](https://github.com/arcjet/arcjet-js/commit/a5c25719e1a9dab4658a6a7c736f14b405ecff1e))
+
+
+### 🧹 Miscellaneous Chores
+
+* **ci:** Change the dependabot commit prefix for Actions PRs ([#1231](https://github.com/arcjet/arcjet-js/issues/1231)) ([4dac6d5](https://github.com/arcjet/arcjet-js/commit/4dac6d5c1f515960b54d215218cdeb5e3030c3f5))
+* **ci:** Ignore typescript-eslint 8 until we upgrade to eslint 9 ([#1263](https://github.com/arcjet/arcjet-js/issues/1263)) ([b089de2](https://github.com/arcjet/arcjet-js/commit/b089de280782d927288d1d3685c7dff24f7e47de)), closes [#539](https://github.com/arcjet/arcjet-js/issues/539)
+* **ci:** Leverage Dependabot to update our GitHub Actions ([#1222](https://github.com/arcjet/arcjet-js/issues/1222)) ([ffde70a](https://github.com/arcjet/arcjet-js/commit/ffde70a7f7203b5a5ff1772b00065fcfe7a8bcd1))
+* **ci:** Switch release-please-action location & update to latest version ([#1229](https://github.com/arcjet/arcjet-js/issues/1229)) ([e44d81d](https://github.com/arcjet/arcjet-js/commit/e44d81d6eff544fcaa9b7e579ae1d37b40073f5b))
+* **deps:** bump actions/checkout from 3 to 4 ([#1226](https://github.com/arcjet/arcjet-js/issues/1226)) ([7d5242c](https://github.com/arcjet/arcjet-js/commit/7d5242c318f29de3c483b86756db6582317bfe1a))
+* **deps:** bump step-security/harden-runner from 2.7.0 to 2.9.0 ([#1225](https://github.com/arcjet/arcjet-js/issues/1225)) ([76755e1](https://github.com/arcjet/arcjet-js/commit/76755e163a5b13f2678c2bd0cfc50d1627f7bc02))
+* **examples:** Ensure bun examples have updated dependencies ([#1213](https://github.com/arcjet/arcjet-js/issues/1213)) ([e766029](https://github.com/arcjet/arcjet-js/commit/e766029fe5e5b1e0e55b53f0733b81c1287647fc))
+* Remove Dependencies section from release notes ([#1211](https://github.com/arcjet/arcjet-js/issues/1211)) ([1708f6a](https://github.com/arcjet/arcjet-js/commit/1708f6a259a5220a0e7c54aa31d9d9362336e05d))
+
 ## [1.0.0-alpha.20](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.19...v1.0.0-alpha.20) (2024-07-24)
 
 
