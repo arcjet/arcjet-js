@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-alpha.21](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.20...arcjet-v1.0.0-alpha.21) (2024-08-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.20 to 1.0.0-alpha.21
+    * @arcjet/duration bumped from 1.0.0-alpha.20 to 1.0.0-alpha.21
+    * @arcjet/headers bumped from 1.0.0-alpha.20 to 1.0.0-alpha.21
+    * @arcjet/protocol bumped from 1.0.0-alpha.20 to 1.0.0-alpha.21
+    * @arcjet/runtime bumped from 1.0.0-alpha.20 to 1.0.0-alpha.21
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.20 to 1.0.0-alpha.21
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.20 to 1.0.0-alpha.21
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.20 to 1.0.0-alpha.21
+
 ## [1.0.0-alpha.20](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.19...arcjet-v1.0.0-alpha.20) (2024-07-24)
 
 
