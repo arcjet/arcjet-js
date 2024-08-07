@@ -1,4 +1,12 @@
-import type { ArcjetLogger, ArcjetRequestDetails } from "@arcjet/protocol";
+import type {
+  ArcjetLogger,
+  ArcjetRequestDetails,
+  CustomDetect,
+  DetectedSensitiveInfoEntity,
+  DetectSensitiveInfoResult,
+  SensitiveInfoConfig,
+  SensitiveInfoEntity,
+} from "@arcjet/protocol";
 
 import * as core from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
@@ -12,6 +20,11 @@ import type {
 import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm?module";
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm?module";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm?module";
+import {
+  ConvertAnalyzeEntitiesToProtocolEntities,
+  ConvertDetectedSensitiveInfoEntityToAnalyzeEntity,
+  ConvertProtocolEntitiesToAnalyzeEntities,
+} from "./index.js";
 
 const FREE_EMAIL_PROVIDERS = [
   "gmail.com",
@@ -40,8 +53,18 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-async function init(context: AnalyzeContext) {
+async function init(context: AnalyzeContext, detect?: CustomDetect) {
   const { log } = context;
+
+  const convertedDetect = (tokens: string[]) => {
+    if (detect !== undefined) {
+      return detect(tokens).map(
+        ConvertDetectedSensitiveInfoEntityToAnalyzeEntity,
+      );
+    } else {
+      return [] as any[];
+    }
+  };
 
   const coreImports: ImportObject = {
     "arcjet:js-req/logger": {
@@ -68,6 +91,9 @@ async function init(context: AnalyzeContext) {
       hasGravatar() {
         return "unknown";
       },
+    },
+    "arcjet:js-req/sensitive-information-identifier": {
+      detect: convertedDetect,
     },
   };
 
@@ -158,6 +184,59 @@ export async function detectBot(
     return {
       botType: "not-analyzed",
       botScore: 0,
+    };
+  }
+}
+export async function detectSensitiveInfo(
+  context: AnalyzeContext,
+  candidate: string,
+  options?: SensitiveInfoConfig,
+): Promise<DetectSensitiveInfoResult> {
+  const analyze = await init(context, options?.customDetect);
+  const skipCustomDetect = options?.customDetect === undefined;
+  let entities: core.Entities = {
+    tag: "allow",
+    val: options?.allow?.map(ConvertProtocolEntitiesToAnalyzeEntities) || [],
+  };
+  if (options?.deny) {
+    entities = {
+      tag: "deny",
+      val: options.deny.map(ConvertProtocolEntitiesToAnalyzeEntities),
+    };
+  }
+  const optionsOrDefault = {
+    entities,
+    contextWindowSize: options?.contextWindowSize || 1,
+    skipCustomDetect,
+  };
+
+  if (typeof analyze !== "undefined") {
+    const result = analyze.detectSensitiveInfo(candidate, optionsOrDefault);
+    const allowed = result.allowed.map((entity) => {
+      return {
+        ...entity,
+        identifiedType: ConvertAnalyzeEntitiesToProtocolEntities(
+          entity.identifiedType,
+        ),
+      };
+    });
+    const denied = result.denied.map((entity) => {
+      return {
+        ...entity,
+        identifiedType: ConvertAnalyzeEntitiesToProtocolEntities(
+          entity.identifiedType,
+        ),
+      };
+    });
+    return {
+      allowed,
+      denied,
+    };
+  } else {
+    // Skip the local evaluation of the rule if WASM is not available
+    return {
+      allowed: [],
+      denied: [],
     };
   }
 }
