@@ -21,7 +21,9 @@ import {
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
   ArcjetLogger,
-  ArcjetRateLimitRule,
+  ArcjetSensitiveInfoRule,
+  DetectedSensitiveInfoEntity,
+  CustomDetect,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
@@ -32,6 +34,8 @@ import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
+import { SensitiveInfoEntity } from "@arcjet/protocol";
+import { ArcjetSensitiveInfoReason } from "@arcjet/protocol";
 
 export * from "@arcjet/protocol";
 
@@ -309,11 +313,31 @@ export type EmailOptions = {
   allowDomainLiteral?: boolean;
 };
 
+type SensitiveInfoOptionsCommon = {
+  contextWindowSize?: number;
+  mode?: ArcjetMode;
+};
+
+interface SensitiveInfoOptionsAllow extends SensitiveInfoOptionsCommon {
+  allow: SensitiveInfoEntity[];
+  deny?: never;
+}
+
+interface SensitiveInfoOptionsBlock extends SensitiveInfoOptionsCommon {
+  allow?: never;
+  deny: SensitiveInfoEntity[];
+}
+
+export type SensitiveInfoOptions =
+  | SensitiveInfoOptionsAllow
+  | SensitiveInfoOptionsBlock;
+
 const Priority = {
   Shield: 1,
   RateLimit: 2,
   BotDetection: 3,
   EmailValidation: 4,
+  SensitiveInfo: 5,
 };
 
 type PlainObject = { [key: string]: unknown };
@@ -365,7 +389,9 @@ export type ExtraProps<Rules> = Rules extends []
  * Among other things, this could include the Arcjet API Key if it were only
  * available in a runtime handler or IP details provided by a platform.
  */
-export type ArcjetAdapterContext = Record<string, unknown>;
+export type ArcjetAdapterContext = {
+  getBody: () => Promise<string | undefined>;
+} & Record<string, unknown>;
 
 /**
  * @property {string} ip - The IP address of the client.
@@ -390,6 +416,7 @@ export type ArcjetRequest<Props extends PlainObject> = Simplify<
     headers?: Headers | Record<string, string | string[] | undefined>;
     cookies?: string;
     query?: string;
+    body?: string;
   } & Props
 >;
 
@@ -517,6 +544,125 @@ export function slidingWindow<
       algorithm: "SLIDING_WINDOW",
       max,
       interval,
+    });
+  }
+
+  return rules;
+}
+
+export function sensitiveInfo(
+  options: SensitiveInfoOptions,
+  ...additionalOptions: SensitiveInfoOptions[]
+): Primitive<{}> {
+  const rules: ArcjetSensitiveInfoRule<{}>[] = [];
+
+  // Always create at least one EMAIL rule
+  for (const opt of [
+    options ?? ({} as SensitiveInfoOptions),
+    ...additionalOptions,
+  ]) {
+    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    // TODO: Filter invalid email types (or error??)
+
+    const customFunctions: CustomDetect[] = [];
+    const customRegExp: RegExp[] = [];
+    if (options?.allow?.length && options.allow.length > 0) {
+      customFunctions.push(
+        ...options.allow.filter((rule) => typeof rule === "function"),
+      );
+      customRegExp.push(
+        ...options.allow.filter((rule) => rule instanceof RegExp),
+      );
+    } else if (options?.deny?.length && options.deny.length > 0) {
+      customFunctions.push(
+        ...options.deny.filter((rule) => typeof rule === "function"),
+      );
+      customRegExp.push(
+        ...options.deny.filter((rule) => rule instanceof RegExp),
+      );
+    }
+    const customDetect: CustomDetect = (tokens: string[]) => {
+      for (const fn of customFunctions) {
+        const result = fn(tokens);
+        if (result.find((e) => e !== undefined)) {
+          return result;
+        }
+      }
+
+      const entities: (DetectedSensitiveInfoEntity | undefined)[] = new Array(
+        tokens.length,
+      ).fill(undefined);
+      for (const regex of customRegExp) {
+        for (const [i, token] of tokens.entries()) {
+          if (regex.test(token)) {
+            entities[i] = "custom";
+          }
+        }
+      }
+
+      return entities;
+    };
+
+    const redactOpts = {
+      allow: options?.allow || [],
+      deny: options?.deny || [],
+      contextWindowSize: opt.contextWindowSize || 1,
+      customDetect,
+    };
+
+    rules.push({
+      type: "SENSITIVE_INFO",
+      priority: Priority.EmailValidation,
+      mode,
+      options: redactOpts,
+
+      validate(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): asserts details is ArcjetRequestDetails {},
+
+      async protect(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const body = await context.getBody();
+        if (body === undefined) {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "NOT_RUN",
+            conclusion: "ERROR",
+            reason: new ArcjetErrorReason(
+              "Couldn't read the body of the request to perform sensitive info identification.",
+            ),
+          });
+        }
+        const result = await analyze.detectSensitiveInfo(
+          context,
+          body,
+          this.options,
+        );
+        if (result.denied.length === 0) {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "RUN",
+            conclusion: "ALLOW",
+            reason: new ArcjetSensitiveInfoReason({
+              denied: result.denied,
+              allowed: result.allowed,
+            }),
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "RUN",
+            conclusion: "DENY",
+            reason: new ArcjetSensitiveInfoReason({
+              denied: result.denied,
+              allowed: result.allowed,
+            }),
+          });
+        }
+      },
     });
   }
 
@@ -911,6 +1057,7 @@ export default function arcjet<
       // body: request.body,
       extra: extraProps(request),
       email: typeof request.email === "string" ? request.email : undefined,
+      body: request.body,
     });
 
     log.time?.("local");

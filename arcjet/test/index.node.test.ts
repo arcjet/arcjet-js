@@ -35,6 +35,9 @@ import arcjet, {
   Primitive,
   Arcjet,
   shield,
+  sensitiveInfo,
+  ArcjetSensitiveInfoReason,
+  DetectedSensitiveInfoEntity,
 } from "../index";
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -378,6 +381,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       headers: new Headers(),
@@ -398,6 +402,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       headers: undefined,
@@ -418,6 +423,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -464,6 +470,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -520,6 +527,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -576,6 +584,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -619,6 +628,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -684,6 +694,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -734,6 +745,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -783,6 +795,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1459,6 +1472,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       email: "abc@example.com",
@@ -1479,6 +1493,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       email: undefined,
@@ -1499,6 +1514,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1533,6 +1549,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1567,6 +1584,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1601,6 +1619,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1637,6 +1656,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1671,6 +1691,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1705,6 +1726,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1741,6 +1763,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -2029,7 +2052,11 @@ describe("SDK", () => {
       >
     >;
 
-    const _ = await aj2.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj2.protect(context, request);
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.anything(),
@@ -2097,7 +2124,11 @@ describe("SDK", () => {
       >
     >;
 
-    const _ = await aj3.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj3.protect(context, request);
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.anything(),
@@ -2160,7 +2191,11 @@ describe("SDK", () => {
     const aj3 = aj.withRule(testRule);
     type WithRuleTestTwo = Assert<SDKProps<typeof aj3, { abc: number }>>;
 
-    const _ = await aj3.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj3.protect(context, request);
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.anything(),
@@ -2300,7 +2335,11 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const decision = await aj.protect(context, request);
     expect(decision.conclusion).toEqual("DENY");
 
     expect(allowed.validate).toHaveBeenCalledTimes(1);
@@ -2330,7 +2369,11 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const decision = await aj.protect(context, request);
     expect(decision.conclusion).toEqual("ALLOW");
   });
 
@@ -2385,7 +2428,11 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const decision = await aj.protect(context, request);
     expect(decision.conclusion).toEqual("ERROR");
   });
 
@@ -2420,7 +2467,11 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const decision = await aj.protect(context, request);
     expect(decision.conclusion).toEqual("DENY");
 
     expect(denied.validate).toHaveBeenCalledTimes(1);
@@ -2446,6 +2497,7 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
     };
     const request = {
       ip: "172.100.1.1",
@@ -2464,7 +2516,7 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const decision = await aj.protect(context, request);
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.objectContaining(context),
@@ -2500,6 +2552,7 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
     };
     const request = {
       ip: "172.100.1.1",
@@ -2518,7 +2571,7 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const decision = await aj.protect(context, request);
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.objectContaining(context),
@@ -2557,6 +2610,7 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
     };
     const request = {
       ip: "172.100.1.1",
@@ -2578,7 +2632,7 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const decision = await aj.protect(context, request);
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.objectContaining(context),
@@ -2630,7 +2684,11 @@ describe("SDK", () => {
       log,
     });
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
     expect(client.report).toHaveBeenCalledTimes(0);
     expect(client.decide).toHaveBeenCalledTimes(1);
     // TODO: Validate correct `ruleResults` are sent with `decide` when available
@@ -2653,6 +2711,7 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
     };
     const request = {
       ip: "172.100.1.1",
@@ -2672,7 +2731,7 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const decision = await aj.protect(context, request);
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.objectContaining(context),
@@ -2708,6 +2767,7 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
     };
     const request = {
       ip: "172.100.1.1",
@@ -2727,7 +2787,7 @@ describe("SDK", () => {
       log,
     });
 
-    const _ = await aj.protect({}, request);
+    const _ = await aj.protect(context, request);
     expect(client.report).toHaveBeenCalledTimes(1);
     expect(client.report).toHaveBeenCalledWith(
       expect.objectContaining(context),
@@ -2779,7 +2839,11 @@ describe("SDK", () => {
       log,
     });
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
     expect(client.decide).toHaveBeenCalledTimes(0);
   });
 
@@ -2800,6 +2864,7 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
     };
     const request = {
       ip: "172.100.1.1",
@@ -2818,7 +2883,7 @@ describe("SDK", () => {
       log,
     });
 
-    const _ = await aj.protect({}, request);
+    const _ = await aj.protect(context, request);
 
     expect(client.report).toHaveBeenCalledTimes(0);
     expect(client.decide).toHaveBeenCalledTimes(1);
@@ -2868,7 +2933,11 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const decision = await aj.protect(context, request);
 
     expect(decision.isErrored()).toBe(false);
 
@@ -2877,7 +2946,7 @@ describe("SDK", () => {
 
     expect(decision.conclusion).toEqual("DENY");
 
-    const decision2 = await aj.protect({}, request);
+    const decision2 = await aj.protect(context, request);
 
     expect(decision2.isErrored()).toBe(false);
     expect(client.decide).toHaveBeenCalledTimes(1);
@@ -2937,7 +3006,11 @@ describe("SDK", () => {
       log,
     });
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
 
     expect(client.report).toHaveBeenCalledTimes(0);
     expect(client.decide).toHaveBeenCalledTimes(1);
@@ -2985,7 +3058,11 @@ describe("SDK", () => {
       log,
     });
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
 
     expect(log.error).toHaveBeenCalledTimes(1);
     expect(log.error).toHaveBeenCalledWith(
@@ -3036,7 +3113,11 @@ describe("SDK", () => {
       log,
     });
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
 
     expect(log.error).toHaveBeenCalledTimes(1);
     expect(log.error).toHaveBeenCalledWith(
@@ -3075,14 +3156,18 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const decision = await aj.protect(context, request);
 
     expect(decision.isDenied()).toBe(false);
 
     expect(client.decide).toBeCalledTimes(1);
     expect(client.report).toBeCalledTimes(1);
 
-    const decision2 = await aj.protect({}, request);
+    const decision2 = await aj.protect(context, request);
 
     expect(decision2.isDenied()).toBe(false);
 
@@ -3107,6 +3192,7 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
     };
     const request = {
       ip: "172.100.1.1",
@@ -3127,7 +3213,7 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const decision = await aj.protect(context, request);
 
     expect(decision.isErrored()).toBe(false);
 
@@ -3166,6 +3252,7 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
     };
     const request = {
       ip: "172.100.1.1",
@@ -3186,7 +3273,10 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({ key: "overridden-key" }, request);
+    const decision = await aj.protect(
+      { ...context, key: "overridden-key" },
+      request,
+    );
 
     expect(decision.isErrored()).toBe(false);
 
@@ -3221,6 +3311,7 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
     };
     const request = {
       ip: "172.100.1.1",
@@ -3239,7 +3330,7 @@ describe("SDK", () => {
       log,
     });
 
-    const decision = await aj.protect({}, request);
+    const decision = await aj.protect(context, request);
 
     expect(decision.isErrored()).toBe(true);
 
@@ -3302,7 +3393,11 @@ describe("SDK", () => {
       someGlobalCharacteristic: "test",
     };
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
 
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
@@ -3356,7 +3451,11 @@ describe("SDK", () => {
       someLocalCharacteristic: "test",
     };
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
 
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
@@ -3407,7 +3506,11 @@ describe("SDK", () => {
       someGlobalCharacteristic: "test",
     };
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
 
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
@@ -3462,7 +3565,11 @@ describe("SDK", () => {
       someLocalCharacteristic: "test",
     };
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
 
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
@@ -3515,7 +3622,11 @@ describe("SDK", () => {
       someGlobalCharacteristic: "test",
     };
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
 
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
@@ -3572,7 +3683,11 @@ describe("SDK", () => {
       someLocalCharacteristic: "test",
     };
 
-    const _ = await aj.protect({}, request);
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
 
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
@@ -3584,5 +3699,575 @@ describe("SDK", () => {
         }),
       ],
     );
+  });
+
+  describe("Primitive > sensitiveInfo", () => {
+    test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
+      const [rule] = sensitiveInfo({
+        // @ts-expect-error
+        mode: "INVALID",
+        allow: [],
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      expect(rule).toHaveProperty("mode", "DRY_RUN");
+    });
+
+    test("allows specifying sensitive info entities to allow", async () => {
+      const [rule] = sensitiveInfo({
+        allow: ["email", "credit-card-number"],
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      expect(rule).toHaveProperty("options.allow", [
+        "email",
+        "credit-card-number",
+      ]);
+    });
+
+    test("it doesnt detect any entities in a non sensitive body", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () => Promise.resolve("none of this is sensitive"),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        allow: [],
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "ALLOW",
+        reason: new ArcjetSensitiveInfoReason({
+          denied: [],
+          allowed: [],
+        }),
+      });
+    });
+
+    test("it identifies built-in entities", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () =>
+          Promise.resolve(
+            "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
+          ),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        allow: [],
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "DENY",
+        reason: new ArcjetSensitiveInfoReason({
+          denied: [
+            {
+              start: 0,
+              end: 9,
+              identifiedType: "ip-address",
+            },
+            {
+              start: 10,
+              end: 26,
+              identifiedType: "email",
+            },
+            {
+              start: 27,
+              end: 43,
+              identifiedType: "credit-card-number",
+            },
+            {
+              start: 44,
+              end: 60,
+              identifiedType: "phone-number",
+            },
+          ],
+          allowed: [],
+        }),
+      });
+    });
+
+    test("it allows entities on the allow list", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () =>
+          Promise.resolve(
+            "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
+          ),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        allow: ["email", "phone-number"],
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "DENY",
+        reason: new ArcjetSensitiveInfoReason({
+          denied: [
+            {
+              start: 0,
+              end: 9,
+              identifiedType: "ip-address",
+            },
+            {
+              start: 27,
+              end: 43,
+              identifiedType: "credit-card-number",
+            },
+          ],
+          allowed: [
+            {
+              start: 10,
+              end: 26,
+              identifiedType: "email",
+            },
+            {
+              start: 44,
+              end: 60,
+              identifiedType: "phone-number",
+            },
+          ],
+        }),
+      });
+    });
+
+    test("it returns an allow decision when all identified types are allowed", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        allow: ["email", "phone-number"],
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "ALLOW",
+        reason: new ArcjetSensitiveInfoReason({
+          denied: [],
+          allowed: [
+            {
+              start: 0,
+              end: 16,
+              identifiedType: "email",
+            },
+            {
+              start: 17,
+              end: 33,
+              identifiedType: "phone-number",
+            },
+          ],
+        }),
+      });
+    });
+
+    test("it only denies listed entities when deny mode is set", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        deny: ["credit-card-number"],
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "ALLOW",
+        reason: new ArcjetSensitiveInfoReason({
+          denied: [],
+          allowed: [
+            {
+              start: 0,
+              end: 16,
+              identifiedType: "email",
+            },
+            {
+              start: 17,
+              end: 33,
+              identifiedType: "phone-number",
+            },
+          ],
+        }),
+      });
+    });
+
+    test("it returns a deny decision in deny mode when an entity is matched", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        deny: ["email"],
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "DENY",
+        reason: new ArcjetSensitiveInfoReason({
+          denied: [
+            {
+              start: 0,
+              end: 16,
+              identifiedType: "email",
+            },
+          ],
+          allowed: [
+            {
+              start: 17,
+              end: 33,
+              identifiedType: "phone-number",
+            },
+          ],
+        }),
+      });
+    });
+
+    test("it blocks entities matched by a custom regex in the deny list", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () => Promise.resolve("hello world"),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        deny: [/hello/],
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "DENY",
+        reason: new ArcjetSensitiveInfoReason({
+          denied: [
+            {
+              start: 0,
+              end: 5,
+              identifiedType: "custom",
+            },
+          ],
+          allowed: [],
+        }),
+      });
+    });
+
+    test("it allows items matched by custom regexs that would have otherwise been blocked", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () => Promise.resolve("my card number is 4242424242424242"),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        allow: [/4242424242424242/], // matches a credit card number
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "ALLOW",
+        reason: new ArcjetSensitiveInfoReason({
+          denied: [],
+          allowed: [
+            {
+              start: 18,
+              end: 34,
+              identifiedType: "custom",
+            },
+          ],
+        }),
+      });
+    });
+
+    test("it blocks entities identified by a custom function", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () => Promise.resolve("this is bad"),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const customDetect = (
+        tokens: string[],
+      ): Array<DetectedSensitiveInfoEntity | undefined> => {
+        return tokens.map((token) => {
+          if (token === "bad") {
+            return "custom";
+          }
+        });
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        deny: [customDetect],
+        contextWindowSize: 1,
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "DENY",
+        reason: new ArcjetSensitiveInfoReason({
+          allowed: [],
+          denied: [
+            {
+              start: 8,
+              end: 11,
+              identifiedType: "custom",
+            },
+          ],
+        }),
+      });
+    });
+
+    test("it allows custom entities identified by a function that would have otherwise been blocked", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () => Promise.resolve("my email is test@example.com"),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const customDetect = (
+        tokens: string[],
+      ): Array<DetectedSensitiveInfoEntity | undefined> => {
+        return tokens.map((token) => {
+          if (token === "test@example.com") {
+            return "custom";
+          }
+        });
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        allow: [customDetect],
+        contextWindowSize: 1,
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      const result = await rule.protect(context, details);
+      expect(result).toMatchObject({
+        state: "RUN",
+        conclusion: "ALLOW",
+        reason: new ArcjetSensitiveInfoReason({
+          allowed: [
+            {
+              start: 12,
+              end: 28,
+              identifiedType: "custom",
+            },
+          ],
+          denied: [],
+        }),
+      });
+    });
+
+    test("it provides the right size context window", async () => {
+      const context = {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log,
+        characteristics: [],
+        getBody: () => Promise.resolve("my email is test@example.com"),
+      };
+      const details = {
+        ip: "172.100.1.1",
+        method: "GET",
+        protocol: "http",
+        host: "example.com",
+        path: "/",
+        headers: new Headers(),
+        cookies: "",
+        query: "",
+        extra: {},
+      };
+
+      const customDetect = (
+        tokens: string[],
+      ): Array<DetectedSensitiveInfoEntity | undefined> => {
+        expect(tokens).toHaveLength(3);
+        return new Array(tokens.length).fill(undefined);
+      };
+
+      const [rule] = sensitiveInfo({
+        mode: "LIVE",
+        allow: [customDetect],
+        contextWindowSize: 3,
+      });
+      expect(rule.type).toEqual("SENSITIVE_INFO");
+      assertIsLocalRule(rule);
+      await rule.protect(context, details);
+    });
   });
 });

@@ -98,7 +98,9 @@ describe("Arcjet: Env = Edge runtime", () => {
     const aj2 = aj.withRule(foobarbaz());
 
     const decision = await aj2.protect(
-      {},
+      {
+        getBody: () => Promise.resolve(undefined),
+      },
       {
         abc: 123,
         requested: 1,

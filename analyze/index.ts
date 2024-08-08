@@ -1,4 +1,12 @@
-import type { ArcjetLogger, ArcjetRequestDetails } from "@arcjet/protocol";
+import type {
+  ArcjetLogger,
+  ArcjetRequestDetails,
+  SensitiveInfoEntity,
+  DetectedSensitiveInfoEntity,
+  DetectSensitiveInfoResult,
+  CustomDetect,
+  SensitiveInfoConfig,
+} from "@arcjet/protocol";
 
 import * as core from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
@@ -24,6 +32,77 @@ const FREE_EMAIL_PROVIDERS = [
 interface AnalyzeContext {
   log: ArcjetLogger;
   characteristics: string[];
+}
+
+export function ConvertProtocolEntitiesToAnalyzeEntities(
+  entity: SensitiveInfoEntity,
+): core.SensitiveInfoEntity {
+  if (entity === "email") {
+    return { tag: "email" };
+  }
+
+  if (entity === "phone-number") {
+    return { tag: "phone-number" };
+  }
+
+  if (entity === "ip-address") {
+    return { tag: "ip-address" };
+  }
+
+  if (entity === "credit-card-number") {
+    return { tag: "credit-card-number" };
+  }
+
+  return {
+    tag: "custom",
+    val: "custom",
+  };
+}
+
+export function ConvertDetectedSensitiveInfoEntityToAnalyzeEntity(
+  entity?: DetectedSensitiveInfoEntity,
+): core.SensitiveInfoEntity | undefined {
+  if (entity === "email") {
+    return { tag: "email" };
+  }
+
+  if (entity === "phone-number") {
+    return { tag: "phone-number" };
+  }
+
+  if (entity === "credit-card-number") {
+    return { tag: "credit-card-number" };
+  }
+
+  if (entity === "ip-address") {
+    return { tag: "ip-address" };
+  }
+
+  if (entity === "custom") {
+    return { tag: "custom", val: "custom" };
+  }
+}
+
+export function ConvertAnalyzeEntitiesToProtocolEntities(
+  entity: core.SensitiveInfoEntity,
+): DetectedSensitiveInfoEntity {
+  if (entity.tag === "email") {
+    return "email";
+  }
+
+  if (entity.tag === "ip-address") {
+    return "ip-address";
+  }
+
+  if (entity.tag === "credit-card-number") {
+    return "credit-card-number";
+  }
+
+  if (entity.tag === "phone-number") {
+    return "phone-number";
+  }
+
+  return "custom";
 }
 
 // TODO: Do we actually need this wasmCache or does `import` cache correctly?
@@ -54,8 +133,18 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-async function init(context: AnalyzeContext) {
+async function init(context: AnalyzeContext, detect?: CustomDetect) {
   const { log } = context;
+
+  const convertedDetect = (tokens: string[]): any[] => {
+    if (detect !== undefined) {
+      return detect(tokens).map(
+        ConvertDetectedSensitiveInfoEntityToAnalyzeEntity,
+      );
+    } else {
+      return [];
+    }
+  };
 
   const coreImports: ImportObject = {
     "arcjet:js-req/logger": {
@@ -82,6 +171,9 @@ async function init(context: AnalyzeContext) {
       hasGravatar() {
         return "unknown";
       },
+    },
+    "arcjet:js-req/sensitive-information-identifier": {
+      detect: convertedDetect,
     },
   };
 
@@ -172,6 +264,60 @@ export async function detectBot(
     return {
       botType: "not-analyzed",
       botScore: 0,
+    };
+  }
+}
+
+export async function detectSensitiveInfo(
+  context: AnalyzeContext,
+  candidate: string,
+  options?: SensitiveInfoConfig,
+): Promise<DetectSensitiveInfoResult> {
+  const analyze = await init(context, options?.customDetect);
+  const skipCustomDetect = options?.customDetect === undefined;
+  let entities: core.Entities = {
+    tag: "allow",
+    val: options?.allow?.map(ConvertProtocolEntitiesToAnalyzeEntities) || [],
+  };
+  if (options?.deny && options?.deny.length > 0) {
+    entities = {
+      tag: "deny",
+      val: options.deny.map(ConvertProtocolEntitiesToAnalyzeEntities),
+    };
+  }
+  const optionsOrDefault = {
+    entities,
+    contextWindowSize: options?.contextWindowSize || 1,
+    skipCustomDetect,
+  };
+
+  if (typeof analyze !== "undefined") {
+    const result = analyze.detectSensitiveInfo(candidate, optionsOrDefault);
+    const allowed = result.allowed.map((entity) => {
+      return {
+        ...entity,
+        identifiedType: ConvertAnalyzeEntitiesToProtocolEntities(
+          entity.identifiedType,
+        ),
+      };
+    });
+    const denied = result.denied.map((entity) => {
+      return {
+        ...entity,
+        identifiedType: ConvertAnalyzeEntitiesToProtocolEntities(
+          entity.identifiedType,
+        ),
+      };
+    });
+    return {
+      allowed,
+      denied,
+    };
+  } else {
+    // Skip the local evaluation of the rule if WASM is not available
+    return {
+      allowed: [],
+      denied: [],
     };
   }
 }

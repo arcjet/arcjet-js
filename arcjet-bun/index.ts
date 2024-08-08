@@ -235,7 +235,16 @@ export default function arcjet<
           ExtraProps<Rules>
         >;
 
-        return aj.protect({}, req);
+        const getBody = async () => {
+          try {
+            const clonedRequest = request.clone();
+            return clonedRequest.text();
+          } catch (e) {
+            return undefined;
+          }
+        };
+
+        return aj.protect({ getBody }, req);
       },
       handler(
         fetch: (
