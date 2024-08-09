@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
-    "@clerk/nextjs": "^5.2.13",
+    "@clerk/nextjs": "^5.3.0",
     "next": "^14.2.5",
     "react": "^18",
     "react-dom": "^18"
@@ -23,7 +23,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8",
-    "tailwindcss": "^3.4.7",
+    "tailwindcss": "^3.4.9",
     "typescript": "^5"
   }
 }
