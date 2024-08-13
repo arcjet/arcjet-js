@@ -1,4 +1,5 @@
-import { type Transport, createPromiseClient } from "@connectrpc/connect";
+import type { Transport } from "@connectrpc/connect";
+import { createPromiseClient } from "@connectrpc/connect";
 import { Timestamp } from "@bufbuild/protobuf";
 import {
   ArcjetDecisionFromProtocol,
@@ -6,13 +7,12 @@ import {
   ArcjetRuleToProtocol,
   ArcjetStackToProtocol,
 } from "./convert.js";
-import {
-  type ArcjetContext,
-  ArcjetDecision,
-  type ArcjetRequestDetails,
-  type ArcjetRule,
-  ArcjetStack,
+import type {
+  ArcjetContext,
+  ArcjetRequestDetails,
+  ArcjetRule,
 } from "./index.js";
+import { ArcjetDecision, ArcjetStack } from "./index.js";
 import { DecideService } from "./proto/decide/v1alpha1/decide_connect.js";
 import {
   DecideRequest,

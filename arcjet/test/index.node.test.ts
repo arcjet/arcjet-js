@@ -10,10 +10,10 @@ import {
   test,
 } from "@jest/globals";
 
+import type { ArcjetRule, ArcjetLocalRule, Primitive, Arcjet } from "../index";
 import arcjet, {
   ArcjetMode,
   detectBot,
-  type ArcjetRule,
   validateEmail,
   protectSignup,
   ArcjetBotType,
@@ -28,12 +28,9 @@ import arcjet, {
   ArcjetEmailReason,
   ArcjetBotReason,
   ArcjetRateLimitReason,
-  type ArcjetLocalRule,
   fixedWindow,
   tokenBucket,
   slidingWindow,
-  type Primitive,
-  type Arcjet,
   shield,
 } from "../index";
 

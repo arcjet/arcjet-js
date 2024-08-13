@@ -1,9 +1,20 @@
+import type {
+  ArcjetContext,
+  ArcjetEmailRule,
+  ArcjetBotRule,
+  ArcjetRule,
+  ArcjetLocalRule,
+  ArcjetRequestDetails,
+  ArcjetTokenBucketRateLimitRule,
+  ArcjetFixedWindowRateLimitRule,
+  ArcjetSlidingWindowRateLimitRule,
+  ArcjetShieldRule,
+  ArcjetLogger,
+} from "@arcjet/protocol";
 import {
-  type ArcjetContext,
   ArcjetBotReason,
   ArcjetBotType,
   ArcjetEmailReason,
-  type ArcjetEmailRule,
   ArcjetEmailType,
   ArcjetErrorReason,
   ArcjetMode,
@@ -12,15 +23,6 @@ import {
   ArcjetDecision,
   ArcjetDenyDecision,
   ArcjetErrorDecision,
-  type ArcjetBotRule,
-  type ArcjetRule,
-  type ArcjetLocalRule,
-  type ArcjetRequestDetails,
-  type ArcjetTokenBucketRateLimitRule,
-  type ArcjetFixedWindowRateLimitRule,
-  type ArcjetSlidingWindowRateLimitRule,
-  type ArcjetShieldRule,
-  type ArcjetLogger,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,

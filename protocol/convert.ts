@@ -1,4 +1,14 @@
 import { Timestamp } from "@bufbuild/protobuf";
+import type {
+  ArcjetRule,
+  ArcjetRateLimitRule,
+  ArcjetBotRule,
+  ArcjetEmailRule,
+  ArcjetTokenBucketRateLimitRule,
+  ArcjetFixedWindowRateLimitRule,
+  ArcjetSlidingWindowRateLimitRule,
+  ArcjetShieldRule,
+} from "./index";
 import {
   ArcjetAllowDecision,
   ArcjetBotReason,
@@ -19,16 +29,9 @@ import {
   ArcjetReason,
   ArcjetRuleState,
   ArcjetStack,
-  type ArcjetRule,
-  type ArcjetRateLimitRule,
-  type ArcjetBotRule,
-  type ArcjetEmailRule,
-  type ArcjetTokenBucketRateLimitRule,
-  type ArcjetFixedWindowRateLimitRule,
-  type ArcjetSlidingWindowRateLimitRule,
   ArcjetIpDetails,
-  type ArcjetShieldRule,
 } from "./index";
+import type { IpDetails } from "./proto/decide/v1alpha1/decide_pb.js";
 import {
   BotReason,
   BotType,
@@ -38,7 +41,6 @@ import {
   EmailReason,
   EmailType,
   ErrorReason,
-  type IpDetails,
   Mode,
   RateLimitAlgorithm,
   RateLimitReason,
