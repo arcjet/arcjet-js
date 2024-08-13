@@ -1,9 +1,9 @@
 import {
-  ArcjetContext,
+  type ArcjetContext,
   ArcjetBotReason,
   ArcjetBotType,
   ArcjetEmailReason,
-  ArcjetEmailRule,
+  type ArcjetEmailRule,
   ArcjetEmailType,
   ArcjetErrorReason,
   ArcjetMode,
@@ -12,22 +12,21 @@ import {
   ArcjetDecision,
   ArcjetDenyDecision,
   ArcjetErrorDecision,
-  ArcjetBotRule,
-  ArcjetRule,
-  ArcjetLocalRule,
-  ArcjetRequestDetails,
-  ArcjetTokenBucketRateLimitRule,
-  ArcjetFixedWindowRateLimitRule,
-  ArcjetSlidingWindowRateLimitRule,
-  ArcjetShieldRule,
-  ArcjetLogger,
-  ArcjetRateLimitRule,
+  type ArcjetBotRule,
+  type ArcjetRule,
+  type ArcjetLocalRule,
+  type ArcjetRequestDetails,
+  type ArcjetTokenBucketRateLimitRule,
+  type ArcjetFixedWindowRateLimitRule,
+  type ArcjetSlidingWindowRateLimitRule,
+  type ArcjetShieldRule,
+  type ArcjetLogger,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
   isRateLimitRule,
 } from "@arcjet/protocol/convert.js";
-import { Client } from "@arcjet/protocol/client.js";
+import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";

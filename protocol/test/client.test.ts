@@ -30,7 +30,7 @@ import {
   ArcjetErrorDecision,
   ArcjetErrorReason,
   ArcjetReason,
-  ArcjetRule,
+  type ArcjetRule,
   ArcjetRuleResult,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";

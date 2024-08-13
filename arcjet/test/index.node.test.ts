@@ -13,7 +13,7 @@ import {
 import arcjet, {
   ArcjetMode,
   detectBot,
-  ArcjetRule,
+  type ArcjetRule,
   validateEmail,
   protectSignup,
   ArcjetBotType,
@@ -28,12 +28,12 @@ import arcjet, {
   ArcjetEmailReason,
   ArcjetBotReason,
   ArcjetRateLimitReason,
-  ArcjetLocalRule,
+  type ArcjetLocalRule,
   fixedWindow,
   tokenBucket,
   slidingWindow,
-  Primitive,
-  Arcjet,
+  type Primitive,
+  type Arcjet,
   shield,
 } from "../index";
 

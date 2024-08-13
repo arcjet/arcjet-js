@@ -1,6 +1,6 @@
 import format from "@arcjet/sprintf";
 import {
-  ArcjetDecision,
+  type ArcjetDecision,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,

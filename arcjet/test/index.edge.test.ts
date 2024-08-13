@@ -14,7 +14,7 @@ import arcjet, {
   fixedWindow,
   tokenBucket,
   protectSignup,
-  Primitive,
+  type Primitive,
   ArcjetReason,
   ArcjetAllowDecision,
 } from "../index";

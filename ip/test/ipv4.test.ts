@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { describe, expect, test } from "@jest/globals";
-import ip, { Options, RequestLike } from "../index";
+import ip, { type Options, type RequestLike } from "../index";
 
 type MakeTest = (ip: unknown) => [RequestLike, Headers, Options | undefined];
 
