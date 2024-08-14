@@ -2,10 +2,8 @@ import type {
   ArcjetLogger,
   ArcjetRequestDetails,
   CustomDetect,
-  DetectedSensitiveInfoEntity,
   DetectSensitiveInfoResult,
   SensitiveInfoConfig,
-  SensitiveInfoEntity,
 } from "@arcjet/protocol";
 
 import * as core from "./wasm/arcjet_analyze_js_req.component.js";
@@ -24,7 +22,7 @@ import {
   ConvertAnalyzeEntitiesToProtocolEntities,
   ConvertDetectedSensitiveInfoEntityToAnalyzeEntity,
   ConvertProtocolEntitiesToAnalyzeEntities,
-} from "./index.js";
+} from "./convert";
 
 const FREE_EMAIL_PROVIDERS = [
   "gmail.com",
