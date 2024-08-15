@@ -136,5 +136,7 @@ index.js
 index.d.ts
 workerd.js
 workerd.d.ts
+convert.js
+convert.d.ts
 test/*.js
 _virtual/*.js
