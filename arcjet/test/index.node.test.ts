@@ -37,7 +37,7 @@ import arcjet, {
   shield,
   sensitiveInfo,
   ArcjetSensitiveInfoReason,
-  DetectedSensitiveInfoEntity,
+  SensitiveInfoEntity,
 } from "../index";
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -4034,94 +4034,6 @@ describe("SDK", () => {
       });
     });
 
-    test("it blocks entities matched by a custom regex in the deny list", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () => Promise.resolve("hello world"),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        deny: [/hello/],
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "DENY",
-        reason: new ArcjetSensitiveInfoReason({
-          denied: [
-            {
-              start: 0,
-              end: 5,
-              identifiedType: "custom",
-            },
-          ],
-          allowed: [],
-        }),
-      });
-    });
-
-    test("it allows items matched by custom regexs that would have otherwise been blocked", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () => Promise.resolve("my card number is 4242424242424242"),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        allow: [/4242424242424242/], // matches a credit card number
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetSensitiveInfoReason({
-          denied: [],
-          allowed: [
-            {
-              start: 18,
-              end: 34,
-              identifiedType: "custom",
-            },
-          ],
-        }),
-      });
-    });
-
     test("it blocks entities identified by a custom function", async () => {
       const context = {
         key: "test-key",
@@ -4143,9 +4055,7 @@ describe("SDK", () => {
         extra: {},
       };
 
-      const customDetect = (
-        tokens: string[],
-      ): Array<DetectedSensitiveInfoEntity | undefined> => {
+      const customDetect = (tokens: string[]) => {
         return tokens.map((token) => {
           if (token === "bad") {
             return "custom";
@@ -4155,8 +4065,9 @@ describe("SDK", () => {
 
       const [rule] = sensitiveInfo({
         mode: "LIVE",
-        deny: [customDetect],
+        deny: ["custom"],
         contextWindowSize: 1,
+        detect: customDetect,
       });
       expect(rule.type).toEqual("SENSITIVE_INFO");
       assertIsLocalRule(rule);
@@ -4198,9 +4109,7 @@ describe("SDK", () => {
         extra: {},
       };
 
-      const customDetect = (
-        tokens: string[],
-      ): Array<DetectedSensitiveInfoEntity | undefined> => {
+      const customDetect = (tokens: string[]) => {
         return tokens.map((token) => {
           if (token === "test@example.com") {
             return "custom";
@@ -4210,7 +4119,8 @@ describe("SDK", () => {
 
       const [rule] = sensitiveInfo({
         mode: "LIVE",
-        allow: [customDetect],
+        allow: ["custom"],
+        detect: customDetect,
         contextWindowSize: 1,
       });
       expect(rule.type).toEqual("SENSITIVE_INFO");
@@ -4253,16 +4163,15 @@ describe("SDK", () => {
         extra: {},
       };
 
-      const customDetect = (
-        tokens: string[],
-      ): Array<DetectedSensitiveInfoEntity | undefined> => {
+      const customDetect = (tokens: string[]) => {
         expect(tokens).toHaveLength(3);
         return new Array(tokens.length).fill(undefined);
       };
 
       const [rule] = sensitiveInfo({
         mode: "LIVE",
-        allow: [customDetect],
+        allow: ["custom"],
+        detect: customDetect,
         contextWindowSize: 3,
       });
       expect(rule.type).toEqual("SENSITIVE_INFO");

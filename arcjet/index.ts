@@ -22,7 +22,6 @@ import {
   ArcjetShieldRule,
   ArcjetLogger,
   ArcjetSensitiveInfoRule,
-  DetectedSensitiveInfoEntity,
   CustomDetect,
 } from "@arcjet/protocol";
 import {
@@ -313,24 +312,27 @@ export type EmailOptions = {
   allowDomainLiteral?: boolean;
 };
 
-type SensitiveInfoOptionsCommon = {
+type SensitiveInfoOptionsCommon<Custom extends string> = {
   contextWindowSize?: number;
   mode?: ArcjetMode;
+  detect?: CustomDetect<Custom>;
 };
 
-interface SensitiveInfoOptionsAllow extends SensitiveInfoOptionsCommon {
-  allow: SensitiveInfoEntity[];
+interface SensitiveInfoOptionsAllow<Custom extends string>
+  extends SensitiveInfoOptionsCommon<Custom> {
+  allow: SensitiveInfoEntity<Custom>[];
   deny?: never;
 }
 
-interface SensitiveInfoOptionsBlock extends SensitiveInfoOptionsCommon {
+interface SensitiveInfoOptionsBlock<Custom extends string>
+  extends SensitiveInfoOptionsCommon<Custom> {
   allow?: never;
-  deny: SensitiveInfoEntity[];
+  deny: SensitiveInfoEntity<Custom>[];
 }
 
-export type SensitiveInfoOptions =
-  | SensitiveInfoOptionsAllow
-  | SensitiveInfoOptionsBlock;
+export type SensitiveInfoOptions<Custom extends string> =
+  | SensitiveInfoOptionsAllow<Custom>
+  | SensitiveInfoOptionsBlock<Custom>;
 
 const Priority = {
   Shield: 1,
@@ -550,64 +552,25 @@ export function slidingWindow<
   return rules;
 }
 
-export function sensitiveInfo(
-  options: SensitiveInfoOptions,
-  ...additionalOptions: SensitiveInfoOptions[]
+export function sensitiveInfo<Custom extends string>(
+  options: SensitiveInfoOptions<Custom>,
+  ...additionalOptions: SensitiveInfoOptions<Custom>[]
 ): Primitive<{}> {
-  const rules: ArcjetSensitiveInfoRule<{}>[] = [];
+  const rules: ArcjetSensitiveInfoRule<{}, Custom>[] = [];
 
   // Always create at least one EMAIL rule
   for (const opt of [
-    options ?? ({} as SensitiveInfoOptions),
+    options ?? ({} as SensitiveInfoOptions<Custom>),
     ...additionalOptions,
   ]) {
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
     // TODO: Filter invalid email types (or error??)
 
-    const customFunctions: CustomDetect[] = [];
-    const customRegExp: RegExp[] = [];
-    if (options?.allow?.length && options.allow.length > 0) {
-      customFunctions.push(
-        ...options.allow.filter((rule) => typeof rule === "function"),
-      );
-      customRegExp.push(
-        ...options.allow.filter((rule) => rule instanceof RegExp),
-      );
-    } else if (options?.deny?.length && options.deny.length > 0) {
-      customFunctions.push(
-        ...options.deny.filter((rule) => typeof rule === "function"),
-      );
-      customRegExp.push(
-        ...options.deny.filter((rule) => rule instanceof RegExp),
-      );
-    }
-    const customDetect: CustomDetect = (tokens: string[]) => {
-      for (const fn of customFunctions) {
-        const result = fn(tokens);
-        if (result.find((e) => e !== undefined)) {
-          return result;
-        }
-      }
-
-      const entities: (DetectedSensitiveInfoEntity | undefined)[] = new Array(
-        tokens.length,
-      ).fill(undefined);
-      for (const regex of customRegExp) {
-        for (const [i, token] of tokens.entries()) {
-          if (regex.test(token)) {
-            entities[i] = "custom";
-          }
-        }
-      }
-
-      return entities;
-    };
-
     const redactOpts = {
       allow: options?.allow || [],
       deny: options?.deny || [],
       contextWindowSize: opt.contextWindowSize || 1,
-      customDetect,
+      customDetect: options?.detect,
     };
 
     rules.push({
