@@ -20,7 +20,6 @@ import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.was
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm?module";
 import {
   ConvertAnalyzeEntitiesToProtocolEntities,
-  ConvertDetectedSensitiveInfoEntityToAnalyzeEntity,
   ConvertProtocolEntitiesToAnalyzeEntities,
 } from "./convert";
 
@@ -51,13 +50,16 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-async function init(context: AnalyzeContext, detect?: CustomDetect) {
+async function init<Custom extends string>(
+  context: AnalyzeContext,
+  detect?: CustomDetect<Custom>,
+) {
   const { log } = context;
 
   const convertedDetect = (tokens: string[]) => {
     if (detect !== undefined) {
       return detect(tokens).map(
-        ConvertDetectedSensitiveInfoEntityToAnalyzeEntity,
+        (e) => e && ConvertProtocolEntitiesToAnalyzeEntities,
       );
     } else {
       return [] as any[];
@@ -185,11 +187,11 @@ export async function detectBot(
     };
   }
 }
-export async function detectSensitiveInfo(
+export async function detectSensitiveInfo<Custom extends string>(
   context: AnalyzeContext,
   candidate: string,
-  options?: SensitiveInfoConfig,
-): Promise<DetectSensitiveInfoResult> {
+  options?: SensitiveInfoConfig<Custom>,
+): Promise<DetectSensitiveInfoResult<Custom>> {
   const analyze = await init(context, options?.customDetect);
   const skipCustomDetect = options?.customDetect === undefined;
   let entities: core.Entities = {
