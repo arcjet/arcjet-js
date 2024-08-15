@@ -92,6 +92,18 @@ export const ArcjetConclusion: ArcjetEnum<ArcjetConclusion> = Object.freeze({
   ERROR: "ERROR",
 });
 
+export type ArcjetSensitiveInfoType =
+  | "EMAIL"
+  | "PHONE_NUMBER"
+  | "IP_ADDRESS"
+  | "CREDIT_CARD_NUMBER";
+export const ArcjetSensitiveInfoType: ArcjetEnum<ArcjetSensitiveInfoType> = {
+  EMAIL: "EMAIL",
+  PHONE_NUMBER: "PHONE_NUMBER",
+  IP_ADDRESS: "IP_ADDRESS",
+  CREDIT_CARD_NUMBER: "CREDIT_CARD_NUMBER",
+};
+
 export type ArcjetRuleType = "LOCAL" | "REMOTE";
 export const ArcjetRuleType: ArcjetEnum<ArcjetRuleType> = Object.freeze({
   LOCAL: "LOCAL",
@@ -788,13 +800,9 @@ export type SensitiveInfoConfig<Custom extends string> = {
   contextWindowSize: number;
 };
 
-export interface ArcjetSensitiveInfoRule<
-  Props extends {},
-  Custom extends string,
-> extends ArcjetLocalRule<Props> {
+export interface ArcjetSensitiveInfoRule<Props extends {}>
+  extends ArcjetLocalRule<Props> {
   type: "SENSITIVE_INFO";
-
-  options: SensitiveInfoConfig<Custom>;
 }
 
 export interface ArcjetBotRule<Props extends {}>

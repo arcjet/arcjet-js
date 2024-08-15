@@ -22,7 +22,8 @@ import {
   ArcjetShieldRule,
   ArcjetLogger,
   ArcjetSensitiveInfoRule,
-  CustomDetect,
+  ArcjetSensitiveInfoType,
+  ArcjetSensitiveInfoReason,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
@@ -33,8 +34,6 @@ import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
-import { SensitiveInfoEntity } from "@arcjet/protocol";
-import { ArcjetSensitiveInfoReason } from "@arcjet/protocol";
 
 export * from "@arcjet/protocol";
 
@@ -312,27 +311,36 @@ export type EmailOptions = {
   allowDomainLiteral?: boolean;
 };
 
-type SensitiveInfoOptionsCommon<Custom extends string> = {
+type DetectEntities<T> = (tokens: string[]) => (ArcjetSensitiveInfoType | T)[];
+
+type SensitiveInfoOptionsAllow<
+  Detect extends DetectEntities<CustomEntities>,
+  CustomEntities extends string,
+> = {
+  allow: (ArcjetSensitiveInfoType | ReturnType<Detect>[number])[];
+  deny?: never;
   contextWindowSize?: number;
   mode?: ArcjetMode;
-  detect?: CustomDetect<Custom>;
+  detect?: Detect;
 };
 
-interface SensitiveInfoOptionsAllow<Custom extends string>
-  extends SensitiveInfoOptionsCommon<Custom> {
-  allow: SensitiveInfoEntity<Custom>[];
-  deny?: never;
-}
-
-interface SensitiveInfoOptionsBlock<Custom extends string>
-  extends SensitiveInfoOptionsCommon<Custom> {
+type SensitiveInfoOptionsDeny<
+  Detect extends DetectEntities<CustomEntities>,
+  CustomEntities extends string,
+> = {
   allow?: never;
-  deny: SensitiveInfoEntity<Custom>[];
-}
+  deny: (ArcjetSensitiveInfoType | ReturnType<Detect>[number])[];
+  contextWindowSize?: number;
+  mode?: ArcjetMode;
+  detect?: Detect;
+};
 
-export type SensitiveInfoOptions<Custom extends string> =
-  | SensitiveInfoOptionsAllow<Custom>
-  | SensitiveInfoOptionsBlock<Custom>;
+export type SensitiveInfoOptions<
+  Detect extends DetectEntities<CustomEntities>,
+  CustomEntities extends string,
+> =
+  | SensitiveInfoOptionsAllow<Detect, CustomEntities>
+  | SensitiveInfoOptionsDeny<Detect, CustomEntities>;
 
 const Priority = {
   Shield: 1,
@@ -552,17 +560,17 @@ export function slidingWindow<
   return rules;
 }
 
-export function sensitiveInfo<Custom extends string>(
-  options: SensitiveInfoOptions<Custom>,
-  ...additionalOptions: SensitiveInfoOptions<Custom>[]
+export function sensitiveInfo<
+  const Detect extends DetectEntities<CustomEntities>,
+  const CustomEntities extends string,
+>(
+  options: SensitiveInfoOptions<Detect, CustomEntities>,
+  ...additionalOptions: SensitiveInfoOptions<Detect, CustomEntities>[]
 ): Primitive<{}> {
-  const rules: ArcjetSensitiveInfoRule<{}, Custom>[] = [];
+  const rules: ArcjetSensitiveInfoRule<{}>[] = [];
 
   // Always create at least one EMAIL rule
-  for (const opt of [
-    options ?? ({} as SensitiveInfoOptions<Custom>),
-    ...additionalOptions,
-  ]) {
+  for (const opt of [options, ...additionalOptions]) {
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
     // TODO: Filter invalid email types (or error??)
 
@@ -577,7 +585,6 @@ export function sensitiveInfo<Custom extends string>(
       type: "SENSITIVE_INFO",
       priority: Priority.EmailValidation,
       mode,
-      options: redactOpts,
 
       validate(
         context: ArcjetContext,
@@ -602,7 +609,7 @@ export function sensitiveInfo<Custom extends string>(
         const result = await analyze.detectSensitiveInfo(
           context,
           body,
-          this.options,
+          redactOpts,
         );
         if (result.denied.length === 0) {
           return new ArcjetRuleResult({
