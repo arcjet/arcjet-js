@@ -96,7 +96,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
 // Interface of fields that the Arcjet Next.js SDK expects on `Request` objects.
 // This is the minimum interface that can be supplied via `NextRequest` and `NextApiRequest`
 // in order for only 1 API to exist no matter which runtime the end-user targets
-export interface ArcjetNextRequestCommon {
+export interface ArcjetNextRequest {
   headers?: Record<string, string | string[] | undefined> | Headers;
 
   socket?: Partial<{ remoteAddress: string; encrypted: boolean }>;
@@ -122,19 +122,10 @@ export interface ArcjetNextRequestCommon {
         >;
       }
     | Partial<{ [key: string]: string }>;
-}
 
-interface ArcjetNextAppRequest extends ArcjetNextRequestCommon {
-  clone: () => Request;
-  body: ReadableStream<Uint8Array> | null;
+  clone?(): Request;
+  body?: any;
 }
-
-interface ArcjetNextApiRequest extends ArcjetNextRequestCommon {
-  body: any;
-  clone?: never;
-}
-
-export type ArcjetNextRequest = ArcjetNextAppRequest | ArcjetNextApiRequest;
 
 function isIterable(val: any): val is Iterable<any> {
   return typeof val?.[Symbol.iterator] === "function";
@@ -345,7 +336,7 @@ export default function arcjet<
               const cloned = request.clone();
               return await cloned.text();
             } else {
-              return request.body;
+              return request.body.toString();
             }
           } catch (e) {
             return undefined;
