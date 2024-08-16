@@ -24,6 +24,7 @@ import {
   ArcjetSensitiveInfoRule,
   ArcjetSensitiveInfoType,
   ArcjetSensitiveInfoReason,
+  IdentifiedEntity,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
@@ -311,7 +312,9 @@ export type EmailOptions = {
   allowDomainLiteral?: boolean;
 };
 
-type DetectEntities<T> = (tokens: string[]) => (ArcjetSensitiveInfoType | T)[];
+type DetectEntities<T> = (
+  tokens: string[],
+) => (ArcjetSensitiveInfoType | T | undefined)[];
 
 type SensitiveInfoOptionsAllow<
   Detect extends DetectEntities<CustomEntities>,
@@ -560,6 +563,62 @@ export function slidingWindow<
   return rules;
 }
 
+function protocolEntitiesToAnalyze<Custom extends string>(
+  entity: ArcjetSensitiveInfoType | Custom,
+): analyze.SensitiveInfoEntity {
+  if (entity === "EMAIL") {
+    return { tag: "email" };
+  }
+
+  if (entity === "PHONE_NUMBER") {
+    return { tag: "phone-number" };
+  }
+
+  if (entity === "IP_ADDRESS") {
+    return { tag: "ip-address" };
+  }
+
+  if (entity === "CREDIT_CARD_NUMBER") {
+    return { tag: "credit-card-number" };
+  }
+
+  return {
+    tag: "custom",
+    val: entity,
+  };
+}
+
+function analyzeEntitiesToString(entity: analyze.SensitiveInfoEntity): string {
+  if (entity.tag === "email") {
+    return "EMAIL";
+  }
+
+  if (entity.tag === "ip-address") {
+    return "IP_ADDRESS";
+  }
+
+  if (entity.tag === "credit-card-number") {
+    return "CREDIT_CARD_NUMBER";
+  }
+
+  if (entity.tag === "phone-number") {
+    return "PHONE_NUMBER";
+  }
+
+  return entity.val;
+}
+
+function convertAnalyzeDetectedEntity(
+  detectedEntities: analyze.DetectedEntitiy[],
+): IdentifiedEntity[] {
+  return detectedEntities.map((detectedEntity) => {
+    return {
+      ...detectedEntity,
+      identifiedType: analyzeEntitiesToString(detectedEntity.identifiedType),
+    };
+  });
+}
+
 export function sensitiveInfo<
   const Detect extends DetectEntities<CustomEntities>,
   const CustomEntities extends string,
@@ -569,17 +628,10 @@ export function sensitiveInfo<
 ): Primitive<{}> {
   const rules: ArcjetSensitiveInfoRule<{}>[] = [];
 
-  // Always create at least one EMAIL rule
+  // Always create at least one SENSITIVE_INFO rule
   for (const opt of [options, ...additionalOptions]) {
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
     // TODO: Filter invalid email types (or error??)
-
-    const redactOpts = {
-      allow: options?.allow || [],
-      deny: options?.deny || [],
-      contextWindowSize: opt.contextWindowSize || 1,
-      customDetect: options?.detect,
-    };
 
     rules.push({
       type: "SENSITIVE_INFO",
@@ -606,30 +658,59 @@ export function sensitiveInfo<
             ),
           });
         }
+        const convertedDetect = (tokens: string[]): any[] => {
+          if (options.detect !== undefined) {
+            return options
+              .detect(tokens)
+              .map((e) => e && protocolEntitiesToAnalyze(e));
+          } else {
+            return [];
+          }
+        };
+
+        let entities: analyze.Entities = {
+          tag: "allow",
+          val:
+            options?.allow
+              ?.filter((e) => e !== undefined)
+              .map(protocolEntitiesToAnalyze) || [],
+        };
+
+        if (options?.deny && options?.deny.length > 0) {
+          entities = {
+            tag: "deny",
+            val: options.deny
+              .filter((e) => e !== undefined)
+              .map(protocolEntitiesToAnalyze),
+          };
+        }
+
         const result = await analyze.detectSensitiveInfo(
           context,
           body,
-          redactOpts,
+          entities,
+          options.contextWindowSize || 1,
+          convertedDetect,
         );
+
+        const reason = new ArcjetSensitiveInfoReason({
+          denied: convertAnalyzeDetectedEntity(result.denied),
+          allowed: convertAnalyzeDetectedEntity(result.allowed),
+        });
+
         if (result.denied.length === 0) {
           return new ArcjetRuleResult({
             ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
-            reason: new ArcjetSensitiveInfoReason({
-              denied: result.denied,
-              allowed: result.allowed,
-            }),
+            reason,
           });
         } else {
           return new ArcjetRuleResult({
             ttl: 0,
             state: "RUN",
             conclusion: "DENY",
-            reason: new ArcjetSensitiveInfoReason({
-              denied: result.denied,
-              allowed: result.allowed,
-            }),
+            reason,
           });
         }
       },
@@ -1027,7 +1108,6 @@ export default function arcjet<
       // body: request.body,
       extra: extraProps(request),
       email: typeof request.email === "string" ? request.email : undefined,
-      body: request.body,
     });
 
     log.time?.("local");

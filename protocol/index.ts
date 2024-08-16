@@ -50,22 +50,15 @@ export const ArcjetEmailType: ArcjetEnum<ArcjetEmailType> = {
   INVALID: "INVALID",
 };
 
-export type SensitiveInfoEntity<Custom extends string> =
-  | "email"
-  | "phone-number"
-  | "ip-address"
-  | "credit-card-number"
-  | Custom;
-
-export type IdentifiedEntity<Custom extends string> = {
+export type IdentifiedEntity = {
   start: number;
   end: number;
-  identifiedType: SensitiveInfoEntity<Custom>;
+  identifiedType: string;
 };
 
-export type DetectSensitiveInfoResult<Custom extends string> = {
-  allowed: IdentifiedEntity<Custom>[];
-  denied: IdentifiedEntity<Custom>[];
+export type DetectSensitiveInfoResult = {
+  allowed: IdentifiedEntity[];
+  denied: IdentifiedEntity[];
 };
 
 export type ArcjetStack = "NODEJS" | "NEXTJS" | "BUN" | "SVELTEKIT";
@@ -120,7 +113,7 @@ export class ArcjetReason {
     | "ERROR"
     | "SENSITIVE_INFO";
 
-  isSensitiveInfo(): this is ArcjetSensitiveInfoReason<any> {
+  isSensitiveInfo(): this is ArcjetSensitiveInfoReason {
     return this.type === "SENSITIVE_INFO";
   }
 
@@ -149,17 +142,15 @@ export class ArcjetReason {
   }
 }
 
-export class ArcjetSensitiveInfoReason<
-  Custom extends string,
-> extends ArcjetReason {
+export class ArcjetSensitiveInfoReason extends ArcjetReason {
   type = "SENSITIVE_INFO" as const;
 
-  denied: IdentifiedEntity<Custom>[];
-  allowed: IdentifiedEntity<Custom>[];
+  denied: IdentifiedEntity[];
+  allowed: IdentifiedEntity[];
 
   constructor(init: {
-    denied: IdentifiedEntity<Custom>[];
-    allowed: IdentifiedEntity<Custom>[];
+    denied: IdentifiedEntity[];
+    allowed: IdentifiedEntity[];
   }) {
     super();
 
@@ -789,17 +780,6 @@ export interface ArcjetEmailRule<Props extends { email: string }>
   allowDomainLiteral: boolean;
 }
 
-export type CustomDetect<Custom extends string> = (
-  tokens: string[],
-) => (SensitiveInfoEntity<Custom> | undefined)[];
-
-export type SensitiveInfoConfig<Custom extends string> = {
-  allow?: SensitiveInfoEntity<Custom>[];
-  deny?: SensitiveInfoEntity<Custom>[];
-  customDetect?: CustomDetect<Custom>;
-  contextWindowSize: number;
-};
-
 export interface ArcjetSensitiveInfoRule<Props extends {}>
   extends ArcjetLocalRule<Props> {
   type: "SENSITIVE_INFO";
@@ -833,8 +813,6 @@ export interface ArcjetLogger {
   error(msg: string, ...args: unknown[]): void;
   error(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
 }
-
-export type GetBody = () => Promise<string>;
 
 export type ArcjetContext = {
   [key: string]: unknown;

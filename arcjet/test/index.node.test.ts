@@ -37,7 +37,6 @@ import arcjet, {
   shield,
   sensitiveInfo,
   ArcjetSensitiveInfoReason,
-  SensitiveInfoEntity,
 } from "../index";
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -3714,13 +3713,9 @@ describe("SDK", () => {
 
     test("allows specifying sensitive info entities to allow", async () => {
       const [rule] = sensitiveInfo({
-        allow: ["email", "credit-card-number"],
+        allow: ["EMAIL", "CREDIT_CARD_NUMBER"],
       });
       expect(rule.type).toEqual("SENSITIVE_INFO");
-      expect(rule).toHaveProperty("options.allow", [
-        "email",
-        "credit-card-number",
-      ]);
     });
 
     test("it doesnt detect any entities in a non sensitive body", async () => {
@@ -3800,22 +3795,22 @@ describe("SDK", () => {
             {
               start: 0,
               end: 9,
-              identifiedType: "ip-address",
+              identifiedType: "IP_ADDRESS",
             },
             {
               start: 10,
               end: 26,
-              identifiedType: "email",
+              identifiedType: "EMAIL",
             },
             {
               start: 27,
               end: 43,
-              identifiedType: "credit-card-number",
+              identifiedType: "CREDIT_CARD_NUMBER",
             },
             {
               start: 44,
               end: 60,
-              identifiedType: "phone-number",
+              identifiedType: "PHONE_NUMBER",
             },
           ],
           allowed: [],
@@ -3849,7 +3844,7 @@ describe("SDK", () => {
 
       const [rule] = sensitiveInfo({
         mode: "LIVE",
-        allow: ["email", "phone-number"],
+        allow: ["EMAIL", "PHONE_NUMBER"],
       });
       expect(rule.type).toEqual("SENSITIVE_INFO");
       assertIsLocalRule(rule);
@@ -3862,24 +3857,24 @@ describe("SDK", () => {
             {
               start: 0,
               end: 9,
-              identifiedType: "ip-address",
+              identifiedType: "IP_ADDRESS",
             },
             {
               start: 27,
               end: 43,
-              identifiedType: "credit-card-number",
+              identifiedType: "CREDIT_CARD_NUMBER",
             },
           ],
           allowed: [
             {
               start: 10,
               end: 26,
-              identifiedType: "email",
+              identifiedType: "EMAIL",
             },
             {
               start: 44,
               end: 60,
-              identifiedType: "phone-number",
+              identifiedType: "PHONE_NUMBER",
             },
           ],
         }),
@@ -3909,7 +3904,7 @@ describe("SDK", () => {
 
       const [rule] = sensitiveInfo({
         mode: "LIVE",
-        allow: ["email", "phone-number"],
+        allow: ["EMAIL", "PHONE_NUMBER"],
       });
       expect(rule.type).toEqual("SENSITIVE_INFO");
       assertIsLocalRule(rule);
@@ -3923,12 +3918,12 @@ describe("SDK", () => {
             {
               start: 0,
               end: 16,
-              identifiedType: "email",
+              identifiedType: "EMAIL",
             },
             {
               start: 17,
               end: 33,
-              identifiedType: "phone-number",
+              identifiedType: "PHONE_NUMBER",
             },
           ],
         }),
@@ -3958,7 +3953,7 @@ describe("SDK", () => {
 
       const [rule] = sensitiveInfo({
         mode: "LIVE",
-        deny: ["credit-card-number"],
+        deny: ["CREDIT_CARD_NUMBER"],
       });
       expect(rule.type).toEqual("SENSITIVE_INFO");
       assertIsLocalRule(rule);
@@ -3972,12 +3967,12 @@ describe("SDK", () => {
             {
               start: 0,
               end: 16,
-              identifiedType: "email",
+              identifiedType: "EMAIL",
             },
             {
               start: 17,
               end: 33,
-              identifiedType: "phone-number",
+              identifiedType: "PHONE_NUMBER",
             },
           ],
         }),
@@ -4007,7 +4002,7 @@ describe("SDK", () => {
 
       const [rule] = sensitiveInfo({
         mode: "LIVE",
-        deny: ["email"],
+        deny: ["EMAIL"],
       });
       expect(rule.type).toEqual("SENSITIVE_INFO");
       assertIsLocalRule(rule);
@@ -4020,14 +4015,14 @@ describe("SDK", () => {
             {
               start: 0,
               end: 16,
-              identifiedType: "email",
+              identifiedType: "EMAIL",
             },
           ],
           allowed: [
             {
               start: 17,
               end: 33,
-              identifiedType: "phone-number",
+              identifiedType: "PHONE_NUMBER",
             },
           ],
         }),
@@ -4058,14 +4053,14 @@ describe("SDK", () => {
       const customDetect = (tokens: string[]) => {
         return tokens.map((token) => {
           if (token === "bad") {
-            return "custom";
+            return "CUSTOM";
           }
         });
       };
 
       const [rule] = sensitiveInfo({
         mode: "LIVE",
-        deny: ["custom"],
+        deny: ["CUSTOM"],
         contextWindowSize: 1,
         detect: customDetect,
       });
@@ -4081,7 +4076,7 @@ describe("SDK", () => {
             {
               start: 8,
               end: 11,
-              identifiedType: "custom",
+              identifiedType: "CUSTOM",
             },
           ],
         }),

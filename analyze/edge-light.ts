@@ -1,10 +1,4 @@
-import type {
-  ArcjetLogger,
-  ArcjetRequestDetails,
-  CustomDetect,
-  DetectSensitiveInfoResult,
-  SensitiveInfoConfig,
-} from "@arcjet/protocol";
+import type { ArcjetLogger, ArcjetRequestDetails } from "@arcjet/protocol";
 
 import * as core from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
@@ -18,10 +12,7 @@ import type {
 import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm?module";
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm?module";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm?module";
-import {
-  ConvertAnalyzeEntitiesToProtocolEntities,
-  ConvertProtocolEntitiesToAnalyzeEntities,
-} from "./convert";
+import { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 
 const FREE_EMAIL_PROVIDERS = [
   "gmail.com",
@@ -50,21 +41,16 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-async function init<Custom extends string>(
+async function init(
   context: AnalyzeContext,
-  detect?: CustomDetect<Custom>,
+  detect?: typeof ArcjetJsReqSensitiveInformationIdentifier.detect,
 ) {
   const { log } = context;
 
-  const convertedDetect = (tokens: string[]) => {
-    if (detect !== undefined) {
-      return detect(tokens).map(
-        (e) => e && ConvertProtocolEntitiesToAnalyzeEntities,
-      );
-    } else {
-      return [] as any[];
-    }
-  };
+  let detectOrDefault = detect;
+  if (detectOrDefault === undefined) {
+    detectOrDefault = () => [];
+  }
 
   const coreImports: ImportObject = {
     "arcjet:js-req/logger": {
@@ -93,7 +79,7 @@ async function init<Custom extends string>(
       },
     },
     "arcjet:js-req/sensitive-information-identifier": {
-      detect: convertedDetect,
+      detect: detectOrDefault,
     },
   };
 
@@ -187,51 +173,24 @@ export async function detectBot(
     };
   }
 }
-export async function detectSensitiveInfo<Custom extends string>(
+export async function detectSensitiveInfo(
   context: AnalyzeContext,
   candidate: string,
-  options?: SensitiveInfoConfig<Custom>,
-): Promise<DetectSensitiveInfoResult<Custom>> {
-  const analyze = await init(context, options?.customDetect);
-  const skipCustomDetect = options?.customDetect === undefined;
-  let entities: core.Entities = {
-    tag: "allow",
-    val: options?.allow?.map(ConvertProtocolEntitiesToAnalyzeEntities) || [],
-  };
-  if (options?.deny) {
-    entities = {
-      tag: "deny",
-      val: options.deny.map(ConvertProtocolEntitiesToAnalyzeEntities),
-    };
-  }
-  const optionsOrDefault = {
+  entities: core.Entities,
+  contextWindowSize: number,
+  detect: typeof ArcjetJsReqSensitiveInformationIdentifier.detect,
+): Promise<core.SensitiveInfoResult> {
+  const analyze = await init(context, detect);
+  const skipCustomDetect = detect === undefined;
+
+  const options: core.DetectConfig = {
     entities,
-    contextWindowSize: options?.contextWindowSize || 1,
+    contextWindowSize,
     skipCustomDetect,
   };
 
   if (typeof analyze !== "undefined") {
-    const result = analyze.detectSensitiveInfo(candidate, optionsOrDefault);
-    const allowed = result.allowed.map((entity) => {
-      return {
-        ...entity,
-        identifiedType: ConvertAnalyzeEntitiesToProtocolEntities(
-          entity.identifiedType,
-        ),
-      };
-    });
-    const denied = result.denied.map((entity) => {
-      return {
-        ...entity,
-        identifiedType: ConvertAnalyzeEntitiesToProtocolEntities(
-          entity.identifiedType,
-        ),
-      };
-    });
-    return {
-      allowed,
-      denied,
-    };
+    return analyze.detectSensitiveInfo(candidate, options);
   } else {
     // Skip the local evaluation of the rule if WASM is not available
     return {
@@ -240,3 +199,7 @@ export async function detectSensitiveInfo<Custom extends string>(
     };
   }
 }
+
+export type SensitiveInfoEntity = core.SensitiveInfoEntity;
+export type Entities = core.Entities;
+export type DetectedEntitiy = core.DetectedEntity;

@@ -93,8 +93,8 @@ export interface ArcjetNodeRequest {
   method?: string;
   httpVersion?: string;
   url?: string;
-  clone(): ArcjetNodeRequest;
-  text(): Promise<string>;
+  clone?(): ArcjetNodeRequest;
+  text?(): Promise<string>;
 }
 
 function cookiesToString(cookies: string | string[] | undefined): string {
@@ -259,8 +259,16 @@ export default function arcjet<
 
         const getBody = async () => {
           try {
-            const clonedRequest = request.clone();
-            return await clonedRequest.text();
+            if (request.clone) {
+              const clonedRequest = request.clone();
+              if (clonedRequest.text) {
+                return await clonedRequest.text();
+              } else {
+                return undefined;
+              }
+            } else {
+              return undefined;
+            }
           } catch (e) {
             return undefined;
           }
