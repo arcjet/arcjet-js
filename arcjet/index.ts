@@ -630,11 +630,9 @@ export function sensitiveInfo<
   // Always create at least one SENSITIVE_INFO rule
   for (const opt of [options, ...additionalOptions]) {
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    // TODO: Filter invalid email types (or error??)
-
     rules.push({
       type: "SENSITIVE_INFO",
-      priority: Priority.EmailValidation,
+      priority: Priority.SensitiveInfo,
       mode,
 
       validate(
