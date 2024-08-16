@@ -429,7 +429,6 @@ export type ArcjetRequest<Props extends PlainObject> = Simplify<
     headers?: Headers | Record<string, string | string[] | undefined>;
     cookies?: string;
     query?: string;
-    body?: string;
   } & Props
 >;
 
