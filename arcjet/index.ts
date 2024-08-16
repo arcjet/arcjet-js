@@ -565,25 +565,25 @@ export function slidingWindow<
 
 function protocolEntitiesToAnalyze<Custom extends string>(
   entity: ArcjetSensitiveInfoType | Custom,
-): analyze.SensitiveInfoEntity {
+) {
   if (entity === "EMAIL") {
-    return { tag: "email" };
+    return { tag: "email" as const };
   }
 
   if (entity === "PHONE_NUMBER") {
-    return { tag: "phone-number" };
+    return { tag: "phone-number" as const };
   }
 
   if (entity === "IP_ADDRESS") {
-    return { tag: "ip-address" };
+    return { tag: "ip-address" as const };
   }
 
   if (entity === "CREDIT_CARD_NUMBER") {
-    return { tag: "credit-card-number" };
+    return { tag: "credit-card-number" as const };
   }
 
   return {
-    tag: "custom",
+    tag: "custom" as const,
     val: entity,
   };
 }
@@ -609,7 +609,7 @@ function analyzeEntitiesToString(entity: analyze.SensitiveInfoEntity): string {
 }
 
 function convertAnalyzeDetectedEntity(
-  detectedEntities: analyze.DetectedEntitiy[],
+  detectedEntities: analyze.DetectedEntity[],
 ): IdentifiedEntity[] {
   return detectedEntities.map((detectedEntity) => {
     return {
@@ -668,22 +668,23 @@ export function sensitiveInfo<
           }
         };
 
-        let entities: analyze.Entities = {
-          tag: "allow",
-          val:
-            options?.allow
-              ?.filter((e) => e !== undefined)
-              .map(protocolEntitiesToAnalyze) || [],
-        };
+        let entitiesTag: "allow" | "deny" = "allow";
+        let entitiesVal =
+          options?.allow
+            ?.filter((e) => e !== undefined)
+            .map(protocolEntitiesToAnalyze) || [];
 
         if (options?.deny && options?.deny.length > 0) {
-          entities = {
-            tag: "deny",
-            val: options.deny
-              .filter((e) => e !== undefined)
-              .map(protocolEntitiesToAnalyze),
-          };
+          entitiesTag = "deny";
+          entitiesVal = options.deny
+            .filter((e) => e !== undefined)
+            .map(protocolEntitiesToAnalyze);
         }
+
+        const entities = {
+          tag: entitiesTag,
+          val: entitiesVal,
+        };
 
         const result = await analyze.detectSensitiveInfo(
           context,

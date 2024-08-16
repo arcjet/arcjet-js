@@ -15,6 +15,8 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
+import { IncomingMessage } from "http";
+import { Socket } from "net";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -256,6 +258,8 @@ export default function arcjet<
         const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
           ExtraProps<Rules>
         >;
+
+        const test = new IncomingMessage(new Socket());
 
         const getBody = async () => {
           try {

@@ -7,6 +7,8 @@ import type {
   BotDetectionResult,
   BotType,
   EmailValidationResult,
+  DetectedEntity,
+  SensitiveInfoEntity,
 } from "./wasm/arcjet_analyze_js_req.component.js";
 
 import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.component.core.wasm?js";
@@ -120,6 +122,8 @@ export {
    * almost certain this request was not a bot.
    */
   type BotDetectionResult,
+  type DetectedEntity,
+  type SensitiveInfoEntity,
 };
 
 /**
@@ -212,7 +216,3 @@ export async function detectSensitiveInfo(
     );
   }
 }
-
-export type SensitiveInfoEntity = core.SensitiveInfoEntity;
-export type Entities = core.Entities;
-export type DetectedEntitiy = core.DetectedEntity;
