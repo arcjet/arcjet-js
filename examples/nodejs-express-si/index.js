@@ -1,4 +1,4 @@
-import arcjet, { fixedWindow, shield } from "@arcjet/node";
+import arcjet, { sensitiveInfo, shield } from "@arcjet/node";
 import express from "express";
 
 const app = express();
@@ -15,17 +15,14 @@ const aj = arcjet({
     }),
     // Fixed window rate limit. Arcjet also supports sliding window and token
     // bucket.
-    fixedWindow({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      // Limiting by ip.src is the default if not specified
-      //characteristics: ["ip.src"],
-      window: "1m", // 1 min fixed window
-      max: 1, // allow a single request (for demo purposes)
+    sensitiveInfo({
+      mode: "LIVE",
+      deny: ["EMAIL"]
     }),
   ],
 });
 
-app.get('/', async (req, res) => {
+app.post('/', async (req, res) => {
   const decision = await aj.protect(req);
 
   if (decision.isDenied()) {
@@ -36,6 +33,8 @@ app.get('/', async (req, res) => {
     res.end(JSON.stringify({ message: "Hello World" }));
   }
 })
+
+app.use(express.json());
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

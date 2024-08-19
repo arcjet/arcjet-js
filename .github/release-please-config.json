@@ -76,6 +76,10 @@
       "component": "@arcjet/ip",
       "skip-github-release": true
     },
+    "body": {
+      "component": "@arcjet/ip",
+      "skip-github-release": true
+    },
     "logger": {
       "component": "@arcjet/logger",
       "skip-github-release": true
@@ -127,6 +131,7 @@
         "@arcjet/eslint-config",
         "@arcjet/headers",
         "@arcjet/ip",
+        "@arcjet/body",
         "@arcjet/logger",
         "@arcjet/protocol",
         "@arcjet/rollup-config",

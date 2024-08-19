@@ -17,6 +17,7 @@ import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 import { IncomingMessage } from "http";
 import { Socket } from "net";
+import { getBody } from "@arcjet/body";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -95,8 +96,7 @@ export interface ArcjetNodeRequest {
   method?: string;
   httpVersion?: string;
   url?: string;
-  clone?(): ArcjetNodeRequest;
-  text?(): Promise<string>;
+  body?: any;
 }
 
 function cookiesToString(cookies: string | string[] | undefined): string {
@@ -259,26 +259,35 @@ export default function arcjet<
           ExtraProps<Rules>
         >;
 
-        const test = new IncomingMessage(new Socket());
-
-        const getBody = async () => {
+        const getRequestBody = async () => {
           try {
-            if (request.clone) {
-              const clonedRequest = request.clone();
-              if (clonedRequest.text) {
-                return await clonedRequest.text();
-              } else {
-                return undefined;
+            // If request.body is present then the body was likely read by a package like express' `body-parser`.
+            // If it's not present then we attempt to read the bytes from the IncomingMessage ourselves.
+            if (request.body) {
+              return JSON.stringify(request.body);
+            }
+            if (request instanceof IncomingMessage) {
+              const expectedLengthStr = request.headers["content-length"];
+              let expectedLength = undefined;
+              if (expectedLengthStr) {
+                try {
+                  expectedLength = parseInt(expectedLengthStr, 10);
+                } catch {
+                  // If the expected length couldn't be parsed we'll just not set one.
+                }
               }
-            } else {
-              return undefined;
+              return await getBody(request, {
+                encoding: "utf-8",
+                limit: 1048576,
+                expectedLength,
+              });
             }
           } catch (e) {
             return undefined;
           }
         };
 
-        return aj.protect({ getBody }, req);
+        return aj.protect({ getBody: getRequestBody }, req);
       },
     });
   }
