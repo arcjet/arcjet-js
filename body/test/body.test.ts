@@ -8,7 +8,7 @@ import { AddressInfo } from "net";
 
 describe("reads the body from the readable stream", () => {
   test("should read normal body streams", (done) => {
-    var server = http.createServer((req, res) => {
+    const server = http.createServer((req, res) => {
       getBodySync(
         req,
         { encoding: "utf-8", limit: 1024 },
@@ -27,8 +27,8 @@ describe("reads the body from the readable stream", () => {
     });
 
     server.listen(function onListen() {
-      var addr = server.address() as AddressInfo;
-      var client = http.request({ method: "POST", port: addr.port });
+      const addr = server.address() as AddressInfo;
+      const client = http.request({ method: "POST", port: addr.port });
 
       client.end("hello, world!");
 
@@ -48,7 +48,7 @@ describe("reads the body from the readable stream", () => {
   });
 
   test("should error if the body exceeds the length limit", (done) => {
-    var server = http.createServer((req, res) => {
+    const server = http.createServer((req, res) => {
       getBodySync(
         req,
         { encoding: "utf-8", limit: 4 },
@@ -68,8 +68,8 @@ describe("reads the body from the readable stream", () => {
     });
 
     server.listen(function onListen() {
-      var addr = server.address() as AddressInfo;
-      var client = http.request({ method: "POST", port: addr.port });
+      const addr = server.address() as AddressInfo;
+      const client = http.request({ method: "POST", port: addr.port });
 
       client.end("i am a string");
 
@@ -90,7 +90,7 @@ describe("reads the body from the readable stream", () => {
   });
 
   test("should error if it isnt the exact length specified", (done) => {
-    var server = http.createServer((req, res) => {
+    const server = http.createServer((req, res) => {
       getBodySync(
         req,
         { encoding: "utf-8", limit: 1024, expectedLength: 4 },
@@ -112,8 +112,8 @@ describe("reads the body from the readable stream", () => {
     });
 
     server.listen(function onListen() {
-      var addr = server.address() as AddressInfo;
-      var client = http.request({ method: "POST", port: addr.port });
+      const addr = server.address() as AddressInfo;
+      const client = http.request({ method: "POST", port: addr.port });
 
       client.end("hello, world!");
 

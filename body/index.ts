@@ -23,15 +23,15 @@ export function getBodySync(
   callback: StreamReadCallback,
 ) {
   const decoder = new TextDecoder(opts.encoding);
-  var buffer = "";
-  var complete = false;
-  var sync = true;
+  let buffer = "";
+  let complete = false;
+  let sync = true;
 
   if (typeof stream.readable !== "undefined" && !stream.readable) {
     done(new Error("stream is not readable"));
   }
 
-  var received = 0;
+  let received = 0;
 
   const limit = opts.limit || 0;
   const length = opts.expectedLength || null;
