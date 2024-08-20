@@ -1,5 +1,5 @@
 {
-  "name": "arcjet-redact",
+  "name": "@arcjet/redact",
   "version": "1.0.0-alpha.21",
   "description": "Arcjet PII Redaction Library",
   "license": "Apache-2.0",
