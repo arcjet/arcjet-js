@@ -28,12 +28,12 @@ export interface BotDetectionResult {
 export type EmailValidity = 'valid' | 'invalid';
 export interface EmailValidationResult {
   validity: EmailValidity,
-  blocked: string[],
+  blocked: Array<string>,
 }
 export interface EmailValidationConfig {
   requireTopLevelDomain: boolean,
   allowDomainLiteral: boolean,
-  blockedEmails: string[],
+  blockedEmails: Array<string>,
 }
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
 import { ArcjetJsReqLogger } from './interfaces/arcjet-js-req-logger.js';
@@ -43,7 +43,7 @@ export interface ImportObject {
 }
 export interface Root {
   detectBot(headers: string, patternsAdd: string, patternsRemove: string): BotDetectionResult,
-  generateFingerprint(request: string, characteristics: string[]): string,
+  generateFingerprint(request: string, characteristics: Array<string>): string,
   isValidEmail(candidate: string, options: EmailValidationConfig): EmailValidationResult,
 }
 
@@ -67,8 +67,13 @@ export interface Root {
 * on the web, for example.
 */
 export function instantiate(
-getCoreModule: (path: string) => Promise<WebAssembly.Module>,
+getCoreModule: (path: string) => WebAssembly.Module,
 imports: ImportObject,
-instantiateCore?: (module: WebAssembly.Module, imports: Record<string, any>) => Promise<WebAssembly.Instance>
-): Promise<Root>;
+instantiateCore?: (module: WebAssembly.Module, imports: Record<string, any>) => WebAssembly.Instance
+): Root;
+export function instantiate(
+getCoreModule: (path: string) => WebAssembly.Module | Promise<WebAssembly.Module>,
+imports: ImportObject,
+instantiateCore?: (module: WebAssembly.Module, imports: Record<string, any>) => WebAssembly.Instance | Promise<WebAssembly.Instance>
+): Root | Promise<Root>;
 
