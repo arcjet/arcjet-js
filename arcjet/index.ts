@@ -663,15 +663,14 @@ export function sensitiveInfo<
             ),
           });
         }
-        const convertedDetect = (tokens: string[]): any[] => {
-          if (options.detect !== undefined) {
-            return options
-              .detect(tokens)
-              .map((e) => e && protocolEntitiesToAnalyze(e));
-          } else {
-            return [];
-          }
-        };
+
+        let convertedDetect = undefined;
+        if (options.detect !== undefined) {
+          const detect = options.detect;
+          convertedDetect = (tokens: string[]): any[] => {
+            return detect(tokens).map((e) => e && protocolEntitiesToAnalyze(e));
+          };
+        }
 
         let entitiesTag: "allow" | "deny" = "allow";
         let entitiesVal =
