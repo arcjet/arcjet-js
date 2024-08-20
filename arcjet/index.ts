@@ -667,7 +667,7 @@ export function sensitiveInfo<
         let convertedDetect = undefined;
         if (options.detect !== undefined) {
           const detect = options.detect;
-          convertedDetect = (tokens: string[]): any[] => {
+          convertedDetect = (tokens: string[]) => {
             return detect(tokens).map((e) => e && protocolEntitiesToAnalyze(e));
           };
         }

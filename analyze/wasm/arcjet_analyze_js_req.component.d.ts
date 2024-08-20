@@ -40,11 +40,11 @@ export interface EmailValidationConfig {
 export type Entities = EntitiesAllow | EntitiesDeny;
 export interface EntitiesAllow {
   tag: 'allow',
-  val: SensitiveInfoEntity[],
+  val: Array<SensitiveInfoEntity>,
 }
 export interface EntitiesDeny {
   tag: 'deny',
-  val: SensitiveInfoEntity[],
+  val: Array<SensitiveInfoEntity>,
 }
 export interface DetectConfig {
   entities: Entities,
@@ -57,8 +57,8 @@ export interface DetectedEntity {
   identifiedType: SensitiveInfoEntity,
 }
 export interface SensitiveInfoResult {
-  allowed: DetectedEntity[],
-  denied: DetectedEntity[],
+  allowed: Array<DetectedEntity>,
+  denied: Array<DetectedEntity>,
 }
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
 import { ArcjetJsReqLogger } from './interfaces/arcjet-js-req-logger.js';
