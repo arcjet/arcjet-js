@@ -582,6 +582,15 @@ export declare class Reason extends Message<Reason> {
      */
     value: ErrorReason;
     case: "error";
+  } | {
+    /**
+     * Contains details about sensitive info identified in the body of the 
+     * request if the sensitive info rule is configured.
+     *
+     * @generated from field: proto.decide.v1alpha1.SensitiveInfoReason sensitive_info = 7;
+     */
+    value: SensitiveInfoReason;
+    case: "sensitiveInfo";
   } | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<Reason>);
@@ -863,6 +872,81 @@ export declare class ErrorReason extends Message<ErrorReason> {
 }
 
 /**
+ * @generated from message proto.decide.v1alpha1.IdentifiedEntity
+ */
+export declare class IdentifiedEntity extends Message<IdentifiedEntity> {
+  /**
+   * The type of entity that was identified
+   *
+   * @generated from field: string identified_type = 1;
+   */
+  identifiedType: string;
+
+  /**
+   * The start index of the entity in the body.
+   *
+   * @generated from field: uint32 start = 2;
+   */
+  start: number;
+
+  /**
+   * The end index of the entity in the body.
+   *
+   * @generated from field: uint32 end = 3;
+   */
+  end: number;
+
+  constructor(data?: PartialMessage<IdentifiedEntity>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.IdentifiedEntity";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): IdentifiedEntity;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): IdentifiedEntity;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): IdentifiedEntity;
+
+  static equals(a: IdentifiedEntity | PlainMessage<IdentifiedEntity> | undefined, b: IdentifiedEntity | PlainMessage<IdentifiedEntity> | undefined): boolean;
+}
+
+/**
+ * Details of a sensitive info reason.
+ *
+ * @generated from message proto.decide.v1alpha1.SensitiveInfoReason
+ */
+export declare class SensitiveInfoReason extends Message<SensitiveInfoReason> {
+  /**
+   * The allowed sensitive info types
+   *
+   * @generated from field: repeated proto.decide.v1alpha1.IdentifiedEntity allowed = 1;
+   */
+  allowed: IdentifiedEntity[];
+
+  /**
+   * The denied sensitive info types
+   *
+   * @generated from field: repeated proto.decide.v1alpha1.IdentifiedEntity denied = 2;
+   */
+  denied: IdentifiedEntity[];
+
+  constructor(data?: PartialMessage<SensitiveInfoReason>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.SensitiveInfoReason";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SensitiveInfoReason;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SensitiveInfoReason;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SensitiveInfoReason;
+
+  static equals(a: SensitiveInfoReason | PlainMessage<SensitiveInfoReason> | undefined, b: SensitiveInfoReason | PlainMessage<SensitiveInfoReason> | undefined): boolean;
+}
+
+/**
  * The configuration for a rate limit rule.
  *
  * @generated from message proto.decide.v1alpha1.RateLimitRule
@@ -1107,6 +1191,44 @@ export declare class EmailRule extends Message<EmailRule> {
 }
 
 /**
+ * The configuration for a detect sensitive info rule.
+ *
+ * @generated from message proto.decide.v1alpha1.SensitiveInfoRule
+ */
+export declare class SensitiveInfoRule extends Message<SensitiveInfoRule> {
+  /**
+   * @generated from field: proto.decide.v1alpha1.Mode mode = 1;
+   */
+  mode: Mode;
+
+  /**
+   * The sensitive info types to allow and deny.
+   *
+   * @generated from field: repeated string allow = 2;
+   */
+  allow: string[];
+
+  /**
+   * @generated from field: repeated string deny = 3;
+   */
+  deny: string[];
+
+  constructor(data?: PartialMessage<SensitiveInfoRule>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.SensitiveInfoRule";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SensitiveInfoRule;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SensitiveInfoRule;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SensitiveInfoRule;
+
+  static equals(a: SensitiveInfoRule | PlainMessage<SensitiveInfoRule> | undefined, b: SensitiveInfoRule | PlainMessage<SensitiveInfoRule> | undefined): boolean;
+}
+
+/**
  * The configuration for a shield rule.
  *
  * @generated from message proto.decide.v1alpha1.ShieldRule
@@ -1170,6 +1292,12 @@ export declare class Rule extends Message<Rule> {
      */
     value: ShieldRule;
     case: "shield";
+  } | {
+    /**
+     * @generated from field: proto.decide.v1alpha1.SensitiveInfoRule sensitive_info = 5;
+     */
+    value: SensitiveInfoRule;
+    case: "sensitiveInfo";
   } | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<Rule>);

@@ -320,7 +320,10 @@ type SensitiveInfoOptionsAllow<
   Detect extends DetectEntities<CustomEntities>,
   CustomEntities extends string,
 > = {
-  allow: (ArcjetSensitiveInfoType | ReturnType<Detect>[number])[];
+  allow: (
+    | ArcjetSensitiveInfoType
+    | Exclude<ReturnType<Detect>[number], undefined>
+  )[];
   deny?: never;
   contextWindowSize?: number;
   mode?: ArcjetMode;
@@ -332,7 +335,10 @@ type SensitiveInfoOptionsDeny<
   CustomEntities extends string,
 > = {
   allow?: never;
-  deny: (ArcjetSensitiveInfoType | ReturnType<Detect>[number])[];
+  deny: (
+    | ArcjetSensitiveInfoType
+    | Exclude<ReturnType<Detect>[number], undefined>
+  )[];
   contextWindowSize?: number;
   mode?: ArcjetMode;
   detect?: Detect;
@@ -634,6 +640,8 @@ export function sensitiveInfo<
       type: "SENSITIVE_INFO",
       priority: Priority.SensitiveInfo,
       mode,
+      allow: options.allow || [],
+      deny: options.deny || [],
 
       validate(
         context: ArcjetContext,

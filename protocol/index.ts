@@ -783,6 +783,9 @@ export interface ArcjetEmailRule<Props extends { email: string }>
 export interface ArcjetSensitiveInfoRule<Props extends {}>
   extends ArcjetLocalRule<Props> {
   type: "SENSITIVE_INFO";
+
+  allow: string[];
+  deny: string[];
 }
 
 export interface ArcjetBotRule<Props extends {}>
