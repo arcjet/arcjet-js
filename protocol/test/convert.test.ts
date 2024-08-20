@@ -34,26 +34,28 @@ import {
   RuleState,
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
+import type {
+  ArcjetBotRule,
+  ArcjetEmailRule,
+  ArcjetTokenBucketRateLimitRule,
+  ArcjetFixedWindowRateLimitRule,
+  ArcjetSlidingWindowRateLimitRule,
+  ArcjetShieldRule,
+} from "../index.js";
 import {
   ArcjetAllowDecision,
   ArcjetBotReason,
-  ArcjetBotRule,
   ArcjetChallengeDecision,
   ArcjetDenyDecision,
   ArcjetEdgeRuleReason,
   ArcjetEmailReason,
-  ArcjetEmailRule,
   ArcjetErrorDecision,
   ArcjetErrorReason,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
   ArcjetShieldReason,
-  ArcjetTokenBucketRateLimitRule,
-  ArcjetFixedWindowRateLimitRule,
-  ArcjetSlidingWindowRateLimitRule,
   ArcjetIpDetails,
-  ArcjetShieldRule,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
 

@@ -10,11 +10,11 @@ import {
   afterEach,
 } from "@jest/globals";
 
+import type { Primitive } from "../index";
 import arcjet, {
   fixedWindow,
   tokenBucket,
   protectSignup,
-  Primitive,
   ArcjetReason,
   ArcjetAllowDecision,
 } from "../index";
