@@ -50,7 +50,7 @@
     "@arcjet/eslint-config": "1.0.0-alpha.21",
     "@arcjet/rollup-config": "1.0.0-alpha.21",
     "@arcjet/tsconfig": "1.0.0-alpha.21",
-    "@edge-runtime/jest-environment": "3.0.1",
+    "@edge-runtime/jest-environment": "3.0.2",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.21.0",
     "@types/node": "18.18.0",
