@@ -6,11 +6,11 @@ import type {
   DetectedEntity,
   SensitiveInfoEntity,
 } from "./wasm/arcjet_analyze_bindings_redact.component.js";
+import { ArcjetSensitiveInfoSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-sensitive-info-sensitive-information-identifier";
 
 import componentCoreWasm from "./wasm/arcjet_analyze_bindings_redact.component.core.wasm?module";
 import componentCore2Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core2.wasm?module";
 import componentCore3Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core3.wasm?module";
-import { ArcjetSensitiveInfoSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-sensitive-info-sensitive-information-identifier.js";
 
 interface AnalyzeContext {
   log: ArcjetLogger;
