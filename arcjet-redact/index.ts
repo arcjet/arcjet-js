@@ -1,6 +1,6 @@
 import { logLevel } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
-import { ArcjetLogger } from "@arcjet/protocol";
+import { type ArcjetLogger } from "@arcjet/protocol";
 import {
   DetectedEntity,
   detectSensitiveInfo,
