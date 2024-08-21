@@ -9,6 +9,7 @@
     "analyze",
     "redact-wasm",
     "arcjet-*",
+    "decorate",
     "duration",
     "env",
     "eslint-config",
