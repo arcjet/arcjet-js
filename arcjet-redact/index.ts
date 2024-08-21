@@ -2,9 +2,9 @@ import { logLevel } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { type ArcjetLogger } from "@arcjet/protocol";
 import {
-  DetectedEntity,
+  type DetectedEntity,
   detectSensitiveInfo,
-  SensitiveInfoEntity,
+  type SensitiveInfoEntity,
 } from "@arcjet/redact-wasm";
 
 export type ArcjetSensitiveInfoType =
