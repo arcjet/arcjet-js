@@ -1,17 +1,6 @@
-import {
+import type {
   ArcjetContext,
-  ArcjetBotReason,
-  ArcjetBotType,
-  ArcjetEmailReason,
   ArcjetEmailRule,
-  ArcjetEmailType,
-  ArcjetErrorReason,
-  ArcjetMode,
-  ArcjetReason,
-  ArcjetRuleResult,
-  ArcjetDecision,
-  ArcjetDenyDecision,
-  ArcjetErrorDecision,
   ArcjetBotRule,
   ArcjetRule,
   ArcjetLocalRule,
@@ -21,6 +10,19 @@ import {
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
   ArcjetLogger,
+} from "@arcjet/protocol";
+import {
+  ArcjetBotReason,
+  ArcjetBotType,
+  ArcjetEmailReason,
+  ArcjetEmailType,
+  ArcjetErrorReason,
+  ArcjetMode,
+  ArcjetReason,
+  ArcjetRuleResult,
+  ArcjetDecision,
+  ArcjetDenyDecision,
+  ArcjetErrorDecision,
   ArcjetSensitiveInfoRule,
   ArcjetSensitiveInfoType,
   ArcjetSensitiveInfoReason,
@@ -30,7 +32,7 @@ import {
   ArcjetBotTypeToProtocol,
   isRateLimitRule,
 } from "@arcjet/protocol/convert.js";
-import { Client } from "@arcjet/protocol/client.js";
+import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";

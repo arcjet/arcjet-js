@@ -1,9 +1,9 @@
 import type { NextApiResponse } from "next";
-import {
-  type NextFetchEvent,
-  type NextMiddleware,
-  type NextRequest,
-  NextResponse,
+import { NextResponse } from "next/server.js";
+import type {
+  NextFetchEvent,
+  NextMiddleware,
+  NextRequest,
 } from "next/server.js";
 import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
 import core from "arcjet";
