@@ -6,8 +6,8 @@
     "node": ">=18"
   },
   "workspaces": [
-    "analyze/*",
-    "redact-wasm/*",
+    "analyze*",
+    "redact-wasm*",
     "arcjet-*",
     "decorate",
     "duration",
