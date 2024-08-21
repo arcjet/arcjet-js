@@ -6,7 +6,22 @@
     "node": ">=18"
   },
   "workspaces": [
-    "*"
+    "analyze",
+    "redact-wasm",
+    "arcjet-*",
+    "duration",
+    "env",
+    "eslint-config",
+    "examples",
+    "headers",
+    "ip",
+    "logger",
+    "protocol",
+    "rollup-config",
+    "runtime",
+    "sprintf",
+    "transport",
+    "tsconfig"
   ],
   "scripts": {
     "prepare": "npm run build -ws --if-present --foreground-scripts",
