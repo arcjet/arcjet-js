@@ -42,6 +42,7 @@
   "dependencies": {
     "@arcjet/redact-wasm": "1.0.0-alpha.21",
     "@arcjet/env": "1.0.0-alpha.21",
+    "@arcjet/protocol": "1.0.0-alpha.21",
     "@arcjet/logger": "1.0.0-alpha.21"
   },
   "devDependencies": {
