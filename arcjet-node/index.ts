@@ -15,8 +15,6 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
-import { IncomingMessage } from "http";
-import { Socket } from "net";
 import { getBody } from "@arcjet/body";
 
 // Re-export all named exports from the generic SDK
@@ -88,6 +86,8 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   });
 }
 
+type EventLike = (event: string, listener: (...args: any[]) => void) => void;
+
 // Interface of fields that the Arcjet Node.js SDK expects on `IncomingMessage`
 // objects.
 export interface ArcjetNodeRequest {
@@ -97,6 +97,10 @@ export interface ArcjetNodeRequest {
   httpVersion?: string;
   url?: string;
   body?: any;
+  on?: EventLike;
+  removeListener?: EventLike;
+
+  readable?: boolean;
 }
 
 function cookiesToString(cookies: string | string[] | undefined): string {
@@ -263,26 +267,42 @@ export default function arcjet<
           try {
             // If request.body is present then the body was likely read by a package like express' `body-parser`.
             // If it's not present then we attempt to read the bytes from the IncomingMessage ourselves.
-            if (request.body) {
+            if (typeof request.body === "string") {
+              return request.body;
+            } else if (typeof request.body !== "undefined") {
               return JSON.stringify(request.body);
             }
-            if (request instanceof IncomingMessage) {
-              const expectedLengthStr = request.headers["content-length"];
+
+            if (
+              typeof request.on === "function" &&
+              typeof request.removeListener === "function"
+            ) {
               let expectedLength = undefined;
-              if (expectedLengthStr) {
-                try {
-                  expectedLength = parseInt(expectedLengthStr, 10);
-                } catch {
-                  // If the expected length couldn't be parsed we'll just not set one.
+              if (typeof request.headers !== "undefined") {
+                const expectedLengthStr = request.headers["content-length"];
+                if (typeof expectedLengthStr === "string") {
+                  try {
+                    expectedLength = parseInt(expectedLengthStr, 10);
+                  } catch {
+                    // If the expected length couldn't be parsed we'll just not set one.
+                  }
                 }
               }
-              return await getBody(request, {
-                encoding: "utf-8",
-                limit: 1048576,
-                expectedLength,
-              });
+              // Need to only pass the required fields for type narrowing to work correctly
+              return await getBody(
+                {
+                  on: request.on,
+                  removeListener: request.removeListener,
+                  readable: request.readable,
+                },
+                {
+                  limit: 1048576, // 1mb
+                  expectedLength,
+                },
+              );
             }
           } catch (e) {
+            log.error("failed to get request body", e);
             return undefined;
           }
         };

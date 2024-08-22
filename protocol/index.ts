@@ -50,15 +50,10 @@ export const ArcjetEmailType: ArcjetEnum<ArcjetEmailType> = {
   INVALID: "INVALID",
 };
 
-export type IdentifiedEntity = {
+export type ArcjetIdentifiedEntity = {
   start: number;
   end: number;
   identifiedType: string;
-};
-
-export type DetectSensitiveInfoResult = {
-  allowed: IdentifiedEntity[];
-  denied: IdentifiedEntity[];
 };
 
 export type ArcjetStack = "NODEJS" | "NEXTJS" | "BUN" | "SVELTEKIT";
@@ -145,12 +140,12 @@ export class ArcjetReason {
 export class ArcjetSensitiveInfoReason extends ArcjetReason {
   type = "SENSITIVE_INFO" as const;
 
-  denied: IdentifiedEntity[];
-  allowed: IdentifiedEntity[];
+  denied: ArcjetIdentifiedEntity[];
+  allowed: ArcjetIdentifiedEntity[];
 
   constructor(init: {
-    denied: IdentifiedEntity[];
-    allowed: IdentifiedEntity[];
+    denied: ArcjetIdentifiedEntity[];
+    allowed: ArcjetIdentifiedEntity[];
   }) {
     super();
 
@@ -716,7 +711,7 @@ export interface ArcjetRequestDetails {
 }
 
 export type ArcjetRule<Props extends {} = {}> = {
-  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | "DETECT_PII" | string;
+  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | "SENSITIVE_INFO" | string;
   mode: ArcjetMode;
   priority: number;
 };

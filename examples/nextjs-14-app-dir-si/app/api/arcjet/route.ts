@@ -1,4 +1,4 @@
-import arcjet, { fixedWindow, sensitiveInfo } from "@arcjet/next";
+import arcjet, { sensitiveInfo } from "@arcjet/next";
 import { NextResponse } from "next/server";
 
 const aj = arcjet({
@@ -31,7 +31,5 @@ export async function POST(req: Request) {
     );
   }
 
-  console.log(await req.text());
-
-  return NextResponse.json({ message: "Hello World" });
+  return NextResponse.json({ message: "Hello World", reason: decision.reason });
 }

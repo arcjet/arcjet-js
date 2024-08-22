@@ -77,7 +77,7 @@
       "skip-github-release": true
     },
     "body": {
-      "component": "@arcjet/ip",
+      "component": "@arcjet/body",
       "skip-github-release": true
     },
     "logger": {

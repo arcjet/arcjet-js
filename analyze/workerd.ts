@@ -10,11 +10,11 @@ import type {
   DetectedEntity,
   SensitiveInfoEntity,
 } from "./wasm/arcjet_analyze_js_req.component.js";
+import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 
 import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm";
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm";
-import { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 
 const FREE_EMAIL_PROVIDERS = [
   "gmail.com",
@@ -28,6 +28,8 @@ interface AnalyzeContext {
   log: ArcjetLogger;
   characteristics: string[];
 }
+
+type DetectFunction = typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
 
 async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   if (path === "arcjet_analyze_js_req.component.core.wasm") {
@@ -43,15 +45,16 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-async function init(
-  context: AnalyzeContext,
-  detect?: typeof ArcjetJsReqSensitiveInformationIdentifier.detect,
-) {
+function noOpDetect(): SensitiveInfoEntity[] {
+  return [];
+}
+
+async function init(context: AnalyzeContext, detect?: DetectFunction) {
   const { log } = context;
 
   let detectOrDefault = detect;
   if (detectOrDefault === undefined) {
-    detectOrDefault = () => [];
+    detectOrDefault = noOpDetect;
   }
 
   const coreImports: ImportObject = {
@@ -183,12 +186,12 @@ export async function detectSensitiveInfo(
   candidate: string,
   entities: core.Entities,
   contextWindowSize: number,
-  detect?: typeof ArcjetJsReqSensitiveInformationIdentifier.detect,
+  detect?: DetectFunction,
 ): Promise<core.SensitiveInfoResult> {
   const analyze = await init(context, detect);
   const skipCustomDetect = detect === undefined;
 
-  const options: core.DetectConfig = {
+  const options = {
     entities,
     contextWindowSize,
     skipCustomDetect,
@@ -198,7 +201,7 @@ export async function detectSensitiveInfo(
     return analyze.detectSensitiveInfo(candidate, options);
   } else {
     throw new Error(
-      "SENSITIVE_INFO rule failed to run because wasm is not supported in this environment.",
+      "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
     );
   }
 }

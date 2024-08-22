@@ -10,11 +10,11 @@ import type {
   DetectedEntity,
   SensitiveInfoEntity,
 } from "./wasm/arcjet_analyze_js_req.component.js";
+import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 
 import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.component.core.wasm?js";
 import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_js_req.component.core2.wasm?js";
 import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_js_req.component.core3.wasm?js";
-import { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 
 const FREE_EMAIL_PROVIDERS = [
   "gmail.com",
@@ -28,6 +28,8 @@ interface AnalyzeContext {
   log: ArcjetLogger;
   characteristics: string[];
 }
+
+type DetectFunction = typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
 
 // TODO: Do we actually need this wasmCache or does `import` cache correctly?
 const wasmCache = new Map<string, WebAssembly.Module>();
@@ -57,15 +59,16 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-async function init(
-  context: AnalyzeContext,
-  detect?: typeof ArcjetJsReqSensitiveInformationIdentifier.detect,
-) {
+function noOpDetect(): SensitiveInfoEntity[] {
+  return [];
+}
+
+async function init(context: AnalyzeContext, detect?: DetectFunction) {
   const { log } = context;
 
   let detectOrDefault = detect;
   if (detectOrDefault === undefined) {
-    detectOrDefault = () => [];
+    detectOrDefault = noOpDetect;
   }
 
   const coreImports: ImportObject = {
@@ -197,7 +200,7 @@ export async function detectSensitiveInfo(
   candidate: string,
   entities: core.Entities,
   contextWindowSize: number,
-  detect?: typeof ArcjetJsReqSensitiveInformationIdentifier.detect,
+  detect?: DetectFunction,
 ): Promise<core.SensitiveInfoResult> {
   const analyze = await init(context, detect);
   const skipCustomDetect = detect === undefined;
@@ -212,7 +215,7 @@ export async function detectSensitiveInfo(
     return analyze.detectSensitiveInfo(candidate, options);
   } else {
     throw new Error(
-      "SENSITIVE_INFO rule failed to run because wasm is not supported in this environment.",
+      "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
     );
   }
 }

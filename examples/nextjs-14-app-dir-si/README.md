@@ -34,4 +34,5 @@ handler](https://nextjs.org/docs/app/building-your-application/routing/route-han
    ```
 
 5. Curl `http://localhost:3000/api/arcjet` with some data
-6. If the data you sent contains any blocked types then the api will return a 400.
+   `curl http://localhost:3000/api/arcjet --data "my email is test@example.com"`
+6. If the data you sent contains any blocked types then the route will return a 400.

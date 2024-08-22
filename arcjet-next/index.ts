@@ -339,6 +339,7 @@ export default function arcjet<
               return JSON.stringify(request.body);
             }
           } catch (e) {
+            log.error("failed to get request body", e);
             return undefined;
           }
         };

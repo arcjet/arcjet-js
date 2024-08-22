@@ -27,13 +27,13 @@ npm install -S @arcjet/body
 ## Example
 
 ```ts
-import { getBody, getBodySync } from "../index";
+import { getBody } from "../index";
 
 // Some stream.Readable-like object, such as node's `http.IncomingMessage`
 const request = new IncomingMessage();
 
 // Returns the body as a utf-8 encoded string
-const body = await getBody(request, { encoding: "utf-8" });
+const body = await getBody(request);
 console.log(body);
 ```
 
@@ -53,4 +53,5 @@ as a string.
 Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
-[node-raw-body]: https://raw.githubusercontent.com/stream-utils/raw-body/191e4b6506dcf77198eed01c8feb4b6817008342/index.js
+[node-raw-body]: https://github.com/stream-utils/raw-body/blob/191e4b6506dcf77198eed01c8feb4b6817008342/test/index.js
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0

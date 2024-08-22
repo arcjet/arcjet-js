@@ -8,6 +8,7 @@ import type {
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
+  ArcjetSensitiveInfoRule,
 } from "./index";
 import {
   ArcjetAllowDecision,
@@ -31,7 +32,6 @@ import {
   ArcjetStack,
   ArcjetIpDetails,
   ArcjetSensitiveInfoReason,
-  ArcjetSensitiveInfoRule,
 } from "./index";
 import type { IpDetails } from "./proto/decide/v1alpha1/decide_pb.js";
 import {

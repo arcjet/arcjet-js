@@ -8,6 +8,7 @@
   "arcjet-sveltekit": "1.0.0-alpha.21",
   "decorate": "1.0.0-alpha.21",
   "duration": "1.0.0-alpha.21",
+  "body": "1.0.0-alpha.21",
   "env": "1.0.0-alpha.21",
   "eslint-config": "1.0.0-alpha.21",
   "headers": "1.0.0-alpha.21",

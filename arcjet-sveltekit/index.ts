@@ -236,6 +236,7 @@ export default function arcjet<
             const clonedRequest = request.request.clone();
             return await clonedRequest.text();
           } catch (e) {
+            log.error("failed to get request body", e);
             return undefined;
           }
         };

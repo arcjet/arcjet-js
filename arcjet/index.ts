@@ -10,6 +10,8 @@ import type {
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
   ArcjetLogger,
+  ArcjetSensitiveInfoRule,
+  ArcjetIdentifiedEntity,
 } from "@arcjet/protocol";
 import {
   ArcjetBotReason,
@@ -20,13 +22,11 @@ import {
   ArcjetMode,
   ArcjetReason,
   ArcjetRuleResult,
+  ArcjetSensitiveInfoType,
+  ArcjetSensitiveInfoReason,
   ArcjetDecision,
   ArcjetDenyDecision,
   ArcjetErrorDecision,
-  ArcjetSensitiveInfoRule,
-  ArcjetSensitiveInfoType,
-  ArcjetSensitiveInfoReason,
-  IdentifiedEntity,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
@@ -37,6 +37,7 @@ import * as analyze from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
+import type { DetectedEntity, SensitiveInfoEntity } from "@arcjet/analyze";
 
 export * from "@arcjet/protocol";
 
@@ -316,16 +317,15 @@ export type EmailOptions = {
 
 type DetectEntities<T> = (
   tokens: string[],
-) => (ArcjetSensitiveInfoType | T | undefined)[];
+) => Array<ArcjetSensitiveInfoType | T | undefined>;
 
 type SensitiveInfoOptionsAllow<
   Detect extends DetectEntities<CustomEntities>,
   CustomEntities extends string,
 > = {
-  allow: (
-    | ArcjetSensitiveInfoType
-    | Exclude<ReturnType<Detect>[number], undefined>
-  )[];
+  allow: Array<
+    ArcjetSensitiveInfoType | Exclude<ReturnType<Detect>[number], undefined>
+  >;
   deny?: never;
   contextWindowSize?: number;
   mode?: ArcjetMode;
@@ -337,10 +337,9 @@ type SensitiveInfoOptionsDeny<
   CustomEntities extends string,
 > = {
   allow?: never;
-  deny: (
-    | ArcjetSensitiveInfoType
-    | Exclude<ReturnType<Detect>[number], undefined>
-  )[];
+  deny: Array<
+    ArcjetSensitiveInfoType | Exclude<ReturnType<Detect>[number], undefined>
+  >;
   contextWindowSize?: number;
   mode?: ArcjetMode;
   detect?: Detect;
@@ -354,11 +353,11 @@ export type SensitiveInfoOptions<
   | SensitiveInfoOptionsDeny<Detect, CustomEntities>;
 
 const Priority = {
-  Shield: 1,
-  RateLimit: 2,
-  BotDetection: 3,
-  EmailValidation: 4,
-  SensitiveInfo: 5,
+  SensitiveInfo: 1,
+  Shield: 2,
+  RateLimit: 3,
+  BotDetection: 4,
+  EmailValidation: 5,
 };
 
 type PlainObject = { [key: string]: unknown };
@@ -411,8 +410,9 @@ export type ExtraProps<Rules> = Rules extends []
  * available in a runtime handler or IP details provided by a platform.
  */
 export type ArcjetAdapterContext = {
-  getBody: () => Promise<string | undefined>;
-} & Record<string, unknown>;
+  [key: string]: unknown;
+  getBody(): Promise<string | undefined>;
+};
 
 /**
  * @property {string} ip - The IP address of the client.
@@ -595,7 +595,7 @@ function protocolEntitiesToAnalyze<Custom extends string>(
   };
 }
 
-function analyzeEntitiesToString(entity: analyze.SensitiveInfoEntity): string {
+function analyzeEntitiesToString(entity: SensitiveInfoEntity): string {
   if (entity.tag === "email") {
     return "EMAIL";
   }
@@ -616,8 +616,8 @@ function analyzeEntitiesToString(entity: analyze.SensitiveInfoEntity): string {
 }
 
 function convertAnalyzeDetectedEntity(
-  detectedEntities: analyze.DetectedEntity[],
-): IdentifiedEntity[] {
+  detectedEntities: DetectedEntity[],
+): ArcjetIdentifiedEntity[] {
   return detectedEntities.map((detectedEntity) => {
     return {
       ...detectedEntity,
@@ -638,6 +638,12 @@ export function sensitiveInfo<
   // Always create at least one SENSITIVE_INFO rule
   for (const opt of [options, ...additionalOptions]) {
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    if (typeof opt.allow !== "undefined" && typeof opt.deny !== "undefined") {
+      throw new Error(
+        "Both allow and deny cannot be provided to sensitiveInfo",
+      );
+    }
+
     rules.push({
       type: "SENSITIVE_INFO",
       priority: Priority.SensitiveInfo,
@@ -655,7 +661,7 @@ export function sensitiveInfo<
         details: ArcjetRequestDetails,
       ): Promise<ArcjetRuleResult> {
         const body = await context.getBody();
-        if (body === undefined) {
+        if (typeof body === "undefined") {
           return new ArcjetRuleResult({
             ttl: 0,
             state: "NOT_RUN",
@@ -667,10 +673,12 @@ export function sensitiveInfo<
         }
 
         let convertedDetect = undefined;
-        if (options.detect !== undefined) {
+        if (typeof options.detect !== "undefined") {
           const detect = options.detect;
           convertedDetect = (tokens: string[]) => {
-            return detect(tokens).map((e) => e && protocolEntitiesToAnalyze(e));
+            return detect(tokens)
+              .filter((e) => typeof e !== "undefined")
+              .map((e) => protocolEntitiesToAnalyze(e));
           };
         }
 
