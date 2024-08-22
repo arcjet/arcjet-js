@@ -34,10 +34,10 @@ import {
 } from "@arcjet/protocol/convert.js";
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
+import type { DetectedEntity, SensitiveInfoEntity } from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
-import type { DetectedEntity, SensitiveInfoEntity } from "@arcjet/analyze";
 
 export * from "@arcjet/protocol";
 
@@ -573,6 +573,10 @@ export function slidingWindow<
 function protocolEntitiesToAnalyze<Custom extends string>(
   entity: ArcjetSensitiveInfoType | Custom,
 ) {
+  if (typeof entity !== "string") {
+    throw new Error("invalid entity type");
+  }
+
   if (entity === "EMAIL") {
     return { tag: "email" as const };
   }
@@ -648,8 +652,8 @@ export function sensitiveInfo<
       type: "SENSITIVE_INFO",
       priority: Priority.SensitiveInfo,
       mode,
-      allow: options.allow || [],
-      deny: options.deny || [],
+      allow: opt.allow || [],
+      deny: opt.deny || [],
 
       validate(
         context: ArcjetContext,
@@ -673,25 +677,30 @@ export function sensitiveInfo<
         }
 
         let convertedDetect = undefined;
-        if (typeof options.detect !== "undefined") {
-          const detect = options.detect;
+        if (typeof opt.detect !== "undefined") {
+          const detect = opt.detect;
           convertedDetect = (tokens: string[]) => {
             return detect(tokens)
               .filter((e) => typeof e !== "undefined")
-              .map((e) => protocolEntitiesToAnalyze(e));
+              .map(protocolEntitiesToAnalyze);
           };
         }
 
         let entitiesTag: "allow" | "deny" = "allow";
-        let entitiesVal =
-          options?.allow
-            ?.filter((e) => e !== undefined)
-            .map(protocolEntitiesToAnalyze) || [];
+        let entitiesVal: Array<ReturnType<typeof protocolEntitiesToAnalyze>> =
+          [];
 
-        if (options?.deny && options?.deny.length > 0) {
+        if (Array.isArray(opt.allow)) {
+          entitiesTag = "allow";
+          entitiesVal = opt.allow
+            .filter((e) => typeof e !== "undefined")
+            .map(protocolEntitiesToAnalyze);
+        }
+
+        if (Array.isArray(opt.deny)) {
           entitiesTag = "deny";
-          entitiesVal = options.deny
-            .filter((e) => e !== undefined)
+          entitiesVal = opt.deny
+            .filter((e) => typeof e !== "undefined")
             .map(protocolEntitiesToAnalyze);
         }
 
