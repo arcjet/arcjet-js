@@ -8,99 +8,108 @@ import type { AddressInfo } from "net";
 
 describe("reads the body from the readable stream", () => {
   test("should read normal body streams", (done) => {
-    const server = http.createServer((req, res) => {
-      readBody(req, { limit: 1024 })
-        .then((body) => {
-          res.end(body);
-        })
-        .catch((err) => {
-          req.resume();
-          res.statusCode = 500;
+    const server = http.createServer(async (req, res) => {
+      try {
+        const body = await readBody(req, { limit: 1024 });
+        res.end(body);
+      } catch (err) {
+        req.resume();
+        res.statusCode = 500;
+        if (err instanceof Error) {
           return res.end(err.message);
-        });
+        } else {
+          return res.end("unknown error");
+        }
+      }
     });
 
-    server.listen(function onListen() {
+    server.listen(() => {
       const addr = server.address() as AddressInfo;
       const client = http.request({ method: "POST", port: addr.port });
 
       client.end("hello, world!");
 
-      client.on("response", (res) => {
-        readBody(res, { limit: 1024 })
-          .then((body) => {
-            server.close(function onClose() {
-              expect(body).toEqual("hello, world!");
-              done();
-            });
-          })
-          .catch((err) => {
-            expect(err).toBeUndefined;
-          });
+      client.on("response", async (res) => {
+        try {
+          const body = await readBody(res, { limit: 1024 });
+          expect(body).toEqual("hello, world!");
+        } catch (err) {
+          expect(err).toBeUndefined();
+        } finally {
+          server.close(done);
+        }
       });
     });
   });
 
   test("should error if the body exceeds the length limit", (done) => {
-    const server = http.createServer((req, res) => {
-      readBody(req, { limit: 4 })
-        .then((body) => {
-          res.end(body);
-        })
-        .catch((err) => {
-          req.resume();
-          res.statusCode = 500;
+    const server = http.createServer(async (req, res) => {
+      try {
+        const body = await readBody(req, { limit: 4 });
+        res.end(body);
+      } catch (err) {
+        req.resume();
+        res.statusCode = 500;
+        if (err instanceof Error) {
           return res.end(err.message);
-        });
+        } else {
+          return res.end("unknown error");
+        }
+      }
     });
 
-    server.listen(function onListen() {
+    server.listen(() => {
       const addr = server.address() as AddressInfo;
       const client = http.request({ method: "POST", port: addr.port });
 
       client.end("i am a string");
 
-      client.on("response", (res) => {
-        readBody(res, { limit: 4 })
-          .then((body) => {
-            expect(body).toBeUndefined();
-          })
-          .catch((err) => {
-            expect(err).toEqual(new Error("request entity too large"));
-          });
+      client.on("response", async (res) => {
+        try {
+          const body = await readBody(res, { limit: 4 });
+          expect(body).toBeUndefined();
+        } catch (err) {
+          expect(err).toEqual(new Error("request entity too large"));
+        } finally {
+          server.close(done);
+        }
       });
     });
   });
 
   test("should error if it isnt the exact length specified", (done) => {
-    const server = http.createServer((req, res) => {
-      readBody(req, { limit: 1024, expectedLength: 4 })
-        .then((body) => {
-          res.end(body);
-        })
-        .catch((err) => {
-          req.resume();
-          res.statusCode = 500;
+    const server = http.createServer(async (req, res) => {
+      try {
+        const body = await readBody(req, { limit: 1024, expectedLength: 4 });
+        res.end(body);
+      } catch (err) {
+        req.resume();
+        res.statusCode = 500;
+        if (err instanceof Error) {
           return res.end(err.message);
-        });
+        } else {
+          return res.end("unknown error");
+        }
+      }
     });
 
-    server.listen(function onListen() {
+    server.listen(() => {
       const addr = server.address() as AddressInfo;
       const client = http.request({ method: "POST", port: addr.port });
 
       client.end("hello, world!");
 
-      client.on("response", (res) => {
-        readBody(res, { limit: 1024, expectedLength: 4 })
-          .then((body) => {
-            expect(body).toBeUndefined();
-          })
-          .catch((err) => {
-            expect(err).toEqual(
-              new Error("request size did not match content length"),
-            );
-          });
+      client.on("response", async (res) => {
+        try {
+          const body = await readBody(res, { limit: 1024, expectedLength: 4 });
+          expect(body).toBeUndefined();
+        } catch (err) {
+          expect(err).toEqual(
+            new Error("request size did not match content length"),
+          );
+        } finally {
+          server.close(done)
+        }
       });
     });
   });
