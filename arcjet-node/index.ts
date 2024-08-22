@@ -304,9 +304,9 @@ export default function arcjet<
               typeof request.removeListener === "function"
             ) {
               let expectedLength: number | undefined;
-              // TODO: This shouldn't need to build headers again but the type for `req` above is
-              // overly relaxed
-              let headers = new ArcjetHeaders(request.headers);
+              // TODO: This shouldn't need to build headers again but the type
+              // for `req` above is overly relaxed
+              const headers = new ArcjetHeaders(request.headers);
               const expectedLengthStr = headers.get("content-length");
               if (typeof expectedLengthStr === "string") {
                 try {
