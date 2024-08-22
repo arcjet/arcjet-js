@@ -143,7 +143,7 @@ export interface ArcjetNextRequest {
     | Partial<{ [key: string]: string }>;
 
   clone?(): Request;
-  body?: any;
+  body?: unknown;
 }
 
 function isIterable(val: any): val is Iterable<any> {
