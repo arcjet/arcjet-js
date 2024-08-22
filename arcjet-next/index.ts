@@ -142,7 +142,7 @@ export interface ArcjetNextRequest {
       }
     | Partial<{ [key: string]: string }>;
 
-  clone?(): Request;
+  clone?: () => Request;
   body?: unknown;
 }
 
