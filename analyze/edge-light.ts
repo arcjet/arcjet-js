@@ -10,7 +10,7 @@ import type {
   DetectedEntity,
   Entities,
   SensitiveInfoEntity,
-  SensitiveInfoResult
+  SensitiveInfoResult,
 } from "./wasm/arcjet_analyze_js_req.component.js";
 import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 

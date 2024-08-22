@@ -108,7 +108,7 @@ describe("reads the body from the readable stream", () => {
             new Error("request size did not match content length"),
           );
         } finally {
-          server.close(done)
+          server.close(done);
         }
       });
     });
