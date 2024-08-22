@@ -355,7 +355,7 @@ export default function arcjet<
               const cloned = request.clone();
               return await cloned.text();
             } else if (typeof request.body === "string") {
-              return;
+              return request.body;
             } else if (
               typeof request.body !== "undefined" &&
               // BigInt cannot be serialized with JSON.stringify
