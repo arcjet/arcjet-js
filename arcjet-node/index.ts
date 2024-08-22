@@ -315,12 +315,13 @@ export default function arcjet<
                   // If the expected length couldn't be parsed we'll just not set one.
                 }
               }
-              // Need to only pass the required fields for type narrowing to work correctly
-              return readBody(request, {
+              // Awaited to throw if it rejects and we'll just return undefined
+              const body = await readBody(request, {
                 // We will process 1mb bodies
                 limit: 1048576,
                 expectedLength,
               });
+              return body;
             }
 
             log.warn("no body available");

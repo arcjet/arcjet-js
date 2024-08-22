@@ -353,7 +353,9 @@ export default function arcjet<
           try {
             if (typeof request.clone === "function") {
               const cloned = request.clone();
-              return cloned.text();
+              // Awaited to throw if it rejects and we'll just return undefined
+              const body = await cloned.text();
+              return body;
             } else if (typeof request.body === "string") {
               return request.body;
             } else if (

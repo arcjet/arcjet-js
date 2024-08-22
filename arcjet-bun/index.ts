@@ -257,7 +257,9 @@ export default function arcjet<
         const getBody = async () => {
           try {
             const clonedRequest = request.clone();
-            return clonedRequest.text();
+            // Awaited to throw if it rejects and we'll just return undefined
+            const body = await clonedRequest.text();
+            return body;
           } catch (e) {
             log.error("failed to get request body: %s", errorMessage(e));
             return;
