@@ -19,4 +19,3 @@ const aj = arcjet({
 });
 
 export default createMiddleware(aj);
-
