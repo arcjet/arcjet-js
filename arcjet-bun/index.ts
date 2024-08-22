@@ -22,6 +22,25 @@ import { createTransport } from "@arcjet/transport";
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
 
+// TODO: Deduplicate with other packages
+function errorMessage(err: unknown): string {
+  if (err) {
+    if (typeof err === "string") {
+      return err;
+    }
+
+    if (
+      typeof err === "object" &&
+      "message" in err &&
+      typeof err.message === "string"
+    ) {
+      return err.message;
+    }
+  }
+
+  return "Unknown problem";
+}
+
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
 //
@@ -240,8 +259,8 @@ export default function arcjet<
             const clonedRequest = request.clone();
             return clonedRequest.text();
           } catch (e) {
-            log.error("failed to get request body", e);
-            return undefined;
+            log.error("failed to get request body: %s", errorMessage(e));
+            return;
           }
         };
 
