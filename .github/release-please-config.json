@@ -52,6 +52,10 @@
       "component": "@arcjet/sveltekit",
       "skip-github-release": true
     },
+    "body": {
+      "component": "@arcjet/body",
+      "skip-github-release": true
+    },
     "decorate": {
       "component": "@arcjet/decorate",
       "skip-github-release": true
@@ -74,10 +78,6 @@
     },
     "ip": {
       "component": "@arcjet/ip",
-      "skip-github-release": true
-    },
-    "body": {
-      "component": "@arcjet/body",
       "skip-github-release": true
     },
     "logger": {
