@@ -353,7 +353,7 @@ export default function arcjet<
           try {
             if (typeof request.clone === "function") {
               const cloned = request.clone();
-              return await cloned.text();
+              return cloned.text();
             } else if (typeof request.body === "string") {
               return request.body;
             } else if (
