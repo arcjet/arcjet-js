@@ -27,6 +27,25 @@ import { createTransport } from "@arcjet/transport";
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
 
+// TODO: Deduplicate with other packages
+function errorMessage(err: unknown): string {
+  if (err) {
+    if (typeof err === "string") {
+      return err;
+    }
+
+    if (
+      typeof err === "object" &&
+      "message" in err &&
+      typeof err.message === "string"
+    ) {
+      return err.message;
+    }
+  }
+
+  return "Unknown problem";
+}
+
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
 //
@@ -332,15 +351,24 @@ export default function arcjet<
 
         const getBody = async () => {
           try {
-            if (request.clone !== undefined) {
+            if (typeof request.clone === "function") {
               const cloned = request.clone();
               return await cloned.text();
-            } else if (request.body !== undefined) {
+            } else if (typeof request.body === "string") {
+              return;
+            } else if (
+              typeof request.body !== "undefined" &&
+              // BigInt cannot be serialized with JSON.stringify
+              typeof request.body !== "bigint"
+            ) {
               return JSON.stringify(request.body);
+            } else {
+              log.warn("no body available");
+              return;
             }
           } catch (e) {
-            log.error("failed to get request body", e);
-            return undefined;
+            log.error("failed to get request body: %s", errorMessage(e));
+            return;
           }
         };
 
