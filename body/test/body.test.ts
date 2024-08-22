@@ -3,13 +3,13 @@
  */
 import { describe, expect, test } from "@jest/globals";
 import * as http from "http";
-import { getBody } from "../index";
+import { readBody } from "../index";
 import type { AddressInfo } from "net";
 
 describe("reads the body from the readable stream", () => {
   test("should read normal body streams", (done) => {
     const server = http.createServer((req, res) => {
-      getBody(req, { limit: 1024 })
+      readBody(req, { limit: 1024 })
         .then((body) => {
           res.end(body);
         })
@@ -27,7 +27,7 @@ describe("reads the body from the readable stream", () => {
       client.end("hello, world!");
 
       client.on("response", (res) => {
-        getBody(res, { limit: 1024 })
+        readBody(res, { limit: 1024 })
           .then((body) => {
             server.close(function onClose() {
               expect(body).toEqual("hello, world!");
@@ -43,7 +43,7 @@ describe("reads the body from the readable stream", () => {
 
   test("should error if the body exceeds the length limit", (done) => {
     const server = http.createServer((req, res) => {
-      getBody(req, { limit: 4 })
+      readBody(req, { limit: 4 })
         .then((body) => {
           res.end(body);
         })
@@ -61,7 +61,7 @@ describe("reads the body from the readable stream", () => {
       client.end("i am a string");
 
       client.on("response", (res) => {
-        getBody(res, { limit: 4 })
+        readBody(res, { limit: 4 })
           .then((body) => {
             expect(body).toBeUndefined();
           })
@@ -74,7 +74,7 @@ describe("reads the body from the readable stream", () => {
 
   test("should error if it isnt the exact length specified", (done) => {
     const server = http.createServer((req, res) => {
-      getBody(req, { limit: 1024, expectedLength: 4 })
+      readBody(req, { limit: 1024, expectedLength: 4 })
         .then((body) => {
           res.end(body);
         })
@@ -92,7 +92,7 @@ describe("reads the body from the readable stream", () => {
       client.end("hello, world!");
 
       client.on("response", (res) => {
-        getBody(res, { limit: 1024, expectedLength: 4 })
+        readBody(res, { limit: 1024, expectedLength: 4 })
           .then((body) => {
             expect(body).toBeUndefined();
           })

@@ -1,25 +1,27 @@
-export type GetBodyOpts = {
-  limit?: number;
+export type ReadBodyOpts = {
+  limit: number;
   expectedLength?: number;
 };
 
-type EventLike = (event: string, listener: (...args: any[]) => void) => void;
+type EventHandlerLike = (
+  event: string,
+  listener: (...args: any[]) => void,
+) => void;
+
 // The fields from stream.Readable that we use
 export interface ReadableStreamLike {
-  on: EventLike;
-  removeListener: EventLike;
-
+  on: EventHandlerLike;
+  removeListener: EventHandlerLike;
   readable?: boolean;
 }
 
-export async function getBody(
+export async function readBody(
   stream: ReadableStreamLike,
-  opts: GetBodyOpts,
+  opts: ReadBodyOpts,
 ): Promise<string> {
   const decoder = new TextDecoder("utf-8");
   let buffer = "";
   let complete = false;
-  let sync = true;
 
   return new Promise((resolve, reject) => {
     if (typeof stream.readable !== "undefined" && !stream.readable) {
@@ -38,25 +40,14 @@ export async function getBody(
     stream.on("end", onEnd);
     stream.on("error", onEnd);
 
-    // mark sync section complete
-    sync = false;
-
     function done(err?: Error, buffer?: string) {
       complete = true;
 
-      if (sync) {
-        process.nextTick(invokeCallback);
-      } else {
-        invokeCallback();
-      }
-
-      function invokeCallback() {
-        cleanup();
-        if (typeof err !== "undefined") {
-          reject(err);
-        } else if (typeof buffer !== "undefined") {
-          resolve(buffer);
-        }
+      cleanup();
+      if (typeof err !== "undefined") {
+        reject(err);
+      } else if (typeof buffer !== "undefined") {
+        resolve(buffer);
       }
     }
 
@@ -102,8 +93,8 @@ export async function getBody(
     // ensure that we don't poll forever if the stream is incorrectly configured.
     setTimeout(() => {
       if (received === 0) {
-        done(new Error("received no body chunks after 1000ms"));
+        done(new Error("received no body chunks after 100ms"));
       }
-    }, 1000);
+    }, 100);
   });
 }
