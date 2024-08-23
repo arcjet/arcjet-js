@@ -45,9 +45,10 @@ describe("reads the body from the readable stream", () => {
   test("should error if the body exceeds the length limit", (done) => {
     const server = http.createServer(async (req, res) => {
       try {
-        const body = await readBody(req, { limit: 4 });
-        res.end(body);
+        await readBody(req, { limit: 4 });
+        throw new Error("this should not return successfully");
       } catch (err) {
+        expect(err).toEqual(new Error("request entity too large"));
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -66,10 +67,8 @@ describe("reads the body from the readable stream", () => {
 
       client.on("response", async (res) => {
         try {
-          const body = await readBody(res, { limit: 4 });
-          expect(body).toBeUndefined();
-        } catch (err) {
-          expect(err).toEqual(new Error("request entity too large"));
+          const body = await readBody(res, { limit: 1024 });
+          expect(body).toEqual("request entity too large");
         } finally {
           server.close(done);
         }
@@ -77,12 +76,15 @@ describe("reads the body from the readable stream", () => {
     });
   });
 
-  test("should error if it isnt the exact length specified", (done) => {
+  test("should error if it isn't the exact length specified", (done) => {
     const server = http.createServer(async (req, res) => {
       try {
-        const body = await readBody(req, { limit: 1024, expectedLength: 4 });
-        res.end(body);
+        await readBody(req, { limit: 1024, expectedLength: 4 });
+        throw new Error("this should not return successfully");
       } catch (err) {
+        expect(err).toEqual(
+          new Error("request size did not match content length"),
+        );
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -101,12 +103,8 @@ describe("reads the body from the readable stream", () => {
 
       client.on("response", async (res) => {
         try {
-          const body = await readBody(res, { limit: 1024, expectedLength: 4 });
-          expect(body).toBeUndefined();
-        } catch (err) {
-          expect(err).toEqual(
-            new Error("request size did not match content length"),
-          );
+          const body = await readBody(res, { limit: 1024 });
+          expect(body).toEqual("request size did not match content length");
         } finally {
           server.close(done);
         }
@@ -121,10 +119,10 @@ describe("reads the body from the readable stream", () => {
           removeListener: req.removeListener,
           readable: req.readable,
         };
-        const body = await readBody(reqNoOn, { limit: 1024 });
-        console.dir(body);
-        res.end(body);
+        await readBody(reqNoOn, { limit: 1024 });
+        throw new Error("this should not return successfully");
       } catch (err) {
+        expect(err).toEqual(new Error("missing `on` function"));
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -159,10 +157,10 @@ describe("reads the body from the readable stream", () => {
           on: req.on,
           readable: req.readable,
         };
-        const body = await readBody(reqNoOn, { limit: 1024 });
-        console.dir(body);
-        res.end(body);
+        await readBody(reqNoOn, { limit: 1024 });
+        throw new Error("this should not return successfully");
       } catch (err) {
+        expect(err).toEqual(new Error("missing `removeListener` function"));
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -198,10 +196,10 @@ describe("reads the body from the readable stream", () => {
           removeListener: req.removeListener,
           readable: false,
         };
-        const body = await readBody(reqNoOn, { limit: 1024 });
-        console.dir(body);
-        res.end(body);
+        await readBody(reqNoOn, { limit: 1024 });
+        throw new Error("this should not return successfully");
       } catch (err) {
+        expect(err).toEqual(new Error("stream is not readable"));
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -237,10 +235,10 @@ describe("reads the body from the readable stream", () => {
           removeListener: req.removeListener,
           readable: req.readable,
         };
-        const body = await readBody(reqNoOn, { limit: undefined as any });
-        console.dir(body);
-        res.end(body);
+        await readBody(reqNoOn, { limit: undefined as any });
+        throw new Error("this should not return successfully");
       } catch (err) {
+        expect(err).toEqual(new Error("must set a limit"));
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
