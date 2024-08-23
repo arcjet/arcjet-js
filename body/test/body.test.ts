@@ -5,7 +5,6 @@ import { describe, expect, test } from "@jest/globals";
 import * as http from "http";
 import { readBody } from "../index";
 import type { AddressInfo } from "net";
-import { removeListener } from "process";
 
 describe("reads the body from the readable stream", () => {
   test("should read normal body streams", (done) => {
