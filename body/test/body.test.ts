@@ -145,8 +145,6 @@ describe("reads the body from the readable stream", () => {
         try {
           const body = await readBody(res, { limit: 1024 });
           expect(body).toEqual("missing `on` function");
-        } catch (err) {
-          throw err;
         } finally {
           server.close(done);
         }
@@ -185,8 +183,6 @@ describe("reads the body from the readable stream", () => {
         try {
           const body = await readBody(res, { limit: 1024 });
           expect(body).toEqual("missing `removeListener` function");
-        } catch (err) {
-          throw err;
         } finally {
           server.close(done);
         }
@@ -226,8 +222,6 @@ describe("reads the body from the readable stream", () => {
         try {
           const body = await readBody(res, { limit: 1024 });
           expect(body).toEqual("stream is not readable");
-        } catch (err) {
-          throw err;
         } finally {
           server.close(done);
         }
@@ -267,8 +261,6 @@ describe("reads the body from the readable stream", () => {
         try {
           const body = await readBody(res, { limit: 1024 });
           expect(body).toEqual("must set a limit");
-        } catch (err) {
-          throw err;
         } finally {
           server.close(done);
         }
