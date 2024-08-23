@@ -361,7 +361,9 @@ export default function arcjet<
             } else if (
               typeof request.body !== "undefined" &&
               // BigInt cannot be serialized with JSON.stringify
-              typeof request.body !== "bigint"
+              typeof request.body !== "bigint" &&
+              // body will be null if there was no body with the request
+              request.body !== null
             ) {
               return JSON.stringify(request.body);
             } else {

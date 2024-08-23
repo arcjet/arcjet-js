@@ -21,7 +21,7 @@ This example shows how to use Arcjet to perform Sensitive Information detection 
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/nodejs-express-rl
+   cd examples/nodejs-sensitive-info
    npm ci
    ```
 

@@ -318,12 +318,12 @@ export type EmailOptions = {
   allowDomainLiteral?: boolean;
 };
 
-type DetectEntities<T> = (
+type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
 ) => Array<ArcjetSensitiveInfoType | T | undefined>;
 
 type SensitiveInfoOptionsAllow<
-  Detect extends DetectEntities<CustomEntities>,
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 > = {
   allow: Array<
@@ -336,7 +336,7 @@ type SensitiveInfoOptionsAllow<
 };
 
 type SensitiveInfoOptionsDeny<
-  Detect extends DetectEntities<CustomEntities>,
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 > = {
   allow?: never;
@@ -349,7 +349,7 @@ type SensitiveInfoOptionsDeny<
 };
 
 export type SensitiveInfoOptions<
-  Detect extends DetectEntities<CustomEntities>,
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 > =
   | SensitiveInfoOptionsAllow<Detect, CustomEntities>
@@ -573,7 +573,7 @@ export function slidingWindow<
   return rules;
 }
 
-function protocolEntitiesToAnalyze<Custom extends string>(
+function protocolSensitiveInfoEntitiesToAnalyze<Custom extends string>(
   entity: ArcjetSensitiveInfoType | Custom,
 ) {
   if (typeof entity !== "string") {
@@ -602,7 +602,9 @@ function protocolEntitiesToAnalyze<Custom extends string>(
   };
 }
 
-function analyzeEntitiesToString(entity: SensitiveInfoEntity): string {
+function analyzeSensitiveInfoEntitiesToString(
+  entity: SensitiveInfoEntity,
+): string {
   if (entity.tag === "email") {
     return "EMAIL";
   }
@@ -622,19 +624,21 @@ function analyzeEntitiesToString(entity: SensitiveInfoEntity): string {
   return entity.val;
 }
 
-function convertAnalyzeDetectedEntity(
+function convertAnalyzeDetectedSensitiveInfoEntity(
   detectedEntities: DetectedSensitiveInfoEntity[],
 ): ArcjetIdentifiedEntity[] {
   return detectedEntities.map((detectedEntity) => {
     return {
       ...detectedEntity,
-      identifiedType: analyzeEntitiesToString(detectedEntity.identifiedType),
+      identifiedType: analyzeSensitiveInfoEntitiesToString(
+        detectedEntity.identifiedType,
+      ),
     };
   });
 }
 
 export function sensitiveInfo<
-  const Detect extends DetectEntities<CustomEntities>,
+  const Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   const CustomEntities extends string,
 >(
   options: SensitiveInfoOptions<Detect, CustomEntities>,
@@ -685,26 +689,27 @@ export function sensitiveInfo<
           convertedDetect = (tokens: string[]) => {
             return detect(tokens)
               .filter((e) => typeof e !== "undefined")
-              .map(protocolEntitiesToAnalyze);
+              .map(protocolSensitiveInfoEntitiesToAnalyze);
           };
         }
 
         let entitiesTag: "allow" | "deny" = "allow";
-        let entitiesVal: Array<ReturnType<typeof protocolEntitiesToAnalyze>> =
-          [];
+        let entitiesVal: Array<
+          ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>
+        > = [];
 
         if (Array.isArray(opt.allow)) {
           entitiesTag = "allow";
           entitiesVal = opt.allow
             .filter((e) => typeof e !== "undefined")
-            .map(protocolEntitiesToAnalyze);
+            .map(protocolSensitiveInfoEntitiesToAnalyze);
         }
 
         if (Array.isArray(opt.deny)) {
           entitiesTag = "deny";
           entitiesVal = opt.deny
             .filter((e) => typeof e !== "undefined")
-            .map(protocolEntitiesToAnalyze);
+            .map(protocolSensitiveInfoEntitiesToAnalyze);
         }
 
         const entities = {
@@ -721,8 +726,8 @@ export function sensitiveInfo<
         );
 
         const reason = new ArcjetSensitiveInfoReason({
-          denied: convertAnalyzeDetectedEntity(result.denied),
-          allowed: convertAnalyzeDetectedEntity(result.allowed),
+          denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
+          allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
         });
 
         if (result.denied.length === 0) {

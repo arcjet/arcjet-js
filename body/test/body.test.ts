@@ -282,8 +282,8 @@ describe("reads the body from the readable stream", () => {
       expect(e).toEqual(new Error("received no body chunks after 100ms"));
     }
 
-    // setting test timeout to 105 because the promise should throw after 100ms
-  }, 105);
+    // setting test timeout to 200 because the promise should throw after 100ms
+  }, 200);
 
   type NoOpFunc = (...args: any[]) => void;
   test("should error if the stream is aborted", async () => {

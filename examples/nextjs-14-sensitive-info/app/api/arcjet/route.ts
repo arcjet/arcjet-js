@@ -1,5 +1,14 @@
-import arcjet, { sensitiveInfo } from "@arcjet/next";
+import arcjet, { sensitiveInfo, shield } from "@arcjet/next";
 import { NextResponse } from "next/server";
+
+// This function is called by the `sensitiveInfo` rule to perform custom detection on strings.
+function detectDash(tokens: string[]): Array<"CONTAINS_DASH" | undefined> {
+  return tokens.map((token) => {
+    if (token.includes("-")) {
+      return "CONTAINS_DASH";
+    }
+  });
+}
 
 const aj = arcjet({
   // Get your site key from https://app.arcjet.com
@@ -7,12 +16,17 @@ const aj = arcjet({
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
   key: process.env.ARCJET_KEY!,
   rules: [
-    // Allows email addresses to be submitted and blocks all other types of sensitive information
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
+    // allows all pii entities other than email addresses and those containing a dash character.
     sensitiveInfo({
-      allow: ["email"], // Will block all sensitive information types other than email.
-      // deny: ["credit-card-number", (tokens) => { return new Array(tokens.length).fill("custom") }], // Will block all sensitive information types other than email.
-      mode: "LIVE" // Will block requests, use "DRY_RUN" to log only
-    })
+      // allow: ["EMAIL"], Will block all sensitive information types other than email.
+      deny: ["EMAIL", "CONTAINS_DASH"], // Will block all sensitive information types other than email.
+      mode: "LIVE", // Will block requests, use "DRY_RUN" to log only
+      detect: detectDash,
+      contextWindowSize: 2, // Two tokens will be provided to the custom detect function at a time.
+    }),
   ],
 });
 

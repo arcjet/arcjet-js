@@ -21,7 +21,7 @@ handler](https://nextjs.org/docs/app/building-your-application/routing/route-han
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/nextjs-14-app-dir-rl
+   cd examples/nextjs-14-sensitive-info
    npm ci
    ```
 
@@ -35,4 +35,5 @@ handler](https://nextjs.org/docs/app/building-your-application/routing/route-han
 
 5. Curl `http://localhost:3000/api/arcjet` with some data
    `curl http://localhost:3000/api/arcjet --data "my email is test@example.com"`
+   `curl http://localhost:3000/api/arcjet --data "here's a string that contains-a-dash"`
 6. If the data you sent contains any blocked types then the route will return a 400.
