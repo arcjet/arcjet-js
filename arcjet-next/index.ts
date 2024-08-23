@@ -362,7 +362,9 @@ export default function arcjet<
               typeof request.body !== "undefined" &&
               // BigInt cannot be serialized with JSON.stringify
               typeof request.body !== "bigint" &&
-              // body will be null if there was no body with the request
+              // The body will be null if there was no body with the request.
+              // Reference:
+              // https://nextjs.org/docs/pages/building-your-application/routing/api-routes#request-helpers
               request.body !== null
             ) {
               return JSON.stringify(request.body);
