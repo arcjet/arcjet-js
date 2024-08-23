@@ -26,7 +26,6 @@ import {
   Conclusion,
   Decision,
   EmailType,
-  IdentifiedEntity,
   Mode,
   RateLimitAlgorithm,
   Reason,
@@ -34,7 +33,6 @@ import {
   RuleResult,
   RuleState,
   SDKStack,
-  SensitiveInfoReason,
 } from "../proto/decide/v1alpha1/decide_pb.js";
 import type {
   ArcjetBotRule,
