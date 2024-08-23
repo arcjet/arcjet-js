@@ -22,7 +22,7 @@ const aj = arcjet({
     // allows all pii entities other than email addresses and those containing a dash character.
     sensitiveInfo({
       // allow: ["EMAIL"], Will block all sensitive information types other than email.
-      deny: ["EMAIL", "CONTAINS_DASH"], // Will block all sensitive information types other than email.
+      deny: ["EMAIL", "CONTAINS_DASH"], // Will block email and any custom detected values that "contain dash"
       mode: "LIVE", // Will block requests, use "DRY_RUN" to log only
       detect: detectDash,
       contextWindowSize: 2, // Two tokens will be provided to the custom detect function at a time.
