@@ -26,6 +26,7 @@ import {
   Conclusion,
   Decision,
   EmailType,
+  IdentifiedEntity,
   Mode,
   RateLimitAlgorithm,
   Reason,
@@ -33,6 +34,7 @@ import {
   RuleResult,
   RuleState,
   SDKStack,
+  SensitiveInfoReason,
 } from "../proto/decide/v1alpha1/decide_pb.js";
 import type {
   ArcjetBotRule,
@@ -56,6 +58,7 @@ import {
   ArcjetRuleResult,
   ArcjetShieldReason,
   ArcjetIpDetails,
+  ArcjetSensitiveInfoReason,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
 
@@ -328,6 +331,24 @@ describe("convert", () => {
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
+            case: "sensitiveInfo",
+            value: {
+              denied: [
+                {
+                  start: 0,
+                  end: 16,
+                  identifiedType: "credit-card-number",
+                },
+              ],
+            },
+          },
+        }),
+      ),
+    ).toBeInstanceOf(ArcjetSensitiveInfoReason);
+    expect(
+      ArcjetReasonFromProtocol(
+        new Reason({
+          reason: {
             case: "shield",
             value: {
               shieldTriggered: true,
@@ -436,6 +457,35 @@ describe("convert", () => {
             ipProxy: false,
             ipTor: false,
             ipRelay: false,
+          },
+        },
+      }),
+    );
+    expect(
+      ArcjetReasonToProtocol(
+        new ArcjetSensitiveInfoReason({
+          denied: [
+            {
+              start: 0,
+              end: 16,
+              identifiedType: "credit-card-number",
+            },
+          ],
+          allowed: [],
+        }),
+      ),
+    ).toEqual(
+      new Reason({
+        reason: {
+          case: "sensitiveInfo",
+          value: {
+            denied: [
+              {
+                start: 0,
+                end: 16,
+                identifiedType: "credit-card-number",
+              },
+            ],
           },
         },
       }),

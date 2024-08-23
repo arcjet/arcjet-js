@@ -7,7 +7,7 @@
 
 # Arcjet Sensitive Info Detection with Express for Node.js
 
-This example shows how to use Arcjet with a Node.js
+This example shows how to use Arcjet to perform Sensitive Information detection with a Node.js
 [Express](https://expressjs.com/) server.
 
 ## How to use
@@ -39,5 +39,7 @@ This example shows how to use Arcjet with a Node.js
    [dotenv](https://www.npmjs.com/package/dotenv) to load the environment file.
 
 4. Execute to POST request to `http://localhost:3000/` without any sensitive data.
+   `curl http://localhost:3000/ -X POST --data "hello world!"`
 5. Execute to POST request to `http://localhost:3000/` with some blocked entities in the body
    and the request should fail.
+   `curl http://localhost:3000/ -X POST --data "my email address is test@example.com"`

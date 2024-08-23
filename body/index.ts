@@ -15,6 +15,37 @@ export interface ReadableStreamLike {
   readable?: boolean;
 }
 
+// This `readBody` function is a derivitive of the `getRawBody` function in the `raw-body`
+// npm package with deviations to strip down the implementation to specifically what is needed
+// by Arcjet.
+//
+// These include:
+// - The removal of the sync interface.
+// - The removal of the ability to return the body as a `Buffer`. Instead the body is always
+//   parsed as a utf-8 string.
+// - The removal of certain config options that are not relevant to us.
+//
+// Original source:
+// https://github.com/stream-utils/raw-body/blob/191e4b6506dcf77198eed01c8feb4b6817008342/test/index.js
+//
+// Licensed: The MIT License (MIT)
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions: The above copyright
+// notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 export async function readBody(
   stream: ReadableStreamLike,
   opts: ReadBodyOpts,
@@ -60,12 +91,14 @@ export async function readBody(
       if (typeof err !== "undefined") {
         reject(err);
       } else if (typeof buffer !== "undefined") {
+        // Need to call it one final time to flush any remaining chars.
+        buffer += decoder.decode();
         resolve(buffer);
       }
     }
 
     function onAborted() {
-      done(new Error("Stream was aborted"));
+      done(new Error("stream was aborted"));
     }
 
     function onData(chunk: Buffer) {

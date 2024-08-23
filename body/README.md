@@ -45,8 +45,8 @@ package. Both licensed MIT with licenses included in our source code.
 We've chosen to re-implement the logic to read the body from the stream to keep
 the dependency tree for our packages as light as possible. Our implementation is
 as light as possible while still providing the functionality that we need, specifically
-it excludes the functionality to return the stream as a buffer and always parses it
-as a string.
+it excludes the functionality to return the stream as a buffer and removes encoding to parse it
+as a utf-8 string, it also only uses an async-await interface rather than the sync provided by `raw-body`.
 
 ## License
 

@@ -34,7 +34,10 @@ import {
 } from "@arcjet/protocol/convert.js";
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
-import type { DetectedEntity, SensitiveInfoEntity } from "@arcjet/analyze";
+import type {
+  DetectedSensitiveInfoEntity,
+  SensitiveInfoEntity,
+} from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
@@ -620,7 +623,7 @@ function analyzeEntitiesToString(entity: SensitiveInfoEntity): string {
 }
 
 function convertAnalyzeDetectedEntity(
-  detectedEntities: DetectedEntity[],
+  detectedEntities: DetectedSensitiveInfoEntity[],
 ): ArcjetIdentifiedEntity[] {
   return detectedEntities.map((detectedEntity) => {
     return {

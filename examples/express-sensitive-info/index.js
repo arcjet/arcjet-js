@@ -27,14 +27,14 @@ app.post('/', async (req, res) => {
 
   if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Too Many Requests", denied: decision.reason.denied }));
+    res.end(JSON.stringify({ error: "Sensitive Information Detected", denied: decision.reason.denied }));
   } else {
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Hello World" }));
+    res.end(JSON.stringify({ message: `You said: ${req.body}` }));
   }
 })
 
-app.use(express.json());
+app.use(express.text());
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

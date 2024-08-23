@@ -31,5 +31,6 @@ export async function POST(req: Request) {
     );
   }
 
-  return NextResponse.json({ message: "Hello World", reason: decision.reason });
+  const message = await req.text();
+  return NextResponse.json({ message: `You said: ${message}` });
 }

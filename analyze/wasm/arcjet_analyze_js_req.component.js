@@ -554,7 +554,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           break;
         }
         default: {
-          throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant8.tag)}\` (received \`${variant8}\`) specified for \`Entities\``);
+          throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant8.tag)}\` (received \`${variant8}\`) specified for \`SensitiveInfoEntities\``);
         }
       }
       var variant9 = v1_1;

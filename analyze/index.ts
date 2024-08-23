@@ -7,8 +7,8 @@ import type {
   BotDetectionResult,
   BotType,
   EmailValidationResult,
-  DetectedEntity,
-  Entities,
+  DetectedSensitiveInfoEntity,
+  SensitiveInfoEntities,
   SensitiveInfoEntity,
   SensitiveInfoResult,
 } from "./wasm/arcjet_analyze_js_req.component.js";
@@ -130,7 +130,7 @@ export {
    * almost certain this request was not a bot.
    */
   type BotDetectionResult,
-  type DetectedEntity,
+  type DetectedSensitiveInfoEntity,
   type SensitiveInfoEntity,
   type DetectSensitiveInfoFunction,
 };
@@ -204,7 +204,7 @@ export async function detectBot(
 export async function detectSensitiveInfo(
   context: AnalyzeContext,
   candidate: string,
-  entities: Entities,
+  entities: SensitiveInfoEntities,
   contextWindowSize: number,
   detect?: DetectSensitiveInfoFunction,
 ): Promise<SensitiveInfoResult> {
