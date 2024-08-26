@@ -1,17 +1,6 @@
-import {
+import type {
   ArcjetContext,
-  ArcjetBotReason,
-  ArcjetBotType,
-  ArcjetEmailReason,
   ArcjetEmailRule,
-  ArcjetEmailType,
-  ArcjetErrorReason,
-  ArcjetMode,
-  ArcjetReason,
-  ArcjetRuleResult,
-  ArcjetDecision,
-  ArcjetDenyDecision,
-  ArcjetErrorDecision,
   ArcjetBotRule,
   ArcjetRule,
   ArcjetLocalRule,
@@ -21,14 +10,34 @@ import {
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
   ArcjetLogger,
-  ArcjetRateLimitRule,
+  ArcjetSensitiveInfoRule,
+  ArcjetIdentifiedEntity,
+} from "@arcjet/protocol";
+import {
+  ArcjetBotReason,
+  ArcjetBotType,
+  ArcjetEmailReason,
+  ArcjetEmailType,
+  ArcjetErrorReason,
+  ArcjetMode,
+  ArcjetReason,
+  ArcjetRuleResult,
+  ArcjetSensitiveInfoType,
+  ArcjetSensitiveInfoReason,
+  ArcjetDecision,
+  ArcjetDenyDecision,
+  ArcjetErrorDecision,
 } from "@arcjet/protocol";
 import {
   ArcjetBotTypeToProtocol,
   isRateLimitRule,
 } from "@arcjet/protocol/convert.js";
-import { Client } from "@arcjet/protocol/client.js";
+import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
+import type {
+  DetectedSensitiveInfoEntity,
+  SensitiveInfoEntity,
+} from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
@@ -309,11 +318,49 @@ export type EmailOptions = {
   allowDomainLiteral?: boolean;
 };
 
+type DetectSensitiveInfoEntities<T> = (
+  tokens: string[],
+) => Array<ArcjetSensitiveInfoType | T | undefined>;
+
+type SensitiveInfoOptionsAllow<
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  CustomEntities extends string,
+> = {
+  allow: Array<
+    ArcjetSensitiveInfoType | Exclude<ReturnType<Detect>[number], undefined>
+  >;
+  deny?: never;
+  contextWindowSize?: number;
+  mode?: ArcjetMode;
+  detect?: Detect;
+};
+
+type SensitiveInfoOptionsDeny<
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  CustomEntities extends string,
+> = {
+  allow?: never;
+  deny: Array<
+    ArcjetSensitiveInfoType | Exclude<ReturnType<Detect>[number], undefined>
+  >;
+  contextWindowSize?: number;
+  mode?: ArcjetMode;
+  detect?: Detect;
+};
+
+export type SensitiveInfoOptions<
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  CustomEntities extends string,
+> =
+  | SensitiveInfoOptionsAllow<Detect, CustomEntities>
+  | SensitiveInfoOptionsDeny<Detect, CustomEntities>;
+
 const Priority = {
-  Shield: 1,
-  RateLimit: 2,
-  BotDetection: 3,
-  EmailValidation: 4,
+  SensitiveInfo: 1,
+  Shield: 2,
+  RateLimit: 3,
+  BotDetection: 4,
+  EmailValidation: 5,
 };
 
 type PlainObject = { [key: string]: unknown };
@@ -365,7 +412,10 @@ export type ExtraProps<Rules> = Rules extends []
  * Among other things, this could include the Arcjet API Key if it were only
  * available in a runtime handler or IP details provided by a platform.
  */
-export type ArcjetAdapterContext = Record<string, unknown>;
+export type ArcjetAdapterContext = {
+  [key: string]: unknown;
+  getBody(): Promise<string | undefined>;
+};
 
 /**
  * @property {string} ip - The IP address of the client.
@@ -517,6 +567,185 @@ export function slidingWindow<
       algorithm: "SLIDING_WINDOW",
       max,
       interval,
+    });
+  }
+
+  return rules;
+}
+
+function protocolSensitiveInfoEntitiesToAnalyze<Custom extends string>(
+  entity: ArcjetSensitiveInfoType | Custom,
+) {
+  if (typeof entity !== "string") {
+    throw new Error("invalid entity type");
+  }
+
+  if (entity === "EMAIL") {
+    return { tag: "email" as const };
+  }
+
+  if (entity === "PHONE_NUMBER") {
+    return { tag: "phone-number" as const };
+  }
+
+  if (entity === "IP_ADDRESS") {
+    return { tag: "ip-address" as const };
+  }
+
+  if (entity === "CREDIT_CARD_NUMBER") {
+    return { tag: "credit-card-number" as const };
+  }
+
+  return {
+    tag: "custom" as const,
+    val: entity,
+  };
+}
+
+function analyzeSensitiveInfoEntitiesToString(
+  entity: SensitiveInfoEntity,
+): string {
+  if (entity.tag === "email") {
+    return "EMAIL";
+  }
+
+  if (entity.tag === "ip-address") {
+    return "IP_ADDRESS";
+  }
+
+  if (entity.tag === "credit-card-number") {
+    return "CREDIT_CARD_NUMBER";
+  }
+
+  if (entity.tag === "phone-number") {
+    return "PHONE_NUMBER";
+  }
+
+  return entity.val;
+}
+
+function convertAnalyzeDetectedSensitiveInfoEntity(
+  detectedEntities: DetectedSensitiveInfoEntity[],
+): ArcjetIdentifiedEntity[] {
+  return detectedEntities.map((detectedEntity) => {
+    return {
+      ...detectedEntity,
+      identifiedType: analyzeSensitiveInfoEntitiesToString(
+        detectedEntity.identifiedType,
+      ),
+    };
+  });
+}
+
+export function sensitiveInfo<
+  const Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  const CustomEntities extends string,
+>(
+  options: SensitiveInfoOptions<Detect, CustomEntities>,
+  ...additionalOptions: SensitiveInfoOptions<Detect, CustomEntities>[]
+): Primitive<{}> {
+  const rules: ArcjetSensitiveInfoRule<{}>[] = [];
+
+  // Always create at least one SENSITIVE_INFO rule
+  for (const opt of [options, ...additionalOptions]) {
+    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+    if (typeof opt.allow !== "undefined" && typeof opt.deny !== "undefined") {
+      throw new Error(
+        "Both allow and deny cannot be provided to sensitiveInfo",
+      );
+    }
+
+    rules.push({
+      type: "SENSITIVE_INFO",
+      priority: Priority.SensitiveInfo,
+      mode,
+      allow: opt.allow || [],
+      deny: opt.deny || [],
+
+      validate(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): asserts details is ArcjetRequestDetails {},
+
+      async protect(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const body = await context.getBody();
+        if (typeof body === "undefined") {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "NOT_RUN",
+            conclusion: "ERROR",
+            reason: new ArcjetErrorReason(
+              "Couldn't read the body of the request to perform sensitive info identification.",
+            ),
+          });
+        }
+
+        let convertedDetect = undefined;
+        if (typeof opt.detect !== "undefined") {
+          const detect = opt.detect;
+          convertedDetect = (tokens: string[]) => {
+            return detect(tokens)
+              .filter((e) => typeof e !== "undefined")
+              .map(protocolSensitiveInfoEntitiesToAnalyze);
+          };
+        }
+
+        let entitiesTag: "allow" | "deny" = "allow";
+        let entitiesVal: Array<
+          ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>
+        > = [];
+
+        if (Array.isArray(opt.allow)) {
+          entitiesTag = "allow";
+          entitiesVal = opt.allow
+            .filter((e) => typeof e !== "undefined")
+            .map(protocolSensitiveInfoEntitiesToAnalyze);
+        }
+
+        if (Array.isArray(opt.deny)) {
+          entitiesTag = "deny";
+          entitiesVal = opt.deny
+            .filter((e) => typeof e !== "undefined")
+            .map(protocolSensitiveInfoEntitiesToAnalyze);
+        }
+
+        const entities = {
+          tag: entitiesTag,
+          val: entitiesVal,
+        };
+
+        const result = await analyze.detectSensitiveInfo(
+          context,
+          body,
+          entities,
+          options.contextWindowSize || 1,
+          convertedDetect,
+        );
+
+        const reason = new ArcjetSensitiveInfoReason({
+          denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
+          allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
+        });
+
+        if (result.denied.length === 0) {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "RUN",
+            conclusion: "ALLOW",
+            reason,
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ttl: 0,
+            state: "RUN",
+            conclusion: "DENY",
+            reason,
+          });
+        }
+      },
     });
   }
 

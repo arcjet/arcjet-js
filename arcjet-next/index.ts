@@ -1,9 +1,9 @@
 import type { NextApiResponse } from "next";
-import {
-  type NextFetchEvent,
-  type NextMiddleware,
-  type NextRequest,
-  NextResponse,
+import { NextResponse } from "next/server.js";
+import type {
+  NextFetchEvent,
+  NextMiddleware,
+  NextRequest,
 } from "next/server.js";
 import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
 import core from "arcjet";
@@ -26,6 +26,25 @@ import { createTransport } from "@arcjet/transport";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
+
+// TODO: Deduplicate with other packages
+function errorMessage(err: unknown): string {
+  if (err) {
+    if (typeof err === "string") {
+      return err;
+    }
+
+    if (
+      typeof err === "object" &&
+      "message" in err &&
+      typeof err.message === "string"
+    ) {
+      return err.message;
+    }
+  }
+
+  return "Unknown problem";
+}
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
@@ -122,6 +141,9 @@ export interface ArcjetNextRequest {
         >;
       }
     | Partial<{ [key: string]: string }>;
+
+  clone?: () => Request;
+  body?: unknown;
 }
 
 function isIterable(val: any): val is Iterable<any> {
@@ -327,7 +349,36 @@ export default function arcjet<
           ExtraProps<Rules>
         >;
 
-        return aj.protect({}, req);
+        const getBody = async () => {
+          try {
+            if (typeof request.clone === "function") {
+              const cloned = request.clone();
+              // Awaited to throw if it rejects and we'll just return undefined
+              const body = await cloned.text();
+              return body;
+            } else if (typeof request.body === "string") {
+              return request.body;
+            } else if (
+              typeof request.body !== "undefined" &&
+              // BigInt cannot be serialized with JSON.stringify
+              typeof request.body !== "bigint" &&
+              // The body will be null if there was no body with the request.
+              // Reference:
+              // https://nextjs.org/docs/pages/building-your-application/routing/api-routes#request-helpers
+              request.body !== null
+            ) {
+              return JSON.stringify(request.body);
+            } else {
+              log.warn("no body available");
+              return;
+            }
+          } catch (e) {
+            log.error("failed to get request body: %s", errorMessage(e));
+            return;
+          }
+        };
+
+        return aj.protect({ getBody }, req);
       },
     });
   }

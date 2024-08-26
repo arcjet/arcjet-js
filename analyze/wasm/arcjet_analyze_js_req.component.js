@@ -16,6 +16,10 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
   let dv = new DataView(new ArrayBuffer());
   const dataView = mem => dv.buffer === mem.buffer ? dv : dv = new DataView(mem.buffer);
   
+  function toUint32(val) {
+    return val >>> 0;
+  }
+  
   const utf8Decoder = new TextDecoder();
   
   const utf8Encoder = new TextEncoder();
@@ -41,10 +45,12 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
   
   const { hasGravatar, hasMxRecords, isDisposableEmail, isFreeEmail } = imports['arcjet:js-req/email-validator-overrides'];
   const { debug, error } = imports['arcjet:js-req/logger'];
+  const { detect } = imports['arcjet:js-req/sensitive-information-identifier'];
   let gen = (function* init () {
     let exports0;
     let exports1;
     let memory0;
+    let realloc0;
     
     function trampoline0(arg0, arg1) {
       var ptr0 = arg0;
@@ -183,10 +189,70 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       }
       return enum1;
     }
-    let realloc0;
+    
+    function trampoline6(arg0, arg1, arg2) {
+      var len1 = arg1;
+      var base1 = arg0;
+      var result1 = [];
+      for (let i = 0; i < len1; i++) {
+        const base = base1 + i * 8;
+        var ptr0 = dataView(memory0).getInt32(base + 0, true);
+        var len0 = dataView(memory0).getInt32(base + 4, true);
+        var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+        result1.push(result0);
+      }
+      const ret = detect(result1);
+      var vec5 = ret;
+      var len5 = vec5.length;
+      var result5 = realloc0(0, 0, 4, len5 * 16);
+      for (let i = 0; i < vec5.length; i++) {
+        const e = vec5[i];
+        const base = result5 + i * 16;var variant4 = e;
+        if (variant4 === null || variant4=== undefined) {
+          dataView(memory0).setInt8(base + 0, 0, true);
+        } else {
+          const e = variant4;
+          dataView(memory0).setInt8(base + 0, 1, true);
+          var variant3 = e;
+          switch (variant3.tag) {
+            case 'email': {
+              dataView(memory0).setInt8(base + 4, 0, true);
+              break;
+            }
+            case 'phone-number': {
+              dataView(memory0).setInt8(base + 4, 1, true);
+              break;
+            }
+            case 'ip-address': {
+              dataView(memory0).setInt8(base + 4, 2, true);
+              break;
+            }
+            case 'credit-card-number': {
+              dataView(memory0).setInt8(base + 4, 3, true);
+              break;
+            }
+            case 'custom': {
+              const e = variant3.val;
+              dataView(memory0).setInt8(base + 4, 4, true);
+              var ptr2 = utf8Encode(e, realloc0, memory0);
+              var len2 = utf8EncodedLen;
+              dataView(memory0).setInt32(base + 12, len2, true);
+              dataView(memory0).setInt32(base + 8, ptr2, true);
+              break;
+            }
+            default: {
+              throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant3.tag)}\` (received \`${variant3}\`) specified for \`SensitiveInfoEntity\``);
+            }
+          }
+        }
+      }
+      dataView(memory0).setInt32(arg2 + 4, len5, true);
+      dataView(memory0).setInt32(arg2 + 0, result5, true);
+    }
     let postReturn0;
     let postReturn1;
     let postReturn2;
+    let postReturn3;
     Promise.all([module0, module1, module2]).catch(() => {});
     ({ exports: exports0 } = yield instantiateCore(yield module1));
     ({ exports: exports1 } = yield instantiateCore(yield module0, {
@@ -200,8 +266,12 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         debug: exports0['0'],
         error: exports0['1'],
       },
+      'arcjet:js-req/sensitive-information-identifier': {
+        detect: exports0['6'],
+      },
     }));
     memory0 = exports1.memory;
+    realloc0 = exports1.cabi_realloc;
     (yield instantiateCore(yield module2, {
       '': {
         $imports: exports0.$imports,
@@ -211,12 +281,13 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         '3': trampoline3,
         '4': trampoline4,
         '5': trampoline5,
+        '6': trampoline6,
       },
     }));
-    realloc0 = exports1.cabi_realloc;
     postReturn0 = exports1['cabi_post_detect-bot'];
     postReturn1 = exports1['cabi_post_generate-fingerprint'];
     postReturn2 = exports1['cabi_post_is-valid-email'];
+    postReturn3 = exports1['cabi_post_detect-sensitive-info'];
     
     function detectBot(arg0, arg1, arg2) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
@@ -385,7 +456,230 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal.val;
     }
     
-    return { detectBot, generateFingerprint, isValidEmail,  };
+    function detectSensitiveInfo(arg0, arg1) {
+      var ptr0 = utf8Encode(arg0, realloc0, memory0);
+      var len0 = utf8EncodedLen;
+      var {entities: v1_0, contextWindowSize: v1_1, skipCustomDetect: v1_2 } = arg1;
+      var variant8 = v1_0;
+      let variant8_0;
+      let variant8_1;
+      let variant8_2;
+      switch (variant8.tag) {
+        case 'allow': {
+          const e = variant8.val;
+          var vec4 = e;
+          var len4 = vec4.length;
+          var result4 = realloc0(0, 0, 4, len4 * 12);
+          for (let i = 0; i < vec4.length; i++) {
+            const e = vec4[i];
+            const base = result4 + i * 12;var variant3 = e;
+            switch (variant3.tag) {
+              case 'email': {
+                dataView(memory0).setInt8(base + 0, 0, true);
+                break;
+              }
+              case 'phone-number': {
+                dataView(memory0).setInt8(base + 0, 1, true);
+                break;
+              }
+              case 'ip-address': {
+                dataView(memory0).setInt8(base + 0, 2, true);
+                break;
+              }
+              case 'credit-card-number': {
+                dataView(memory0).setInt8(base + 0, 3, true);
+                break;
+              }
+              case 'custom': {
+                const e = variant3.val;
+                dataView(memory0).setInt8(base + 0, 4, true);
+                var ptr2 = utf8Encode(e, realloc0, memory0);
+                var len2 = utf8EncodedLen;
+                dataView(memory0).setInt32(base + 8, len2, true);
+                dataView(memory0).setInt32(base + 4, ptr2, true);
+                break;
+              }
+              default: {
+                throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant3.tag)}\` (received \`${variant3}\`) specified for \`SensitiveInfoEntity\``);
+              }
+            }
+          }
+          variant8_0 = 0;
+          variant8_1 = result4;
+          variant8_2 = len4;
+          break;
+        }
+        case 'deny': {
+          const e = variant8.val;
+          var vec7 = e;
+          var len7 = vec7.length;
+          var result7 = realloc0(0, 0, 4, len7 * 12);
+          for (let i = 0; i < vec7.length; i++) {
+            const e = vec7[i];
+            const base = result7 + i * 12;var variant6 = e;
+            switch (variant6.tag) {
+              case 'email': {
+                dataView(memory0).setInt8(base + 0, 0, true);
+                break;
+              }
+              case 'phone-number': {
+                dataView(memory0).setInt8(base + 0, 1, true);
+                break;
+              }
+              case 'ip-address': {
+                dataView(memory0).setInt8(base + 0, 2, true);
+                break;
+              }
+              case 'credit-card-number': {
+                dataView(memory0).setInt8(base + 0, 3, true);
+                break;
+              }
+              case 'custom': {
+                const e = variant6.val;
+                dataView(memory0).setInt8(base + 0, 4, true);
+                var ptr5 = utf8Encode(e, realloc0, memory0);
+                var len5 = utf8EncodedLen;
+                dataView(memory0).setInt32(base + 8, len5, true);
+                dataView(memory0).setInt32(base + 4, ptr5, true);
+                break;
+              }
+              default: {
+                throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant6.tag)}\` (received \`${variant6}\`) specified for \`SensitiveInfoEntity\``);
+              }
+            }
+          }
+          variant8_0 = 1;
+          variant8_1 = result7;
+          variant8_2 = len7;
+          break;
+        }
+        default: {
+          throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant8.tag)}\` (received \`${variant8}\`) specified for \`SensitiveInfoEntities\``);
+        }
+      }
+      var variant9 = v1_1;
+      let variant9_0;
+      let variant9_1;
+      if (variant9 === null || variant9=== undefined) {
+        variant9_0 = 0;
+        variant9_1 = 0;
+      } else {
+        const e = variant9;
+        variant9_0 = 1;
+        variant9_1 = toUint32(e);
+      }
+      const ret = exports1['detect-sensitive-info'](ptr0, len0, variant8_0, variant8_1, variant8_2, variant9_0, variant9_1, v1_2 ? 1 : 0);
+      var len12 = dataView(memory0).getInt32(ret + 4, true);
+      var base12 = dataView(memory0).getInt32(ret + 0, true);
+      var result12 = [];
+      for (let i = 0; i < len12; i++) {
+        const base = base12 + i * 20;
+        let variant11;
+        switch (dataView(memory0).getUint8(base + 8, true)) {
+          case 0: {
+            variant11= {
+              tag: 'email',
+            };
+            break;
+          }
+          case 1: {
+            variant11= {
+              tag: 'phone-number',
+            };
+            break;
+          }
+          case 2: {
+            variant11= {
+              tag: 'ip-address',
+            };
+            break;
+          }
+          case 3: {
+            variant11= {
+              tag: 'credit-card-number',
+            };
+            break;
+          }
+          case 4: {
+            var ptr10 = dataView(memory0).getInt32(base + 12, true);
+            var len10 = dataView(memory0).getInt32(base + 16, true);
+            var result10 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr10, len10));
+            variant11= {
+              tag: 'custom',
+              val: result10
+            };
+            break;
+          }
+          default: {
+            throw new TypeError('invalid variant discriminant for SensitiveInfoEntity');
+          }
+        }
+        result12.push({
+          start: dataView(memory0).getInt32(base + 0, true) >>> 0,
+          end: dataView(memory0).getInt32(base + 4, true) >>> 0,
+          identifiedType: variant11,
+        });
+      }
+      var len15 = dataView(memory0).getInt32(ret + 12, true);
+      var base15 = dataView(memory0).getInt32(ret + 8, true);
+      var result15 = [];
+      for (let i = 0; i < len15; i++) {
+        const base = base15 + i * 20;
+        let variant14;
+        switch (dataView(memory0).getUint8(base + 8, true)) {
+          case 0: {
+            variant14= {
+              tag: 'email',
+            };
+            break;
+          }
+          case 1: {
+            variant14= {
+              tag: 'phone-number',
+            };
+            break;
+          }
+          case 2: {
+            variant14= {
+              tag: 'ip-address',
+            };
+            break;
+          }
+          case 3: {
+            variant14= {
+              tag: 'credit-card-number',
+            };
+            break;
+          }
+          case 4: {
+            var ptr13 = dataView(memory0).getInt32(base + 12, true);
+            var len13 = dataView(memory0).getInt32(base + 16, true);
+            var result13 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr13, len13));
+            variant14= {
+              tag: 'custom',
+              val: result13
+            };
+            break;
+          }
+          default: {
+            throw new TypeError('invalid variant discriminant for SensitiveInfoEntity');
+          }
+        }
+        result15.push({
+          start: dataView(memory0).getInt32(base + 0, true) >>> 0,
+          end: dataView(memory0).getInt32(base + 4, true) >>> 0,
+          identifiedType: variant14,
+        });
+      }
+      const retVal = {
+        allowed: result12,
+        denied: result15,
+      };
+      postReturn3(ret);
+      return retVal;
+    }
+    
+    return { detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail,  };
   })();
   let promise, resolve, reject;
   function runNext (value) {

@@ -174,6 +174,7 @@ export const Reason = /*@__PURE__*/ proto3.makeMessageType(
     { no: 4, name: "shield", kind: "message", T: ShieldReason, oneof: "reason" },
     { no: 5, name: "email", kind: "message", T: EmailReason, oneof: "reason" },
     { no: 6, name: "error", kind: "message", T: ErrorReason, oneof: "reason" },
+    { no: 7, name: "sensitive_info", kind: "message", T: SensitiveInfoReason, oneof: "reason" },
   ],
 );
 
@@ -261,6 +262,31 @@ export const ErrorReason = /*@__PURE__*/ proto3.makeMessageType(
 );
 
 /**
+ * @generated from message proto.decide.v1alpha1.IdentifiedEntity
+ */
+export const IdentifiedEntity = /*@__PURE__*/ proto3.makeMessageType(
+  "proto.decide.v1alpha1.IdentifiedEntity",
+  () => [
+    { no: 1, name: "identified_type", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "start", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 3, name: "end", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+  ],
+);
+
+/**
+ * Details of a sensitive info reason.
+ *
+ * @generated from message proto.decide.v1alpha1.SensitiveInfoReason
+ */
+export const SensitiveInfoReason = /*@__PURE__*/ proto3.makeMessageType(
+  "proto.decide.v1alpha1.SensitiveInfoReason",
+  () => [
+    { no: 1, name: "allowed", kind: "message", T: IdentifiedEntity, repeated: true },
+    { no: 2, name: "denied", kind: "message", T: IdentifiedEntity, repeated: true },
+  ],
+);
+
+/**
  * The configuration for a rate limit rule.
  *
  * @generated from message proto.decide.v1alpha1.RateLimitRule
@@ -324,6 +350,20 @@ export const EmailRule = /*@__PURE__*/ proto3.makeMessageType(
 );
 
 /**
+ * The configuration for a detect sensitive info rule.
+ *
+ * @generated from message proto.decide.v1alpha1.SensitiveInfoRule
+ */
+export const SensitiveInfoRule = /*@__PURE__*/ proto3.makeMessageType(
+  "proto.decide.v1alpha1.SensitiveInfoRule",
+  () => [
+    { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
+    { no: 2, name: "allow", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "deny", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ],
+);
+
+/**
  * The configuration for a shield rule.
  *
  * @generated from message proto.decide.v1alpha1.ShieldRule
@@ -348,6 +388,7 @@ export const Rule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 2, name: "bots", kind: "message", T: BotRule, oneof: "rule" },
     { no: 3, name: "email", kind: "message", T: EmailRule, oneof: "rule" },
     { no: 4, name: "shield", kind: "message", T: ShieldRule, oneof: "rule" },
+    { no: 5, name: "sensitive_info", kind: "message", T: SensitiveInfoRule, oneof: "rule" },
   ],
 );
 

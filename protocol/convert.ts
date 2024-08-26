@@ -1,4 +1,15 @@
 import { Timestamp } from "@bufbuild/protobuf";
+import type {
+  ArcjetRule,
+  ArcjetRateLimitRule,
+  ArcjetBotRule,
+  ArcjetEmailRule,
+  ArcjetTokenBucketRateLimitRule,
+  ArcjetFixedWindowRateLimitRule,
+  ArcjetSlidingWindowRateLimitRule,
+  ArcjetShieldRule,
+  ArcjetSensitiveInfoRule,
+} from "./index";
 import {
   ArcjetAllowDecision,
   ArcjetBotReason,
@@ -19,16 +30,10 @@ import {
   ArcjetReason,
   ArcjetRuleState,
   ArcjetStack,
-  ArcjetRule,
-  ArcjetRateLimitRule,
-  ArcjetBotRule,
-  ArcjetEmailRule,
-  ArcjetTokenBucketRateLimitRule,
-  ArcjetFixedWindowRateLimitRule,
-  ArcjetSlidingWindowRateLimitRule,
   ArcjetIpDetails,
-  ArcjetShieldRule,
+  ArcjetSensitiveInfoReason,
 } from "./index";
+import type { IpDetails } from "./proto/decide/v1alpha1/decide_pb.js";
 import {
   BotReason,
   BotType,
@@ -38,7 +43,6 @@ import {
   EmailReason,
   EmailType,
   ErrorReason,
-  IpDetails,
   Mode,
   RateLimitAlgorithm,
   RateLimitReason,
@@ -47,6 +51,7 @@ import {
   RuleResult,
   RuleState,
   SDKStack,
+  SensitiveInfoReason,
   ShieldReason,
 } from "./proto/decide/v1alpha1/decide_pb.js";
 
@@ -290,6 +295,13 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         emailTypes: reason.emailTypes.map(ArcjetEmailTypeFromProtocol),
       });
     }
+    case "sensitiveInfo": {
+      const reason = proto.reason.value;
+      return new ArcjetSensitiveInfoReason({
+        allowed: reason.allowed,
+        denied: reason.denied,
+      });
+    }
     case "error": {
       const reason = proto.reason.value;
       return new ArcjetErrorReason(reason.message);
@@ -377,6 +389,18 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         case: "error",
         value: new ErrorReason({
           message: reason.message,
+        }),
+      },
+    });
+  }
+
+  if (reason.isSensitiveInfo()) {
+    return new Reason({
+      reason: {
+        case: "sensitiveInfo",
+        value: new SensitiveInfoReason({
+          allowed: reason.allowed,
+          denied: reason.denied,
         }),
       },
     });
@@ -580,6 +604,12 @@ function isShieldRule<Props extends { email: string }>(
   return rule.type === "SHIELD";
 }
 
+function isSensitiveInfoRule<Props extends {}>(
+  rule: ArcjetRule<Props>,
+): rule is ArcjetSensitiveInfoRule<Props> {
+  return rule.type === "SENSITIVE_INFO";
+}
+
 export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   rule: ArcjetRule<Props>,
 ): Rule {
@@ -681,6 +711,18 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
           autoAdded: false,
+        },
+      },
+    });
+  }
+
+  if (isSensitiveInfoRule(rule)) {
+    return new Rule({
+      rule: {
+        case: "sensitiveInfo",
+        value: {
+          allow: rule.allow,
+          deny: rule.deny,
         },
       },
     });

@@ -1,3 +1,5 @@
+import type { SensitiveInfoEntity } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
+export { SensitiveInfoEntity };
 /**
 * # Variants
 * 
@@ -35,16 +37,42 @@ export interface EmailValidationConfig {
   allowDomainLiteral: boolean,
   blockedEmails: Array<string>,
 }
+export type SensitiveInfoEntities = SensitiveInfoEntitiesAllow | SensitiveInfoEntitiesDeny;
+export interface SensitiveInfoEntitiesAllow {
+  tag: 'allow',
+  val: Array<SensitiveInfoEntity>,
+}
+export interface SensitiveInfoEntitiesDeny {
+  tag: 'deny',
+  val: Array<SensitiveInfoEntity>,
+}
+export interface SensitiveInfoConfig {
+  entities: SensitiveInfoEntities,
+  contextWindowSize?: number,
+  skipCustomDetect: boolean,
+}
+export interface DetectedSensitiveInfoEntity {
+  start: number,
+  end: number,
+  identifiedType: SensitiveInfoEntity,
+}
+export interface SensitiveInfoResult {
+  allowed: Array<DetectedSensitiveInfoEntity>,
+  denied: Array<DetectedSensitiveInfoEntity>,
+}
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
 import { ArcjetJsReqLogger } from './interfaces/arcjet-js-req-logger.js';
+import { ArcjetJsReqSensitiveInformationIdentifier } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
 export interface ImportObject {
   'arcjet:js-req/email-validator-overrides': typeof ArcjetJsReqEmailValidatorOverrides,
   'arcjet:js-req/logger': typeof ArcjetJsReqLogger,
+  'arcjet:js-req/sensitive-information-identifier': typeof ArcjetJsReqSensitiveInformationIdentifier,
 }
 export interface Root {
   detectBot(headers: string, patternsAdd: string, patternsRemove: string): BotDetectionResult,
   generateFingerprint(request: string, characteristics: Array<string>): string,
   isValidEmail(candidate: string, options: EmailValidationConfig): EmailValidationResult,
+  detectSensitiveInfo(content: string, options: SensitiveInfoConfig): SensitiveInfoResult,
 }
 
 /**

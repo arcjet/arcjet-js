@@ -46,6 +46,7 @@
     "@arcjet/logger": "1.0.0-alpha.21",
     "@arcjet/protocol": "1.0.0-alpha.21",
     "@arcjet/transport": "1.0.0-alpha.21",
+    "@arcjet/body": "1.0.0-alpha.21",
     "arcjet": "1.0.0-alpha.21"
   },
   "devDependencies": {
@@ -54,7 +55,7 @@
     "@arcjet/tsconfig": "1.0.0-alpha.21",
     "@jest/globals": "29.7.0",
     "@types/node": "18.18.0",
-    "@rollup/wasm-node": "4.20.0",
+    "@rollup/wasm-node": "4.21.0",
     "jest": "29.7.0",
     "typescript": "5.5.4"
   },

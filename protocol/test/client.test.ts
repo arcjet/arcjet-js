@@ -21,6 +21,7 @@ import {
   RuleState,
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
+import type { ArcjetRule } from "../index.js";
 import {
   ArcjetAllowDecision,
   ArcjetChallengeDecision,
@@ -30,7 +31,6 @@ import {
   ArcjetErrorDecision,
   ArcjetErrorReason,
   ArcjetReason,
-  ArcjetRule,
   ArcjetRuleResult,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
@@ -119,6 +119,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -176,6 +177,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -234,6 +236,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -290,6 +293,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -347,6 +351,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -409,6 +414,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -454,6 +460,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -498,6 +505,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -542,6 +550,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -589,6 +598,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -642,6 +652,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -687,6 +698,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -757,6 +769,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -826,6 +839,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -902,6 +916,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -971,6 +986,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1036,6 +1052,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const receivedAt = Timestamp.now();
     const details = {
@@ -1127,6 +1144,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1174,6 +1192,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: ["src.ip"],
+      getBody: () => Promise.resolve(undefined),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1232,6 +1251,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: ["ip.src"],
+      getBody: () => Promise.resolve(undefined),
     };
     const receivedAt = Timestamp.now();
     const details = {

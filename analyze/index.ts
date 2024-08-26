@@ -1,13 +1,18 @@
 import type { ArcjetLogger, ArcjetRequestDetails } from "@arcjet/protocol";
 
-import * as core from "./wasm/arcjet_analyze_js_req.component.js";
+import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
   ImportObject,
   EmailValidationConfig,
   BotDetectionResult,
   BotType,
   EmailValidationResult,
+  DetectedSensitiveInfoEntity,
+  SensitiveInfoEntities,
+  SensitiveInfoEntity,
+  SensitiveInfoResult,
 } from "./wasm/arcjet_analyze_js_req.component.js";
+import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 
 import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.component.core.wasm?js";
 import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_js_req.component.core2.wasm?js";
@@ -25,6 +30,9 @@ interface AnalyzeContext {
   log: ArcjetLogger;
   characteristics: string[];
 }
+
+type DetectSensitiveInfoFunction =
+  typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
 
 // TODO: Do we actually need this wasmCache or does `import` cache correctly?
 const wasmCache = new Map<string, WebAssembly.Module>();
@@ -54,8 +62,19 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-async function init(context: AnalyzeContext) {
+function noOpDetect(): SensitiveInfoEntity[] {
+  return [];
+}
+
+async function init(
+  context: AnalyzeContext,
+  detectSensitiveInfo?: DetectSensitiveInfoFunction,
+) {
   const { log } = context;
+
+  if (typeof detectSensitiveInfo !== "function") {
+    detectSensitiveInfo = noOpDetect;
+  }
 
   const coreImports: ImportObject = {
     "arcjet:js-req/logger": {
@@ -83,10 +102,13 @@ async function init(context: AnalyzeContext) {
         return "unknown";
       },
     },
+    "arcjet:js-req/sensitive-information-identifier": {
+      detect: detectSensitiveInfo,
+    },
   };
 
   try {
-    return core.instantiate(moduleFromPath, coreImports);
+    return instantiate(moduleFromPath, coreImports);
   } catch {
     log.debug("WebAssembly is not supported in this runtime");
   }
@@ -108,6 +130,9 @@ export {
    * almost certain this request was not a bot.
    */
   type BotDetectionResult,
+  type DetectedSensitiveInfoEntity,
+  type SensitiveInfoEntity,
+  type DetectSensitiveInfoFunction,
 };
 
 /**
@@ -173,5 +198,28 @@ export async function detectBot(
       botType: "not-analyzed",
       botScore: 0,
     };
+  }
+}
+
+export async function detectSensitiveInfo(
+  context: AnalyzeContext,
+  candidate: string,
+  entities: SensitiveInfoEntities,
+  contextWindowSize: number,
+  detect?: DetectSensitiveInfoFunction,
+): Promise<SensitiveInfoResult> {
+  const analyze = await init(context, detect);
+
+  if (typeof analyze !== "undefined") {
+    const skipCustomDetect = typeof detect !== "function";
+    return analyze.detectSensitiveInfo(candidate, {
+      entities,
+      contextWindowSize,
+      skipCustomDetect,
+    });
+  } else {
+    throw new Error(
+      "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
+    );
   }
 }

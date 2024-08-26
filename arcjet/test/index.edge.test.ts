@@ -10,11 +10,11 @@ import {
   afterEach,
 } from "@jest/globals";
 
+import type { Primitive } from "../index";
 import arcjet, {
   fixedWindow,
   tokenBucket,
   protectSignup,
-  Primitive,
   ArcjetReason,
   ArcjetAllowDecision,
 } from "../index";
@@ -98,7 +98,9 @@ describe("Arcjet: Env = Edge runtime", () => {
     const aj2 = aj.withRule(foobarbaz());
 
     const decision = await aj2.protect(
-      {},
+      {
+        getBody: () => Promise.resolve(undefined),
+      },
       {
         abc: 123,
         requested: 1,

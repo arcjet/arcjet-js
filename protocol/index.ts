@@ -50,6 +50,12 @@ export const ArcjetEmailType: ArcjetEnum<ArcjetEmailType> = {
   INVALID: "INVALID",
 };
 
+export type ArcjetIdentifiedEntity = {
+  start: number;
+  end: number;
+  identifiedType: string;
+};
+
 export type ArcjetStack = "NODEJS" | "NEXTJS" | "BUN" | "SVELTEKIT";
 export const ArcjetStack: ArcjetEnum<ArcjetStack> = {
   NODEJS: "NODEJS",
@@ -74,6 +80,18 @@ export const ArcjetConclusion: ArcjetEnum<ArcjetConclusion> = Object.freeze({
   ERROR: "ERROR",
 });
 
+export type ArcjetSensitiveInfoType =
+  | "EMAIL"
+  | "PHONE_NUMBER"
+  | "IP_ADDRESS"
+  | "CREDIT_CARD_NUMBER";
+export const ArcjetSensitiveInfoType: ArcjetEnum<ArcjetSensitiveInfoType> = {
+  EMAIL: "EMAIL",
+  PHONE_NUMBER: "PHONE_NUMBER",
+  IP_ADDRESS: "IP_ADDRESS",
+  CREDIT_CARD_NUMBER: "CREDIT_CARD_NUMBER",
+};
+
 export type ArcjetRuleType = "LOCAL" | "REMOTE";
 export const ArcjetRuleType: ArcjetEnum<ArcjetRuleType> = Object.freeze({
   LOCAL: "LOCAL",
@@ -81,7 +99,18 @@ export const ArcjetRuleType: ArcjetEnum<ArcjetRuleType> = Object.freeze({
 });
 
 export class ArcjetReason {
-  type?: "RATE_LIMIT" | "BOT" | "EDGE_RULE" | "SHIELD" | "EMAIL" | "ERROR";
+  type?:
+    | "RATE_LIMIT"
+    | "BOT"
+    | "EDGE_RULE"
+    | "SHIELD"
+    | "EMAIL"
+    | "ERROR"
+    | "SENSITIVE_INFO";
+
+  isSensitiveInfo(): this is ArcjetSensitiveInfoReason {
+    return this.type === "SENSITIVE_INFO";
+  }
 
   isRateLimit(): this is ArcjetRateLimitReason {
     return this.type === "RATE_LIMIT";
@@ -105,6 +134,23 @@ export class ArcjetReason {
 
   isError(): this is ArcjetErrorReason {
     return this.type === "ERROR";
+  }
+}
+
+export class ArcjetSensitiveInfoReason extends ArcjetReason {
+  type = "SENSITIVE_INFO" as const;
+
+  denied: ArcjetIdentifiedEntity[];
+  allowed: ArcjetIdentifiedEntity[];
+
+  constructor(init: {
+    denied: ArcjetIdentifiedEntity[];
+    allowed: ArcjetIdentifiedEntity[];
+  }) {
+    super();
+
+    this.denied = init.denied;
+    this.allowed = init.allowed;
   }
 }
 
@@ -665,7 +711,7 @@ export interface ArcjetRequestDetails {
 }
 
 export type ArcjetRule<Props extends {} = {}> = {
-  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | string;
+  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | "SENSITIVE_INFO" | string;
   mode: ArcjetMode;
   priority: number;
 };
@@ -729,6 +775,14 @@ export interface ArcjetEmailRule<Props extends { email: string }>
   allowDomainLiteral: boolean;
 }
 
+export interface ArcjetSensitiveInfoRule<Props extends {}>
+  extends ArcjetLocalRule<Props> {
+  type: "SENSITIVE_INFO";
+
+  allow: string[];
+  deny: string[];
+}
+
 export interface ArcjetBotRule<Props extends {}>
   extends ArcjetLocalRule<Props> {
   type: "BOT";
@@ -765,4 +819,5 @@ export type ArcjetContext = {
   runtime: string;
   log: ArcjetLogger;
   characteristics: string[];
+  getBody: () => Promise<string | undefined>;
 };
