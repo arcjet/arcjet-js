@@ -46,6 +46,7 @@
     "@arcjet/logger": "1.0.0-alpha.21",
     "@arcjet/protocol": "1.0.0-alpha.21",
     "@arcjet/transport": "1.0.0-alpha.21",
+    "@arcjet/body": "1.0.0-alpha.21",
     "arcjet": "1.0.0-alpha.21"
   },
   "devDependencies": {

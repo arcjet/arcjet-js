@@ -52,6 +52,10 @@
       "component": "@arcjet/sveltekit",
       "skip-github-release": true
     },
+    "body": {
+      "component": "@arcjet/body",
+      "skip-github-release": true
+    },
     "decorate": {
       "component": "@arcjet/decorate",
       "skip-github-release": true
@@ -127,6 +131,7 @@
         "@arcjet/eslint-config",
         "@arcjet/headers",
         "@arcjet/ip",
+        "@arcjet/body",
         "@arcjet/logger",
         "@arcjet/protocol",
         "@arcjet/rollup-config",

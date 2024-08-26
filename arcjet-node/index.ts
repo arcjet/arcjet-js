@@ -15,9 +15,29 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
+import { readBody } from "@arcjet/body";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
+
+// TODO: Deduplicate with other packages
+function errorMessage(err: unknown): string {
+  if (err) {
+    if (typeof err === "string") {
+      return err;
+    }
+
+    if (
+      typeof err === "object" &&
+      "message" in err &&
+      typeof err.message === "string"
+    ) {
+      return err.message;
+    }
+  }
+
+  return "Unknown problem";
+}
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
@@ -85,6 +105,11 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   });
 }
 
+type EventHandlerLike = (
+  event: string,
+  listener: (...args: any[]) => void,
+) => void;
+
 // Interface of fields that the Arcjet Node.js SDK expects on `IncomingMessage`
 // objects.
 export interface ArcjetNodeRequest {
@@ -93,6 +118,11 @@ export interface ArcjetNodeRequest {
   method?: string;
   httpVersion?: string;
   url?: string;
+  // Things needed for getting a body
+  body?: unknown;
+  on?: EventHandlerLike;
+  removeListener?: EventHandlerLike;
+  readable?: boolean;
 }
 
 function cookiesToString(cookies: string | string[] | undefined): string {
@@ -255,7 +285,54 @@ export default function arcjet<
           ExtraProps<Rules>
         >;
 
-        return aj.protect({}, req);
+        const getBody = async () => {
+          try {
+            // If request.body is present then the body was likely read by a package like express' `body-parser`.
+            // If it's not present then we attempt to read the bytes from the IncomingMessage ourselves.
+            if (typeof request.body === "string") {
+              return request.body;
+            } else if (
+              typeof request.body !== "undefined" &&
+              // BigInt cannot be serialized with JSON.stringify
+              typeof request.body !== "bigint"
+            ) {
+              return JSON.stringify(request.body);
+            }
+
+            if (
+              typeof request.on === "function" &&
+              typeof request.removeListener === "function"
+            ) {
+              let expectedLength: number | undefined;
+              // TODO: This shouldn't need to build headers again but the type
+              // for `req` above is overly relaxed
+              const headers = new ArcjetHeaders(request.headers);
+              const expectedLengthStr = headers.get("content-length");
+              if (typeof expectedLengthStr === "string") {
+                try {
+                  expectedLength = parseInt(expectedLengthStr, 10);
+                } catch {
+                  // If the expected length couldn't be parsed we'll just not set one.
+                }
+              }
+              // Awaited to throw if it rejects and we'll just return undefined
+              const body = await readBody(request, {
+                // We will process 1mb bodies
+                limit: 1048576,
+                expectedLength,
+              });
+              return body;
+            }
+
+            log.warn("no body available");
+            return;
+          } catch (e) {
+            log.error("failed to get request body: %s", errorMessage(e));
+            return;
+          }
+        };
+
+        return aj.protect({ getBody }, req);
       },
     });
   }
