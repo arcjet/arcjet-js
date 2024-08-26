@@ -1,6 +1,6 @@
 {
   "name": "arcjet-js",
-  "version": "1.0.0-alpha.21",
+  "version": "1.0.0-alpha.22",
   "private": true,
   "engines": {
     "node": ">=18"

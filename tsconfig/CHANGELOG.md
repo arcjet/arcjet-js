@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0-alpha.22](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.21...@arcjet/tsconfig-v1.0.0-alpha.22) (2024-08-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* **tsconfig:** Enable verbatim module syntax ([#1324](https://github.com/arcjet/arcjet-js/issues/1324))
+
+### 🧹 Miscellaneous Chores
+
+* **tsconfig:** Enable verbatim module syntax ([#1324](https://github.com/arcjet/arcjet-js/issues/1324)) ([7012b54](https://github.com/arcjet/arcjet-js/commit/7012b5473431a84c6025e361a89eca027ebfc93f)), closes [#1314](https://github.com/arcjet/arcjet-js/issues/1314)
+
 ## [1.0.0-alpha.21](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.20...@arcjet/tsconfig-v1.0.0-alpha.21) (2024-08-05)
 
 
