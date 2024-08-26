@@ -134,3 +134,6 @@ dist
 
 # macOS
 .DS_Store
+
+# turborepo
+.turbo/
