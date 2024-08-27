@@ -39,6 +39,7 @@ lint:
     - linters: [ALL]
       paths:
         - analyze/wasm/**
+        - redact-wasm/wasm/**
         - protocol/proto/**
         - "**/LICENSE"
         - "**/CHANGELOG.md"
