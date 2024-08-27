@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-alpha.22](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.21...@arcjet/logger-v1.0.0-alpha.22) (2024-08-26)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/logger:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/sprintf bumped from 1.0.0-alpha.21 to 1.0.0-alpha.22
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.21 to 1.0.0-alpha.22
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.21 to 1.0.0-alpha.22
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.21 to 1.0.0-alpha.22
+
 ## [1.0.0-alpha.21](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.20...@arcjet/logger-v1.0.0-alpha.21) (2024-08-05)
 
 

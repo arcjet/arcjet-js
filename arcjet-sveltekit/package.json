@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/sveltekit",
-  "version": "1.0.0-alpha.21",
+  "version": "1.0.0-alpha.22",
   "description": "Arcjet SDK for SvelteKit",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -40,18 +40,18 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "dependencies": {
-    "@arcjet/env": "1.0.0-alpha.21",
-    "@arcjet/headers": "1.0.0-alpha.21",
-    "@arcjet/ip": "1.0.0-alpha.21",
-    "@arcjet/logger": "1.0.0-alpha.21",
-    "@arcjet/protocol": "1.0.0-alpha.21",
-    "@arcjet/transport": "1.0.0-alpha.21",
-    "arcjet": "1.0.0-alpha.21"
+    "@arcjet/env": "1.0.0-alpha.22",
+    "@arcjet/headers": "1.0.0-alpha.22",
+    "@arcjet/ip": "1.0.0-alpha.22",
+    "@arcjet/logger": "1.0.0-alpha.22",
+    "@arcjet/protocol": "1.0.0-alpha.22",
+    "@arcjet/transport": "1.0.0-alpha.22",
+    "arcjet": "1.0.0-alpha.22"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.21",
-    "@arcjet/rollup-config": "1.0.0-alpha.21",
-    "@arcjet/tsconfig": "1.0.0-alpha.21",
+    "@arcjet/eslint-config": "1.0.0-alpha.22",
+    "@arcjet/rollup-config": "1.0.0-alpha.22",
+    "@arcjet/tsconfig": "1.0.0-alpha.22",
     "@jest/globals": "29.7.0",
     "@types/node": "18.18.0",
     "@rollup/wasm-node": "4.21.0",
