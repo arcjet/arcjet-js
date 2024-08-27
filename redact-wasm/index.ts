@@ -3,8 +3,9 @@ import type { ArcjetLogger } from "@arcjet/protocol";
 import * as core from "./wasm/arcjet_analyze_bindings_redact.component.js";
 import type {
   ImportObject,
-  DetectedEntity,
+  DetectedSensitiveInfoEntity,
   SensitiveInfoEntity,
+  SensitiveInfoConfig,
 } from "./wasm/arcjet_analyze_bindings_redact.component.js";
 import type { ArcjetSensitiveInfoSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-sensitive-info-sensitive-information-identifier.js";
 
@@ -51,7 +52,7 @@ async function init(
   const { log } = context;
 
   let detectOrDefault = detect;
-  if (detectOrDefault === undefined) {
+  if (typeof detectOrDefault === "undefined") {
     detectOrDefault = () => [];
   }
 
@@ -73,7 +74,7 @@ async function init(
   }
 }
 
-export { type DetectedEntity, type SensitiveInfoEntity };
+export { type DetectedSensitiveInfoEntity as DetectedEntity, type SensitiveInfoEntity };
 
 export async function detectSensitiveInfo(
   context: AnalyzeContext,
@@ -81,11 +82,11 @@ export async function detectSensitiveInfo(
   entities: core.SensitiveInfoEntity[],
   contextWindowSize: number,
   detect?: typeof ArcjetSensitiveInfoSensitiveInformationIdentifier.detect,
-): Promise<core.DetectedEntity[]> {
+): Promise<DetectedSensitiveInfoEntity[]> {
   const analyze = await init(context, detect);
   const skipCustomDetect = detect === undefined;
 
-  const options: core.DetectConfig = {
+  const options: SensitiveInfoConfig = {
     entities,
     contextWindowSize,
     skipCustomDetect,

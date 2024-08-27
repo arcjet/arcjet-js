@@ -12,5 +12,21 @@
     "OPENAI_API_KEY",
     "FLY_APP_NAME"
   ],
-  "tasks": {}
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "outputLogs": "none"
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "cache": false,
+      "outputLogs": "none"
+    },
+    "test": {
+      "dependsOn": ["^test"],
+      "cache": false,
+      "outputLogs": "none"
+    }
+  }
 }

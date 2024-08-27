@@ -2,7 +2,6 @@ import { logLevel } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { type ArcjetLogger } from "@arcjet/protocol";
 import {
-  type DetectedEntity,
   detectSensitiveInfo,
   type SensitiveInfoEntity,
 } from "@arcjet/redact-wasm";
@@ -13,19 +12,30 @@ export type ArcjetSensitiveInfoType =
   | "ip-address"
   | "credit-card-number";
 
-type DetectEntities<T> = (
+type DetectedSensitiveInfoEntity = {
+  start: number,
+  end: number,
+  identifiedType: string,
+}
+
+type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
-) => (ArcjetSensitiveInfoType | T | undefined)[];
+) => Array<ArcjetSensitiveInfoType | T | undefined>;
+
+type SensitiveInfoEntities<
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  CustomEntities extends string,
+> = Array<
+  | ArcjetSensitiveInfoType
+  | Exclude<ReturnType<Detect>[number], undefined>
+>;
 
 type RedactOptions<
-  Detect extends DetectEntities<CustomEntities>,
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 > = {
   allow?: never;
-  redact: (
-    | ArcjetSensitiveInfoType
-    | Exclude<ReturnType<Detect>[number], undefined>
-  )[];
+  redact: SensitiveInfoEntities<Detect, CustomEntities>;
   contextWindowSize?: number;
   detect?: Detect;
   replacer?: Replacers<Detect, CustomEntities>;
@@ -33,13 +43,13 @@ type RedactOptions<
 };
 
 export type Replacers<
-  Detect extends DetectEntities<CustomEntities>,
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 > = {
-  [T in
+    [T in
     | ArcjetSensitiveInfoType
     | Exclude<ReturnType<Detect>[number], undefined>]?: () => string;
-};
+  };
 
 type RedactContext = {
   log: ArcjetLogger;
@@ -106,7 +116,7 @@ function performReplacementInText(
 }
 
 export class RedactSession<
-  Detect extends DetectEntities<CustomEntities>,
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 > {
   private unredactEntities: RedactedText[];
@@ -121,24 +131,31 @@ export class RedactSession<
     };
   }
 
-  public async identify(candidate: string): Promise<DetectedEntity[]> {
-    const entities = (this.opts.redact || []).map(userEntitiesToWasm);
+  public async identify(candidate: string): Promise<DetectedSensitiveInfoEntity[]> {
+    const entities = this.opts.redact.map(userEntitiesToWasm);
     const windowSize = this.opts.contextWindowSize || 1;
     let convertedDetect = undefined;
-    if (this.opts.detect !== undefined) {
+    if (typeof this.opts.detect !== "undefined") {
       const detect = this.opts.detect;
       convertedDetect = (tokens: string[]): any[] => {
-        return detect(tokens).map((e) => e && userEntitiesToWasm(e));
+        return detect(tokens).filter((e) => typeof e !== "undefined").map((e) => userEntitiesToWasm(e));
       };
     }
 
-    return await detectSensitiveInfo(
+    const detectedEntities = await detectSensitiveInfo(
       this.context,
       candidate,
       entities,
       windowSize,
       convertedDetect,
     );
+
+    return detectedEntities.map((e) => {
+      return {
+        ...e,
+        identifiedType: analyzeEntitiesToString(e.identifiedType)
+      }
+    });
   }
 
   public async redact(candidate: string): Promise<string> {
@@ -148,7 +165,6 @@ export class RedactSession<
     let redactedIdx = 0;
     let extraOffset = 0;
     for (const entity of detectedEntities) {
-      const entityType = analyzeEntitiesToString(entity.identifiedType);
       const replacers: Replacers<Detect, CustomEntities> =
         this.opts.replacer || {};
 
@@ -159,8 +175,8 @@ export class RedactSession<
       let replacement = `<REDACTED INFO #${redactedIdx}>`;
       redactedIdx++;
 
-      if (entityType in replacers) {
-        const customReplacer = replacers[entityType as keyof typeof replacers];
+      if (entity.identifiedType in replacers) {
+        const customReplacer = replacers[entity.identifiedType as keyof typeof replacers];
         if (customReplacer !== undefined) {
           replacement = customReplacer();
         }

@@ -20,21 +20,29 @@
 code. Implement rate limiting, bot protection, email verification, and defense
 against common attacks.
 
-This is the [Arcjet][arcjet] TypeScript and JavaScript Redaction library.
+This is the [Arcjet][arcjet] TypeScript and JavaScript sensitive information
+detection and redaction library.
 
 ## Getting started
 
 Visit [docs.arcjet.com](https://docs.arcjet.com) to get started.
 
-Generally, you'll want to use the Arcjet SDK for your specific framework, such
-as [`@arcjet/next`](../arcjet-next/README.md) for Next.js. However, this package
-can be used to interact with Arcjet if your framework does not have an
-integration.
-
 ## Installation
 
 ```shell
 npm install -S @arcjet/redact
+```
+
+## Example
+```typescript
+const session = new RedactSession({ redact: ["email", "phone-number"] });
+const text = "Hi, my name is John and my email adress is john@example.com";
+const redacted = await session.redact(text);
+console.log(redacted); 
+// Hi, my name is John and my email address is <REDACTED INFO #0>
+
+const unredacted = await session.unredact("Your email address is <REDACTED INFO #0>");
+console.log(unredacted); // Your email address is john@example.com
 ```
 
 ## API

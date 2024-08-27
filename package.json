@@ -6,12 +6,15 @@
     "node": ">=18"
   },
   "workspaces": [
-    "redact-wasm*",
     "*"
   ],
+  "packageManager": "npm@10.8.1",
   "scripts": {
-    "prepare": "npm run build -ws --if-present --foreground-scripts",
-    "lint": "npm run lint -ws -if-present",
-    "test": "npm test -ws --if-present"
+    "prepare": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo test"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.14"
   }
 }
