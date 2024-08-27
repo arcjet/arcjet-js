@@ -34,14 +34,17 @@ npm install -S @arcjet/redact
 ```
 
 ## Example
+
 ```typescript
 const session = new RedactSession({ redact: ["email", "phone-number"] });
 const text = "Hi, my name is John and my email adress is john@example.com";
 const redacted = await session.redact(text);
-console.log(redacted); 
+console.log(redacted);
 // Hi, my name is John and my email address is <REDACTED INFO #0>
 
-const unredacted = await session.unredact("Your email address is <REDACTED INFO #0>");
+const unredacted = await session.unredact(
+  "Your email address is <REDACTED INFO #0>",
+);
 console.log(unredacted); // Your email address is john@example.com
 ```
 

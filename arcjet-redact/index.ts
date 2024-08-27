@@ -13,10 +13,10 @@ export type ArcjetSensitiveInfoType =
   | "credit-card-number";
 
 type DetectedSensitiveInfoEntity = {
-  start: number,
-  end: number,
-  identifiedType: string,
-}
+  start: number;
+  end: number;
+  identifiedType: string;
+};
 
 type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
@@ -26,8 +26,7 @@ type SensitiveInfoEntities<
   Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 > = Array<
-  | ArcjetSensitiveInfoType
-  | Exclude<ReturnType<Detect>[number], undefined>
+  ArcjetSensitiveInfoType | Exclude<ReturnType<Detect>[number], undefined>
 >;
 
 type RedactOptions<
@@ -46,10 +45,10 @@ export type Replacers<
   Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 > = {
-    [T in
+  [T in
     | ArcjetSensitiveInfoType
     | Exclude<ReturnType<Detect>[number], undefined>]?: () => string;
-  };
+};
 
 type RedactContext = {
   log: ArcjetLogger;
@@ -131,14 +130,18 @@ export class RedactSession<
     };
   }
 
-  public async identify(candidate: string): Promise<DetectedSensitiveInfoEntity[]> {
+  public async identify(
+    candidate: string,
+  ): Promise<DetectedSensitiveInfoEntity[]> {
     const entities = this.opts.redact.map(userEntitiesToWasm);
     const windowSize = this.opts.contextWindowSize || 1;
     let convertedDetect = undefined;
     if (typeof this.opts.detect !== "undefined") {
       const detect = this.opts.detect;
       convertedDetect = (tokens: string[]): any[] => {
-        return detect(tokens).filter((e) => typeof e !== "undefined").map((e) => userEntitiesToWasm(e));
+        return detect(tokens)
+          .filter((e) => typeof e !== "undefined")
+          .map((e) => userEntitiesToWasm(e));
       };
     }
 
@@ -153,8 +156,8 @@ export class RedactSession<
     return detectedEntities.map((e) => {
       return {
         ...e,
-        identifiedType: analyzeEntitiesToString(e.identifiedType)
-      }
+        identifiedType: analyzeEntitiesToString(e.identifiedType),
+      };
     });
   }
 
@@ -176,7 +179,8 @@ export class RedactSession<
       redactedIdx++;
 
       if (entity.identifiedType in replacers) {
-        const customReplacer = replacers[entity.identifiedType as keyof typeof replacers];
+        const customReplacer =
+          replacers[entity.identifiedType as keyof typeof replacers];
         if (customReplacer !== undefined) {
           replacement = customReplacer();
         }

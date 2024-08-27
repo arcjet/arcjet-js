@@ -74,7 +74,10 @@ async function init(
   }
 }
 
-export { type DetectedSensitiveInfoEntity as DetectedEntity, type SensitiveInfoEntity };
+export {
+  type DetectedSensitiveInfoEntity as DetectedEntity,
+  type SensitiveInfoEntity,
+};
 
 export async function detectSensitiveInfo(
   context: AnalyzeContext,

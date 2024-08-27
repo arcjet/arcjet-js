@@ -1,20 +1,27 @@
 export namespace ArcjetSensitiveInfoSensitiveInformationIdentifier {
-  export function detect(tokens: Array<string>): Array<SensitiveInfoEntity | undefined>;
+  export function detect(
+    tokens: Array<string>,
+  ): Array<SensitiveInfoEntity | undefined>;
 }
-export type SensitiveInfoEntity = SensitiveInfoEntityEmail | SensitiveInfoEntityPhoneNumber | SensitiveInfoEntityIpAddress | SensitiveInfoEntityCreditCardNumber | SensitiveInfoEntityCustom;
+export type SensitiveInfoEntity =
+  | SensitiveInfoEntityEmail
+  | SensitiveInfoEntityPhoneNumber
+  | SensitiveInfoEntityIpAddress
+  | SensitiveInfoEntityCreditCardNumber
+  | SensitiveInfoEntityCustom;
 export interface SensitiveInfoEntityEmail {
-  tag: 'email',
+  tag: "email";
 }
 export interface SensitiveInfoEntityPhoneNumber {
-  tag: 'phone-number',
+  tag: "phone-number";
 }
 export interface SensitiveInfoEntityIpAddress {
-  tag: 'ip-address',
+  tag: "ip-address";
 }
 export interface SensitiveInfoEntityCreditCardNumber {
-  tag: 'credit-card-number',
+  tag: "credit-card-number";
 }
 export interface SensitiveInfoEntityCustom {
-  tag: 'custom',
-  val: string,
+  tag: "custom";
+  val: string;
 }

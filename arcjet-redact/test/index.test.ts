@@ -13,22 +13,32 @@ const log = {
 describe("ArcjetRedact", () => {
   describe("identify()", () => {
     test("it will identify the configured entities", async () => {
-      const session = new RedactSession({ redact: ["email", "credit-card-number"] });
+      const session = new RedactSession({
+        redact: ["email", "credit-card-number"],
+      });
       const text = "4242424242424242 test@example.com 011234567 number";
       const identified = await session.identify(text);
-      const expected = [{ "end": 16, "identifiedType": "credit-card-number", "start": 0 }, { "end": 33, "identifiedType": "email", "start": 17 }];
+      const expected = [
+        { end: 16, identifiedType: "credit-card-number", start: 0 },
+        { end: 33, identifiedType: "email", start: 17 },
+      ];
       expect(identified).toEqual(expected);
     });
     test("it will prefer custom entity types to inbuilt ones", async () => {
       const session = new RedactSession({
         redact: ["email", "credit-card-number", "test-email"],
         detect: (tokens) => {
-          return tokens.map((t) => t === "test@example.com" ? "test-email" : undefined);
-        }
+          return tokens.map((t) =>
+            t === "test@example.com" ? "test-email" : undefined,
+          );
+        },
       });
       const text = "4242424242424242 test@example.com 011234567 number";
       const identified = await session.identify(text);
-      const expected = [{ "end": 16, "identifiedType": "credit-card-number", "start": 0 }, { "end": 33, "identifiedType": "test-email", "start": 17 }];
+      const expected = [
+        { end: 16, identifiedType: "credit-card-number", start: 0 },
+        { end: 33, identifiedType: "test-email", start: 17 },
+      ];
       expect(identified).toEqual(expected);
     });
     test("it will identify nothing if the list is empty", async () => {
