@@ -22,7 +22,6 @@ import {
   ArcjetRateLimitReason,
   ArcjetRuleResult,
   ArcjetShieldReason,
-  ArcjetBotType,
   ArcjetConclusion,
   ArcjetDecision,
   ArcjetEmailType,
@@ -36,7 +35,6 @@ import {
 import type { IpDetails } from "./proto/decide/v1alpha1/decide_pb.js";
 import {
   BotReason,
-  BotType,
   Conclusion,
   Decision,
   EdgeRuleReason,
@@ -64,46 +62,6 @@ export function ArcjetModeToProtocol(mode: ArcjetMode) {
     default: {
       const _exhaustive: never = mode;
       return Mode.UNSPECIFIED;
-    }
-  }
-}
-
-export function ArcjetBotTypeToProtocol(botType: ArcjetBotType): BotType {
-  switch (botType) {
-    case "NOT_ANALYZED":
-      return BotType.NOT_ANALYZED;
-    case "AUTOMATED":
-      return BotType.AUTOMATED;
-    case "LIKELY_AUTOMATED":
-      return BotType.LIKELY_AUTOMATED;
-    case "LIKELY_NOT_A_BOT":
-      return BotType.LIKELY_NOT_A_BOT;
-    case "VERIFIED_BOT":
-      return BotType.VERIFIED_BOT;
-    default: {
-      const _exhaustive: never = botType;
-      return BotType.UNSPECIFIED;
-    }
-  }
-}
-
-export function ArcjetBotTypeFromProtocol(botType: BotType): ArcjetBotType {
-  switch (botType) {
-    case BotType.UNSPECIFIED:
-      throw new Error("Invalid BotType");
-    case BotType.NOT_ANALYZED:
-      return "NOT_ANALYZED";
-    case BotType.AUTOMATED:
-      return "AUTOMATED";
-    case BotType.LIKELY_AUTOMATED:
-      return "LIKELY_AUTOMATED";
-    case BotType.LIKELY_NOT_A_BOT:
-      return "LIKELY_NOT_A_BOT";
-    case BotType.VERIFIED_BOT:
-      return "VERIFIED_BOT";
-    default: {
-      const _exhaustive: never = botType;
-      throw new Error("Invalid BotType");
     }
   }
 }
@@ -270,14 +228,8 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
     case "bot": {
       const reason = proto.reason.value;
       return new ArcjetBotReason({
-        botType: ArcjetBotTypeFromProtocol(reason.botType),
-        botScore: reason.botScore,
-        userAgentMatch: reason.userAgentMatch,
-        ipHosting: reason.ipHosting,
-        ipVpn: reason.ipVpn,
-        ipProxy: reason.ipProxy,
-        ipTor: reason.ipTor,
-        ipRelay: reason.ipRelay,
+        allowed: reason.allowed,
+        denied: reason.denied,
       });
     }
     case "edgeRule": {
@@ -339,14 +291,8 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
       reason: {
         case: "bot",
         value: new BotReason({
-          botType: ArcjetBotTypeToProtocol(reason.botType),
-          botScore: reason.botScore,
-          userAgentMatch: reason.userAgentMatch,
-          ipHosting: reason.ipHosting,
-          ipVpn: reason.ipVpn,
-          ipProxy: reason.ipProxy,
-          ipTor: reason.ipTor,
-          ipRelay: reason.ipRelay,
+          allowed: reason.allowed,
+          denied: reason.denied,
         }),
       },
     });
@@ -680,25 +626,15 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isBotRule(rule)) {
-    const block = Array.isArray(rule.block)
-      ? rule.block.map(ArcjetBotTypeToProtocol)
-      : [];
-    const add = Array.isArray(rule.add)
-      ? rule.add.map(([key, botType]) => [
-          key,
-          ArcjetBotTypeToProtocol(botType),
-        ])
-      : [];
+    const allow = Array.isArray(rule.allow) ? rule.allow : [];
+    const deny = Array.isArray(rule.deny) ? rule.deny : [];
     return new Rule({
       rule: {
         case: "bots",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          block,
-          patterns: {
-            add: Object.fromEntries(add),
-            remove: rule.remove,
-          },
+          allow,
+          deny,
         },
       },
     });

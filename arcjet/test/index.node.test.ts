@@ -16,7 +16,6 @@ import arcjet, {
   detectBot,
   validateEmail,
   protectSignup,
-  ArcjetBotType,
   ArcjetEmailType,
   ArcjetAllowDecision,
   ArcjetDenyDecision,
@@ -294,7 +293,8 @@ describe("ArcjetDecision", () => {
 
   test("`isBot()` returns true when reason is BOT", () => {
     const reason = new ArcjetBotReason({
-      botType: "AUTOMATED",
+      allowed: [],
+      denied: [],
     });
     expect(reason.isBot()).toEqual(true);
   });
@@ -310,9 +310,8 @@ describe("Primitive > detectBot", () => {
     const [rule] = detectBot();
     expect(rule.type).toEqual("BOT");
     expect(rule).toHaveProperty("mode", "DRY_RUN");
-    expect(rule).toHaveProperty("block", ["AUTOMATED"]);
-    expect(rule).toHaveProperty("add", []);
-    expect(rule).toHaveProperty("remove", []);
+    expect(rule).toHaveProperty("allow", []);
+    expect(rule).toHaveProperty("deny", []);
   });
 
   test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
@@ -324,72 +323,51 @@ describe("Primitive > detectBot", () => {
     expect(rule).toHaveProperty("mode", "DRY_RUN");
   });
 
-  test("allows specifying BotTypes to block", async () => {
-    const options = {
-      block: [
-        ArcjetBotType.LIKELY_AUTOMATED,
-        ArcjetBotType.LIKELY_NOT_A_BOT,
-        ArcjetBotType.NOT_ANALYZED,
-        ArcjetBotType.VERIFIED_BOT,
-      ],
-    };
+  // test("allows specifying BotTypes to block", async () => {
+  //   const options = {
+  //     block: [
+  //       ArcjetBotType.LIKELY_AUTOMATED,
+  //       ArcjetBotType.LIKELY_NOT_A_BOT,
+  //       ArcjetBotType.NOT_ANALYZED,
+  //       ArcjetBotType.VERIFIED_BOT,
+  //     ],
+  //   };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("block", [
-      "LIKELY_AUTOMATED",
-      "LIKELY_NOT_A_BOT",
-      "NOT_ANALYZED",
-      "VERIFIED_BOT",
-    ]);
-  });
+  //   const [rule] = detectBot(options);
+  //   expect(rule.type).toEqual("BOT");
+  //   expect(rule).toHaveProperty("block", [
+  //     "LIKELY_AUTOMATED",
+  //     "LIKELY_NOT_A_BOT",
+  //     "NOT_ANALYZED",
+  //     "VERIFIED_BOT",
+  //   ]);
+  // });
 
-  test("allows specifying `add` patterns that map to BotTypes", async () => {
-    const options = {
-      patterns: {
-        add: {
-          safari: ArcjetBotType.LIKELY_AUTOMATED,
-        },
-      },
-    };
+  // test("allows specifying `add` patterns that map to BotTypes", async () => {
+  //   const options = {
+  //     patterns: {
+  //       add: {
+  //         safari: ArcjetBotType.LIKELY_AUTOMATED,
+  //       },
+  //     },
+  //   };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("add", [["safari", "LIKELY_AUTOMATED"]]);
-  });
+  //   const [rule] = detectBot(options);
+  //   expect(rule.type).toEqual("BOT");
+  //   expect(rule).toHaveProperty("add", [["safari", "LIKELY_AUTOMATED"]]);
+  // });
 
-  test("allows specifying `remove` patterns", async () => {
-    const options = {
-      patterns: {
-        remove: ["^curl"],
-      },
-    };
+  // test("allows specifying `remove` patterns", async () => {
+  //   const options = {
+  //     patterns: {
+  //       remove: ["^curl"],
+  //     },
+  //   };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("remove", ["^curl"]);
-  });
-
-  test("validates that headers is defined", () => {
-    const context = {
-      key: "test-key",
-      fingerprint: "test-fingerprint",
-      runtime: "test",
-      log,
-      characteristics: [],
-      getBody: () => Promise.resolve(undefined),
-    };
-    const details = {
-      headers: new Headers(),
-    };
-
-    const [rule] = detectBot();
-    expect(rule.type).toEqual("BOT");
-    assertIsLocalRule(rule);
-    expect(() => {
-      const _ = rule.validate(context, details);
-    }).not.toThrow();
-  });
+  //   const [rule] = detectBot(options);
+  //   expect(rule.type).toEqual("BOT");
+  //   expect(rule).toHaveProperty("remove", ["^curl"]);
+  // });
 
   test("throws via `validate()` if headers is undefined", () => {
     const context = {
@@ -412,7 +390,7 @@ describe("Primitive > detectBot", () => {
     }).toThrow();
   });
 
-  test("does not analyze if no headers are specified", async () => {
+  test("throws via `validate()` if user-agent header is missing", async () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
@@ -436,253 +414,244 @@ describe("Primitive > detectBot", () => {
     const [rule] = detectBot();
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
-    const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetBotReason({
-        botType: "NOT_ANALYZED",
-      }),
-    });
+    expect(() => {
+      const _ = rule.validate(context, details);
+    }).toThrow();
   });
 
-  test("can be configured for VERIFIED_BOT", async () => {
-    const options = {
-      mode: ArcjetMode.LIVE,
-      block: [
-        // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
-        ArcjetBotType.AUTOMATED,
-        ArcjetBotType.VERIFIED_BOT,
-      ],
-      patterns: {
-        add: {
-          safari: ArcjetBotType.VERIFIED_BOT,
-        },
-      },
-    };
-    const context = {
-      key: "test-key",
-      fingerprint: "test-fingerprint",
-      runtime: "test",
-      log,
-      characteristics: [],
-      getBody: () => Promise.resolve(undefined),
-    };
-    const details = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([
-        [
-          "User-Agent",
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
-        ],
-      ]),
-      cookies: "",
-      query: "",
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-    };
+  // test("can be configured for VERIFIED_BOT", async () => {
+  //   const options = {
+  //     mode: ArcjetMode.LIVE,
+  //     block: [
+  //       // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
+  //       ArcjetBotType.AUTOMATED,
+  //       ArcjetBotType.VERIFIED_BOT,
+  //     ],
+  //     patterns: {
+  //       add: {
+  //         safari: ArcjetBotType.VERIFIED_BOT,
+  //       },
+  //     },
+  //   };
+  //   const context = {
+  //     key: "test-key",
+  //     fingerprint: "test-fingerprint",
+  //     runtime: "test",
+  //     log,
+  //     characteristics: [],
+  //     getBody: () => Promise.resolve(undefined),
+  //   };
+  //   const details = {
+  //     ip: "172.100.1.1",
+  //     method: "GET",
+  //     protocol: "http",
+  //     host: "example.com",
+  //     path: "/",
+  //     headers: new Headers([
+  //       [
+  //         "User-Agent",
+  //         "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
+  //       ],
+  //     ]),
+  //     cookies: "",
+  //     query: "",
+  //     extra: {
+  //       "extra-test": "extra-test-value",
+  //     },
+  //   };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    assertIsLocalRule(rule);
-    const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetBotReason({
-        // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
-        botType: "AUTOMATED",
-        botScore: 1,
-        userAgentMatch: true,
-      }),
-    });
-  });
+  //   const [rule] = detectBot(options);
+  //   expect(rule.type).toEqual("BOT");
+  //   assertIsLocalRule(rule);
+  //   const result = await rule.protect(context, details);
+  //   expect(result).toMatchObject({
+  //     state: "RUN",
+  //     conclusion: "DENY",
+  //     reason: new ArcjetBotReason({
+  //       // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
+  //       botType: "AUTOMATED",
+  //       botScore: 1,
+  //       userAgentMatch: true,
+  //     }),
+  //   });
+  // });
 
-  test("can be configured for LIKELY_NOT_A_BOT", async () => {
-    const options = {
-      mode: ArcjetMode.LIVE,
-      block: [
-        // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
-        ArcjetBotType.AUTOMATED,
-        ArcjetBotType.LIKELY_NOT_A_BOT,
-      ],
-      patterns: {
-        add: {
-          safari: ArcjetBotType.LIKELY_NOT_A_BOT,
-        },
-      },
-    };
-    const context = {
-      key: "test-key",
-      fingerprint: "test-fingerprint",
-      runtime: "test",
-      log,
-      characteristics: [],
-      getBody: () => Promise.resolve(undefined),
-    };
-    const details = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([
-        [
-          "User-Agent",
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
-        ],
-      ]),
-      cookies: "",
-      query: "",
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-    };
+  // test("can be configured for LIKELY_NOT_A_BOT", async () => {
+  //   const options = {
+  //     mode: ArcjetMode.LIVE,
+  //     block: [
+  //       // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
+  //       ArcjetBotType.AUTOMATED,
+  //       ArcjetBotType.LIKELY_NOT_A_BOT,
+  //     ],
+  //     patterns: {
+  //       add: {
+  //         safari: ArcjetBotType.LIKELY_NOT_A_BOT,
+  //       },
+  //     },
+  //   };
+  //   const context = {
+  //     key: "test-key",
+  //     fingerprint: "test-fingerprint",
+  //     runtime: "test",
+  //     log,
+  //     characteristics: [],
+  //     getBody: () => Promise.resolve(undefined),
+  //   };
+  //   const details = {
+  //     ip: "172.100.1.1",
+  //     method: "GET",
+  //     protocol: "http",
+  //     host: "example.com",
+  //     path: "/",
+  //     headers: new Headers([
+  //       [
+  //         "User-Agent",
+  //         "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
+  //       ],
+  //     ]),
+  //     cookies: "",
+  //     query: "",
+  //     extra: {
+  //       "extra-test": "extra-test-value",
+  //     },
+  //   };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    assertIsLocalRule(rule);
-    const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetBotReason({
-        // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
-        botType: "AUTOMATED",
-        botScore: 1,
-        userAgentMatch: true,
-      }),
-    });
-  });
+  //   const [rule] = detectBot(options);
+  //   expect(rule.type).toEqual("BOT");
+  //   assertIsLocalRule(rule);
+  //   const result = await rule.protect(context, details);
+  //   expect(result).toMatchObject({
+  //     state: "RUN",
+  //     conclusion: "DENY",
+  //     reason: new ArcjetBotReason({
+  //       // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
+  //       botType: "AUTOMATED",
+  //       botScore: 1,
+  //       userAgentMatch: true,
+  //     }),
+  //   });
+  // });
 
-  test("can be configured for NOT_ANALYZED", async () => {
-    const options = {
-      mode: ArcjetMode.LIVE,
-      block: [
-        // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
-        ArcjetBotType.AUTOMATED,
-        ArcjetBotType.NOT_ANALYZED,
-      ],
-      patterns: {
-        add: {
-          safari: ArcjetBotType.NOT_ANALYZED,
-        },
-      },
-    };
-    const context = {
-      key: "test-key",
-      fingerprint: "test-fingerprint",
-      runtime: "test",
-      log,
-      characteristics: [],
-      getBody: () => Promise.resolve(undefined),
-    };
-    const details = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([
-        [
-          "User-Agent",
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
-        ],
-      ]),
-      cookies: "",
-      query: "",
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-    };
+  // test("can be configured for NOT_ANALYZED", async () => {
+  //   const options = {
+  //     mode: ArcjetMode.LIVE,
+  //     block: [
+  //       // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
+  //       ArcjetBotType.AUTOMATED,
+  //       ArcjetBotType.NOT_ANALYZED,
+  //     ],
+  //     patterns: {
+  //       add: {
+  //         safari: ArcjetBotType.NOT_ANALYZED,
+  //       },
+  //     },
+  //   };
+  //   const context = {
+  //     key: "test-key",
+  //     fingerprint: "test-fingerprint",
+  //     runtime: "test",
+  //     log,
+  //     characteristics: [],
+  //     getBody: () => Promise.resolve(undefined),
+  //   };
+  //   const details = {
+  //     ip: "172.100.1.1",
+  //     method: "GET",
+  //     protocol: "http",
+  //     host: "example.com",
+  //     path: "/",
+  //     headers: new Headers([
+  //       [
+  //         "User-Agent",
+  //         "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
+  //       ],
+  //     ]),
+  //     cookies: "",
+  //     query: "",
+  //     extra: {
+  //       "extra-test": "extra-test-value",
+  //     },
+  //   };
 
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    assertIsLocalRule(rule);
-    const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetBotReason({
-        // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
-        botType: "AUTOMATED",
-        botScore: 1,
-        userAgentMatch: true,
-      }),
-    });
-  });
+  //   const [rule] = detectBot(options);
+  //   expect(rule.type).toEqual("BOT");
+  //   assertIsLocalRule(rule);
+  //   const result = await rule.protect(context, details);
+  //   expect(result).toMatchObject({
+  //     state: "RUN",
+  //     conclusion: "DENY",
+  //     reason: new ArcjetBotReason({
+  //       // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
+  //       botType: "AUTOMATED",
+  //       botScore: 1,
+  //       userAgentMatch: true,
+  //     }),
+  //   });
+  // });
 
-  test("can be configured for invalid bots", async () => {
-    const context = {
-      key: "test-key",
-      fingerprint: "test-fingerprint",
-      runtime: "test",
-      log,
-      characteristics: [],
-      getBody: () => Promise.resolve(undefined),
-    };
-    const details = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([
-        [
-          "User-Agent",
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
-        ],
-      ]),
-      cookies: "",
-      query: "",
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-    };
+  // test("can be configured for invalid bots", async () => {
+  //   const context = {
+  //     key: "test-key",
+  //     fingerprint: "test-fingerprint",
+  //     runtime: "test",
+  //     log,
+  //     characteristics: [],
+  //     getBody: () => Promise.resolve(undefined),
+  //   };
+  //   const details = {
+  //     ip: "172.100.1.1",
+  //     method: "GET",
+  //     protocol: "http",
+  //     host: "example.com",
+  //     path: "/",
+  //     headers: new Headers([
+  //       [
+  //         "User-Agent",
+  //         "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
+  //       ],
+  //     ]),
+  //     cookies: "",
+  //     query: "",
+  //     extra: {
+  //       "extra-test": "extra-test-value",
+  //     },
+  //   };
 
-    const [rule] = detectBot({
-      mode: ArcjetMode.LIVE,
-      block: [
-        // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
-        ArcjetBotType.AUTOMATED,
-        // @ts-expect-error
-        "SOMETHING_INVALID",
-      ],
-      patterns: {
-        add: {
-          // @ts-expect-error
-          safari: "SOMETHING_INVALID",
-        },
-      },
-    });
-    expect(rule.type).toEqual("BOT");
-    assertIsLocalRule(rule);
-    const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetBotReason({
-        // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
-        botType: "AUTOMATED",
-        botScore: 1,
-        userAgentMatch: true,
-      }),
-    });
-  });
+  //   const [rule] = detectBot({
+  //     mode: ArcjetMode.LIVE,
+  //     block: [
+  //       // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
+  //       ArcjetBotType.AUTOMATED,
+  //       // @ts-expect-error
+  //       "SOMETHING_INVALID",
+  //     ],
+  //     patterns: {
+  //       add: {
+  //         // @ts-expect-error
+  //         safari: "SOMETHING_INVALID",
+  //       },
+  //     },
+  //   });
+  //   expect(rule.type).toEqual("BOT");
+  //   assertIsLocalRule(rule);
+  //   const result = await rule.protect(context, details);
+  //   expect(result).toMatchObject({
+  //     state: "RUN",
+  //     conclusion: "DENY",
+  //     reason: new ArcjetBotReason({
+  //       // TODO: Fix this in the analyze code so it returns the BotType specified via `add`
+  //       botType: "AUTOMATED",
+  //       botScore: 1,
+  //       userAgentMatch: true,
+  //     }),
+  //   });
+  // });
 
   test("denies curl", async () => {
     const options = {
       mode: ArcjetMode.LIVE,
-      block: [
-        ArcjetBotType.AUTOMATED,
-        ArcjetBotType.LIKELY_AUTOMATED,
-        ArcjetBotType.LIKELY_NOT_A_BOT,
-      ],
+      allow: [],
     };
     const context = {
       key: "test-key",
@@ -714,76 +683,72 @@ describe("Primitive > detectBot", () => {
       state: "RUN",
       conclusion: "DENY",
       reason: new ArcjetBotReason({
-        botType: "AUTOMATED",
-        botScore: 1,
-        userAgentMatch: true,
+        allowed: [],
+        denied: ["CURL"],
       }),
     });
   });
 
-  test("denies safari using an add pattern", async () => {
+  // test("denies safari using an add pattern", async () => {
+  //   const options = {
+  //     mode: ArcjetMode.LIVE,
+  //     block: [
+  //       ArcjetBotType.AUTOMATED,
+  //       ArcjetBotType.LIKELY_AUTOMATED,
+  //       ArcjetBotType.LIKELY_NOT_A_BOT,
+  //     ],
+  //     patterns: {
+  //       add: {
+  //         safari: ArcjetBotType.AUTOMATED,
+  //       },
+  //     },
+  //   };
+  //   const context = {
+  //     key: "test-key",
+  //     fingerprint: "test-fingerprint",
+  //     runtime: "test",
+  //     log,
+  //     characteristics: [],
+  //     getBody: () => Promise.resolve(undefined),
+  //   };
+  //   const details = {
+  //     ip: "172.100.1.1",
+  //     method: "GET",
+  //     protocol: "http",
+  //     host: "example.com",
+  //     path: "/",
+  //     headers: new Headers([
+  //       [
+  //         "User-Agent",
+  //         "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
+  //       ],
+  //     ]),
+  //     cookies: "",
+  //     query: "",
+  //     extra: {
+  //       "extra-test": "extra-test-value",
+  //     },
+  //   };
+
+  //   const [rule] = detectBot(options);
+  //   expect(rule.type).toEqual("BOT");
+  //   assertIsLocalRule(rule);
+  //   const result = await rule.protect(context, details);
+  //   expect(result).toMatchObject({
+  //     state: "RUN",
+  //     conclusion: "DENY",
+  //     reason: new ArcjetBotReason({
+  //       botType: "AUTOMATED",
+  //       botScore: 1,
+  //       userAgentMatch: true,
+  //     }),
+  //   });
+  // });
+
+  test("can be configured to allow curl", async () => {
     const options = {
       mode: ArcjetMode.LIVE,
-      block: [
-        ArcjetBotType.AUTOMATED,
-        ArcjetBotType.LIKELY_AUTOMATED,
-        ArcjetBotType.LIKELY_NOT_A_BOT,
-      ],
-      patterns: {
-        add: {
-          safari: ArcjetBotType.AUTOMATED,
-        },
-      },
-    };
-    const context = {
-      key: "test-key",
-      fingerprint: "test-fingerprint",
-      runtime: "test",
-      log,
-      characteristics: [],
-      getBody: () => Promise.resolve(undefined),
-    };
-    const details = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([
-        [
-          "User-Agent",
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
-        ],
-      ]),
-      cookies: "",
-      query: "",
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-    };
-
-    const [rule] = detectBot(options);
-    expect(rule.type).toEqual("BOT");
-    assertIsLocalRule(rule);
-    const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetBotReason({
-        botType: "AUTOMATED",
-        botScore: 1,
-        userAgentMatch: true,
-      }),
-    });
-  });
-
-  test("allows curl using a remove pattern", async () => {
-    const options = {
-      mode: ArcjetMode.LIVE,
-      block: [ArcjetBotType.AUTOMATED, ArcjetBotType.LIKELY_AUTOMATED],
-      patterns: {
-        remove: ["^curl"],
-      },
+      allow: ["CURL"],
     };
     const context = {
       key: "test-key",
@@ -815,8 +780,8 @@ describe("Primitive > detectBot", () => {
       state: "RUN",
       conclusion: "ALLOW",
       reason: new ArcjetBotReason({
-        botScore: 0,
-        botType: "LIKELY_NOT_A_BOT",
+        allowed: ["CURL"],
+        denied: [],
       }),
     });
   });
@@ -1827,6 +1792,7 @@ describe("Products > protectSignup", () => {
       },
       bots: {
         mode: ArcjetMode.DRY_RUN,
+        allow: [],
       },
       email: {
         mode: ArcjetMode.LIVE,
@@ -1861,9 +1827,11 @@ describe("Products > protectSignup", () => {
       bots: [
         {
           mode: "DRY_RUN",
+          allow: [],
         },
         {
           mode: "LIVE",
+          allow: [],
         },
       ],
     });

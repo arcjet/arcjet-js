@@ -4,8 +4,6 @@
 import { describe, expect, test } from "@jest/globals";
 import {
   ArcjetModeToProtocol,
-  ArcjetBotTypeToProtocol,
-  ArcjetBotTypeFromProtocol,
   ArcjetEmailTypeToProtocol,
   ArcjetEmailTypeFromProtocol,
   ArcjetStackToProtocol,
@@ -22,7 +20,6 @@ import {
   ArcjetRuleToProtocol,
 } from "../convert.js";
 import {
-  BotType,
   Conclusion,
   Decision,
   EmailType,
@@ -70,53 +67,6 @@ describe("convert", () => {
         "NOT_VALID",
       ),
     ).toEqual(Mode.UNSPECIFIED);
-  });
-
-  test("ArcjetBotTypeToProtocol", () => {
-    expect(ArcjetBotTypeToProtocol("AUTOMATED")).toEqual(BotType.AUTOMATED);
-    expect(ArcjetBotTypeToProtocol("LIKELY_AUTOMATED")).toEqual(
-      BotType.LIKELY_AUTOMATED,
-    );
-    expect(ArcjetBotTypeToProtocol("LIKELY_NOT_A_BOT")).toEqual(
-      BotType.LIKELY_NOT_A_BOT,
-    );
-    expect(ArcjetBotTypeToProtocol("NOT_ANALYZED")).toEqual(
-      BotType.NOT_ANALYZED,
-    );
-    expect(ArcjetBotTypeToProtocol("VERIFIED_BOT")).toEqual(
-      BotType.VERIFIED_BOT,
-    );
-    expect(
-      ArcjetBotTypeToProtocol(
-        // @ts-expect-error
-        "NOT_VALID",
-      ),
-    ).toEqual(BotType.UNSPECIFIED);
-  });
-
-  test("ArcjetBotTypeFromProtocol", () => {
-    expect(ArcjetBotTypeFromProtocol(BotType.AUTOMATED)).toEqual("AUTOMATED");
-    expect(ArcjetBotTypeFromProtocol(BotType.LIKELY_AUTOMATED)).toEqual(
-      "LIKELY_AUTOMATED",
-    );
-    expect(ArcjetBotTypeFromProtocol(BotType.LIKELY_NOT_A_BOT)).toEqual(
-      "LIKELY_NOT_A_BOT",
-    );
-    expect(ArcjetBotTypeFromProtocol(BotType.NOT_ANALYZED)).toEqual(
-      "NOT_ANALYZED",
-    );
-    expect(ArcjetBotTypeFromProtocol(BotType.VERIFIED_BOT)).toEqual(
-      "VERIFIED_BOT",
-    );
-    expect(() => {
-      ArcjetBotTypeFromProtocol(BotType.UNSPECIFIED);
-    }).toThrow("Invalid BotType");
-    expect(() => {
-      ArcjetBotTypeFromProtocol(
-        // @ts-expect-error
-        99,
-      );
-    }).toThrow("Invalid BotType");
   });
 
   test("ArcjetEmailTypeToProtocol", () => {
@@ -244,14 +194,8 @@ describe("convert", () => {
           reason: {
             case: "bot",
             value: {
-              botType: BotType.AUTOMATED,
-              botScore: 1,
-              userAgentMatch: true,
-              ipHosting: false,
-              ipVpn: false,
-              ipProxy: false,
-              ipTor: false,
-              ipRelay: false,
+              allowed: [],
+              denied: [],
             },
           },
         }),
@@ -432,14 +376,8 @@ describe("convert", () => {
     expect(
       ArcjetReasonToProtocol(
         new ArcjetBotReason({
-          botType: "AUTOMATED",
-          botScore: 1,
-          userAgentMatch: true,
-          ipHosting: false,
-          ipVpn: false,
-          ipProxy: false,
-          ipTor: false,
-          ipRelay: false,
+          allowed: ["GOOGLE_CRAWLER"],
+          denied: [],
         }),
       ),
     ).toEqual(
@@ -447,14 +385,8 @@ describe("convert", () => {
         reason: {
           case: "bot",
           value: {
-            botType: BotType.AUTOMATED,
-            botScore: 1,
-            userAgentMatch: true,
-            ipHosting: false,
-            ipVpn: false,
-            ipProxy: false,
-            ipTor: false,
-            ipRelay: false,
+            allowed: ["GOOGLE_CRAWLER"],
+            denied: [],
           },
         },
       }),
@@ -752,35 +684,8 @@ describe("convert", () => {
           case: "bots",
           value: {
             mode: Mode.DRY_RUN,
-            patterns: {
-              add: {},
-              remove: [],
-            },
-          },
-        },
-      }),
-    );
-    expect(
-      ArcjetRuleToProtocol(<ArcjetBotRule<{}>>{
-        type: "BOT",
-        mode: "DRY_RUN",
-        priority: 1,
-        block: ["AUTOMATED"],
-        add: [["chrome", "LIKELY_NOT_A_BOT"]],
-      }),
-    ).toEqual(
-      new Rule({
-        rule: {
-          case: "bots",
-          value: {
-            mode: Mode.DRY_RUN,
-            block: [BotType.AUTOMATED],
-            patterns: {
-              add: {
-                chrome: BotType.LIKELY_NOT_A_BOT,
-              },
-              remove: [],
-            },
+            allow: [],
+            deny: [],
           },
         },
       }),

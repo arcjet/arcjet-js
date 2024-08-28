@@ -6,25 +6,6 @@
 import { proto3, Timestamp } from "@bufbuild/protobuf";
 
 /**
- * Represents whether we think the client is a bot or not. This should be used
- * alongside the bot score which represents the level of certainty of our
- * detection.
- *
- * @generated from enum proto.decide.v1alpha1.BotType
- */
-export const BotType = /*@__PURE__*/ proto3.makeEnum(
-  "proto.decide.v1alpha1.BotType",
-  [
-    {no: 0, name: "BOT_TYPE_UNSPECIFIED", localName: "UNSPECIFIED"},
-    {no: 1, name: "BOT_TYPE_NOT_ANALYZED", localName: "NOT_ANALYZED"},
-    {no: 2, name: "BOT_TYPE_AUTOMATED", localName: "AUTOMATED"},
-    {no: 3, name: "BOT_TYPE_LIKELY_AUTOMATED", localName: "LIKELY_AUTOMATED"},
-    {no: 4, name: "BOT_TYPE_LIKELY_NOT_A_BOT", localName: "LIKELY_NOT_A_BOT"},
-    {no: 5, name: "BOT_TYPE_VERIFIED_BOT", localName: "VERIFIED_BOT"},
-  ],
-);
-
-/**
  * Represents the type of email address submitted.
  *
  * @generated from enum proto.decide.v1alpha1.EmailType
@@ -213,14 +194,8 @@ export const EdgeRuleReason = /*@__PURE__*/ proto3.makeMessageType(
 export const BotReason = /*@__PURE__*/ proto3.makeMessageType(
   "proto.decide.v1alpha1.BotReason",
   () => [
-    { no: 1, name: "bot_type", kind: "enum", T: proto3.getEnumType(BotType) },
-    { no: 2, name: "bot_score", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 3, name: "user_agent_match", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 5, name: "ip_hosting", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 6, name: "ip_vpn", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 7, name: "ip_proxy", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 8, name: "ip_tor", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 9, name: "ip_relay", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 10, name: "allowed", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 11, name: "denied", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ],
 );
 
@@ -317,21 +292,9 @@ export const BotRule = /*@__PURE__*/ proto3.makeMessageType(
   "proto.decide.v1alpha1.BotRule",
   () => [
     { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
-    { no: 2, name: "block", kind: "enum", T: proto3.getEnumType(BotType), repeated: true },
-    { no: 3, name: "patterns", kind: "message", T: BotRule_Patterns },
+    { no: 4, name: "allow", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 5, name: "deny", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ],
-);
-
-/**
- * @generated from message proto.decide.v1alpha1.BotRule.Patterns
- */
-export const BotRule_Patterns = /*@__PURE__*/ proto3.makeMessageType(
-  "proto.decide.v1alpha1.BotRule.Patterns",
-  () => [
-    { no: 1, name: "add", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "enum", T: proto3.getEnumType(BotType)} },
-    { no: 2, name: "remove", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
-  ],
-  {localName: "BotRule_Patterns"},
 );
 
 /**

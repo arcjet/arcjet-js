@@ -3,26 +3,6 @@ export { SensitiveInfoEntity };
 /**
 * # Variants
 * 
-* ## `"unspecified"`
-* 
-* ## `"not-analyzed"`
-* 
-* ## `"automated"`
-* 
-* ## `"likely-automated"`
-* 
-* ## `"likely-not-a-bot"`
-* 
-* ## `"verified-bot"`
-*/
-export type BotType = 'unspecified' | 'not-analyzed' | 'automated' | 'likely-automated' | 'likely-not-a-bot' | 'verified-bot';
-export interface BotDetectionResult {
-  botType: BotType,
-  botScore: number,
-}
-/**
-* # Variants
-* 
 * ## `"valid"`
 * 
 * ## `"invalid"`
@@ -60,6 +40,28 @@ export interface SensitiveInfoResult {
   allowed: Array<DetectedSensitiveInfoEntity>,
   denied: Array<DetectedSensitiveInfoEntity>,
 }
+export type BotEntity = string;
+export interface AllowedBotConfig {
+  entities: Array<BotEntity>,
+  skipCustomDetect: boolean,
+}
+export interface DeniedBotConfig {
+  entities: Array<BotEntity>,
+  skipCustomDetect: boolean,
+}
+export type BotConfig = BotConfigAllowedBotConfig | BotConfigDeniedBotConfig;
+export interface BotConfigAllowedBotConfig {
+  tag: 'allowed-bot-config',
+  val: AllowedBotConfig,
+}
+export interface BotConfigDeniedBotConfig {
+  tag: 'denied-bot-config',
+  val: DeniedBotConfig,
+}
+export interface BotResult {
+  allowed: Array<BotEntity>,
+  denied: Array<BotEntity>,
+}
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
 import { ArcjetJsReqLogger } from './interfaces/arcjet-js-req-logger.js';
 import { ArcjetJsReqSensitiveInformationIdentifier } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
@@ -69,7 +71,7 @@ export interface ImportObject {
   'arcjet:js-req/sensitive-information-identifier': typeof ArcjetJsReqSensitiveInformationIdentifier,
 }
 export interface Root {
-  detectBot(headers: string, patternsAdd: string, patternsRemove: string): BotDetectionResult,
+  detectBot(request: string, options: BotConfig): BotResult,
   generateFingerprint(request: string, characteristics: Array<string>): string,
   isValidEmail(candidate: string, options: EmailValidationConfig): EmailValidationResult,
   detectSensitiveInfo(content: string, options: SensitiveInfoConfig): SensitiveInfoResult,
