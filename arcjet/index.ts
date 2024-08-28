@@ -217,6 +217,20 @@ function toString(value: unknown) {
   return "<unsupported value>";
 }
 
+function toAnalyzeRequest(request: Partial<ArcjetRequestDetails>) {
+  const headers: Record<string, string> = {};
+  if (typeof request.headers !== "undefined") {
+    for (const [key, value] of request.headers.entries()) {
+      headers[key] = value;
+    }
+  }
+
+  return {
+    ...request,
+    headers,
+  };
+}
+
 function extraProps<Props extends PlainObject>(
   details: ArcjetRequest<Props>,
 ): Record<string, string> {
@@ -1157,7 +1171,10 @@ export default function arcjet<
       ...ctx,
     };
 
-    const fingerprint = await analyze.generateFingerprint(baseContext, details);
+    const fingerprint = await analyze.generateFingerprint(
+      baseContext,
+      toAnalyzeRequest(details),
+    );
     log.debug("fingerprint (%s): %s", rt, fingerprint);
     log.timeEnd?.("fingerprint");
 

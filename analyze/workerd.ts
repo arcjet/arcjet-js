@@ -1,4 +1,4 @@
-import type { ArcjetLogger, ArcjetRequestDetails } from "@arcjet/protocol";
+import type { ArcjetLogger } from "@arcjet/protocol";
 
 import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
@@ -17,6 +17,18 @@ import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interface
 import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm";
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm";
+
+type AnalyzeRequest = {
+  ip?: string;
+  method?: string;
+  protocol?: string;
+  host?: string;
+  path?: string;
+  headers?: Record<string, string>;
+  cookies?: string;
+  query?: string;
+  extra?: Record<string, string>;
+};
 
 const FREE_EMAIL_PROVIDERS = [
   "gmail.com",
@@ -130,7 +142,7 @@ export {
  */
 export async function generateFingerprint(
   context: AnalyzeContext,
-  request: Partial<ArcjetRequestDetails>,
+  request: AnalyzeRequest,
 ): Promise<string> {
   const analyze = await init(context);
 
