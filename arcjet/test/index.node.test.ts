@@ -3390,7 +3390,8 @@ describe("SDK", () => {
     expect(client.decide).toHaveBeenCalledTimes(1);
     expect(client.decide).toHaveBeenCalledWith(
       expect.objectContaining({
-        fingerprint: "fp::2::6f3a3854134fe3d20fe56387bdcb594f18b182683424757b88da75e8f13b92bd",
+        fingerprint:
+          "fp::2::6f3a3854134fe3d20fe56387bdcb594f18b182683424757b88da75e8f13b92bd",
       }),
       expect.anything(),
       expect.anything(),
