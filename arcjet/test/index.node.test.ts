@@ -3352,6 +3352,50 @@ describe("SDK", () => {
     );
   });
 
+  test("header characteristics are used to generate fingerprints", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: ['http.request.headers["abcxyz"]'],
+      rules: [],
+      client,
+      log,
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["abcxyz", "test1234"]]),
+    };
+
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const _ = await aj.protect(context, request);
+
+    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.decide).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fingerprint: "fp::2::6f3a3854134fe3d20fe56387bdcb594f18b182683424757b88da75e8f13b92bd",
+      }),
+      expect.anything(),
+      expect.anything(),
+    );
+  });
   test("global characteristics are propagated if they aren't separately specified in fixedWindow", async () => {
     const client = {
       decide: jest.fn(async () => {
