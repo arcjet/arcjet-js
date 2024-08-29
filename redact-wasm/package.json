@@ -50,9 +50,7 @@
   "sideEffects": [
     "./wasm/arcjet_analyze_bindings_redact_bg.js"
   ],
-  "dependencies": {
-    "@arcjet/protocol": "1.0.0-alpha.21"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.21",
     "@arcjet/rollup-config": "1.0.0-alpha.21",
