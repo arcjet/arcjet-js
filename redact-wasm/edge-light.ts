@@ -9,7 +9,7 @@ import type {
 import componentCoreWasm from "./wasm/arcjet_analyze_bindings_redact.component.core.wasm?module";
 import componentCore2Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core2.wasm?module";
 import componentCore3Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core3.wasm?module";
-import { ArcjetRedactCustomRedact } from "./wasm/interfaces/arcjet-redact-custom-redact.js";
+import type { ArcjetRedactCustomRedact } from "./wasm/interfaces/arcjet-redact-custom-redact.js";
 
 async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   if (path === "arcjet_analyze_bindings_redact.component.core.wasm") {
@@ -24,8 +24,6 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
 
   throw new Error(`Unknown path: ${path}`);
 }
-
-function noOpFn(): any {}
 
 export async function initializeWasm(
   detect: CustomDetect,

@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/redact-wasm",
-  "version": "1.0.0-alpha.21",
-  "description": "Arcjet local analysis engine",
+  "version": "1.0.0-alpha.22",
+  "description": "Arcjet PII identification and redaction engine.",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
@@ -47,17 +47,14 @@
     "pretest": "npm run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
-  "sideEffects": [
-    "./wasm/arcjet_analyze_bindings_redact_bg.js"
-  ],
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.21",
-    "@arcjet/rollup-config": "1.0.0-alpha.21",
-    "@arcjet/tsconfig": "1.0.0-alpha.21",
-    "@bytecodealliance/jco": "1.4.3",
+    "@arcjet/eslint-config": "1.0.0-alpha.22",
+    "@arcjet/rollup-config": "1.0.0-alpha.22",
+    "@arcjet/tsconfig": "1.0.0-alpha.22",
+    "@bytecodealliance/jco": "1.4.4",
     "@jest/globals": "29.7.0",
-    "@rollup/wasm-node": "4.20.0",
+    "@rollup/wasm-node": "4.21.1",
     "@types/node": "18.18.0",
     "jest": "29.7.0",
     "typescript": "5.5.4"

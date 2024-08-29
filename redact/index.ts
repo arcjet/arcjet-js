@@ -1,4 +1,5 @@
-import { initializeWasm, type SensitiveInfoEntity } from "@arcjet/redact-wasm";
+import { initializeWasm } from "@arcjet/redact-wasm";
+import type { SensitiveInfoEntity } from "@arcjet/redact-wasm";
 
 export type ArcjetSensitiveInfoType =
   | "email"
@@ -6,7 +7,9 @@ export type ArcjetSensitiveInfoType =
   | "ip-address"
   | "credit-card-number";
 
-type Replace = (identifiedType: string) => string | undefined;
+type ReplaceSensitiveInfoEntities<T> = (
+  identifiedType: ArcjetSensitiveInfoType | T,
+) => string | undefined;
 
 type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
@@ -21,6 +24,7 @@ type SensitiveInfoEntities<
 
 type RedactOptions<
   Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  Replace extends ReplaceSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 > = {
   allow?: never;
@@ -33,7 +37,10 @@ type RedactOptions<
 function userEntitiesToWasm<Custom extends string>(
   entity: ArcjetSensitiveInfoType | Custom,
 ) {
-  // TODO: Make these the same as analyze.js
+  if (typeof entity !== "string") {
+    throw new Error("Redaction entities must be a string");
+  }
+
   if (entity === "email") {
     return { tag: "email" as const };
   }
@@ -85,7 +92,12 @@ function performReplacementInText(
   return text.substring(0, start) + replacement + text.substring(end);
 }
 
-function noOpFn(..._args: any[]): any {}
+function noOpDetect(_tokens: string[]): Array<SensitiveInfoEntity | undefined> {
+  return [];
+}
+function noOpReplace(_input: SensitiveInfoEntity): string | undefined {
+  return undefined;
+}
 
 interface RedactedSensitiveInfoEntity {
   original: string;
@@ -97,13 +109,14 @@ interface RedactedSensitiveInfoEntity {
 
 async function callRedactWasm<
   Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  Replace extends ReplaceSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 >(
   candidate: string,
-  options: RedactOptions<Detect, CustomEntities>,
+  options: RedactOptions<Detect, Replace, CustomEntities>,
 ): Promise<RedactedSensitiveInfoEntity[]> {
-  let convertedDetect = noOpFn;
-  if (typeof options.detect !== "undefined") {
+  let convertedDetect = noOpDetect;
+  if (typeof options.detect === "function") {
     const detect = options.detect;
     convertedDetect = (tokens: string[]) => {
       return detect(tokens)
@@ -112,27 +125,32 @@ async function callRedactWasm<
     };
   }
 
-  let convertedRedact = noOpFn;
-  if (typeof options.replace !== "undefined") {
+  let convertedReplace = noOpReplace;
+  if (typeof options.replace === "function") {
     const replace = options.replace;
-    convertedRedact = (identifiedType: SensitiveInfoEntity) => {
-      return replace(wasmEntitiesToString(identifiedType));
+    convertedReplace = (identifiedType: SensitiveInfoEntity) => {
+      // We need to use an `as` here because the Wasm generated types just use `string` for custom.
+      return replace(
+        wasmEntitiesToString(identifiedType) as
+          | CustomEntities
+          | ArcjetSensitiveInfoType,
+      );
     };
   }
 
-  const wasm = await initializeWasm(convertedDetect, convertedRedact);
-
-  const skipCustomDetect = options.detect === undefined;
-  const skipCustomRedact = options.redact === undefined;
-
-  const config = {
-    entities: options.redact.map(userEntitiesToWasm),
-    contextWindowSize: options.contextWindowSize,
-    skipCustomDetect,
-    skipCustomRedact,
-  };
+  const wasm = await initializeWasm(convertedDetect, convertedReplace);
 
   if (typeof wasm !== "undefined") {
+    const skipCustomDetect = typeof options.detect !== "function";
+    const skipCustomRedact = typeof options.replace !== "function";
+
+    const config = {
+      entities: options.redact.map(userEntitiesToWasm),
+      contextWindowSize: options.contextWindowSize,
+      skipCustomDetect,
+      skipCustomRedact,
+    };
+
     return wasm.redact(candidate, config).map((e) => {
       return {
         ...e,
@@ -141,7 +159,7 @@ async function callRedactWasm<
     });
   } else {
     throw new Error(
-      "redact failed to run because wasm is not supported in this enviornment",
+      "redact failed to run because Wasm is not supported in this environment",
     );
   }
 }
@@ -150,25 +168,24 @@ type Unredact = (input: string) => string;
 
 export async function redact<
   Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  Replace extends ReplaceSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
 >(
   candidate: string,
-  options: RedactOptions<Detect, CustomEntities>,
+  options: RedactOptions<Detect, Replace, CustomEntities>,
 ): Promise<[string, Unredact]> {
   const redactions = await callRedactWasm(candidate, options);
 
-  let extraOffset = 0;
+  // Need to apply the redactions in reverse order so that the offsets aren't changed
+  // when we redact with strings that are longer/shorter than the original.
+  redactions.reverse();
   for (const redaction of redactions) {
     candidate = performReplacementInText(
       candidate,
       redaction.redacted,
-      redaction.start + extraOffset,
-      redaction.end + extraOffset,
+      redaction.start,
+      redaction.end,
     );
-
-    // We need to track an extra offset because the indices are relative to the original text.
-    // When we make our first replacement we shift all subsequent replacements, and this needs to be accounted for.
-    extraOffset += redaction.redacted.length - redaction.original.length;
   }
 
   function unredact(input: string): string {

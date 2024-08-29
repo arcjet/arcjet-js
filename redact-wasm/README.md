@@ -5,20 +5,16 @@
   </picture>
 </a>
 
-# `@arcjet/analyze`
+# `@arcjet/redact-wasm`
 
 <p>
-  <a href="https://www.npmjs.com/package/@arcjet/analyze">
+  <a href="https://www.npmjs.com/package/@arcjet/redact-wasm">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/%40arcjet%2Fanalyze?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
-      <img alt="npm badge" src="https://img.shields.io/npm/v/%40arcjet%2Fanalyze?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
+      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/%40arcjet%2Fredact-wasm?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
+      <img alt="npm badge" src="https://img.shields.io/npm/v/%40arcjet%2Fredact-wasm?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
     </picture>
   </a>
 </p>
-
-[Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Implement rate limiting, bot protection, email verification, and defense
-against common attacks.
 
 This is the [Arcjet][arcjet] Redaction library PII detection engine.
 
@@ -28,24 +24,12 @@ This is the [Arcjet][arcjet] Redaction library PII detection engine.
 npm install -S @arcjet/redact-wasm
 ```
 
-## Example
-
-```ts
-import { generateFingerprint, isValidEmail } from "@arcjet/analyze";
-
-const fingerprint = generateFingerprint("127.0.0.1");
-console.log("fingerprint: ", fingerprint);
-
-const valid = isValidEmail("hello@example.com");
-console.log("is email valid?", valid);
-```
-
 ## Implementation
 
 This package provides pii identification logic implemented as a WebAssembly module which
 will run local analysis on the provided string.
 
-The [arcjet.wasm.js](./wasm/arcjet_analyze_bindings_redact.component.js) file contains the binary inlined as
+The [Wasm](./wasm/arcjet_analyze_bindings_redact.component.js) file contains the binary inlined as
 a base64 [Data URL][mdn-data-url] with the `application/wasm` MIME type.
 
 This was chosen to save on storage space over inlining the file directly as a

@@ -5,13 +5,13 @@
   </picture>
 </a>
 
-# `arcjet`
+# `@arcjet/redact`
 
 <p>
-  <a href="https://www.npmjs.com/package/arcjet">
+  <a href="https://www.npmjs.com/package/@arcjet/redact">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/arcjet?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
-      <img alt="npm badge" src="https://img.shields.io/npm/v/arcjet?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
+      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/%40arcjet%2Fredact?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
+      <img alt="npm badge" src="https://img.shields.io/npm/v/%40arcjet%2Fredact?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
     </picture>
   </a>
 </p>
@@ -20,12 +20,7 @@
 code. Implement rate limiting, bot protection, email verification, and defense
 against common attacks.
 
-This is the [Arcjet][arcjet] TypeScript and JavaScript sensitive information
-detection and redaction library.
-
-## Getting started
-
-Visit [docs.arcjet.com](https://docs.arcjet.com) to get started.
+This is the [Arcjet][arcjet] TypeScript and JavaScript sensitive information redaction library.
 
 ## Installation
 
@@ -36,15 +31,14 @@ npm install -S @arcjet/redact
 ## Example
 
 ```typescript
-const session = new RedactSession({ redact: ["email", "phone-number"] });
 const text = "Hi, my name is John and my email adress is john@example.com";
-const redacted = await session.redact(text);
+const [redacted, unredact] = await redact(text, {
+  redact: ["email", "phone-number"],
+});
 console.log(redacted);
-// Hi, my name is John and my email address is <REDACTED INFO #0>
+// Hi, my name is John and my email address is <Redacted email #0>
 
-const unredacted = await session.unredact(
-  "Your email address is <REDACTED INFO #0>",
-);
+const unredacted = unredact("Your email address is <Redacted email #0>");
 console.log(unredacted); // Your email address is john@example.com
 ```
 
