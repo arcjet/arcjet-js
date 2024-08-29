@@ -24,6 +24,38 @@ This is the [Arcjet][arcjet] Redaction library PII detection engine.
 npm install -S @arcjet/redact-wasm
 ```
 
+## Example
+
+```ts
+import { initializeWasm } from "@arcjet/redact-wasm";
+import type { SensitiveInfoEntity } from "@arcjet/redact-wasm";
+
+function noOpDetect(_tokens: string[]): Array<SensitiveInfoEntity | undefined> {
+  return [];
+}
+function noOpReplace(_input: SensitiveInfoEntity): string | undefined {
+  return undefined;
+}
+
+const wasm = await initializeWasm(noOpDetect, noOpReplace);
+
+// If WebAssembly isn't available in the environment then it will be undefined.
+if (typeof wasm !== "undefined") {
+  const config = {
+    entities: [],
+    contextWindowSize: 1,
+    skipCustomDetect: true,
+    skipCustomRedact: true,
+  };
+
+  wasm.redact("I am a string", config);
+} else {
+  throw new Error(
+    "redact failed to run because Wasm is not supported in this environment",
+  );
+}
+```
+
 ## Implementation
 
 This package provides pii identification logic implemented as a WebAssembly module which
