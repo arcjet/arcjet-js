@@ -5,10 +5,10 @@
   "engines": {
     "node": ">=18"
   },
+  "packageManager": "npm@10.8.1",
   "workspaces": [
     "*"
   ],
-  "packageManager": "npm@10.8.1",
   "scripts": {
     "prepare": "turbo run build",
     "lint": "turbo run lint",
