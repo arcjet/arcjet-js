@@ -47,9 +47,6 @@
     "pretest": "npm run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
-  "sideEffects": [
-    "./wasm/arcjet_analyze_js_req_bg.js"
-  ],
   "dependencies": {
     "@arcjet/protocol": "1.0.0-alpha.22"
   },
