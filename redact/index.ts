@@ -7,36 +7,32 @@ export type ArcjetSensitiveInfoType =
   | "ip-address"
   | "credit-card-number";
 
-type ReplaceSensitiveInfoEntities<T> = (
-  identifiedType: ArcjetSensitiveInfoType | T,
-) => string | undefined;
-
 type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
 ) => Array<ArcjetSensitiveInfoType | T | undefined>;
 
-type SensitiveInfoEntities<
-  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
-  CustomEntities extends string,
-> = Array<
-  ArcjetSensitiveInfoType | Exclude<ReturnType<Detect>[number], undefined>
+type ValidEntities<Detect> = Array<
+  // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/
+  // Conditional types distribute over unions. If you have ((string | undefined)
+  // extends undefined ? 1 : 0) it is evaluated separately for each member of
+  // the union, then union-ed together again. The result is (string extends
+  // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
+  // to 0 | 1
+  undefined extends Detect
+    ? ArcjetSensitiveInfoType
+    : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
+      ? ArcjetSensitiveInfoType | CustomEntities
+      : never
 >;
 
-type RedactOptions<
-  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
-  Replace extends ReplaceSensitiveInfoEntities<CustomEntities>,
-  CustomEntities extends string,
-> = {
-  allow?: never;
-  redact: SensitiveInfoEntities<Detect, CustomEntities>;
+export type RedactOptions<Detect> = {
+  redact?: ValidEntities<Detect>;
   contextWindowSize?: number;
   detect?: Detect;
-  replace?: Replace;
+  replace?: (entity: ValidEntities<Detect>[number]) => string | undefined;
 };
 
-function userEntitiesToWasm<Custom extends string>(
-  entity: ArcjetSensitiveInfoType | Custom,
-) {
+function userEntitiesToWasm(entity: unknown) {
   if (typeof entity !== "string") {
     throw new Error("Redaction entities must be a string");
   }
@@ -63,7 +59,7 @@ function userEntitiesToWasm<Custom extends string>(
   };
 }
 
-function wasmEntitiesToString(entity: SensitiveInfoEntity): string {
+function wasmEntitiesToString(entity: SensitiveInfoEntity) {
   if (entity.tag === "email") {
     return "email";
   }
@@ -108,12 +104,11 @@ interface RedactedSensitiveInfoEntity {
 }
 
 async function callRedactWasm<
-  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
-  Replace extends ReplaceSensitiveInfoEntities<CustomEntities>,
-  CustomEntities extends string,
+  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
+  const CustomEntities extends string,
 >(
   candidate: string,
-  options: RedactOptions<Detect, Replace, CustomEntities>,
+  options: RedactOptions<Detect>,
 ): Promise<RedactedSensitiveInfoEntity[]> {
   let convertedDetect = noOpDetect;
   if (typeof options.detect === "function") {
@@ -129,11 +124,9 @@ async function callRedactWasm<
   if (typeof options.replace === "function") {
     const replace = options.replace;
     convertedReplace = (identifiedType: SensitiveInfoEntity) => {
-      // We need to use an `as` here because the Wasm generated types just use `string` for custom.
       return replace(
-        wasmEntitiesToString(identifiedType) as
-          | CustomEntities
-          | ArcjetSensitiveInfoType,
+        // @ts-ignore because we know this is coming from Wasm
+        wasmEntitiesToString(identifiedType),
       );
     };
   }
@@ -145,7 +138,9 @@ async function callRedactWasm<
     const skipCustomRedact = typeof options.replace !== "function";
 
     const config = {
-      entities: options.redact.map(userEntitiesToWasm),
+      entities: Array.isArray(options.redact)
+        ? options.redact.map(userEntitiesToWasm)
+        : [],
       contextWindowSize: options.contextWindowSize,
       skipCustomDetect,
       skipCustomRedact,
@@ -167,12 +162,11 @@ async function callRedactWasm<
 type Unredact = (input: string) => string;
 
 export async function redact<
-  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
-  Replace extends ReplaceSensitiveInfoEntities<CustomEntities>,
-  CustomEntities extends string,
+  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
+  const CustomEntities extends string,
 >(
   candidate: string,
-  options: RedactOptions<Detect, Replace, CustomEntities>,
+  options: RedactOptions<Detect>,
 ): Promise<[string, Unredact]> {
   const redactions = await callRedactWasm(candidate, options);
 

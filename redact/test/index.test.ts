@@ -42,7 +42,7 @@ describe("ArcjetRedact", () => {
       const [redacted] = await redact(text, {
         redact: ["my-custom-entity"],
         contextWindowSize: 1,
-        detect: (tokens) => {
+        detect: (tokens: string[]) => {
           if (tokens[0] === "phone") {
             return ["my-custom-entity"];
           } else {
@@ -60,7 +60,7 @@ describe("ArcjetRedact", () => {
       const [redacted] = await redact(text, {
         redact: ["my-custom-entity"],
         contextWindowSize: 1,
-        detect: (tokens) => {
+        detect: (tokens: string[]) => {
           if (tokens[0] === "phone") {
             return ["my-custom-entity"];
           } else {
