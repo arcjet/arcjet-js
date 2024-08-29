@@ -30,22 +30,14 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
   const module1 = getCoreModule('arcjet_analyze_bindings_redact.component.core2.wasm');
   const module2 = getCoreModule('arcjet_analyze_bindings_redact.component.core3.wasm');
   
-  const { debug } = imports['arcjet:sensitive-info/logger'];
-  const { detect } = imports['arcjet:sensitive-info/sensitive-information-identifier'];
+  const { detectSensitiveInfo, redactSensitiveInfo } = imports['arcjet:redact/custom-redact'];
   let gen = (function* init () {
     let exports0;
     let exports1;
     let memory0;
     let realloc0;
     
-    function trampoline0(arg0, arg1) {
-      var ptr0 = arg0;
-      var len0 = arg1;
-      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
-      debug(result0);
-    }
-    
-    function trampoline1(arg0, arg1, arg2) {
+    function trampoline0(arg0, arg1, arg2) {
       var len1 = arg1;
       var base1 = arg0;
       var result1 = [];
@@ -56,7 +48,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
         result1.push(result0);
       }
-      const ret = detect(result1);
+      const ret = detectSensitiveInfo(result1);
       var vec5 = ret;
       var len5 = vec5.length;
       var result5 = realloc0(0, 0, 4, len5 * 16);
@@ -104,15 +96,68 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       dataView(memory0).setInt32(arg2 + 4, len5, true);
       dataView(memory0).setInt32(arg2 + 0, result5, true);
     }
+    
+    function trampoline1(arg0, arg1, arg2, arg3) {
+      let variant1;
+      switch (arg0) {
+        case 0: {
+          variant1= {
+            tag: 'email',
+          };
+          break;
+        }
+        case 1: {
+          variant1= {
+            tag: 'phone-number',
+          };
+          break;
+        }
+        case 2: {
+          variant1= {
+            tag: 'ip-address',
+          };
+          break;
+        }
+        case 3: {
+          variant1= {
+            tag: 'credit-card-number',
+          };
+          break;
+        }
+        case 4: {
+          var ptr0 = arg1;
+          var len0 = arg2;
+          var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+          variant1= {
+            tag: 'custom',
+            val: result0
+          };
+          break;
+        }
+        default: {
+          throw new TypeError('invalid variant discriminant for SensitiveInfoEntity');
+        }
+      }
+      const ret = redactSensitiveInfo(variant1);
+      var variant3 = ret;
+      if (variant3 === null || variant3=== undefined) {
+        dataView(memory0).setInt8(arg3 + 0, 0, true);
+      } else {
+        const e = variant3;
+        dataView(memory0).setInt8(arg3 + 0, 1, true);
+        var ptr2 = utf8Encode(e, realloc0, memory0);
+        var len2 = utf8EncodedLen;
+        dataView(memory0).setInt32(arg3 + 8, len2, true);
+        dataView(memory0).setInt32(arg3 + 4, ptr2, true);
+      }
+    }
     let postReturn0;
     Promise.all([module0, module1, module2]).catch(() => {});
     ({ exports: exports0 } = yield instantiateCore(yield module1));
     ({ exports: exports1 } = yield instantiateCore(yield module0, {
-      'arcjet:sensitive-info/logger': {
-        debug: exports0['0'],
-      },
-      'arcjet:sensitive-info/sensitive-information-identifier': {
-        detect: exports0['1'],
+      'arcjet:redact/custom-redact': {
+        'detect-sensitive-info': exports0['0'],
+        'redact-sensitive-info': exports0['1'],
       },
     }));
     memory0 = exports1.memory;
@@ -124,12 +169,12 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         '1': trampoline1,
       },
     }));
-    postReturn0 = exports1['cabi_post_detect-sensitive-info'];
+    postReturn0 = exports1.cabi_post_redact;
     
-    function detectSensitiveInfo(arg0, arg1) {
+    function redact(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
-      var {entities: v1_0, contextWindowSize: v1_1, skipCustomDetect: v1_2 } = arg1;
+      var {entities: v1_0, contextWindowSize: v1_1, skipCustomDetect: v1_2, skipCustomRedact: v1_3 } = arg1;
       var vec4 = v1_0;
       var len4 = vec4.length;
       var result4 = realloc0(0, 0, 4, len4 * 12);
@@ -178,45 +223,51 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         variant5_0 = 1;
         variant5_1 = toUint32(e);
       }
-      const ret = exports1['detect-sensitive-info'](ptr0, len0, result4, len4, variant5_0, variant5_1, v1_2 ? 1 : 0);
-      var len8 = dataView(memory0).getInt32(ret + 4, true);
-      var base8 = dataView(memory0).getInt32(ret + 0, true);
-      var result8 = [];
-      for (let i = 0; i < len8; i++) {
-        const base = base8 + i * 20;
-        let variant7;
-        switch (dataView(memory0).getUint8(base + 8, true)) {
+      const ret = exports1.redact(ptr0, len0, result4, len4, variant5_0, variant5_1, v1_2 ? 1 : 0, v1_3 ? 1 : 0);
+      var len10 = dataView(memory0).getInt32(ret + 4, true);
+      var base10 = dataView(memory0).getInt32(ret + 0, true);
+      var result10 = [];
+      for (let i = 0; i < len10; i++) {
+        const base = base10 + i * 36;
+        var ptr6 = dataView(memory0).getInt32(base + 0, true);
+        var len6 = dataView(memory0).getInt32(base + 4, true);
+        var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
+        var ptr7 = dataView(memory0).getInt32(base + 8, true);
+        var len7 = dataView(memory0).getInt32(base + 12, true);
+        var result7 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr7, len7));
+        let variant9;
+        switch (dataView(memory0).getUint8(base + 24, true)) {
           case 0: {
-            variant7= {
+            variant9= {
               tag: 'email',
             };
             break;
           }
           case 1: {
-            variant7= {
+            variant9= {
               tag: 'phone-number',
             };
             break;
           }
           case 2: {
-            variant7= {
+            variant9= {
               tag: 'ip-address',
             };
             break;
           }
           case 3: {
-            variant7= {
+            variant9= {
               tag: 'credit-card-number',
             };
             break;
           }
           case 4: {
-            var ptr6 = dataView(memory0).getInt32(base + 12, true);
-            var len6 = dataView(memory0).getInt32(base + 16, true);
-            var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
-            variant7= {
+            var ptr8 = dataView(memory0).getInt32(base + 28, true);
+            var len8 = dataView(memory0).getInt32(base + 32, true);
+            var result8 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr8, len8));
+            variant9= {
               tag: 'custom',
-              val: result6
+              val: result8
             };
             break;
           }
@@ -224,18 +275,20 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
             throw new TypeError('invalid variant discriminant for SensitiveInfoEntity');
           }
         }
-        result8.push({
-          start: dataView(memory0).getInt32(base + 0, true) >>> 0,
-          end: dataView(memory0).getInt32(base + 4, true) >>> 0,
-          identifiedType: variant7,
+        result10.push({
+          original: result6,
+          redacted: result7,
+          start: dataView(memory0).getInt32(base + 16, true) >>> 0,
+          end: dataView(memory0).getInt32(base + 20, true) >>> 0,
+          identifiedType: variant9,
         });
       }
-      const retVal = result8;
+      const retVal = result10;
       postReturn0(ret);
       return retVal;
     }
     
-    return { detectSensitiveInfo,  };
+    return { redact,  };
   })();
   let promise, resolve, reject;
   function runNext (value) {

@@ -1,5 +1,6 @@
-export namespace ArcjetSensitiveInfoSensitiveInformationIdentifier {
-  export function detect(tokens: Array<string>): Array<SensitiveInfoEntity | undefined>;
+export namespace ArcjetRedactCustomRedact {
+  export function detectSensitiveInfo(tokens: Array<string>): Array<SensitiveInfoEntity | undefined>;
+  export function redactSensitiveInfo(entityType: SensitiveInfoEntity): string | undefined;
 }
 export type SensitiveInfoEntity = SensitiveInfoEntityEmail | SensitiveInfoEntityPhoneNumber | SensitiveInfoEntityIpAddress | SensitiveInfoEntityCreditCardNumber | SensitiveInfoEntityCustom;
 export interface SensitiveInfoEntityEmail {

@@ -1,3 +1,3 @@
-export namespace ArcjetSensitiveInfoLogger {
+export namespace ArcjetRedactLogger {
   export function debug(msg: string): void;
 }

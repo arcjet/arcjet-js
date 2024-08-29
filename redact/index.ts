@@ -1,10 +1,4 @@
-import { logLevel } from "@arcjet/env";
-import { Logger } from "@arcjet/logger";
-import { type ArcjetLogger } from "@arcjet/protocol";
-import {
-  detectSensitiveInfo,
-  type SensitiveInfoEntity,
-} from "@arcjet/redact-wasm";
+import { initializeWasm, type SensitiveInfoEntity } from "@arcjet/redact-wasm";
 
 export type ArcjetSensitiveInfoType =
   | "email"
@@ -12,11 +6,7 @@ export type ArcjetSensitiveInfoType =
   | "ip-address"
   | "credit-card-number";
 
-type DetectedSensitiveInfoEntity = {
-  start: number;
-  end: number;
-  identifiedType: string;
-};
+type Replace = (identifiedType: string) => string | undefined;
 
 type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
@@ -37,21 +27,7 @@ type RedactOptions<
   redact: SensitiveInfoEntities<Detect, CustomEntities>;
   contextWindowSize?: number;
   detect?: Detect;
-  replacer?: Replacers<Detect, CustomEntities>;
-  log?: ArcjetLogger;
-};
-
-export type Replacers<
-  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
-  CustomEntities extends string,
-> = {
-  [T in
-    | ArcjetSensitiveInfoType
-    | Exclude<ReturnType<Detect>[number], undefined>]?: () => string;
-};
-
-type RedactContext = {
-  log: ArcjetLogger;
+  replace?: Replace;
 };
 
 function userEntitiesToWasm<Custom extends string>(
@@ -80,7 +56,7 @@ function userEntitiesToWasm<Custom extends string>(
   };
 }
 
-function analyzeEntitiesToString(entity: SensitiveInfoEntity): string {
+function wasmEntitiesToString(entity: SensitiveInfoEntity): string {
   if (entity.tag === "email") {
     return "email";
   }
@@ -100,11 +76,6 @@ function analyzeEntitiesToString(entity: SensitiveInfoEntity): string {
   return entity.val;
 }
 
-type RedactedText = {
-  original: string;
-  replacement: string;
-};
-
 function performReplacementInText(
   text: string,
   replacement: string,
@@ -114,108 +85,107 @@ function performReplacementInText(
   return text.substring(0, start) + replacement + text.substring(end);
 }
 
-export class RedactSession<
+function noOpFn(..._args: any[]): any {}
+
+interface RedactedSensitiveInfoEntity {
+  original: string;
+  redacted: string;
+  start: number;
+  end: number;
+  identifiedType: string;
+}
+
+async function callRedactWasm<
   Detect extends DetectSensitiveInfoEntities<CustomEntities>,
   CustomEntities extends string,
-> {
-  private unredactEntities: RedactedText[];
-  private opts: RedactOptions<Detect, CustomEntities>;
-  private context: RedactContext;
-
-  public constructor(options: RedactOptions<Detect, CustomEntities>) {
-    this.unredactEntities = [];
-    this.opts = options;
-    this.context = {
-      log: options.log || new Logger({ level: logLevel(process.env) }),
+>(
+  candidate: string,
+  options: RedactOptions<Detect, CustomEntities>,
+): Promise<RedactedSensitiveInfoEntity[]> {
+  let convertedDetect = noOpFn;
+  if (typeof options.detect !== "undefined") {
+    const detect = options.detect;
+    convertedDetect = (tokens: string[]) => {
+      return detect(tokens)
+        .filter((e) => typeof e !== "undefined")
+        .map((e) => userEntitiesToWasm(e));
     };
   }
 
-  public async identify(
-    candidate: string,
-  ): Promise<DetectedSensitiveInfoEntity[]> {
-    const entities = this.opts.redact.map(userEntitiesToWasm);
-    const windowSize = this.opts.contextWindowSize || 1;
-    let convertedDetect = undefined;
-    if (typeof this.opts.detect !== "undefined") {
-      const detect = this.opts.detect;
-      convertedDetect = (tokens: string[]): any[] => {
-        return detect(tokens)
-          .filter((e) => typeof e !== "undefined")
-          .map((e) => userEntitiesToWasm(e));
-      };
-    }
+  let convertedRedact = noOpFn;
+  if (typeof options.replace !== "undefined") {
+    const replace = options.replace;
+    convertedRedact = (identifiedType: SensitiveInfoEntity) => {
+      return replace(wasmEntitiesToString(identifiedType));
+    };
+  }
 
-    const detectedEntities = await detectSensitiveInfo(
-      this.context,
-      candidate,
-      entities,
-      windowSize,
-      convertedDetect,
-    );
+  const wasm = await initializeWasm(convertedDetect, convertedRedact);
 
-    return detectedEntities.map((e) => {
+  const skipCustomDetect = options.detect === undefined;
+  const skipCustomRedact = options.redact === undefined;
+
+  const config = {
+    entities: options.redact.map(userEntitiesToWasm),
+    contextWindowSize: options.contextWindowSize,
+    skipCustomDetect,
+    skipCustomRedact,
+  };
+
+  if (typeof wasm !== "undefined") {
+    return wasm.redact(candidate, config).map((e) => {
       return {
         ...e,
-        identifiedType: analyzeEntitiesToString(e.identifiedType),
+        identifiedType: wasmEntitiesToString(e.identifiedType),
       };
     });
+  } else {
+    throw new Error(
+      "redact failed to run because wasm is not supported in this enviornment",
+    );
+  }
+}
+
+type Unredact = (input: string) => string;
+
+export async function redact<
+  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  CustomEntities extends string,
+>(
+  candidate: string,
+  options: RedactOptions<Detect, CustomEntities>,
+): Promise<[string, Unredact]> {
+  const redactions = await callRedactWasm(candidate, options);
+
+  let extraOffset = 0;
+  for (const redaction of redactions) {
+    candidate = performReplacementInText(
+      candidate,
+      redaction.redacted,
+      redaction.start + extraOffset,
+      redaction.end + extraOffset,
+    );
+
+    // We need to track an extra offset because the indices are relative to the original text.
+    // When we make our first replacement we shift all subsequent replacements, and this needs to be accounted for.
+    extraOffset += redaction.redacted.length - redaction.original.length;
   }
 
-  public async redact(candidate: string): Promise<string> {
-    const detectedEntities = await this.identify(candidate);
-
-    let outputString = candidate;
-    let redactedIdx = 0;
-    let extraOffset = 0;
-    for (const entity of detectedEntities) {
-      const replacers: Replacers<Detect, CustomEntities> =
-        this.opts.replacer || {};
-
-      const original = outputString.substring(
-        entity.start + extraOffset,
-        entity.end + extraOffset,
-      );
-      let replacement = `<REDACTED INFO #${redactedIdx}>`;
-      redactedIdx++;
-
-      if (entity.identifiedType in replacers) {
-        const customReplacer =
-          replacers[entity.identifiedType as keyof typeof replacers];
-        if (customReplacer !== undefined) {
-          replacement = customReplacer();
-        }
-      }
-
-      this.unredactEntities.push({ original, replacement });
-
-      outputString = performReplacementInText(
-        outputString,
-        replacement,
-        entity.start + extraOffset,
-        entity.end + extraOffset,
-      );
-      // We need to track an extra offset because the indices are relative to the original text.
-      // When we make our first replacement we shift all subsequent replacements, and this needs to be accounted for.
-      extraOffset += replacement.length - original.length;
-    }
-
-    return outputString;
-  }
-
-  public async unredact(final: string): Promise<string> {
-    let outputString = final;
-    for (const entity of this.unredactEntities) {
-      const position = outputString.indexOf(entity.replacement);
+  function unredact(input: string): string {
+    for (const redaction of redactions) {
+      const position = input.indexOf(redaction.redacted);
       if (position !== -1) {
-        outputString = performReplacementInText(
-          outputString,
-          entity.original,
+        input = performReplacementInText(
+          input,
+          redaction.original,
           position,
-          position + entity.replacement.length,
+          position + redaction.redacted.length,
         );
       }
     }
 
-    return outputString;
+    return input;
   }
+
+  return [candidate, unredact];
 }

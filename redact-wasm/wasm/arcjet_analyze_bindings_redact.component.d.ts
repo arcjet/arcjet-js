@@ -1,23 +1,24 @@
-import type { SensitiveInfoEntity } from './interfaces/arcjet-sensitive-info-sensitive-information-identifier.js';
+import type { SensitiveInfoEntity } from './interfaces/arcjet-redact-custom-redact.js';
 export { SensitiveInfoEntity };
-export interface SensitiveInfoConfig {
+export interface RedactSensitiveInfoConfig {
   entities: Array<SensitiveInfoEntity>,
   contextWindowSize?: number,
   skipCustomDetect: boolean,
+  skipCustomRedact: boolean,
 }
-export interface DetectedSensitiveInfoEntity {
+export interface RedactedSensitiveInfoEntity {
+  original: string,
+  redacted: string,
   start: number,
   end: number,
   identifiedType: SensitiveInfoEntity,
 }
-import { ArcjetSensitiveInfoLogger } from './interfaces/arcjet-sensitive-info-logger.js';
-import { ArcjetSensitiveInfoSensitiveInformationIdentifier } from './interfaces/arcjet-sensitive-info-sensitive-information-identifier.js';
+import { ArcjetRedactCustomRedact } from './interfaces/arcjet-redact-custom-redact.js';
 export interface ImportObject {
-  'arcjet:sensitive-info/logger': typeof ArcjetSensitiveInfoLogger,
-  'arcjet:sensitive-info/sensitive-information-identifier': typeof ArcjetSensitiveInfoSensitiveInformationIdentifier,
+  'arcjet:redact/custom-redact': typeof ArcjetRedactCustomRedact,
 }
 export interface Root {
-  detectSensitiveInfo(content: string, options: SensitiveInfoConfig): Array<DetectedSensitiveInfoEntity>,
+  redact(content: string, options: RedactSensitiveInfoConfig): Array<RedactedSensitiveInfoEntity>,
 }
 
 /**

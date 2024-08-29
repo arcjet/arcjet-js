@@ -1,21 +1,15 @@
-import type { ArcjetLogger } from "@arcjet/protocol";
-
 import * as core from "./wasm/arcjet_analyze_bindings_redact.component.js";
 import type {
   ImportObject,
-  DetectedSensitiveInfoEntity,
+  RedactedSensitiveInfoEntity,
+  RedactSensitiveInfoConfig,
   SensitiveInfoEntity,
-  SensitiveInfoConfig,
 } from "./wasm/arcjet_analyze_bindings_redact.component.js";
-import type { ArcjetSensitiveInfoSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-sensitive-info-sensitive-information-identifier.js";
 
 import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_bindings_redact.component.core.wasm?js";
 import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_bindings_redact.component.core2.wasm?js";
 import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_bindings_redact.component.core3.wasm?js";
-
-interface AnalyzeContext {
-  log: ArcjetLogger;
-}
+import { ArcjetRedactCustomRedact } from "./wasm/interfaces/arcjet-redact-custom-redact.js";
 
 // TODO: Do we actually need this wasmCache or does `import` cache correctly?
 const wasmCache = new Map<string, WebAssembly.Module>();
@@ -45,61 +39,31 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-async function init(
-  context: AnalyzeContext,
-  detect?: typeof ArcjetSensitiveInfoSensitiveInformationIdentifier.detect,
+export async function initializeWasm(
+  detect: CustomDetect,
+  replace: CustomRedact,
 ) {
-  const { log } = context;
-
-  let detectOrDefault = detect;
-  if (typeof detectOrDefault === "undefined") {
-    detectOrDefault = () => [];
-  }
-
   const coreImports: ImportObject = {
-    "arcjet:sensitive-info/logger": {
-      debug(msg) {
-        log.debug(msg);
-      },
-    },
-    "arcjet:sensitive-info/sensitive-information-identifier": {
-      detect: detectOrDefault,
+    "arcjet:redact/custom-redact": {
+      detectSensitiveInfo: detect,
+      redactSensitiveInfo: replace,
     },
   };
 
   try {
     return core.instantiate(moduleFromPath, coreImports);
   } catch {
-    log.debug("WebAssembly is not supported in this runtime");
+    console.debug("WebAssembly is not supported in this runtime");
   }
 }
+
+type CustomDetect = typeof ArcjetRedactCustomRedact.detectSensitiveInfo;
+type CustomRedact = typeof ArcjetRedactCustomRedact.redactSensitiveInfo;
 
 export {
-  type DetectedSensitiveInfoEntity as DetectedEntity,
+  type CustomDetect,
+  type CustomRedact,
+  type RedactedSensitiveInfoEntity,
+  type RedactSensitiveInfoConfig,
   type SensitiveInfoEntity,
 };
-
-export async function detectSensitiveInfo(
-  context: AnalyzeContext,
-  candidate: string,
-  entities: core.SensitiveInfoEntity[],
-  contextWindowSize: number,
-  detect?: typeof ArcjetSensitiveInfoSensitiveInformationIdentifier.detect,
-): Promise<DetectedSensitiveInfoEntity[]> {
-  const analyze = await init(context, detect);
-  const skipCustomDetect = detect === undefined;
-
-  const options: SensitiveInfoConfig = {
-    entities,
-    contextWindowSize,
-    skipCustomDetect,
-  };
-
-  if (typeof analyze !== "undefined") {
-    return analyze.detectSensitiveInfo(candidate, options);
-  } else {
-    throw new Error(
-      "detectSensitiveInfo failed to run because wasm is not supported in this enviornment",
-    );
-  }
-}
