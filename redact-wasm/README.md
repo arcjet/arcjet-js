@@ -48,7 +48,8 @@ if (typeof wasm !== "undefined") {
     skipCustomRedact: true,
   };
 
-  wasm.redact("I am a string", config);
+  const entities = wasm.redact("I am a string", config);
+  // Do something with entities that should be redacted.
 } else {
   throw new Error(
     "redact failed to run because Wasm is not supported in this environment",
