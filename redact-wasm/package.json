@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/redact-wasm",
   "version": "1.0.0-alpha.22",
-  "description": "Arcjet PII identification and redaction engine.",
+  "description": "Arcjet sensitive information redaction detection engine",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
