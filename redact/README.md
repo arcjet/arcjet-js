@@ -42,10 +42,6 @@ const unredacted = unredact("Your email address is <Redacted email #0>");
 console.log(unredacted); // Your email address is john@example.com
 ```
 
-## API
-
-TODO
-
 ## License
 
 Licensed under the [Apache License, Version 2.0][apache-license].

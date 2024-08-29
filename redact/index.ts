@@ -179,6 +179,7 @@ export async function redact<
   // Need to apply the redactions in reverse order so that the offsets aren't changed
   // when we redact with strings that are longer/shorter than the original.
   redactions.reverse();
+
   for (const redaction of redactions) {
     candidate = performReplacementInText(
       candidate,
@@ -190,14 +191,17 @@ export async function redact<
 
   function unredact(input: string): string {
     for (const redaction of redactions) {
-      const position = input.indexOf(redaction.redacted);
-      if (position !== -1) {
-        input = performReplacementInText(
-          input,
-          redaction.original,
-          position,
-          position + redaction.redacted.length,
-        );
+      let position;
+      while (position !== -1) {
+        position = input.indexOf(redaction.redacted);
+        if (position !== -1) {
+          input = performReplacementInText(
+            input,
+            redaction.original,
+            position,
+            position + redaction.redacted.length,
+          );
+        }
       }
     }
 

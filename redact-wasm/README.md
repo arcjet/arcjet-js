@@ -16,7 +16,7 @@
   </a>
 </p>
 
-This is the [Arcjet][arcjet] Redaction library PII detection engine.
+[Arcjet][arcjet] sensitive information redaction detection engine.
 
 ## Installation
 
@@ -59,10 +59,10 @@ if (typeof wasm !== "undefined") {
 
 ## Implementation
 
-This package provides pii identification logic implemented as a WebAssembly module which
-will run local analysis on the provided string.
+This package provides sensitive information identification and redaction logic implemented as a
+WebAssembly module which will run local analysis on the provided string.
 
-The [Wasm](./wasm/arcjet_analyze_bindings_redact.component.js) file contains the binary inlined as
+The generated `_virtual/arcjet_analyze_bindings_redact.component.js` file contains the binary inlined as
 a base64 [Data URL][mdn-data-url] with the `application/wasm` MIME type.
 
 This was chosen to save on storage space over inlining the file directly as a
@@ -80,10 +80,6 @@ Wasm file if we don't do this.
 
 In the future, we hope to do away with this workaround when all bundlers
 properly support consistent asset bundling techniques.
-
-## API
-
-In progress.
 
 ## License
 

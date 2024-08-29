@@ -117,6 +117,23 @@ describe("ArcjetRedact", () => {
       expect(unredacted).toEqual(expectedUnredacted);
     });
 
+    test("it will redact and unredact configured entities multiple times", async () => {
+      const text = "email test@example.com phone 011234567 ip 10.12.234.2";
+      const expectedRedacted =
+        "email <Redacted email #0> phone <Redacted phone number #1> ip 10.12.234.2";
+      const [redacted, unredact] = await redact(text, {
+        redact: ["email", "phone-number"],
+      });
+      expect(redacted).toEqual(expectedRedacted);
+
+      const newText =
+        "hello <Redacted email #0> your phone number is <Redacted phone number #1> <Redacted phone number #1>";
+      const expectedUnredacted =
+        "hello test@example.com your phone number is 011234567 011234567";
+      const unredacted = unredact(newText);
+      expect(unredacted).toEqual(expectedUnredacted);
+    });
+
     test("it will redact and unredact custom entities", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       const expectedRedacted =
