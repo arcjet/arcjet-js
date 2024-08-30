@@ -9,6 +9,7 @@ const config = {
   // for this context". Tracking in
   // https://github.com/vercel/edge-runtime/issues/250
   coverageProvider: "v8",
+  collectCoverageFrom: ["index.js"],
   verbose: true,
   testEnvironment: "node",
 };

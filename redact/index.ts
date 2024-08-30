@@ -34,7 +34,7 @@ export type RedactOptions<Detect> = {
 
 function userEntitiesToWasm(entity: unknown) {
   if (typeof entity !== "string") {
-    throw new Error("Redaction entities must be a string");
+    throw new Error("redaction entities must be strings");
   }
 
   if (entity === "email") {
@@ -88,12 +88,16 @@ function performReplacementInText(
   return text.substring(0, start) + replacement + text.substring(end);
 }
 
+/* c8 ignore start */
+// Coverage is ignored on these no-op functions because they are never executed
+// due to the `skipCustomDetect` and `skipCustomReplace` options.
 function noOpDetect(_tokens: string[]): Array<SensitiveInfoEntity | undefined> {
   return [];
 }
 function noOpReplace(_input: SensitiveInfoEntity): string | undefined {
   return undefined;
 }
+/* c8 ignore stop */
 
 interface RedactedSensitiveInfoEntity {
   original: string;

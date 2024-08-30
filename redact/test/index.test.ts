@@ -1,8 +1,12 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, jest, test, afterEach } from "@jest/globals";
 import { redact } from "../index";
 
 describe("ArcjetRedact", () => {
   describe("redact()", () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
     test("it will redact all if no entities list is given", async () => {
       const text =
         "email test@example.com phone 011234567 credit 4242424242424242 ip 10.12.234.2";
@@ -16,6 +20,40 @@ describe("ArcjetRedact", () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       expect(async () => await redact(text, { entities: [] })).rejects.toThrow(
         new Error("no entities configured for redaction"),
+      );
+    });
+
+    test("it will throw if entities is not an array", async () => {
+      const text = "email test@example.com phone 011234567 ip 10.12.234.2";
+      expect(
+        redact(text, {
+          // @ts-expect-error
+          entities: "foobar",
+        }),
+      ).rejects.toThrow(new Error("entities must be an array"));
+    });
+
+    test("it will throw if non-string entities in the array", async () => {
+      const text = "email test@example.com phone 011234567 ip 10.12.234.2";
+      expect(
+        redact(text, {
+          // @ts-expect-error
+          entities: [1234],
+        }),
+      ).rejects.toThrow(new Error("redaction entities must be strings"));
+    });
+
+    test("it will throw WebAssembly is not available", async () => {
+      // Fake a WebAssembly failure
+      jest.spyOn(WebAssembly, "instantiate").mockImplementation(() => {
+        return Promise.reject("mock failure in wasm");
+      });
+
+      const text = "email test@example.com phone 011234567 ip 10.12.234.2";
+      expect(redact(text)).rejects.toThrow(
+        new Error(
+          "redact failed to run because Wasm is not supported in this environment",
+        ),
       );
     });
 

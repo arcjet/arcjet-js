@@ -50,7 +50,9 @@ export async function initializeWasm(
   };
 
   try {
-    return core.instantiate(moduleFromPath, coreImports);
+    // Await the instantiation to catch the failure
+    const api = await core.instantiate(moduleFromPath, coreImports);
+    return api;
   } catch {
     console.debug("WebAssembly is not supported in this runtime");
   }
