@@ -15,6 +15,8 @@
   "ip": "1.0.0-alpha.22",
   "logger": "1.0.0-alpha.22",
   "protocol": "1.0.0-alpha.22",
+  "redact": "1.0.0-alpha.22",
+  "redact-wasm": "1.0.0-alpha.22",
   "rollup-config": "1.0.0-alpha.22",
   "runtime": "1.0.0-alpha.22",
   "sprintf": "1.0.0-alpha.22",
