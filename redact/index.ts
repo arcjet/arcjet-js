@@ -108,16 +108,18 @@ function getWasmOptions<
   const CustomEntities extends string,
 >(options?: RedactOptions<Detect>) {
   if (typeof options === "object" && options !== null) {
-    if (Array.isArray(options.entities)) {
-      if (options.entities.length < 1) {
-        throw new Error("no entities configured for redaction");
+    if (typeof options.entities !== "undefined") {
+      if (Array.isArray(options.entities)) {
+        if (options.entities.length < 1) {
+          throw new Error("no entities configured for redaction");
+        }
+      } else {
+        throw new Error("entities must be an array");
       }
-    } else {
-      throw new Error("entities must be an array");
     }
 
     return {
-      entities: options.entities.map(userEntitiesToWasm),
+      entities: options.entities?.map(userEntitiesToWasm),
       contextWindowSize: options.contextWindowSize || 1,
       skipCustomDetect: typeof options.detect !== "function",
       skipCustomRedact: typeof options.replace !== "function",
