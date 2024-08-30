@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@arcjet/env": "file:../../env",
     "@arcjet/next": "file:../../arcjet-next",
     "next": "^14.2.6",
     "react": "^18",
