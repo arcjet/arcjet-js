@@ -24,7 +24,7 @@ const aj = arcjet({
     }),
     detectBot({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      block: ["AUTOMATED"], // blocks all automated clients
+      allow: [], // blocks all detected bots
     }),
   ],
 });
