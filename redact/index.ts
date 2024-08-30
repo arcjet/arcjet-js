@@ -26,7 +26,7 @@ type ValidEntities<Detect> = Array<
 >;
 
 export type RedactOptions<Detect> = {
-  redact?: ValidEntities<Detect>;
+  entities: ValidEntities<Detect>;
   contextWindowSize?: number;
   detect?: Detect;
   replace?: (entity: ValidEntities<Detect>[number]) => string | undefined;
@@ -108,10 +108,10 @@ async function callRedactWasm<
   const CustomEntities extends string,
 >(
   candidate: string,
-  options: RedactOptions<Detect>,
+  options?: RedactOptions<Detect>,
 ): Promise<RedactedSensitiveInfoEntity[]> {
   let convertedDetect = noOpDetect;
-  if (typeof options.detect === "function") {
+  if (typeof options?.detect === "function") {
     const detect = options.detect;
     convertedDetect = (tokens: string[]) => {
       return detect(tokens)
@@ -121,7 +121,7 @@ async function callRedactWasm<
   }
 
   let convertedReplace = noOpReplace;
-  if (typeof options.replace === "function") {
+  if (typeof options?.replace === "function") {
     const replace = options.replace;
     convertedReplace = (identifiedType: SensitiveInfoEntity) => {
       return replace(
@@ -134,14 +134,18 @@ async function callRedactWasm<
   const wasm = await initializeWasm(convertedDetect, convertedReplace);
 
   if (typeof wasm !== "undefined") {
-    const skipCustomDetect = typeof options.detect !== "function";
-    const skipCustomRedact = typeof options.replace !== "function";
+    const skipCustomDetect = typeof options?.detect !== "function";
+    const skipCustomRedact = typeof options?.replace !== "function";
+
+    if (options?.entities?.length === 0) {
+      console.warn("no entities configured for redaction");
+    }
 
     const config = {
-      entities: Array.isArray(options.redact)
-        ? options.redact.map(userEntitiesToWasm)
-        : [],
-      contextWindowSize: options.contextWindowSize,
+      entities: Array.isArray(options?.entities)
+        ? options.entities.map(userEntitiesToWasm)
+        : undefined,
+      contextWindowSize: options?.contextWindowSize,
       skipCustomDetect,
       skipCustomRedact,
     };
@@ -166,7 +170,7 @@ export async function redact<
   const CustomEntities extends string,
 >(
   candidate: string,
-  options: RedactOptions<Detect>,
+  options?: RedactOptions<Detect>,
 ): Promise<[string, Unredact]> {
   const redactions = await callRedactWasm(candidate, options);
 

@@ -175,99 +175,113 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
       var {entities: v1_0, contextWindowSize: v1_1, skipCustomDetect: v1_2, skipCustomRedact: v1_3 } = arg1;
-      var vec4 = v1_0;
-      var len4 = vec4.length;
-      var result4 = realloc0(0, 0, 4, len4 * 12);
-      for (let i = 0; i < vec4.length; i++) {
-        const e = vec4[i];
-        const base = result4 + i * 12;var variant3 = e;
-        switch (variant3.tag) {
-          case 'email': {
-            dataView(memory0).setInt8(base + 0, 0, true);
-            break;
-          }
-          case 'phone-number': {
-            dataView(memory0).setInt8(base + 0, 1, true);
-            break;
-          }
-          case 'ip-address': {
-            dataView(memory0).setInt8(base + 0, 2, true);
-            break;
-          }
-          case 'credit-card-number': {
-            dataView(memory0).setInt8(base + 0, 3, true);
-            break;
-          }
-          case 'custom': {
-            const e = variant3.val;
-            dataView(memory0).setInt8(base + 0, 4, true);
-            var ptr2 = utf8Encode(e, realloc0, memory0);
-            var len2 = utf8EncodedLen;
-            dataView(memory0).setInt32(base + 8, len2, true);
-            dataView(memory0).setInt32(base + 4, ptr2, true);
-            break;
-          }
-          default: {
-            throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant3.tag)}\` (received \`${variant3}\`) specified for \`SensitiveInfoEntity\``);
-          }
-        }
-      }
-      var variant5 = v1_1;
+      var variant5 = v1_0;
       let variant5_0;
       let variant5_1;
+      let variant5_2;
       if (variant5 === null || variant5=== undefined) {
         variant5_0 = 0;
         variant5_1 = 0;
+        variant5_2 = 0;
       } else {
         const e = variant5;
+        var vec4 = e;
+        var len4 = vec4.length;
+        var result4 = realloc0(0, 0, 4, len4 * 12);
+        for (let i = 0; i < vec4.length; i++) {
+          const e = vec4[i];
+          const base = result4 + i * 12;var variant3 = e;
+          switch (variant3.tag) {
+            case 'email': {
+              dataView(memory0).setInt8(base + 0, 0, true);
+              break;
+            }
+            case 'phone-number': {
+              dataView(memory0).setInt8(base + 0, 1, true);
+              break;
+            }
+            case 'ip-address': {
+              dataView(memory0).setInt8(base + 0, 2, true);
+              break;
+            }
+            case 'credit-card-number': {
+              dataView(memory0).setInt8(base + 0, 3, true);
+              break;
+            }
+            case 'custom': {
+              const e = variant3.val;
+              dataView(memory0).setInt8(base + 0, 4, true);
+              var ptr2 = utf8Encode(e, realloc0, memory0);
+              var len2 = utf8EncodedLen;
+              dataView(memory0).setInt32(base + 8, len2, true);
+              dataView(memory0).setInt32(base + 4, ptr2, true);
+              break;
+            }
+            default: {
+              throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant3.tag)}\` (received \`${variant3}\`) specified for \`SensitiveInfoEntity\``);
+            }
+          }
+        }
         variant5_0 = 1;
-        variant5_1 = toUint32(e);
+        variant5_1 = result4;
+        variant5_2 = len4;
       }
-      const ret = exports1.redact(ptr0, len0, result4, len4, variant5_0, variant5_1, v1_2 ? 1 : 0, v1_3 ? 1 : 0);
-      var len10 = dataView(memory0).getInt32(ret + 4, true);
-      var base10 = dataView(memory0).getInt32(ret + 0, true);
-      var result10 = [];
-      for (let i = 0; i < len10; i++) {
-        const base = base10 + i * 36;
-        var ptr6 = dataView(memory0).getInt32(base + 0, true);
-        var len6 = dataView(memory0).getInt32(base + 4, true);
-        var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
-        var ptr7 = dataView(memory0).getInt32(base + 8, true);
-        var len7 = dataView(memory0).getInt32(base + 12, true);
+      var variant6 = v1_1;
+      let variant6_0;
+      let variant6_1;
+      if (variant6 === null || variant6=== undefined) {
+        variant6_0 = 0;
+        variant6_1 = 0;
+      } else {
+        const e = variant6;
+        variant6_0 = 1;
+        variant6_1 = toUint32(e);
+      }
+      const ret = exports1.redact(ptr0, len0, variant5_0, variant5_1, variant5_2, variant6_0, variant6_1, v1_2 ? 1 : 0, v1_3 ? 1 : 0);
+      var len11 = dataView(memory0).getInt32(ret + 4, true);
+      var base11 = dataView(memory0).getInt32(ret + 0, true);
+      var result11 = [];
+      for (let i = 0; i < len11; i++) {
+        const base = base11 + i * 36;
+        var ptr7 = dataView(memory0).getInt32(base + 0, true);
+        var len7 = dataView(memory0).getInt32(base + 4, true);
         var result7 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr7, len7));
-        let variant9;
+        var ptr8 = dataView(memory0).getInt32(base + 8, true);
+        var len8 = dataView(memory0).getInt32(base + 12, true);
+        var result8 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr8, len8));
+        let variant10;
         switch (dataView(memory0).getUint8(base + 24, true)) {
           case 0: {
-            variant9= {
+            variant10= {
               tag: 'email',
             };
             break;
           }
           case 1: {
-            variant9= {
+            variant10= {
               tag: 'phone-number',
             };
             break;
           }
           case 2: {
-            variant9= {
+            variant10= {
               tag: 'ip-address',
             };
             break;
           }
           case 3: {
-            variant9= {
+            variant10= {
               tag: 'credit-card-number',
             };
             break;
           }
           case 4: {
-            var ptr8 = dataView(memory0).getInt32(base + 28, true);
-            var len8 = dataView(memory0).getInt32(base + 32, true);
-            var result8 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr8, len8));
-            variant9= {
+            var ptr9 = dataView(memory0).getInt32(base + 28, true);
+            var len9 = dataView(memory0).getInt32(base + 32, true);
+            var result9 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr9, len9));
+            variant10= {
               tag: 'custom',
-              val: result8
+              val: result9
             };
             break;
           }
@@ -275,15 +289,15 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
             throw new TypeError('invalid variant discriminant for SensitiveInfoEntity');
           }
         }
-        result10.push({
-          original: result6,
-          redacted: result7,
+        result11.push({
+          original: result7,
+          redacted: result8,
           start: dataView(memory0).getInt32(base + 16, true) >>> 0,
           end: dataView(memory0).getInt32(base + 20, true) >>> 0,
-          identifiedType: variant9,
+          identifiedType: variant10,
         });
       }
-      const retVal = result10;
+      const retVal = result11;
       postReturn0(ret);
       return retVal;
     }

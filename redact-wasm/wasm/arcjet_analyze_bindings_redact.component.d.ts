@@ -1,7 +1,7 @@
 import type { SensitiveInfoEntity } from './interfaces/arcjet-redact-custom-redact.js';
 export { SensitiveInfoEntity };
 export interface RedactSensitiveInfoConfig {
-  entities: Array<SensitiveInfoEntity>,
+  entities?: Array<SensitiveInfoEntity>,
   contextWindowSize?: number,
   skipCustomDetect: boolean,
   skipCustomRedact: boolean,

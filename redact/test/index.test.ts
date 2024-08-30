@@ -3,9 +3,18 @@ import { redact } from "../index";
 
 describe("ArcjetRedact", () => {
   describe("redact()", () => {
-    test("it will do nothing if no entities are configured", async () => {
+    test("it will redact all if no entities list is given", async () => {
+      const text =
+        "email test@example.com phone 011234567 credit 4242424242424242 ip 10.12.234.2";
+      const expected =
+        "email <Redacted email #0> phone <Redacted phone number #1> credit <Redacted credit card number #2> ip <Redacted IP address #3>";
+      const [redacted] = await redact(text);
+      expect(redacted).toEqual(expected);
+    });
+
+    test("it will do nothing if an empty entities list is given", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      const [redacted] = await redact(text, { redact: [] });
+      const [redacted] = await redact(text, { entities: [] });
       expect(redacted).toEqual(text);
     });
 
@@ -15,7 +24,7 @@ describe("ArcjetRedact", () => {
       const expected =
         "email <Redacted email #0> phone <Redacted phone number #1> credit <Redacted credit card number #2> ip 10.12.234.2";
       const [redacted] = await redact(text, {
-        redact: ["email", "phone-number", "credit-card-number"],
+        entities: ["email", "phone-number", "credit-card-number"],
       });
       expect(redacted).toEqual(expected);
     });
@@ -25,7 +34,7 @@ describe("ArcjetRedact", () => {
       const expected =
         "email redacted-email phone 011234567 ip <Redacted IP address #1>";
       const [redacted] = await redact(text, {
-        redact: ["email", "ip-address"],
+        entities: ["email", "ip-address"],
         replace: (entityType) => {
           if (entityType === "email") {
             return "redacted-email";
@@ -40,7 +49,7 @@ describe("ArcjetRedact", () => {
       const expected =
         "email test@example.com <Redacted my-custom-entity #0> 011234567 ip 10.12.234.2";
       const [redacted] = await redact(text, {
-        redact: ["my-custom-entity"],
+        entities: ["my-custom-entity"],
         contextWindowSize: 1,
         detect: (tokens: string[]) => {
           if (tokens[0] === "phone") {
@@ -58,7 +67,7 @@ describe("ArcjetRedact", () => {
       const expected =
         "email test@example.com custom-replace 011234567 ip 10.12.234.2";
       const [redacted] = await redact(text, {
-        redact: ["my-custom-entity"],
+        entities: ["my-custom-entity"],
         contextWindowSize: 1,
         detect: (tokens: string[]) => {
           if (tokens[0] === "phone") {
@@ -79,7 +88,7 @@ describe("ArcjetRedact", () => {
     test("it will pass the number of tokens requested by the context window size parameter to the custom detect function", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       const [redacted] = await redact(text, {
-        redact: [],
+        entities: [],
         contextWindowSize: 3,
         detect: (tokens) => {
           expect(tokens).toHaveLength(3);
@@ -92,7 +101,7 @@ describe("ArcjetRedact", () => {
   describe("unredact()", () => {
     test("it will do nothing if no entities are configured", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      const [redacted, unredact] = await redact(text, { redact: [] });
+      const [redacted, unredact] = await redact(text, { entities: [] });
       expect(redacted).toEqual(text);
 
       const newText = "hello test@example.com your phone number is 10.12.234.2";
@@ -105,7 +114,7 @@ describe("ArcjetRedact", () => {
       const expectedRedacted =
         "email <Redacted email #0> phone <Redacted phone number #1> ip 10.12.234.2";
       const [redacted, unredact] = await redact(text, {
-        redact: ["email", "phone-number"],
+        entities: ["email", "phone-number"],
       });
       expect(redacted).toEqual(expectedRedacted);
 
@@ -122,7 +131,7 @@ describe("ArcjetRedact", () => {
       const expectedRedacted =
         "email <Redacted email #0> phone <Redacted phone number #1> ip 10.12.234.2";
       const [redacted, unredact] = await redact(text, {
-        redact: ["email", "phone-number"],
+        entities: ["email", "phone-number"],
       });
       expect(redacted).toEqual(expectedRedacted);
 
@@ -139,7 +148,7 @@ describe("ArcjetRedact", () => {
       const expectedRedacted =
         "email my-custom-email-replacement phone <Redacted phone number #1> ip 10.12.234.2";
       const [redacted, unredact] = await redact(text, {
-        redact: ["email", "phone-number"],
+        entities: ["email", "phone-number"],
         replace: (entityType) => {
           if (entityType === "email") {
             return "my-custom-email-replacement";
