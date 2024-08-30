@@ -12,10 +12,11 @@ describe("ArcjetRedact", () => {
       expect(redacted).toEqual(expected);
     });
 
-    test("it will do nothing if an empty entities list is given", async () => {
+    test("it will throw if an empty entities list is given", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      const [redacted] = await redact(text, { entities: [] });
-      expect(redacted).toEqual(text);
+      expect(async () => await redact(text, { entities: [] })).rejects.toThrow(
+        new Error("no entities configured for redaction"),
+      );
     });
 
     test("it will redact the configured entities only", async () => {
@@ -88,7 +89,7 @@ describe("ArcjetRedact", () => {
     test("it will pass the number of tokens requested by the context window size parameter to the custom detect function", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       const [redacted] = await redact(text, {
-        entities: [],
+        entities: ["credit-card-number"],
         contextWindowSize: 3,
         detect: (tokens) => {
           expect(tokens).toHaveLength(3);
@@ -99,16 +100,6 @@ describe("ArcjetRedact", () => {
     });
   });
   describe("unredact()", () => {
-    test("it will do nothing if no entities are configured", async () => {
-      const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      const [redacted, unredact] = await redact(text, { entities: [] });
-      expect(redacted).toEqual(text);
-
-      const newText = "hello test@example.com your phone number is 10.12.234.2";
-      const unredacted = unredact(newText);
-      expect(unredacted).toEqual(newText);
-    });
-
     test("it will redact and unredact configured entities", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       const expectedRedacted =

@@ -137,14 +137,17 @@ async function callRedactWasm<
     const skipCustomDetect = typeof options?.detect !== "function";
     const skipCustomRedact = typeof options?.replace !== "function";
 
-    if (options?.entities?.length === 0) {
-      console.warn("no entities configured for redaction");
+    if (
+      typeof options?.entities !== "undefined" &&
+      !Array.isArray(options?.entities)
+    ) {
+      throw new Error("entities must be an array");
+    } else if (options?.entities.length === 0) {
+      throw new Error("no entities configured for redaction");
     }
 
     const config = {
-      entities: Array.isArray(options?.entities)
-        ? options.entities.map(userEntitiesToWasm)
-        : undefined,
+      entities: options?.entities?.map(userEntitiesToWasm),
       contextWindowSize: options?.contextWindowSize,
       skipCustomDetect,
       skipCustomRedact,
