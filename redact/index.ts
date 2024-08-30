@@ -26,7 +26,7 @@ type ValidEntities<Detect> = Array<
 >;
 
 export type RedactOptions<Detect> = {
-  entities: ValidEntities<Detect>;
+  entities?: ValidEntities<Detect>;
   contextWindowSize?: number;
   detect?: Detect;
   replace?: (entity: ValidEntities<Detect>[number]) => string | undefined;

@@ -89,7 +89,6 @@ describe("ArcjetRedact", () => {
     test("it will pass the number of tokens requested by the context window size parameter to the custom detect function", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       const [redacted] = await redact(text, {
-        entities: ["credit-card-number"],
         contextWindowSize: 3,
         detect: (tokens) => {
           expect(tokens).toHaveLength(3);
