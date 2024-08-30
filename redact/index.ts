@@ -142,7 +142,7 @@ async function callRedactWasm<
       !Array.isArray(options?.entities)
     ) {
       throw new Error("entities must be an array");
-    } else if (options?.entities.length === 0) {
+    } else if (options?.entities?.length === 0) {
       throw new Error("no entities configured for redaction");
     }
 
