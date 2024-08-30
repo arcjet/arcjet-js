@@ -103,6 +103,35 @@ interface RedactedSensitiveInfoEntity {
   identifiedType: string;
 }
 
+function getWasmOptions<
+  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
+  const CustomEntities extends string,
+>(options?: RedactOptions<Detect>) {
+  if (typeof options === "object" && options !== null) {
+    if (Array.isArray(options.entities)) {
+      if (options.entities.length < 1) {
+        throw new Error("no entities configured for redaction");
+      }
+    } else {
+      throw new Error("entities must be an array");
+    }
+
+    return {
+      entities: options.entities.map(userEntitiesToWasm),
+      contextWindowSize: options.contextWindowSize || 1,
+      skipCustomDetect: typeof options.detect !== "function",
+      skipCustomRedact: typeof options.replace !== "function",
+    };
+  } else {
+    return {
+      entities: undefined,
+      contextWindowSize: 1,
+      skipCustomDetect: true,
+      skipCustomRedact: true,
+    };
+  }
+}
+
 async function callRedactWasm<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
@@ -134,24 +163,7 @@ async function callRedactWasm<
   const wasm = await initializeWasm(convertedDetect, convertedReplace);
 
   if (typeof wasm !== "undefined") {
-    const skipCustomDetect = typeof options?.detect !== "function";
-    const skipCustomRedact = typeof options?.replace !== "function";
-
-    if (
-      typeof options?.entities !== "undefined" &&
-      !Array.isArray(options?.entities)
-    ) {
-      throw new Error("entities must be an array");
-    } else if (options?.entities?.length === 0) {
-      throw new Error("no entities configured for redaction");
-    }
-
-    const config = {
-      entities: options?.entities?.map(userEntitiesToWasm),
-      contextWindowSize: options?.contextWindowSize,
-      skipCustomDetect,
-      skipCustomRedact,
-    };
+    const config = getWasmOptions(options);
 
     return wasm.redact(candidate, config).map((e) => {
       return {
