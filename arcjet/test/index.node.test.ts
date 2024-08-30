@@ -746,10 +746,6 @@ describe("Primitive > detectBot", () => {
   // });
 
   test("can be configured to allow curl", async () => {
-    const options = {
-      mode: ArcjetMode.LIVE,
-      allow: ["CURL"],
-    };
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
@@ -772,7 +768,10 @@ describe("Primitive > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
+    const [rule] = detectBot({
+      mode: ArcjetMode.LIVE,
+      allow: ["CURL"],
+    });
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);

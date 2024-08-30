@@ -12,6 +12,7 @@ import type {
   ArcjetLogger,
   ArcjetSensitiveInfoRule,
   ArcjetIdentifiedEntity,
+  ArcjetWellKnownBot,
 } from "@arcjet/protocol";
 import {
   ArcjetBotReason,
@@ -268,14 +269,14 @@ type SlidingWindowRateLimitOptions<Characteristics extends readonly string[]> =
 
 type BotOptionsAllow = {
   mode?: ArcjetMode;
-  allow: Array<string>;
+  allow: Array<ArcjetWellKnownBot>;
   deny?: never;
 };
 
 type BotOptionsDeny = {
   mode?: ArcjetMode;
   allow?: never;
-  deny: Array<string>;
+  deny: Array<ArcjetWellKnownBot>;
 };
 
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
