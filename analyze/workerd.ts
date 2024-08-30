@@ -106,7 +106,8 @@ async function init(
   };
 
   try {
-    return instantiate(moduleFromPath, coreImports);
+    // Await the instantiation to catch the failure
+    return await instantiate(moduleFromPath, coreImports);
   } catch {
     log.debug("WebAssembly is not supported in this runtime");
   }
