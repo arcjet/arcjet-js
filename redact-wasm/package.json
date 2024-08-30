@@ -1,0 +1,66 @@
+{
+  "name": "@arcjet/redact-wasm",
+  "version": "1.0.0-alpha.22",
+  "description": "Arcjet sensitive information redaction detection engine",
+  "license": "Apache-2.0",
+  "homepage": "https://arcjet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "redact-wasm"
+  },
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    "edge-light": "./edge-light.js",
+    "workerd": "./workerd.js",
+    "default": "./index.js"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "_virtual/",
+    "wasm/",
+    "*.js",
+    "*.d.ts",
+    "*.ts",
+    "!*.config.js"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "jco": "jco transpile wasm/arcjet_analyze_bindings_redact.component.wasm --no-wasi-shim --instantiation async -o wasm",
+    "build": "npm run jco; rollup --config rollup.config.js",
+    "lint": "eslint .",
+    "pretest": "npm run build",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@arcjet/eslint-config": "1.0.0-alpha.22",
+    "@arcjet/rollup-config": "1.0.0-alpha.22",
+    "@arcjet/tsconfig": "1.0.0-alpha.22",
+    "@bytecodealliance/jco": "1.5.0",
+    "@jest/globals": "29.7.0",
+    "@rollup/wasm-node": "4.21.1",
+    "@types/node": "18.18.0",
+    "jest": "29.7.0",
+    "typescript": "5.5.4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  }
+}
