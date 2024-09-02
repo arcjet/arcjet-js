@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...@arcjet/transport-v1.0.0-alpha.23) (2024-09-02)
+
+
+### 🧹 Miscellaneous Chores
+
+* **transport:** Reduce idle timeout for AWS Global Accelerator ([#1479](https://github.com/arcjet/arcjet-js/issues/1479)) ([cd1df38](https://github.com/arcjet/arcjet-js/commit/cd1df385c412266aa78fe14489c680d0b100fecb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+
 ## [1.0.0-alpha.22](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.21...@arcjet/transport-v1.0.0-alpha.22) (2024-08-26)
 
 

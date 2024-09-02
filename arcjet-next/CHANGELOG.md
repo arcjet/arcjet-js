@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...@arcjet/next-v1.0.0-alpha.23) (2024-09-02)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/next:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/headers bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/ip bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/logger bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/protocol bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/transport bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * arcjet bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+
 ## [1.0.0-alpha.22](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.21...@arcjet/next-v1.0.0-alpha.22) (2024-08-26)
 
 

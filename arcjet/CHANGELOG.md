@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...arcjet-v1.0.0-alpha.23) (2024-09-02)
+
+
+### 🪲 Bug Fixes
+
+* **analyze:** Ensure headers are serialized correctly ([#1435](https://github.com/arcjet/arcjet-js/issues/1435)) ([0319412](https://github.com/arcjet/arcjet-js/commit/0319412a56e6227f71ab981e23ccdd460a3515cd))
+* **arcjet:** Infer types when no detect function is specified ([#1446](https://github.com/arcjet/arcjet-js/issues/1446)) ([8ae0370](https://github.com/arcjet/arcjet-js/commit/8ae03707f6e168c3451542d9ea78f816f0e1fc6a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/duration bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/headers bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/protocol bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/runtime bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+
 ## [1.0.0-alpha.22](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.21...arcjet-v1.0.0-alpha.22) (2024-08-26)
 
 
