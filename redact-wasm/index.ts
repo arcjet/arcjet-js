@@ -1,4 +1,4 @@
-import * as core from "./wasm/arcjet_analyze_bindings_redact.component.js";
+import { instantiate } from "./wasm/arcjet_analyze_bindings_redact.component.js";
 import type {
   ImportObject,
   RedactedSensitiveInfoEntity,
@@ -51,8 +51,7 @@ export async function initializeWasm(
 
   try {
     // Await the instantiation to catch the failure
-    const api = await core.instantiate(moduleFromPath, coreImports);
-    return api;
+    return await instantiate(moduleFromPath, coreImports);
   } catch {
     console.debug("WebAssembly is not supported in this runtime");
   }
