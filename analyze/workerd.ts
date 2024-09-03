@@ -160,7 +160,7 @@ export async function isValidEmail(
   if (typeof analyze !== "undefined") {
     return analyze.isValidEmail(candidate, optionsOrDefault);
   } else {
-    // Skip the local evaluation of the rule if WASM is not available
+    // Skip the local evaluation of the rule if Wasm is not available
     return {
       validity: "valid",
       blocked: [],
