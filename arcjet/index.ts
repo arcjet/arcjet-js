@@ -802,7 +802,7 @@ export function detectBot(
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
     if (typeof opt.allow !== "undefined" && typeof opt.deny !== "undefined") {
       throw new Error(
-        "Both allow and deny cannot be provided to sensitiveInfo",
+        "Both allow and deny cannot be provided to detectBot",
       );
     }
 
