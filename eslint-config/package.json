@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/eslint-config",
-  "version": "1.0.0-alpha.22",
+  "version": "1.0.0-alpha.23",
   "description": "Custom eslint config for Arcjet projects",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -36,7 +36,7 @@
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
     "eslint-config-prettier": "9.1.0",
-    "eslint-config-turbo": "2.1.0"
+    "eslint-config-turbo": "2.1.1"
   },
   "peerDependencies": {
     "eslint": "^8"

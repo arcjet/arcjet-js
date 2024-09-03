@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...v1.0.0-alpha.23) (2024-09-02)
+
+
+### 🚀 New Features
+
+* add library to perform redaction of sensitive information ([#1358](https://github.com/arcjet/arcjet-js/issues/1358)) ([59d4a0d](https://github.com/arcjet/arcjet-js/commit/59d4a0de86ae8f6b44839566df49bb2cd391e51a))
+
+
+### 🪲 Bug Fixes
+
+* **analyze:** Ensure headers are serialized correctly ([#1435](https://github.com/arcjet/arcjet-js/issues/1435)) ([0319412](https://github.com/arcjet/arcjet-js/commit/0319412a56e6227f71ab981e23ccdd460a3515cd))
+* **arcjet:** Infer types when no detect function is specified ([#1446](https://github.com/arcjet/arcjet-js/issues/1446)) ([8ae0370](https://github.com/arcjet/arcjet-js/commit/8ae03707f6e168c3451542d9ea78f816f0e1fc6a))
+* Ensure instantiation throws if WebAssembly is unavailable ([#1458](https://github.com/arcjet/arcjet-js/issues/1458)) ([0edfd45](https://github.com/arcjet/arcjet-js/commit/0edfd457d9f1428d360787e8c78dce3471abdee8))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps:** bump webpack and @nestjs/cli in /examples/nodejs-nestjs ([#1456](https://github.com/arcjet/arcjet-js/issues/1456)) ([8d125ac](https://github.com/arcjet/arcjet-js/commit/8d125acfe3b641fc9337693d64c4bcba11a5b334))
+* **example:** Remove env package usage ([#1457](https://github.com/arcjet/arcjet-js/issues/1457)) ([f09f3d3](https://github.com/arcjet/arcjet-js/commit/f09f3d3cfc9b74bde91d5f1fbedbcfc1da0a282c))
+* remove sideEffects from analyze ([#1444](https://github.com/arcjet/arcjet-js/issues/1444)) ([572aaa0](https://github.com/arcjet/arcjet-js/commit/572aaa067ba8d2e132e608997b15953896474ca9))
+* **transport:** Reduce idle timeout for AWS Global Accelerator ([#1479](https://github.com/arcjet/arcjet-js/issues/1479)) ([cd1df38](https://github.com/arcjet/arcjet-js/commit/cd1df385c412266aa78fe14489c680d0b100fecb))
+
 ## [1.0.0-alpha.22](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.21...v1.0.0-alpha.22) (2024-08-26)
 
 

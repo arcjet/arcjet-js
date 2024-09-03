@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...@arcjet/analyze-v1.0.0-alpha.23) (2024-09-02)
+
+
+### 🪲 Bug Fixes
+
+* **analyze:** Ensure headers are serialized correctly ([#1435](https://github.com/arcjet/arcjet-js/issues/1435)) ([0319412](https://github.com/arcjet/arcjet-js/commit/0319412a56e6227f71ab981e23ccdd460a3515cd))
+* Ensure instantiation throws if WebAssembly is unavailable ([#1458](https://github.com/arcjet/arcjet-js/issues/1458)) ([0edfd45](https://github.com/arcjet/arcjet-js/commit/0edfd457d9f1428d360787e8c78dce3471abdee8))
+
+
+### 🧹 Miscellaneous Chores
+
+* remove sideEffects from analyze ([#1444](https://github.com/arcjet/arcjet-js/issues/1444)) ([572aaa0](https://github.com/arcjet/arcjet-js/commit/572aaa067ba8d2e132e608997b15953896474ca9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.22 to 1.0.0-alpha.23
+
 ## [1.0.0-alpha.22](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.21...@arcjet/analyze-v1.0.0-alpha.22) (2024-08-26)
 
 

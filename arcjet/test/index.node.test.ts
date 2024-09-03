@@ -4169,12 +4169,12 @@ describe("SDK", () => {
 
       const customDetect = (tokens: string[]) => {
         expect(tokens).toHaveLength(3);
-        return new Array(tokens.length).fill(undefined);
+        return tokens.map(() => undefined);
       };
 
       const [rule] = sensitiveInfo({
         mode: "LIVE",
-        allow: ["custom"],
+        allow: [],
         detect: customDetect,
         contextWindowSize: 3,
       });

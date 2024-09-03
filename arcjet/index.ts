@@ -292,38 +292,39 @@ type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
 ) => Array<ArcjetSensitiveInfoType | T | undefined>;
 
-type SensitiveInfoOptionsAllow<
-  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
-  CustomEntities extends string,
-> = {
-  allow: Array<
-    ArcjetSensitiveInfoType | Exclude<ReturnType<Detect>[number], undefined>
-  >;
+type ValidEntities<Detect> = Array<
+  // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/
+  // Conditional types distribute over unions. If you have ((string | undefined)
+  // extends undefined ? 1 : 0) it is evaluated separately for each member of
+  // the union, then union-ed together again. The result is (string extends
+  // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
+  // to 0 | 1
+  undefined extends Detect
+    ? ArcjetSensitiveInfoType
+    : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
+      ? ArcjetSensitiveInfoType | CustomEntities
+      : never
+>;
+
+type SensitiveInfoOptionsAllow<Detect> = {
+  allow: ValidEntities<Detect>;
   deny?: never;
   contextWindowSize?: number;
   mode?: ArcjetMode;
   detect?: Detect;
 };
 
-type SensitiveInfoOptionsDeny<
-  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
-  CustomEntities extends string,
-> = {
+type SensitiveInfoOptionsDeny<Detect> = {
   allow?: never;
-  deny: Array<
-    ArcjetSensitiveInfoType | Exclude<ReturnType<Detect>[number], undefined>
-  >;
+  deny: ValidEntities<Detect>;
   contextWindowSize?: number;
   mode?: ArcjetMode;
   detect?: Detect;
 };
 
-export type SensitiveInfoOptions<
-  Detect extends DetectSensitiveInfoEntities<CustomEntities>,
-  CustomEntities extends string,
-> =
-  | SensitiveInfoOptionsAllow<Detect, CustomEntities>
-  | SensitiveInfoOptionsDeny<Detect, CustomEntities>;
+export type SensitiveInfoOptions<Detect> =
+  | SensitiveInfoOptionsAllow<Detect>
+  | SensitiveInfoOptionsDeny<Detect>;
 
 const Priority = {
   SensitiveInfo: 1,
@@ -608,11 +609,11 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
 }
 
 export function sensitiveInfo<
-  const Detect extends DetectSensitiveInfoEntities<CustomEntities>,
+  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
 >(
-  options: SensitiveInfoOptions<Detect, CustomEntities>,
-  ...additionalOptions: SensitiveInfoOptions<Detect, CustomEntities>[]
+  options: SensitiveInfoOptions<Detect>,
+  ...additionalOptions: SensitiveInfoOptions<Detect>[]
 ): Primitive<{}> {
   const rules: ArcjetSensitiveInfoRule<{}>[] = [];
 
