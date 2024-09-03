@@ -894,7 +894,7 @@ export function detectBot(
           });
         } else {
           return new ArcjetRuleResult({
-            ttl: 60,
+            ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
             reason: new ArcjetBotReason({

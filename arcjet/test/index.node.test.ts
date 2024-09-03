@@ -323,6 +323,34 @@ describe("Primitive > detectBot", () => {
     expect(rule).toHaveProperty("mode", "DRY_RUN");
   });
 
+  test("throws if `allow` and `deny` are both defined", async () => {
+    expect(() => {
+      const _ = detectBot({
+        allow: ["CURL"],
+        // @ts-expect-error
+        deny: ["GOOGLE_ADSBOT"],
+      });
+    }).toThrow();
+  });
+
+  test("throws if `allow` contains non-strings", async () => {
+    expect(() => {
+      const _ = detectBot({
+        // @ts-expect-error
+        allow: [/abc/],
+      });
+    }).toThrow();
+  });
+
+  test("throws if `deny` contains non-strings", async () => {
+    expect(() => {
+      const _ = detectBot({
+        // @ts-expect-error
+        deny: [/abc/],
+      });
+    }).toThrow();
+  });
+
   test("throws via `validate()` if headers is undefined", () => {
     const context = {
       key: "test-key",
@@ -341,6 +369,31 @@ describe("Primitive > detectBot", () => {
     assertIsLocalRule(rule);
     expect(() => {
       const _ = rule.validate(context, details);
+    }).toThrow();
+  });
+
+  test("throws via `validate()` if headers does not extend Headers", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      headers: {},
+    };
+
+    const [rule] = detectBot();
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    expect(() => {
+      const _ = rule.validate(
+        context,
+        //@ts-expect-error
+        details,
+      );
     }).toThrow();
   });
 
@@ -410,6 +463,68 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: [],
         denied: ["CURL"],
+      }),
+    });
+  });
+
+  test("only denies CURL if configured", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const curlDetails = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+    const googlebotDetails = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "Googlebot/2.0"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = detectBot({
+      mode: ArcjetMode.LIVE,
+      deny: ["CURL"],
+    });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const curlResult = await rule.protect(context, curlDetails);
+    expect(curlResult).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CURL"],
+      }),
+    });
+    const googlebotResults = await rule.protect(context, googlebotDetails);
+    expect(googlebotResults).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetBotReason({
+        allowed: ["GOOGLE_CRAWLER"],
+        denied: [],
       }),
     });
   });
