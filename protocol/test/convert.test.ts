@@ -192,7 +192,7 @@ describe("convert", () => {
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
-            case: "bot",
+            case: "botV2",
             value: {
               allowed: [],
               denied: [],
@@ -383,7 +383,7 @@ describe("convert", () => {
     ).toEqual(
       new Reason({
         reason: {
-          case: "bot",
+          case: "botV2",
           value: {
             allowed: ["GOOGLE_CRAWLER"],
             denied: [],
@@ -681,7 +681,7 @@ describe("convert", () => {
     ).toEqual(
       new Rule({
         rule: {
-          case: "bots",
+          case: "botV2",
           value: {
             mode: Mode.DRY_RUN,
             allow: [],

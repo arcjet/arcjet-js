@@ -34,7 +34,7 @@ import {
 } from "./index";
 import type { IpDetails } from "./proto/decide/v1alpha1/decide_pb.js";
 import {
-  BotReason,
+  BotV2Reason,
   Conclusion,
   Decision,
   EdgeRuleReason,
@@ -225,7 +225,7 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         resetTime: reason.resetTime?.toDate(),
       });
     }
-    case "bot": {
+    case "botV2": {
       const reason = proto.reason.value;
       return new ArcjetBotReason({
         allowed: reason.allowed,
@@ -253,6 +253,9 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         allowed: reason.allowed,
         denied: reason.denied,
       });
+    }
+    case "bot": {
+      return new ArcjetErrorReason("bot detection v1 is deprecated");
     }
     case "error": {
       const reason = proto.reason.value;
@@ -289,8 +292,8 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
   if (reason.isBot()) {
     return new Reason({
       reason: {
-        case: "bot",
-        value: new BotReason({
+        case: "botV2",
+        value: new BotV2Reason({
           allowed: reason.allowed,
           denied: reason.denied,
         }),
@@ -630,7 +633,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
     const deny = Array.isArray(rule.deny) ? rule.deny : [];
     return new Rule({
       rule: {
-        case: "bots",
+        case: "botV2",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
           allow,

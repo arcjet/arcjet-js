@@ -7,6 +7,71 @@ import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialM
 import { Message, proto3 } from "@bufbuild/protobuf";
 
 /**
+ * Represents whether we think the client is a bot or not. This should be used
+ * alongside the bot score which represents the level of certainty of our
+ * detection.
+ *
+ * @generated from enum proto.decide.v1alpha1.BotType
+ */
+export declare enum BotType {
+  /**
+   * The bot type is unspecified. This should not be used, but is here to
+   * conform to the gRPC best practices.
+   *
+   * @generated from enum value: BOT_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * We could not analyze the request, perhaps because of insufficient
+   * information or because the bot analysis can't be executed in this
+   * environment. We do not recommend blocking these requests. Represented by
+   * a score of 0.
+   *
+   * @generated from enum value: BOT_TYPE_NOT_ANALYZED = 1;
+   */
+  NOT_ANALYZED = 1,
+
+  /**
+   * We are sure the request was made by an automated bot. We recommend
+   * blocking these requests for paths which are for humans only e.g. login or
+   * signup pages, but not blocking for API paths. Represented by a score of
+   * 1.
+   *
+   * @generated from enum value: BOT_TYPE_AUTOMATED = 2;
+   */
+  AUTOMATED = 2,
+
+  /**
+   * We have some evidence that the request was made by an automated bot. The
+   * degree of certainty is represented by a score range of 2-29.
+   *
+   * @generated from enum value: BOT_TYPE_LIKELY_AUTOMATED = 3;
+   */
+  LIKELY_AUTOMATED = 3,
+
+  /**
+   * We don't think this request was made by an automated bot. The degree of
+   * certainty is represented by a score range of 30-99.
+   *
+   * @generated from enum value: BOT_TYPE_LIKELY_NOT_A_BOT = 4;
+   */
+  LIKELY_NOT_A_BOT = 4,
+
+  /**
+   * We are sure the request was made by an automated bot and it is on our
+   * list of verified good bots. This is manually maintained by the Arcjet
+   * team and includes bots such as monitoring agents and friendly search
+   * engine crawlers. In most cases you can allow these requests on public
+   * pages, but you may wish to block them for internal or private paths.
+   * Represented by a score of 100.
+   *
+   * @generated from enum value: BOT_TYPE_VERIFIED_BOT = 5;
+   */
+  VERIFIED_BOT = 5,
+}
+
+/**
  * Represents the type of email address submitted.
  *
  * @generated from enum proto.decide.v1alpha1.EmailType
@@ -519,13 +584,22 @@ export declare class Reason extends Message<Reason> {
     case: "error";
   } | {
     /**
-     * Contains details about sensitive info identified in the body of the 
+     * Contains details about sensitive info identified in the body of the
      * request if the sensitive info rule is configured.
      *
      * @generated from field: proto.decide.v1alpha1.SensitiveInfoReason sensitive_info = 7;
      */
     value: SensitiveInfoReason;
     case: "sensitiveInfo";
+  } | {
+    /**
+     * Contains details about why the request was considered a bot when the
+     * decision was made based on a bot (v2) rule.
+     *
+     * @generated from field: proto.decide.v1alpha1.BotV2Reason bot_v2 = 8;
+     */
+    value: BotV2Reason;
+    case: "botV2";
   } | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<Reason>);
@@ -639,14 +713,62 @@ export declare class EdgeRuleReason extends Message<EdgeRuleReason> {
  */
 export declare class BotReason extends Message<BotReason> {
   /**
-   * @generated from field: repeated string allowed = 10;
+   * The bot type we detected. See `BotType` for more information.
+   *
+   * @generated from field: proto.decide.v1alpha1.BotType bot_type = 1;
    */
-  allowed: string[];
+  botType: BotType;
 
   /**
-   * @generated from field: repeated string denied = 11;
+   * The bot score we calculated. Score ranges from 0 to 99 representing the
+   * degree of certainty. The higher the number within the type category, the
+   * greater the degree of certainty. See `BotType` for more information.
+   *
+   * @generated from field: int32 bot_score = 2;
    */
-  denied: string[];
+  botScore: number;
+
+  /**
+   * Whether bot detection was triggered by our user agent matching.
+   *
+   * @generated from field: bool user_agent_match = 3;
+   */
+  userAgentMatch: boolean;
+
+  /**
+   * Whether the IP address belongs to a hosting provider.
+   *
+   * @generated from field: bool ip_hosting = 5;
+   */
+  ipHosting: boolean;
+
+  /**
+   * Whether the IP address belongs to a VPN provider.
+   *
+   * @generated from field: bool ip_vpn = 6;
+   */
+  ipVpn: boolean;
+
+  /**
+   * Whether the IP address belongs to a proxy provider.
+   *
+   * @generated from field: bool ip_proxy = 7;
+   */
+  ipProxy: boolean;
+
+  /**
+   * Whether the IP address belongs to a Tor node.
+   *
+   * @generated from field: bool ip_tor = 8;
+   */
+  ipTor: boolean;
+
+  /**
+   * Whether the IP address belongs to a relay service.
+   *
+   * @generated from field: bool ip_relay = 9;
+   */
+  ipRelay: boolean;
 
   constructor(data?: PartialMessage<BotReason>);
 
@@ -661,6 +783,37 @@ export declare class BotReason extends Message<BotReason> {
   static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BotReason;
 
   static equals(a: BotReason | PlainMessage<BotReason> | undefined, b: BotReason | PlainMessage<BotReason> | undefined): boolean;
+}
+
+/**
+ * Details of a bot (v2) decision.
+ *
+ * @generated from message proto.decide.v1alpha1.BotV2Reason
+ */
+export declare class BotV2Reason extends Message<BotV2Reason> {
+  /**
+   * @generated from field: repeated string allowed = 1;
+   */
+  allowed: string[];
+
+  /**
+   * @generated from field: repeated string denied = 2;
+   */
+  denied: string[];
+
+  constructor(data?: PartialMessage<BotV2Reason>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.BotV2Reason";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BotV2Reason;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BotV2Reason;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BotV2Reason;
+
+  static equals(a: BotV2Reason | PlainMessage<BotV2Reason> | undefined, b: BotV2Reason | PlainMessage<BotV2Reason> | undefined): boolean;
 }
 
 /**
@@ -973,14 +1126,21 @@ export declare class BotRule extends Message<BotRule> {
   mode: Mode;
 
   /**
-   * @generated from field: repeated string allow = 4;
+   * The bot types to block. This may be one or more of the `BotType` values.
+   *
+   * @generated from field: repeated proto.decide.v1alpha1.BotType block = 2;
    */
-  allow: string[];
+  block: BotType[];
 
   /**
-   * @generated from field: repeated string deny = 5;
+   * Additional bot detection rules to add or remove from the Arcjet standard
+   * list. Each rule is a regular expression that matches the user agent of
+   * the bot plus a label to indicate what type of bot it is from the above
+   * `BotType`s.
+   *
+   * @generated from field: proto.decide.v1alpha1.BotRule.Patterns patterns = 3;
    */
-  deny: string[];
+  patterns?: BotRule_Patterns;
 
   constructor(data?: PartialMessage<BotRule>);
 
@@ -995,6 +1155,71 @@ export declare class BotRule extends Message<BotRule> {
   static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BotRule;
 
   static equals(a: BotRule | PlainMessage<BotRule> | undefined, b: BotRule | PlainMessage<BotRule> | undefined): boolean;
+}
+
+/**
+ * @generated from message proto.decide.v1alpha1.BotRule.Patterns
+ */
+export declare class BotRule_Patterns extends Message<BotRule_Patterns> {
+  /**
+   * @generated from field: map<string, proto.decide.v1alpha1.BotType> add = 1;
+   */
+  add: { [key: string]: BotType };
+
+  /**
+   * @generated from field: repeated string remove = 2;
+   */
+  remove: string[];
+
+  constructor(data?: PartialMessage<BotRule_Patterns>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.BotRule.Patterns";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BotRule_Patterns;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BotRule_Patterns;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BotRule_Patterns;
+
+  static equals(a: BotRule_Patterns | PlainMessage<BotRule_Patterns> | undefined, b: BotRule_Patterns | PlainMessage<BotRule_Patterns> | undefined): boolean;
+}
+
+/**
+ * The configuration for a bot (v2) rule.
+ *
+ * @generated from message proto.decide.v1alpha1.BotV2Rule
+ */
+export declare class BotV2Rule extends Message<BotV2Rule> {
+  /**
+   * @generated from field: proto.decide.v1alpha1.Mode mode = 1;
+   */
+  mode: Mode;
+
+  /**
+   * @generated from field: repeated string allow = 2;
+   */
+  allow: string[];
+
+  /**
+   * @generated from field: repeated string deny = 3;
+   */
+  deny: string[];
+
+  constructor(data?: PartialMessage<BotV2Rule>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.BotV2Rule";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BotV2Rule;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BotV2Rule;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BotV2Rule;
+
+  static equals(a: BotV2Rule | PlainMessage<BotV2Rule> | undefined, b: BotV2Rule | PlainMessage<BotV2Rule> | undefined): boolean;
 }
 
 /**
@@ -1149,6 +1374,12 @@ export declare class Rule extends Message<Rule> {
      */
     value: SensitiveInfoRule;
     case: "sensitiveInfo";
+  } | {
+    /**
+     * @generated from field: proto.decide.v1alpha1.BotV2Rule bot_v2 = 6;
+     */
+    value: BotV2Rule;
+    case: "botV2";
   } | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<Rule>);
