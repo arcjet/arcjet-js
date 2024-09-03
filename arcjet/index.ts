@@ -34,7 +34,7 @@ import * as analyze from "@arcjet/analyze";
 import type {
   DetectedSensitiveInfoEntity,
   SensitiveInfoEntity,
-  BotConfig as AnalyzeBotConfig,
+  BotConfig,
 } from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
@@ -810,7 +810,7 @@ export function detectBot(
     const allow = Array.isArray(opt.allow) ? opt.allow : [];
     const deny = Array.isArray(opt.deny) ? opt.deny : [];
 
-    let config: AnalyzeBotConfig = {
+    let config: BotConfig = {
       tag: "allowed-bot-config",
       val: {
         entities: [],
