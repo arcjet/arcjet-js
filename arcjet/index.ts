@@ -802,13 +802,8 @@ export function detectBot(
   for (const opt of [options ?? { allow: [] }, ...additionalOptions]) {
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
     if (typeof opt.allow !== "undefined" && typeof opt.deny !== "undefined") {
-      throw new Error(
-        "Both allow and deny cannot be provided to detectBot",
-      );
+      throw new Error("Both allow and deny cannot be provided to detectBot");
     }
-
-    const allow = Array.isArray(opt.allow) ? opt.allow : [];
-    const deny = Array.isArray(opt.deny) ? opt.deny : [];
 
     let config: BotConfig = {
       tag: "allowed-bot-config",
@@ -818,6 +813,12 @@ export function detectBot(
       },
     };
     if (Array.isArray(opt.allow)) {
+      for (const allow of opt.allow) {
+        if (typeof allow !== "string") {
+          throw new Error("all values in `allow` must be a string");
+        }
+      }
+
       config = {
         tag: "allowed-bot-config",
         val: {
@@ -828,6 +829,12 @@ export function detectBot(
     }
 
     if (Array.isArray(opt.deny)) {
+      for (const deny of opt.deny) {
+        if (typeof deny !== "string") {
+          throw new Error("all values in `allow` must be a string");
+        }
+      }
+
       config = {
         tag: "denied-bot-config",
         val: {
@@ -841,21 +848,24 @@ export function detectBot(
       type: "BOT",
       priority: Priority.BotDetection,
       mode,
-      allow,
-      deny,
+      allow: Array.isArray(opt.allow) ? opt.allow : [],
+      deny: Array.isArray(opt.deny) ? opt.deny : [],
 
       validate(
         context: ArcjetContext,
         details: Partial<ArcjetRequestDetails>,
       ): asserts details is ArcjetRequestDetails {
-        assert(
-          typeof details.headers !== "undefined",
-          "DetectBot requires `headers` to be set.",
-        );
-        assert(
-          details.headers!.has("user-agent"),
-          "bot detection requires user-agent header",
-        );
+        if (typeof details.headers === "undefined") {
+          throw new Error("bot detection requires `headers` to be set");
+        }
+        if (typeof details.headers.has !== "function") {
+          throw new Error(
+            "bot detection requires `headers` to extend `Headers`",
+          );
+        }
+        if (!details.headers.has("user-agent")) {
+          throw new Error("bot detection requires user-agent header");
+        }
       },
 
       /**
