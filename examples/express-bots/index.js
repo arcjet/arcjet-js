@@ -13,9 +13,11 @@ const aj = arcjet({
     shield({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
     }),
+    // Detect bots with the ability to allow or deny subsets
     detectBot({
       mode: "LIVE",
-      deny: ["CURL"]
+      deny: ["CURL"] // explicitly deny the curl command
+      // allow: [] // explicitly allow bots in the list while denying all others
     }),
   ],
 });
