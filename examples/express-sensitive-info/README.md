@@ -39,7 +39,7 @@ This example shows how to use Arcjet to perform Sensitive Information detection 
    [dotenv](https://www.npmjs.com/package/dotenv) to load the environment file.
 
 4. Execute to POST request to `http://localhost:3000/` without any sensitive data.
-   `curl http://localhost:3000/ -X POST --data "hello world!"`
+   `curl http://localhost:3000/ -H "Content-Type: text/plain" -X POST --data "hello world!"`
 5. Execute to POST request to `http://localhost:3000/` with some blocked entities in the body
    and the request should fail.
-   `curl http://localhost:3000/ -X POST --data "my email address is test@example.com"`
+   `curl http://localhost:3000/ -H "Content-Type: text/plain" -X POST --data "my email address is test@example.com"`
