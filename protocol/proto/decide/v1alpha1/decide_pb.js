@@ -175,6 +175,7 @@ export const Reason = /*@__PURE__*/ proto3.makeMessageType(
     { no: 5, name: "email", kind: "message", T: EmailReason, oneof: "reason" },
     { no: 6, name: "error", kind: "message", T: ErrorReason, oneof: "reason" },
     { no: 7, name: "sensitive_info", kind: "message", T: SensitiveInfoReason, oneof: "reason" },
+    { no: 8, name: "bot_v2", kind: "message", T: BotV2Reason, oneof: "reason" },
   ],
 );
 
@@ -221,6 +222,19 @@ export const BotReason = /*@__PURE__*/ proto3.makeMessageType(
     { no: 7, name: "ip_proxy", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 8, name: "ip_tor", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 9, name: "ip_relay", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ],
+);
+
+/**
+ * Details of a bot (v2) decision.
+ *
+ * @generated from message proto.decide.v1alpha1.BotV2Reason
+ */
+export const BotV2Reason = /*@__PURE__*/ proto3.makeMessageType(
+  "proto.decide.v1alpha1.BotV2Reason",
+  () => [
+    { no: 1, name: "allowed", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 2, name: "denied", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ],
 );
 
@@ -335,6 +349,20 @@ export const BotRule_Patterns = /*@__PURE__*/ proto3.makeMessageType(
 );
 
 /**
+ * The configuration for a bot (v2) rule.
+ *
+ * @generated from message proto.decide.v1alpha1.BotV2Rule
+ */
+export const BotV2Rule = /*@__PURE__*/ proto3.makeMessageType(
+  "proto.decide.v1alpha1.BotV2Rule",
+  () => [
+    { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
+    { no: 2, name: "allow", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "deny", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ],
+);
+
+/**
  * The configuration for an email rule.
  *
  * @generated from message proto.decide.v1alpha1.EmailRule
@@ -389,6 +417,7 @@ export const Rule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 3, name: "email", kind: "message", T: EmailRule, oneof: "rule" },
     { no: 4, name: "shield", kind: "message", T: ShieldRule, oneof: "rule" },
     { no: 5, name: "sensitive_info", kind: "message", T: SensitiveInfoRule, oneof: "rule" },
+    { no: 6, name: "bot_v2", kind: "message", T: BotV2Rule, oneof: "rule" },
   ],
 );
 

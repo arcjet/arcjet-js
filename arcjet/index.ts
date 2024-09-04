@@ -12,10 +12,10 @@ import type {
   ArcjetLogger,
   ArcjetSensitiveInfoRule,
   ArcjetIdentifiedEntity,
+  ArcjetWellKnownBot,
 } from "@arcjet/protocol";
 import {
   ArcjetBotReason,
-  ArcjetBotType,
   ArcjetEmailReason,
   ArcjetEmailType,
   ArcjetErrorReason,
@@ -28,15 +28,13 @@ import {
   ArcjetDenyDecision,
   ArcjetErrorDecision,
 } from "@arcjet/protocol";
-import {
-  ArcjetBotTypeToProtocol,
-  isRateLimitRule,
-} from "@arcjet/protocol/convert.js";
+import { isRateLimitRule } from "@arcjet/protocol/convert.js";
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import type {
   DetectedSensitiveInfoEntity,
   SensitiveInfoEntity,
+  BotConfig,
 } from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
@@ -269,61 +267,19 @@ type SlidingWindowRateLimitOptions<Characteristics extends readonly string[]> =
     max: number;
   };
 
-/**
- * Bot detection is disabled by default. The `bots` configuration block allows
- * you to enable or disable it and configure additional rules.
- *
- * @link https://docs.arcjet.com/bot-protection
- */
-export type BotOptions = {
+type BotOptionsAllow = {
   mode?: ArcjetMode;
-  /**
-   * The types of bots to block. Defaults to `block:
-   * [ArcjetBotType.Automated]` which blocks requests we are sure are
-   * automated. Choose from the list of `ArcjetBotType` values: `Automated`,
-   * `LikelyAutomated`, `LikelyNotABot`, `VerifiedBot`.
-   */
-  block?: ArcjetBotType[];
-  /**
-   * Additional bot detection rules. This allows you to add or remove rules.
-   */
-  patterns?: {
-    /**
-     * You can add additional bot detection rules to the bots configuration
-     * block. Each rule is a regular expression that matches the user agent of
-     * the bot plus a label to indicate what type of bot this is.
-     *
-     * @example
-     * ```ts
-     * patterns: {
-     *  add: {
-     *   // Adds Googlebot to the list of good bots
-     *   "Googlebot\\/": ArcjetBotType.Automated,
-     *  },
-     * },
-     * ```
-     */
-    add?: { [key: string]: ArcjetBotType };
-    /**
-     * Arcjet includes a set of default matching rules to detect common bots.
-     * You can remove any of these rules by listing them here. See the docs
-     * for a list of default rules which can be removed.
-     *
-     * @link https://docs.arcjet.com/bot-protection
-     * @example
-     * ```ts
-     * patterns: {
-     *   remove: [
-     *   // Removes the datadog agent from the list of bots so it will be
-     *   // considered as ArcjetBotType.LikelyNotABot
-     *   "datadog agent"
-     *   ],
-     * },
-     * ```
-     */
-    remove?: string[];
-  };
+  allow: Array<ArcjetWellKnownBot>;
+  deny?: never;
 };
+
+type BotOptionsDeny = {
+  mode?: ArcjetMode;
+  allow?: never;
+  deny: Array<ArcjetWellKnownBot>;
+};
+
+export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 
 export type EmailOptions = {
   mode?: ArcjetMode;
@@ -836,35 +792,6 @@ export function validateEmail(
   return rules;
 }
 
-// This is an unfortunate requirement of the jco translations. We could align
-// all our SDK enums as lowercase with dashes so we wouldn't need this
-// translation.
-function translateBotType(botType: analyze.BotType): ArcjetBotType | undefined {
-  switch (botType) {
-    case "unspecified": {
-      return;
-    }
-    case "not-analyzed": {
-      return "NOT_ANALYZED";
-    }
-    case "automated": {
-      return "AUTOMATED";
-    }
-    case "likely-automated": {
-      return "LIKELY_AUTOMATED";
-    }
-    case "likely-not-a-bot": {
-      return "LIKELY_NOT_A_BOT";
-    }
-    case "verified-bot": {
-      return "VERIFIED_BOT";
-    }
-    default: {
-      return;
-    }
-  }
-}
-
 export function detectBot(
   options?: BotOptions,
   ...additionalOptions: BotOptions[]
@@ -872,37 +799,73 @@ export function detectBot(
   const rules: ArcjetBotRule<{}>[] = [];
 
   // Always create at least one BOT rule
-  for (const opt of [options ?? {}, ...additionalOptions]) {
+  for (const opt of [options ?? { allow: [] }, ...additionalOptions]) {
     const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    // TODO: Filter invalid bot types (or error??)
-    const block = Array.isArray(opt.block)
-      ? opt.block
-      : [ArcjetBotType.AUTOMATED];
-    // TODO: Does this avoid prototype pollution by putting in a Map first?
-    const addMap = new Map();
-    for (const [key, value] of Object.entries(opt.patterns?.add ?? {})) {
-      addMap.set(key, value);
+    if (typeof opt.allow !== "undefined" && typeof opt.deny !== "undefined") {
+      throw new Error("Both allow and deny cannot be provided to detectBot");
     }
-    // TODO(#217): Additional validation on these `patterns` options
-    const add = Array.from(addMap.entries());
-    const remove = opt.patterns?.remove ?? [];
+
+    let config: BotConfig = {
+      tag: "allowed-bot-config",
+      val: {
+        entities: [],
+        skipCustomDetect: true,
+      },
+    };
+    if (Array.isArray(opt.allow)) {
+      for (const allow of opt.allow) {
+        if (typeof allow !== "string") {
+          throw new Error("all values in `allow` must be a string");
+        }
+      }
+
+      config = {
+        tag: "allowed-bot-config",
+        val: {
+          entities: opt.allow,
+          skipCustomDetect: true,
+        },
+      };
+    }
+
+    if (Array.isArray(opt.deny)) {
+      for (const deny of opt.deny) {
+        if (typeof deny !== "string") {
+          throw new Error("all values in `allow` must be a string");
+        }
+      }
+
+      config = {
+        tag: "denied-bot-config",
+        val: {
+          entities: opt.deny,
+          skipCustomDetect: true,
+        },
+      };
+    }
 
     rules.push({
       type: "BOT",
       priority: Priority.BotDetection,
       mode,
-      block,
-      add,
-      remove,
+      allow: Array.isArray(opt.allow) ? opt.allow : [],
+      deny: Array.isArray(opt.deny) ? opt.deny : [],
 
       validate(
         context: ArcjetContext,
         details: Partial<ArcjetRequestDetails>,
       ): asserts details is ArcjetRequestDetails {
-        assert(
-          typeof details.headers !== "undefined",
-          "DetectBot requires `headers` to be set.",
-        );
+        if (typeof details.headers === "undefined") {
+          throw new Error("bot detection requires `headers` to be set");
+        }
+        if (typeof details.headers.has !== "function") {
+          throw new Error(
+            "bot detection requires `headers` to extend `Headers`",
+          );
+        }
+        if (!details.headers.has("user-agent")) {
+          throw new Error("bot detection requires user-agent header");
+        }
       },
 
       /**
@@ -910,57 +873,33 @@ export function detectBot(
        */
       async protect(
         context: ArcjetContext,
-        { headers }: ArcjetRequestDetails,
+        request: ArcjetRequestDetails,
       ): Promise<ArcjetRuleResult> {
-        const headersKV: Record<string, string> = {};
-
-        for (const [key, value] of headers) {
-          headersKV[key] = value;
-        }
-
-        const botResult = await analyze.detectBot(
+        const result = await analyze.detectBot(
           context,
-          JSON.stringify(headersKV),
-          JSON.stringify(
-            Object.fromEntries(
-              add.map(([key, botType]) => [
-                key,
-                ArcjetBotTypeToProtocol(botType),
-              ]),
-            ),
-          ),
-          JSON.stringify(remove),
+          toAnalyzeRequest(request),
+          config,
         );
 
-        const botType = translateBotType(botResult.botType);
-        if (typeof botType === "undefined") {
-          return new ArcjetRuleResult({
-            ttl: 0,
-            state: "RUN",
-            conclusion: "ERROR",
-            reason: new ArcjetErrorReason("Could not determine bot type"),
-          });
-        }
-
         // If this is a bot and of a type that we want to block, then block!
-        if (botResult.botScore !== 0 && block.includes(botType)) {
+        if (result.denied.length > 0) {
           return new ArcjetRuleResult({
             ttl: 60,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetBotReason({
-              botType,
-              botScore: botResult.botScore,
-              userAgentMatch: true,
+              allowed: result.allowed,
+              denied: result.denied,
             }),
           });
         } else {
           return new ArcjetRuleResult({
-            ttl: 60,
+            ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
             reason: new ArcjetBotReason({
-              botType,
+              allowed: result.allowed,
+              denied: result.denied,
             }),
           });
         }

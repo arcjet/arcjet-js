@@ -1,6 +1,9 @@
 import { typeid } from "typeid-js";
 import { Reason } from "./proto/decide/v1alpha1/decide_pb.js";
 
+// Re-export the Well Known Bots from the generated file
+export type * from "./well-known-bots.js";
+
 type RequiredProps<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
 
 type ArcjetEnum<T extends string> = { readonly [Key in T]: T };
@@ -21,20 +24,6 @@ export const ArcjetRateLimitAlgorithm: ArcjetEnum<ArcjetRateLimitAlgorithm> =
     FIXED_WINDOW: "FIXED_WINDOW",
     SLIDING_WINDOW: "SLIDING_WINDOW",
   });
-
-export type ArcjetBotType =
-  | "NOT_ANALYZED"
-  | "AUTOMATED"
-  | "LIKELY_AUTOMATED"
-  | "LIKELY_NOT_A_BOT"
-  | "VERIFIED_BOT";
-export const ArcjetBotType: ArcjetEnum<ArcjetBotType> = Object.freeze({
-  NOT_ANALYZED: "NOT_ANALYZED",
-  AUTOMATED: "AUTOMATED",
-  LIKELY_AUTOMATED: "LIKELY_AUTOMATED",
-  LIKELY_NOT_A_BOT: "LIKELY_NOT_A_BOT",
-  VERIFIED_BOT: "VERIFIED_BOT",
-});
 
 export type ArcjetEmailType =
   | "DISPOSABLE"
@@ -183,35 +172,14 @@ export class ArcjetRateLimitReason extends ArcjetReason {
 export class ArcjetBotReason extends ArcjetReason {
   type = "BOT" as const;
 
-  botType: ArcjetBotType;
-  botScore: number;
-  userAgentMatch: boolean;
-  ipHosting: boolean;
-  ipVpn: boolean;
-  ipProxy: boolean;
-  ipTor: boolean;
-  ipRelay: boolean;
+  allowed: Array<string>;
+  denied: Array<string>;
 
-  constructor(init: {
-    botType: ArcjetBotType;
-    botScore?: number;
-    userAgentMatch?: boolean;
-    ipHosting?: boolean;
-    ipVpn?: boolean;
-    ipProxy?: boolean;
-    ipTor?: boolean;
-    ipRelay?: boolean;
-  }) {
+  constructor(init: { allowed: Array<string>; denied: Array<string> }) {
     super();
 
-    this.botType = init.botType;
-    this.botScore = init.botScore ?? 0;
-    this.userAgentMatch = init.userAgentMatch ?? false;
-    this.ipHosting = init.ipHosting ?? false;
-    this.ipVpn = init.ipVpn ?? false;
-    this.ipProxy = init.ipProxy ?? false;
-    this.ipTor = init.ipTor ?? false;
-    this.ipRelay = init.ipRelay ?? false;
+    this.allowed = init.allowed;
+    this.denied = init.denied;
   }
 }
 
@@ -787,9 +755,8 @@ export interface ArcjetBotRule<Props extends {}>
   extends ArcjetLocalRule<Props> {
   type: "BOT";
 
-  block: ArcjetBotType[];
-  add: [string, ArcjetBotType][];
-  remove: string[];
+  allow: Array<string>;
+  deny: Array<string>;
 }
 
 export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {

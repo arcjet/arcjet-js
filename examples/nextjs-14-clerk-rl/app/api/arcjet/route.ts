@@ -1,4 +1,4 @@
-import arcjet, { ArcjetDecision, tokenBucket, detectBot, shield } from "@arcjet/next";
+import arcjet, { ArcjetDecision, tokenBucket, shield } from "@arcjet/next";
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 

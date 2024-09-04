@@ -1,10 +1,5 @@
 function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.instantiate) {
   
-  function clampGuest(i, min, max) {
-    if (i < min || i > max) throw new TypeError(`must be between ${min} and ${max}`);
-    return i;
-  }
-  
   class ComponentError extends Error {
     constructor (value) {
       const enumerable = typeof value !== 'string';
@@ -289,63 +284,97 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     postReturn2 = exports1['cabi_post_is-valid-email'];
     postReturn3 = exports1['cabi_post_detect-sensitive-info'];
     
-    function detectBot(arg0, arg1, arg2) {
+    function detectBot(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
-      var ptr1 = utf8Encode(arg1, realloc0, memory0);
-      var len1 = utf8EncodedLen;
-      var ptr2 = utf8Encode(arg2, realloc0, memory0);
-      var len2 = utf8EncodedLen;
-      const ret = exports1['detect-bot'](ptr0, len0, ptr1, len1, ptr2, len2);
-      let variant5;
+      var variant7 = arg1;
+      let variant7_0;
+      let variant7_1;
+      let variant7_2;
+      let variant7_3;
+      switch (variant7.tag) {
+        case 'allowed-bot-config': {
+          const e = variant7.val;
+          var {entities: v1_0, skipCustomDetect: v1_1 } = e;
+          var vec3 = v1_0;
+          var len3 = vec3.length;
+          var result3 = realloc0(0, 0, 4, len3 * 8);
+          for (let i = 0; i < vec3.length; i++) {
+            const e = vec3[i];
+            const base = result3 + i * 8;var ptr2 = utf8Encode(e, realloc0, memory0);
+            var len2 = utf8EncodedLen;
+            dataView(memory0).setInt32(base + 4, len2, true);
+            dataView(memory0).setInt32(base + 0, ptr2, true);
+          }
+          variant7_0 = 0;
+          variant7_1 = result3;
+          variant7_2 = len3;
+          variant7_3 = v1_1 ? 1 : 0;
+          break;
+        }
+        case 'denied-bot-config': {
+          const e = variant7.val;
+          var {entities: v4_0, skipCustomDetect: v4_1 } = e;
+          var vec6 = v4_0;
+          var len6 = vec6.length;
+          var result6 = realloc0(0, 0, 4, len6 * 8);
+          for (let i = 0; i < vec6.length; i++) {
+            const e = vec6[i];
+            const base = result6 + i * 8;var ptr5 = utf8Encode(e, realloc0, memory0);
+            var len5 = utf8EncodedLen;
+            dataView(memory0).setInt32(base + 4, len5, true);
+            dataView(memory0).setInt32(base + 0, ptr5, true);
+          }
+          variant7_0 = 1;
+          variant7_1 = result6;
+          variant7_2 = len6;
+          variant7_3 = v4_1 ? 1 : 0;
+          break;
+        }
+        default: {
+          throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant7.tag)}\` (received \`${variant7}\`) specified for \`BotConfig\``);
+        }
+      }
+      const ret = exports1['detect-bot'](ptr0, len0, variant7_0, variant7_1, variant7_2, variant7_3);
+      let variant13;
       switch (dataView(memory0).getUint8(ret + 0, true)) {
         case 0: {
-          let enum3;
-          switch (dataView(memory0).getUint8(ret + 4, true)) {
-            case 0: {
-              enum3 = 'unspecified';
-              break;
-            }
-            case 1: {
-              enum3 = 'not-analyzed';
-              break;
-            }
-            case 2: {
-              enum3 = 'automated';
-              break;
-            }
-            case 3: {
-              enum3 = 'likely-automated';
-              break;
-            }
-            case 4: {
-              enum3 = 'likely-not-a-bot';
-              break;
-            }
-            case 5: {
-              enum3 = 'verified-bot';
-              break;
-            }
-            default: {
-              throw new TypeError('invalid discriminant specified for BotType');
-            }
+          var len9 = dataView(memory0).getInt32(ret + 8, true);
+          var base9 = dataView(memory0).getInt32(ret + 4, true);
+          var result9 = [];
+          for (let i = 0; i < len9; i++) {
+            const base = base9 + i * 8;
+            var ptr8 = dataView(memory0).getInt32(base + 0, true);
+            var len8 = dataView(memory0).getInt32(base + 4, true);
+            var result8 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr8, len8));
+            result9.push(result8);
           }
-          variant5= {
+          var len11 = dataView(memory0).getInt32(ret + 16, true);
+          var base11 = dataView(memory0).getInt32(ret + 12, true);
+          var result11 = [];
+          for (let i = 0; i < len11; i++) {
+            const base = base11 + i * 8;
+            var ptr10 = dataView(memory0).getInt32(base + 0, true);
+            var len10 = dataView(memory0).getInt32(base + 4, true);
+            var result10 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr10, len10));
+            result11.push(result10);
+          }
+          variant13= {
             tag: 'ok',
             val: {
-              botType: enum3,
-              botScore: clampGuest(dataView(memory0).getUint8(ret + 5, true), 0, 255),
+              allowed: result9,
+              denied: result11,
             }
           };
           break;
         }
         case 1: {
-          var ptr4 = dataView(memory0).getInt32(ret + 4, true);
-          var len4 = dataView(memory0).getInt32(ret + 8, true);
-          var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
-          variant5= {
+          var ptr12 = dataView(memory0).getInt32(ret + 4, true);
+          var len12 = dataView(memory0).getInt32(ret + 8, true);
+          var result12 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr12, len12));
+          variant13= {
             tag: 'err',
-            val: result4
+            val: result12
           };
           break;
         }
@@ -353,7 +382,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           throw new TypeError('invalid variant discriminant for expected');
         }
       }
-      const retVal = variant5;
+      const retVal = variant13;
       postReturn0(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
