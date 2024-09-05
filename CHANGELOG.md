@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.24](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.23...v1.0.0-alpha.24) (2024-09-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437))
+
+### 🚀 New Features
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437)) ([eef18e3](https://github.com/arcjet/arcjet-js/commit/eef18e3a7c52a849fbc1766439dc28bf0cb2da27))
+
+
+### 🧹 Miscellaneous Chores
+
+* **examples:** Correct some usage mistakes in sensitive info examples ([#1503](https://github.com/arcjet/arcjet-js/issues/1503)) ([1286280](https://github.com/arcjet/arcjet-js/commit/12862800e790c1ad92f14c9285bfde66588027a6))
+
 ## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...v1.0.0-alpha.23) (2024-09-02)
 
 

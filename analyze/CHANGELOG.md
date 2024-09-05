@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-alpha.24](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.23...@arcjet/analyze-v1.0.0-alpha.24) (2024-09-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437))
+
+### 🚀 New Features
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437)) ([eef18e3](https://github.com/arcjet/arcjet-js/commit/eef18e3a7c52a849fbc1766439dc28bf0cb2da27))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+
 ## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...@arcjet/analyze-v1.0.0-alpha.23) (2024-09-02)
 
 
