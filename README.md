@@ -119,7 +119,9 @@ const aj = arcjet({
   rules: [
     detectBot({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      block: ["AUTOMATED"], // blocks all automated clients
+      // configured with a list of bots to allow from
+      // https://arcjet.com/bot-list
+      allow: [], // "allow none" will block all detected bots
     }),
   ],
 });

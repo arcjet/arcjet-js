@@ -39,15 +39,16 @@ npm install -S @arcjet/sveltekit
 
 ## Rate limit example
 
-The [Arcjet rate limit][rate-limit-concepts-docs] example below applies a token
-bucket rate limit rule to a route where we identify the user based on their ID
-e.g. if they are logged in. The bucket is configured with a maximum capacity of
-10 tokens and refills by 5 tokens every 10 seconds. Each request consumes 5
-tokens.
+The example below applies a token bucket rate limit rule to a route where we
+identify the user based on their ID e.g. if they are logged in. The bucket is
+configured with a maximum capacity of 10 tokens and refills by 5 tokens every 10
+seconds. Each request consumes 5 tokens.
+
+Bot detection is also enabled to block requests from known bots.
 
 ```ts
 // In your `+page.server.ts` file
-import arcjet, { tokenBucket } from "@arcjet/sveltekit";
+import arcjet, { tokenBucket, detectBot } from "@arcjet/sveltekit";
 import { error, type RequestEvent } from "@sveltejs/kit";
 import { env } from "$env/dynamic/private";
 
@@ -62,6 +63,12 @@ const aj = arcjet({
       interval: 10, // refill every 10 seconds
       capacity: 10, // bucket maximum capacity of 10 tokens
     }),
+    detectBot({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      // configured with a list of bots to allow from
+      // https://arcjet.com/bot-list
+      allow: [], // "allow none" will block all detected bots
+    }),
   ],
 });
 
@@ -71,7 +78,7 @@ export async function load(event: RequestEvent) {
   console.log("Arcjet decision", decision);
 
   if (decision.isDenied()) {
-    return error(429, "Too Many Requests");
+    return error(403, "Forbidden");
   }
 
   return { message: "Hello world" };
@@ -133,6 +140,5 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [example-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/sveltekit
 [example-source]: https://github.com/arcjet/arcjet-js-example
-[rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
 [shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

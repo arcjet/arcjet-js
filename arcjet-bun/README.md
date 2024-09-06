@@ -37,7 +37,7 @@ Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 bun add @arcjet/bun
 ```
 
-## Rate limit example
+## Rate limit + bot detection example
 
 The [Arcjet rate limit][rate-limit-concepts-docs] example below applies a token
 bucket rate limit rule to a route where we identify the user based on their ID
@@ -46,7 +46,7 @@ e.g. if they are logged in. The bucket is configured with a maximum capacity of
 tokens.
 
 ```ts
-import arcjet, { tokenBucket } from "@arcjet/bun";
+import arcjet, { tokenBucket, detectBot } from "@arcjet/bun";
 
 const aj = arcjet({
   key: Bun.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
@@ -59,6 +59,12 @@ const aj = arcjet({
       interval: 10, // refill every 10 seconds
       capacity: 10, // bucket maximum capacity of 10 tokens
     }),
+    detectBot({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      // configured with a list of bots to allow from
+      // https://arcjet.com/bot-list
+      allow: [], // "allow none" will block all detected bots
+    }),
   ],
 });
 
@@ -70,10 +76,7 @@ export default {
     console.log("Arcjet decision", decision);
 
     if (decision.isDenied()) {
-      return Response.json(
-        { error: "Too Many Requests", reason: decision.reason },
-        { status: 429 },
-      );
+      return Response.json({ error: "Forbidden" }, { status: 403 });
     } else {
       return Response.json({ message: "Hello world" });
     }
