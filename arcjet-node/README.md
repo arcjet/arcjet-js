@@ -42,26 +42,33 @@ npm install -S @arcjet/node
 
 ## Rate limit example
 
-The [Arcjet rate limit][rate-limit-concepts-docs] example below applies a token
-bucket rate limit rule to a route where we identify the user based on their ID
-e.g. if they are logged in. The bucket is configured with a maximum capacity of
-10 tokens and refills by 5 tokens every 10 seconds. Each request consumes 5
-tokens.
+The example below applies a token bucket rate limit rule to a route where we
+identify the user based on their ID e.g. if they are logged in. The bucket is
+configured with a maximum capacity of 10 tokens and refills by 5 tokens every 10
+seconds. Each request consumes 5 tokens.
+
+Bot detection is also enabled to block requests from known bots.
 
 ```ts
-import arcjet, { tokenBucket } from "@arcjet/node";
+import arcjet, { tokenBucket, detectBot } from "@arcjet/node";
 import http from "node:http";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  characteristics: ["userId"], // track requests by a custom user ID
   rules: [
     // Create a token bucket rate limit. Other algorithms are supported.
     tokenBucket({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      characteristics: ["userId"], // track requests by a custom user ID
       refillRate: 5, // refill 5 tokens per interval
       interval: 10, // refill every 10 seconds
       capacity: 10, // bucket maximum capacity of 10 tokens
+    }),
+    detectBot({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      // configured with a list of bots to allow from
+      // https://arcjet.com/bot-list
+      allow: [], // "allow none" will block all detected bots
     }),
   ],
 });
@@ -75,10 +82,8 @@ const server = http.createServer(async function (
   console.log("Arcjet decision", decision);
 
   if (decision.isDenied()) {
-    res.writeHead(429, { "Content-Type": "application/json" });
-    res.end(
-      JSON.stringify({ error: "Too Many Requests", reason: decision.reason }),
-    );
+    res.writeHead(403, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Forbidden" }));
   } else {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Hello world" }));
@@ -135,6 +140,5 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [example-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/nodejs
 [example-source]: https://github.com/arcjet/arcjet-js-example
-[rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
 [shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

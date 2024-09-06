@@ -40,30 +40,35 @@ Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 npm install -S @arcjet/next
 ```
 
-## Rate limit example
+## Rate limit + bot detection example
 
-The [Arcjet rate limit][rate-limit-concepts-docs] example below applies a token
-bucket rate limit rule to a route where we identify the user based on their ID
-e.g. if they are logged in. The bucket is configured with a maximum capacity of
-10 tokens and refills by 5 tokens every 10 seconds. Each request consumes 5
-tokens.
+The example below applies a token bucket rate limit rule to a route where we
+identify the user based on their ID e.g. if they are logged in. The bucket is
+configured with a maximum capacity of 10 tokens and refills by 5 tokens every 10
+seconds. Each request consumes 5 tokens.
 
-See the [Arcjet rate limit documentation][rate-limit-quick-start] for details.
+Bot detection is also enabled to block requests from known bots.
 
 ```ts
-import arcjet, { tokenBucket } from "@arcjet/next";
+import arcjet, { tokenBucket, detectBot } from "@arcjet/next";
 import { NextResponse } from "next/server";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  characteristics: ["userId"], // track requests by a custom user ID
   rules: [
     // Create a token bucket rate limit. Other algorithms are supported.
     tokenBucket({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      characteristics: ["userId"], // track requests by a custom user ID
       refillRate: 5, // refill 5 tokens per interval
       interval: 10, // refill every 10 seconds
       capacity: 10, // bucket maximum capacity of 10 tokens
+    }),
+    detectBot({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      // configured with a list of bots to allow from
+      // https://arcjet.com/bot-list
+      allow: [], // "allow none" will block all detected bots
     }),
   ],
 });
@@ -74,10 +79,7 @@ export async function GET(req: Request) {
   console.log("Arcjet decision", decision);
 
   if (decision.isDenied()) {
-    return NextResponse.json(
-      { error: "Too Many Requests", reason: decision.reason },
-      { status: 429 },
-    );
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   return NextResponse.json({ message: "Hello world" });
@@ -134,8 +136,6 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [next-sdk-docs]: https://docs.arcjet.com/reference/nextjs
 [example-url]: https://example.arcjet.com
 [example-source]: https://github.com/arcjet/arcjet-js-example
-[rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
-[rate-limit-quick-start]: https://docs.arcjet.com/rate-limiting/quick-start/nextjs
 [shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
 [shield-quick-start]: https://docs.arcjet.com/shield/quick-start/nextjs
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
