@@ -2,13 +2,15 @@ import arcjet, { shield, tokenBucket } from "@arcjet/bun";
 
 const aj = arcjet({
   key: Bun.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  // We specify a custom fingerprint so we can dynamically build it within each
+  // demo route.
+  characteristics: ["userId"],
   rules: [
     // Shield protects your app from common attacks like SQL injection
     shield({ mode: "LIVE" }),
     // Create a token bucket rate limit. Other algorithms are supported.
     tokenBucket({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      characteristics: ["userId"], // track requests by a custom user ID
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only      
       refillRate: 5, // refill 5 tokens per interval
       interval: 10, // refill every 10 seconds
       capacity: 10, // bucket maximum capacity of 10 tokens
