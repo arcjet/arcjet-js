@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/bun",
-  "version": "1.0.0-alpha.24",
+  "version": "1.0.0-alpha.25",
   "description": "Arcjet SDK for Bun.sh",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -38,18 +38,18 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "dependencies": {
-    "@arcjet/env": "1.0.0-alpha.24",
-    "@arcjet/headers": "1.0.0-alpha.24",
-    "@arcjet/ip": "1.0.0-alpha.24",
-    "@arcjet/logger": "1.0.0-alpha.24",
-    "@arcjet/protocol": "1.0.0-alpha.24",
-    "@arcjet/transport": "1.0.0-alpha.24",
-    "arcjet": "1.0.0-alpha.24"
+    "@arcjet/env": "1.0.0-alpha.25",
+    "@arcjet/headers": "1.0.0-alpha.25",
+    "@arcjet/ip": "1.0.0-alpha.25",
+    "@arcjet/logger": "1.0.0-alpha.25",
+    "@arcjet/protocol": "1.0.0-alpha.25",
+    "@arcjet/transport": "1.0.0-alpha.25",
+    "arcjet": "1.0.0-alpha.25"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.24",
-    "@arcjet/rollup-config": "1.0.0-alpha.24",
-    "@arcjet/tsconfig": "1.0.0-alpha.24",
+    "@arcjet/eslint-config": "1.0.0-alpha.25",
+    "@arcjet/rollup-config": "1.0.0-alpha.25",
+    "@arcjet/tsconfig": "1.0.0-alpha.25",
     "@jest/globals": "29.7.0",
     "@types/node": "20.12.12",
     "@rollup/wasm-node": "4.21.2",

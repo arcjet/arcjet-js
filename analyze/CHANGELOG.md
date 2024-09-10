@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0-alpha.25](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.24...@arcjet/analyze-v1.0.0-alpha.25) (2024-09-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze:** Regenerate WebAssembly with updated bot list ([#1546](https://github.com/arcjet/arcjet-js/issues/1546)) ([0a38e0f](https://github.com/arcjet/arcjet-js/commit/0a38e0f954eb9cfe52289720f3724b0f8f337744)), closes [#1545](https://github.com/arcjet/arcjet-js/issues/1545)
+* **analyze:** Update crawler list with Coda Server Fetcher ([#1580](https://github.com/arcjet/arcjet-js/issues/1580)) ([91dd435](https://github.com/arcjet/arcjet-js/commit/91dd435bc5abeafbe7955b6e186668e7af6307a1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+
 ## [1.0.0-alpha.24](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.23...@arcjet/analyze-v1.0.0-alpha.24) (2024-09-05)
 
 

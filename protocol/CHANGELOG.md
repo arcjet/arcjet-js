@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.25](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.24...@arcjet/protocol-v1.0.0-alpha.25) (2024-09-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze:** Update crawler list with Coda Server Fetcher ([#1580](https://github.com/arcjet/arcjet-js/issues/1580)) ([91dd435](https://github.com/arcjet/arcjet-js/commit/91dd435bc5abeafbe7955b6e186668e7af6307a1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+
 ## [1.0.0-alpha.24](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.23...@arcjet/protocol-v1.0.0-alpha.24) (2024-09-05)
 
 

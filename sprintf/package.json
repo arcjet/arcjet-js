@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/sprintf",
-  "version": "1.0.0-alpha.24",
+  "version": "1.0.0-alpha.25",
   "description": "Arcjet platform-independent replacement for util.format",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -41,9 +41,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.24",
-    "@arcjet/rollup-config": "1.0.0-alpha.24",
-    "@arcjet/tsconfig": "1.0.0-alpha.24",
+    "@arcjet/eslint-config": "1.0.0-alpha.25",
+    "@arcjet/rollup-config": "1.0.0-alpha.25",
+    "@arcjet/tsconfig": "1.0.0-alpha.25",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.21.2",
     "@types/node": "18.18.0",
