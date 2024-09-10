@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.0-alpha.25](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.24...v1.0.0-alpha.25) (2024-09-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* All examples use root level characteristics ([#1543](https://github.com/arcjet/arcjet-js/issues/1543)) ([6b360af](https://github.com/arcjet/arcjet-js/commit/6b360af99fc83fa9e940a9c61777136ff3c3bb95))
+* **analyze:** Regenerate WebAssembly with updated bot list ([#1546](https://github.com/arcjet/arcjet-js/issues/1546)) ([0a38e0f](https://github.com/arcjet/arcjet-js/commit/0a38e0f954eb9cfe52289720f3724b0f8f337744)), closes [#1545](https://github.com/arcjet/arcjet-js/issues/1545)
+* **analyze:** Update crawler list with Coda Server Fetcher ([#1580](https://github.com/arcjet/arcjet-js/issues/1580)) ([91dd435](https://github.com/arcjet/arcjet-js/commit/91dd435bc5abeafbe7955b6e186668e7af6307a1))
+* Update READMEs with latest examples ([#1542](https://github.com/arcjet/arcjet-js/issues/1542)) ([8969486](https://github.com/arcjet/arcjet-js/commit/8969486cc01dac6fc01289672744744913eaab01))
+
 ## [1.0.0-alpha.24](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.23...v1.0.0-alpha.24) (2024-09-05)
 
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.25](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.24...@arcjet/transport-v1.0.0-alpha.25) (2024-09-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/transport:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+
 ## [1.0.0-alpha.24](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.23...@arcjet/transport-v1.0.0-alpha.24) (2024-09-05)
 
 
