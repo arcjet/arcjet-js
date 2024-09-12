@@ -579,29 +579,32 @@ export type ArcjetWellKnownBot =
   | "ZUPERLIST_CRAWLER";
 
 export type ArcjetBotCategory =
-  | "academic"
-  | "advertising"
-  | "ai"
-  | "amazon"
-  | "archive"
-  | "feedfetcher"
-  | "google"
-  | "meta"
-  | "microsoft"
-  | "monitor"
-  | "optimizer"
-  | "preview"
-  | "programmatic"
-  | "search-engine"
-  | "slack"
-  | "social"
-  | "tool"
-  | "unknown"
-  | "vercel"
-  | "yahoo";
+  | "CATEGORY:ACADEMIC"
+  | "CATEGORY:ADVERTISING"
+  | "CATEGORY:AI"
+  | "CATEGORY:AMAZON"
+  | "CATEGORY:ARCHIVE"
+  | "CATEGORY:FEEDFETCHER"
+  | "CATEGORY:GOOGLE"
+  | "CATEGORY:META"
+  | "CATEGORY:MICROSOFT"
+  | "CATEGORY:MONITOR"
+  | "CATEGORY:OPTIMIZER"
+  | "CATEGORY:PREVIEW"
+  | "CATEGORY:PROGRAMMATIC"
+  | "CATEGORY:SEARCH_ENGINE"
+  | "CATEGORY:SLACK"
+  | "CATEGORY:SOCIAL"
+  | "CATEGORY:TOOL"
+  | "CATEGORY:UNKNOWN"
+  | "CATEGORY:VERCEL"
+  | "CATEGORY:YAHOO";
 
-export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]> = Object.freeze({
-  "academic": Object.freeze<ArcjetWellKnownBot[]>([
+export const categories: Record<
+  ArcjetBotCategory,
+  readonly ArcjetWellKnownBot[]
+> = Object.freeze({
+  "CATEGORY:ACADEMIC": Object.freeze<ArcjetWellKnownBot[]>([
     "BLACKBOARD_CRAWLER",
     "CISPA_CRAWLER",
     "COMMONCRAWL_CRAWLER",
@@ -618,7 +621,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "UTEXAS_CRAWLER",
     "YAMANALAB_CRAWLER",
   ]),
-  "advertising": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:ADVERTISING": Object.freeze<ArcjetWellKnownBot[]>([
     "BING_ADS",
     "GOOGLE_ADSBOT",
     "GOOGLE_ADSBOT_MOBILE",
@@ -628,7 +631,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "MOAT_CRAWLER",
     "MSN_CRAWLER",
   ]),
-  "ai": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:AI": Object.freeze<ArcjetWellKnownBot[]>([
     "AI_SEARCH_BOT",
     "AIHIT_CRAWLER",
     "ANTHROPIC_CRAWLER",
@@ -656,12 +659,12 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "TURNITIN_CRAWLER",
     "YOU_CRAWLER",
   ]),
-  "amazon": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:AMAZON": Object.freeze<ArcjetWellKnownBot[]>([
     "AMAZON_ALEXA_CRAWLER",
     "AMAZON_CLOUDFRONT",
     "AMAZON_CRAWLER",
   ]),
-  "archive": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:ARCHIVE": Object.freeze<ArcjetWellKnownBot[]>([
     "ARCHIVEORG_ARCHIVER",
     "CLOUDFLARE_ARCHIVER",
     "COMMONCRAWL_CRAWLER",
@@ -673,7 +676,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "TRENDSMAP_CRAWLER",
     "WEBARCHIVE_CRAWLER",
   ]),
-  "feedfetcher": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:FEEDFETCHER": Object.freeze<ArcjetWellKnownBot[]>([
     "AWARIO_CRAWLER_RSS",
     "BAZQUX_FEEDFETCHER",
     "BLOGTRAFFIC_FEEDFETCHER",
@@ -699,7 +702,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "TTRSS_FEEDFETCHER",
     "WORDPRESS_CRAWLER_RSS",
   ]),
-  "google": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:GOOGLE": Object.freeze<ArcjetWellKnownBot[]>([
     "GOOGLE_ADSBOT",
     "GOOGLE_ADSBOT_MOBILE",
     "GOOGLE_ADSENSE",
@@ -728,12 +731,12 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "GOOGLE_WEB_SNIPPET",
     "GOOGLE_XRAWLER",
   ]),
-  "meta": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:META": Object.freeze<ArcjetWellKnownBot[]>([
     "FACEBOOK_CRAWLER",
     "FACEBOOK_SHARE_CRAWLER",
     "WHATSAPP_CRAWLER",
   ]),
-  "microsoft": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:MICROSOFT": Object.freeze<ArcjetWellKnownBot[]>([
     "AZURE_APP_INSIGHTS",
     "BING_ADS",
     "BING_CRAWLER",
@@ -743,7 +746,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "MSN_CRAWLER",
     "SKYPE_PREVIEW",
   ]),
-  "monitor": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:MONITOR": Object.freeze<ArcjetWellKnownBot[]>([
     "AZURE_APP_INSIGHTS",
     "BETTERUPTIME_MONITOR",
     "BRANDVERITY_CRAWLER",
@@ -785,7 +788,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "XENU_CRAWLER",
     "ZABBIX_MONITOR",
   ]),
-  "optimizer": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:OPTIMIZER": Object.freeze<ArcjetWellKnownBot[]>([
     "CONDUCTOR_CRAWLER",
     "DAREBOOST_CRAWLER",
     "DUBBOT_CRAWLER",
@@ -798,7 +801,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "TESTOMATO_CRAWLER",
     "WEBPAGETEST_CRAWLER",
   ]),
-  "preview": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:PREVIEW": Object.freeze<ArcjetWellKnownBot[]>([
     "BING_PREVIEW",
     "BITLY_CRAWLER",
     "DISCORD_CRAWLER",
@@ -824,7 +827,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "WHATSAPP_CRAWLER",
     "YAHOO_PREVIEW",
   ]),
-  "programmatic": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:PROGRAMMATIC": Object.freeze<ArcjetWellKnownBot[]>([
     "CODA_SERVER_FETCHER",
     "GIGABLAST_CRAWLER_OSS",
     "GO_HTTP",
@@ -857,7 +860,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "PYTHON_URLLIB",
     "RUBY_METAINSPECTOR",
   ]),
-  "search-engine": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:SEARCH_ENGINE": Object.freeze<ArcjetWellKnownBot[]>([
     "ADDSEARCH_CRAWLER",
     "AHREFS_CRAWLER",
     "ALEXANDRIA_CRAWLER",
@@ -894,11 +897,11 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "YANDEX_CRAWLER",
     "YANDEX_CRAWLER_JAVASCRIPT",
   ]),
-  "slack": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:SLACK": Object.freeze<ArcjetWellKnownBot[]>([
     "SLACK_CRAWLER",
     "SLACK_IMAGE_PROXY",
   ]),
-  "social": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:SOCIAL": Object.freeze<ArcjetWellKnownBot[]>([
     "DIGG_CRAWLER",
     "DISCORD_CRAWLER",
     "EVERYONESOCIAL_CRAWLER",
@@ -925,7 +928,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "VIBER_CRAWLER",
     "WHATSAPP_CRAWLER",
   ]),
-  "tool": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:TOOL": Object.freeze<ArcjetWellKnownBot[]>([
     "CURL",
     "DCRAWL",
     "DOMAINSPROJECT_CRAWLER",
@@ -941,7 +944,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "XENU_CRAWLER",
     "ZGRAB",
   ]),
-  "unknown": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:UNKNOWN": Object.freeze<ArcjetWellKnownBot[]>([
     "A6CORP_CRAWLER",
     "ABOUNDEX_CRAWLER",
     "ACAPBOT",
@@ -1280,11 +1283,11 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "ZUM_CRAWLER",
     "ZUPERLIST_CRAWLER",
   ]),
-  "vercel": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:VERCEL": Object.freeze<ArcjetWellKnownBot[]>([
     "VERCEL_CRAWLER",
     "VERCEL_MONITOR_PREVIEW",
   ]),
-  "yahoo": Object.freeze<ArcjetWellKnownBot[]>([
+  "CATEGORY:YAHOO": Object.freeze<ArcjetWellKnownBot[]>([
     "YAHOO_CRAWLER",
     "YAHOO_CRAWLER_JAPAN",
     "YAHOO_PREVIEW",
