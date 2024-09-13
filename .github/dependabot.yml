@@ -554,6 +554,14 @@ updates:
       dependencies:
         patterns:
           - "*"
+    ignore:
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+      - dependency-name: "@typescript-eslint/parser"
+        versions: [">=8"]
+      - dependency-name: "@typescript-eslint/eslint-plugin"
+        versions: [">=8"]
 
   - package-ecosystem: npm
     directory: /examples/nodejs-rl
