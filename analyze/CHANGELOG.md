@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-alpha.26](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.25...@arcjet/analyze-v1.0.0-alpha.26) (2024-09-16)
+
+
+### 🚀 New Features
+
+* Implement bot detection categories ([#1618](https://github.com/arcjet/arcjet-js/issues/1618)) ([540cfe8](https://github.com/arcjet/arcjet-js/commit/540cfe8d74b9f029248cfeb6f27e4c7b47fbb9b7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+
 ## [1.0.0-alpha.25](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.24...@arcjet/analyze-v1.0.0-alpha.25) (2024-09-10)
 
 
