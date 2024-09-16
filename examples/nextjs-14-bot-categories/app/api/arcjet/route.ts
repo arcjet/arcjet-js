@@ -37,7 +37,7 @@ export async function GET(req: Request) {
   if (decision.isDenied()) {
     return NextResponse.json(
       { error: "You are a Bot!" },
-      { status: 429, headers },
+      { status: 403, headers },
     );
   }
 
