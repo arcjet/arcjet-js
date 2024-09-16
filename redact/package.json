@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/redact",
-  "version": "1.0.0-alpha.25",
+  "version": "1.0.0-alpha.26",
   "description": "Arcjet sensitive information redaction library",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -40,12 +40,12 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@arcjet/redact-wasm": "1.0.0-alpha.25"
+    "@arcjet/redact-wasm": "1.0.0-alpha.26"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.25",
-    "@arcjet/rollup-config": "1.0.0-alpha.25",
-    "@arcjet/tsconfig": "1.0.0-alpha.25",
+    "@arcjet/eslint-config": "1.0.0-alpha.26",
+    "@arcjet/rollup-config": "1.0.0-alpha.26",
+    "@arcjet/tsconfig": "1.0.0-alpha.26",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.21.3",
     "@types/node": "18.18.0",

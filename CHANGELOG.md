@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.0-alpha.26](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.25...v1.0.0-alpha.26) (2024-09-16)
+
+
+### 🚀 New Features
+
+* Implement bot detection categories ([#1618](https://github.com/arcjet/arcjet-js/issues/1618)) ([540cfe8](https://github.com/arcjet/arcjet-js/commit/540cfe8d74b9f029248cfeb6f27e4c7b47fbb9b7))
+
+
+### 🧹 Miscellaneous Chores
+
+* **ci:** Ignore eslint majors for our nestjs example ([#1638](https://github.com/arcjet/arcjet-js/issues/1638)) ([16be215](https://github.com/arcjet/arcjet-js/commit/16be21596724d4181cfb33055f56aa1dd305fc81))
+* **ci:** Increase our dependabot open PR limit ([#1670](https://github.com/arcjet/arcjet-js/issues/1670)) ([5dee404](https://github.com/arcjet/arcjet-js/commit/5dee404ccf29de1caa333ef3f079b8f3c541a1ec))
+* **ci:** Sort dependabot projects and add missing nestjs example ([#1617](https://github.com/arcjet/arcjet-js/issues/1617)) ([4c0e77b](https://github.com/arcjet/arcjet-js/commit/4c0e77badb69af195638c087e94a4df8c369ef0e))
+
 ## [1.0.0-alpha.25](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.24...v1.0.0-alpha.25) (2024-09-10)
 
 
