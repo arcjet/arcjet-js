@@ -28,7 +28,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -70,7 +70,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -112,7 +112,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -156,7 +156,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -198,7 +198,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -240,7 +240,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -282,7 +282,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -324,7 +324,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -366,7 +366,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -408,7 +408,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -450,7 +450,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -492,7 +492,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -534,7 +534,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -574,7 +574,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
@@ -614,7 +614,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.3
+        uses: actions/setup-node@v4.0.4
         with:
           node-version: 20
 
