@@ -37,7 +37,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "dependencies": {
-    "@rollup/plugin-replace": "5.0.7",
+    "@rollup/plugin-replace": "6.0.1",
     "@rollup/plugin-typescript": "12.1.0"
   },
   "peerDependencies": {
