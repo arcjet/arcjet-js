@@ -6,7 +6,6 @@ export class ValidateEmailService {
     return `
       In addition to being protected by shield, this route is also protected
       against invalid email submissions.
-      <br />
       You submitted: "${content}". Try sending an invalid email!
     `;
   }

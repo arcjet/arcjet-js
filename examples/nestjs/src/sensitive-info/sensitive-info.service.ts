@@ -6,7 +6,6 @@ export class SensitiveInfoService {
     return `
       In addition to being protected by shield, this route is also protected
       from sensitive info submission.
-      <br />
       You submitted: "${content}". Try sending a phone number!
     `;
   }
