@@ -565,7 +565,32 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /examples/nodejs-nestjs
+    directory: /examples/nestjs
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+    reviewers:
+      - blaine-arcjet
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+      - dependency-name: "@typescript-eslint/parser"
+        versions: [">=8"]
+      - dependency-name: "@typescript-eslint/eslint-plugin"
+        versions: [">=8"]
+
+  - package-ecosystem: npm
+    directory: /examples/nestjs-fastify
     schedule:
       # Our dependencies should be checked daily
       interval: daily

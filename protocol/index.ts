@@ -48,12 +48,13 @@ export type ArcjetIdentifiedEntity = {
   identifiedType: string;
 };
 
-export type ArcjetStack = "NODEJS" | "NEXTJS" | "BUN" | "SVELTEKIT";
+export type ArcjetStack = "NODEJS" | "NEXTJS" | "BUN" | "SVELTEKIT" | "NESTJS";
 export const ArcjetStack: ArcjetEnum<ArcjetStack> = {
   NODEJS: "NODEJS",
   NEXTJS: "NEXTJS",
   BUN: "BUN",
   SVELTEKIT: "SVELTEKIT",
+  NESTJS: "NESTJS",
 };
 
 export type ArcjetRuleState = "RUN" | "NOT_RUN" | "CACHED" | "DRY_RUN";
