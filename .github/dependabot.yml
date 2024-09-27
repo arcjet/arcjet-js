@@ -581,6 +581,9 @@ updates:
         patterns:
           - "*"
     ignore:
+      # NestJS uses Express 4
+      - dependency-name: "@types/express"
+        versions: [">=5"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
