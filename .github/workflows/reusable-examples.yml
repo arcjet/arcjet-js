@@ -46,7 +46,7 @@ jobs:
         run: npm run build
 
   nestjs-fastify:
-    name: NestJS
+    name: NestJS + Fastify
     runs-on: ubuntu-latest
     permissions:
       contents: read

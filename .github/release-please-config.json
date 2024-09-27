@@ -40,6 +40,10 @@
       "component": "@arcjet/bun",
       "skip-github-release": true
     },
+    "arcjet-nest": {
+      "component": "@arcjet/nest",
+      "skip-github-release": true
+    },
     "arcjet-next": {
       "component": "@arcjet/next",
       "skip-github-release": true
@@ -130,6 +134,7 @@
         "@arcjet/analyze",
         "arcjet",
         "@arcjet/bun",
+        "@arcjet/nest",
         "@arcjet/next",
         "@arcjet/node",
         "@arcjet/sveltekit",
