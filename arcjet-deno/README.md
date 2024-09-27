@@ -55,17 +55,19 @@ const aj = arcjet({
   ],
 });
 
-Deno.serve(aj.handler(async function (req: Request) {
-  const userId = "user123"; // Replace with your authenticated user ID
-  const decision = await aj.protect(req, { userId, requested: 5 }); // Deduct 5 tokens from the bucket
-  console.log("Arcjet decision", decision);
+Deno.serve(
+  aj.handler(async function (req: Request) {
+    const userId = "user123"; // Replace with your authenticated user ID
+    const decision = await aj.protect(req, { userId, requested: 5 }); // Deduct 5 tokens from the bucket
+    console.log("Arcjet decision", decision);
 
-  if (decision.isDenied()) {
-    return Response.json({ error: "Forbidden" }, { status: 403 });
-  } else {
-    return Response.json({ message: "Hello world" });
-  }
-}));
+    if (decision.isDenied()) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    } else {
+      return Response.json({ message: "Hello world" });
+    }
+  }),
+);
 ```
 
 ## Shield example
@@ -88,15 +90,17 @@ const aj = arcjet({
   ],
 });
 
-Deno.serve(aj.handler(async function (req: Request) {
-  const decision = await aj.protect(req);
+Deno.serve(
+  aj.handler(async function (req: Request) {
+    const decision = await aj.protect(req);
 
-  if (decision.isDenied()) {
-    return Response.json({ error: "Forbidden" }, { status: 403 });
-  } else {
-    return Response.json({ message: "Hello world" });
-  }
-}));
+    if (decision.isDenied()) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    } else {
+      return Response.json({ message: "Hello world" });
+    }
+  }),
+);
 ```
 
 ## License

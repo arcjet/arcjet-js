@@ -151,7 +151,10 @@ export interface ArcjetDeno<Props extends PlainObject> {
       request: Request,
       info: Deno.ServeHandlerInfo<Deno.NetAddr>,
     ) => Response | Promise<Response>,
-  ): (request: Request, info: Deno.ServeHandlerInfo<Deno.NetAddr>) => Response | Promise<Response>;
+  ): (
+    request: Request,
+    info: Deno.ServeHandlerInfo<Deno.NetAddr>,
+  ) => Response | Promise<Response>;
 }
 
 /**
