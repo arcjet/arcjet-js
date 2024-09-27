@@ -82,8 +82,8 @@ applications using the `@arcjet/nest` adapter with rule configuration loaded via
          * Serve when targeting is OFF: `Clamped Down`
 
 5. For each of the flags you just created, open them, toggle the "Off/On"
-switch at the top of the page to the "On" position, click "Review and save",
-and "Save changes".
+   switch at the top of the page to the "On" position, click "Review and save",
+   and "Save changes".
 
 6. Start the server.
 
