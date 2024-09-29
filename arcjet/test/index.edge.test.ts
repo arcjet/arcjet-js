@@ -14,7 +14,7 @@ import type { Primitive } from "../index";
 import arcjet, {
   fixedWindow,
   tokenBucket,
-  protectSignup,
+  validateEmail,
   ArcjetReason,
   ArcjetAllowDecision,
 } from "../index";
@@ -55,41 +55,45 @@ describe("Arcjet: Env = Edge runtime", () => {
     };
 
     function foobarbaz(): Primitive<{ abc: number }> {
-      return [];
+      return [
+        {
+          mode: "LIVE",
+          type: "test",
+          priority: 1,
+        },
+      ];
     }
 
     const aj = arcjet({
       key: "1234",
       rules: [
         // Test rules
-        // foobarbaz(),
-        tokenBucket(
-          {
-            characteristics: [
-              "ip.src",
-              "http.host",
-              "http.method",
-              "http.request.uri.path",
-              `http.request.headers["abc"]`,
-              `http.request.cookie["xyz"]`,
-              `http.request.uri.args["foobar"]`,
-            ],
-            refillRate: 1,
-            interval: 1,
-            capacity: 1,
-          },
-          {
-            characteristics: ["userId"],
-            refillRate: 1,
-            interval: 1,
-            capacity: 1,
-          },
-        ),
+        foobarbaz(),
+        tokenBucket({
+          characteristics: [
+            "ip.src",
+            "http.host",
+            "http.method",
+            "http.request.uri.path",
+            `http.request.headers["abc"]`,
+            `http.request.cookie["xyz"]`,
+            `http.request.uri.args["foobar"]`,
+          ],
+          refillRate: 1,
+          interval: 1,
+          capacity: 1,
+        }),
+        tokenBucket({
+          characteristics: ["userId"],
+          refillRate: 1,
+          interval: 1,
+          capacity: 1,
+        }),
         fixedWindow({
           max: 1,
           window: "60s",
         }),
-        protectSignup(),
+        validateEmail({}),
       ],
       client,
       log,
