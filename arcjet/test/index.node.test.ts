@@ -307,13 +307,15 @@ describe("ArcjetDecision", () => {
 
 describe("Primitive > detectBot", () => {
   test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
-    const [rule] = detectBot({
-      // @ts-expect-error
-      mode: "INVALID",
-      allow: [],
-    });
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+    expect(() => {
+      detectBot({
+        // @ts-expect-error
+        mode: "INVALID",
+        allow: [],
+      });
+    }).toThrow(
+      "`detectBot` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
   });
 
   test("throws if `allow` and `deny` are both defined", async () => {
@@ -566,18 +568,20 @@ describe("Primitive > detectBot", () => {
 });
 
 describe("Primitive > tokenBucket", () => {
-  test("sets mode as `DRY_RUN` if not 'LIVE' or 'DRY_RUN'", async () => {
-    const [rule] = tokenBucket({
-      // @ts-expect-error
-      mode: "INVALID",
-      match: "/test",
-      characteristics: ["ip.src"],
-      refillRate: 1,
-      interval: 1,
-      capacity: 1,
-    });
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+  test("validates `mode` if it is set", async () => {
+    expect(() => {
+      tokenBucket({
+        // @ts-expect-error
+        mode: "INVALID",
+        match: "/test",
+        characteristics: ["ip.src"],
+        refillRate: 1,
+        interval: 1,
+        capacity: 1,
+      });
+    }).toThrow(
+      "`tokenBucket` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
   });
 
   test("sets mode as `LIVE` if specified", async () => {
@@ -692,17 +696,19 @@ describe("Primitive > tokenBucket", () => {
 });
 
 describe("Primitive > fixedWindow", () => {
-  test("sets mode as `DRY_RUN` if not 'LIVE' or 'DRY_RUN'", async () => {
-    const [rule] = fixedWindow({
-      // @ts-expect-error
-      mode: "INVALID",
-      match: "/test",
-      characteristics: ["ip.src"],
-      window: "1h",
-      max: 1,
-    });
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+  test("validates `mode` if it is set", async () => {
+    expect(() => {
+      fixedWindow({
+        // @ts-expect-error
+        mode: "INVALID",
+        match: "/test",
+        characteristics: ["ip.src"],
+        window: "1h",
+        max: 1,
+      });
+    }).toThrow(
+      "`fixedWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
   });
 
   test("sets mode as `LIVE` if specified", async () => {
@@ -804,17 +810,19 @@ describe("Primitive > fixedWindow", () => {
 });
 
 describe("Primitive > slidingWindow", () => {
-  test("sets mode as `DRY_RUN` if not 'LIVE' or 'DRY_RUN'", async () => {
-    const [rule] = slidingWindow({
-      // @ts-expect-error
-      mode: "INVALID",
-      match: "/test",
-      characteristics: ["ip.src"],
-      interval: 3600,
-      max: 1,
-    });
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+  test("validates `mode` if it is set", async () => {
+    expect(() => {
+      slidingWindow({
+        // @ts-expect-error
+        mode: "INVALID",
+        match: "/test",
+        characteristics: ["ip.src"],
+        interval: 3600,
+        max: 1,
+      });
+    }).toThrow(
+      "`slidingWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
   });
 
   test("sets mode as `LIVE` if specified", async () => {
@@ -916,13 +924,15 @@ describe("Primitive > slidingWindow", () => {
 });
 
 describe("Primitive > validateEmail", () => {
-  test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
-    const [rule] = validateEmail({
-      // @ts-expect-error
-      mode: "INVALID",
-    });
-    expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+  test("validates `mode` if it is set", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        mode: "INVALID",
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
   });
 
   test("allows specifying EmailTypes to block", async () => {
@@ -1278,12 +1288,14 @@ describe("Primitive > validateEmail", () => {
 
 describe("Primitive > shield", () => {
   test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
-    const [rule] = shield({
-      // @ts-expect-error
-      mode: "INVALID",
-    });
-    expect(rule.type).toEqual("SHIELD");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+    expect(() => {
+      shield({
+        // @ts-expect-error
+        mode: "INVALID",
+      });
+    }).toThrow(
+      "`shield` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
   });
 
   test("sets mode as `LIVE` if specified", async () => {
@@ -3175,14 +3187,16 @@ describe("SDK", () => {
   });
 
   describe("Primitive > sensitiveInfo", () => {
-    test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
-      const [rule] = sensitiveInfo({
-        // @ts-expect-error
-        mode: "INVALID",
-        allow: [],
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      expect(rule).toHaveProperty("mode", "DRY_RUN");
+    test("validates `mode` if it is set", async () => {
+      expect(() => {
+        sensitiveInfo({
+          // @ts-expect-error
+          mode: "INVALID",
+          allow: [],
+        });
+      }).toThrow(
+        "`sensitiveInfo` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+      );
     });
 
     test("allows specifying sensitive info entities to allow", async () => {
