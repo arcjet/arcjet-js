@@ -340,7 +340,7 @@ type PlainObject = { [key: string]: unknown };
 // Primitives and Products external names for Rules even though they are defined
 // the same.
 // See ExtraProps below for further explanation on why we define them like this.
-export type Primitive<Props extends PlainObject = {}> = ArcjetRule<Props>[];
+export type Primitive<Props extends PlainObject = {}> = [ArcjetRule<Props>];
 export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 
 // User-defined characteristics alter the required props of an ArcjetRequest
@@ -429,8 +429,7 @@ function isLocalRule<Props extends PlainObject>(
 export function tokenBucket<
   const Characteristics extends readonly string[] = [],
 >(
-  options?: TokenBucketRateLimitOptions<Characteristics>,
-  ...additionalOptions: TokenBucketRateLimitOptions<Characteristics>[]
+  options: TokenBucketRateLimitOptions<Characteristics>,
 ): Primitive<
   Simplify<
     UnionToIntersection<
@@ -438,24 +437,18 @@ export function tokenBucket<
     >
   >
 > {
-  const rules: ArcjetTokenBucketRateLimitRule<{ requested: number }>[] = [];
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const match = options.match;
+  const characteristics = Array.isArray(options.characteristics)
+    ? options.characteristics
+    : undefined;
 
-  if (typeof options === "undefined") {
-    return rules;
-  }
+  const refillRate = options.refillRate;
+  const interval = duration.parse(options.interval);
+  const capacity = options.capacity;
 
-  for (const opt of [options, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    const match = opt.match;
-    const characteristics = Array.isArray(opt.characteristics)
-      ? opt.characteristics
-      : undefined;
-
-    const refillRate = opt.refillRate;
-    const interval = duration.parse(opt.interval);
-    const capacity = opt.capacity;
-
-    rules.push({
+  return [
+    <ArcjetTokenBucketRateLimitRule<{ requested: number }>>{
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
@@ -465,35 +458,26 @@ export function tokenBucket<
       refillRate,
       interval,
       capacity,
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export function fixedWindow<
   const Characteristics extends readonly string[] = [],
 >(
-  options?: FixedWindowRateLimitOptions<Characteristics>,
-  ...additionalOptions: FixedWindowRateLimitOptions<Characteristics>[]
+  options: FixedWindowRateLimitOptions<Characteristics>,
 ): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
-  const rules: ArcjetFixedWindowRateLimitRule<{}>[] = [];
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const match = options.match;
+  const characteristics = Array.isArray(options.characteristics)
+    ? options.characteristics
+    : undefined;
 
-  if (typeof options === "undefined") {
-    return rules;
-  }
+  const max = options.max;
+  const window = duration.parse(options.window);
 
-  for (const opt of [options, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    const match = opt.match;
-    const characteristics = Array.isArray(opt.characteristics)
-      ? opt.characteristics
-      : undefined;
-
-    const max = opt.max;
-    const window = duration.parse(opt.window);
-
-    rules.push({
+  return [
+    <ArcjetFixedWindowRateLimitRule<{}>>{
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
@@ -502,35 +486,26 @@ export function fixedWindow<
       algorithm: "FIXED_WINDOW",
       max,
       window,
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export function slidingWindow<
   const Characteristics extends readonly string[] = [],
 >(
-  options?: SlidingWindowRateLimitOptions<Characteristics>,
-  ...additionalOptions: SlidingWindowRateLimitOptions<Characteristics>[]
+  options: SlidingWindowRateLimitOptions<Characteristics>,
 ): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
-  const rules: ArcjetSlidingWindowRateLimitRule<{}>[] = [];
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const match = options.match;
+  const characteristics = Array.isArray(options.characteristics)
+    ? options.characteristics
+    : undefined;
 
-  if (typeof options === "undefined") {
-    return rules;
-  }
+  const max = options.max;
+  const interval = duration.parse(options.interval);
 
-  for (const opt of [options, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    const match = opt.match;
-    const characteristics = Array.isArray(opt.characteristics)
-      ? opt.characteristics
-      : undefined;
-
-    const max = opt.max;
-    const interval = duration.parse(opt.interval);
-
-    rules.push({
+  return [
+    <ArcjetSlidingWindowRateLimitRule<{}>>{
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
@@ -539,10 +514,8 @@ export function slidingWindow<
       algorithm: "SLIDING_WINDOW",
       max,
       interval,
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 function protocolSensitiveInfoEntitiesToAnalyze<Custom extends string>(
@@ -612,27 +585,28 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
 export function sensitiveInfo<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
->(
-  options: SensitiveInfoOptions<Detect>,
-  ...additionalOptions: SensitiveInfoOptions<Detect>[]
-): Primitive<{}> {
-  const rules: ArcjetSensitiveInfoRule<{}>[] = [];
+>(options: SensitiveInfoOptions<Detect>): Primitive<{}> {
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  if (
+    typeof options.allow !== "undefined" &&
+    typeof options.deny !== "undefined"
+  ) {
+    throw new Error("Both allow and deny cannot be provided to sensitiveInfo");
+  }
+  if (
+    typeof options.allow === "undefined" &&
+    typeof options.deny === "undefined"
+  ) {
+    throw new Error("Must specify allow or deny to sensitiveInfo");
+  }
 
-  // Always create at least one SENSITIVE_INFO rule
-  for (const opt of [options, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    if (typeof opt.allow !== "undefined" && typeof opt.deny !== "undefined") {
-      throw new Error(
-        "Both allow and deny cannot be provided to sensitiveInfo",
-      );
-    }
-
-    rules.push({
+  return [
+    <ArcjetSensitiveInfoRule<{}>>{
       type: "SENSITIVE_INFO",
       priority: Priority.SensitiveInfo,
       mode,
-      allow: opt.allow || [],
-      deny: opt.deny || [],
+      allow: options.allow || [],
+      deny: options.deny || [],
 
       validate(
         context: ArcjetContext,
@@ -656,8 +630,8 @@ export function sensitiveInfo<
         }
 
         let convertedDetect = undefined;
-        if (typeof opt.detect !== "undefined") {
-          const detect = opt.detect;
+        if (typeof options.detect !== "undefined") {
+          const detect = options.detect;
           convertedDetect = (tokens: string[]) => {
             return detect(tokens)
               .filter((e) => typeof e !== "undefined")
@@ -670,16 +644,16 @@ export function sensitiveInfo<
           ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>
         > = [];
 
-        if (Array.isArray(opt.allow)) {
+        if (Array.isArray(options.allow)) {
           entitiesTag = "allow";
-          entitiesVal = opt.allow
+          entitiesVal = options.allow
             .filter((e) => typeof e !== "undefined")
             .map(protocolSensitiveInfoEntitiesToAnalyze);
         }
 
-        if (Array.isArray(opt.deny)) {
+        if (Array.isArray(options.deny)) {
           entitiesTag = "deny";
-          entitiesVal = opt.deny
+          entitiesVal = options.deny
             .filter((e) => typeof e !== "undefined")
             .map(protocolSensitiveInfoEntitiesToAnalyze);
         }
@@ -718,33 +692,26 @@ export function sensitiveInfo<
           });
         }
       },
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export function validateEmail(
-  options?: EmailOptions,
-  ...additionalOptions: EmailOptions[]
+  options: EmailOptions,
 ): Primitive<{ email: string }> {
-  const rules: ArcjetEmailRule<{ email: string }>[] = [];
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const block = options.block ?? [];
+  const requireTopLevelDomain = options.requireTopLevelDomain ?? true;
+  const allowDomainLiteral = options.allowDomainLiteral ?? false;
 
-  // Always create at least one EMAIL rule
-  for (const opt of [options ?? {}, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    // TODO: Filter invalid email types (or error??)
-    const block = opt.block ?? [];
-    const requireTopLevelDomain = opt.requireTopLevelDomain ?? true;
-    const allowDomainLiteral = opt.allowDomainLiteral ?? false;
+  const emailOpts = {
+    requireTopLevelDomain,
+    allowDomainLiteral,
+    blockedEmails: block,
+  };
 
-    const emailOpts = {
-      requireTopLevelDomain,
-      allowDomainLiteral,
-      blockedEmails: block,
-    };
-
-    rules.push({
+  return [
+    <ArcjetEmailRule<{ email: string }>>{
       type: "EMAIL",
       priority: Priority.EmailValidation,
       mode,
@@ -787,70 +754,71 @@ export function validateEmail(
           });
         }
       },
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
-export function detectBot(
-  options?: BotOptions,
-  ...additionalOptions: BotOptions[]
-): Primitive {
-  const rules: ArcjetBotRule<{}>[] = [];
+export function detectBot(options: BotOptions): Primitive<{}> {
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  if (
+    typeof options.allow !== "undefined" &&
+    typeof options.deny !== "undefined"
+  ) {
+    throw new Error("Both allow and deny cannot be provided to detectBot");
+  }
+  if (
+    typeof options.allow === "undefined" &&
+    typeof options.deny === "undefined"
+  ) {
+    throw new Error("Must specify allow or deny to detectBot");
+  }
 
-  // Always create at least one BOT rule
-  for (const opt of [options ?? { allow: [] }, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    if (typeof opt.allow !== "undefined" && typeof opt.deny !== "undefined") {
-      throw new Error("Both allow and deny cannot be provided to detectBot");
+  let config: BotConfig = {
+    tag: "allowed-bot-config",
+    val: {
+      entities: [],
+      skipCustomDetect: true,
+    },
+  };
+  if (Array.isArray(options.allow)) {
+    for (const allow of options.allow) {
+      if (typeof allow !== "string") {
+        throw new Error("all values in `allow` must be a string");
+      }
     }
 
-    let config: BotConfig = {
+    config = {
       tag: "allowed-bot-config",
       val: {
-        entities: [],
+        entities: options.allow,
         skipCustomDetect: true,
       },
     };
-    if (Array.isArray(opt.allow)) {
-      for (const allow of opt.allow) {
-        if (typeof allow !== "string") {
-          throw new Error("all values in `allow` must be a string");
-        }
-      }
+  }
 
-      config = {
-        tag: "allowed-bot-config",
-        val: {
-          entities: opt.allow,
-          skipCustomDetect: true,
-        },
-      };
+  if (Array.isArray(options.deny)) {
+    for (const deny of options.deny) {
+      if (typeof deny !== "string") {
+        throw new Error("all values in `allow` must be a string");
+      }
     }
 
-    if (Array.isArray(opt.deny)) {
-      for (const deny of opt.deny) {
-        if (typeof deny !== "string") {
-          throw new Error("all values in `allow` must be a string");
-        }
-      }
+    config = {
+      tag: "denied-bot-config",
+      val: {
+        entities: options.deny,
+        skipCustomDetect: true,
+      },
+    };
+  }
 
-      config = {
-        tag: "denied-bot-config",
-        val: {
-          entities: opt.deny,
-          skipCustomDetect: true,
-        },
-      };
-    }
-
-    rules.push({
+  return [
+    <ArcjetBotRule<{}>>{
       type: "BOT",
       priority: Priority.BotDetection,
       mode,
-      allow: Array.isArray(opt.allow) ? opt.allow : [],
-      deny: Array.isArray(opt.deny) ? opt.deny : [],
+      allow: options.allow ?? [],
+      deny: options.deny ?? [],
 
       validate(
         context: ArcjetContext,
@@ -905,45 +873,33 @@ export function detectBot(
           });
         }
       },
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export type ShieldOptions = {
   mode?: ArcjetMode;
 };
 
-export function shield(
-  options?: ShieldOptions,
-  ...additionalOptions: ShieldOptions[]
-): Primitive {
-  const rules: ArcjetShieldRule<{}>[] = [];
-
-  // Always create at least one Shield rule
-  for (const opt of [options ?? {}, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    rules.push({
+export function shield(options: ShieldOptions): Primitive<{}> {
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  return [
+    <ArcjetShieldRule<{}>>{
       type: "SHIELD",
       priority: Priority.Shield,
       mode,
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export type ProtectSignupOptions<Characteristics extends string[]> = {
-  rateLimit?:
-    | SlidingWindowRateLimitOptions<Characteristics>
-    | SlidingWindowRateLimitOptions<Characteristics>[];
-  bots?: BotOptions | BotOptions[];
-  email?: EmailOptions | EmailOptions[];
+  rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
+  bots: BotOptions;
+  email: EmailOptions;
 };
 
 export function protectSignup<const Characteristics extends string[] = []>(
-  options?: ProtectSignupOptions<Characteristics>,
+  options: ProtectSignupOptions<Characteristics>,
 ): Product<
   Simplify<
     UnionToIntersection<
@@ -951,28 +907,11 @@ export function protectSignup<const Characteristics extends string[] = []>(
     >
   >
 > {
-  let rateLimitRules: Primitive<{}> = [];
-  if (Array.isArray(options?.rateLimit)) {
-    rateLimitRules = slidingWindow(...options.rateLimit);
-  } else {
-    rateLimitRules = slidingWindow(options?.rateLimit);
-  }
-
-  let botRules: Primitive<{}> = [];
-  if (Array.isArray(options?.bots)) {
-    botRules = detectBot(...options.bots);
-  } else {
-    botRules = detectBot(options?.bots);
-  }
-
-  let emailRules: Primitive<{ email: string }> = [];
-  if (Array.isArray(options?.email)) {
-    emailRules = validateEmail(...options.email);
-  } else {
-    emailRules = validateEmail(options?.email);
-  }
-
-  return [...rateLimitRules, ...botRules, ...emailRules];
+  return [
+    ...slidingWindow(options.rateLimit),
+    ...detectBot(options.bots),
+    ...validateEmail(options.email),
+  ];
 }
 
 export interface ArcjetOptions<
