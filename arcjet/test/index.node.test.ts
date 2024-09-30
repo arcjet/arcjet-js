@@ -1687,7 +1687,7 @@ describe("Primitive > sensitiveInfo", () => {
       sensitiveInfo({
         allow: [],
         // @ts-expect-error
-        contextWindowSize: "abc"
+        contextWindowSize: "abc",
       });
     }).toThrow(
       "`sensitiveInfo` options error: invalid type for `contextWindowSize` - expected number",
@@ -1699,7 +1699,7 @@ describe("Primitive > sensitiveInfo", () => {
       sensitiveInfo({
         allow: [],
         // @ts-expect-error
-        detect: "abc"
+        detect: "abc",
       });
     }).toThrow(
       "`sensitiveInfo` options error: invalid type for `detect` - expected function",

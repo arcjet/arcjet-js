@@ -800,13 +800,17 @@ export function sensitiveInfo<
     typeof options.allow !== "undefined" &&
     typeof options.deny !== "undefined"
   ) {
-    throw new Error("`sensitiveInfo` options error: `allow` and `deny` cannot be provided together");
+    throw new Error(
+      "`sensitiveInfo` options error: `allow` and `deny` cannot be provided together",
+    );
   }
   if (
     typeof options.allow === "undefined" &&
     typeof options.deny === "undefined"
   ) {
-    throw new Error("`sensitiveInfo` options error: either `allow` or `deny` must be specified");
+    throw new Error(
+      "`sensitiveInfo` options error: either `allow` or `deny` must be specified",
+    );
   }
 
   return [
