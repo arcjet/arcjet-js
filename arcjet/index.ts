@@ -331,7 +331,7 @@ function createValidator({
           if (err instanceof Error) {
             throw new Error(`\`${rule}\` options error: ${err.message}`);
           } else {
-            throw new Error(`\`${rule}\` options error: unkonwn failure`);
+            throw new Error(`\`${rule}\` options error: unknown failure`);
           }
         }
       }
@@ -800,13 +800,13 @@ export function sensitiveInfo<
     typeof options.allow !== "undefined" &&
     typeof options.deny !== "undefined"
   ) {
-    throw new Error("Both allow and deny cannot be provided to sensitiveInfo");
+    throw new Error("`sensitiveInfo` options error: `allow` and `deny` cannot be provided together");
   }
   if (
     typeof options.allow === "undefined" &&
     typeof options.deny === "undefined"
   ) {
-    throw new Error("Must specify allow or deny to sensitiveInfo");
+    throw new Error("`sensitiveInfo` options error: either `allow` or `deny` must be specified");
   }
 
   return [
@@ -977,13 +977,17 @@ export function detectBot(options: BotOptions): Primitive<{}> {
     typeof options.allow !== "undefined" &&
     typeof options.deny !== "undefined"
   ) {
-    throw new Error("Both allow and deny cannot be provided to detectBot");
+    throw new Error(
+      "`detectBot` options error: `allow` and `deny` cannot be provided together",
+    );
   }
   if (
     typeof options.allow === "undefined" &&
     typeof options.deny === "undefined"
   ) {
-    throw new Error("Must specify allow or deny to detectBot");
+    throw new Error(
+      "`detectBot` options error: either `allow` or `deny` must be specified",
+    );
   }
 
   let config: BotConfig = {

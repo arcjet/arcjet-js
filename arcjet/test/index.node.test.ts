@@ -306,7 +306,7 @@ describe("ArcjetDecision", () => {
 });
 
 describe("Primitive > detectBot", () => {
-  test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
+  test("validates `mode` option if it is set", async () => {
     expect(() => {
       detectBot({
         // @ts-expect-error
@@ -318,7 +318,51 @@ describe("Primitive > detectBot", () => {
     );
   });
 
-  test("throws if `allow` and `deny` are both defined", async () => {
+  test("validates `allow` option is array if set", async () => {
+    expect(() => {
+      const _ = detectBot({
+        // @ts-expect-error
+        allow: "abc",
+      });
+    }).toThrow(
+      "detectBot` options error: invalid type for `allow` - expected an array",
+    );
+  });
+
+  test("validates `allow` option only contains strings", async () => {
+    expect(() => {
+      const _ = detectBot({
+        // @ts-expect-error
+        allow: [/abc/],
+      });
+    }).toThrow(
+      "detectBot` options error: invalid type for `allow[0]` - expected string",
+    );
+  });
+
+  test("validates `deny` option is an array if set", async () => {
+    expect(() => {
+      const _ = detectBot({
+        // @ts-expect-error
+        deny: "abc",
+      });
+    }).toThrow(
+      "detectBot` options error: invalid type for `deny` - expected an array",
+    );
+  });
+
+  test("validates `deny` option only contains strings", async () => {
+    expect(() => {
+      const _ = detectBot({
+        // @ts-expect-error
+        deny: [/abc/],
+      });
+    }).toThrow(
+      "detectBot` options error: invalid type for `deny[0]` - expected string",
+    );
+  });
+
+  test("validates `allow` and `deny` options are not specified together", async () => {
     expect(() => {
       const _ = detectBot(
         // @ts-expect-error
@@ -327,25 +371,20 @@ describe("Primitive > detectBot", () => {
           deny: ["GOOGLE_ADSBOT"],
         },
       );
-    }).toThrow();
+    }).toThrow(
+      "`detectBot` options error: `allow` and `deny` cannot be provided together",
+    );
   });
 
-  test("throws if `allow` contains non-strings", async () => {
+  test("validates either `allow` or `deny` option is specified", async () => {
     expect(() => {
-      const _ = detectBot({
+      const _ = detectBot(
         // @ts-expect-error
-        allow: [/abc/],
-      });
-    }).toThrow();
-  });
-
-  test("throws if `deny` contains non-strings", async () => {
-    expect(() => {
-      const _ = detectBot({
-        // @ts-expect-error
-        deny: [/abc/],
-      });
-    }).toThrow();
+        {},
+      );
+    }).toThrow(
+      "`detectBot` options error: either `allow` or `deny` must be specified",
+    );
   });
 
   test("throws via `validate()` if headers is undefined", () => {
@@ -568,19 +607,134 @@ describe("Primitive > detectBot", () => {
 });
 
 describe("Primitive > tokenBucket", () => {
-  test("validates `mode` if it is set", async () => {
+  test("validates `mode` option if it is set", async () => {
     expect(() => {
       tokenBucket({
         // @ts-expect-error
         mode: "INVALID",
-        match: "/test",
-        characteristics: ["ip.src"],
         refillRate: 1,
         interval: 1,
         capacity: 1,
       });
     }).toThrow(
       "`tokenBucket` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
+  });
+
+  test("validates `match` option if it is set", async () => {
+    expect(() => {
+      tokenBucket({
+        // @ts-expect-error
+        match: /foobar/,
+        refillRate: 1,
+        interval: 1,
+        capacity: 1,
+      });
+    }).toThrow(
+      "`tokenBucket` options error: invalid type for `match` - expected string",
+    );
+  });
+
+  test("validates `characteristics` items are strings if it is set", async () => {
+    expect(() => {
+      tokenBucket({
+        // @ts-expect-error
+        characteristics: [/foobar/],
+        refillRate: 1,
+        interval: 1,
+        capacity: 1,
+      });
+    }).toThrow(
+      "`tokenBucket` options error: invalid type for `characteristics[0]` - expected string",
+    );
+  });
+
+  test("validates `characteristics` option is an array if set", async () => {
+    expect(() => {
+      tokenBucket({
+        // @ts-expect-error
+        characteristics: 12345,
+        refillRate: 1,
+        interval: 1,
+        capacity: 1,
+      });
+    }).toThrow(
+      "`tokenBucket` options error: invalid type for `characteristics` - expected an array",
+    );
+  });
+
+  test("validates `refillRate` option is required", async () => {
+    expect(() => {
+      tokenBucket(
+        // @ts-expect-error
+        {
+          interval: 1,
+          capacity: 1,
+        },
+      );
+    }).toThrow("`tokenBucket` options error: `refillRate` is required");
+  });
+
+  test("validates `refillRate` option is a number", async () => {
+    expect(() => {
+      tokenBucket({
+        // @ts-expect-error
+        refillRate: "abc",
+        interval: 1,
+        capacity: 1,
+      });
+    }).toThrow(
+      "`tokenBucket` options error: invalid type for `refillRate` - expected number",
+    );
+  });
+
+  test("validates `interval` option is required", async () => {
+    expect(() => {
+      tokenBucket(
+        // @ts-expect-error
+        {
+          refillRate: 1,
+          capacity: 1,
+        },
+      );
+    }).toThrow("`tokenBucket` options error: `interval` is required");
+  });
+
+  test("validates `interval` option is a number or string", async () => {
+    expect(() => {
+      tokenBucket({
+        refillRate: 1,
+        // @ts-expect-error
+        interval: /foobar/,
+        capacity: 1,
+      });
+    }).toThrow(
+      "`tokenBucket` options error: invalid type for `interval` - expected one of string, number",
+    );
+  });
+
+  test("validates `capacity` option is required", async () => {
+    expect(() => {
+      tokenBucket(
+        // @ts-expect-error
+        {
+          refillRate: 1,
+          interval: 1,
+        },
+      );
+    }).toThrow("`tokenBucket` options error: `capacity` is required");
+  });
+
+  test("validates `capacity` option is a number", async () => {
+    expect(() => {
+      tokenBucket({
+        refillRate: 1,
+        interval: 1,
+        // @ts-expect-error
+        capacity: "abc",
+      });
+    }).toThrow(
+      "`tokenBucket` options error: invalid type for `capacity` - expected number",
     );
   });
 
@@ -696,18 +850,75 @@ describe("Primitive > tokenBucket", () => {
 });
 
 describe("Primitive > fixedWindow", () => {
-  test("validates `mode` if it is set", async () => {
+  test("validates `mode` option if it is set", async () => {
     expect(() => {
       fixedWindow({
         // @ts-expect-error
         mode: "INVALID",
-        match: "/test",
-        characteristics: ["ip.src"],
         window: "1h",
         max: 1,
       });
     }).toThrow(
       "`fixedWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
+  });
+
+  test("validates `match` option if it is set", async () => {
+    expect(() => {
+      fixedWindow({
+        // @ts-expect-error
+        match: /foobar/,
+        window: "1h",
+        max: 1,
+      });
+    }).toThrow(
+      "`fixedWindow` options error: invalid type for `match` - expected string",
+    );
+  });
+
+  test("validates `window` option is required", async () => {
+    expect(() => {
+      fixedWindow(
+        // @ts-expect-error
+        {
+          max: 1,
+        },
+      );
+    }).toThrow("`fixedWindow` options error: `window` is required");
+  });
+
+  test("validates `window` option is string or number", async () => {
+    expect(() => {
+      fixedWindow({
+        // @ts-expect-error
+        window: /foobar/,
+        max: 1,
+      });
+    }).toThrow(
+      "`fixedWindow` options error: invalid type for `window` - expected one of string, number",
+    );
+  });
+
+  test("validates `max` option is required", async () => {
+    expect(() => {
+      fixedWindow(
+        // @ts-expect-error
+        {
+          window: 1,
+        },
+      );
+    }).toThrow("`fixedWindow` options error: `max` is required");
+  });
+
+  test("validates `max` option is number", async () => {
+    expect(() => {
+      fixedWindow({
+        window: 1,
+        // @ts-expect-error
+        max: "abc",
+      });
+    }).toThrow(
+      "`fixedWindow` options error: invalid type for `max` - expected number",
     );
   });
 
@@ -810,18 +1021,75 @@ describe("Primitive > fixedWindow", () => {
 });
 
 describe("Primitive > slidingWindow", () => {
-  test("validates `mode` if it is set", async () => {
+  test("validates `mode` option if it is set", async () => {
     expect(() => {
       slidingWindow({
         // @ts-expect-error
         mode: "INVALID",
-        match: "/test",
-        characteristics: ["ip.src"],
         interval: 3600,
         max: 1,
       });
     }).toThrow(
       "`slidingWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
+  });
+
+  test("validates `match` option if it is set", async () => {
+    expect(() => {
+      slidingWindow({
+        // @ts-expect-error
+        match: /foobar/,
+        interval: 3600,
+        max: 1,
+      });
+    }).toThrow(
+      "`slidingWindow` options error: invalid type for `match` - expected string",
+    );
+  });
+
+  test("validates `interval` option is required", async () => {
+    expect(() => {
+      slidingWindow(
+        // @ts-expect-error
+        {
+          max: 1,
+        },
+      );
+    }).toThrow("`slidingWindow` options error: `interval` is required");
+  });
+
+  test("validates `interval` option is string or number", async () => {
+    expect(() => {
+      slidingWindow({
+        // @ts-expect-error
+        interval: /foobar/,
+        max: 1,
+      });
+    }).toThrow(
+      "`slidingWindow` options error: invalid type for `interval` - expected one of string, number",
+    );
+  });
+
+  test("validates `max` option is required", async () => {
+    expect(() => {
+      slidingWindow(
+        // @ts-expect-error
+        {
+          interval: 1,
+        },
+      );
+    }).toThrow("`slidingWindow` options error: `max` is required");
+  });
+
+  test("validates `max` option is number", async () => {
+    expect(() => {
+      slidingWindow({
+        interval: 1,
+        // @ts-expect-error
+        max: "abc",
+      });
+    }).toThrow(
+      "`slidingWindow` options error: invalid type for `max` - expected number",
     );
   });
 
@@ -924,7 +1192,7 @@ describe("Primitive > slidingWindow", () => {
 });
 
 describe("Primitive > validateEmail", () => {
-  test("validates `mode` if it is set", async () => {
+  test("validates `mode` option if it is set", async () => {
     expect(() => {
       validateEmail({
         // @ts-expect-error
@@ -932,6 +1200,50 @@ describe("Primitive > validateEmail", () => {
       });
     }).toThrow(
       "`validateEmail` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
+  });
+
+  test("validates `block` option is array if it is set", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        block: 1234,
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid type for `block` - expected an array",
+    );
+  });
+
+  test("validates `block` option only contains specific values", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        block: ["FOOBAR"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid value for `block[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
+    );
+  });
+
+  test("validates `requireTopLevelDomain` option if it is set", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        requireTopLevelDomain: "abc",
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid type for `requireTopLevelDomain` - expected boolean",
+    );
+  });
+
+  test("validates `allowDomainLiteral` option if it is set", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        allowDomainLiteral: "abc",
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid type for `allowDomainLiteral` - expected boolean",
     );
   });
 
@@ -1287,7 +1599,7 @@ describe("Primitive > validateEmail", () => {
 });
 
 describe("Primitive > shield", () => {
-  test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
+  test("validates `mode` option if it is set", async () => {
     expect(() => {
       shield({
         // @ts-expect-error
@@ -1304,6 +1616,582 @@ describe("Primitive > shield", () => {
     });
     expect(rule.type).toEqual("SHIELD");
     expect(rule).toHaveProperty("mode", "LIVE");
+  });
+
+  test("sets mode as `DRY_RUN` if not specified", async () => {
+    const [rule] = shield({});
+    expect(rule.type).toEqual("SHIELD");
+    expect(rule).toHaveProperty("mode", "DRY_RUN");
+  });
+});
+
+describe("Primitive > sensitiveInfo", () => {
+  test("validates `mode` option if it is set", async () => {
+    expect(() => {
+      sensitiveInfo({
+        // @ts-expect-error
+        mode: "INVALID",
+        allow: [],
+      });
+    }).toThrow(
+      "`sensitiveInfo` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
+    );
+  });
+
+  test("validates `allow` option is an array if set", async () => {
+    expect(() => {
+      sensitiveInfo({
+        // @ts-expect-error
+        allow: "abc",
+      });
+    }).toThrow(
+      "`sensitiveInfo` options error: invalid type for `allow` - expected an array",
+    );
+  });
+
+  test("validates `allow` option only contains strings", async () => {
+    expect(() => {
+      sensitiveInfo({
+        // @ts-expect-error
+        allow: [/foo/],
+      });
+    }).toThrow(
+      "`sensitiveInfo` options error: invalid type for `allow[0]` - expected string",
+    );
+  });
+
+  test("validates `deny` option is an array if set", async () => {
+    expect(() => {
+      sensitiveInfo({
+        // @ts-expect-error
+        deny: "abc",
+      });
+    }).toThrow(
+      "`sensitiveInfo` options error: invalid type for `deny` - expected an array",
+    );
+  });
+
+  test("validates `deny` option only contains strings", async () => {
+    expect(() => {
+      sensitiveInfo({
+        // @ts-expect-error
+        deny: [/foo/],
+      });
+    }).toThrow(
+      "`sensitiveInfo` options error: invalid type for `deny[0]` - expected string",
+    );
+  });
+
+  test("validates `contextWindowSize` option if set", async () => {
+    expect(() => {
+      sensitiveInfo({
+        allow: [],
+        // @ts-expect-error
+        contextWindowSize: "abc"
+      });
+    }).toThrow(
+      "`sensitiveInfo` options error: invalid type for `contextWindowSize` - expected number",
+    );
+  });
+
+  test("validates `detect` option if set", async () => {
+    expect(() => {
+      sensitiveInfo({
+        allow: [],
+        // @ts-expect-error
+        detect: "abc"
+      });
+    }).toThrow(
+      "`sensitiveInfo` options error: invalid type for `detect` - expected function",
+    );
+  });
+
+  test("validates `allow` and `deny` options are not specified together", async () => {
+    expect(() => {
+      const _ = sensitiveInfo(
+        // @ts-expect-error
+        {
+          allow: [],
+          deny: [],
+        },
+      );
+    }).toThrow(
+      "`sensitiveInfo` options error: `allow` and `deny` cannot be provided together",
+    );
+  });
+
+  test("validates either `allow` or `deny` option is specified", async () => {
+    expect(() => {
+      const _ = sensitiveInfo(
+        // @ts-expect-error
+        {},
+      );
+    }).toThrow(
+      "`sensitiveInfo` options error: either `allow` or `deny` must be specified",
+    );
+  });
+
+  test("allows specifying sensitive info entities to allow", async () => {
+    const [rule] = sensitiveInfo({
+      allow: ["EMAIL", "CREDIT_CARD_NUMBER"],
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+  });
+
+  test("it doesnt detect any entities in a non sensitive body", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve("none of this is sensitive"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: [],
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetSensitiveInfoReason({
+        denied: [],
+        allowed: [],
+      }),
+    });
+  });
+
+  test("it identifies built-in entities", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () =>
+        Promise.resolve(
+          "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
+        ),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: [],
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetSensitiveInfoReason({
+        denied: [
+          {
+            start: 0,
+            end: 9,
+            identifiedType: "IP_ADDRESS",
+          },
+          {
+            start: 10,
+            end: 26,
+            identifiedType: "EMAIL",
+          },
+          {
+            start: 27,
+            end: 43,
+            identifiedType: "CREDIT_CARD_NUMBER",
+          },
+          {
+            start: 44,
+            end: 60,
+            identifiedType: "PHONE_NUMBER",
+          },
+        ],
+        allowed: [],
+      }),
+    });
+  });
+
+  test("it allows entities on the allow list", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () =>
+        Promise.resolve(
+          "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
+        ),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: ["EMAIL", "PHONE_NUMBER"],
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetSensitiveInfoReason({
+        denied: [
+          {
+            start: 0,
+            end: 9,
+            identifiedType: "IP_ADDRESS",
+          },
+          {
+            start: 27,
+            end: 43,
+            identifiedType: "CREDIT_CARD_NUMBER",
+          },
+        ],
+        allowed: [
+          {
+            start: 10,
+            end: 26,
+            identifiedType: "EMAIL",
+          },
+          {
+            start: 44,
+            end: 60,
+            identifiedType: "PHONE_NUMBER",
+          },
+        ],
+      }),
+    });
+  });
+
+  test("it returns an allow decision when all identified types are allowed", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: ["EMAIL", "PHONE_NUMBER"],
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetSensitiveInfoReason({
+        denied: [],
+        allowed: [
+          {
+            start: 0,
+            end: 16,
+            identifiedType: "EMAIL",
+          },
+          {
+            start: 17,
+            end: 33,
+            identifiedType: "PHONE_NUMBER",
+          },
+        ],
+      }),
+    });
+  });
+
+  test("it only denies listed entities when deny mode is set", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      deny: ["CREDIT_CARD_NUMBER"],
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetSensitiveInfoReason({
+        denied: [],
+        allowed: [
+          {
+            start: 0,
+            end: 16,
+            identifiedType: "EMAIL",
+          },
+          {
+            start: 17,
+            end: 33,
+            identifiedType: "PHONE_NUMBER",
+          },
+        ],
+      }),
+    });
+  });
+
+  test("it returns a deny decision in deny mode when an entity is matched", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      deny: ["EMAIL"],
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetSensitiveInfoReason({
+        denied: [
+          {
+            start: 0,
+            end: 16,
+            identifiedType: "EMAIL",
+          },
+        ],
+        allowed: [
+          {
+            start: 17,
+            end: 33,
+            identifiedType: "PHONE_NUMBER",
+          },
+        ],
+      }),
+    });
+  });
+
+  test("it blocks entities identified by a custom function", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve("this is bad"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const customDetect = (tokens: string[]) => {
+      return tokens.map((token) => {
+        if (token === "bad") {
+          return "CUSTOM";
+        }
+      });
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      deny: ["CUSTOM"],
+      contextWindowSize: 1,
+      detect: customDetect,
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetSensitiveInfoReason({
+        allowed: [],
+        denied: [
+          {
+            start: 8,
+            end: 11,
+            identifiedType: "CUSTOM",
+          },
+        ],
+      }),
+    });
+  });
+
+  test("it allows custom entities identified by a function that would have otherwise been blocked", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve("my email is test@example.com"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const customDetect = (tokens: string[]) => {
+      return tokens.map((token) => {
+        if (token === "test@example.com") {
+          return "custom";
+        }
+      });
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: ["custom"],
+      detect: customDetect,
+      contextWindowSize: 1,
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetSensitiveInfoReason({
+        allowed: [
+          {
+            start: 12,
+            end: 28,
+            identifiedType: "custom",
+          },
+        ],
+        denied: [],
+      }),
+    });
+  });
+
+  test("it provides the right size context window", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve("my email is test@example.com"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const customDetect = (tokens: string[]) => {
+      expect(tokens).toHaveLength(3);
+      return tokens.map(() => undefined);
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: [],
+      detect: customDetect,
+      contextWindowSize: 3,
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    await rule.protect(context, details);
   });
 });
 
@@ -3184,482 +4072,5 @@ describe("SDK", () => {
         }),
       ],
     );
-  });
-
-  describe("Primitive > sensitiveInfo", () => {
-    test("validates `mode` if it is set", async () => {
-      expect(() => {
-        sensitiveInfo({
-          // @ts-expect-error
-          mode: "INVALID",
-          allow: [],
-        });
-      }).toThrow(
-        "`sensitiveInfo` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-      );
-    });
-
-    test("allows specifying sensitive info entities to allow", async () => {
-      const [rule] = sensitiveInfo({
-        allow: ["EMAIL", "CREDIT_CARD_NUMBER"],
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-    });
-
-    test("it doesnt detect any entities in a non sensitive body", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () => Promise.resolve("none of this is sensitive"),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        allow: [],
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetSensitiveInfoReason({
-          denied: [],
-          allowed: [],
-        }),
-      });
-    });
-
-    test("it identifies built-in entities", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () =>
-          Promise.resolve(
-            "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
-          ),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        allow: [],
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "DENY",
-        reason: new ArcjetSensitiveInfoReason({
-          denied: [
-            {
-              start: 0,
-              end: 9,
-              identifiedType: "IP_ADDRESS",
-            },
-            {
-              start: 10,
-              end: 26,
-              identifiedType: "EMAIL",
-            },
-            {
-              start: 27,
-              end: 43,
-              identifiedType: "CREDIT_CARD_NUMBER",
-            },
-            {
-              start: 44,
-              end: 60,
-              identifiedType: "PHONE_NUMBER",
-            },
-          ],
-          allowed: [],
-        }),
-      });
-    });
-
-    test("it allows entities on the allow list", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () =>
-          Promise.resolve(
-            "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
-          ),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        allow: ["EMAIL", "PHONE_NUMBER"],
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "DENY",
-        reason: new ArcjetSensitiveInfoReason({
-          denied: [
-            {
-              start: 0,
-              end: 9,
-              identifiedType: "IP_ADDRESS",
-            },
-            {
-              start: 27,
-              end: 43,
-              identifiedType: "CREDIT_CARD_NUMBER",
-            },
-          ],
-          allowed: [
-            {
-              start: 10,
-              end: 26,
-              identifiedType: "EMAIL",
-            },
-            {
-              start: 44,
-              end: 60,
-              identifiedType: "PHONE_NUMBER",
-            },
-          ],
-        }),
-      });
-    });
-
-    test("it returns an allow decision when all identified types are allowed", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        allow: ["EMAIL", "PHONE_NUMBER"],
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetSensitiveInfoReason({
-          denied: [],
-          allowed: [
-            {
-              start: 0,
-              end: 16,
-              identifiedType: "EMAIL",
-            },
-            {
-              start: 17,
-              end: 33,
-              identifiedType: "PHONE_NUMBER",
-            },
-          ],
-        }),
-      });
-    });
-
-    test("it only denies listed entities when deny mode is set", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        deny: ["CREDIT_CARD_NUMBER"],
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetSensitiveInfoReason({
-          denied: [],
-          allowed: [
-            {
-              start: 0,
-              end: 16,
-              identifiedType: "EMAIL",
-            },
-            {
-              start: 17,
-              end: 33,
-              identifiedType: "PHONE_NUMBER",
-            },
-          ],
-        }),
-      });
-    });
-
-    test("it returns a deny decision in deny mode when an entity is matched", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        deny: ["EMAIL"],
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "DENY",
-        reason: new ArcjetSensitiveInfoReason({
-          denied: [
-            {
-              start: 0,
-              end: 16,
-              identifiedType: "EMAIL",
-            },
-          ],
-          allowed: [
-            {
-              start: 17,
-              end: 33,
-              identifiedType: "PHONE_NUMBER",
-            },
-          ],
-        }),
-      });
-    });
-
-    test("it blocks entities identified by a custom function", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () => Promise.resolve("this is bad"),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const customDetect = (tokens: string[]) => {
-        return tokens.map((token) => {
-          if (token === "bad") {
-            return "CUSTOM";
-          }
-        });
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        deny: ["CUSTOM"],
-        contextWindowSize: 1,
-        detect: customDetect,
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "DENY",
-        reason: new ArcjetSensitiveInfoReason({
-          allowed: [],
-          denied: [
-            {
-              start: 8,
-              end: 11,
-              identifiedType: "CUSTOM",
-            },
-          ],
-        }),
-      });
-    });
-
-    test("it allows custom entities identified by a function that would have otherwise been blocked", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () => Promise.resolve("my email is test@example.com"),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const customDetect = (tokens: string[]) => {
-        return tokens.map((token) => {
-          if (token === "test@example.com") {
-            return "custom";
-          }
-        });
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        allow: ["custom"],
-        detect: customDetect,
-        contextWindowSize: 1,
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetSensitiveInfoReason({
-          allowed: [
-            {
-              start: 12,
-              end: 28,
-              identifiedType: "custom",
-            },
-          ],
-          denied: [],
-        }),
-      });
-    });
-
-    test("it provides the right size context window", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log,
-        characteristics: [],
-        getBody: () => Promise.resolve("my email is test@example.com"),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers(),
-        cookies: "",
-        query: "",
-        extra: {},
-      };
-
-      const customDetect = (tokens: string[]) => {
-        expect(tokens).toHaveLength(3);
-        return tokens.map(() => undefined);
-      };
-
-      const [rule] = sensitiveInfo({
-        mode: "LIVE",
-        allow: [],
-        detect: customDetect,
-        contextWindowSize: 3,
-      });
-      expect(rule.type).toEqual("SENSITIVE_INFO");
-      assertIsLocalRule(rule);
-      await rule.protect(context, details);
-    });
   });
 });
