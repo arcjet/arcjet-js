@@ -44,6 +44,10 @@
       "component": "@arcjet/deno",
       "skip-github-release": true
     },
+    "arcjet-nest": {
+      "component": "@arcjet/nest",
+      "skip-github-release": true
+    },
     "arcjet-next": {
       "component": "@arcjet/next",
       "skip-github-release": true
@@ -135,6 +139,7 @@
         "arcjet",
         "@arcjet/bun",
         "@arcjet/deno",
+        "@arcjet/nest",
         "@arcjet/next",
         "@arcjet/node",
         "@arcjet/sveltekit",

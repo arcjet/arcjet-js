@@ -584,7 +584,7 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /examples/nodejs-nestjs
+    directory: /examples/nestjs
     schedule:
       # Our dependencies should be checked daily
       interval: daily
@@ -600,6 +600,62 @@ updates:
         patterns:
           - "*"
     ignore:
+      # NestJS uses Express 4
+      - dependency-name: "@types/express"
+        versions: [">=5"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+      - dependency-name: "@typescript-eslint/parser"
+        versions: [">=8"]
+      - dependency-name: "@typescript-eslint/eslint-plugin"
+        versions: [">=8"]
+
+  - package-ecosystem: npm
+    directory: /examples/nestjs-fastify
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+    reviewers:
+      - blaine-arcjet
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+      - dependency-name: "@typescript-eslint/parser"
+        versions: [">=8"]
+      - dependency-name: "@typescript-eslint/eslint-plugin"
+        versions: [">=8"]
+
+  - package-ecosystem: npm
+    directory: /examples/nestjs-launchdarkly
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+    reviewers:
+      - blaine-arcjet
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # NestJS uses Express 4
+      - dependency-name: "@types/express"
+        versions: [">=5"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
