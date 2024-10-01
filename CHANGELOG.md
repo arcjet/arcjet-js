@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...v1.0.0-alpha.27) (2024-10-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add options validation for all rules ([#1785](https://github.com/arcjet/arcjet-js/issues/1785))
+* Only produce 1 rule per constructor ([#1783](https://github.com/arcjet/arcjet-js/issues/1783))
+
+### 🚀 New Features
+
+* Add Deno adapter ([#1782](https://github.com/arcjet/arcjet-js/issues/1782)) ([fdfcaf3](https://github.com/arcjet/arcjet-js/commit/fdfcaf3e0242e9b4a6d9db5d93dc601f983bae3c)), closes [#758](https://github.com/arcjet/arcjet-js/issues/758)
+* Add NestJS adapter ([#1776](https://github.com/arcjet/arcjet-js/issues/1776)) ([4e52453](https://github.com/arcjet/arcjet-js/commit/4e5245300f2e9958630a948b902472c2e056b3ba)), closes [#781](https://github.com/arcjet/arcjet-js/issues/781)
+
+
+### 🪲 Bug Fixes
+
+* **protocol:** Ensure relative imports have extensions ([#1722](https://github.com/arcjet/arcjet-js/issues/1722)) ([73928c8](https://github.com/arcjet/arcjet-js/commit/73928c8c77c643577384cb5481a1dff955638388)), closes [#1720](https://github.com/arcjet/arcjet-js/issues/1720)
+
+
+### 🧹 Miscellaneous Chores
+
+* Add options validation for all rules ([#1785](https://github.com/arcjet/arcjet-js/issues/1785)) ([c3a248e](https://github.com/arcjet/arcjet-js/commit/c3a248ee953a54d5b818942135bebff22a84b307)), closes [#992](https://github.com/arcjet/arcjet-js/issues/992)
+* **analyze:** Update well known bots ([#1784](https://github.com/arcjet/arcjet-js/issues/1784)) ([52f1ee3](https://github.com/arcjet/arcjet-js/commit/52f1ee35fde144d152ef2face2546ed79ca35f49))
+* Only produce 1 rule per constructor ([#1783](https://github.com/arcjet/arcjet-js/issues/1783)) ([8d79e63](https://github.com/arcjet/arcjet-js/commit/8d79e639be69095c97fb383490817a7eb326458c)), closes [#1397](https://github.com/arcjet/arcjet-js/issues/1397)
+* Update WebAssembly modules ([#1721](https://github.com/arcjet/arcjet-js/issues/1721)) ([2dbb9eb](https://github.com/arcjet/arcjet-js/commit/2dbb9eb90755dca6dc99dc0092246304b98889f9))
+
 ## [1.0.0-alpha.26](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.25...v1.0.0-alpha.26) (2024-09-16)
 
 
