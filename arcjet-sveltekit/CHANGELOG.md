@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/sveltekit-v1.0.0-alpha.27) (2024-10-01)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sveltekit:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/headers bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/ip bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/logger bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/protocol bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/transport bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * arcjet bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+
 ## [1.0.0-alpha.26](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.25...@arcjet/sveltekit-v1.0.0-alpha.26) (2024-09-16)
 
 

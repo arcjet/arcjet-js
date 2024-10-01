@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/redact-wasm-v1.0.0-alpha.27) (2024-10-01)
+
+
+### 🧹 Miscellaneous Chores
+
+* Update WebAssembly modules ([#1721](https://github.com/arcjet/arcjet-js/issues/1721)) ([2dbb9eb](https://github.com/arcjet/arcjet-js/commit/2dbb9eb90755dca6dc99dc0092246304b98889f9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+
 ## [1.0.0-alpha.26](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.25...@arcjet/redact-wasm-v1.0.0-alpha.26) (2024-09-16)
 
 

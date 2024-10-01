@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/env",
-  "version": "1.0.0-alpha.26",
+  "version": "1.0.0-alpha.27",
   "description": "Arcjet environment detection",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -41,9 +41,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.26",
-    "@arcjet/rollup-config": "1.0.0-alpha.26",
-    "@arcjet/tsconfig": "1.0.0-alpha.26",
+    "@arcjet/eslint-config": "1.0.0-alpha.27",
+    "@arcjet/rollup-config": "1.0.0-alpha.27",
+    "@arcjet/tsconfig": "1.0.0-alpha.27",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.22.5",
     "jest": "29.7.0",
