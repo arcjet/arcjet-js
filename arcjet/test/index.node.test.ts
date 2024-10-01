@@ -306,18 +306,11 @@ describe("ArcjetDecision", () => {
 });
 
 describe("Primitive > detectBot", () => {
-  test("provides a default rule with no options specified", async () => {
-    const [rule] = detectBot();
-    expect(rule.type).toEqual("BOT");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
-    expect(rule).toHaveProperty("allow", []);
-    expect(rule).toHaveProperty("deny", []);
-  });
-
   test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
     const [rule] = detectBot({
       // @ts-expect-error
       mode: "INVALID",
+      allow: [],
     });
     expect(rule.type).toEqual("BOT");
     expect(rule).toHaveProperty("mode", "DRY_RUN");
@@ -325,11 +318,13 @@ describe("Primitive > detectBot", () => {
 
   test("throws if `allow` and `deny` are both defined", async () => {
     expect(() => {
-      const _ = detectBot({
-        allow: ["CURL"],
+      const _ = detectBot(
         // @ts-expect-error
-        deny: ["GOOGLE_ADSBOT"],
-      });
+        {
+          allow: ["CURL"],
+          deny: ["GOOGLE_ADSBOT"],
+        },
+      );
     }).toThrow();
   });
 
@@ -364,7 +359,7 @@ describe("Primitive > detectBot", () => {
       headers: undefined,
     };
 
-    const [rule] = detectBot();
+    const [rule] = detectBot({ mode: "LIVE", allow: [] });
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
     expect(() => {
@@ -385,7 +380,7 @@ describe("Primitive > detectBot", () => {
       headers: {},
     };
 
-    const [rule] = detectBot();
+    const [rule] = detectBot({ mode: "LIVE", allow: [] });
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
     expect(() => {
@@ -418,7 +413,7 @@ describe("Primitive > detectBot", () => {
       extra: {},
     };
 
-    const [rule] = detectBot();
+    const [rule] = detectBot({ mode: "LIVE", allow: [] });
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
     expect(() => {
@@ -571,11 +566,6 @@ describe("Primitive > detectBot", () => {
 });
 
 describe("Primitive > tokenBucket", () => {
-  test("provides no rules if no `options` specified", () => {
-    const rules = tokenBucket();
-    expect(rules).toHaveLength(0);
-  });
-
   test("sets mode as `DRY_RUN` if not 'LIVE' or 'DRY_RUN'", async () => {
     const [rule] = tokenBucket({
       // @ts-expect-error
@@ -666,7 +656,7 @@ describe("Primitive > tokenBucket", () => {
     type Test = Assert<RuleProps<typeof rules, { requested: number }>>;
   });
 
-  test("produces a rules based on single `limit` specified", async () => {
+  test("produces a rules based on configuration specified", async () => {
     const options = {
       match: "/test",
       characteristics: ["ip.src"],
@@ -687,51 +677,7 @@ describe("Primitive > tokenBucket", () => {
     expect(rules[0]).toHaveProperty("capacity", 1);
   });
 
-  test("produces a multiple rules based on multiple `limit` specified", async () => {
-    const options = [
-      {
-        match: "/test",
-        characteristics: ["ip.src"],
-        refillRate: 1,
-        interval: 1,
-        capacity: 1,
-      },
-      {
-        match: "/test-double",
-        characteristics: ["ip.src"],
-        refillRate: 2,
-        interval: 2,
-        capacity: 2,
-      },
-    ];
-
-    const rules = tokenBucket(...options);
-    expect(rules).toHaveLength(2);
-    expect(rules).toEqual([
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: "/test",
-        characteristics: ["ip.src"],
-        algorithm: "TOKEN_BUCKET",
-        refillRate: 1,
-        interval: 1,
-        capacity: 1,
-      }),
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: "/test-double",
-        characteristics: ["ip.src"],
-        algorithm: "TOKEN_BUCKET",
-        refillRate: 2,
-        interval: 2,
-        capacity: 2,
-      }),
-    ]);
-  });
-
-  test("does not default `match` and `characteristics` if not specified in single `limit`", async () => {
+  test("does not default `match` and `characteristics` if not specified", async () => {
     const options = {
       refillRate: 1,
       interval: 1,
@@ -743,52 +689,9 @@ describe("Primitive > tokenBucket", () => {
     expect(rule).toHaveProperty("match", undefined);
     expect(rule).toHaveProperty("characteristics", undefined);
   });
-
-  test("does not default `match` or `characteristics` if not specified in array `limit`", async () => {
-    const options = [
-      {
-        refillRate: 1,
-        interval: 1,
-        capacity: 1,
-      },
-      {
-        refillRate: 2,
-        interval: 2,
-        capacity: 2,
-      },
-    ];
-
-    const rules = tokenBucket(...options);
-    expect(rules).toEqual([
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: undefined,
-        characteristics: undefined,
-        algorithm: "TOKEN_BUCKET",
-        refillRate: 1,
-        interval: 1,
-        capacity: 1,
-      }),
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: undefined,
-        characteristics: undefined,
-        refillRate: 2,
-        interval: 2,
-        capacity: 2,
-      }),
-    ]);
-  });
 });
 
 describe("Primitive > fixedWindow", () => {
-  test("provides no rules if no `options` specified", () => {
-    const rules = fixedWindow();
-    expect(rules).toHaveLength(0);
-  });
-
   test("sets mode as `DRY_RUN` if not 'LIVE' or 'DRY_RUN'", async () => {
     const [rule] = fixedWindow({
       // @ts-expect-error
@@ -868,7 +771,7 @@ describe("Primitive > fixedWindow", () => {
     type Test = Assert<RuleProps<typeof rules, {}>>;
   });
 
-  test("produces a rules based on single `limit` specified", async () => {
+  test("produces a rules based on configuration specified", async () => {
     const options = {
       match: "/test",
       characteristics: ["ip.src"],
@@ -887,47 +790,7 @@ describe("Primitive > fixedWindow", () => {
     expect(rules[0]).toHaveProperty("max", 1);
   });
 
-  test("produces a multiple rules based on multiple `limit` specified", async () => {
-    const options = [
-      {
-        match: "/test",
-        characteristics: ["ip.src"],
-        window: "1h",
-        max: 1,
-      },
-      {
-        match: "/test-double",
-        characteristics: ["ip.src"],
-        window: "2h",
-        max: 2,
-      },
-    ];
-
-    const rules = fixedWindow(...options);
-    expect(rules).toHaveLength(2);
-    expect(rules).toEqual([
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: "/test",
-        characteristics: ["ip.src"],
-        algorithm: "FIXED_WINDOW",
-        window: 3600,
-        max: 1,
-      }),
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: "/test-double",
-        characteristics: ["ip.src"],
-        algorithm: "FIXED_WINDOW",
-        window: 7200,
-        max: 2,
-      }),
-    ]);
-  });
-
-  test("does not default `match` and `characteristics` if not specified in single `limit`", async () => {
+  test("does not default `match` and `characteristics` if not specified", async () => {
     const options = {
       window: "1h",
       max: 1,
@@ -938,49 +801,9 @@ describe("Primitive > fixedWindow", () => {
     expect(rule).toHaveProperty("match", undefined);
     expect(rule).toHaveProperty("characteristics", undefined);
   });
-
-  test("does not default `match` or `characteristics` if not specified in array `limit`", async () => {
-    const options = [
-      {
-        window: "1h",
-        max: 1,
-      },
-      {
-        window: "2h",
-        max: 2,
-      },
-    ];
-
-    const rules = fixedWindow(...options);
-    expect(rules).toEqual([
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: undefined,
-        characteristics: undefined,
-        algorithm: "FIXED_WINDOW",
-        window: 3600,
-        max: 1,
-      }),
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: undefined,
-        characteristics: undefined,
-        algorithm: "FIXED_WINDOW",
-        window: 7200,
-        max: 2,
-      }),
-    ]);
-  });
 });
 
 describe("Primitive > slidingWindow", () => {
-  test("provides no rules if no `options` specified", () => {
-    const rules = slidingWindow();
-    expect(rules).toHaveLength(0);
-  });
-
   test("sets mode as `DRY_RUN` if not 'LIVE' or 'DRY_RUN'", async () => {
     const [rule] = slidingWindow({
       // @ts-expect-error
@@ -1060,7 +883,7 @@ describe("Primitive > slidingWindow", () => {
     type Test = Assert<RuleProps<typeof rules, {}>>;
   });
 
-  test("produces a rules based on single `limit` specified", async () => {
+  test("produces a rules based on configuration specified", async () => {
     const options = {
       match: "/test",
       characteristics: ["ip.src"],
@@ -1079,47 +902,7 @@ describe("Primitive > slidingWindow", () => {
     expect(rules[0]).toHaveProperty("max", 1);
   });
 
-  test("produces a multiple rules based on multiple `limit` specified", async () => {
-    const options = [
-      {
-        match: "/test",
-        characteristics: ["ip.src"],
-        interval: 3600,
-        max: 1,
-      },
-      {
-        match: "/test-double",
-        characteristics: ["ip.src"],
-        interval: 7200,
-        max: 2,
-      },
-    ];
-
-    const rules = slidingWindow(...options);
-    expect(rules).toHaveLength(2);
-    expect(rules).toEqual([
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: "/test",
-        characteristics: ["ip.src"],
-        algorithm: "SLIDING_WINDOW",
-        interval: 3600,
-        max: 1,
-      }),
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: "/test-double",
-        characteristics: ["ip.src"],
-        algorithm: "SLIDING_WINDOW",
-        interval: 7200,
-        max: 2,
-      }),
-    ]);
-  });
-
-  test("does not default `match` and `characteristics` if not specified in single `limit`", async () => {
+  test("does not default `match` and `characteristics` if not specified", async () => {
     const options = {
       interval: 3600,
       max: 1,
@@ -1130,54 +913,9 @@ describe("Primitive > slidingWindow", () => {
     expect(rule).toHaveProperty("match", undefined);
     expect(rule).toHaveProperty("characteristics", undefined);
   });
-
-  test("does not default `match` or `characteristics` if not specified in array `limit`", async () => {
-    const options = [
-      {
-        interval: 3600,
-        max: 1,
-      },
-      {
-        interval: 7200,
-        max: 2,
-      },
-    ];
-
-    const rules = slidingWindow(...options);
-    expect(rules).toEqual([
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: undefined,
-        characteristics: undefined,
-        algorithm: "SLIDING_WINDOW",
-        interval: 3600,
-        max: 1,
-      }),
-      expect.objectContaining({
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        match: undefined,
-        characteristics: undefined,
-        algorithm: "SLIDING_WINDOW",
-        interval: 7200,
-        max: 2,
-      }),
-    ]);
-  });
 });
 
 describe("Primitive > validateEmail", () => {
-  test("provides a default rule with no options specified", async () => {
-    const [rule] = validateEmail();
-    expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
-    expect(rule).toHaveProperty("block", []);
-    expect(rule).toHaveProperty("requireTopLevelDomain", true);
-    expect(rule).toHaveProperty("allowDomainLiteral", false);
-    assertIsLocalRule(rule);
-  });
-
   test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
     const [rule] = validateEmail({
       // @ts-expect-error
@@ -1222,7 +960,7 @@ describe("Primitive > validateEmail", () => {
       email: "abc@example.com",
     };
 
-    const [rule] = validateEmail();
+    const [rule] = validateEmail({ mode: "LIVE" });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
@@ -1243,7 +981,7 @@ describe("Primitive > validateEmail", () => {
       email: undefined,
     };
 
-    const [rule] = validateEmail();
+    const [rule] = validateEmail({ mode: "LIVE" });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
@@ -1273,7 +1011,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail();
+    const [rule] = validateEmail({ mode: "LIVE" });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1308,7 +1046,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail();
+    const [rule] = validateEmail({ mode: "LIVE" });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1343,7 +1081,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail();
+    const [rule] = validateEmail({ mode: "LIVE" });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1415,7 +1153,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail();
+    const [rule] = validateEmail({ mode: "LIVE" });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1450,7 +1188,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail();
+    const [rule] = validateEmail({ mode: "LIVE" });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1539,12 +1277,6 @@ describe("Primitive > validateEmail", () => {
 });
 
 describe("Primitive > shield", () => {
-  test("provides a default rule with no options specified", async () => {
-    const [rule] = shield();
-    expect(rule.type).toEqual("SHIELD");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
-  });
-
   test("sets mode as 'DRY_RUN' if not 'LIVE' or 'DRY_RUN'", async () => {
     const [rule] = shield({
       // @ts-expect-error
@@ -1580,57 +1312,6 @@ describe("Products > protectSignup", () => {
       email: {
         mode: ArcjetMode.LIVE,
       },
-    });
-    expect(rules.length).toEqual(3);
-  });
-
-  test("allows configuration of multiple rate limit rules with an array of options", () => {
-    const rules = protectSignup({
-      rateLimit: [
-        {
-          mode: ArcjetMode.DRY_RUN,
-          match: "/test",
-          characteristics: ["ip.src"],
-          interval: 60 /* minutes */ * 60 /* seconds */,
-          max: 1,
-        },
-        {
-          match: "/test",
-          characteristics: ["ip.src"],
-          interval: 2 /* hours */ * 60 /* minutes */ * 60 /* seconds */,
-          max: 2,
-        },
-      ],
-    });
-    expect(rules.length).toEqual(4);
-  });
-
-  test("allows configuration of multiple bot rules with an array of options", () => {
-    const rules = protectSignup({
-      bots: [
-        {
-          mode: "DRY_RUN",
-          allow: [],
-        },
-        {
-          mode: "LIVE",
-          allow: [],
-        },
-      ],
-    });
-    expect(rules.length).toEqual(3);
-  });
-
-  test("allows configuration of multiple email rules with an array of options", () => {
-    const rules = protectSignup({
-      email: [
-        {
-          mode: "DRY_RUN",
-        },
-        {
-          mode: "LIVE",
-        },
-      ],
     });
     expect(rules.length).toEqual(3);
   });
@@ -1726,7 +1407,7 @@ describe("SDK", () => {
   }
 
   function testRuleProps(): Primitive<{ abc: number }> {
-    return [];
+    return [{ mode: "LIVE", type: "test", priority: 10000 }];
   }
 
   test("creates a new Arcjet SDK with no rules", () => {

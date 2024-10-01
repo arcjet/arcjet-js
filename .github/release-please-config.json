@@ -4,16 +4,46 @@
   "release-type": "node",
   "changelog-path": "CHANGELOG.md",
   "changelog-sections": [
-    { "type": "feat", "section": "🚀 New Features" },
-    { "type": "fix", "section": "🪲 Bug Fixes" },
-    { "type": "perf", "section": "🏎️ Performance Improvements" },
-    { "type": "revert", "section": "↩️ Reverts" },
-    { "type": "docs", "section": "📝 Documentation" },
-    { "type": "chore", "section": "🧹 Miscellaneous Chores" },
-    { "type": "refactor", "section": "⌨️ Code Refactoring" },
-    { "type": "test", "section": "📚 Tests" },
-    { "type": "build", "section": "🔨 Build System" },
-    { "type": "ci", "section": "✅ Continuous Integration" }
+    {
+      "type": "feat",
+      "section": "🚀 New Features"
+    },
+    {
+      "type": "fix",
+      "section": "🪲 Bug Fixes"
+    },
+    {
+      "type": "perf",
+      "section": "🏎️ Performance Improvements"
+    },
+    {
+      "type": "revert",
+      "section": "↩️ Reverts"
+    },
+    {
+      "type": "docs",
+      "section": "📝 Documentation"
+    },
+    {
+      "type": "chore",
+      "section": "🧹 Miscellaneous Chores"
+    },
+    {
+      "type": "refactor",
+      "section": "⌨️ Code Refactoring"
+    },
+    {
+      "type": "test",
+      "section": "📚 Tests"
+    },
+    {
+      "type": "build",
+      "section": "🔨 Build System"
+    },
+    {
+      "type": "ci",
+      "section": "✅ Continuous Integration"
+    }
   ],
   "group-pull-request-title-pattern": "chore: Release ${version}",
   "pull-request-header": "Automatically generated with [Release Please](https://github.com/googleapis/release-please).",
@@ -38,6 +68,10 @@
     },
     "arcjet-bun": {
       "component": "@arcjet/bun",
+      "skip-github-release": true
+    },
+    "arcjet-deno": {
+      "component": "@arcjet/deno",
       "skip-github-release": true
     },
     "arcjet-nest": {
@@ -134,6 +168,7 @@
         "@arcjet/analyze",
         "arcjet",
         "@arcjet/bun",
+        "@arcjet/deno",
         "@arcjet/nest",
         "@arcjet/next",
         "@arcjet/node",

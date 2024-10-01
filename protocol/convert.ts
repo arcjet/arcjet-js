@@ -120,6 +120,8 @@ export function ArcjetStackToProtocol(stack: ArcjetStack): SDKStack {
       return SDKStack.SDK_STACK_BUN;
     case "SVELTEKIT":
       return SDKStack.SDK_STACK_SVELTEKIT;
+    case "DENO":
+      return SDKStack.SDK_STACK_DENO;
     case "NESTJS":
       return SDKStack.SDK_STACK_NESTJS;
     default: {
