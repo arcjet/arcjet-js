@@ -54,7 +54,8 @@ export type ArcjetStack =
   | "BUN"
   | "SVELTEKIT"
   | "DENO"
-  | "NESTJS";
+  | "NESTJS"
+  | "REMIX";
 export const ArcjetStack: ArcjetEnum<ArcjetStack> = {
   NODEJS: "NODEJS",
   NEXTJS: "NEXTJS",
@@ -62,6 +63,7 @@ export const ArcjetStack: ArcjetEnum<ArcjetStack> = {
   SVELTEKIT: "SVELTEKIT",
   DENO: "DENO",
   NESTJS: "NESTJS",
+  REMIX: "REMIX"
 };
 
 export type ArcjetRuleState = "RUN" | "NOT_RUN" | "CACHED" | "DRY_RUN";

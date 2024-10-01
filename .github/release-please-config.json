@@ -56,6 +56,10 @@
       "component": "@arcjet/node",
       "skip-github-release": true
     },
+    "arcjet-remix": {
+      "component": "@arcjet/remix",
+      "skip-github-release": true
+    },
     "arcjet-sveltekit": {
       "component": "@arcjet/sveltekit",
       "skip-github-release": true
@@ -142,6 +146,7 @@
         "@arcjet/nest",
         "@arcjet/next",
         "@arcjet/node",
+        "@arcjet/remix",
         "@arcjet/sveltekit",
         "@arcjet/decorate",
         "@arcjet/duration",
