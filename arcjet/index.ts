@@ -242,6 +242,209 @@ function extraProps<Props extends PlainObject>(
   return Object.fromEntries(extra.entries());
 }
 
+type Validator = (key: string, value: unknown) => void;
+
+type ValidationSchema = {
+  key: string;
+  required: boolean;
+  validate: Validator;
+};
+
+function createTypeValidator(
+  ...types: Array<
+    // These are the types we can compare via `typeof`
+    | "string"
+    | "number"
+    | "bigint"
+    | "boolean"
+    | "symbol"
+    | "undefined"
+    | "object"
+    | "function"
+  >
+): Validator {
+  return (key, value) => {
+    const typeOfValue = typeof value;
+    if (!types.includes(typeOfValue)) {
+      if (types.length === 1) {
+        throw new Error(`invalid type for \`${key}\` - expected ${types[0]}`);
+      } else {
+        throw new Error(
+          `invalid type for \`${key}\` - expected one of ${types.join(", ")}`,
+        );
+      }
+    } else {
+      return false;
+    }
+  };
+}
+
+function createValueValidator(...values: string[]): Validator {
+  return (key, value) => {
+    // We cast the values to unknown because the optionValue isn't known but
+    // we only want to use `values` on string enumerations
+    if (!(values as unknown[]).includes(value)) {
+      if (values.length === 1) {
+        throw new Error(`invalid value for \`${key}\` - expected ${values[0]}`);
+      } else {
+        throw new Error(
+          `invalid value for \`${key}\` - expected one of ${values.map((value) => `'${value}'`).join(", ")}`,
+        );
+      }
+    }
+  };
+}
+
+function createArrayValidator(validate: Validator): Validator {
+  return (key, value) => {
+    if (Array.isArray(value)) {
+      for (const [idx, item] of value.entries()) {
+        validate(`${key}[${idx}]`, item);
+      }
+    } else {
+      throw new Error(`invalid type for \`${key}\` - expected an array`);
+    }
+  };
+}
+
+function createValidator({
+  rule,
+  validations,
+}: {
+  rule: string;
+  validations: ValidationSchema[];
+}) {
+  return (options: Record<string, unknown>) => {
+    for (const { key, validate, required } of validations) {
+      if (required && !Object.hasOwn(options, key)) {
+        throw new Error(`\`${rule}\` options error: \`${key}\` is required`);
+      }
+
+      const value = options[key];
+
+      // The `required` flag is checked above, so these should only be validated
+      // if the value is not undefined.
+      if (typeof value !== "undefined") {
+        try {
+          validate(key, value);
+        } catch (err) {
+          if (err instanceof Error) {
+            throw new Error(`\`${rule}\` options error: ${err.message}`);
+          } else {
+            throw new Error(`\`${rule}\` options error: unknown failure`);
+          }
+        }
+      }
+    }
+  };
+}
+
+const validateString = createTypeValidator("string");
+const validateNumber = createTypeValidator("number");
+const validateBoolean = createTypeValidator("boolean");
+const validateFunction = createTypeValidator("function");
+const validateStringOrNumber = createTypeValidator("string", "number");
+const validateStringArray = createArrayValidator(validateString);
+const validateMode = createValueValidator("LIVE", "DRY_RUN");
+const validateEmailTypes = createArrayValidator(
+  createValueValidator(
+    "DISPOSABLE",
+    "FREE",
+    "NO_MX_RECORDS",
+    "NO_GRAVATAR",
+    "INVALID",
+  ),
+);
+
+const validateTokenBucketOptions = createValidator({
+  rule: "tokenBucket",
+  validations: [
+    {
+      key: "mode",
+      required: false,
+      validate: validateMode,
+    },
+    { key: "match", required: false, validate: validateString },
+    {
+      key: "characteristics",
+      validate: validateStringArray,
+      required: false,
+    },
+    { key: "refillRate", required: true, validate: validateNumber },
+    { key: "interval", required: true, validate: validateStringOrNumber },
+    { key: "capacity", required: true, validate: validateNumber },
+  ],
+});
+
+const validateFixedWindowOptions = createValidator({
+  rule: "fixedWindow",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "match", required: false, validate: validateString },
+    {
+      key: "characteristics",
+      validate: validateStringArray,
+      required: false,
+    },
+    { key: "max", required: true, validate: validateNumber },
+    { key: "window", required: true, validate: validateStringOrNumber },
+  ],
+});
+
+const validateSlidingWindowOptions = createValidator({
+  rule: "slidingWindow",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "match", required: false, validate: validateString },
+    {
+      key: "characteristics",
+      validate: validateStringArray,
+      required: false,
+    },
+    { key: "max", required: true, validate: validateNumber },
+    { key: "interval", required: true, validate: validateStringOrNumber },
+  ],
+});
+
+const validateSensitiveInfoOptions = createValidator({
+  rule: "sensitiveInfo",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "allow", required: false, validate: validateStringArray },
+    { key: "deny", required: false, validate: validateStringArray },
+    { key: "contextWindowSize", required: false, validate: validateNumber },
+    { key: "detect", required: false, validate: validateFunction },
+  ],
+});
+
+const validateEmailOptions = createValidator({
+  rule: "validateEmail",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "block", required: false, validate: validateEmailTypes },
+    {
+      key: "requireTopLevelDomain",
+      required: false,
+      validate: validateBoolean,
+    },
+    { key: "allowDomainLiteral", required: false, validate: validateBoolean },
+  ],
+});
+
+const validateBotOptions = createValidator({
+  rule: "detectBot",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "allow", required: false, validate: validateStringArray },
+    { key: "deny", required: false, validate: validateStringArray },
+  ],
+});
+
+const validateShieldOptions = createValidator({
+  rule: "shield",
+  validations: [{ key: "mode", required: false, validate: validateMode }],
+});
+
 type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
   mode?: ArcjetMode;
   match?: string;
@@ -437,11 +640,11 @@ export function tokenBucket<
     >
   >
 > {
+  validateTokenBucketOptions(options);
+
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const match = options.match;
-  const characteristics = Array.isArray(options.characteristics)
-    ? options.characteristics
-    : undefined;
+  const characteristics = options.characteristics;
 
   const refillRate = options.refillRate;
   const interval = duration.parse(options.interval);
@@ -467,6 +670,8 @@ export function fixedWindow<
 >(
   options: FixedWindowRateLimitOptions<Characteristics>,
 ): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
+  validateFixedWindowOptions(options);
+
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const match = options.match;
   const characteristics = Array.isArray(options.characteristics)
@@ -495,6 +700,8 @@ export function slidingWindow<
 >(
   options: SlidingWindowRateLimitOptions<Characteristics>,
 ): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
+  validateSlidingWindowOptions(options);
+
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const match = options.match;
   const characteristics = Array.isArray(options.characteristics)
@@ -586,18 +793,24 @@ export function sensitiveInfo<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
 >(options: SensitiveInfoOptions<Detect>): Primitive<{}> {
+  validateSensitiveInfoOptions(options);
+
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   if (
     typeof options.allow !== "undefined" &&
     typeof options.deny !== "undefined"
   ) {
-    throw new Error("Both allow and deny cannot be provided to sensitiveInfo");
+    throw new Error(
+      "`sensitiveInfo` options error: `allow` and `deny` cannot be provided together",
+    );
   }
   if (
     typeof options.allow === "undefined" &&
     typeof options.deny === "undefined"
   ) {
-    throw new Error("Must specify allow or deny to sensitiveInfo");
+    throw new Error(
+      "`sensitiveInfo` options error: either `allow` or `deny` must be specified",
+    );
   }
 
   return [
@@ -699,6 +912,8 @@ export function sensitiveInfo<
 export function validateEmail(
   options: EmailOptions,
 ): Primitive<{ email: string }> {
+  validateEmailOptions(options);
+
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const block = options.block ?? [];
   const requireTopLevelDomain = options.requireTopLevelDomain ?? true;
@@ -759,18 +974,24 @@ export function validateEmail(
 }
 
 export function detectBot(options: BotOptions): Primitive<{}> {
+  validateBotOptions(options);
+
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   if (
     typeof options.allow !== "undefined" &&
     typeof options.deny !== "undefined"
   ) {
-    throw new Error("Both allow and deny cannot be provided to detectBot");
+    throw new Error(
+      "`detectBot` options error: `allow` and `deny` cannot be provided together",
+    );
   }
   if (
     typeof options.allow === "undefined" &&
     typeof options.deny === "undefined"
   ) {
-    throw new Error("Must specify allow or deny to detectBot");
+    throw new Error(
+      "`detectBot` options error: either `allow` or `deny` must be specified",
+    );
   }
 
   let config: BotConfig = {
@@ -780,13 +1001,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
       skipCustomDetect: true,
     },
   };
-  if (Array.isArray(options.allow)) {
-    for (const allow of options.allow) {
-      if (typeof allow !== "string") {
-        throw new Error("all values in `allow` must be a string");
-      }
-    }
-
+  if (typeof options.allow !== "undefined") {
     config = {
       tag: "allowed-bot-config",
       val: {
@@ -796,13 +1011,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
     };
   }
 
-  if (Array.isArray(options.deny)) {
-    for (const deny of options.deny) {
-      if (typeof deny !== "string") {
-        throw new Error("all values in `allow` must be a string");
-      }
-    }
-
+  if (typeof options.deny !== "undefined") {
     config = {
       tag: "denied-bot-config",
       val: {
@@ -882,6 +1091,8 @@ export type ShieldOptions = {
 };
 
 export function shield(options: ShieldOptions): Primitive<{}> {
+  validateShieldOptions(options);
+
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   return [
     <ArcjetShieldRule<{}>>{
