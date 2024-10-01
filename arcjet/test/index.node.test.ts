@@ -621,20 +621,6 @@ describe("Primitive > tokenBucket", () => {
     );
   });
 
-  test("validates `match` option if it is set", async () => {
-    expect(() => {
-      tokenBucket({
-        // @ts-expect-error
-        match: /foobar/,
-        refillRate: 1,
-        interval: 1,
-        capacity: 1,
-      });
-    }).toThrow(
-      "`tokenBucket` options error: invalid type for `match` - expected string",
-    );
-  });
-
   test("validates `characteristics` items are strings if it is set", async () => {
     expect(() => {
       tokenBucket({
@@ -741,7 +727,6 @@ describe("Primitive > tokenBucket", () => {
   test("sets mode as `LIVE` if specified", async () => {
     const [rule] = tokenBucket({
       mode: "LIVE",
-      match: "/test",
       characteristics: ["ip.src"],
       refillRate: 1,
       interval: 1,
@@ -816,7 +801,6 @@ describe("Primitive > tokenBucket", () => {
 
   test("produces a rules based on configuration specified", async () => {
     const options = {
-      match: "/test",
       characteristics: ["ip.src"],
       refillRate: 1,
       interval: 1,
@@ -827,7 +811,6 @@ describe("Primitive > tokenBucket", () => {
     expect(rules).toHaveLength(1);
     expect(rules[0].type).toEqual("RATE_LIMIT");
     expect(rules[0]).toHaveProperty("mode", "DRY_RUN");
-    expect(rules[0]).toHaveProperty("match", "/test");
     expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
     expect(rules[0]).toHaveProperty("algorithm", "TOKEN_BUCKET");
     expect(rules[0]).toHaveProperty("refillRate", 1);
@@ -835,7 +818,7 @@ describe("Primitive > tokenBucket", () => {
     expect(rules[0]).toHaveProperty("capacity", 1);
   });
 
-  test("does not default `match` and `characteristics` if not specified", async () => {
+  test("does not default `characteristics` if not specified", async () => {
     const options = {
       refillRate: 1,
       interval: 1,
@@ -844,7 +827,6 @@ describe("Primitive > tokenBucket", () => {
 
     const [rule] = tokenBucket(options);
     expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("match", undefined);
     expect(rule).toHaveProperty("characteristics", undefined);
   });
 });
@@ -860,19 +842,6 @@ describe("Primitive > fixedWindow", () => {
       });
     }).toThrow(
       "`fixedWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-    );
-  });
-
-  test("validates `match` option if it is set", async () => {
-    expect(() => {
-      fixedWindow({
-        // @ts-expect-error
-        match: /foobar/,
-        window: "1h",
-        max: 1,
-      });
-    }).toThrow(
-      "`fixedWindow` options error: invalid type for `match` - expected string",
     );
   });
 
@@ -925,7 +894,6 @@ describe("Primitive > fixedWindow", () => {
   test("sets mode as `LIVE` if specified", async () => {
     const [rule] = fixedWindow({
       mode: "LIVE",
-      match: "/test",
       characteristics: ["ip.src"],
       window: "1h",
       max: 1,
@@ -990,7 +958,6 @@ describe("Primitive > fixedWindow", () => {
 
   test("produces a rules based on configuration specified", async () => {
     const options = {
-      match: "/test",
       characteristics: ["ip.src"],
       window: "1h",
       max: 1,
@@ -1000,14 +967,13 @@ describe("Primitive > fixedWindow", () => {
     expect(rules).toHaveLength(1);
     expect(rules[0].type).toEqual("RATE_LIMIT");
     expect(rules[0]).toHaveProperty("mode", "DRY_RUN");
-    expect(rules[0]).toHaveProperty("match", "/test");
     expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
     expect(rules[0]).toHaveProperty("algorithm", "FIXED_WINDOW");
     expect(rules[0]).toHaveProperty("window", 3600);
     expect(rules[0]).toHaveProperty("max", 1);
   });
 
-  test("does not default `match` and `characteristics` if not specified", async () => {
+  test("does not default `characteristics` if not specified", async () => {
     const options = {
       window: "1h",
       max: 1,
@@ -1015,7 +981,6 @@ describe("Primitive > fixedWindow", () => {
 
     const [rule] = fixedWindow(options);
     expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("match", undefined);
     expect(rule).toHaveProperty("characteristics", undefined);
   });
 });
@@ -1031,19 +996,6 @@ describe("Primitive > slidingWindow", () => {
       });
     }).toThrow(
       "`slidingWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-    );
-  });
-
-  test("validates `match` option if it is set", async () => {
-    expect(() => {
-      slidingWindow({
-        // @ts-expect-error
-        match: /foobar/,
-        interval: 3600,
-        max: 1,
-      });
-    }).toThrow(
-      "`slidingWindow` options error: invalid type for `match` - expected string",
     );
   });
 
@@ -1096,7 +1048,6 @@ describe("Primitive > slidingWindow", () => {
   test("sets mode as `LIVE` if specified", async () => {
     const [rule] = slidingWindow({
       mode: "LIVE",
-      match: "/test",
       characteristics: ["ip.src"],
       interval: 3600,
       max: 1,
@@ -1161,7 +1112,6 @@ describe("Primitive > slidingWindow", () => {
 
   test("produces a rules based on configuration specified", async () => {
     const options = {
-      match: "/test",
       characteristics: ["ip.src"],
       interval: 3600,
       max: 1,
@@ -1171,14 +1121,13 @@ describe("Primitive > slidingWindow", () => {
     expect(rules).toHaveLength(1);
     expect(rules[0].type).toEqual("RATE_LIMIT");
     expect(rules[0]).toHaveProperty("mode", "DRY_RUN");
-    expect(rules[0]).toHaveProperty("match", "/test");
     expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
     expect(rules[0]).toHaveProperty("algorithm", "SLIDING_WINDOW");
     expect(rules[0]).toHaveProperty("interval", 3600);
     expect(rules[0]).toHaveProperty("max", 1);
   });
 
-  test("does not default `match` and `characteristics` if not specified", async () => {
+  test("does not default `characteristics` if not specified", async () => {
     const options = {
       interval: 3600,
       max: 1,
@@ -1186,7 +1135,6 @@ describe("Primitive > slidingWindow", () => {
 
     const [rule] = slidingWindow(options);
     expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("match", undefined);
     expect(rule).toHaveProperty("characteristics", undefined);
   });
 });
@@ -2200,7 +2148,6 @@ describe("Products > protectSignup", () => {
     const rules = protectSignup({
       rateLimit: {
         mode: ArcjetMode.DRY_RUN,
-        match: "/test",
         characteristics: ["ip.src"],
         interval: 60 /* minutes */ * 60 /* seconds */,
         max: 1,

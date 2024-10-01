@@ -364,7 +364,6 @@ const validateTokenBucketOptions = createValidator({
       required: false,
       validate: validateMode,
     },
-    { key: "match", required: false, validate: validateString },
     {
       key: "characteristics",
       validate: validateStringArray,
@@ -380,7 +379,6 @@ const validateFixedWindowOptions = createValidator({
   rule: "fixedWindow",
   validations: [
     { key: "mode", required: false, validate: validateMode },
-    { key: "match", required: false, validate: validateString },
     {
       key: "characteristics",
       validate: validateStringArray,
@@ -395,7 +393,6 @@ const validateSlidingWindowOptions = createValidator({
   rule: "slidingWindow",
   validations: [
     { key: "mode", required: false, validate: validateMode },
-    { key: "match", required: false, validate: validateString },
     {
       key: "characteristics",
       validate: validateStringArray,
@@ -447,7 +444,6 @@ const validateShieldOptions = createValidator({
 
 type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
   mode?: ArcjetMode;
-  match?: string;
   characteristics?: Characteristics;
   refillRate: number;
   interval: string | number;
@@ -456,7 +452,6 @@ type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
 
 type FixedWindowRateLimitOptions<Characteristics extends readonly string[]> = {
   mode?: ArcjetMode;
-  match?: string;
   characteristics?: Characteristics;
   window: string | number;
   max: number;
@@ -465,7 +460,6 @@ type FixedWindowRateLimitOptions<Characteristics extends readonly string[]> = {
 type SlidingWindowRateLimitOptions<Characteristics extends readonly string[]> =
   {
     mode?: ArcjetMode;
-    match?: string;
     characteristics?: Characteristics;
     interval: string | number;
     max: number;
@@ -643,7 +637,6 @@ export function tokenBucket<
   validateTokenBucketOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const match = options.match;
   const characteristics = options.characteristics;
 
   const refillRate = options.refillRate;
@@ -655,7 +648,6 @@ export function tokenBucket<
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
-      match,
       characteristics,
       algorithm: "TOKEN_BUCKET",
       refillRate,
@@ -673,7 +665,6 @@ export function fixedWindow<
   validateFixedWindowOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const match = options.match;
   const characteristics = Array.isArray(options.characteristics)
     ? options.characteristics
     : undefined;
@@ -686,7 +677,6 @@ export function fixedWindow<
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
-      match,
       characteristics,
       algorithm: "FIXED_WINDOW",
       max,
@@ -703,7 +693,6 @@ export function slidingWindow<
   validateSlidingWindowOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const match = options.match;
   const characteristics = Array.isArray(options.characteristics)
     ? options.characteristics
     : undefined;
@@ -716,7 +705,6 @@ export function slidingWindow<
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
-      match,
       characteristics,
       algorithm: "SLIDING_WINDOW",
       max,
