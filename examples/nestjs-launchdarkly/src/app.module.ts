@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ArcjetGuard, ArcjetModule, shield } from '@arcjet/nest';
+import { ArcjetGuard, ArcjetModule } from '@arcjet/nest';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
