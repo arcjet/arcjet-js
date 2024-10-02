@@ -572,7 +572,6 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         case: "rateLimit",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          match: rule.match,
           characteristics: rule.characteristics,
           algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
           refillRate: rule.refillRate,
@@ -589,7 +588,6 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         case: "rateLimit",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          match: rule.match,
           characteristics: rule.characteristics,
           algorithm: RateLimitAlgorithm.FIXED_WINDOW,
           max: rule.max,
@@ -605,7 +603,6 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         case: "rateLimit",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          match: rule.match,
           characteristics: rule.characteristics,
           algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
           max: rule.max,

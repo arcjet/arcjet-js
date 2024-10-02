@@ -721,7 +721,6 @@ export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
   extends ArcjetRateLimitRule<Props> {
   algorithm: "TOKEN_BUCKET";
 
-  match?: string;
   refillRate: number;
   interval: number;
   capacity: number;
@@ -731,7 +730,6 @@ export interface ArcjetFixedWindowRateLimitRule<Props extends {}>
   extends ArcjetRateLimitRule<Props> {
   algorithm: "FIXED_WINDOW";
 
-  match?: string;
   max: number;
   window: number;
 }
@@ -740,7 +738,6 @@ export interface ArcjetSlidingWindowRateLimitRule<Props extends {}>
   extends ArcjetRateLimitRule<Props> {
   algorithm: "SLIDING_WINDOW";
 
-  match?: string;
   max: number;
   interval: number;
 }
