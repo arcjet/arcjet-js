@@ -37,11 +37,18 @@ integration.
 npm install -S arcjet
 ```
 
-## Example
+## Rate limit + bot detection example
+
+The example below applies a token bucket rate limit rule to a route where we
+identify the user based on their ID e.g. if they are logged in. The bucket is
+configured with a maximum capacity of 10 tokens and refills by 5 tokens every 10
+seconds. Each request consumes 5 tokens.
+
+Bot detection is also enabled to block requests from known bots.
 
 ```ts
 import http from "http";
-import arcjet, { createRemoteClient } from "arcjet";
+import arcjet, { createRemoteClient, tokenBucket, detectBot } from "arcjet";
 import { baseUrl } from "@arcjet/env";
 import { createConnectTransport } from "@connectrpc/connect-node";
 
@@ -50,7 +57,22 @@ const aj = arcjet({
   // and set it as an environment variable rather than hard coding.
   // See: https://www.npmjs.com/package/dotenv
   key: process.env.ARCJET_KEY,
-  rules: [],
+  characteristics: ["userId"], // track requests by a custom user ID
+  rules: [
+    // Create a token bucket rate limit. Other algorithms are supported.
+    tokenBucket({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      refillRate: 5, // refill 5 tokens per interval
+      interval: 10, // refill every 10 seconds
+      capacity: 10, // bucket maximum capacity of 10 tokens
+    }),
+    detectBot({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      // configured with a list of bots to allow from
+      // https://arcjet.com/bot-list
+      allow: [], // "allow none" will block all detected bots
+    }),
+  ],
   client: createRemoteClient({
     transport: createConnectTransport({
       baseUrl: baseUrl(process.env),
@@ -76,7 +98,7 @@ const server = http.createServer(async function (
     path: path.pathname,
   };
 
-  const decision = await aj.protect(ctx, details);
+  const decision = await aj.protect(ctx, details, { requested: 5 }); // Deduct 5 tokens from the bucket
   console.log(decision);
 
   if (decision.isDenied()) {

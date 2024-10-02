@@ -22,6 +22,8 @@ const aj = arcjet({
   ],
 });
 
+app.use(express.text());
+
 app.post('/', async (req, res) => {
   const decision = await aj.protect(req);
 
@@ -32,10 +34,8 @@ app.post('/', async (req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: `You said: ${req.body}` }));
   }
-})
-
-app.use(express.text());
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
-})
+});

@@ -16,8 +16,8 @@ async function getClient() {
       arcjet
         // Add a sliding window to limit requests to 5 per minute
         .withRule(slidingWindow({ mode: "LIVE", max: 5, interval: 60 }))
-        // Add bot detection to block automated requests
-        .withRule(detectBot({ mode: "LIVE", block: ["AUTOMATED"] }))
+        // Add detection to block all detected bots
+        .withRule(detectBot({ mode: "LIVE", allow: [] }))
     );
   }
 

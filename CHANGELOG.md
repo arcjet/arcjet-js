@@ -1,5 +1,71 @@
 # Changelog
 
+## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...v1.0.0-alpha.27) (2024-10-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add options validation for all rules ([#1785](https://github.com/arcjet/arcjet-js/issues/1785))
+* Only produce 1 rule per constructor ([#1783](https://github.com/arcjet/arcjet-js/issues/1783))
+
+### 🚀 New Features
+
+* Add Deno adapter ([#1782](https://github.com/arcjet/arcjet-js/issues/1782)) ([fdfcaf3](https://github.com/arcjet/arcjet-js/commit/fdfcaf3e0242e9b4a6d9db5d93dc601f983bae3c)), closes [#758](https://github.com/arcjet/arcjet-js/issues/758)
+* Add NestJS adapter ([#1776](https://github.com/arcjet/arcjet-js/issues/1776)) ([4e52453](https://github.com/arcjet/arcjet-js/commit/4e5245300f2e9958630a948b902472c2e056b3ba)), closes [#781](https://github.com/arcjet/arcjet-js/issues/781)
+
+
+### 🪲 Bug Fixes
+
+* **protocol:** Ensure relative imports have extensions ([#1722](https://github.com/arcjet/arcjet-js/issues/1722)) ([73928c8](https://github.com/arcjet/arcjet-js/commit/73928c8c77c643577384cb5481a1dff955638388)), closes [#1720](https://github.com/arcjet/arcjet-js/issues/1720)
+
+
+### 🧹 Miscellaneous Chores
+
+* Add options validation for all rules ([#1785](https://github.com/arcjet/arcjet-js/issues/1785)) ([c3a248e](https://github.com/arcjet/arcjet-js/commit/c3a248ee953a54d5b818942135bebff22a84b307)), closes [#992](https://github.com/arcjet/arcjet-js/issues/992)
+* **analyze:** Update well known bots ([#1784](https://github.com/arcjet/arcjet-js/issues/1784)) ([52f1ee3](https://github.com/arcjet/arcjet-js/commit/52f1ee35fde144d152ef2face2546ed79ca35f49))
+* Only produce 1 rule per constructor ([#1783](https://github.com/arcjet/arcjet-js/issues/1783)) ([8d79e63](https://github.com/arcjet/arcjet-js/commit/8d79e639be69095c97fb383490817a7eb326458c)), closes [#1397](https://github.com/arcjet/arcjet-js/issues/1397)
+* Update WebAssembly modules ([#1721](https://github.com/arcjet/arcjet-js/issues/1721)) ([2dbb9eb](https://github.com/arcjet/arcjet-js/commit/2dbb9eb90755dca6dc99dc0092246304b98889f9))
+
+## [1.0.0-alpha.26](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.25...v1.0.0-alpha.26) (2024-09-16)
+
+
+### 🚀 New Features
+
+* Implement bot detection categories ([#1618](https://github.com/arcjet/arcjet-js/issues/1618)) ([540cfe8](https://github.com/arcjet/arcjet-js/commit/540cfe8d74b9f029248cfeb6f27e4c7b47fbb9b7))
+
+
+### 🧹 Miscellaneous Chores
+
+* **ci:** Ignore eslint majors for our nestjs example ([#1638](https://github.com/arcjet/arcjet-js/issues/1638)) ([16be215](https://github.com/arcjet/arcjet-js/commit/16be21596724d4181cfb33055f56aa1dd305fc81))
+* **ci:** Increase our dependabot open PR limit ([#1670](https://github.com/arcjet/arcjet-js/issues/1670)) ([5dee404](https://github.com/arcjet/arcjet-js/commit/5dee404ccf29de1caa333ef3f079b8f3c541a1ec))
+* **ci:** Sort dependabot projects and add missing nestjs example ([#1617](https://github.com/arcjet/arcjet-js/issues/1617)) ([4c0e77b](https://github.com/arcjet/arcjet-js/commit/4c0e77badb69af195638c087e94a4df8c369ef0e))
+
+## [1.0.0-alpha.25](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.24...v1.0.0-alpha.25) (2024-09-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* All examples use root level characteristics ([#1543](https://github.com/arcjet/arcjet-js/issues/1543)) ([6b360af](https://github.com/arcjet/arcjet-js/commit/6b360af99fc83fa9e940a9c61777136ff3c3bb95))
+* **analyze:** Regenerate WebAssembly with updated bot list ([#1546](https://github.com/arcjet/arcjet-js/issues/1546)) ([0a38e0f](https://github.com/arcjet/arcjet-js/commit/0a38e0f954eb9cfe52289720f3724b0f8f337744)), closes [#1545](https://github.com/arcjet/arcjet-js/issues/1545)
+* **analyze:** Update crawler list with Coda Server Fetcher ([#1580](https://github.com/arcjet/arcjet-js/issues/1580)) ([91dd435](https://github.com/arcjet/arcjet-js/commit/91dd435bc5abeafbe7955b6e186668e7af6307a1))
+* Update READMEs with latest examples ([#1542](https://github.com/arcjet/arcjet-js/issues/1542)) ([8969486](https://github.com/arcjet/arcjet-js/commit/8969486cc01dac6fc01289672744744913eaab01))
+
+## [1.0.0-alpha.24](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.23...v1.0.0-alpha.24) (2024-09-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437))
+
+### 🚀 New Features
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437)) ([eef18e3](https://github.com/arcjet/arcjet-js/commit/eef18e3a7c52a849fbc1766439dc28bf0cb2da27))
+
+
+### 🧹 Miscellaneous Chores
+
+* **examples:** Correct some usage mistakes in sensitive info examples ([#1503](https://github.com/arcjet/arcjet-js/issues/1503)) ([1286280](https://github.com/arcjet/arcjet-js/commit/12862800e790c1ad92f14c9285bfde66588027a6))
+
 ## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...v1.0.0-alpha.23) (2024-09-02)
 
 

@@ -1,5 +1,83 @@
 # Changelog
 
+## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/analyze-v1.0.0-alpha.27) (2024-10-01)
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze:** Update well known bots ([#1784](https://github.com/arcjet/arcjet-js/issues/1784)) ([52f1ee3](https://github.com/arcjet/arcjet-js/commit/52f1ee35fde144d152ef2face2546ed79ca35f49))
+* Update WebAssembly modules ([#1721](https://github.com/arcjet/arcjet-js/issues/1721)) ([2dbb9eb](https://github.com/arcjet/arcjet-js/commit/2dbb9eb90755dca6dc99dc0092246304b98889f9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+
+## [1.0.0-alpha.26](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.25...@arcjet/analyze-v1.0.0-alpha.26) (2024-09-16)
+
+
+### 🚀 New Features
+
+* Implement bot detection categories ([#1618](https://github.com/arcjet/arcjet-js/issues/1618)) ([540cfe8](https://github.com/arcjet/arcjet-js/commit/540cfe8d74b9f029248cfeb6f27e4c7b47fbb9b7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+
+## [1.0.0-alpha.25](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.24...@arcjet/analyze-v1.0.0-alpha.25) (2024-09-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze:** Regenerate WebAssembly with updated bot list ([#1546](https://github.com/arcjet/arcjet-js/issues/1546)) ([0a38e0f](https://github.com/arcjet/arcjet-js/commit/0a38e0f954eb9cfe52289720f3724b0f8f337744)), closes [#1545](https://github.com/arcjet/arcjet-js/issues/1545)
+* **analyze:** Update crawler list with Coda Server Fetcher ([#1580](https://github.com/arcjet/arcjet-js/issues/1580)) ([91dd435](https://github.com/arcjet/arcjet-js/commit/91dd435bc5abeafbe7955b6e186668e7af6307a1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+
+## [1.0.0-alpha.24](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.23...@arcjet/analyze-v1.0.0-alpha.24) (2024-09-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437))
+
+### 🚀 New Features
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437)) ([eef18e3](https://github.com/arcjet/arcjet-js/commit/eef18e3a7c52a849fbc1766439dc28bf0cb2da27))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+
 ## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...@arcjet/analyze-v1.0.0-alpha.23) (2024-09-02)
 
 

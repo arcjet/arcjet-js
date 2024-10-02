@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/runtime",
-  "version": "1.0.0-alpha.23",
+  "version": "1.0.0-alpha.27",
   "description": "Arcjet runtime detection",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -41,14 +41,14 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.23",
-    "@arcjet/rollup-config": "1.0.0-alpha.23",
-    "@arcjet/tsconfig": "1.0.0-alpha.23",
+    "@arcjet/eslint-config": "1.0.0-alpha.27",
+    "@arcjet/rollup-config": "1.0.0-alpha.27",
+    "@arcjet/tsconfig": "1.0.0-alpha.27",
     "@jest/globals": "29.7.0",
-    "@rollup/wasm-node": "4.21.2",
+    "@rollup/wasm-node": "4.23.0",
     "jest": "29.7.0",
     "jest-environment-node": "29.7.0",
-    "typescript": "5.5.4"
+    "typescript": "5.6.2"
   },
   "publishConfig": {
     "access": "public",

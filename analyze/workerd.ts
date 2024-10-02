@@ -3,7 +3,7 @@ import type { ArcjetLogger } from "@arcjet/protocol";
 import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
   ImportObject,
-  BotType,
+  BotConfig,
   DetectedSensitiveInfoEntity,
   SensitiveInfoEntity,
 } from "./wasm/arcjet_analyze_js_req.component.js";
@@ -95,8 +95,9 @@ export async function initializeWasm(
   }
 }
 
+
 export {
-  type BotType,
+  type BotConfig,
   type DetectedSensitiveInfoEntity,
   type SensitiveInfoEntity,
 };

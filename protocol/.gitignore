@@ -136,4 +136,6 @@ client.js
 client.d.ts
 convert.js
 convert.d.ts
+well-known-bots.js
+well-known-bots.d.ts
 test/*.js

@@ -1,0 +1,26 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-read --allow-env --allow-net --watch server.ts",
+    "start": "deno run --allow-read --allow-env --allow-net server.ts"
+  },
+  "imports": {
+    "@arcjet/analyze": "../../analyze/index.js",
+    "npm:@arcjet/deno": "../../arcjet-deno/index.js",
+    "@arcjet/duration": "../../duration/index.js",
+    "@arcjet/env": "../../env/index.js",
+    "@arcjet/headers": "../../headers/index.js",
+    "@arcjet/ip": "../../ip/index.js",
+    "@arcjet/logger": "../../logger/index.js",
+    "@arcjet/protocol": "../../protocol/index.js",
+    "@arcjet/protocol/client.js": "../../protocol/client.js",
+    "@arcjet/protocol/convert.js": "../../protocol/convert.js",
+    "@arcjet/runtime": "../../runtime/index.js",
+    "@arcjet/sprintf": "../../sprintf/index.js",
+    "@arcjet/transport": "../../transport/index.js",
+    "@bufbuild/protobuf": "npm:@bufbuild/protobuf@1.10.0",
+    "@connectrpc/connect": "npm:@connectrpc/connect@1.5.0",
+    "@connectrpc/connect-node": "npm:@connectrpc/connect-node@1.5.0",
+    "arcjet": "../../arcjet/index.js",
+    "typeid-js": "npm:typeid-js@1.1.0"
+  }
+}

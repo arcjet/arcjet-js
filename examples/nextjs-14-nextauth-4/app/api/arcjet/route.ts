@@ -1,7 +1,7 @@
 import arcjet, { ArcjetDecision, tokenBucket, detectBot, shield} from "@arcjet/next";
 import { getServerSession } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const authOptions = {
   // Configure one or more authentication providers
@@ -17,6 +17,9 @@ const authOptions = {
 // The arcjet instance is created outside of the handler
 const aj = arcjet({
   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  // We specify a custom fingerprint so we can dynamically build it within each
+  // demo route.
+  characteristics: ["fingerprint"],
   rules: [
     // Protect against common attacks with Arcjet Shield
     shield({
@@ -24,12 +27,12 @@ const aj = arcjet({
     }),
     detectBot({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      block: ["AUTOMATED"], // blocks all automated clients
+      allow: [], // blocks all detected bots
     }),
   ],
 });
 
-export async function GET(req: Request, res: Response) {
+export async function GET(req: NextRequest, res: Response) {
   // Get the current user from NextAuth
   const session = await getServerSession(authOptions);
   console.log("Session", session)
@@ -49,23 +52,25 @@ export async function GET(req: Request, res: Response) {
       // Create a token bucket rate limit. Other algorithms are supported.
       tokenBucket({
         mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-        characteristics: ["user"], // Rate limit based on the GitHub email
         refillRate: 20, // refill 20 tokens per interval
         interval: 10, // refill every 10 seconds
         capacity: 100, // bucket maximum capacity of 100 tokens
       })
     );
 
+    const fingerprint = emailHash; // Use the email hash as the fingerprint
+
     // Deduct 5 tokens from the token bucket
-    decision = await rl.protect(req, { user: emailHash, requested: 5 });
+    decision = await rl.protect(req, { fingerprint, requested: 5 });
     console.log("Arcjet logged in decision", decision)
   } else {
+    const fingerprint = req.ip!;
+
     // Limit the amount of requests for anonymous users.
     const rl = aj.withRule(
       // Create a token bucket rate limit. Other algorithms are supported.
       tokenBucket({
         mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-        characteristics: ["ip.src"], // Use the built in ip.src characteristic
         refillRate: 5, // refill 5 tokens per interval
         interval: 10, // refill every 10 seconds
         capacity: 10, // bucket maximum capacity of 10 tokens
@@ -73,7 +78,7 @@ export async function GET(req: Request, res: Response) {
     );
 
     // Deduct 5 tokens from the token bucket
-    decision = await rl.protect(req, { requested: 5 });
+    decision = await rl.protect(req, { fingerprint, requested: 5 });
     console.log("Arcjet logged out decision", decision)
   }
 

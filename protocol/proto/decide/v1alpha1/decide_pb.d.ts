@@ -584,13 +584,22 @@ export declare class Reason extends Message<Reason> {
     case: "error";
   } | {
     /**
-     * Contains details about sensitive info identified in the body of the 
+     * Contains details about sensitive info identified in the body of the
      * request if the sensitive info rule is configured.
      *
      * @generated from field: proto.decide.v1alpha1.SensitiveInfoReason sensitive_info = 7;
      */
     value: SensitiveInfoReason;
     case: "sensitiveInfo";
+  } | {
+    /**
+     * Contains details about why the request was considered a bot when the
+     * decision was made based on a bot (v2) rule.
+     *
+     * @generated from field: proto.decide.v1alpha1.BotV2Reason bot_v2 = 8;
+     */
+    value: BotV2Reason;
+    case: "botV2";
   } | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<Reason>);
@@ -774,6 +783,37 @@ export declare class BotReason extends Message<BotReason> {
   static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BotReason;
 
   static equals(a: BotReason | PlainMessage<BotReason> | undefined, b: BotReason | PlainMessage<BotReason> | undefined): boolean;
+}
+
+/**
+ * Details of a bot (v2) decision.
+ *
+ * @generated from message proto.decide.v1alpha1.BotV2Reason
+ */
+export declare class BotV2Reason extends Message<BotV2Reason> {
+  /**
+   * @generated from field: repeated string allowed = 1;
+   */
+  allowed: string[];
+
+  /**
+   * @generated from field: repeated string denied = 2;
+   */
+  denied: string[];
+
+  constructor(data?: PartialMessage<BotV2Reason>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.BotV2Reason";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BotV2Reason;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BotV2Reason;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BotV2Reason;
+
+  static equals(a: BotV2Reason | PlainMessage<BotV2Reason> | undefined, b: BotV2Reason | PlainMessage<BotV2Reason> | undefined): boolean;
 }
 
 /**
@@ -1147,6 +1187,42 @@ export declare class BotRule_Patterns extends Message<BotRule_Patterns> {
 }
 
 /**
+ * The configuration for a bot (v2) rule.
+ *
+ * @generated from message proto.decide.v1alpha1.BotV2Rule
+ */
+export declare class BotV2Rule extends Message<BotV2Rule> {
+  /**
+   * @generated from field: proto.decide.v1alpha1.Mode mode = 1;
+   */
+  mode: Mode;
+
+  /**
+   * @generated from field: repeated string allow = 2;
+   */
+  allow: string[];
+
+  /**
+   * @generated from field: repeated string deny = 3;
+   */
+  deny: string[];
+
+  constructor(data?: PartialMessage<BotV2Rule>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.BotV2Rule";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BotV2Rule;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BotV2Rule;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BotV2Rule;
+
+  static equals(a: BotV2Rule | PlainMessage<BotV2Rule> | undefined, b: BotV2Rule | PlainMessage<BotV2Rule> | undefined): boolean;
+}
+
+/**
  * The configuration for an email rule.
  *
  * @generated from message proto.decide.v1alpha1.EmailRule
@@ -1298,6 +1374,12 @@ export declare class Rule extends Message<Rule> {
      */
     value: SensitiveInfoRule;
     case: "sensitiveInfo";
+  } | {
+    /**
+     * @generated from field: proto.decide.v1alpha1.BotV2Rule bot_v2 = 6;
+     */
+    value: BotV2Rule;
+    case: "botV2";
   } | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<Rule>);

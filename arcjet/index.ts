@@ -12,10 +12,11 @@ import type {
   ArcjetLogger,
   ArcjetSensitiveInfoRule,
   ArcjetIdentifiedEntity,
+  ArcjetWellKnownBot,
+  ArcjetBotCategory,
 } from "@arcjet/protocol";
 import {
   ArcjetBotReason,
-  ArcjetBotType,
   ArcjetEmailReason,
   ArcjetEmailType,
   ArcjetErrorReason,
@@ -28,15 +29,13 @@ import {
   ArcjetDenyDecision,
   ArcjetErrorDecision,
 } from "@arcjet/protocol";
-import {
-  ArcjetBotTypeToProtocol,
-  isRateLimitRule,
-} from "@arcjet/protocol/convert.js";
+import { isRateLimitRule } from "@arcjet/protocol/convert.js";
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import type {
   DetectedSensitiveInfoEntity,
   SensitiveInfoEntity,
+  BotConfig,
 } from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
@@ -142,36 +141,36 @@ type UnionToIntersection<Union> =
   // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
   (
     Union extends unknown
-      ? // The union type is used as the only argument to a function since the union
-        // of function arguments is an intersection.
-        (distributedUnion: Union) => void
-      : // This won't happen.
-        never
+    ? // The union type is used as the only argument to a function since the union
+    // of function arguments is an intersection.
+    (distributedUnion: Union) => void
+    : // This won't happen.
+    never
   ) extends // Infer the `Intersection` type since TypeScript represents the positional
   // arguments of unions of functions as an intersection of the union.
   (mergedIntersection: infer Intersection) => void
-    ? // The `& Union` is to allow indexing by the resulting type
-      Intersection & Union
-    : never;
+  ? // The `& Union` is to allow indexing by the resulting type
+  Intersection & Union
+  : never;
 type IsNever<T> = [T] extends [never] ? true : false;
 type LiteralCheck<
   T,
   LiteralType extends
-    | null
-    | undefined
-    | string
-    | number
-    | boolean
-    | symbol
-    | bigint,
+  | null
+  | undefined
+  | string
+  | number
+  | boolean
+  | symbol
+  | bigint,
 > =
   IsNever<T> extends false // Must be wider than `never`
-    ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
-      ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
-        ? false
-        : true
-      : false
-    : false;
+  ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
+  ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
+  ? false
+  : true
+  : false
+  : false;
 type IsStringLiteral<T> = LiteralCheck<T, string>;
 
 const knownFields = [
@@ -243,9 +242,208 @@ function extraProps<Props extends PlainObject>(
   return Object.fromEntries(extra.entries());
 }
 
+type Validator = (key: string, value: unknown) => void;
+
+type ValidationSchema = {
+  key: string;
+  required: boolean;
+  validate: Validator;
+};
+
+function createTypeValidator(
+  ...types: Array<
+    // These are the types we can compare via `typeof`
+    | "string"
+    | "number"
+    | "bigint"
+    | "boolean"
+    | "symbol"
+    | "undefined"
+    | "object"
+    | "function"
+  >
+): Validator {
+  return (key, value) => {
+    const typeOfValue = typeof value;
+    if (!types.includes(typeOfValue)) {
+      if (types.length === 1) {
+        throw new Error(`invalid type for \`${key}\` - expected ${types[0]}`);
+      } else {
+        throw new Error(
+          `invalid type for \`${key}\` - expected one of ${types.join(", ")}`,
+        );
+      }
+    } else {
+      return false;
+    }
+  };
+}
+
+function createValueValidator(...values: string[]): Validator {
+  return (key, value) => {
+    // We cast the values to unknown because the optionValue isn't known but
+    // we only want to use `values` on string enumerations
+    if (!(values as unknown[]).includes(value)) {
+      if (values.length === 1) {
+        throw new Error(`invalid value for \`${key}\` - expected ${values[0]}`);
+      } else {
+        throw new Error(
+          `invalid value for \`${key}\` - expected one of ${values.map((value) => `'${value}'`).join(", ")}`,
+        );
+      }
+    }
+  };
+}
+
+function createArrayValidator(validate: Validator): Validator {
+  return (key, value) => {
+    if (Array.isArray(value)) {
+      for (const [idx, item] of value.entries()) {
+        validate(`${key}[${idx}]`, item);
+      }
+    } else {
+      throw new Error(`invalid type for \`${key}\` - expected an array`);
+    }
+  };
+}
+
+function createValidator({
+  rule,
+  validations,
+}: {
+  rule: string;
+  validations: ValidationSchema[];
+}) {
+  return (options: Record<string, unknown>) => {
+    for (const { key, validate, required } of validations) {
+      if (required && !Object.hasOwn(options, key)) {
+        throw new Error(`\`${rule}\` options error: \`${key}\` is required`);
+      }
+
+      const value = options[key];
+
+      // The `required` flag is checked above, so these should only be validated
+      // if the value is not undefined.
+      if (typeof value !== "undefined") {
+        try {
+          validate(key, value);
+        } catch (err) {
+          if (err instanceof Error) {
+            throw new Error(`\`${rule}\` options error: ${err.message}`);
+          } else {
+            throw new Error(`\`${rule}\` options error: unknown failure`);
+          }
+        }
+      }
+    }
+  };
+}
+
+const validateString = createTypeValidator("string");
+const validateNumber = createTypeValidator("number");
+const validateBoolean = createTypeValidator("boolean");
+const validateFunction = createTypeValidator("function");
+const validateStringOrNumber = createTypeValidator("string", "number");
+const validateStringArray = createArrayValidator(validateString);
+const validateMode = createValueValidator("LIVE", "DRY_RUN");
+const validateEmailTypes = createArrayValidator(
+  createValueValidator(
+    "DISPOSABLE",
+    "FREE",
+    "NO_MX_RECORDS",
+    "NO_GRAVATAR",
+    "INVALID",
+  ),
+);
+
+const validateTokenBucketOptions = createValidator({
+  rule: "tokenBucket",
+  validations: [
+    {
+      key: "mode",
+      required: false,
+      validate: validateMode,
+    },
+    {
+      key: "characteristics",
+      validate: validateStringArray,
+      required: false,
+    },
+    { key: "refillRate", required: true, validate: validateNumber },
+    { key: "interval", required: true, validate: validateStringOrNumber },
+    { key: "capacity", required: true, validate: validateNumber },
+  ],
+});
+
+const validateFixedWindowOptions = createValidator({
+  rule: "fixedWindow",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    {
+      key: "characteristics",
+      validate: validateStringArray,
+      required: false,
+    },
+    { key: "max", required: true, validate: validateNumber },
+    { key: "window", required: true, validate: validateStringOrNumber },
+  ],
+});
+
+const validateSlidingWindowOptions = createValidator({
+  rule: "slidingWindow",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    {
+      key: "characteristics",
+      validate: validateStringArray,
+      required: false,
+    },
+    { key: "max", required: true, validate: validateNumber },
+    { key: "interval", required: true, validate: validateStringOrNumber },
+  ],
+});
+
+const validateSensitiveInfoOptions = createValidator({
+  rule: "sensitiveInfo",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "allow", required: false, validate: validateStringArray },
+    { key: "deny", required: false, validate: validateStringArray },
+    { key: "contextWindowSize", required: false, validate: validateNumber },
+    { key: "detect", required: false, validate: validateFunction },
+  ],
+});
+
+const validateEmailOptions = createValidator({
+  rule: "validateEmail",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "block", required: false, validate: validateEmailTypes },
+    {
+      key: "requireTopLevelDomain",
+      required: false,
+      validate: validateBoolean,
+    },
+    { key: "allowDomainLiteral", required: false, validate: validateBoolean },
+  ],
+});
+
+const validateBotOptions = createValidator({
+  rule: "detectBot",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "allow", required: false, validate: validateStringArray },
+    { key: "deny", required: false, validate: validateStringArray },
+  ],
+});
+
+const validateShieldOptions = createValidator({
+  rule: "shield",
+  validations: [{ key: "mode", required: false, validate: validateMode }],
+});
+
 type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
   mode?: ArcjetMode;
-  match?: string;
   characteristics?: Characteristics;
   refillRate: number;
   interval: string | number;
@@ -254,7 +452,6 @@ type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
 
 type FixedWindowRateLimitOptions<Characteristics extends readonly string[]> = {
   mode?: ArcjetMode;
-  match?: string;
   characteristics?: Characteristics;
   window: string | number;
   max: number;
@@ -263,67 +460,24 @@ type FixedWindowRateLimitOptions<Characteristics extends readonly string[]> = {
 type SlidingWindowRateLimitOptions<Characteristics extends readonly string[]> =
   {
     mode?: ArcjetMode;
-    match?: string;
     characteristics?: Characteristics;
     interval: string | number;
     max: number;
   };
 
-/**
- * Bot detection is disabled by default. The `bots` configuration block allows
- * you to enable or disable it and configure additional rules.
- *
- * @link https://docs.arcjet.com/bot-protection
- */
-export type BotOptions = {
+type BotOptionsAllow = {
   mode?: ArcjetMode;
-  /**
-   * The types of bots to block. Defaults to `block:
-   * [ArcjetBotType.Automated]` which blocks requests we are sure are
-   * automated. Choose from the list of `ArcjetBotType` values: `Automated`,
-   * `LikelyAutomated`, `LikelyNotABot`, `VerifiedBot`.
-   */
-  block?: ArcjetBotType[];
-  /**
-   * Additional bot detection rules. This allows you to add or remove rules.
-   */
-  patterns?: {
-    /**
-     * You can add additional bot detection rules to the bots configuration
-     * block. Each rule is a regular expression that matches the user agent of
-     * the bot plus a label to indicate what type of bot this is.
-     *
-     * @example
-     * ```ts
-     * patterns: {
-     *  add: {
-     *   // Adds Googlebot to the list of good bots
-     *   "Googlebot\\/": ArcjetBotType.Automated,
-     *  },
-     * },
-     * ```
-     */
-    add?: { [key: string]: ArcjetBotType };
-    /**
-     * Arcjet includes a set of default matching rules to detect common bots.
-     * You can remove any of these rules by listing them here. See the docs
-     * for a list of default rules which can be removed.
-     *
-     * @link https://docs.arcjet.com/bot-protection
-     * @example
-     * ```ts
-     * patterns: {
-     *   remove: [
-     *   // Removes the datadog agent from the list of bots so it will be
-     *   // considered as ArcjetBotType.LikelyNotABot
-     *   "datadog agent"
-     *   ],
-     * },
-     * ```
-     */
-    remove?: string[];
-  };
+  allow: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  deny?: never;
 };
+
+type BotOptionsDeny = {
+  mode?: ArcjetMode;
+  allow?: never;
+  deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+};
+
+export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 
 export type EmailOptions = {
   mode?: ArcjetMode;
@@ -344,10 +498,10 @@ type ValidEntities<Detect> = Array<
   // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
   // to 0 | 1
   undefined extends Detect
-    ? ArcjetSensitiveInfoType
-    : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
-      ? ArcjetSensitiveInfoType | CustomEntities
-      : never
+  ? ArcjetSensitiveInfoType
+  : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
+  ? ArcjetSensitiveInfoType | CustomEntities
+  : never
 >;
 
 type SensitiveInfoOptionsAllow<Detect> = {
@@ -383,7 +537,7 @@ type PlainObject = { [key: string]: unknown };
 // Primitives and Products external names for Rules even though they are defined
 // the same.
 // See ExtraProps below for further explanation on why we define them like this.
-export type Primitive<Props extends PlainObject = {}> = ArcjetRule<Props>[];
+export type Primitive<Props extends PlainObject = {}> = [ArcjetRule<Props>];
 export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 
 // User-defined characteristics alter the required props of an ArcjetRequest
@@ -392,19 +546,19 @@ export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 // `as const` suffix to the characteristics array.
 type PropsForCharacteristic<T> =
   IsStringLiteral<T> extends true
-    ? T extends
-        | "ip.src"
-        | "http.host"
-        | "http.method"
-        | "http.request.uri.path"
-        | `http.request.headers["${string}"]`
-        | `http.request.cookie["${string}"]`
-        | `http.request.uri.args["${string}"]`
-      ? {}
-      : T extends string
-        ? Record<T, string | number | boolean>
-        : never
-    : {};
+  ? T extends
+  | "ip.src"
+  | "http.host"
+  | "http.method"
+  | "http.request.uri.path"
+  | `http.request.headers["${string}"]`
+  | `http.request.cookie["${string}"]`
+  | `http.request.uri.args["${string}"]`
+  ? {}
+  : T extends string
+  ? Record<T, string | number | boolean>
+  : never
+  : {};
 export type CharacteristicProps<Characteristics extends readonly string[]> =
   UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>;
 // Rules can specify they require specific props on an ArcjetRequest
@@ -416,10 +570,10 @@ type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 export type ExtraProps<Rules> = Rules extends []
   ? {}
   : Rules extends ArcjetRule[][]
-    ? UnionToIntersection<PropsForRule<Rules[number][number]>>
-    : Rules extends ArcjetRule[]
-      ? UnionToIntersection<PropsForRule<Rules[number]>>
-      : never;
+  ? UnionToIntersection<PropsForRule<Rules[number][number]>>
+  : Rules extends ArcjetRule[]
+  ? UnionToIntersection<PropsForRule<Rules[number]>>
+  : never;
 
 /**
  * Additional context that can be provided by adapters.
@@ -472,8 +626,7 @@ function isLocalRule<Props extends PlainObject>(
 export function tokenBucket<
   const Characteristics extends readonly string[] = [],
 >(
-  options?: TokenBucketRateLimitOptions<Characteristics>,
-  ...additionalOptions: TokenBucketRateLimitOptions<Characteristics>[]
+  options: TokenBucketRateLimitOptions<Characteristics>,
 ): Primitive<
   Simplify<
     UnionToIntersection<
@@ -481,111 +634,83 @@ export function tokenBucket<
     >
   >
 > {
-  const rules: ArcjetTokenBucketRateLimitRule<{ requested: number }>[] = [];
+  validateTokenBucketOptions(options);
 
-  if (typeof options === "undefined") {
-    return rules;
-  }
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const characteristics = options.characteristics;
 
-  for (const opt of [options, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    const match = opt.match;
-    const characteristics = Array.isArray(opt.characteristics)
-      ? opt.characteristics
-      : undefined;
+  const refillRate = options.refillRate;
+  const interval = duration.parse(options.interval);
+  const capacity = options.capacity;
 
-    const refillRate = opt.refillRate;
-    const interval = duration.parse(opt.interval);
-    const capacity = opt.capacity;
-
-    rules.push({
+  return [
+    <ArcjetTokenBucketRateLimitRule<{ requested: number }>>{
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
-      match,
       characteristics,
       algorithm: "TOKEN_BUCKET",
       refillRate,
       interval,
       capacity,
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export function fixedWindow<
   const Characteristics extends readonly string[] = [],
 >(
-  options?: FixedWindowRateLimitOptions<Characteristics>,
-  ...additionalOptions: FixedWindowRateLimitOptions<Characteristics>[]
+  options: FixedWindowRateLimitOptions<Characteristics>,
 ): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
-  const rules: ArcjetFixedWindowRateLimitRule<{}>[] = [];
+  validateFixedWindowOptions(options);
 
-  if (typeof options === "undefined") {
-    return rules;
-  }
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const characteristics = Array.isArray(options.characteristics)
+    ? options.characteristics
+    : undefined;
 
-  for (const opt of [options, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    const match = opt.match;
-    const characteristics = Array.isArray(opt.characteristics)
-      ? opt.characteristics
-      : undefined;
+  const max = options.max;
+  const window = duration.parse(options.window);
 
-    const max = opt.max;
-    const window = duration.parse(opt.window);
-
-    rules.push({
+  return [
+    <ArcjetFixedWindowRateLimitRule<{}>>{
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
-      match,
       characteristics,
       algorithm: "FIXED_WINDOW",
       max,
       window,
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export function slidingWindow<
   const Characteristics extends readonly string[] = [],
 >(
-  options?: SlidingWindowRateLimitOptions<Characteristics>,
-  ...additionalOptions: SlidingWindowRateLimitOptions<Characteristics>[]
+  options: SlidingWindowRateLimitOptions<Characteristics>,
 ): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
-  const rules: ArcjetSlidingWindowRateLimitRule<{}>[] = [];
+  validateSlidingWindowOptions(options);
 
-  if (typeof options === "undefined") {
-    return rules;
-  }
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const characteristics = Array.isArray(options.characteristics)
+    ? options.characteristics
+    : undefined;
 
-  for (const opt of [options, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    const match = opt.match;
-    const characteristics = Array.isArray(opt.characteristics)
-      ? opt.characteristics
-      : undefined;
+  const max = options.max;
+  const interval = duration.parse(options.interval);
 
-    const max = opt.max;
-    const interval = duration.parse(opt.interval);
-
-    rules.push({
+  return [
+    <ArcjetSlidingWindowRateLimitRule<{}>>{
       type: "RATE_LIMIT",
       priority: Priority.RateLimit,
       mode,
-      match,
       characteristics,
       algorithm: "SLIDING_WINDOW",
       max,
       interval,
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 function protocolSensitiveInfoEntitiesToAnalyze<Custom extends string>(
@@ -655,32 +780,39 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
 export function sensitiveInfo<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
->(
-  options: SensitiveInfoOptions<Detect>,
-  ...additionalOptions: SensitiveInfoOptions<Detect>[]
-): Primitive<{}> {
-  const rules: ArcjetSensitiveInfoRule<{}>[] = [];
+>(options: SensitiveInfoOptions<Detect>): Primitive<{}> {
+  validateSensitiveInfoOptions(options);
 
-  // Always create at least one SENSITIVE_INFO rule
-  for (const opt of [options, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    if (typeof opt.allow !== "undefined" && typeof opt.deny !== "undefined") {
-      throw new Error(
-        "Both allow and deny cannot be provided to sensitiveInfo",
-      );
-    }
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  if (
+    typeof options.allow !== "undefined" &&
+    typeof options.deny !== "undefined"
+  ) {
+    throw new Error(
+      "`sensitiveInfo` options error: `allow` and `deny` cannot be provided together",
+    );
+  }
+  if (
+    typeof options.allow === "undefined" &&
+    typeof options.deny === "undefined"
+  ) {
+    throw new Error(
+      "`sensitiveInfo` options error: either `allow` or `deny` must be specified",
+    );
+  }
 
-    rules.push({
+  return [
+    <ArcjetSensitiveInfoRule<{}>>{
       type: "SENSITIVE_INFO",
       priority: Priority.SensitiveInfo,
       mode,
-      allow: opt.allow || [],
-      deny: opt.deny || [],
+      allow: options.allow || [],
+      deny: options.deny || [],
 
       validate(
         context: ArcjetContext,
         details: ArcjetRequestDetails,
-      ): asserts details is ArcjetRequestDetails {},
+      ): asserts details is ArcjetRequestDetails { },
 
       async protect(
         context: ArcjetContext,
@@ -699,8 +831,8 @@ export function sensitiveInfo<
         }
 
         let convertedDetect = undefined;
-        if (typeof opt.detect !== "undefined") {
-          const detect = opt.detect;
+        if (typeof options.detect !== "undefined") {
+          const detect = options.detect;
           convertedDetect = (tokens: string[]) => {
             return detect(tokens)
               .filter((e) => typeof e !== "undefined")
@@ -713,16 +845,16 @@ export function sensitiveInfo<
           ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>
         > = [];
 
-        if (Array.isArray(opt.allow)) {
+        if (Array.isArray(options.allow)) {
           entitiesTag = "allow";
-          entitiesVal = opt.allow
+          entitiesVal = options.allow
             .filter((e) => typeof e !== "undefined")
             .map(protocolSensitiveInfoEntitiesToAnalyze);
         }
 
-        if (Array.isArray(opt.deny)) {
+        if (Array.isArray(options.deny)) {
           entitiesTag = "deny";
-          entitiesVal = opt.deny
+          entitiesVal = options.deny
             .filter((e) => typeof e !== "undefined")
             .map(protocolSensitiveInfoEntitiesToAnalyze);
         }
@@ -770,33 +902,28 @@ export function sensitiveInfo<
           });
         }
       },
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export function validateEmail(
-  options?: EmailOptions,
-  ...additionalOptions: EmailOptions[]
+  options: EmailOptions,
 ): Primitive<{ email: string }> {
-  const rules: ArcjetEmailRule<{ email: string }>[] = [];
+  validateEmailOptions(options);
 
-  // Always create at least one EMAIL rule
-  for (const opt of [options ?? {}, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    // TODO: Filter invalid email types (or error??)
-    const block = opt.block ?? [];
-    const requireTopLevelDomain = opt.requireTopLevelDomain ?? true;
-    const allowDomainLiteral = opt.allowDomainLiteral ?? false;
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const block = options.block ?? [];
+  const requireTopLevelDomain = options.requireTopLevelDomain ?? true;
+  const allowDomainLiteral = options.allowDomainLiteral ?? false;
 
-    const emailOpts = {
-      requireTopLevelDomain,
-      allowDomainLiteral,
-      blockedEmails: block,
-    };
+  const emailOpts = {
+    requireTopLevelDomain,
+    allowDomainLiteral,
+    blockedEmails: block,
+  };
 
-    rules.push({
+  return [
+    <ArcjetEmailRule<{ email: string }>>{
       type: "EMAIL",
       priority: Priority.EmailValidation,
       mode,
@@ -857,79 +984,81 @@ export function validateEmail(
           });
         }
       },
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
-// This is an unfortunate requirement of the jco translations. We could align
-// all our SDK enums as lowercase with dashes so we wouldn't need this
-// translation.
-function translateBotType(botType: analyze.BotType): ArcjetBotType | undefined {
-  switch (botType) {
-    case "unspecified": {
-      return;
-    }
-    case "not-analyzed": {
-      return "NOT_ANALYZED";
-    }
-    case "automated": {
-      return "AUTOMATED";
-    }
-    case "likely-automated": {
-      return "LIKELY_AUTOMATED";
-    }
-    case "likely-not-a-bot": {
-      return "LIKELY_NOT_A_BOT";
-    }
-    case "verified-bot": {
-      return "VERIFIED_BOT";
-    }
-    default: {
-      return;
-    }
+export function detectBot(options: BotOptions): Primitive<{}> {
+  validateBotOptions(options);
+
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  if (
+    typeof options.allow !== "undefined" &&
+    typeof options.deny !== "undefined"
+  ) {
+    throw new Error(
+      "`detectBot` options error: `allow` and `deny` cannot be provided together",
+    );
   }
-}
+  if (
+    typeof options.allow === "undefined" &&
+    typeof options.deny === "undefined"
+  ) {
+    throw new Error(
+      "`detectBot` options error: either `allow` or `deny` must be specified",
+    );
+  }
 
-export function detectBot(
-  options?: BotOptions,
-  ...additionalOptions: BotOptions[]
-): Primitive {
-  const rules: ArcjetBotRule<{}>[] = [];
+  let config: BotConfig = {
+    tag: "allowed-bot-config",
+    val: {
+      entities: [],
+      skipCustomDetect: true,
+    },
+  };
+  if (typeof options.allow !== "undefined") {
+    config = {
+      tag: "allowed-bot-config",
+      val: {
+        entities: options.allow,
+        skipCustomDetect: true,
+      },
+    };
+  }
 
-  // Always create at least one BOT rule
-  for (const opt of [options ?? {}, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    // TODO: Filter invalid bot types (or error??)
-    const block = Array.isArray(opt.block)
-      ? opt.block
-      : [ArcjetBotType.AUTOMATED];
-    // TODO: Does this avoid prototype pollution by putting in a Map first?
-    const addMap = new Map();
-    for (const [key, value] of Object.entries(opt.patterns?.add ?? {})) {
-      addMap.set(key, value);
-    }
-    // TODO(#217): Additional validation on these `patterns` options
-    const add = Array.from(addMap.entries());
-    const remove = opt.patterns?.remove ?? [];
+  if (typeof options.deny !== "undefined") {
+    config = {
+      tag: "denied-bot-config",
+      val: {
+        entities: options.deny,
+        skipCustomDetect: true,
+      },
+    };
+  }
 
-    rules.push({
+  return [
+    <ArcjetBotRule<{}>>{
       type: "BOT",
       priority: Priority.BotDetection,
       mode,
-      block,
-      add,
-      remove,
+      allow: options.allow ?? [],
+      deny: options.deny ?? [],
 
       validate(
         context: ArcjetContext,
         details: Partial<ArcjetRequestDetails>,
       ): asserts details is ArcjetRequestDetails {
-        assert(
-          typeof details.headers !== "undefined",
-          "DetectBot requires `headers` to be set.",
-        );
+        if (typeof details.headers === "undefined") {
+          throw new Error("bot detection requires `headers` to be set");
+        }
+        if (typeof details.headers.has !== "function") {
+          throw new Error(
+            "bot detection requires `headers` to extend `Headers`",
+          );
+        }
+        if (!details.headers.has("user-agent")) {
+          throw new Error("bot detection requires user-agent header");
+        }
       },
 
       /**
@@ -937,113 +1066,75 @@ export function detectBot(
        */
       async protect(
         context: ArcjetContext,
-        { headers }: ArcjetRequestDetails,
+        request: ArcjetRequestDetails,
       ): Promise<ArcjetRuleResult> {
-        const headersKV: Record<string, string> = {};
-
-        for (const [key, value] of headers) {
-          headersKV[key] = value;
-        }
-
         const analyzeInstance = await analyze.initializeWasm(context);
 
-        const headersJson = JSON.stringify(headers);
-        const patternsAdd = JSON.stringify(
-          Object.fromEntries(
-            add.map(([key, botType]) => [
-              key,
-              ArcjetBotTypeToProtocol(botType),
-            ]),
-          ),
-        );
-        const patternsRemove = JSON.stringify(remove);
-
-        let botResult;
+        let result;
         if (typeof analyzeInstance !== "undefined") {
-          botResult = analyzeInstance.detectBot(
-            headersJson,
-            patternsAdd,
-            patternsRemove,
+          result = analyzeInstance.detectBot(
+            JSON.stringify(toAnalyzeRequest(request)),
+            config
           );
         } else {
-          botResult = {
-            botType: "not-analyzed" as const,
-            botScore: 0,
+          result = {
+            allowed: [],
+            denied: [],
           };
         }
 
-        const botType = translateBotType(botResult.botType);
-        if (typeof botType === "undefined") {
-          return new ArcjetRuleResult({
-            ttl: 0,
-            state: "RUN",
-            conclusion: "ERROR",
-            reason: new ArcjetErrorReason("Could not determine bot type"),
-          });
-        }
-
         // If this is a bot and of a type that we want to block, then block!
-        if (botResult.botScore !== 0 && block.includes(botType)) {
+        if (result.denied.length > 0) {
           return new ArcjetRuleResult({
             ttl: 60,
             state: "RUN",
             conclusion: "DENY",
             reason: new ArcjetBotReason({
-              botType,
-              botScore: botResult.botScore,
-              userAgentMatch: true,
+              allowed: result.allowed,
+              denied: result.denied,
             }),
           });
         } else {
           return new ArcjetRuleResult({
-            ttl: 60,
+            ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
             reason: new ArcjetBotReason({
-              botType,
+              allowed: result.allowed,
+              denied: result.denied,
             }),
           });
         }
       },
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export type ShieldOptions = {
   mode?: ArcjetMode;
 };
 
-export function shield(
-  options?: ShieldOptions,
-  ...additionalOptions: ShieldOptions[]
-): Primitive {
-  const rules: ArcjetShieldRule<{}>[] = [];
+export function shield(options: ShieldOptions): Primitive<{}> {
+  validateShieldOptions(options);
 
-  // Always create at least one Shield rule
-  for (const opt of [options ?? {}, ...additionalOptions]) {
-    const mode = opt.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-    rules.push({
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  return [
+    <ArcjetShieldRule<{}>>{
       type: "SHIELD",
       priority: Priority.Shield,
       mode,
-    });
-  }
-
-  return rules;
+    },
+  ];
 }
 
 export type ProtectSignupOptions<Characteristics extends string[]> = {
-  rateLimit?:
-    | SlidingWindowRateLimitOptions<Characteristics>
-    | SlidingWindowRateLimitOptions<Characteristics>[];
-  bots?: BotOptions | BotOptions[];
-  email?: EmailOptions | EmailOptions[];
+  rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
+  bots: BotOptions;
+  email: EmailOptions;
 };
 
 export function protectSignup<const Characteristics extends string[] = []>(
-  options?: ProtectSignupOptions<Characteristics>,
+  options: ProtectSignupOptions<Characteristics>,
 ): Product<
   Simplify<
     UnionToIntersection<
@@ -1051,28 +1142,11 @@ export function protectSignup<const Characteristics extends string[] = []>(
     >
   >
 > {
-  let rateLimitRules: Primitive<{}> = [];
-  if (Array.isArray(options?.rateLimit)) {
-    rateLimitRules = slidingWindow(...options.rateLimit);
-  } else {
-    rateLimitRules = slidingWindow(options?.rateLimit);
-  }
-
-  let botRules: Primitive<{}> = [];
-  if (Array.isArray(options?.bots)) {
-    botRules = detectBot(...options.bots);
-  } else {
-    botRules = detectBot(options?.bots);
-  }
-
-  let emailRules: Primitive<{ email: string }> = [];
-  if (Array.isArray(options?.email)) {
-    emailRules = validateEmail(...options.email);
-  } else {
-    emailRules = validateEmail(options?.email);
-  }
-
-  return [...rateLimitRules, ...botRules, ...emailRules];
+  return [
+    ...slidingWindow(options.rateLimit),
+    ...detectBot(options.bots),
+    ...validateEmail(options.email),
+  ];
 }
 
 export interface ArcjetOptions<

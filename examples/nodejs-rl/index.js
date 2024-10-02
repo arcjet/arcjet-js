@@ -5,6 +5,8 @@ const aj = arcjet({
   // Get your site key from https://app.arcjet.com and set it as an environment
   // variable rather than hard coding.
   key: process.env.ARCJET_KEY,
+  // Limiting by ip.src is the default if not specified
+  //characteristics: ["ip.src"],
   rules: [
     // Protect against common attacks with Arcjet Shield
     shield({
@@ -14,8 +16,6 @@ const aj = arcjet({
     // bucket.
     fixedWindow({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      // Limiting by ip.src is the default if not specified
-      //characteristics: ["ip.src"],
       window: "1m", // 1 min fixed window
       max: 1, // allow a single request (for demo purposes)
     }),

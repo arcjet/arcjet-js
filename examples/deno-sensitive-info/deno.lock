@@ -1,0 +1,60 @@
+{
+  "version": "4",
+  "specifiers": {
+    "jsr:@std/dotenv@*": "0.225.2",
+    "npm:@bufbuild/protobuf@1.10.0": "1.10.0",
+    "npm:@connectrpc/connect-node@1.5.0": "1.5.0_@bufbuild+protobuf@1.10.0_@connectrpc+connect@1.5.0__@bufbuild+protobuf@1.10.0",
+    "npm:@connectrpc/connect@1.5.0": "1.5.0_@bufbuild+protobuf@1.10.0",
+    "npm:typeid-js@1.1.0": "1.1.0"
+  },
+  "jsr": {
+    "@std/dotenv@0.225.2": {
+      "integrity": "e2025dce4de6c7bca21dece8baddd4262b09d5187217e231b033e088e0c4dd23"
+    }
+  },
+  "npm": {
+    "@bufbuild/protobuf@1.10.0": {
+      "integrity": "sha512-QDdVFLoN93Zjg36NoQPZfsVH9tZew7wKDKyV5qRdj8ntT4wQCOradQjRaTdwMhWUYsgKsvCINKKm87FdEk96Ag=="
+    },
+    "@connectrpc/connect-node@1.5.0_@bufbuild+protobuf@1.10.0_@connectrpc+connect@1.5.0__@bufbuild+protobuf@1.10.0": {
+      "integrity": "sha512-go27+V6c6/YOGMXUs7d1NbXnGpMJl5fKYfMtbBKDs9azZTg/tW9q5S0iw9upZs43bOPV8YnJAWmTW9n1Te9NAw==",
+      "dependencies": [
+        "@bufbuild/protobuf",
+        "@connectrpc/connect",
+        "undici"
+      ]
+    },
+    "@connectrpc/connect@1.5.0_@bufbuild+protobuf@1.10.0": {
+      "integrity": "sha512-1gGg0M6c2Y3lnr5itis9dNj9r8hbOIuBMqoGSbUy7L7Vjw4MAttjJzJfj9HCDgytGCJkGanYEYI6MQVDijdVQw==",
+      "dependencies": [
+        "@bufbuild/protobuf"
+      ]
+    },
+    "@fastify/busboy@2.1.1": {
+      "integrity": "sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA=="
+    },
+    "typeid-js@1.1.0": {
+      "integrity": "sha512-SS0GEC0/0OJ06IvGEbqc6dVa5WwQN4mDq2UG9x2D7f+CD2X/b+p2xfEPNli0DO23lmeVl45bFt/bAOQa0GB4fg==",
+      "dependencies": [
+        "uuid"
+      ]
+    },
+    "undici@5.28.4": {
+      "integrity": "sha512-72RFADWFqKmUb2hmmvNODKL3p9hcB6Gt2DOQMis1SEBaV6a4MH8soBvzg+95CYhCKPFedut2JY9bMfrDl9D23g==",
+      "dependencies": [
+        "@fastify/busboy"
+      ]
+    },
+    "uuid@10.0.0": {
+      "integrity": "sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:@bufbuild/protobuf@1.10.0",
+      "npm:@connectrpc/connect-node@1.5.0",
+      "npm:@connectrpc/connect@1.5.0",
+      "npm:typeid-js@1.1.0"
+    ]
+  }
+}

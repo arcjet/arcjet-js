@@ -4,6 +4,7 @@ import { auth } from "auth";
 // The arcjet instance is created outside of the handler
 const aj = arcjet({
   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  characteristics: ["userId"], // Rate limit based on the Clerk userId
   rules: [
     // Protect against common attacks with Arcjet Shield
     shield({
@@ -12,7 +13,6 @@ const aj = arcjet({
     // Create a token bucket rate limit. Other algorithms are supported.
     tokenBucket({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      characteristics: ["userId"], // Rate limit based on the Clerk userId
       refillRate: 5, // refill 5 tokens per interval
       interval: 10, // refill every 10 seconds
       capacity: 10, // bucket maximum capacity of 10 tokens

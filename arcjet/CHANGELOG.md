@@ -1,5 +1,103 @@
 # Changelog
 
+## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...arcjet-v1.0.0-alpha.27) (2024-10-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add options validation for all rules ([#1785](https://github.com/arcjet/arcjet-js/issues/1785))
+* Only produce 1 rule per constructor ([#1783](https://github.com/arcjet/arcjet-js/issues/1783))
+
+### 🧹 Miscellaneous Chores
+
+* Add options validation for all rules ([#1785](https://github.com/arcjet/arcjet-js/issues/1785)) ([c3a248e](https://github.com/arcjet/arcjet-js/commit/c3a248ee953a54d5b818942135bebff22a84b307)), closes [#992](https://github.com/arcjet/arcjet-js/issues/992)
+* Only produce 1 rule per constructor ([#1783](https://github.com/arcjet/arcjet-js/issues/1783)) ([8d79e63](https://github.com/arcjet/arcjet-js/commit/8d79e639be69095c97fb383490817a7eb326458c)), closes [#1397](https://github.com/arcjet/arcjet-js/issues/1397)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/duration bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/headers bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/protocol bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/runtime bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.26 to 1.0.0-alpha.27
+
+## [1.0.0-alpha.26](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.25...arcjet-v1.0.0-alpha.26) (2024-09-16)
+
+
+### 🚀 New Features
+
+* Implement bot detection categories ([#1618](https://github.com/arcjet/arcjet-js/issues/1618)) ([540cfe8](https://github.com/arcjet/arcjet-js/commit/540cfe8d74b9f029248cfeb6f27e4c7b47fbb9b7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/duration bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/headers bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/protocol bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/runtime bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.25 to 1.0.0-alpha.26
+
+## [1.0.0-alpha.25](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.24...arcjet-v1.0.0-alpha.25) (2024-09-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* Update READMEs with latest examples ([#1542](https://github.com/arcjet/arcjet-js/issues/1542)) ([8969486](https://github.com/arcjet/arcjet-js/commit/8969486cc01dac6fc01289672744744913eaab01))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/duration bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/headers bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/protocol bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/runtime bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.24 to 1.0.0-alpha.25
+
+## [1.0.0-alpha.24](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.23...arcjet-v1.0.0-alpha.24) (2024-09-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437))
+
+### 🚀 New Features
+
+* Rework bot detection rule with allow/deny configuration ([#1437](https://github.com/arcjet/arcjet-js/issues/1437)) ([eef18e3](https://github.com/arcjet/arcjet-js/commit/eef18e3a7c52a849fbc1766439dc28bf0cb2da27))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/duration bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/headers bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/protocol bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/runtime bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.23 to 1.0.0-alpha.24
+
 ## [1.0.0-alpha.23](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.22...arcjet-v1.0.0-alpha.23) (2024-09-02)
 
 
