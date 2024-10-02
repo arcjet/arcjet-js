@@ -795,4 +795,5 @@ export type ArcjetContext = {
   log: ArcjetLogger;
   characteristics: string[];
   getBody: () => Promise<string | undefined>;
+  waitUntil?: (promise: Promise<unknown>) => void;
 };

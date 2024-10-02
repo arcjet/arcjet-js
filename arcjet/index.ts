@@ -584,6 +584,7 @@ export type ExtraProps<Rules> = Rules extends []
 export type ArcjetAdapterContext = {
   [key: string]: unknown;
   getBody(): Promise<string | undefined>;
+  waitUntil?: (promise: Promise<unknown>) => void;
 };
 
 /**
