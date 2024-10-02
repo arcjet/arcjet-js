@@ -25,6 +25,10 @@ for JS.
 
 - **Bun?** Use the [`@arcjet/bun`][npm-bun] package with our [Bun quick start
   guide][bun-quick-start].
+- **Deno?** Use the [`npm:@arcjet/deno`][npm-deno] package with our [Deno quick
+  start guide][deno-quick-start].
+- **NestJS?** Use the [`@arcjet/nest`][npm-nest] package with our [NestJS
+  quick start guide][nest-quick-start].
 - **Next.js?** Use the [`@arcjet/next`][npm-next] package with our [Next.js
   quick start guide][next-quick-start].
 - **Node.js?** Use the [`@arcjet/node`][npm-node] package with our [Node.js
@@ -153,6 +157,8 @@ find a specific one through the categories and descriptions below.
 ### SDKs
 
 - [`@arcjet/bun`](./arcjet-bun/README.md): SDK for Bun.sh.
+- [`@arcjet/deno`](./arcjet-deno/README.md): SDK for Deno.
+- [`@arcjet/nest`](./arcjet-nest/README.md): SDK for NestJS.
 - [`@arcjet/next`](./arcjet-next/README.md): SDK for the Next.js framework.
 - [`@arcjet/node`](./arcjet-node/README.md): SDK for Node.js.
 - [`@arcjet/sveltekit`](./arcjet-sveltekit/README.md): SDK for SvelteKit.
@@ -205,8 +211,12 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
 [npm-bun]: https://www.npmjs.com/package/@arcjet/bun
+[npm-deno]: https://www.npmjs.com/package/@arcjet/deno
+[npm-nest]: https://www.npmjs.com/package/@arcjet/nest
 [npm-next]: https://www.npmjs.com/package/@arcjet/next
 [bun-quick-start]: https://docs.arcjet.com/get-started/bun
+[deno-quick-start]: https://docs.arcjet.com/get-started/deno
+[nest-quick-start]: https://docs.arcjet.com/get-started/nest
 [next-quick-start]: https://docs.arcjet.com/get-started/nextjs
 [npm-node]: https://www.npmjs.com/package/@arcjet/node
 [node-quick-start]: https://docs.arcjet.com/get-started/nodejs
