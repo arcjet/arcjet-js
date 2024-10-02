@@ -141,36 +141,36 @@ type UnionToIntersection<Union> =
   // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
   (
     Union extends unknown
-    ? // The union type is used as the only argument to a function since the union
-    // of function arguments is an intersection.
-    (distributedUnion: Union) => void
-    : // This won't happen.
-    never
+      ? // The union type is used as the only argument to a function since the union
+        // of function arguments is an intersection.
+        (distributedUnion: Union) => void
+      : // This won't happen.
+        never
   ) extends // Infer the `Intersection` type since TypeScript represents the positional
   // arguments of unions of functions as an intersection of the union.
   (mergedIntersection: infer Intersection) => void
-  ? // The `& Union` is to allow indexing by the resulting type
-  Intersection & Union
-  : never;
+    ? // The `& Union` is to allow indexing by the resulting type
+      Intersection & Union
+    : never;
 type IsNever<T> = [T] extends [never] ? true : false;
 type LiteralCheck<
   T,
   LiteralType extends
-  | null
-  | undefined
-  | string
-  | number
-  | boolean
-  | symbol
-  | bigint,
+    | null
+    | undefined
+    | string
+    | number
+    | boolean
+    | symbol
+    | bigint,
 > =
   IsNever<T> extends false // Must be wider than `never`
-  ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
-  ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
-  ? false
-  : true
-  : false
-  : false;
+    ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
+      ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
+        ? false
+        : true
+      : false
+    : false;
 type IsStringLiteral<T> = LiteralCheck<T, string>;
 
 const knownFields = [
@@ -498,10 +498,10 @@ type ValidEntities<Detect> = Array<
   // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
   // to 0 | 1
   undefined extends Detect
-  ? ArcjetSensitiveInfoType
-  : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
-  ? ArcjetSensitiveInfoType | CustomEntities
-  : never
+    ? ArcjetSensitiveInfoType
+    : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
+      ? ArcjetSensitiveInfoType | CustomEntities
+      : never
 >;
 
 type SensitiveInfoOptionsAllow<Detect> = {
@@ -546,19 +546,19 @@ export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 // `as const` suffix to the characteristics array.
 type PropsForCharacteristic<T> =
   IsStringLiteral<T> extends true
-  ? T extends
-  | "ip.src"
-  | "http.host"
-  | "http.method"
-  | "http.request.uri.path"
-  | `http.request.headers["${string}"]`
-  | `http.request.cookie["${string}"]`
-  | `http.request.uri.args["${string}"]`
-  ? {}
-  : T extends string
-  ? Record<T, string | number | boolean>
-  : never
-  : {};
+    ? T extends
+        | "ip.src"
+        | "http.host"
+        | "http.method"
+        | "http.request.uri.path"
+        | `http.request.headers["${string}"]`
+        | `http.request.cookie["${string}"]`
+        | `http.request.uri.args["${string}"]`
+      ? {}
+      : T extends string
+        ? Record<T, string | number | boolean>
+        : never
+    : {};
 export type CharacteristicProps<Characteristics extends readonly string[]> =
   UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>;
 // Rules can specify they require specific props on an ArcjetRequest
@@ -570,10 +570,10 @@ type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 export type ExtraProps<Rules> = Rules extends []
   ? {}
   : Rules extends ArcjetRule[][]
-  ? UnionToIntersection<PropsForRule<Rules[number][number]>>
-  : Rules extends ArcjetRule[]
-  ? UnionToIntersection<PropsForRule<Rules[number]>>
-  : never;
+    ? UnionToIntersection<PropsForRule<Rules[number][number]>>
+    : Rules extends ArcjetRule[]
+      ? UnionToIntersection<PropsForRule<Rules[number]>>
+      : never;
 
 /**
  * Additional context that can be provided by adapters.
@@ -812,7 +812,7 @@ export function sensitiveInfo<
       validate(
         context: ArcjetContext,
         details: ArcjetRequestDetails,
-      ): asserts details is ArcjetRequestDetails { },
+      ): asserts details is ArcjetRequestDetails {},
 
       async protect(
         context: ArcjetContext,
@@ -1074,7 +1074,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
         if (typeof analyzeInstance !== "undefined") {
           result = analyzeInstance.detectBot(
             JSON.stringify(toAnalyzeRequest(request)),
-            config
+            config,
           );
         } else {
           result = {
