@@ -24,6 +24,7 @@ import { Inject, SetMetadata } from "@nestjs/common";
 import type {
   CanActivate,
   ConfigurableModuleAsyncOptions,
+  ContextType,
   DynamicModule,
   ExecutionContext,
   FactoryProvider,
@@ -376,6 +377,40 @@ export const ARCJET = Symbol("ARCJET");
 const ARCJET_OPTIONS = Symbol("ARCJET_OPTIONS");
 const ARCJET_WITH_RULES = Symbol("ARCJET_WITH_RULES");
 
+type GqlContextType = "graphql" | ContextType;
+
+function requestFromContext(context: ExecutionContext) {
+  const contextType = context.getType<GqlContextType>();
+  switch (contextType) {
+    case "graphql": {
+      // The `req` property should exist on the context at position 2
+      // https://github.com/nestjs/graphql/blob/8d19548dd8cb8c6d6003552673a6646603d2e22f/packages/graphql/lib/services/gql-execution-context.ts#L37
+      const ctx = context.getArgByIndex<{ req?: ArcjetNestRequest }>(2);
+      if (typeof ctx === "object" && ctx !== null && "req" in ctx) {
+        return ctx.req;
+      }
+    }
+    case "http": {
+      // The request object is at position 0
+      // https://github.com/nestjs/nest/blob/9825529f405fa6064eb98d8ecb2a5d3d5f1e41f9/packages/core/helpers/execution-context-host.ts#L52
+      return context.getArgByIndex<ArcjetNestRequest>(0);
+    }
+    case "ws": {
+      // TODO: Figure out if we can support "ws" context types
+      return;
+    }
+    case "rpc": {
+      // TODO: Figure out if we can support "rpc" context types
+      return;
+    }
+    default: {
+      // Avoiding the _exhaustive check to avoid some TypeScript errors in with
+      // different compiler options
+      return;
+    }
+  }
+}
+
 let ArcjetGuard = class ArcjetGuard implements CanActivate {
   aj: ArcjetNest<WithoutCustomProps>;
 
@@ -395,7 +430,12 @@ let ArcjetGuard = class ArcjetGuard implements CanActivate {
       aj = rules.reduce((aj, rule) => aj.withRule(rule), aj);
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = requestFromContext(context);
+
+    // If we cannot access the request, we "fail open" by allowing the request
+    if (typeof request === "undefined") {
+      return true;
+    }
 
     const decision = await aj.protect(request);
 
