@@ -389,6 +389,9 @@ function requestFromContext(context: ExecutionContext) {
       if (typeof ctx === "object" && ctx !== null && "req" in ctx) {
         return ctx.req;
       }
+
+      // If it isn't there for some reason, we just return undefined
+      return;
     }
     case "http": {
       // The request object is at position 0
