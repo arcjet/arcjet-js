@@ -864,13 +864,22 @@ export function sensitiveInfo<
           val: entitiesVal,
         };
 
-        const result = await analyze.detectSensitiveInfo(
+        const analyzeInstance = await analyze.initializeWasm(
           context,
-          body,
-          entities,
-          options.contextWindowSize || 1,
           convertedDetect,
         );
+
+        if (typeof analyzeInstance === "undefined") {
+          throw new Error(
+            "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
+          );
+        }
+
+        const result = analyzeInstance.detectSensitiveInfo(body, {
+          entities,
+          contextWindowSize: options.contextWindowSize || 1,
+          skipCustomDetect: typeof convertedDetect !== "function",
+        });
 
         const reason = new ArcjetSensitiveInfoReason({
           denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
@@ -936,7 +945,25 @@ export function validateEmail(
         context: ArcjetContext,
         { email }: ArcjetRequestDetails & { email: string },
       ): Promise<ArcjetRuleResult> {
-        const result = await analyze.isValidEmail(context, email, emailOpts);
+        const analyzeInstance = await analyze.initializeWasm(context);
+
+        let result;
+        if (typeof analyzeInstance !== "undefined") {
+          const optionsOrDefault = {
+            requireTopLevelDomain: true,
+            allowDomainLiteral: false,
+            blockedEmails: [],
+            ...options,
+          };
+
+          result = analyzeInstance.isValidEmail(email, optionsOrDefault);
+        } else {
+          result = {
+            validity: "valid",
+            blocked: [] as const,
+          };
+        }
+
         if (result.validity === "valid") {
           return new ArcjetRuleResult({
             ttl: 0,
@@ -1041,11 +1068,20 @@ export function detectBot(options: BotOptions): Primitive<{}> {
         context: ArcjetContext,
         request: ArcjetRequestDetails,
       ): Promise<ArcjetRuleResult> {
-        const result = await analyze.detectBot(
-          context,
-          toAnalyzeRequest(request),
-          config,
-        );
+        const analyzeInstance = await analyze.initializeWasm(context);
+
+        let result;
+        if (typeof analyzeInstance !== "undefined") {
+          result = analyzeInstance.detectBot(
+            JSON.stringify(toAnalyzeRequest(request)),
+            config,
+          );
+        } else {
+          result = {
+            allowed: [],
+            denied: [],
+          };
+        }
 
         // If this is a bot and of a type that we want to block, then block!
         if (result.denied.length > 0) {
@@ -1250,10 +1286,16 @@ export default function arcjet<
       ...ctx,
     };
 
-    const fingerprint = await analyze.generateFingerprint(
-      baseContext,
-      toAnalyzeRequest(details),
-    );
+    const analyzeInstance = await analyze.initializeWasm(baseContext);
+    const stringRequest = JSON.stringify(toAnalyzeRequest(details));
+    let fingerprint = "";
+    if (typeof analyzeInstance !== "undefined") {
+      fingerprint = analyzeInstance.generateFingerprint(
+        stringRequest,
+        baseContext.characteristics,
+      );
+    }
+
     log.debug("fingerprint (%s): %s", rt, fingerprint);
     log.timeEnd?.("fingerprint");
 

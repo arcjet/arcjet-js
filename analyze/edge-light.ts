@@ -3,32 +3,15 @@ import type { ArcjetLogger } from "@arcjet/protocol";
 import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
   ImportObject,
-  EmailValidationConfig,
-  EmailValidationResult,
   DetectedSensitiveInfoEntity,
-  SensitiveInfoEntities,
   SensitiveInfoEntity,
-  SensitiveInfoResult,
   BotConfig,
-  BotResult,
 } from "./wasm/arcjet_analyze_js_req.component.js";
 import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 
 import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm?module";
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm?module";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm?module";
-
-type AnalyzeRequest = {
-  ip?: string;
-  method?: string;
-  protocol?: string;
-  host?: string;
-  path?: string;
-  headers?: Record<string, string>;
-  cookies?: string;
-  query?: string;
-  extra?: Record<string, string>;
-};
 
 const FREE_EMAIL_PROVIDERS = [
   "gmail.com",
@@ -43,8 +26,7 @@ interface AnalyzeContext {
   characteristics: string[];
 }
 
-type DetectSensitiveInfoFunction =
-  typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
+type CustomDetect = typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
 
 async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   if (path === "arcjet_analyze_js_req.component.core.wasm") {
@@ -64,14 +46,14 @@ function noOpDetect(): SensitiveInfoEntity[] {
   return [];
 }
 
-async function init(
+export async function initializeWasm(
   context: AnalyzeContext,
-  detectSensitiveInfo?: DetectSensitiveInfoFunction,
+  detect?: CustomDetect,
 ) {
   const { log } = context;
 
-  if (typeof detectSensitiveInfo !== "function") {
-    detectSensitiveInfo = noOpDetect;
+  if (typeof detect !== "function") {
+    detect = noOpDetect;
   }
 
   const coreImports: ImportObject = {
@@ -101,110 +83,20 @@ async function init(
       },
     },
     "arcjet:js-req/sensitive-information-identifier": {
-      detect: detectSensitiveInfo,
+      detect,
     },
   };
 
   try {
     // Await the instantiation to catch the failure
-    return await instantiate(moduleFromPath, coreImports);
+    return instantiate(moduleFromPath, coreImports);
   } catch {
     log.debug("WebAssembly is not supported in this runtime");
   }
 }
 
 export {
-  type EmailValidationConfig,
   type BotConfig,
   type DetectedSensitiveInfoEntity,
   type SensitiveInfoEntity,
-  type DetectSensitiveInfoFunction,
 };
-
-/**
- * Generate a fingerprint for the client. This is used to identify the client
- * across multiple requests.
- * @param context - The Arcjet Analyze context.
- * @param request - The request to fingerprint.
- * @returns A SHA-256 string fingerprint.
- */
-export async function generateFingerprint(
-  context: AnalyzeContext,
-  request: AnalyzeRequest,
-): Promise<string> {
-  const analyze = await init(context);
-
-  if (typeof analyze !== "undefined") {
-    return analyze.generateFingerprint(
-      JSON.stringify(request),
-      context.characteristics,
-    );
-  }
-
-  return "";
-}
-
-export async function isValidEmail(
-  context: AnalyzeContext,
-  candidate: string,
-  options?: EmailValidationConfig,
-): Promise<EmailValidationResult> {
-  const analyze = await init(context);
-  const optionsOrDefault = {
-    requireTopLevelDomain: true,
-    allowDomainLiteral: false,
-    blockedEmails: [],
-    ...options,
-  };
-
-  if (typeof analyze !== "undefined") {
-    return analyze.isValidEmail(candidate, optionsOrDefault);
-  } else {
-    // Skip the local evaluation of the rule if Wasm is not available
-    return {
-      validity: "valid",
-      blocked: [],
-    };
-  }
-}
-
-export async function detectBot(
-  context: AnalyzeContext,
-  request: AnalyzeRequest,
-  options: BotConfig,
-): Promise<BotResult> {
-  const analyze = await init(context);
-
-  if (typeof analyze !== "undefined") {
-    return analyze.detectBot(JSON.stringify(request), options);
-  } else {
-    // Skip the local evaluation of the rule if Wasm is not available
-    return {
-      allowed: [],
-      denied: [],
-    };
-  }
-}
-
-export async function detectSensitiveInfo(
-  context: AnalyzeContext,
-  candidate: string,
-  entities: SensitiveInfoEntities,
-  contextWindowSize: number,
-  detect?: DetectSensitiveInfoFunction,
-): Promise<SensitiveInfoResult> {
-  const analyze = await init(context, detect);
-
-  if (typeof analyze !== "undefined") {
-    const skipCustomDetect = typeof detect !== "function";
-    return analyze.detectSensitiveInfo(candidate, {
-      entities,
-      contextWindowSize,
-      skipCustomDetect,
-    });
-  } else {
-    throw new Error(
-      "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
-    );
-  }
-}
