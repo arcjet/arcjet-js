@@ -1235,10 +1235,6 @@ export default function arcjet<
       email: typeof request.email === "string" ? request.email : undefined,
     });
 
-    log.time?.("local");
-
-    log.time?.("fingerprint");
-
     const characteristics = options.characteristics
       ? [...options.characteristics]
       : [];
@@ -1250,6 +1246,7 @@ export default function arcjet<
       ...ctx,
     };
 
+    log.time?.("fingerprint");
     const fingerprint = await analyze.generateFingerprint(
       baseContext,
       toAnalyzeRequest(details),
@@ -1314,149 +1311,147 @@ export default function arcjet<
       }
     }
 
-    // We have our own local cache which we check first. This doesn't work in
-    // serverless environments where every request is isolated, but there may be
-    // some instances where the instance is not recycled immediately. If so, we
-    // can take advantage of that.
-    log.time?.("cache");
-    const existingBlockReason = blockCache.get(fingerprint);
-    log.timeEnd?.("cache");
+    try {
+      log.time?.("local");
 
-    // If already blocked then we can async log to the API and return the
-    // decision immediately.
-    if (existingBlockReason) {
-      log.timeEnd?.("local");
-      log.debug(
-        {
-          fingerprint,
-          existingBlockReason,
-        },
-        "decide: alreadyBlocked",
-      );
-      const decision = new ArcjetDenyDecision({
-        ttl: blockCache.ttl(fingerprint),
-        reason: existingBlockReason,
-        // All results will be NOT_RUN because we used a cached decision
-        results,
-      });
+      // We have our own local cache which we check first. This doesn't work in
+      // serverless environments where every request is isolated, but there may be
+      // some instances where the instance is not recycled immediately. If so, we
+      // can take advantage of that.
+      log.time?.("cache");
+      const existingBlockReason = blockCache.get(fingerprint);
+      log.timeEnd?.("cache");
 
-      client.report(context, details, decision, rules);
-
-      log.debug(
-        {
-          id: decision.id,
-          conclusion: decision.conclusion,
-          fingerprint,
-          reason: existingBlockReason,
-          runtime: rt,
-        },
-        "decide: already blocked",
-      );
-
-      return decision;
-    }
-
-    for (const [idx, rule] of rules.entries()) {
-      // This re-assignment is a workaround to a TypeScript error with
-      // assertions where the name was introduced via a destructure
-      let localRule: ArcjetLocalRule;
-      if (isLocalRule(rule)) {
-        localRule = rule;
-      } else {
-        continue;
-      }
-
-      log.time?.(rule.type);
-
-      try {
-        localRule.validate(context, details);
-        results[idx] = await localRule.protect(context, details);
-
-        log.debug(
-          {
-            id: results[idx].ruleId,
-            rule: rule.type,
-            fingerprint,
-            path: details.path,
-            runtime: rt,
-            ttl: results[idx].ttl,
-            conclusion: results[idx].conclusion,
-            reason: results[idx].reason,
-          },
-          "Local rule result:",
-        );
-      } catch (err) {
-        log.error(
-          "Failure running rule: %s due to %s",
-          rule.type,
-          errorMessage(err),
-        );
-
-        results[idx] = new ArcjetRuleResult({
-          ttl: 0,
-          state: "RUN",
-          conclusion: "ERROR",
-          reason: new ArcjetErrorReason(err),
-        });
-      }
-
-      log.timeEnd?.(rule.type);
-
-      if (results[idx].isDenied()) {
-        log.timeEnd?.("local");
-
+      // If already blocked then we can async log to the API and return the
+      // decision immediately.
+      if (existingBlockReason) {
         const decision = new ArcjetDenyDecision({
-          ttl: results[idx].ttl,
-          reason: results[idx].reason,
+          ttl: blockCache.ttl(fingerprint),
+          reason: existingBlockReason,
+          // All results will be NOT_RUN because we used a cached decision
           results,
         });
 
-        // Only a DENY decision is reported to avoid creating 2 entries for a
-        // request. Upon ALLOW, the `decide` call will create an entry for the
-        // request.
         client.report(context, details, decision, rules);
 
-        // If we're not in DRY_RUN mode, we want to cache non-zero TTL results
-        // and return this DENY decision.
-        if (rule.mode !== "DRY_RUN") {
-          if (results[idx].ttl > 0) {
-            log.debug(
-              {
-                fingerprint,
-                conclusion: decision.conclusion,
-                reason: decision.reason,
-              },
-              "Caching decision for %d seconds",
-              decision.ttl,
-            );
+        log.debug(
+          {
+            id: decision.id,
+            conclusion: decision.conclusion,
+            fingerprint,
+            reason: existingBlockReason,
+            runtime: rt,
+          },
+          "decide: already blocked",
+        );
 
-            blockCache.set(
-              fingerprint,
-              decision.reason,
-              nowInSeconds() + decision.ttl,
-            );
-          }
+        return decision;
+      }
 
-          return decision;
+      for (const [idx, rule] of rules.entries()) {
+        // This re-assignment is a workaround to a TypeScript error with
+        // assertions where the name was introduced via a destructure
+        let localRule: ArcjetLocalRule;
+        if (isLocalRule(rule)) {
+          localRule = rule;
+        } else {
+          continue;
         }
 
-        log.warn(
-          `Dry run mode is enabled for "%s" rule. Overriding decision. Decision was: %s`,
-          rule.type,
-          decision.conclusion,
-        );
-      }
-    }
+        try {
+          log.time?.(rule.type);
 
-    log.timeEnd?.("local");
-    log.time?.("remote");
+          localRule.validate(context, details);
+          results[idx] = await localRule.protect(context, details);
+
+          log.debug(
+            {
+              id: results[idx].ruleId,
+              rule: rule.type,
+              fingerprint,
+              path: details.path,
+              runtime: rt,
+              ttl: results[idx].ttl,
+              conclusion: results[idx].conclusion,
+              reason: results[idx].reason,
+            },
+            "Local rule result:",
+          );
+        } catch (err) {
+          log.error(
+            "Failure running rule: %s due to %s",
+            rule.type,
+            errorMessage(err),
+          );
+
+          results[idx] = new ArcjetRuleResult({
+            ttl: 0,
+            state: "RUN",
+            conclusion: "ERROR",
+            reason: new ArcjetErrorReason(err),
+          });
+        } finally {
+          log.timeEnd?.(rule.type);
+        }
+
+        if (results[idx].isDenied()) {
+          const decision = new ArcjetDenyDecision({
+            ttl: results[idx].ttl,
+            reason: results[idx].reason,
+            results,
+          });
+
+          // Only a DENY decision is reported to avoid creating 2 entries for a
+          // request. Upon ALLOW, the `decide` call will create an entry for the
+          // request.
+          client.report(context, details, decision, rules);
+
+          // If we're not in DRY_RUN mode, we want to cache non-zero TTL results
+          // and return this DENY decision.
+          if (rule.mode !== "DRY_RUN") {
+            if (results[idx].ttl > 0) {
+              log.debug(
+                {
+                  fingerprint,
+                  conclusion: decision.conclusion,
+                  reason: decision.reason,
+                },
+                "Caching decision for %d seconds",
+                decision.ttl,
+              );
+
+              blockCache.set(
+                fingerprint,
+                decision.reason,
+                nowInSeconds() + decision.ttl,
+              );
+            }
+
+            return decision;
+          }
+
+          log.warn(
+            `Dry run mode is enabled for "%s" rule. Overriding decision. Decision was: %s`,
+            rule.type,
+            decision.conclusion,
+          );
+        }
+      }
+    } finally {
+      log.timeEnd?.("local");
+    }
 
     // With no cached values, we take a decision remotely. We use a timeout to
     // fail open.
     try {
+      log.time?.("remote");
+
       log.time?.("decideApi");
-      const decision = await client.decide(context, details, rules);
-      log.timeEnd?.("decideApi");
+      const decision = await client
+        .decide(context, details, rules)
+        .finally(() => {
+          log.timeEnd?.("decideApi");
+        });
 
       // If the decision is to block and we have a non-zero TTL, we cache the
       // block locally
