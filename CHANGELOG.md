@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...v1.0.0-alpha.28) (2024-10-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* Update Wasm with phone-number fix and tokenizer update ([#1854](https://github.com/arcjet/arcjet-js/issues/1854))
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815))
+
+### 🪲 Bug Fixes
+
+* **arcjet:** Ensure performance measurements are 1-to-1 and always captured ([#1858](https://github.com/arcjet/arcjet-js/issues/1858)) ([4d29f9a](https://github.com/arcjet/arcjet-js/commit/4d29f9adee96296ca0a4fc7cd3192f68ebc6ad0a))
+* **nestjs:** Lookup request from GraphQL context in ArcjetGuard ([#1857](https://github.com/arcjet/arcjet-js/issues/1857)) ([c0b2903](https://github.com/arcjet/arcjet-js/commit/c0b29032a9a4bb5398edb041221d5cc732fc21cb)), closes [#1856](https://github.com/arcjet/arcjet-js/issues/1856)
+* Update Wasm with phone-number fix and tokenizer update ([#1854](https://github.com/arcjet/arcjet-js/issues/1854)) ([f94f078](https://github.com/arcjet/arcjet-js/commit/f94f07825431dea7690bd82982047e2820971b72))
+
+
+### 🧹 Miscellaneous Chores
+
+* Add README links for new adapters ([#1831](https://github.com/arcjet/arcjet-js/issues/1831)) ([81885d9](https://github.com/arcjet/arcjet-js/commit/81885d92c1a4cb36d4ffbf4483ae20c1d90b7b6c)), closes [#1813](https://github.com/arcjet/arcjet-js/issues/1813)
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815)) ([853119d](https://github.com/arcjet/arcjet-js/commit/853119d24c37330690c937149a0cf1d0c4d31862)), closes [#1810](https://github.com/arcjet/arcjet-js/issues/1810)
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...v1.0.0-alpha.27) (2024-10-01)
 
 
