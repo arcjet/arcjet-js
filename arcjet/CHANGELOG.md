@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...arcjet-v1.0.0-alpha.28) (2024-10-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815))
+
+### 🪲 Bug Fixes
+
+* **arcjet:** Ensure performance measurements are 1-to-1 and always captured ([#1858](https://github.com/arcjet/arcjet-js/issues/1858)) ([4d29f9a](https://github.com/arcjet/arcjet-js/commit/4d29f9adee96296ca0a4fc7cd3192f68ebc6ad0a))
+
+
+### 🧹 Miscellaneous Chores
+
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815)) ([853119d](https://github.com/arcjet/arcjet-js/commit/853119d24c37330690c937149a0cf1d0c4d31862)), closes [#1810](https://github.com/arcjet/arcjet-js/issues/1810)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/duration bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/headers bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/protocol bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/runtime bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...arcjet-v1.0.0-alpha.27) (2024-10-01)
 
 

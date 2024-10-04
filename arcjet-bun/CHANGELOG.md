@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/bun-v1.0.0-alpha.28) (2024-10-04)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/bun:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/headers bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/ip bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/logger bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/protocol bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/transport bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * arcjet bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/bun-v1.0.0-alpha.27) (2024-10-01)
 
 

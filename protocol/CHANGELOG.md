@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/protocol-v1.0.0-alpha.28) (2024-10-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815))
+
+### 🧹 Miscellaneous Chores
+
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815)) ([853119d](https://github.com/arcjet/arcjet-js/commit/853119d24c37330690c937149a0cf1d0c4d31862)), closes [#1810](https://github.com/arcjet/arcjet-js/issues/1810)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/protocol-v1.0.0-alpha.27) (2024-10-01)
 
 
