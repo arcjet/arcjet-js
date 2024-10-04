@@ -108,6 +108,8 @@ export const SDKStack = /*@__PURE__*/ proto3.makeEnum(
     {no: 8, name: "SDK_STACK_HONO"},
     {no: 9, name: "SDK_STACK_NUXT"},
     {no: 10, name: "SDK_STACK_NESTJS"},
+    {no: 11, name: "SDK_STACK_REMIX"},
+    {no: 12, name: "SDK_STACK_ASTRO"},
   ],
 );
 
