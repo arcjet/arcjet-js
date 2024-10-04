@@ -12,7 +12,7 @@
     "@arcjet/next": "file:../../arcjet-next",
     "@clerk/nextjs": "^5.7.1",
     "next": "14.2.14",
-    "permitio": "^2.5.9",
+    "permitio": "^2.6.0",
     "react": "^18",
     "react-dom": "^18"
   },
