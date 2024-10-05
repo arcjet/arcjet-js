@@ -159,7 +159,7 @@ export function createClient(options: ClientOptions): Client {
 
       // We use the promise API directly to avoid returning a promise from this function so execution can't be paused with `await`
       // TODO(#884): Leverage `waitUntil` if the function is attached to the context
-      client
+      const reportPromise = client
         .report(reportRequest, {
           headers: { Authorization: `Bearer ${context.key}` },
           timeoutMs: 2_000, // 2 seconds
@@ -179,6 +179,10 @@ export function createClient(options: ClientOptions): Client {
         .catch((err: unknown) => {
           log.info("Encountered problem sending report: %s", errorMessage(err));
         });
+
+      if (typeof context.waitUntil === "function") {
+        context.waitUntil(reportPromise);
+      }
     },
   });
 }

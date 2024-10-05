@@ -27,6 +27,35 @@ import { createTransport } from "@arcjet/transport";
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
 
+// This is the Symbol that Vercel defines in their infrastructure to access the
+// Context (where available). The Context can contain the `waitUntil` function.
+// https://github.com/vercel/vercel/blob/930d7fb892dc26f240f2b950d963931c45e1e661/packages/functions/src/get-context.ts#L6
+const SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
+
+type WaitUntil = (promise: Promise<unknown>) => void;
+
+function lookupWaitUntil(): WaitUntil | undefined {
+  const fromSymbol: typeof globalThis & {
+    [SYMBOL_FOR_REQ_CONTEXT]?: unknown;
+  } = globalThis;
+  if (
+    typeof fromSymbol[SYMBOL_FOR_REQ_CONTEXT] === "object" &&
+    fromSymbol[SYMBOL_FOR_REQ_CONTEXT] !== null &&
+    "get" in fromSymbol[SYMBOL_FOR_REQ_CONTEXT] &&
+    typeof fromSymbol[SYMBOL_FOR_REQ_CONTEXT].get === "function"
+  ) {
+    const vercelCtx = fromSymbol[SYMBOL_FOR_REQ_CONTEXT].get();
+    if (
+      typeof vercelCtx === "object" &&
+      vercelCtx !== null &&
+      "waitUntil" in vercelCtx &&
+      typeof vercelCtx.waitUntil === "function"
+    ) {
+      return vercelCtx.waitUntil;
+    }
+  }
+}
+
 // TODO: Deduplicate with other packages
 function errorMessage(err: unknown): string {
   if (err) {
@@ -378,7 +407,9 @@ export default function arcjet<
           }
         };
 
-        return aj.protect({ getBody }, req);
+        const waitUntil = lookupWaitUntil();
+
+        return aj.protect({ getBody, waitUntil }, req);
       },
     });
   }
