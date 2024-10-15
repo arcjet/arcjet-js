@@ -1,13 +1,13 @@
 {
   "name": "@arcjet/analyze",
   "version": "1.0.0-alpha.27",
-  "description": "Arcjet local analysis engine",
+  "description": "Arcjet local analysis engine wasm bindings",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "analyze"
+    "directory": "analyze-wasm"
   },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
@@ -24,11 +24,6 @@
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
-  "exports": {
-    "edge-light": "./edge-light.js",
-    "workerd": "./workerd.js",
-    "default": "./index.js"
-  },
   "files": [
     "LICENSE",
     "README.md",
@@ -41,13 +36,13 @@
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
-    "jco": "jco transpile wasm/arcjet_analyze_js_req.component.wasm --no-wasi-shim --instantiation async -o wasm",
-    "build": "npm run jco; rollup --config rollup.config.js",
+    "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
     "pretest": "npm run build",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
+    "@arcjet/analyze-wasm": "1.0.0-alpha.27",
     "@arcjet/protocol": "1.0.0-alpha.27"
   },
   "devDependencies": {

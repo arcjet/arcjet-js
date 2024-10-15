@@ -1,13 +1,13 @@
 {
-  "name": "arcjet",
+  "name": "@arcjet/analyze-wasm",
   "version": "1.0.0-alpha.27",
-  "description": "Arcjet TypeScript and JavaScript SDK core",
+  "description": "Arcjet local analysis engine",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "arcjet"
+    "directory": "analyze"
   },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
@@ -24,9 +24,16 @@
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
+  "exports": {
+    "edge-light": "./edge-light.js",
+    "workerd": "./workerd.js",
+    "default": "./index.js"
+  },
   "files": [
     "LICENSE",
     "README.md",
+    "_virtual/",
+    "wasm/",
     "*.js",
     "*.d.ts",
     "*.ts",
@@ -34,25 +41,22 @@
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "rollup --config rollup.config.js",
+    "jco": "jco transpile wasm/arcjet_analyze_js_req.component.wasm --no-wasi-shim --instantiation async -o wasm",
+    "build": "npm run jco; rollup --config rollup.config.js",
     "lint": "eslint .",
     "pretest": "npm run build",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.0.0-alpha.27",
-    "@arcjet/duration": "1.0.0-alpha.27",
-    "@arcjet/headers": "1.0.0-alpha.27",
-    "@arcjet/protocol": "1.0.0-alpha.27",
-    "@arcjet/runtime": "1.0.0-alpha.27"
+    "@arcjet/protocol": "1.0.0-alpha.27"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.27",
     "@arcjet/rollup-config": "1.0.0-alpha.27",
     "@arcjet/tsconfig": "1.0.0-alpha.27",
-    "@edge-runtime/jest-environment": "3.0.3",
+    "@bytecodealliance/jco": "1.5.0",
     "@jest/globals": "29.7.0",
-    "@rollup/wasm-node": "4.24.0",
+    "@rollup/wasm-node": "4.23.0",
     "@types/node": "18.18.0",
     "jest": "29.7.0",
     "typescript": "5.6.2"
