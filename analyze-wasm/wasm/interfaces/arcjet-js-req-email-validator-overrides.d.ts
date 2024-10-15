@@ -6,11 +6,11 @@ export namespace ArcjetJsReqEmailValidatorOverrides {
 }
 /**
  * # Variants
- *
+ * 
  * ## `"yes"`
- *
+ * 
  * ## `"no"`
- *
+ * 
  * ## `"unknown"`
  */
-export type ValidatorResponse = "yes" | "no" | "unknown";
+export type ValidatorResponse = 'yes' | 'no' | 'unknown';
