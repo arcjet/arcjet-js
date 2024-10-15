@@ -314,6 +314,16 @@ export declare enum SDKStack {
    * @generated from enum value: SDK_STACK_NESTJS = 10;
    */
   SDK_STACK_NESTJS = 10,
+
+  /**
+   * @generated from enum value: SDK_STACK_REMIX = 11;
+   */
+  SDK_STACK_REMIX = 11,
+
+  /**
+   * @generated from enum value: SDK_STACK_ASTRO = 12;
+   */
+  SDK_STACK_ASTRO = 12,
 }
 
 /**
