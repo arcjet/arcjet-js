@@ -85,6 +85,46 @@ jobs:
         working-directory: examples/nestjs-fastify
         run: npm run build
 
+  nestjs-graphql:
+    name: NestJS + GraphQL
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.0.4
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nestjs-graphql
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nestjs-graphql
+        run: npm run build
+
   nestjs-launchdarkly:
     name: NestJS + LaunchDarkly
     runs-on: ubuntu-latest
@@ -709,6 +749,46 @@ jobs:
 
       - name: Build
         working-directory: examples/nodejs-hono-rl
+        run: npm run build
+
+  remix-express:
+    name: Remix + Express
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.0.4
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/remix-express
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/remix-express
         run: npm run build
 
   sveltekit:
