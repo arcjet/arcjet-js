@@ -1,6 +1,7 @@
 {
   ".": "1.0.0-alpha.27",
   "analyze": "1.0.0-alpha.27",
+  "analyze-wasm": "1.0.0-alpha.27",
   "arcjet": "1.0.0-alpha.27",
   "arcjet-bun": "1.0.0-alpha.27",
   "arcjet-deno": "1.0.0-alpha.27",

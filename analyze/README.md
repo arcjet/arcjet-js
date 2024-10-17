@@ -42,31 +42,12 @@ console.log("is email valid?", valid);
 
 ## Implementation
 
-This package provides analyze logic implemented as a WebAssembly module which
-will run local analysis on request details before calling the Arcjet API.
+This package uses the wasm bindings provided by `@arcjet/analyze-wasm` to
+call various functions that are exported by our wasm bindings.
 
-The [arcjet.wasm.js](./wasm/arcjet.wasm.js) file contains the binary inlined as
-a base64 [Data URL][mdn-data-url] with the `application/wasm` MIME type.
-
-This was chosen to save on storage space over inlining the file directly as a
-Uint8Array, which would take up ~3x the space of the Wasm file. See
-[Better Binary Batter: Mixing Base64 and Uint8Array][wasm-base64-blog] for more
-details.
-
-It is then decoded into an ArrayBuffer to be used directly via WebAssembly's
-`compile()` function in our entry point file.
-
-This is all done to avoid trying to read or bundle the Wasm asset in various
-ways based on the platform or bundler a user is targeting. One example being
-that Next.js requires special `asyncWebAssembly` webpack config to load our
-Wasm file if we don't do this.
-
-In the future, we hope to do away with this workaround when all bundlers
-properly support consistent asset bundling techniques.
-
-## API
-
-In progress.
+We chose to put this logic in a separate package because we need to change the
+import structure for each runtime that we support in the wasm bindings. Moving
+this to a separate package allows us not to have to duplicate code.
 
 ## License
 
