@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@connectrpc/connect-node": "1.6.1",
-    "@connectrpc/connect-web": "1.5.0"
+    "@connectrpc/connect-web": "1.6.1"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.27",
