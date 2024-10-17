@@ -45,7 +45,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "dependencies": {
-    "@connectrpc/connect-node": "1.5.0",
+    "@connectrpc/connect-node": "1.6.1",
     "@connectrpc/connect-web": "1.5.0"
   },
   "devDependencies": {
