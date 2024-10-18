@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/redact-wasm-v1.0.0-alpha.28) (2024-10-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **analyze:** improve sensitive info string token accuracy ([#1962](https://github.com/arcjet/arcjet-js/issues/1962))
+* Update Wasm with phone-number fix and tokenizer update ([#1854](https://github.com/arcjet/arcjet-js/issues/1854))
+
+### 🚀 New Features
+
+* **analyze:** improve sensitive info string token accuracy ([#1962](https://github.com/arcjet/arcjet-js/issues/1962)) ([abad1bd](https://github.com/arcjet/arcjet-js/commit/abad1bdbb13c9778d9724e29e97cddfadcf3ab02))
+
+
+### 🪲 Bug Fixes
+
+* Update Wasm with phone-number fix and tokenizer update ([#1854](https://github.com/arcjet/arcjet-js/issues/1854)) ([f94f078](https://github.com/arcjet/arcjet-js/commit/f94f07825431dea7690bd82982047e2820971b72))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/redact-wasm-v1.0.0-alpha.27) (2024-10-01)
 
 
