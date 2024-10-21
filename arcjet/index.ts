@@ -1246,13 +1246,35 @@ export default function arcjet<
       ...ctx,
     };
 
-    log.time?.("fingerprint");
-    const fingerprint = await analyze.generateFingerprint(
-      baseContext,
-      toAnalyzeRequest(details),
-    );
-    log.debug("fingerprint (%s): %s", rt, fingerprint);
-    log.timeEnd?.("fingerprint");
+    let fingerprint = "";
+    try {
+      log.time?.("fingerprint");
+      fingerprint = await analyze.generateFingerprint(
+        baseContext,
+        toAnalyzeRequest(details),
+      );
+      log.debug("fingerprint (%s): %s", rt, fingerprint);
+    } catch (error) {
+      log.error(
+        { error },
+        "Failed to build fingerprint. Please verify your Characteristics.",
+      );
+
+      const decision = new ArcjetErrorDecision({
+        ttl: 0,
+        reason: new ArcjetErrorReason(
+          `Failed to build fingerprint - ${errorMessage(error)}`,
+        ),
+        // No results because we couldn't create a fingerprint
+        results: [],
+      });
+
+      // TODO: Consider sending this to Report when we have an infallible fingerprint
+
+      return decision;
+    } finally {
+      log.timeEnd?.("fingerprint");
+    }
 
     const context: ArcjetContext = Object.freeze({
       ...baseContext,

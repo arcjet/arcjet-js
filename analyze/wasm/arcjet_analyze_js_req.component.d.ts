@@ -63,16 +63,15 @@ export interface BotResult {
   denied: Array<BotEntity>,
 }
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
-import { ArcjetJsReqLogger } from './interfaces/arcjet-js-req-logger.js';
 import { ArcjetJsReqSensitiveInformationIdentifier } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
 export interface ImportObject {
   'arcjet:js-req/email-validator-overrides': typeof ArcjetJsReqEmailValidatorOverrides,
-  'arcjet:js-req/logger': typeof ArcjetJsReqLogger,
   'arcjet:js-req/sensitive-information-identifier': typeof ArcjetJsReqSensitiveInformationIdentifier,
 }
 export interface Root {
   detectBot(request: string, options: BotConfig): BotResult,
   generateFingerprint(request: string, characteristics: Array<string>): string,
+  validateCharacteristics(request: string, characteristics: Array<string>): void,
   isValidEmail(candidate: string, options: EmailValidationConfig): EmailValidationResult,
   detectSensitiveInfo(content: string, options: SensitiveInfoConfig): SensitiveInfoResult,
 }

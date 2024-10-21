@@ -2623,7 +2623,7 @@ describe("SDK", () => {
     expect(denied.protect).toHaveBeenCalledTimes(1);
   });
 
-  test("works with an empty request object", async () => {
+  test("returns an ERROR decision if fingerprint cannot be generated", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -2649,10 +2649,10 @@ describe("SDK", () => {
     };
 
     const decision = await aj.protect(context, request);
-    expect(decision.conclusion).toEqual("ALLOW");
+    expect(decision.conclusion).toEqual("ERROR");
   });
 
-  test("does not crash with no request object", async () => {
+  test("returns an ERROR decision with no request object", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -2673,7 +2673,7 @@ describe("SDK", () => {
 
     // @ts-expect-error
     const decision = await aj.protect();
-    expect(decision.conclusion).toEqual("ALLOW");
+    expect(decision.conclusion).toEqual("ERROR");
   });
 
   test("returns an ERROR decision when more than 10 rules are generated", async () => {
@@ -2688,7 +2688,9 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const request = {};
+    const request = {
+      ip: "100.100.100.100",
+    };
 
     const rules: ArcjetRule[][] = [];
     // We only iterate 4 times because `testRuleMultiple` generates 3 rules
