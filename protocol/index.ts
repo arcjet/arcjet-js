@@ -771,6 +771,8 @@ export interface ArcjetBotRule<Props extends {}>
 
 export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {
   type: "SHIELD";
+
+  characteristics?: string[];
 }
 
 export interface ArcjetLogger {

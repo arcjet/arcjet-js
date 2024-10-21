@@ -29,7 +29,7 @@ import {
   ArcjetDenyDecision,
   ArcjetErrorDecision,
 } from "@arcjet/protocol";
-import { isRateLimitRule } from "@arcjet/protocol/convert.js";
+import { isRateLimitRule, isShieldRule } from "@arcjet/protocol/convert.js";
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import type {
@@ -439,7 +439,14 @@ const validateBotOptions = createValidator({
 
 const validateShieldOptions = createValidator({
   rule: "shield",
-  validations: [{ key: "mode", required: false, validate: validateMode }],
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    {
+      key: "characteristics",
+      validate: validateStringArray,
+      required: false,
+    },
+  ],
 });
 
 type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
@@ -1074,19 +1081,27 @@ export function detectBot(options: BotOptions): Primitive<{}> {
   ];
 }
 
-export type ShieldOptions = {
+export type ShieldOptions<Characteristics extends readonly string[]> = {
   mode?: ArcjetMode;
+  characteristics?: Characteristics;
 };
 
-export function shield(options: ShieldOptions): Primitive<{}> {
+export function shield<const Characteristics extends readonly string[] = []>(
+  options: ShieldOptions<Characteristics>,
+): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
   validateShieldOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const characteristics = Array.isArray(options.characteristics)
+    ? options.characteristics
+    : undefined;
+
   return [
     <ArcjetShieldRule<{}>>{
       type: "SHIELD",
       priority: Priority.Shield,
       mode,
+      characteristics,
     },
   ];
 }
@@ -1300,10 +1315,10 @@ export default function arcjet<
         reason: new ArcjetReason(),
       });
 
-      // Add top-level characteristics to all Rate Limit rules that don't already have
-      // their own set of characteristics.
+      // Add top-level characteristics to all RateLimit or Shield rules that
+      // don't already have their own set of characteristics.
       const candidate_rule = rules[idx];
-      if (isRateLimitRule(candidate_rule)) {
+      if (isRateLimitRule(candidate_rule) || isShieldRule(candidate_rule)) {
         if (typeof candidate_rule.characteristics === "undefined") {
           candidate_rule.characteristics = characteristics;
           rules[idx] = candidate_rule;
