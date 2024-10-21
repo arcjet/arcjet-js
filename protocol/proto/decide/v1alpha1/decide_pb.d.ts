@@ -1018,10 +1018,10 @@ export declare class RateLimitRule extends Message<RateLimitRule> {
   match: string;
 
   /**
-   * Defines how Arcjet will track the rate limit. If not specified, it will
-   * default to the client IP address ip.src. If more than one option is
-   * provided, they will be combined. See
-   * https://docs.arcjet.com/rate-limiting/configuration
+   * Defines how Arcjet will track rate limits. If none are specified, it will
+   * default to using the client IP address. If more than one characteristic
+   * is provided, they will be combined. For further details, see
+   * https://docs.arcjet.com/architecture/#fingerprinting
    *
    * @generated from field: repeated string characteristics = 3;
    */
@@ -1329,6 +1329,16 @@ export declare class ShieldRule extends Message<ShieldRule> {
    * @generated from field: bool auto_added = 2;
    */
   autoAdded: boolean;
+
+  /**
+   * Defines how Arcjet will track suspicious requests. If none are specified,
+   * it will default to using the client IP address. If more than one
+   * characteristic is provided, they will be combined. For further details,
+   * see https://docs.arcjet.com/architecture/#fingerprinting
+   *
+   * @generated from field: repeated string characteristics = 3;
+   */
+  characteristics: string[];
 
   constructor(data?: PartialMessage<ShieldRule>);
 

@@ -553,7 +553,7 @@ function isEmailRule<Props extends { email: string }>(
   return rule.type === "EMAIL";
 }
 
-function isShieldRule<Props extends { email: string }>(
+export function isShieldRule<Props extends { email: string }>(
   rule: ArcjetRule<Props>,
 ): rule is ArcjetShieldRule<Props> {
   return rule.type === "SHIELD";
@@ -652,6 +652,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         case: "shield",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
+          characteristics: rule.characteristics,
           autoAdded: false,
         },
       },
