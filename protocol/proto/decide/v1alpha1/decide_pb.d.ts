@@ -1733,11 +1733,6 @@ export declare class ReportRequest extends Message<ReportRequest> {
   rules: Rule[];
 
   /**
-   * @generated from field: google.protobuf.Timestamp received_at = 7;
-   */
-  receivedAt?: Timestamp;
-
-  /**
    * The characteristics that should be used for fingerprinting.
    *
    * @generated from field: repeated string characteristics = 8;
@@ -1765,13 +1760,6 @@ export declare class ReportRequest extends Message<ReportRequest> {
  * @generated from message proto.decide.v1alpha1.ReportResponse
  */
 export declare class ReportResponse extends Message<ReportResponse> {
-  /**
-   * The decision reported about the request under investigation.
-   *
-   * @generated from field: proto.decide.v1alpha1.Decision decision = 1;
-   */
-  decision?: Decision;
-
   /**
    * Any extra information returned by the Arcjet analysis.
    *

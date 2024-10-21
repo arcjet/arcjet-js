@@ -518,7 +518,6 @@ export const ReportRequest = /*@__PURE__*/ proto3.makeMessageType(
     { no: 4, name: "details", kind: "message", T: RequestDetails },
     { no: 5, name: "decision", kind: "message", T: Decision },
     { no: 6, name: "rules", kind: "message", T: Rule, repeated: true },
-    { no: 7, name: "received_at", kind: "message", T: Timestamp },
     { no: 8, name: "characteristics", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ],
 );
@@ -531,7 +530,6 @@ export const ReportRequest = /*@__PURE__*/ proto3.makeMessageType(
 export const ReportResponse = /*@__PURE__*/ proto3.makeMessageType(
   "proto.decide.v1alpha1.ReportResponse",
   () => [
-    { no: 1, name: "decision", kind: "message", T: Decision },
     { no: 2, name: "extra", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
   ],
 );
