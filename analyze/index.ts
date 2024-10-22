@@ -89,14 +89,6 @@ async function init(
   }
 
   const coreImports: ImportObject = {
-    "arcjet:js-req/logger": {
-      debug(msg) {
-        log.debug(msg);
-      },
-      error(msg) {
-        log.error(msg);
-      },
-    },
     "arcjet:js-req/email-validator-overrides": {
       isFreeEmail(domain) {
         if (FREE_EMAIL_PROVIDERS.includes(domain)) {
