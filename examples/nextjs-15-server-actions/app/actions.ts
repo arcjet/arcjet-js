@@ -4,6 +4,7 @@ import arcjet, { request, validateEmail } from "@arcjet/next";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
+  // Use the `uid` cookie that is set by the middleware to fingerprint requests
   characteristics: ['http.request.cookie["uid"]'],
   rules: [
     validateEmail({ mode: "LIVE", block: ["DISPOSABLE", "NO_MX_RECORDS"] })
@@ -12,6 +13,9 @@ const aj = arcjet({
 
 export async function validate(prev: { message: string }, formData: FormData) {
   const email = formData.get("email");
+
+  // TypeScript types allow this to be a `File`, `string`, or `null` so we need
+  // to check it is a string type before using it
   if (typeof email !== "string") {
     throw new Error("Invalid form data")
   }

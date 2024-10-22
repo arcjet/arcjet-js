@@ -9,8 +9,10 @@ export const config = {
 export default async function middleware() {
   const cook = await cookies();
 
-  // Give each user a unique identifier that Arcjet can use to create a fingerprint
-  cook.set("uid", crypto.randomUUID())
+  if (!cook.has("uid")) {
+    // Give each user a unique identifier that Arcjet can use to create a fingerprint
+    cook.set("uid", crypto.randomUUID())
+  }
 
   return NextResponse.next();
 }
