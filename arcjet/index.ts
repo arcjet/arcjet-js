@@ -216,6 +216,35 @@ function toString(value: unknown) {
   return "<unsupported value>";
 }
 
+// This is the Symbol that Vercel defines in their infrastructure to access the
+// Context (where available). The Context can contain the `waitUntil` function.
+// https://github.com/vercel/vercel/blob/930d7fb892dc26f240f2b950d963931c45e1e661/packages/functions/src/get-context.ts#L6
+const SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
+
+type WaitUntil = (promise: Promise<unknown>) => void;
+
+function lookupWaitUntil(): WaitUntil | undefined {
+  const fromSymbol: typeof globalThis & {
+    [SYMBOL_FOR_REQ_CONTEXT]?: unknown;
+  } = globalThis;
+  if (
+    typeof fromSymbol[SYMBOL_FOR_REQ_CONTEXT] === "object" &&
+    fromSymbol[SYMBOL_FOR_REQ_CONTEXT] !== null &&
+    "get" in fromSymbol[SYMBOL_FOR_REQ_CONTEXT] &&
+    typeof fromSymbol[SYMBOL_FOR_REQ_CONTEXT].get === "function"
+  ) {
+    const vercelCtx = fromSymbol[SYMBOL_FOR_REQ_CONTEXT].get();
+    if (
+      typeof vercelCtx === "object" &&
+      vercelCtx !== null &&
+      "waitUntil" in vercelCtx &&
+      typeof vercelCtx.waitUntil === "function"
+    ) {
+      return vercelCtx.waitUntil;
+    }
+  }
+}
+
 function toAnalyzeRequest(request: Partial<ArcjetRequestDetails>) {
   const headers: Record<string, string> = {};
   if (typeof request.headers !== "undefined") {
@@ -584,6 +613,7 @@ export type ExtraProps<Rules> = Rules extends []
 export type ArcjetAdapterContext = {
   [key: string]: unknown;
   getBody(): Promise<string | undefined>;
+  waitUntil?: (promise: Promise<unknown>) => void;
 };
 
 /**
@@ -1239,10 +1269,13 @@ export default function arcjet<
       ? [...options.characteristics]
       : [];
 
+    const waitUntil = lookupWaitUntil();
+
     const baseContext = {
       key,
       log,
       characteristics,
+      waitUntil,
       ...ctx,
     };
 
