@@ -94,18 +94,6 @@ export class Logger {
     }
   }
 
-  time(label: string) {
-    if (this.#logLevel <= 0) {
-      console.time(getTimeLabel(label));
-    }
-  }
-
-  timeEnd(label: string) {
-    if (this.#logLevel <= 0) {
-      console.timeEnd(getTimeLabel(label));
-    }
-  }
-
   debug(msg: string, ...args: unknown[]): void;
   debug(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
   debug(obj: unknown, msg?: unknown, ...args: unknown[]): void {

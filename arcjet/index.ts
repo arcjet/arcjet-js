@@ -200,6 +200,24 @@ function isEmailType(type: string): type is ArcjetEmailType {
   );
 }
 
+class Performance {
+  log: ArcjetLogger;
+
+  constructor(logger: ArcjetLogger) {
+    this.log = logger;
+  }
+
+  // TODO(#2020): We should no-op this if loglevel is not `debug` to do less work
+  measure(label: string) {
+    const start = performance.now();
+    return () => {
+      const end = performance.now();
+      const diff = end - start;
+      this.log.debug("LATENCY %s: %sms", label, diff.toFixed(3));
+    };
+  }
+}
+
 function toString(value: unknown) {
   if (typeof value === "string") {
     return value;
@@ -1223,6 +1241,8 @@ export default function arcjet<
   }
   const log = options.log;
 
+  const perf = new Performance(log);
+
   // TODO(#207): Remove this when we can default the transport so client is not required
   // It is currently optional in the options so the Next SDK can override it for the user
   if (typeof options.client === "undefined") {
@@ -1280,8 +1300,9 @@ export default function arcjet<
     };
 
     let fingerprint = "";
+
+    const logFingerprintPerf = perf.measure("fingerprint");
     try {
-      log.time?.("fingerprint");
       fingerprint = await analyze.generateFingerprint(
         baseContext,
         toAnalyzeRequest(details),
@@ -1306,7 +1327,7 @@ export default function arcjet<
 
       return decision;
     } finally {
-      log.timeEnd?.("fingerprint");
+      logFingerprintPerf();
     }
 
     const context: ArcjetContext = Object.freeze({
@@ -1366,16 +1387,15 @@ export default function arcjet<
       }
     }
 
+    const logLocalPerf = perf.measure("local");
     try {
-      log.time?.("local");
-
       // We have our own local cache which we check first. This doesn't work in
       // serverless environments where every request is isolated, but there may be
       // some instances where the instance is not recycled immediately. If so, we
       // can take advantage of that.
-      log.time?.("cache");
+      const logCachePerf = perf.measure("cache");
       const existingBlockReason = blockCache.get(fingerprint);
-      log.timeEnd?.("cache");
+      logCachePerf();
 
       // If already blocked then we can async log to the API and return the
       // decision immediately.
@@ -1413,9 +1433,8 @@ export default function arcjet<
           continue;
         }
 
+        const logRulePerf = perf.measure(rule.type);
         try {
-          log.time?.(rule.type);
-
           localRule.validate(context, details);
           results[idx] = await localRule.protect(context, details);
 
@@ -1446,7 +1465,7 @@ export default function arcjet<
             reason: new ArcjetErrorReason(err),
           });
         } finally {
-          log.timeEnd?.(rule.type);
+          logRulePerf();
         }
 
         if (results[idx].isDenied()) {
@@ -1493,19 +1512,18 @@ export default function arcjet<
         }
       }
     } finally {
-      log.timeEnd?.("local");
+      logLocalPerf();
     }
 
     // With no cached values, we take a decision remotely. We use a timeout to
     // fail open.
+    const logRemotePerf = perf.measure("remote");
     try {
-      log.time?.("remote");
-
-      log.time?.("decideApi");
+      const logDediceApiPerf = perf.measure("decideApi");
       const decision = await client
         .decide(context, details, rules)
         .finally(() => {
-          log.timeEnd?.("decideApi");
+          logDediceApiPerf();
         });
 
       // If the decision is to block and we have a non-zero TTL, we cache the
@@ -1536,7 +1554,7 @@ export default function arcjet<
 
       return decision;
     } finally {
-      log.timeEnd?.("remote");
+      logRemotePerf();
     }
   }
 
