@@ -216,7 +216,14 @@ function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    let ip = findIP(request, headers, { platform: platform(process.env) });
+    let ip = findIP(
+      {
+        ip: request.ip,
+        socket: request.socket,
+        headers,
+      },
+      { platform: platform(process.env) },
+    );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

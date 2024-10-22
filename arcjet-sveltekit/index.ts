@@ -194,8 +194,8 @@ export default function arcjet<
     let ip = findIP(
       {
         ip: event.getClientAddress(),
+        headers,
       },
-      headers,
       { platform: platform(process.env) },
     );
     if (ip === "") {

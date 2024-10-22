@@ -180,8 +180,8 @@ export default function arcjet<
       {
         // The `getLoadContext` API will attach the `ip` to the context
         ip: context?.ip,
+        headers,
       },
-      headers,
       { platform: platform(process.env) },
     );
     if (ip === "") {
