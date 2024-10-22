@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
-    "ai": "^3.4.14",
-    "next": "^14.2.15",
-    "openai": "^4.68.0",
+    "ai": "^3.4.17",
+    "next": "^15.0.0",
+    "openai": "^4.68.1",
     "openai-chat-tokens": "^0.2.8",
     "react": "^18",
     "react-dom": "^18"
@@ -23,7 +23,7 @@
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",
     "eslint": "^8",
-    "eslint-config-next": "14.2.15",
+    "eslint-config-next": "15.0.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.14",
     "typescript": "^5"
