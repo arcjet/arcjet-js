@@ -207,7 +207,7 @@ class Performance {
     this.log = logger;
   }
 
-  // TODO: We should no-op this if loglevel is not `debug` to do less work
+  // TODO(#2020): We should no-op this if loglevel is not `debug` to do less work
   measure(label: string) {
     const start = performance.now();
     return () => {
