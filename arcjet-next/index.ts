@@ -1,5 +1,6 @@
 import type { NextApiResponse } from "next";
 import { NextResponse } from "next/server.js";
+import { headers, cookies } from "next/headers.js";
 import type {
   NextFetchEvent,
   NextMiddleware,
@@ -26,6 +27,20 @@ import { createTransport } from "@arcjet/transport";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
+
+export async function request(): Promise<ArcjetNextRequest> {
+  const hdrs = await headers();
+  const cook = await cookies();
+
+  const cookieEntries = cook
+    .getAll()
+    .map((cookie) => [cookie.name, cookie.value]);
+
+  return {
+    headers: hdrs,
+    cookies: Object.fromEntries(cookieEntries),
+  };
+}
 
 // TODO: Deduplicate with other packages
 function errorMessage(err: unknown): string {
