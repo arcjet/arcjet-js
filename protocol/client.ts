@@ -1,6 +1,5 @@
 import type { Transport } from "@connectrpc/connect";
 import { createPromiseClient } from "@connectrpc/connect";
-import { Timestamp } from "@bufbuild/protobuf";
 import {
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,
@@ -152,7 +151,6 @@ export function createClient(options: ClientOptions): Client {
         },
         decision: ArcjetDecisionToProtocol(decision),
         rules: rules.map(ArcjetRuleToProtocol),
-        receivedAt: Timestamp.now(),
       });
 
       log.debug("Report request to %s", baseUrl);
@@ -167,7 +165,7 @@ export function createClient(options: ClientOptions): Client {
         .then((response) => {
           log.debug(
             {
-              id: response.decision?.id,
+              id: decision.id,
               fingerprint: context.fingerprint,
               path: details.path,
               runtime: context.runtime,

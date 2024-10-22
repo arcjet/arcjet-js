@@ -33,7 +33,6 @@ import {
   ArcjetReason,
   ArcjetRuleResult,
 } from "../index.js";
-import { Timestamp } from "@bufbuild/protobuf";
 
 function deferred(): [Promise<void>, () => void, (reason?: unknown) => void] {
   let resolve: () => void;
@@ -700,7 +699,6 @@ describe("createClient", () => {
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
-    const receivedAt = Timestamp.now();
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -753,7 +751,6 @@ describe("createClient", () => {
           reason: new Reason(),
           ruleResults: [],
         },
-        receivedAt,
       }),
       expect.anything(),
     );
@@ -771,7 +768,6 @@ describe("createClient", () => {
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
-    const receivedAt = Timestamp.now();
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -823,7 +819,6 @@ describe("createClient", () => {
           reason: new Reason(),
           ruleResults: [],
         },
-        receivedAt,
       }),
       expect.anything(),
     );
@@ -841,7 +836,6 @@ describe("createClient", () => {
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
-    const receivedAt = Timestamp.now();
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -900,7 +894,6 @@ describe("createClient", () => {
           }),
           ruleResults: [],
         },
-        receivedAt,
       }),
       expect.anything(),
     );
@@ -918,7 +911,6 @@ describe("createClient", () => {
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
-    const receivedAt = Timestamp.now();
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -970,7 +962,6 @@ describe("createClient", () => {
           reason: new Reason(),
           ruleResults: [],
         },
-        receivedAt,
       }),
       expect.anything(),
     );
@@ -988,7 +979,6 @@ describe("createClient", () => {
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
-    const receivedAt = Timestamp.now();
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1036,7 +1026,6 @@ describe("createClient", () => {
           reason: new Reason(),
           ruleResults: [],
         },
-        receivedAt,
       }),
       expect.anything(),
     );
@@ -1054,7 +1043,6 @@ describe("createClient", () => {
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
-    const receivedAt = Timestamp.now();
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1128,7 +1116,6 @@ describe("createClient", () => {
           ],
         },
         rules: [new Rule()],
-        receivedAt,
       }),
       expect.anything(),
     );
@@ -1253,7 +1240,6 @@ describe("createClient", () => {
       characteristics: ["ip.src"],
       getBody: () => Promise.resolve(undefined),
     };
-    const receivedAt = Timestamp.now();
     const details = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1322,7 +1308,6 @@ describe("createClient", () => {
           ],
         },
         rules: [],
-        receivedAt,
         characteristics: ["ip.src"],
       }),
       expect.anything(),
