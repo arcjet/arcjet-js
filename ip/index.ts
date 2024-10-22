@@ -628,6 +628,11 @@ function findIP(
     if (isGlobalIP(cfConnectingIP)) {
       return cfConnectingIP;
     }
+
+    // If we are using a platform check and don't have a Global IP, we exit
+    // early with an empty IP since the more generic headers shouldn't be
+    // trusted over the platform-specific headers.
+    return "";
   }
 
   // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
@@ -637,6 +642,11 @@ function findIP(
     if (isGlobalIP(flyClientIP)) {
       return flyClientIP;
     }
+
+    // If we are using a platform check and don't have a Global IP, we exit
+    // early with an empty IP since the more generic headers shouldn't be
+    // trusted over the platform-specific headers.
+    return "";
   }
 
   // Standard headers used by Amazon EC2, Heroku, and others.
