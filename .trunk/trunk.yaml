@@ -60,13 +60,24 @@ merge:
     - Trunk Check
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 18)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 20)"
-    - Build examples / Next.js 14 + App Router + Rate Limit
-    - Build examples / Next.js 14 + App Router + Validate Email
-    - Build examples / Next.js 14 + Clerk + Rate Limit
-    - Build examples / Next.js 14 + Clerk + Shield
-    - Build examples / Next.js 14 + Decorate
+    - Build examples / NestJS
+    - Build examples / NestJS + Fastify
+    - Build examples / NestJS + GraphQL
+    - Build examples / NestJS + LaunchDarkly
     - Build examples / Next.js 14 + NextAuth 4
-    - Build examples / Next.js 14 + OpenAI
-    - Build examples / Next.js 14 + Page Router + withArcjet
+    - Build examples / Next.js + App Router + Rate Limit
+    - Build examples / Next.js + App Router + Validate Email
+    - Build examples / Next.js + Auth.js 5
+    - Build examples / Next.js + Bot categories
+    - Build examples / Next.js + Clerk + Rate Limit
+    - Build examples / Next.js + Clerk + Shield
+    - Build examples / Next.js + Decorate
+    - Build examples / Next.js + IP Details
+    - Build examples / Next.js + OpenAI
+    - Build examples / Next.js + Page Router + withArcjet
+    - Build examples / Next.js + Permit
+    - Build examples / Next.js + Sensitive Info
+    - Build examples / Next.js + Server Actions
     - Build examples / Node.js + Hono + Rate Limit
+    - Build examples / Remix + Express
     - Build examples / SvelteKit
