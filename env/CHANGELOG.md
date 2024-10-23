@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/env-v1.0.0-alpha.28) (2024-10-23)
+
+
+### 🚀 New Features
+
+* **ip:** Add Vercel platform-specific IP header detection ([#2022](https://github.com/arcjet/arcjet-js/issues/2022)) ([d886c76](https://github.com/arcjet/arcjet-js/commit/d886c763983b2adcf50223a56f80ba0df2df078a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/env-v1.0.0-alpha.27) (2024-10-01)
 
 

@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/ip-v1.0.0-alpha.28) (2024-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ip:** Accept Request or IncomingMessage directly ([#2018](https://github.com/arcjet/arcjet-js/issues/2018))
+* **ip:** Exit early if platform-specific headers are missing IP ([#2021](https://github.com/arcjet/arcjet-js/issues/2021))
+
+### 🚀 New Features
+
+* **ip:** Accept Request or IncomingMessage directly ([#2018](https://github.com/arcjet/arcjet-js/issues/2018)) ([1704da8](https://github.com/arcjet/arcjet-js/commit/1704da87a6791c824cc5ddf6b10a11d5e0786a39)), closes [#1904](https://github.com/arcjet/arcjet-js/issues/1904)
+* **ip:** Add Vercel platform-specific IP header detection ([#2022](https://github.com/arcjet/arcjet-js/issues/2022)) ([d886c76](https://github.com/arcjet/arcjet-js/commit/d886c763983b2adcf50223a56f80ba0df2df078a))
+
+
+### 🪲 Bug Fixes
+
+* **ip:** Exit early if platform-specific headers are missing IP ([#2021](https://github.com/arcjet/arcjet-js/issues/2021)) ([1a13d9c](https://github.com/arcjet/arcjet-js/commit/1a13d9c9b3a96a4c90a13842b04ca5bf39bf018e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/ip-v1.0.0-alpha.27) (2024-10-01)
 
 

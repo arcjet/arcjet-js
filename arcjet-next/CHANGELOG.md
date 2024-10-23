@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/next-v1.0.0-alpha.28) (2024-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ip:** Accept Request or IncomingMessage directly ([#2018](https://github.com/arcjet/arcjet-js/issues/2018))
+
+### 🚀 New Features
+
+* **ip:** Accept Request or IncomingMessage directly ([#2018](https://github.com/arcjet/arcjet-js/issues/2018)) ([1704da8](https://github.com/arcjet/arcjet-js/commit/1704da87a6791c824cc5ddf6b10a11d5e0786a39)), closes [#1904](https://github.com/arcjet/arcjet-js/issues/1904)
+* **nextjs:** Support Next.js Server Actions ([#1991](https://github.com/arcjet/arcjet-js/issues/1991)) ([07e68dc](https://github.com/arcjet/arcjet-js/commit/07e68dc2f8d2273b8c114df7a6bc74a5a1249b9f)), closes [#1200](https://github.com/arcjet/arcjet-js/issues/1200)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/headers bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/ip bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/logger bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/protocol bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/transport bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * arcjet bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/next-v1.0.0-alpha.27) (2024-10-01)
 
 

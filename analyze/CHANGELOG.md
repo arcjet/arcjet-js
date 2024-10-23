@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/analyze-v1.0.0-alpha.28) (2024-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* Return ERROR decision when fingerprint cannot be generated ([#1990](https://github.com/arcjet/arcjet-js/issues/1990))
+* **analyze:** improve sensitive info string token accuracy ([#1962](https://github.com/arcjet/arcjet-js/issues/1962))
+* Update Wasm with phone-number fix and tokenizer update ([#1854](https://github.com/arcjet/arcjet-js/issues/1854))
+
+### 🚀 New Features
+
+* **analyze:** improve sensitive info string token accuracy ([#1962](https://github.com/arcjet/arcjet-js/issues/1962)) ([abad1bd](https://github.com/arcjet/arcjet-js/commit/abad1bdbb13c9778d9724e29e97cddfadcf3ab02))
+
+
+### 🪲 Bug Fixes
+
+* Return ERROR decision when fingerprint cannot be generated ([#1990](https://github.com/arcjet/arcjet-js/issues/1990)) ([618a1ee](https://github.com/arcjet/arcjet-js/commit/618a1eef0bd70c827ce1c4911d991bfb55b0deb2)), closes [#1801](https://github.com/arcjet/arcjet-js/issues/1801)
+* Update Wasm with phone-number fix and tokenizer update ([#1854](https://github.com/arcjet/arcjet-js/issues/1854)) ([f94f078](https://github.com/arcjet/arcjet-js/commit/f94f07825431dea7690bd82982047e2820971b72))
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze:** Regenerate Wasm with updated dependencies ([#2067](https://github.com/arcjet/arcjet-js/issues/2067)) ([f96994c](https://github.com/arcjet/arcjet-js/commit/f96994c83fbd40bd40a379c954dae53c11e5d1ae))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/analyze-v1.0.0-alpha.27) (2024-10-01)
 
 
