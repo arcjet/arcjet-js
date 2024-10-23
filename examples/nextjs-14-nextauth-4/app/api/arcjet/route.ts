@@ -1,3 +1,4 @@
+import ip from "@arcjet/ip";
 import arcjet, { ArcjetDecision, tokenBucket, detectBot, shield} from "@arcjet/next";
 import { getServerSession } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
@@ -64,7 +65,7 @@ export async function GET(req: NextRequest, res: Response) {
     decision = await rl.protect(req, { fingerprint, requested: 5 });
     console.log("Arcjet logged in decision", decision)
   } else {
-    const fingerprint = req.ip!;
+    const fingerprint = ip(req);
 
     // Limit the amount of requests for anonymous users.
     const rl = aj.withRule(

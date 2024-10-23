@@ -5,6 +5,7 @@ import { arcjet } from "@/lib/arcjet";
 import { permit } from "@/lib/permit";
 import { getLastFriday } from "@/lib/dateHelper";
 import { getOrderCount, getToppings } from "@/data/stats";
+import ip from "@arcjet/ip";
 
 // Returns ad-hoc rules depending on whether the user is logged in, and if they
 // are, whether they have permission to update stats.
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
   // Get the user's ID if they are logged in, otherwise use
   // their IP address as a fingerprint
   const user = await currentUser();
-  const fingerprint: string = user ? user.id : req.ip!;
+  const fingerprint: string = user ? user.id : ip(req);
 
   // Get the Arcjet client and request a decision
   const aj = await getClient();

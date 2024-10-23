@@ -8,6 +8,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@arcjet/ip": "file:../../ip",
     "@arcjet/next": "file:../../arcjet-next",
     "next": "^14.2.15",
     "next-auth": "^4.24.8",

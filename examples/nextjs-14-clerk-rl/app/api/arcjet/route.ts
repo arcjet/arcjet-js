@@ -1,6 +1,7 @@
 import arcjet, { ArcjetDecision, tokenBucket, shield } from "@arcjet/next";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
+import ip from "@arcjet/ip";
 
 // The root Arcjet client is created outside of the handler.
 const aj = arcjet({
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    const fingerprint = req.ip!
+    const fingerprint = ip(req);
 
     // Deduct 5 tokens from the token bucket
     decision = await rl.protect(req, { fingerprint, requested: 5 });
