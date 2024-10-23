@@ -42,12 +42,12 @@ for JS.
 
 ## Examples
 
-- [Next.js rate limits](./examples/nextjs-14-app-dir-rl)
-- [Next.js email validation](./examples/nextjs-14-app-dir-validate-email)
-- [Bun rate limits](./examples/bun-rl)
+- [Next.js rate limits](./examples/nextjs-app-dir-rate-limit)
+- [Next.js email validation](./examples/nextjs-app-dir-validate-email)
+- [Bun rate limits](./examples/bun-rate-limit)
 - [Protect NextAuth login routes](./examples/nextjs-14-nextauth-4)
-- [OpenAI chatbot protection](./examples/nextjs-14-openai)
-- [Express.js rate limits](./examples/nodejs-express-rl)
+- [OpenAI chatbot protection](./examples/nextjs-openai)
+- [Express.js rate limits](./examples/nodejs-express-rate-limit)
 - [SvelteKit](./examples/sveltekit)
 - ... [more examples](./examples)
 
