@@ -40,7 +40,7 @@ app.get("/api/bots", async (req, res) => {
   const decision = await aj
     // Only inline to self-contain the sample code.
     // Static rules should be defined outside the handler for performance.
-    .withRule(detectBot({ mode: "LIVE" }))
+    .withRule(detectBot({ mode: "LIVE", allow: [] }))
     .protect(req);
 
   if (decision.isDenied()) {
