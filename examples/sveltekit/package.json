@@ -16,7 +16,7 @@
     "@arcjet/sveltekit": "file:../../arcjet-sveltekit"
   },
   "devDependencies": {
-    "@sveltejs/adapter-auto": "^3.2.5",
+    "@sveltejs/adapter-auto": "^3.3.0",
     "@sveltejs/kit": "^2.7.2",
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
     "@types/eslint": "^8.56.0",
