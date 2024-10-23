@@ -30,7 +30,7 @@ GraphQL applications using the `@arcjet/nest` adapter.
 4. Start the server.
 
    ```bash
-   npm start
+   npm run start:dev
    ```
 
 5. Visit `http://localhost:3000/graphql` in a browser and submit a GraphQL

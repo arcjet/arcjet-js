@@ -88,7 +88,7 @@ applications using the `@arcjet/nest` adapter with rule configuration loaded via
 6. Start the server.
 
    ```bash
-   npm start
+   npm run start:dev
    ```
 
 7. Visit `http://localhost:3000/`.
