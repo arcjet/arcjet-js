@@ -35,7 +35,7 @@ function suite(make: MakeTest) {
     ).toEqual("");
   });
 
-  // Support for Node.js IncomingRequest
+  // Support for Node.js IncomingMessage
   test("supports plain object headers with single value", () => {
     const request = {
       headers: {
@@ -46,7 +46,7 @@ function suite(make: MakeTest) {
     expect(ip(request)).toEqual("1.1.1.1");
   });
 
-  // Support for Node.js IncomingRequest
+  // Support for Node.js IncomingMessage
   test("supports plain object headers with array value", () => {
     const request = {
       headers: {
