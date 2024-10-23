@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@arcjet/ip": "file:../../ip",
     "@arcjet/next": "file:../../arcjet-next",
     "@clerk/nextjs": "^5.7.5",
     "next": "14.2.15",

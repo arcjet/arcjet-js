@@ -203,8 +203,8 @@ export default function arcjet<
         // workaround to the API design in Bun that requires access to the
         // `Server` to lookup an IP.
         ip: ipCache.get(request),
+        headers,
       },
-      headers,
       { platform: platform(env) },
     );
     if (ip === "") {
