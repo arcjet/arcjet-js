@@ -543,7 +543,15 @@ interface PartialRequestContext {
   identity?: PartialIdentiy;
 }
 
-export interface RequestLike {
+export type HeaderLike =
+  | {
+      headers: Headers;
+    }
+  | {
+      headers: Record<string, string | string[] | undefined>;
+    };
+
+export type RequestLike = {
   ip?: unknown;
 
   socket?: PartialSocket;
@@ -551,14 +559,29 @@ export interface RequestLike {
   info?: PartialInfo;
 
   requestContext?: PartialRequestContext;
-
-  headers: Headers;
-}
+} & HeaderLike;
 
 export type Platform = "cloudflare" | "fly-io" | "vercel";
 
 export interface Options {
   platform?: Platform;
+}
+
+function isHeaders(val: HeaderLike["headers"]): val is Headers {
+  return typeof val.get === "function";
+}
+
+function getHeader(headers: HeaderLike["headers"], headerKey: string) {
+  if (isHeaders(headers)) {
+    return headers.get(headerKey);
+  } else {
+    const headerValue = headers[headerKey];
+    if (Array.isArray(headerValue)) {
+      return headerValue.join(",");
+    } else {
+      return headerValue;
+    }
+  }
 }
 
 // Heavily based on https://github.com/pbojinov/request-ip
@@ -612,11 +635,6 @@ function findIP(request: RequestLike, options: Options = {}): string {
     return "";
   }
 
-  // Validate we have a `get()` function to use to read headers
-  if (typeof request.headers.get !== "function") {
-    return "";
-  }
-
   // Platform-specific headers should only be accepted when we can determine
   // that we are running on that platform. For example, the `CF-Connecting-IP`
   // header should only be accepted when running on Cloudflare; otherwise, it
@@ -626,13 +644,13 @@ function findIP(request: RequestLike, options: Options = {}): string {
 
   if (platform === "cloudflare") {
     // CF-Connecting-IPv6: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ipv6
-    const cfConnectingIPv6 = request.headers.get("cf-connecting-ipv6");
+    const cfConnectingIPv6 = getHeader(request.headers, "cf-connecting-ipv6");
     if (isGlobalIPv6(cfConnectingIPv6)) {
       return cfConnectingIPv6;
     }
 
     // CF-Connecting-IP: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ip
-    const cfConnectingIP = request.headers.get("cf-connecting-ip");
+    const cfConnectingIP = getHeader(request.headers, "cf-connecting-ip");
     if (isGlobalIP(cfConnectingIP)) {
       return cfConnectingIP;
     }
@@ -646,7 +664,7 @@ function findIP(request: RequestLike, options: Options = {}): string {
   // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
   if (platform === "fly-io") {
     // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
-    const flyClientIP = request.headers.get("fly-client-ip");
+    const flyClientIP = getHeader(request.headers, "fly-client-ip");
     if (isGlobalIP(flyClientIP)) {
       return flyClientIP;
     }
@@ -661,7 +679,7 @@ function findIP(request: RequestLike, options: Options = {}): string {
     // https://vercel.com/docs/edge-network/headers/request-headers#x-real-ip
     // Also used by `@vercel/functions`, see:
     // https://github.com/vercel/vercel/blob/d7536d52c87712b1b3f83e4b0fd535a1fb7e384c/packages/functions/src/headers.ts#L12
-    const xRealIP = request.headers.get("x-real-ip");
+    const xRealIP = getHeader(request.headers, "x-real-ip");
     if (isGlobalIP(xRealIP)) {
       return xRealIP;
     }
@@ -670,7 +688,10 @@ function findIP(request: RequestLike, options: Options = {}): string {
     // By default, it seems this will be 1 address, but they discuss trusted
     // proxy forwarding so we try to parse it like normal. See
     // https://vercel.com/docs/edge-network/headers/request-headers#custom-x-forwarded-for-ip
-    const xVercelForwardedFor = request.headers.get("x-vercel-forwarded-for");
+    const xVercelForwardedFor = getHeader(
+      request.headers,
+      "x-vercel-forwarded-for",
+    );
     const xVercelForwardedForItems = parseXForwardedFor(xVercelForwardedFor);
     // As per MDN X-Forwarded-For Headers documentation at
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
@@ -687,7 +708,7 @@ function findIP(request: RequestLike, options: Options = {}): string {
     // By default, it seems this will be 1 address, but they discuss trusted
     // proxy forwarding so we try to parse it like normal. See
     // https://vercel.com/docs/edge-network/headers/request-headers#custom-x-forwarded-for-ip
-    const xForwardedFor = request.headers.get("x-forwarded-for");
+    const xForwardedFor = getHeader(request.headers, "x-forwarded-for");
     const xForwardedForItems = parseXForwardedFor(xForwardedFor);
     // As per MDN X-Forwarded-For Headers documentation at
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
@@ -707,13 +728,13 @@ function findIP(request: RequestLike, options: Options = {}): string {
   }
 
   // Standard headers used by Amazon EC2, Heroku, and others.
-  const xClientIP = request.headers.get("x-client-ip");
+  const xClientIP = getHeader(request.headers, "x-client-ip");
   if (isGlobalIP(xClientIP)) {
     return xClientIP;
   }
 
   // Load-balancers (AWS ELB) or proxies.
-  const xForwardedFor = request.headers.get("x-forwarded-for");
+  const xForwardedFor = getHeader(request.headers, "x-forwarded-for");
   const xForwardedForItems = parseXForwardedFor(xForwardedFor);
   // As per MDN X-Forwarded-For Headers documentation at
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
@@ -728,56 +749,56 @@ function findIP(request: RequestLike, options: Options = {}): string {
 
   // DigitalOcean.
   // DO-Connecting-IP: https://www.digitalocean.com/community/questions/app-platform-client-ip
-  const doConnectingIP = request.headers.get("do-connecting-ip");
+  const doConnectingIP = getHeader(request.headers, "do-connecting-ip");
   if (isGlobalIP(doConnectingIP)) {
     return doConnectingIP;
   }
 
   // Fastly and Firebase hosting header (When forwared to cloud function)
   // Fastly-Client-IP
-  const fastlyClientIP = request.headers.get("fastly-client-ip");
+  const fastlyClientIP = getHeader(request.headers, "fastly-client-ip");
   if (isGlobalIP(fastlyClientIP)) {
     return fastlyClientIP;
   }
 
   // Akamai
   // True-Client-IP
-  const trueClientIP = request.headers.get("true-client-ip");
+  const trueClientIP = getHeader(request.headers, "true-client-ip");
   if (isGlobalIP(trueClientIP)) {
     return trueClientIP;
   }
 
   // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies
   // X-Real-IP
-  const xRealIP = request.headers.get("x-real-ip");
+  const xRealIP = getHeader(request.headers, "x-real-ip");
   if (isGlobalIP(xRealIP)) {
     return xRealIP;
   }
 
   // Rackspace LB and Riverbed's Stingray?
-  const xClusterClientIP = request.headers.get("x-cluster-client-ip");
+  const xClusterClientIP = getHeader(request.headers, "x-cluster-client-ip");
   if (isGlobalIP(xClusterClientIP)) {
     return xClusterClientIP;
   }
 
-  const xForwarded = request.headers.get("x-forwarded");
+  const xForwarded = getHeader(request.headers, "x-forwarded");
   if (isGlobalIP(xForwarded)) {
     return xForwarded;
   }
 
-  const forwardedFor = request.headers.get("forwarded-for");
+  const forwardedFor = getHeader(request.headers, "forwarded-for");
   if (isGlobalIP(forwardedFor)) {
     return forwardedFor;
   }
 
-  const forwarded = request.headers.get("forwarded");
+  const forwarded = getHeader(request.headers, "forwarded");
   if (isGlobalIP(forwarded)) {
     return forwarded;
   }
 
   // Google Cloud App Engine
   // X-Appengine-User-IP: https://cloud.google.com/appengine/docs/standard/reference/request-headers?tab=node.js
-  const xAppEngineUserIP = request.headers.get("x-appengine-user-ip");
+  const xAppEngineUserIP = getHeader(request.headers, "x-appengine-user-ip");
   if (isGlobalIP(xAppEngineUserIP)) {
     return xAppEngineUserIP;
   }

@@ -17,13 +17,44 @@ function suite(make: MakeTest) {
     ).toEqual("");
   });
 
-  test("returns empty string if headers is not a Headers object", () => {
+  test("returns empty string if headers is null", () => {
     expect(
       ip({
         // @ts-expect-error
-        headers: {},
+        headers: null,
       }),
     ).toEqual("");
+  });
+
+  test("returns empty string if headers is not object", () => {
+    expect(
+      ip({
+        // @ts-expect-error
+        headers: "",
+      }),
+    ).toEqual("");
+  });
+
+  // Support for Node.js IncomingRequest
+  test("supports plain object headers with single value", () => {
+    const request = {
+      headers: {
+        // Node.js lowercases the header keys
+        "x-real-ip": "1.1.1.1",
+      },
+    };
+    expect(ip(request)).toEqual("1.1.1.1");
+  });
+
+  // Support for Node.js IncomingRequest
+  test("supports plain object headers with array value", () => {
+    const request = {
+      headers: {
+        // Node.js lowercases the header keys
+        "x-forwarded-for": ["1.1.1.1", "2.2.2.2", "3.3.3.3"],
+      },
+    };
+    expect(ip(request)).toEqual("3.3.3.3");
   });
 
   test("returns empty string if unspecified", () => {
