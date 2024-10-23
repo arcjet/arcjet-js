@@ -1,6 +1,6 @@
 {
   "name": "arcjet",
-  "version": "1.0.0-alpha.27",
+  "version": "1.0.0-alpha.28",
   "description": "Arcjet TypeScript and JavaScript SDK core",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -40,16 +40,16 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.0.0-alpha.27",
-    "@arcjet/duration": "1.0.0-alpha.27",
-    "@arcjet/headers": "1.0.0-alpha.27",
-    "@arcjet/protocol": "1.0.0-alpha.27",
-    "@arcjet/runtime": "1.0.0-alpha.27"
+    "@arcjet/analyze": "1.0.0-alpha.28",
+    "@arcjet/duration": "1.0.0-alpha.28",
+    "@arcjet/headers": "1.0.0-alpha.28",
+    "@arcjet/protocol": "1.0.0-alpha.28",
+    "@arcjet/runtime": "1.0.0-alpha.28"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.27",
-    "@arcjet/rollup-config": "1.0.0-alpha.27",
-    "@arcjet/tsconfig": "1.0.0-alpha.27",
+    "@arcjet/eslint-config": "1.0.0-alpha.28",
+    "@arcjet/rollup-config": "1.0.0-alpha.28",
+    "@arcjet/tsconfig": "1.0.0-alpha.28",
     "@edge-runtime/jest-environment": "3.0.3",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.24.0",

@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/protocol-v1.0.0-alpha.28) (2024-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* Ensure performance metrics are scoped to same call ([#2019](https://github.com/arcjet/arcjet-js/issues/2019))
+* **protocol:** Remove received_at and decision fields from Report ([#1988](https://github.com/arcjet/arcjet-js/issues/1988))
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815))
+
+### 🚀 New Features
+
+* Add Remix adapter ([#1866](https://github.com/arcjet/arcjet-js/issues/1866)) ([32d6d41](https://github.com/arcjet/arcjet-js/commit/32d6d41661ec2e5fe08d4300b60086dc007841bc)), closes [#1313](https://github.com/arcjet/arcjet-js/issues/1313)
+* Use `waitUntil` for Report call if available ([#1838](https://github.com/arcjet/arcjet-js/issues/1838)) ([2851021](https://github.com/arcjet/arcjet-js/commit/28510216334e2b66fc19a7ee51e741fb59a20607)), closes [#884](https://github.com/arcjet/arcjet-js/issues/884)
+
+
+### 🪲 Bug Fixes
+
+* Ensure performance metrics are scoped to same call ([#2019](https://github.com/arcjet/arcjet-js/issues/2019)) ([e9f869c](https://github.com/arcjet/arcjet-js/commit/e9f869ca0c287c9dfb23fa3ebe91007822b3390e)), closes [#1865](https://github.com/arcjet/arcjet-js/issues/1865)
+
+
+### 🧹 Miscellaneous Chores
+
+* **protocol:** Remove received_at and decision fields from Report ([#1988](https://github.com/arcjet/arcjet-js/issues/1988)) ([3da543e](https://github.com/arcjet/arcjet-js/commit/3da543e78fa95dc2d001fd54a210115458eb5a60))
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815)) ([853119d](https://github.com/arcjet/arcjet-js/commit/853119d24c37330690c937149a0cf1d0c4d31862)), closes [#1810](https://github.com/arcjet/arcjet-js/issues/1810)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/protocol-v1.0.0-alpha.27) (2024-10-01)
 
 
