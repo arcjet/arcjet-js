@@ -463,6 +463,9 @@ jobs:
       - name: Build
         working-directory: examples/nextjs-clerk-shield
         run: npm run build
+        env:
+          # This is the smallest dummy token that passes the Clerk validation
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_JA==
 
   nextjs-decorate:
     name: Next.js + Decorate
