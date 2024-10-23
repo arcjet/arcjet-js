@@ -395,7 +395,7 @@ updates:
       - dependency-name: eslint
         versions: [">=9"]
 
- - package-ecosystem: npm
+  - package-ecosystem: npm
     directory: /examples/nextjs-bot-categories
     schedule:
       # Our dependencies should be checked daily
@@ -422,7 +422,7 @@ updates:
       - dependency-name: eslint
         versions: [">=9"]
 
-- package-ecosystem: npm
+  - package-ecosystem: npm
     directory: /examples/nextjs-clerk-rate-limit
     schedule:
       # Our dependencies should be checked daily
