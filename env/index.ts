@@ -1,6 +1,7 @@
 export type Env = {
   [key: string]: unknown;
   FLY_APP_NAME?: string;
+  VERCEL?: string;
   NODE_ENV?: string;
   ARCJET_KEY?: string;
   ARCJET_ENV?: string;
@@ -11,6 +12,10 @@ export type Env = {
 export function platform(env: Env) {
   if (typeof env["FLY_APP_NAME"] === "string" && env["FLY_APP_NAME"] !== "") {
     return "fly-io" as const;
+  }
+
+  if (typeof env["VERCEL"] === "string" && env["VERCEL"] === "1") {
+    return "vercel" as const;
   }
 }
 

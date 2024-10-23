@@ -151,6 +151,9 @@ describe("find public IPv6", () => {
   headerSuite("X-Forwarded-For");
   headerSuite("CF-Connecting-IPv6", { platform: "cloudflare" });
   headerSuite("CF-Connecting-IP", { platform: "cloudflare" });
+  headerSuite("X-Real-IP", { platform: "vercel" });
+  headerSuite("X-Vercel-Forwarded-For", { platform: "vercel" });
+  headerSuite("X-Forwarded-For", { platform: "vercel" });
   headerSuite("DO-Connecting-IP");
   headerSuite("Fastly-Client-IP");
   headerSuite("Fly-Client-IP", { platform: "fly-io" });

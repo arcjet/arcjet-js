@@ -553,7 +553,7 @@ export interface RequestLike {
   requestContext?: PartialRequestContext;
 }
 
-export type Platform = "cloudflare" | "fly-io";
+export type Platform = "cloudflare" | "fly-io" | "vercel";
 
 export interface Options {
   platform?: Platform;
@@ -641,6 +641,55 @@ function findIP(
     const flyClientIP = headers.get("fly-client-ip");
     if (isGlobalIP(flyClientIP)) {
       return flyClientIP;
+    }
+
+    // If we are using a platform check and don't have a Global IP, we exit
+    // early with an empty IP since the more generic headers shouldn't be
+    // trusted over the platform-specific headers.
+    return "";
+  }
+
+  if (platform === "vercel") {
+    // https://vercel.com/docs/edge-network/headers/request-headers#x-real-ip
+    // Also used by `@vercel/functions`, see:
+    // https://github.com/vercel/vercel/blob/d7536d52c87712b1b3f83e4b0fd535a1fb7e384c/packages/functions/src/headers.ts#L12
+    const xRealIP = headers.get("x-real-ip");
+    if (isGlobalIP(xRealIP)) {
+      return xRealIP;
+    }
+
+    // https://vercel.com/docs/edge-network/headers/request-headers#x-vercel-forwarded-for
+    // By default, it seems this will be 1 address, but they discuss trusted
+    // proxy forwarding so we try to parse it like normal. See
+    // https://vercel.com/docs/edge-network/headers/request-headers#custom-x-forwarded-for-ip
+    const xVercelForwardedFor = headers.get("x-vercel-forwarded-for");
+    const xVercelForwardedForItems = parseXForwardedFor(xVercelForwardedFor);
+    // As per MDN X-Forwarded-For Headers documentation at
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
+    // We may find more than one IP in the `x-forwarded-for` header. Since the
+    // first IP will be closest to the user (and the most likely to be spoofed),
+    // we want to iterate tail-to-head so we reverse the list.
+    for (const item of xVercelForwardedForItems.reverse()) {
+      if (isGlobalIP(item)) {
+        return item;
+      }
+    }
+
+    // https://vercel.com/docs/edge-network/headers/request-headers#x-forwarded-for
+    // By default, it seems this will be 1 address, but they discuss trusted
+    // proxy forwarding so we try to parse it like normal. See
+    // https://vercel.com/docs/edge-network/headers/request-headers#custom-x-forwarded-for-ip
+    const xForwardedFor = headers.get("x-forwarded-for");
+    const xForwardedForItems = parseXForwardedFor(xForwardedFor);
+    // As per MDN X-Forwarded-For Headers documentation at
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
+    // We may find more than one IP in the `x-forwarded-for` header. Since the
+    // first IP will be closest to the user (and the most likely to be spoofed),
+    // we want to iterate tail-to-head so we reverse the list.
+    for (const item of xForwardedForItems.reverse()) {
+      if (isGlobalIP(item)) {
+        return item;
+      }
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
