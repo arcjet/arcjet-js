@@ -11,9 +11,9 @@
   "dependencies": {
     "@arcjet/ip": "file:../../ip",
     "@arcjet/next": "file:../../arcjet-next",
-    "@clerk/nextjs": "^6.0.0",
+    "@clerk/nextjs": "^6.0.2",
     "next": "15.0.1",
-    "permitio": "^2.6.1",
+    "permitio": "^2.7.2",
     "react": "^18",
     "react-dom": "^18"
   },
