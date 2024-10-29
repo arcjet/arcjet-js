@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
-    "ai": "^3.4.18",
+    "ai": "^3.4.23",
     "next": "15.0.1",
-    "openai": "^4.68.2",
+    "openai": "^4.68.4",
     "openai-chat-tokens": "^0.2.8",
     "react": "^18",
     "react-dom": "^18"
