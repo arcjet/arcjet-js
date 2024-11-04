@@ -25,10 +25,6 @@ export interface LoggerOptions {
 
 const PREFIX = "✦Aj";
 
-function getTimeLabel(label: string) {
-  return `${PREFIX} LATENCY ${label}`;
-}
-
 function getMessage(obj: unknown, msg: unknown, args: unknown[]) {
   // The first argument was the message so juggle the args
   if (typeof obj === "string") {
