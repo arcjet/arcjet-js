@@ -1309,15 +1309,19 @@ export default function arcjet<
       );
       log.debug("fingerprint (%s): %s", rt, fingerprint);
     } catch (error) {
+      const errMsg = errorMessage(error);
       log.error(
-        { error },
+        {
+          // Workaround for inability to JSON.stringify Error objects
+          error: errMsg,
+        },
         "Failed to build fingerprint. Please verify your Characteristics.",
       );
 
       const decision = new ArcjetErrorDecision({
         ttl: 0,
         reason: new ArcjetErrorReason(
-          `Failed to build fingerprint - ${errorMessage(error)}`,
+          `Failed to build fingerprint - ${errMsg}`,
         ),
         // No results because we couldn't create a fingerprint
         results: [],
