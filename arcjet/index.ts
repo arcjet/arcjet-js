@@ -326,18 +326,17 @@ function createTypeValidator(
   };
 }
 
-function createValueValidator(...values: string[]): Validator {
+function createValueValidator(
+  // This uses types to ensure we have at least 2 values
+  ...values: [string, string, ...string[]]
+): Validator {
   return (key, value) => {
     // We cast the values to unknown because the optionValue isn't known but
     // we only want to use `values` on string enumerations
     if (!(values as unknown[]).includes(value)) {
-      if (values.length === 1) {
-        throw new Error(`invalid value for \`${key}\` - expected ${values[0]}`);
-      } else {
-        throw new Error(
-          `invalid value for \`${key}\` - expected one of ${values.map((value) => `'${value}'`).join(", ")}`,
-        );
-      }
+      throw new Error(
+        `invalid value for \`${key}\` - expected one of ${values.map((value) => `'${value}'`).join(", ")}`,
+      );
     }
   };
 }
@@ -375,11 +374,7 @@ function createValidator({
         try {
           validate(key, value);
         } catch (err) {
-          if (err instanceof Error) {
-            throw new Error(`\`${rule}\` options error: ${err.message}`);
-          } else {
-            throw new Error(`\`${rule}\` options error: unknown failure`);
-          }
+          throw new Error(`\`${rule}\` options error: ${errorMessage(err)}`);
         }
       }
     }
@@ -1309,19 +1304,15 @@ export default function arcjet<
       );
       log.debug("fingerprint (%s): %s", rt, fingerprint);
     } catch (error) {
-      const errMsg = errorMessage(error);
       log.error(
-        {
-          // Workaround for inability to JSON.stringify Error objects
-          error: errMsg,
-        },
+        { error },
         "Failed to build fingerprint. Please verify your Characteristics.",
       );
 
       const decision = new ArcjetErrorDecision({
         ttl: 0,
         reason: new ArcjetErrorReason(
-          `Failed to build fingerprint - ${errMsg}`,
+          `Failed to build fingerprint - ${errorMessage(error)}`,
         ),
         // No results because we couldn't create a fingerprint
         results: [],
