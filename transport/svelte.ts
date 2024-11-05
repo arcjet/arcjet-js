@@ -57,10 +57,8 @@ export function createTransport(baseUrl: string) {
       let client;
       try {
         client = await node;
-        console.log("node client");
       } catch {
         client = await web;
-        console.log("web client");
       }
 
       return client.unary(...args);
