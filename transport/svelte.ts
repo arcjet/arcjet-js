@@ -75,7 +75,7 @@ export function createTransport(baseUrl: string) {
         client = await web;
       }
 
-      return client.unary(...args);
+      return client.stream(...args);
     },
   };
 }
