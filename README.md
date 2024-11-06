@@ -33,6 +33,8 @@ for JS.
   quick start guide][next-quick-start].
 - **Node.js?** Use the [`@arcjet/node`][npm-node] package with our [Node.js
   quick start guide][node-quick-start].
+- **Remix?** Use the [`@arcjet/remix`][npm-remix] package with our [Remix
+  quick start guide][remix-quick-start].
 - **SvelteKit?** Use the [`@arcjet/sveltekit`][npm-sveltekit] package with our
   [SvelteKit quick start guide][sveltekit-quick-start].
 
@@ -161,6 +163,7 @@ find a specific one through the categories and descriptions below.
 - [`@arcjet/nest`](./arcjet-nest/README.md): SDK for NestJS.
 - [`@arcjet/next`](./arcjet-next/README.md): SDK for the Next.js framework.
 - [`@arcjet/node`](./arcjet-node/README.md): SDK for Node.js.
+- [`@arcjet/remix`](./arcjet-remix/README.md): SDK for Remix.
 - [`@arcjet/sveltekit`](./arcjet-sveltekit/README.md): SDK for SvelteKit.
 
 ### Analysis
@@ -170,29 +173,35 @@ find a specific one through the categories and descriptions below.
   class.
 - [`@arcjet/ip`](./ip/README.md): Utilities for finding the originating IP of a
   request.
+- [`@arcjet/redact`](./redact/README.md): Redact & unredact sensitive
+  information from strings.
 
 ### Utilities
 
 - [`arcjet`](./arcjet/README.md): JS SDK core.
-- [`@arcjet/protocol`](./protocol/README.md): JS interface into the Arcjet
-  protocol.
-- [`@arcjet/transport`](./transport/README.md): Transport mechanisms for the
-  Arcjet protocol.
-- [`@arcjet/logger`](./logger/README.md): Lightweight logger which mirrors the
-  Pino structured logger interface.
+- [`@arcjet/body`](./body/README.md): utilities for extracting the body from a
+  Node.js IncomingMessage.
 - [`@arcjet/decorate`](./decorate/README.md): Utilities for decorating responses
   with information.
 - [`@arcjet/duration`](./duration/README.md): Utilities for parsing duration
   strings into seconds integers.
+- [`@arcjet/env`](./env/README.md): Environment detection for Arcjet variables.
+- [`@arcjet/logger`](./logger/README.md): Lightweight logger which mirrors the
+  Pino structured logger interface.
+- [`@arcjet/protocol`](./protocol/README.md): JS interface into the Arcjet
+  protocol.
 - [`@arcjet/runtime`](./runtime/README.md): Runtime detection.
 - [`@arcjet/sprintf`](./sprintf/README.md): Platform-independent replacement for
   `util.format`.
-- [`@arcjet/env`](./env/README.md): Environment detection for Arcjet variables.
+- [`@arcjet/transport`](./transport/README.md): Transport mechanisms for the
+  Arcjet protocol.
 
 ### Internal development
 
 - [`@arcjet/eslint-config`](./eslint-config/README.md): Custom eslint config for
   our projects.
+- [`@arcjet/redact-wasm`](./redact-wasm/README.md): Sensitive information
+  redaction detection engine.
 - [`@arcjet/rollup-config`](./rollup-config/README.md): Custom rollup config for
   our projects.
 - [`@arcjet/tsconfig`](./tsconfig/README.md): Custom tsconfig for our projects.
@@ -214,22 +223,24 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [npm-deno]: https://www.npmjs.com/package/@arcjet/deno
 [npm-nest]: https://www.npmjs.com/package/@arcjet/nest
 [npm-next]: https://www.npmjs.com/package/@arcjet/next
-[bun-quick-start]: https://docs.arcjet.com/get-started/bun
-[deno-quick-start]: https://docs.arcjet.com/get-started/deno
-[nest-quick-start]: https://docs.arcjet.com/get-started/nest
-[next-quick-start]: https://docs.arcjet.com/get-started/nextjs
 [npm-node]: https://www.npmjs.com/package/@arcjet/node
-[node-quick-start]: https://docs.arcjet.com/get-started/nodejs
-[sveltekit-quick-start]: https://docs.arcjet.com/get-started/sveltekit
+[npm-remix]: https://www.npmjs.com/package/@arcjet/remix
 [npm-sveltekit]: https://www.npmjs.com/package/@arcjet/sveltekit
-[discord-invite]: https://discord.gg/TPra6jqZDC
+[bun-quick-start]: https://docs.arcjet.com/get-started?f=bun
+[deno-quick-start]: https://docs.arcjet.com/get-started?f=deno
+[nest-quick-start]: https://docs.arcjet.com/get-started?f=nest-js
+[next-quick-start]: https://docs.arcjet.com/get-started?f=next-js
+[node-quick-start]: https://docs.arcjet.com/get-started?f=node-js
+[remix-quick-start]: https://docs.arcjet.com/get-started?f=remix
+[sveltekit-quick-start]: https://docs.arcjet.com/get-started?f=sveltekit
+[discord-invite]: https://arcjet.com/discord
 [support]: https://docs.arcjet.com/support
 [example-url]: https://example.arcjet.com
-[example-source]: https://github.com/arcjet/arcjet-js-example
+[example-source]: https://github.com/arcjet/example-nextjs
 [rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
-[next-rate-limit-quick-start]: https://docs.arcjet.com/rate-limiting/quick-start/nextjs
+[next-rate-limit-quick-start]: https://docs.arcjet.com/rate-limiting/quick-start?f=next-js
 [bot-protection-concepts-docs]: https://docs.arcjet.com/bot-protection/concepts
-[node-bot-quick-start]: https://docs.arcjet.com/bot-protection/quick-start/nodejs
+[node-bot-quick-start]: https://docs.arcjet.com/bot-protection/quick-start?f=node-js
 [arcjet-docs]: https://docs.arcjet.com/
 [arcjet-support]: https://docs.arcjet.com/support
 [arcjet-security]: https://docs.arcjet.com/security
