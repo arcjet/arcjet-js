@@ -1433,6 +1433,18 @@ export default function arcjet<
           localRule.validate(context, details);
           results[idx] = await localRule.protect(context, details);
 
+          // If a rule didn't return a rule result, we need to stub it to avoid
+          // crashing. This should only happen if a user writes a custom local
+          // rule incorrectly.
+          if (typeof results[idx] === "undefined") {
+            results[idx] = new ArcjetRuleResult({
+              ttl: 0,
+              state: "RUN",
+              conclusion: "ERROR",
+              reason: new ArcjetErrorReason("rule result missing"),
+            });
+          }
+
           log.debug(
             {
               id: results[idx].ruleId,
