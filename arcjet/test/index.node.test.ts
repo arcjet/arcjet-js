@@ -2304,6 +2304,16 @@ describe("SDK", () => {
       ),
     };
   }
+  function testRuleLocalIncorrect(): ArcjetLocalRule {
+    return {
+      mode: ArcjetMode.LIVE,
+      type: "TEST_RULE_LOCAL_INCORRECT",
+      priority: 1,
+      validate: jest.fn(),
+      // @ts-expect-error
+      protect: jest.fn(async () => undefined),
+    };
+  }
 
   function testRuleRemote(): ArcjetRule {
     return {
@@ -2726,6 +2736,48 @@ describe("SDK", () => {
     expect(allowed.protect).toHaveBeenCalledTimes(1);
     expect(denied.validate).toHaveBeenCalledTimes(1);
     expect(denied.protect).toHaveBeenCalledTimes(1);
+  });
+
+  test("does not crash if a local rule does not return a result", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      "extra-test": "extra-test-value",
+    };
+    const rule = testRuleLocalIncorrect();
+
+    const aj = arcjet({
+      key: "test-key",
+      rules: [[rule]],
+      client,
+      log,
+    });
+
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const decision = await aj.protect(context, request);
+    // ALLOW because the remote rule was called and it returned ALLOW
+    expect(decision.conclusion).toEqual("ALLOW");
+
+    expect(rule.validate).toHaveBeenCalledTimes(1);
+    expect(rule.protect).toHaveBeenCalledTimes(1);
   });
 
   test("returns an ERROR decision if fingerprint cannot be generated", async () => {
