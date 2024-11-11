@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@arcjet/remix": "file:../../arcjet-remix",
-    "@remix-run/express": "^2.13.1",
-    "@remix-run/node": "^2.13.1",
-    "@remix-run/react": "^2.13.1",
-    "compression": "^1.7.4",
+    "@remix-run/express": "^2.14.0",
+    "@remix-run/node": "^2.14.0",
+    "@remix-run/react": "^2.14.0",
+    "compression": "^1.7.5",
     "cross-env": "^7.0.3",
     "express": "^4.21.1",
     "isbot": "^5.1.17",
@@ -24,7 +24,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^2.13.1",
+    "@remix-run/dev": "^2.14.0",
     "@types/compression": "^1.7.5",
     "@types/express": "^5.0.0",
     "@types/morgan": "^1.9.9",
@@ -36,10 +36,10 @@
     "eslint": "^8.38.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-jsx-a11y": "^6.10.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
-    "postcss": "^8.4.38",
+    "postcss": "^8.4.48",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.1.6",
     "vite": "^5.4.10"
