@@ -61,12 +61,16 @@ export interface BotConfigDeniedBotConfig {
 export interface BotResult {
   allowed: Array<BotEntity>,
   denied: Array<BotEntity>,
+  verified: boolean,
+  spoofed: boolean,
 }
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
 import { ArcjetJsReqSensitiveInformationIdentifier } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
+import { ArcjetJsReqVerifyBot } from './interfaces/arcjet-js-req-verify-bot.js';
 export interface ImportObject {
   'arcjet:js-req/email-validator-overrides': typeof ArcjetJsReqEmailValidatorOverrides,
   'arcjet:js-req/sensitive-information-identifier': typeof ArcjetJsReqSensitiveInformationIdentifier,
+  'arcjet:js-req/verify-bot': typeof ArcjetJsReqVerifyBot,
 }
 export interface Root {
   detectBot(request: string, options: BotConfig): BotResult,

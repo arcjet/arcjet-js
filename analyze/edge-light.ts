@@ -95,6 +95,11 @@ async function init(
     "arcjet:js-req/sensitive-information-identifier": {
       detect: detectSensitiveInfo,
     },
+    "arcjet:js-req/verify-bot": {
+      verify() {
+        return "unverifiable";
+      },
+    },
   };
 
   try {
@@ -174,6 +179,8 @@ export async function detectBot(
     return {
       allowed: [],
       denied: [],
+      spoofed: false,
+      verified: false,
     };
   }
 }
