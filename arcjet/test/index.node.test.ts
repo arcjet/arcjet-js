@@ -62,8 +62,8 @@ import arcjet, {
 // SOFTWARE.
 type IsEqual<A, B> =
   (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2
-  ? true
-  : false;
+    ? true
+    : false;
 
 // Type testing utilities
 type Assert<T extends true> = T;
@@ -116,7 +116,7 @@ function assertIsLocalRule(rule: ArcjetRule): asserts rule is ArcjetLocalRule {
   expect("protect" in rule && typeof rule.protect === "function").toEqual(true);
 }
 
-class ArcjetTestReason extends ArcjetReason { }
+class ArcjetTestReason extends ArcjetReason {}
 
 const log = {
   time: jest.fn(),
