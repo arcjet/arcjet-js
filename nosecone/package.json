@@ -1,0 +1,58 @@
+{
+  "name": "nosecone",
+  "version": "1.0.0-alpha.28",
+  "description": "Secure your application with proper headers",
+  "license": "Apache-2.0",
+  "homepage": "https://arcjet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "nosecone"
+  },
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "*.ts",
+    "!*.config.js"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "rollup --config rollup.config.js",
+    "lint": "eslint .",
+    "pretest": "npm run build",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@arcjet/headers": "1.0.0-alpha.28",
+    "@arcjet/runtime": "1.0.0-alpha.28"
+  },
+  "devDependencies": {
+    "@arcjet/eslint-config": "1.0.0-alpha.28",
+    "@arcjet/rollup-config": "1.0.0-alpha.28",
+    "@arcjet/tsconfig": "1.0.0-alpha.28",
+    "@rollup/wasm-node": "4.24.4",
+    "@types/node": "18.18.0",
+    "typescript": "5.6.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  }
+}
