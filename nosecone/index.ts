@@ -11,7 +11,9 @@ function isRequest(request: unknown): request is RequestLike {
     request !== null &&
     "headers" in request &&
     typeof request.headers === "object" &&
-    request.headers !== null
+    request.headers !== null &&
+    "set" in request.headers &&
+    typeof request.headers.set === "function"
   );
 }
 
