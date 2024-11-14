@@ -625,6 +625,7 @@ function xXssProtectionHeader() {
 }
 
 export default function nosecone(options: NoseconeOptions = {}) {
+  /* eslint-disable prefer-const */
   let {
     env = "development",
     contentSecurityPolicy = defaults.contentSecurityPolicy,
@@ -641,6 +642,7 @@ export default function nosecone(options: NoseconeOptions = {}) {
     xPermittedCrossDomainPolicies = defaults.xPermittedCrossDomainPolicies,
     xXssProtection = defaults.xXssProtection,
   } = options;
+  /* eslint-enable prefer-const */
 
   if (contentSecurityPolicy === true) {
     contentSecurityPolicy = defaults.contentSecurityPolicy;
