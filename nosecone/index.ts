@@ -792,96 +792,96 @@ export default function nosecone(options: NoseconeOptions = {}) {
       throw new Error("must be run as Next.js middleware");
     }
 
-    // If we have an RequestEvent from SvelteKit, we need to do some weird stuff
-    if (isEventLike(request)) {
-      const headers: Record<string, string> = {};
+    // TODO: More research needs to go into supporting SvelteKit well
+    // if (isEventLike(request)) {
+    //   const headers: Record<string, string> = {};
 
-      if (contentSecurityPolicy) {
-        let builder;
-        // TOOD: Does SvelteKit need the extra unsafe values for dev?
-        if (env === "development" || env === "test") {
-          builder = developmentContentSecurityPolicyHeader;
-        } else {
-          builder = productionContentSecurityPolicyHeader;
-        }
-        const [headerName, headerValue] = builder(contentSecurityPolicy);
-        headers[headerName] = headerValue;
-      }
+    //   if (contentSecurityPolicy) {
+    //     let builder;
+    //     // TOOD: Does SvelteKit need the extra unsafe values for dev?
+    //     if (env === "development" || env === "test") {
+    //       builder = developmentContentSecurityPolicyHeader;
+    //     } else {
+    //       builder = productionContentSecurityPolicyHeader;
+    //     }
+    //     const [headerName, headerValue] = builder(contentSecurityPolicy);
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (crossOriginEmbedderPolicy) {
-        const [headerName, headerValue] = crossOriginEmbedderPolicyHeader(
-          crossOriginEmbedderPolicy,
-        );
-        headers[headerName] = headerValue;
-      }
+    //   if (crossOriginEmbedderPolicy) {
+    //     const [headerName, headerValue] = crossOriginEmbedderPolicyHeader(
+    //       crossOriginEmbedderPolicy,
+    //     );
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (crossOriginOpenerPolicy) {
-        const [headerName, headerValue] = crossOriginOpenerPolicyHeader(
-          crossOriginOpenerPolicy,
-        );
-        headers[headerName] = headerValue;
-      }
+    //   if (crossOriginOpenerPolicy) {
+    //     const [headerName, headerValue] = crossOriginOpenerPolicyHeader(
+    //       crossOriginOpenerPolicy,
+    //     );
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (crossOriginResourcePolicy) {
-        const [headerName, headerValue] = crossOriginResourcePolicyHeader(
-          crossOriginResourcePolicy,
-        );
-        headers[headerName] = headerValue;
-      }
+    //   if (crossOriginResourcePolicy) {
+    //     const [headerName, headerValue] = crossOriginResourcePolicyHeader(
+    //       crossOriginResourcePolicy,
+    //     );
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (originAgentCluster) {
-        const [headerName, headerValue] = originAgentClusterHeader();
-        headers[headerName] = headerValue;
-      }
+    //   if (originAgentCluster) {
+    //     const [headerName, headerValue] = originAgentClusterHeader();
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (referrerPolicy) {
-        const [headerName, headerValue] = referrerPolicyHeader(referrerPolicy);
-        headers[headerName] = headerValue;
-      }
+    //   if (referrerPolicy) {
+    //     const [headerName, headerValue] = referrerPolicyHeader(referrerPolicy);
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (strictTransportSecurity) {
-        const [headerName, headerValue] = strictTransportSecurityHeader(
-          strictTransportSecurity,
-        );
-        headers[headerName] = headerValue;
-      }
+    //   if (strictTransportSecurity) {
+    //     const [headerName, headerValue] = strictTransportSecurityHeader(
+    //       strictTransportSecurity,
+    //     );
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (xContentTypeOptions) {
-        const [headerName, headerValue] = xContentTypeOptionsHeader();
-        headers[headerName] = headerValue;
-      }
+    //   if (xContentTypeOptions) {
+    //     const [headerName, headerValue] = xContentTypeOptionsHeader();
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (xDnsPrefetchControl) {
-        const [headerName, headerValue] =
-          xDnsPrefetchControlHeader(xDnsPrefetchControl);
-        headers[headerName] = headerValue;
-      }
+    //   if (xDnsPrefetchControl) {
+    //     const [headerName, headerValue] =
+    //       xDnsPrefetchControlHeader(xDnsPrefetchControl);
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (xDownloadOptions) {
-        const [headerName, headerValue] = xDownloadOptionsHeader();
-        headers[headerName] = headerValue;
-      }
+    //   if (xDownloadOptions) {
+    //     const [headerName, headerValue] = xDownloadOptionsHeader();
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (xFrameOptions) {
-        const [headerName, headerValue] = xFrameOptionsHeader(xFrameOptions);
-        headers[headerName] = headerValue;
-      }
+    //   if (xFrameOptions) {
+    //     const [headerName, headerValue] = xFrameOptionsHeader(xFrameOptions);
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (xPermittedCrossDomainPolicies) {
-        const [headerName, headerValue] = xPermittedCrossDomainPoliciesHeader(
-          xPermittedCrossDomainPolicies,
-        );
-        headers[headerName] = headerValue;
-      }
+    //   if (xPermittedCrossDomainPolicies) {
+    //     const [headerName, headerValue] = xPermittedCrossDomainPoliciesHeader(
+    //       xPermittedCrossDomainPolicies,
+    //     );
+    //     headers[headerName] = headerValue;
+    //   }
 
-      if (xXssProtection) {
-        const [headerName, headerValue] = xXssProtectionHeader();
-        headers[headerName] = headerValue;
-      }
+    //   if (xXssProtection) {
+    //     const [headerName, headerValue] = xXssProtectionHeader();
+    //     headers[headerName] = headerValue;
+    //   }
 
-      request.setHeaders(headers);
-      return;
-    }
+    //   request.setHeaders(headers);
+    //   return;
+    // }
 
     if (isResponseLike(response) && typeof next === "function") {
       if (contentSecurityPolicy) {
