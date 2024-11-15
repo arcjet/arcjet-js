@@ -13,7 +13,8 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@arcjet/sveltekit": "file:../../arcjet-sveltekit"
+    "@arcjet/sveltekit": "file:../../arcjet-sveltekit",
+    "@nosecone/sveltekit": "file:../../nosecone-sveltekit"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.3.1",
