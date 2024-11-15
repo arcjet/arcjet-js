@@ -1,57 +1,3 @@
-import ArcjetHeaders from "@arcjet/headers";
-import { runtime } from "@arcjet/runtime";
-
-interface RequestLike {
-  headers: Headers | Record<string, string | string[] | undefined>;
-}
-
-function isRequest(request: unknown): request is RequestLike {
-  return (
-    typeof request === "object" &&
-    request !== null &&
-    "headers" in request &&
-    typeof request.headers === "object" &&
-    request.headers !== null &&
-    "set" in request.headers &&
-    typeof request.headers.set === "function"
-  );
-}
-
-interface EventLike {
-  request: RequestLike;
-
-  setHeaders(headers: Record<string, string>): void;
-}
-
-function isEventLike(e: unknown): e is EventLike {
-  // Can't use `event` as the name otherwise Next.js throws during build
-  return (
-    typeof e === "object" &&
-    e !== null &&
-    "request" in e &&
-    isRequest(e.request) &&
-    "setHeaders" in e &&
-    typeof e.setHeaders === "function"
-  );
-}
-
-interface ResponseLike {
-  setHeader(name: string, value: string): void;
-}
-
-function isResponseLike(response: unknown): response is ResponseLike {
-  return (
-    typeof response === "object" &&
-    response !== null &&
-    "setHeader" in response &&
-    typeof response.setHeader === "function"
-  );
-}
-
-type NextFn = (error?: unknown) => void;
-
-const rt = runtime();
-
 // Based on https://github.com/josh-hemphill/csp-typed-directives/blob/latest/src/csp.types.ts
 //
 // MIT License
@@ -100,39 +46,6 @@ type SchemeSource =
   | "filesystem:";
 type Source = HostSource | SchemeSource | CryptoSource | BaseSource;
 type StaticOrDynamic<S> = boolean | null | ReadonlyArray<S | (() => S)>;
-
-// Mapping of configuration options to the kebab-case names for the header
-const CONTENT_SECURITY_POLICY_DIRECTIVES = new Map<keyof CspDirectives, string>(
-  [
-    ["baseUri", "base-uri"],
-    ["childSrc", "child-src"],
-    ["defaultSrc", "default-src"],
-    ["frameSrc", "frame-src"],
-    ["workerSrc", "worker-src"],
-    ["connectSrc", "connect-src"],
-    ["fontSrc", "font-src"],
-    ["imgSrc", "img-src"],
-    ["manifestSrc", "manifest-src"],
-    ["mediaSrc", "media-src"],
-    ["objectSrc", "object-src"],
-    ["prefetchSrc", "prefetch-src"],
-    ["scriptSrc", "script-src"],
-    ["scriptSrcElem", "script-src-elem"],
-    ["scriptSrcAttr", "script-src-attr"],
-    ["styleSrc", "style-src"],
-    ["styleSrcElem", "style-src-elem"],
-    ["styleSrcAttr", "style-src-attr"],
-    ["sandbox", "sandbox"],
-    ["formAction", "form-action"],
-    ["frameAncestors", "frame-ancestors"],
-    ["navigateTo", "navigate-to"],
-    ["reportUri", "report-uri"],
-    ["reportTo", "report-to"],
-    ["requireTrustedTypesFor", "require-trusted-types-for"],
-    ["trustedTypes", "trusted-types"],
-    ["upgradeInsecureRequests", "upgrade-insecure-requests"],
-  ],
-);
 
 export interface CspDirectives {
   baseUri?: StaticOrDynamic<Source | ActionSource>;
@@ -228,8 +141,6 @@ export interface XPermittedCrossDomainPoliciesConfig {
 }
 
 export interface NoseconeOptions {
-  // This is how Next.js defines the `NODE_ENV` variable
-  env?: "production" | "development" | "test";
   contentSecurityPolicy?: ContentSecurityPolicyConfig | boolean;
   crossOriginEmbedderPolicy?: CrossOriginEmbedderPolicyConfig | boolean;
   crossOriginOpenerPolicy?: CrossOriginOpenerPolicyConfig | boolean;
@@ -242,28 +153,65 @@ export interface NoseconeOptions {
   xDownloadOptions?: boolean;
   xFrameOptions?: XFrameOptionsConfig | boolean;
   xPermittedCrossDomainPolicies?: XPermittedCrossDomainPoliciesConfig | boolean;
-  // xPoweredBy?: boolean;
   xXssProtection?: boolean;
 }
 
+// Map of configuration options to the kebab-case names for
+// `Content-Security-Policy` directives
+const CONTENT_SECURITY_POLICY_DIRECTIVES = new Map<keyof CspDirectives, string>(
+  [
+    ["baseUri", "base-uri"],
+    ["childSrc", "child-src"],
+    ["defaultSrc", "default-src"],
+    ["frameSrc", "frame-src"],
+    ["workerSrc", "worker-src"],
+    ["connectSrc", "connect-src"],
+    ["fontSrc", "font-src"],
+    ["imgSrc", "img-src"],
+    ["manifestSrc", "manifest-src"],
+    ["mediaSrc", "media-src"],
+    ["objectSrc", "object-src"],
+    ["prefetchSrc", "prefetch-src"],
+    ["scriptSrc", "script-src"],
+    ["scriptSrcElem", "script-src-elem"],
+    ["scriptSrcAttr", "script-src-attr"],
+    ["styleSrc", "style-src"],
+    ["styleSrcElem", "style-src-elem"],
+    ["styleSrcAttr", "style-src-attr"],
+    ["sandbox", "sandbox"],
+    ["formAction", "form-action"],
+    ["frameAncestors", "frame-ancestors"],
+    ["navigateTo", "navigate-to"],
+    ["reportUri", "report-uri"],
+    ["reportTo", "report-to"],
+    ["requireTrustedTypesFor", "require-trusted-types-for"],
+    ["trustedTypes", "trusted-types"],
+    ["upgradeInsecureRequests", "upgrade-insecure-requests"],
+  ],
+);
+
+// Set of valid `Cross-Origin-Embedder-Policy` values
 const CROSS_ORIGIN_EMBEDDER_POLICIES = new Set([
   "require-corp",
   "credentialless",
   "unsafe-none",
 ]);
 
+// Set of valid `Cross-Origin-Opener-Policy` values
 const CROSS_ORIGIN_OPENER_POLICIES = new Set([
   "same-origin",
   "same-origin-allow-popups",
   "unsafe-none",
 ]);
 
+// Set of valid `Cross-Origin-Resource-Policy` values
 const CROSS_ORIGIN_RESOURCE_POLICIES = new Set([
   "same-origin",
   "same-site",
   "cross-origin",
 ]);
 
+// Set of valid `Resource-Policy` tokens
 const REFERRER_POLICIES = new Set([
   "no-referrer",
   "no-referrer-when-downgrade",
@@ -276,6 +224,7 @@ const REFERRER_POLICIES = new Set([
   "",
 ]);
 
+// Set of valid `X-Permitted-Cross-Domain-Policies` values
 const PERMITTED_CROSS_DOMAIN_POLICIES = new Set([
   "none",
   "master-only",
@@ -283,6 +232,7 @@ const PERMITTED_CROSS_DOMAIN_POLICIES = new Set([
   "all",
 ]);
 
+// Set of valid values for the `sandbox` directive of `Content-Security-Policy`
 const SANDBOX_DIRECTIVES = new Set([
   "allow-downloads-without-user-activation",
   "allow-forms",
@@ -299,6 +249,7 @@ const SANDBOX_DIRECTIVES = new Set([
   "allow-top-navigation-by-user-activation",
 ]);
 
+// Set of values that need to be quoted in `Content-Security-Policy`
 const QUOTED = new Set([
   "self",
   "unsafe-eval",
@@ -311,17 +262,7 @@ const QUOTED = new Set([
   "script",
 ]);
 
-export function nonce() {
-  if (typeof crypto === "undefined") {
-    throw new Error(
-      "`globalThis.crypto` is not defined — please implement `nonce` for your platform",
-    );
-  }
-
-  return `'nonce-${btoa(crypto.randomUUID())}'` as const;
-}
-
-export const defaultDirectives: CspDirectives = {
+export const defaultDirectives = {
   baseUri: ["'none'"],
   childSrc: ["'none'"],
   connectSrc: ["'self'"],
@@ -334,14 +275,13 @@ export const defaultDirectives: CspDirectives = {
   manifestSrc: ["'self'"],
   mediaSrc: ["'self'"],
   objectSrc: ["'none'"],
-  scriptSrc: [nonce, "'strict-dynamic'"],
+  scriptSrc: ["'self'"],
   styleSrc: ["'self'"],
   workerSrc: ["'self'"],
   upgradeInsecureRequests: true,
 } as const;
 
 export const defaults = {
-  env: "production",
   contentSecurityPolicy: {
     directives: defaultDirectives,
   },
@@ -385,15 +325,13 @@ function resolveValue(v: (() => string) | string) {
   }
 }
 
-class ValidationError extends Error {
+export class NoseconeValidationError extends Error {
   constructor(message: string) {
     super(`validation error: ${message}`);
   }
 }
 
-function productionContentSecurityPolicyHeader(
-  options: ContentSecurityPolicyConfig,
-) {
+function contentSecurityPolicyHeader(options: ContentSecurityPolicyConfig) {
   const cspEntries = [];
   for (const [optionKey, optionValues] of Object.entries(options.directives)) {
     const key = CONTENT_SECURITY_POLICY_DIRECTIVES.get(
@@ -401,7 +339,7 @@ function productionContentSecurityPolicyHeader(
       optionKey,
     );
     if (!key) {
-      throw new ValidationError(
+      throw new NoseconeValidationError(
         `${optionKey} is not a Content-Security-Policy directive`,
       );
     }
@@ -419,13 +357,13 @@ function productionContentSecurityPolicyHeader(
     // TODO: Add more validation
     for (const value of resolvedValues) {
       if (QUOTED.has(value)) {
-        throw new ValidationError(
+        throw new NoseconeValidationError(
           `"${value}" must be quoted using single-quotes, e.g. "'${value}'"`,
         );
       }
       if (key === "sandbox") {
         if (!SANDBOX_DIRECTIVES.has(value)) {
-          throw new ValidationError(
+          throw new NoseconeValidationError(
             "invalid sandbox value in Content-Security-Policy",
           );
         }
@@ -441,82 +379,15 @@ function productionContentSecurityPolicyHeader(
   return ["content-security-policy", cspEntries.join(" ")] as const;
 }
 
-function developmentContentSecurityPolicyHeader(
-  options: ContentSecurityPolicyConfig,
-) {
-  const cspEntries = [];
-  for (const [optionKey, optionValues] of Object.entries(options.directives)) {
-    const key = CONTENT_SECURITY_POLICY_DIRECTIVES.get(
-      // @ts-expect-error because we're validating this option key
-      optionKey,
-    );
-    if (!key) {
-      throw new ValidationError(
-        `${optionKey} is not a Content-Security-Policy directive`,
-      );
-    }
-
-    // Skip anything falsey
-    if (!optionValues) {
-      continue;
-    }
-
-    // TODO: What do we want to do if array is empty? I think they work differently for some directives
-    const resolvedValues = Array.isArray(optionValues)
-      ? new Set(optionValues.map(resolveValue))
-      : new Set<string>();
-
-    if (key === "script-src") {
-      // Next.js requires `'unsafe-eval'` in development mode
-      resolvedValues.add("'unsafe-eval'");
-    }
-    if (key === "style-src") {
-      // Next.js requires `'unsafe-inline'` in development mode
-      resolvedValues.add("'unsafe-inline'");
-    }
-
-    const values = Array.from(resolvedValues);
-
-    const entry = `${key} ${values.join(" ")}`.trim();
-    const entryWithSep = `${entry};`;
-    cspEntries.push(entryWithSep);
-  }
-  return ["content-security-policy", cspEntries.join(" ")] as const;
-}
-
-class NextMiddlewareHeaders {
-  headers: Set<string>;
-
-  constructor() {
-    this.headers = new Set();
-  }
-
-  add(header: string) {
-    this.headers.add(header);
-  }
-
-  // This applies the needed headers to forward from Next.js middleware=
-  // https://github.com/vercel/next.js/blob/5c45d58cd058a9683e435fd3a1a9b8fede8376c3/packages/next/src/server/web/spec-extension/response.ts#L22-L27
-  apply(headers: Headers) {
-    const addedHeaders = Array.from(this.headers);
-    for (const headerName of addedHeaders) {
-      const headerValue = headers.get(headerName);
-      if (typeof headerValue !== "string") {
-        throw new Error(`impossible: missing value for ${headerName}`);
-      }
-      headers.set(`x-middleware-request-${headerName}`, headerValue);
-    }
-    headers.set("x-middleware-override-headers", addedHeaders.join(","));
-  }
-}
-
 function crossOriginEmbedderPolicyHeader(
   options: CrossOriginEmbedderPolicyConfig,
 ) {
   if (CROSS_ORIGIN_EMBEDDER_POLICIES.has(options.policy)) {
     return ["cross-origin-embedder-policy", options.policy];
   } else {
-    throw new ValidationError(`invalid value for Cross-Origin-Embedder-Policy`);
+    throw new NoseconeValidationError(
+      `invalid value for Cross-Origin-Embedder-Policy`,
+    );
   }
 }
 
@@ -524,7 +395,9 @@ function crossOriginOpenerPolicyHeader(options: CrossOriginOpenerPolicyConfig) {
   if (CROSS_ORIGIN_OPENER_POLICIES.has(options.policy)) {
     return ["cross-origin-opener-policy", options.policy];
   } else {
-    throw new ValidationError(`invalid value for Cross-Origin-Opener-Policy`);
+    throw new NoseconeValidationError(
+      `invalid value for Cross-Origin-Opener-Policy`,
+    );
   }
 }
 
@@ -534,7 +407,9 @@ function crossOriginResourcePolicyHeader(
   if (CROSS_ORIGIN_RESOURCE_POLICIES.has(options.policy)) {
     return ["cross-origin-resource-policy", options.policy];
   } else {
-    throw new ValidationError(`invalid value for Cross-Origin-Resource-Policy`);
+    throw new NoseconeValidationError(
+      `invalid value for Cross-Origin-Resource-Policy`,
+    );
   }
 }
 
@@ -549,14 +424,14 @@ function referrerPolicyHeader(options: ReferrerPolicyConfig) {
       if (REFERRER_POLICIES.has(token)) {
         tokens.add(token);
       } else {
-        throw new ValidationError(`invalid value for Referrer-Policy`);
+        throw new NoseconeValidationError(`invalid value for Referrer-Policy`);
       }
     }
 
     return ["referrer-policy", Array.from(tokens).join(",")];
   }
 
-  throw new ValidationError(
+  throw new NoseconeValidationError(
     "must provide at least one policy for Referrer-Policy",
   );
 }
@@ -567,7 +442,7 @@ function strictTransportSecurityHeader(options: StrictTransportSecurityConfig) {
   if (options.maxAge >= 0 && Number.isFinite(options.maxAge)) {
     maxAge = Math.floor(options.maxAge);
   } else {
-    throw new ValidationError(
+    throw new NoseconeValidationError(
       "must provide a positive integer for the maxAge of Strict-Transport-Security",
     );
   }
@@ -605,7 +480,7 @@ function xFrameOptionsHeader(options: XFrameOptionsConfig) {
     }
   }
 
-  throw new ValidationError("invalid value for X-Frame-Options");
+  throw new NoseconeValidationError("invalid value for X-Frame-Options");
 }
 
 function xPermittedCrossDomainPoliciesHeader(
@@ -614,7 +489,7 @@ function xPermittedCrossDomainPoliciesHeader(
   if (PERMITTED_CROSS_DOMAIN_POLICIES.has(options.permittedPolicies)) {
     return ["x-permitted-cross-domain-policies", options.permittedPolicies];
   } else {
-    throw new ValidationError(
+    throw new NoseconeValidationError(
       `invalid value for X-Permitted-Cross-Domain-Policies`,
     );
   }
@@ -624,10 +499,9 @@ function xXssProtectionHeader() {
   return ["x-xss-protection", "0"];
 }
 
-export default function nosecone(options: NoseconeOptions = {}) {
+export default function nosecone(options: NoseconeOptions = defaults) {
   /* eslint-disable prefer-const */
   let {
-    env = "development",
     contentSecurityPolicy = defaults.contentSecurityPolicy,
     crossOriginEmbedderPolicy = defaults.crossOriginEmbedderPolicy,
     crossOriginOpenerPolicy = defaults.crossOriginOpenerPolicy,
@@ -672,304 +546,85 @@ export default function nosecone(options: NoseconeOptions = {}) {
     xPermittedCrossDomainPolicies = defaults.xPermittedCrossDomainPolicies;
   }
 
-  return async (
-    request: RequestLike | EventLike,
-    response?: ResponseLike,
-    next?: NextFn,
-  ): Promise<any> => {
-    if (isRequest(request)) {
-      const forwardHeaders = new NextMiddlewareHeaders();
-      const headers = new ArcjetHeaders(request.headers);
+  const headers: Record<string, string> = {};
 
-      if (contentSecurityPolicy) {
-        let builder;
-        if (env === "development" || env === "test") {
-          builder = developmentContentSecurityPolicyHeader;
-        } else {
-          builder = productionContentSecurityPolicyHeader;
-        }
-        const [headerName, headerValue] = builder(contentSecurityPolicy);
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (contentSecurityPolicy) {
+    const [headerName, headerValue] = contentSecurityPolicyHeader(
+      contentSecurityPolicy,
+    );
+    headers[headerName] = headerValue;
+  }
 
-      if (crossOriginEmbedderPolicy) {
-        const [headerName, headerValue] = crossOriginEmbedderPolicyHeader(
-          crossOriginEmbedderPolicy,
-        );
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (crossOriginEmbedderPolicy) {
+    const [headerName, headerValue] = crossOriginEmbedderPolicyHeader(
+      crossOriginEmbedderPolicy,
+    );
+    headers[headerName] = headerValue;
+  }
 
-      if (crossOriginOpenerPolicy) {
-        const [headerName, headerValue] = crossOriginOpenerPolicyHeader(
-          crossOriginOpenerPolicy,
-        );
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (crossOriginOpenerPolicy) {
+    const [headerName, headerValue] = crossOriginOpenerPolicyHeader(
+      crossOriginOpenerPolicy,
+    );
+    headers[headerName] = headerValue;
+  }
 
-      if (crossOriginResourcePolicy) {
-        const [headerName, headerValue] = crossOriginResourcePolicyHeader(
-          crossOriginResourcePolicy,
-        );
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (crossOriginResourcePolicy) {
+    const [headerName, headerValue] = crossOriginResourcePolicyHeader(
+      crossOriginResourcePolicy,
+    );
+    headers[headerName] = headerValue;
+  }
 
-      if (originAgentCluster) {
-        const [headerName, headerValue] = originAgentClusterHeader();
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (originAgentCluster) {
+    const [headerName, headerValue] = originAgentClusterHeader();
+    headers[headerName] = headerValue;
+  }
 
-      if (referrerPolicy) {
-        const [headerName, headerValue] = referrerPolicyHeader(referrerPolicy);
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (referrerPolicy) {
+    const [headerName, headerValue] = referrerPolicyHeader(referrerPolicy);
+    headers[headerName] = headerValue;
+  }
 
-      if (strictTransportSecurity) {
-        const [headerName, headerValue] = strictTransportSecurityHeader(
-          strictTransportSecurity,
-        );
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (strictTransportSecurity) {
+    const [headerName, headerValue] = strictTransportSecurityHeader(
+      strictTransportSecurity,
+    );
+    headers[headerName] = headerValue;
+  }
 
-      if (xContentTypeOptions) {
-        const [headerName, headerValue] = xContentTypeOptionsHeader();
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (xContentTypeOptions) {
+    const [headerName, headerValue] = xContentTypeOptionsHeader();
+    headers[headerName] = headerValue;
+  }
 
-      if (xDnsPrefetchControl) {
-        const [headerName, headerValue] =
-          xDnsPrefetchControlHeader(xDnsPrefetchControl);
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (xDnsPrefetchControl) {
+    const [headerName, headerValue] =
+      xDnsPrefetchControlHeader(xDnsPrefetchControl);
+    headers[headerName] = headerValue;
+  }
 
-      if (xDownloadOptions) {
-        const [headerName, headerValue] = xDownloadOptionsHeader();
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (xDownloadOptions) {
+    const [headerName, headerValue] = xDownloadOptionsHeader();
+    headers[headerName] = headerValue;
+  }
 
-      if (xFrameOptions) {
-        const [headerName, headerValue] = xFrameOptionsHeader(xFrameOptions);
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (xFrameOptions) {
+    const [headerName, headerValue] = xFrameOptionsHeader(xFrameOptions);
+    headers[headerName] = headerValue;
+  }
 
-      if (xPermittedCrossDomainPolicies) {
-        const [headerName, headerValue] = xPermittedCrossDomainPoliciesHeader(
-          xPermittedCrossDomainPolicies,
-        );
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (xPermittedCrossDomainPolicies) {
+    const [headerName, headerValue] = xPermittedCrossDomainPoliciesHeader(
+      xPermittedCrossDomainPolicies,
+    );
+    headers[headerName] = headerValue;
+  }
 
-      if (xXssProtection) {
-        const [headerName, headerValue] = xXssProtectionHeader();
-        headers.set(headerName, headerValue);
-        forwardHeaders.add(headerName);
-      }
+  if (xXssProtection) {
+    const [headerName, headerValue] = xXssProtectionHeader();
+    headers[headerName] = headerValue;
+  }
 
-      // If we have a `Request` and we're in the `edge-light` runtime, we assume
-      // that this is Next.js middleware
-      if (rt === "edge-light") {
-        // Setting specific headers is the way that Next implements middleware
-        // See: https://github.com/vercel/next.js/blob/5c45d58cd058a9683e435fd3a1a9b8fede8376c3/packages/next/src/server/web/spec-extension/response.ts#L148
-        headers.set("x-middleware-next", "1");
-        forwardHeaders.apply(headers);
-
-        return new Response(null, {
-          headers,
-        });
-      }
-
-      // TODO: Are there any frameworks that use `Request` in middleware other
-      // than Next.js?
-      throw new Error("must be run as Next.js middleware");
-    }
-
-    // TODO: More research needs to go into supporting SvelteKit well
-    // if (isEventLike(request)) {
-    //   const headers: Record<string, string> = {};
-
-    //   if (contentSecurityPolicy) {
-    //     let builder;
-    //     // TOOD: Does SvelteKit need the extra unsafe values for dev?
-    //     if (env === "development" || env === "test") {
-    //       builder = developmentContentSecurityPolicyHeader;
-    //     } else {
-    //       builder = productionContentSecurityPolicyHeader;
-    //     }
-    //     const [headerName, headerValue] = builder(contentSecurityPolicy);
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (crossOriginEmbedderPolicy) {
-    //     const [headerName, headerValue] = crossOriginEmbedderPolicyHeader(
-    //       crossOriginEmbedderPolicy,
-    //     );
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (crossOriginOpenerPolicy) {
-    //     const [headerName, headerValue] = crossOriginOpenerPolicyHeader(
-    //       crossOriginOpenerPolicy,
-    //     );
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (crossOriginResourcePolicy) {
-    //     const [headerName, headerValue] = crossOriginResourcePolicyHeader(
-    //       crossOriginResourcePolicy,
-    //     );
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (originAgentCluster) {
-    //     const [headerName, headerValue] = originAgentClusterHeader();
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (referrerPolicy) {
-    //     const [headerName, headerValue] = referrerPolicyHeader(referrerPolicy);
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (strictTransportSecurity) {
-    //     const [headerName, headerValue] = strictTransportSecurityHeader(
-    //       strictTransportSecurity,
-    //     );
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (xContentTypeOptions) {
-    //     const [headerName, headerValue] = xContentTypeOptionsHeader();
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (xDnsPrefetchControl) {
-    //     const [headerName, headerValue] =
-    //       xDnsPrefetchControlHeader(xDnsPrefetchControl);
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (xDownloadOptions) {
-    //     const [headerName, headerValue] = xDownloadOptionsHeader();
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (xFrameOptions) {
-    //     const [headerName, headerValue] = xFrameOptionsHeader(xFrameOptions);
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (xPermittedCrossDomainPolicies) {
-    //     const [headerName, headerValue] = xPermittedCrossDomainPoliciesHeader(
-    //       xPermittedCrossDomainPolicies,
-    //     );
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   if (xXssProtection) {
-    //     const [headerName, headerValue] = xXssProtectionHeader();
-    //     headers[headerName] = headerValue;
-    //   }
-
-    //   request.setHeaders(headers);
-    //   return;
-    // }
-
-    if (isResponseLike(response) && typeof next === "function") {
-      if (contentSecurityPolicy) {
-        let builder;
-        // TOOD: Does Express or Nest need the extra unsafe values for dev?
-        if (env === "development" || env === "test") {
-          builder = developmentContentSecurityPolicyHeader;
-        } else {
-          builder = productionContentSecurityPolicyHeader;
-        }
-        const [headerName, headerValue] = builder(contentSecurityPolicy);
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (crossOriginEmbedderPolicy) {
-        const [headerName, headerValue] = crossOriginEmbedderPolicyHeader(
-          crossOriginEmbedderPolicy,
-        );
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (crossOriginOpenerPolicy) {
-        const [headerName, headerValue] = crossOriginOpenerPolicyHeader(
-          crossOriginOpenerPolicy,
-        );
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (crossOriginResourcePolicy) {
-        const [headerName, headerValue] = crossOriginResourcePolicyHeader(
-          crossOriginResourcePolicy,
-        );
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (originAgentCluster) {
-        const [headerName, headerValue] = originAgentClusterHeader();
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (referrerPolicy) {
-        const [headerName, headerValue] = referrerPolicyHeader(referrerPolicy);
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (strictTransportSecurity) {
-        const [headerName, headerValue] = strictTransportSecurityHeader(
-          strictTransportSecurity,
-        );
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (xContentTypeOptions) {
-        const [headerName, headerValue] = xContentTypeOptionsHeader();
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (xDnsPrefetchControl) {
-        const [headerName, headerValue] =
-          xDnsPrefetchControlHeader(xDnsPrefetchControl);
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (xDownloadOptions) {
-        const [headerName, headerValue] = xDownloadOptionsHeader();
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (xFrameOptions) {
-        const [headerName, headerValue] = xFrameOptionsHeader(xFrameOptions);
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (xPermittedCrossDomainPolicies) {
-        const [headerName, headerValue] = xPermittedCrossDomainPoliciesHeader(
-          xPermittedCrossDomainPolicies,
-        );
-        response.setHeader(headerName, headerValue);
-      }
-
-      if (xXssProtection) {
-        const [headerName, headerValue] = xXssProtectionHeader();
-        response.setHeader(headerName, headerValue);
-      }
-
-      next();
-    }
-  };
+  return headers;
 }

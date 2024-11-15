@@ -16,7 +16,7 @@
   </a>
 </p>
 
-Secure your application with proper headers.
+Protect your `Response` with secure headers.
 
 ## Installation
 
@@ -26,12 +26,12 @@ npm install -S nosecone
 
 ## Example
 
-In your Next.js application's `middleware.ts` file:
-
 ```ts
 import nosecone from "nosecone";
 
-export default nosecone({ env: process.env.NODE_ENV });
+const secureResponse = new Response(null, {
+  headers: nosecone()
+});
 ```
 
 ## License

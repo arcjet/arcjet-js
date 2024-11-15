@@ -1,13 +1,13 @@
 {
-  "name": "nosecone",
+  "name": "@nosecone/next",
   "version": "1.0.0-alpha.28",
-  "description": "Protect your Response with secure headers",
+  "description": "Protect your Next.js application with secure headers",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "nosecone"
+    "directory": "nosecone-next"
   },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
@@ -39,7 +39,9 @@
     "pretest": "npm run build",
     "test": "node --test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "nosecone": "1.0.0-alpha.28"
+  },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.28",
     "@arcjet/rollup-config": "1.0.0-alpha.28",

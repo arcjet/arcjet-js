@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
+    "@nosecone/next": "file:../../nosecone-next",
     "next": "15.0.1",
-    "nosecone": "file:../../nosecone",
     "react": "^18",
     "react-dom": "^18"
   },
