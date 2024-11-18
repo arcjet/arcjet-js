@@ -42,12 +42,16 @@
   "dependencies": {
     "nosecone": "1.0.0-alpha.28"
   },
+  "peerDependencies": {
+    "next": ">=14"
+  },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.28",
     "@arcjet/rollup-config": "1.0.0-alpha.28",
     "@arcjet/tsconfig": "1.0.0-alpha.28",
     "@rollup/wasm-node": "4.24.4",
     "@types/node": "18.18.0",
+    "next": "15.0.1",
     "typescript": "5.6.3"
   },
   "publishConfig": {

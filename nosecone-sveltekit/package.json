@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "nosecone-next"
+    "directory": "nosecone-sveltekit"
   },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
@@ -43,7 +43,7 @@
     "nosecone": "1.0.0-alpha.28"
   },
   "peerDependencies": {
-    "@sveltejs/kit": "^2"
+    "@sveltejs/kit": ">=2"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.28",

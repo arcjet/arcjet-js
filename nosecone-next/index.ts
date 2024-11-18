@@ -1,6 +1,9 @@
 import nosecone, { defaults } from "nosecone";
 import type { CspDirectives, NoseconeOptions } from "nosecone";
 
+// We export `nosecone` as the default so it can be used with `new Response()`
+export default nosecone;
+
 function nonce() {
   return `'nonce-${btoa(crypto.randomUUID())}'` as const;
 }
@@ -86,6 +89,12 @@ function nextMiddlewareHeaders(
   return forwardedHeaders;
 }
 
+/**
+ * Create Next.js middleware that sets secure headers on every request.
+ *
+ * @param options: Configuration to provide to Nosecone
+ * @returns Next.js middleware that sets secure headers
+ */
 export function createMiddleware(options: NoseconeOptions = defaults) {
   return async () => {
     const opts = applyNextDefaults(options);
