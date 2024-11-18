@@ -1,4 +1,5 @@
-// Based on https://github.com/josh-hemphill/csp-typed-directives/blob/latest/src/csp.types.ts
+// Types based on
+// https://github.com/josh-hemphill/csp-typed-directives/blob/6e2cbc6d3cc18bbdc9b13d42c4556e786e28b243/src/csp.types.ts
 //
 // MIT License
 //
@@ -23,29 +24,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-type ActionSource = "'strict-dynamic'" | "'report-sample'";
-type BaseSource =
+export type ActionSource = "'strict-dynamic'" | "'report-sample'";
+export type BaseSource =
   | "'self'"
   | "'unsafe-eval'"
   | "'unsafe-hashes'"
   | "'unsafe-inline'"
   | "'wasm-unsafe-eval'"
   | "'none'";
-type CryptoSource = `'${"nonce" | "sha256" | "sha384" | "sha512"}-${string}'`;
-type FrameSource = HostSource | SchemeSource | "'self'" | "'none'";
-type HostNameScheme = `${string}.${string}` | "localhost";
-type HostSource = `${HostProtocolSchemes}${HostNameScheme}${PortScheme}`;
-type HostProtocolSchemes = `${string}://` | "";
-type PortScheme = `:${number}` | "" | ":*";
-type SchemeSource =
+export type CryptoSource =
+  `'${"nonce" | "sha256" | "sha384" | "sha512"}-${string}'`;
+export type FrameSource = HostSource | SchemeSource | "'self'" | "'none'";
+export type HostNameScheme = `${string}.${string}` | "localhost";
+export type HostSource = `${HostProtocolSchemes}${HostNameScheme}${PortScheme}`;
+export type HostProtocolSchemes = `${string}://` | "";
+export type PortScheme = `:${number}` | "" | ":*";
+export type SchemeSource =
   | "http:"
   | "https:"
   | "data:"
   | "mediastream:"
   | "blob:"
   | "filesystem:";
-type Source = HostSource | SchemeSource | CryptoSource | BaseSource;
-type StaticOrDynamic<S> = boolean | null | ReadonlyArray<S | (() => S)>;
+export type Source = HostSource | SchemeSource | CryptoSource | BaseSource;
+export type StaticOrDynamic<S> = boolean | null | ReadonlyArray<S | (() => S)>;
 
 export interface CspDirectives {
   baseUri?: StaticOrDynamic<Source | ActionSource>;
@@ -91,7 +93,7 @@ export interface CspDirectives {
   upgradeInsecureRequests?: boolean;
 }
 
-type ReferrerPolicyToken =
+export type ReferrerPolicyToken =
   | "no-referrer"
   | "no-referrer-when-downgrade"
   | "same-origin"
@@ -103,41 +105,41 @@ type ReferrerPolicyToken =
   | "";
 
 export interface ContentSecurityPolicyConfig {
-  directives: Readonly<CspDirectives>;
+  directives?: Readonly<CspDirectives>;
 }
 
 export interface CrossOriginEmbedderPolicyConfig {
-  policy: "require-corp" | "credentialless" | "unsafe-none";
+  policy?: "require-corp" | "credentialless" | "unsafe-none";
 }
 
 export interface CrossOriginOpenerPolicyConfig {
-  policy: "same-origin" | "same-origin-allow-popups" | "unsafe-none";
+  policy?: "same-origin" | "same-origin-allow-popups" | "unsafe-none";
 }
 
 export interface CrossOriginResourcePolicyConfig {
-  policy: "same-origin" | "same-site" | "cross-origin";
+  policy?: "same-origin" | "same-site" | "cross-origin";
 }
 
 export interface ReferrerPolicyConfig {
-  policy: ReadonlyArray<ReferrerPolicyToken>;
+  policy?: ReadonlyArray<ReferrerPolicyToken>;
 }
 
 export interface StrictTransportSecurityConfig {
-  maxAge: number;
-  includeSubDomains: boolean;
-  preload: boolean;
+  maxAge?: number;
+  includeSubDomains?: boolean;
+  preload?: boolean;
 }
 
-export interface XDNsPrefetchControlConfig {
-  allow: boolean;
+export interface DnsPrefetchControlConfig {
+  allow?: boolean;
 }
 
-export interface XFrameOptionsConfig {
-  action: "deny" | "sameorigin";
+export interface FrameOptionsConfig {
+  action?: "deny" | "sameorigin";
 }
 
-export interface XPermittedCrossDomainPoliciesConfig {
-  permittedPolicies: "none" | "master-only" | "by-content-type" | "all";
+export interface PermittedCrossDomainPoliciesConfig {
+  permittedPolicies?: "none" | "master-only" | "by-content-type" | "all";
 }
 
 export interface NoseconeOptions {
@@ -149,70 +151,68 @@ export interface NoseconeOptions {
   referrerPolicy?: ReferrerPolicyConfig | boolean;
   strictTransportSecurity?: StrictTransportSecurityConfig | boolean;
   xContentTypeOptions?: boolean;
-  xDnsPrefetchControl?: XDNsPrefetchControlConfig | boolean;
+  xDnsPrefetchControl?: DnsPrefetchControlConfig | boolean;
   xDownloadOptions?: boolean;
-  xFrameOptions?: XFrameOptionsConfig | boolean;
-  xPermittedCrossDomainPolicies?: XPermittedCrossDomainPoliciesConfig | boolean;
+  xFrameOptions?: FrameOptionsConfig | boolean;
+  xPermittedCrossDomainPolicies?: PermittedCrossDomainPoliciesConfig | boolean;
   xXssProtection?: boolean;
 }
 
 // Map of configuration options to the kebab-case names for
 // `Content-Security-Policy` directives
-const CONTENT_SECURITY_POLICY_DIRECTIVES = new Map<keyof CspDirectives, string>(
-  [
-    ["baseUri", "base-uri"],
-    ["childSrc", "child-src"],
-    ["defaultSrc", "default-src"],
-    ["frameSrc", "frame-src"],
-    ["workerSrc", "worker-src"],
-    ["connectSrc", "connect-src"],
-    ["fontSrc", "font-src"],
-    ["imgSrc", "img-src"],
-    ["manifestSrc", "manifest-src"],
-    ["mediaSrc", "media-src"],
-    ["objectSrc", "object-src"],
-    ["prefetchSrc", "prefetch-src"],
-    ["scriptSrc", "script-src"],
-    ["scriptSrcElem", "script-src-elem"],
-    ["scriptSrcAttr", "script-src-attr"],
-    ["styleSrc", "style-src"],
-    ["styleSrcElem", "style-src-elem"],
-    ["styleSrcAttr", "style-src-attr"],
-    ["sandbox", "sandbox"],
-    ["formAction", "form-action"],
-    ["frameAncestors", "frame-ancestors"],
-    ["navigateTo", "navigate-to"],
-    ["reportUri", "report-uri"],
-    ["reportTo", "report-to"],
-    ["requireTrustedTypesFor", "require-trusted-types-for"],
-    ["trustedTypes", "trusted-types"],
-    ["upgradeInsecureRequests", "upgrade-insecure-requests"],
-  ],
-);
+export const CONTENT_SECURITY_POLICY_DIRECTIVES = new Map([
+  ["baseUri", "base-uri"],
+  ["childSrc", "child-src"],
+  ["defaultSrc", "default-src"],
+  ["frameSrc", "frame-src"],
+  ["workerSrc", "worker-src"],
+  ["connectSrc", "connect-src"],
+  ["fontSrc", "font-src"],
+  ["imgSrc", "img-src"],
+  ["manifestSrc", "manifest-src"],
+  ["mediaSrc", "media-src"],
+  ["objectSrc", "object-src"],
+  ["prefetchSrc", "prefetch-src"],
+  ["scriptSrc", "script-src"],
+  ["scriptSrcElem", "script-src-elem"],
+  ["scriptSrcAttr", "script-src-attr"],
+  ["styleSrc", "style-src"],
+  ["styleSrcElem", "style-src-elem"],
+  ["styleSrcAttr", "style-src-attr"],
+  ["sandbox", "sandbox"],
+  ["formAction", "form-action"],
+  ["frameAncestors", "frame-ancestors"],
+  ["navigateTo", "navigate-to"],
+  ["reportUri", "report-uri"],
+  ["reportTo", "report-to"],
+  ["requireTrustedTypesFor", "require-trusted-types-for"],
+  ["trustedTypes", "trusted-types"],
+  ["upgradeInsecureRequests", "upgrade-insecure-requests"],
+] as const);
 
 // Set of valid `Cross-Origin-Embedder-Policy` values
-const CROSS_ORIGIN_EMBEDDER_POLICIES = new Set([
+export const CROSS_ORIGIN_EMBEDDER_POLICIES = new Set([
   "require-corp",
   "credentialless",
   "unsafe-none",
-]);
+] as const);
 
 // Set of valid `Cross-Origin-Opener-Policy` values
-const CROSS_ORIGIN_OPENER_POLICIES = new Set([
+export const CROSS_ORIGIN_OPENER_POLICIES = new Set([
   "same-origin",
   "same-origin-allow-popups",
   "unsafe-none",
-]);
+] as const);
 
 // Set of valid `Cross-Origin-Resource-Policy` values
-const CROSS_ORIGIN_RESOURCE_POLICIES = new Set([
+export const CROSS_ORIGIN_RESOURCE_POLICIES = new Set([
   "same-origin",
   "same-site",
   "cross-origin",
-]);
+] as const);
 
 // Set of valid `Resource-Policy` tokens
-const REFERRER_POLICIES = new Set([
+export const REFERRER_POLICIES = new Set([
   "no-referrer",
   "no-referrer-when-downgrade",
   "same-origin",
@@ -222,18 +222,18 @@ const REFERRER_POLICIES = new Set([
   "strict-origin-when-cross-origin",
   "unsafe-url",
   "",
-]);
+] as const);
 
 // Set of valid `X-Permitted-Cross-Domain-Policies` values
-const PERMITTED_CROSS_DOMAIN_POLICIES = new Set([
+export const PERMITTED_CROSS_DOMAIN_POLICIES = new Set([
   "none",
   "master-only",
   "by-content-type",
   "all",
-]);
+] as const);
 
 // Set of valid values for the `sandbox` directive of `Content-Security-Policy`
-const SANDBOX_DIRECTIVES = new Set([
+export const SANDBOX_DIRECTIVES = new Set([
   "allow-downloads-without-user-activation",
   "allow-forms",
   "allow-modals",
@@ -247,22 +247,23 @@ const SANDBOX_DIRECTIVES = new Set([
   "allow-storage-access-by-user-activation",
   "allow-top-navigation",
   "allow-top-navigation-by-user-activation",
-]);
+] as const);
 
-// Set of values that need to be quoted in `Content-Security-Policy`
-const QUOTED = new Set([
-  "self",
-  "unsafe-eval",
-  "unsafe-hashes",
-  "unsafe-inline",
-  "none",
-  "strict-dynamic",
-  "report-sample",
-  "wasm-unsafe-eval",
-  "script",
-]);
+// Mapping of values that need to be quoted in `Content-Security-Policy`;
+// however, it does not include `nonce-*` or `sha*-*` because those are dynamic
+export const QUOTED = new Map([
+  ["self", "'self'"],
+  ["unsafe-eval", "'unsafe-eval'"],
+  ["unsafe-hashes", "'unsafe-hashes'"],
+  ["unsafe-inline", "'unsafe-inline'"],
+  ["none", "'none'"],
+  ["strict-dynamic", "'strict-dynamic'"],
+  ["report-sample", "'report-sample'"],
+  ["wasm-unsafe-eval", "'wasm-unsafe-eval'"],
+  ["script", "'script'"],
+] as const);
 
-export const defaultDirectives = {
+const directives = {
   baseUri: ["'none'"],
   childSrc: ["'none'"],
   connectSrc: ["'self'"],
@@ -283,7 +284,7 @@ export const defaultDirectives = {
 
 export const defaults = {
   contentSecurityPolicy: {
-    directives: defaultDirectives,
+    directives,
   },
   crossOriginEmbedderPolicy: {
     policy: "require-corp",
@@ -317,7 +318,7 @@ export const defaults = {
   xXssProtection: true,
 } as const;
 
-function resolveValue(v: (() => string) | string) {
+function resolveValue<S extends string>(v: (() => S) | S): S {
   if (typeof v === "function") {
     return v();
   } else {
@@ -331,9 +332,39 @@ export class NoseconeValidationError extends Error {
   }
 }
 
-function contentSecurityPolicyHeader(options: ContentSecurityPolicyConfig) {
+// Header defaults and construction inspired by
+// https://github.com/helmetjs/helmet/tree/9a8e6d5322aad6090394b0bb2e81448c5f5b3e74
+//
+// The MIT License
+//
+// Copyright (c) 2012-2024 Evan Hahn, Adam Baldwin
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// 'Software'), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+// CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+export function createContentSecurityPolicy(
+  {
+    directives = defaults.contentSecurityPolicy.directives,
+  }: ContentSecurityPolicyConfig = defaults.contentSecurityPolicy,
+) {
   const cspEntries = [];
-  for (const [optionKey, optionValues] of Object.entries(options.directives)) {
+  for (const [optionKey, optionValues] of Object.entries(directives)) {
     const key = CONTENT_SECURITY_POLICY_DIRECTIVES.get(
       // @ts-expect-error because we're validating this option key
       optionKey,
@@ -356,13 +387,23 @@ function contentSecurityPolicyHeader(options: ContentSecurityPolicyConfig) {
 
     // TODO: Add more validation
     for (const value of resolvedValues) {
-      if (QUOTED.has(value)) {
+      if (
+        QUOTED.has(
+          // @ts-expect-error because we are validation this value
+          value,
+        )
+      ) {
         throw new NoseconeValidationError(
           `"${value}" must be quoted using single-quotes, e.g. "'${value}'"`,
         );
       }
       if (key === "sandbox") {
-        if (!SANDBOX_DIRECTIVES.has(value)) {
+        if (
+          !SANDBOX_DIRECTIVES.has(
+            // @ts-expect-error because we are validation this value
+            value,
+          )
+        ) {
           throw new NoseconeValidationError(
             "invalid sandbox value in Content-Security-Policy",
           );
@@ -379,11 +420,13 @@ function contentSecurityPolicyHeader(options: ContentSecurityPolicyConfig) {
   return ["content-security-policy", cspEntries.join(" ")] as const;
 }
 
-function crossOriginEmbedderPolicyHeader(
-  options: CrossOriginEmbedderPolicyConfig,
+export function createCrossOriginEmbedderPolicy(
+  {
+    policy = defaults.crossOriginEmbedderPolicy.policy,
+  }: CrossOriginEmbedderPolicyConfig = defaults.crossOriginEmbedderPolicy,
 ) {
-  if (CROSS_ORIGIN_EMBEDDER_POLICIES.has(options.policy)) {
-    return ["cross-origin-embedder-policy", options.policy];
+  if (CROSS_ORIGIN_EMBEDDER_POLICIES.has(policy)) {
+    return ["cross-origin-embedder-policy", policy] as const;
   } else {
     throw new NoseconeValidationError(
       `invalid value for Cross-Origin-Embedder-Policy`,
@@ -391,9 +434,13 @@ function crossOriginEmbedderPolicyHeader(
   }
 }
 
-function crossOriginOpenerPolicyHeader(options: CrossOriginOpenerPolicyConfig) {
-  if (CROSS_ORIGIN_OPENER_POLICIES.has(options.policy)) {
-    return ["cross-origin-opener-policy", options.policy];
+export function createCrossOriginOpenerPolicy(
+  {
+    policy = defaults.crossOriginOpenerPolicy.policy,
+  }: CrossOriginOpenerPolicyConfig = defaults.crossOriginOpenerPolicy,
+) {
+  if (CROSS_ORIGIN_OPENER_POLICIES.has(policy)) {
+    return ["cross-origin-opener-policy", policy] as const;
   } else {
     throw new NoseconeValidationError(
       `invalid value for Cross-Origin-Opener-Policy`,
@@ -401,11 +448,13 @@ function crossOriginOpenerPolicyHeader(options: CrossOriginOpenerPolicyConfig) {
   }
 }
 
-function crossOriginResourcePolicyHeader(
-  options: CrossOriginResourcePolicyConfig,
+export function createCrossOriginResourcePolicy(
+  {
+    policy = defaults.crossOriginResourcePolicy.policy,
+  }: CrossOriginResourcePolicyConfig = defaults.crossOriginResourcePolicy,
 ) {
-  if (CROSS_ORIGIN_RESOURCE_POLICIES.has(options.policy)) {
-    return ["cross-origin-resource-policy", options.policy];
+  if (CROSS_ORIGIN_RESOURCE_POLICIES.has(policy)) {
+    return ["cross-origin-resource-policy", policy] as const;
   } else {
     throw new NoseconeValidationError(
       `invalid value for Cross-Origin-Resource-Policy`,
@@ -413,81 +462,106 @@ function crossOriginResourcePolicyHeader(
   }
 }
 
-function originAgentClusterHeader() {
-  return ["origin-agent-cluster", "?1"];
+export function createOriginAgentCluster() {
+  return ["origin-agent-cluster", "?1"] as const;
 }
 
-function referrerPolicyHeader(options: ReferrerPolicyConfig) {
-  if (Array.isArray(options.policy) && options.policy.length > 0) {
-    const tokens = new Set<ReferrerPolicyToken>();
-    for (const token of options.policy) {
-      if (REFERRER_POLICIES.has(token)) {
-        tokens.add(token);
-      } else {
-        throw new NoseconeValidationError(`invalid value for Referrer-Policy`);
+export function createReferrerPolicy(
+  {
+    policy = defaults.referrerPolicy.policy,
+  }: ReferrerPolicyConfig = defaults.referrerPolicy,
+) {
+  if (Array.isArray(policy)) {
+    if (policy.length > 0) {
+      const tokens = new Set<ReferrerPolicyToken>();
+      for (const token of policy) {
+        if (REFERRER_POLICIES.has(token)) {
+          tokens.add(token);
+        } else {
+          throw new NoseconeValidationError(
+            `invalid value for Referrer-Policy`,
+          );
+        }
       }
-    }
 
-    return ["referrer-policy", Array.from(tokens).join(",")];
+      return ["referrer-policy", Array.from(tokens).join(",")] as const;
+    } else {
+      throw new NoseconeValidationError(
+        "must provide at least one policy for Referrer-Policy",
+      );
+    }
   }
 
-  throw new NoseconeValidationError(
-    "must provide at least one policy for Referrer-Policy",
-  );
+  throw new NoseconeValidationError("must provide array for Referrer-Policy");
 }
 
-function strictTransportSecurityHeader(options: StrictTransportSecurityConfig) {
-  let maxAge;
-
-  if (options.maxAge >= 0 && Number.isFinite(options.maxAge)) {
-    maxAge = Math.floor(options.maxAge);
+export function createStrictTransportSecurity(
+  {
+    maxAge = defaults.strictTransportSecurity.maxAge,
+    includeSubDomains = defaults.strictTransportSecurity.includeSubDomains,
+    preload = defaults.strictTransportSecurity.preload,
+  }: StrictTransportSecurityConfig = defaults.strictTransportSecurity,
+) {
+  if (maxAge >= 0 && Number.isFinite(maxAge)) {
+    maxAge = Math.floor(maxAge);
   } else {
     throw new NoseconeValidationError(
-      "must provide a positive integer for the maxAge of Strict-Transport-Security",
+      "must provide a finite, positive integer for the maxAge of Strict-Transport-Security",
     );
   }
   const directives: string[] = [`max-age=${maxAge}`];
 
-  if (options.includeSubDomains) {
+  if (includeSubDomains) {
     directives.push("includeSubDomains");
   }
 
-  if (options.preload) {
+  if (preload) {
     directives.push("preload");
   }
 
-  return ["strict-transport-security", directives.join("; ")];
+  return ["strict-transport-security", directives.join("; ")] as const;
 }
 
-function xContentTypeOptionsHeader() {
-  return ["x-content-type-options", "nosniff"];
+export function createContentTypeOptions() {
+  return ["x-content-type-options", "nosniff"] as const;
 }
 
-function xDnsPrefetchControlHeader(options: XDNsPrefetchControlConfig) {
-  const headerValue = options.allow ? "on" : "off";
-  return ["x-dns-prefetch-control", headerValue];
+export function createDnsPrefetchControl(
+  {
+    allow = defaults.xDnsPrefetchControl.allow,
+  }: DnsPrefetchControlConfig = defaults.xDnsPrefetchControl,
+) {
+  const headerValue = allow ? "on" : "off";
+  return ["x-dns-prefetch-control", headerValue] as const;
 }
 
-function xDownloadOptionsHeader() {
-  return ["x-download-options", "noopen"];
+export function createDownloadOptions() {
+  return ["x-download-options", "noopen"] as const;
 }
 
-function xFrameOptionsHeader(options: XFrameOptionsConfig) {
-  if (typeof options.action === "string") {
-    const headerValue = options.action.toUpperCase();
+export function createFrameOptions(
+  {
+    action = defaults.xFrameOptions.action,
+  }: FrameOptionsConfig = defaults.xFrameOptions,
+) {
+  if (typeof action === "string") {
+    const headerValue = action.toUpperCase();
     if (headerValue === "SAMEORIGIN" || headerValue === "DENY") {
-      return ["x-frame-options", headerValue];
+      return ["x-frame-options", headerValue] as const;
     }
   }
 
   throw new NoseconeValidationError("invalid value for X-Frame-Options");
 }
 
-function xPermittedCrossDomainPoliciesHeader(
-  options: XPermittedCrossDomainPoliciesConfig,
+export function createPermittedCrossDomainPolicies(
+  {
+    permittedPolicies = defaults.xPermittedCrossDomainPolicies
+      .permittedPolicies,
+  }: PermittedCrossDomainPoliciesConfig = defaults.xPermittedCrossDomainPolicies,
 ) {
-  if (PERMITTED_CROSS_DOMAIN_POLICIES.has(options.permittedPolicies)) {
-    return ["x-permitted-cross-domain-policies", options.permittedPolicies];
+  if (PERMITTED_CROSS_DOMAIN_POLICIES.has(permittedPolicies)) {
+    return ["x-permitted-cross-domain-policies", permittedPolicies] as const;
   } else {
     throw new NoseconeValidationError(
       `invalid value for X-Permitted-Cross-Domain-Policies`,
@@ -495,29 +569,25 @@ function xPermittedCrossDomainPoliciesHeader(
   }
 }
 
-function xXssProtectionHeader() {
-  return ["x-xss-protection", "0"];
+export function createXssProtection() {
+  return ["x-xss-protection", "0"] as const;
 }
 
-export default function nosecone(options: NoseconeOptions = defaults) {
-  /* eslint-disable prefer-const */
-  let {
-    contentSecurityPolicy = defaults.contentSecurityPolicy,
-    crossOriginEmbedderPolicy = defaults.crossOriginEmbedderPolicy,
-    crossOriginOpenerPolicy = defaults.crossOriginOpenerPolicy,
-    crossOriginResourcePolicy = defaults.crossOriginResourcePolicy,
-    originAgentCluster = defaults.originAgentCluster,
-    referrerPolicy = defaults.referrerPolicy,
-    strictTransportSecurity = defaults.strictTransportSecurity,
-    xContentTypeOptions = defaults.xContentTypeOptions,
-    xDnsPrefetchControl = defaults.xDnsPrefetchControl,
-    xDownloadOptions = defaults.xDownloadOptions,
-    xFrameOptions = defaults.xFrameOptions,
-    xPermittedCrossDomainPolicies = defaults.xPermittedCrossDomainPolicies,
-    xXssProtection = defaults.xXssProtection,
-  } = options;
-  /* eslint-enable prefer-const */
-
+export default function nosecone({
+  contentSecurityPolicy = defaults.contentSecurityPolicy,
+  crossOriginEmbedderPolicy = defaults.crossOriginEmbedderPolicy,
+  crossOriginOpenerPolicy = defaults.crossOriginOpenerPolicy,
+  crossOriginResourcePolicy = defaults.crossOriginResourcePolicy,
+  originAgentCluster = defaults.originAgentCluster,
+  referrerPolicy = defaults.referrerPolicy,
+  strictTransportSecurity = defaults.strictTransportSecurity,
+  xContentTypeOptions = defaults.xContentTypeOptions,
+  xDnsPrefetchControl = defaults.xDnsPrefetchControl,
+  xDownloadOptions = defaults.xDownloadOptions,
+  xFrameOptions = defaults.xFrameOptions,
+  xPermittedCrossDomainPolicies = defaults.xPermittedCrossDomainPolicies,
+  xXssProtection = defaults.xXssProtection,
+}: NoseconeOptions = defaults) {
   if (contentSecurityPolicy === true) {
     contentSecurityPolicy = defaults.contentSecurityPolicy;
   }
@@ -549,80 +619,80 @@ export default function nosecone(options: NoseconeOptions = defaults) {
   const headers: Record<string, string> = {};
 
   if (contentSecurityPolicy) {
-    const [headerName, headerValue] = contentSecurityPolicyHeader(
+    const [headerName, headerValue] = createContentSecurityPolicy(
       contentSecurityPolicy,
     );
     headers[headerName] = headerValue;
   }
 
   if (crossOriginEmbedderPolicy) {
-    const [headerName, headerValue] = crossOriginEmbedderPolicyHeader(
+    const [headerName, headerValue] = createCrossOriginEmbedderPolicy(
       crossOriginEmbedderPolicy,
     );
     headers[headerName] = headerValue;
   }
 
   if (crossOriginOpenerPolicy) {
-    const [headerName, headerValue] = crossOriginOpenerPolicyHeader(
+    const [headerName, headerValue] = createCrossOriginOpenerPolicy(
       crossOriginOpenerPolicy,
     );
     headers[headerName] = headerValue;
   }
 
   if (crossOriginResourcePolicy) {
-    const [headerName, headerValue] = crossOriginResourcePolicyHeader(
+    const [headerName, headerValue] = createCrossOriginResourcePolicy(
       crossOriginResourcePolicy,
     );
     headers[headerName] = headerValue;
   }
 
   if (originAgentCluster) {
-    const [headerName, headerValue] = originAgentClusterHeader();
+    const [headerName, headerValue] = createOriginAgentCluster();
     headers[headerName] = headerValue;
   }
 
   if (referrerPolicy) {
-    const [headerName, headerValue] = referrerPolicyHeader(referrerPolicy);
+    const [headerName, headerValue] = createReferrerPolicy(referrerPolicy);
     headers[headerName] = headerValue;
   }
 
   if (strictTransportSecurity) {
-    const [headerName, headerValue] = strictTransportSecurityHeader(
+    const [headerName, headerValue] = createStrictTransportSecurity(
       strictTransportSecurity,
     );
     headers[headerName] = headerValue;
   }
 
   if (xContentTypeOptions) {
-    const [headerName, headerValue] = xContentTypeOptionsHeader();
+    const [headerName, headerValue] = createContentTypeOptions();
     headers[headerName] = headerValue;
   }
 
   if (xDnsPrefetchControl) {
     const [headerName, headerValue] =
-      xDnsPrefetchControlHeader(xDnsPrefetchControl);
+      createDnsPrefetchControl(xDnsPrefetchControl);
     headers[headerName] = headerValue;
   }
 
   if (xDownloadOptions) {
-    const [headerName, headerValue] = xDownloadOptionsHeader();
+    const [headerName, headerValue] = createDownloadOptions();
     headers[headerName] = headerValue;
   }
 
   if (xFrameOptions) {
-    const [headerName, headerValue] = xFrameOptionsHeader(xFrameOptions);
+    const [headerName, headerValue] = createFrameOptions(xFrameOptions);
     headers[headerName] = headerValue;
   }
 
   if (xPermittedCrossDomainPolicies) {
-    const [headerName, headerValue] = xPermittedCrossDomainPoliciesHeader(
+    const [headerName, headerValue] = createPermittedCrossDomainPolicies(
       xPermittedCrossDomainPolicies,
     );
     headers[headerName] = headerValue;
   }
 
   if (xXssProtection) {
-    const [headerName, headerValue] = xXssProtectionHeader();
+    const [headerName, headerValue] = createXssProtection();
     headers[headerName] = headerValue;
   }
 
