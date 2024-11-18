@@ -1,64 +1,116 @@
-import nosecone, { defaultDirectives, defaults } from "nosecone";
+import nosecone, {
+  CONTENT_SECURITY_POLICY_DIRECTIVES,
+  QUOTED,
+  defaults,
+  NoseconeValidationError,
+} from "nosecone";
 import type { CspDirectives, NoseconeOptions } from "nosecone";
+import type { Handle, KitConfig } from "@sveltejs/kit";
 
-function applySvelteKitDefaults(options: NoseconeOptions): NoseconeOptions {
-  if (
-    typeof options.contentSecurityPolicy === "undefined" ||
-    !options.contentSecurityPolicy
-  ) {
-    return options;
-  }
+// We export `nosecone` as the default so it can be used with `new Response()`
+export default nosecone;
 
-  return {
-    ...options,
-    contentSecurityPolicy: false,
-  };
-}
+/**
+ * Create a SvelteKit hook that sets secure headers on every request.
+ *
+ * @param options: Configuration to provide to Nosecone
+ * @returns A SvelteKit hook that sets secure headers
+ */
+export function createHook(options: NoseconeOptions = defaults): Handle {
+  return async ({ event, resolve }) => {
+    const response = await resolve(event);
 
-// Setting specific headers is the way that Next implements middleware
-// See: https://github.com/vercel/next.js/blob/5c45d58cd058a9683e435fd3a1a9b8fede8376c3/packages/next/src/server/web/spec-extension/response.ts#L148
-function nextMiddlewareHeaders(
-  headers: Record<string, string>,
-): Record<string, string> {
-  const forwardedHeaders: Record<string, string> = {
-    "x-middleware-next": "1",
-  };
-
-  // This applies the needed headers to forward from Next.js middleware
-  // https://github.com/vercel/next.js/blob/5c45d58cd058a9683e435fd3a1a9b8fede8376c3/packages/next/src/server/web/spec-extension/response.ts#L22-L27
-  for (const [headerName, headerValue] of Object.entries(headers)) {
-    if (typeof headerValue !== "string") {
-      throw new Error(`impossible: missing value for ${headerName}`);
+    const headers = nosecone(options);
+    for (const [headerName, headerValue] of Object.entries(headers)) {
+      // Only add headers that aren't already set. For example, SvelteKit will
+      // likely have added `Content-Security-Policy` if configured with `csp`
+      if (!response.headers.has(headerName)) {
+        response.headers.set(headerName, headerValue);
+      }
     }
-    forwardedHeaders[`x-middleware-request-${headerName}`] = headerValue;
-  }
-  forwardedHeaders["x-middleware-override-headers"] =
-    Object.keys(headers).join(",");
 
-  return forwardedHeaders;
-}
-
-export function createHook(options: NoseconeOptions = defaults) {
-  return async ({
-    event,
-    resolve,
-  }: {
-    event: { setHeaders: any };
-    resolve: any;
-  }): Promise<Response> => {
-    const opts = applySvelteKitDefaults(options);
-    const headers = nosecone(opts);
-    event.setHeaders(headers);
-    return resolve(event);
+    return response;
   };
 }
 
-// TODO: Take config and use it to set directives
-export function csp() {
+type SvelteKitCsp = Exclude<KitConfig["csp"], undefined>;
+
+export type ContentSecurityPolicyConfig = {
+  mode?: SvelteKitCsp["mode"];
+  directives?: CspDirectives;
+  // TODO: Support `reportOnly`
+};
+
+const directives: CspDirectives = {
+  ...defaults.contentSecurityPolicy.directives,
+  scriptSrc: ["'strict-dynamic'"],
+};
+
+function unquote(value?: string) {
+  for (const [unquoted, quoted] of QUOTED) {
+    if (value === quoted) {
+      return unquoted;
+    }
+  }
+
+  return value;
+}
+
+function resolveValue(v: (() => string) | string) {
+  if (typeof v === "function") {
+    return v();
+  } else {
+    return v;
+  }
+}
+
+function directivesToSvelteKitConfig(
+  directives: Readonly<CspDirectives>,
+): SvelteKitCsp["directives"] {
+  const sveltekitDirectives: SvelteKitCsp["directives"] = {};
+  for (const [optionKey, optionValues] of Object.entries(directives)) {
+    const key = CONTENT_SECURITY_POLICY_DIRECTIVES.get(
+      // @ts-expect-error because we're validating this option key
+      optionKey,
+    );
+    if (!key) {
+      throw new NoseconeValidationError(
+        `${optionKey} is not a Content-Security-Policy directive`,
+      );
+    }
+
+    // Skip anything falsey
+    if (!optionValues) {
+      continue;
+    }
+
+    // TODO: What do we want to do if array is empty? I think they work differently for some directives
+    const resolvedValues = Array.isArray(optionValues)
+      ? new Set(optionValues.map(resolveValue))
+      : new Set<string>();
+
+    // TODO: Add validations for SvelteKit CSP directives
+
+    const values = Array.from(resolvedValues);
+
+    if (key === "upgrade-insecure-requests") {
+      sveltekitDirectives[key] = true;
+    } else {
+      // @ts-ignore because we're mapping to SvelteKit options
+      sveltekitDirectives[key] = values.map(unquote);
+    }
+  }
+
+  return sveltekitDirectives;
+}
+
+export function csp(
+  options: ContentSecurityPolicyConfig = { mode: "auto", directives },
+): SvelteKitCsp {
   return {
-    mode: "auto",
-    directives: {
-      "default-src": ["self"],
-    },
+    mode: options.mode ? options.mode : "auto",
+    directives: directivesToSvelteKitConfig(
+      options.directives ?? defaults.contentSecurityPolicy.directives,
+    ),
   };
 }

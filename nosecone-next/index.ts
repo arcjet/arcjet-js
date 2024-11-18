@@ -1,9 +1,11 @@
-import nosecone, { defaultDirectives, defaults } from "nosecone";
+import nosecone, { defaults } from "nosecone";
 import type { CspDirectives, NoseconeOptions } from "nosecone";
 
 function nonce() {
   return `'nonce-${btoa(crypto.randomUUID())}'` as const;
 }
+
+const defaultDirectives = defaults.contentSecurityPolicy.directives;
 
 function applyNextDefaults(options: NoseconeOptions): NoseconeOptions {
   if (
@@ -14,7 +16,8 @@ function applyNextDefaults(options: NoseconeOptions): NoseconeOptions {
   }
 
   const directives =
-    options.contentSecurityPolicy === true
+    options.contentSecurityPolicy === true ||
+    typeof options.contentSecurityPolicy.directives === "undefined"
       ? defaultDirectives
       : options.contentSecurityPolicy.directives;
 

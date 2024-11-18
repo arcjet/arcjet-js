@@ -16,5 +16,8 @@
   },
   "devDependencies": {
     "turbo": "^2.2.3"
+  },
+  "overrides": {
+    "rollup": "npm:@rollup/wasm-node"
   }
 }
