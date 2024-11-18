@@ -30,7 +30,7 @@ npm install -S nosecone
 import nosecone from "nosecone";
 
 const secureResponse = new Response(null, {
-  headers: nosecone()
+  headers: nosecone(),
 });
 ```
 
