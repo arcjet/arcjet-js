@@ -66,29 +66,6 @@ function applyNextDefaults(options: NoseconeOptions): NoseconeOptions {
   };
 }
 
-// Setting specific headers is the way that Next.js implements middleware
-// See: https://github.com/vercel/next.js/blob/5c45d58cd058a9683e435fd3a1a9b8fede8376c3/packages/next/src/server/web/spec-extension/response.ts#L148
-function nextMiddlewareHeaders(
-  headers: Record<string, string>,
-): Record<string, string> {
-  const forwardedHeaders: Record<string, string> = {
-    "x-middleware-next": "1",
-  };
-
-  // This applies the logic to forward headers from Next.js middleware
-  // https://github.com/vercel/next.js/blob/5c45d58cd058a9683e435fd3a1a9b8fede8376c3/packages/next/src/server/web/spec-extension/response.ts#L22-L27
-  for (const [headerName, headerValue] of Object.entries(headers)) {
-    if (typeof headerValue !== "string") {
-      throw new Error(`impossible: missing value for ${headerName}`);
-    }
-    forwardedHeaders[`x-middleware-request-${headerName}`] = headerValue;
-  }
-  forwardedHeaders["x-middleware-override-headers"] =
-    Object.keys(headers).join(",");
-
-  return forwardedHeaders;
-}
-
 /**
  * Create Next.js middleware that sets secure headers on every request.
  *
@@ -103,7 +80,12 @@ export function createMiddleware(options: NoseconeOptions = defaults) {
     return new Response(null, {
       headers: {
         ...headers,
-        ...nextMiddlewareHeaders(headers),
+        // Setting this specific header is the way that Next.js implements
+        // middleware. See:
+        // https://github.com/vercel/next.js/blob/5c45d58cd058a9683e435fd3a1a9b8fede8376c3/packages/next/src/server/web/spec-extension/response.ts#L148
+        // Note: we don't create the `x-middleware-override-headers` header so
+        // the original headers pass through
+        "x-middleware-next": "1",
       },
     });
   };
