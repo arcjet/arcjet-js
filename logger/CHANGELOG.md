@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...@arcjet/logger-v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🧹 Miscellaneous Chores
+
+* **logger:** Remove unused `getTimeLabel` function ([#2140](https://github.com/arcjet/arcjet-js/issues/2140)) ([73d94d5](https://github.com/arcjet/arcjet-js/commit/73d94d5c69148acb81d10ef932f6fec179a8cb6e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/sprintf bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+
 ## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/logger-v1.0.0-alpha.28) (2024-10-23)
 
 

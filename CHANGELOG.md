@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🚀 New Features
+
+* Create nosecone package for creating secure headers ([#2237](https://github.com/arcjet/arcjet-js/issues/2237)) ([1e8e73b](https://github.com/arcjet/arcjet-js/commit/1e8e73b43e8d93ed5bd6aa9a2f0efcb7cb142378))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** Log error message when fingerprint cannot be built ([#2139](https://github.com/arcjet/arcjet-js/issues/2139)) ([56e5319](https://github.com/arcjet/arcjet-js/commit/56e5319e096f282a99cb008f3086f083dc782992))
+* Guard against incorrectly written local rules ([#2191](https://github.com/arcjet/arcjet-js/issues/2191)) ([0885ccf](https://github.com/arcjet/arcjet-js/commit/0885ccfc6d9dedf0d16b7add66ea4be0a43e5432))
+* **sveltekit:** Load env from `node:process` ([#2156](https://github.com/arcjet/arcjet-js/issues/2156)) ([346a350](https://github.com/arcjet/arcjet-js/commit/346a3507cc01795c9e4c7246123a62c2a64f0e60)), closes [#2154](https://github.com/arcjet/arcjet-js/issues/2154)
+
+
+### 🧹 Miscellaneous Chores
+
+* Add initial contributing help ([#2158](https://github.com/arcjet/arcjet-js/issues/2158)) ([d21b81e](https://github.com/arcjet/arcjet-js/commit/d21b81e22a5a14129c49161085fbfea869043a2b)), closes [#1122](https://github.com/arcjet/arcjet-js/issues/1122)
+* **arcjet:** Increase test coverage to 100% ([#2157](https://github.com/arcjet/arcjet-js/issues/2157)) ([17f8a9a](https://github.com/arcjet/arcjet-js/commit/17f8a9a43d3a3470d08f17b2529e4d380f2e7ae2)), closes [#1802](https://github.com/arcjet/arcjet-js/issues/1802)
+* **example:** Allow swc compilers ([#2280](https://github.com/arcjet/arcjet-js/issues/2280)) ([cb64f4a](https://github.com/arcjet/arcjet-js/commit/cb64f4a63f260ce8e605c9165927ae285ceaf75a))
+* **ip:** Update documentation for previous breaking changes ([#2278](https://github.com/arcjet/arcjet-js/issues/2278)) ([cff3cc9](https://github.com/arcjet/arcjet-js/commit/cff3cc935545cf06c6b5eba6227ee48a09bcd825)), closes [#2277](https://github.com/arcjet/arcjet-js/issues/2277)
+* **logger:** Remove unused `getTimeLabel` function ([#2140](https://github.com/arcjet/arcjet-js/issues/2140)) ([73d94d5](https://github.com/arcjet/arcjet-js/commit/73d94d5c69148acb81d10ef932f6fec179a8cb6e))
+* Regenerate Wasm with updated dependencies ([#2168](https://github.com/arcjet/arcjet-js/issues/2168)) ([90b8350](https://github.com/arcjet/arcjet-js/commit/90b8350160d80f7d55416ae179fdd9ab85f8fdfe))
+* Regenerate Wasm with updated dependencies ([#2258](https://github.com/arcjet/arcjet-js/issues/2258)) ([b82284b](https://github.com/arcjet/arcjet-js/commit/b82284bc08e5952656664f7056d2749da9286872))
+* Update root readme with all packages and new urls ([#2169](https://github.com/arcjet/arcjet-js/issues/2169)) ([32f0572](https://github.com/arcjet/arcjet-js/commit/32f0572d9b38f4cfac9fbeccdf709bba7b23a9fb))
+
 ## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...v1.0.0-alpha.28) (2024-10-23)
 
 
