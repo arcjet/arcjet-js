@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...@arcjet/redact-wasm-v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🧹 Miscellaneous Chores
+
+* Regenerate Wasm with updated dependencies ([#2168](https://github.com/arcjet/arcjet-js/issues/2168)) ([90b8350](https://github.com/arcjet/arcjet-js/commit/90b8350160d80f7d55416ae179fdd9ab85f8fdfe))
+* Regenerate Wasm with updated dependencies ([#2258](https://github.com/arcjet/arcjet-js/issues/2258)) ([b82284b](https://github.com/arcjet/arcjet-js/commit/b82284bc08e5952656664f7056d2749da9286872))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+
 ## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/redact-wasm-v1.0.0-alpha.28) (2024-10-23)
 
 
