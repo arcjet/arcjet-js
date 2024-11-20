@@ -1,6 +1,9 @@
 import nosecone, { defaults } from "nosecone";
 import type { CspDirectives, NoseconeOptions } from "nosecone";
 
+// Re-exports the defaults for easier overrides
+export { defaults };
+
 // We export `nosecone` as the default so it can be used with `new Response()`
 export default nosecone;
 
