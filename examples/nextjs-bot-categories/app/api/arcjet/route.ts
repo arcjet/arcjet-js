@@ -26,6 +26,13 @@ const aj = arcjet({
 export async function GET(req: Request) {
   const decision = await aj.protect(req);
 
+  if (decision.isErrored()) {
+    return NextResponse.json(
+      { error: decision.reason.message },
+      { status: 500, statusText: "Internal Server Error" },
+    )
+  }
+
   const headers = new Headers();
   if (decision.reason.isBot()) {
     // WARNING: This is illustrative! Don't share this metadata with users;
