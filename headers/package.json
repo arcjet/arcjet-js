@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/headers",
-  "version": "1.0.0-alpha.29",
+  "version": "1.0.0-alpha.30",
   "description": "Arcjet extension of the Headers class",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -41,9 +41,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.29",
-    "@arcjet/rollup-config": "1.0.0-alpha.29",
-    "@arcjet/tsconfig": "1.0.0-alpha.29",
+    "@arcjet/eslint-config": "1.0.0-alpha.30",
+    "@arcjet/rollup-config": "1.0.0-alpha.30",
+    "@arcjet/tsconfig": "1.0.0-alpha.30",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.27.3",
     "@types/node": "18.18.0",

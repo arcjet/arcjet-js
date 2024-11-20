@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0-alpha.30](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.29...v1.0.0-alpha.30) (2024-11-20)
+
+
+### 🪲 Bug Fixes
+
+* **nosecone-next:** Avoid overriding original headers ([#2284](https://github.com/arcjet/arcjet-js/issues/2284)) ([3fcd8b1](https://github.com/arcjet/arcjet-js/commit/3fcd8b1bbc5e1e8175060713c47f580ed2460725))
+* **nosecone:** Re-export default configuration from adapters ([#2285](https://github.com/arcjet/arcjet-js/issues/2285)) ([8b19f65](https://github.com/arcjet/arcjet-js/commit/8b19f650f8063aa1073f71eda369926e480c9651))
+
 ## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...v1.0.0-alpha.29) (2024-11-19)
 
 
