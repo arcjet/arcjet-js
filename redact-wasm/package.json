@@ -52,7 +52,7 @@
     "@arcjet/eslint-config": "1.0.0-alpha.30",
     "@arcjet/rollup-config": "1.0.0-alpha.30",
     "@arcjet/tsconfig": "1.0.0-alpha.30",
-    "@bytecodealliance/jco": "1.5.0",
+    "@bytecodealliance/jco": "1.7.2",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.27.3",
     "@types/node": "18.18.0",
