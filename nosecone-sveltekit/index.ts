@@ -1,14 +1,19 @@
 import nosecone, {
   CONTENT_SECURITY_POLICY_DIRECTIVES,
   QUOTED,
-  defaults,
+  defaults as baseDefaults,
   NoseconeValidationError,
 } from "nosecone";
 import type { CspDirectives, NoseconeOptions } from "nosecone";
 import type { Handle, KitConfig } from "@sveltejs/kit";
 
-// Re-exports the defaults for easier overrides
-export { defaults };
+export const defaults = {
+  ...baseDefaults,
+  directives: {
+    ...baseDefaults.contentSecurityPolicy.directives,
+    scriptSrc: ["'strict-dynamic'"],
+  },
+} as const;
 
 // We export `nosecone` as the default so it can be used with `new Response()`
 export default nosecone;
@@ -42,11 +47,6 @@ export type ContentSecurityPolicyConfig = {
   mode?: SvelteKitCsp["mode"];
   directives?: CspDirectives;
   // TODO: Support `reportOnly`
-};
-
-const directives: CspDirectives = {
-  ...defaults.contentSecurityPolicy.directives,
-  scriptSrc: ["'strict-dynamic'"],
 };
 
 function unquote(value?: string) {
@@ -108,7 +108,7 @@ function directivesToSvelteKitConfig(
 }
 
 export function csp(
-  options: ContentSecurityPolicyConfig = { mode: "auto", directives },
+  options: ContentSecurityPolicyConfig = { mode: "auto" },
 ): SvelteKitCsp {
   return {
     mode: options.mode ? options.mode : "auto",

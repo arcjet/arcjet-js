@@ -1,72 +1,30 @@
-import nosecone, { defaults } from "nosecone";
-import type { CspDirectives, NoseconeOptions } from "nosecone";
+import nosecone, { defaults as baseDefaults } from "nosecone";
+import type { NoseconeOptions } from "nosecone";
 
-// Re-exports the defaults for easier overrides
-export { defaults };
+export const defaults = {
+  ...baseDefaults,
+  contentSecurityPolicy: {
+    directives: {
+      ...baseDefaults.contentSecurityPolicy.directives,
+      scriptSrc:
+        // Replace the defaults to remove `'self'`
+        process.env.NODE_ENV === "development"
+          ? ([nonce, "'strict-dynamic'"] as const)
+          : // Next.js hot reloading relies on `eval` so we enable it in development
+            ([nonce, "'strict-dynamic'", "'unsafe-eval'"] as const),
+      styleSrc: [
+        ...baseDefaults.contentSecurityPolicy.directives.styleSrc,
+        "'unsafe-inline'",
+      ],
+    },
+  },
+} as const;
 
 // We export `nosecone` as the default so it can be used with `new Response()`
 export default nosecone;
 
 function nonce() {
   return `'nonce-${btoa(crypto.randomUUID())}'` as const;
-}
-
-const defaultDirectives = defaults.contentSecurityPolicy.directives;
-
-function applyNextDefaults(options: NoseconeOptions): NoseconeOptions {
-  if (
-    typeof options.contentSecurityPolicy === "undefined" ||
-    !options.contentSecurityPolicy
-  ) {
-    return options;
-  }
-
-  const directives =
-    options.contentSecurityPolicy === true ||
-    typeof options.contentSecurityPolicy.directives === "undefined"
-      ? defaultDirectives
-      : options.contentSecurityPolicy.directives;
-
-  let scriptSrc: CspDirectives["scriptSrc"];
-  if (directives.scriptSrc === true) {
-    scriptSrc = defaultDirectives.scriptSrc;
-  } else {
-    scriptSrc = directives.scriptSrc;
-  }
-  if (scriptSrc) {
-    const scriptSrcSet = new Set(scriptSrc);
-    scriptSrcSet.delete("'self'");
-    scriptSrcSet.add(nonce());
-    scriptSrcSet.add("'strict-dynamic'");
-    // Next.js hot reloading relies on `eval` so we enable it in development
-    if (process.env.NODE_ENV === "development") {
-      scriptSrcSet.add("'unsafe-eval'");
-    }
-    scriptSrc = Array.from(scriptSrcSet);
-  }
-
-  let styleSrc: CspDirectives["styleSrc"];
-  if (directives.styleSrc === true) {
-    styleSrc = defaultDirectives.styleSrc;
-  } else {
-    styleSrc = directives.styleSrc;
-  }
-  if (styleSrc) {
-    const styleSrcSet = new Set(styleSrc);
-    styleSrcSet.add("'unsafe-inline'");
-    styleSrc = Array.from(styleSrcSet);
-  }
-
-  return {
-    ...options,
-    contentSecurityPolicy: {
-      directives: {
-        ...directives,
-        scriptSrc,
-        styleSrc,
-      },
-    },
-  };
 }
 
 /**
@@ -77,8 +35,7 @@ function applyNextDefaults(options: NoseconeOptions): NoseconeOptions {
  */
 export function createMiddleware(options: NoseconeOptions = defaults) {
   return async () => {
-    const opts = applyNextDefaults(options);
-    const headers = nosecone(opts);
+    const headers = nosecone(options);
 
     return new Response(null, {
       headers: {
