@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/protocol",
-  "version": "1.0.0-alpha.28",
+  "version": "1.0.0-alpha.30",
   "description": "The TypeScript & JavaScript interface into the Arcjet protocol",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -46,11 +46,11 @@
     "typeid-js": "1.1.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.28",
-    "@arcjet/rollup-config": "1.0.0-alpha.28",
-    "@arcjet/tsconfig": "1.0.0-alpha.28",
+    "@arcjet/eslint-config": "1.0.0-alpha.30",
+    "@arcjet/rollup-config": "1.0.0-alpha.30",
+    "@arcjet/tsconfig": "1.0.0-alpha.30",
     "@jest/globals": "29.7.0",
-    "@rollup/wasm-node": "4.24.4",
+    "@rollup/wasm-node": "4.27.3",
     "@types/node": "18.18.0",
     "jest": "29.7.0",
     "typescript": "5.6.3"

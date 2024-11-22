@@ -29,25 +29,26 @@ npm install -S @arcjet/ip
 ```ts
 import ip from "@arcjet/ip";
 
-// Some Request-like object, such as node's `http.IncomingMessage` or next.js'
-// `NextRequest`
-const request = new NextRequest();
-// A `Headers` object, which is passed separately for cases where it needs to be
-// constructed or sanitized
-const headers = new Headers();
+// Some Request-like object, such as node's `http.IncomingMessage`, `Request` or
+// Next.js' `NextRequest`
+const request = new Request();
 
 // Returns the first non-private IP address detected
-const globalIp = ip(request, headers);
+const globalIp = ip(request);
 console.log(globalIp);
+
+// Also optionally takes a platform for additional protection
+const platformGuardedGloablIp = ip(request, { platform: "fly-io" });
 ```
 
 ## Considerations
 
 The IP should not be trusted as it can be spoofed in most cases, especially when
-loaded via the `Headers` object.
+loaded via the `Headers` object. We apply additional platform guards if a
+platform is supplied in the `options` argument.
 
-In non-production environments (`NODE_ENV !== "production"`), we allow
-private/internal addresses so that the SDKs work correctly locally.
+If a private/internal address is encountered, it will be skipped. If only those
+are detected, an empty string is returned.
 
 ## Implementation
 

@@ -1,5 +1,53 @@
 # Changelog
 
+## [1.0.0-alpha.30](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.29...@arcjet/sveltekit-v1.0.0-alpha.30) (2024-11-20)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sveltekit:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/headers bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/ip bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/logger bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/protocol bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/transport bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * arcjet bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...@arcjet/sveltekit-v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🪲 Bug Fixes
+
+* **sveltekit:** Load env from `node:process` ([#2156](https://github.com/arcjet/arcjet-js/issues/2156)) ([346a350](https://github.com/arcjet/arcjet-js/commit/346a3507cc01795c9e4c7246123a62c2a64f0e60)), closes [#2154](https://github.com/arcjet/arcjet-js/issues/2154)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/headers bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/ip bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/logger bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/protocol bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/transport bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * arcjet bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+
 ## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/sveltekit-v1.0.0-alpha.28) (2024-10-23)
 
 

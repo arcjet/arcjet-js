@@ -1,5 +1,55 @@
 # Changelog
 
+## [1.0.0-alpha.30](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.29...arcjet-v1.0.0-alpha.30) (2024-11-20)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/duration bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/headers bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/protocol bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/runtime bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...arcjet-v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** Log error message when fingerprint cannot be built ([#2139](https://github.com/arcjet/arcjet-js/issues/2139)) ([56e5319](https://github.com/arcjet/arcjet-js/commit/56e5319e096f282a99cb008f3086f083dc782992))
+* Guard against incorrectly written local rules ([#2191](https://github.com/arcjet/arcjet-js/issues/2191)) ([0885ccf](https://github.com/arcjet/arcjet-js/commit/0885ccfc6d9dedf0d16b7add66ea4be0a43e5432))
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Increase test coverage to 100% ([#2157](https://github.com/arcjet/arcjet-js/issues/2157)) ([17f8a9a](https://github.com/arcjet/arcjet-js/commit/17f8a9a43d3a3470d08f17b2529e4d380f2e7ae2)), closes [#1802](https://github.com/arcjet/arcjet-js/issues/1802)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/duration bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/headers bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/protocol bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/runtime bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+
 ## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...arcjet-v1.0.0-alpha.28) (2024-10-23)
 
 

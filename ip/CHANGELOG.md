@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.0.0-alpha.30](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.29...@arcjet/ip-v1.0.0-alpha.30) (2024-11-20)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/ip:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...@arcjet/ip-v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🧹 Miscellaneous Chores
+
+* **ip:** Update documentation for previous breaking changes ([#2278](https://github.com/arcjet/arcjet-js/issues/2278)) ([cff3cc9](https://github.com/arcjet/arcjet-js/commit/cff3cc935545cf06c6b5eba6227ee48a09bcd825)), closes [#2277](https://github.com/arcjet/arcjet-js/issues/2277)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+
 ## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/ip-v1.0.0-alpha.28) (2024-10-23)
 
 

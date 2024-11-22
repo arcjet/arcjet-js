@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.0.0-alpha.30](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.29...@arcjet/redact-v1.0.0-alpha.30) (2024-11-20)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/redact:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/redact-wasm bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...@arcjet/redact-v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/redact:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/redact-wasm bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+
 ## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/redact-v1.0.0-alpha.28) (2024-10-23)
 
 
