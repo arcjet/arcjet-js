@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    const fingerprint = ip(req);
+    const fingerprint = ip(req) || "127.0.0.1"; // Fall back to local IP if none
 
     // Deduct 5 tokens from the token bucket
     decision = await rl.protect(req, { fingerprint, requested: 5 });
@@ -67,19 +67,15 @@ export async function GET(req: NextRequest) {
           status: 429,
         }
       );
-    } else {
-      // Detected a bot
-      return NextResponse.json(
-        {
-          error: "Forbidden",
-          reason: decision.reason,
-        },
-        {
-          status: 403,
-        }
-      );
     }
   }
+  
+  let reset: Date | undefined;
+  let remaining: number | undefined;
 
-  return NextResponse.json({ message: "Hello World" });
-}
+  if (decision.reason.isRateLimit()) {
+    reset = decision.reason.resetTime;
+    remaining = decision.reason.remaining;
+  }
+
+  return NextResponse.json({ message: "Hello World", reset, remaining });}
