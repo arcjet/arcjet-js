@@ -13,7 +13,7 @@
     "@arcjet/next": "file:../../arcjet-next",
     "ai": "^4.0.3",
     "next": "15.0.3",
-    "openai": "^4.73.1",
+    "openai": "^4.73.0",
     "openai-chat-tokens": "^0.2.8",
     "react": "^18",
     "react-dom": "^18"
