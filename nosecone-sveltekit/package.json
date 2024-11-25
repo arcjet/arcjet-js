@@ -50,7 +50,7 @@
     "@arcjet/rollup-config": "1.0.0-alpha.31",
     "@arcjet/tsconfig": "1.0.0-alpha.31",
     "@rollup/wasm-node": "4.27.3",
-    "@sveltejs/kit": "^2.8.0",
+    "@sveltejs/kit": "^2.8.3",
     "@types/node": "18.18.0",
     "typescript": "5.6.3"
   },
