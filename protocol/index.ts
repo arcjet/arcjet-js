@@ -187,12 +187,29 @@ export class ArcjetBotReason extends ArcjetReason {
 
   allowed: Array<string>;
   denied: Array<string>;
+  verified: boolean;
+  spoofed: boolean;
 
-  constructor(init: { allowed: Array<string>; denied: Array<string> }) {
+  constructor(init: {
+    allowed: Array<string>;
+    denied: Array<string>;
+    verified: boolean;
+    spoofed: boolean;
+  }) {
     super();
 
     this.allowed = init.allowed;
     this.denied = init.denied;
+    this.verified = init.verified;
+    this.spoofed = init.spoofed;
+  }
+
+  isVerified(): boolean {
+    return this.verified;
+  }
+
+  isSpoofed(): boolean {
+    return this.spoofed;
   }
 }
 

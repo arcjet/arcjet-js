@@ -1099,6 +1099,8 @@ export function detectBot(options: BotOptions): Primitive<{}> {
             reason: new ArcjetBotReason({
               allowed: result.allowed,
               denied: result.denied,
+              verified: result.verified,
+              spoofed: result.spoofed,
             }),
           });
         } else {
@@ -1109,6 +1111,8 @@ export function detectBot(options: BotOptions): Primitive<{}> {
             reason: new ArcjetBotReason({
               allowed: result.allowed,
               denied: result.denied,
+              verified: result.verified,
+              spoofed: result.spoofed,
             }),
           });
         }

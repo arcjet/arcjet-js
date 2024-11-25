@@ -295,11 +295,47 @@ describe("ArcjetDecision", () => {
     const reason = new ArcjetBotReason({
       allowed: [],
       denied: [],
+      verified: false,
+      spoofed: false,
     });
     expect(reason.isBot()).toEqual(true);
   });
 
-  test("`isBot()` returns true when reason is not BOT", () => {
+  test("isVerified() returns the correct value", () => {
+    const reasonTrue = new ArcjetBotReason({
+      allowed: [],
+      denied: [],
+      verified: true,
+      spoofed: false,
+    });
+    expect(reasonTrue.isVerified()).toEqual(true);
+    const reasonFalse = new ArcjetBotReason({
+      allowed: [],
+      denied: [],
+      verified: false,
+      spoofed: false,
+    });
+    expect(reasonFalse.isVerified()).toEqual(false);
+  });
+
+  test("isSpoofed() returns the correct value", () => {
+    const reasonTrue = new ArcjetBotReason({
+      allowed: [],
+      denied: [],
+      verified: false,
+      spoofed: true,
+    });
+    expect(reasonTrue.isSpoofed()).toEqual(true);
+    const reasonFalse = new ArcjetBotReason({
+      allowed: [],
+      denied: [],
+      verified: false,
+      spoofed: false,
+    });
+    expect(reasonFalse.isSpoofed()).toEqual(false);
+  });
+
+  test("`isBot()` returns false when reason is not BOT", () => {
     const reason = new ArcjetTestReason();
     expect(reason.isBot()).toEqual(false);
   });
@@ -499,6 +535,8 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: [],
         denied: ["CURL"],
+        verified: false,
+        spoofed: false,
       }),
     });
   });
@@ -552,6 +590,8 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: [],
         denied: ["CURL"],
+        verified: false,
+        spoofed: false,
       }),
     });
     const googlebotResults = await rule.protect(context, googlebotDetails);
@@ -561,6 +601,8 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: ["GOOGLE_CRAWLER"],
         denied: [],
+        verified: false,
+        spoofed: false,
       }),
     });
   });
@@ -601,6 +643,8 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: ["CURL"],
         denied: [],
+        verified: false,
+        spoofed: false,
       }),
     });
   });

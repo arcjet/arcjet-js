@@ -378,6 +378,8 @@ describe("convert", () => {
         new ArcjetBotReason({
           allowed: ["GOOGLE_CRAWLER"],
           denied: [],
+          verified: true,
+          spoofed: false,
         }),
       ),
     ).toEqual(
@@ -387,6 +389,8 @@ describe("convert", () => {
           value: {
             allowed: ["GOOGLE_CRAWLER"],
             denied: [],
+            verified: true,
+            spoofed: false,
           },
         },
       }),

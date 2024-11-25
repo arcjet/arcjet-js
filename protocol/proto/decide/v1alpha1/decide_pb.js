@@ -237,6 +237,8 @@ export const BotV2Reason = /*@__PURE__*/ proto3.makeMessageType(
   () => [
     { no: 1, name: "allowed", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 2, name: "denied", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "verified", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "spoofed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ],
 );
 
@@ -403,6 +405,7 @@ export const ShieldRule = /*@__PURE__*/ proto3.makeMessageType(
   () => [
     { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
     { no: 2, name: "auto_added", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 3, name: "characteristics", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ],
 );
 
