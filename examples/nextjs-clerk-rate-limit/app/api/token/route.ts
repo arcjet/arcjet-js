@@ -5,11 +5,9 @@
 import { auth } from "@clerk/nextjs/server";
 
 export async function GET(req: Request) {
-  const { userId, getToken } = await auth();
+  const { userId, getToken, redirectToSignIn } = await auth();
 
-  if (!userId) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  if (!userId) return redirectToSignIn()
 
   try {
     const token = await getToken();
