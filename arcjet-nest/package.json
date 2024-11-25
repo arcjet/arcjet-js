@@ -62,7 +62,7 @@
     "@rollup/wasm-node": "4.27.4",
     "@types/node": "18.18.0",
     "jest": "29.7.0",
-    "typescript": "5.6.3"
+    "typescript": "5.7.2"
   },
   "publishConfig": {
     "access": "public",
