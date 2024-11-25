@@ -30,7 +30,6 @@
     "proto/",
     "*.js",
     "*.d.ts",
-    "*.ts",
     "!*.config.js"
   ],
   "scripts": {
