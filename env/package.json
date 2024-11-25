@@ -29,7 +29,6 @@
     "README.md",
     "*.js",
     "*.d.ts",
-    "*.ts",
     "!*.config.js"
   ],
   "scripts": {
