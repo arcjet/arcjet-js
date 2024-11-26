@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-alpha.32](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.31...v1.0.0-alpha.32) (2024-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326))
+
+### 🚀 New Features
+
+* check verification status ([#2229](https://github.com/arcjet/arcjet-js/issues/2229)) ([3329fd7](https://github.com/arcjet/arcjet-js/commit/3329fd7baaafa6784d6f6573905c95fd0686ea4e))
+
+
+### 🪲 Bug Fixes
+
+* **nosecone-next:** Apply the correct defaults based on env ([#2311](https://github.com/arcjet/arcjet-js/issues/2311)) ([2bfaa79](https://github.com/arcjet/arcjet-js/commit/2bfaa7953d0580b71f69e5d61cb964dcf98873a7))
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326)) ([f8f6a2d](https://github.com/arcjet/arcjet-js/commit/f8f6a2d998220d9705ecda8f10d3c5e14b47cad6)), closes [#1836](https://github.com/arcjet/arcjet-js/issues/1836)
+
+
+### 🧹 Miscellaneous Chores
+
+* Update AI chat example to latest AI SDK v4 ([#2313](https://github.com/arcjet/arcjet-js/issues/2313)) ([a3fd423](https://github.com/arcjet/arcjet-js/commit/a3fd42399e6827ee933ec2d7d5fa0851052b91c5)), closes [#2283](https://github.com/arcjet/arcjet-js/issues/2283)
+* Update example for Clerk v6 ([#2312](https://github.com/arcjet/arcjet-js/issues/2312)) ([439c1d5](https://github.com/arcjet/arcjet-js/commit/439c1d52934a9864da5654e97cea49127ebe90b7))
+
 ## [1.0.0-alpha.31](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.30...v1.0.0-alpha.31) (2024-11-22)
 
 

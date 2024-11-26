@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/deno",
-  "version": "1.0.0-alpha.31",
+  "version": "1.0.0-alpha.32",
   "description": "Arcjet SDK for Deno",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -37,18 +37,18 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "dependencies": {
-    "@arcjet/env": "1.0.0-alpha.31",
-    "@arcjet/headers": "1.0.0-alpha.31",
-    "@arcjet/ip": "1.0.0-alpha.31",
-    "@arcjet/logger": "1.0.0-alpha.31",
-    "@arcjet/protocol": "1.0.0-alpha.31",
-    "@arcjet/transport": "1.0.0-alpha.31",
-    "arcjet": "1.0.0-alpha.31"
+    "@arcjet/env": "1.0.0-alpha.32",
+    "@arcjet/headers": "1.0.0-alpha.32",
+    "@arcjet/ip": "1.0.0-alpha.32",
+    "@arcjet/logger": "1.0.0-alpha.32",
+    "@arcjet/protocol": "1.0.0-alpha.32",
+    "@arcjet/transport": "1.0.0-alpha.32",
+    "arcjet": "1.0.0-alpha.32"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.31",
-    "@arcjet/rollup-config": "1.0.0-alpha.31",
-    "@arcjet/tsconfig": "1.0.0-alpha.31",
+    "@arcjet/eslint-config": "1.0.0-alpha.32",
+    "@arcjet/rollup-config": "1.0.0-alpha.32",
+    "@arcjet/tsconfig": "1.0.0-alpha.32",
     "@jest/globals": "29.7.0",
     "@types/deno": "2.0.0",
     "@rollup/wasm-node": "4.27.4",
