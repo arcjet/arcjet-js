@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.0-alpha.32](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.31...@arcjet/runtime-v1.0.0-alpha.32) (2024-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326))
+
+### 🪲 Bug Fixes
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326)) ([f8f6a2d](https://github.com/arcjet/arcjet-js/commit/f8f6a2d998220d9705ecda8f10d3c5e14b47cad6)), closes [#1836](https://github.com/arcjet/arcjet-js/issues/1836)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+
 ## [1.0.0-alpha.31](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.30...@arcjet/runtime-v1.0.0-alpha.31) (2024-11-22)
 
 
