@@ -36,17 +36,13 @@ function nonce() {
 export function createMiddleware(options: NoseconeOptions = defaults) {
   return async () => {
     const headers = nosecone(options);
+    // Setting this specific header is the way that Next.js implements
+    // middleware. See:
+    // https://github.com/vercel/next.js/blob/5c45d58cd058a9683e435fd3a1a9b8fede8376c3/packages/next/src/server/web/spec-extension/response.ts#L148
+    // Note: we don't create the `x-middleware-override-headers` header so
+    // the original headers pass through
+    headers.set("x-middleware-next", "1");
 
-    return new Response(null, {
-      headers: {
-        ...headers,
-        // Setting this specific header is the way that Next.js implements
-        // middleware. See:
-        // https://github.com/vercel/next.js/blob/5c45d58cd058a9683e435fd3a1a9b8fede8376c3/packages/next/src/server/web/spec-extension/response.ts#L148
-        // Note: we don't create the `x-middleware-override-headers` header so
-        // the original headers pass through
-        "x-middleware-next": "1",
-      },
-    });
+    return new Response(null, { headers });
   };
 }

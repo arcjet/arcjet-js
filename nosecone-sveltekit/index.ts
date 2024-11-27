@@ -29,7 +29,7 @@ export function createHook(options: NoseconeOptions = defaults): Handle {
     const response = await resolve(event);
 
     const headers = nosecone(options);
-    for (const [headerName, headerValue] of Object.entries(headers)) {
+    for (const [headerName, headerValue] of headers.entries()) {
       // Only add headers that aren't already set. For example, SvelteKit will
       // likely have added `Content-Security-Policy` if configured with `csp`
       if (!response.headers.has(headerName)) {

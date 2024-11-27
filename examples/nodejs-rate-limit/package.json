@@ -5,7 +5,8 @@
         "start": "node --env-file .env.local ./index.js"
     },
     "dependencies": {
-        "@arcjet/node": "../../arcjet-node"
+        "@arcjet/node": "../../arcjet-node",
+        "nosecone": "../../nosecone"
     },
     "devDependencies": {
         "@types/node": "^20",
