@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 
 import nosecone, {
+  defaults,
   createContentSecurityPolicy,
   createContentTypeOptions,
   createCrossOriginEmbedderPolicy,
@@ -16,6 +17,7 @@ import nosecone, {
   createStrictTransportSecurity,
   createXssProtection,
   NoseconeValidationError,
+  withVercelToolbar,
 } from "../index";
 
 describe("nosecone", () => {
@@ -635,6 +637,348 @@ describe("nosecone", () => {
         "x-frame-options": "SAMEORIGIN",
         "x-permitted-cross-domain-policies": "none",
         "x-xss-protection": "0",
+      });
+    });
+  });
+
+  describe("withVercelToolbar", () => {
+    it("adds nothing if `contentSecurityPolicy` and `crossOriginEmbedderPolicy` undefined", () => {
+      const policy = withVercelToolbar({});
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: undefined,
+        crossOriginEmbedderPolicy: undefined,
+      });
+    });
+
+    it("adds nothing if policies not in use", () => {
+      const policy = withVercelToolbar({
+        contentSecurityPolicy: false,
+        crossOriginEmbedderPolicy: false,
+      });
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: false,
+        crossOriginEmbedderPolicy: false,
+      });
+    });
+
+    it("augments policies using defaults if true", () => {
+      const policy = withVercelToolbar({
+        contentSecurityPolicy: true,
+        crossOriginEmbedderPolicy: true,
+      });
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: {
+          directives: {
+            baseUri: ["'none'"],
+            childSrc: ["'none'"],
+            connectSrc: [
+              "'self'",
+              "https://vercel.live",
+              "wss://ws-us3.pusher.com",
+            ],
+            defaultSrc: ["'self'"],
+            fontSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://assets.vercel.com",
+            ],
+            formAction: ["'self'"],
+            frameAncestors: ["'none'"],
+            frameSrc: ["https://vercel.live"],
+            imgSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://vercel.com",
+              "data:",
+              "blob:",
+            ],
+            manifestSrc: ["'self'"],
+            mediaSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            scriptSrc: ["'self'", "https://vercel.live"],
+            styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
+            upgradeInsecureRequests: true,
+            workerSrc: ["'self'"],
+          },
+        },
+        crossOriginEmbedderPolicy: {
+          policy: "unsafe-none",
+        },
+      });
+    });
+
+    it("adds nothing if directives not in use", () => {
+      const policy = withVercelToolbar({
+        contentSecurityPolicy: {
+          directives: {
+            scriptSrc: false,
+            connectSrc: false,
+            imgSrc: false,
+            frameSrc: false,
+            styleSrc: false,
+            fontSrc: false,
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: {
+          directives: {
+            scriptSrc: false,
+            connectSrc: false,
+            imgSrc: false,
+            frameSrc: false,
+            styleSrc: false,
+            fontSrc: false,
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+    });
+
+    it("adds nothing if directives are undefined", () => {
+      const policy = withVercelToolbar({
+        contentSecurityPolicy: {
+          directives: {},
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: {
+          directives: {
+            scriptSrc: undefined,
+            connectSrc: undefined,
+            imgSrc: undefined,
+            frameSrc: undefined,
+            styleSrc: undefined,
+            fontSrc: undefined,
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+    });
+
+    it("augments directives using defaults if true", () => {
+      const policy = withVercelToolbar({
+        contentSecurityPolicy: {
+          directives: {
+            scriptSrc: true,
+            connectSrc: true,
+            imgSrc: true,
+            frameSrc: true,
+            styleSrc: true,
+            fontSrc: true,
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: {
+          directives: {
+            connectSrc: [
+              "'self'",
+              "https://vercel.live",
+              "wss://ws-us3.pusher.com",
+            ],
+            fontSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://assets.vercel.com",
+            ],
+            frameSrc: ["https://vercel.live"],
+            imgSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://vercel.com",
+              "data:",
+              "blob:",
+            ],
+            scriptSrc: ["'self'", "https://vercel.live"],
+            styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+    });
+
+    it("removes `'none'` values", () => {
+      const policy = withVercelToolbar({
+        contentSecurityPolicy: {
+          directives: {
+            scriptSrc: ["'none'"],
+            connectSrc: ["'none'"],
+            imgSrc: ["'none'"],
+            frameSrc: ["'none'"],
+            styleSrc: ["'none'"],
+            fontSrc: ["'none'"],
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: {
+          directives: {
+            connectSrc: ["https://vercel.live", "wss://ws-us3.pusher.com"],
+            fontSrc: ["https://vercel.live", "https://assets.vercel.com"],
+            frameSrc: ["https://vercel.live"],
+            imgSrc: [
+              "https://vercel.live",
+              "https://vercel.com",
+              "data:",
+              "blob:",
+            ],
+            scriptSrc: ["https://vercel.live"],
+            styleSrc: ["https://vercel.live", "'unsafe-inline'"],
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+    });
+
+    it("removes `'self'` values", () => {
+      const policy = withVercelToolbar({
+        contentSecurityPolicy: {
+          directives: {
+            scriptSrc: ["'self'"],
+            connectSrc: ["'self'"],
+            imgSrc: ["'self'"],
+            frameSrc: ["'self'"],
+            styleSrc: ["'self'"],
+            fontSrc: ["'self'"],
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: {
+          directives: {
+            connectSrc: [
+              "'self'",
+              "https://vercel.live",
+              "wss://ws-us3.pusher.com",
+            ],
+            fontSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://assets.vercel.com",
+            ],
+            frameSrc: ["'self'", "https://vercel.live"],
+            imgSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://vercel.com",
+              "data:",
+              "blob:",
+            ],
+            scriptSrc: ["'self'", "https://vercel.live"],
+            styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      });
+    });
+
+    it("can be called twice without duplicating values", () => {
+      const policy = withVercelToolbar(
+        withVercelToolbar({
+          contentSecurityPolicy: true,
+          crossOriginEmbedderPolicy: true,
+        }),
+      );
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: {
+          directives: {
+            baseUri: ["'none'"],
+            childSrc: ["'none'"],
+            connectSrc: [
+              "'self'",
+              "https://vercel.live",
+              "wss://ws-us3.pusher.com",
+            ],
+            defaultSrc: ["'self'"],
+            fontSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://assets.vercel.com",
+            ],
+            formAction: ["'self'"],
+            frameAncestors: ["'none'"],
+            frameSrc: ["https://vercel.live"],
+            imgSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://vercel.com",
+              "data:",
+              "blob:",
+            ],
+            manifestSrc: ["'self'"],
+            mediaSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            scriptSrc: ["'self'", "https://vercel.live"],
+            styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
+            upgradeInsecureRequests: true,
+            workerSrc: ["'self'"],
+          },
+        },
+        crossOriginEmbedderPolicy: {
+          policy: "unsafe-none",
+        },
+      });
+    });
+
+    it("can be applied to defaults", () => {
+      const policy = withVercelToolbar(defaults);
+      assert.deepStrictEqual(policy, {
+        contentSecurityPolicy: {
+          directives: {
+            baseUri: ["'none'"],
+            childSrc: ["'none'"],
+            connectSrc: [
+              "'self'",
+              "https://vercel.live",
+              "wss://ws-us3.pusher.com",
+            ],
+            defaultSrc: ["'self'"],
+            fontSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://assets.vercel.com",
+            ],
+            formAction: ["'self'"],
+            frameAncestors: ["'none'"],
+            frameSrc: ["https://vercel.live"],
+            imgSrc: [
+              "'self'",
+              "https://vercel.live",
+              "https://vercel.com",
+              "data:",
+              "blob:",
+            ],
+            manifestSrc: ["'self'"],
+            mediaSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            scriptSrc: ["'self'", "https://vercel.live"],
+            styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
+            upgradeInsecureRequests: true,
+            workerSrc: ["'self'"],
+          },
+        },
+        crossOriginEmbedderPolicy: { policy: "unsafe-none" },
+        crossOriginOpenerPolicy: { policy: "same-origin" },
+        crossOriginResourcePolicy: { policy: "same-origin" },
+        originAgentCluster: true,
+        referrerPolicy: { policy: ["no-referrer"] },
+        strictTransportSecurity: {
+          maxAge: 31536000,
+          includeSubDomains: true,
+          preload: false,
+        },
+        xContentTypeOptions: true,
+        xDnsPrefetchControl: { allow: false },
+        xDownloadOptions: true,
+        xFrameOptions: { action: "sameorigin" },
+        xPermittedCrossDomainPolicies: { permittedPolicies: "none" },
+        xXssProtection: true,
       });
     });
   });

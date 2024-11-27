@@ -7,6 +7,8 @@ import nosecone, {
 import type { CspDirectives, NoseconeOptions } from "nosecone";
 import type { Handle, KitConfig } from "@sveltejs/kit";
 
+export { withVercelToolbar, type NoseconeOptions } from "nosecone";
+
 export const defaults = {
   ...baseDefaults,
   directives: {

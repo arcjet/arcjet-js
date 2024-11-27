@@ -1,6 +1,8 @@
 import nosecone, { defaults as baseDefaults } from "nosecone";
 import type { NoseconeOptions } from "nosecone";
 
+export { withVercelToolbar, type NoseconeOptions } from "nosecone";
+
 export const defaults = {
   ...baseDefaults,
   contentSecurityPolicy: {

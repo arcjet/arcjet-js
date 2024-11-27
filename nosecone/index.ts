@@ -698,3 +698,148 @@ export default function nosecone({
 
   return headers;
 }
+
+/**
+ * Augment some Nosecone configuration with the values necessary for using the
+ * Vercel Toolbar.
+ *
+ * Follows the guidance at
+ * https://vercel.com/docs/workflow-collaboration/vercel-toolbar/managing-toolbar#using-a-content-security-policy
+ *
+ * @param config Base configuration for you application
+ * @returns Augmented configuration to allow Vercel Toolbar
+ */
+export function withVercelToolbar(config: NoseconeOptions) {
+  let contentSecurityPolicy = config.contentSecurityPolicy;
+  if (contentSecurityPolicy === true) {
+    contentSecurityPolicy = defaults.contentSecurityPolicy;
+  }
+
+  let augmentedContentSecurityPolicy = contentSecurityPolicy;
+  if (contentSecurityPolicy) {
+    let scriptSrc = contentSecurityPolicy.directives?.scriptSrc;
+    if (scriptSrc === true) {
+      scriptSrc = defaults.contentSecurityPolicy.directives.scriptSrc;
+    }
+
+    let connectSrc = contentSecurityPolicy.directives?.connectSrc;
+    if (connectSrc === true) {
+      connectSrc = defaults.contentSecurityPolicy.directives.connectSrc;
+    }
+
+    let imgSrc = contentSecurityPolicy.directives?.imgSrc;
+    if (imgSrc === true) {
+      imgSrc = defaults.contentSecurityPolicy.directives.imgSrc;
+    }
+
+    let frameSrc = contentSecurityPolicy.directives?.frameSrc;
+    if (frameSrc === true) {
+      frameSrc = defaults.contentSecurityPolicy.directives.frameSrc;
+    }
+
+    let styleSrc = contentSecurityPolicy.directives?.styleSrc;
+    if (styleSrc === true) {
+      styleSrc = defaults.contentSecurityPolicy.directives.styleSrc;
+    }
+
+    let fontSrc = contentSecurityPolicy.directives?.fontSrc;
+    if (fontSrc === true) {
+      fontSrc = defaults.contentSecurityPolicy.directives.fontSrc;
+    }
+
+    augmentedContentSecurityPolicy = {
+      ...contentSecurityPolicy,
+      directives: {
+        ...contentSecurityPolicy.directives,
+        scriptSrc: scriptSrc
+          ? [
+              ...scriptSrc.filter(
+                (v) => v !== "'none'" && v !== "https://vercel.live",
+              ),
+              "https://vercel.live",
+            ]
+          : scriptSrc,
+        connectSrc: connectSrc
+          ? [
+              ...connectSrc.filter(
+                (v) =>
+                  v !== "'none'" &&
+                  v !== "https://vercel.live" &&
+                  v !== "wss://ws-us3.pusher.com",
+              ),
+              "https://vercel.live",
+              "wss://ws-us3.pusher.com",
+            ]
+          : connectSrc,
+        imgSrc: imgSrc
+          ? [
+              ...imgSrc.filter(
+                (v) =>
+                  v !== "'none'" &&
+                  v !== "https://vercel.live" &&
+                  v !== "https://vercel.com" &&
+                  v !== "data:" &&
+                  v !== "blob:",
+              ),
+              "https://vercel.live",
+              "https://vercel.com",
+              "data:",
+              "blob:",
+            ]
+          : imgSrc,
+        frameSrc: frameSrc
+          ? [
+              ...frameSrc.filter(
+                (v) => v !== "'none'" && v !== "https://vercel.live",
+              ),
+              "https://vercel.live",
+            ]
+          : frameSrc,
+        styleSrc: styleSrc
+          ? [
+              ...styleSrc.filter(
+                (v) =>
+                  v !== "'none'" &&
+                  v !== "https://vercel.live" &&
+                  v !== "'unsafe-inline'",
+              ),
+              "https://vercel.live",
+              "'unsafe-inline'",
+            ]
+          : styleSrc,
+        fontSrc: fontSrc
+          ? [
+              ...fontSrc.filter(
+                (v) =>
+                  v !== "'none'" &&
+                  v !== "https://vercel.live" &&
+                  v !== "https://assets.vercel.com",
+              ),
+              "https://vercel.live",
+              "https://assets.vercel.com",
+            ]
+          : fontSrc,
+      },
+    };
+  }
+
+  let crossOriginEmbedderPolicy = config.crossOriginEmbedderPolicy;
+  if (crossOriginEmbedderPolicy === true) {
+    crossOriginEmbedderPolicy = defaults.crossOriginEmbedderPolicy;
+  }
+
+  let augmentedCrossOriginEmbedderPolicy = crossOriginEmbedderPolicy;
+  if (crossOriginEmbedderPolicy) {
+    augmentedCrossOriginEmbedderPolicy = {
+      policy: crossOriginEmbedderPolicy.policy
+        ? "unsafe-none"
+        : crossOriginEmbedderPolicy.policy,
+    };
+  }
+
+  return {
+    ...config,
+    contentSecurityPolicy: augmentedContentSecurityPolicy,
+    crossOriginEmbedderPolicy: augmentedCrossOriginEmbedderPolicy,
+  } as const;
+}
