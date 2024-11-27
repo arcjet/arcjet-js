@@ -835,7 +835,7 @@ describe("nosecone", () => {
       });
     });
 
-    it("removes `'self'` values", () => {
+    it("keeps `'self'` values", () => {
       const policy = withVercelToolbar({
         contentSecurityPolicy: {
           directives: {
