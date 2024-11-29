@@ -547,42 +547,46 @@ describe("nosecone", () => {
   describe("nosecone", () => {
     it("uses default configuration if no options provided", () => {
       const headers = nosecone();
-      assert.deepStrictEqual(headers, {
-        "content-security-policy":
+      assert.deepStrictEqual(Array.from(headers.entries()), [
+        [
+          "content-security-policy",
           "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; upgrade-insecure-requests;",
-        "cross-origin-embedder-policy": "require-corp",
-        "cross-origin-opener-policy": "same-origin",
-        "cross-origin-resource-policy": "same-origin",
-        "origin-agent-cluster": "?1",
-        "referrer-policy": "no-referrer",
-        "strict-transport-security": "max-age=31536000; includeSubDomains",
-        "x-content-type-options": "nosniff",
-        "x-dns-prefetch-control": "off",
-        "x-download-options": "noopen",
-        "x-frame-options": "SAMEORIGIN",
-        "x-permitted-cross-domain-policies": "none",
-        "x-xss-protection": "0",
-      });
+        ],
+        ["cross-origin-embedder-policy", "require-corp"],
+        ["cross-origin-opener-policy", "same-origin"],
+        ["cross-origin-resource-policy", "same-origin"],
+        ["origin-agent-cluster", "?1"],
+        ["referrer-policy", "no-referrer"],
+        ["strict-transport-security", "max-age=31536000; includeSubDomains"],
+        ["x-content-type-options", "nosniff"],
+        ["x-dns-prefetch-control", "off"],
+        ["x-download-options", "noopen"],
+        ["x-frame-options", "SAMEORIGIN"],
+        ["x-permitted-cross-domain-policies", "none"],
+        ["x-xss-protection", "0"],
+      ]);
     });
 
     it("uses default configuration if field not provided", () => {
       const headers = nosecone({});
-      assert.deepStrictEqual(headers, {
-        "content-security-policy":
+      assert.deepStrictEqual(Array.from(headers.entries()), [
+        [
+          "content-security-policy",
           "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; upgrade-insecure-requests;",
-        "cross-origin-embedder-policy": "require-corp",
-        "cross-origin-opener-policy": "same-origin",
-        "cross-origin-resource-policy": "same-origin",
-        "origin-agent-cluster": "?1",
-        "referrer-policy": "no-referrer",
-        "strict-transport-security": "max-age=31536000; includeSubDomains",
-        "x-content-type-options": "nosniff",
-        "x-dns-prefetch-control": "off",
-        "x-download-options": "noopen",
-        "x-frame-options": "SAMEORIGIN",
-        "x-permitted-cross-domain-policies": "none",
-        "x-xss-protection": "0",
-      });
+        ],
+        ["cross-origin-embedder-policy", "require-corp"],
+        ["cross-origin-opener-policy", "same-origin"],
+        ["cross-origin-resource-policy", "same-origin"],
+        ["origin-agent-cluster", "?1"],
+        ["referrer-policy", "no-referrer"],
+        ["strict-transport-security", "max-age=31536000; includeSubDomains"],
+        ["x-content-type-options", "nosniff"],
+        ["x-dns-prefetch-control", "off"],
+        ["x-download-options", "noopen"],
+        ["x-frame-options", "SAMEORIGIN"],
+        ["x-permitted-cross-domain-policies", "none"],
+        ["x-xss-protection", "0"],
+      ]);
     });
 
     it("disables header with explicit false", () => {
@@ -601,7 +605,7 @@ describe("nosecone", () => {
         xPermittedCrossDomainPolicies: false,
         xXssProtection: false,
       });
-      assert.deepStrictEqual(headers, {});
+      assert.deepStrictEqual(Array.from(headers.entries()), []);
     });
 
     it("enabled default header with explicit true", () => {
@@ -620,22 +624,24 @@ describe("nosecone", () => {
         xPermittedCrossDomainPolicies: true,
         xXssProtection: true,
       });
-      assert.deepStrictEqual(headers, {
-        "content-security-policy":
+      assert.deepStrictEqual(Array.from(headers.entries()), [
+        [
+          "content-security-policy",
           "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; upgrade-insecure-requests;",
-        "cross-origin-embedder-policy": "require-corp",
-        "cross-origin-opener-policy": "same-origin",
-        "cross-origin-resource-policy": "same-origin",
-        "origin-agent-cluster": "?1",
-        "referrer-policy": "no-referrer",
-        "strict-transport-security": "max-age=31536000; includeSubDomains",
-        "x-content-type-options": "nosniff",
-        "x-dns-prefetch-control": "off",
-        "x-download-options": "noopen",
-        "x-frame-options": "SAMEORIGIN",
-        "x-permitted-cross-domain-policies": "none",
-        "x-xss-protection": "0",
-      });
+        ],
+        ["cross-origin-embedder-policy", "require-corp"],
+        ["cross-origin-opener-policy", "same-origin"],
+        ["cross-origin-resource-policy", "same-origin"],
+        ["origin-agent-cluster", "?1"],
+        ["referrer-policy", "no-referrer"],
+        ["strict-transport-security", "max-age=31536000; includeSubDomains"],
+        ["x-content-type-options", "nosniff"],
+        ["x-dns-prefetch-control", "off"],
+        ["x-download-options", "noopen"],
+        ["x-frame-options", "SAMEORIGIN"],
+        ["x-permitted-cross-domain-policies", "none"],
+        ["x-xss-protection", "0"],
+      ]);
     });
   });
 });

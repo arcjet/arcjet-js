@@ -1,5 +1,6 @@
 import arcjet, { fixedWindow, shield } from "@arcjet/node";
 import * as http from "node:http";
+import nosecone from "nosecone";
 
 const aj = arcjet({
   // Get your site key from https://app.arcjet.com and set it as an environment
@@ -24,6 +25,8 @@ const aj = arcjet({
 
 const server = http.createServer(async function (req, res) {
   const decision = await aj.protect(req);
+
+  res.setHeaders(nosecone());
 
   if (decision.isDenied()) {
     res.writeHead(429, { "Content-Type": "application/json" });

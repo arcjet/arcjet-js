@@ -616,84 +616,84 @@ export default function nosecone({
     xPermittedCrossDomainPolicies = defaults.xPermittedCrossDomainPolicies;
   }
 
-  const headers: Record<string, string> = {};
+  const headers = new Headers();
 
   if (contentSecurityPolicy) {
     const [headerName, headerValue] = createContentSecurityPolicy(
       contentSecurityPolicy,
     );
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (crossOriginEmbedderPolicy) {
     const [headerName, headerValue] = createCrossOriginEmbedderPolicy(
       crossOriginEmbedderPolicy,
     );
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (crossOriginOpenerPolicy) {
     const [headerName, headerValue] = createCrossOriginOpenerPolicy(
       crossOriginOpenerPolicy,
     );
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (crossOriginResourcePolicy) {
     const [headerName, headerValue] = createCrossOriginResourcePolicy(
       crossOriginResourcePolicy,
     );
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (originAgentCluster) {
     const [headerName, headerValue] = createOriginAgentCluster();
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (referrerPolicy) {
     const [headerName, headerValue] = createReferrerPolicy(referrerPolicy);
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (strictTransportSecurity) {
     const [headerName, headerValue] = createStrictTransportSecurity(
       strictTransportSecurity,
     );
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (xContentTypeOptions) {
     const [headerName, headerValue] = createContentTypeOptions();
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (xDnsPrefetchControl) {
     const [headerName, headerValue] =
       createDnsPrefetchControl(xDnsPrefetchControl);
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (xDownloadOptions) {
     const [headerName, headerValue] = createDownloadOptions();
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (xFrameOptions) {
     const [headerName, headerValue] = createFrameOptions(xFrameOptions);
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (xPermittedCrossDomainPolicies) {
     const [headerName, headerValue] = createPermittedCrossDomainPolicies(
       xPermittedCrossDomainPolicies,
     );
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   if (xXssProtection) {
     const [headerName, headerValue] = createXssProtection();
-    headers[headerName] = headerValue;
+    headers.set(headerName, headerValue);
   }
 
   return headers;
