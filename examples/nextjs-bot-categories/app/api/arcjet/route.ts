@@ -37,8 +37,16 @@ export async function GET(req: Request) {
   if (decision.reason.isBot()) {
     // WARNING: This is illustrative! Don't share this metadata with users;
     // otherwise they may use it to subvert bot detection!
-    headers.set("X-Arcjet-Bot-Allowed",  decision.reason.allowed.join(", "))
-    headers.set("X-Arcjet-Bot-Denied",  decision.reason.denied.join(", "))
+    headers.set("X-Arcjet-Bot-Allowed", decision.reason.allowed.join(", "))
+    headers.set("X-Arcjet-Bot-Denied", decision.reason.denied.join(", "))
+
+    // We need to check that the bot is who they say they are.
+    if (decision.reason.isSpoofed()) {
+      return NextResponse.json(
+        { error: "You are pretending to be a good bot!" },
+        { status: 403, headers },
+      );
+    }
   }
 
   if (decision.isDenied()) {
