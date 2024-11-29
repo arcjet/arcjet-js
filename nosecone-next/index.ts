@@ -10,8 +10,8 @@ export const defaults = {
         // Replace the defaults to remove `'self'`
         process.env.NODE_ENV === "development"
           ? // Next.js hot reloading relies on `eval` so we enable it in development
-            ([nonce, "'strict-dynamic'", "'unsafe-eval'"] as const)
-          : ([nonce, "'strict-dynamic'"] as const),
+            ([nonce, "'unsafe-eval'"] as const)
+          : ([nonce] as const),
       styleSrc: [
         ...baseDefaults.contentSecurityPolicy.directives.styleSrc,
         "'unsafe-inline'",
