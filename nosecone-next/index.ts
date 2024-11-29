@@ -8,15 +8,13 @@ export const defaults = {
   contentSecurityPolicy: {
     directives: {
       ...baseDefaults.contentSecurityPolicy.directives,
-      scriptSrc:
-        // Replace the defaults to remove `'self'`
-        process.env.NODE_ENV === "development"
-          ? // Next.js hot reloading relies on `eval` so we enable it in development
-            ([nonce, "'unsafe-eval'"] as const)
-          : ([nonce] as const),
+      scriptSrc: [
+        ...baseDefaults.contentSecurityPolicy.directives.scriptSrc,
+        ...nextScriptSrc(),
+      ],
       styleSrc: [
         ...baseDefaults.contentSecurityPolicy.directives.styleSrc,
-        "'unsafe-inline'",
+        ...nextStyleSrc(),
       ],
     },
   },
@@ -27,6 +25,17 @@ export default nosecone;
 
 function nonce() {
   return `'nonce-${btoa(crypto.randomUUID())}'` as const;
+}
+
+function nextScriptSrc() {
+  return process.env.NODE_ENV === "development"
+    ? // Next.js hot reloading relies on `eval` so we enable it in development
+      ([nonce, "'unsafe-eval'"] as const)
+    : ([nonce] as const);
+}
+
+function nextStyleSrc() {
+  return ["'unsafe-inline'"] as const;
 }
 
 /**
