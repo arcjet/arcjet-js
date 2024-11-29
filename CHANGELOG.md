@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...v1.0.0-alpha.33) (2024-11-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* **nosecone-next:** Remove strict-dynamic value in script-src directive ([#2363](https://github.com/arcjet/arcjet-js/issues/2363))
+* **nosecone:** Change return value to Headers ([#2362](https://github.com/arcjet/arcjet-js/issues/2362))
+
+### 🚀 New Features
+
+* **nosecone:** Add withVercelToolbar utility function ([#2364](https://github.com/arcjet/arcjet-js/issues/2364)) ([177d16d](https://github.com/arcjet/arcjet-js/commit/177d16db642899213a3d936d671fc197d03f4fa1))
+* show isSpoofed() in bot examples ([#2375](https://github.com/arcjet/arcjet-js/issues/2375)) ([d9cab55](https://github.com/arcjet/arcjet-js/commit/d9cab55ecc6d9cbd199aac776f229f384d984ea7))
+
+
+### 🪲 Bug Fixes
+
+* **nosecone-next:** Remove strict-dynamic value in script-src directive ([#2363](https://github.com/arcjet/arcjet-js/issues/2363)) ([2bd8bff](https://github.com/arcjet/arcjet-js/commit/2bd8bffdc8a1be0634b50aa6123bf74b781e9764))
+* **nosecone:** Change return value to Headers ([#2362](https://github.com/arcjet/arcjet-js/issues/2362)) ([ff19af9](https://github.com/arcjet/arcjet-js/commit/ff19af90920b0637d6c628e15aa0f295bb6f2e64))
+
 ## [1.0.0-alpha.32](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.31...v1.0.0-alpha.32) (2024-11-26)
 
 

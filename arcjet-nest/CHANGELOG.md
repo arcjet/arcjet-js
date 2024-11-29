@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...@arcjet/nest-v1.0.0-alpha.33) (2024-11-29)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/nest:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/headers bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/ip bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/logger bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/protocol bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/transport bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/body bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * arcjet bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+
 ## [1.0.0-alpha.32](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.31...@arcjet/nest-v1.0.0-alpha.32) (2024-11-26)
 
 
