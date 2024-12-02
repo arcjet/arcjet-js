@@ -99,6 +99,11 @@ function suite(make: MakeTest) {
     const [request, options] = make("::abcd:c00a:2ff%1");
     expect(ip(request, options)).toEqual("::abcd:c00a:2ff%1");
   });
+
+  test("returns empty string if the ip is a trusted proxy", () => {
+    const [request, options] = make("::abcd:c00a:2ff");
+    expect(ip(request, { ...options, proxies: ["::abcd:c00a:2ff"] }));
+  });
 }
 
 function requestSuite(...keys: string[]) {
@@ -196,6 +201,26 @@ describe("find public IPv6", () => {
         ]),
       };
       expect(ip(request)).toEqual("abcd::");
+    });
+
+    test("skips any trusted proxy IP", () => {
+      const request = {
+        headers: new Headers([["X-Forwarded-For", "e123::, 3.3.3.3, abcd::"]]),
+      };
+      const options = {
+        proxies: ["abcd::"],
+      };
+      expect(ip(request, options)).toEqual("3.3.3.3");
+    });
+
+    test("skips multiple trusted proxy IPs", () => {
+      const request = {
+        headers: new Headers([["X-Forwarded-For", "e123::, 3.3.3.3, abcd::"]]),
+      };
+      const options = {
+        proxies: ["3.3.3.3", "abcd::"],
+      };
+      expect(ip(request, options)).toEqual("e123::");
     });
   });
 });

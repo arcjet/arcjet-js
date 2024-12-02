@@ -171,6 +171,11 @@ function suite(make: MakeTest) {
     const [request, options] = make("1.1.1.1:443");
     expect(ip(request, options)).toEqual("1.1.1.1:443");
   });
+
+  test("returns empty string if the ip is a trusted proxy", () => {
+    const [request, options] = make("1.1.1.1");
+    expect(ip(request, { ...options, proxies: ["1.1.1.1"] }));
+  });
 }
 
 function requestSuite(...keys: string[]) {
@@ -269,6 +274,30 @@ describe("find public IPv4", () => {
         ]),
       };
       expect(ip(request)).toEqual("3.3.3.3");
+    });
+
+    test("skips any trusted proxy IP", () => {
+      const request = {
+        headers: new Headers([
+          ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3"],
+        ]),
+      };
+      const options = {
+        proxies: ["3.3.3.3"],
+      };
+      expect(ip(request, options)).toEqual("2.2.2.2");
+    });
+
+    test("skips multiple trusted proxy IPs", () => {
+      const request = {
+        headers: new Headers([
+          ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3"],
+        ]),
+      };
+      const options = {
+        proxies: ["3.3.3.3", "2.2.2.2"],
+      };
+      expect(ip(request, options)).toEqual("1.1.1.1");
     });
   });
 });
