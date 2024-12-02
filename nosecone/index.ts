@@ -145,7 +145,7 @@ export interface PermittedCrossDomainPoliciesConfig {
 export interface NoseconeOptions {
   /**
    * Configure the `Content-Security-Policy` header, which helps mitigate a
-   * large number of * attacks, such as cross-site scripting.
+   * large number of attacks, such as cross-site scripting.
    *
    * Enable with defaults by specifying `true`, disable by specifying `false`,
    * or provide {@link ContentSecurityPolicyConfig} to configure individual
