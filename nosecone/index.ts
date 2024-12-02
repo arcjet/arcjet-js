@@ -294,7 +294,7 @@ export interface NoseconeOptions {
   xPermittedCrossDomainPolicies?: PermittedCrossDomainPoliciesConfig | boolean;
   /**
    * Disable the `X-XSS-Protection` header, which could introduce a browser
-   * side-channel if enabled.
+   * side-channel in legacy browsers if enabled.
    *
    * Disable it by specifying `true` or avoid setting the header by specifying
    * `false`.
