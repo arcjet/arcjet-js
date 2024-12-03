@@ -10,7 +10,7 @@ import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
 import core from "arcjet";
 import type {
   ArcjetDecision,
-  ArcjetOptions,
+  ArcjetOptions as CoreOptions,
   Primitive,
   Product,
   ArcjetRequest,
@@ -191,6 +191,22 @@ function cookiesToString(cookies?: ArcjetNextRequest["cookies"]): string {
 }
 
 /**
+ * The options used to configure an {@link ArcjetNest} client.
+ */
+export type ArcjetOptions<
+  Rules extends [...Array<Primitive | Product>],
+  Characteristics extends readonly string[],
+> = Simplify<
+  CoreOptions<Rules, Characteristics> & {
+    /**
+     * One or more IP Address of trusted proxies in front of the application.
+     * These addresses will be excluded when Arcjet detects a public IP address.
+     */
+    proxies?: Array<string>;
+  }
+>;
+
+/**
  * The ArcjetNext client provides a public `protect()` method to
  * make a decision about how a Next.js request should be handled.
  */
@@ -263,7 +279,7 @@ export default function arcjet<
         requestContext: request.requestContext,
         headers,
       },
-      { platform: platform(process.env) },
+      { platform: platform(process.env), proxies: options.proxies },
     );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
