@@ -33,7 +33,7 @@ describe("nosecone", () => {
       const policy = createContentSecurityPolicy();
       assert.deepStrictEqual(policy, [
         "content-security-policy",
-        "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; upgrade-insecure-requests;",
+        "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self';",
       ]);
     });
 
@@ -41,7 +41,7 @@ describe("nosecone", () => {
       const policy = createContentSecurityPolicy({});
       assert.deepStrictEqual(policy, [
         "content-security-policy",
-        "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; upgrade-insecure-requests;",
+        "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self';",
       ]);
     });
 
@@ -552,7 +552,7 @@ describe("nosecone", () => {
       assert.deepStrictEqual(Array.from(headers.entries()), [
         [
           "content-security-policy",
-          "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; upgrade-insecure-requests;",
+          "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self';",
         ],
         ["cross-origin-embedder-policy", "require-corp"],
         ["cross-origin-opener-policy", "same-origin"],
@@ -574,7 +574,7 @@ describe("nosecone", () => {
       assert.deepStrictEqual(Array.from(headers.entries()), [
         [
           "content-security-policy",
-          "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; upgrade-insecure-requests;",
+          "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self';",
         ],
         ["cross-origin-embedder-policy", "require-corp"],
         ["cross-origin-opener-policy", "same-origin"],
@@ -629,7 +629,7 @@ describe("nosecone", () => {
       assert.deepStrictEqual(Array.from(headers.entries()), [
         [
           "content-security-policy",
-          "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; upgrade-insecure-requests;",
+          "base-uri 'none'; child-src 'none'; connect-src 'self'; default-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' blob: data:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self';",
         ],
         ["cross-origin-embedder-policy", "require-corp"],
         ["cross-origin-opener-policy", "same-origin"],
@@ -703,7 +703,6 @@ describe("nosecone", () => {
             objectSrc: ["'none'"],
             scriptSrc: ["'self'", "https://vercel.live"],
             styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
-            upgradeInsecureRequests: true,
             workerSrc: ["'self'"],
           },
         },
@@ -922,7 +921,6 @@ describe("nosecone", () => {
             objectSrc: ["'none'"],
             scriptSrc: ["'self'", "https://vercel.live"],
             styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
-            upgradeInsecureRequests: true,
             workerSrc: ["'self'"],
           },
         },
@@ -965,7 +963,6 @@ describe("nosecone", () => {
             objectSrc: ["'none'"],
             scriptSrc: ["'self'", "https://vercel.live"],
             styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
-            upgradeInsecureRequests: true,
             workerSrc: ["'self'"],
           },
         },
