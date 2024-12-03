@@ -429,7 +429,6 @@ const directives = {
   scriptSrc: ["'self'"],
   styleSrc: ["'self'"],
   workerSrc: ["'self'"],
-  upgradeInsecureRequests: true,
 } as const;
 
 export const defaults = {
