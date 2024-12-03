@@ -39,6 +39,9 @@ console.log(globalIp);
 
 // Also optionally takes a platform for additional protection
 const platformGuardedGloablIp = ip(request, { platform: "fly-io" });
+
+// You can also pass a list of trusted proxies to ignore
+const proxyExcludedGlobalIp = ip(request, { proxies: ["103.31.4.0"] });
 ```
 
 ## Considerations
