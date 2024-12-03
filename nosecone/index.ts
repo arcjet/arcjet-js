@@ -143,18 +143,168 @@ export interface PermittedCrossDomainPoliciesConfig {
 }
 
 export interface NoseconeOptions {
+  /**
+   * Configure the `Content-Security-Policy` header, which helps mitigate a
+   * large number of attacks, such as cross-site scripting.
+   *
+   * Enable with defaults by specifying `true`, disable by specifying `false`,
+   * or provide {@link ContentSecurityPolicyConfig} to configure individual
+   * items.
+   *
+   * See also:
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+   * - https://owasp.org/www-project-secure-headers/#content-security-policy
+   */
   contentSecurityPolicy?: ContentSecurityPolicyConfig | boolean;
+  /**
+   * Configure the `Cross-Origin-Embedder-Policy` header, which helps control
+   * what resources can be loaded cross-origin.
+   *
+   * Enable with defaults by specifying `true`, disable by specifying `false`,
+   * or provide {@link CrossOriginEmbedderPolicyConfig} to configure individual
+   * items.
+   *
+   * See also:
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy
+   * - https://owasp.org/www-project-secure-headers/#cross-origin-embedder-policy
+   */
   crossOriginEmbedderPolicy?: CrossOriginEmbedderPolicyConfig | boolean;
+  /**
+   * Configure the `Cross-Origin-Opener-Policy` header, which helps
+   * process-isolate your page.
+   *
+   * Enable with defaults by specifying `true`, disable by specifying `false`,
+   * or provide {@link CrossOriginOpenerPolicyConfig} to configure individual
+   * items.
+   *
+   * See also:
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Opener-Policy
+   * - https://owasp.org/www-project-secure-headers/#cross-origin-opener-policy
+   */
   crossOriginOpenerPolicy?: CrossOriginOpenerPolicyConfig | boolean;
+  /**
+   * Configure the `Cross-Origin-Resource-Policy` header, which blocks others
+   * from loading your resources cross-origin in some cases.
+   *
+   * Enable with defaults by specifying `true`, disable by specifying `false`,
+   * or provide {@link CrossOriginResourcePolicyConfig} to configure individual
+   * items.
+   *
+   * See also:
+   * - https://resourcepolicy.fyi/
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Resource-Policy
+   * - https://owasp.org/www-project-secure-headers/#cross-origin-resource-policy
+   */
   crossOriginResourcePolicy?: CrossOriginResourcePolicyConfig | boolean;
+  /**
+   * Configure the `Origin-Agent-Cluster` header, which provides a mechanism to
+   * allow web applications to isolate their origins from other processes.
+   *
+   * Enable with defaults by specifying `true` or disable by specifying `false`.
+   *
+   * See also:
+   * - https://whatpr.org/html/6214/origin.html#origin-keyed-agent-clusters
+   */
   originAgentCluster?: boolean;
+  /**
+   * Configure the `Referrer-Policy` header, which controls what information is
+   * set in the `Referer` request header.
+   *
+   * Enable with defaults by specifying `true`, disable by specifying `false`,
+   * or provide {@link ReferrerPolicyConfig} to configure individual items.
+   *
+   * See also:
+   * - https://developer.mozilla.org/en-US/docs/Web/Security/Referer_header:_privacy_and_security_concerns
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+   * - https://owasp.org/www-project-secure-headers/#referrer-policy
+   */
   referrerPolicy?: ReferrerPolicyConfig | boolean;
+  /**
+   * Configure the `Strict-Transport-Security` header, which tells browsers to
+   * prefer HTTPS instead of insecure HTTP.
+   *
+   * Enable with defaults by specifying `true`, disable by specifying `false`,
+   * or provide {@link StrictTransportSecurityConfig} to configure individual
+   * items.
+   *
+   * See also:
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+   * - https://owasp.org/www-project-secure-headers/#strict-transport-security
+   */
   strictTransportSecurity?: StrictTransportSecurityConfig | boolean;
+  /**
+   * Configure the `X-Content-Type-Options` header, which helps mitigate MIME
+   * type sniffing that can cause security issues.
+   *
+   * Enable with defaults by specifying `true` or disable by specifying `false`.
+   *
+   * See also:
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types#mime_sniffing
+   * - https://owasp.org/www-project-secure-headers/#x-content-type-options
+   */
   xContentTypeOptions?: boolean;
+  /**
+   * Configure the `X-DNS-Prefetch-Control` header, which helps control DNS
+   * prefetching to improve user privacy at the expense of performance.
+   *
+   * Enable with defaults by specifying `true`, disable by specifying `false`,
+   * or provide {@link DnsPrefetchControlConfig} to configure individual items.
+   *
+   * See also:
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-DNS-Prefetch-Control
+   */
   xDnsPrefetchControl?: DnsPrefetchControlConfig | boolean;
+  /**
+   * Configure the `X-Download-Options` header, which prevents a user from
+   * opening a file directly in Internet Explorer 8 to avoid prevent script
+   * injection.
+   *
+   * Enable with defaults by specifying `true` or disable by specifying `false`.
+   *
+   * See also:
+   * - https://learn.microsoft.com/en-us/archive/blogs/ie/ie8-security-part-v-comprehensive-protection#mime-handling-force-save
+   */
   xDownloadOptions?: boolean;
+  /**
+   * Configure the `X-Frame-Options` header, which help mitigate clickjacking
+   * attacks in legacy browsers. This header is superceded by a directive in the
+   * `Content-Security-Policy` header.
+   *
+   * Enable with defaults by specifying `true`, disable by specifying `false`,
+   * or provide {@link FrameOptionsConfig} to configure individual items.
+   *
+   * See also:
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+   * - https://owasp.org/www-project-secure-headers/#x-frame-options
+   */
   xFrameOptions?: FrameOptionsConfig | boolean;
+  /**
+   * Configure the `X-Permitted-Cross-Domain-Policies` header, which tells some
+   * clients, like Adobe products, your domain's policy for loading cross-domain
+   * content.
+   *
+   * Enable with defaults by specifying `true`, disable by specifying `false`,
+   * or provide {@link PermittedCrossDomainPoliciesConfig} to configure
+   * individual items.
+   *
+   * See also:
+   * - https://owasp.org/www-project-secure-headers/#x-permitted-cross-domain-policies
+   */
   xPermittedCrossDomainPolicies?: PermittedCrossDomainPoliciesConfig | boolean;
+  /**
+   * Disable the `X-XSS-Protection` header, which could introduce a browser
+   * side-channel in legacy browsers if enabled.
+   *
+   * Disable it by specifying `true` or avoid setting the header by specifying
+   * `false`.
+   *
+   * See also:
+   * - https://github.com/helmetjs/helmet/issues/230
+   * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
+   * - https://owasp.org/www-project-secure-headers/#x-xss-protection
+   * - https://portswigger.net/daily-swig/new-xs-leak-techniques-reveal-fresh-ways-to-expose-user-information
+   */
   xXssProtection?: boolean;
 }
 
