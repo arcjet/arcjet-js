@@ -176,6 +176,15 @@ find a specific one through the categories and descriptions below.
 - [`@arcjet/redact`](./redact/README.md): Redact & unredact sensitive
   information from strings.
 
+### Nosecone
+
+- [`nosecone`](./nosecone/README.md): Protect your `Response` with secure
+  headers.
+- [`@nosecone/next`](./nosecone-next/README.md): Protect your Next.js
+  application with secure headers.
+- [`@nosecone/sveltekit`](./nosecone-sveltekit/README.md): Protect your
+  SvelteKit application with secure headers.
+
 ### Utilities
 
 - [`arcjet`](./arcjet/README.md): JS SDK core.
