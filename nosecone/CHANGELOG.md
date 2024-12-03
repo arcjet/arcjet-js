@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...nosecone-v1.0.0-alpha.34) (2024-12-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **nosecone:** Remove `upgradeInsecureRequests` default value ([#2401](https://github.com/arcjet/arcjet-js/issues/2401))
+
+### 🪲 Bug Fixes
+
+* **nosecone:** Remove `upgradeInsecureRequests` default value ([#2401](https://github.com/arcjet/arcjet-js/issues/2401)) ([093dc53](https://github.com/arcjet/arcjet-js/commit/093dc53459c187955781997446df98e5d190fca3))
+
+
+### 🧹 Miscellaneous Chores
+
+* **nosecone:** Add JSDoc comments to NoseconeOptions ([#2380](https://github.com/arcjet/arcjet-js/issues/2380)) ([53ec4eb](https://github.com/arcjet/arcjet-js/commit/53ec4eb96fd742dec7a23cd8abd2722b77c537b8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+
 ## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...nosecone-v1.0.0-alpha.33) (2024-11-29)
 
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/ip-v1.0.0-alpha.34) (2024-12-03)
+
+
+### 🚀 New Features
+
+* **ip:** Allow trusted proxies to exclude when looking for global IP ([#2393](https://github.com/arcjet/arcjet-js/issues/2393)) ([58286b7](https://github.com/arcjet/arcjet-js/commit/58286b72d456236e85bdd0c975b007e081dcac5a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+
 ## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...@arcjet/ip-v1.0.0-alpha.33) (2024-11-29)
 
 
