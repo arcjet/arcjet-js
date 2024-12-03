@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...v1.0.0-alpha.34) (2024-12-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **nosecone:** Remove `upgradeInsecureRequests` default value ([#2401](https://github.com/arcjet/arcjet-js/issues/2401))
+
+### 🚀 New Features
+
+* **ip:** Allow trusted proxies to exclude when looking for global IP ([#2393](https://github.com/arcjet/arcjet-js/issues/2393)) ([58286b7](https://github.com/arcjet/arcjet-js/commit/58286b72d456236e85bdd0c975b007e081dcac5a))
+* **nosecone-next:** Keep `'self'` script-src in defaults ([#2378](https://github.com/arcjet/arcjet-js/issues/2378)) ([13348c8](https://github.com/arcjet/arcjet-js/commit/13348c8a771a167f970cfa68d6c57f1c6288447b))
+* Support trusted proxy configuration on each adapter ([#2394](https://github.com/arcjet/arcjet-js/issues/2394)) ([f9587d8](https://github.com/arcjet/arcjet-js/commit/f9587d8ec6bd0327cb34ac19e52aeecbf6b79cf3)), closes [#2346](https://github.com/arcjet/arcjet-js/issues/2346)
+
+
+### 🪲 Bug Fixes
+
+* **nosecone:** Remove `upgradeInsecureRequests` default value ([#2401](https://github.com/arcjet/arcjet-js/issues/2401)) ([093dc53](https://github.com/arcjet/arcjet-js/commit/093dc53459c187955781997446df98e5d190fca3))
+
+
+### 📝 Documentation
+
+* Add nosecone section to root README ([#2404](https://github.com/arcjet/arcjet-js/issues/2404)) ([4674fa4](https://github.com/arcjet/arcjet-js/commit/4674fa41d8ed2bace58ea66bed8a138c4f52a167))
+
+
+### 🧹 Miscellaneous Chores
+
+* **nosecone:** Add JSDoc comments to NoseconeOptions ([#2380](https://github.com/arcjet/arcjet-js/issues/2380)) ([53ec4eb](https://github.com/arcjet/arcjet-js/commit/53ec4eb96fd742dec7a23cd8abd2722b77c537b8))
+
 ## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...v1.0.0-alpha.33) (2024-11-29)
 
 

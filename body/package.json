@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/body",
-  "version": "1.0.0-alpha.33",
+  "version": "1.0.0-alpha.34",
   "description": "Arcjet utilities for extracting the body from a Node.js IncomingMessage",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -40,9 +40,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.33",
-    "@arcjet/rollup-config": "1.0.0-alpha.33",
-    "@arcjet/tsconfig": "1.0.0-alpha.33",
+    "@arcjet/eslint-config": "1.0.0-alpha.34",
+    "@arcjet/rollup-config": "1.0.0-alpha.34",
+    "@arcjet/tsconfig": "1.0.0-alpha.34",
     "@jest/globals": "29.7.0",
     "@rollup/wasm-node": "4.28.0",
     "@types/node": "18.18.0",

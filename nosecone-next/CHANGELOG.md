@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@nosecone/next-v1.0.0-alpha.34) (2024-12-03)
+
+
+### 🚀 New Features
+
+* **nosecone-next:** Keep `'self'` script-src in defaults ([#2378](https://github.com/arcjet/arcjet-js/issues/2378)) ([13348c8](https://github.com/arcjet/arcjet-js/commit/13348c8a771a167f970cfa68d6c57f1c6288447b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+
 ## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...@nosecone/next-v1.0.0-alpha.33) (2024-11-29)
 
 

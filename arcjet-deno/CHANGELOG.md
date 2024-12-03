@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/deno-v1.0.0-alpha.34) (2024-12-03)
+
+
+### 🚀 New Features
+
+* Support trusted proxy configuration on each adapter ([#2394](https://github.com/arcjet/arcjet-js/issues/2394)) ([f9587d8](https://github.com/arcjet/arcjet-js/commit/f9587d8ec6bd0327cb34ac19e52aeecbf6b79cf3)), closes [#2346](https://github.com/arcjet/arcjet-js/issues/2346)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/headers bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/ip bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/logger bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/protocol bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/transport bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * arcjet bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+
 ## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...@arcjet/deno-v1.0.0-alpha.33) (2024-11-29)
 
 
