@@ -1,7 +1,4 @@
-/**
- * @jest-environment node
- */
-import { describe, test } from "@jest/globals";
+import { describe, test } from "node:test";
 import assert from "node:assert";
 import sprintf from "../index";
 

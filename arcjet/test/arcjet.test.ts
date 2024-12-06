@@ -1,14 +1,5 @@
-/**
- * @jest-environment node
- */
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  jest,
-  test,
-} from "@jest/globals";
+import { describe, test, mock } from "node:test";
+import { expect } from "expect";
 
 import type { ArcjetRule, ArcjetLocalRule, Primitive, Arcjet } from "../index";
 import arcjet, {
@@ -98,17 +89,6 @@ function areHeadersEqual(a: unknown, b: unknown): boolean | undefined {
 
 expect.addEqualityTesters([areHeadersEqual]);
 
-beforeEach(() => {
-  jest.useFakeTimers();
-});
-
-afterEach(() => {
-  jest.useRealTimers();
-  jest.clearAllTimers();
-  jest.clearAllMocks();
-  jest.restoreAllMocks();
-});
-
 function assertIsLocalRule(rule: ArcjetRule): asserts rule is ArcjetLocalRule {
   expect("validate" in rule && typeof rule.validate === "function").toEqual(
     true,
@@ -118,14 +98,16 @@ function assertIsLocalRule(rule: ArcjetRule): asserts rule is ArcjetLocalRule {
 
 class ArcjetTestReason extends ArcjetReason {}
 
-const log = {
-  time: jest.fn(),
-  timeEnd: jest.fn(),
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-};
+function mockLogger() {
+  return {
+    time: mock.fn(),
+    timeEnd: mock.fn(),
+    debug: mock.fn(),
+    info: mock.fn(),
+    warn: mock.fn(),
+    error: mock.fn(),
+  };
+}
 
 describe("ArcjetDecision", () => {
   test("will default the `id` property if not specified", () => {
@@ -428,7 +410,7 @@ describe("Primitive > detectBot", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -449,7 +431,7 @@ describe("Primitive > detectBot", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -474,7 +456,7 @@ describe("Primitive > detectBot", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -507,7 +489,7 @@ describe("Primitive > detectBot", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -546,7 +528,7 @@ describe("Primitive > detectBot", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -612,7 +594,7 @@ describe("Primitive > detectBot", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1266,7 +1248,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1287,7 +1269,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1308,7 +1290,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1343,7 +1325,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1378,7 +1360,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1413,7 +1395,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1450,7 +1432,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1485,7 +1467,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1520,7 +1502,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1557,7 +1539,7 @@ describe("Primitive > validateEmail", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1728,7 +1710,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -1756,7 +1738,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve("none of this is sensitive"),
     };
@@ -1794,7 +1776,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () =>
         Promise.resolve(
@@ -1856,7 +1838,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () =>
         Promise.resolve(
@@ -1919,7 +1901,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
     };
@@ -1968,7 +1950,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () =>
         Promise.resolve("127.0.0.1 test@example.com +353 87 123 4567"),
@@ -2024,7 +2006,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
     };
@@ -2074,7 +2056,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve("this is bad"),
     };
@@ -2128,7 +2110,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve("this is bad"),
     };
@@ -2171,7 +2153,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve("my email is test@example.com"),
     };
@@ -2225,7 +2207,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve("my email is test@example.com"),
     };
@@ -2262,7 +2244,7 @@ describe("Primitive > sensitiveInfo", () => {
       key: "test-key",
       fingerprint: "test-fingerprint",
       runtime: "test",
-      log,
+      log: mockLogger(),
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
@@ -2314,13 +2296,13 @@ describe("Products > protectSignup", () => {
 });
 
 describe("SDK", () => {
-  function testRuleLocalAllowed(): ArcjetLocalRule {
+  function testRuleLocalAllowed() {
     return {
       mode: ArcjetMode.LIVE,
       type: "TEST_RULE_LOCAL_ALLOWED",
       priority: 1,
-      validate: jest.fn(),
-      protect: jest.fn(
+      validate: mock.fn(),
+      protect: mock.fn(
         async () =>
           new ArcjetRuleResult({
             ttl: 0,
@@ -2331,13 +2313,13 @@ describe("SDK", () => {
       ),
     };
   }
-  function testRuleLocalDenied(): ArcjetLocalRule {
+  function testRuleLocalDenied() {
     return {
       mode: ArcjetMode.LIVE,
       type: "TEST_RULE_LOCAL_DENIED",
       priority: 1,
-      validate: jest.fn(),
-      protect: jest.fn(
+      validate: mock.fn(),
+      protect: mock.fn(
         async () =>
           new ArcjetRuleResult({
             ttl: 5000,
@@ -2348,14 +2330,13 @@ describe("SDK", () => {
       ),
     };
   }
-  function testRuleLocalIncorrect(): ArcjetLocalRule {
+  function testRuleLocalIncorrect() {
     return {
       mode: ArcjetMode.LIVE,
       type: "TEST_RULE_LOCAL_INCORRECT",
       priority: 1,
-      validate: jest.fn(),
-      // @ts-expect-error
-      protect: jest.fn(async () => undefined),
+      validate: mock.fn(),
+      protect: mock.fn(async () => undefined),
     };
   }
 
@@ -2383,25 +2364,25 @@ describe("SDK", () => {
     };
   }
 
-  function testRuleLocalThrow(): ArcjetLocalRule {
+  function testRuleLocalThrow() {
     return {
       mode: ArcjetMode.LIVE,
       type: "TEST_RULE_LOCAL_THROW",
       priority: 1,
-      validate: jest.fn(),
-      protect: jest.fn(async () => {
+      validate: mock.fn(),
+      protect: mock.fn(async () => {
         throw new Error("Local rule protect failed");
       }),
     };
   }
 
-  function testRuleLocalDryRun(): ArcjetLocalRule {
+  function testRuleLocalDryRun() {
     return {
       mode: ArcjetMode.DRY_RUN,
       type: "TEST_RULE_LOCAL_DRY_RUN",
       priority: 1,
-      validate: jest.fn(),
-      protect: jest.fn(async () => {
+      validate: mock.fn(),
+      protect: mock.fn(async () => {
         return new ArcjetRuleResult({
           ttl: 0,
           state: "RUN",
@@ -2418,21 +2399,21 @@ describe("SDK", () => {
 
   test("creates a new Arcjet SDK with no rules", () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const aj = arcjet({
       key: "test-key",
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
     expect(aj).toHaveProperty("protect");
     expect(typeof aj.protect).toEqual("function");
@@ -2440,14 +2421,14 @@ describe("SDK", () => {
 
   test("can augment rules via `withRule` API", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -2467,7 +2448,7 @@ describe("SDK", () => {
       key,
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
@@ -2491,24 +2472,24 @@ describe("SDK", () => {
     };
 
     const _ = await aj2.protect(context, request);
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.anything(),
       expect.anything(),
       [...tokenBucketRule],
-    );
+    ]);
   });
 
   test("can chain new rules via multiple `withRule` calls", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -2529,7 +2510,7 @@ describe("SDK", () => {
       key,
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
@@ -2563,24 +2544,24 @@ describe("SDK", () => {
     };
 
     const _ = await aj3.protect(context, request);
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.anything(),
       expect.anything(),
       [...tokenBucketRule, ...testRule],
-    );
+    ]);
   });
 
   test("creates different augmented clients when `withRule` not chained", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -2601,7 +2582,7 @@ describe("SDK", () => {
       key,
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
@@ -2630,31 +2611,31 @@ describe("SDK", () => {
     };
 
     const _ = await aj3.protect(context, request);
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.anything(),
       expect.anything(),
       [...testRule],
-    );
+    ]);
   });
 
   test("creates a new Arcjet SDK with only local rules", () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const aj = arcjet({
       key: "test-key",
       rules: [[testRuleLocalAllowed(), testRuleLocalDenied()]],
       client,
-      log,
+      log: mockLogger(),
     });
     expect(aj).toHaveProperty("protect");
     expect(typeof aj.protect).toEqual("function");
@@ -2662,21 +2643,21 @@ describe("SDK", () => {
 
   test("creates a new Arcjet SDK with only remote rules", () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const aj = arcjet({
       key: "test-key",
       rules: [[testRuleRemote()]],
       client,
-      log,
+      log: mockLogger(),
     });
     expect(aj).toHaveProperty("protect");
     expect(typeof aj.protect).toEqual("function");
@@ -2684,14 +2665,14 @@ describe("SDK", () => {
 
   test("creates a new Arcjet SDK with both local and remote rules", () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const aj = arcjet({
@@ -2700,7 +2681,7 @@ describe("SDK", () => {
         [testRuleLocalAllowed(), testRuleLocalDenied(), testRuleRemote()],
       ],
       client,
-      log,
+      log: mockLogger(),
     });
     expect(aj).toHaveProperty("protect");
     expect(typeof aj.protect).toEqual("function");
@@ -2712,7 +2693,7 @@ describe("SDK", () => {
       const aj = arcjet({
         key: "test-key",
         rules: [],
-        log,
+        log: mockLogger(),
       });
     }).toThrow();
   });
@@ -2720,14 +2701,14 @@ describe("SDK", () => {
   test("throws if no log is specified", () => {
     expect(() => {
       const client = {
-        decide: jest.fn(async () => {
+        decide: mock.fn(async () => {
           return new ArcjetAllowDecision({
             ttl: 0,
             reason: new ArcjetTestReason(),
             results: [],
           });
         }),
-        report: jest.fn(),
+        report: mock.fn(),
       };
 
       const aj = arcjet({
@@ -2740,14 +2721,14 @@ describe("SDK", () => {
 
   test("calls each local rule until a DENY decision is encountered", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -2766,7 +2747,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[allowed, denied]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -2776,22 +2757,22 @@ describe("SDK", () => {
     const decision = await aj.protect(context, request);
     expect(decision.conclusion).toEqual("DENY");
 
-    expect(allowed.validate).toHaveBeenCalledTimes(1);
-    expect(allowed.protect).toHaveBeenCalledTimes(1);
-    expect(denied.validate).toHaveBeenCalledTimes(1);
-    expect(denied.protect).toHaveBeenCalledTimes(1);
+    expect(allowed.validate.mock.callCount()).toEqual(1);
+    expect(allowed.protect.mock.callCount()).toEqual(1);
+    expect(denied.validate.mock.callCount()).toEqual(1);
+    expect(denied.protect.mock.callCount()).toEqual(1);
   });
 
   test("does not crash if a local rule does not return a result", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -2809,7 +2790,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[rule]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -2820,20 +2801,20 @@ describe("SDK", () => {
     // ALLOW because the remote rule was called and it returned ALLOW
     expect(decision.conclusion).toEqual("ALLOW");
 
-    expect(rule.validate).toHaveBeenCalledTimes(1);
-    expect(rule.protect).toHaveBeenCalledTimes(1);
+    expect(rule.validate.mock.callCount()).toEqual(1);
+    expect(rule.protect.mock.callCount()).toEqual(1);
   });
 
   test("returns an ERROR decision if fingerprint cannot be generated", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {};
@@ -2842,7 +2823,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -2855,21 +2836,21 @@ describe("SDK", () => {
 
   test("returns an ERROR decision with no request object", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const aj = arcjet({
       key: "test-key",
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
 
     // @ts-expect-error
@@ -2879,14 +2860,14 @@ describe("SDK", () => {
 
   test("returns an ERROR decision when more than 10 rules are generated", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -2903,7 +2884,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: rules,
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -2916,14 +2897,14 @@ describe("SDK", () => {
 
   test("won't run a later local rule if a DENY decision is encountered", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -2942,7 +2923,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[denied, allowed]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -2952,22 +2933,22 @@ describe("SDK", () => {
     const decision = await aj.protect(context, request);
     expect(decision.conclusion).toEqual("DENY");
 
-    expect(denied.validate).toHaveBeenCalledTimes(1);
-    expect(denied.protect).toHaveBeenCalledTimes(1);
-    expect(allowed.validate).toHaveBeenCalledTimes(0);
-    expect(allowed.protect).toHaveBeenCalledTimes(0);
+    expect(denied.validate.mock.callCount()).toEqual(1);
+    expect(denied.protect.mock.callCount()).toEqual(1);
+    expect(allowed.validate.mock.callCount()).toEqual(0);
+    expect(allowed.protect.mock.callCount()).toEqual(0);
   });
 
   test("accepts plain object of headers", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -2991,12 +2972,12 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const decision = await aj.protect(context, request);
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.objectContaining(context),
       expect.objectContaining({
         ip: request.ip,
@@ -3010,19 +2991,19 @@ describe("SDK", () => {
         },
       }),
       [],
-    );
+    ]);
   });
 
   test("accepts plain object of `raw` headers", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -3046,12 +3027,12 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const decision = await aj.protect(context, request);
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.objectContaining(context),
       expect.objectContaining({
         ip: request.ip,
@@ -3068,19 +3049,19 @@ describe("SDK", () => {
         },
       }),
       [],
-    );
+    ]);
   });
 
   test("converts extra keys with non-string values to string values", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -3107,12 +3088,12 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const decision = await aj.protect(context, request);
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.objectContaining(context),
       expect.objectContaining({
         ip: request.ip,
@@ -3129,19 +3110,19 @@ describe("SDK", () => {
         },
       }),
       [],
-    );
+    ]);
   });
 
   test("does not call `client.report()` if the local decision is ALLOW", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetErrorDecision({
           ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -3159,7 +3140,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[allowed]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -3167,21 +3148,21 @@ describe("SDK", () => {
     };
 
     const _ = await aj.protect(context, request);
-    expect(client.report).toHaveBeenCalledTimes(0);
-    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.report.mock.callCount()).toEqual(0);
+    expect(client.decide.mock.callCount()).toEqual(1);
     // TODO: Validate correct `ruleResults` are sent with `decide` when available
   });
 
   test("calls `client.decide()` if the local decision is ALLOW", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetErrorDecision({
           ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -3206,12 +3187,12 @@ describe("SDK", () => {
       key,
       rules: [[rule]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const decision = await aj.protect(context, request);
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.objectContaining(context),
       expect.objectContaining({
         ip: request.ip,
@@ -3225,19 +3206,19 @@ describe("SDK", () => {
         },
       }),
       [rule],
-    );
+    ]);
   });
 
   test("calls `client.report()` if the local decision is DENY", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetErrorDecision({
           ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -3262,12 +3243,12 @@ describe("SDK", () => {
       key,
       rules: [[rule]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const _ = await aj.protect(context, request);
-    expect(client.report).toHaveBeenCalledTimes(1);
-    expect(client.report).toHaveBeenCalledWith(
+    expect(client.report.mock.callCount()).toEqual(1);
+    expect(client.report.mock.calls[0].arguments).toEqual([
       expect.objectContaining(context),
       expect.objectContaining({
         ip: request.ip,
@@ -3284,22 +3265,22 @@ describe("SDK", () => {
         conclusion: "DENY",
       }),
       [rule],
-    );
+    ]);
   });
 
   test("provides `waitUntil` in context to  `client.report()` if available", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetErrorDecision({
           ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
-    const waitUntil = jest.fn();
+    const waitUntil = mock.fn();
 
     const SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
     // @ts-ignore
@@ -3331,33 +3312,33 @@ describe("SDK", () => {
       key,
       rules: [[rule]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const _ = await aj.protect(context, request);
-    expect(client.report).toHaveBeenCalledTimes(1);
-    expect(client.report).toHaveBeenCalledWith(
+    expect(client.report.mock.callCount()).toEqual(1);
+    expect(client.report.mock.calls[0].arguments).toEqual([
       expect.objectContaining({
         waitUntil,
       }),
       expect.anything(),
       expect.anything(),
       [rule],
-    );
+    ]);
     // @ts-ignore
     delete globalThis[SYMBOL_FOR_REQ_CONTEXT];
   });
 
   test("does not call `client.decide()` if the local decision is DENY", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetErrorDecision({
           ttl: 0,
           reason: new ArcjetErrorReason("This decision not under test"),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -3375,7 +3356,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[denied]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -3383,19 +3364,19 @@ describe("SDK", () => {
     };
 
     const _ = await aj.protect(context, request);
-    expect(client.decide).toHaveBeenCalledTimes(0);
+    expect(client.decide.mock.callCount()).toEqual(0);
   });
 
   test("calls `client.decide()` even with no rules", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -3419,14 +3400,14 @@ describe("SDK", () => {
       key,
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const _ = await aj.protect(context, request);
 
-    expect(client.report).toHaveBeenCalledTimes(0);
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.report.mock.callCount()).toEqual(0);
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.objectContaining(context),
       expect.objectContaining({
         ip: request.ip,
@@ -3440,19 +3421,19 @@ describe("SDK", () => {
         },
       }),
       [],
-    );
+    ]);
   });
 
   test("caches a DENY decision locally and reports when a cached decision is used", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetDenyDecision({
           ttl: 5000,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -3469,7 +3450,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -3480,30 +3461,30 @@ describe("SDK", () => {
 
     expect(decision.isErrored()).toBe(false);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.report).toHaveBeenCalledTimes(0);
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.report.mock.callCount()).toEqual(0);
 
     expect(decision.conclusion).toEqual("DENY");
 
     const decision2 = await aj.protect(context, request);
 
     expect(decision2.isErrored()).toBe(false);
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.report).toHaveBeenCalledTimes(1);
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.report.mock.callCount()).toEqual(1);
 
     expect(decision2.conclusion).toEqual("DENY");
   });
 
   test("does not throw if unknown rule type is passed", () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     expect(() => {
@@ -3511,21 +3492,21 @@ describe("SDK", () => {
         key: "test-key",
         rules: [[testRuleInvalidType()]],
         client,
-        log,
+        log: mockLogger(),
       });
     }).not.toThrow("Unknown Rule type");
   });
 
   test("does not call `client.report()` if a local rule throws", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -3542,7 +3523,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[testRuleLocalThrow()]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -3551,21 +3532,21 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.report).toHaveBeenCalledTimes(0);
-    expect(client.decide).toHaveBeenCalledTimes(1);
+    expect(client.report.mock.callCount()).toEqual(0);
+    expect(client.decide.mock.callCount()).toEqual(1);
     // TODO: Validate correct `ruleResults` are sent with `decide` when available
   });
 
   test("correctly logs an error message if a local rule throws a string", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -3583,12 +3564,14 @@ describe("SDK", () => {
         mode: ArcjetMode.LIVE,
         type: "TEST_RULE_LOCAL_THROW_STRING",
         priority: 1,
-        validate: jest.fn(),
+        validate: mock.fn(),
         async protect(context, details) {
           throw "Local rule protect failed";
         },
       };
     }
+
+    const log = mockLogger();
 
     const aj = arcjet({
       key: "test-key",
@@ -3603,24 +3586,24 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(log.error).toHaveBeenCalledTimes(1);
-    expect(log.error).toHaveBeenCalledWith(
+    expect(log.error.mock.callCount()).toEqual(1);
+    expect(log.error.mock.calls[0].arguments).toEqual([
       "Failure running rule: %s due to %s",
       "TEST_RULE_LOCAL_THROW_STRING",
       "Local rule protect failed",
-    );
+    ]);
   });
 
   test("correctly logs an error message if a local rule throws a non-error", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -3638,12 +3621,14 @@ describe("SDK", () => {
         mode: ArcjetMode.LIVE,
         type: "TEST_RULE_LOCAL_THROW_NULL",
         priority: 1,
-        validate: jest.fn(),
+        validate: mock.fn(),
         async protect(context, details) {
           throw null;
         },
       };
     }
+
+    const log = mockLogger();
 
     const aj = arcjet({
       key: "test-key",
@@ -3658,24 +3643,25 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(log.error).toHaveBeenCalledTimes(1);
-    expect(log.error).toHaveBeenCalledWith(
+    console.log(log.error.mock.calls);
+    expect(log.error.mock.callCount()).toEqual(1);
+    expect(log.error.mock.calls[0].arguments).toEqual([
       "Failure running rule: %s due to %s",
       "TEST_RULE_LOCAL_THROW_NULL",
       "Unknown problem",
-    );
+    ]);
   });
 
   test("does not return nor cache a deny decision if DENY decision in a dry run local rule", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const request = {
@@ -3692,7 +3678,7 @@ describe("SDK", () => {
       key: "test-key",
       rules: [[testRuleLocalDryRun()]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const context = {
@@ -3703,27 +3689,27 @@ describe("SDK", () => {
 
     expect(decision.isDenied()).toBe(false);
 
-    expect(client.decide).toBeCalledTimes(1);
-    expect(client.report).toBeCalledTimes(1);
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.report.mock.callCount()).toEqual(1);
 
     const decision2 = await aj.protect(context, request);
 
     expect(decision2.isDenied()).toBe(false);
 
-    expect(client.decide).toBeCalledTimes(2);
-    expect(client.report).toBeCalledTimes(2);
+    expect(client.decide.mock.callCount()).toEqual(2);
+    expect(client.report.mock.callCount()).toEqual(2);
   });
 
   test("processes a single rule from a REMOTE ArcjetRule", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -3749,15 +3735,15 @@ describe("SDK", () => {
       key,
       rules: [[rule]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const decision = await aj.protect(context, request);
 
     expect(decision.isErrored()).toBe(false);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.objectContaining(context),
       expect.objectContaining({
         ip: request.ip,
@@ -3771,19 +3757,19 @@ describe("SDK", () => {
         },
       }),
       [rule],
-    );
+    ]);
   });
 
   test("overrides `key` with custom context", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -3809,7 +3795,7 @@ describe("SDK", () => {
       key,
       rules: [[rule]],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const decision = await aj.protect(
@@ -3819,8 +3805,8 @@ describe("SDK", () => {
 
     expect(decision.isErrored()).toBe(false);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.objectContaining({ ...context, key: "overridden-key" }),
       expect.objectContaining({
         ip: request.ip,
@@ -3834,15 +3820,15 @@ describe("SDK", () => {
         },
       }),
       [rule],
-    );
+    ]);
   });
 
   test("reports and returns an ERROR decision if a `client.decide()` fails", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         throw new Error("Decide function failed");
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const key = "test-key";
@@ -3866,16 +3852,16 @@ describe("SDK", () => {
       key,
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const decision = await aj.protect(context, request);
 
     expect(decision.isErrored()).toBe(true);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.report).toHaveBeenCalledTimes(1);
-    expect(client.report).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.report.mock.callCount()).toEqual(1);
+    expect(client.report.mock.calls[0].arguments).toEqual([
       expect.objectContaining(context),
       expect.objectContaining({
         ip: request.ip,
@@ -3892,19 +3878,19 @@ describe("SDK", () => {
         conclusion: "ERROR",
       }),
       [],
-    );
+    ]);
   });
 
   test("header characteristics are used to generate fingerprints", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const aj = arcjet({
@@ -3912,7 +3898,7 @@ describe("SDK", () => {
       characteristics: ['http.request.headers["abcxyz"]'],
       rules: [],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const request = {
@@ -3930,26 +3916,26 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.objectContaining({
         fingerprint:
           "fp::2::6f3a3854134fe3d20fe56387bdcb594f18b182683424757b88da75e8f13b92bd",
       }),
       expect.anything(),
       expect.anything(),
-    );
+    ]);
   });
   test("global characteristics are propagated if they aren't separately specified in fixedWindow", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const globalCharacteristics = ["someGlobalCharacteristic"] as const;
@@ -3964,7 +3950,7 @@ describe("SDK", () => {
         }),
       ],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const request = {
@@ -3983,8 +3969,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.anything(),
       expect.anything(),
       [
@@ -3992,19 +3978,19 @@ describe("SDK", () => {
           characteristics: globalCharacteristics,
         }),
       ],
-    );
+    ]);
   });
 
   test("local characteristics are prefered on fixedWindow over global characteristics", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const globalCharacteristics = ["someGlobalCharacteristic"] as const;
@@ -4021,7 +4007,7 @@ describe("SDK", () => {
         }),
       ],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const request = {
@@ -4041,8 +4027,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.anything(),
       expect.anything(),
       [
@@ -4050,19 +4036,19 @@ describe("SDK", () => {
           characteristics: localCharacteristics,
         }),
       ],
-    );
+    ]);
   });
 
   test("global characteristics are propagated if they aren't separately specified in slidingWindow", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const globalCharacteristics = ["someGlobalCharacteristic"] as const;
@@ -4077,7 +4063,7 @@ describe("SDK", () => {
         }),
       ],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const request = {
@@ -4096,8 +4082,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.anything(),
       expect.anything(),
       [
@@ -4105,19 +4091,19 @@ describe("SDK", () => {
           characteristics: globalCharacteristics,
         }),
       ],
-    );
+    ]);
   });
 
   test("local characteristics are prefered on slidingWindow over global characteristics", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const globalCharacteristics = ["someGlobalCharacteristic"] as const;
@@ -4135,7 +4121,7 @@ describe("SDK", () => {
         }),
       ],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const request = {
@@ -4155,8 +4141,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.anything(),
       expect.anything(),
       [
@@ -4164,19 +4150,19 @@ describe("SDK", () => {
           characteristics: localCharacteristics,
         }),
       ],
-    );
+    ]);
   });
 
   test("global characteristics are propagated if they aren't separately specified in tokenBucket", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const globalCharacteristics = ["someGlobalCharacteristic"] as const;
@@ -4192,7 +4178,7 @@ describe("SDK", () => {
         }),
       ],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const request = {
@@ -4212,8 +4198,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.anything(),
       expect.anything(),
       [
@@ -4221,19 +4207,19 @@ describe("SDK", () => {
           characteristics: globalCharacteristics,
         }),
       ],
-    );
+    ]);
   });
 
   test("local characteristics are prefered on tokenBucket over global characteristics", async () => {
     const client = {
-      decide: jest.fn(async () => {
+      decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
           results: [],
         });
       }),
-      report: jest.fn(),
+      report: mock.fn(),
     };
 
     const globalCharacteristics = ["someGlobalCharacteristic"] as const;
@@ -4252,7 +4238,7 @@ describe("SDK", () => {
         }),
       ],
       client,
-      log,
+      log: mockLogger(),
     });
 
     const request = {
@@ -4273,8 +4259,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide).toHaveBeenCalledTimes(1);
-    expect(client.decide).toHaveBeenCalledWith(
+    expect(client.decide.mock.callCount()).toEqual(1);
+    expect(client.decide.mock.calls[0].arguments).toEqual([
       expect.anything(),
       expect.anything(),
       [
@@ -4282,6 +4268,6 @@ describe("SDK", () => {
           characteristics: localCharacteristics,
         }),
       ],
-    );
+    ]);
   });
 });

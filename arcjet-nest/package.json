@@ -36,7 +36,7 @@
     "build": "rollup --config rollup.config.mjs",
     "lint": "eslint .",
     "pretest": "npm run build",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
+    "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
     "@arcjet/env": "1.0.0-alpha.34",
@@ -56,11 +56,10 @@
     "@arcjet/eslint-config": "1.0.0-alpha.34",
     "@arcjet/rollup-config": "1.0.0-alpha.34",
     "@arcjet/tsconfig": "1.0.0-alpha.34",
-    "@jest/globals": "29.7.0",
     "@nestjs/common": "^10.4.12",
     "@rollup/wasm-node": "4.28.0",
     "@types/node": "18.18.0",
-    "jest": "29.7.0",
+    "expect": "29.7.0",
     "typescript": "5.7.2"
   },
   "publishConfig": {
