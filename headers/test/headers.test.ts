@@ -1,7 +1,5 @@
-/**
- * @jest-environment node
- */
-import { describe, expect, test } from "@jest/globals";
+import { describe, test } from "node:test";
+import { expect } from "expect";
 import ArcjetHeaders from "../index";
 
 describe("ArcjetHeaders", () => {

@@ -1,10 +1,11 @@
-import { describe, expect, jest, test, afterEach } from "@jest/globals";
+import { describe, test, afterEach, mock } from "node:test";
+import { expect } from "expect";
 import { redact } from "../index";
 
 describe("ArcjetRedact", () => {
   describe("redact()", () => {
     afterEach(() => {
-      jest.restoreAllMocks();
+      mock.restoreAll();
     });
 
     test("it will redact all if no entities list is given", async () => {
@@ -45,7 +46,7 @@ describe("ArcjetRedact", () => {
 
     test("it will throw WebAssembly is not available", async () => {
       // Fake a WebAssembly failure
-      jest.spyOn(WebAssembly, "instantiate").mockImplementation(() => {
+      mock.method(WebAssembly, "instantiate", () => {
         return Promise.reject("mock failure in wasm");
       });
 
