@@ -10,6 +10,8 @@ module.exports = {
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": "off",
+    // TODO: Evaluate our usage of `{}` types
+    "@typescript-eslint/no-empty-object-type": "off",
     "no-unused-vars": "off",
   },
   parser: "@typescript-eslint/parser",
