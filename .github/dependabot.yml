@@ -48,6 +48,15 @@ updates:
         versions: [">=8"]
       - dependency-name: "@typescript-eslint/eslint-plugin"
         versions: [">=8"]
+      # Ignore updates for Buf and ConnectRPC v2 and above
+      - dependency-name: "@bufbuild/protobuf"
+        versions: [">=2"]
+      - dependency-name: "@connectrpc/connect"
+        versions: [">=2"]
+      - dependency-name: "@connectrpc/connect-node"
+        versions: [">=2"]
+      - dependency-name: "@connectrpc/connect-web"
+        versions: [">=2"]
 
   # Dependencies in our examples
 
