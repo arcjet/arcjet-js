@@ -589,7 +589,10 @@ function decorate(decorators: any[], target: any, key?: any, desc?: any): any {
 
 // Creates a decorator for a constructor parameter. Pulled out of `tslib` to
 // avoid build failures.
-function param(paramIndex: number, decorator: Function): Function {
+function param(
+  paramIndex: number,
+  decorator: (target: any, key: any, paramIndex: number) => void,
+) {
   return function (target: any, key: any) {
     decorator(target, key, paramIndex);
   };

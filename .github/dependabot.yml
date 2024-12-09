@@ -44,10 +44,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
       # Ignore updates for Buf and ConnectRPC v2 and above
       - dependency-name: "@bufbuild/protobuf"
         versions: [">=2"]
@@ -199,10 +195,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
 
   - package-ecosystem: npm
     directory: /examples/nestjs-fastify
@@ -226,10 +218,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
 
   - package-ecosystem: npm
     directory: /examples/nestjs-graphql
@@ -256,10 +244,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
 
   - package-ecosystem: npm
     directory: /examples/nestjs-launchdarkly
@@ -286,10 +270,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-nextauth-4
@@ -646,10 +626,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-sensitive-info
@@ -827,10 +803,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
 
   - package-ecosystem: npm
     directory: /examples/sveltekit
@@ -854,7 +826,3 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
