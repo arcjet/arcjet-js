@@ -44,6 +44,15 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
+      # Ignore updates for Buf and ConnectRPC v2 and above
+      - dependency-name: "@bufbuild/protobuf"
+        versions: [">=2"]
+      - dependency-name: "@connectrpc/connect"
+        versions: [">=2"]
+      - dependency-name: "@connectrpc/connect-node"
+        versions: [">=2"]
+      - dependency-name: "@connectrpc/connect-web"
+        versions: [">=2"]
 
   # Dependencies in our examples
 
@@ -794,7 +803,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
 
   - package-ecosystem: npm
     directory: /examples/sveltekit
