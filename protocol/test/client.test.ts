@@ -1,11 +1,5 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  jest,
-  test,
-} from "@jest/globals";
+import { describe, mock, test } from "node:test";
+import { expect } from "expect";
 import { createClient } from "../client.js";
 import { createRouterTransport } from "@connectrpc/connect";
 import { DecideService } from "../proto/decide/v1alpha1/decide_connect.js";
@@ -59,17 +53,6 @@ class ArcjetInvalidDecision extends ArcjetDecision {
     this.reason = new ArcjetTestReason();
   }
 }
-
-beforeEach(() => {
-  jest.useFakeTimers();
-});
-
-afterEach(() => {
-  jest.useRealTimers();
-  jest.clearAllTimers();
-  jest.clearAllMocks();
-  jest.restoreAllMocks();
-});
 
 describe("createClient", () => {
   const log = {
@@ -133,7 +116,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.ALLOW,
@@ -151,8 +134,8 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide).toHaveBeenCalledTimes(1);
-    expect(router.decide).toHaveBeenCalledWith(
+    expect(router.decide.mock.callCount()).toEqual(1);
+    expect(router.decide.mock.calls[0].arguments).toEqual([
       new DecideRequest({
         details: {
           ...details,
@@ -163,7 +146,7 @@ describe("createClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("sets the sdkStack as UNSPECIFIED if invalid", async () => {
@@ -191,7 +174,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.ALLOW,
@@ -210,8 +193,8 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide).toHaveBeenCalledTimes(1);
-    expect(router.decide).toHaveBeenCalledWith(
+    expect(router.decide.mock.callCount()).toEqual(1);
+    expect(router.decide.mock.calls[0].arguments).toEqual([
       new DecideRequest({
         details: {
           ...details,
@@ -222,7 +205,7 @@ describe("createClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `decide` will make RPC call with correct message", async () => {
@@ -250,7 +233,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.ALLOW,
@@ -267,8 +250,8 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide).toHaveBeenCalledTimes(1);
-    expect(router.decide).toHaveBeenCalledWith(
+    expect(router.decide.mock.callCount()).toEqual(1);
+    expect(router.decide.mock.calls[0].arguments).toEqual([
       new DecideRequest({
         details: {
           ...details,
@@ -279,7 +262,7 @@ describe("createClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `decide` will make RPC with email included", async () => {
@@ -308,7 +291,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.ALLOW,
@@ -325,8 +308,8 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide).toHaveBeenCalledTimes(1);
-    expect(router.decide).toHaveBeenCalledWith(
+    expect(router.decide.mock.callCount()).toEqual(1);
+    expect(router.decide.mock.calls[0].arguments).toEqual([
       new DecideRequest({
         details: {
           ...details,
@@ -337,7 +320,7 @@ describe("createClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `decide` will make RPC with rules included", async () => {
@@ -366,7 +349,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.ALLOW,
@@ -388,8 +371,8 @@ describe("createClient", () => {
     };
     const _ = await client.decide(context, details, [rule]);
 
-    expect(router.decide).toHaveBeenCalledTimes(1);
-    expect(router.decide).toHaveBeenCalledWith(
+    expect(router.decide.mock.callCount()).toEqual(1);
+    expect(router.decide.mock.calls[0].arguments).toEqual([
       new DecideRequest({
         details: {
           ...details,
@@ -400,7 +383,7 @@ describe("createClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `decide` creates an ALLOW ArcjetDecision if DecideResponse is allowed", async () => {
@@ -428,7 +411,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.ALLOW,
@@ -474,7 +457,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.DENY,
@@ -519,7 +502,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.CHALLENGE,
@@ -564,7 +547,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.ERROR,
@@ -612,7 +595,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.ERROR,
@@ -666,7 +649,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.UNSPECIFIED,
@@ -700,7 +683,7 @@ describe("createClient", () => {
       log,
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
-      waitUntil: jest.fn((promise: Promise<unknown>) => {
+      waitUntil: mock.fn((promise: Promise<unknown>) => {
         promise.then(() => resolve());
       }),
     };
@@ -738,7 +721,7 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(context.waitUntil).toHaveBeenCalledTimes(1);
+    expect(context.waitUntil.mock.callCount()).toEqual(1);
   });
 
   test("calling `report` will make RPC call with ALLOW decision", async () => {
@@ -769,7 +752,7 @@ describe("createClient", () => {
     const [promise, resolve] = deferred();
 
     const router = {
-      report: jest.fn((args) => {
+      report: mock.fn((args) => {
         resolve();
         return new ReportResponse({});
       }),
@@ -790,8 +773,8 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report).toHaveBeenCalledTimes(1);
-    expect(router.report).toHaveBeenCalledWith(
+    expect(router.report.mock.callCount()).toEqual(1);
+    expect(router.report.mock.calls[0].arguments).toEqual([
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -807,7 +790,7 @@ describe("createClient", () => {
         },
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `report` will make RPC call with DENY decision", async () => {
@@ -837,7 +820,7 @@ describe("createClient", () => {
     const [promise, resolve] = deferred();
 
     const router = {
-      report: jest.fn((args) => {
+      report: mock.fn((args) => {
         resolve();
         return new ReportResponse({});
       }),
@@ -858,8 +841,8 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report).toHaveBeenCalledTimes(1);
-    expect(router.report).toHaveBeenCalledWith(
+    expect(router.report.mock.callCount()).toEqual(1);
+    expect(router.report.mock.calls[0].arguments).toEqual([
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -875,7 +858,7 @@ describe("createClient", () => {
         },
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `report` will make RPC call with ERROR decision", async () => {
@@ -905,7 +888,7 @@ describe("createClient", () => {
     const [promise, resolve] = deferred();
 
     const router = {
-      report: jest.fn((args) => {
+      report: mock.fn((args) => {
         resolve();
         return new ReportResponse({});
       }),
@@ -926,8 +909,8 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report).toHaveBeenCalledTimes(1);
-    expect(router.report).toHaveBeenCalledWith(
+    expect(router.report.mock.callCount()).toEqual(1);
+    expect(router.report.mock.calls[0].arguments).toEqual([
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -950,7 +933,7 @@ describe("createClient", () => {
         },
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `report` will make RPC call with CHALLENGE decision", async () => {
@@ -980,7 +963,7 @@ describe("createClient", () => {
     const [promise, resolve] = deferred();
 
     const router = {
-      report: jest.fn((args) => {
+      report: mock.fn((args) => {
         resolve();
         return new ReportResponse({});
       }),
@@ -1001,8 +984,8 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report).toHaveBeenCalledTimes(1);
-    expect(router.report).toHaveBeenCalledWith(
+    expect(router.report.mock.callCount()).toEqual(1);
+    expect(router.report.mock.calls[0].arguments).toEqual([
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -1018,7 +1001,7 @@ describe("createClient", () => {
         },
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `report` will make RPC call with UNSPECIFIED decision if invalid", async () => {
@@ -1048,7 +1031,7 @@ describe("createClient", () => {
     const [promise, resolve] = deferred();
 
     const router = {
-      report: jest.fn((args) => {
+      report: mock.fn((args) => {
         resolve();
         return new ReportResponse({});
       }),
@@ -1065,8 +1048,8 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report).toHaveBeenCalledTimes(1);
-    expect(router.report).toHaveBeenCalledWith(
+    expect(router.report.mock.callCount()).toEqual(1);
+    expect(router.report.mock.calls[0].arguments).toEqual([
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -1082,7 +1065,7 @@ describe("createClient", () => {
         },
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `report` will make RPC with rules included", async () => {
@@ -1113,7 +1096,7 @@ describe("createClient", () => {
     const [promise, resolve] = deferred();
 
     const router = {
-      report: jest.fn((args) => {
+      report: mock.fn((args) => {
         resolve();
         return new ReportResponse({});
       }),
@@ -1147,8 +1130,8 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report).toHaveBeenCalledTimes(1);
-    expect(router.report).toHaveBeenCalledWith(
+    expect(router.report.mock.callCount()).toEqual(1);
+    expect(router.report.mock.calls[0].arguments).toEqual([
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -1172,7 +1155,7 @@ describe("createClient", () => {
         rules: [new Rule()],
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `report` only logs if it fails", async () => {
@@ -1201,7 +1184,7 @@ describe("createClient", () => {
 
     const [promise, resolve] = deferred();
 
-    const logSpy = jest.spyOn(log, "info").mockImplementation(() => {
+    const logSpy = mock.method(log, "info", () => {
       resolve();
     });
 
@@ -1220,7 +1203,7 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(logSpy).toHaveBeenCalledTimes(1);
+    expect(logSpy.mock.callCount()).toEqual(1);
   });
 
   test("calling `decide` will make RPC with top level characteristics included", async () => {
@@ -1249,7 +1232,7 @@ describe("createClient", () => {
     };
 
     const router = {
-      decide: jest.fn((args) => {
+      decide: mock.fn((args) => {
         return new DecideResponse({
           decision: {
             conclusion: Conclusion.ALLOW,
@@ -1266,8 +1249,8 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide).toHaveBeenCalledTimes(1);
-    expect(router.decide).toHaveBeenCalledWith(
+    expect(router.decide.mock.callCount()).toEqual(1);
+    expect(router.decide.mock.calls[0].arguments).toEqual([
       new DecideRequest({
         details: {
           ...details,
@@ -1279,7 +1262,7 @@ describe("createClient", () => {
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
       expect.anything(),
-    );
+    ]);
   });
 
   test("calling `report` will make RPC with top level characteristics included", async () => {
@@ -1310,7 +1293,7 @@ describe("createClient", () => {
     const [promise, resolve] = deferred();
 
     const router = {
-      report: jest.fn((args) => {
+      report: mock.fn((args) => {
         resolve();
         return new ReportResponse({});
       }),
@@ -1339,8 +1322,8 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report).toHaveBeenCalledTimes(1);
-    expect(router.report).toHaveBeenCalledWith(
+    expect(router.report.mock.callCount()).toEqual(1);
+    expect(router.report.mock.calls[0].arguments).toEqual([
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -1365,6 +1348,6 @@ describe("createClient", () => {
         characteristics: ["ip.src"],
       }),
       expect.anything(),
-    );
+    ]);
   });
 });
