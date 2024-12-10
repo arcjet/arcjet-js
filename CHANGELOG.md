@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-alpha.35](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...v1.0.0-alpha.35) (2024-12-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* **protocol:** Opt out of Buf & ConnectRPC v2 changes ([#2473](https://github.com/arcjet/arcjet-js/issues/2473)) ([06b5b21](https://github.com/arcjet/arcjet-js/commit/06b5b21d10c4a861c5379b4896168284d5c33225))
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...v1.0.0-alpha.34) (2024-12-03)
 
 

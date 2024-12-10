@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-alpha.35](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...arcjet-v1.0.0-alpha.35) (2024-12-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/duration bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/headers bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/protocol bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/runtime bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...arcjet-v1.0.0-alpha.34) (2024-12-03)
 
 

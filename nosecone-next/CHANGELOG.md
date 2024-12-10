@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-alpha.35](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@nosecone/next-v1.0.0-alpha.35) (2024-12-10)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@nosecone/next:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@nosecone/next-v1.0.0-alpha.34) (2024-12-03)
 
 
