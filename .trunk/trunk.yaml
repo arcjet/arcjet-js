@@ -38,7 +38,7 @@ lint:
   ignore:
     - linters: [ALL]
       paths:
-        - analyze/wasm/**
+        - analyze-wasm/wasm/**
         - redact-wasm/wasm/**
         - protocol/proto/**
         - "**/LICENSE"
