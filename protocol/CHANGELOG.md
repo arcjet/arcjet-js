@@ -1,5 +1,144 @@
 # Changelog
 
+## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/protocol-v1.0.0-alpha.34) (2024-12-03)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/protocol:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+
+## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...@arcjet/protocol-v1.0.0-alpha.33) (2024-11-29)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/protocol:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+
+## [1.0.0-alpha.32](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.31...@arcjet/protocol-v1.0.0-alpha.32) (2024-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326))
+
+### 🚀 New Features
+
+* check verification status ([#2229](https://github.com/arcjet/arcjet-js/issues/2229)) ([3329fd7](https://github.com/arcjet/arcjet-js/commit/3329fd7baaafa6784d6f6573905c95fd0686ea4e))
+
+
+### 🪲 Bug Fixes
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326)) ([f8f6a2d](https://github.com/arcjet/arcjet-js/commit/f8f6a2d998220d9705ecda8f10d3c5e14b47cad6)), closes [#1836](https://github.com/arcjet/arcjet-js/issues/1836)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+
+## [1.0.0-alpha.31](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.30...@arcjet/protocol-v1.0.0-alpha.31) (2024-11-22)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/protocol:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.30 to 1.0.0-alpha.31
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.30 to 1.0.0-alpha.31
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.30 to 1.0.0-alpha.31
+
+## [1.0.0-alpha.30](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.29...@arcjet/protocol-v1.0.0-alpha.30) (2024-11-20)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/protocol:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...@arcjet/protocol-v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/protocol:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/protocol-v1.0.0-alpha.28) (2024-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* Ensure performance metrics are scoped to same call ([#2019](https://github.com/arcjet/arcjet-js/issues/2019))
+* **protocol:** Remove received_at and decision fields from Report ([#1988](https://github.com/arcjet/arcjet-js/issues/1988))
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815))
+
+### 🚀 New Features
+
+* Add Remix adapter ([#1866](https://github.com/arcjet/arcjet-js/issues/1866)) ([32d6d41](https://github.com/arcjet/arcjet-js/commit/32d6d41661ec2e5fe08d4300b60086dc007841bc)), closes [#1313](https://github.com/arcjet/arcjet-js/issues/1313)
+* Use `waitUntil` for Report call if available ([#1838](https://github.com/arcjet/arcjet-js/issues/1838)) ([2851021](https://github.com/arcjet/arcjet-js/commit/28510216334e2b66fc19a7ee51e741fb59a20607)), closes [#884](https://github.com/arcjet/arcjet-js/issues/884)
+
+
+### 🪲 Bug Fixes
+
+* Ensure performance metrics are scoped to same call ([#2019](https://github.com/arcjet/arcjet-js/issues/2019)) ([e9f869c](https://github.com/arcjet/arcjet-js/commit/e9f869ca0c287c9dfb23fa3ebe91007822b3390e)), closes [#1865](https://github.com/arcjet/arcjet-js/issues/1865)
+
+
+### 🧹 Miscellaneous Chores
+
+* **protocol:** Remove received_at and decision fields from Report ([#1988](https://github.com/arcjet/arcjet-js/issues/1988)) ([3da543e](https://github.com/arcjet/arcjet-js/commit/3da543e78fa95dc2d001fd54a210115458eb5a60))
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815)) ([853119d](https://github.com/arcjet/arcjet-js/commit/853119d24c37330690c937149a0cf1d0c4d31862)), closes [#1810](https://github.com/arcjet/arcjet-js/issues/1810)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/protocol-v1.0.0-alpha.27) (2024-10-01)
 
 

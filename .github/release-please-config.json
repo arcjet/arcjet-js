@@ -100,6 +100,18 @@
       "component": "@arcjet/logger",
       "skip-github-release": true
     },
+    "nosecone": {
+      "component": "nosecone",
+      "skip-github-release": true
+    },
+    "nosecone-next": {
+      "component": "@nosecone/next",
+      "skip-github-release": true
+    },
+    "nosecone-sveltekit": {
+      "component": "@nosecone/sveltekit",
+      "skip-github-release": true
+    },
     "protocol": {
       "component": "@arcjet/protocol",
       "skip-github-release": true
@@ -161,6 +173,9 @@
         "@arcjet/ip",
         "@arcjet/body",
         "@arcjet/logger",
+        "nosecone",
+        "@nosecone/next",
+        "@nosecone/sveltekit",
         "@arcjet/protocol",
         "@arcjet/redact",
         "@arcjet/redact-wasm",

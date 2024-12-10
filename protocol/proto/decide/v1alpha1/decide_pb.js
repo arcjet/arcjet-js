@@ -237,6 +237,8 @@ export const BotV2Reason = /*@__PURE__*/ proto3.makeMessageType(
   () => [
     { no: 1, name: "allowed", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 2, name: "denied", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "verified", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "spoofed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ],
 );
 
@@ -403,6 +405,7 @@ export const ShieldRule = /*@__PURE__*/ proto3.makeMessageType(
   () => [
     { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
     { no: 2, name: "auto_added", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 3, name: "characteristics", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ],
 );
 
@@ -518,7 +521,6 @@ export const ReportRequest = /*@__PURE__*/ proto3.makeMessageType(
     { no: 4, name: "details", kind: "message", T: RequestDetails },
     { no: 5, name: "decision", kind: "message", T: Decision },
     { no: 6, name: "rules", kind: "message", T: Rule, repeated: true },
-    { no: 7, name: "received_at", kind: "message", T: Timestamp },
     { no: 8, name: "characteristics", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ],
 );
@@ -531,7 +533,6 @@ export const ReportRequest = /*@__PURE__*/ proto3.makeMessageType(
 export const ReportResponse = /*@__PURE__*/ proto3.makeMessageType(
   "proto.decide.v1alpha1.ReportResponse",
   () => [
-    { no: 1, name: "decision", kind: "message", T: Decision },
     { no: 2, name: "extra", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
   ],
 );

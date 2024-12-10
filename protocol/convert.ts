@@ -236,6 +236,8 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
       return new ArcjetBotReason({
         allowed: reason.allowed,
         denied: reason.denied,
+        verified: reason.verified,
+        spoofed: reason.spoofed,
       });
     }
     case "edgeRule": {
@@ -302,6 +304,8 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         value: new BotV2Reason({
           allowed: reason.allowed,
           denied: reason.denied,
+          verified: reason.verified,
+          spoofed: reason.spoofed,
         }),
       },
     });

@@ -92,6 +92,8 @@ export async function detectBot(
     return {
       allowed: [],
       denied: [],
+      spoofed: false,
+      verified: false,
     };
   }
 }

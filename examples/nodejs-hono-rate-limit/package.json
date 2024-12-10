@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prestart": "npm run build",
+    "start": "node --env-file .env.local ./index.js",
+    "build": "tsc -p ."
+  },
+  "dependencies": {
+    "@arcjet/node": "file:../../arcjet-node",
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.13"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

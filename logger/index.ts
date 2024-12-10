@@ -25,10 +25,6 @@ export interface LoggerOptions {
 
 const PREFIX = "✦Aj";
 
-function getTimeLabel(label: string) {
-  return `${PREFIX} LATENCY ${label}`;
-}
-
 function getMessage(obj: unknown, msg: unknown, args: unknown[]) {
   // The first argument was the message so juggle the args
   if (typeof obj === "string") {
@@ -91,18 +87,6 @@ export class Logger {
       default: {
         throw new Error(`Unknown log level: ${opts.level}`);
       }
-    }
-  }
-
-  time(label: string) {
-    if (this.#logLevel <= 0) {
-      console.time(getTimeLabel(label));
-    }
-  }
-
-  timeEnd(label: string) {
-    if (this.#logLevel <= 0) {
-      console.timeEnd(getTimeLabel(label));
     }
   }
 

@@ -1,0 +1,60 @@
+{
+  "name": "@nosecone/sveltekit",
+  "version": "1.0.0-alpha.34",
+  "description": "Protect your SvelteKit application with secure headers",
+  "license": "Apache-2.0",
+  "homepage": "https://arcjet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "nosecone-sveltekit"
+  },
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "!*.config.js"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "rollup --config rollup.config.js",
+    "lint": "eslint .",
+    "pretest": "npm run build",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "nosecone": "1.0.0-alpha.34"
+  },
+  "peerDependencies": {
+    "@sveltejs/kit": ">=2"
+  },
+  "devDependencies": {
+    "@arcjet/eslint-config": "1.0.0-alpha.34",
+    "@arcjet/rollup-config": "1.0.0-alpha.34",
+    "@arcjet/tsconfig": "1.0.0-alpha.34",
+    "@rollup/wasm-node": "4.28.1",
+    "@sveltejs/kit": "^2.9.0",
+    "@types/node": "18.18.0",
+    "typescript": "5.7.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  }
+}

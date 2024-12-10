@@ -1,5 +1,132 @@
 # Changelog
 
+## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/ip-v1.0.0-alpha.34) (2024-12-03)
+
+
+### 🚀 New Features
+
+* **ip:** Allow trusted proxies to exclude when looking for global IP ([#2393](https://github.com/arcjet/arcjet-js/issues/2393)) ([58286b7](https://github.com/arcjet/arcjet-js/commit/58286b72d456236e85bdd0c975b007e081dcac5a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+
+## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...@arcjet/ip-v1.0.0-alpha.33) (2024-11-29)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/ip:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+
+## [1.0.0-alpha.32](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.31...@arcjet/ip-v1.0.0-alpha.32) (2024-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326))
+
+### 🪲 Bug Fixes
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326)) ([f8f6a2d](https://github.com/arcjet/arcjet-js/commit/f8f6a2d998220d9705ecda8f10d3c5e14b47cad6)), closes [#1836](https://github.com/arcjet/arcjet-js/issues/1836)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+
+## [1.0.0-alpha.31](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.30...@arcjet/ip-v1.0.0-alpha.31) (2024-11-22)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/ip:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.30 to 1.0.0-alpha.31
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.30 to 1.0.0-alpha.31
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.30 to 1.0.0-alpha.31
+
+## [1.0.0-alpha.30](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.29...@arcjet/ip-v1.0.0-alpha.30) (2024-11-20)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/ip:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...@arcjet/ip-v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🧹 Miscellaneous Chores
+
+* **ip:** Update documentation for previous breaking changes ([#2278](https://github.com/arcjet/arcjet-js/issues/2278)) ([cff3cc9](https://github.com/arcjet/arcjet-js/commit/cff3cc935545cf06c6b5eba6227ee48a09bcd825)), closes [#2277](https://github.com/arcjet/arcjet-js/issues/2277)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/ip-v1.0.0-alpha.28) (2024-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ip:** Accept Request or IncomingMessage directly ([#2018](https://github.com/arcjet/arcjet-js/issues/2018))
+* **ip:** Exit early if platform-specific headers are missing IP ([#2021](https://github.com/arcjet/arcjet-js/issues/2021))
+
+### 🚀 New Features
+
+* **ip:** Accept Request or IncomingMessage directly ([#2018](https://github.com/arcjet/arcjet-js/issues/2018)) ([1704da8](https://github.com/arcjet/arcjet-js/commit/1704da87a6791c824cc5ddf6b10a11d5e0786a39)), closes [#1904](https://github.com/arcjet/arcjet-js/issues/1904)
+* **ip:** Add Vercel platform-specific IP header detection ([#2022](https://github.com/arcjet/arcjet-js/issues/2022)) ([d886c76](https://github.com/arcjet/arcjet-js/commit/d886c763983b2adcf50223a56f80ba0df2df078a))
+
+
+### 🪲 Bug Fixes
+
+* **ip:** Exit early if platform-specific headers are missing IP ([#2021](https://github.com/arcjet/arcjet-js/issues/2021)) ([1a13d9c](https://github.com/arcjet/arcjet-js/commit/1a13d9c9b3a96a4c90a13842b04ca5bf39bf018e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/ip-v1.0.0-alpha.27) (2024-10-01)
 
 

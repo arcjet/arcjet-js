@@ -31,7 +31,7 @@ Adapater](https://docs.nestjs.com/techniques/performance).
 4. Start the server.
 
    ```bash
-   npm start
+   npm run start:dev
    ```
 
 5. Visit `http://localhost:3000/` in a browser.

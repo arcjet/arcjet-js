@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/duration",
-  "version": "1.0.0-alpha.27",
+  "version": "1.0.0-alpha.34",
   "description": "Arcjet utilities for parsing duration strings",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -29,7 +29,6 @@
     "README.md",
     "*.js",
     "*.d.ts",
-    "*.ts",
     "!*.config.js"
   ],
   "scripts": {
@@ -41,14 +40,14 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.27",
-    "@arcjet/rollup-config": "1.0.0-alpha.27",
-    "@arcjet/tsconfig": "1.0.0-alpha.27",
+    "@arcjet/eslint-config": "1.0.0-alpha.34",
+    "@arcjet/rollup-config": "1.0.0-alpha.34",
+    "@arcjet/tsconfig": "1.0.0-alpha.34",
     "@jest/globals": "29.7.0",
-    "@rollup/wasm-node": "4.24.0",
+    "@rollup/wasm-node": "4.28.1",
     "@types/node": "18.18.0",
     "jest": "29.7.0",
-    "typescript": "5.6.2"
+    "typescript": "5.7.2"
   },
   "publishConfig": {
     "access": "public",

@@ -1,5 +1,121 @@
 # Changelog
 
+## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/transport-v1.0.0-alpha.34) (2024-12-03)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/transport:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.33 to 1.0.0-alpha.34
+
+## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...@arcjet/transport-v1.0.0-alpha.33) (2024-11-29)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/transport:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.32 to 1.0.0-alpha.33
+
+## [1.0.0-alpha.32](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.31...@arcjet/transport-v1.0.0-alpha.32) (2024-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326))
+
+### 🪲 Bug Fixes
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326)) ([f8f6a2d](https://github.com/arcjet/arcjet-js/commit/f8f6a2d998220d9705ecda8f10d3c5e14b47cad6)), closes [#1836](https://github.com/arcjet/arcjet-js/issues/1836)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.31 to 1.0.0-alpha.32
+
+## [1.0.0-alpha.31](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.30...@arcjet/transport-v1.0.0-alpha.31) (2024-11-22)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/transport:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.30 to 1.0.0-alpha.31
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.30 to 1.0.0-alpha.31
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.30 to 1.0.0-alpha.31
+
+## [1.0.0-alpha.30](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.29...@arcjet/transport-v1.0.0-alpha.30) (2024-11-20)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/transport:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.29 to 1.0.0-alpha.30
+
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...@arcjet/transport-v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/transport:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.28 to 1.0.0-alpha.29
+
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...@arcjet/transport-v1.0.0-alpha.28) (2024-10-23)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/transport:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.27 to 1.0.0-alpha.28
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...@arcjet/transport-v1.0.0-alpha.27) (2024-10-01)
 
 

@@ -811,6 +811,16 @@ export declare class BotV2Reason extends Message<BotV2Reason> {
    */
   denied: string[];
 
+  /**
+   * @generated from field: bool verified = 3;
+   */
+  verified: boolean;
+
+  /**
+   * @generated from field: bool spoofed = 4;
+   */
+  spoofed: boolean;
+
   constructor(data?: PartialMessage<BotV2Reason>);
 
   static readonly runtime: typeof proto3;
@@ -1018,10 +1028,10 @@ export declare class RateLimitRule extends Message<RateLimitRule> {
   match: string;
 
   /**
-   * Defines how Arcjet will track the rate limit. If not specified, it will
-   * default to the client IP address ip.src. If more than one option is
-   * provided, they will be combined. See
-   * https://docs.arcjet.com/rate-limiting/configuration
+   * Defines how Arcjet will track rate limits. If none are specified, it will
+   * default to using the client IP address. If more than one characteristic
+   * is provided, they will be combined. For further details, see
+   * https://docs.arcjet.com/architecture/#fingerprinting
    *
    * @generated from field: repeated string characteristics = 3;
    */
@@ -1329,6 +1339,16 @@ export declare class ShieldRule extends Message<ShieldRule> {
    * @generated from field: bool auto_added = 2;
    */
   autoAdded: boolean;
+
+  /**
+   * Defines how Arcjet will track suspicious requests. If none are specified,
+   * it will default to using the client IP address. If more than one
+   * characteristic is provided, they will be combined. For further details,
+   * see https://docs.arcjet.com/architecture/#fingerprinting
+   *
+   * @generated from field: repeated string characteristics = 3;
+   */
+  characteristics: string[];
 
   constructor(data?: PartialMessage<ShieldRule>);
 
@@ -1733,11 +1753,6 @@ export declare class ReportRequest extends Message<ReportRequest> {
   rules: Rule[];
 
   /**
-   * @generated from field: google.protobuf.Timestamp received_at = 7;
-   */
-  receivedAt?: Timestamp;
-
-  /**
    * The characteristics that should be used for fingerprinting.
    *
    * @generated from field: repeated string characteristics = 8;
@@ -1765,13 +1780,6 @@ export declare class ReportRequest extends Message<ReportRequest> {
  * @generated from message proto.decide.v1alpha1.ReportResponse
  */
 export declare class ReportResponse extends Message<ReportResponse> {
-  /**
-   * The decision reported about the request under investigation.
-   *
-   * @generated from field: proto.decide.v1alpha1.Decision decision = 1;
-   */
-  decision?: Decision;
-
   /**
    * Any extra information returned by the Arcjet analysis.
    *

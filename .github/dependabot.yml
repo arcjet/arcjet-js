@@ -11,8 +11,10 @@ updates:
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(ci)
       prefix-development: deps(ci)
@@ -27,8 +29,10 @@ updates:
     open-pull-requests-limit: 20
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps
       prefix-development: deps(dev)
@@ -40,17 +44,22 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
+      # Ignore updates for Buf and ConnectRPC v2 and above
+      - dependency-name: "@bufbuild/protobuf"
+        versions: [">=2"]
+      - dependency-name: "@connectrpc/connect"
+        versions: [">=2"]
+      - dependency-name: "@connectrpc/connect-node"
+        versions: [">=2"]
+      - dependency-name: "@connectrpc/connect-web"
+        versions: [">=2"]
 
   # Dependencies in our examples
 
   # Bun isn't supported by Dependabot
   # Ref: https://github.com/dependabot/dependabot-core/issues/6528
   # - package-ecosystem: npm
-  #   directory: /examples/bun-hono-rl
+  #   directory: /examples/bun-hono-rate-limit
   #   schedule:
   #     # Our dependencies should be checked daily
   #     interval: daily
@@ -69,7 +78,7 @@ updates:
   # Bun isn't supported by Dependabot
   # Ref: https://github.com/dependabot/dependabot-core/issues/6528
   # - package-ecosystem: npm
-  #   directory: /examples/bun-rl
+  #   directory: /examples/bun-rate-limit
   #   schedule:
   #     # Our dependencies should be checked daily
   #     interval: daily
@@ -162,14 +171,16 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /examples/nextjs-14-app-dir-rl
+    directory: /examples/nestjs
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -178,23 +189,24 @@ updates:
         patterns:
           - "*"
     ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
+      # NestJS uses Express 4
+      - dependency-name: "@types/express"
+        versions: [">=5"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
 
   - package-ecosystem: npm
-    directory: /examples/nextjs-14-app-dir-validate-email
+    directory: /examples/nestjs-fastify
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -203,23 +215,21 @@ updates:
         patterns:
           - "*"
     ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
 
   - package-ecosystem: npm
-    directory: /examples/nextjs-14-authjs-5
+    directory: /examples/nestjs-graphql
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -228,23 +238,24 @@ updates:
         patterns:
           - "*"
     ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
+      # NestJS uses Express 4
+      - dependency-name: "@types/express"
+        versions: [">=5"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
 
   - package-ecosystem: npm
-    directory: /examples/nextjs-14-bot-categories
+    directory: /examples/nestjs-launchdarkly
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -253,110 +264,9 @@ updates:
         patterns:
           - "*"
     ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
-
-  - package-ecosystem: npm
-    directory: /examples/nextjs-14-clerk-rl
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
-
-  - package-ecosystem: npm
-    directory: /examples/nextjs-14-clerk-shield
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
-
-  - package-ecosystem: npm
-    directory: /examples/nextjs-14-decorate
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
-
-  - package-ecosystem: npm
-    directory: /examples/nextjs-14-ip-details
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
+      # NestJS uses Express 4
+      - dependency-name: "@types/express"
+        versions: [">=5"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
@@ -368,8 +278,42 @@ updates:
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # NextAuth 4 doesn't support Next.js 15+ so the dependencies below are
+      # restricted.
+      - dependency-name: next
+        versions: [">=15"]
+      - dependency-name: eslint
+        versions: [">=9"]
+      - dependency-name: eslint-config-next
+        versions: [">=15"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-app-dir-rate-limit
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -387,14 +331,16 @@ updates:
         versions: [">=9"]
 
   - package-ecosystem: npm
-    directory: /examples/nextjs-14-openai
+    directory: /examples/nextjs-app-dir-validate-email
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -412,14 +358,16 @@ updates:
         versions: [">=9"]
 
   - package-ecosystem: npm
-    directory: /examples/nextjs-14-pages-wrap
+    directory: /examples/nextjs-authjs-5
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -437,14 +385,16 @@ updates:
         versions: [">=9"]
 
   - package-ecosystem: npm
-    directory: /examples/nextjs-14-permit
+    directory: /examples/nextjs-bot-categories
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -462,14 +412,16 @@ updates:
         versions: [">=9"]
 
   - package-ecosystem: npm
-    directory: /examples/nextjs-14-react-hook-form
+    directory: /examples/nextjs-clerk-rate-limit
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -485,20 +437,18 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
 
   - package-ecosystem: npm
-    directory: /examples/nextjs-14-sensitive-info
+    directory: /examples/nextjs-clerk-shield
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -514,6 +464,227 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-decorate
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-ip-details
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-openai
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-pages-wrap
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-permit
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-react-hook-form
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-sensitive-info
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-server-actions
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+      # Ignore React during the `rc` period
+      - dependency-name: react
+        versions: ["*"]
+      - dependency-name: react-dom
+        versions: ["*"]
 
   - package-ecosystem: npm
     directory: /examples/nodejs-express-launchdarkly
@@ -522,8 +693,10 @@ updates:
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -533,14 +706,16 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /examples/nodejs-express-rl
+    directory: /examples/nodejs-express-rate-limit
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -556,8 +731,10 @@ updates:
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -567,14 +744,16 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /examples/nodejs-hono-rl
+    directory: /examples/nodejs-hono-rate-limit
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -584,123 +763,16 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /examples/nestjs
+    directory: /examples/nodejs-rate-limit
     schedule:
       # Our dependencies should be checked daily
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-    ignore:
-      # NestJS uses Express 4
-      - dependency-name: "@types/express"
-        versions: [">=5"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
-
-  - package-ecosystem: npm
-    directory: /examples/nestjs-fastify
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-    ignore:
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
-
-  - package-ecosystem: npm
-    directory: /examples/nestjs-graphql
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-    ignore:
-      # NestJS uses Express 4
-      - dependency-name: "@types/express"
-        versions: [">=5"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
-
-  - package-ecosystem: npm
-    directory: /examples/nestjs-launchdarkly
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
-    ignore:
-      # NestJS uses Express 4
-      - dependency-name: "@types/express"
-        versions: [">=5"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
-
-  - package-ecosystem: npm
-    directory: /examples/nodejs-rl
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -716,8 +788,10 @@ updates:
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -729,10 +803,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]
 
   - package-ecosystem: npm
     directory: /examples/sveltekit
@@ -741,8 +811,10 @@ updates:
       interval: daily
     assignees:
       - blaine-arcjet
+      - e-moran
     reviewers:
       - blaine-arcjet
+      - e-moran
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -754,7 +826,3 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      - dependency-name: "@typescript-eslint/parser"
-        versions: [">=8"]
-      - dependency-name: "@typescript-eslint/eslint-plugin"
-        versions: [">=8"]

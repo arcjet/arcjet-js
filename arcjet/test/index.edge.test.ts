@@ -109,7 +109,7 @@ describe("Arcjet: Env = Edge runtime", () => {
         abc: 123,
         requested: 1,
         email: "",
-        ip: "",
+        ip: "100.100.100.100",
         method: "",
         protocol: "",
         host: "",

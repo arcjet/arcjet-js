@@ -295,11 +295,47 @@ describe("ArcjetDecision", () => {
     const reason = new ArcjetBotReason({
       allowed: [],
       denied: [],
+      verified: false,
+      spoofed: false,
     });
     expect(reason.isBot()).toEqual(true);
   });
 
-  test("`isBot()` returns true when reason is not BOT", () => {
+  test("isVerified() returns the correct value", () => {
+    const reasonTrue = new ArcjetBotReason({
+      allowed: [],
+      denied: [],
+      verified: true,
+      spoofed: false,
+    });
+    expect(reasonTrue.isVerified()).toEqual(true);
+    const reasonFalse = new ArcjetBotReason({
+      allowed: [],
+      denied: [],
+      verified: false,
+      spoofed: false,
+    });
+    expect(reasonFalse.isVerified()).toEqual(false);
+  });
+
+  test("isSpoofed() returns the correct value", () => {
+    const reasonTrue = new ArcjetBotReason({
+      allowed: [],
+      denied: [],
+      verified: false,
+      spoofed: true,
+    });
+    expect(reasonTrue.isSpoofed()).toEqual(true);
+    const reasonFalse = new ArcjetBotReason({
+      allowed: [],
+      denied: [],
+      verified: false,
+      spoofed: false,
+    });
+    expect(reasonFalse.isSpoofed()).toEqual(false);
+  });
+
+  test("`isBot()` returns false when reason is not BOT", () => {
     const reason = new ArcjetTestReason();
     expect(reason.isBot()).toEqual(false);
   });
@@ -499,6 +535,8 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: [],
         denied: ["CURL"],
+        verified: false,
+        spoofed: false,
       }),
     });
   });
@@ -552,6 +590,8 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: [],
         denied: ["CURL"],
+        verified: false,
+        spoofed: false,
       }),
     });
     const googlebotResults = await rule.protect(context, googlebotDetails);
@@ -561,6 +601,8 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: ["GOOGLE_CRAWLER"],
         denied: [],
+        verified: false,
+        spoofed: false,
       }),
     });
   });
@@ -601,6 +643,8 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: ["CURL"],
         denied: [],
+        verified: false,
+        spoofed: false,
       }),
     });
   });
@@ -1679,6 +1723,27 @@ describe("Primitive > sensitiveInfo", () => {
     );
   });
 
+  test("does not throw via `validate()`", () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      email: undefined,
+    };
+
+    const [rule] = sensitiveInfo({ mode: "LIVE", allow: [] });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    expect(() => {
+      const _ = rule.validate(context, details);
+    }).not.toThrow();
+  });
+
   test("allows specifying sensitive info entities to allow", async () => {
     const [rule] = sensitiveInfo({
       allow: ["EMAIL", "CREDIT_CARD_NUMBER"],
@@ -1905,7 +1970,8 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log,
       characteristics: [],
-      getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
+      getBody: () =>
+        Promise.resolve("127.0.0.1 test@example.com +353 87 123 4567"),
     };
     const details = {
       ip: "172.100.1.1",
@@ -1921,25 +1987,31 @@ describe("Primitive > sensitiveInfo", () => {
 
     const [rule] = sensitiveInfo({
       mode: "LIVE",
-      deny: ["CREDIT_CARD_NUMBER"],
+      deny: ["CREDIT_CARD_NUMBER", "IP_ADDRESS"],
     });
     expect(rule.type).toEqual("SENSITIVE_INFO");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
-      conclusion: "ALLOW",
+      conclusion: "DENY",
       reason: new ArcjetSensitiveInfoReason({
-        denied: [],
-        allowed: [
+        denied: [
           {
             start: 0,
-            end: 16,
+            end: 9,
+            identifiedType: "IP_ADDRESS",
+          },
+        ],
+        allowed: [
+          {
+            start: 10,
+            end: 26,
             identifiedType: "EMAIL",
           },
           {
-            start: 17,
-            end: 33,
+            start: 27,
+            end: 43,
             identifiedType: "PHONE_NUMBER",
           },
         ],
@@ -2051,6 +2123,49 @@ describe("Primitive > sensitiveInfo", () => {
     });
   });
 
+  test("it throws when custom function returns non-string", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve("this is bad"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const customDetect = (tokens: string[]) => {
+      return tokens.map((token) => {
+        if (token === "bad") {
+          return 12345;
+        }
+      });
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: [],
+      contextWindowSize: 1,
+      // @ts-expect-error
+      detect: customDetect,
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    expect(async () => {
+      const _ = await rule.protect(context, details);
+    }).rejects.toEqual(new Error("invalid entity type"));
+  });
+
   test("it allows custom entities identified by a function that would have otherwise been blocked", async () => {
     const context = {
       key: "test-key",
@@ -2141,6 +2256,40 @@ describe("Primitive > sensitiveInfo", () => {
     assertIsLocalRule(rule);
     await rule.protect(context, details);
   });
+
+  test("it returns an error decision when body is not available", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log,
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: [],
+      contextWindowSize: 1,
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const decision = await rule.protect(context, details);
+    expect(decision.ttl).toEqual(0);
+    expect(decision.state).toEqual("NOT_RUN");
+    expect(decision.conclusion).toEqual("ERROR");
+  });
 });
 
 describe("Products > protectSignup", () => {
@@ -2197,6 +2346,16 @@ describe("SDK", () => {
             reason: new ArcjetTestReason(),
           }),
       ),
+    };
+  }
+  function testRuleLocalIncorrect(): ArcjetLocalRule {
+    return {
+      mode: ArcjetMode.LIVE,
+      type: "TEST_RULE_LOCAL_INCORRECT",
+      priority: 1,
+      validate: jest.fn(),
+      // @ts-expect-error
+      protect: jest.fn(async () => undefined),
     };
   }
 
@@ -2623,7 +2782,49 @@ describe("SDK", () => {
     expect(denied.protect).toHaveBeenCalledTimes(1);
   });
 
-  test("works with an empty request object", async () => {
+  test("does not crash if a local rule does not return a result", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      "extra-test": "extra-test-value",
+    };
+    const rule = testRuleLocalIncorrect();
+
+    const aj = arcjet({
+      key: "test-key",
+      rules: [[rule]],
+      client,
+      log,
+    });
+
+    const context = {
+      getBody: () => Promise.resolve(undefined),
+    };
+
+    const decision = await aj.protect(context, request);
+    // ALLOW because the remote rule was called and it returned ALLOW
+    expect(decision.conclusion).toEqual("ALLOW");
+
+    expect(rule.validate).toHaveBeenCalledTimes(1);
+    expect(rule.protect).toHaveBeenCalledTimes(1);
+  });
+
+  test("returns an ERROR decision if fingerprint cannot be generated", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -2649,10 +2850,10 @@ describe("SDK", () => {
     };
 
     const decision = await aj.protect(context, request);
-    expect(decision.conclusion).toEqual("ALLOW");
+    expect(decision.conclusion).toEqual("ERROR");
   });
 
-  test("does not crash with no request object", async () => {
+  test("returns an ERROR decision with no request object", async () => {
     const client = {
       decide: jest.fn(async () => {
         return new ArcjetAllowDecision({
@@ -2673,7 +2874,7 @@ describe("SDK", () => {
 
     // @ts-expect-error
     const decision = await aj.protect();
-    expect(decision.conclusion).toEqual("ALLOW");
+    expect(decision.conclusion).toEqual("ERROR");
   });
 
   test("returns an ERROR decision when more than 10 rules are generated", async () => {
@@ -2688,7 +2889,9 @@ describe("SDK", () => {
       report: jest.fn(),
     };
 
-    const request = {};
+    const request = {
+      ip: "100.100.100.100",
+    };
 
     const rules: ArcjetRule[][] = [];
     // We only iterate 4 times because `testRuleMultiple` generates 3 rules
@@ -3082,6 +3285,67 @@ describe("SDK", () => {
       }),
       [rule],
     );
+  });
+
+  test("provides `waitUntil` in context to  `client.report()` if available", async () => {
+    const client = {
+      decide: jest.fn(async () => {
+        return new ArcjetErrorDecision({
+          ttl: 0,
+          reason: new ArcjetErrorReason("This decision not under test"),
+          results: [],
+        });
+      }),
+      report: jest.fn(),
+    };
+
+    const waitUntil = jest.fn();
+
+    const SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
+    // @ts-ignore
+    globalThis[SYMBOL_FOR_REQ_CONTEXT] = {
+      get() {
+        return { waitUntil };
+      },
+    };
+
+    const key = "test-key";
+    const context = {
+      key,
+      fingerprint:
+        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+      getBody: () => Promise.resolve(undefined),
+    };
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      "extra-test": "extra-test-value",
+    };
+    const rule = testRuleLocalDenied();
+
+    const aj = arcjet({
+      key,
+      rules: [[rule]],
+      client,
+      log,
+    });
+
+    const _ = await aj.protect(context, request);
+    expect(client.report).toHaveBeenCalledTimes(1);
+    expect(client.report).toHaveBeenCalledWith(
+      expect.objectContaining({
+        waitUntil,
+      }),
+      expect.anything(),
+      expect.anything(),
+      [rule],
+    );
+    // @ts-ignore
+    delete globalThis[SYMBOL_FOR_REQ_CONTEXT];
   });
 
   test("does not call `client.decide()` if the local decision is DENY", async () => {

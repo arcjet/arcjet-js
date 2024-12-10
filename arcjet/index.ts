@@ -200,6 +200,24 @@ function isEmailType(type: string): type is ArcjetEmailType {
   );
 }
 
+class Performance {
+  log: ArcjetLogger;
+
+  constructor(logger: ArcjetLogger) {
+    this.log = logger;
+  }
+
+  // TODO(#2020): We should no-op this if loglevel is not `debug` to do less work
+  measure(label: string) {
+    const start = performance.now();
+    return () => {
+      const end = performance.now();
+      const diff = end - start;
+      this.log.debug("LATENCY %s: %sms", label, diff.toFixed(3));
+    };
+  }
+}
+
 function toString(value: unknown) {
   if (typeof value === "string") {
     return value;
@@ -214,6 +232,35 @@ function toString(value: unknown) {
   }
 
   return "<unsupported value>";
+}
+
+// This is the Symbol that Vercel defines in their infrastructure to access the
+// Context (where available). The Context can contain the `waitUntil` function.
+// https://github.com/vercel/vercel/blob/930d7fb892dc26f240f2b950d963931c45e1e661/packages/functions/src/get-context.ts#L6
+const SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
+
+type WaitUntil = (promise: Promise<unknown>) => void;
+
+function lookupWaitUntil(): WaitUntil | undefined {
+  const fromSymbol: typeof globalThis & {
+    [SYMBOL_FOR_REQ_CONTEXT]?: unknown;
+  } = globalThis;
+  if (
+    typeof fromSymbol[SYMBOL_FOR_REQ_CONTEXT] === "object" &&
+    fromSymbol[SYMBOL_FOR_REQ_CONTEXT] !== null &&
+    "get" in fromSymbol[SYMBOL_FOR_REQ_CONTEXT] &&
+    typeof fromSymbol[SYMBOL_FOR_REQ_CONTEXT].get === "function"
+  ) {
+    const vercelCtx = fromSymbol[SYMBOL_FOR_REQ_CONTEXT].get();
+    if (
+      typeof vercelCtx === "object" &&
+      vercelCtx !== null &&
+      "waitUntil" in vercelCtx &&
+      typeof vercelCtx.waitUntil === "function"
+    ) {
+      return vercelCtx.waitUntil;
+    }
+  }
 }
 
 function toAnalyzeRequest(request: Partial<ArcjetRequestDetails>) {
@@ -279,18 +326,17 @@ function createTypeValidator(
   };
 }
 
-function createValueValidator(...values: string[]): Validator {
+function createValueValidator(
+  // This uses types to ensure we have at least 2 values
+  ...values: [string, string, ...string[]]
+): Validator {
   return (key, value) => {
     // We cast the values to unknown because the optionValue isn't known but
     // we only want to use `values` on string enumerations
     if (!(values as unknown[]).includes(value)) {
-      if (values.length === 1) {
-        throw new Error(`invalid value for \`${key}\` - expected ${values[0]}`);
-      } else {
-        throw new Error(
-          `invalid value for \`${key}\` - expected one of ${values.map((value) => `'${value}'`).join(", ")}`,
-        );
-      }
+      throw new Error(
+        `invalid value for \`${key}\` - expected one of ${values.map((value) => `'${value}'`).join(", ")}`,
+      );
     }
   };
 }
@@ -328,11 +374,7 @@ function createValidator({
         try {
           validate(key, value);
         } catch (err) {
-          if (err instanceof Error) {
-            throw new Error(`\`${rule}\` options error: ${err.message}`);
-          } else {
-            throw new Error(`\`${rule}\` options error: unknown failure`);
-          }
+          throw new Error(`\`${rule}\` options error: ${errorMessage(err)}`);
         }
       }
     }
@@ -584,6 +626,7 @@ export type ExtraProps<Rules> = Rules extends []
 export type ArcjetAdapterContext = {
   [key: string]: unknown;
   getBody(): Promise<string | undefined>;
+  waitUntil?: (promise: Promise<unknown>) => void;
 };
 
 /**
@@ -1056,6 +1099,8 @@ export function detectBot(options: BotOptions): Primitive<{}> {
             reason: new ArcjetBotReason({
               allowed: result.allowed,
               denied: result.denied,
+              verified: result.verified,
+              spoofed: result.spoofed,
             }),
           });
         } else {
@@ -1066,6 +1111,8 @@ export function detectBot(options: BotOptions): Primitive<{}> {
             reason: new ArcjetBotReason({
               allowed: result.allowed,
               denied: result.denied,
+              verified: result.verified,
+              spoofed: result.spoofed,
             }),
           });
         }
@@ -1193,6 +1240,8 @@ export default function arcjet<
   }
   const log = options.log;
 
+  const perf = new Performance(log);
+
   // TODO(#207): Remove this when we can default the transport so client is not required
   // It is currently optional in the options so the Next SDK can override it for the user
   if (typeof options.client === "undefined") {
@@ -1239,20 +1288,46 @@ export default function arcjet<
       ? [...options.characteristics]
       : [];
 
+    const waitUntil = lookupWaitUntil();
+
     const baseContext = {
       key,
       log,
       characteristics,
+      waitUntil,
       ...ctx,
     };
 
-    log.time?.("fingerprint");
-    const fingerprint = await analyze.generateFingerprint(
-      baseContext,
-      toAnalyzeRequest(details),
-    );
-    log.debug("fingerprint (%s): %s", rt, fingerprint);
-    log.timeEnd?.("fingerprint");
+    let fingerprint = "";
+
+    const logFingerprintPerf = perf.measure("fingerprint");
+    try {
+      fingerprint = await analyze.generateFingerprint(
+        baseContext,
+        toAnalyzeRequest(details),
+      );
+      log.debug("fingerprint (%s): %s", rt, fingerprint);
+    } catch (error) {
+      log.error(
+        { error },
+        "Failed to build fingerprint. Please verify your Characteristics.",
+      );
+
+      const decision = new ArcjetErrorDecision({
+        ttl: 0,
+        reason: new ArcjetErrorReason(
+          `Failed to build fingerprint - ${errorMessage(error)}`,
+        ),
+        // No results because we couldn't create a fingerprint
+        results: [],
+      });
+
+      // TODO: Consider sending this to Report when we have an infallible fingerprint
+
+      return decision;
+    } finally {
+      logFingerprintPerf();
+    }
 
     const context: ArcjetContext = Object.freeze({
       ...baseContext,
@@ -1311,16 +1386,15 @@ export default function arcjet<
       }
     }
 
+    const logLocalPerf = perf.measure("local");
     try {
-      log.time?.("local");
-
       // We have our own local cache which we check first. This doesn't work in
       // serverless environments where every request is isolated, but there may be
       // some instances where the instance is not recycled immediately. If so, we
       // can take advantage of that.
-      log.time?.("cache");
+      const logCachePerf = perf.measure("cache");
       const existingBlockReason = blockCache.get(fingerprint);
-      log.timeEnd?.("cache");
+      logCachePerf();
 
       // If already blocked then we can async log to the API and return the
       // decision immediately.
@@ -1358,11 +1432,22 @@ export default function arcjet<
           continue;
         }
 
+        const logRulePerf = perf.measure(rule.type);
         try {
-          log.time?.(rule.type);
-
           localRule.validate(context, details);
           results[idx] = await localRule.protect(context, details);
+
+          // If a rule didn't return a rule result, we need to stub it to avoid
+          // crashing. This should only happen if a user writes a custom local
+          // rule incorrectly.
+          if (typeof results[idx] === "undefined") {
+            results[idx] = new ArcjetRuleResult({
+              ttl: 0,
+              state: "RUN",
+              conclusion: "ERROR",
+              reason: new ArcjetErrorReason("rule result missing"),
+            });
+          }
 
           log.debug(
             {
@@ -1391,7 +1476,7 @@ export default function arcjet<
             reason: new ArcjetErrorReason(err),
           });
         } finally {
-          log.timeEnd?.(rule.type);
+          logRulePerf();
         }
 
         if (results[idx].isDenied()) {
@@ -1438,19 +1523,18 @@ export default function arcjet<
         }
       }
     } finally {
-      log.timeEnd?.("local");
+      logLocalPerf();
     }
 
     // With no cached values, we take a decision remotely. We use a timeout to
     // fail open.
+    const logRemotePerf = perf.measure("remote");
     try {
-      log.time?.("remote");
-
-      log.time?.("decideApi");
+      const logDediceApiPerf = perf.measure("decideApi");
       const decision = await client
         .decide(context, details, rules)
         .finally(() => {
-          log.timeEnd?.("decideApi");
+          logDediceApiPerf();
         });
 
       // If the decision is to block and we have a non-zero TTL, we cache the
@@ -1481,7 +1565,7 @@ export default function arcjet<
 
       return decision;
     } finally {
-      log.timeEnd?.("remote");
+      logRemotePerf();
     }
   }
 

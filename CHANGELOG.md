@@ -1,5 +1,159 @@
 # Changelog
 
+## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...v1.0.0-alpha.34) (2024-12-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **nosecone:** Remove `upgradeInsecureRequests` default value ([#2401](https://github.com/arcjet/arcjet-js/issues/2401))
+
+### 🚀 New Features
+
+* **ip:** Allow trusted proxies to exclude when looking for global IP ([#2393](https://github.com/arcjet/arcjet-js/issues/2393)) ([58286b7](https://github.com/arcjet/arcjet-js/commit/58286b72d456236e85bdd0c975b007e081dcac5a))
+* **nosecone-next:** Keep `'self'` script-src in defaults ([#2378](https://github.com/arcjet/arcjet-js/issues/2378)) ([13348c8](https://github.com/arcjet/arcjet-js/commit/13348c8a771a167f970cfa68d6c57f1c6288447b))
+* Support trusted proxy configuration on each adapter ([#2394](https://github.com/arcjet/arcjet-js/issues/2394)) ([f9587d8](https://github.com/arcjet/arcjet-js/commit/f9587d8ec6bd0327cb34ac19e52aeecbf6b79cf3)), closes [#2346](https://github.com/arcjet/arcjet-js/issues/2346)
+
+
+### 🪲 Bug Fixes
+
+* **nosecone:** Remove `upgradeInsecureRequests` default value ([#2401](https://github.com/arcjet/arcjet-js/issues/2401)) ([093dc53](https://github.com/arcjet/arcjet-js/commit/093dc53459c187955781997446df98e5d190fca3))
+
+
+### 📝 Documentation
+
+* Add nosecone section to root README ([#2404](https://github.com/arcjet/arcjet-js/issues/2404)) ([4674fa4](https://github.com/arcjet/arcjet-js/commit/4674fa41d8ed2bace58ea66bed8a138c4f52a167))
+
+
+### 🧹 Miscellaneous Chores
+
+* **nosecone:** Add JSDoc comments to NoseconeOptions ([#2380](https://github.com/arcjet/arcjet-js/issues/2380)) ([53ec4eb](https://github.com/arcjet/arcjet-js/commit/53ec4eb96fd742dec7a23cd8abd2722b77c537b8))
+
+## [1.0.0-alpha.33](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.32...v1.0.0-alpha.33) (2024-11-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* **nosecone-next:** Remove strict-dynamic value in script-src directive ([#2363](https://github.com/arcjet/arcjet-js/issues/2363))
+* **nosecone:** Change return value to Headers ([#2362](https://github.com/arcjet/arcjet-js/issues/2362))
+
+### 🚀 New Features
+
+* **nosecone:** Add withVercelToolbar utility function ([#2364](https://github.com/arcjet/arcjet-js/issues/2364)) ([177d16d](https://github.com/arcjet/arcjet-js/commit/177d16db642899213a3d936d671fc197d03f4fa1))
+* show isSpoofed() in bot examples ([#2375](https://github.com/arcjet/arcjet-js/issues/2375)) ([d9cab55](https://github.com/arcjet/arcjet-js/commit/d9cab55ecc6d9cbd199aac776f229f384d984ea7))
+
+
+### 🪲 Bug Fixes
+
+* **nosecone-next:** Remove strict-dynamic value in script-src directive ([#2363](https://github.com/arcjet/arcjet-js/issues/2363)) ([2bd8bff](https://github.com/arcjet/arcjet-js/commit/2bd8bffdc8a1be0634b50aa6123bf74b781e9764))
+* **nosecone:** Change return value to Headers ([#2362](https://github.com/arcjet/arcjet-js/issues/2362)) ([ff19af9](https://github.com/arcjet/arcjet-js/commit/ff19af90920b0637d6c628e15aa0f295bb6f2e64))
+
+## [1.0.0-alpha.32](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.31...v1.0.0-alpha.32) (2024-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326))
+
+### 🚀 New Features
+
+* check verification status ([#2229](https://github.com/arcjet/arcjet-js/issues/2229)) ([3329fd7](https://github.com/arcjet/arcjet-js/commit/3329fd7baaafa6784d6f6573905c95fd0686ea4e))
+
+
+### 🪲 Bug Fixes
+
+* **nosecone-next:** Apply the correct defaults based on env ([#2311](https://github.com/arcjet/arcjet-js/issues/2311)) ([2bfaa79](https://github.com/arcjet/arcjet-js/commit/2bfaa7953d0580b71f69e5d61cb964dcf98873a7))
+* Stop publishing TypeScript source files ([#2326](https://github.com/arcjet/arcjet-js/issues/2326)) ([f8f6a2d](https://github.com/arcjet/arcjet-js/commit/f8f6a2d998220d9705ecda8f10d3c5e14b47cad6)), closes [#1836](https://github.com/arcjet/arcjet-js/issues/1836)
+
+
+### 🧹 Miscellaneous Chores
+
+* Update AI chat example to latest AI SDK v4 ([#2313](https://github.com/arcjet/arcjet-js/issues/2313)) ([a3fd423](https://github.com/arcjet/arcjet-js/commit/a3fd42399e6827ee933ec2d7d5fa0851052b91c5)), closes [#2283](https://github.com/arcjet/arcjet-js/issues/2283)
+* Update example for Clerk v6 ([#2312](https://github.com/arcjet/arcjet-js/issues/2312)) ([439c1d5](https://github.com/arcjet/arcjet-js/commit/439c1d52934a9864da5654e97cea49127ebe90b7))
+
+## [1.0.0-alpha.31](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.30...v1.0.0-alpha.31) (2024-11-22)
+
+
+### 🪲 Bug Fixes
+
+* **nosecone:** Export overridden defaults from adapters ([#2301](https://github.com/arcjet/arcjet-js/issues/2301)) ([e3f4686](https://github.com/arcjet/arcjet-js/commit/e3f46864bcfe46fe3361077309bf0a362ee9c23e))
+
+## [1.0.0-alpha.30](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.29...v1.0.0-alpha.30) (2024-11-20)
+
+
+### 🪲 Bug Fixes
+
+* **nosecone-next:** Avoid overriding original headers ([#2284](https://github.com/arcjet/arcjet-js/issues/2284)) ([3fcd8b1](https://github.com/arcjet/arcjet-js/commit/3fcd8b1bbc5e1e8175060713c47f580ed2460725))
+* **nosecone:** Re-export default configuration from adapters ([#2285](https://github.com/arcjet/arcjet-js/issues/2285)) ([8b19f65](https://github.com/arcjet/arcjet-js/commit/8b19f650f8063aa1073f71eda369926e480c9651))
+
+## [1.0.0-alpha.29](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.28...v1.0.0-alpha.29) (2024-11-19)
+
+
+### 🚀 New Features
+
+* Create nosecone package for creating secure headers ([#2237](https://github.com/arcjet/arcjet-js/issues/2237)) ([1e8e73b](https://github.com/arcjet/arcjet-js/commit/1e8e73b43e8d93ed5bd6aa9a2f0efcb7cb142378))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** Log error message when fingerprint cannot be built ([#2139](https://github.com/arcjet/arcjet-js/issues/2139)) ([56e5319](https://github.com/arcjet/arcjet-js/commit/56e5319e096f282a99cb008f3086f083dc782992))
+* Guard against incorrectly written local rules ([#2191](https://github.com/arcjet/arcjet-js/issues/2191)) ([0885ccf](https://github.com/arcjet/arcjet-js/commit/0885ccfc6d9dedf0d16b7add66ea4be0a43e5432))
+* **sveltekit:** Load env from `node:process` ([#2156](https://github.com/arcjet/arcjet-js/issues/2156)) ([346a350](https://github.com/arcjet/arcjet-js/commit/346a3507cc01795c9e4c7246123a62c2a64f0e60)), closes [#2154](https://github.com/arcjet/arcjet-js/issues/2154)
+
+
+### 🧹 Miscellaneous Chores
+
+* Add initial contributing help ([#2158](https://github.com/arcjet/arcjet-js/issues/2158)) ([d21b81e](https://github.com/arcjet/arcjet-js/commit/d21b81e22a5a14129c49161085fbfea869043a2b)), closes [#1122](https://github.com/arcjet/arcjet-js/issues/1122)
+* **arcjet:** Increase test coverage to 100% ([#2157](https://github.com/arcjet/arcjet-js/issues/2157)) ([17f8a9a](https://github.com/arcjet/arcjet-js/commit/17f8a9a43d3a3470d08f17b2529e4d380f2e7ae2)), closes [#1802](https://github.com/arcjet/arcjet-js/issues/1802)
+* **example:** Allow swc compilers ([#2280](https://github.com/arcjet/arcjet-js/issues/2280)) ([cb64f4a](https://github.com/arcjet/arcjet-js/commit/cb64f4a63f260ce8e605c9165927ae285ceaf75a))
+* **ip:** Update documentation for previous breaking changes ([#2278](https://github.com/arcjet/arcjet-js/issues/2278)) ([cff3cc9](https://github.com/arcjet/arcjet-js/commit/cff3cc935545cf06c6b5eba6227ee48a09bcd825)), closes [#2277](https://github.com/arcjet/arcjet-js/issues/2277)
+* **logger:** Remove unused `getTimeLabel` function ([#2140](https://github.com/arcjet/arcjet-js/issues/2140)) ([73d94d5](https://github.com/arcjet/arcjet-js/commit/73d94d5c69148acb81d10ef932f6fec179a8cb6e))
+* Regenerate Wasm with updated dependencies ([#2168](https://github.com/arcjet/arcjet-js/issues/2168)) ([90b8350](https://github.com/arcjet/arcjet-js/commit/90b8350160d80f7d55416ae179fdd9ab85f8fdfe))
+* Regenerate Wasm with updated dependencies ([#2258](https://github.com/arcjet/arcjet-js/issues/2258)) ([b82284b](https://github.com/arcjet/arcjet-js/commit/b82284bc08e5952656664f7056d2749da9286872))
+* Update root readme with all packages and new urls ([#2169](https://github.com/arcjet/arcjet-js/issues/2169)) ([32f0572](https://github.com/arcjet/arcjet-js/commit/32f0572d9b38f4cfac9fbeccdf709bba7b23a9fb))
+
+## [1.0.0-alpha.28](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.27...v1.0.0-alpha.28) (2024-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ip:** Accept Request or IncomingMessage directly ([#2018](https://github.com/arcjet/arcjet-js/issues/2018))
+* **ip:** Exit early if platform-specific headers are missing IP ([#2021](https://github.com/arcjet/arcjet-js/issues/2021))
+* Ensure performance metrics are scoped to same call ([#2019](https://github.com/arcjet/arcjet-js/issues/2019))
+* Return ERROR decision when fingerprint cannot be generated ([#1990](https://github.com/arcjet/arcjet-js/issues/1990))
+* **protocol:** Remove received_at and decision fields from Report ([#1988](https://github.com/arcjet/arcjet-js/issues/1988))
+* **analyze:** improve sensitive info string token accuracy ([#1962](https://github.com/arcjet/arcjet-js/issues/1962))
+* Update Wasm with phone-number fix and tokenizer update ([#1854](https://github.com/arcjet/arcjet-js/issues/1854))
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815))
+
+### 🚀 New Features
+
+* Add Remix adapter ([#1866](https://github.com/arcjet/arcjet-js/issues/1866)) ([32d6d41](https://github.com/arcjet/arcjet-js/commit/32d6d41661ec2e5fe08d4300b60086dc007841bc)), closes [#1313](https://github.com/arcjet/arcjet-js/issues/1313)
+* **analyze:** improve sensitive info string token accuracy ([#1962](https://github.com/arcjet/arcjet-js/issues/1962)) ([abad1bd](https://github.com/arcjet/arcjet-js/commit/abad1bdbb13c9778d9724e29e97cddfadcf3ab02))
+* **ip:** Accept Request or IncomingMessage directly ([#2018](https://github.com/arcjet/arcjet-js/issues/2018)) ([1704da8](https://github.com/arcjet/arcjet-js/commit/1704da87a6791c824cc5ddf6b10a11d5e0786a39)), closes [#1904](https://github.com/arcjet/arcjet-js/issues/1904)
+* **ip:** Add Vercel platform-specific IP header detection ([#2022](https://github.com/arcjet/arcjet-js/issues/2022)) ([d886c76](https://github.com/arcjet/arcjet-js/commit/d886c763983b2adcf50223a56f80ba0df2df078a))
+* **nextjs:** Support Next.js Server Actions ([#1991](https://github.com/arcjet/arcjet-js/issues/1991)) ([07e68dc](https://github.com/arcjet/arcjet-js/commit/07e68dc2f8d2273b8c114df7a6bc74a5a1249b9f)), closes [#1200](https://github.com/arcjet/arcjet-js/issues/1200)
+* Use `waitUntil` for Report call if available ([#1838](https://github.com/arcjet/arcjet-js/issues/1838)) ([2851021](https://github.com/arcjet/arcjet-js/commit/28510216334e2b66fc19a7ee51e741fb59a20607)), closes [#884](https://github.com/arcjet/arcjet-js/issues/884)
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** Ensure performance measurements are 1-to-1 and always captured ([#1858](https://github.com/arcjet/arcjet-js/issues/1858)) ([4d29f9a](https://github.com/arcjet/arcjet-js/commit/4d29f9adee96296ca0a4fc7cd3192f68ebc6ad0a))
+* Ensure performance metrics are scoped to same call ([#2019](https://github.com/arcjet/arcjet-js/issues/2019)) ([e9f869c](https://github.com/arcjet/arcjet-js/commit/e9f869ca0c287c9dfb23fa3ebe91007822b3390e)), closes [#1865](https://github.com/arcjet/arcjet-js/issues/1865)
+* **ip:** Exit early if platform-specific headers are missing IP ([#2021](https://github.com/arcjet/arcjet-js/issues/2021)) ([1a13d9c](https://github.com/arcjet/arcjet-js/commit/1a13d9c9b3a96a4c90a13842b04ca5bf39bf018e))
+* **nestjs:** Lookup request from GraphQL context in ArcjetGuard ([#1857](https://github.com/arcjet/arcjet-js/issues/1857)) ([c0b2903](https://github.com/arcjet/arcjet-js/commit/c0b29032a9a4bb5398edb041221d5cc732fc21cb)), closes [#1856](https://github.com/arcjet/arcjet-js/issues/1856)
+* Return ERROR decision when fingerprint cannot be generated ([#1990](https://github.com/arcjet/arcjet-js/issues/1990)) ([618a1ee](https://github.com/arcjet/arcjet-js/commit/618a1eef0bd70c827ce1c4911d991bfb55b0deb2)), closes [#1801](https://github.com/arcjet/arcjet-js/issues/1801)
+* Update Wasm with phone-number fix and tokenizer update ([#1854](https://github.com/arcjet/arcjet-js/issues/1854)) ([f94f078](https://github.com/arcjet/arcjet-js/commit/f94f07825431dea7690bd82982047e2820971b72))
+
+
+### 🧹 Miscellaneous Chores
+
+* Add README links for new adapters ([#1831](https://github.com/arcjet/arcjet-js/issues/1831)) ([81885d9](https://github.com/arcjet/arcjet-js/commit/81885d92c1a4cb36d4ffbf4483ae20c1d90b7b6c)), closes [#1813](https://github.com/arcjet/arcjet-js/issues/1813)
+* **analyze:** Regenerate Wasm with updated dependencies ([#2067](https://github.com/arcjet/arcjet-js/issues/2067)) ([f96994c](https://github.com/arcjet/arcjet-js/commit/f96994c83fbd40bd40a379c954dae53c11e5d1ae))
+* **examples:** Reorganize examples for clarity and decoupling from Next.js version ([#2017](https://github.com/arcjet/arcjet-js/issues/2017)) ([8568bf2](https://github.com/arcjet/arcjet-js/commit/8568bf2f930bcf65c6870c003b7018942268d64a))
+* **examples:** Various cleanup ([#2066](https://github.com/arcjet/arcjet-js/issues/2066)) ([c626228](https://github.com/arcjet/arcjet-js/commit/c62622871ab851b33eee4dd6d6fdcfe5af52fa20))
+* **protocol:** Remove received_at and decision fields from Report ([#1988](https://github.com/arcjet/arcjet-js/issues/1988)) ([3da543e](https://github.com/arcjet/arcjet-js/commit/3da543e78fa95dc2d001fd54a210115458eb5a60))
+* Remove `match` option from rate limit rules ([#1815](https://github.com/arcjet/arcjet-js/issues/1815)) ([853119d](https://github.com/arcjet/arcjet-js/commit/853119d24c37330690c937149a0cf1d0c4d31862)), closes [#1810](https://github.com/arcjet/arcjet-js/issues/1810)
+
 ## [1.0.0-alpha.27](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.26...v1.0.0-alpha.27) (2024-10-01)
 
 

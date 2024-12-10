@@ -1,7 +1,7 @@
 import core from "arcjet";
 import type {
   ArcjetDecision,
-  ArcjetOptions,
+  ArcjetOptions as CoreOptions,
   Primitive,
   Product,
   ArcjetRequest,
@@ -15,6 +15,7 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
+import { env } from "node:process";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -83,11 +84,11 @@ export type RemoteClientOptions = {
 export function createRemoteClient(options?: RemoteClientOptions) {
   // The base URL for the Arcjet API. Will default to the standard production
   // API unless environment variable `ARCJET_BASE_URL` is set.
-  const url = options?.baseUrl ?? baseUrl(process.env);
+  const url = options?.baseUrl ?? baseUrl(env);
 
   // The timeout for the Arcjet API in milliseconds. This is set to a low value
   // in production so calls fail open.
-  const timeout = options?.timeout ?? (isDevelopment(process.env) ? 1000 : 500);
+  const timeout = options?.timeout ?? (isDevelopment(env) ? 1000 : 500);
 
   // Transport is the HTTP client that the client uses to make requests.
   const transport = createTransport(url);
@@ -124,6 +125,22 @@ function cookiesToString(
     .map((v) => `${v.name}=${encodeURIComponent(v.value)}`)
     .join("; ");
 }
+
+/**
+ * The options used to configure an {@link ArcjetSvelteKit} client.
+ */
+export type ArcjetOptions<
+  Rules extends [...Array<Primitive | Product>],
+  Characteristics extends readonly string[],
+> = Simplify<
+  CoreOptions<Rules, Characteristics> & {
+    /**
+     * One or more IP Address of trusted proxies in front of the application.
+     * These addresses will be excluded when Arcjet detects a public IP address.
+     */
+    proxies?: Array<string>;
+  }
+>;
 
 /**
  * The ArcjetSvelteKit client provides a public `protect()` method to
@@ -179,7 +196,7 @@ export default function arcjet<
   const log = options.log
     ? options.log
     : new Logger({
-        level: logLevel(process.env),
+        level: logLevel(env),
       });
 
   function toArcjetRequest<Props extends PlainObject>(
@@ -194,14 +211,14 @@ export default function arcjet<
     let ip = findIP(
       {
         ip: event.getClientAddress(),
+        headers,
       },
-      headers,
-      { platform: platform(process.env) },
+      { platform: platform(env), proxies: options.proxies },
     );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
-      if (isDevelopment(process.env)) {
+      if (isDevelopment(env)) {
         log.warn("Using 127.0.0.1 as IP address in development mode");
         ip = "127.0.0.1";
       } else {

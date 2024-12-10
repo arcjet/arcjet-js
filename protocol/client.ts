@@ -1,6 +1,5 @@
 import type { Transport } from "@connectrpc/connect";
 import { createPromiseClient } from "@connectrpc/connect";
-import { Timestamp } from "@bufbuild/protobuf";
 import {
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,
@@ -152,14 +151,13 @@ export function createClient(options: ClientOptions): Client {
         },
         decision: ArcjetDecisionToProtocol(decision),
         rules: rules.map(ArcjetRuleToProtocol),
-        receivedAt: Timestamp.now(),
       });
 
       log.debug("Report request to %s", baseUrl);
 
-      // We use the promise API directly to avoid returning a promise from this function so execution can't be paused with `await`
-      // TODO(#884): Leverage `waitUntil` if the function is attached to the context
-      client
+      // We use the promise API directly to avoid returning a promise from this
+      // function so execution can't be paused with `await`
+      const reportPromise = client
         .report(reportRequest, {
           headers: { Authorization: `Bearer ${context.key}` },
           timeoutMs: 2_000, // 2 seconds
@@ -167,7 +165,7 @@ export function createClient(options: ClientOptions): Client {
         .then((response) => {
           log.debug(
             {
-              id: response.decision?.id,
+              id: decision.id,
               fingerprint: context.fingerprint,
               path: details.path,
               runtime: context.runtime,
@@ -179,6 +177,10 @@ export function createClient(options: ClientOptions): Client {
         .catch((err: unknown) => {
           log.info("Encountered problem sending report: %s", errorMessage(err));
         });
+
+      if (typeof context.waitUntil === "function") {
+        context.waitUntil(reportPromise);
+      }
     },
   });
 }

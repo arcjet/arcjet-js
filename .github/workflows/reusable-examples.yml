@@ -13,7 +13,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -28,7 +28,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -53,7 +53,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -68,7 +68,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -93,7 +93,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -108,7 +108,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -133,7 +133,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -148,7 +148,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -163,342 +163,6 @@ jobs:
 
       - name: Build
         working-directory: examples/nestjs-launchdarkly
-        run: npm run build
-
-  nextjs-14-app-dir-rl:
-    name: Next.js 14 + App Router + Rate Limit
-    runs-on: ubuntu-latest
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            fonts.googleapis.com:443
-            fonts.gstatic.com:443
-            github.com:443
-            registry.npmjs.org:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.0.4
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nextjs-14-app-dir-rl
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nextjs-14-app-dir-rl
-        run: npm run build
-
-  nextjs-14-app-dir-validate-email:
-    name: Next.js 14 + App Router + Validate Email
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            fonts.googleapis.com:443
-            fonts.gstatic.com:443
-            github.com:443
-            registry.npmjs.org:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.0.4
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nextjs-14-app-dir-validate-email
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nextjs-14-app-dir-validate-email
-        run: npm run build
-
-  nextjs-14-authjs-5:
-    name: Next.js 14 + Auth.js 5
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            fonts.googleapis.com:443
-            fonts.gstatic.com:443
-            github.com:443
-            registry.npmjs.org:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.0.4
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nextjs-14-authjs-5
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nextjs-14-authjs-5
-        env:
-          AUTH_SECRET: TEST_SECRET
-        run: npm run build
-
-  nextjs-14-bot-categories:
-    name: Next.js 14 + Bot categories
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            fonts.googleapis.com:443
-            fonts.gstatic.com:443
-            github.com:443
-            registry.npmjs.org:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.0.4
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nextjs-14-bot-categories
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nextjs-14-bot-categories
-        run: npm run build
-
-  nextjs-14-clerk-rl:
-    name: Next.js 14 + Clerk + Rate Limit
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            fonts.googleapis.com:443
-            fonts.gstatic.com:443
-            github.com:443
-            registry.npmjs.org:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.0.4
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nextjs-14-clerk-rl
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nextjs-14-clerk-rl
-        run: npm run build
-
-  nextjs-14-clerk-shield:
-    name: Next.js 14 + Clerk + Shield
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            fonts.googleapis.com:443
-            fonts.gstatic.com:443
-            github.com:443
-            registry.npmjs.org:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.0.4
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nextjs-14-clerk-shield
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nextjs-14-clerk-shield
-        run: npm run build
-
-  nextjs-14-decorate:
-    name: Next.js 14 + Decorate
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            fonts.googleapis.com:443
-            fonts.gstatic.com:443
-            github.com:443
-            registry.npmjs.org:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.0.4
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nextjs-14-decorate
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nextjs-14-decorate
-        run: npm run build
-
-  nextjs-14-ip-details:
-    name: Next.js 14 + IP Details
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            fonts.googleapis.com:443
-            fonts.gstatic.com:443
-            github.com:443
-            registry.npmjs.org:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.0.4
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nextjs-14-ip-details
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nextjs-14-ip-details
         run: npm run build
 
   nextjs-14-nextauth-4:
@@ -509,7 +173,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -526,7 +190,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -543,15 +207,15 @@ jobs:
         working-directory: examples/nextjs-14-nextauth-4
         run: npm run build
 
-  nextjs-14-openai:
-    name: Next.js 14 + OpenAI
+  nextjs-app-dir-rate-limit:
+    name: Next.js + App Router + Rate Limit
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -568,7 +232,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -578,22 +242,22 @@ jobs:
         run: npm ci
 
       - name: Install example dependencies
-        working-directory: examples/nextjs-14-openai
+        working-directory: examples/nextjs-app-dir-rate-limit
         run: npm ci
 
       - name: Build
-        working-directory: examples/nextjs-14-openai
+        working-directory: examples/nextjs-app-dir-rate-limit
         run: npm run build
 
-  nextjs-14-pages-wrap:
-    name: Next.js 14 + Page Router + withArcjet
+  nextjs-app-dir-validate-email:
+    name: Next.js + App Router + Validate Email
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -610,7 +274,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -620,22 +284,22 @@ jobs:
         run: npm ci
 
       - name: Install example dependencies
-        working-directory: examples/nextjs-14-pages-wrap
+        working-directory: examples/nextjs-app-dir-validate-email
         run: npm ci
 
       - name: Build
-        working-directory: examples/nextjs-14-pages-wrap
+        working-directory: examples/nextjs-app-dir-validate-email
         run: npm run build
 
-  nextjs-14-permit:
-    name: Next.js 14 + Permit
+  nextjs-authjs-5:
+    name: Next.js + Auth.js 5
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -652,7 +316,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -662,22 +326,24 @@ jobs:
         run: npm ci
 
       - name: Install example dependencies
-        working-directory: examples/nextjs-14-permit
+        working-directory: examples/nextjs-authjs-5
         run: npm ci
 
       - name: Build
-        working-directory: examples/nextjs-14-permit
+        working-directory: examples/nextjs-authjs-5
+        env:
+          AUTH_SECRET: TEST_SECRET
         run: npm run build
 
-  nextjs-14-sensitive-info:
-    name: Next.js 14 + Sensitive Info
+  nextjs-bot-categories:
+    name: Next.js + Bot categories
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -694,7 +360,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -704,14 +370,401 @@ jobs:
         run: npm ci
 
       - name: Install example dependencies
-        working-directory: examples/nextjs-14-sensitive-info
+        working-directory: examples/nextjs-bot-categories
         run: npm ci
 
       - name: Build
-        working-directory: examples/nextjs-14-sensitive-info
+        working-directory: examples/nextjs-bot-categories
         run: npm run build
 
-  nodejs-hono-rl:
+  nextjs-clerk-rate-limit:
+    name: Next.js + Clerk + Rate Limit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-clerk-rate-limit
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-clerk-rate-limit
+        run: npm run build
+        env:
+          # This is the smallest dummy token that passes the Clerk validation
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_JA==
+
+  nextjs-clerk-shield:
+    name: Next.js + Clerk + Shield
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-clerk-shield
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-clerk-shield
+        run: npm run build
+        env:
+          # This is the smallest dummy token that passes the Clerk validation
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_JA==
+
+  nextjs-decorate:
+    name: Next.js + Decorate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-decorate
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-decorate
+        run: npm run build
+
+  nextjs-ip-details:
+    name: Next.js + IP Details
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-ip-details
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-ip-details
+        run: npm run build
+
+  nextjs-openai:
+    name: Next.js + OpenAI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-openai
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-openai
+        run: npm run build
+
+  nextjs-pages-wrap:
+    name: Next.js + Page Router + withArcjet
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-pages-wrap
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-pages-wrap
+        run: npm run build
+
+  nextjs-permit:
+    name: Next.js + Permit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-permit
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-permit
+        run: npm run build
+        env:
+          # This is the smallest dummy token that passes the Clerk validation
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_JA==
+
+  nextjs-sensitive-info:
+    name: Next.js + Sensitive Info
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-sensitive-info
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-sensitive-info
+        run: npm run build
+
+  nextjs-server-actions:
+    name: Next.js + Server Actions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-server-actions
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-server-actions
+        run: npm run build
+
+  nodejs-hono-rate-limit:
     name: Node.js + Hono + Rate Limit
     runs-on: ubuntu-latest
     permissions:
@@ -719,7 +772,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -734,7 +787,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -744,11 +797,11 @@ jobs:
         run: npm ci
 
       - name: Install example dependencies
-        working-directory: examples/nodejs-hono-rl
+        working-directory: examples/nodejs-hono-rate-limit
         run: npm ci
 
       - name: Build
-        working-directory: examples/nodejs-hono-rl
+        working-directory: examples/nodejs-hono-rate-limit
         run: npm run build
 
   remix-express:
@@ -759,7 +812,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -774,7 +827,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 
@@ -799,7 +852,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -814,7 +867,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 20
 

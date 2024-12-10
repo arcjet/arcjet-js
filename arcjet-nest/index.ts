@@ -5,7 +5,7 @@ import "reflect-metadata";
 import core from "arcjet";
 import type {
   ArcjetDecision,
-  ArcjetOptions,
+  ArcjetOptions as CoreOptions,
   Primitive,
   Product,
   ArcjetRequest,
@@ -158,6 +158,22 @@ function cookiesToString(cookies: string | string[] | undefined): string {
 }
 
 /**
+ * The options used to configure an {@link ArcjetNest} client.
+ */
+export type ArcjetOptions<
+  Rules extends [...Array<Primitive | Product>],
+  Characteristics extends readonly string[],
+> = Simplify<
+  CoreOptions<Rules, Characteristics> & {
+    /**
+     * One or more IP Address of trusted proxies in front of the application.
+     * These addresses will be excluded when Arcjet detects a public IP address.
+     */
+    proxies?: Array<string>;
+  }
+>;
+
+/**
  * The ArcjetNest client provides a public `protect()` method to
  * make a decision about how a NestJS request should be handled.
  */
@@ -216,7 +232,14 @@ function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    let ip = findIP(request, headers, { platform: platform(process.env) });
+    let ip = findIP(
+      {
+        ip: request.ip,
+        socket: request.socket,
+        headers,
+      },
+      { platform: platform(process.env), proxies: options.proxies },
+    );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
@@ -566,7 +589,10 @@ function decorate(decorators: any[], target: any, key?: any, desc?: any): any {
 
 // Creates a decorator for a constructor parameter. Pulled out of `tslib` to
 // avoid build failures.
-function param(paramIndex: number, decorator: Function): Function {
+function param(
+  paramIndex: number,
+  decorator: (target: any, key: any, paramIndex: number) => void,
+) {
   return function (target: any, key: any) {
     decorator(target, key, paramIndex);
   };

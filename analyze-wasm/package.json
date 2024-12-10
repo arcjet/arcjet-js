@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/analyze-wasm",
-  "version": "1.0.0-alpha.27",
+  "version": "1.0.0-alpha.34",
   "description": "Arcjet local analysis engine",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
