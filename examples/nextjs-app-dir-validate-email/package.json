@@ -11,7 +11,7 @@
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
     "@nosecone/next": "file:../../nosecone-next",
-    "next": "15.0.3",
+    "next": "15.1.0",
     "react": "^19",
     "react-dom": "^19"
   },
