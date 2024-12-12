@@ -1,16 +1,13 @@
-/**
- * @jest-environment ./test/runtime-env
- * @jest-environment-options {"Deno": {}}
- */
-
-// These tests are written in JS because otherwise the jest-environment pragma
-// is moved by rollup. See also https://github.com/jestjs/jest/issues/12573
-
-import { describe, expect, test } from "@jest/globals";
-import { runtime } from "../index";
+import { describe, test } from "node:test";
+import { expect } from "expect";
+import { importWithGlobal } from "./import-with-global.js";
 
 describe("deno detection", () => {
-  test("detects deno if appropriate globals are available", () => {
+  test("detects deno if appropriate globals are available", async () => {
+    const { runtime } = await importWithGlobal(
+      "../index.js",
+      { "Deno": {} }
+    );
     expect(runtime()).toEqual("deno");
   });
 });

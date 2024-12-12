@@ -1,16 +1,13 @@
-/**
- * @jest-environment ./test/runtime-env
- * @jest-environment-options {"navigator": {"userAgent": "Cloudflare-Workers"}}
- */
-
-// These tests are written in JS because otherwise the jest-environment pragma
-// is moved by rollup. See also https://github.com/jestjs/jest/issues/12573
-
-import { describe, expect, test } from "@jest/globals";
-import { runtime } from "../index";
+import { describe, test } from "node:test";
+import { expect } from "expect";
+import { importWithGlobal } from "./import-with-global.js";
 
 describe("workerd detection", () => {
-  test("detects workerd if appropriate globals are available", () => {
+  test("detects workerd if appropriate globals are available", async () => {
+    const { runtime } = await importWithGlobal(
+      "../index.js",
+      { "navigator": { "userAgent": "Cloudflare-Workers" } },
+    );
     expect(runtime()).toEqual("workerd");
   });
 });
