@@ -1,13 +1,11 @@
-/**
- * @jest-environment node
- */
-import { describe, expect, test } from "@jest/globals";
+import { describe, test } from "node:test";
+import { expect } from "expect";
 import * as http from "http";
 import { readBody } from "../index";
 import type { AddressInfo } from "net";
 
 describe("reads the body from the readable stream", () => {
-  test("should read normal body streams", (done) => {
+  test("should read normal body streams", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
         const body = await readBody(req, { limit: 1024 });
@@ -42,7 +40,7 @@ describe("reads the body from the readable stream", () => {
     });
   });
 
-  test("should error if the body exceeds the length limit", (done) => {
+  test("should error if the body exceeds the length limit", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
         await readBody(req, { limit: 4 });
@@ -76,7 +74,7 @@ describe("reads the body from the readable stream", () => {
     });
   });
 
-  test("should error if it isn't the exact length specified", (done) => {
+  test("should error if it isn't the exact length specified", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
         await readBody(req, { limit: 1024, expectedLength: 4 });
@@ -112,7 +110,7 @@ describe("reads the body from the readable stream", () => {
     });
   });
 
-  test("should error if the `on` function isn't present on the object", (done) => {
+  test("should error if the `on` function isn't present on the object", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
         const reqNoOn = {
@@ -150,7 +148,7 @@ describe("reads the body from the readable stream", () => {
     });
   });
 
-  test("should error if the `removeListener` function isn't present on the object", (done) => {
+  test("should error if the `removeListener` function isn't present on the object", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
         const reqNoOn = {
@@ -188,7 +186,7 @@ describe("reads the body from the readable stream", () => {
     });
   });
 
-  test("should error if the stream is not readable", (done) => {
+  test("should error if the stream is not readable", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
         const reqNoOn = {
@@ -227,7 +225,7 @@ describe("reads the body from the readable stream", () => {
     });
   });
 
-  test("should error if limit is not present", (done) => {
+  test("should error if limit is not present", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
         const reqNoOn = {
@@ -266,22 +264,27 @@ describe("reads the body from the readable stream", () => {
     });
   });
 
-  test("should timeout if no chunks are sent", async () => {
-    const stream = {
-      on: () => undefined,
-      removeListener: () => undefined,
-      readable: true,
-    };
+  test(
+    "should timeout if no chunks are sent",
+    {
+      // setting test timeout to 200 because the promise should throw after 100ms
+      timeout: 200,
+    },
+    async () => {
+      const stream = {
+        on: () => undefined,
+        removeListener: () => undefined,
+        readable: true,
+      };
 
-    try {
-      await readBody(stream, { limit: 100 });
-      throw new Error("this should not return successfully");
-    } catch (e) {
-      expect(e).toEqual(new Error("received no body chunks after 100ms"));
-    }
-
-    // setting test timeout to 200 because the promise should throw after 100ms
-  }, 200);
+      try {
+        await readBody(stream, { limit: 100 });
+        throw new Error("this should not return successfully");
+      } catch (e) {
+        expect(e).toEqual(new Error("received no body chunks after 100ms"));
+      }
+    },
+  );
 
   type NoOpFunc = (...args: any[]) => void;
   test("should error if the stream is aborted", async () => {

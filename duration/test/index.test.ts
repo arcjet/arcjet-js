@@ -1,13 +1,6 @@
-/**
- * @jest-environment node
- */
-import { describe, expect, test, afterEach, jest } from "@jest/globals";
+import { describe, test } from "node:test";
+import { expect } from "expect";
 import { parse } from "../index";
-
-afterEach(() => {
-  jest.clearAllMocks();
-  jest.restoreAllMocks();
-});
 
 describe("parse", () => {
   test("always returns 0 if the duration string is just 0", () => {

@@ -1,4 +1,5 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, test } from "node:test";
+import { expect } from "expect";
 import * as env from "../index";
 
 describe("env", () => {
