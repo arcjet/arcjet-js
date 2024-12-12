@@ -12,7 +12,7 @@
     "@ai-sdk/openai": "^1.0.8",
     "@arcjet/next": "file:../../arcjet-next",
     "ai": "^4.0.14",
-    "next": "15.0.3",
+    "next": "15.1.0",
     "openai": "^4.76.1",
     "openai-chat-tokens": "^0.2.8",
     "react": "^19",
