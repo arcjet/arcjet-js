@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "analyze"
+    "directory": "analyze-wasm"
   },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
