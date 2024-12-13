@@ -47,6 +47,7 @@
     "pretest": "npm run build",
     "test": "node --test"
   },
+  "dependencies": {},
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.34",
     "@arcjet/rollup-config": "1.0.0-alpha.34",

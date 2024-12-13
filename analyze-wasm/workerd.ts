@@ -1,5 +1,3 @@
-import type { ArcjetLogger } from "@arcjet/protocol";
-
 import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
   ImportObject,
@@ -17,11 +15,6 @@ import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interface
 import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm";
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm";
-
-interface AnalyzeContext {
-  log: ArcjetLogger;
-  characteristics: string[];
-}
 
 type DetectSensitiveInfoFunction =
   typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
@@ -50,7 +43,6 @@ export async function initializeWasm(coreImports: ImportObject) {
 }
 
 export {
-  type AnalyzeContext,
   type BotConfig,
   type DetectedSensitiveInfoEntity,
   type SensitiveInfoEntity,

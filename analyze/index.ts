@@ -1,6 +1,5 @@
 import { initializeWasm } from "@arcjet/analyze-wasm";
 import type {
-  AnalyzeContext,
   BotConfig,
   BotResult,
   DetectedSensitiveInfoEntity,
@@ -10,8 +9,14 @@ import type {
   SensitiveInfoEntities,
   SensitiveInfoEntity,
   SensitiveInfoResult,
+  ImportObject,
 } from "@arcjet/analyze-wasm";
-import type { ImportObject } from "@arcjet/analyze-wasm/wasm/arcjet_analyze_js_req.component";
+import type { ArcjetLogger } from "@arcjet/protocol";
+
+interface AnalyzeContext {
+  log: ArcjetLogger;
+  characteristics: string[];
+}
 
 type AnalyzeRequest = {
   ip?: string;

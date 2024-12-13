@@ -1,5 +1,3 @@
-import type { ArcjetLogger } from "@arcjet/protocol";
-
 import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
 import type {
   ImportObject,
@@ -18,11 +16,6 @@ import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm?
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm?module";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm?module";
 
-interface AnalyzeContext {
-  log: ArcjetLogger;
-  characteristics: string[];
-}
-
 type DetectSensitiveInfoFunction =
   typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
 
@@ -40,10 +33,7 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-export async function initializeWasm(
-  context: AnalyzeContext,
-  coreImports: ImportObject,
-) {
+export async function initializeWasm(coreImports: ImportObject) {
   try {
     return instantiate(moduleFromPath, coreImports);
   } catch {
@@ -52,7 +42,6 @@ export async function initializeWasm(
 }
 
 export {
-  type AnalyzeContext,
   type BotConfig,
   type DetectedSensitiveInfoEntity,
   type SensitiveInfoEntity,
