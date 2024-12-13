@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.0-alpha.35](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...v1.0.0-alpha.35) (2024-12-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* refactor wasm loading for analyze ([#1832](https://github.com/arcjet/arcjet-js/issues/1832))
+
+### 🧹 Miscellaneous Chores
+
+* **protocol:** Opt out of Buf & ConnectRPC v2 changes ([#2473](https://github.com/arcjet/arcjet-js/issues/2473)) ([06b5b21](https://github.com/arcjet/arcjet-js/commit/06b5b21d10c4a861c5379b4896168284d5c33225))
+* refactor wasm loading for analyze ([#1832](https://github.com/arcjet/arcjet-js/issues/1832)) ([02e4435](https://github.com/arcjet/arcjet-js/commit/02e4435a86b6b40b97feb369f0402b2199a4bc12)), closes [#1448](https://github.com/arcjet/arcjet-js/issues/1448)
+* **runtime:** Replace Jest with Node test harness ([#2565](https://github.com/arcjet/arcjet-js/issues/2565)) ([ec60fe2](https://github.com/arcjet/arcjet-js/commit/ec60fe2c39519eeb3ffdfd7b89ba0aac544cc478)), closes [#9](https://github.com/arcjet/arcjet-js/issues/9)
+* Switch most test harnesses to node:test ([#2479](https://github.com/arcjet/arcjet-js/issues/2479)) ([8a71bbc](https://github.com/arcjet/arcjet-js/commit/8a71bbc3d1fa6b63586f1bae7fa6f0f8d4fbad66))
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...v1.0.0-alpha.34) (2024-12-03)
 
 
