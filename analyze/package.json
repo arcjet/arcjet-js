@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@arcjet/analyze-wasm": "1.0.0-alpha.34",
-    "@arcjet/protocol": "1.0.0-alpha.27"
+    "@arcjet/protocol": "1.0.0-alpha.34"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.34",
