@@ -132,3 +132,4 @@ dist
 # Generated files
 index.js
 index.d.ts
+test/*.js

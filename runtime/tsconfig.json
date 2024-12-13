@@ -1,4 +1,4 @@
 {
   "extends": "@arcjet/tsconfig/base",
-  "include": ["index.ts"]
+  "include": ["index.ts", "test/import-with-global.ts"]
 }
