@@ -12,7 +12,6 @@ import type {
   SensitiveInfoResult,
 } from "@arcjet/analyze-wasm";
 import type { ImportObject } from "@arcjet/analyze-wasm/wasm/arcjet_analyze_js_req.component";
-import { create } from "domain";
 
 type AnalyzeRequest = {
   ip?: string;
@@ -90,14 +89,17 @@ export async function generateFingerprint(
   context: AnalyzeContext,
   request: AnalyzeRequest,
 ): Promise<string> {
+  const { log } = context;
   const coreImports = createCoreImports();
-  const analyze = await initializeWasm(context, coreImports);
+  const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
     return analyze.generateFingerprint(
       JSON.stringify(request),
       context.characteristics,
     );
+  } else {
+    log.debug("WebAssembly is not supported in this runtime");
   }
 
   return "";
@@ -108,8 +110,9 @@ export async function isValidEmail(
   candidate: string,
   options?: EmailValidationConfig,
 ): Promise<EmailValidationResult> {
+  const { log } = context;
   const coreImports = createCoreImports();
-  const analyze = await initializeWasm(context, coreImports);
+  const analyze = await initializeWasm(coreImports);
   const optionsOrDefault = {
     requireTopLevelDomain: true,
     allowDomainLiteral: false,
@@ -120,6 +123,7 @@ export async function isValidEmail(
   if (typeof analyze !== "undefined") {
     return analyze.isValidEmail(candidate, optionsOrDefault);
   } else {
+    log.debug("WebAssembly is not supported in this runtime");
     // Skip the local evaluation of the rule if WASM is not available
     return {
       validity: "valid",
@@ -133,12 +137,14 @@ export async function detectBot(
   request: AnalyzeRequest,
   options: BotConfig,
 ): Promise<BotResult> {
+  const { log } = context;
   const coreImports = createCoreImports();
-  const analyze = await initializeWasm(context, coreImports);
+  const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
     return analyze.detectBot(JSON.stringify(request), options);
   } else {
+    log.debug("WebAssembly is not supported in this runtime");
     // Skip the local evaluation of the rule if Wasm is not available
     return {
       allowed: [],
@@ -156,8 +162,9 @@ export async function detectSensitiveInfo(
   contextWindowSize: number,
   detect?: DetectSensitiveInfoFunction,
 ): Promise<SensitiveInfoResult> {
+  const { log } = context;
   const coreImports = createCoreImports(detect);
-  const analyze = await initializeWasm(context, coreImports);
+  const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
     const skipCustomDetect = typeof detect !== "function";
@@ -167,6 +174,7 @@ export async function detectSensitiveInfo(
       skipCustomDetect,
     });
   } else {
+    log.debug("WebAssembly is not supported in this runtime");
     throw new Error(
       "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
     );

@@ -47,13 +47,12 @@ call various functions that are exported by our wasm bindings.
 
 We chose to put this logic in a separate package because we need to change the
 import structure for each runtime that we support in the wasm bindings. Moving
-this to a separate package allows us not to have to duplicate code.
+this to a separate package allows us not to have to duplicate code while providing
+a combined higher-level api for calling our core functionality in Wasm.
 
 ## License
 
 Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
-[mdn-data-url]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
-[wasm-base64-blog]: https://blobfolio.com/2019/better-binary-batter-mixing-base64-and-uint8array/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

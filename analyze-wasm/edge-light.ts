@@ -44,13 +44,10 @@ export async function initializeWasm(
   context: AnalyzeContext,
   coreImports: ImportObject,
 ) {
-  const { log } = context;
-
   try {
-    // Await the instantiation to catch the failure
     return instantiate(moduleFromPath, coreImports);
   } catch {
-    log.debug("WebAssembly is not supported in this runtime");
+    return undefined;
   }
 }
 

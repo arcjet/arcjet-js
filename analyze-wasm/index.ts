@@ -53,17 +53,12 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-export async function initializeWasm(
-  context: AnalyzeContext,
-  coreImports: ImportObject,
-) {
-  const { log } = context;
-
+export async function initializeWasm(coreImports: ImportObject) {
   try {
     // Await the instantiation to catch the failure
     return instantiate(moduleFromPath, coreImports);
   } catch {
-    log.debug("WebAssembly is not supported in this runtime");
+    return undefined;
   }
 }
 
