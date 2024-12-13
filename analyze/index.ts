@@ -1,22 +1,22 @@
-import type { ArcjetLogger } from "@arcjet/protocol";
-
-import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
+import { initializeWasm } from "@arcjet/analyze-wasm";
 import type {
-  ImportObject,
+  BotConfig,
+  BotResult,
+  DetectedSensitiveInfoEntity,
+  DetectSensitiveInfoFunction,
   EmailValidationConfig,
   EmailValidationResult,
-  DetectedSensitiveInfoEntity,
   SensitiveInfoEntities,
   SensitiveInfoEntity,
   SensitiveInfoResult,
-  BotConfig,
-  BotResult,
-} from "./wasm/arcjet_analyze_js_req.component.js";
-import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
+  ImportObject,
+} from "@arcjet/analyze-wasm";
+import type { ArcjetLogger } from "@arcjet/protocol";
 
-import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.component.core.wasm?js";
-import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_js_req.component.core2.wasm?js";
-import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_js_req.component.core3.wasm?js";
+interface AnalyzeContext {
+  log: ArcjetLogger;
+  characteristics: string[];
+}
 
 type AnalyzeRequest = {
   ip?: string;
@@ -30,6 +30,13 @@ type AnalyzeRequest = {
   extra?: Record<string, string>;
 };
 
+export {
+  type EmailValidationConfig,
+  type BotConfig,
+  type SensitiveInfoEntity,
+  type DetectedSensitiveInfoEntity,
+};
+
 const FREE_EMAIL_PROVIDERS = [
   "gmail.com",
   "yahoo.com",
@@ -38,57 +45,16 @@ const FREE_EMAIL_PROVIDERS = [
   "hotmail.co.uk",
 ];
 
-interface AnalyzeContext {
-  log: ArcjetLogger;
-  characteristics: string[];
-}
-
-type DetectSensitiveInfoFunction =
-  typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
-
-// TODO: Do we actually need this wasmCache or does `import` cache correctly?
-const wasmCache = new Map<string, WebAssembly.Module>();
-
-async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
-  const cachedModule = wasmCache.get(path);
-  if (typeof cachedModule !== "undefined") {
-    return cachedModule;
-  }
-
-  if (path === "arcjet_analyze_js_req.component.core.wasm") {
-    const mod = await componentCoreWasm();
-    wasmCache.set(path, mod);
-    return mod;
-  }
-  if (path === "arcjet_analyze_js_req.component.core2.wasm") {
-    const mod = await componentCore2Wasm();
-    wasmCache.set(path, mod);
-    return mod;
-  }
-  if (path === "arcjet_analyze_js_req.component.core3.wasm") {
-    const mod = await componentCore3Wasm();
-    wasmCache.set(path, mod);
-    return mod;
-  }
-
-  throw new Error(`Unknown path: ${path}`);
-}
-
 function noOpDetect(): SensitiveInfoEntity[] {
   return [];
 }
 
-async function init(
-  context: AnalyzeContext,
-  detectSensitiveInfo?: DetectSensitiveInfoFunction,
-) {
-  const { log } = context;
-
-  if (typeof detectSensitiveInfo !== "function") {
-    detectSensitiveInfo = noOpDetect;
+function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
+  if (typeof detect !== "function") {
+    detect = noOpDetect;
   }
 
-  const coreImports: ImportObject = {
+  return {
     "arcjet:js-req/email-validator-overrides": {
       isFreeEmail(domain) {
         if (FREE_EMAIL_PROVIDERS.includes(domain)) {
@@ -107,7 +73,7 @@ async function init(
       },
     },
     "arcjet:js-req/sensitive-information-identifier": {
-      detect: detectSensitiveInfo,
+      detect,
     },
     "arcjet:js-req/verify-bot": {
       verify() {
@@ -115,22 +81,7 @@ async function init(
       },
     },
   };
-
-  try {
-    // Await the instantiation to catch the failure
-    return await instantiate(moduleFromPath, coreImports);
-  } catch {
-    log.debug("WebAssembly is not supported in this runtime");
-  }
 }
-
-export {
-  type EmailValidationConfig,
-  type BotConfig,
-  type DetectedSensitiveInfoEntity,
-  type SensitiveInfoEntity,
-  type DetectSensitiveInfoFunction,
-};
 
 /**
  * Generate a fingerprint for the client. This is used to identify the client
@@ -143,13 +94,17 @@ export async function generateFingerprint(
   context: AnalyzeContext,
   request: AnalyzeRequest,
 ): Promise<string> {
-  const analyze = await init(context);
+  const { log } = context;
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
     return analyze.generateFingerprint(
       JSON.stringify(request),
       context.characteristics,
     );
+  } else {
+    log.debug("WebAssembly is not supported in this runtime");
   }
 
   return "";
@@ -160,7 +115,9 @@ export async function isValidEmail(
   candidate: string,
   options?: EmailValidationConfig,
 ): Promise<EmailValidationResult> {
-  const analyze = await init(context);
+  const { log } = context;
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(coreImports);
   const optionsOrDefault = {
     requireTopLevelDomain: true,
     allowDomainLiteral: false,
@@ -171,6 +128,7 @@ export async function isValidEmail(
   if (typeof analyze !== "undefined") {
     return analyze.isValidEmail(candidate, optionsOrDefault);
   } else {
+    log.debug("WebAssembly is not supported in this runtime");
     // Skip the local evaluation of the rule if WASM is not available
     return {
       validity: "valid",
@@ -184,11 +142,14 @@ export async function detectBot(
   request: AnalyzeRequest,
   options: BotConfig,
 ): Promise<BotResult> {
-  const analyze = await init(context);
+  const { log } = context;
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
     return analyze.detectBot(JSON.stringify(request), options);
   } else {
+    log.debug("WebAssembly is not supported in this runtime");
     // Skip the local evaluation of the rule if Wasm is not available
     return {
       allowed: [],
@@ -206,7 +167,9 @@ export async function detectSensitiveInfo(
   contextWindowSize: number,
   detect?: DetectSensitiveInfoFunction,
 ): Promise<SensitiveInfoResult> {
-  const analyze = await init(context, detect);
+  const { log } = context;
+  const coreImports = createCoreImports(detect);
+  const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
     const skipCustomDetect = typeof detect !== "function";
@@ -216,6 +179,7 @@ export async function detectSensitiveInfo(
       skipCustomDetect,
     });
   } else {
+    log.debug("WebAssembly is not supported in this runtime");
     throw new Error(
       "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
     );

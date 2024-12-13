@@ -1,13 +1,13 @@
 {
-  "name": "@arcjet/analyze",
+  "name": "@arcjet/analyze-wasm",
   "version": "1.0.0-alpha.34",
-  "description": "Arcjet local analysis engine",
+  "description": "WebAssembly bindings to Arcjet's local analysis engine",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "analyze"
+    "directory": "analyze-wasm"
   },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
@@ -24,6 +24,11 @@
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
+  "exports": {
+    "edge-light": "./edge-light.js",
+    "workerd": "./workerd.js",
+    "default": "./index.js"
+  },
   "files": [
     "LICENSE",
     "README.md",
@@ -31,19 +36,18 @@
     "wasm/",
     "*.js",
     "*.d.ts",
+    "*.ts",
     "!*.config.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "rollup --config rollup.config.js",
+    "jco": "jco transpile wasm/arcjet_analyze_js_req.component.wasm --no-wasi-shim --instantiation async -o wasm",
+    "build": "npm run jco; rollup --config rollup.config.js",
     "lint": "eslint .",
     "pretest": "npm run build",
-    "test": "node --test --experimental-test-coverage"
+    "test": "node --test"
   },
-  "dependencies": {
-    "@arcjet/analyze-wasm": "1.0.0-alpha.34",
-    "@arcjet/protocol": "1.0.0-alpha.34"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-alpha.34",
     "@arcjet/rollup-config": "1.0.0-alpha.34",

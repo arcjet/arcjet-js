@@ -32,6 +32,10 @@
       "component": "@arcjet/analyze",
       "skip-github-release": true
     },
+    "analyze-wasm": {
+      "component": "@arcjet/analyze-wasm",
+      "skip-github-release": true
+    },
     "arcjet": {
       "component": "arcjet",
       "skip-github-release": true
@@ -152,6 +156,7 @@
       "components": [
         "root",
         "@arcjet/analyze",
+        "@arcjet/analyze-wasm",
         "arcjet",
         "@arcjet/bun",
         "@arcjet/deno",
