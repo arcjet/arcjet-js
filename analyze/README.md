@@ -42,7 +42,7 @@ console.log("is email valid?", valid);
 
 ## Implementation
 
-This package uses the wasm bindings provided by `@arcjet/analyze-wasm` to
+This package uses the Wasm bindings provided by `@arcjet/analyze-wasm` to
 call various functions that are exported by our wasm bindings.
 
 We chose to put this logic in a separate package because we need to change the

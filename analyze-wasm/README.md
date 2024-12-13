@@ -10,7 +10,7 @@
 <p>
   <a href="https://www.npmjs.com/package/@arcjet/analyze-wasm">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/%40arcjet%2Fanalyze?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
+      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/%40arcjet%2Fanalyze-wasm?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
       <img alt="npm badge" src="https://img.shields.io/npm/v/%40arcjet%2Fanalyze-wasm?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
     </picture>
   </a>
@@ -20,7 +20,7 @@
 code. Implement rate limiting, bot protection, email verification, and defense
 against common attacks.
 
-This is the [Arcjet][arcjet] local analysis engine WASM bindings
+This package provides WebAssembly bindings to [Arcjet's][arcjet] local analysis engine.
 
 ## Installation
 
@@ -31,9 +31,9 @@ npm install -S @arcjet/analyze-wasm
 ## Implementation
 
 This package provides analyze logic implemented as a WebAssembly module which
-will run local analysis on request details before calling the Arcjet API.
+will run local analysis on request details.
 
-The [arcjet.wasm.js](./wasm/arcjet.wasm.js) file contains the binary inlined as
+The `_virtual/arcjet_analyze_js_req.component.core.js` file contains the binary inlined as
 a base64 [Data URL][mdn-data-url] with the `application/wasm` MIME type.
 
 This was chosen to save on storage space over inlining the file directly as a

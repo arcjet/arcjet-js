@@ -34,7 +34,6 @@ interface AnalyzeContext {
 type DetectSensitiveInfoFunction =
   typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
 
-// TODO: Do we actually need this wasmCache or does `import` cache correctly?
 const wasmCache = new Map<string, WebAssembly.Module>();
 
 async function moduleFromPath(path: string): Promise<WebAssembly.Module> {

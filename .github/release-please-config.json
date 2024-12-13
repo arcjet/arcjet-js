@@ -33,7 +33,7 @@
       "skip-github-release": true
     },
     "analyze-wasm": {
-      "component": "@arcjet/analyze",
+      "component": "@arcjet/analyze-wasm",
       "skip-github-release": true
     },
     "arcjet": {
