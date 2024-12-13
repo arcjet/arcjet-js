@@ -11,6 +11,8 @@ import type {
   SensitiveInfoEntity,
   SensitiveInfoResult,
 } from "@arcjet/analyze-wasm";
+import type { ImportObject } from "@arcjet/analyze-wasm/wasm/arcjet_analyze_js_req.component";
+import { create } from "domain";
 
 type AnalyzeRequest = {
   ip?: string;
@@ -31,6 +33,52 @@ export {
   type DetectedSensitiveInfoEntity,
 };
 
+const FREE_EMAIL_PROVIDERS = [
+  "gmail.com",
+  "yahoo.com",
+  "hotmail.com",
+  "aol.com",
+  "hotmail.co.uk",
+];
+
+function noOpDetect(): SensitiveInfoEntity[] {
+  return [];
+}
+
+function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
+  if (typeof detect !== "function") {
+    detect = noOpDetect;
+  }
+
+  return {
+    "arcjet:js-req/email-validator-overrides": {
+      isFreeEmail(domain) {
+        if (FREE_EMAIL_PROVIDERS.includes(domain)) {
+          return "yes";
+        }
+        return "unknown";
+      },
+      isDisposableEmail() {
+        return "unknown";
+      },
+      hasMxRecords() {
+        return "unknown";
+      },
+      hasGravatar() {
+        return "unknown";
+      },
+    },
+    "arcjet:js-req/sensitive-information-identifier": {
+      detect,
+    },
+    "arcjet:js-req/verify-bot": {
+      verify() {
+        return "unverifiable";
+      },
+    },
+  };
+}
+
 /**
  * Generate a fingerprint for the client. This is used to identify the client
  * across multiple requests.
@@ -42,7 +90,8 @@ export async function generateFingerprint(
   context: AnalyzeContext,
   request: AnalyzeRequest,
 ): Promise<string> {
-  const analyze = await initializeWasm(context);
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(context, coreImports);
 
   if (typeof analyze !== "undefined") {
     return analyze.generateFingerprint(
@@ -59,7 +108,8 @@ export async function isValidEmail(
   candidate: string,
   options?: EmailValidationConfig,
 ): Promise<EmailValidationResult> {
-  const analyze = await initializeWasm(context);
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(context, coreImports);
   const optionsOrDefault = {
     requireTopLevelDomain: true,
     allowDomainLiteral: false,
@@ -83,7 +133,8 @@ export async function detectBot(
   request: AnalyzeRequest,
   options: BotConfig,
 ): Promise<BotResult> {
-  const analyze = await initializeWasm(context);
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(context, coreImports);
 
   if (typeof analyze !== "undefined") {
     return analyze.detectBot(JSON.stringify(request), options);
@@ -105,7 +156,8 @@ export async function detectSensitiveInfo(
   contextWindowSize: number,
   detect?: DetectSensitiveInfoFunction,
 ): Promise<SensitiveInfoResult> {
-  const analyze = await initializeWasm(context, detect);
+  const coreImports = createCoreImports(detect);
+  const analyze = await initializeWasm(context, coreImports);
 
   if (typeof analyze !== "undefined") {
     const skipCustomDetect = typeof detect !== "function";

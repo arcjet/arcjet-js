@@ -18,14 +18,6 @@ import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.componen
 import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_js_req.component.core2.wasm?js";
 import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_js_req.component.core3.wasm?js";
 
-const FREE_EMAIL_PROVIDERS = [
-  "gmail.com",
-  "yahoo.com",
-  "hotmail.com",
-  "aol.com",
-  "hotmail.co.uk",
-];
-
 interface AnalyzeContext {
   log: ArcjetLogger;
   characteristics: string[];
@@ -61,47 +53,11 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-function noOpDetect(): SensitiveInfoEntity[] {
-  return [];
-}
-
 export async function initializeWasm(
   context: AnalyzeContext,
-  detect?: DetectSensitiveInfoFunction,
+  coreImports: ImportObject,
 ) {
   const { log } = context;
-
-  if (typeof detect !== "function") {
-    detect = noOpDetect;
-  }
-
-  const coreImports: ImportObject = {
-    "arcjet:js-req/email-validator-overrides": {
-      isFreeEmail(domain) {
-        if (FREE_EMAIL_PROVIDERS.includes(domain)) {
-          return "yes";
-        }
-        return "unknown";
-      },
-      isDisposableEmail() {
-        return "unknown";
-      },
-      hasMxRecords() {
-        return "unknown";
-      },
-      hasGravatar() {
-        return "unknown";
-      },
-    },
-    "arcjet:js-req/sensitive-information-identifier": {
-      detect,
-    },
-    "arcjet:js-req/verify-bot": {
-      verify() {
-        return "unverifiable";
-      },
-    },
-  };
 
   try {
     // Await the instantiation to catch the failure
@@ -122,4 +78,5 @@ export {
   type SensitiveInfoResult,
   type SensitiveInfoEntities,
   type DetectSensitiveInfoFunction,
+  type ImportObject,
 };
