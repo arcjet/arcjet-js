@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-alpha.35](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/protocol-v1.0.0-alpha.35) (2024-12-13)
+
+
+### 🧹 Miscellaneous Chores
+
+* **protocol:** Opt out of Buf & ConnectRPC v2 changes ([#2473](https://github.com/arcjet/arcjet-js/issues/2473)) ([06b5b21](https://github.com/arcjet/arcjet-js/commit/06b5b21d10c4a861c5379b4896168284d5c33225))
+* Switch most test harnesses to node:test ([#2479](https://github.com/arcjet/arcjet-js/issues/2479)) ([8a71bbc](https://github.com/arcjet/arcjet-js/commit/8a71bbc3d1fa6b63586f1bae7fa6f0f8d4fbad66))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-alpha.35
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/protocol-v1.0.0-alpha.34) (2024-12-03)
 
 
