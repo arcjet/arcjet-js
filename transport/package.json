@@ -26,6 +26,7 @@
   "types": "./index.d.ts",
   "exports": {
     "bun": "./bun.js",
+    "svelte": "./svelte.js",
     "edge-light": "./edge-light.js",
     "default": "./index.js"
   },
