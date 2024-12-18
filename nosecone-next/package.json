@@ -50,7 +50,7 @@
     "@arcjet/tsconfig": "1.0.0-alpha.34",
     "@rollup/wasm-node": "4.28.1",
     "@types/node": "18.18.0",
-    "next": "15.1.0",
+    "next": "15.1.1",
     "typescript": "5.7.2"
   },
   "publishConfig": {
