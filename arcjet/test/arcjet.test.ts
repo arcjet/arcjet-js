@@ -1221,9 +1221,9 @@ describe("Primitive > validateEmail", () => {
     );
   });
 
-  test("allows specifying EmailTypes to block", async () => {
+  test("allows specifying EmailTypes to deny", async () => {
     const options = {
-      block: [
+      deny: [
         ArcjetEmailType.DISPOSABLE,
         ArcjetEmailType.FREE,
         ArcjetEmailType.NO_GRAVATAR,
@@ -1234,7 +1234,29 @@ describe("Primitive > validateEmail", () => {
 
     const [rule] = validateEmail(options);
     expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("block", [
+    expect(rule).toHaveProperty("deny", [
+      "DISPOSABLE",
+      "FREE",
+      "NO_GRAVATAR",
+      "NO_MX_RECORDS",
+      "INVALID",
+    ]);
+  });
+
+  test("allows specifying EmailTypes to allow", async () => {
+    const options = {
+      allow: [
+        ArcjetEmailType.DISPOSABLE,
+        ArcjetEmailType.FREE,
+        ArcjetEmailType.NO_GRAVATAR,
+        ArcjetEmailType.NO_MX_RECORDS,
+        ArcjetEmailType.INVALID,
+      ],
+    };
+
+    const [rule] = validateEmail(options);
+    expect(rule.type).toEqual("EMAIL");
+    expect(rule).toHaveProperty("allow", [
       "DISPOSABLE",
       "FREE",
       "NO_GRAVATAR",
@@ -1256,7 +1278,7 @@ describe("Primitive > validateEmail", () => {
       email: "abc@example.com",
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
@@ -1277,7 +1299,7 @@ describe("Primitive > validateEmail", () => {
       email: undefined,
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
@@ -1307,7 +1329,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1342,7 +1364,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1377,7 +1399,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1413,7 +1435,7 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({
-      block: [],
+      deny: [],
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
@@ -1449,7 +1471,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1484,7 +1506,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1521,6 +1543,7 @@ describe("Primitive > validateEmail", () => {
 
     const [rule] = validateEmail({
       requireTopLevelDomain: false,
+      deny: [],
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
@@ -1558,6 +1581,7 @@ describe("Primitive > validateEmail", () => {
 
     const [rule] = validateEmail({
       allowDomainLiteral: true,
+      deny: [],
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
@@ -2288,6 +2312,7 @@ describe("Products > protectSignup", () => {
         allow: [],
       },
       email: {
+        allow: [],
         mode: ArcjetMode.LIVE,
       },
     });

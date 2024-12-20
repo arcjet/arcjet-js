@@ -7,7 +7,13 @@ const aj = arcjet({
   // Use the `uid` cookie that is set by the middleware to fingerprint requests
   characteristics: ['http.request.cookie["uid"]'],
   rules: [
-    validateEmail({ mode: "LIVE", block: ["DISPOSABLE", "NO_MX_RECORDS"] })
+    validateEmail({
+      mode: "LIVE",
+      deny: ["DISPOSABLE", "NO_MX_RECORDS"]
+      // Alternatively, you can specify a list of email types to allow.
+      // This will block all others.
+      // allow: ['FREE'],
+    })
   ]
 });
 
