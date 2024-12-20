@@ -36,6 +36,7 @@ import type {
   DetectedSensitiveInfoEntity,
   SensitiveInfoEntity,
   BotConfig,
+  EmailValidationConfig,
 } from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
@@ -521,12 +522,23 @@ type BotOptionsDeny = {
 
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 
-export type EmailOptions = {
+type EmailOptionsAllow = {
   mode?: ArcjetMode;
-  block?: ArcjetEmailType[];
+  allow: ArcjetEmailType[];
+  deny?: never;
   requireTopLevelDomain?: boolean;
   allowDomainLiteral?: boolean;
 };
+
+type EmailOptionsDeny = {
+  mode?: ArcjetMode;
+  allow?: never;
+  deny: ArcjetEmailType[];
+  requireTopLevelDomain?: boolean;
+  allowDomainLiteral?: boolean;
+};
+
+export type EmailOptions = EmailOptionsAllow | EmailOptionsDeny;
 
 type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
@@ -946,22 +958,65 @@ export function validateEmail(
   validateEmailOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const block = options.block ?? [];
+  if (
+    typeof options.allow !== "undefined" &&
+    typeof options.deny !== "undefined"
+  ) {
+    throw new Error(
+      "`validateEmail` options error: `allow` and `deny` cannot be provided together",
+    );
+  }
+  if (
+    typeof options.allow === "undefined" &&
+    typeof options.deny === "undefined"
+  ) {
+    throw new Error(
+      "`validateEmail` options error: either `allow` or `deny` must be specified",
+    );
+  }
+  const allow = options.allow ?? [];
+  const deny = options.deny ?? [];
   const requireTopLevelDomain = options.requireTopLevelDomain ?? true;
   const allowDomainLiteral = options.allowDomainLiteral ?? false;
 
-  const emailOpts = {
-    requireTopLevelDomain,
-    allowDomainLiteral,
-    blockedEmails: block,
+  let config: EmailValidationConfig = {
+    tag: "allow-email-validation-config",
+    val: {
+      requireTopLevelDomain,
+      allowDomainLiteral,
+      allow: [],
+    },
   };
+
+  if (typeof options.allow !== "undefined") {
+    config = {
+      tag: "allow-email-validation-config",
+      val: {
+        requireTopLevelDomain,
+        allowDomainLiteral,
+        allow: options.allow,
+      },
+    };
+  }
+
+  if (typeof options.deny !== "undefined") {
+    config = {
+      tag: "deny-email-validation-config",
+      val: {
+        requireTopLevelDomain,
+        allowDomainLiteral,
+        deny: options.deny,
+      },
+    };
+  }
 
   return [
     <ArcjetEmailRule<{ email: string }>>{
       type: "EMAIL",
       priority: Priority.EmailValidation,
       mode,
-      block,
+      allow,
+      deny,
       requireTopLevelDomain,
       allowDomainLiteral,
 
@@ -979,7 +1034,7 @@ export function validateEmail(
         context: ArcjetContext,
         { email }: ArcjetRequestDetails & { email: string },
       ): Promise<ArcjetRuleResult> {
-        const result = await analyze.isValidEmail(context, email, emailOpts);
+        const result = await analyze.isValidEmail(context, email, config);
         if (result.validity === "valid") {
           return new ArcjetRuleResult({
             ttl: 0,

@@ -1257,7 +1257,8 @@ export declare class EmailRule extends Message<EmailRule> {
    * The email types to block. This may be one or more of the `EmailType`
    * values.
    *
-   * @generated from field: repeated proto.decide.v1alpha1.EmailType block = 2;
+   * @generated from field: repeated proto.decide.v1alpha1.EmailType block = 2 [deprecated = true];
+   * @deprecated
    */
   block: EmailType[];
 
@@ -1270,6 +1271,16 @@ export declare class EmailRule extends Message<EmailRule> {
    * @generated from field: bool allow_domain_literal = 4;
    */
   allowDomainLiteral: boolean;
+
+  /**
+   * @generated from field: repeated proto.decide.v1alpha1.EmailType allow = 5;
+   */
+  allow: EmailType[];
+
+  /**
+   * @generated from field: repeated proto.decide.v1alpha1.EmailType deny = 6;
+   */
+  deny: EmailType[];
 
   constructor(data?: PartialMessage<EmailRule>);
 

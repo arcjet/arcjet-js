@@ -765,7 +765,8 @@ export interface ArcjetEmailRule<Props extends { email: string }>
   extends ArcjetLocalRule<Props> {
   type: "EMAIL";
 
-  block: ArcjetEmailType[];
+  allow: ArcjetEmailType[];
+  deny: ArcjetEmailType[];
   requireTopLevelDomain: boolean;
   allowDomainLiteral: boolean;
 }

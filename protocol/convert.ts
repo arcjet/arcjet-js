@@ -619,15 +619,19 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isEmailRule(rule)) {
-    const block = Array.isArray(rule.block)
-      ? rule.block.map(ArcjetEmailTypeToProtocol)
+    const allow = Array.isArray(rule.allow)
+      ? rule.allow.map(ArcjetEmailTypeToProtocol)
+      : [];
+    const deny = Array.isArray(rule.deny)
+      ? rule.deny.map(ArcjetEmailTypeToProtocol)
       : [];
     return new Rule({
       rule: {
         case: "email",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          block,
+          allow,
+          deny,
           requireTopLevelDomain: rule.requireTopLevelDomain,
           allowDomainLiteral: rule.allowDomainLiteral,
         },

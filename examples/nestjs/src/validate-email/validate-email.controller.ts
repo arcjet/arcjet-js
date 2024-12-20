@@ -19,7 +19,7 @@ export class ValidateEmailController {
     // also running ArcjetGuard on the handlers calling `protect()` to avoid
     // making multiple requests to Arcjet.
     @Inject(ARCJET) private readonly arcjet: ArcjetNest,
-  ) {}
+  ) { }
 
   @Post()
   async validateEmail(@Req() req: Request, @Body() email: string) {
@@ -27,7 +27,10 @@ export class ValidateEmailController {
       .withRule(
         validateEmail({
           mode: 'LIVE',
-          block: ['DISPOSABLE', 'INVALID', 'NO_MX_RECORDS'],
+          deny: ['DISPOSABLE', 'INVALID', 'NO_MX_RECORDS'],
+          // Alternatively, you can specify a list of email types to allow.
+          // This will block all others.
+          // allow: ['FREE'],
         }),
       )
       .protect(req, { email });

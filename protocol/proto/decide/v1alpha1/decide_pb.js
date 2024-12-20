@@ -378,6 +378,8 @@ export const EmailRule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 2, name: "block", kind: "enum", T: proto3.getEnumType(EmailType), repeated: true },
     { no: 3, name: "require_top_level_domain", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 4, name: "allow_domain_literal", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 5, name: "allow", kind: "enum", T: proto3.getEnumType(EmailType), repeated: true },
+    { no: 6, name: "deny", kind: "enum", T: proto3.getEnumType(EmailType), repeated: true },
   ],
 );
 
