@@ -12,6 +12,7 @@ type RequiredProps<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
 type ArcjetEnum<T extends string> = { readonly [Key in T]: T };
 
 export type ArcjetMode = "LIVE" | "DRY_RUN";
+/** @deprecated */
 export const ArcjetMode: ArcjetEnum<ArcjetMode> = Object.freeze({
   LIVE: "LIVE",
   DRY_RUN: "DRY_RUN",
@@ -21,6 +22,7 @@ export type ArcjetRateLimitAlgorithm =
   | "TOKEN_BUCKET"
   | "FIXED_WINDOW"
   | "SLIDING_WINDOW";
+/** @deprecated */
 export const ArcjetRateLimitAlgorithm: ArcjetEnum<ArcjetRateLimitAlgorithm> =
   Object.freeze({
     TOKEN_BUCKET: "TOKEN_BUCKET",
@@ -34,6 +36,7 @@ export type ArcjetEmailType =
   | "NO_MX_RECORDS"
   | "NO_GRAVATAR"
   | "INVALID";
+/** @deprecated */
 export const ArcjetEmailType: ArcjetEnum<ArcjetEmailType> = {
   DISPOSABLE: "DISPOSABLE",
   FREE: "FREE",
@@ -56,6 +59,7 @@ export type ArcjetStack =
   | "DENO"
   | "NESTJS"
   | "REMIX";
+/** @deprecated */
 export const ArcjetStack: ArcjetEnum<ArcjetStack> = {
   NODEJS: "NODEJS",
   NEXTJS: "NEXTJS",
@@ -67,6 +71,7 @@ export const ArcjetStack: ArcjetEnum<ArcjetStack> = {
 };
 
 export type ArcjetRuleState = "RUN" | "NOT_RUN" | "CACHED" | "DRY_RUN";
+/** @deprecated */
 export const ArcjetRuleState: ArcjetEnum<ArcjetRuleState> = Object.freeze({
   RUN: "RUN",
   NOT_RUN: "NOT_RUN",
@@ -75,6 +80,7 @@ export const ArcjetRuleState: ArcjetEnum<ArcjetRuleState> = Object.freeze({
 });
 
 export type ArcjetConclusion = "ALLOW" | "DENY" | "CHALLENGE" | "ERROR";
+/** @deprecated */
 export const ArcjetConclusion: ArcjetEnum<ArcjetConclusion> = Object.freeze({
   ALLOW: "ALLOW",
   DENY: "DENY",
@@ -87,6 +93,7 @@ export type ArcjetSensitiveInfoType =
   | "PHONE_NUMBER"
   | "IP_ADDRESS"
   | "CREDIT_CARD_NUMBER";
+/** @deprecated */
 export const ArcjetSensitiveInfoType: ArcjetEnum<ArcjetSensitiveInfoType> = {
   EMAIL: "EMAIL",
   PHONE_NUMBER: "PHONE_NUMBER",
@@ -95,6 +102,7 @@ export const ArcjetSensitiveInfoType: ArcjetEnum<ArcjetSensitiveInfoType> = {
 };
 
 export type ArcjetRuleType = "LOCAL" | "REMOTE";
+/** @deprecated */
 export const ArcjetRuleType: ArcjetEnum<ArcjetRuleType> = Object.freeze({
   LOCAL: "LOCAL",
   REMOTE: "REMOTE",
