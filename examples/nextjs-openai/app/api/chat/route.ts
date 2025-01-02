@@ -48,7 +48,7 @@ export const runtime = "edge";
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-   // Estimate the number of tokens required to process the request
+  // Estimate the number of tokens required to process the request
   const estimate = promptTokensEstimate({
     messages,
   });
@@ -59,8 +59,9 @@ export async function POST(req: Request) {
   const decision = await aj.protect(req, { requested: estimate });
   console.log("Arcjet decision", decision.conclusion);
 
-  if (decision.reason.isRateLimit()) {
-    console.log("Requests remaining", decision.reason.remaining);
+  const rateLimitReason = decision.results.map((rule) => rule.reason).find((reason) => reason.isRateLimit());
+  if (typeof rateLimitReason !== "undefined") {
+    console.log("Requests remaining", rateLimitReason.remaining);
   }
 
   // If the request is denied, return a 429

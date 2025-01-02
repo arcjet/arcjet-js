@@ -69,13 +69,17 @@ export async function GET(req: NextRequest) {
       );
     }
   }
-  
+
   let reset: Date | undefined;
   let remaining: number | undefined;
 
-  if (decision.reason.isRateLimit()) {
-    reset = decision.reason.resetTime;
-    remaining = decision.reason.remaining;
-  }
+  const rateLimitReason = decision.results.map((rule) => rule.reason).find((reason) => reason.isRateLimit());
+  if (typeof rateLimitReason !== "undefined") {
+    if (rateLimitReason.isRateLimit()) {
+      reset = rateLimitReason.resetTime;
+      remaining = rateLimitReason.remaining;
+    }
 
-  return NextResponse.json({ message: "Hello World", reset, remaining });}
+    return NextResponse.json({ message: "Hello World", reset, remaining });
+  }
+}
