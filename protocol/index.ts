@@ -591,7 +591,7 @@ export abstract class ArcjetDecision {
   ip: ArcjetIpDetails;
 
   abstract conclusion: ArcjetConclusion;
-  abstract reason: ArcjetReason;
+  abstract reason: ArcjetReason | undefined;
 
   constructor(init: {
     id?: string;
@@ -627,15 +627,20 @@ export abstract class ArcjetDecision {
   }
 }
 
+export type ArcjetDecisionWithReason = ArcjetDecision & {
+  reason: NonNullable<ArcjetDecision["reason"]>;
+};
+
 export class ArcjetAllowDecision extends ArcjetDecision {
   conclusion = "ALLOW" as const;
-  reason: ArcjetReason;
+  /** @deprecated */
+  reason: ArcjetReason | undefined;
 
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
     ttl: number;
-    reason: ArcjetReason;
+    reason?: ArcjetReason;
     ip?: ArcjetIpDetails;
   }) {
     super(init);

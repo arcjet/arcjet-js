@@ -208,7 +208,7 @@ export function setRateLimitHeaders(
       .sort(sortByLowestMax)
       .map(toPolicyString)
       .join(", ");
-  } else {
+  } else if (typeof decision.reason !== "undefined") {
     // For cached decisions, we may not have rule results, but we'd still have
     // the top-level reason.
     if (isRateLimitReason(decision.reason)) {
@@ -229,6 +229,8 @@ export function setRateLimitHeaders(
     } else {
       return;
     }
+  } else {
+    return;
   }
 
   if (isHeaderLike(value)) {

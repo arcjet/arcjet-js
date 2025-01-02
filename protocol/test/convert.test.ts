@@ -36,6 +36,7 @@ import type {
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
+  ArcjetDecisionWithReason,
 } from "../index.js";
 import {
   ArcjetAllowDecision,
@@ -519,7 +520,7 @@ describe("convert", () => {
           results: [],
           reason: new ArcjetReason(),
           ip: new ArcjetIpDetails(),
-        }),
+        }) as ArcjetDecisionWithReason,
       ),
     ).toEqual(
       new Decision({
