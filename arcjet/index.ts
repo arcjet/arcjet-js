@@ -462,6 +462,8 @@ const validateEmailOptions = createValidator({
   validations: [
     { key: "mode", required: false, validate: validateMode },
     { key: "block", required: false, validate: validateEmailTypes },
+    { key: "allow", required: false, validate: validateEmailTypes },
+    { key: "deny", required: false, validate: validateEmailTypes },
     {
       key: "requireTopLevelDomain",
       required: false,
@@ -522,7 +524,7 @@ type BotOptionsDeny = {
 
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 
-type EmailOptionsAllow = {
+export type EmailOptionsAllow = {
   mode?: ArcjetMode;
   allow: ArcjetEmailType[];
   deny?: never;
@@ -530,7 +532,7 @@ type EmailOptionsAllow = {
   allowDomainLiteral?: boolean;
 };
 
-type EmailOptionsDeny = {
+export type EmailOptionsDeny = {
   mode?: ArcjetMode;
   allow?: never;
   deny: ArcjetEmailType[];
@@ -980,11 +982,11 @@ export function validateEmail(
   const allowDomainLiteral = options.allowDomainLiteral ?? false;
 
   let config: EmailValidationConfig = {
-    tag: "allow-email-validation-config",
+    tag: "deny-email-validation-config",
     val: {
       requireTopLevelDomain,
       allowDomainLiteral,
-      allow: [],
+      deny: [],
     },
   };
 
