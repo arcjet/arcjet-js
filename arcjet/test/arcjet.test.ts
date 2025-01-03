@@ -1243,6 +1243,28 @@ describe("Primitive > validateEmail", () => {
     ]);
   });
 
+  test("allows specifying EmailTypes to block and maps these to deny", async () => {
+    const options = {
+      block: [
+        ArcjetEmailType.DISPOSABLE,
+        ArcjetEmailType.FREE,
+        ArcjetEmailType.NO_GRAVATAR,
+        ArcjetEmailType.NO_MX_RECORDS,
+        ArcjetEmailType.INVALID,
+      ],
+    };
+
+    const [rule] = validateEmail(options);
+    expect(rule.type).toEqual("EMAIL");
+    expect(rule).toHaveProperty("deny", [
+      "DISPOSABLE",
+      "FREE",
+      "NO_GRAVATAR",
+      "NO_MX_RECORDS",
+      "INVALID",
+    ]);
+  });
+
   test("allows specifying EmailTypes to allow", async () => {
     const options = {
       allow: [

@@ -527,6 +527,7 @@ export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 export type EmailOptionsAllow = {
   mode?: ArcjetMode;
   allow: ArcjetEmailType[];
+  block?: never;
   deny?: never;
   requireTopLevelDomain?: boolean;
   allowDomainLiteral?: boolean;
@@ -535,12 +536,26 @@ export type EmailOptionsAllow = {
 export type EmailOptionsDeny = {
   mode?: ArcjetMode;
   allow?: never;
+  block?: never;
   deny: ArcjetEmailType[];
   requireTopLevelDomain?: boolean;
   allowDomainLiteral?: boolean;
 };
 
-export type EmailOptions = EmailOptionsAllow | EmailOptionsDeny;
+type EmailOptionsBlock = {
+  mode?: ArcjetMode;
+  allow?: never;
+  /** @deprecated use `deny` instead */
+  block: ArcjetEmailType[];
+  deny?: never;
+  requireTopLevelDomain?: boolean;
+  allowDomainLiteral?: boolean;
+};
+
+export type EmailOptions =
+  | EmailOptionsAllow
+  | EmailOptionsDeny
+  | EmailOptionsBlock;
 
 type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
@@ -958,7 +973,6 @@ export function validateEmail(
   options: EmailOptions,
 ): Primitive<{ email: string }> {
   validateEmailOptions(options);
-
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   if (
     typeof options.allow !== "undefined" &&
@@ -969,15 +983,32 @@ export function validateEmail(
     );
   }
   if (
+    typeof options.allow !== "undefined" &&
+    typeof options.block !== "undefined"
+  ) {
+    throw new Error(
+      "`validateEmail` options error: `allow` and `block` cannot be provided together",
+    );
+  }
+  if (
+    typeof options.deny !== "undefined" &&
+    typeof options.block !== "undefined"
+  ) {
+    throw new Error(
+      "`validateEmail` options error: `deny` and `block` cannot be provided together, `block` is now deprecated so `deny` should be preferred.",
+    );
+  }
+  if (
     typeof options.allow === "undefined" &&
-    typeof options.deny === "undefined"
+    typeof options.deny === "undefined" &&
+    typeof options.block === "undefined"
   ) {
     throw new Error(
       "`validateEmail` options error: either `allow` or `deny` must be specified",
     );
   }
   const allow = options.allow ?? [];
-  const deny = options.deny ?? [];
+  const deny = options.deny ?? options.block ?? [];
   const requireTopLevelDomain = options.requireTopLevelDomain ?? true;
   const allowDomainLiteral = options.allowDomainLiteral ?? false;
 
@@ -1008,6 +1039,17 @@ export function validateEmail(
         requireTopLevelDomain,
         allowDomainLiteral,
         deny: options.deny,
+      },
+    };
+  }
+
+  if (typeof options.block !== "undefined") {
+    config = {
+      tag: "deny-email-validation-config",
+      val: {
+        requireTopLevelDomain,
+        allowDomainLiteral,
+        deny: options.block,
       },
     };
   }
