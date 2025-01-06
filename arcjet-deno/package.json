@@ -50,7 +50,7 @@
     "@arcjet/rollup-config": "1.0.0-alpha.34",
     "@arcjet/tsconfig": "1.0.0-alpha.34",
     "@types/deno": "2.0.0",
-    "@rollup/wasm-node": "4.28.1",
+    "@rollup/wasm-node": "4.30.0",
     "expect": "29.7.0",
     "typescript": "5.7.2"
   },
