@@ -1,9 +1,16 @@
-import { auth } from "@/auth";
-import ip from "@arcjet/ip";
-import arcjet, { shield, tokenBucket } from "@arcjet/next";
-import { toNextJsHandler } from "better-auth/next-js";
-import { NextRequest } from "next/server";
+// This is an alternative to our recommended approach of implementing the Arcjet
+// as a Better Auth hook. Choose one or the other to avoid duplicate
+// protections.
 
+import { auth } from "@/auth";
+//import ip from "@arcjet/ip";
+//import arcjet, { shield, tokenBucket } from "@arcjet/next";
+import { toNextJsHandler } from "better-auth/next-js";
+//import { NextRequest } from "next/server";
+
+export const { POST, GET } = toNextJsHandler(auth);
+
+/*
 // The arcjet instance is created outside of the handler
 const aj = arcjet({
     key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
@@ -18,7 +25,7 @@ const aj = arcjet({
             mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
             refillRate: 5, // refill 5 tokens per interval
             interval: 10, // refill every 10 seconds
-            capacity: 10, // bucket maximum capacity of 10 tokens
+            capacity: 50, // bucket maximum capacity of 10 tokens
         }),
     ],
 });
@@ -74,3 +81,4 @@ const ajProtectedPOST = async (req: NextRequest) => {
 
 export { ajProtectedPOST as POST };
 export const { GET } = betterAuthHandlers;
+*/

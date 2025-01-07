@@ -7,8 +7,13 @@
 
 # Arcjet bot detection with Next.js + Better Auth
 
-This example shows how to use Arcjet with a Next.js [route
-handler](https://nextjs.org/docs/app/building-your-application/routing/route-handlers).
+This example shows how to use Arcjet with [Better
+Auth](https://www.better-auth.com). Arcjet is implemented as a hook in
+`auth.ts`, which is our recommended approach.
+
+Alternatively, you can use the Arcjet integration in
+`app/api/auth/[...all]/route.ts`. If you do, remove the hook from `auth.ts` to
+avoid duplicate protection.
 
 ## How to use
 

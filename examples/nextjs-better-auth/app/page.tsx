@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { headers } from "next/headers"
 import SignInButton from '@/components/SignInGitHub'
 import SignOutButton from "@/components/SignOut"
+import SignUp from "@/components/SignUp"
 
 export default async function Home() {
   const session = await auth.api.getSession({
@@ -9,7 +10,12 @@ export default async function Home() {
   })
 
   if (!session) {
-    return <div>Not authenticated. <SignInButton /></div>
+    return (
+      <>
+        <div>Not authenticated. <SignInButton /> or sign up below.</div>
+        <div><SignUp /></div>
+      </>
+    )
   }
 
   return (
