@@ -1303,7 +1303,7 @@ export default function arcjet<
     const logWasmPrewarmPerf = perf.measure("wasm prewarm");
     const prewarmed = await wasmPrewarm;
     if (!prewarmed) {
-      log.warn(
+      log.debug(
         "Wasm prewarm failed. This may indicate that Wasm is not supported on this platform",
       );
     }
