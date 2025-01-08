@@ -16,7 +16,8 @@
  rate limit rule. The value is then passed as a string, number or boolean when
  calling the protect method. You can use any string value for the key.
 */
-import arcjet, { shield, tokenBucket } from "@arcjet/next";
+import arcjet, { ArcjetRateLimitReason, ArcjetReason, ArcjetRuleResult, shield, tokenBucket } from "@arcjet/next";
+import format from "@arcjet/sprintf";
 import { openai } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { promptTokensEstimate } from "openai-chat-tokens";
@@ -40,6 +41,47 @@ const aj = arcjet({
   ],
 });
 
+function extractReason(result: ArcjetRuleResult): ArcjetReason {
+  return result.reason;
+}
+
+function isRateLimitReason(
+  reason?: ArcjetReason,
+): reason is ArcjetRateLimitReason {
+  return typeof reason !== "undefined" && reason.isRateLimit();
+}
+
+function nearestLimit(
+  current: ArcjetRateLimitReason,
+  next: ArcjetRateLimitReason,
+) {
+  if (current.remaining < next.remaining) {
+    return current;
+  }
+
+  if (current.remaining > next.remaining) {
+    return next;
+  }
+
+  // Reaching here means `remaining` is equal so prioritize closest reset
+  if (current.reset < next.reset) {
+    return current;
+  }
+
+  if (current.reset > next.reset) {
+    return next;
+  }
+
+  // Reaching here means that `remaining` and `reset` are equal, so prioritize
+  // the smallest `max`
+  if (current.max < next.max) {
+    return current;
+  }
+
+  // All else equal, just return the next item in the list
+  return next;
+}
+
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
@@ -53,7 +95,7 @@ export async function POST(req: Request) {
 
   const { messages } = await req.json();
 
-   // Estimate the number of tokens required to process the request
+  // Estimate the number of tokens required to process the request
   const estimate = promptTokensEstimate({
     messages,
   });
@@ -64,8 +106,40 @@ export async function POST(req: Request) {
   const decision = await aj.protect(req, { requested: estimate, userId });
   console.log("Arcjet decision", decision.conclusion);
 
-  if (decision.reason.isRateLimit()) {
-    console.log("Requests remaining", decision.reason.remaining);
+  const rateLimitReasons = decision.results
+    .map(extractReason)
+    .filter(isRateLimitReason);
+
+  let remaining: number | undefined;
+
+  if (rateLimitReasons.length > 0) {
+    const policies = new Map<number, number>();
+    for (const reason of rateLimitReasons) {
+      if (policies.has(reason.max)) {
+        console.error(
+          "Invalid rate limit policy—two policies should not share the same limit",
+        );
+      }
+
+      if (
+        typeof reason.max !== "number" ||
+        typeof reason.window !== "number" ||
+        typeof reason.remaining !== "number" ||
+        typeof reason.reset !== "number"
+      ) {
+        console.error(format("Invalid rate limit encountered: %o", reason));
+      }
+
+      policies.set(reason.max, reason.window);
+    }
+
+    const rl = rateLimitReasons.reduce(nearestLimit);
+
+    remaining = rl.remaining;
+  }
+
+  if (typeof remaining !== "undefined") {
+    console.log("Requests remaining", remaining);
   }
 
   // If the request is denied, return a 429
