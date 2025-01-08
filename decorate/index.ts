@@ -122,9 +122,9 @@ function extractReason(result: ArcjetRuleResult): ArcjetReason {
 }
 
 function isRateLimitReason(
-  reason: ArcjetReason,
+  reason?: ArcjetReason,
 ): reason is ArcjetRateLimitReason {
-  return reason.isRateLimit();
+  return typeof reason !== "undefined" && reason.isRateLimit();
 }
 
 function nearestLimit(
@@ -208,7 +208,7 @@ export function setRateLimitHeaders(
       .sort(sortByLowestMax)
       .map(toPolicyString)
       .join(", ");
-  } else if (typeof decision.reason !== "undefined") {
+  } else {
     // For cached decisions, we may not have rule results, but we'd still have
     // the top-level reason.
     if (isRateLimitReason(decision.reason)) {
@@ -229,8 +229,6 @@ export function setRateLimitHeaders(
     } else {
       return;
     }
-  } else {
-    return;
   }
 
   if (isHeaderLike(value)) {

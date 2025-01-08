@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
+    "@arcjet/sprintf": "file:../../sprintf",
     "@clerk/nextjs": "^6.9.1",
     "next": "15.1.0",
     "react": "^19",

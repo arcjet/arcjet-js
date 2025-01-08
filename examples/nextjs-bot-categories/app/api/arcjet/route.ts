@@ -33,21 +33,43 @@ export async function GET(req: Request) {
     )
   }
 
-  const headers = new Headers();
-  const botReason = decision.results.map((rule) => rule.reason).find((reason) => reason.isBot());
-  if (typeof botReason !== "undefined") {
-    // WARNING: This is illustrative! Don't share this metadata with users;
-    // otherwise they may use it to subvert bot detection!
-    headers.set("X-Arcjet-Bot-Allowed", botReason.allowed.join(", "))
-    headers.set("X-Arcjet-Bot-Denied", botReason.denied.join(", "))
-
-    // We need to check that the bot is who they say they are.
-    if (botReason.isSpoofed()) {
-      return NextResponse.json(
-        { error: "You are pretending to be a good bot!" },
-        { status: 403, headers },
-      );
+  const allowedBots = decision.results.reduce<string[]>((bots, rule) => {
+    if (rule.reason.isBot()) {
+      return [...bots, ...rule.reason.allowed]
+    } else {
+      return bots;
     }
+  }, []);
+
+  const deniedBots = decision.results.reduce<string[]>((bots, rule) => {
+    if (rule.reason.isBot()) {
+      return [...bots, ...rule.reason.denied]
+    } else {
+      return bots;
+    }
+  }, []);
+
+  const isSpoofed = decision.results.some((rule) => {
+    if (rule.reason.isBot()) {
+      return rule.reason.isSpoofed();
+    } else {
+      return false;
+    }
+  });
+
+  // WARNING: This is illustrative! Don't share this metadata with users;
+  // otherwise they may use it to subvert bot detection!
+  const headers = new Headers({
+    "X-Arcjet-Bot-Allowed": allowedBots.join(", "),
+    "X-Arcjet-Bot-Denied": deniedBots.join(", "),
+  });
+
+  // We need to check that the bot is who they say they are.
+  if (isSpoofed) {
+    return NextResponse.json(
+      { error: "You are pretending to be a good bot!" },
+      { status: 403, headers },
+    );
   }
 
   if (decision.isDenied()) {

@@ -1,4 +1,5 @@
-import arcjet, { ArcjetDecision, tokenBucket, shield } from "@arcjet/next";
+import arcjet, { ArcjetDecision, tokenBucket, shield, ArcjetRateLimitReason, ArcjetReason, ArcjetRuleResult } from "@arcjet/next";
+import format from "@arcjet/sprintf";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import ip from "@arcjet/ip";
@@ -15,6 +16,47 @@ const aj = arcjet({
     }),
   ],
 });
+
+function extractReason(result: ArcjetRuleResult): ArcjetReason {
+  return result.reason;
+}
+
+function isRateLimitReason(
+  reason?: ArcjetReason,
+): reason is ArcjetRateLimitReason {
+  return typeof reason !== "undefined" && reason.isRateLimit();
+}
+
+function nearestLimit(
+  current: ArcjetRateLimitReason,
+  next: ArcjetRateLimitReason,
+) {
+  if (current.remaining < next.remaining) {
+    return current;
+  }
+
+  if (current.remaining > next.remaining) {
+    return next;
+  }
+
+  // Reaching here means `remaining` is equal so prioritize closest reset
+  if (current.reset < next.reset) {
+    return current;
+  }
+
+  if (current.reset > next.reset) {
+    return next;
+  }
+
+  // Reaching here means that `remaining` and `reset` are equal, so prioritize
+  // the smallest `max`
+  if (current.max < next.max) {
+    return current;
+  }
+
+  // All else equal, just return the next item in the list
+  return next;
+}
 
 export async function GET(req: NextRequest) {
   // Get the current user from Clerk
@@ -73,13 +115,36 @@ export async function GET(req: NextRequest) {
   let reset: Date | undefined;
   let remaining: number | undefined;
 
-  const rateLimitReason = decision.results.map((rule) => rule.reason).find((reason) => reason.isRateLimit());
-  if (typeof rateLimitReason !== "undefined") {
-    if (rateLimitReason.isRateLimit()) {
-      reset = rateLimitReason.resetTime;
-      remaining = rateLimitReason.remaining;
+  const rateLimitReasons = decision.results
+    .map(extractReason)
+    .filter(isRateLimitReason);
+
+  if (rateLimitReasons.length > 0) {
+    const policies = new Map<number, number>();
+    for (const reason of rateLimitReasons) {
+      if (policies.has(reason.max)) {
+        console.error(
+          "Invalid rate limit policy—two policies should not share the same limit",
+        );
+      }
+
+      if (
+        typeof reason.max !== "number" ||
+        typeof reason.window !== "number" ||
+        typeof reason.remaining !== "number" ||
+        typeof reason.reset !== "number"
+      ) {
+        console.error(format("Invalid rate limit encountered: %o", reason));
+      }
+
+      policies.set(reason.max, reason.window);
     }
 
-    return NextResponse.json({ message: "Hello World", reset, remaining });
+    const rl = rateLimitReasons.reduce(nearestLimit);
+
+    reset = rl.resetTime;
+    remaining = rl.remaining;
   }
+
+  return NextResponse.json({ message: "Hello World", reset, remaining });
 }

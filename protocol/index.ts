@@ -647,6 +647,10 @@ export class ArcjetAllowDecision extends ArcjetDecision {
 
     this.reason = init.reason;
   }
+
+  hasReason(): this is ArcjetAllowDecision & { reason: ArcjetReason } {
+    return this.reason !== undefined;
+  }
 }
 
 export class ArcjetDenyDecision extends ArcjetDecision {

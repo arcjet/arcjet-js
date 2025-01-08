@@ -512,24 +512,25 @@ describe("convert", () => {
   });
 
   test("ArcjetDecisionToProtocol", () => {
-    expect(
-      ArcjetDecisionToProtocol(
-        new ArcjetAllowDecision({
+    const decision = new ArcjetAllowDecision({
+      id: "abc123",
+      ttl: 0,
+      results: [],
+      reason: new ArcjetReason(),
+      ip: new ArcjetIpDetails(),
+    });
+    if (decision.hasReason()) {
+      expect(ArcjetDecisionToProtocol(decision)).toEqual(
+        new Decision({
           id: "abc123",
-          ttl: 0,
-          results: [],
-          reason: new ArcjetReason(),
-          ip: new ArcjetIpDetails(),
-        }) as ArcjetDecisionWithReason,
-      ),
-    ).toEqual(
-      new Decision({
-        id: "abc123",
-        conclusion: Conclusion.ALLOW,
-        ruleResults: [],
-        reason: new Reason(),
-      }),
-    );
+          conclusion: Conclusion.ALLOW,
+          ruleResults: [],
+          reason: new Reason(),
+        }),
+      );
+    } else {
+      throw new Error("decision created with reason have a reason");
+    }
   });
 
   test("ArcjetDecisionFromProtocol", () => {
