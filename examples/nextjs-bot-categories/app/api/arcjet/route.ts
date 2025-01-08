@@ -1,4 +1,4 @@
-import arcjet, { botCategories, detectBot } from "@arcjet/next";
+import arcjet, { ArcjetRuleResult, botCategories, detectBot } from "@arcjet/next";
 import { NextResponse } from "next/server";
 
 const aj = arcjet({
@@ -23,6 +23,26 @@ const aj = arcjet({
   ],
 });
 
+function reduceAllowedBots(bots: string[], rule: ArcjetRuleResult) {
+  if (rule.reason.isBot()) {
+    return [...bots, ...rule.reason.allowed]
+  } else {
+    return bots;
+  }
+}
+
+function reduceDeniedBots(bots: string[], rule: ArcjetRuleResult) {
+  if (rule.reason.isBot()) {
+    return [...bots, ...rule.reason.denied]
+  } else {
+    return bots;
+  }
+}
+
+function checkSpoofed(rule: ArcjetRuleResult) {
+  return rule.reason.isBot() && rule.reason.isSpoofed()
+}
+
 export async function GET(req: Request) {
   const decision = await aj.protect(req);
 
@@ -33,29 +53,11 @@ export async function GET(req: Request) {
     )
   }
 
-  const allowedBots = decision.results.reduce<string[]>((bots, rule) => {
-    if (rule.reason.isBot()) {
-      return [...bots, ...rule.reason.allowed]
-    } else {
-      return bots;
-    }
-  }, []);
+  const allowedBots = decision.results.reduce<string[]>(reduceAllowedBots, []);
 
-  const deniedBots = decision.results.reduce<string[]>((bots, rule) => {
-    if (rule.reason.isBot()) {
-      return [...bots, ...rule.reason.denied]
-    } else {
-      return bots;
-    }
-  }, []);
+  const deniedBots = decision.results.reduce<string[]>(reduceDeniedBots, []);
 
-  const isSpoofed = decision.results.some((rule) => {
-    if (rule.reason.isBot()) {
-      return rule.reason.isSpoofed();
-    } else {
-      return false;
-    }
-  });
+  const isSpoofed = decision.results.some(checkSpoofed);
 
   // WARNING: This is illustrative! Don't share this metadata with users;
   // otherwise they may use it to subvert bot detection!
@@ -63,6 +65,8 @@ export async function GET(req: Request) {
     "X-Arcjet-Bot-Allowed": allowedBots.join(", "),
     "X-Arcjet-Bot-Denied": deniedBots.join(", "),
   });
+  headers.set("X-Arcjet-Bot-Allowed", allowedBots.join(", "))
+  headers.set("X-Arcjet-Bot-Denied", deniedBots.join(", "))
 
   // We need to check that the bot is who they say they are.
   if (isSpoofed) {
