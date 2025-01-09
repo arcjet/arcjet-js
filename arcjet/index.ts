@@ -484,7 +484,9 @@ const validateShieldOptions = createValidator({
   validations: [{ key: "mode", required: false, validate: validateMode }],
 });
 
-type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
+export type TokenBucketRateLimitOptions<
+  Characteristics extends readonly string[],
+> = {
   mode?: ArcjetMode;
   characteristics?: Characteristics;
   refillRate: number;
@@ -492,28 +494,31 @@ type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
   capacity: number;
 };
 
-type FixedWindowRateLimitOptions<Characteristics extends readonly string[]> = {
+export type FixedWindowRateLimitOptions<
+  Characteristics extends readonly string[],
+> = {
   mode?: ArcjetMode;
   characteristics?: Characteristics;
   window: string | number;
   max: number;
 };
 
-type SlidingWindowRateLimitOptions<Characteristics extends readonly string[]> =
-  {
-    mode?: ArcjetMode;
-    characteristics?: Characteristics;
-    interval: string | number;
-    max: number;
-  };
+export type SlidingWindowRateLimitOptions<
+  Characteristics extends readonly string[],
+> = {
+  mode?: ArcjetMode;
+  characteristics?: Characteristics;
+  interval: string | number;
+  max: number;
+};
 
-type BotOptionsAllow = {
+export type BotOptionsAllow = {
   mode?: ArcjetMode;
   allow: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
   deny?: never;
 };
 
-type BotOptionsDeny = {
+export type BotOptionsDeny = {
   mode?: ArcjetMode;
   allow?: never;
   deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
@@ -546,7 +551,7 @@ type ValidEntities<Detect> = Array<
       : never
 >;
 
-type SensitiveInfoOptionsAllow<Detect> = {
+export type SensitiveInfoOptionsAllow<Detect> = {
   allow: ValidEntities<Detect>;
   deny?: never;
   contextWindowSize?: number;
@@ -554,7 +559,7 @@ type SensitiveInfoOptionsAllow<Detect> = {
   detect?: Detect;
 };
 
-type SensitiveInfoOptionsDeny<Detect> = {
+export type SensitiveInfoOptionsDeny<Detect> = {
   allow?: never;
   deny: ValidEntities<Detect>;
   contextWindowSize?: number;
