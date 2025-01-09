@@ -36,7 +36,7 @@
     "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@rollup/plugin-replace": "6.0.1",
+    "@rollup/plugin-replace": "6.0.2",
     "@rollup/plugin-typescript": "12.1.1"
   },
   "peerDependencies": {
