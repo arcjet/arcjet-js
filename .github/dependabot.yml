@@ -298,6 +298,14 @@ updates:
       # restricted.
       - dependency-name: next
         versions: [">=15"]
+      - dependency-name: react
+        versions: [">=19"]
+      - dependency-name: "@types/react"
+        versions: [">=19"]
+      - dependency-name: react-dom
+        versions: [">=19"]
+      - dependency-name: "@types/react-dom"
+        versions: [">=19"]
       - dependency-name: eslint
         versions: [">=9"]
       - dependency-name: eslint-config-next
