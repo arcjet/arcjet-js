@@ -1243,6 +1243,42 @@ describe("Primitive > validateEmail", () => {
     );
   });
 
+  test("validates `deny` and `block` cannot be set at the same time", async () => {
+    expect(() => {
+      // @ts-expect-error
+      validateEmail({
+        deny: ["INVALID"],
+        block: ["INVALID"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: `deny` and `block` cannot be provided together, `block` is now deprecated so `deny` should be preferred.",
+    );
+  });
+
+  test("validates `allow` and `deny` cannot be set at the same time", async () => {
+    expect(() => {
+      // @ts-expect-error
+      validateEmail({
+        allow: ["INVALID"],
+        deny: ["INVALID"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: `allow` and `deny` cannot be provided together",
+    );
+  });
+
+  test("validates `block` and `deny` cannot be set at the same time", async () => {
+    expect(() => {
+      // @ts-expect-error
+      validateEmail({
+        allow: ["INVALID"],
+        block: ["INVALID"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: `allow` and `block` cannot be provided together",
+    );
+  });
+
   test("validates `requireTopLevelDomain` option if it is set", async () => {
     expect(() => {
       validateEmail({
