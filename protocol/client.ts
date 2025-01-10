@@ -8,7 +8,6 @@ import {
 } from "./convert.js";
 import type {
   ArcjetContext,
-  ArcjetDecisionWithReason,
   ArcjetRequestDetails,
   ArcjetRule,
 } from "./index.js";
@@ -128,7 +127,7 @@ export function createClient(options: ClientOptions): Client {
     report(
       context: ArcjetContext,
       details: ArcjetRequestDetails,
-      decision: ArcjetDecisionWithReason,
+      decision: ArcjetDecision,
       rules: ArcjetRule[],
     ): void {
       const { log } = context;

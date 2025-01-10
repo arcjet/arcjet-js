@@ -627,13 +627,9 @@ export abstract class ArcjetDecision {
   }
 }
 
-export type ArcjetDecisionWithReason = ArcjetDecision & {
-  reason: NonNullable<ArcjetDecision["reason"]>;
-};
-
 export class ArcjetAllowDecision extends ArcjetDecision {
   conclusion = "ALLOW" as const;
-  /** @deprecated */
+  /** @deprecated: use results instead */
   reason: ArcjetReason | undefined;
 
   constructor(init: {
@@ -688,7 +684,8 @@ export class ArcjetChallengeDecision extends ArcjetDecision {
 
 export class ArcjetErrorDecision extends ArcjetDecision {
   conclusion = "ERROR" as const;
-  reason: ArcjetErrorReason;
+  /** @deprecated: use results instead */
+  reason: ArcjetErrorReason | undefined;
 
   constructor(init: {
     id?: string;

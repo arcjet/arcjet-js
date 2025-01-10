@@ -9,7 +9,6 @@ import type {
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
   ArcjetSensitiveInfoRule,
-  ArcjetDecisionWithReason,
 } from "./index.js";
 import {
   ArcjetAllowDecision,
@@ -392,14 +391,12 @@ export function ArcjetRuleResultFromProtocol(
   });
 }
 
-export function ArcjetDecisionToProtocol(
-  decision: ArcjetDecisionWithReason,
-): Decision {
+export function ArcjetDecisionToProtocol(decision: ArcjetDecision): Decision {
   return new Decision({
     id: decision.id,
     ttl: decision.ttl,
     conclusion: ArcjetConclusionToProtocol(decision.conclusion),
-    reason: ArcjetReasonToProtocol(decision.reason),
+    reason: decision.reason && ArcjetReasonToProtocol(decision.reason),
     ruleResults: decision.results.map(ArcjetRuleResultToProtocol),
   });
 }

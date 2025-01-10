@@ -1,4 +1,4 @@
-import arcjet, { ArcjetDecision, tokenBucket, shield, ArcjetRateLimitReason, ArcjetReason, ArcjetRuleResult } from "@arcjet/next";
+import arcjet, { ArcjetDecision, tokenBucket, shield, ArcjetRateLimitReason, ArcjetReason, ArcjetRuleResult, Arcjet } from "@arcjet/next";
 import format from "@arcjet/sprintf";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
@@ -16,16 +16,6 @@ const aj = arcjet({
     }),
   ],
 });
-
-function extractReason(result: ArcjetRuleResult): ArcjetReason {
-  return result.reason;
-}
-
-function isRateLimitReason(
-  reason?: ArcjetReason,
-): reason is ArcjetRateLimitReason {
-  return typeof reason !== "undefined" && reason.isRateLimit();
-}
 
 function nearestLimit(
   current: ArcjetRateLimitReason,
@@ -56,6 +46,18 @@ function nearestLimit(
 
   // All else equal, just return the next item in the list
   return next;
+}
+
+function reduceNearestLimit(currentNearest: ArcjetRateLimitReason | undefined, rule: ArcjetRuleResult) {
+  if (rule.reason.isRateLimit()) {
+    if (typeof currentNearest !== "undefined") {
+      return nearestLimit(currentNearest, rule.reason);
+    } else {
+      return rule.reason;
+    }
+  } else {
+    return currentNearest;
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -112,38 +114,14 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // We need to find the nearest rate limit, because multiple rate limit rules could be defined
+  const nearestRateLimit = decision.results.reduce<ArcjetRateLimitReason | undefined>(reduceNearestLimit, undefined)
+
   let reset: Date | undefined;
   let remaining: number | undefined;
-
-  const rateLimitReasons = decision.results
-    .map(extractReason)
-    .filter(isRateLimitReason);
-
-  if (rateLimitReasons.length > 0) {
-    const policies = new Map<number, number>();
-    for (const reason of rateLimitReasons) {
-      if (policies.has(reason.max)) {
-        console.error(
-          "Invalid rate limit policy—two policies should not share the same limit",
-        );
-      }
-
-      if (
-        typeof reason.max !== "number" ||
-        typeof reason.window !== "number" ||
-        typeof reason.remaining !== "number" ||
-        typeof reason.reset !== "number"
-      ) {
-        console.error(format("Invalid rate limit encountered: %o", reason));
-      }
-
-      policies.set(reason.max, reason.window);
-    }
-
-    const rl = rateLimitReasons.reduce(nearestLimit);
-
-    reset = rl.resetTime;
-    remaining = rl.remaining;
+  if (typeof nearestRateLimit !== "undefined") {
+    reset = nearestRateLimit.resetTime;
+    remaining = nearestRateLimit.remaining;
   }
 
   return NextResponse.json({ message: "Hello World", reset, remaining });

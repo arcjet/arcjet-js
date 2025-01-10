@@ -41,16 +41,6 @@ const aj = arcjet({
   ],
 });
 
-function extractReason(result: ArcjetRuleResult): ArcjetReason {
-  return result.reason;
-}
-
-function isRateLimitReason(
-  reason?: ArcjetReason,
-): reason is ArcjetRateLimitReason {
-  return typeof reason !== "undefined" && reason.isRateLimit();
-}
-
 function nearestLimit(
   current: ArcjetRateLimitReason,
   next: ArcjetRateLimitReason,
@@ -82,6 +72,18 @@ function nearestLimit(
   return next;
 }
 
+function reduceNearestLimit(currentNearest: ArcjetRateLimitReason | undefined, rule: ArcjetRuleResult) {
+  if (rule.reason.isRateLimit()) {
+    if (typeof currentNearest !== "undefined") {
+      return nearestLimit(currentNearest, rule.reason);
+    } else {
+      return rule.reason;
+    }
+  } else {
+    return currentNearest;
+  }
+}
+
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
@@ -106,40 +108,11 @@ export async function POST(req: Request) {
   const decision = await aj.protect(req, { requested: estimate, userId });
   console.log("Arcjet decision", decision.conclusion);
 
-  const rateLimitReasons = decision.results
-    .map(extractReason)
-    .filter(isRateLimitReason);
+  // We need to find the nearest rate limit, because multiple rate limit rules could be defined
+  const nearestRateLimit = decision.results.reduce<ArcjetRateLimitReason | undefined>(reduceNearestLimit, undefined)
 
-  let remaining: number | undefined;
-
-  if (rateLimitReasons.length > 0) {
-    const policies = new Map<number, number>();
-    for (const reason of rateLimitReasons) {
-      if (policies.has(reason.max)) {
-        console.error(
-          "Invalid rate limit policy—two policies should not share the same limit",
-        );
-      }
-
-      if (
-        typeof reason.max !== "number" ||
-        typeof reason.window !== "number" ||
-        typeof reason.remaining !== "number" ||
-        typeof reason.reset !== "number"
-      ) {
-        console.error(format("Invalid rate limit encountered: %o", reason));
-      }
-
-      policies.set(reason.max, reason.window);
-    }
-
-    const rl = rateLimitReasons.reduce(nearestLimit);
-
-    remaining = rl.remaining;
-  }
-
-  if (typeof remaining !== "undefined") {
-    console.log("Requests remaining", remaining);
+  if (typeof nearestRateLimit !== "undefined") {
+    console.log("Requests remaining", nearestRateLimit.remaining);
   }
 
   // If the request is denied, return a 429
