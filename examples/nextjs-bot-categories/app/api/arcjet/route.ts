@@ -43,12 +43,21 @@ function checkSpoofed(rule: ArcjetRuleResult) {
   return rule.reason.isBot() && rule.reason.isSpoofed()
 }
 
+function collectErrors(errors: string[], rule: ArcjetRuleResult) {
+  if (rule.reason.isError()) {
+    return [...errors, rule.reason.message];
+  } else {
+    return errors;
+  }
+}
+
 export async function GET(req: Request) {
   const decision = await aj.protect(req);
 
-  if (decision.isErrored()) {
+  const errors = decision.results.reduce(collectErrors, []);
+  if (errors.length > 0) {
     return NextResponse.json(
-      { error: decision.reason.message },
+      { errors },
       { status: 500, statusText: "Internal Server Error" },
     )
   }

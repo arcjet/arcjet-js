@@ -1,6 +1,6 @@
 "use server"
 
-import arcjet, { request, validateEmail } from "@arcjet/next";
+import arcjet, { ArcjetRuleResult, request, validateEmail } from "@arcjet/next";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -10,6 +10,14 @@ const aj = arcjet({
     validateEmail({ mode: "LIVE", block: ["DISPOSABLE", "NO_MX_RECORDS"] })
   ]
 });
+
+function collectErrors(errors: string[], rule: ArcjetRuleResult) {
+  if (rule.reason.isError()) {
+    return [...errors, rule.reason.message];
+  } else {
+    return errors;
+  }
+}
 
 export async function validate(prev: { message: string }, formData: FormData) {
   const email = formData.get("email");
@@ -28,8 +36,9 @@ export async function validate(prev: { message: string }, formData: FormData) {
 
   // If Arcjet encounters an error, you could fail "open" or you could respond
   // with a "closed"-style message like below
-  if (decision.isErrored()) {
-    console.log("Error occurred:", decision.reason.message);
+  const errors = decision.results.reduce(collectErrors, []);
+  if (errors.length > 0) {
+    console.log("Errors occurred:", errors);
     return {
       message: "Encountered an error"
     }
