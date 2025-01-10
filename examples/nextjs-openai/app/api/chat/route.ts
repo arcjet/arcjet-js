@@ -15,8 +15,7 @@
  adding custom characteristics so you could use a user ID to track authenticated
  users instead. See the `chat_userid` example for an example of this.
 */
-import arcjet, { ArcjetRateLimitReason, ArcjetReason, ArcjetRuleResult, shield, tokenBucket } from "@arcjet/next";
-import format from "@arcjet/sprintf";
+import arcjet, { ArcjetRateLimitReason, ArcjetRuleResult, shield, tokenBucket } from "@arcjet/next";
 import { openai } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { promptTokensEstimate } from "openai-chat-tokens";

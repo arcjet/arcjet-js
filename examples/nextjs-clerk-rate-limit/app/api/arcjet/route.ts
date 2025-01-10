@@ -1,5 +1,4 @@
-import arcjet, { ArcjetDecision, tokenBucket, shield, ArcjetRateLimitReason, ArcjetReason, ArcjetRuleResult, Arcjet } from "@arcjet/next";
-import format from "@arcjet/sprintf";
+import arcjet, { ArcjetDecision, tokenBucket, shield, ArcjetRateLimitReason, ArcjetRuleResult } from "@arcjet/next";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import ip from "@arcjet/ip";

@@ -16,8 +16,7 @@
  rate limit rule. The value is then passed as a string, number or boolean when
  calling the protect method. You can use any string value for the key.
 */
-import arcjet, { ArcjetRateLimitReason, ArcjetReason, ArcjetRuleResult, shield, tokenBucket } from "@arcjet/next";
-import format from "@arcjet/sprintf";
+import arcjet, { ArcjetRateLimitReason, ArcjetRuleResult, shield, tokenBucket } from "@arcjet/next";
 import { openai } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { promptTokensEstimate } from "openai-chat-tokens";
