@@ -30,13 +30,11 @@ import {
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
 import type {
-  ArcjetBotRule,
   ArcjetEmailRule,
   ArcjetTokenBucketRateLimitRule,
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
-  ArcjetDecisionWithReason,
 } from "../index.js";
 import {
   ArcjetAllowDecision,
