@@ -1188,6 +1188,28 @@ describe("Primitive > validateEmail", () => {
     );
   });
 
+  test("validates `deny` option is array if it is set", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        deny: 1234,
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid type for `deny` - expected an array",
+    );
+  });
+
+  test("validates `allow` option is array if it is set", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        allow: 1234,
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid type for `allow` - expected an array",
+    );
+  });
+
   test("validates `block` option only contains specific values", async () => {
     expect(() => {
       validateEmail({
@@ -1196,6 +1218,28 @@ describe("Primitive > validateEmail", () => {
       });
     }).toThrow(
       "`validateEmail` options error: invalid value for `block[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
+    );
+  });
+
+  test("validates `deny` option only contains specific values", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        deny: ["FOOBAR"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid value for `deny[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
+    );
+  });
+
+  test("validates `allow` option only contains specific values", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        allow: ["FOOBAR"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid value for `allow[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
     );
   });
 
