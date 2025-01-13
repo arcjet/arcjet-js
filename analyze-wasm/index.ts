@@ -21,6 +21,10 @@ type DetectSensitiveInfoFunction =
 
 const wasmCache = new Map<string, WebAssembly.Module>();
 
+const componentCoreWasmPromise = componentCoreWasm();
+const componentCore2WasmPromise = componentCore2Wasm();
+const componentCore3WasmPromise = componentCore3Wasm();
+
 async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   const cachedModule = wasmCache.get(path);
   if (typeof cachedModule !== "undefined") {
@@ -28,17 +32,17 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   }
 
   if (path === "arcjet_analyze_js_req.component.core.wasm") {
-    const mod = await componentCoreWasm();
+    const mod = await componentCoreWasmPromise;
     wasmCache.set(path, mod);
     return mod;
   }
   if (path === "arcjet_analyze_js_req.component.core2.wasm") {
-    const mod = await componentCore2Wasm();
+    const mod = await componentCore2WasmPromise;
     wasmCache.set(path, mod);
     return mod;
   }
   if (path === "arcjet_analyze_js_req.component.core3.wasm") {
-    const mod = await componentCore3Wasm();
+    const mod = await componentCore3WasmPromise;
     wasmCache.set(path, mod);
     return mod;
   }
