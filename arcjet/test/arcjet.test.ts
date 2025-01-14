@@ -3,11 +3,9 @@ import { expect } from "expect";
 
 import type { ArcjetRule, ArcjetLocalRule, Primitive, Arcjet } from "../index";
 import arcjet, {
-  ArcjetMode,
   detectBot,
   validateEmail,
   protectSignup,
-  ArcjetEmailType,
   ArcjetAllowDecision,
   ArcjetDenyDecision,
   ArcjetErrorDecision,
@@ -481,10 +479,6 @@ describe("Primitive > detectBot", () => {
   });
 
   test("denies curl", async () => {
-    const options = {
-      mode: ArcjetMode.LIVE,
-      allow: [],
-    };
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
@@ -507,7 +501,10 @@ describe("Primitive > detectBot", () => {
       },
     };
 
-    const [rule] = detectBot(options);
+    const [rule] = detectBot({
+      mode: "LIVE",
+      allow: [],
+    });
     expect(rule.type).toEqual("BOT");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -560,7 +557,7 @@ describe("Primitive > detectBot", () => {
     };
 
     const [rule] = detectBot({
-      mode: ArcjetMode.LIVE,
+      mode: "LIVE",
       deny: ["CURL"],
     });
     expect(rule.type).toEqual("BOT");
@@ -613,7 +610,7 @@ describe("Primitive > detectBot", () => {
     };
 
     const [rule] = detectBot({
-      mode: ArcjetMode.LIVE,
+      mode: "LIVE",
       allow: ["CURL"],
     });
     expect(rule.type).toEqual("BOT");
@@ -1302,17 +1299,9 @@ describe("Primitive > validateEmail", () => {
   });
 
   test("allows specifying EmailTypes to deny", async () => {
-    const options = {
-      deny: [
-        ArcjetEmailType.DISPOSABLE,
-        ArcjetEmailType.FREE,
-        ArcjetEmailType.NO_GRAVATAR,
-        ArcjetEmailType.NO_MX_RECORDS,
-        ArcjetEmailType.INVALID,
-      ],
-    };
-
-    const [rule] = validateEmail(options);
+    const [rule] = validateEmail({
+      deny: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
+    });
     expect(rule.type).toEqual("EMAIL");
     expect(rule).toHaveProperty("deny", [
       "DISPOSABLE",
@@ -1324,17 +1313,9 @@ describe("Primitive > validateEmail", () => {
   });
 
   test("allows specifying EmailTypes to block and maps these to deny", async () => {
-    const options = {
-      block: [
-        ArcjetEmailType.DISPOSABLE,
-        ArcjetEmailType.FREE,
-        ArcjetEmailType.NO_GRAVATAR,
-        ArcjetEmailType.NO_MX_RECORDS,
-        ArcjetEmailType.INVALID,
-      ],
-    };
-
-    const [rule] = validateEmail(options);
+    const [rule] = validateEmail({
+      block: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
+    });
     expect(rule.type).toEqual("EMAIL");
     expect(rule).toHaveProperty("deny", [
       "DISPOSABLE",
@@ -1346,17 +1327,9 @@ describe("Primitive > validateEmail", () => {
   });
 
   test("allows specifying EmailTypes to allow", async () => {
-    const options = {
-      allow: [
-        ArcjetEmailType.DISPOSABLE,
-        ArcjetEmailType.FREE,
-        ArcjetEmailType.NO_GRAVATAR,
-        ArcjetEmailType.NO_MX_RECORDS,
-        ArcjetEmailType.INVALID,
-      ],
-    };
-
-    const [rule] = validateEmail(options);
+    const [rule] = validateEmail({
+      allow: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
+    });
     expect(rule.type).toEqual("EMAIL");
     expect(rule).toHaveProperty("allow", [
       "DISPOSABLE",
@@ -2404,18 +2377,18 @@ describe("Products > protectSignup", () => {
   test("allows configuration of rateLimit, bot, and email", () => {
     const rules = protectSignup({
       rateLimit: {
-        mode: ArcjetMode.DRY_RUN,
+        mode: "DRY_RUN",
         characteristics: ["ip.src"],
         interval: 60 /* minutes */ * 60 /* seconds */,
         max: 1,
       },
       bots: {
-        mode: ArcjetMode.DRY_RUN,
+        mode: "DRY_RUN",
         allow: [],
       },
       email: {
         allow: [],
-        mode: ArcjetMode.LIVE,
+        mode: "LIVE",
       },
     });
     expect(rules.length).toEqual(3);
@@ -2425,7 +2398,7 @@ describe("Products > protectSignup", () => {
 describe("SDK", () => {
   function testRuleLocalAllowed() {
     return {
-      mode: ArcjetMode.LIVE,
+      mode: "LIVE",
       type: "TEST_RULE_LOCAL_ALLOWED",
       priority: 1,
       validate: mock.fn(),
@@ -2438,11 +2411,11 @@ describe("SDK", () => {
             reason: new ArcjetTestReason(),
           }),
       ),
-    };
+    } as const;
   }
   function testRuleLocalDenied() {
     return {
-      mode: ArcjetMode.LIVE,
+      mode: "LIVE",
       type: "TEST_RULE_LOCAL_DENIED",
       priority: 1,
       validate: mock.fn(),
@@ -2455,16 +2428,16 @@ describe("SDK", () => {
             reason: new ArcjetTestReason(),
           }),
       ),
-    };
+    } as const;
   }
   function testRuleLocalIncorrect() {
     return {
-      mode: ArcjetMode.LIVE,
+      mode: "LIVE",
       type: "TEST_RULE_LOCAL_INCORRECT",
       priority: 1,
       validate: mock.fn(),
       protect: mock.fn(async () => undefined),
-    };
+    } as const;
   }
 
   function testRuleRemote(): ArcjetRule {
@@ -2485,7 +2458,7 @@ describe("SDK", () => {
 
   function testRuleInvalidType(): ArcjetRule {
     return {
-      mode: ArcjetMode.LIVE,
+      mode: "LIVE",
       type: "TEST_RULE_INVALID_TYPE",
       priority: 1,
     };
@@ -2493,19 +2466,19 @@ describe("SDK", () => {
 
   function testRuleLocalThrow() {
     return {
-      mode: ArcjetMode.LIVE,
+      mode: "LIVE",
       type: "TEST_RULE_LOCAL_THROW",
       priority: 1,
       validate: mock.fn(),
       protect: mock.fn(async () => {
         throw new Error("Local rule protect failed");
       }),
-    };
+    } as const;
   }
 
   function testRuleLocalDryRun() {
     return {
-      mode: ArcjetMode.DRY_RUN,
+      mode: "DRY_RUN",
       type: "TEST_RULE_LOCAL_DRY_RUN",
       priority: 1,
       validate: mock.fn(),
@@ -2517,7 +2490,7 @@ describe("SDK", () => {
           reason: new ArcjetTestReason(),
         });
       }),
-    };
+    } as const;
   }
 
   function testRuleProps(): Primitive<{ abc: number }> {
@@ -3688,7 +3661,7 @@ describe("SDK", () => {
 
     function testRuleLocalThrowString(): ArcjetLocalRule {
       return {
-        mode: ArcjetMode.LIVE,
+        mode: "LIVE",
         type: "TEST_RULE_LOCAL_THROW_STRING",
         priority: 1,
         validate: mock.fn(),
@@ -3745,7 +3718,7 @@ describe("SDK", () => {
 
     function testRuleLocalThrowNull(): ArcjetLocalRule {
       return {
-        mode: ArcjetMode.LIVE,
+        mode: "LIVE",
         type: "TEST_RULE_LOCAL_THROW_NULL",
         priority: 1,
         validate: mock.fn(),

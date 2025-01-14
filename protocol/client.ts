@@ -10,8 +10,9 @@ import type {
   ArcjetContext,
   ArcjetRequestDetails,
   ArcjetRule,
+  ArcjetStack,
 } from "./index.js";
-import { ArcjetDecision, ArcjetStack } from "./index.js";
+import { ArcjetDecision } from "./index.js";
 import { DecideService } from "./proto/decide/v1alpha1/decide_connect.js";
 import {
   DecideRequest,
