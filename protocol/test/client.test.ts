@@ -15,11 +15,10 @@ import {
   RuleState,
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
-import type { ArcjetRule } from "../index.js";
+import type { ArcjetConclusion, ArcjetRule } from "../index.js";
 import {
   ArcjetAllowDecision,
   ArcjetChallengeDecision,
-  ArcjetConclusion,
   ArcjetDecision,
   ArcjetDenyDecision,
   ArcjetErrorDecision,
