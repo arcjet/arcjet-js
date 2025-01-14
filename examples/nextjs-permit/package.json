@@ -12,7 +12,7 @@
     "@arcjet/ip": "file:../../ip",
     "@arcjet/next": "file:../../arcjet-next",
     "@clerk/nextjs": "^6.9.10",
-    "next": "15.1.0",
+    "next": "15.1.4",
     "permitio": "^2.7.2",
     "react": "^19",
     "react-dom": "^19"
