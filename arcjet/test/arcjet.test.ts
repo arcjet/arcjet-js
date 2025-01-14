@@ -1188,6 +1188,28 @@ describe("Primitive > validateEmail", () => {
     );
   });
 
+  test("validates `deny` option is array if it is set", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        deny: 1234,
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid type for `deny` - expected an array",
+    );
+  });
+
+  test("validates `allow` option is array if it is set", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        allow: 1234,
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid type for `allow` - expected an array",
+    );
+  });
+
   test("validates `block` option only contains specific values", async () => {
     expect(() => {
       validateEmail({
@@ -1196,6 +1218,64 @@ describe("Primitive > validateEmail", () => {
       });
     }).toThrow(
       "`validateEmail` options error: invalid value for `block[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
+    );
+  });
+
+  test("validates `deny` option only contains specific values", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        deny: ["FOOBAR"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid value for `deny[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
+    );
+  });
+
+  test("validates `allow` option only contains specific values", async () => {
+    expect(() => {
+      validateEmail({
+        // @ts-expect-error
+        allow: ["FOOBAR"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: invalid value for `allow[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
+    );
+  });
+
+  test("validates `deny` and `block` cannot be set at the same time", async () => {
+    expect(() => {
+      // @ts-expect-error
+      validateEmail({
+        deny: ["INVALID"],
+        block: ["INVALID"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: `deny` and `block` cannot be provided together, `block` is now deprecated so `deny` should be preferred.",
+    );
+  });
+
+  test("validates `allow` and `deny` cannot be set at the same time", async () => {
+    expect(() => {
+      // @ts-expect-error
+      validateEmail({
+        allow: ["INVALID"],
+        deny: ["INVALID"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: `allow` and `deny` cannot be provided together",
+    );
+  });
+
+  test("validates `block` and `deny` cannot be set at the same time", async () => {
+    expect(() => {
+      // @ts-expect-error
+      validateEmail({
+        allow: ["INVALID"],
+        block: ["INVALID"],
+      });
+    }).toThrow(
+      "`validateEmail` options error: `allow` and `block` cannot be provided together",
     );
   });
 
@@ -1221,7 +1301,29 @@ describe("Primitive > validateEmail", () => {
     );
   });
 
-  test("allows specifying EmailTypes to block", async () => {
+  test("allows specifying EmailTypes to deny", async () => {
+    const options = {
+      deny: [
+        ArcjetEmailType.DISPOSABLE,
+        ArcjetEmailType.FREE,
+        ArcjetEmailType.NO_GRAVATAR,
+        ArcjetEmailType.NO_MX_RECORDS,
+        ArcjetEmailType.INVALID,
+      ],
+    };
+
+    const [rule] = validateEmail(options);
+    expect(rule.type).toEqual("EMAIL");
+    expect(rule).toHaveProperty("deny", [
+      "DISPOSABLE",
+      "FREE",
+      "NO_GRAVATAR",
+      "NO_MX_RECORDS",
+      "INVALID",
+    ]);
+  });
+
+  test("allows specifying EmailTypes to block and maps these to deny", async () => {
     const options = {
       block: [
         ArcjetEmailType.DISPOSABLE,
@@ -1234,7 +1336,29 @@ describe("Primitive > validateEmail", () => {
 
     const [rule] = validateEmail(options);
     expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("block", [
+    expect(rule).toHaveProperty("deny", [
+      "DISPOSABLE",
+      "FREE",
+      "NO_GRAVATAR",
+      "NO_MX_RECORDS",
+      "INVALID",
+    ]);
+  });
+
+  test("allows specifying EmailTypes to allow", async () => {
+    const options = {
+      allow: [
+        ArcjetEmailType.DISPOSABLE,
+        ArcjetEmailType.FREE,
+        ArcjetEmailType.NO_GRAVATAR,
+        ArcjetEmailType.NO_MX_RECORDS,
+        ArcjetEmailType.INVALID,
+      ],
+    };
+
+    const [rule] = validateEmail(options);
+    expect(rule.type).toEqual("EMAIL");
+    expect(rule).toHaveProperty("allow", [
       "DISPOSABLE",
       "FREE",
       "NO_GRAVATAR",
@@ -1256,7 +1380,7 @@ describe("Primitive > validateEmail", () => {
       email: "abc@example.com",
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
@@ -1277,7 +1401,7 @@ describe("Primitive > validateEmail", () => {
       email: undefined,
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     expect(() => {
@@ -1307,7 +1431,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1342,7 +1466,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1377,7 +1501,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1413,7 +1537,7 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({
-      block: [],
+      deny: [],
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
@@ -1449,7 +1573,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1484,7 +1608,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE" });
+    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1521,6 +1645,7 @@ describe("Primitive > validateEmail", () => {
 
     const [rule] = validateEmail({
       requireTopLevelDomain: false,
+      deny: [],
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
@@ -1558,6 +1683,7 @@ describe("Primitive > validateEmail", () => {
 
     const [rule] = validateEmail({
       allowDomainLiteral: true,
+      deny: [],
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
@@ -2288,6 +2414,7 @@ describe("Products > protectSignup", () => {
         allow: [],
       },
       email: {
+        allow: [],
         mode: ArcjetMode.LIVE,
       },
     });

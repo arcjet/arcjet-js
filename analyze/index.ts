@@ -113,20 +113,14 @@ export async function generateFingerprint(
 export async function isValidEmail(
   context: AnalyzeContext,
   candidate: string,
-  options?: EmailValidationConfig,
+  options: EmailValidationConfig,
 ): Promise<EmailValidationResult> {
   const { log } = context;
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
-  const optionsOrDefault = {
-    requireTopLevelDomain: true,
-    allowDomainLiteral: false,
-    blockedEmails: [],
-    ...options,
-  };
 
   if (typeof analyze !== "undefined") {
-    return analyze.isValidEmail(candidate, optionsOrDefault);
+    return analyze.isValidEmail(candidate, options);
   } else {
     log.debug("WebAssembly is not supported in this runtime");
     // Skip the local evaluation of the rule if WASM is not available

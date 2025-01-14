@@ -13,7 +13,10 @@ const aj = arcjet({
   rules: [
     validateEmail({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      block: ["NO_MX_RECORDS"], // block email addresses with no MX records
+      deny: ["NO_MX_RECORDS"], // block email addresses with no MX records
+      // Alternatively, you can specify a list of email types to allow.
+      // This will block all others.
+      // allow: ['FREE'],
     }),
   ],
   client,
