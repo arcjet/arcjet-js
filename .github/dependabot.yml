@@ -811,6 +811,10 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
+      # Remix 2 doesn't support Vite 6 so the dependencies below are
+      # restricted.
+      - dependency-name: vite
+        versions: [">=6"]
 
   - package-ecosystem: npm
     directory: /examples/sveltekit
