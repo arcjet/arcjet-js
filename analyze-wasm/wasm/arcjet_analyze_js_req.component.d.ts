@@ -12,10 +12,24 @@ export interface EmailValidationResult {
   validity: EmailValidity,
   blocked: Array<string>,
 }
-export interface EmailValidationConfig {
+export interface AllowEmailValidationConfig {
   requireTopLevelDomain: boolean,
   allowDomainLiteral: boolean,
-  blockedEmails: Array<string>,
+  allow: Array<string>,
+}
+export interface DenyEmailValidationConfig {
+  requireTopLevelDomain: boolean,
+  allowDomainLiteral: boolean,
+  deny: Array<string>,
+}
+export type EmailValidationConfig = EmailValidationConfigAllowEmailValidationConfig | EmailValidationConfigDenyEmailValidationConfig;
+export interface EmailValidationConfigAllowEmailValidationConfig {
+  tag: 'allow-email-validation-config',
+  val: AllowEmailValidationConfig,
+}
+export interface EmailValidationConfigDenyEmailValidationConfig {
+  tag: 'deny-email-validation-config',
+  val: DenyEmailValidationConfig,
 }
 export type SensitiveInfoEntities = SensitiveInfoEntitiesAllow | SensitiveInfoEntitiesDeny;
 export interface SensitiveInfoEntitiesAllow {
