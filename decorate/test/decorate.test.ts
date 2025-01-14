@@ -3,6 +3,7 @@ import { expect } from "expect";
 import { setRateLimitHeaders } from "../index";
 import {
   ArcjetAllowDecision,
+  ArcjetDenyDecision,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
@@ -307,7 +308,7 @@ describe("setRateLimitHeaders", () => {
       const headers = new Headers();
       setRateLimitHeaders(
         headers,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -332,7 +333,7 @@ describe("setRateLimitHeaders", () => {
       const headers = new Headers();
       setRateLimitHeaders(
         headers,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -356,7 +357,7 @@ describe("setRateLimitHeaders", () => {
       const headers = new Headers();
       setRateLimitHeaders(
         headers,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -380,7 +381,7 @@ describe("setRateLimitHeaders", () => {
       const headers = new Headers();
       setRateLimitHeaders(
         headers,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -404,7 +405,7 @@ describe("setRateLimitHeaders", () => {
       const headers = new Headers();
       setRateLimitHeaders(
         headers,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1023,7 +1024,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new Response();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1048,7 +1049,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new Response();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1072,7 +1073,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new Response();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1096,7 +1097,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new Response();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1120,7 +1121,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new Response();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1834,7 +1835,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1859,7 +1860,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1883,7 +1884,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1907,7 +1908,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({
@@ -1931,7 +1932,7 @@ describe("setRateLimitHeaders", () => {
       const resp = new OutgoingMessage();
       setRateLimitHeaders(
         resp,
-        new ArcjetAllowDecision({
+        new ArcjetDenyDecision({
           results: [],
           ttl: 0,
           reason: new ArcjetRateLimitReason({

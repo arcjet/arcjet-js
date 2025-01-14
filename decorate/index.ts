@@ -122,9 +122,19 @@ function extractReason(result: ArcjetRuleResult): ArcjetReason {
 }
 
 function isRateLimitReason(
-  reason?: ArcjetReason,
+  reason: ArcjetReason,
 ): reason is ArcjetRateLimitReason {
-  return typeof reason !== "undefined" && reason.isRateLimit();
+  return reason.isRateLimit();
+}
+
+function getRateLimitReason(
+  decision: ArcjetDecision,
+): ArcjetRateLimitReason | undefined {
+  if (decision.isDenied() || decision.isChallenged()) {
+    if (decision.reason.isRateLimit()) {
+      return decision.reason;
+    }
+  }
 }
 
 function nearestLimit(
@@ -211,21 +221,22 @@ export function setRateLimitHeaders(
   } else {
     // For cached decisions, we may not have rule results, but we'd still have
     // the top-level reason.
-    if (isRateLimitReason(decision.reason)) {
+    const rateLimitReason = getRateLimitReason(decision);
+    if (rateLimitReason) {
       if (
-        typeof decision.reason.max !== "number" ||
-        typeof decision.reason.window !== "number" ||
-        typeof decision.reason.remaining !== "number" ||
-        typeof decision.reason.reset !== "number"
+        typeof rateLimitReason.max !== "number" ||
+        typeof rateLimitReason.window !== "number" ||
+        typeof rateLimitReason.remaining !== "number" ||
+        typeof rateLimitReason.reset !== "number"
       ) {
         console.error(
-          format("Invalid rate limit encountered: %o", decision.reason),
+          format("Invalid rate limit encountered: %o", rateLimitReason),
         );
         return;
       }
 
-      limit = toLimitString(decision.reason);
-      policy = toPolicyString([decision.reason.max, decision.reason.window]);
+      limit = toLimitString(rateLimitReason);
+      policy = toPolicyString([rateLimitReason.max, rateLimitReason.window]);
     } else {
       return;
     }
