@@ -35,7 +35,7 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "8.20.0",
     "@typescript-eslint/parser": "8.20.0",
-    "eslint-config-prettier": "9.1.0",
+    "eslint-config-prettier": "10.0.1",
     "eslint-config-turbo": "2.3.3"
   },
   "peerDependencies": {
