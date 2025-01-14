@@ -14,11 +14,11 @@ import type {
   ArcjetIdentifiedEntity,
   ArcjetWellKnownBot,
   ArcjetBotCategory,
+  ArcjetEmailType,
 } from "@arcjet/protocol";
 import {
   ArcjetBotReason,
   ArcjetEmailReason,
-  ArcjetEmailType,
   ArcjetErrorReason,
   ArcjetMode,
   ArcjetReason,
