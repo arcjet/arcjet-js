@@ -84,17 +84,6 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
 }
 
 /**
- * Pre-warms the wasm cache to improve cold start performance.
- * @returns Whether the cache was successfully warmed or not.
- */
-export async function prewarmWasmCache(): Promise<boolean> {
-  const coreImports = createCoreImports();
-  const analyze = await initializeWasm(coreImports);
-
-  return typeof analyze !== "undefined";
-}
-
-/**
  * Generate a fingerprint for the client. This is used to identify the client
  * across multiple requests.
  * @param context - The Arcjet Analyze context.

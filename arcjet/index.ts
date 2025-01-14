@@ -1240,8 +1240,6 @@ export default function arcjet<
   }
   const log = options.log;
 
-  const wasmPrewarm = analyze.prewarmWasmCache();
-
   const perf = new Performance(log);
 
   // TODO(#207): Remove this when we can default the transport so client is not required
@@ -1299,15 +1297,6 @@ export default function arcjet<
       waitUntil,
       ...ctx,
     };
-
-    const logWasmPrewarmPerf = perf.measure("wasm prewarm");
-    const prewarmed = await wasmPrewarm;
-    if (!prewarmed) {
-      log.debug(
-        "Wasm prewarm failed. This may indicate that Wasm is not supported on this platform",
-      );
-    }
-    logWasmPrewarmPerf();
 
     let fingerprint = "";
 
