@@ -392,13 +392,45 @@ export function ArcjetRuleResultFromProtocol(
 }
 
 export function ArcjetDecisionToProtocol(decision: ArcjetDecision): Decision {
-  return new Decision({
-    id: decision.id,
-    ttl: decision.ttl,
-    conclusion: ArcjetConclusionToProtocol(decision.conclusion),
-    reason: decision.reason && ArcjetReasonToProtocol(decision.reason),
-    ruleResults: decision.results.map(ArcjetRuleResultToProtocol),
-  });
+  if (decision.isDenied()) {
+    return new Decision({
+      id: decision.id,
+      ttl: decision.ttl,
+      conclusion: ArcjetConclusionToProtocol(decision.conclusion),
+      reason: ArcjetReasonToProtocol(decision.reason),
+      ruleResults: decision.results.map(ArcjetRuleResultToProtocol),
+    });
+  }
+
+  if (decision.isChallenged()) {
+    return new Decision({
+      id: decision.id,
+      ttl: decision.ttl,
+      conclusion: ArcjetConclusionToProtocol(decision.conclusion),
+      reason: ArcjetReasonToProtocol(decision.reason),
+      ruleResults: decision.results.map(ArcjetRuleResultToProtocol),
+    });
+  }
+
+  if (decision.isErrored()) {
+    return new Decision({
+      id: decision.id,
+      ttl: decision.ttl,
+      conclusion: ArcjetConclusionToProtocol(decision.conclusion),
+      ruleResults: decision.results.map(ArcjetRuleResultToProtocol),
+    });
+  }
+
+  if (decision.isAllowed()) {
+    return new Decision({
+      id: decision.id,
+      ttl: decision.ttl,
+      conclusion: ArcjetConclusionToProtocol(decision.conclusion),
+      ruleResults: decision.results.map(ArcjetRuleResultToProtocol),
+    });
+  }
+
+  return new Decision();
 }
 
 export function ArcjetIpDetailsFromProtocol(
@@ -667,6 +699,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
       rule: {
         case: "sensitiveInfo",
         value: {
+          mode: ArcjetModeToProtocol(rule.mode),
           allow: rule.allow,
           deny: rule.deny,
         },

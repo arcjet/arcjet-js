@@ -115,7 +115,6 @@ export function createClient(options: ClientOptions): Client {
           runtime: context.runtime,
           ttl: decision.ttl,
           conclusion: decision.conclusion,
-          reason: decision.reason,
           ruleResults: decision.results,
         },
         "Decide response",

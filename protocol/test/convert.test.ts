@@ -23,6 +23,7 @@ import {
   EmailType,
   Mode,
   RateLimitAlgorithm,
+  RateLimitReason,
   Reason,
   Rule,
   RuleResult,
@@ -35,6 +36,8 @@ import type {
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
+  ArcjetSensitiveInfoRule,
+  ArcjetConclusion,
 } from "../index.js";
 import {
   ArcjetAllowDecision,
@@ -51,6 +54,7 @@ import {
   ArcjetShieldReason,
   ArcjetIpDetails,
   ArcjetSensitiveInfoReason,
+  ArcjetDecision,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
 
@@ -113,6 +117,12 @@ describe("convert", () => {
     expect(ArcjetStackToProtocol("NODEJS")).toEqual(SDKStack.SDK_STACK_NODEJS);
     expect(ArcjetStackToProtocol("NEXTJS")).toEqual(SDKStack.SDK_STACK_NEXTJS);
     expect(ArcjetStackToProtocol("BUN")).toEqual(SDKStack.SDK_STACK_BUN);
+    expect(ArcjetStackToProtocol("SVELTEKIT")).toEqual(
+      SDKStack.SDK_STACK_SVELTEKIT,
+    );
+    expect(ArcjetStackToProtocol("DENO")).toEqual(SDKStack.SDK_STACK_DENO);
+    expect(ArcjetStackToProtocol("NESTJS")).toEqual(SDKStack.SDK_STACK_NESTJS);
+    expect(ArcjetStackToProtocol("REMIX")).toEqual(SDKStack.SDK_STACK_REMIX);
     expect(
       ArcjetStackToProtocol(
         // @ts-expect-error
@@ -319,6 +329,17 @@ describe("convert", () => {
         reason: "NOT_VALID",
       });
     }).toThrow("Invalid Reason");
+    // Bot rule V1 is deprecated and produces an Error Reason
+    expect(
+      ArcjetReasonFromProtocol(
+        new Reason({
+          reason: {
+            case: "bot",
+            value: {},
+          },
+        }),
+      ),
+    ).toBeInstanceOf(ArcjetErrorReason);
   });
 
   test("ArcjetReasonToProtocol", () => {
@@ -510,25 +531,119 @@ describe("convert", () => {
   });
 
   test("ArcjetDecisionToProtocol", () => {
-    const decision = new ArcjetAllowDecision({
-      id: "abc123",
-      ttl: 0,
-      results: [],
-      reason: new ArcjetReason(),
-      ip: new ArcjetIpDetails(),
-    });
-    if (decision.hasReason()) {
-      expect(ArcjetDecisionToProtocol(decision)).toEqual(
-        new Decision({
+    expect(
+      ArcjetDecisionToProtocol(
+        new ArcjetAllowDecision({
           id: "abc123",
-          conclusion: Conclusion.ALLOW,
-          ruleResults: [],
-          reason: new Reason(),
+          ttl: 0,
+          results: [],
+          ip: new ArcjetIpDetails(),
         }),
-      );
-    } else {
-      throw new Error("decision created with reason have a reason");
-    }
+      ),
+    ).toEqual(
+      new Decision({
+        id: "abc123",
+        conclusion: Conclusion.ALLOW,
+        ruleResults: [],
+      }),
+    );
+    expect(
+      ArcjetDecisionToProtocol(
+        new ArcjetErrorDecision({
+          id: "abc123",
+          ttl: 0,
+          results: [],
+          ip: new ArcjetIpDetails(),
+        }),
+      ),
+    ).toEqual(
+      new Decision({
+        id: "abc123",
+        conclusion: Conclusion.ERROR,
+        ruleResults: [],
+      }),
+    );
+    expect(
+      ArcjetDecisionToProtocol(
+        new ArcjetChallengeDecision({
+          id: "abc123",
+          ttl: 0,
+          results: [],
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            remaining: 0,
+            window: 1,
+            reset: 1,
+          }),
+          ip: new ArcjetIpDetails(),
+        }),
+      ),
+    ).toEqual(
+      new Decision({
+        id: "abc123",
+        conclusion: Conclusion.CHALLENGE,
+        ruleResults: [],
+        reason: new Reason({
+          reason: {
+            case: "rateLimit",
+            value: new RateLimitReason({
+              max: 1,
+              remaining: 0,
+              windowInSeconds: 1,
+              resetInSeconds: 1,
+            }),
+          },
+        }),
+      }),
+    );
+    expect(
+      ArcjetDecisionToProtocol(
+        new ArcjetDenyDecision({
+          id: "abc123",
+          ttl: 0,
+          results: [],
+          reason: new ArcjetRateLimitReason({
+            max: 1,
+            remaining: 0,
+            window: 1,
+            reset: 1,
+          }),
+          ip: new ArcjetIpDetails(),
+        }),
+      ),
+    ).toEqual(
+      new Decision({
+        id: "abc123",
+        conclusion: Conclusion.DENY,
+        ruleResults: [],
+        reason: new Reason({
+          reason: {
+            case: "rateLimit",
+            value: new RateLimitReason({
+              max: 1,
+              remaining: 0,
+              windowInSeconds: 1,
+              resetInSeconds: 1,
+            }),
+          },
+        }),
+      }),
+    );
+
+    const ArcjetInvalidDecision = class extends ArcjetDecision {
+      // @ts-expect-error
+      conclusion: ArcjetConclusion = "INVALID";
+    };
+    expect(
+      ArcjetDecisionToProtocol(
+        new ArcjetInvalidDecision({
+          id: "abc123",
+          ttl: 0,
+          results: [],
+          ip: new ArcjetIpDetails(),
+        }),
+      ),
+    ).toEqual(new Decision());
   });
 
   test("ArcjetDecisionFromProtocol", () => {
@@ -705,6 +820,22 @@ describe("convert", () => {
           value: {
             mode: Mode.DRY_RUN,
             autoAdded: false,
+          },
+        },
+      }),
+    );
+    expect(
+      ArcjetRuleToProtocol(<ArcjetSensitiveInfoRule<{}>>{
+        type: "SENSITIVE_INFO",
+        mode: "DRY_RUN",
+        priority: 1,
+      }),
+    ).toEqual(
+      new Rule({
+        rule: {
+          case: "sensitiveInfo",
+          value: {
+            mode: Mode.DRY_RUN,
           },
         },
       }),
