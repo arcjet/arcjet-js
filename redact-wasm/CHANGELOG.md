@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/redact-wasm-v1.0.0-beta.1) (2025-01-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **redact:** Correctly handle urlencoded data when tokenizing characters ([#2864](https://github.com/arcjet/arcjet-js/issues/2864))
+
+### 🪲 Bug Fixes
+
+* **redact:** Correctly handle urlencoded data when tokenizing characters ([#2864](https://github.com/arcjet/arcjet-js/issues/2864)) ([fbed883](https://github.com/arcjet/arcjet-js/commit/fbed8835f7e2c4ee659bcfafecad1bfa7898c7a4))
+
+
+### 🧹 Miscellaneous Chores
+
+* Switch most test harnesses to node:test ([#2479](https://github.com/arcjet/arcjet-js/issues/2479)) ([8a71bbc](https://github.com/arcjet/arcjet-js/commit/8a71bbc3d1fa6b63586f1bae7fa6f0f8d4fbad66))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/redact-wasm-v1.0.0-alpha.34) (2024-12-03)
 
 
