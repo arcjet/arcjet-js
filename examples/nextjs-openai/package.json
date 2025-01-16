@@ -11,7 +11,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^1.0.19",
     "@arcjet/next": "file:../../arcjet-next",
-    "ai": "^4.0.36",
+    "ai": "^4.0.38",
     "next": "15.1.4",
     "openai": "^4.78.1",
     "openai-chat-tokens": "^0.2.8",
