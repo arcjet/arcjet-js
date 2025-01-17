@@ -9,9 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.0.19",
+    "@ai-sdk/openai": "^1.0.20",
     "@arcjet/next": "file:../../arcjet-next",
-    "ai": "^4.0.36",
+    "ai": "^4.0.39",
     "next": "15.1.4",
     "openai": "^4.78.1",
     "openai-chat-tokens": "^0.2.8",
