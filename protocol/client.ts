@@ -79,7 +79,7 @@ export function createClient(options: ClientOptions): Client {
       const { log } = context;
 
       let hasValidateEmail = false;
-      let protoRules: Rule[] = [];
+      const protoRules: Rule[] = [];
       for (const rule of rules) {
         if (rule.type === "EMAIL") {
           hasValidateEmail = true;
