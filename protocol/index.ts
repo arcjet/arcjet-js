@@ -82,7 +82,8 @@ export type ArcjetStack =
   | "SVELTEKIT"
   | "DENO"
   | "NESTJS"
-  | "REMIX";
+  | "REMIX"
+  | "ASTRO";
 export const ArcjetStack = Object.freeze({
   /**
    * @deprecated Use the string `"NODEJS"` instead.
@@ -112,6 +113,10 @@ export const ArcjetStack = Object.freeze({
    * @deprecated Use the string `"REMIX"` instead.
    **/
   REMIX: "REMIX",
+  /**
+   * @deprecated Use the string `"ASTRO"` instead.
+   **/
+  ASTRO: "ASTRO",
 });
 
 export type ArcjetRuleState = "RUN" | "NOT_RUN" | "CACHED" | "DRY_RUN";
