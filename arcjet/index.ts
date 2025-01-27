@@ -1242,7 +1242,7 @@ export function shield(options: ShieldOptions): Primitive<{}> {
   ];
 }
 
-export type ProtectSignupOptions<Characteristics extends string[]> = {
+export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
   rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
   bots: BotOptions;
   email: EmailOptions;
