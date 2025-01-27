@@ -169,7 +169,7 @@ export default function arcjet<Characteristics extends readonly string[]>({
   return {
     name: "@arcjet/astro",
     hooks: {
-      "astro:config:setup"({ updateConfig }) {
+      "astro:config:setup"({ updateConfig, addMiddleware }) {
         updateConfig({
           env: {
             schema: {
@@ -256,6 +256,10 @@ export default function arcjet<Characteristics extends readonly string[]>({
               },
             ],
           },
+        });
+        addMiddleware({
+          entrypoint: new URL("./middleware.js", import.meta.url),
+          order: "pre",
         });
       },
       "astro:config:done": async ({ injectTypes }) => {

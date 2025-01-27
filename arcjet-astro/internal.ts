@@ -25,10 +25,10 @@ import {
   VERCEL,
 } from "astro:env/server";
 
-// Astro uses this symbol to store client address on the `Request`; however,
-// they don't make it available in package exports. We hardcode this but it can
-// break if Astro decides to change it.
-const astroClientAddressSymbol = Symbol.for("astro.clientAddress");
+// We use a middleware to store the IP address on a `Request` with this symbol.
+// This is due to Astro inconsistently using `Symbol.for("astro.clientAddress")`
+// to store the client address and not exporting it from their module.
+const ipSymbol = Symbol.for("arcjet.ip");
 
 const env = {
   ARCJET_BASE_URL,
@@ -206,7 +206,7 @@ export function createArcjetClient<
     request: Request,
     props: Props,
   ): ArcjetRequest<Props> {
-    const clientAddress = Reflect.get(request, astroClientAddressSymbol);
+    const clientAddress = Reflect.get(request, ipSymbol);
     if (!clientAddress) {
       // TODO: Handle this better
       throw new Error("Arcjet used in prerendered page");
