@@ -13,6 +13,8 @@ describe("env", () => {
     expect(env.isDevelopment({})).toEqual(false);
     expect(env.isDevelopment({ NODE_ENV: "production" })).toEqual(false);
     expect(env.isDevelopment({ NODE_ENV: "development" })).toEqual(true);
+    expect(env.isDevelopment({ MODE: "production" })).toEqual(false);
+    expect(env.isDevelopment({ MODE: "development" })).toEqual(true);
     expect(env.isDevelopment({ ARCJET_ENV: "production" })).toEqual(false);
     expect(env.isDevelopment({ ARCJET_ENV: "development" })).toEqual(true);
   });
