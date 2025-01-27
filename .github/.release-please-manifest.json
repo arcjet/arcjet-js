@@ -3,6 +3,7 @@
   "analyze": "1.0.0-beta.1",
   "analyze-wasm": "1.0.0-beta.1",
   "arcjet": "1.0.0-beta.1",
+  "arcjet-astro": "1.0.0-beta.1",
   "arcjet-bun": "1.0.0-beta.1",
   "arcjet-deno": "1.0.0-beta.1",
   "arcjet-nest": "1.0.0-beta.1",
