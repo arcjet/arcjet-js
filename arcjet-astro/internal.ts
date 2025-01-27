@@ -147,7 +147,7 @@ export type ArcjetOptions<
 
 /**
  * The ArcjetAstro client provides a public `protect()` method to
- * make a decision about how a Bun.sh request should be handled.
+ * make a decision about how an Astro request should be handled.
  */
 export interface ArcjetAstro<Props extends PlainObject> {
   /**

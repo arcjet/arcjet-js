@@ -217,7 +217,7 @@ export default function arcjet<Characteristics extends readonly string[]>({
           vite: {
             plugins: [
               {
-                name: "arcjet",
+                name: "@arcjet/astro",
                 resolveId(id) {
                   if (id === "arcjet:client") {
                     return resolvedVirtualClientId;
