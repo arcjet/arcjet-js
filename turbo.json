@@ -10,7 +10,8 @@
     "ARCJET_RUNTIME",
     "ARCJET_LOG_LEVEL",
     "OPENAI_API_KEY",
-    "FLY_APP_NAME"
+    "FLY_APP_NAME",
+    "MODE"
   ],
   "tasks": {
     "build": {
