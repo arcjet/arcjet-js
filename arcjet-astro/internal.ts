@@ -37,6 +37,8 @@ const env = {
   ARCJET_LOG_LEVEL,
   FLY_APP_NAME,
   VERCEL,
+  // `MODE` is only set on `import.meta.env`.
+  MODE: import.meta.env.MODE,
 };
 
 // Re-export all named exports from the generic SDK
