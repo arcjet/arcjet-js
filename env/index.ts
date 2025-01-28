@@ -21,7 +21,11 @@ export function platform(env: Env) {
 }
 
 export function isDevelopment(env: Env) {
-  return env.NODE_ENV === "development" || env.MODE === "development" || env.ARCJET_ENV === "development";
+  return (
+    env.NODE_ENV === "development" ||
+    env.MODE === "development" ||
+    env.ARCJET_ENV === "development"
+  );
 }
 
 export function logLevel(env: Env) {
