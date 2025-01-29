@@ -1,0 +1,27 @@
+---
+import { actions } from 'astro:actions';
+
+// Pages that use Astro Actions can be prerendered because the form submission
+// via POST is never prerendered.
+export const prerender = true;
+
+const result = Astro.getActionResult(actions.email);
+---
+
+<div id="email">
+  {result ? (
+    <div>{result.error ? result.error.message : result.data}</div>
+  ) : (
+    <form  method="POST" action={actions.email}>
+      <label for="email">Validate email:</label>
+      <input id="email" required type="text" name="email" />
+      <button>Submit</button>
+    </form>
+  )}
+</div>
+
+<style>
+  #email {
+    margin: 5px auto;
+  }
+</style>
