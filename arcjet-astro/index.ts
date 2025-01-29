@@ -47,8 +47,12 @@ type IntegrationRule<Characteristics extends readonly string[]> =
       options: ProtectSignupOptions<Characteristics>;
     };
 
+// TODO: Figure out some way of configuring a logger
 type ArcjetIntegrationOptions<Characteristics extends readonly string[]> = {
   rules: IntegrationRule<Characteristics>[];
+  characteristics?: Characteristics;
+  client?: RemoteClientOptions;
+  proxies?: string[];
 };
 
 function integrationRuleToClientRule<
@@ -153,8 +157,20 @@ export function protectSignup<Characteristics extends readonly string[]>(
   return { type: "protectSignup", options } as const;
 }
 
+export type RemoteClientOptions = {
+  baseUrl?: string;
+  timeout?: number;
+};
+
+export function createRemoteClient({ baseUrl, timeout }: RemoteClientOptions) {
+  return { baseUrl, timeout } as const;
+}
+
 export default function arcjet<Characteristics extends readonly string[]>({
   rules,
+  characteristics,
+  client,
+  proxies,
 }: ArcjetIntegrationOptions<Characteristics>): AstroIntegration {
   // TODO: this only supports serializable options, so no custom detect functions are supported
   // but maybe they could be supported via a module import?
@@ -165,6 +181,20 @@ export default function arcjet<Characteristics extends readonly string[]>({
     arcjetImports.add(importName);
     arcjetRules.push(code);
   }
+
+  const characteristicsInjection = characteristics
+    ? `characteristics: ${JSON.stringify(characteristics)},`
+    : "";
+
+  const proxiesInjection = proxies
+    ? // TODO: Validate before stringify?
+      `proxies: ${JSON.stringify(proxies)},`
+    : "";
+
+  const clientInjection = client
+    ? // TODO: Validate before stringify?
+      `client: createRemoteClient(${JSON.stringify(client)}),`
+    : "";
 
   return {
     name: "@arcjet/astro",
@@ -246,6 +276,9 @@ export default function arcjet<Characteristics extends readonly string[]>({
                           rules: [
                             ${arcjetRules.join(",\n")}
                           ],
+                          ${characteristicsInjection}
+                          ${proxiesInjection}
+                          ${clientInjection}
                         })
 
                         export default aj;
@@ -280,7 +313,10 @@ export default function arcjet<Characteristics extends readonly string[]>({
             const client = createArcjetClient({
               rules: [
                 ${arcjetRules.join(",\n")}
-              ]
+              ],
+              ${characteristicsInjection}
+              ${proxiesInjection}
+              ${clientInjection}
             })
             export default client
           }`,
