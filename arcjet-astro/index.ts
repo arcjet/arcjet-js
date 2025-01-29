@@ -9,45 +9,164 @@ import type {
   TokenBucketRateLimitOptions,
 } from "arcjet";
 import type { AstroIntegration } from "astro";
+import { z, type ZodType, type ZodTypeDef } from "astro/zod";
 import fs from "node:fs/promises";
 
 const resolvedVirtualClientId = "\0ARCJET_VIRTUAL_CLIENT";
 
+const validateMode = z.enum(["LIVE", "DRY_RUN"]);
+const validateProxies = z.array(z.string());
+const validateCharacteristics = z.array(z.string());
+const validateClientOptions = z
+  .object({
+    baseUrl: z.string(),
+    timeout: z.number(),
+  })
+  .strict()
+  .optional();
+
+const validateShieldOptions = z
+  .object({
+    mode: validateMode,
+  })
+  .strict()
+  .optional();
+
+const validateBotOptions = z
+  .union([
+    z
+      .object({
+        mode: validateMode,
+        allow: z.array(z.string()),
+      })
+      .strict(),
+    z
+      .object({
+        mode: validateMode,
+        deny: z.array(z.string()),
+      })
+      .strict(),
+  ])
+  .optional();
+
+const validateEmailOptions = z
+  .union([
+    z
+      .object({
+        mode: validateMode,
+        allow: z.array(z.string()),
+        requireTopLevelDomain: z.boolean(),
+        allowDomainLiteral: z.boolean(),
+      })
+      .strict(),
+    z
+      .object({
+        mode: validateMode,
+        deny: z.array(z.string()),
+        requireTopLevelDomain: z.boolean(),
+        allowDomainLiteral: z.boolean(),
+      })
+      .strict(),
+  ])
+  .optional();
+
+const validateSensitiveInfoOptions = z
+  .union([
+    z
+      .object({
+        mode: validateMode,
+        allow: z.array(z.string()),
+        contextWindowSize: z.number(),
+      })
+      .strict(),
+    z
+      .object({
+        mode: validateMode,
+        deny: z.array(z.string()),
+        contextWindowSize: z.number(),
+      })
+      .strict(),
+  ])
+  .optional();
+
+const validateFixedWindowOptions = z
+  .object({
+    mode: validateMode,
+    characteristics: validateCharacteristics,
+    window: z.union([z.string(), z.number()]),
+    max: z.number(),
+  })
+  .strict()
+  .optional();
+
+const validateSlidingWindowOptions = z
+  .object({
+    mode: validateMode,
+    characteristics: validateCharacteristics,
+    interval: z.union([z.string(), z.number()]),
+    max: z.number(),
+  })
+  .strict()
+  .optional();
+
+const validateTokenBucketOptions = z
+  .object({
+    mode: validateMode,
+    characteristics: validateCharacteristics,
+    refillRate: z.number(),
+    interval: z.union([z.string(), z.number()]),
+    capacity: z.number(),
+  })
+  .strict()
+  .optional();
+
+const validateProtectSignupOptions = z
+  .object({
+    rateLimit: validateSlidingWindowOptions,
+    bots: validateBotOptions,
+    email: validateEmailOptions,
+  })
+  .strict()
+  .optional();
+
 type IntegrationRule<Characteristics extends readonly string[]> =
   | {
       type: "shield";
-      options: ShieldOptions;
+      options?: ShieldOptions;
     }
   | {
       type: "bot";
-      options: BotOptions;
+      options?: BotOptions;
     }
   | {
       type: "email";
-      options: EmailOptions;
+      options?: EmailOptions;
     }
   | {
       type: "sensitiveInfo";
-      options: SensitiveInfoOptions<never>;
+      // TODO: This only supports serializable options, so no custom detect functions are supported
+      // but maybe they could be supported via a module import
+      options?: SensitiveInfoOptions<never>;
     }
   | {
       type: "fixedWindow";
-      options: FixedWindowRateLimitOptions<Characteristics>;
+      options?: FixedWindowRateLimitOptions<Characteristics>;
     }
   | {
       type: "slidingWindow";
-      options: SlidingWindowRateLimitOptions<Characteristics>;
+      options?: SlidingWindowRateLimitOptions<Characteristics>;
     }
   | {
       type: "tokenBucket";
-      options: TokenBucketRateLimitOptions<Characteristics>;
+      options?: TokenBucketRateLimitOptions<Characteristics>;
     }
   | {
       type: "protectSignup";
-      options: ProtectSignupOptions<Characteristics>;
+      options?: ProtectSignupOptions<Characteristics>;
     };
 
-// TODO: Figure out some way of configuring a logger
+// TODO: This only supports serializable options, so no custom loggers are
+// supported but maybe they could be supported via a module import
 type ArcjetIntegrationOptions<Characteristics extends readonly string[]> = {
   rules: IntegrationRule<Characteristics>[];
   characteristics?: Characteristics;
@@ -55,104 +174,143 @@ type ArcjetIntegrationOptions<Characteristics extends readonly string[]> = {
   proxies?: string[];
 };
 
-function integrationRuleToClientRule<
-  Characteristics extends readonly string[],
->({ type, options }: IntegrationRule<Characteristics>) {
-  // TODO: validate rules options
-  switch (type) {
+function validateAndSerialize<
+  Output = any,
+  Def extends ZodTypeDef = ZodTypeDef,
+  Input = Output,
+>(schema: ZodType<Output, Def, Input>, value: unknown): string {
+  const v = schema.parse(value);
+  return v ? JSON.stringify(v) : "";
+}
+
+function integrationRuleToClientRule<Characteristics extends readonly string[]>(
+  rule: IntegrationRule<Characteristics>,
+) {
+  switch (rule.type) {
     case "shield": {
+      const serializedOpts = validateAndSerialize(
+        validateShieldOptions,
+        rule.options,
+      );
       return {
         importName: `shield`,
-        code: `shield(${JSON.stringify(options)})`,
+        code: `shield(${serializedOpts})`,
       } as const;
     }
     case "bot": {
+      const serializedOpts = validateAndSerialize(
+        validateBotOptions,
+        rule.options,
+      );
       return {
         importName: `detectBot`,
-        code: `detectBot(${JSON.stringify(options)})`,
+        code: `detectBot(${serializedOpts})`,
       } as const;
     }
     case "email": {
+      const serializedOpts = validateAndSerialize(
+        validateEmailOptions,
+        rule.options,
+      );
       return {
         importName: `validateEmail`,
-        code: `validateEmail(${JSON.stringify(options)})`,
+        code: `validateEmail(${serializedOpts})`,
       } as const;
     }
     case "sensitiveInfo": {
+      const serializedOpts = validateAndSerialize(
+        validateSensitiveInfoOptions,
+        rule.options,
+      );
       return {
         importName: `sensitiveInfo`,
-        code: `sensitiveInfo(${JSON.stringify(options)})`,
+        code: `sensitiveInfo(${serializedOpts})`,
       } as const;
     }
     case "fixedWindow": {
+      const serializedOpts = validateAndSerialize(
+        validateFixedWindowOptions,
+        rule.options,
+      );
       return {
         importName: `fixedWindow`,
-        code: `fixedWindow(${JSON.stringify(options)})`,
+        code: `fixedWindow(${serializedOpts})`,
       } as const;
     }
     case "slidingWindow": {
+      const serializedOpts = validateAndSerialize(
+        validateSlidingWindowOptions,
+        rule.options,
+      );
       return {
         importName: `slidingWindow`,
-        code: `slidingWindow(${JSON.stringify(options)})`,
+        code: `slidingWindow(${serializedOpts})`,
       } as const;
     }
     case "tokenBucket": {
+      const serializedOpts = validateAndSerialize(
+        validateTokenBucketOptions,
+        rule.options,
+      );
       return {
         importName: `tokenBucket`,
-        code: `tokenBucket(${JSON.stringify(options)})`,
+        code: `tokenBucket(${serializedOpts})`,
       } as const;
     }
     case "protectSignup": {
+      const serializedOpts = validateAndSerialize(
+        validateProtectSignupOptions,
+        rule.options,
+      );
       return {
-        importName: `tokenBucket`,
-        code: `tokenBucket(${JSON.stringify(options)})`,
+        importName: `protectSignup`,
+        code: `protectSignup(${serializedOpts})`,
       } as const;
     }
     default: {
-      const _exhaustive: never = type;
-      // TODO: Warn instead?
+      const _exhaustive: never = rule;
       throw new Error("Cannot convert rule via integration");
     }
   }
 }
 
 // Mirror the rule functions in the SDK but produce serializable rules
-export function shield(options: ShieldOptions) {
+export function shield(options?: ShieldOptions) {
   return { type: "shield", options } as const;
 }
 
-export function detectBot(options: BotOptions) {
+export function detectBot(options?: BotOptions) {
   return { type: "bot", options } as const;
 }
 
-export function validateEmail(options: EmailOptions) {
+export function validateEmail(options?: EmailOptions) {
   return { type: "email", options } as const;
 }
 
-export function sensitiveInfo(options: SensitiveInfoOptions<never>) {
+export function sensitiveInfo(options?: SensitiveInfoOptions<never>) {
   return { type: "sensitiveInfo", options } as const;
 }
 
 export function fixedWindow<Characteristics extends readonly string[]>(
-  options: FixedWindowRateLimitOptions<Characteristics>,
+  options?: FixedWindowRateLimitOptions<Characteristics>,
 ) {
   return { type: "fixedWindow", options } as const;
 }
 
 export function slidingWindow<Characteristics extends readonly string[]>(
-  options: SlidingWindowRateLimitOptions<Characteristics>,
+  options?: SlidingWindowRateLimitOptions<Characteristics>,
 ) {
   return { type: "slidingWindow", options } as const;
 }
 
 export function tokenBucket<Characteristics extends readonly string[]>(
-  options: TokenBucketRateLimitOptions<Characteristics>,
+  options?: TokenBucketRateLimitOptions<Characteristics>,
 ) {
   return { type: "tokenBucket", options } as const;
 }
 
 export function protectSignup<Characteristics extends readonly string[]>(
-  options: ProtectSignupOptions<Characteristics>,
+  options?: ProtectSignupOptions<Characteristics>,
 ) {
   return { type: "protectSignup", options } as const;
 }
@@ -172,8 +330,6 @@ export default function arcjet<Characteristics extends readonly string[]>({
   client,
   proxies,
 }: ArcjetIntegrationOptions<Characteristics>): AstroIntegration {
-  // TODO: this only supports serializable options, so no custom detect functions are supported
-  // but maybe they could be supported via a module import?
   const arcjetImports = new Set();
   const arcjetRules: string[] = [];
   for (const rule of rules) {
@@ -183,17 +339,15 @@ export default function arcjet<Characteristics extends readonly string[]>({
   }
 
   const characteristicsInjection = characteristics
-    ? `characteristics: ${JSON.stringify(characteristics)},`
+    ? `characteristics: ${validateAndSerialize(validateCharacteristics, characteristics)},`
     : "";
 
   const proxiesInjection = proxies
-    ? // TODO: Validate before stringify?
-      `proxies: ${JSON.stringify(proxies)},`
+    ? `proxies: ${validateAndSerialize(validateProxies, proxies)},`
     : "";
 
   const clientInjection = client
-    ? // TODO: Validate before stringify?
-      `client: createRemoteClient(${JSON.stringify(client)}),`
+    ? `client: createRemoteClient(${validateAndSerialize(validateClientOptions, client)}),`
     : "";
 
   return {
