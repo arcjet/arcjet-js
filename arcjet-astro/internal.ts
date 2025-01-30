@@ -208,8 +208,7 @@ export function createArcjetClient<
   ): ArcjetRequest<Props> {
     const clientAddress = Reflect.get(request, ipSymbol);
     if (!clientAddress) {
-      // TODO: Handle this better
-      throw new Error("Arcjet used in prerendered page");
+      throw new Error("`protect()` cannot be used in prerendered pages");
     }
 
     const cookies = request.headers.get("cookie") ?? undefined;

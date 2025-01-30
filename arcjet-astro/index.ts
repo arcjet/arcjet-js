@@ -144,8 +144,9 @@ type IntegrationRule<Characteristics extends readonly string[]> =
     }
   | {
       type: "sensitiveInfo";
-      // TODO: This only supports serializable options, so no custom detect functions are supported
-      // but maybe they could be supported via a module import
+      // TODO: This only supports serializable options, so no custom detect
+      // functions are supported but maybe they could be supported via a module
+      // import
       options?: SensitiveInfoOptions<never>;
     }
   | {
