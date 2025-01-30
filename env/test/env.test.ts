@@ -7,12 +7,16 @@ describe("env", () => {
     expect(env.platform({})).toBeUndefined();
     expect(env.platform({ FLY_APP_NAME: "" })).toBeUndefined();
     expect(env.platform({ FLY_APP_NAME: "foobar" })).toEqual("fly-io");
+    expect(env.platform({ VERCEL: "" })).toBeUndefined();
+    expect(env.platform({ VERCEL: "1" })).toEqual("vercel");
   });
 
   test("isDevelopment", () => {
     expect(env.isDevelopment({})).toEqual(false);
     expect(env.isDevelopment({ NODE_ENV: "production" })).toEqual(false);
     expect(env.isDevelopment({ NODE_ENV: "development" })).toEqual(true);
+    expect(env.isDevelopment({ MODE: "production" })).toEqual(false);
+    expect(env.isDevelopment({ MODE: "development" })).toEqual(true);
     expect(env.isDevelopment({ ARCJET_ENV: "production" })).toEqual(false);
     expect(env.isDevelopment({ ARCJET_ENV: "development" })).toEqual(true);
   });
