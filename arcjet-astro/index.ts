@@ -325,12 +325,14 @@ export function createRemoteClient({ baseUrl, timeout }: RemoteClientOptions) {
   return { baseUrl, timeout } as const;
 }
 
-export default function arcjet<Characteristics extends readonly string[]>({
-  rules,
-  characteristics,
-  client,
-  proxies,
-}: ArcjetIntegrationOptions<Characteristics>): AstroIntegration {
+export default function arcjet<Characteristics extends readonly string[]>(
+  {
+    rules,
+    characteristics,
+    client,
+    proxies,
+  }: ArcjetIntegrationOptions<Characteristics> = { rules: [] },
+): AstroIntegration {
   const arcjetImports = new Set();
   const arcjetRules: string[] = [];
   for (const rule of rules) {
