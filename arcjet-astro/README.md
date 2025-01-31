@@ -39,7 +39,7 @@ npx astro add @arcjet/astro
 
 ## Usage
 
-If installed via the Astro CLI, your `astro.config.mjs` should be changed like:
+If installed via the Astro CLI command above, your `astro.config.mjs` should be changed like:
 
 ```diff
   // @ts-check
@@ -67,6 +67,8 @@ npx astro dev
 
 You can now import from the `arcjet:client` module within your Astro project!
 
+This example adds Arcjet to your middleware, but note this only works for non-prerendered pages:
+
 ```ts
 // src/middleware.ts
 import { defineMiddleware } from "astro:middleware";
@@ -80,7 +82,7 @@ export const onRequest = defineMiddleware(
       // console.log(request);
       const decision = await aj.protect(request);
 
-      // Deny decisions can respond immediately to avoid any additional server
+      // Deny decisions respond immediately to avoid any additional server
       // processing.
       if (decision.isDenied()) {
         return new Response(null, { status: 403, statusText: "Forbidden" });
@@ -99,6 +101,8 @@ bucket rate limit rule to a route where we identify the user based on their ID
 e.g. if they are logged in. The bucket is configured with a maximum capacity of
 10 tokens and refills by 5 tokens every 10 seconds. Each request consumes 5
 tokens.
+
+The rule is defined in your `astro.config.mjs` file:
 
 ```js
 // @ts-check
@@ -130,6 +134,8 @@ export default defineConfig({
 });
 ```
 
+Then Arcjet is called from within this page route:
+
 ```ts
 // src/pages/api.json.ts
 import type { APIRoute } from "astro";
@@ -154,6 +160,8 @@ export const GET: APIRoute = async ({ request }) => {
 attacks, including the OWASP Top 10. You can run Shield on every request with
 negligible performance impact.
 
+The rule is defined in your `astro.config.mjs` file:
+
 ```js
 // @ts-check
 import { defineConfig } from "astro/config";
@@ -172,6 +180,8 @@ export default defineConfig({
   ],
 });
 ```
+
+Then Arcjet is called from within this page route:
 
 ```ts
 // src/pages/api.json.ts
