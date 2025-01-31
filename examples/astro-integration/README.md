@@ -1,36 +1,38 @@
-# Astro Starter Kit: Basics
+<a href="https://arcjet.com" target="_arcjet-home">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
+    <img src="https://arcjet.com/logo/arcjet-light-lockup-voyage-horizontal.svg" alt="Arcjet Logo" height="128" width="auto">
+  </picture>
+</a>
 
-## 🚀 Project Structure
+# Arcjet Integration with Astro
 
-Inside of your Astro project, you'll see the following folders and files:
+This example shows how to use the Arcjet Integration with
+[astro](https://astro.build/).
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+## How to use
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+1. From the root of the project, install the SDK dependencies.
 
-## 🧞 Commands
+   ```bash
+   npm ci
+   ```
 
-All commands are run from the root of the project, from a terminal:
+2. Enter this directory and install the example's dependencies.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+   ```bash
+   cd examples/astro-integration
+   npm ci
+   ```
 
-## 👀 Want to learn more?
+3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+4. Start the server.
+
+   ```bash
+   npm run dev
+   ```
+
+5. Visit `http://localhost:4321/`
+
+6. Interact with the page to trigger various Arcjet rules.
