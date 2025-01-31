@@ -39,7 +39,8 @@ npx astro add @arcjet/astro
 
 ## Usage
 
-If installed via the Astro CLI command above, your `astro.config.mjs` should be changed like:
+If installed via the Astro CLI command above, your `astro.config.mjs` should be
+changed like:
 
 ```diff
   // @ts-check
@@ -57,6 +58,25 @@ If installed via the Astro CLI command above, your `astro.config.mjs` should be 
 However, if installed manually, you'll want to add the above lines to your Astro
 configuration.
 
+We also recommended validating your environment variables at build time. To do
+this, update your `astro.config.mjs` to add the option:
+
+```diff
+  // @ts-check
+  import { defineConfig } from "astro/config";
+  import arcjet from "@arcjet/astro";
+
+  // https://astro.build/config
+  export default defineConfig({
++   env: {
++     validateSecrets: true
++   },
+    integrations: [
+      arcjet(),
+    ],
+  });
+```
+
 Once Arcjet is added as an integration, you'll want to start the Astro dev
 server to build the `arcjet:client` virtual module and types. In your terminal,
 run:
@@ -67,7 +87,8 @@ npx astro dev
 
 You can now import from the `arcjet:client` module within your Astro project!
 
-This example adds Arcjet to your middleware, but note this only works for non-prerendered pages:
+This example adds Arcjet to your middleware, but note this only works for
+non-prerendered pages:
 
 ```ts
 // src/middleware.ts
