@@ -49,14 +49,14 @@
     "arcjet": "1.0.0-beta.1"
   },
   "peerDependencies": {
-    "@nestjs/common": "^10",
+    "@nestjs/common": "^10 || ^11",
     "reflect-metadata": "^0.1.12 || ^0.2.0"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-beta.1",
     "@arcjet/rollup-config": "1.0.0-beta.1",
     "@arcjet/tsconfig": "1.0.0-beta.1",
-    "@nestjs/common": "^10.4.15",
+    "@nestjs/common": "^11.0.7",
     "@rollup/wasm-node": "4.32.1",
     "@types/node": "18.18.0",
     "expect": "29.7.0",
