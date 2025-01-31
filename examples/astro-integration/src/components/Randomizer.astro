@@ -1,0 +1,49 @@
+---
+const placeholder = "?? ?? ?? ?? ??"
+---
+
+<div id="randomizer">
+  <span>Lottery numbers:</span>
+  <span id="randomizer-output" data-placeholder={placeholder}>{placeholder}</span>
+  <button id="randomizer-roll">Roll</button>
+</div>
+<div id="randomizer-error"></div>
+
+<script>
+  const $roll = document.getElementById("randomizer-roll")!
+  const $error = document.getElementById("randomizer-error")!
+  const $output = document.getElementById("randomizer-output")!
+
+  $roll.addEventListener("click", async () => {
+    $error.innerText = "";
+    $output.innerText = $output.dataset.placeholder ?? "";
+
+    try {
+      const res = await fetch("/randomizer.json");
+      if (res.status === 429) {
+        $error.innerText = "You've been rate limited. Please wait before rolling again.";
+        return;
+      }
+      if (res.status === 200) {
+        const numbers = await res.json();
+        $output.innerText = numbers.join(' ');
+        return;
+      }
+
+      $error.innerText = "You've been blocked!";
+    } catch (err) {
+      console.log("An error occurred.", err);
+    }
+  });
+</script>
+
+<style>
+  #randomizer,
+  #randomizer-error {
+    margin: 5px auto;
+  }
+
+  #randomizer-error {
+    color: red;
+  }
+</style>

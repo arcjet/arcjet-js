@@ -1,0 +1,59 @@
+---
+import background from '../assets/background.svg';
+
+import Layout from '../layouts/Layout.astro';
+import Welcome from '../components/Welcome.astro';
+import ValidateEmail from '../components/ValidateEmail.astro';
+import CheckSensitiveInfo from '../components/CheckSensitiveInfo.astro';
+import Randomizer from '../components/Randomizer.astro';
+---
+
+<Layout>
+  <div id="container">
+    <img id="background" src={background.src} alt="" fetchpriority="high" />
+    <main>
+      <Welcome server:defer>
+        <div class="fallback" slot="fallback">Loading greeting...</div>
+      </Welcome>
+      <ValidateEmail />
+      <CheckSensitiveInfo />
+      <Randomizer />
+    </main>
+  </div>
+</Layout>
+
+
+<style>
+  .fallback {
+    margin: 0 auto;
+  }
+
+  #background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    filter: blur(100px);
+  }
+
+  #container {
+    font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+    height: 100%;
+  }
+
+  main {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media screen and (max-width: 768px) {
+    #container {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+</style>
