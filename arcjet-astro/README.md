@@ -132,6 +132,9 @@ import arcjet, { tokenBucket, detectBot } from "@arcjet/astro";
 
 // https://astro.build/config
 export default defineConfig({
+  env: {
+    validateSecrets: true,
+  },
   integrations: [
     arcjet({
       characteristics: ["userId"], // track requests by a custom user ID
@@ -190,6 +193,9 @@ import arcjet, { shield } from "@arcjet/astro";
 
 // https://astro.build/config
 export default defineConfig({
+  env: {
+    validateSecrets: true,
+  },
   integrations: [
     arcjet({
       rules: [
