@@ -56,6 +56,25 @@ updates:
 
   # Dependencies in our examples
 
+  - package-ecosystem: npm
+    directory: /examples/astro-integration
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+
   # Bun isn't supported by Dependabot
   # Ref: https://github.com/dependabot/dependabot-core/issues/6528
   # - package-ecosystem: npm
