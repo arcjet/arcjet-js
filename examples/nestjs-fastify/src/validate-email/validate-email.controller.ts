@@ -7,7 +7,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { FastifyRequest } from 'fastify';
 import { ARCJET, ArcjetNest, validateEmail } from '@arcjet/nest';
 import { ValidateEmailService } from './validate-email.service.js';
 
@@ -22,7 +22,7 @@ export class ValidateEmailController {
   ) { }
 
   @Post()
-  async validateEmail(@Req() req: Request, @Body() email: string) {
+  async validateEmail(@Req() req: FastifyRequest, @Body() email: string) {
     const decision = await this.arcjet
       .withRule(
         validateEmail({
