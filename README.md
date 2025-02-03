@@ -56,8 +56,8 @@ Arcjet security features for protecting JS apps:
 
 ## Example apps
 
-- [Nest.js][example-nestjs] ([try live][example-url])
-- [Next.js][example-nextjs]
+- [NestJS][example-nestjs]
+- [Next.js][example-nextjs] ([try live][example-url])
 - [Remix][example-remix]
 - ... [more examples][example-examples-folder]
 
