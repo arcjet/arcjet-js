@@ -62,7 +62,7 @@ npm i @arcjet/next
 
 ### 2. Set your key
 
-[Create a free Arcjet account](arcjet-account) then follow the instructions to
+[Create a free Arcjet account][arcjet-account] then follow the instructions to
 add a site and get a key.
 
 Add your key to a `.env.local` file in your project root.
@@ -166,19 +166,19 @@ The wait is necessary because the decision is cached for your IP based on the
 You should see a `403` response because `curl` is considered a bot by default
 ([customizable][customizable]).
 
-The requests will also show in the [Arcjet dashboard](arcjet-account).
+The requests will also show in the [Arcjet dashboard][arcjet-account].
 
 ### What next?
 
-- [Customize allowed bots](identifying-bots).
-- [Protect server actions](server-actions).
-- [Learn how Arcjet works](architecture).
-- [Review the Next.js SDK reference](nextjs-reference).
+- [Customize allowed bots][identifying-bots]
+- [Protect server actions][server-actions]
+- [Learn how Arcjet works][architecture].
+- [Review the Next.js SDK reference][nextjs-reference].
 
 ## Accessing the decision
 
-The [protect function](protect-function) returns a `Promise` that resolves to an
-[`ArcjetDecision`](decision) object. This allows you to access the full decision
+The [protect function][protect-function] returns a `Promise` that resolves to an
+[`ArcjetDecision`][decision] object. This allows you to access the full decision
 and results.
 
 ```ts
@@ -206,7 +206,7 @@ for (const result of decision.results) {
 ### IP address analysis
 
 For each request, Arcjet [returns additional data about the IP
-address](ip-analysis). The available fields depends on the pricing plan you're
+address][ip-analysis]. The available fields depends on the pricing plan you're
 on. The free plan includes country and IP type e.g. VPN or proxy.
 
 ```ts
@@ -296,6 +296,6 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [server-actions]: https://docs.arcjet.com/reference/nextjs#server-actions
 [architecture]: https://docs.arcjet.com/architecture
 [nextjs-reference]: https://docs.arcjet.com/reference/nextjs
-[protection-function]: https://docs.arcjet.com/reference/nextjs#protect
+[protect-function]: https://docs.arcjet.com/reference/nextjs#protect
 [ip-analysis]: https://docs.arcjet.com/reference/nextjs#ip-analysis
 [decision]: https://docs.arcjet.com/reference/nextjs#decision
