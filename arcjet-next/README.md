@@ -277,7 +277,7 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
 [next-js]: https://nextjs.org/
-[quick-start]: https://docs.arcjet.com/get-started/nextjs
+[quick-start]: https://docs.arcjet.com/get-started?f=next-js
 [example-url]: https://example.arcjet.com
 [example-source]: https://github.com/arcjet/arcjet-js-example
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
