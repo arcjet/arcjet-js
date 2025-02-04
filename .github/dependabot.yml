@@ -411,6 +411,8 @@ updates:
       # https://github.com/shadcn-ui/ui/discussions/2996
       - dependency-name: tailwindcss
         versions: [">=4"]
+      - dependency-name: tailwind-merge
+        versions: [">=3"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
@@ -685,6 +687,8 @@ updates:
       # https://github.com/francoismassart/eslint-plugin-tailwindcss/pull/381
       - dependency-name: tailwindcss
         versions: [">=4"]
+      - dependency-name: tailwind-merge
+        versions: [">=3"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
