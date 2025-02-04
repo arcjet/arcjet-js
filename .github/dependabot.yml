@@ -681,8 +681,8 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # Ignore tailwind updates while eslint-plugin-tailwindcss does not work
-      # with Tailwind v4. See:
+      # Tailwind v4 is not supported by eslint-plugin-tailwindcss
+      # See:
       # https://github.com/francoismassart/eslint-plugin-tailwindcss/pull/381
       - dependency-name: tailwindcss
         versions: [">=4"]
