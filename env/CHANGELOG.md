@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/env-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🚀 New Features
+
+* **env:** Support MODE environment variable for `isDevelopment` detection ([#3012](https://github.com/arcjet/arcjet-js/issues/3012)) ([f3a45a7](https://github.com/arcjet/arcjet-js/commit/f3a45a7d253c759d467e5ff2c1a52a924ea7496c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
 ## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/env-v1.0.0-beta.1) (2025-01-15)
 
 

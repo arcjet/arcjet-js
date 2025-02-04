@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/nest-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🚀 New Features
+
+* **nestjs:** Allow NestJS v11 as peerDependency ([#3042](https://github.com/arcjet/arcjet-js/issues/3042)) ([4a75963](https://github.com/arcjet/arcjet-js/commit/4a75963f1c39bc584b6a0549ce44bd51cf8eeb59)), closes [#2921](https://github.com/arcjet/arcjet-js/issues/2921)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/headers bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/ip bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/logger bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/protocol bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/transport bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/body bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * arcjet bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
 ## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/nest-v1.0.0-beta.1) (2025-01-15)
 
 

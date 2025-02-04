@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...arcjet-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** Ensure Characteristics are readonly type on protect signup options ([#3013](https://github.com/arcjet/arcjet-js/issues/3013)) ([1f16a99](https://github.com/arcjet/arcjet-js/commit/1f16a997cbbc574bbed31c70f234e2598d348bf9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/duration bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/headers bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/protocol bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/runtime bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
 ## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...arcjet-v1.0.0-beta.1) (2025-01-15)
 
 

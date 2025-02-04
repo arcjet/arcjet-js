@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/node-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/node:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/headers bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/ip bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/logger bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/protocol bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/transport bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/body bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * arcjet bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
 ## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/node-v1.0.0-beta.1) (2025-01-15)
 
 
