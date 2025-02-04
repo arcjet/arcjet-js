@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-02-04)
+
+
+### 🚀 New Features
+
+* **env:** Support MODE environment variable for `isDevelopment` detection ([#3012](https://github.com/arcjet/arcjet-js/issues/3012)) ([f3a45a7](https://github.com/arcjet/arcjet-js/commit/f3a45a7d253c759d467e5ff2c1a52a924ea7496c))
+* Implement Astro integration ([#2992](https://github.com/arcjet/arcjet-js/issues/2992)) ([a48eea8](https://github.com/arcjet/arcjet-js/commit/a48eea89f80bff18c9a1889fd83f1eed9092b110)), closes [#1075](https://github.com/arcjet/arcjet-js/issues/1075)
+* **nestjs:** Allow NestJS v11 as peerDependency ([#3042](https://github.com/arcjet/arcjet-js/issues/3042)) ([4a75963](https://github.com/arcjet/arcjet-js/commit/4a75963f1c39bc584b6a0549ce44bd51cf8eeb59)), closes [#2921](https://github.com/arcjet/arcjet-js/issues/2921)
+* **redact:** Pre-compile WebAssembly on module load ([#3037](https://github.com/arcjet/arcjet-js/issues/3037)) ([c12bec5](https://github.com/arcjet/arcjet-js/commit/c12bec58ee0abd3becb1e978596fed9047702d3d))
+
+
+### 🪲 Bug Fixes
+
+* **analyze:** Always lowercase headers and iterate in insertion order ([#2865](https://github.com/arcjet/arcjet-js/issues/2865)) ([a9af1e4](https://github.com/arcjet/arcjet-js/commit/a9af1e49eff46aaab16522e38df9f2ce7888f7fa))
+* **arcjet:** Ensure Characteristics are readonly type on protect signup options ([#3013](https://github.com/arcjet/arcjet-js/issues/3013)) ([1f16a99](https://github.com/arcjet/arcjet-js/commit/1f16a997cbbc574bbed31c70f234e2598d348bf9))
+* **protocol:** Double timeout when email rule configured ([#2934](https://github.com/arcjet/arcjet-js/issues/2934)) ([23f9a9e](https://github.com/arcjet/arcjet-js/commit/23f9a9eab277b9c2e1a350ca621367cefe0c0e1f)), closes [#1697](https://github.com/arcjet/arcjet-js/issues/1697)
+
+
+### 🧹 Miscellaneous Chores
+
+* **ci:** Add dependabot for Astro example ([#3068](https://github.com/arcjet/arcjet-js/issues/3068)) ([d4d8f82](https://github.com/arcjet/arcjet-js/commit/d4d8f822fa1949713ba5be699acfb049ac1d2fa6))
+* **ci:** Avoid upgrading Tailwind where it breaks things ([#3081](https://github.com/arcjet/arcjet-js/issues/3081)) ([5c25abe](https://github.com/arcjet/arcjet-js/commit/5c25abe97fd4b62e3a9025878c7d93d0613c6e68))
+* **ci:** Restrict tailwind-merge where tailwind restricted ([#3089](https://github.com/arcjet/arcjet-js/issues/3089)) ([a3437a5](https://github.com/arcjet/arcjet-js/commit/a3437a54583f4a46968f5d4b749a265be1ce781c))
+* **docs:** Add a link to the Redact reference page ([#3038](https://github.com/arcjet/arcjet-js/issues/3038)) ([6095b6a](https://github.com/arcjet/arcjet-js/commit/6095b6a25aaf60b2c583a71babab54de53113b0c))
+* Refresh root & Next.js READMEs ([#3066](https://github.com/arcjet/arcjet-js/issues/3066)) ([57a38d7](https://github.com/arcjet/arcjet-js/commit/57a38d7c61871f0d836aa9304ca1f787286c86c1))
+* **rollup-config:** Consolidate wasmToModule plugin ([#3039](https://github.com/arcjet/arcjet-js/issues/3039)) ([c3b8e36](https://github.com/arcjet/arcjet-js/commit/c3b8e36dd59a0ca0c8a10946b0d76e4bc3766f40))
+
 ## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...v1.0.0-beta.1) (2025-01-15)
 
 
