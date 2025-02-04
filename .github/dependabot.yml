@@ -409,7 +409,7 @@ updates:
         versions: [">18.18"]
       # Tailwind v4 breaks behavior this example depended upon
       - dependency-name: tailwindcss
-        versions: [">4"]
+        versions: [">=4"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
@@ -684,7 +684,7 @@ updates:
       # with Tailwind v4. See:
       # https://github.com/francoismassart/eslint-plugin-tailwindcss/pull/381
       - dependency-name: tailwindcss
-        versions: [">4"]
+        versions: [">=4"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
