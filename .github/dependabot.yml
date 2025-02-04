@@ -407,8 +407,8 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # Tailwind v4 is not supported by shadcn/ui
-      # See: https://github.com/shadcn-ui/ui/discussions/2996
+      # Tailwind v4 is not supported by shadcn/ui. See:
+      # https://github.com/shadcn-ui/ui/discussions/2996
       - dependency-name: tailwindcss
         versions: [">=4"]
       # TODO(#539): Upgrade to eslint 9
