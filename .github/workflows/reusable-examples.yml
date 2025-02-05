@@ -187,6 +187,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -229,6 +230,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -271,6 +273,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -313,6 +316,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -357,6 +361,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -401,6 +406,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -443,6 +449,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -488,6 +495,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -533,6 +541,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -575,6 +584,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -617,6 +627,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -659,6 +670,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -701,6 +713,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -746,6 +759,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -788,6 +802,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -908,6 +923,7 @@ jobs:
           allowed-endpoints: >
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
