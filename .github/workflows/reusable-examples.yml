@@ -4,6 +4,11 @@ name: Reusable examples workflow
 
 on: [workflow_call]
 
+env:
+  DO_NOT_TRACK: "1"
+  NEXT_TELEMETRY_DISABLED: "1"
+  TURBO_TELEMETRY_DISABLED: "1"
+
 jobs:
   nestjs:
     name: NestJS
