@@ -151,6 +151,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         dataView(memory0).setInt32(arg3 + 4, ptr2, true);
       }
     }
+    let exports2;
     let postReturn0;
     Promise.all([module0, module1, module2]).catch(() => {});
     ({ exports: exports0 } = yield instantiateCore(yield module1));
@@ -162,7 +163,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     }));
     memory0 = exports1.memory;
     realloc0 = exports1.cabi_realloc;
-    (yield instantiateCore(yield module2, {
+    ({ exports: exports2 } = yield instantiateCore(yield module2, {
       '': {
         $imports: exports0.$imports,
         '0': trampoline0,
