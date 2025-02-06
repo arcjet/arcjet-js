@@ -408,6 +408,8 @@ jobs:
             registry.npmjs.org:443
             decide.arcjet.com:443
             nodejs.org:443
+            binaries.prisma.sh:443
+            objects.githubusercontent.com:443
 
       # Checkout
       # Most toolchains require checkout first
