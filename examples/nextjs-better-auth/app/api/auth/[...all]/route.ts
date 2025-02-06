@@ -73,7 +73,7 @@ async function protect(req: NextRequest): Promise<ArcjetDecision> {
   // If this is a signup then use the special protectSignup rule
   // See https://docs.arcjet.com/signup-protection/quick-start
   if (req.nextUrl.pathname.startsWith("/api/auth/sign-up")) {
-    // Better-Auth doesn't clone the body, so we need to clone the request preemptively
+    // Better-Auth reads the body, so we need to clone the request preemptively
     const body = await req.clone().json();
 
     // If the email is in the body of the request then we can run
