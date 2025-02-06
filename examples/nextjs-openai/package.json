@@ -9,24 +9,25 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.0.8",
+    "@ai-sdk/openai": "^1",
     "@arcjet/next": "file:../../arcjet-next",
-    "ai": "^4.0.16",
-    "next": "15.1.0",
-    "openai": "^4.76.2",
-    "openai-chat-tokens": "^0.2.8",
+    "ai": "^4",
+    "next": "^15",
+    "openai": "^4",
+    "openai-chat-tokens": "^0.2",
     "react": "^19",
     "react-dom": "^19"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "^10",
     "eslint": "^8",
-    "eslint-config-next": "15.1.0",
+    "eslint-config-next": "^15",
     "postcss": "^8",
-    "tailwindcss": "^3.4.16",
+    "tailwindcss": "^4",
     "typescript": "^5"
   }
 }

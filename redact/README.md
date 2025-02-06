@@ -20,13 +20,18 @@
 code. Implement rate limiting, bot protection, email verification, and defense
 against common attacks.
 
-This is the [Arcjet][arcjet] TypeScript and JavaScript sensitive information redaction library.
+This is the [Arcjet][arcjet] TypeScript and JavaScript sensitive information
+redaction library.
 
 ## Installation
 
 ```shell
 npm install -S @arcjet/redact
 ```
+
+## Reference
+
+The full reference documentation can be found in the [Arcjet docs][redact-ref].
 
 ## Example
 
@@ -47,4 +52,5 @@ console.log(unredacted); // Your email address is john@example.com
 Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet]: https://arcjet.com
+[redact-ref]: https://docs.arcjet.com/redact/reference
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

@@ -268,6 +268,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       dataView(memory0).setInt32(arg2 + 4, len5, true);
       dataView(memory0).setInt32(arg2 + 0, result5, true);
     }
+    let exports2;
     let postReturn0;
     let postReturn1;
     let postReturn2;
@@ -291,7 +292,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     }));
     memory0 = exports1.memory;
     realloc0 = exports1.cabi_realloc;
-    (yield instantiateCore(yield module2, {
+    ({ exports: exports2 } = yield instantiateCore(yield module2, {
       '': {
         $imports: exports0.$imports,
         '0': trampoline0,
@@ -514,61 +515,101 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     function isValidEmail(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
-      var {requireTopLevelDomain: v1_0, allowDomainLiteral: v1_1, blockedEmails: v1_2 } = arg1;
-      var vec3 = v1_2;
-      var len3 = vec3.length;
-      var result3 = realloc0(0, 0, 4, len3 * 8);
-      for (let i = 0; i < vec3.length; i++) {
-        const e = vec3[i];
-        const base = result3 + i * 8;var ptr2 = utf8Encode(e, realloc0, memory0);
-        var len2 = utf8EncodedLen;
-        dataView(memory0).setInt32(base + 4, len2, true);
-        dataView(memory0).setInt32(base + 0, ptr2, true);
+      var variant7 = arg1;
+      let variant7_0;
+      let variant7_1;
+      let variant7_2;
+      let variant7_3;
+      let variant7_4;
+      switch (variant7.tag) {
+        case 'allow-email-validation-config': {
+          const e = variant7.val;
+          var {requireTopLevelDomain: v1_0, allowDomainLiteral: v1_1, allow: v1_2 } = e;
+          var vec3 = v1_2;
+          var len3 = vec3.length;
+          var result3 = realloc0(0, 0, 4, len3 * 8);
+          for (let i = 0; i < vec3.length; i++) {
+            const e = vec3[i];
+            const base = result3 + i * 8;var ptr2 = utf8Encode(e, realloc0, memory0);
+            var len2 = utf8EncodedLen;
+            dataView(memory0).setInt32(base + 4, len2, true);
+            dataView(memory0).setInt32(base + 0, ptr2, true);
+          }
+          variant7_0 = 0;
+          variant7_1 = v1_0 ? 1 : 0;
+          variant7_2 = v1_1 ? 1 : 0;
+          variant7_3 = result3;
+          variant7_4 = len3;
+          break;
+        }
+        case 'deny-email-validation-config': {
+          const e = variant7.val;
+          var {requireTopLevelDomain: v4_0, allowDomainLiteral: v4_1, deny: v4_2 } = e;
+          var vec6 = v4_2;
+          var len6 = vec6.length;
+          var result6 = realloc0(0, 0, 4, len6 * 8);
+          for (let i = 0; i < vec6.length; i++) {
+            const e = vec6[i];
+            const base = result6 + i * 8;var ptr5 = utf8Encode(e, realloc0, memory0);
+            var len5 = utf8EncodedLen;
+            dataView(memory0).setInt32(base + 4, len5, true);
+            dataView(memory0).setInt32(base + 0, ptr5, true);
+          }
+          variant7_0 = 1;
+          variant7_1 = v4_0 ? 1 : 0;
+          variant7_2 = v4_1 ? 1 : 0;
+          variant7_3 = result6;
+          variant7_4 = len6;
+          break;
+        }
+        default: {
+          throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant7.tag)}\` (received \`${variant7}\`) specified for \`EmailValidationConfig\``);
+        }
       }
-      const ret = exports1['is-valid-email'](ptr0, len0, v1_0 ? 1 : 0, v1_1 ? 1 : 0, result3, len3);
-      let variant8;
+      const ret = exports1['is-valid-email'](ptr0, len0, variant7_0, variant7_1, variant7_2, variant7_3, variant7_4);
+      let variant12;
       switch (dataView(memory0).getUint8(ret + 0, true)) {
         case 0: {
-          let enum4;
+          let enum8;
           switch (dataView(memory0).getUint8(ret + 4, true)) {
             case 0: {
-              enum4 = 'valid';
+              enum8 = 'valid';
               break;
             }
             case 1: {
-              enum4 = 'invalid';
+              enum8 = 'invalid';
               break;
             }
             default: {
               throw new TypeError('invalid discriminant specified for EmailValidity');
             }
           }
-          var len6 = dataView(memory0).getInt32(ret + 12, true);
-          var base6 = dataView(memory0).getInt32(ret + 8, true);
-          var result6 = [];
-          for (let i = 0; i < len6; i++) {
-            const base = base6 + i * 8;
-            var ptr5 = dataView(memory0).getInt32(base + 0, true);
-            var len5 = dataView(memory0).getInt32(base + 4, true);
-            var result5 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr5, len5));
-            result6.push(result5);
+          var len10 = dataView(memory0).getInt32(ret + 12, true);
+          var base10 = dataView(memory0).getInt32(ret + 8, true);
+          var result10 = [];
+          for (let i = 0; i < len10; i++) {
+            const base = base10 + i * 8;
+            var ptr9 = dataView(memory0).getInt32(base + 0, true);
+            var len9 = dataView(memory0).getInt32(base + 4, true);
+            var result9 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr9, len9));
+            result10.push(result9);
           }
-          variant8= {
+          variant12= {
             tag: 'ok',
             val: {
-              validity: enum4,
-              blocked: result6,
+              validity: enum8,
+              blocked: result10,
             }
           };
           break;
         }
         case 1: {
-          var ptr7 = dataView(memory0).getInt32(ret + 4, true);
-          var len7 = dataView(memory0).getInt32(ret + 8, true);
-          var result7 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr7, len7));
-          variant8= {
+          var ptr11 = dataView(memory0).getInt32(ret + 4, true);
+          var len11 = dataView(memory0).getInt32(ret + 8, true);
+          var result11 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr11, len11));
+          variant12= {
             tag: 'err',
-            val: result7
+            val: result11
           };
           break;
         }
@@ -576,7 +617,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           throw new TypeError('invalid variant discriminant for expected');
         }
       }
-      const retVal = variant8;
+      const retVal = variant12;
       postReturn3(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);

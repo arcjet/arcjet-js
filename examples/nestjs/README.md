@@ -42,7 +42,7 @@ applications using the `@arcjet/nest` adapter.
    sensitive data.
 
    ```bash
-   curl http://localhost:3000/sensitive-info -H "Content-Type: text/plain" -X POST --data "hello world!"`
+   curl http://localhost:3000/sensitive-info -H "Content-Type: text/plain" -X POST --data "hello world!"
    ```
 
 8. Execute a POST request to `http://localhost:3000/sensitive-info` with a
@@ -56,7 +56,7 @@ applications using the `@arcjet/nest` adapter.
    and the request should fail.
 
    ```bash
-   curl http://localhost:3000/sensitive-info -H "Content-Type: text/plain" -X POST --data "test@arcjettest.com"
+   curl http://localhost:3000/email -H "Content-Type: text/plain" -X POST --data "test@arcjettest.com"
    ```
 
 10. Execute a GET request to `http://localhost:3000/bot` with the `curl` command

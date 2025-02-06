@@ -1,5 +1,59 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/protocol-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🚀 New Features
+
+* Implement Astro integration ([#2992](https://github.com/arcjet/arcjet-js/issues/2992)) ([a48eea8](https://github.com/arcjet/arcjet-js/commit/a48eea89f80bff18c9a1889fd83f1eed9092b110)), closes [#1075](https://github.com/arcjet/arcjet-js/issues/1075)
+
+
+### 🪲 Bug Fixes
+
+* **protocol:** Double timeout when email rule configured ([#2934](https://github.com/arcjet/arcjet-js/issues/2934)) ([23f9a9e](https://github.com/arcjet/arcjet-js/commit/23f9a9eab277b9c2e1a350ca621367cefe0c0e1f)), closes [#1697](https://github.com/arcjet/arcjet-js/issues/1697)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
+## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/protocol-v1.0.0-beta.1) (2025-01-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **protocol:** Improve deprecation message on enum-like field usage ([#2855](https://github.com/arcjet/arcjet-js/issues/2855))
+
+### 🚀 New Features
+
+* support `allow` or `deny` config in validateEmail & deprecate `block` config ([#2661](https://github.com/arcjet/arcjet-js/issues/2661)) ([890afcd](https://github.com/arcjet/arcjet-js/commit/890afcd2d1afef262b741a74521b82cb85711860)), closes [#1834](https://github.com/arcjet/arcjet-js/issues/1834)
+
+
+### 🪲 Bug Fixes
+
+* **protocol:** Improve deprecation message on enum-like field usage ([#2855](https://github.com/arcjet/arcjet-js/issues/2855)) ([6512258](https://github.com/arcjet/arcjet-js/commit/6512258546076d6ac3478b02337741c2c0dbf67f))
+* **protocol:** Include `cookies` and `query` fields on reports ([#2777](https://github.com/arcjet/arcjet-js/issues/2777)) ([cff2e3a](https://github.com/arcjet/arcjet-js/commit/cff2e3ae4e3ed3e714d90cd52da26ec7b6a7c4cc))
+
+
+### 🧹 Miscellaneous Chores
+
+* Deprecate Arcjet enum-like objects ([#2684](https://github.com/arcjet/arcjet-js/issues/2684)) ([7d9ac4f](https://github.com/arcjet/arcjet-js/commit/7d9ac4f6401c2e47632c8dc97845f6cd3abf92f9)), closes [#2621](https://github.com/arcjet/arcjet-js/issues/2621)
+* **protocol:** Opt out of Buf & ConnectRPC v2 changes ([#2473](https://github.com/arcjet/arcjet-js/issues/2473)) ([06b5b21](https://github.com/arcjet/arcjet-js/commit/06b5b21d10c4a861c5379b4896168284d5c33225))
+* Switch most test harnesses to node:test ([#2479](https://github.com/arcjet/arcjet-js/issues/2479)) ([8a71bbc](https://github.com/arcjet/arcjet-js/commit/8a71bbc3d1fa6b63586f1bae7fa6f0f8d4fbad66))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/protocol-v1.0.0-alpha.34) (2024-12-03)
 
 

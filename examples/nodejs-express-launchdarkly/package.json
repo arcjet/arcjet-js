@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "@arcjet/node": "file:../../arcjet-node",
-    "@launchdarkly/node-server-sdk": "^9.7.2",
+    "@launchdarkly/node-server-sdk": "^9.7.3",
     "express": "^4.21.2"
   },
   "devDependencies": {

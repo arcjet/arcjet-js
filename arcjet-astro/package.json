@@ -1,0 +1,67 @@
+{
+  "name": "@arcjet/astro",
+  "version": "1.0.0-beta.2",
+  "description": "Arcjet SDK integration for Astro",
+  "license": "Apache-2.0",
+  "homepage": "https://arcjet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "arcjet-astro"
+  },
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "engines": {},
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "!*.config.js"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "rollup --config rollup.config.js",
+    "lint": "eslint .",
+    "pretest": "npm run build",
+    "test": "node --test --experimental-test-coverage"
+  },
+  "dependencies": {
+    "@arcjet/env": "1.0.0-beta.2",
+    "@arcjet/headers": "1.0.0-beta.2",
+    "@arcjet/ip": "1.0.0-beta.2",
+    "@arcjet/logger": "1.0.0-beta.2",
+    "@arcjet/protocol": "1.0.0-beta.2",
+    "@arcjet/transport": "1.0.0-beta.2",
+    "arcjet": "1.0.0-beta.2"
+  },
+  "peerDependencies": {
+    "astro": "^5"
+  },
+  "devDependencies": {
+    "@arcjet/eslint-config": "1.0.0-beta.2",
+    "@arcjet/rollup-config": "1.0.0-beta.2",
+    "@arcjet/tsconfig": "1.0.0-beta.2",
+    "@rollup/wasm-node": "4.34.2",
+    "astro": "5.2.5",
+    "expect": "29.7.0",
+    "typescript": "5.7.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "keywords": [
+    "astro-integration"
+  ]
+}

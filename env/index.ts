@@ -2,6 +2,7 @@ export type Env = {
   [key: string]: unknown;
   FLY_APP_NAME?: string;
   VERCEL?: string;
+  MODE?: string;
   NODE_ENV?: string;
   ARCJET_KEY?: string;
   ARCJET_ENV?: string;
@@ -20,7 +21,11 @@ export function platform(env: Env) {
 }
 
 export function isDevelopment(env: Env) {
-  return env.NODE_ENV === "development" || env.ARCJET_ENV === "development";
+  return (
+    env.NODE_ENV === "development" ||
+    env.MODE === "development" ||
+    env.ARCJET_ENV === "development"
+  );
 }
 
 export function logLevel(env: Env) {

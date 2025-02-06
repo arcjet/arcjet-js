@@ -7,7 +7,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { FastifyRequest } from 'fastify';
 import { ARCJET, ArcjetNest, validateEmail } from '@arcjet/nest';
 import { ValidateEmailService } from './validate-email.service.js';
 
@@ -19,15 +19,18 @@ export class ValidateEmailController {
     // also running ArcjetGuard on the handlers calling `protect()` to avoid
     // making multiple requests to Arcjet.
     @Inject(ARCJET) private readonly arcjet: ArcjetNest,
-  ) {}
+  ) { }
 
   @Post()
-  async validateEmail(@Req() req: Request, @Body() email: string) {
+  async validateEmail(@Req() req: FastifyRequest, @Body() email: string) {
     const decision = await this.arcjet
       .withRule(
         validateEmail({
           mode: 'LIVE',
-          block: ['DISPOSABLE', 'INVALID', 'NO_MX_RECORDS'],
+          deny: ['DISPOSABLE', 'INVALID', 'NO_MX_RECORDS'],
+          // Alternatively, you can specify a list of email types to allow.
+          // This will block all others.
+          // allow: ['FREE'],
         }),
       )
       .protect(req, { email });

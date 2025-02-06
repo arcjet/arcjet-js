@@ -4,6 +4,7 @@ import type {
   ArcjetBotRule,
   ArcjetRule,
   ArcjetLocalRule,
+  ArcjetMode,
   ArcjetRequestDetails,
   ArcjetTokenBucketRateLimitRule,
   ArcjetFixedWindowRateLimitRule,
@@ -14,16 +15,15 @@ import type {
   ArcjetIdentifiedEntity,
   ArcjetWellKnownBot,
   ArcjetBotCategory,
+  ArcjetEmailType,
+  ArcjetSensitiveInfoType,
 } from "@arcjet/protocol";
 import {
   ArcjetBotReason,
   ArcjetEmailReason,
-  ArcjetEmailType,
   ArcjetErrorReason,
-  ArcjetMode,
   ArcjetReason,
   ArcjetRuleResult,
-  ArcjetSensitiveInfoType,
   ArcjetSensitiveInfoReason,
   ArcjetDecision,
   ArcjetDenyDecision,
@@ -36,6 +36,7 @@ import type {
   DetectedSensitiveInfoEntity,
   SensitiveInfoEntity,
   BotConfig,
+  EmailValidationConfig,
 } from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
@@ -461,6 +462,8 @@ const validateEmailOptions = createValidator({
   validations: [
     { key: "mode", required: false, validate: validateMode },
     { key: "block", required: false, validate: validateEmailTypes },
+    { key: "allow", required: false, validate: validateEmailTypes },
+    { key: "deny", required: false, validate: validateEmailTypes },
     {
       key: "requireTopLevelDomain",
       required: false,
@@ -484,7 +487,9 @@ const validateShieldOptions = createValidator({
   validations: [{ key: "mode", required: false, validate: validateMode }],
 });
 
-type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
+export type TokenBucketRateLimitOptions<
+  Characteristics extends readonly string[],
+> = {
   mode?: ArcjetMode;
   characteristics?: Characteristics;
   refillRate: number;
@@ -492,28 +497,31 @@ type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
   capacity: number;
 };
 
-type FixedWindowRateLimitOptions<Characteristics extends readonly string[]> = {
+export type FixedWindowRateLimitOptions<
+  Characteristics extends readonly string[],
+> = {
   mode?: ArcjetMode;
   characteristics?: Characteristics;
   window: string | number;
   max: number;
 };
 
-type SlidingWindowRateLimitOptions<Characteristics extends readonly string[]> =
-  {
-    mode?: ArcjetMode;
-    characteristics?: Characteristics;
-    interval: string | number;
-    max: number;
-  };
+export type SlidingWindowRateLimitOptions<
+  Characteristics extends readonly string[],
+> = {
+  mode?: ArcjetMode;
+  characteristics?: Characteristics;
+  interval: string | number;
+  max: number;
+};
 
-type BotOptionsAllow = {
+export type BotOptionsAllow = {
   mode?: ArcjetMode;
   allow: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
   deny?: never;
 };
 
-type BotOptionsDeny = {
+export type BotOptionsDeny = {
   mode?: ArcjetMode;
   allow?: never;
   deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
@@ -521,12 +529,38 @@ type BotOptionsDeny = {
 
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 
-export type EmailOptions = {
+export type EmailOptionsAllow = {
   mode?: ArcjetMode;
-  block?: ArcjetEmailType[];
+  allow: ArcjetEmailType[];
+  block?: never;
+  deny?: never;
   requireTopLevelDomain?: boolean;
   allowDomainLiteral?: boolean;
 };
+
+export type EmailOptionsDeny = {
+  mode?: ArcjetMode;
+  allow?: never;
+  block?: never;
+  deny: ArcjetEmailType[];
+  requireTopLevelDomain?: boolean;
+  allowDomainLiteral?: boolean;
+};
+
+type EmailOptionsBlock = {
+  mode?: ArcjetMode;
+  allow?: never;
+  /** @deprecated use `deny` instead */
+  block: ArcjetEmailType[];
+  deny?: never;
+  requireTopLevelDomain?: boolean;
+  allowDomainLiteral?: boolean;
+};
+
+export type EmailOptions =
+  | EmailOptionsAllow
+  | EmailOptionsDeny
+  | EmailOptionsBlock;
 
 type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
@@ -546,7 +580,7 @@ type ValidEntities<Detect> = Array<
       : never
 >;
 
-type SensitiveInfoOptionsAllow<Detect> = {
+export type SensitiveInfoOptionsAllow<Detect> = {
   allow: ValidEntities<Detect>;
   deny?: never;
   contextWindowSize?: number;
@@ -554,7 +588,7 @@ type SensitiveInfoOptionsAllow<Detect> = {
   detect?: Detect;
 };
 
-type SensitiveInfoOptionsDeny<Detect> = {
+export type SensitiveInfoOptionsDeny<Detect> = {
   allow?: never;
   deny: ValidEntities<Detect>;
   contextWindowSize?: number;
@@ -944,24 +978,94 @@ export function validateEmail(
   options: EmailOptions,
 ): Primitive<{ email: string }> {
   validateEmailOptions(options);
-
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const block = options.block ?? [];
+  if (
+    typeof options.allow !== "undefined" &&
+    typeof options.deny !== "undefined"
+  ) {
+    throw new Error(
+      "`validateEmail` options error: `allow` and `deny` cannot be provided together",
+    );
+  }
+  if (
+    typeof options.allow !== "undefined" &&
+    typeof options.block !== "undefined"
+  ) {
+    throw new Error(
+      "`validateEmail` options error: `allow` and `block` cannot be provided together",
+    );
+  }
+  if (
+    typeof options.deny !== "undefined" &&
+    typeof options.block !== "undefined"
+  ) {
+    throw new Error(
+      "`validateEmail` options error: `deny` and `block` cannot be provided together, `block` is now deprecated so `deny` should be preferred.",
+    );
+  }
+  if (
+    typeof options.allow === "undefined" &&
+    typeof options.deny === "undefined" &&
+    typeof options.block === "undefined"
+  ) {
+    throw new Error(
+      "`validateEmail` options error: either `allow` or `deny` must be specified",
+    );
+  }
+  const allow = options.allow ?? [];
+  const deny = options.deny ?? options.block ?? [];
   const requireTopLevelDomain = options.requireTopLevelDomain ?? true;
   const allowDomainLiteral = options.allowDomainLiteral ?? false;
 
-  const emailOpts = {
-    requireTopLevelDomain,
-    allowDomainLiteral,
-    blockedEmails: block,
+  let config: EmailValidationConfig = {
+    tag: "deny-email-validation-config",
+    val: {
+      requireTopLevelDomain,
+      allowDomainLiteral,
+      deny: [],
+    },
   };
+
+  if (typeof options.allow !== "undefined") {
+    config = {
+      tag: "allow-email-validation-config",
+      val: {
+        requireTopLevelDomain,
+        allowDomainLiteral,
+        allow: options.allow,
+      },
+    };
+  }
+
+  if (typeof options.deny !== "undefined") {
+    config = {
+      tag: "deny-email-validation-config",
+      val: {
+        requireTopLevelDomain,
+        allowDomainLiteral,
+        deny: options.deny,
+      },
+    };
+  }
+
+  if (typeof options.block !== "undefined") {
+    config = {
+      tag: "deny-email-validation-config",
+      val: {
+        requireTopLevelDomain,
+        allowDomainLiteral,
+        deny: options.block,
+      },
+    };
+  }
 
   return [
     <ArcjetEmailRule<{ email: string }>>{
       type: "EMAIL",
       priority: Priority.EmailValidation,
       mode,
-      block,
+      allow,
+      deny,
       requireTopLevelDomain,
       allowDomainLiteral,
 
@@ -979,7 +1083,7 @@ export function validateEmail(
         context: ArcjetContext,
         { email }: ArcjetRequestDetails & { email: string },
       ): Promise<ArcjetRuleResult> {
-        const result = await analyze.isValidEmail(context, email, emailOpts);
+        const result = await analyze.isValidEmail(context, email, config);
         if (result.validity === "valid") {
           return new ArcjetRuleResult({
             ttl: 0,
@@ -1138,7 +1242,7 @@ export function shield(options: ShieldOptions): Primitive<{}> {
   ];
 }
 
-export type ProtectSignupOptions<Characteristics extends string[]> = {
+export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
   rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
   bots: BotOptions;
   email: EmailOptions;

@@ -3,7 +3,12 @@ import type {
   ArcjetRule,
   ArcjetRateLimitRule,
   ArcjetBotRule,
+  ArcjetConclusion,
   ArcjetEmailRule,
+  ArcjetEmailType,
+  ArcjetMode,
+  ArcjetRuleState,
+  ArcjetStack,
   ArcjetTokenBucketRateLimitRule,
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
@@ -22,13 +27,8 @@ import {
   ArcjetRateLimitReason,
   ArcjetRuleResult,
   ArcjetShieldReason,
-  ArcjetConclusion,
   ArcjetDecision,
-  ArcjetEmailType,
-  ArcjetMode,
   ArcjetReason,
-  ArcjetRuleState,
-  ArcjetStack,
   ArcjetIpDetails,
   ArcjetSensitiveInfoReason,
 } from "./index.js";
@@ -126,6 +126,8 @@ export function ArcjetStackToProtocol(stack: ArcjetStack): SDKStack {
       return SDKStack.SDK_STACK_NESTJS;
     case "REMIX":
       return SDKStack.SDK_STACK_REMIX;
+    case "ASTRO":
+      return SDKStack.SDK_STACK_ASTRO;
     default: {
       const _exhaustive: never = stack;
       return SDKStack.SDK_STACK_UNSPECIFIED;
@@ -619,15 +621,19 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isEmailRule(rule)) {
-    const block = Array.isArray(rule.block)
-      ? rule.block.map(ArcjetEmailTypeToProtocol)
+    const allow = Array.isArray(rule.allow)
+      ? rule.allow.map(ArcjetEmailTypeToProtocol)
+      : [];
+    const deny = Array.isArray(rule.deny)
+      ? rule.deny.map(ArcjetEmailTypeToProtocol)
       : [];
     return new Rule({
       rule: {
         case: "email",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          block,
+          allow,
+          deny,
           requireTopLevelDomain: rule.requireTopLevelDomain,
           allowDomainLiteral: rule.allowDomainLiteral,
         },

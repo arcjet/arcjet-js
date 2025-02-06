@@ -1,5 +1,55 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/node-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/node:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/headers bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/ip bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/logger bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/protocol bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/transport bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/body bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * arcjet bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
+## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/node-v1.0.0-beta.1) (2025-01-15)
+
+
+### 🧹 Miscellaneous Chores
+
+* Switch most test harnesses to node:test ([#2479](https://github.com/arcjet/arcjet-js/issues/2479)) ([8a71bbc](https://github.com/arcjet/arcjet-js/commit/8a71bbc3d1fa6b63586f1bae7fa6f0f8d4fbad66))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/headers bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/ip bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/logger bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/protocol bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/transport bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/body bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * arcjet bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/node-v1.0.0-alpha.34) (2024-12-03)
 
 

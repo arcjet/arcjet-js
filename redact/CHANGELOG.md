@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/redact-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🧹 Miscellaneous Chores
+
+* **docs:** Add a link to the Redact reference page ([#3038](https://github.com/arcjet/arcjet-js/issues/3038)) ([6095b6a](https://github.com/arcjet/arcjet-js/commit/6095b6a25aaf60b2c583a71babab54de53113b0c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/redact-wasm bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
+## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/redact-v1.0.0-beta.1) (2025-01-15)
+
+
+### 🧹 Miscellaneous Chores
+
+* Switch most test harnesses to node:test ([#2479](https://github.com/arcjet/arcjet-js/issues/2479)) ([8a71bbc](https://github.com/arcjet/arcjet-js/commit/8a71bbc3d1fa6b63586f1bae7fa6f0f8d4fbad66))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/redact-wasm bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/redact-v1.0.0-alpha.34) (2024-12-03)
 
 

@@ -1,5 +1,53 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/analyze-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze-wasm bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/protocol bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
+## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/analyze-v1.0.0-beta.1) (2025-01-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* refactor wasm loading for analyze ([#1832](https://github.com/arcjet/arcjet-js/issues/1832))
+
+### 🚀 New Features
+
+* support `allow` or `deny` config in validateEmail & deprecate `block` config ([#2661](https://github.com/arcjet/arcjet-js/issues/2661)) ([890afcd](https://github.com/arcjet/arcjet-js/commit/890afcd2d1afef262b741a74521b82cb85711860)), closes [#1834](https://github.com/arcjet/arcjet-js/issues/1834)
+
+
+### 🧹 Miscellaneous Chores
+
+* refactor wasm loading for analyze ([#1832](https://github.com/arcjet/arcjet-js/issues/1832)) ([02e4435](https://github.com/arcjet/arcjet-js/commit/02e4435a86b6b40b97feb369f0402b2199a4bc12)), closes [#1448](https://github.com/arcjet/arcjet-js/issues/1448)
+* Switch most test harnesses to node:test ([#2479](https://github.com/arcjet/arcjet-js/issues/2479)) ([8a71bbc](https://github.com/arcjet/arcjet-js/commit/8a71bbc3d1fa6b63586f1bae7fa6f0f8d4fbad66))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze-wasm bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/protocol bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/analyze-v1.0.0-alpha.34) (2024-12-03)
 
 

@@ -9,12 +9,15 @@ export { categories as botCategories } from "./well-known-bots.js";
 
 type RequiredProps<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
 
-type ArcjetEnum<T extends string> = { readonly [Key in T]: T };
-
 export type ArcjetMode = "LIVE" | "DRY_RUN";
-/** @deprecated use equivalent string union type instead */
-export const ArcjetMode: ArcjetEnum<ArcjetMode> = Object.freeze({
+export const ArcjetMode = Object.freeze({
+  /**
+   * @deprecated Use the string `"LIVE"` instead.
+   **/
   LIVE: "LIVE",
+  /**
+   * @deprecated Use the string `"DRY_RUN"` instead.
+   **/
   DRY_RUN: "DRY_RUN",
 });
 
@@ -22,13 +25,20 @@ export type ArcjetRateLimitAlgorithm =
   | "TOKEN_BUCKET"
   | "FIXED_WINDOW"
   | "SLIDING_WINDOW";
-/** @deprecated use equivalent string union type instead */
-export const ArcjetRateLimitAlgorithm: ArcjetEnum<ArcjetRateLimitAlgorithm> =
-  Object.freeze({
-    TOKEN_BUCKET: "TOKEN_BUCKET",
-    FIXED_WINDOW: "FIXED_WINDOW",
-    SLIDING_WINDOW: "SLIDING_WINDOW",
-  });
+export const ArcjetRateLimitAlgorithm = Object.freeze({
+  /**
+   * @deprecated Use the string `"TOKEN_BUCKET"` instead.
+   **/
+  TOKEN_BUCKET: "TOKEN_BUCKET",
+  /**
+   * @deprecated Use the string `"FIXED_WINDOW"` instead.
+   **/
+  FIXED_WINDOW: "FIXED_WINDOW",
+  /**
+   * @deprecated Use the string `"SLIDING_WINDOW"` instead.
+   **/
+  SLIDING_WINDOW: "SLIDING_WINDOW",
+});
 
 export type ArcjetEmailType =
   | "DISPOSABLE"
@@ -36,14 +46,28 @@ export type ArcjetEmailType =
   | "NO_MX_RECORDS"
   | "NO_GRAVATAR"
   | "INVALID";
-/** @deprecated use equivalent string union type instead */
-export const ArcjetEmailType: ArcjetEnum<ArcjetEmailType> = {
+export const ArcjetEmailType = Object.freeze({
+  /**
+   * @deprecated Use the string `"DISPOSABLE"` instead.
+   **/
   DISPOSABLE: "DISPOSABLE",
+  /**
+   * @deprecated Use the string `"FREE"` instead.
+   **/
   FREE: "FREE",
+  /**
+   * @deprecated Use the string `"NO_MX_RECORDS"` instead.
+   **/
   NO_MX_RECORDS: "NO_MX_RECORDS",
+  /**
+   * @deprecated Use the string `"NO_GRAVATAR"` instead.
+   **/
   NO_GRAVATAR: "NO_GRAVATAR",
+  /**
+   * @deprecated Use the string `"INVALID"` instead.
+   **/
   INVALID: "INVALID",
-};
+});
 
 export type ArcjetIdentifiedEntity = {
   start: number;
@@ -58,33 +82,80 @@ export type ArcjetStack =
   | "SVELTEKIT"
   | "DENO"
   | "NESTJS"
-  | "REMIX";
-/** @deprecated use equivalent string union type instead */
-export const ArcjetStack: ArcjetEnum<ArcjetStack> = {
+  | "REMIX"
+  | "ASTRO";
+export const ArcjetStack = Object.freeze({
+  /**
+   * @deprecated Use the string `"NODEJS"` instead.
+   **/
   NODEJS: "NODEJS",
+  /**
+   * @deprecated Use the string `"NEXTJS"` instead.
+   **/
   NEXTJS: "NEXTJS",
+  /**
+   * @deprecated Use the string `"BUN"` instead.
+   **/
   BUN: "BUN",
+  /**
+   * @deprecated Use the string `"SVELTEKIT"` instead.
+   **/
   SVELTEKIT: "SVELTEKIT",
+  /**
+   * @deprecated Use the string `"DENO"` instead.
+   **/
   DENO: "DENO",
+  /**
+   * @deprecated Use the string `"NESTJS"` instead.
+   **/
   NESTJS: "NESTJS",
+  /**
+   * @deprecated Use the string `"REMIX"` instead.
+   **/
   REMIX: "REMIX",
-};
+  /**
+   * @deprecated Use the string `"ASTRO"` instead.
+   **/
+  ASTRO: "ASTRO",
+});
 
 export type ArcjetRuleState = "RUN" | "NOT_RUN" | "CACHED" | "DRY_RUN";
-/** @deprecated use equivalent string union type instead */
-export const ArcjetRuleState: ArcjetEnum<ArcjetRuleState> = Object.freeze({
+export const ArcjetRuleState = Object.freeze({
+  /**
+   * @deprecated Use the string `"RUN"` instead.
+   **/
   RUN: "RUN",
+  /**
+   * @deprecated Use the string `"NOT_RUN"` instead.
+   **/
   NOT_RUN: "NOT_RUN",
+  /**
+   * @deprecated Use the string `"CACHED"` instead.
+   **/
   CACHED: "CACHED",
+  /**
+   * @deprecated Use the string `"DRY_RUN"` instead.
+   **/
   DRY_RUN: "DRY_RUN",
 });
 
 export type ArcjetConclusion = "ALLOW" | "DENY" | "CHALLENGE" | "ERROR";
-/** @deprecated use equivalent string union type instead */
-export const ArcjetConclusion: ArcjetEnum<ArcjetConclusion> = Object.freeze({
+export const ArcjetConclusion = Object.freeze({
+  /**
+   * @deprecated Use the string `"ALLOW"` instead.
+   **/
   ALLOW: "ALLOW",
+  /**
+   * @deprecated Use the string `"DENY"` instead.
+   **/
   DENY: "DENY",
+  /**
+   * @deprecated Use the string `"CHALLENGE"` instead.
+   **/
   CHALLENGE: "CHALLENGE",
+  /**
+   * @deprecated Use the string `"ERROR"` instead.
+   **/
   ERROR: "ERROR",
 });
 
@@ -93,18 +164,34 @@ export type ArcjetSensitiveInfoType =
   | "PHONE_NUMBER"
   | "IP_ADDRESS"
   | "CREDIT_CARD_NUMBER";
-/** @deprecated use equivalent string union type instead */
-export const ArcjetSensitiveInfoType: ArcjetEnum<ArcjetSensitiveInfoType> = {
+export const ArcjetSensitiveInfoType = Object.freeze({
+  /**
+   * @deprecated Use the string `"EMAIL"` instead.
+   **/
   EMAIL: "EMAIL",
+  /**
+   * @deprecated Use the string `"PHONE_NUMBER"` instead.
+   **/
   PHONE_NUMBER: "PHONE_NUMBER",
+  /**
+   * @deprecated Use the string `"IP_ADDRESS"` instead.
+   **/
   IP_ADDRESS: "IP_ADDRESS",
+  /**
+   * @deprecated Use the string `"CREDIT_CARD_NUMBER"` instead.
+   **/
   CREDIT_CARD_NUMBER: "CREDIT_CARD_NUMBER",
-};
+});
 
 export type ArcjetRuleType = "LOCAL" | "REMOTE";
-/** @deprecated use equivalent string union type instead */
-export const ArcjetRuleType: ArcjetEnum<ArcjetRuleType> = Object.freeze({
+export const ArcjetRuleType = Object.freeze({
+  /**
+   * @deprecated Use the string `"LOCAL"` instead.
+   **/
   LOCAL: "LOCAL",
+  /**
+   * @deprecated Use the string `"REMOTE"` instead.
+   **/
   REMOTE: "REMOTE",
 });
 
@@ -773,7 +860,8 @@ export interface ArcjetEmailRule<Props extends { email: string }>
   extends ArcjetLocalRule<Props> {
   type: "EMAIL";
 
-  block: ArcjetEmailType[];
+  allow: ArcjetEmailType[];
+  deny: ArcjetEmailType[];
   requireTopLevelDomain: boolean;
   allowDomainLiteral: boolean;
 }

@@ -56,6 +56,25 @@ updates:
 
   # Dependencies in our examples
 
+  - package-ecosystem: npm
+    directory: /examples/astro-integration
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+
   # Bun isn't supported by Dependabot
   # Ref: https://github.com/dependabot/dependabot-core/issues/6528
   # - package-ecosystem: npm
@@ -298,6 +317,14 @@ updates:
       # restricted.
       - dependency-name: next
         versions: [">=15"]
+      - dependency-name: react
+        versions: [">=19"]
+      - dependency-name: "@types/react"
+        versions: [">=19"]
+      - dependency-name: react-dom
+        versions: [">=19"]
+      - dependency-name: "@types/react-dom"
+        versions: [">=19"]
       - dependency-name: eslint
         versions: [">=9"]
       - dependency-name: eslint-config-next
@@ -359,6 +386,39 @@ updates:
 
   - package-ecosystem: npm
     directory: /examples/nextjs-authjs-5
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # Tailwind v4 is not supported by shadcn/ui. See:
+      # https://github.com/shadcn-ui/ui/discussions/2996
+      - dependency-name: tailwindcss
+        versions: [">=4"]
+      - dependency-name: tailwind-merge
+        versions: [">=3"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
+    directory: /examples/nextjs-authjs-nosecone
     schedule:
       # Our dependencies should be checked daily
       interval: daily
@@ -650,6 +710,12 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
+      # Tailwind v4 is not supported by eslint-plugin-tailwindcss. See:
+      # https://github.com/francoismassart/eslint-plugin-tailwindcss/pull/381
+      - dependency-name: tailwindcss
+        versions: [">=4"]
+      - dependency-name: tailwind-merge
+        versions: [">=3"]
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
@@ -830,6 +896,18 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
+      # Remix 2 doesn't support Vite 6 or React 19 so the dependencies below are
+      # restricted.
+      - dependency-name: vite
+        versions: [">=6"]
+      - dependency-name: react
+        versions: [">=19"]
+      - dependency-name: "@types/react"
+        versions: [">=19"]
+      - dependency-name: react-dom
+        versions: [">=19"]
+      - dependency-name: "@types/react-dom"
+        versions: [">=19"]
 
   - package-ecosystem: npm
     directory: /examples/sveltekit

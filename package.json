@@ -1,6 +1,6 @@
 {
   "name": "arcjet-js",
-  "version": "1.0.0-alpha.34",
+  "version": "1.0.0-beta.2",
   "private": true,
   "engines": {
     "node": ">=18"
@@ -15,7 +15,7 @@
     "test": "turbo test"
   },
   "devDependencies": {
-    "turbo": "^2.3.3"
+    "turbo": "^2.4.0"
   },
   "overrides": {
     "cookie": "0.7.2",

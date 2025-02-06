@@ -1,5 +1,64 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...arcjet-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** Ensure Characteristics are readonly type on protect signup options ([#3013](https://github.com/arcjet/arcjet-js/issues/3013)) ([1f16a99](https://github.com/arcjet/arcjet-js/commit/1f16a997cbbc574bbed31c70f234e2598d348bf9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/duration bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/headers bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/protocol bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/runtime bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
+## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...arcjet-v1.0.0-beta.1) (2025-01-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **protocol:** Improve deprecation message on enum-like field usage ([#2855](https://github.com/arcjet/arcjet-js/issues/2855))
+
+### 🚀 New Features
+
+* Export more option types ([#2752](https://github.com/arcjet/arcjet-js/issues/2752)) ([89a9f77](https://github.com/arcjet/arcjet-js/commit/89a9f77a74031e0e22c0c77c5426b377daa5c8be)), closes [#2751](https://github.com/arcjet/arcjet-js/issues/2751)
+* support `allow` or `deny` config in validateEmail & deprecate `block` config ([#2661](https://github.com/arcjet/arcjet-js/issues/2661)) ([890afcd](https://github.com/arcjet/arcjet-js/commit/890afcd2d1afef262b741a74521b82cb85711860)), closes [#1834](https://github.com/arcjet/arcjet-js/issues/1834)
+
+
+### 🪲 Bug Fixes
+
+* **protocol:** Improve deprecation message on enum-like field usage ([#2855](https://github.com/arcjet/arcjet-js/issues/2855)) ([6512258](https://github.com/arcjet/arcjet-js/commit/6512258546076d6ac3478b02337741c2c0dbf67f))
+
+
+### 🧹 Miscellaneous Chores
+
+* Switch most test harnesses to node:test ([#2479](https://github.com/arcjet/arcjet-js/issues/2479)) ([8a71bbc](https://github.com/arcjet/arcjet-js/commit/8a71bbc3d1fa6b63586f1bae7fa6f0f8d4fbad66))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/duration bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/headers bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/protocol bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/runtime bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...arcjet-v1.0.0-alpha.34) (2024-12-03)
 
 

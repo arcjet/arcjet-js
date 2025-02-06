@@ -19,28 +19,19 @@ import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_js_req.compone
 type DetectSensitiveInfoFunction =
   typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
 
-const wasmCache = new Map<string, WebAssembly.Module>();
+const componentCoreWasmPromise = componentCoreWasm();
+const componentCore2WasmPromise = componentCore2Wasm();
+const componentCore3WasmPromise = componentCore3Wasm();
 
 async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
-  const cachedModule = wasmCache.get(path);
-  if (typeof cachedModule !== "undefined") {
-    return cachedModule;
-  }
-
   if (path === "arcjet_analyze_js_req.component.core.wasm") {
-    const mod = await componentCoreWasm();
-    wasmCache.set(path, mod);
-    return mod;
+    return componentCoreWasmPromise;
   }
   if (path === "arcjet_analyze_js_req.component.core2.wasm") {
-    const mod = await componentCore2Wasm();
-    wasmCache.set(path, mod);
-    return mod;
+    return componentCore2WasmPromise;
   }
   if (path === "arcjet_analyze_js_req.component.core3.wasm") {
-    const mod = await componentCore3Wasm();
-    wasmCache.set(path, mod);
-    return mod;
+    return componentCore3WasmPromise;
   }
 
   throw new Error(`Unknown path: ${path}`);

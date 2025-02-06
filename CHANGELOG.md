@@ -1,5 +1,71 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-02-04)
+
+
+### 🚀 New Features
+
+* **env:** Support MODE environment variable for `isDevelopment` detection ([#3012](https://github.com/arcjet/arcjet-js/issues/3012)) ([f3a45a7](https://github.com/arcjet/arcjet-js/commit/f3a45a7d253c759d467e5ff2c1a52a924ea7496c))
+* Implement Astro integration ([#2992](https://github.com/arcjet/arcjet-js/issues/2992)) ([a48eea8](https://github.com/arcjet/arcjet-js/commit/a48eea89f80bff18c9a1889fd83f1eed9092b110)), closes [#1075](https://github.com/arcjet/arcjet-js/issues/1075)
+* **nestjs:** Allow NestJS v11 as peerDependency ([#3042](https://github.com/arcjet/arcjet-js/issues/3042)) ([4a75963](https://github.com/arcjet/arcjet-js/commit/4a75963f1c39bc584b6a0549ce44bd51cf8eeb59)), closes [#2921](https://github.com/arcjet/arcjet-js/issues/2921)
+* **redact:** Pre-compile WebAssembly on module load ([#3037](https://github.com/arcjet/arcjet-js/issues/3037)) ([c12bec5](https://github.com/arcjet/arcjet-js/commit/c12bec58ee0abd3becb1e978596fed9047702d3d))
+
+
+### 🪲 Bug Fixes
+
+* **analyze:** Always lowercase headers and iterate in insertion order ([#2865](https://github.com/arcjet/arcjet-js/issues/2865)) ([a9af1e4](https://github.com/arcjet/arcjet-js/commit/a9af1e49eff46aaab16522e38df9f2ce7888f7fa))
+* **arcjet:** Ensure Characteristics are readonly type on protect signup options ([#3013](https://github.com/arcjet/arcjet-js/issues/3013)) ([1f16a99](https://github.com/arcjet/arcjet-js/commit/1f16a997cbbc574bbed31c70f234e2598d348bf9))
+* **protocol:** Double timeout when email rule configured ([#2934](https://github.com/arcjet/arcjet-js/issues/2934)) ([23f9a9e](https://github.com/arcjet/arcjet-js/commit/23f9a9eab277b9c2e1a350ca621367cefe0c0e1f)), closes [#1697](https://github.com/arcjet/arcjet-js/issues/1697)
+
+
+### 🧹 Miscellaneous Chores
+
+* **ci:** Add dependabot for Astro example ([#3068](https://github.com/arcjet/arcjet-js/issues/3068)) ([d4d8f82](https://github.com/arcjet/arcjet-js/commit/d4d8f822fa1949713ba5be699acfb049ac1d2fa6))
+* **ci:** Avoid upgrading Tailwind where it breaks things ([#3081](https://github.com/arcjet/arcjet-js/issues/3081)) ([5c25abe](https://github.com/arcjet/arcjet-js/commit/5c25abe97fd4b62e3a9025878c7d93d0613c6e68))
+* **ci:** Restrict tailwind-merge where tailwind restricted ([#3089](https://github.com/arcjet/arcjet-js/issues/3089)) ([a3437a5](https://github.com/arcjet/arcjet-js/commit/a3437a54583f4a46968f5d4b749a265be1ce781c))
+* **docs:** Add a link to the Redact reference page ([#3038](https://github.com/arcjet/arcjet-js/issues/3038)) ([6095b6a](https://github.com/arcjet/arcjet-js/commit/6095b6a25aaf60b2c583a71babab54de53113b0c))
+* Refresh root & Next.js READMEs ([#3066](https://github.com/arcjet/arcjet-js/issues/3066)) ([57a38d7](https://github.com/arcjet/arcjet-js/commit/57a38d7c61871f0d836aa9304ca1f787286c86c1))
+* **rollup-config:** Consolidate wasmToModule plugin ([#3039](https://github.com/arcjet/arcjet-js/issues/3039)) ([c3b8e36](https://github.com/arcjet/arcjet-js/commit/c3b8e36dd59a0ca0c8a10946b0d76e4bc3766f40))
+
+## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...v1.0.0-beta.1) (2025-01-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **redact:** Correctly handle urlencoded data when tokenizing characters ([#2864](https://github.com/arcjet/arcjet-js/issues/2864))
+* Correctly handle urlencoded data when tokenizing characters ([#2863](https://github.com/arcjet/arcjet-js/issues/2863))
+* **protocol:** Improve deprecation message on enum-like field usage ([#2855](https://github.com/arcjet/arcjet-js/issues/2855))
+* refactor wasm loading for analyze ([#1832](https://github.com/arcjet/arcjet-js/issues/1832))
+
+### 🚀 New Features
+
+* Export more option types ([#2752](https://github.com/arcjet/arcjet-js/issues/2752)) ([89a9f77](https://github.com/arcjet/arcjet-js/commit/89a9f77a74031e0e22c0c77c5426b377daa5c8be)), closes [#2751](https://github.com/arcjet/arcjet-js/issues/2751)
+* support `allow` or `deny` config in validateEmail & deprecate `block` config ([#2661](https://github.com/arcjet/arcjet-js/issues/2661)) ([890afcd](https://github.com/arcjet/arcjet-js/commit/890afcd2d1afef262b741a74521b82cb85711860)), closes [#1834](https://github.com/arcjet/arcjet-js/issues/1834)
+
+
+### 🪲 Bug Fixes
+
+* Correctly handle urlencoded data when tokenizing characters ([#2863](https://github.com/arcjet/arcjet-js/issues/2863)) ([fa93290](https://github.com/arcjet/arcjet-js/commit/fa93290b91ac1edc3acf44cd4f2a9ff324da3fbd))
+* **protocol:** Improve deprecation message on enum-like field usage ([#2855](https://github.com/arcjet/arcjet-js/issues/2855)) ([6512258](https://github.com/arcjet/arcjet-js/commit/6512258546076d6ac3478b02337741c2c0dbf67f))
+* **protocol:** Include `cookies` and `query` fields on reports ([#2777](https://github.com/arcjet/arcjet-js/issues/2777)) ([cff2e3a](https://github.com/arcjet/arcjet-js/commit/cff2e3ae4e3ed3e714d90cd52da26ec7b6a7c4cc))
+* **redact:** Correctly handle urlencoded data when tokenizing characters ([#2864](https://github.com/arcjet/arcjet-js/issues/2864)) ([fbed883](https://github.com/arcjet/arcjet-js/commit/fbed8835f7e2c4ee659bcfafecad1bfa7898c7a4))
+
+
+### 🏎️ Performance Improvements
+
+* **analyze:** Compile WebAssembly upon module load ([#2727](https://github.com/arcjet/arcjet-js/issues/2727)) ([489f1c6](https://github.com/arcjet/arcjet-js/commit/489f1c6b5248197ef170676992a9089a9bc46c6b))
+
+
+### 🧹 Miscellaneous Chores
+
+* Deprecate Arcjet enum-like objects ([#2684](https://github.com/arcjet/arcjet-js/issues/2684)) ([7d9ac4f](https://github.com/arcjet/arcjet-js/commit/7d9ac4f6401c2e47632c8dc97845f6cd3abf92f9)), closes [#2621](https://github.com/arcjet/arcjet-js/issues/2621)
+* **examples:** Add Auth.js chained middleware example using Nosecone ([#2640](https://github.com/arcjet/arcjet-js/issues/2640)) ([d9774cc](https://github.com/arcjet/arcjet-js/commit/d9774cca64065a85965f5914622bb702a5dbc759))
+* **examples:** Restrict React to v18 in Next 14 example ([#2778](https://github.com/arcjet/arcjet-js/issues/2778)) ([50cde21](https://github.com/arcjet/arcjet-js/commit/50cde215e7b44c904d2f0d2887130e8e6100fa99))
+* **protocol:** Opt out of Buf & ConnectRPC v2 changes ([#2473](https://github.com/arcjet/arcjet-js/issues/2473)) ([06b5b21](https://github.com/arcjet/arcjet-js/commit/06b5b21d10c4a861c5379b4896168284d5c33225))
+* refactor wasm loading for analyze ([#1832](https://github.com/arcjet/arcjet-js/issues/1832)) ([02e4435](https://github.com/arcjet/arcjet-js/commit/02e4435a86b6b40b97feb369f0402b2199a4bc12)), closes [#1448](https://github.com/arcjet/arcjet-js/issues/1448)
+* **runtime:** Replace Jest with Node test harness ([#2565](https://github.com/arcjet/arcjet-js/issues/2565)) ([ec60fe2](https://github.com/arcjet/arcjet-js/commit/ec60fe2c39519eeb3ffdfd7b89ba0aac544cc478)), closes [#9](https://github.com/arcjet/arcjet-js/issues/9)
+* Switch most test harnesses to node:test ([#2479](https://github.com/arcjet/arcjet-js/issues/2479)) ([8a71bbc](https://github.com/arcjet/arcjet-js/commit/8a71bbc3d1fa6b63586f1bae7fa6f0f8d4fbad66))
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...v1.0.0-alpha.34) (2024-12-03)
 
 

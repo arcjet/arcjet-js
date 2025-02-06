@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/rollup-config",
-  "version": "1.0.0-alpha.34",
+  "version": "1.0.0-beta.2",
   "description": "Custom rollup config for Arcjet projects",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -36,19 +36,19 @@
     "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@rollup/plugin-replace": "6.0.1",
-    "@rollup/plugin-typescript": "12.1.1"
+    "@rollup/plugin-replace": "6.0.2",
+    "@rollup/plugin-typescript": "12.1.2"
   },
   "peerDependencies": {
     "@rollup/wasm-node": "^4"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-alpha.34",
-    "@arcjet/tsconfig": "1.0.0-alpha.34",
+    "@arcjet/eslint-config": "1.0.0-beta.2",
+    "@arcjet/tsconfig": "1.0.0-beta.2",
     "@types/node": "18.18.0",
-    "@rollup/wasm-node": "4.28.1",
+    "@rollup/wasm-node": "4.34.2",
     "expect": "29.7.0",
-    "typescript": "5.7.2"
+    "typescript": "5.7.3"
   },
   "publishConfig": {
     "access": "public",

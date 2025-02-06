@@ -40,6 +40,10 @@
       "component": "arcjet",
       "skip-github-release": true
     },
+    "arcjet-astro": {
+      "component": "@arcjet/astro",
+      "skip-github-release": true
+    },
     "arcjet-bun": {
       "component": "@arcjet/bun",
       "skip-github-release": true
@@ -158,6 +162,7 @@
         "@arcjet/analyze",
         "@arcjet/analyze-wasm",
         "arcjet",
+        "@arcjet/astro",
         "@arcjet/bun",
         "@arcjet/deno",
         "@arcjet/nest",

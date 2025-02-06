@@ -661,7 +661,7 @@ describe("convert", () => {
         type: "EMAIL",
         mode: "DRY_RUN",
         priority: 1,
-        block: ["INVALID"],
+        deny: ["INVALID"],
       }),
     ).toEqual(
       new Rule({
@@ -669,7 +669,27 @@ describe("convert", () => {
           case: "email",
           value: {
             mode: Mode.DRY_RUN,
-            block: [EmailType.INVALID],
+            allow: [],
+            deny: [EmailType.INVALID],
+          },
+        },
+      }),
+    );
+    expect(
+      ArcjetRuleToProtocol(<ArcjetEmailRule<{ email: string }>>{
+        type: "EMAIL",
+        mode: "DRY_RUN",
+        priority: 1,
+        allow: ["INVALID"],
+      }),
+    ).toEqual(
+      new Rule({
+        rule: {
+          case: "email",
+          value: {
+            mode: Mode.DRY_RUN,
+            allow: [EmailType.INVALID],
+            deny: [],
           },
         },
       }),

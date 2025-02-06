@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/runtime-v1.0.0-beta.2) (2025-02-04)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/runtime:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/rollup-config bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+    * @arcjet/tsconfig bumped from 1.0.0-beta.1 to 1.0.0-beta.2
+
+## [1.0.0-beta.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.34...@arcjet/runtime-v1.0.0-beta.1) (2025-01-15)
+
+
+### 🧹 Miscellaneous Chores
+
+* **runtime:** Replace Jest with Node test harness ([#2565](https://github.com/arcjet/arcjet-js/issues/2565)) ([ec60fe2](https://github.com/arcjet/arcjet-js/commit/ec60fe2c39519eeb3ffdfd7b89ba0aac544cc478)), closes [#9](https://github.com/arcjet/arcjet-js/issues/9)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/rollup-config bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+    * @arcjet/tsconfig bumped from 1.0.0-alpha.34 to 1.0.0-beta.1
+
 ## [1.0.0-alpha.34](https://github.com/arcjet/arcjet-js/compare/v1.0.0-alpha.33...@arcjet/runtime-v1.0.0-alpha.34) (2024-12-03)
 
 
