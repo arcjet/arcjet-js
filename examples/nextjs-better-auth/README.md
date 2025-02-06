@@ -8,12 +8,8 @@
 # Arcjet bot detection with Next.js + Better Auth
 
 This example shows how to use Arcjet with [Better
-Auth](https://www.better-auth.com). Arcjet is implemented as a hook in
-`auth.ts`, which is our recommended approach.
-
-Alternatively, you can use the Arcjet integration in
-`app/api/auth/[...all]/route.ts`. If you do, remove the hook from `auth.ts` to
-avoid duplicate protection.
+Auth](https://www.better-auth.com). Arcjet is implemented as a wrapper around
+the `POST` handler in `app/api/auth/[...all]/route.ts`.
 
 ## How to use
 
@@ -26,7 +22,7 @@ avoid duplicate protection.
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/nextjs-app-dir-rate-limit
+   cd examples/nextjs-better-auth
    npm ci
    ```
 
@@ -35,16 +31,16 @@ avoid duplicate protection.
    app](https://github.com/settings/applications) for testing (see the [Better
    Auth docs](https://www.better-auth.com/docs/authentication/github)).
 
-4. Start the dev server.
-
-   ```bash
-   npm run dev
-   ```
-
-5. Run the database migration. A SQLite database is used for this example.
+4. Run the database migration. A SQLite database is used for this example.
 
    ```bash
    npx @better-auth/cli migrate
+   ```
+
+5. Start the dev server.
+
+   ```bash
+   npm run dev
    ```
 
 6. Visit `http://localhost:3000`.
