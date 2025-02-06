@@ -407,6 +407,7 @@ jobs:
             github.com:443
             registry.npmjs.org:443
             decide.arcjet.com:443
+            nodejs.org:443
 
       # Checkout
       # Most toolchains require checkout first
