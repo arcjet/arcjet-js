@@ -389,6 +389,51 @@ jobs:
           AUTH_SECRET: TEST_SECRET
         run: npm run build
 
+  nextjs-better-auth:
+    name: Next.js + Better-Auth
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+            decide.arcjet.com:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-better-auth
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-better-auth
+        env:
+          BETTER_AUTH_SECRET: TEST_SECRET
+        run: npm run build
+
   nextjs-bot-categories:
     name: Next.js + Bot categories
     runs-on: ubuntu-latest
