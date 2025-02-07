@@ -445,6 +445,33 @@ updates:
         versions: [">=9"]
 
   - package-ecosystem: npm
+    directory: /examples/nextjs-better-auth
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+
+  - package-ecosystem: npm
     directory: /examples/nextjs-bot-categories
     schedule:
       # Our dependencies should be checked daily
