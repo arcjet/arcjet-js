@@ -49,7 +49,7 @@
     "@arcjet/eslint-config": "1.0.0-beta.2",
     "@arcjet/rollup-config": "1.0.0-beta.2",
     "@arcjet/tsconfig": "1.0.0-beta.2",
-    "@rollup/wasm-node": "4.34.2",
+    "@rollup/wasm-node": "4.34.5",
     "expect": "29.7.0",
     "typescript": "5.7.3"
   },
