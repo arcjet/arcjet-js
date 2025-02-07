@@ -564,7 +564,8 @@ describe("createClient", () => {
     const decision = await client.decide(context, details, []);
 
     expect(decision.isErrored()).toBe(true);
-    expect(decision.reason).toMatchObject({
+    // Duplicated `isErrored()` narrowing because the assertion library isn't assertion aware
+    expect(decision.isErrored() && decision.reason).toMatchObject({
       message: "Unknown error occurred",
     });
   });
@@ -618,7 +619,8 @@ describe("createClient", () => {
     const decision = await client.decide(context, details, []);
 
     expect(decision.isErrored()).toBe(true);
-    expect(decision.reason).toMatchObject({
+    // Duplicated `isErrored()` narrowing because the assertion library isn't assertion aware
+    expect(decision.isErrored() && decision.reason).toMatchObject({
       message: "Boom!",
     });
   });
@@ -784,7 +786,6 @@ describe("createClient", () => {
         decision: {
           id: decision.id,
           conclusion: Conclusion.ALLOW,
-          reason: new Reason(),
           ruleResults: [],
         },
       }),
@@ -920,14 +921,6 @@ describe("createClient", () => {
         decision: {
           id: decision.id,
           conclusion: Conclusion.ERROR,
-          reason: new Reason({
-            reason: {
-              case: "error",
-              value: {
-                message: "Failure",
-              },
-            },
-          }),
           ruleResults: [],
         },
       }),
@@ -1056,12 +1049,7 @@ describe("createClient", () => {
           ...details,
           headers: { "user-agent": "curl/8.1.2" },
         },
-        decision: {
-          id: decision.id,
-          conclusion: Conclusion.UNSPECIFIED,
-          reason: new Reason(),
-          ruleResults: [],
-        },
+        decision: {},
       }),
       expect.anything(),
     ]);
