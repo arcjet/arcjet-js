@@ -7,8 +7,7 @@
 
 # TRPC Rate limiting using Arcjet
 
-This example shows how to use Arcjet with Next.js [server
-actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations).
+This example shows how to implement Rate Limiting in TRPC using Arcjet.
 
 ## How to use
 
@@ -25,7 +24,7 @@ actions](https://nextjs.org/docs/app/building-your-application/data-fetching/ser
    npm ci
    ```
 
-3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
+3. Copy `.env.example` and name it `.env`, then add your Arcjet key.
 
 4. Start the dev server.
 
@@ -35,4 +34,4 @@ actions](https://nextjs.org/docs/app/building-your-application/data-fetching/ser
 
 5. Visit `http://localhost:3000/`
 
-6. Submit a post 4 or more times to observe the error
+6. Submit a post 4 or more times to observe the error.
