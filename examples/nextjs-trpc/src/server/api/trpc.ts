@@ -107,15 +107,21 @@ const rateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
 		// If Arcjet encounters an error, you could fail "open" or you could respond
 		// with a "closed"-style message like below
 		if (decision.isErrored()) {
-			console.log('Error occurred:', decision.reason.message);
+			console.error('Error occurred:', decision.reason.message);
 		}
 
-		// If the rate limit is hit, return an error to block the request
 		if (decision.isDenied()) {
-			throw new TRPCError({
-				code: 'TOO_MANY_REQUESTS',
-				message: "You've hit a rate limit!",
-			});
+			// If the rate limit is hit, return an error to block the request
+			if (decision.reason.isRateLimit()) {
+				throw new TRPCError({
+					code: 'TOO_MANY_REQUESTS',
+					message: "You've hit a rate limit!",
+				});
+			} else {
+				throw new TRPCError({
+					code: 'BAD_REQUEST',
+				});
+			}
 		}
 	}
 
