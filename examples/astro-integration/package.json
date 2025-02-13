@@ -12,5 +12,8 @@
     "@arcjet/astro": "file:../../arcjet-astro",
     "@astrojs/node": "^9.0.2",
     "astro": "^5.1.10"
+  },
+  "overrides": {
+    "esbuild": ">=0.25.0"
   }
 }

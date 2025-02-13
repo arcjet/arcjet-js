@@ -18,7 +18,8 @@
     "turbo": "^2.4.2"
   },
   "overrides": {
-    "cookie": "0.7.2",
+    "cookie": ">=0.7.2",
+    "esbuild": ">=0.25.0",
     "rollup": "npm:@rollup/wasm-node"
   }
 }
