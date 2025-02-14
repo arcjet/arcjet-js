@@ -722,6 +722,40 @@ updates:
         versions: ["*"]
 
   - package-ecosystem: npm
+    directory: /examples/nextjs-trpc
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+      - danni-popova
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+      - danni-popova
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Ignore updates to the @types/node package due to conflict between
+      # Headers in DOM.
+      - dependency-name: "@types/node"
+        versions: [">18.18"]
+      # TODO(#539): Upgrade to eslint 9
+      - dependency-name: eslint
+        versions: [">=9"]
+      # Ignore React during the `rc` period
+      - dependency-name: react
+        versions: ["*"]
+      - dependency-name: react-dom
+        versions: ["*"]
+
+  - package-ecosystem: npm
     directory: /examples/nodejs-express-launchdarkly
     schedule:
       # Our dependencies should be checked daily

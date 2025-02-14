@@ -808,6 +808,48 @@ jobs:
         working-directory: examples/nextjs-server-actions
         run: npm run build
 
+  nextjs-trpc:
+    name: Next.js + TRPC
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            fonts.googleapis.com:443
+            fonts.gstatic.com:443
+            github.com:443
+            registry.npmjs.org:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/nextjs-trpc
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/nextjs-trpc
+        run: npm run build
+
   nodejs-hono-rate-limit:
     name: Node.js + Hono + Rate Limit
     runs-on: ubuntu-latest
