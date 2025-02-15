@@ -825,6 +825,7 @@ jobs:
             fonts.gstatic.com:443
             github.com:443
             registry.npmjs.org:443
+            decide.arcjet.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -849,6 +850,9 @@ jobs:
       - name: Build
         working-directory: examples/nextjs-trpc
         run: npm run build
+        env:
+          # Skip the T3 environment validation during our test builds
+          SKIP_ENV_VALIDATION: true
 
   nodejs-hono-rate-limit:
     name: Node.js + Hono + Rate Limit

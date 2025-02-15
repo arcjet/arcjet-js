@@ -749,11 +749,6 @@ updates:
       # TODO(#539): Upgrade to eslint 9
       - dependency-name: eslint
         versions: [">=9"]
-      # Ignore React during the `rc` period
-      - dependency-name: react
-        versions: ["*"]
-      - dependency-name: react-dom
-        versions: ["*"]
 
   - package-ecosystem: npm
     directory: /examples/nodejs-express-launchdarkly

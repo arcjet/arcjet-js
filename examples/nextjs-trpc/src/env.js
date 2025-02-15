@@ -8,7 +8,7 @@ export const env = createEnv({
 	 */
 	server: {
 		NODE_ENV: z.enum(['development', 'test', 'production']),
-		ARCJET_KEY: z.string().startsWith('ajkey_').optional(),
+		ARCJET_KEY: z.string().startsWith('ajkey_'),
 	},
 
 	/**

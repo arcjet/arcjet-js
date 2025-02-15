@@ -1,11 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
-import { type NextRequest } from 'next/server';
 import { aj } from '~/lib/arcjet';
 
 /**
@@ -22,7 +18,7 @@ import { aj } from '~/lib/arcjet';
  */
 export const createTRPCContext = async (opts: {
 	headers: Headers;
-	req?: NextRequest;
+	req?: Request;
 }) => {
 	return {
 		...opts,
@@ -98,10 +94,15 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * Arcjet Rate Limiting Middleware
  */
 const rateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
+	if (!ctx.req) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+		});
+	}
+
 	// Access the request object
 	const request = ctx.req;
 
-	if (request) {
 		const decision = await aj.protect(request);
 
 		// If Arcjet encounters an error, you could fail "open" or you could respond
@@ -123,7 +124,6 @@ const rateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
 				});
 			}
 		}
-	}
 
 	// Call the next middleware or resolver
 	return next();
