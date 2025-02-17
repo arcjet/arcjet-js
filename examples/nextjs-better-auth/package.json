@@ -21,7 +21,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/better-sqlite3": "^7",
     "@types/node": "^20",
-    "@types/react": "19.0.1",
+    "@types/react": "19.0.9",
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
     "eslint": "^8",
