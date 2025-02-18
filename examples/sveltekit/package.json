@@ -36,6 +36,7 @@
     "vite": "^6.0.11"
   },
   "overrides": {
-    "cookie": "0.7.1"
+    "cookie": ">=0.7.1",
+    "esbuild": ">=0.25.0"
   }
 }
