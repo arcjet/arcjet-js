@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...arcjet-v1.0.0-beta.3) (2025-02-18)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/duration bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/headers bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/protocol bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/runtime bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/rollup-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/tsconfig bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...arcjet-v1.0.0-beta.2) (2025-02-04)
 
 

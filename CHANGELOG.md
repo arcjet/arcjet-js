@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2025-02-18)
+
+
+### 🚀 New Features
+
+* **analyze:** Add Hydrozen monitoring bot ([#3132](https://github.com/arcjet/arcjet-js/issues/3132)) ([211dbd0](https://github.com/arcjet/arcjet-js/commit/211dbd0fe35f3a72c267fd21cfeb083214f66372))
+
+
+### 📝 Documentation
+
+* https://github.com/arcjet/arcjet-docs/pull/356 ([0514251](https://github.com/arcjet/arcjet-js/commit/051425101d4e025e692cf43652a9097218c307f4))
+
+
+### 🧹 Miscellaneous Chores
+
+* **ci:** Enable Bun Dependabot ecosystem ([#3190](https://github.com/arcjet/arcjet-js/issues/3190)) ([f01f4c2](https://github.com/arcjet/arcjet-js/commit/f01f4c2a2ffba117b60cfa73f380fe746d516b55))
+* **examples:** Next.js + Better Auth ([#2750](https://github.com/arcjet/arcjet-js/issues/2750)) ([0514251](https://github.com/arcjet/arcjet-js/commit/051425101d4e025e692cf43652a9097218c307f4))
+* Regenerate jco bindings ([#3098](https://github.com/arcjet/arcjet-js/issues/3098)) ([8268d83](https://github.com/arcjet/arcjet-js/commit/8268d833d6a9bfd7849447a05ae5455f279ba19f))
+* Update trunk, linters, and allowed workflow endpoints ([#3097](https://github.com/arcjet/arcjet-js/issues/3097)) ([92dc38b](https://github.com/arcjet/arcjet-js/commit/92dc38b4e8951f54213a80a559fdf08382a965b2))
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-02-04)
 
 
