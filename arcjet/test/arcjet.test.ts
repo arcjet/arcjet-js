@@ -512,248 +512,248 @@ describe("Primitive > detectBot", () => {
         "extra-test": "extra-test-value",
       },
     };
+  });
 
-    test("only denies CURL if configured", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log: mockLogger(),
-        characteristics: [],
-        getBody: () => Promise.resolve(undefined),
-      };
-      const curlDetails = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        cookies: "",
-        query: "",
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-      const googlebotDetails = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "Googlebot/2.0"]]),
-        cookies: "",
-        query: "",
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
+  test("only denies CURL if configured", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const curlDetails = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+    const googlebotDetails = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "Googlebot/2.0"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
 
-      const [rule] = detectBot({
-        mode: "LIVE",
-        deny: ["CURL"],
-      });
-      expect(rule.type).toEqual("BOT");
-      assertIsLocalRule(rule);
-      const curlResult = await rule.protect(context, curlDetails);
-      expect(curlResult).toMatchObject({
-        state: "RUN",
-        conclusion: "DENY",
-        reason: new ArcjetBotReason({
-          allowed: [],
-          denied: ["CURL"],
-          verified: false,
-          spoofed: false,
-        }),
-      });
-      const googlebotResults = await rule.protect(context, googlebotDetails);
-      expect(googlebotResults).toMatchObject({
-        state: "RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetBotReason({
-          allowed: ["GOOGLE_CRAWLER"],
-          denied: [],
-          verified: false,
-          spoofed: false,
-        }),
-      });
+    const [rule] = detectBot({
+      mode: "LIVE",
+      deny: ["CURL"],
     });
-
-    test("can be configured to allow curl", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log: mockLogger(),
-        characteristics: [],
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        cookies: "",
-        query: "",
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const [rule] = detectBot({
-        mode: "LIVE",
-        allow: ["CURL"],
-      });
-      expect(rule.type).toEqual("BOT");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetBotReason({
-          allowed: ["CURL"],
-          denied: [],
-          verified: false,
-          spoofed: false,
-        }),
-      });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const curlResult = await rule.protect(context, curlDetails);
+    expect(curlResult).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CURL"],
+        verified: false,
+        spoofed: false,
+      }),
     });
-
-    test("denies a custom entity", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log: mockLogger(),
-        characteristics: [],
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        cookies: "",
-        query: "",
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const [rule] = detectBot({
-        mode: "LIVE",
-        allow: [],
-        detect: (_) => {
-          return ["CUSTOM_BOT_A" as const];
-        },
-      });
-      expect(rule.type).toEqual("BOT");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "DENY",
-        reason: new ArcjetBotReason({
-          allowed: [],
-          denied: ["CUSTOM_BOT_A"],
-          verified: false,
-          spoofed: false,
-        }),
-      });
+    const googlebotResults = await rule.protect(context, googlebotDetails);
+    expect(googlebotResults).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetBotReason({
+        allowed: ["GOOGLE_CRAWLER"],
+        denied: [],
+        verified: false,
+        spoofed: false,
+      }),
     });
+  });
 
-    test("can be configured to allow a custom entity", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log: mockLogger(),
-        characteristics: [],
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        cookies: "",
-        query: "",
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
+  test("can be configured to allow curl", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
 
-      const [rule] = detectBot({
-        mode: "LIVE",
-        allow: ["CUSTOM_BOT_A"],
-        detect: () => {
-          return ["CUSTOM_BOT_A" as const];
-        },
-      });
-      expect(rule.type).toEqual("BOT");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "DENY",
-        reason: new ArcjetBotReason({
-          allowed: [],
-          denied: ["CUSTOM_BOT_A"],
-          verified: false,
-          spoofed: false,
-        }),
-      });
+    const [rule] = detectBot({
+      mode: "LIVE",
+      allow: ["CURL"],
     });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetBotReason({
+        allowed: ["CURL"],
+        denied: [],
+        verified: false,
+        spoofed: false,
+      }),
+    });
+  });
 
-    test("can be configured to deny a custom entity", async () => {
-      const context = {
-        key: "test-key",
-        fingerprint: "test-fingerprint",
-        runtime: "test",
-        log: mockLogger(),
-        characteristics: [],
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        cookies: "",
-        query: "",
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
+  test("denies a custom entity", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
 
-      const [rule] = detectBot({
-        mode: "LIVE",
-        deny: ["CUSTOM_BOT_A"],
-        detect: () => {
-          return ["CUSTOM_BOT_A" as const];
-        },
-      });
-      expect(rule.type).toEqual("BOT");
-      assertIsLocalRule(rule);
-      const result = await rule.protect(context, details);
-      expect(result).toMatchObject({
-        state: "RUN",
-        conclusion: "DENY",
-        reason: new ArcjetBotReason({
-          allowed: [],
-          denied: ["CUSTOM_BOT_A"],
-          verified: false,
-          spoofed: false,
-        }),
-      });
+    const [rule] = detectBot({
+      mode: "LIVE",
+      allow: [],
+      detect: (_) => {
+        return ["CUSTOM_BOT_A" as const];
+      },
+    });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CUSTOM_BOT_A"],
+        verified: false,
+        spoofed: false,
+      }),
+    });
+  });
+
+  test("can be configured to allow a custom entity", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = detectBot({
+      mode: "LIVE",
+      allow: ["CUSTOM_BOT_A"],
+      detect: () => {
+        return ["CUSTOM_BOT_A" as const];
+      },
+    });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CUSTOM_BOT_A"],
+        verified: false,
+        spoofed: false,
+      }),
+    });
+  });
+
+  test("can be configured to deny a custom entity", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = detectBot({
+      mode: "LIVE",
+      deny: ["CUSTOM_BOT_A"],
+      detect: () => {
+        return ["CUSTOM_BOT_A" as const];
+      },
+    });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CUSTOM_BOT_A"],
+        verified: false,
+        spoofed: false,
+      }),
     });
   });
 });
