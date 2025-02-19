@@ -512,6 +512,24 @@ describe("Primitive > detectBot", () => {
         "extra-test": "extra-test-value",
       },
     };
+
+    const [rule] = detectBot({
+      mode: "LIVE",
+      allow: [],
+    });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CURL"],
+        verified: false,
+        spoofed: false,
+      }),
+    });
   });
 
   test("only denies CURL if configured", async () => {
