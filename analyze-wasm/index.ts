@@ -10,11 +10,14 @@ import type {
   EmailValidationConfig,
   SensitiveInfoEntities,
 } from "./wasm/arcjet_analyze_js_req.component.js";
+import type { ArcjetJsReqBotIdentifier } from "./wasm/interfaces/arcjet-js-req-bot-identifier.js";
 import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 
 import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.component.core.wasm?js";
 import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_js_req.component.core2.wasm?js";
 import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_js_req.component.core3.wasm?js";
+
+type DetectBotsFunction = typeof ArcjetJsReqBotIdentifier.detect;
 
 type DetectSensitiveInfoFunction =
   typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
@@ -55,6 +58,7 @@ export {
   type BotResult,
   type SensitiveInfoResult,
   type SensitiveInfoEntities,
+  type DetectBotsFunction,
   type DetectSensitiveInfoFunction,
   type ImportObject,
 };

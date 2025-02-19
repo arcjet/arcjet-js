@@ -479,6 +479,7 @@ const validateBotOptions = createValidator({
     { key: "mode", required: false, validate: validateMode },
     { key: "allow", required: false, validate: validateStringArray },
     { key: "deny", required: false, validate: validateStringArray },
+    { key: "detect", required: false, validate: validateFunction },
   ],
 });
 
@@ -515,19 +516,43 @@ export type SlidingWindowRateLimitOptions<
   max: number;
 };
 
-export type BotOptionsAllow = {
+// This represents the User-facing implementation where the request is an object.
+type DetectBot<T> = (request: ArcjetRequest<{}>) => Array<T>;
+
+// This represents the Wasm-facing implentation where the request is JSON.
+type DetectBotSerialized<T> = (request: string) => Array<T>;
+
+type ValidBotEntities<Detect> = Array<
+  // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/
+  // Conditional types distribute over unions. If you have ((string | undefined)
+  // extends undefined ? 1 : 0) it is evaluated separately for each member of
+  // the union, then union-ed together again. The result is (string extends
+  // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
+  // to 0 | 1
+  undefined extends Detect
+    ? ArcjetBotCategory | ArcjetWellKnownBot
+    : Detect extends DetectBot<infer CustomEntities>
+      ? ArcjetBotCategory | ArcjetWellKnownBot | CustomEntities
+      : never
+>;
+
+export type BotOptionsAllow<Detect> = {
   mode?: ArcjetMode;
-  allow: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  allow: ValidBotEntities<Detect>;
   deny?: never;
+  detect?: Detect;
 };
 
-export type BotOptionsDeny = {
+export type BotOptionsDeny<Detect> = {
   mode?: ArcjetMode;
   allow?: never;
-  deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  deny: ValidBotEntities<Detect>;
+  detect?: Detect;
 };
 
-export type BotOptions = BotOptionsAllow | BotOptionsDeny;
+export type BotOptions<Detect> =
+  | BotOptionsAllow<Detect>
+  | BotOptionsDeny<Detect>;
 
 export type EmailOptionsAllow = {
   mode?: ArcjetMode;
@@ -1108,7 +1133,10 @@ export function validateEmail(
   ];
 }
 
-export function detectBot(options: BotOptions): Primitive<{}> {
+export function detectBot<
+  const Detect extends DetectBot<CustomBots> | undefined,
+  const CustomBots extends string,
+>(options: BotOptions<Detect>): Primitive<{}> {
   validateBotOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
@@ -1156,6 +1184,20 @@ export function detectBot(options: BotOptions): Primitive<{}> {
     };
   }
 
+  let customDetect: DetectBotSerialized<CustomBots>;
+  if (typeof options.detect === "function") {
+    const detect = options.detect;
+    customDetect = (req: string) => {
+      let request: ArcjetRequest<{}>;
+      try {
+        request = JSON.parse(req);
+      } catch {
+        throw new Error("object sent for detection was not a request");
+      }
+      return detect(request);
+    };
+  }
+
   return [
     <ArcjetBotRule<{}>>{
       type: "BOT",
@@ -1192,6 +1234,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
           context,
           toAnalyzeRequest(request),
           config,
+          customDetect,
         );
 
         // If this is a bot and of a type that we want to block, then block!
@@ -1242,14 +1285,21 @@ export function shield(options: ShieldOptions): Primitive<{}> {
   ];
 }
 
-export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
+export type ProtectSignupOptions<
+  Characteristics extends readonly string[],
+  DetectBot,
+> = {
   rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
-  bots: BotOptions;
+  bots: BotOptions<DetectBot>;
   email: EmailOptions;
 };
 
-export function protectSignup<const Characteristics extends string[] = []>(
-  options: ProtectSignupOptions<Characteristics>,
+export function protectSignup<
+  const Detect extends DetectBot<CustomEntities> | undefined,
+  const CustomEntities extends string,
+  const Characteristics extends string[] = [],
+>(
+  options: ProtectSignupOptions<Characteristics, Detect>,
 ): Product<
   Simplify<
     UnionToIntersection<
