@@ -665,7 +665,7 @@ describe("Primitive > detectBot", () => {
 
     const [rule] = detectBot({
       mode: "LIVE",
-      allow: ["CUSTOM_BOT_A"],
+      deny: ["CUSTOM_BOT_A"],
       detect: () => {
         return ["CUSTOM_BOT_A" as const];
       },
