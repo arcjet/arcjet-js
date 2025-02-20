@@ -55,8 +55,8 @@ function noOpDetectBots(): string[] {
 }
 
 function createCoreImports(
-  detectSensitiveInfo: DetectSensitiveInfoFunction,
-  detectBots: DetectBotsFunction,
+  detectSensitiveInfo: DetectSensitiveInfoFunction = noOpDetectSensitiveInfo,
+  detectBots: DetectBotsFunction = noOpDetectBots,
 ): ImportObject {
   return {
     "arcjet:js-req/email-validator-overrides": {
@@ -102,10 +102,7 @@ export async function generateFingerprint(
   request: AnalyzeRequest,
 ): Promise<string> {
   const { log } = context;
-  const coreImports = createCoreImports(
-    noOpDetectSensitiveInfo,
-    noOpDetectBots,
-  );
+  const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
@@ -126,10 +123,7 @@ export async function isValidEmail(
   options: EmailValidationConfig,
 ): Promise<EmailValidationResult> {
   const { log } = context;
-  const coreImports = createCoreImports(
-    noOpDetectSensitiveInfo,
-    noOpDetectBots,
-  );
+  const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
@@ -194,10 +188,7 @@ export async function detectSensitiveInfo(
   detect?: DetectSensitiveInfoFunction,
 ): Promise<SensitiveInfoResult> {
   const { log } = context;
-  const coreImports = createCoreImports(
-    detect || noOpDetectSensitiveInfo,
-    noOpDetectBots,
-  );
+  const coreImports = createCoreImports(detect || noOpDetectSensitiveInfo);
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
