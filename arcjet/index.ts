@@ -1134,9 +1134,11 @@ export function validateEmail(
 }
 
 export function detectBot<
-  const Detect extends DetectBot<CustomBots> | undefined,
-  const CustomBots extends string,
->(options: BotOptions<Detect>): Primitive<{}> {
+  const Detect extends DetectBot<CustomBots> | undefined = undefined,
+  const CustomBots extends string = never,
+>(
+  options: BotOptions<Detect extends never ? undefined : DetectBot<CustomBots>>,
+): Primitive<{}> {
   validateBotOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
@@ -1161,7 +1163,7 @@ export function detectBot<
     tag: "allowed-bot-config",
     val: {
       entities: [],
-      skipCustomDetect: true,
+      skipCustomDetect: typeof options.detect !== "function",
     },
   };
   if (typeof options.allow !== "undefined") {
@@ -1169,7 +1171,7 @@ export function detectBot<
       tag: "allowed-bot-config",
       val: {
         entities: options.allow,
-        skipCustomDetect: true,
+        skipCustomDetect: typeof options.detect !== "function",
       },
     };
   }
@@ -1179,22 +1181,8 @@ export function detectBot<
       tag: "denied-bot-config",
       val: {
         entities: options.deny,
-        skipCustomDetect: true,
+        skipCustomDetect: typeof options.detect !== "function",
       },
-    };
-  }
-
-  let customDetect: DetectBotSerialized<CustomBots>;
-  if (typeof options.detect === "function") {
-    const detect = options.detect;
-    customDetect = (req: string) => {
-      let request: ArcjetRequest<{}>;
-      try {
-        request = JSON.parse(req);
-      } catch {
-        throw new Error("object sent for detection was not a request");
-      }
-      return detect(request);
     };
   }
 
@@ -1234,7 +1222,7 @@ export function detectBot<
           context,
           toAnalyzeRequest(request),
           config,
-          customDetect,
+          options.detect,
         );
 
         // If this is a bot and of a type that we want to block, then block!
@@ -1287,7 +1275,7 @@ export function shield(options: ShieldOptions): Primitive<{}> {
 
 export type ProtectSignupOptions<
   Characteristics extends readonly string[],
-  DetectBot,
+  DetectBot = undefined,
 > = {
   rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
   bots: BotOptions<DetectBot>;
@@ -1295,11 +1283,14 @@ export type ProtectSignupOptions<
 };
 
 export function protectSignup<
-  const Detect extends DetectBot<CustomEntities> | undefined,
-  const CustomEntities extends string,
   const Characteristics extends string[] = [],
+  const Detect extends DetectBot<CustomBots> | undefined = undefined,
+  const CustomBots extends string = never,
 >(
-  options: ProtectSignupOptions<Characteristics, Detect>,
+  options: ProtectSignupOptions<
+    Characteristics,
+    Detect extends never ? undefined : DetectBot<CustomBots>
+  >,
 ): Product<
   Simplify<
     UnionToIntersection<
@@ -1309,7 +1300,7 @@ export function protectSignup<
 > {
   return [
     ...slidingWindow(options.rateLimit),
-    ...detectBot(options.bots),
+    ...detectBot<Detect, CustomBots>(options.bots),
     ...validateEmail(options.email),
   ];
 }

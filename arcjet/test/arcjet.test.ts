@@ -655,7 +655,7 @@ describe("Primitive > detectBot", () => {
       protocol: "http",
       host: "example.com",
       path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      headers: new Headers([["User-Agent", "not-a-bot"]]),
       cookies: "",
       query: "",
       extra: {
@@ -665,8 +665,8 @@ describe("Primitive > detectBot", () => {
 
     const [rule] = detectBot({
       mode: "LIVE",
-      allow: [],
-      detect: (_) => {
+      allow: ["CUSTOM_BOT_A"],
+      detect: () => {
         return ["CUSTOM_BOT_A" as const];
       },
     });
@@ -700,7 +700,7 @@ describe("Primitive > detectBot", () => {
       protocol: "http",
       host: "example.com",
       path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      headers: new Headers([["User-Agent", "not-a-bot"]]),
       cookies: "",
       query: "",
       extra: {
@@ -720,10 +720,10 @@ describe("Primitive > detectBot", () => {
     const result = await rule.protect(context, details);
     expect(result).toMatchObject({
       state: "RUN",
-      conclusion: "DENY",
+      conclusion: "ALLOW",
       reason: new ArcjetBotReason({
-        allowed: [],
-        denied: ["CUSTOM_BOT_A"],
+        allowed: ["CUSTOM_BOT_A"],
+        denied: [],
         verified: false,
         spoofed: false,
       }),

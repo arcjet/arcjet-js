@@ -38,7 +38,7 @@ const botOptions = {
   // configured with a list of bots to allow from
   // https://arcjet.com/bot-list
   allow: [], // prevents bots from submitting the form
-} satisfies BotOptions;
+} satisfies BotOptions<never>;
 
 const rateLimitOptions = {
   mode: "LIVE",
@@ -53,7 +53,7 @@ const signupOptions = {
   // It would be unusual for a form to be submitted more than 5 times in 10
   // minutes from the same IP address
   rateLimit: rateLimitOptions,
-} satisfies ProtectSignupOptions<[]>;
+} satisfies ProtectSignupOptions<[], never>;
 
 async function protect(req: NextRequest): Promise<ArcjetDecision> {
   const session = await auth.api.getSession({

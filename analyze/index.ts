@@ -54,21 +54,10 @@ function noOpDetectBots(): string[] {
   return [];
 }
 
-function createCoreImports(imports?: {
-  detectSensitiveInfo?: DetectSensitiveInfoFunction;
-  detectBots?: DetectBotsFunction;
-}): ImportObject {
-  let detectSensitiveInfo = imports?.detectSensitiveInfo;
-  let detectBots = imports?.detectBots;
-
-  if (typeof detectSensitiveInfo !== "function") {
-    detectSensitiveInfo = noOpDetectSensitiveInfo;
-  }
-
-  if (typeof detectBots !== "function") {
-    detectBots = noOpDetectBots;
-  }
-
+function createCoreImports(
+  detectSensitiveInfo: DetectSensitiveInfoFunction,
+  detectBots: DetectBotsFunction,
+): ImportObject {
   return {
     "arcjet:js-req/email-validator-overrides": {
       isFreeEmail(domain) {
@@ -113,7 +102,10 @@ export async function generateFingerprint(
   request: AnalyzeRequest,
 ): Promise<string> {
   const { log } = context;
-  const coreImports = createCoreImports();
+  const coreImports = createCoreImports(
+    noOpDetectSensitiveInfo,
+    noOpDetectBots,
+  );
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
@@ -134,7 +126,10 @@ export async function isValidEmail(
   options: EmailValidationConfig,
 ): Promise<EmailValidationResult> {
   const { log } = context;
-  const coreImports = createCoreImports();
+  const coreImports = createCoreImports(
+    noOpDetectSensitiveInfo,
+    noOpDetectBots,
+  );
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
@@ -149,14 +144,32 @@ export async function isValidEmail(
   }
 }
 
+type RequestDetectBotsFunction = (request: AnalyzeRequest) => Array<string>;
+
 export async function detectBot(
   context: AnalyzeContext,
   request: AnalyzeRequest,
   options: BotConfig,
-  detect?: DetectBotsFunction,
+  detect?: RequestDetectBotsFunction,
 ): Promise<BotResult> {
   const { log } = context;
-  const coreImports = createCoreImports({ detectBots: detect });
+  let convertedDetect;
+  if (typeof detect === "function") {
+    convertedDetect = (req: string) => {
+      let request: AnalyzeRequest;
+      try {
+        request = JSON.parse(req);
+      } catch {
+        throw new Error("object sent for detection was not a request");
+      }
+      return detect(request);
+    };
+  }
+
+  const coreImports = createCoreImports(
+    noOpDetectSensitiveInfo,
+    convertedDetect || noOpDetectBots,
+  );
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
@@ -181,7 +194,10 @@ export async function detectSensitiveInfo(
   detect?: DetectSensitiveInfoFunction,
 ): Promise<SensitiveInfoResult> {
   const { log } = context;
-  const coreImports = createCoreImports({ detectSensitiveInfo: detect });
+  const coreImports = createCoreImports(
+    detect || noOpDetectSensitiveInfo,
+    noOpDetectBots,
+  );
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
