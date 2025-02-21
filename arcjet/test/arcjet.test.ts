@@ -1,7 +1,13 @@
 import { describe, test, mock } from "node:test";
 import { expect } from "expect";
 
-import type { ArcjetRule, ArcjetLocalRule, Primitive, Arcjet } from "../index";
+import type {
+  ArcjetRule,
+  ArcjetLocalRule,
+  Primitive,
+  Arcjet,
+  ArcjetRequest,
+} from "../index";
 import arcjet, {
   detectBot,
   validateEmail,
@@ -649,13 +655,16 @@ describe("Primitive > detectBot", () => {
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
+    const headers = {
+      "user-agent": "not-a-bot",
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
       path: "/",
-      headers: new Headers([["User-Agent", "not-a-bot"]]),
+      headers: new Headers(headers),
       cookies: "",
       query: "",
       extra: {
@@ -666,7 +675,15 @@ describe("Primitive > detectBot", () => {
     const [rule] = detectBot({
       mode: "LIVE",
       deny: ["CUSTOM_BOT_A"],
-      detect: () => {
+      detect: (req: ArcjetRequest<{}>) => {
+        expect(details.ip).toMatch(details.ip!);
+        expect(details.method).toMatch(details.method!);
+        expect(details.protocol).toMatch(details.protocol!);
+        expect(details.host).toMatch(details.host!);
+        expect(details.path).toMatch(details.path!);
+        expect(req.headers).toEqual(headers);
+        expect(details.cookies).toMatch(details.cookies!);
+        expect(details.query).toMatch(details.query!);
         return ["CUSTOM_BOT_A" as const];
       },
     });
@@ -694,13 +711,16 @@ describe("Primitive > detectBot", () => {
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
+    const headers = {
+      "user-agent": "not-a-bot",
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
       path: "/",
-      headers: new Headers([["User-Agent", "not-a-bot"]]),
+      headers: new Headers(headers),
       cookies: "",
       query: "",
       extra: {
@@ -711,7 +731,15 @@ describe("Primitive > detectBot", () => {
     const [rule] = detectBot({
       mode: "LIVE",
       allow: ["CUSTOM_BOT_A"],
-      detect: () => {
+      detect: (req: ArcjetRequest<{}>) => {
+        expect(details.ip).toMatch(details.ip!);
+        expect(details.method).toMatch(details.method!);
+        expect(details.protocol).toMatch(details.protocol!);
+        expect(details.host).toMatch(details.host!);
+        expect(details.path).toMatch(details.path!);
+        expect(req.headers).toEqual(headers);
+        expect(details.cookies).toMatch(details.cookies!);
+        expect(details.query).toMatch(details.query!);
         return ["CUSTOM_BOT_A" as const];
       },
     });
@@ -739,13 +767,16 @@ describe("Primitive > detectBot", () => {
       characteristics: [],
       getBody: () => Promise.resolve(undefined),
     };
+    const headers = {
+      "user-agent": "not-a-bot",
+    };
     const details = {
       ip: "172.100.1.1",
       method: "GET",
       protocol: "http",
       host: "example.com",
       path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      headers: new Headers(headers),
       cookies: "",
       query: "",
       extra: {
@@ -756,7 +787,15 @@ describe("Primitive > detectBot", () => {
     const [rule] = detectBot({
       mode: "LIVE",
       deny: ["CUSTOM_BOT_A"],
-      detect: () => {
+      detect: (req: ArcjetRequest<{}>) => {
+        expect(details.ip).toMatch(details.ip!);
+        expect(details.method).toMatch(details.method!);
+        expect(details.protocol).toMatch(details.protocol!);
+        expect(details.host).toMatch(details.host!);
+        expect(details.path).toMatch(details.path!);
+        expect(req.headers).toEqual(headers);
+        expect(details.cookies).toMatch(details.cookies!);
+        expect(details.query).toMatch(details.query!);
         return ["CUSTOM_BOT_A" as const];
       },
     });

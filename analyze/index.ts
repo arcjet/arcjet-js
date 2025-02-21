@@ -50,7 +50,7 @@ function noOpDetectSensitiveInfo(): SensitiveInfoEntity[] {
   return [];
 }
 
-function noOpDetectBots(): string[] {
+function noOpDetectBots(_: string): string[] {
   return [];
 }
 
@@ -147,7 +147,7 @@ export async function detectBot(
   detect?: RequestDetectBotsFunction,
 ): Promise<BotResult> {
   const { log } = context;
-  let convertedDetect;
+  let convertedDetect = noOpDetectBots;
   if (typeof detect === "function") {
     convertedDetect = (req: string) => {
       let request: AnalyzeRequest;
@@ -162,7 +162,7 @@ export async function detectBot(
 
   const coreImports = createCoreImports(
     noOpDetectSensitiveInfo,
-    convertedDetect || noOpDetectBots,
+    convertedDetect,
   );
   const analyze = await initializeWasm(coreImports);
 

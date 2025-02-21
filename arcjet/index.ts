@@ -519,7 +519,6 @@ export type SlidingWindowRateLimitOptions<
 // This represents the User-facing implementation where the request is an object.
 type DetectBot<T> = (request: ArcjetRequest<{}>) => Array<T>;
 
-
 type ValidBotEntities<Detect> = Array<
   // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/
   // Conditional types distribute over unions. If you have ((string | undefined)
