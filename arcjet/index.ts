@@ -519,8 +519,6 @@ export type SlidingWindowRateLimitOptions<
 // This represents the User-facing implementation where the request is an object.
 type DetectBot<T> = (request: ArcjetRequest<{}>) => Array<T>;
 
-// This represents the Wasm-facing implentation where the request is JSON.
-type DetectBotSerialized<T> = (request: string) => Array<T>;
 
 type ValidBotEntities<Detect> = Array<
   // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/

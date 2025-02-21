@@ -188,7 +188,7 @@ export async function detectSensitiveInfo(
   detect?: DetectSensitiveInfoFunction,
 ): Promise<SensitiveInfoResult> {
   const { log } = context;
-  const coreImports = createCoreImports(detect || noOpDetectSensitiveInfo);
+  const coreImports = createCoreImports(detect);
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
