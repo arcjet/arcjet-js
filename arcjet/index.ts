@@ -479,6 +479,7 @@ const validateBotOptions = createValidator({
     { key: "mode", required: false, validate: validateMode },
     { key: "allow", required: false, validate: validateStringArray },
     { key: "deny", required: false, validate: validateStringArray },
+    { key: "detect", required: false, validate: validateFunction },
   ],
 });
 
@@ -515,19 +516,40 @@ export type SlidingWindowRateLimitOptions<
   max: number;
 };
 
-export type BotOptionsAllow = {
+// This represents the User-facing implementation where the request is an object.
+type DetectBot<T> = (request: ArcjetRequest<{}>) => Array<T>;
+
+type ValidBotEntities<Detect> = Array<
+  // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/
+  // Conditional types distribute over unions. If you have ((string | undefined)
+  // extends undefined ? 1 : 0) it is evaluated separately for each member of
+  // the union, then union-ed together again. The result is (string extends
+  // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
+  // to 0 | 1
+  undefined extends Detect
+    ? ArcjetBotCategory | ArcjetWellKnownBot
+    : Detect extends DetectBot<infer CustomEntities>
+      ? ArcjetBotCategory | ArcjetWellKnownBot | CustomEntities
+      : never
+>;
+
+export type BotOptionsAllow<Detect> = {
   mode?: ArcjetMode;
-  allow: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  allow: ValidBotEntities<Detect>;
   deny?: never;
+  detect?: Detect;
 };
 
-export type BotOptionsDeny = {
+export type BotOptionsDeny<Detect> = {
   mode?: ArcjetMode;
   allow?: never;
-  deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  deny: ValidBotEntities<Detect>;
+  detect?: Detect;
 };
 
-export type BotOptions = BotOptionsAllow | BotOptionsDeny;
+export type BotOptions<Detect> =
+  | BotOptionsAllow<Detect>
+  | BotOptionsDeny<Detect>;
 
 export type EmailOptionsAllow = {
   mode?: ArcjetMode;
@@ -1108,7 +1130,12 @@ export function validateEmail(
   ];
 }
 
-export function detectBot(options: BotOptions): Primitive<{}> {
+export function detectBot<
+  const Detect extends DetectBot<CustomBots> | undefined = undefined,
+  const CustomBots extends string = never,
+>(
+  options: BotOptions<Detect extends never ? undefined : DetectBot<CustomBots>>,
+): Primitive<{}> {
   validateBotOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
@@ -1133,7 +1160,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
     tag: "allowed-bot-config",
     val: {
       entities: [],
-      skipCustomDetect: true,
+      skipCustomDetect: typeof options.detect !== "function",
     },
   };
   if (typeof options.allow !== "undefined") {
@@ -1141,7 +1168,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
       tag: "allowed-bot-config",
       val: {
         entities: options.allow,
-        skipCustomDetect: true,
+        skipCustomDetect: typeof options.detect !== "function",
       },
     };
   }
@@ -1151,7 +1178,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
       tag: "denied-bot-config",
       val: {
         entities: options.deny,
-        skipCustomDetect: true,
+        skipCustomDetect: typeof options.detect !== "function",
       },
     };
   }
@@ -1192,6 +1219,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
           context,
           toAnalyzeRequest(request),
           config,
+          options.detect,
         );
 
         // If this is a bot and of a type that we want to block, then block!
@@ -1242,14 +1270,24 @@ export function shield(options: ShieldOptions): Primitive<{}> {
   ];
 }
 
-export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
+export type ProtectSignupOptions<
+  Characteristics extends readonly string[],
+  DetectBot = undefined,
+> = {
   rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
-  bots: BotOptions;
+  bots: BotOptions<DetectBot>;
   email: EmailOptions;
 };
 
-export function protectSignup<const Characteristics extends string[] = []>(
-  options: ProtectSignupOptions<Characteristics>,
+export function protectSignup<
+  const Characteristics extends string[] = [],
+  const Detect extends DetectBot<CustomBots> | undefined = undefined,
+  const CustomBots extends string = never,
+>(
+  options: ProtectSignupOptions<
+    Characteristics,
+    Detect extends never ? undefined : DetectBot<CustomBots>
+  >,
 ): Product<
   Simplify<
     UnionToIntersection<
@@ -1259,7 +1297,7 @@ export function protectSignup<const Characteristics extends string[] = []>(
 > {
   return [
     ...slidingWindow(options.rateLimit),
-    ...detectBot(options.bots),
+    ...detectBot<Detect, CustomBots>(options.bots),
     ...validateEmail(options.email),
   ];
 }

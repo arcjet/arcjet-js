@@ -136,7 +136,7 @@ type IntegrationRule<Characteristics extends readonly string[]> =
     }
   | {
       type: "bot";
-      options?: BotOptions;
+      options?: BotOptions<never>;
     }
   | {
       type: "email";
@@ -163,7 +163,7 @@ type IntegrationRule<Characteristics extends readonly string[]> =
     }
   | {
       type: "protectSignup";
-      options?: ProtectSignupOptions<Characteristics>;
+      options?: ProtectSignupOptions<Characteristics, never>;
     };
 
 // TODO: This only supports serializable options, so no custom loggers are
@@ -280,7 +280,7 @@ export function shield(options?: ShieldOptions) {
   return { type: "shield", options } as const;
 }
 
-export function detectBot(options?: BotOptions) {
+export function detectBot(options?: BotOptions<never>) {
   return { type: "bot", options } as const;
 }
 
@@ -311,7 +311,7 @@ export function tokenBucket<Characteristics extends readonly string[]>(
 }
 
 export function protectSignup<Characteristics extends readonly string[]>(
-  options?: ProtectSignupOptions<Characteristics>,
+  options?: ProtectSignupOptions<Characteristics, never>,
 ) {
   return { type: "protectSignup", options } as const;
 }

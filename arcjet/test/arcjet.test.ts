@@ -1,7 +1,13 @@
 import { describe, test, mock } from "node:test";
 import { expect } from "expect";
 
-import type { ArcjetRule, ArcjetLocalRule, Primitive, Arcjet } from "../index";
+import type {
+  ArcjetRule,
+  ArcjetLocalRule,
+  Primitive,
+  Arcjet,
+  ArcjetRequest,
+} from "../index";
 import arcjet, {
   detectBot,
   validateEmail,
@@ -403,6 +409,18 @@ describe("Primitive > detectBot", () => {
     );
   });
 
+  test("validates `detect` option if set", async () => {
+    expect(() => {
+      detectBot({
+        allow: [],
+        // @ts-expect-error
+        detect: "abc",
+      });
+    }).toThrow(
+      "`detectBot` options error: invalid type for `detect` - expected function",
+    );
+  });
+
   test("throws via `validate()` if headers is undefined", () => {
     const context = {
       key: "test-key",
@@ -622,6 +640,174 @@ describe("Primitive > detectBot", () => {
       reason: new ArcjetBotReason({
         allowed: ["CURL"],
         denied: [],
+        verified: false,
+        spoofed: false,
+      }),
+    });
+  });
+
+  test("denies a custom entity", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const headers = {
+      "user-agent": "not-a-bot",
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(headers),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = detectBot({
+      mode: "LIVE",
+      deny: ["CUSTOM_BOT_A"],
+      detect: (req: ArcjetRequest<{}>) => {
+        expect(details.ip).toMatch(details.ip!);
+        expect(details.method).toMatch(details.method!);
+        expect(details.protocol).toMatch(details.protocol!);
+        expect(details.host).toMatch(details.host!);
+        expect(details.path).toMatch(details.path!);
+        expect(req.headers).toEqual(headers);
+        expect(details.cookies).toMatch(details.cookies!);
+        expect(details.query).toMatch(details.query!);
+        return ["CUSTOM_BOT_A" as const];
+      },
+    });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CUSTOM_BOT_A"],
+        verified: false,
+        spoofed: false,
+      }),
+    });
+  });
+
+  test("can be configured to allow a custom entity", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const headers = {
+      "user-agent": "not-a-bot",
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(headers),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = detectBot({
+      mode: "LIVE",
+      allow: ["CUSTOM_BOT_A"],
+      detect: (req: ArcjetRequest<{}>) => {
+        expect(details.ip).toMatch(details.ip!);
+        expect(details.method).toMatch(details.method!);
+        expect(details.protocol).toMatch(details.protocol!);
+        expect(details.host).toMatch(details.host!);
+        expect(details.path).toMatch(details.path!);
+        expect(req.headers).toEqual(headers);
+        expect(details.cookies).toMatch(details.cookies!);
+        expect(details.query).toMatch(details.query!);
+        return ["CUSTOM_BOT_A" as const];
+      },
+    });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetBotReason({
+        allowed: ["CUSTOM_BOT_A"],
+        denied: [],
+        verified: false,
+        spoofed: false,
+      }),
+    });
+  });
+
+  test("can be configured to deny a custom entity", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const headers = {
+      "user-agent": "not-a-bot",
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(headers),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = detectBot({
+      mode: "LIVE",
+      deny: ["CUSTOM_BOT_A"],
+      detect: (req: ArcjetRequest<{}>) => {
+        expect(details.ip).toMatch(details.ip!);
+        expect(details.method).toMatch(details.method!);
+        expect(details.protocol).toMatch(details.protocol!);
+        expect(details.host).toMatch(details.host!);
+        expect(details.path).toMatch(details.path!);
+        expect(req.headers).toEqual(headers);
+        expect(details.cookies).toMatch(details.cookies!);
+        expect(details.query).toMatch(details.query!);
+        return ["CUSTOM_BOT_A" as const];
+      },
+    });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CUSTOM_BOT_A"],
         verified: false,
         spoofed: false,
       }),

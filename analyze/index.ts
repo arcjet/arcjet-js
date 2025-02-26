@@ -2,6 +2,7 @@ import { initializeWasm } from "@arcjet/analyze-wasm";
 import type {
   BotConfig,
   BotResult,
+  DetectBotsFunction,
   DetectedSensitiveInfoEntity,
   DetectSensitiveInfoFunction,
   EmailValidationConfig,
@@ -45,15 +46,18 @@ const FREE_EMAIL_PROVIDERS = [
   "hotmail.co.uk",
 ];
 
-function noOpDetect(): SensitiveInfoEntity[] {
+function noOpDetectSensitiveInfo(): SensitiveInfoEntity[] {
   return [];
 }
 
-function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
-  if (typeof detect !== "function") {
-    detect = noOpDetect;
-  }
+function noOpDetectBots(_: string): string[] {
+  return [];
+}
 
+function createCoreImports(
+  detectSensitiveInfo: DetectSensitiveInfoFunction = noOpDetectSensitiveInfo,
+  detectBots: DetectBotsFunction = noOpDetectBots,
+): ImportObject {
   return {
     "arcjet:js-req/email-validator-overrides": {
       isFreeEmail(domain) {
@@ -72,8 +76,11 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
         return "unknown";
       },
     },
+    "arcjet:js-req/bot-identifier": {
+      detect: detectBots,
+    },
     "arcjet:js-req/sensitive-information-identifier": {
-      detect,
+      detect: detectSensitiveInfo,
     },
     "arcjet:js-req/verify-bot": {
       verify() {
@@ -131,13 +138,32 @@ export async function isValidEmail(
   }
 }
 
+type RequestDetectBotsFunction = (request: AnalyzeRequest) => Array<string>;
+
 export async function detectBot(
   context: AnalyzeContext,
   request: AnalyzeRequest,
   options: BotConfig,
+  detect?: RequestDetectBotsFunction,
 ): Promise<BotResult> {
   const { log } = context;
-  const coreImports = createCoreImports();
+  let convertedDetect = noOpDetectBots;
+  if (typeof detect === "function") {
+    convertedDetect = (req: string) => {
+      let request: AnalyzeRequest;
+      try {
+        request = JSON.parse(req);
+      } catch {
+        throw new Error("object sent for detection was not a request");
+      }
+      return detect(request);
+    };
+  }
+
+  const coreImports = createCoreImports(
+    noOpDetectSensitiveInfo,
+    convertedDetect,
+  );
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
