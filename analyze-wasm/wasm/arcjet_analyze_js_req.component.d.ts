@@ -1,5 +1,7 @@
 import type { SensitiveInfoEntity } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
 export { SensitiveInfoEntity };
+import type { BotEntity } from './interfaces/arcjet-js-req-bot-identifier.js';
+export { BotEntity };
 /**
 * # Variants
 * 
@@ -54,7 +56,6 @@ export interface SensitiveInfoResult {
   allowed: Array<DetectedSensitiveInfoEntity>,
   denied: Array<DetectedSensitiveInfoEntity>,
 }
-export type BotEntity = string;
 export interface AllowedBotConfig {
   entities: Array<BotEntity>,
   skipCustomDetect: boolean,
@@ -78,10 +79,12 @@ export interface BotResult {
   verified: boolean,
   spoofed: boolean,
 }
+import { ArcjetJsReqBotIdentifier } from './interfaces/arcjet-js-req-bot-identifier.js';
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
 import { ArcjetJsReqSensitiveInformationIdentifier } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
 import { ArcjetJsReqVerifyBot } from './interfaces/arcjet-js-req-verify-bot.js';
 export interface ImportObject {
+  'arcjet:js-req/bot-identifier': typeof ArcjetJsReqBotIdentifier,
   'arcjet:js-req/email-validator-overrides': typeof ArcjetJsReqEmailValidatorOverrides,
   'arcjet:js-req/sensitive-information-identifier': typeof ArcjetJsReqSensitiveInformationIdentifier,
   'arcjet:js-req/verify-bot': typeof ArcjetJsReqVerifyBot,

@@ -42,8 +42,9 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
   const module1 = getCoreModule('arcjet_analyze_js_req.component.core2.wasm');
   const module2 = getCoreModule('arcjet_analyze_js_req.component.core3.wasm');
   
+  const { detect } = imports['arcjet:js-req/bot-identifier'];
   const { hasGravatar, hasMxRecords, isDisposableEmail, isFreeEmail } = imports['arcjet:js-req/email-validator-overrides'];
-  const { detect } = imports['arcjet:js-req/sensitive-information-identifier'];
+  const { detect: detect$1 } = imports['arcjet:js-req/sensitive-information-identifier'];
   const { verify } = imports['arcjet:js-req/verify-bot'];
   let gen = (function* init () {
     let exports0;
@@ -51,7 +52,26 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     let memory0;
     let realloc0;
     
-    function trampoline0(arg0, arg1, arg2, arg3) {
+    function trampoline0(arg0, arg1, arg2) {
+      var ptr0 = arg0;
+      var len0 = arg1;
+      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+      const ret = detect(result0);
+      var vec2 = ret;
+      var len2 = vec2.length;
+      var result2 = realloc0(0, 0, 4, len2 * 8);
+      for (let i = 0; i < vec2.length; i++) {
+        const e = vec2[i];
+        const base = result2 + i * 8;var ptr1 = utf8Encode(e, realloc0, memory0);
+        var len1 = utf8EncodedLen;
+        dataView(memory0).setInt32(base + 4, len1, true);
+        dataView(memory0).setInt32(base + 0, ptr1, true);
+      }
+      dataView(memory0).setInt32(arg2 + 4, len2, true);
+      dataView(memory0).setInt32(arg2 + 0, result2, true);
+    }
+    
+    function trampoline1(arg0, arg1, arg2, arg3) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -85,7 +105,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum2;
     }
     
-    function trampoline1(arg0, arg1) {
+    function trampoline2(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -116,7 +136,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline2(arg0, arg1) {
+    function trampoline3(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -147,7 +167,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline3(arg0, arg1) {
+    function trampoline4(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -178,7 +198,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline4(arg0, arg1) {
+    function trampoline5(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -209,7 +229,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline5(arg0, arg1, arg2) {
+    function trampoline6(arg0, arg1, arg2) {
       var len1 = arg1;
       var base1 = arg0;
       var result1 = [];
@@ -220,7 +240,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
         result1.push(result0);
       }
-      const ret = detect(result1);
+      const ret = detect$1(result1);
       var vec5 = ret;
       var len5 = vec5.length;
       var result5 = realloc0(0, 0, 4, len5 * 16);
@@ -277,17 +297,20 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     Promise.all([module0, module1, module2]).catch(() => {});
     ({ exports: exports0 } = yield instantiateCore(yield module1));
     ({ exports: exports1 } = yield instantiateCore(yield module0, {
+      'arcjet:js-req/bot-identifier': {
+        detect: exports0['0'],
+      },
       'arcjet:js-req/email-validator-overrides': {
-        'has-gravatar': exports0['4'],
-        'has-mx-records': exports0['3'],
-        'is-disposable-email': exports0['2'],
-        'is-free-email': exports0['1'],
+        'has-gravatar': exports0['5'],
+        'has-mx-records': exports0['4'],
+        'is-disposable-email': exports0['3'],
+        'is-free-email': exports0['2'],
       },
       'arcjet:js-req/sensitive-information-identifier': {
-        detect: exports0['5'],
+        detect: exports0['6'],
       },
       'arcjet:js-req/verify-bot': {
-        verify: exports0['0'],
+        verify: exports0['1'],
       },
     }));
     memory0 = exports1.memory;
@@ -301,6 +324,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         '3': trampoline3,
         '4': trampoline4,
         '5': trampoline5,
+        '6': trampoline6,
       },
     }));
     postReturn0 = exports1['cabi_post_detect-bot'];
