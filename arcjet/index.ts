@@ -1229,6 +1229,26 @@ export type ShieldOptions = {
   mode?: ArcjetMode;
 };
 
+/**
+ * Arcjet Shield WAF rule. This rule protects your application against common
+ * attacks, including the OWASP Top 10.
+ *
+ * Arcjet Shield WAF analyzes every request to your application to detect
+ * suspicious activity. Once a certain suspicion threshold is reached,
+ * subsequent requests from that client are blocked for a period of time.
+ *
+ * @param options - The options for the Shield rule
+ *  - {ArcjetMode} `mode` - The mode to run the rule in, either `LIVE` or
+ *    `DRY_RUN`. `LIVE` will block requests, `DRY_RUN` will only simulate
+ *    blocking requests.
+ *
+ * @example
+ * ```ts
+ * shield({ mode: "LIVE" });
+ * ```
+ * @link https://docs.arcjet.com/shield/concepts
+ * @link https://docs.arcjet.com/shield/reference
+ */
 export function shield(options: ShieldOptions): Primitive<{}> {
   validateShieldOptions(options);
 
