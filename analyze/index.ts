@@ -45,16 +45,23 @@ const FREE_EMAIL_PROVIDERS = [
   "hotmail.co.uk",
 ];
 
-function noOpDetect(): SensitiveInfoEntity[] {
+function noOpSensitiveInfoDetect(): SensitiveInfoEntity[] {
+  return [];
+}
+
+function noOpBotsDetect(): string[] {
   return [];
 }
 
 function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
   if (typeof detect !== "function") {
-    detect = noOpDetect;
+    detect = noOpSensitiveInfoDetect;
   }
 
   return {
+    "arcjet:js-req/bot-identifier": {
+      detect: noOpBotsDetect,
+    },
     "arcjet:js-req/email-validator-overrides": {
       isFreeEmail(domain) {
         if (FREE_EMAIL_PROVIDERS.includes(domain)) {
