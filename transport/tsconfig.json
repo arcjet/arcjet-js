@@ -1,4 +1,4 @@
 {
   "extends": "@arcjet/tsconfig/base",
-  "include": ["bun.ts", "edge-light.ts", "index.ts"]
+  "include": ["bun.ts", "edge-light.ts", "index.ts", "svelte.ts"]
 }
