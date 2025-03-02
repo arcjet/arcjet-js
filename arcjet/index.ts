@@ -1117,6 +1117,9 @@ export function validateEmail(
  * bots you want to allow or deny by specific bot names e.g. curl, as well as by
  * category e.g. search engine bots.
  *
+ * Bots are detected based on various signals such as the user agent, IP
+ * address, DNS records, and more.
+ *
  * @param {BotOptions} options - The options for the bot rule.
  * @param {ArcjetMode} options.mode - The block mode of the rule, either
  * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block detected bots, and `"DRY_RUN"`
@@ -1138,10 +1141,14 @@ export function validateEmail(
  * option.
  *
  * @example
+ * Allows search engine bots and curl, denies all other bots
+ *
  * ```ts
  * detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE", "CURL"] });
  * ```
  * @example
+ * Allows search engine bots and curl, denies all other bots
+ *
  * ```ts
  * const aj = arcjet({
  *   key: "",
@@ -1149,6 +1156,25 @@ export function validateEmail(
  *     detectBot({
  *       mode: "LIVE",
  *       allow: ["CATEGORY:SEARCH_ENGINE", "CURL"]
+ *     })
+ *   ],
+ * });
+ * ```
+ * @example
+ * Denies AI crawlers, allows all other bots
+ *
+ * ```ts
+ * detectBot({ mode: "LIVE", deny: ["CATEGORY:AI"] });
+ * ```
+ * @example
+ * Denies AI crawlers, allows all other bots
+ * ```ts
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [
+ *     detectBot({
+ *       mode: "LIVE",
+ *       deny: ["CATEGORY:AI"]
  *     })
  *   ],
  * });
