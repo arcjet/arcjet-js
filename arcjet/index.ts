@@ -1108,6 +1108,55 @@ export function validateEmail(
   ];
 }
 
+/**
+ * Arcjet bot detection rule. Applying this rule allows you to manage traffic by
+ * automated clients and bots.
+ *
+ * Bots can be good (such as search engine crawlers or monitoring agents) or bad
+ * (such as scrapers or automated scripts). Arcjet allows you to configure which
+ * bots you want to allow or deny by specific bot names e.g. curl, as well as by
+ * category e.g. search engine bots.
+ *
+ * @param {BotOptions} options - The options for the bot rule.
+ * @param {ArcjetMode} options.mode - The block mode of the rule, either
+ * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block detected bots, and `"DRY_RUN"`
+ * will allow all requests while only providing access to the rule results.
+ * Defaults to `"DRY_RUN"` if not specified.
+ * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.allow - The
+ * list of bots to allow. If provided, only the bots in this list will be
+ * allowed and any other detected bot will be denied. You may only provide
+ * either `allow` or `deny`, not both. You can use specific bots e.g. `CURL`
+ * will allow the default user-agent of the `curl` tool. You can also use
+ * categories e.g. `CATEGORY:SEARCH_ENGINE` will allow all search engine bots.
+ * See https://docs.arcjet.com/bot-protection/identifying-bots for the full list
+ * of bots and categories.
+ * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.deny - The
+ * list of bots to deny. If provided, the bots in this list will be denied and
+ * all other detected bots will be allowed. You may only provide either `allow`
+ * or `deny`, not both. The same options apply as for `allow`.
+ * @returns {Primitive} The bot rule to provide to the SDK in the `rules`
+ * option.
+ *
+ * @example
+ * ```ts
+ * detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE", "CURL"] });
+ * ```
+ * @example
+ * ```ts
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [
+ *     detectBot({
+ *       mode: "LIVE",
+ *       allow: ["CATEGORY:SEARCH_ENGINE", "CURL"]
+ *     })
+ *   ],
+ * });
+ * ```
+ * @link https://docs.arcjet.com/bot-protection/concepts
+ * @link https://docs.arcjet.com/bot-protection/identifying-bots
+ * @link https://docs.arcjet.com/bot-protection/reference
+ */
 export function detectBot(options: BotOptions): Primitive<{}> {
   validateBotOptions(options);
 
