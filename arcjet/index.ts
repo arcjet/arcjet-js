@@ -1242,11 +1242,19 @@ export type ShieldOptions = {
  * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block suspicious requests, and
  * `"DRY_RUN"` will allow all requests while only providing access to the rule
  * results. Defaults to `"DRY_RUN"` if not specified.
- * @returns {Primitive} The Shield rule to provide to the SDK.
+ * @returns {Primitive} The Shield rule to provide to the SDK in the `rules`
+ * option.
  *
  * @example
  * ```ts
  * shield({ mode: "LIVE" });
+ * ```
+ * @example
+ * ```ts
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [shield({ mode: "LIVE" })],
+ * });
  * ```
  * @link https://docs.arcjet.com/shield/concepts
  * @link https://docs.arcjet.com/shield/reference
