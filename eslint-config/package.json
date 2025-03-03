@@ -33,16 +33,16 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "8.24.0",
-    "@typescript-eslint/parser": "8.24.0",
-    "eslint-config-prettier": "10.0.1",
-    "eslint-config-turbo": "2.4.2"
+    "@typescript-eslint/eslint-plugin": "8.25.0",
+    "@typescript-eslint/parser": "8.25.0",
+    "eslint-config-prettier": "10.0.2",
+    "eslint-config-turbo": "2.4.4"
   },
   "peerDependencies": {
     "eslint": "^8"
   },
   "devDependencies": {
-    "eslint": "8.57.1"
+    "eslint": "9.21.0"
   },
   "publishConfig": {
     "access": "public",
