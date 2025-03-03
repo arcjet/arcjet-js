@@ -44,6 +44,7 @@
     "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
+    "@connectrpc/connect": "1.6.1",
     "@connectrpc/connect-node": "1.6.1",
     "@connectrpc/connect-web": "1.6.1"
   },
