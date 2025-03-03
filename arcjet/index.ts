@@ -1037,7 +1037,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * - `PHONE_NUMBER`
  * - `IP_ADDRESS`
  * - `CREDIT_CARD_NUMBER`
- * @param {Array<ArcjetEmailType>} options.allow - The list of sensitive
+ * @param {Array<ArcjetSensitiveInfoType>} options.allow - The list of sensitive
  * information types to allow. If provided, types in this list will be allowed
  * and all others will be denied. You may only provide either `allow` or `deny`,
  * not both. The same options apply as for `deny`.
@@ -1241,10 +1241,10 @@ export function sensitiveInfo<
  * - `NO_GRAVATAR` - Email addresses with no Gravatar.
  * - `INVALID` - Invalid email addresses.
  *
- * @param {Array<ArcjetEmailType>} options.allow - The list of bots to allow. If
- * provided, email addresses in this list will be allowed and all others will be
- * denied. You may only provide either `allow` or `deny`, not both. The same
- * options apply as for `deny`.
+ * @param {Array<ArcjetEmailType>} options.allow - The list of email types to
+ * allow. If provided, email addresses in this list will be allowed and all
+ * others will be denied. You may only provide either `allow` or `deny`, not
+ * both. The same options apply as for `deny`.
  * @returns {Primitive} The email rule to provide to the SDK in the `rules`
  * option.
  *
@@ -1420,12 +1420,13 @@ export function validateEmail(
  * Defaults to `"DRY_RUN"` if not specified.
  * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.allow - The
  * list of bots to allow. If provided, only the bots in this list will be
- * allowed and any other detected bot will be denied. You may only provide
- * either `allow` or `deny`, not both. You can use specific bots e.g. `CURL`
- * will allow the default user-agent of the `curl` tool. You can also use
- * categories e.g. `CATEGORY:SEARCH_ENGINE` will allow all search engine bots.
- * See https://docs.arcjet.com/bot-protection/identifying-bots for the full list
- * of bots and categories.
+ * allowed and any other detected bot will be denied. If empty, all bots will be
+ * denied. You may only provide either `allow` or `deny`, not both. You can use
+ * specific bots e.g. `CURL` will allow the default user-agent of the `curl`
+ * tool. You can also use categories e.g. `CATEGORY:SEARCH_ENGINE` will allow
+ * all search engine bots. See
+ * https://docs.arcjet.com/bot-protection/identifying-bots for the full list of
+ * bots and categories.
  * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.deny - The
  * list of bots to deny. If provided, the bots in this list will be denied and
  * all other detected bots will be allowed. You may only provide either `allow`
@@ -1646,6 +1647,113 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
   email: EmailOptions;
 };
 
+/**
+ * Arcjet signup form protection rule. Applying this rule combines rate
+ * limiting, bot protection, and email validation to protect your signup forms
+ * from abuse. Using this rule will configure the following:
+ *
+ * - Rate limiting - signup forms are a common target for bots. Arcjet’s rate
+ *   limiting helps to prevent bots and other automated or malicious clients
+ *   from submitting your signup form too many times in a short period of time.
+ * - Bot protection - signup forms are usually exclusively used by humans, which
+ *   means that any automated submissions to the form are likely to be
+ *   fraudulent.
+ * - Email validation - email addresses should be validated to ensure the signup
+ *   is coming from a legitimate user with a real email address that can
+ *   actually receive messages.
+ *
+ * @param {ProtectSignupOptions} options - The options for the signup form
+ * protection rule.
+ * @param {ArcjetMode} options.email.mode - The block mode of the rule, either
+ * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block email addresses based on the
+ * configuration, and `"DRY_RUN"` will allow all requests while still providing
+ * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
+ * @param {Array<ArcjetEmailType>} options.email.deny - The list of email types
+ * to deny. If provided, the email types in this list will be denied. You may
+ * only provide either `allow` or `deny`, not both. Specify one or more of the
+ * following:
+ *
+ * - `DISPOSABLE` - Disposable email addresses.
+ * - `FREE` - Free email addresses.
+ * - `NO_MX_RECORDS` - Email addresses with no MX records.
+ * - `NO_GRAVATAR` - Email addresses with no Gravatar.
+ * - `INVALID` - Invalid email addresses.
+ *
+ * @param {Array<ArcjetEmailType>} options.email.allow - The list of email types
+ * to allow. If provided, email addresses in this list will be allowed and all
+ * others will be denied. You may only provide either `allow` or `deny`, not
+ * both. The same options apply as for `deny`.
+ * @param {ArcjetMode} options.bots.mode - The block mode of the rule, either
+ * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block detected bots, and `"DRY_RUN"`
+ * will allow all requests while still providing access to the rule results.
+ * Defaults to `"DRY_RUN"` if not specified.
+ * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.bots.allow -
+ * The list of bots to allow. If provided, only the bots in this list will be
+ * allowed and any other detected bot will be denied. If empty, all bots will be
+ * denied. You may only provide either `allow` or `deny`, not both. You can use
+ * specific bots e.g. `CURL` will allow the default user-agent of the `curl`
+ * tool. You can also use categories e.g. `CATEGORY:SEARCH_ENGINE` will allow
+ * all search engine bots. See
+ * https://docs.arcjet.com/bot-protection/identifying-bots for the full list of
+ * bots and categories.
+ * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.bots.deny -
+ * The list of bots to deny. If provided, the bots in this list will be denied
+ * and all other detected bots will be allowed. You may only provide either
+ * `allow` or `deny`, not both. The same options apply as for `allow`.
+ * @param {SlidingWindowRateLimitOptions} options.rateLimit - The options for
+ * the sliding window rate limiting rule.
+ * @param {ArcjetMode} options.rateLimit.mode - The block mode of the rule,
+ * either `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when the rate
+ * limit is exceeded, and `"DRY_RUN"` will allow all requests while still
+ * providing access to the rule results. Defaults to `"DRY_RUN"` if not
+ * specified.
+ * @param {string | number} options.rateLimit.interval - The time interval for
+ * the rate limit. This can be a string like `"60s"` for 60 seconds, `"1h45m"`
+ * for 1 hour and 45 minutes, or a number like `60` for 60 seconds. Valid string
+ * time units are:
+ * - `s` for seconds.
+ * - `m` for minutes.
+ * - `h` for hours.
+ * - `d` for days.
+ * @param {number} options.rateLimit.max - The maximum number of requests
+ * allowed in the sliding time window.
+ * @returns {Primitive} The signup form protection rule to provide to the SDK in
+ * the `rules` option.
+ *
+ * @example
+ * Our recommended configuration for most signup forms is:
+ *
+ * - Block emails with invalid syntax, that are from disposable email providers,
+ *   or do not have valid MX records configured.
+ * - Block all bots.
+ * - Apply a rate limit of 5 submissions per 10 minutes from a single IP
+ *   address.
+ *
+ * ```ts
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [
+ *    protectSignup({
+ *      email: {
+ *        mode: "LIVE",
+ *        block: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+ *      },
+ *      bots: {
+ *        mode: "LIVE",
+ *        allow: [], // block all detected bots
+ *      },
+ *      rateLimit: {
+ *        mode: "LIVE",
+ *        interval: "10m",
+ *        max: 5,
+ *      },
+ *    }),
+ *  ],
+ * });
+ * ```
+ * @link https://docs.arcjet.com/signup-protection/concepts
+ * @link https://docs.arcjet.com/signup-protection/reference
+ */
 export function protectSignup<const Characteristics extends string[] = []>(
   options: ProtectSignupOptions<Characteristics>,
 ): Product<
