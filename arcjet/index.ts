@@ -974,6 +974,58 @@ export function sensitiveInfo<
   ];
 }
 
+/**
+ * Arcjet email validation rule. Applying this rule allows you to validate &
+ * verify an email address.
+ *
+ * The first step of the analysis is to validate the email address syntax. This
+ * runs locally within the SDK and validates the email address is in the correct
+ * format. If the email syntax is valid, the SDK will pass the email address to
+ * the Arcjet cloud API to verify the email address. This performs several
+ * checks, depending on the rule configuration.
+ *
+ * @param {EmailOptions} options - The options for the email validation rule.
+ * @param {ArcjetMode} options.mode - The block mode of the rule, either
+ * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block email addresses based on the
+ * configuration, and `"DRY_RUN"` will allow all requests while still providing
+ * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
+ * @param {Array<ArcjetEmailType>} options.deny - The list of email types to
+ * deny. If provided, the email types in this list will be denied. You may only
+ * provide either `allow` or `deny`, not both. Specify one or more of the
+ * following:
+ *
+ * - `DISPOSABLE` - Disposable email addresses.
+ * - `FREE` - Free email addresses.
+ * - `NO_MX_RECORDS` - Email addresses with no MX records.
+ * - `NO_GRAVATAR` - Email addresses with no Gravatar.
+ * - `INVALID` - Invalid email addresses.
+ *
+ * @param {Array<ArcjetEmailType>} options.allow - The list of bots to allow. If
+ * provided, email addresses in this list will be allowed and all others will be
+ * denied. You may only provide either `allow` or `deny`, not both. The same
+ * options apply as for `allow`.
+ * @returns {Primitive} The email rule to provide to the SDK in the `rules`
+ * option.
+ *
+ * @example
+ * ```ts
+ * validateEmail({ mode: "LIVE", deny: ["DISPOSABLE", "INVALID"] });
+ * ```
+ * @example
+ * ```ts
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [
+ *     validateEmail({
+ *       mode: "LIVE",
+ *       deny: ["DISPOSABLE", "INVALID"]
+ *     })
+ *   ],
+ * });
+ * ```
+ * @link https://docs.arcjet.com/email-validation/concepts
+ * @link https://docs.arcjet.com/email-validation/reference
+ */
 export function validateEmail(
   options: EmailOptions,
 ): Primitive<{ email: string }> {
@@ -1123,7 +1175,7 @@ export function validateEmail(
  * @param {BotOptions} options - The options for the bot rule.
  * @param {ArcjetMode} options.mode - The block mode of the rule, either
  * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block detected bots, and `"DRY_RUN"`
- * will allow all requests while only providing access to the rule results.
+ * will allow all requests while still providing access to the rule results.
  * Defaults to `"DRY_RUN"` if not specified.
  * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.allow - The
  * list of bots to allow. If provided, only the bots in this list will be
@@ -1315,7 +1367,7 @@ export type ShieldOptions = {
  * @param {ShieldOptions} options - The options for the Shield rule.
  * @param {ArcjetMode} options.mode - The block mode of the rule, either
  * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block suspicious requests, and
- * `"DRY_RUN"` will allow all requests while only providing access to the rule
+ * `"DRY_RUN"` will allow all requests while still providing access to the rule
  * results. Defaults to `"DRY_RUN"` if not specified.
  * @returns {Primitive} The Shield rule to provide to the SDK in the `rules`
  * option.
