@@ -1011,6 +1011,90 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
   });
 }
 
+/**
+ * Arcjet sensitive information detection rule. Applying this rule protects
+ * against clients sending you sensitive information such as personally
+ * identifiable information (PII) that you do not wish to handle. The rule runs
+ * entirely locally so no data ever leaves your environment.
+ *
+ * This rule includes built-in detections for email addresses, credit/debit card
+ * numbers, IP addresses, and phone numbers. You can also provide a custom
+ * detection function to identify additional sensitive information.
+ *
+ * @param {SensitiveInfoOptions} options - The options for the sensitive
+ * information detection rule.
+ * @param {ArcjetMode} options.mode - The block mode of the rule, either
+ * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when any of the
+ * configured sensitive information types are detected, and `"DRY_RUN"` will
+ * allow all requests while still providing access to the rule results. Defaults
+ * to `"DRY_RUN"` if not specified.
+ * @param {Array<ArcjetSensitiveInfoType>} options.deny - The list of sensitive
+ * information types to deny. If provided, the sensitive information types in
+ * this list will be denied. You may only provide either `allow` or `deny`, not
+ * both. Specify one or more of the following:
+ *
+ * - `EMAIL`
+ * - `PHONE_NUMBER`
+ * - `IP_ADDRESS`
+ * - `CREDIT_CARD_NUMBER`
+ * @param {Array<ArcjetEmailType>} options.allow - The list of sensitive
+ * information types to allow. If provided, types in this list will be allowed
+ * and all others will be denied. You may only provide either `allow` or `deny`,
+ * not both. The same options apply as for `deny`.
+ * @param {DetectSensitiveInfoEntities} options.detect - A custom detection
+ * function. The function will take a list of tokens and must return a list of
+ * either `undefined`, if the corresponding token in the input list is not
+ * sensitive, or the name of the entity if it does match. The number of tokens
+ * that are provided to the function is controlled by the `contextWindowSize`
+ * option, which defaults to `1`. If you need additional context to perform
+ * detections then you can increase this value.
+ * @param {number} options.contextWindowSize - The number of tokens to provide
+ * to the custom detection function. This defaults to 1 if not specified.
+ * @returns {Primitive} The sensitive information rule to provide to the SDK in
+ * the `rules` option.
+ *
+ * @example
+ * ```ts
+ * sensitiveInfo({ mode: "LIVE", deny: ["EMAIL"] });
+ * ```
+ * @example
+ * ```ts
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [
+ *     sensitiveInfo({
+ *       mode: "LIVE",
+ *       deny: ["EMAIL"],
+ *     })
+ *   ],
+ * });
+ * ```
+ * @example
+ * Custom detection function:
+ * ```ts
+ * function detectDash(tokens: string[]): Array<"CONTAINS_DASH" | undefined> {
+ *   return tokens.map((token) => {
+ *     if (token.includes("-")) {
+ *       return "CONTAINS_DASH";
+ *     }
+ *   });
+ * }
+ *
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [
+ *     sensitiveInfo({
+ *       mode: "LIVE",
+ *       deny: ["EMAIL", "CONTAINS_DASH"],
+ *       detect: detectDash,
+ *       contextWindowSize: 2,
+ *     })
+ *   ],
+ * });
+ * ```
+ * @link https://docs.arcjet.com/sensitive-info/concepts
+ * @link https://docs.arcjet.com/sensitive-info/reference
+ */
 export function sensitiveInfo<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
@@ -1160,7 +1244,7 @@ export function sensitiveInfo<
  * @param {Array<ArcjetEmailType>} options.allow - The list of bots to allow. If
  * provided, email addresses in this list will be allowed and all others will be
  * denied. You may only provide either `allow` or `deny`, not both. The same
- * options apply as for `allow`.
+ * options apply as for `deny`.
  * @returns {Primitive} The email rule to provide to the SDK in the `rules`
  * option.
  *
