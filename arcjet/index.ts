@@ -700,6 +700,61 @@ function isLocalRule<Props extends PlainObject>(
   );
 }
 
+/**
+ * Arcjet token bucket rate limiting rule. Applying this rule sets a token
+ * bucket rate limit.
+ *
+ * This algorithm is based on a bucket filled with a specific number of tokens.
+ * Each request withdraws a token from the bucket and the bucket is refilled at
+ * a fixed rate. Once the bucket is empty, the client is blocked until the
+ * bucket refills.
+ *
+ * This algorithm is useful when you want to allow clients to make a burst of
+ * requests and then still be able to make requests at a slower rate.
+ *
+ * @param {TokenBucketRateLimitOptions} options - The options for the token
+ * bucket rate limiting rule.
+ * @param {ArcjetMode} options.mode - The block mode of the rule, either
+ * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when the rate limit is
+ * exceeded, and `"DRY_RUN"` will allow all requests while still providing
+ * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
+ * @param {number} options.refillRate - The number of tokens to add to the
+ * bucket at each interval. For example, if you set the interval to 60 and the
+ * refill rate to 10, the bucket will refill 10 tokens every 60 seconds.
+ * @param {number} options.interval - The time interval for the refill rate.
+ * This can be a string like `"60s"` for 60 seconds, `"1h45m"` for 1 hour and 45
+ * minutes, or a number like `60` for 60 seconds. Valid string time units are:
+ * - `s` for seconds.
+ * - `m` for minutes.
+ * - `h` for hours.
+ * - `d` for days.
+ * @param {number} options.capacity - The maximum number of tokens the bucket
+ * can hold. The bucket will refill until it hits the capacity.
+ * @returns {Primitive} The token bucket rule to provide to the SDK in the
+ * `rules` option.
+ *
+ * @example
+ * ```ts
+ * tokenBucket({ mode: "LIVE", refillRate: 10, interval: "60s", capacity: 100 });
+ * ```
+ * @example
+ * ```ts
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [
+ *     tokenBucket({
+ *       mode: "LIVE",
+ *       refillRate: 10,
+ *       interval: "60s",
+ *       capacity: 100,
+ *     })
+ *   ],
+ * });
+ * ```
+ * @link https://docs.arcjet.com/rate-limiting/concepts
+ * @link https://docs.arcjet.com/rate-limiting/algorithms
+ * @link https://docs.arcjet.com/rate-limiting/reference
+ */
 export function tokenBucket<
   const Characteristics extends readonly string[] = [],
 >(
@@ -734,6 +789,58 @@ export function tokenBucket<
   ];
 }
 
+/**
+ * Arcjet fixed window rate limiting rule. Applying this rule sets a fixed
+ * window rate limit which tracks the number of requests made by a client over a
+ * fixed time window.
+ *
+ * This is the simplest algorithm. It tracks the number of requests made by a
+ * client over a fixed time window e.g. 60 seconds. If the client exceeds the
+ * limit, they are blocked until the window expires.
+ *
+ * This algorithm is useful when you want to apply a simple fixed limit in a
+ * fixed time window. For example, a simple limit on the total number of
+ * requests a client can make.
+ *
+ * @param {FixedWindowRateLimitOptions} options - The options for the fixed
+ * window rate limiting rule.
+ * @param {ArcjetMode} options.mode - The block mode of the rule, either
+ * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when the rate limit is
+ * exceeded, and `"DRY_RUN"` will allow all requests while still providing
+ * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
+ * @param {string | number} options.window - The fixed time window. This can be
+ * a string like `"60s"` for 60 seconds, `"1h45m"` for 1 hour and 45 minutes, or
+ * a number like `60` for 60 seconds. Valid string time units are:
+ * - `s` for seconds.
+ * - `m` for minutes.
+ * - `h` for hours.
+ * - `d` for days.
+ * @param {number} options.max - The maximum number of requests allowed in the
+ * fixed time window.
+ * @returns {Primitive} The fixed window rule to provide to the SDK in the
+ * `rules` option.
+ *
+ * @example
+ * ```ts
+ * fixedWindow({ mode: "LIVE", window: "60s", max: 100 });
+ * ```
+ * @example
+ * ```ts
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [
+ *     fixedWindow({
+ *       mode: "LIVE",
+ *       window: "60s",
+ *       max: 100,
+ *     })
+ *   ],
+ * });
+ * ```
+ * @link https://docs.arcjet.com/rate-limiting/concepts
+ * @link https://docs.arcjet.com/rate-limiting/algorithms
+ * @link https://docs.arcjet.com/rate-limiting/reference
+ */
 export function fixedWindow<
   const Characteristics extends readonly string[] = [],
 >(
@@ -762,6 +869,56 @@ export function fixedWindow<
   ];
 }
 
+/**
+ * Arcjet sliding window rate limiting rule. Applying this rule sets a sliding
+ * window rate limit which tracks the number of requests made by a client over a
+ * sliding window so that the window moves with time.
+ *
+ * This algorithm is useful to avoid the stampede problem of the fixed window.
+ * It provides smoother rate limiting over time and can prevent a client from
+ * making a burst of requests at the start of a window and then being blocked
+ * for the rest of the window.
+ *
+ * @param {SlidingWindowRateLimitOptions} options - The options for the sliding
+ * window rate limiting rule.
+ * @param {ArcjetMode} options.mode - The block mode of the rule, either
+ * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when the rate limit is
+ * exceeded, and `"DRY_RUN"` will allow all requests while still providing
+ * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
+ * @param {string | number} options.interval - The time interval for the rate
+ * limit. This can be a string like `"60s"` for 60 seconds, `"1h45m"` for 1 hour
+ * and 45 minutes, or a number like `60` for 60 seconds. Valid string time units
+ * are:
+ * - `s` for seconds.
+ * - `m` for minutes.
+ * - `h` for hours.
+ * - `d` for days.
+ * @param {number} options.max - The maximum number of requests allowed in the
+ * sliding time window.
+ * @returns {Primitive} The sliding window rule to provide to the SDK in the
+ * `rules` option.
+ *
+ * @example
+ * ```ts
+ * slidingWindow({ mode: "LIVE", interval: "60s", max: 100 });
+ * ```
+ * @example
+ * ```ts
+ * const aj = arcjet({
+ *   key: "",
+ *   rules: [
+ *     slidingWindow({
+ *       mode: "LIVE",
+ *       interval: "60s",
+ *       max: 100,
+ *     })
+ *   ],
+ * });
+ * ```
+ * @link https://docs.arcjet.com/rate-limiting/concepts
+ * @link https://docs.arcjet.com/rate-limiting/algorithms
+ * @link https://docs.arcjet.com/rate-limiting/reference
+ */
 export function slidingWindow<
   const Characteristics extends readonly string[] = [],
 >(
