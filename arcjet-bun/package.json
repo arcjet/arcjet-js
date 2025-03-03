@@ -49,9 +49,9 @@
     "@arcjet/eslint-config": "1.0.0-beta.2",
     "@arcjet/rollup-config": "1.0.0-beta.2",
     "@arcjet/tsconfig": "1.0.0-beta.2",
-    "@types/node": "20.12.12",
+    "@types/node": "22.13.8",
     "@rollup/wasm-node": "4.34.9",
-    "bun-types": "1.2.2",
+    "bun-types": "1.2.4",
     "expect": "29.7.0",
     "typescript": "5.8.2"
   },
