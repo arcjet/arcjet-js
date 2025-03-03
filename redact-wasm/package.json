@@ -55,7 +55,7 @@
     "@rollup/wasm-node": "4.34.6",
     "@types/node": "18.18.0",
     "expect": "29.7.0",
-    "typescript": "5.7.3"
+    "typescript": "5.8.2"
   },
   "publishConfig": {
     "access": "public",
