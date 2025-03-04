@@ -705,9 +705,9 @@ function isLocalRule<Props extends PlainObject>(
  * bucket rate limit.
  *
  * This algorithm is based on a bucket filled with a specific number of tokens.
- * Each request withdraws some amount of tokens from the bucket and the bucket is refilled at
- * a fixed rate. Once the bucket is empty, the client is blocked until the
- * bucket refills.
+ * Each request withdraws some amount of tokens from the bucket and the bucket
+ * is refilled at a fixed rate. Once the bucket is empty, the client is blocked
+ * until the bucket refills.
  *
  * This algorithm is useful when you want to allow clients to make a burst of
  * requests and then still be able to make requests at a slower rate.
@@ -721,15 +721,17 @@ function isLocalRule<Props extends PlainObject>(
  * @param {number} options.refillRate - The number of tokens to add to the
  * bucket at each interval. For example, if you set the interval to 60 and the
  * refill rate to 10, the bucket will refill 10 tokens every 60 seconds.
- * @param {string | number} options.interval - The time interval for the refill rate.
- * This can be a string like `"60s"` for 60 seconds, `"1h45m"` for 1 hour and 45
- * minutes, or a number like `60` for 60 seconds. Valid string time units are:
+ * @param {string | number} options.interval - The time interval for the refill
+ * rate. This can be a string like `"60s"` for 60 seconds, `"1h45m"` for 1 hour
+ * and 45 minutes, or a number like `60` for 60 seconds. Valid string time units
+ * are:
  * - `s` for seconds.
  * - `m` for minutes.
  * - `h` for hours.
  * - `d` for days.
  * @param {number} options.capacity - The maximum number of tokens the bucket
- * can hold. The bucket will refill until it hits the capacity.
+ * can hold. The bucket starts at full capacity and will refill until it hits
+ * the capacity.
  * @returns {Primitive} The token bucket rule to provide to the SDK in the
  * `rules` option.
  *
