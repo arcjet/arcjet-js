@@ -226,7 +226,7 @@ export interface ArcjetNext<Props extends PlainObject> {
    * Calls to `protect()` will not throw an error. Arcjet is designed to fail
    * open so that a service issue or misconfiguration does not block all
    * requests. If there is an error condition when processing the rule, Arcjet
-   * will return an `ERROR` result for that rule and you can check the message
+   * will label an `"ERROR"` result for that rule and you can check the message
    * property on the rule’s error result for more information.
    *
    * @param {ArcjetNextRequest} request - A `NextApiRequest` or `NextRequest`
@@ -247,7 +247,7 @@ export interface ArcjetNext<Props extends PlainObject> {
    *   you can use this property.
    * - `reason` (`ArcjetReason`) - An object containing more detailed
    *   information about the conclusion.
-   * - `results` (`ArcjetRuleResult[]`) - An array of ArcjetRuleResult objects
+   * - `results` (`ArcjetRuleResult[]`) - An array of {@link ArcjetRuleResult} objects
    *   containing the results of each rule that was executed.
    * - `ttl` (number) - The time-to-live for the decision in seconds. This is
    *   the time that the decision is valid for. After this time, the decision
@@ -338,7 +338,7 @@ export interface ArcjetNext<Props extends PlainObject> {
    * @returns An augmented {@link ArcjetNext} client.
    *
    * @example
-   * Create a utility client in a separate file which sets a Shield base rule
+   * Create a base client in a separate file which sets a Shield base rule
    * and then use `withRule` to add a bot detection rule in a specific route
    * handler.
    *

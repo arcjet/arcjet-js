@@ -705,7 +705,7 @@ function isLocalRule<Props extends PlainObject>(
  * bucket rate limit.
  *
  * This algorithm is based on a bucket filled with a specific number of tokens.
- * Each request withdraws a token from the bucket and the bucket is refilled at
+ * Each request withdraws some amount of tokens from the bucket and the bucket is refilled at
  * a fixed rate. Once the bucket is empty, the client is blocked until the
  * bucket refills.
  *
@@ -721,7 +721,7 @@ function isLocalRule<Props extends PlainObject>(
  * @param {number} options.refillRate - The number of tokens to add to the
  * bucket at each interval. For example, if you set the interval to 60 and the
  * refill rate to 10, the bucket will refill 10 tokens every 60 seconds.
- * @param {number} options.interval - The time interval for the refill rate.
+ * @param {string | number} options.interval - The time interval for the refill rate.
  * This can be a string like `"60s"` for 60 seconds, `"1h45m"` for 1 hour and 45
  * minutes, or a number like `60` for 60 seconds. Valid string time units are:
  * - `s` for seconds.
@@ -752,7 +752,7 @@ function isLocalRule<Props extends PlainObject>(
  * });
  * ```
  * @link https://docs.arcjet.com/rate-limiting/concepts
- * @link https://docs.arcjet.com/rate-limiting/algorithms
+ * @link https://docs.arcjet.com/rate-limiting/algorithms#token-bucket
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
 export function tokenBucket<
@@ -838,7 +838,7 @@ export function tokenBucket<
  * });
  * ```
  * @link https://docs.arcjet.com/rate-limiting/concepts
- * @link https://docs.arcjet.com/rate-limiting/algorithms
+ * @link https://docs.arcjet.com/rate-limiting/algorithms#fixed-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
 export function fixedWindow<
@@ -916,7 +916,7 @@ export function fixedWindow<
  * });
  * ```
  * @link https://docs.arcjet.com/rate-limiting/concepts
- * @link https://docs.arcjet.com/rate-limiting/algorithms
+ * @link https://docs.arcjet.com/rate-limiting/algorithms#sliding-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
 export function slidingWindow<
@@ -1033,10 +1033,10 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * this list will be denied. You may only provide either `allow` or `deny`, not
  * both. Specify one or more of the following:
  *
- * - `EMAIL`
- * - `PHONE_NUMBER`
- * - `IP_ADDRESS`
- * - `CREDIT_CARD_NUMBER`
+ * - `"EMAIL"`
+ * - `"PHONE_NUMBER"`
+ * - `"IP_ADDRESS"`
+ * - `"CREDIT_CARD_NUMBER"`
  * @param {Array<ArcjetSensitiveInfoType>} options.allow - The list of sensitive
  * information types to allow. If provided, types in this list will be allowed
  * and all others will be denied. You may only provide either `allow` or `deny`,
@@ -1235,11 +1235,11 @@ export function sensitiveInfo<
  * provide either `allow` or `deny`, not both. Specify one or more of the
  * following:
  *
- * - `DISPOSABLE` - Disposable email addresses.
- * - `FREE` - Free email addresses.
- * - `NO_MX_RECORDS` - Email addresses with no MX records.
- * - `NO_GRAVATAR` - Email addresses with no Gravatar.
- * - `INVALID` - Invalid email addresses.
+ * - `"DISPOSABLE"` - Disposable email addresses.
+ * - `"FREE"` - Free email addresses.
+ * - `"NO_MX_RECORDS"` - Email addresses with no MX records.
+ * - `"NO_GRAVATAR"` - Email addresses with no Gravatar.
+ * - `"INVALID"` - Invalid email addresses.
  *
  * @param {Array<ArcjetEmailType>} options.allow - The list of email types to
  * allow. If provided, email addresses in this list will be allowed and all
@@ -1422,8 +1422,8 @@ export function validateEmail(
  * list of bots to allow. If provided, only the bots in this list will be
  * allowed and any other detected bot will be denied. If empty, all bots will be
  * denied. You may only provide either `allow` or `deny`, not both. You can use
- * specific bots e.g. `CURL` will allow the default user-agent of the `curl`
- * tool. You can also use categories e.g. `CATEGORY:SEARCH_ENGINE` will allow
+ * specific bots e.g. `"CURL"` will allow the default user-agent of the `curl`
+ * tool. You can also use categories e.g. `"CATEGORY:SEARCH_ENGINE"` will allow
  * all search engine bots. See
  * https://docs.arcjet.com/bot-protection/identifying-bots for the full list of
  * bots and categories.
@@ -1673,11 +1673,11 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
  * only provide either `allow` or `deny`, not both. Specify one or more of the
  * following:
  *
- * - `DISPOSABLE` - Disposable email addresses.
- * - `FREE` - Free email addresses.
- * - `NO_MX_RECORDS` - Email addresses with no MX records.
- * - `NO_GRAVATAR` - Email addresses with no Gravatar.
- * - `INVALID` - Invalid email addresses.
+ * - `"DISPOSABLE"` - Disposable email addresses.
+ * - `"FREE"` - Free email addresses.
+ * - `"NO_MX_RECORDS"` - Email addresses with no MX records.
+ * - `"NO_GRAVATAR"` - Email addresses with no Gravatar.
+ * - `"INVALID"` - Invalid email addresses.
  *
  * @param {Array<ArcjetEmailType>} options.email.allow - The list of email types
  * to allow. If provided, email addresses in this list will be allowed and all
@@ -1691,8 +1691,8 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
  * The list of bots to allow. If provided, only the bots in this list will be
  * allowed and any other detected bot will be denied. If empty, all bots will be
  * denied. You may only provide either `allow` or `deny`, not both. You can use
- * specific bots e.g. `CURL` will allow the default user-agent of the `curl`
- * tool. You can also use categories e.g. `CATEGORY:SEARCH_ENGINE` will allow
+ * specific bots e.g. `"CURL"` will allow the default user-agent of the `curl`
+ * tool. You can also use categories e.g. `"CATEGORY:SEARCH_ENGINE"` will allow
  * all search engine bots. See
  * https://docs.arcjet.com/bot-protection/identifying-bots for the full list of
  * bots and categories.
