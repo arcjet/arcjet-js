@@ -11,7 +11,7 @@
   "dependencies": {
     "@arcjet/ip": "file:../../ip",
     "@arcjet/next": "file:../../arcjet-next",
-    "@clerk/nextjs": "^6.11.0",
+    "@clerk/nextjs": "^6.12.2",
     "next": "15.1.4",
     "permitio": "^2.7.2",
     "react": "^19",
@@ -22,7 +22,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^8",
-    "eslint-config-next": "15.1.6",
+    "eslint-config-next": "15.2.1",
     "typescript": "^5"
   }
 }
