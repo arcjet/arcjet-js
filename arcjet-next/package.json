@@ -56,7 +56,7 @@
     "@arcjet/tsconfig": "1.0.0-beta.2",
     "@types/node": "18.18.0",
     "@rollup/wasm-node": "4.34.9",
-    "next": "15.2.0",
+    "next": "15.2.1",
     "typescript": "5.8.2"
   },
   "publishConfig": {
