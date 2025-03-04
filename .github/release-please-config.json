@@ -96,6 +96,10 @@
       "component": "@arcjet/headers",
       "skip-github-release": true
     },
+    "inspect": {
+      "component": "@arcjet/inspect",
+      "skip-github-release": true
+    },
     "ip": {
       "component": "@arcjet/ip",
       "skip-github-release": true
@@ -175,6 +179,7 @@
         "@arcjet/env",
         "@arcjet/eslint-config",
         "@arcjet/headers",
+        "@arcjet/inspect",
         "@arcjet/ip",
         "@arcjet/body",
         "@arcjet/logger",

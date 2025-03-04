@@ -86,6 +86,7 @@ allow list.
 ```ts
 // middleware.ts
 import arcjet, { ArcjetRuleResult, detectBot } from "@arcjet/next";
+import { isSpoofedBot } from "@arcjet/inspect";
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
@@ -110,17 +111,6 @@ const aj = arcjet({
   ],
 });
 
-function isSpoofed(result: ArcjetRuleResult) {
-  return (
-    // You probably don't want DRY_RUN rules resulting in a denial
-    // since they are generally used for evaluation purposes but you
-    // could log here.
-    result.state !== "DRY_RUN" &&
-    result.reason.isBot() &&
-    result.reason.isSpoofed()
-  );
-}
-
 export default async function middleware(request: NextRequest) {
   const decision = await aj.protect(request);
 
@@ -133,7 +123,7 @@ export default async function middleware(request: NextRequest) {
   // Verification isn't always possible, so we recommend checking the results
   // separately.
   // https://docs.arcjet.com/bot-protection/reference#bot-verification
-  if (decision.results.some(isSpoofed)) {
+  if (decision.results.some(isSpoofedBot)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -236,6 +226,8 @@ See [the docs][nosecone-docs] for details.
 - [`@arcjet/duration`](./duration/README.md): Utilities for parsing duration
   strings into seconds integers.
 - [`@arcjet/env`](./env/README.md): Environment detection for Arcjet variables.
+- [`@arcjet/inspect`](./inspect/README.md): Utilities for inspecting decisions
+  made by an SDK.
 - [`@arcjet/logger`](./logger/README.md): Lightweight logger which mirrors the
   Pino structured logger interface.
 - [`@arcjet/protocol`](./protocol/README.md): JS interface into the Arcjet
