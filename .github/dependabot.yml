@@ -75,39 +75,43 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: bun
-    directory: /examples/bun-hono-rate-limit
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
+  # Bun ecosystem doesn't work alongside npm ecosystems and causes other
+  # monorepo dependencies to be updated.
+  # - package-ecosystem: bun
+  #   directory: /examples/bun-hono-rate-limit
+  #   schedule:
+  #     # Our dependencies should be checked daily
+  #     interval: daily
+  #   assignees:
+  #     - blaine-arcjet
+  #   reviewers:
+  #     - blaine-arcjet
+  #   commit-message:
+  #     prefix: deps(example)
+  #     prefix-development: deps(example)
+  #   groups:
+  #     dependencies:
+  #       patterns:
+  #         - "*"
 
-  - package-ecosystem: bun
-    directory: /examples/bun-rate-limit
-    schedule:
-      # Our dependencies should be checked daily
-      interval: daily
-    assignees:
-      - blaine-arcjet
-    reviewers:
-      - blaine-arcjet
-    commit-message:
-      prefix: deps(example)
-      prefix-development: deps(example)
-    groups:
-      dependencies:
-        patterns:
-          - "*"
+  # Bun ecosystem doesn't work alongside npm ecosystems and causes other
+  # monorepo dependencies to be updated.
+  # - package-ecosystem: bun
+  #   directory: /examples/bun-rate-limit
+  #   schedule:
+  #     # Our dependencies should be checked daily
+  #     interval: daily
+  #   assignees:
+  #     - blaine-arcjet
+  #   reviewers:
+  #     - blaine-arcjet
+  #   commit-message:
+  #     prefix: deps(example)
+  #     prefix-development: deps(example)
+  #   groups:
+  #     dependencies:
+  #       patterns:
+  #         - "*"
 
   # Deno isn't supported by Dependabot
   # Ref: https://github.com/dependabot/dependabot-core/issues/2417
