@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/node",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Arcjet SDK for Node.js",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -39,19 +39,19 @@
     "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@arcjet/env": "1.0.0-beta.2",
-    "@arcjet/headers": "1.0.0-beta.2",
-    "@arcjet/ip": "1.0.0-beta.2",
-    "@arcjet/logger": "1.0.0-beta.2",
-    "@arcjet/protocol": "1.0.0-beta.2",
-    "@arcjet/transport": "1.0.0-beta.2",
-    "@arcjet/body": "1.0.0-beta.2",
-    "arcjet": "1.0.0-beta.2"
+    "@arcjet/env": "1.0.0-beta.3",
+    "@arcjet/headers": "1.0.0-beta.3",
+    "@arcjet/ip": "1.0.0-beta.3",
+    "@arcjet/logger": "1.0.0-beta.3",
+    "@arcjet/protocol": "1.0.0-beta.3",
+    "@arcjet/transport": "1.0.0-beta.3",
+    "@arcjet/body": "1.0.0-beta.3",
+    "arcjet": "1.0.0-beta.3"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.2",
-    "@arcjet/rollup-config": "1.0.0-beta.2",
-    "@arcjet/tsconfig": "1.0.0-beta.2",
+    "@arcjet/eslint-config": "1.0.0-beta.3",
+    "@arcjet/rollup-config": "1.0.0-beta.3",
+    "@arcjet/tsconfig": "1.0.0-beta.3",
     "@types/node": "18.18.0",
     "@rollup/wasm-node": "4.34.9",
     "expect": "29.7.0",
