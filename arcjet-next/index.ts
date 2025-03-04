@@ -212,14 +212,116 @@ export type ArcjetOptions<
  */
 export interface ArcjetNext<Props extends PlainObject> {
   /**
-   * Protects an API route when running under the default runtime (non-edge).
-   * For API routes running on the Edge Runtime, use `protect()`. The request is
-   * analyzed and then a decision made on whether to allow, deny, or challenge
-   * the request.
+   * Makes a decision about the provided request using your configured rules.
    *
-   * @param req - A `NextApiRequest` or `NextRequest` provided to the request handler.
-   * @param props - Additonal properties required for running rules against a request.
-   * @returns An {@link ArcjetDecision} indicating Arcjet's decision about the request.
+   * Arcjet can protect Next.js routes and pages that are server components (the
+   * default). Client components cannot be protected because they run on the
+   * client side and do not have access to the request object.
+   *
+   * Server actions are supported in both Next.js 14 and 15 for all features
+   * except sensitive data detection. You need to call a utility function
+   * `request()` that accesses the headers we need to analyze the request (see
+   * example below).
+   *
+   * Calls to `protect()` will not throw an error. Arcjet is designed to fail
+   * open so that a service issue or misconfiguration does not block all
+   * requests. If there is an error condition when processing the rule, Arcjet
+   * will label an `"ERROR"` result for that rule and you can check the message
+   * property on the rule’s error result for more information.
+   *
+   * @param {ArcjetNextRequest} request - A `NextApiRequest` or `NextRequest`
+   * provided to the request handler.
+   * @param props - Any additional properties required for running rules against
+   * a request. Whether this is required depends on the rules you've configured.
+   * @returns {Promise<ArcjetDecision>} A decision indicating a high-level
+   * conclusion and detailed explanations of the decision made by Arcjet. This
+   * contains the following properties:
+   *
+   * - `id` (string) - The unique ID for the request. This can be used to look
+   *   up the request in the Arcjet dashboard. It is prefixed with `req_` for
+   *   decisions involving the Arcjet cloud API. For decisions taken locally,
+   *   the prefix is `lreq_`.
+   * - `conclusion` (`"ALLOW" | "DENY" | "CHALLENGE" | "ERROR"`) - The final
+   *   conclusion based on evaluating each of the configured rules. If you wish
+   *   to accept Arcjet’s recommended action based on the configured rules then
+   *   you can use this property.
+   * - `reason` (`ArcjetReason`) - An object containing more detailed
+   *   information about the conclusion.
+   * - `results` (`ArcjetRuleResult[]`) - An array of {@link ArcjetRuleResult} objects
+   *   containing the results of each rule that was executed.
+   * - `ttl` (number) - The time-to-live for the decision in seconds. This is
+   *   the time that the decision is valid for. After this time, the decision
+   *   will be re-evaluated. The SDK automatically caches DENY decisions for the
+   *   length of the TTL.
+   * - `ip` (`ArcjetIpDetails`) - An object containing Arcjet’s analysis of the
+   *   client IP address. See
+   *   https://docs.arcjet.com/reference/nextjs#ip-analysis for more
+   *   information.
+   *
+   * @example
+   * Inside server components and API route handlers:
+   *
+   * ```ts
+   * // /app/api/hello/route.ts
+   * import arcjet, { shield } from "@arcjet/next";
+   * import { NextResponse } from "next/server";
+   *
+   * const aj = arcjet({
+   *   key: process.env.ARCJET_KEY!,
+   *   rules: [
+   *     // Protect against common attacks with Arcjet Shield
+   *     shield({
+   *      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+   *    }),
+   *   ],
+   * });
+   *
+   * export async function POST(req: Request) {
+   *   const decision = await aj.protect(req);
+   *
+   *   if (decision.isDenied()) {
+   *     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+   *   }
+   *
+   *   return NextResponse.json({
+   *     message: "Hello world",
+   *   });
+   * }
+   * ```
+   *
+   * @example
+   * Server action which can be passed as a prop to a client component. See https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations#client-components
+   *
+   * ```ts
+   * // /app/actions.ts
+   * "use server";
+   *
+   * import arcjet, { detectBot, request } from "@arcjet/next";
+   *
+   * const aj = arcjet({
+   * key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+   * rules: [
+   *    detectBot({
+   *      mode: "LIVE",
+   *      allow: [],
+   *    }),
+   *  ],
+   *});
+   *
+   * export async function create() {
+   *    const req = await request();
+   *    const decision = await aj.protect(req);
+   *    if (decision.isDenied()) {
+   *      throw new Error("Forbidden");
+   *    }
+   *    // mutate data
+   *}
+   * ```
+   * @link https://docs.arcjet.com/reference/nextjs#protect
+   * @link https://docs.arcjet.com/reference/nextjs#error-handling
+   * @link https://docs.arcjet.com/reference/nextjs#decision
+   * @link https://docs.arcjet.com/reference/nextjs#server-actions
+   * @link https://github.com/arcjet/example-nextjs
    */
   protect(
     request: ArcjetNextRequest,
@@ -234,6 +336,59 @@ export interface ArcjetNext<Props extends PlainObject> {
    *
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link ArcjetNext} client.
+   *
+   * @example
+   * Create a base client in a separate file which sets a Shield base rule
+   * and then use `withRule` to add a bot detection rule in a specific route
+   * handler.
+   *
+   * ```ts
+   * // /lib/arcjet.ts
+   * import arcjet, { shield } from "@arcjet/next";
+   *
+   * // Create a base Arcjet instance for use by each handler
+   * export default arcjet({
+   *   key: process.env.ARCJET_KEY,
+   *   rules: [
+   *     shield({
+   *       mode: "LIVE",
+   *     }),
+   *   ],
+   * });
+   * ```
+   *
+   * ```ts
+   * // /app/api/hello/route.ts
+   * import arcjet from "@lib/arcjet";
+   * import { detectBot, fixedWindow } from "@arcjet/next";
+   *
+   * // Add rules to the base Arcjet instance outside of the handler function
+   * const aj = arcjet
+   *   .withRule(
+   *     detectBot({
+   *       mode: "LIVE",
+   *       allow: [], // blocks all automated clients
+   *     }),
+   *   )
+   *   // You can chain multiple rules, so we'll include a rate limit
+   *   .withRule(
+   *     fixedWindow({
+   *       mode: "LIVE",
+   *       max: 100,
+   *       window: "60s",
+   *     }),
+   *   );
+   *
+   * export async function GET(req: NextRequest) {
+   *   const decision = await aj.protect(req);
+   *   if (decision.isDenied()) {
+   *     throw new Error("Forbidden");
+   *   }
+   *   // continue with request processing
+   * }
+   * ```
+   * @link https://docs.arcjet.com/reference/nextjs#ad-hoc-rules
+   * @link https://github.com/arcjet/example-nextjs
    */
   withRule<Rule extends Primitive | Product>(
     rule: Rule,
