@@ -800,7 +800,10 @@ export function tokenBucket<
  *
  * This algorithm is useful when you want to apply a simple fixed limit in a
  * fixed time window. For example, a simple limit on the total number of
- * requests a client can make.
+ * requests a client can make. However, it can be susceptible to the stampede
+ * problem where a client makes a burst of requests at the start of a window and
+ * then is blocked for the rest of the window. The sliding window algorithm can
+ * be used to avoid this.
  *
  * @param {FixedWindowRateLimitOptions} options - The options for the fixed
  * window rate limiting rule.
