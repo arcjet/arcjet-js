@@ -40,8 +40,8 @@
     "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "1.10.0",
-    "@connectrpc/connect": "1.6.1",
+    "@bufbuild/protobuf": "2.2.3",
+    "@connectrpc/connect": "2.0.2",
     "typeid-js": "1.2.0"
   },
   "devDependencies": {
@@ -49,7 +49,7 @@
     "@arcjet/rollup-config": "1.0.0-beta.2",
     "@arcjet/tsconfig": "1.0.0-beta.2",
     "@rollup/wasm-node": "4.34.9",
-    "@types/node": "18.18.0",
+    "@types/node": "22.13.9",
     "expect": "29.7.0",
     "typescript": "5.8.2"
   },
