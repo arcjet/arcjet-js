@@ -2,7 +2,7 @@ module.exports = {
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "turbo",
+    "plugin:turbo/recommended",
     "prettier",
   ],
   rules: {
