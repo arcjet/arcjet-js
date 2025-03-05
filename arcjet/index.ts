@@ -742,7 +742,7 @@ function isLocalRule<Props extends PlainObject>(
  * @example
  * ```ts
  * const aj = arcjet({
- *   key: "",
+ *   key: process.env.ARCJET_KEY,
  *   rules: [
  *     tokenBucket({
  *       mode: "LIVE",
@@ -832,7 +832,7 @@ export function tokenBucket<
  * @example
  * ```ts
  * const aj = arcjet({
- *   key: "",
+ *    key: process.env.ARCJET_KEY,
  *   rules: [
  *     fixedWindow({
  *       mode: "LIVE",
@@ -910,7 +910,7 @@ export function fixedWindow<
  * @example
  * ```ts
  * const aj = arcjet({
- *   key: "",
+ *   key: process.env.ARCJET_KEY,
  *   rules: [
  *     slidingWindow({
  *       mode: "LIVE",
@@ -1065,7 +1065,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * @example
  * ```ts
  * const aj = arcjet({
- *   key: "",
+ *   key: process.env.ARCJET_KEY,
  *   rules: [
  *     sensitiveInfo({
  *       mode: "LIVE",
@@ -1086,7 +1086,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * }
  *
  * const aj = arcjet({
- *   key: "",
+ *   key: process.env.ARCJET_KEY,
  *   rules: [
  *     sensitiveInfo({
  *       mode: "LIVE",
@@ -1260,7 +1260,7 @@ export function sensitiveInfo<
  * @example
  * ```ts
  * const aj = arcjet({
- *   key: "",
+ *   key: process.env.ARCJET_KEY,
  *   rules: [
  *     validateEmail({
  *       mode: "LIVE",
@@ -1450,7 +1450,7 @@ export function validateEmail(
  *
  * ```ts
  * const aj = arcjet({
- *   key: "",
+ *   key: process.env.ARCJET_KEY,
  *   rules: [
  *     detectBot({
  *       mode: "LIVE",
@@ -1469,7 +1469,7 @@ export function validateEmail(
  * Denies AI crawlers, allows all other bots
  * ```ts
  * const aj = arcjet({
- *   key: "",
+ *   key: process.env.ARCJET_KEY,
  *   rules: [
  *     detectBot({
  *       mode: "LIVE",
@@ -1626,7 +1626,7 @@ export type ShieldOptions = {
  * @example
  * ```ts
  * const aj = arcjet({
- *   key: "",
+ *   key: process.env.ARCJET_KEY,
  *   rules: [shield({ mode: "LIVE" })],
  * });
  * ```
@@ -1736,7 +1736,7 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
  *
  * ```ts
  * const aj = arcjet({
- *   key: "",
+ *   key: process.env.ARCJET_KEY,
  *   rules: [
  *    protectSignup({
  *      email: {
