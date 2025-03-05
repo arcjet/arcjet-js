@@ -53,6 +53,10 @@ updates:
         versions: [">=2"]
       - dependency-name: "@connectrpc/connect-web"
         versions: [">=2"]
+      # Ignore updates for jco above 1.5.0 due to unnecessary deps
+      # Ref: https://github.com/bytecodealliance/jco/issues/500
+      - dependency-name: jco
+        versions: [">1.5.0"]
 
   # Dependencies in our examples
 
