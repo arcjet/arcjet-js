@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...@arcjet/redact-wasm-v1.0.0-beta.3) (2025-03-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* Regenerate analyze & redact WebAssembly files ([#3404](https://github.com/arcjet/arcjet-js/issues/3404)) ([97df114](https://github.com/arcjet/arcjet-js/commit/97df114bc1bd19f3ec358a574a9cce7c0f87e3bf))
+* Regenerate jco bindings ([#3098](https://github.com/arcjet/arcjet-js/issues/3098)) ([8268d83](https://github.com/arcjet/arcjet-js/commit/8268d833d6a9bfd7849447a05ae5455f279ba19f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/rollup-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/tsconfig bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/redact-wasm-v1.0.0-beta.2) (2025-02-04)
 
 

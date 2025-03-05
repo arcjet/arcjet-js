@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...@arcjet/sprintf-v1.0.0-beta.3) (2025-03-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sprintf:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/rollup-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/tsconfig bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/sprintf-v1.0.0-beta.2) (2025-02-04)
 
 

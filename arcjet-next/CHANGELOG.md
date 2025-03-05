@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...@arcjet/next-v1.0.0-beta.3) (2025-03-05)
+
+
+### 🚀 New Features
+
+* Add `@arcjet/inspect` package with utilities to inspect decisions ([#3455](https://github.com/arcjet/arcjet-js/issues/3455)) ([9b8db53](https://github.com/arcjet/arcjet-js/commit/9b8db53c0223ef7764deafbdb5909f9f9f9bf41c))
+
+
+### 🧹 Miscellaneous Chores
+
+* Improved doc comments ([#3377](https://github.com/arcjet/arcjet-js/issues/3377)) ([dfb8445](https://github.com/arcjet/arcjet-js/commit/dfb8445c02a8c96bcc05c734f71c6d51d76a6689))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/headers bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/ip bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/logger bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/protocol bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/transport bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * arcjet bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/rollup-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/tsconfig bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/next-v1.0.0-beta.2) (2025-02-04)
 
 
