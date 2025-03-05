@@ -61,7 +61,7 @@ describe("isSpoofedBot", () => {
     }
   });
 
-  test("returns false for dry run bots that are spoofed", () => {
+  test("returns undefined for dry run bots that are spoofed", () => {
     expect(
       isSpoofedBot(
         new ArcjetRuleResult({
@@ -76,34 +76,53 @@ describe("isSpoofedBot", () => {
           }),
         }),
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
   });
 
-  test("returns false for non-bot values", () => {
+  test("works with array methods", () => {
+    const results = [
+      new ArcjetRuleResult({
+        ttl: 0,
+        state: "RUN",
+        conclusion: "DENY",
+        reason: new ArcjetBotReason({
+          allowed: [],
+          denied: ["example"],
+          spoofed: true,
+          verified: false,
+        }),
+      }),
+    ];
+
+    expect(results.some(isSpoofedBot)).toEqual(true);
+    expect(results.find(isSpoofedBot)).toEqual(results[0]);
+  });
+
+  test("returns undefined for non-bot values", () => {
     expect(
       isSpoofedBot(
         // @ts-expect-error
         1,
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isSpoofedBot(
         // @ts-expect-error
         "",
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isSpoofedBot(
         // @ts-expect-error
         [],
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isSpoofedBot(
         // @ts-expect-error
         {},
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
   });
 });
 
@@ -160,7 +179,26 @@ describe("isVerifiedBot", () => {
     }
   });
 
-  test("returns false for dry run bots that are verified", () => {
+  test("works with array methods", () => {
+    const results = [
+      new ArcjetRuleResult({
+        ttl: 0,
+        state: "RUN",
+        conclusion: "DENY",
+        reason: new ArcjetBotReason({
+          allowed: [],
+          denied: ["example"],
+          spoofed: false,
+          verified: true,
+        }),
+      }),
+    ];
+
+    expect(results.some(isVerifiedBot)).toEqual(true);
+    expect(results.find(isVerifiedBot)).toEqual(results[0]);
+  });
+
+  test("returns undefined for dry run bots that are verified", () => {
     expect(
       isVerifiedBot(
         new ArcjetRuleResult({
@@ -175,34 +213,34 @@ describe("isVerifiedBot", () => {
           }),
         }),
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
   });
 
-  test("returns false for non-bot values", () => {
+  test("returns undefined for non-bot values", () => {
     expect(
       isVerifiedBot(
         // @ts-expect-error
         1,
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isVerifiedBot(
         // @ts-expect-error
         "",
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isVerifiedBot(
         // @ts-expect-error
         [],
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isVerifiedBot(
         // @ts-expect-error
         {},
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
   });
 });
 
@@ -240,7 +278,7 @@ describe("isMissingUserAgent", () => {
     }
   });
 
-  test("returns false for dry run errors about missing user-agent header", () => {
+  test("returns undefined for dry run errors about missing user-agent header", () => {
     expect(
       isMissingUserAgent(
         new ArcjetRuleResult({
@@ -250,7 +288,7 @@ describe("isMissingUserAgent", () => {
           reason: new ArcjetErrorReason("missing User-Agent header"),
         }),
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isMissingUserAgent(
         new ArcjetRuleResult({
@@ -260,33 +298,47 @@ describe("isMissingUserAgent", () => {
           reason: new ArcjetErrorReason("requires user-agent header"),
         }),
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
   });
 
-  test("returns false for non-error values", () => {
+  test("works with array methods", () => {
+    const results = [
+      new ArcjetRuleResult({
+        ttl: 0,
+        state: "RUN",
+        conclusion: "DENY",
+        reason: new ArcjetErrorReason("requires user-agent header"),
+      }),
+    ];
+
+    expect(results.some(isMissingUserAgent)).toEqual(true);
+    expect(results.find(isMissingUserAgent)).toEqual(results[0]);
+  });
+
+  test("returns undefined for non-error values", () => {
     expect(
       isMissingUserAgent(
         // @ts-expect-error
         1,
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isMissingUserAgent(
         // @ts-expect-error
         "",
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isMissingUserAgent(
         // @ts-expect-error
         [],
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
     expect(
       isMissingUserAgent(
         // @ts-expect-error
         {},
       ),
-    ).toEqual(false);
+    ).toBeUndefined();
   });
 });

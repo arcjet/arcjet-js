@@ -44,18 +44,21 @@ function isActive(
 }
 
 /**
- * Determines if a `LIVE` bot rule detected a spoofed request. If `true`, the
- * request was spoofed and should be denied. `DRY_RUN` rules are ignored.
+ * Determines if a non-`"DRY_RUN"` bot rule detected a spoofed request. If
+ * `true`, the request was likely spoofed and you may want to block it.
  *
  * For `allow` rules, Arcjet verifies the authenticity of detected bots by
  * checking IP data and performing reverse DNS lookups. This helps protect
- * against spoofed bots where clients pretend to be someone else.
+ * against spoofed bots where malicious clients pretend to be a well-behaving
+ * bot.
  *
  * Note that spoofed bot detection is not available on free plans.
  *
  * @param {ArcjetRuleResult} result - The rule result to inspect.
- * @returns `true` if the rule result was `LIVE` and detected as a spoofed bot,
- * or `false` otherwise.
+ * @returns `true` if the bot rule result was not `"DRY_RUN"` and a spoofed bot
+ * was detected, `false` if the bot rule result was not `"DRY_RUN"` and a
+ * spoofed bot was not detected, or `undefined` if the rule result was from a
+ * `"DRY_RUN"` bot rule or a non-bot rule.
  *
  * @example
  * ```ts
@@ -63,11 +66,13 @@ function isActive(
  * import { isSpoofedBot } from "@arcjet/inspect";
  *
  * const aj = arcjet({
- *  key: process.env.ARCJET_KEY,
+ *  key: process.env.ARCJET_KEY!,
  *  rules: [
  *    detectBot({
  *      mode: "LIVE",
- *      allow: [],
+ *      allow: [
+ *        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *      ],
  *    }),
  *  ],
  * });
@@ -91,29 +96,33 @@ function isActive(
  *
  * @link https://docs.arcjet.com/bot-protection/reference#bot-verification
  */
-export function isSpoofedBot(result: ArcjetRuleResult): boolean {
+export function isSpoofedBot(result: ArcjetRuleResult): boolean | undefined {
   // Use `unknown` argument helpers to guard around the wrong data being passed
   if (isActive(result) && isBotReason(result.reason)) {
     return result.reason.isSpoofed();
   }
 
-  return false;
+  // Explicitly return `undefined` when the rule is not a bot because it is
+  // another falsey value but more clear that the check didn't apply
+  return undefined;
 }
 
 /**
- * Determines if a `LIVE` bot rule detected a request from a verified bot. If
- * `true`, the bot was verified as legitimate. `DRY_RUN` rules are ignored.
+ * Determines if a non-`"DRY_RUN"` bot rule detected a request from a verified
+ * bot. If `true`, the bot was verified as legitimate and you may want to ignore
+ * other signals.
  *
  * For `allow` rules, Arcjet verifies the authenticity of detected bots by
- * checking IP data and performing reverse DNS lookups. This helps protect
- * against spoofed bots where clients pretend to be someone else. A verified bot
- * is a bot that has passed these checks.
+ * checking IP data and performing reverse DNS lookups. A verified bot is a bot
+ * that has passed these checks.
  *
  * Note that verified bot detection is not available on free plans.
  *
  * @param {ArcjetRuleResult} result - The rule result to inspect.
- * @returns `true` if the rule result was `LIVE` and detected as a verified bot,
- * or `false` otherwise.
+ * @returns `true` if the bot rule result was not `"DRY_RUN"` and a verified bot
+ * was detected, `false` if the bot rule result was not `"DRY_RUN"` and a
+ * verified bot was not detected, or `undefined` if the rule result was from a
+ * `"DRY_RUN"` bot rule or a non-bot rule.
  *
  * @example
  * ```ts
@@ -121,11 +130,13 @@ export function isSpoofedBot(result: ArcjetRuleResult): boolean {
  * import { isVerifiedBot } from "@arcjet/inspect";
  *
  * const aj = arcjet({
- *  key: process.env.ARCJET_KEY,
+ *  key: process.env.ARCJET_KEY!,
  *  rules: [
  *    detectBot({
  *      mode: "LIVE",
- *      allow: [],
+ *      allow: [
+ *        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *      ],
  *    }),
  *  ],
  * });
@@ -133,14 +144,13 @@ export function isSpoofedBot(result: ArcjetRuleResult): boolean {
  * export async function GET(request: Request) {
  *  const decision = await aj.protect(request);
  *
- *  if (decision.isDenied()) {
- *    return res.status(403).json({ error: "Forbidden" });
+ *  // Ignore all other signals and always allow verified search engine bots
+ *  if (decision.results.some(isVerifiedBot)) {
+ *    return res.status(200).json({ name: "Hello bot!" });
  *  }
  *
- *  if (!decision.results.some(isVerifiedBot)) {
- *    return res
- *      .status(403)
- *      .json({ error: "You are pretending to be a good bot!" });
+ *  if (decision.isDenied()) {
+ *    return res.status(403).json({ error: "Forbidden" });
  *  }
  *
  *  res.status(200).json({ name: "Hello world" });
@@ -149,24 +159,29 @@ export function isSpoofedBot(result: ArcjetRuleResult): boolean {
  *
  * @link https://docs.arcjet.com/bot-protection/reference#bot-verification
  */
-export function isVerifiedBot(result: ArcjetRuleResult): boolean {
+export function isVerifiedBot(result: ArcjetRuleResult): boolean | undefined {
   // Use `unknown` argument helpers to guard around the wrong data being passed
   if (isActive(result) && isBotReason(result.reason)) {
     return result.reason.isVerified();
   }
 
-  return false;
+  // Explicitly return `undefined` when the rule is not a bot because it is
+  // another falsey value but more clear that the check didn't apply
+  return undefined;
 }
 
 /**
- * Determines if a `LIVE` bot rule errored due to a missing User-Agent header on
- * the request and should be denied. A missing `User-Agent` header is a good
- * indicator of a malicious request because it is required by the HTTP spec.
- * `DRY_RUN` rules are ignored.
+ * Determines if a non-`"DRY_RUN"` bot rule errored due to a missing User-Agent
+ * header on the request. If `true`, you may want to block the request because a
+ * missing User-Agent header is a good indicator of a malicious request since
+ * it is recommended by
+ * {@link https://datatracker.ietf.org/doc/html/rfc9110#field.user-agent}.
  *
  * @param {ArcjetRuleResult} result - The rule result to inspect.
- * @returns `true` if the rule result was `LIVE` and detected as a missing
- * User-Agent, or `false` otherwise.
+ * @returns `true` if the rule result was not `"DRY_RUN"` and the request was
+ * missing a User-Agent header, `false` if the rule result was not `"DRY_RUN"`
+ * and the request had a User-Agent header, or `undefined` if the rule result
+ * was from a `"DRY_RUN"` bot rule or a non-bot rule.
  *
  * @example
  * ```ts
@@ -174,11 +189,13 @@ export function isVerifiedBot(result: ArcjetRuleResult): boolean {
  * import { isMissingUserAgent } from "@arcjet/inspect";
  *
  * const aj = arcjet({
- *  key: process.env.ARCJET_KEY,
+ *  key: process.env.ARCJET_KEY!,
  *  rules: [
  *    detectBot({
  *      mode: "LIVE",
- *      allow: [],
+ *      allow: [
+ *        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *      ],
  *    }),
  *  ],
  * });
@@ -199,7 +216,9 @@ export function isVerifiedBot(result: ArcjetRuleResult): boolean {
  * }
  * ```
  */
-export function isMissingUserAgent(result: ArcjetRuleResult): boolean {
+export function isMissingUserAgent(
+  result: ArcjetRuleResult,
+): boolean | undefined {
   if (isActive(result) && isErrorReason(result.reason)) {
     return (
       // Error message via server bot rule
@@ -209,5 +228,7 @@ export function isMissingUserAgent(result: ArcjetRuleResult): boolean {
     );
   }
 
-  return false;
+  // Explicitly return `undefined` when the rule is not a bot because it is
+  // another falsey value but more clear that the check didn't apply
+  return undefined;
 }
