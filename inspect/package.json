@@ -1,0 +1,57 @@
+{
+  "name": "@arcjet/inspect",
+  "version": "1.0.0-beta.2",
+  "description": "Arcjet utilities for inspecting decisions made an the SDK",
+  "license": "Apache-2.0",
+  "homepage": "https://arcjet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "inspect"
+  },
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "*.js",
+    "*.d.ts",
+    "!*.config.js"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "rollup --config rollup.config.js",
+    "lint": "eslint .",
+    "pretest": "npm run build",
+    "test": "node --test --experimental-test-coverage"
+  },
+  "dependencies": {
+    "@arcjet/protocol": "1.0.0-beta.2"
+  },
+  "devDependencies": {
+    "@arcjet/eslint-config": "1.0.0-beta.2",
+    "@arcjet/rollup-config": "1.0.0-beta.2",
+    "@arcjet/tsconfig": "1.0.0-beta.2",
+    "@rollup/wasm-node": "4.34.9",
+    "@types/node": "18.18.0",
+    "expect": "29.7.0",
+    "typescript": "5.8.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  }
+}

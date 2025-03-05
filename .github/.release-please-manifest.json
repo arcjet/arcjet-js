@@ -17,6 +17,7 @@
   "env": "1.0.0-beta.2",
   "eslint-config": "1.0.0-beta.2",
   "headers": "1.0.0-beta.2",
+  "inspect": "1.0.0-beta.2",
   "ip": "1.0.0-beta.2",
   "logger": "1.0.0-beta.2",
   "nosecone": "1.0.0-beta.2",
