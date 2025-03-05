@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...@arcjet/eslint-config-v1.0.0-beta.3) (2025-03-05)
+
+
+### 🪲 Bug Fixes
+
+* Include turbo plugin correctly ([#3451](https://github.com/arcjet/arcjet-js/issues/3451)) ([21da4d3](https://github.com/arcjet/arcjet-js/commit/21da4d3e57d1c18923eb05e9068ad7b98193ab37))
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/eslint-config-v1.0.0-beta.2) (2025-02-04)
 
 

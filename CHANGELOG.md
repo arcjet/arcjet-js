@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2025-03-05)
+
+
+### 🚀 New Features
+
+* Add `@arcjet/inspect` package with utilities to inspect decisions ([#3455](https://github.com/arcjet/arcjet-js/issues/3455)) ([9b8db53](https://github.com/arcjet/arcjet-js/commit/9b8db53c0223ef7764deafbdb5909f9f9f9bf41c))
+* **analyze:** Add Hydrozen monitoring bot ([#3132](https://github.com/arcjet/arcjet-js/issues/3132)) ([211dbd0](https://github.com/arcjet/arcjet-js/commit/211dbd0fe35f3a72c267fd21cfeb083214f66372))
+
+
+### 🪲 Bug Fixes
+
+* Include turbo plugin correctly ([#3451](https://github.com/arcjet/arcjet-js/issues/3451)) ([21da4d3](https://github.com/arcjet/arcjet-js/commit/21da4d3e57d1c18923eb05e9068ad7b98193ab37))
+* **transport:** Add connect as a direct dependency to satisfy peerDep ([#3416](https://github.com/arcjet/arcjet-js/issues/3416)) ([96c7a48](https://github.com/arcjet/arcjet-js/commit/96c7a48b085329a389094fb47226434b024a4962))
+
+
+### 📝 Documentation
+
+* https://github.com/arcjet/arcjet-docs/pull/356 ([0514251](https://github.com/arcjet/arcjet-js/commit/051425101d4e025e692cf43652a9097218c307f4))
+
+
+### 🧹 Miscellaneous Chores
+
+* Change doc comments key examples ([#3465](https://github.com/arcjet/arcjet-js/issues/3465)) ([6389563](https://github.com/arcjet/arcjet-js/commit/63895638668877b7a612ef16495a1ccf14475e26))
+* **ci:** Enable Bun Dependabot ecosystem ([#3190](https://github.com/arcjet/arcjet-js/issues/3190)) ([f01f4c2](https://github.com/arcjet/arcjet-js/commit/f01f4c2a2ffba117b60cfa73f380fe746d516b55))
+* Disable dependabot for bun examples ([#3447](https://github.com/arcjet/arcjet-js/issues/3447)) ([1ce1a2c](https://github.com/arcjet/arcjet-js/commit/1ce1a2ca880420271ed08a9dd1d30b2ac1c5f71d))
+* **examples:** Next.js + Better Auth ([#2750](https://github.com/arcjet/arcjet-js/issues/2750)) ([0514251](https://github.com/arcjet/arcjet-js/commit/051425101d4e025e692cf43652a9097218c307f4))
+* Improved doc comments ([#3377](https://github.com/arcjet/arcjet-js/issues/3377)) ([dfb8445](https://github.com/arcjet/arcjet-js/commit/dfb8445c02a8c96bcc05c734f71c6d51d76a6689))
+* regen wasm with bot improvements ([#3378](https://github.com/arcjet/arcjet-js/issues/3378)) ([b882835](https://github.com/arcjet/arcjet-js/commit/b882835940a5b1d258e422a410c538c01f452daf))
+* Regenerate analyze & redact WebAssembly files ([#3404](https://github.com/arcjet/arcjet-js/issues/3404)) ([97df114](https://github.com/arcjet/arcjet-js/commit/97df114bc1bd19f3ec358a574a9cce7c0f87e3bf))
+* Regenerate jco bindings ([#3098](https://github.com/arcjet/arcjet-js/issues/3098)) ([8268d83](https://github.com/arcjet/arcjet-js/commit/8268d833d6a9bfd7849447a05ae5455f279ba19f))
+* Restrict jco in dependabot config ([#3446](https://github.com/arcjet/arcjet-js/issues/3446)) ([e7c8a65](https://github.com/arcjet/arcjet-js/commit/e7c8a657906b281031378c3d215d132dd4e6cc4d))
+* Update trunk, linters, and allowed workflow endpoints ([#3097](https://github.com/arcjet/arcjet-js/issues/3097)) ([92dc38b](https://github.com/arcjet/arcjet-js/commit/92dc38b4e8951f54213a80a559fdf08382a965b2))
+
+
+### ✅ Continuous Integration
+
+* Run semgrep action on ubuntu-latest ([#3448](https://github.com/arcjet/arcjet-js/issues/3448)) ([ea3678d](https://github.com/arcjet/arcjet-js/commit/ea3678dea6dcfb28fad056da8e174e793caf9958))
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-02-04)
 
 

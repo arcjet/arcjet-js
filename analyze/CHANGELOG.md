@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...@arcjet/analyze-v1.0.0-beta.3) (2025-03-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* regen wasm with bot improvements ([#3378](https://github.com/arcjet/arcjet-js/issues/3378)) ([b882835](https://github.com/arcjet/arcjet-js/commit/b882835940a5b1d258e422a410c538c01f452daf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze-wasm bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/protocol bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/rollup-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/tsconfig bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/analyze-v1.0.0-beta.2) (2025-02-04)
 
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...@arcjet/transport-v1.0.0-beta.3) (2025-03-05)
+
+
+### 🪲 Bug Fixes
+
+* **transport:** Add connect as a direct dependency to satisfy peerDep ([#3416](https://github.com/arcjet/arcjet-js/issues/3416)) ([96c7a48](https://github.com/arcjet/arcjet-js/commit/96c7a48b085329a389094fb47226434b024a4962))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/rollup-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/tsconfig bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...@arcjet/transport-v1.0.0-beta.2) (2025-02-04)
 
 

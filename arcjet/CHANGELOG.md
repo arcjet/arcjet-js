@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...arcjet-v1.0.0-beta.3) (2025-03-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* Change doc comments key examples ([#3465](https://github.com/arcjet/arcjet-js/issues/3465)) ([6389563](https://github.com/arcjet/arcjet-js/commit/63895638668877b7a612ef16495a1ccf14475e26))
+* Improved doc comments ([#3377](https://github.com/arcjet/arcjet-js/issues/3377)) ([dfb8445](https://github.com/arcjet/arcjet-js/commit/dfb8445c02a8c96bcc05c734f71c6d51d76a6689))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/duration bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/headers bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/protocol bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/runtime bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/rollup-config bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+    * @arcjet/tsconfig bumped from 1.0.0-beta.2 to 1.0.0-beta.3
+
 ## [1.0.0-beta.2](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.1...arcjet-v1.0.0-beta.2) (2025-02-04)
 
 
