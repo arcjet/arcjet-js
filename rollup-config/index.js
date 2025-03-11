@@ -141,7 +141,7 @@ export function createConfig(root, { plugins = [] } = {}) {
       try {
         const files = fs.readdirSync(dir, { withFileTypes: true });
         return files.filter(isTypeScript).map(toEntry);
-      } catch (err) {
+      } catch {
         return [];
       }
     }),

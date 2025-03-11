@@ -17,7 +17,7 @@ export async function importWithGlobal(
   });
 
   const isolatedModule = runInContext(`import("${target}")`, context, {
-    importModuleDynamically(specifier, script, assertions) {
+    importModuleDynamically(specifier) {
       if (specifier === target) {
         return mod;
       }
