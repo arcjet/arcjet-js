@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
-    "next": "^15",
+    "next": "15.2.2-canary.7",
+    "pino": "^9",
     "react": "^19",
     "react-dom": "^19"
   },

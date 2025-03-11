@@ -1,6 +1,8 @@
 import arcjet, { createMiddleware, shield } from "@arcjet/next";
+import pino from "pino";
 
 export const config = {
+  runtime: "nodejs",
   // matcher tells Next.js which routes to run the middleware on
   matcher: ["/"],
 };
@@ -16,6 +18,7 @@ const aj = arcjet({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
     }),
   ],
+  log: pino({ level: "debug" })
 });
 
 export default createMiddleware(aj);

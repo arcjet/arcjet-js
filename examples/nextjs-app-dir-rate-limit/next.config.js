@@ -1,4 +1,8 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {
+    experimental: {
+        nodeMiddleware: true,
+    },
+};
 
 module.exports = nextConfig
