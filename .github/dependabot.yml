@@ -41,9 +41,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
       # Ignore updates for Buf and ConnectRPC v2 and above
       - dependency-name: "@bufbuild/protobuf"
         versions: [">=2"]
