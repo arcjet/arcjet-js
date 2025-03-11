@@ -5,15 +5,11 @@ export default [
   {
     languageOptions: {
       globals: {
-        URL: "readonly"
-      }
-    }
+        URL: "readonly",
+      },
+    },
   },
   {
-    ignores: [
-      ".turbo/",
-      "coverage/",
-      "node_modules/",
-    ]
-  }
-]
+    ignores: [".turbo/", "coverage/", "node_modules/"],
+  },
+];

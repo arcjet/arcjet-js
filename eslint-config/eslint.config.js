@@ -1,13 +1,11 @@
 import js from "@eslint/js";
-import ts from 'typescript-eslint';
+import ts from "typescript-eslint";
 import turbo from "eslint-config-turbo/flat";
-import prettier from "eslint-config-prettier"
+import prettier from "eslint-config-prettier";
 
 export default [
   {
-    files: [
-      "**/*.ts",
-    ]
+    files: ["**/*.ts"],
   },
   js.configs.recommended,
   ...ts.configs.recommended,
@@ -27,5 +25,5 @@ export default [
       "@typescript-eslint/no-empty-object-type": "off",
       "no-unused-vars": "off",
     },
-  }
-]
+  },
+];
