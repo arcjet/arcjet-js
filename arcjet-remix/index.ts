@@ -182,6 +182,12 @@ export default function arcjet<
         level: logLevel(process.env),
       });
 
+  if (isDevelopment(process.env)) {
+    log.warn(
+      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
+    );
+  }
+
   function toArcjetRequest<Props extends PlainObject>(
     { request, context }: ArcjetRemixRequest,
     props: Props,
@@ -204,7 +210,6 @@ export default function arcjet<
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
       if (isDevelopment(process.env)) {
-        log.warn("Using 127.0.0.1 as IP address in development mode");
         ip = "127.0.0.1";
       } else {
         log.warn(

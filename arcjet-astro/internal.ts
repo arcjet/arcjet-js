@@ -202,6 +202,12 @@ export function createArcjetClient<
         level: logLevel(env),
       });
 
+  if (isDevelopment(process.env)) {
+    log.warn(
+      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
+    );
+  }
+
   function toArcjetRequest<Props extends PlainObject>(
     request: Request,
     props: Props,
@@ -228,7 +234,6 @@ export function createArcjetClient<
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
       if (isDevelopment(env)) {
-        log.warn("Using 127.0.0.1 as IP address in development mode");
         ip = "127.0.0.1";
       } else {
         log.warn(
