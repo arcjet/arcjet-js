@@ -16,7 +16,7 @@ export default function IndexPage() {
           </Link>{" "}
           which includes:
         </p>
-        <ul className="max-w-[700px] list-disc list-outside ms-8">
+        <ul className="ms-8 max-w-[700px] list-outside list-disc">
           <li>
             Server-side email verification with Arcjet to check if the email is
             from a disposable provider and that the domain has a valid MX
