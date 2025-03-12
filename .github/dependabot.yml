@@ -191,6 +191,36 @@ updates:
           - "*"
 
   - package-ecosystem: npm
+    directory: /examples/gatsby-rate-limit
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    assignees:
+      - blaine-arcjet
+      - e-moran
+    reviewers:
+      - blaine-arcjet
+      - e-moran
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Gatsby doesn't support React 19 so the dependencies below are
+      # restricted.
+      - dependency-name: react
+        versions: [">=19"]
+      - dependency-name: "@types/react"
+        versions: [">=19"]
+      - dependency-name: react-dom
+        versions: [">=19"]
+      - dependency-name: "@types/react-dom"
+        versions: [">=19"]
+
+  - package-ecosystem: npm
     directory: /examples/nestjs
     schedule:
       # Our dependencies should be checked daily
