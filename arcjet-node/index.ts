@@ -11,6 +11,7 @@ import type {
 } from "arcjet";
 import findIP from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
+import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
@@ -19,6 +20,38 @@ import { readBody } from "@arcjet/body";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
+
+// An object with getters that access the `process.env.SOMEVAR` values directly.
+// This allows bundlers to replace the dot-notation access with string literals
+// while still allowing dynamic access in runtime environments.
+// WARNING: This is fragile because any time we add a new key to `Env`, we need
+// to add another getter here.
+const env: Env = {
+  get FLY_APP_NAME() {
+    return process.env.FLY_APP_NAME;
+  },
+  get VERCEL() {
+    return process.env.VERCEL;
+  },
+  get MODE() {
+    return process.env.MODE;
+  },
+  get NODE_ENV() {
+    return process.env.NODE_ENV;
+  },
+  get ARCJET_KEY() {
+    return process.env.ARCJET_KEY;
+  },
+  get ARCJET_ENV() {
+    return process.env.ARCJET_ENV;
+  },
+  get ARCJET_LOG_LEVEL() {
+    return process.env.ARCJET_LOG_LEVEL;
+  },
+  get ARCJET_BASE_URL() {
+    return process.env.ARCJET_BASE_URL;
+  },
+};
 
 // TODO: Deduplicate with other packages
 function errorMessage(err: unknown): string {
@@ -84,11 +117,11 @@ export type RemoteClientOptions = {
 export function createRemoteClient(options?: RemoteClientOptions) {
   // The base URL for the Arcjet API. Will default to the standard production
   // API unless environment variable `ARCJET_BASE_URL` is set.
-  const url = options?.baseUrl ?? baseUrl(process.env);
+  const url = options?.baseUrl ?? baseUrl(env);
 
   // The timeout for the Arcjet API in milliseconds. This is set to a low value
   // in production so calls fail open.
-  const timeout = options?.timeout ?? (isDevelopment(process.env) ? 1000 : 500);
+  const timeout = options?.timeout ?? (isDevelopment(env) ? 1000 : 500);
 
   // Transport is the HTTP client that the client uses to make requests.
   const transport = createTransport(url);
@@ -208,10 +241,10 @@ export default function arcjet<
   const log = options.log
     ? options.log
     : new Logger({
-        level: logLevel(process.env),
+        level: logLevel(env),
       });
 
-  if (isDevelopment(process.env)) {
+  if (isDevelopment(env)) {
     log.warn(
       "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
     );
@@ -232,12 +265,12 @@ export default function arcjet<
         socket: request.socket,
         headers,
       },
-      { platform: platform(process.env), proxies: options.proxies },
+      { platform: platform(env), proxies: options.proxies },
     );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
-      if (isDevelopment(process.env)) {
+      if (isDevelopment(env)) {
         ip = "127.0.0.1";
       } else {
         log.warn(
