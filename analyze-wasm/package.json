@@ -36,7 +36,6 @@
     "wasm/",
     "*.js",
     "*.d.ts",
-    "*.ts",
     "!*.config.js"
   ],
   "scripts": {
