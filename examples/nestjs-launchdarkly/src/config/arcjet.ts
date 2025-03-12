@@ -11,7 +11,7 @@ export class ArcjetConfig {
     rateLimitMode: 'LIVE',
     rateLimitMax: 1,
     rateLimitWindow: '5s',
-  };
+  } as const;
 
   constructor(private configService: ConfigService) {}
 
@@ -26,29 +26,31 @@ export class ArcjetConfig {
     const context = { key: 'guest' };
 
     // Get the latest configuration from LaunchDarkly
-    const shieldMode = await client.variation(
+    const shieldMode = (await client.variation(
       'shieldMode',
       context,
       ArcjetConfig.defaultConfig.shieldMode,
-    );
-    const rateLimitMode = await client.variation(
+    )) as 'LIVE' | 'DRY_RUN';
+    const rateLimitMode = (await client.variation(
       'rateLimitMode',
       context,
       ArcjetConfig.defaultConfig.rateLimitMode,
-    );
-    const rateLimitMax = await client.variation(
+    )) as 'LIVE' | 'DRY_RUN';
+    const rateLimitMax = (await client.variation(
       'rateLimitMax',
       context,
       ArcjetConfig.defaultConfig.rateLimitMax,
-    );
-    const rateLimitWindow = await client.variation(
+    )) as number;
+    const rateLimitWindow = (await client.variation(
       'rateLimitWindow',
       context,
       ArcjetConfig.defaultConfig.rateLimitWindow,
-    );
+    )) as string | number;
+
+    const key: string = this.configService.get('ARCJET_KEY');
 
     return {
-      key: this.configService.get('ARCJET_KEY')!,
+      key,
       rules: [
         shield({ mode: shieldMode }),
         fixedWindow({

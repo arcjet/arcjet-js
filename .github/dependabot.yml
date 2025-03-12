@@ -211,13 +211,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # NestJS uses Express 4
-      - dependency-name: "@types/express"
-        versions: [">=5"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nestjs-fastify
@@ -237,10 +230,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nestjs-graphql
@@ -260,13 +249,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # NestJS uses Express 4
-      - dependency-name: "@types/express"
-        versions: [">=5"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nestjs-launchdarkly
@@ -286,13 +268,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # NestJS uses Express 4
-      - dependency-name: "@types/express"
-        versions: [">=5"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-14-nextauth-4

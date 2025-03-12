@@ -18,7 +18,7 @@ import { ValidateEmailModule } from './validate-email/validate-email.module.js';
     }),
     ArcjetModule.forRoot({
       isGlobal: true,
-      key: process.env.ARCJET_KEY!,
+      key: process.env.ARCJET_KEY,
       rules: [shield({ mode: 'LIVE' })],
     }),
     RateLimitModule,

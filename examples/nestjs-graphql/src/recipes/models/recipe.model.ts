@@ -2,7 +2,7 @@ import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType({ description: 'recipe ' })
 export class Recipe {
-  @Field(type => ID)
+  @Field(() => ID)
   id: string;
 
   @Field()
@@ -11,6 +11,6 @@ export class Recipe {
   @Field({ nullable: true })
   description?: string;
 
-  @Field(type => [String])
+  @Field(() => [String])
   ingredients: string[];
 }

@@ -20,11 +20,8 @@ import { RecipesModule } from './recipes/recipes.module.js';
     }),
     ArcjetModule.forRoot({
       isGlobal: true,
-      key: process.env.ARCJET_KEY!,
-      rules: [
-        shield({ mode: 'LIVE' }),
-        detectBot({ mode: "LIVE", allow: [] })
-      ],
+      key: process.env.ARCJET_KEY,
+      rules: [shield({ mode: 'LIVE' }), detectBot({ mode: 'LIVE', allow: [] })],
     }),
   ],
   providers: [
@@ -35,8 +32,8 @@ import { RecipesModule } from './recipes/recipes.module.js';
     // requests to Arcjet and you can't opt-out of this global Guard.
     {
       provide: APP_GUARD,
-      useClass: ArcjetGuard
-    }
+      useClass: ArcjetGuard,
+    },
   ],
 })
 export class AppModule {}
