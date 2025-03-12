@@ -1,6 +1,0 @@
-/.turbo/
-/coverage/
-/node_modules/
-*.d.ts
-*.js
-!*.config.js

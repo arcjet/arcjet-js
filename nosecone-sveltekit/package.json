@@ -51,6 +51,7 @@
     "@rollup/wasm-node": "4.34.9",
     "@sveltejs/kit": "^2.18.0",
     "@types/node": "18.18.0",
+    "eslint": "9.22.0",
     "typescript": "5.8.2"
   },
   "publishConfig": {

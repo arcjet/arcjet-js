@@ -1,4 +1,0 @@
-/.turbo/
-/coverage/
-/node_modules/
-!*.config.js

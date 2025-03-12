@@ -1,4 +1,4 @@
-import { describe, test, mock } from "node:test";
+import { describe, test } from "node:test";
 import { expect } from "expect";
 import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../index";
 import {

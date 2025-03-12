@@ -12,7 +12,7 @@ function bigintReplacer(key: string, value: unknown) {
 function tryStringify(o: unknown) {
   try {
     return JSON.stringify(o, bigintReplacer);
-  } catch (e) {
+  } catch {
     return "[Circular]";
   }
 }
