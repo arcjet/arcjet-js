@@ -60,6 +60,7 @@ merge:
     - Trunk Check
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 18)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 20)"
+    - Build examples / Gatsby + Rate Limit
     - Build examples / NestJS
     - Build examples / NestJS + Fastify
     - Build examples / NestJS + GraphQL

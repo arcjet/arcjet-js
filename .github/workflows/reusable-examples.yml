@@ -10,6 +10,48 @@ env:
   TURBO_TELEMETRY_DISABLED: "1"
 
 jobs:
+  gatsby-rate-limit:
+    name: Gatsby + Rate Limit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            registry.npmjs.org:443
+            unpkg.com:443
+            raw.githubusercontent.com:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/gatsby-rate-limit
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/gatsby-rate-limit
+        run: npm run build
+
   nestjs:
     name: NestJS
     runs-on: ubuntu-latest
