@@ -19,7 +19,7 @@ export class ValidateEmailController {
     // also running ArcjetGuard on the handlers calling `protect()` to avoid
     // making multiple requests to Arcjet.
     @Inject(ARCJET) private readonly arcjet: ArcjetNest,
-  ) { }
+  ) {}
 
   @Post()
   async validateEmail(@Req() req: FastifyRequest, @Body() email: string) {
