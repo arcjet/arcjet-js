@@ -329,9 +329,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-app-dir-validate-email
@@ -356,9 +353,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-authjs-5
@@ -389,9 +383,6 @@ updates:
         versions: [">=4"]
       - dependency-name: tailwind-merge
         versions: [">=3"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-authjs-nosecone
@@ -416,9 +407,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-better-auth
@@ -443,9 +431,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-bot-categories
@@ -470,9 +455,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-clerk-rate-limit
@@ -497,9 +479,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-clerk-shield
@@ -524,9 +503,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-decorate
@@ -551,9 +527,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-ip-details
@@ -578,9 +551,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-openai
@@ -605,9 +575,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-pages-wrap
@@ -632,9 +599,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-permit
@@ -659,9 +623,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-react-hook-form
@@ -692,9 +653,6 @@ updates:
         versions: [">=4"]
       - dependency-name: tailwind-merge
         versions: [">=3"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-sensitive-info
@@ -719,9 +677,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-server-actions
@@ -746,14 +701,6 @@ updates:
       # Headers in DOM.
       - dependency-name: "@types/node"
         versions: [">18.18"]
-      # TODO(#539): Upgrade to eslint 9
-      - dependency-name: eslint
-        versions: [">=9"]
-      # Ignore React during the `rc` period
-      - dependency-name: react
-        versions: ["*"]
-      - dependency-name: react-dom
-        versions: ["*"]
 
   - package-ecosystem: npm
     directory: /examples/nodejs-express-launchdarkly
