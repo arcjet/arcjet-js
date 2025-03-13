@@ -25,5 +25,9 @@
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "typescript": "^5.3.3"
+  },
+  "overrides": {
+    "cookie": "^0.7.1",
+    "path-to-regexp": "0.1.12"
   }
 }
