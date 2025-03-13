@@ -26,6 +26,7 @@ jobs:
             github.com:443
             registry.npmjs.org:443
             unpkg.com:443
+            raw.githubusercontent.com:443
 
       # Checkout
       # Most toolchains require checkout first
