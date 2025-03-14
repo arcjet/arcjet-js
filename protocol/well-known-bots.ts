@@ -251,6 +251,7 @@ export type ArcjetWellKnownBot =
   | "IDEASANDCODE_CRAWLER"
   | "IFRAMELY_PREVIEW"
   | "IMAGESIFT_CRAWLER"
+  | "IMESSAGE_PREVIEW"
   | "IMG2DATASET"
   | "INDEED_CRAWLER"
   | "INETDEX_CRAWLER"
@@ -406,6 +407,7 @@ export type ArcjetWellKnownBot =
   | "PINTREST_CRAWLER"
   | "PIPL_CRAWLER"
   | "POCKET_CRAWLER"
+  | "POSTMAN"
   | "POSTRANK_CRAWLER"
   | "PRCY_CRAWLER"
   | "PRIMAL_CRAWLER"
@@ -481,6 +483,7 @@ export type ArcjetWellKnownBot =
   | "STEAM_PREVIEW"
   | "STORYGIZE_CRAWLER"
   | "STRACT_CRAWLER"
+  | "STRIPE_WEBHOOK"
   | "STUTTGART_CRAWLER"
   | "SUMMIFY_CRAWLER"
   | "SUPERFEEDR_CRAWLER"
@@ -599,6 +602,7 @@ export type ArcjetBotCategory =
   | "CATEGORY:ADVERTISING"
   | "CATEGORY:AI"
   | "CATEGORY:AMAZON"
+  | "CATEGORY:APPLE"
   | "CATEGORY:ARCHIVE"
   | "CATEGORY:FEEDFETCHER"
   | "CATEGORY:GOOGLE"
@@ -614,6 +618,7 @@ export type ArcjetBotCategory =
   | "CATEGORY:TOOL"
   | "CATEGORY:UNKNOWN"
   | "CATEGORY:VERCEL"
+  | "CATEGORY:WEBHOOK"
   | "CATEGORY:YAHOO";
 
 export const categories: Record<
@@ -697,6 +702,10 @@ export const categories: Record<
     "AMAZON_ALEXA_CRAWLER",
     "AMAZON_CLOUDFRONT",
     "AMAZON_CRAWLER",
+  ]),
+  "CATEGORY:APPLE": Object.freeze<ArcjetWellKnownBot[]>([
+    "APPLE_CRAWLER",
+    "IMESSAGE_PREVIEW",
   ]),
   "CATEGORY:ARCHIVE": Object.freeze<ArcjetWellKnownBot[]>([
     "ARCHIVEORG_ARCHIVER",
@@ -853,6 +862,7 @@ export const categories: Record<
     "GOOGLE_PREVIEW",
     "GOOGLE_WEB_SNIPPET",
     "IFRAMELY_PREVIEW",
+    "IMESSAGE_PREVIEW",
     "MASTODON_CRAWLER",
     "META_CRAWLER_USER",
     "PAGEPEEKER_CRAWLER",
@@ -955,6 +965,7 @@ export const categories: Record<
     "GOOGLE_WEB_SNIPPET",
     "GROUPME_CRAWLER",
     "IFRAMELY_PREVIEW",
+    "IMESSAGE_PREVIEW",
     "IRC_ARCHIVEBOT",
     "LINKARCHIVER",
     "LINKEDIN_CRAWLER",
@@ -985,6 +996,7 @@ export const categories: Record<
     "NAGIOS_CHECK_HTTP",
     "NMAP",
     "NUTCH",
+    "POSTMAN",
     "WGET",
     "XENU_CRAWLER",
     "ZGRAB",
@@ -1329,6 +1341,7 @@ export const categories: Record<
     "VERCEL_CRAWLER",
     "VERCEL_MONITOR_PREVIEW",
   ]),
+  "CATEGORY:WEBHOOK": Object.freeze<ArcjetWellKnownBot[]>(["STRIPE_WEBHOOK"]),
   "CATEGORY:YAHOO": Object.freeze<ArcjetWellKnownBot[]>([
     "YAHOO_CRAWLER",
     "YAHOO_CRAWLER_JAPAN",
