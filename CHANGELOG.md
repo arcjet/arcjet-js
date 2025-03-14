@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-beta.4](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2025-03-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* Upgrade packages to eslint 9 ([#3531](https://github.com/arcjet/arcjet-js/issues/3531))
+
+### deps
+
+* Upgrade packages to eslint 9 ([#3531](https://github.com/arcjet/arcjet-js/issues/3531)) ([84826b5](https://github.com/arcjet/arcjet-js/commit/84826b51f0c7925ede7a889499bed3a188e48e65)), closes [#539](https://github.com/arcjet/arcjet-js/issues/539)
+
+
+### 🚀 New Features
+
+* regenerate webassembly with new bots ([#3570](https://github.com/arcjet/arcjet-js/issues/3570)) ([9db5e03](https://github.com/arcjet/arcjet-js/commit/9db5e033ba66cb0d5d03917b12f57aa1ddc0150b))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet-node:** Wrap `process.env` access with a getter object ([#3559](https://github.com/arcjet/arcjet-js/issues/3559)) ([134588b](https://github.com/arcjet/arcjet-js/commit/134588bc4e91aaa0086d53044249abd1a1aef1bb))
+* **transport:** Add direct dependency on buf peerDependency ([#3558](https://github.com/arcjet/arcjet-js/issues/3558)) ([1bcc07d](https://github.com/arcjet/arcjet-js/commit/1bcc07d250d9f0c33edb9565d824df0ef583bbb5))
+
+
+### 🧹 Miscellaneous Chores
+
+* **analyze-wasm:** Exclude TypeScript files ([#3533](https://github.com/arcjet/arcjet-js/issues/3533)) ([82e78b9](https://github.com/arcjet/arcjet-js/commit/82e78b95e8b483322e70285dc51a01f64338bb8e))
+* **examples:** Enable nodejs middleware and log with pino logger ([#3528](https://github.com/arcjet/arcjet-js/issues/3528)) ([ee6d039](https://github.com/arcjet/arcjet-js/commit/ee6d039e3b8bd04d9f0633d6511ff84f0738bb1c)), closes [#3374](https://github.com/arcjet/arcjet-js/issues/3374)
+* Only log development mode IP address warning once ([#3527](https://github.com/arcjet/arcjet-js/issues/3527)) ([36e0596](https://github.com/arcjet/arcjet-js/commit/36e0596332341d923dbeb755e2a8c26fd8d28e7c)), closes [#1781](https://github.com/arcjet/arcjet-js/issues/1781)
+
 ## [1.0.0-beta.3](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2025-03-05)
 
 
