@@ -16,7 +16,7 @@
  rate limit rule. The value is then passed as a string, number or boolean when
  calling the protect method. You can use any string value for the key.
 */
-import arcjet, { shield, tokenBucket } from "@arcjet/next";
+import arcjet, { ArcjetRateLimitReason, ArcjetRuleResult, shield, tokenBucket } from "@arcjet/next";
 import { openai } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { promptTokensEstimate } from "openai-chat-tokens";
@@ -40,6 +40,49 @@ const aj = arcjet({
   ],
 });
 
+function nearestLimit(
+  current: ArcjetRateLimitReason,
+  next: ArcjetRateLimitReason,
+) {
+  if (current.remaining < next.remaining) {
+    return current;
+  }
+
+  if (current.remaining > next.remaining) {
+    return next;
+  }
+
+  // Reaching here means `remaining` is equal so prioritize closest reset
+  if (current.reset < next.reset) {
+    return current;
+  }
+
+  if (current.reset > next.reset) {
+    return next;
+  }
+
+  // Reaching here means that `remaining` and `reset` are equal, so prioritize
+  // the smallest `max`
+  if (current.max < next.max) {
+    return current;
+  }
+
+  // All else equal, just return the next item in the list
+  return next;
+}
+
+function reduceNearestLimit(currentNearest: ArcjetRateLimitReason | undefined, rule: ArcjetRuleResult) {
+  if (rule.reason.isRateLimit()) {
+    if (typeof currentNearest !== "undefined") {
+      return nearestLimit(currentNearest, rule.reason);
+    } else {
+      return rule.reason;
+    }
+  } else {
+    return currentNearest;
+  }
+}
+
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
@@ -53,7 +96,7 @@ export async function POST(req: Request) {
 
   const { messages } = await req.json();
 
-   // Estimate the number of tokens required to process the request
+  // Estimate the number of tokens required to process the request
   const estimate = promptTokensEstimate({
     messages,
   });
@@ -64,8 +107,11 @@ export async function POST(req: Request) {
   const decision = await aj.protect(req, { requested: estimate, userId });
   console.log("Arcjet decision", decision.conclusion);
 
-  if (decision.reason.isRateLimit()) {
-    console.log("Requests remaining", decision.reason.remaining);
+  // We need to find the nearest rate limit, because multiple rate limit rules could be defined
+  const nearestRateLimit = decision.results.reduce<ArcjetRateLimitReason | undefined>(reduceNearestLimit, undefined)
+
+  if (typeof nearestRateLimit !== "undefined") {
+    console.log("Requests remaining", nearestRateLimit.remaining);
   }
 
   // If the request is denied, return a 429
