@@ -17,32 +17,214 @@ function parseXForwardedFor(value?: string | null): string[] {
   return forwardedIps;
 }
 
-function isTrustedProxy(ip: string, proxies?: Array<string>) {
+type IPv4Tuple = [number, number, number, number];
+type IPv6Tuple = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+];
+
+function isIPv4Cidr(cidr: unknown): cidr is IPv4CIDR {
+  return (
+    typeof cidr === "object" &&
+    cidr !== null &&
+    "type" in cidr &&
+    typeof cidr.type === "string" &&
+    cidr.type === "v4" &&
+    "contains" in cidr &&
+    typeof cidr.contains === "function"
+  );
+}
+
+function isIPv6Cidr(cidr: unknown): cidr is IPv6CIDR {
+  return (
+    typeof cidr === "object" &&
+    cidr !== null &&
+    "type" in cidr &&
+    typeof cidr.type === "string" &&
+    cidr.type === "v6" &&
+    "contains" in cidr &&
+    typeof cidr.contains === "function"
+  );
+}
+
+function isTrustedProxy(
+  ip: string,
+  segments: number[],
+  proxies?: Array<string | CIDR>,
+) {
   if (Array.isArray(proxies) && proxies.length > 0) {
-    return proxies.includes(ip);
+    return proxies.some((proxy) => {
+      if (typeof proxy === "string") {
+        return proxy === ip;
+      }
+      if (isIPv4Tuple(segments) && isIPv4Cidr(proxy)) {
+        return proxy.contains(segments);
+      }
+      if (isIPv6Tuple(segments) && isIPv6Cidr(proxy)) {
+        return proxy.contains(segments);
+      }
+      return false;
+    });
   }
 
   return false;
 }
 
-function isIPv4Tuple(
-  octets?: ArrayLike<number>,
-): octets is [number, number, number, number] {
-  if (typeof octets === "undefined") {
-    return false;
-  }
+abstract class CIDR {
+  abstract type: "v4" | "v6";
+  abstract partSize: 8 | 16;
+  abstract parts: readonly number[];
+  abstract bits: number;
 
-  return octets.length === 4;
+  // Based on CIDR matching implementation in `ipaddr.js`
+  // Source code:
+  // https://github.com/whitequark/ipaddr.js/blob/08c2cd41e2cb3400683cbd503f60421bfdf66921/lib/ipaddr.js#L107-L130
+  //
+  // Licensed: The MIT License (MIT)
+  // Copyright (C) 2011-2017 whitequark <whitequark@whitequark.org>
+  //
+  // Permission is hereby granted, free of charge, to any person obtaining a copy
+  // of this software and associated documentation files (the "Software"), to deal
+  // in the Software without restriction, including without limitation the rights
+  // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  // copies of the Software, and to permit persons to whom the Software is
+  // furnished to do so, subject to the following conditions:
+
+  // The above copyright notice and this permission notice shall be included in
+  // all copies or substantial portions of the Software.
+
+  // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  // THE SOFTWARE.
+  contains(ip: number[]): boolean {
+    let part = 0;
+    let shift;
+    let cidrBits = this.bits;
+
+    while (cidrBits > 0) {
+      shift = this.partSize - cidrBits;
+      if (shift < 0) {
+        shift = 0;
+      }
+
+      if (ip[part] >> shift !== this.parts[part] >> shift) {
+        return false;
+      }
+
+      cidrBits -= this.partSize;
+      part += 1;
+    }
+
+    return true;
+  }
 }
 
-function isIPv6Tuple(
-  octets?: ArrayLike<number>,
-): octets is [number, number, number, number, number, number, number, number] {
-  if (typeof octets === "undefined") {
+class IPv4CIDR extends CIDR {
+  type = "v4" as const;
+  partSize = 8 as const;
+  parts: Readonly<IPv4Tuple>;
+  bits: number;
+
+  constructor(parts: IPv4Tuple, bits: number) {
+    super();
+    this.bits = bits;
+    this.parts = parts;
+    Object.freeze(this);
+  }
+
+  contains(ip: IPv4Tuple): boolean {
+    return super.contains(ip);
+  }
+}
+
+class IPv6CIDR extends CIDR {
+  type = "v6" as const;
+  partSize = 16 as const;
+  parts: Readonly<IPv6Tuple>;
+  bits: number;
+
+  constructor(parts: IPv6Tuple, bits: number) {
+    super();
+    this.bits = bits;
+    this.parts = parts;
+    Object.freeze(this);
+  }
+
+  contains(ip: IPv6Tuple): boolean {
+    return super.contains(ip);
+  }
+}
+
+function parseCIDR(cidr: `${string}/${string}`): IPv4CIDR | IPv6CIDR {
+  // Pre-condition: `cidr` has be verified to have at least one `/`
+
+  const cidrParts = cidr.split("/");
+  if (cidrParts.length !== 2) {
+    throw new Error("invalid CIDR address: must be exactly 2 parts");
+  }
+
+  const parser = new Parser(cidrParts[0]);
+  const maybeIPv4 = parser.readIPv4Address();
+  if (isIPv4Tuple(maybeIPv4)) {
+    const bits = parseInt(cidrParts[1], 10);
+    if (isNaN(bits) || bits < 0 || bits > 32) {
+      throw new Error("invalid CIDR address: incorrect amount of bits");
+    }
+
+    return new IPv4CIDR(maybeIPv4, bits);
+  }
+
+  const maybeIPv6 = parser.readIPv6Address();
+  if (isIPv6Tuple(maybeIPv6)) {
+    const bits = parseInt(cidrParts[1], 10);
+    if (isNaN(bits) || bits < 0 || bits > 128) {
+      throw new Error("invalid CIDR address: incorrect amount of bits");
+    }
+
+    return new IPv6CIDR(maybeIPv6, bits);
+  }
+
+  throw new Error("invalid CIDR address: could not parse IP address");
+}
+
+function isCIDR(address: string): address is `${string}/${string}` {
+  return address.includes("/");
+}
+
+// Converts a string that looks like a CIDR address into the corresponding class
+// while ignoring non-CIDR IP addresses.
+export function parseProxy(proxy: string): string | CIDR {
+  if (isCIDR(proxy)) {
+    return parseCIDR(proxy);
+  } else {
+    return proxy;
+  }
+}
+
+function isIPv4Tuple(segements?: ArrayLike<number>): segements is IPv4Tuple {
+  if (typeof segements === "undefined") {
     return false;
   }
 
-  return octets.length === 8;
+  return segements.length === 4;
+}
+
+function isIPv6Tuple(segements?: ArrayLike<number>): segements is IPv6Tuple {
+  if (typeof segements === "undefined") {
+    return false;
+  }
+
+  return segements.length === 8;
 }
 
 function u16FromBytes(bytes: [number, number]) {
@@ -50,7 +232,7 @@ function u16FromBytes(bytes: [number, number]) {
   return new Uint16Array(u8.buffer)[0];
 }
 
-function u32FromBytes(bytes: [number, number, number, number]) {
+function u32FromBytes(bytes: IPv4Tuple) {
   const u8 = new Uint8Array(bytes);
   return new Uint32Array(u8.buffer)[0];
 }
@@ -289,7 +471,7 @@ const IPV4_BROADCAST = u32FromBytes([255, 255, 255, 255]);
 
 function isGlobalIPv4(
   s: unknown,
-  proxies: Array<string> | undefined,
+  proxies: Array<string | CIDR> | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -302,7 +484,7 @@ function isGlobalIPv4(
     return false;
   }
 
-  if (isTrustedProxy(s, proxies)) {
+  if (isTrustedProxy(s, octets, proxies)) {
     return false;
   }
 
@@ -388,7 +570,7 @@ function isGlobalIPv4(
 
 function isGlobalIPv6(
   s: unknown,
-  proxies: Array<string> | undefined,
+  proxies: Array<string | CIDR> | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -401,7 +583,7 @@ function isGlobalIPv6(
     return false;
   }
 
-  if (isTrustedProxy(s, proxies)) {
+  if (isTrustedProxy(s, segments, proxies)) {
     return false;
   }
 
@@ -539,7 +721,7 @@ function isGlobalIPv6(
 
 function isGlobalIP(
   s: unknown,
-  proxies: Array<string> | undefined,
+  proxies: Array<string | CIDR> | undefined,
 ): s is string {
   if (isGlobalIPv4(s, proxies)) {
     return true;
@@ -590,7 +772,7 @@ export type Platform = "cloudflare" | "fly-io" | "vercel";
 
 export interface Options {
   platform?: Platform;
-  proxies?: Array<string>;
+  proxies?: Array<string | CIDR>;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {

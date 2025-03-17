@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
 import type { Options, RequestLike } from "../index";
-import ip from "../index";
+import ip, { parseProxy } from "../index";
 
 type MakeTest = (ip: unknown) => [RequestLike, Options | undefined];
 
@@ -100,7 +100,31 @@ function suite(make: MakeTest) {
 
   test("returns empty string if the ip is a trusted proxy", () => {
     const [request, options] = make("::abcd:c00a:2ff");
-    expect(ip(request, { ...options, proxies: ["::abcd:c00a:2ff"] }));
+    expect(ip(request, { ...options, proxies: ["::abcd:c00a:2ff"] })).toEqual(
+      "",
+    );
+    expect(
+      ip(request, { ...options, proxies: [parseProxy("::abcd:c00a:2ff/128")] }),
+    ).toEqual("");
+  });
+
+  test("returns the string if the ip is not a trusted proxy", () => {
+    const [request, options] = make("::abcd:c00a:2ff");
+    expect(ip(request, { ...options, proxies: ["::abcd:c00a:2fa"] })).toEqual(
+      "::abcd:c00a:2ff",
+    );
+    expect(
+      ip(request, { ...options, proxies: [parseProxy("::abcd:c00a:2fa/128")] }),
+    ).toEqual("::abcd:c00a:2ff");
+    expect(
+      ip(request, {
+        ...options,
+        proxies: [
+          // @ts-ignore
+          1234,
+        ],
+      }),
+    ).toEqual("::abcd:c00a:2ff");
   });
 }
 
