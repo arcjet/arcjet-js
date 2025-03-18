@@ -9,7 +9,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import findIP from "@arcjet/ip";
+import findIP, { parseProxy } from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
@@ -199,6 +199,10 @@ export default function arcjet<
         level: logLevel(env),
       });
 
+  const proxies = Array.isArray(options.proxies)
+    ? options.proxies.map(parseProxy)
+    : undefined;
+
   if (isDevelopment(process.env)) {
     log.warn(
       "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
@@ -219,7 +223,7 @@ export default function arcjet<
         ip: event.getClientAddress(),
         headers,
       },
-      { platform: platform(env), proxies: options.proxies },
+      { platform: platform(env), proxies },
     );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP

@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
 import type { Options, RequestLike } from "../index";
-import ip from "../index";
+import ip, { parseProxy } from "../index";
 
 type MakeTest = (ip: unknown) => [RequestLike, Options | undefined];
 
@@ -172,7 +172,29 @@ function suite(make: MakeTest) {
 
   test("returns empty string if the ip is a trusted proxy", () => {
     const [request, options] = make("1.1.1.1");
-    expect(ip(request, { ...options, proxies: ["1.1.1.1"] }));
+    expect(ip(request, { ...options, proxies: ["1.1.1.1"] })).toEqual("");
+    expect(
+      ip(request, { ...options, proxies: [parseProxy("1.1.1.1/32")] }),
+    ).toEqual("");
+  });
+
+  test("returns the string if the ip is not a trusted proxy", () => {
+    const [request, options] = make("1.1.1.1");
+    expect(ip(request, { ...options, proxies: ["1.1.1.2"] })).toEqual(
+      "1.1.1.1",
+    );
+    expect(
+      ip(request, { ...options, proxies: [parseProxy("1.1.1.2/32")] }),
+    ).toEqual("1.1.1.1");
+    expect(
+      ip(request, {
+        ...options,
+        proxies: [
+          // @ts-ignore
+          1234,
+        ],
+      }),
+    ).toEqual("1.1.1.1");
   });
 }
 
