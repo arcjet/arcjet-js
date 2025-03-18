@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2025-03-18)
+
+
+### 🚀 New Features
+
+* Support CIDR strings as proxies ([#3577](https://github.com/arcjet/arcjet-js/issues/3577)) ([2964ca7](https://github.com/arcjet/arcjet-js/commit/2964ca7ce02ee35dca14043fd90ad942b0f1cd73)), closes [#2402](https://github.com/arcjet/arcjet-js/issues/2402)
+
 ## [1.0.0-beta.4](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2025-03-14)
 
 
