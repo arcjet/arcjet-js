@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@arcjet/nest": "file:../../arcjet-nest",
-    "@launchdarkly/node-server-sdk": "^9.7.4",
+    "@launchdarkly/node-server-sdk": "^9.7.5",
     "@nestjs/common": "^11.0.7",
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.11",
