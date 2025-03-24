@@ -49,7 +49,7 @@
     "@arcjet/rollup-config": "1.0.0-beta.4",
     "@arcjet/tsconfig": "1.0.0-beta.4",
     "@rollup/wasm-node": "4.37.0",
-    "@sveltejs/kit": "^2.19.0",
+    "@sveltejs/kit": "^2.20.2",
     "@types/node": "18.18.0",
     "eslint": "9.23.0",
     "typescript": "5.8.2"
