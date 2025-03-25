@@ -1,4 +1,4 @@
-import arcjet, { botCategories, detectBot } from "@arcjet/next";
+import arcjet, { ArcjetRuleResult, botCategories, detectBot } from "@arcjet/next";
 import { NextResponse } from "next/server";
 
 const aj = arcjet({
@@ -23,30 +23,66 @@ const aj = arcjet({
   ],
 });
 
+function reduceAllowedBots(bots: string[], rule: ArcjetRuleResult) {
+  if (rule.reason.isBot()) {
+    return [...bots, ...rule.reason.allowed]
+  } else {
+    return bots;
+  }
+}
+
+function reduceDeniedBots(bots: string[], rule: ArcjetRuleResult) {
+  if (rule.reason.isBot()) {
+    return [...bots, ...rule.reason.denied]
+  } else {
+    return bots;
+  }
+}
+
+function checkSpoofed(rule: ArcjetRuleResult) {
+  return rule.reason.isBot() && rule.reason.isSpoofed()
+}
+
+function collectErrors(errors: string[], rule: ArcjetRuleResult) {
+  if (rule.reason.isError()) {
+    return [...errors, rule.reason.message];
+  } else {
+    return errors;
+  }
+}
+
 export async function GET(req: Request) {
   const decision = await aj.protect(req);
 
-  if (decision.isErrored()) {
+  const errors = decision.results.reduce(collectErrors, []);
+  if (errors.length > 0) {
     return NextResponse.json(
-      { error: decision.reason.message },
+      { errors },
       { status: 500, statusText: "Internal Server Error" },
     )
   }
 
-  const headers = new Headers();
-  if (decision.reason.isBot()) {
-    // WARNING: This is illustrative! Don't share this metadata with users;
-    // otherwise they may use it to subvert bot detection!
-    headers.set("X-Arcjet-Bot-Allowed", decision.reason.allowed.join(", "))
-    headers.set("X-Arcjet-Bot-Denied", decision.reason.denied.join(", "))
+  const allowedBots = decision.results.reduce<string[]>(reduceAllowedBots, []);
 
-    // We need to check that the bot is who they say they are.
-    if (decision.reason.isSpoofed()) {
-      return NextResponse.json(
-        { error: "You are pretending to be a good bot!" },
-        { status: 403, headers },
-      );
-    }
+  const deniedBots = decision.results.reduce<string[]>(reduceDeniedBots, []);
+
+  const isSpoofed = decision.results.some(checkSpoofed);
+
+  // WARNING: This is illustrative! Don't share this metadata with users;
+  // otherwise they may use it to subvert bot detection!
+  const headers = new Headers({
+    "X-Arcjet-Bot-Allowed": allowedBots.join(", "),
+    "X-Arcjet-Bot-Denied": deniedBots.join(", "),
+  });
+  headers.set("X-Arcjet-Bot-Allowed", allowedBots.join(", "))
+  headers.set("X-Arcjet-Bot-Denied", deniedBots.join(", "))
+
+  // We need to check that the bot is who they say they are.
+  if (isSpoofed) {
+    return NextResponse.json(
+      { error: "You are pretending to be a good bot!" },
+      { status: 403, headers },
+    );
   }
 
   if (decision.isDenied()) {
