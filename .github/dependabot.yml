@@ -9,12 +9,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(ci)
       prefix-development: deps(ci)
@@ -27,12 +23,8 @@ updates:
       # Our dependencies should be checked daily
       interval: daily
     open-pull-requests-limit: 20
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps
       prefix-development: deps(dev)
@@ -62,12 +54,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -83,10 +71,8 @@ updates:
   #   schedule:
   #     # Our dependencies should be checked daily
   #     interval: daily
-  #   assignees:
-  #     - blaine-arcjet
   #   reviewers:
-  #     - blaine-arcjet
+  #     - arcjet/js-sdk-team
   #   commit-message:
   #     prefix: deps(example)
   #     prefix-development: deps(example)
@@ -102,10 +88,8 @@ updates:
   #   schedule:
   #     # Our dependencies should be checked daily
   #     interval: daily
-  #   assignees:
-  #     - blaine-arcjet
   #   reviewers:
-  #     - blaine-arcjet
+  #     - arcjet/js-sdk-team
   #   commit-message:
   #     prefix: deps(example)
   #     prefix-development: deps(example)
@@ -121,10 +105,8 @@ updates:
   #   schedule:
   #     # Our dependencies should be checked daily
   #     interval: daily
-  #   assignees:
-  #     - blaine-arcjet
   #   reviewers:
-  #     - blaine-arcjet
+  #     - arcjet/js-sdk-team
   #   commit-message:
   #     prefix: deps(example)
   #     prefix-development: deps(example)
@@ -138,12 +120,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -157,12 +135,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -176,12 +150,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -195,12 +165,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -225,12 +191,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -244,12 +206,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -263,12 +221,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -282,12 +236,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -301,12 +251,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -341,12 +287,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -365,12 +307,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -389,12 +327,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -419,12 +353,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -443,12 +373,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -467,12 +393,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -491,12 +413,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -515,12 +433,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -539,12 +453,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -563,12 +473,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -587,12 +493,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -611,12 +513,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -635,12 +533,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -659,12 +553,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -689,12 +579,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -713,12 +599,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -737,12 +619,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -756,12 +634,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -775,12 +649,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -794,12 +664,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -813,12 +679,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -832,12 +694,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
@@ -866,12 +724,8 @@ updates:
     schedule:
       # Our dependencies should be checked daily
       interval: daily
-    assignees:
-      - blaine-arcjet
-      - e-moran
     reviewers:
-      - blaine-arcjet
-      - e-moran
+      - arcjet/js-sdk-team
     commit-message:
       prefix: deps(example)
       prefix-development: deps(example)
