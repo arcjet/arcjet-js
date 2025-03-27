@@ -25,6 +25,7 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
+    "browser": "./edge-light.js",
     "bun": "./bun.js",
     "edge-light": "./edge-light.js",
     "default": "./index.js"
