@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2025-03-27)
+
+
+### 🚀 New Features
+
+* Add more detected bots ([#3689](https://github.com/arcjet/arcjet-js/issues/3689)) ([0bf3260](https://github.com/arcjet/arcjet-js/commit/0bf32608749bb4beb8e19d250657217d707f7cc1))
+* Support CIDR strings as proxies ([#3577](https://github.com/arcjet/arcjet-js/issues/3577)) ([2964ca7](https://github.com/arcjet/arcjet-js/commit/2964ca7ce02ee35dca14043fd90ad942b0f1cd73)), closes [#2402](https://github.com/arcjet/arcjet-js/issues/2402)
+
+
+### 🧹 Miscellaneous Chores
+
+* **ci:** Request reviewers as the JS SDK team ([#3712](https://github.com/arcjet/arcjet-js/issues/3712)) ([86aae5d](https://github.com/arcjet/arcjet-js/commit/86aae5dad9f11d9d74b7c84b2c3e697a79ae26fe))
+
 ## [1.0.0-beta.4](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2025-03-14)
 
 
