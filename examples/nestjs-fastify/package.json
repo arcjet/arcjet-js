@@ -19,7 +19,7 @@
   "dependencies": {
     "@arcjet/nest": "file:../../arcjet-nest",
     "@nestjs/common": "^11.0.7",
-    "@nestjs/config": "^4.0.1",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.12",
     "@nestjs/platform-fastify": "^11.0.12",
     "reflect-metadata": "^0.2.2",
