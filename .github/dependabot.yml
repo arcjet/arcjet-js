@@ -846,10 +846,8 @@ updates:
         patterns:
           - "*"
     ignore:
-      # Remix 2 doesn't support Vite 6 or React 19 so the dependencies below are
+      # Remix 2 doesn't support React 19 so the dependencies below are
       # restricted.
-      - dependency-name: vite
-        versions: [">=6"]
       - dependency-name: react
         versions: [">=19"]
       - dependency-name: "@types/react"
