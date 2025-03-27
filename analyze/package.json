@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/analyze",
-  "version": "1.0.0-beta.4",
+  "version": "1.0.0-beta.5",
   "description": "Arcjet local analysis engine",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -41,13 +41,13 @@
     "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@arcjet/analyze-wasm": "1.0.0-beta.4",
-    "@arcjet/protocol": "1.0.0-beta.4"
+    "@arcjet/analyze-wasm": "1.0.0-beta.5",
+    "@arcjet/protocol": "1.0.0-beta.5"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.4",
-    "@arcjet/rollup-config": "1.0.0-beta.4",
-    "@arcjet/tsconfig": "1.0.0-beta.4",
+    "@arcjet/eslint-config": "1.0.0-beta.5",
+    "@arcjet/rollup-config": "1.0.0-beta.5",
+    "@arcjet/tsconfig": "1.0.0-beta.5",
     "@bytecodealliance/jco": "1.5.0",
     "@rollup/wasm-node": "4.37.0",
     "@types/node": "18.18.0",

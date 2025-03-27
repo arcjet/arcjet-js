@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...@arcjet/node-v1.0.0-beta.5) (2025-03-27)
+
+
+### 🚀 New Features
+
+* Support CIDR strings as proxies ([#3577](https://github.com/arcjet/arcjet-js/issues/3577)) ([2964ca7](https://github.com/arcjet/arcjet-js/commit/2964ca7ce02ee35dca14043fd90ad942b0f1cd73)), closes [#2402](https://github.com/arcjet/arcjet-js/issues/2402)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/headers bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/ip bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/logger bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/protocol bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/transport bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/body bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * arcjet bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/rollup-config bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/tsconfig bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+
 ## [1.0.0-beta.4](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.3...@arcjet/node-v1.0.0-beta.4) (2025-03-14)
 
 

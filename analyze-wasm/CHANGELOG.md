@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...@arcjet/analyze-wasm-v1.0.0-beta.5) (2025-03-27)
+
+
+### 🚀 New Features
+
+* Add more detected bots ([#3689](https://github.com/arcjet/arcjet-js/issues/3689)) ([0bf3260](https://github.com/arcjet/arcjet-js/commit/0bf32608749bb4beb8e19d250657217d707f7cc1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/rollup-config bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+    * @arcjet/tsconfig bumped from 1.0.0-beta.4 to 1.0.0-beta.5
+
 ## [1.0.0-beta.4](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.3...@arcjet/analyze-wasm-v1.0.0-beta.4) (2025-03-14)
 
 
