@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@arcjet/remix": "file:../../arcjet-remix",
-    "@remix-run/express": "^2.16.2",
-    "@remix-run/node": "^2.16.2",
-    "@remix-run/react": "^2.16.2",
+    "@remix-run/express": "^2.16.3",
+    "@remix-run/node": "^2.16.3",
+    "@remix-run/react": "^2.16.3",
     "compression": "^1.8.0",
     "cross-env": "^7.0.3",
     "express": "^4.21.2",
@@ -24,7 +24,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "^2.16.2",
+    "@remix-run/dev": "^2.16.3",
     "@tailwindcss/postcss": "^4.0.17",
     "@types/compression": "^1.7.5",
     "@types/express": "^5.0.1",
