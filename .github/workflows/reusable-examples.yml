@@ -18,7 +18,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -60,7 +60,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -100,7 +100,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -140,7 +140,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -180,7 +180,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -220,7 +220,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -263,7 +263,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -306,7 +306,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -349,7 +349,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -394,7 +394,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -439,7 +439,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -487,7 +487,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -530,7 +530,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -576,7 +576,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -622,7 +622,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -665,7 +665,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -708,7 +708,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -751,7 +751,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -794,7 +794,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -840,7 +840,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -883,7 +883,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -926,7 +926,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -966,7 +966,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -1006,7 +1006,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
         with:
           disable-sudo: true
           egress-policy: block
