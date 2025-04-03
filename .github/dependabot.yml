@@ -704,6 +704,12 @@ updates:
         patterns:
           - "*"
     ignore:
+      # Remix 2 doesn't support Express 5 so the dependencies below are
+      # restricted.
+      - dependency-name: express
+        versions: [">=5"]
+      - dependency-name: "@types/express"
+        versions: [">=5"]
       # Remix 2 doesn't support React 19 so the dependencies below are
       # restricted.
       - dependency-name: react
