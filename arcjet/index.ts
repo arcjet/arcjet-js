@@ -2095,20 +2095,22 @@ export default function arcjet<
         }
 
         if (results[idx].isDenied()) {
-          const decision = new ArcjetDenyDecision({
-            ttl: results[idx].ttl,
-            reason: results[idx].reason,
-            results,
-          });
-
-          // Only a DENY decision is reported to avoid creating 2 entries for a
-          // request. Upon ALLOW, the `decide` call will create an entry for the
-          // request.
-          client.report(context, details, decision, rules);
-
-          // If we're not in DRY_RUN mode, we want to cache non-zero TTL results
-          // and return this DENY decision.
+          // If the rule is not a DRY_RUN, we want to cache non-zero TTL results
+          // and return a DENY decision.
+          // TODO: The local rules should set `state` correctly as DRY_RUN if in
+          // that mode.
           if (rule.mode !== "DRY_RUN") {
+            const decision = new ArcjetDenyDecision({
+              ttl: results[idx].ttl,
+              reason: results[idx].reason,
+              results,
+            });
+
+            // Only a DENY decision is reported to avoid creating 2 entries for
+            // a request. Upon ALLOW, the `decide` call will create an entry for
+            // the request.
+            client.report(context, details, decision, rules);
+
             if (results[idx].ttl > 0) {
               log.debug(
                 {
@@ -2131,9 +2133,8 @@ export default function arcjet<
           }
 
           log.warn(
-            `Dry run mode is enabled for "%s" rule. Overriding decision. Decision was: %s`,
+            `Dry run mode is enabled for "%s" rule. Overriding decision. Decision was: DENY`,
             rule.type,
-            decision.conclusion,
           );
         }
       }
