@@ -1195,6 +1195,8 @@ export function sensitiveInfo<
           convertedDetect,
         );
 
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+
         const reason = new ArcjetSensitiveInfoReason({
           denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
           allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
@@ -1203,14 +1205,14 @@ export function sensitiveInfo<
         if (result.denied.length === 0) {
           return new ArcjetRuleResult({
             ttl: 0,
-            state: "RUN",
+            state,
             conclusion: "ALLOW",
             reason,
           });
         } else {
           return new ArcjetRuleResult({
             ttl: 0,
-            state: "RUN",
+            state,
             conclusion: "DENY",
             reason,
           });
@@ -1382,10 +1384,11 @@ export function validateEmail(
         { email }: ArcjetRequestDetails & { email: string },
       ): Promise<ArcjetRuleResult> {
         const result = await analyze.isValidEmail(context, email, config);
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
         if (result.validity === "valid") {
           return new ArcjetRuleResult({
             ttl: 0,
-            state: "RUN",
+            state,
             conclusion: "ALLOW",
             reason: new ArcjetEmailReason({ emailTypes: [] }),
           });
@@ -1394,7 +1397,7 @@ export function validateEmail(
 
           return new ArcjetRuleResult({
             ttl: 0,
-            state: "RUN",
+            state,
             conclusion: "DENY",
             reason: new ArcjetEmailReason({
               emailTypes: typedEmailTypes,
@@ -1568,11 +1571,13 @@ export function detectBot(options: BotOptions): Primitive<{}> {
           config,
         );
 
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+
         // If this is a bot and of a type that we want to block, then block!
         if (result.denied.length > 0) {
           return new ArcjetRuleResult({
             ttl: 60,
-            state: "RUN",
+            state,
             conclusion: "DENY",
             reason: new ArcjetBotReason({
               allowed: result.allowed,
@@ -1584,7 +1589,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
         } else {
           return new ArcjetRuleResult({
             ttl: 0,
-            state: "RUN",
+            state,
             conclusion: "ALLOW",
             reason: new ArcjetBotReason({
               allowed: result.allowed,
@@ -2097,9 +2102,7 @@ export default function arcjet<
         if (results[idx].isDenied()) {
           // If the rule is not a DRY_RUN, we want to cache non-zero TTL results
           // and return a DENY decision.
-          // TODO: The local rules should set `state` correctly as DRY_RUN if in
-          // that mode.
-          if (rule.mode !== "DRY_RUN") {
+          if (results[idx].state !== "DRY_RUN") {
             const decision = new ArcjetDenyDecision({
               ttl: results[idx].ttl,
               reason: results[idx].reason,

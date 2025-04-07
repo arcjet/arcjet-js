@@ -520,6 +520,48 @@ describe("Primitive > detectBot", () => {
     });
   });
 
+  test("produces a dry run result in DRY_RUN mode", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = detectBot({
+      mode: "DRY_RUN",
+      allow: [],
+    });
+    expect(rule.type).toEqual("BOT");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "DRY_RUN",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CURL"],
+        verified: false,
+        spoofed: false,
+      }),
+    });
+  });
+
   test("only denies CURL if configured", async () => {
     const context = {
       key: "test-key",
@@ -1382,6 +1424,41 @@ describe("Primitive > validateEmail", () => {
     }).toThrow();
   });
 
+  test("produces a dry run result in DRY_RUN mode", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      email: "foobarbaz",
+      extra: {},
+    };
+
+    const [rule] = validateEmail({ mode: "DRY_RUN", allow: [] });
+    expect(rule.type).toEqual("EMAIL");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "DRY_RUN",
+      conclusion: "DENY",
+      reason: new ArcjetEmailReason({
+        emailTypes: ["INVALID"],
+      }),
+    });
+  });
+
   test("allows a valid email", async () => {
     const context = {
       key: "test-key",
@@ -1404,7 +1481,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
+    const [rule] = validateEmail({ mode: "LIVE", allow: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1439,7 +1516,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
+    const [rule] = validateEmail({ mode: "LIVE", allow: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1474,7 +1551,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
+    const [rule] = validateEmail({ mode: "LIVE", allow: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1510,7 +1587,8 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({
-      deny: [],
+      mode: "LIVE",
+      allow: [],
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
@@ -1546,7 +1624,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
+    const [rule] = validateEmail({ mode: "LIVE", allow: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1581,7 +1659,7 @@ describe("Primitive > validateEmail", () => {
       extra: {},
     };
 
-    const [rule] = validateEmail({ mode: "LIVE", deny: [] });
+    const [rule] = validateEmail({ mode: "LIVE", allow: [] });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
     const result = await rule.protect(context, details);
@@ -1618,7 +1696,8 @@ describe("Primitive > validateEmail", () => {
 
     const [rule] = validateEmail({
       requireTopLevelDomain: false,
-      deny: [],
+      mode: "LIVE",
+      allow: [],
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
@@ -1656,7 +1735,8 @@ describe("Primitive > validateEmail", () => {
 
     const [rule] = validateEmail({
       allowDomainLiteral: true,
-      deny: [],
+      mode: "LIVE",
+      allow: [],
     });
     expect(rule.type).toEqual("EMAIL");
     assertIsLocalRule(rule);
@@ -1830,6 +1910,68 @@ describe("Primitive > sensitiveInfo", () => {
       allow: ["EMAIL", "CREDIT_CARD_NUMBER"],
     });
     expect(rule.type).toEqual("SENSITIVE_INFO");
+  });
+
+  test("produces a dry run result in DRY_RUN mode", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      getBody: () =>
+        Promise.resolve(
+          "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
+        ),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "DRY_RUN",
+      allow: [],
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assertIsLocalRule(rule);
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      state: "DRY_RUN",
+      conclusion: "DENY",
+      reason: new ArcjetSensitiveInfoReason({
+        denied: [
+          {
+            start: 0,
+            end: 9,
+            identifiedType: "IP_ADDRESS",
+          },
+          {
+            start: 10,
+            end: 26,
+            identifiedType: "EMAIL",
+          },
+          {
+            start: 27,
+            end: 43,
+            identifiedType: "CREDIT_CARD_NUMBER",
+          },
+          {
+            start: 44,
+            end: 60,
+            identifiedType: "PHONE_NUMBER",
+          },
+        ],
+        allowed: [],
+      }),
+    });
   });
 
   test("it doesnt detect any entities in a non sensitive body", async () => {
@@ -2485,7 +2627,7 @@ describe("SDK", () => {
       protect: mock.fn(async () => {
         return new ArcjetRuleResult({
           ttl: 0,
-          state: "RUN",
+          state: "DRY_RUN",
           conclusion: "DENY",
           reason: new ArcjetTestReason(),
         });
