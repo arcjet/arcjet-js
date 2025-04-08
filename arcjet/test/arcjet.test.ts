@@ -3743,7 +3743,6 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    console.log(log.error.mock.calls);
     expect(log.error.mock.callCount()).toEqual(1);
     expect(log.error.mock.calls[0].arguments).toEqual([
       "Failure running rule: %s due to %s",
@@ -3790,14 +3789,14 @@ describe("SDK", () => {
     expect(decision.isDenied()).toBe(false);
 
     expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.report.mock.callCount()).toEqual(1);
+    expect(client.report.mock.callCount()).toEqual(0);
 
     const decision2 = await aj.protect(context, request);
 
     expect(decision2.isDenied()).toBe(false);
 
     expect(client.decide.mock.callCount()).toEqual(2);
-    expect(client.report.mock.callCount()).toEqual(2);
+    expect(client.report.mock.callCount()).toEqual(0);
   });
 
   test("processes a single rule from a REMOTE ArcjetRule", async () => {
