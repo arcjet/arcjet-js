@@ -1,4 +1,4 @@
-import arcjet, { ArcjetDecision, tokenBucket, shield } from "@arcjet/next";
+import arcjet, { ArcjetDecision, tokenBucket, shield, ArcjetRateLimitReason, ArcjetRuleResult } from "@arcjet/next";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import ip from "@arcjet/ip";
@@ -15,6 +15,49 @@ const aj = arcjet({
     }),
   ],
 });
+
+function nearestLimit(
+  current: ArcjetRateLimitReason,
+  next: ArcjetRateLimitReason,
+) {
+  if (current.remaining < next.remaining) {
+    return current;
+  }
+
+  if (current.remaining > next.remaining) {
+    return next;
+  }
+
+  // Reaching here means `remaining` is equal so prioritize closest reset
+  if (current.reset < next.reset) {
+    return current;
+  }
+
+  if (current.reset > next.reset) {
+    return next;
+  }
+
+  // Reaching here means that `remaining` and `reset` are equal, so prioritize
+  // the smallest `max`
+  if (current.max < next.max) {
+    return current;
+  }
+
+  // All else equal, just return the next item in the list
+  return next;
+}
+
+function reduceNearestLimit(currentNearest: ArcjetRateLimitReason | undefined, rule: ArcjetRuleResult) {
+  if (rule.reason.isRateLimit()) {
+    if (typeof currentNearest !== "undefined") {
+      return nearestLimit(currentNearest, rule.reason);
+    } else {
+      return rule.reason;
+    }
+  } else {
+    return currentNearest;
+  }
+}
 
 export async function GET(req: NextRequest) {
   // Get the current user from Clerk
@@ -69,13 +112,16 @@ export async function GET(req: NextRequest) {
       );
     }
   }
-  
+
+  // We need to find the nearest rate limit, because multiple rate limit rules could be defined
+  const nearestRateLimit = decision.results.reduce<ArcjetRateLimitReason | undefined>(reduceNearestLimit, undefined)
+
   let reset: Date | undefined;
   let remaining: number | undefined;
-
-  if (decision.reason.isRateLimit()) {
-    reset = decision.reason.resetTime;
-    remaining = decision.reason.remaining;
+  if (typeof nearestRateLimit !== "undefined") {
+    reset = nearestRateLimit.resetTime;
+    remaining = nearestRateLimit.remaining;
   }
 
-  return NextResponse.json({ message: "Hello World", reset, remaining });}
+  return NextResponse.json({ message: "Hello World", reset, remaining });
+}

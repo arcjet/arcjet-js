@@ -662,10 +662,6 @@ export class ArcjetIpDetails {
  * the decision in the Arcjet dashboard.
  * @property `conclusion` - Arcjet's conclusion about the request. This will be
  * one of `"ALLOW"`, `"DENY"`, `"CHALLENGE"`, or `"ERROR"`.
- * @property `reason` - A structured data type about the reason for the
- * decision. One of: {@link ArcjetRateLimitReason}, {@link ArcjetEdgeRuleReason},
- * {@link ArcjetBotReason}, {@link ArcjetShieldReason},
- * {@link ArcjetEmailReason}, or {@link ArcjetErrorReason}.
  * @property `ttl` - The duration in milliseconds this decision should be
  * considered valid, also known as time-to-live.
  * @property `results` - Each separate {@link ArcjetRuleResult} can be found here
@@ -686,7 +682,6 @@ export abstract class ArcjetDecision {
   ip: ArcjetIpDetails;
 
   abstract conclusion: ArcjetConclusion;
-  abstract reason: ArcjetReason;
 
   constructor(init: {
     id?: string;
@@ -724,13 +719,16 @@ export abstract class ArcjetDecision {
 
 export class ArcjetAllowDecision extends ArcjetDecision {
   conclusion = "ALLOW" as const;
-  reason: ArcjetReason;
+  /**
+   * @deprecated Iterate rule results via `decision.results` instead.
+   **/
+  reason: ArcjetReason | undefined;
 
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
     ttl: number;
-    reason: ArcjetReason;
+    reason?: ArcjetReason;
     ip?: ArcjetIpDetails;
   }) {
     super(init);
@@ -774,13 +772,16 @@ export class ArcjetChallengeDecision extends ArcjetDecision {
 
 export class ArcjetErrorDecision extends ArcjetDecision {
   conclusion = "ERROR" as const;
-  reason: ArcjetErrorReason;
+  /**
+   * @deprecated Iterate rule results via `decision.results` instead.
+   * */
+  reason: ArcjetErrorReason | undefined;
 
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
     ttl: number;
-    reason: ArcjetErrorReason;
+    reason?: ArcjetErrorReason;
     ip?: ArcjetIpDetails;
   }) {
     super(init);
