@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@arcjet/nest": "file:../../arcjet-nest",
-    "@launchdarkly/node-server-sdk": "^9.7.7",
+    "@launchdarkly/node-server-sdk": "^9.8.0",
     "@nestjs/common": "^11.0.7",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.13",
@@ -27,9 +27,9 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.23.0",
-    "@nestjs/cli": "^11.0.5",
-    "@nestjs/schematics": "^11.0.0",
+    "@eslint/js": "^9.24.0",
+    "@nestjs/cli": "^11.0.6",
+    "@nestjs/schematics": "^11.0.4",
     "@types/express": "^5.0.1",
     "@types/node": "^20.3.1",
     "eslint": "^9.22.0",
@@ -38,6 +38,6 @@
     "globals": "^16.0.0",
     "prettier": "^3.5.3",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.29.0"
+    "typescript-eslint": "^8.29.1"
   }
 }
