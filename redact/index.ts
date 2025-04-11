@@ -29,7 +29,10 @@ export type RedactOptions<Detect> = {
   entities?: ValidEntities<Detect>;
   contextWindowSize?: number;
   detect?: Detect;
-  replace?: (entity: ValidEntities<Detect>[number]) => string | undefined;
+  replace?: (
+    entity: ValidEntities<Detect>[number],
+    plaintext: string,
+  ) => string | undefined;
 };
 
 function userEntitiesToWasm(entity: unknown) {
@@ -94,7 +97,10 @@ function performReplacementInText(
 function noOpDetect(_tokens: string[]): Array<SensitiveInfoEntity | undefined> {
   return [];
 }
-function noOpReplace(_input: SensitiveInfoEntity): string | undefined {
+function noOpReplace(
+  _input: SensitiveInfoEntity,
+  _plaintext: string,
+): string | undefined {
   return undefined;
 }
 /* c8 ignore stop */
@@ -158,10 +164,14 @@ async function callRedactWasm<
   let convertedReplace = noOpReplace;
   if (typeof options?.replace === "function") {
     const replace = options.replace;
-    convertedReplace = (identifiedType: SensitiveInfoEntity) => {
+    convertedReplace = (
+      identifiedType: SensitiveInfoEntity,
+      plaintext: string,
+    ) => {
       return replace(
         // @ts-ignore because we know this is coming from Wasm
         wasmEntitiesToString(identifiedType),
+        plaintext,
       );
     };
   }

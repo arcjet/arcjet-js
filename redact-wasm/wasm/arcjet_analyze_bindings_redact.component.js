@@ -97,7 +97,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       dataView(memory0).setInt32(arg2 + 0, result5, true);
     }
     
-    function trampoline1(arg0, arg1, arg2, arg3) {
+    function trampoline1(arg0, arg1, arg2, arg3, arg4, arg5) {
       let variant1;
       switch (arg0) {
         case 0: {
@@ -138,17 +138,20 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           throw new TypeError('invalid variant discriminant for SensitiveInfoEntity');
         }
       }
-      const ret = redactSensitiveInfo(variant1);
-      var variant3 = ret;
-      if (variant3 === null || variant3=== undefined) {
-        dataView(memory0).setInt8(arg3 + 0, 0, true);
+      var ptr2 = arg3;
+      var len2 = arg4;
+      var result2 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr2, len2));
+      const ret = redactSensitiveInfo(variant1, result2);
+      var variant4 = ret;
+      if (variant4 === null || variant4=== undefined) {
+        dataView(memory0).setInt8(arg5 + 0, 0, true);
       } else {
-        const e = variant3;
-        dataView(memory0).setInt8(arg3 + 0, 1, true);
-        var ptr2 = utf8Encode(e, realloc0, memory0);
-        var len2 = utf8EncodedLen;
-        dataView(memory0).setInt32(arg3 + 8, len2, true);
-        dataView(memory0).setInt32(arg3 + 4, ptr2, true);
+        const e = variant4;
+        dataView(memory0).setInt8(arg5 + 0, 1, true);
+        var ptr3 = utf8Encode(e, realloc0, memory0);
+        var len3 = utf8EncodedLen;
+        dataView(memory0).setInt32(arg5 + 8, len3, true);
+        dataView(memory0).setInt32(arg5 + 4, ptr3, true);
       }
     }
     let exports2;
