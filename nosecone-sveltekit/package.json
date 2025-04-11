@@ -54,7 +54,7 @@
     "@types/node": "18.18.0",
     "eslint": "9.23.0",
     "svelte": "5.25.3",
-    "typescript": "5.8.2",
+    "typescript": "5.8.3",
     "vite": "6.2.6"
   },
   "publishConfig": {
