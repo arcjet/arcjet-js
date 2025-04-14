@@ -2,25 +2,13 @@
 // import it to be sure.
 import "reflect-metadata";
 
-import core from "arcjet";
-import type {
-  ArcjetDecision,
-  ArcjetOptions as CoreOptions,
-  Primitive,
-  Product,
-  ArcjetRequest,
-  ExtraProps,
-  Arcjet,
-  CharacteristicProps,
-} from "arcjet";
-import findIP, { parseProxy } from "@arcjet/ip";
-import ArcjetHeaders from "@arcjet/headers";
+import { readBody } from "@arcjet/body";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
+import ArcjetHeaders from "@arcjet/headers";
+import findIP, { parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
-import { readBody } from "@arcjet/body";
-import { Inject, SetMetadata } from "@nestjs/common";
 import type {
   CanActivate,
   ConfigurableModuleAsyncOptions,
@@ -32,28 +20,23 @@ import type {
   OptionalFactoryDependency,
   Provider,
 } from "@nestjs/common";
+import { Inject, SetMetadata } from "@nestjs/common";
+import type {
+  Arcjet,
+  ArcjetDecision,
+  ArcjetRequest,
+  CharacteristicProps,
+  ArcjetOptions as CoreOptions,
+  ExtraProps,
+  Primitive,
+  Product,
+} from "arcjet";
+import core from "arcjet";
+import { errorMessage } from "../error-utils";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
-
-// TODO: Deduplicate with other packages
-function errorMessage(err: unknown): string {
-  if (err) {
-    if (typeof err === "string") {
-      return err;
-    }
-
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
-      return err.message;
-    }
-  }
-
-  return "Unknown problem";
-}
+export { ArcjetGuard };
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
@@ -482,7 +465,6 @@ let ArcjetGuard = class ArcjetGuard implements CanActivate {
   }
 };
 ArcjetGuard = decorate([param(0, Inject(ARCJET))], ArcjetGuard);
-export { ArcjetGuard };
 
 export class ArcjetModule {
   static forRoot<

@@ -1,46 +1,47 @@
 import type {
+  BotConfig,
+  DetectedSensitiveInfoEntity,
+  EmailValidationConfig,
+  SensitiveInfoEntity,
+} from "@arcjet/analyze";
+import * as analyze from "@arcjet/analyze";
+import * as duration from "@arcjet/duration";
+import ArcjetHeaders from "@arcjet/headers";
+import type {
+  ArcjetBotCategory,
+  ArcjetBotRule,
   ArcjetContext,
   ArcjetEmailRule,
-  ArcjetBotRule,
-  ArcjetRule,
+  ArcjetEmailType,
+  ArcjetFixedWindowRateLimitRule,
+  ArcjetIdentifiedEntity,
   ArcjetLocalRule,
+  ArcjetLogger,
   ArcjetMode,
   ArcjetRequestDetails,
-  ArcjetTokenBucketRateLimitRule,
-  ArcjetFixedWindowRateLimitRule,
-  ArcjetSlidingWindowRateLimitRule,
-  ArcjetShieldRule,
-  ArcjetLogger,
+  ArcjetRule,
   ArcjetSensitiveInfoRule,
-  ArcjetIdentifiedEntity,
-  ArcjetWellKnownBot,
-  ArcjetBotCategory,
-  ArcjetEmailType,
   ArcjetSensitiveInfoType,
+  ArcjetShieldRule,
+  ArcjetSlidingWindowRateLimitRule,
+  ArcjetTokenBucketRateLimitRule,
+  ArcjetWellKnownBot,
 } from "@arcjet/protocol";
 import {
   ArcjetBotReason,
+  ArcjetDecision,
+  ArcjetDenyDecision,
   ArcjetEmailReason,
+  ArcjetErrorDecision,
   ArcjetErrorReason,
   ArcjetReason,
   ArcjetRuleResult,
   ArcjetSensitiveInfoReason,
-  ArcjetDecision,
-  ArcjetDenyDecision,
-  ArcjetErrorDecision,
 } from "@arcjet/protocol";
-import { isRateLimitRule } from "@arcjet/protocol/convert.js";
 import type { Client } from "@arcjet/protocol/client.js";
-import * as analyze from "@arcjet/analyze";
-import type {
-  DetectedSensitiveInfoEntity,
-  SensitiveInfoEntity,
-  BotConfig,
-  EmailValidationConfig,
-} from "@arcjet/analyze";
-import * as duration from "@arcjet/duration";
-import ArcjetHeaders from "@arcjet/headers";
+import { isRateLimitRule } from "@arcjet/protocol/convert.js";
 import { runtime } from "@arcjet/runtime";
+import { errorMessage } from "../error-utils";
 
 export * from "@arcjet/protocol";
 
@@ -86,23 +87,7 @@ class Cache<T> {
   }
 }
 
-function errorMessage(err: unknown): string {
-  if (err) {
-    if (typeof err === "string") {
-      return err;
-    }
-
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
-      return err.message;
-    }
-  }
-
-  return "Unknown problem";
-}
+ 
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.

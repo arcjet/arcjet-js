@@ -1,5 +1,6 @@
 import type { Transport } from "@connectrpc/connect";
 import { createPromiseClient } from "@connectrpc/connect";
+import { errorMessage } from "../error-utils";
 import {
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,
@@ -20,30 +21,11 @@ import {
   Rule,
 } from "./proto/decide/v1alpha1/decide_pb.js";
 
-// TODO: Dedupe with `errorMessage` in core
-function errorMessage(err: unknown): string {
-  if (err) {
-    if (typeof err === "string") {
-      return err;
-    }
-
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
-      return err.message;
-    }
-  }
-
-  return "Unknown problem";
-}
-
 export interface Client {
   decide(
     context: ArcjetContext,
     details: Partial<ArcjetRequestDetails>,
-    rules: ArcjetRule[],
+    rules: ArcjetRule[]
   ): Promise<ArcjetDecision>;
   // Call the Arcjet Log Decision API with details of the request and decision
   // made so we can log it.
@@ -51,7 +33,7 @@ export interface Client {
     context: ArcjetContext,
     request: Partial<ArcjetRequestDetails>,
     decision: ArcjetDecision,
-    rules: ArcjetRule[],
+    rules: ArcjetRule[]
   ): void;
 }
 
@@ -74,7 +56,7 @@ export function createClient(options: ClientOptions): Client {
     async decide(
       context: ArcjetContext,
       details: ArcjetRequestDetails,
-      rules: ArcjetRule[],
+      rules: ArcjetRule[]
     ): Promise<ArcjetDecision> {
       const { log } = context;
 
@@ -132,7 +114,7 @@ export function createClient(options: ClientOptions): Client {
           reason: decision.reason,
           ruleResults: decision.results,
         },
-        "Decide response",
+        "Decide response"
       );
 
       return decision;
@@ -142,7 +124,7 @@ export function createClient(options: ClientOptions): Client {
       context: ArcjetContext,
       details: ArcjetRequestDetails,
       decision: ArcjetDecision,
-      rules: ArcjetRule[],
+      rules: ArcjetRule[]
     ): void {
       const { log } = context;
 
@@ -189,7 +171,7 @@ export function createClient(options: ClientOptions): Client {
               runtime: context.runtime,
               ttl: decision.ttl,
             },
-            "Report response",
+            "Report response"
           );
         })
         .catch((err: unknown) => {
