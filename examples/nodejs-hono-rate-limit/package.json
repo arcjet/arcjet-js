@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@arcjet/node": "file:../../arcjet-node",
-    "@hono/node-server": "^1.14.0",
-    "hono": "^4.7.5"
+    "@hono/node-server": "^1.14.1",
+    "hono": "^4.7.6"
   },
   "devDependencies": {
     "@types/node": "^20",
