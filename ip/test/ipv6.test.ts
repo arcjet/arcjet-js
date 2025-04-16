@@ -188,6 +188,7 @@ describe("find public IPv6", () => {
   headerSuite("X-Real-IP", { platform: "vercel" });
   headerSuite("X-Vercel-Forwarded-For", { platform: "vercel" });
   headerSuite("X-Forwarded-For", { platform: "vercel" });
+  headerSuite("True-Client-IP", { platform: "render" });
   headerSuite("DO-Connecting-IP");
   headerSuite("Fastly-Client-IP");
   headerSuite("Fly-Client-IP", { platform: "fly-io" });

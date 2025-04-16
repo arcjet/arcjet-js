@@ -768,7 +768,7 @@ export type RequestLike = {
   requestContext?: PartialRequestContext;
 } & HeaderLike;
 
-export type Platform = "cloudflare" | "fly-io" | "vercel";
+export type Platform = "cloudflare" | "fly-io" | "vercel" | "render";
 
 export interface Options {
   platform?: Platform;
@@ -926,6 +926,19 @@ function findIP(request: RequestLike, options: Options = {}): string {
       if (isGlobalIP(item, proxies)) {
         return item;
       }
+    }
+
+    // If we are using a platform check and don't have a Global IP, we exit
+    // early with an empty IP since the more generic headers shouldn't be
+    // trusted over the platform-specific headers.
+    return "";
+  }
+
+  if (platform === "render") {
+    // True-Client-IP: https://community.render.com/t/what-number-of-proxies-sit-in-front-of-an-express-app-deployed-on-render/35981/2
+    const trueClientIP = getHeader(request.headers, "true-client-ip");
+    if (isGlobalIP(trueClientIP, proxies)) {
+      return trueClientIP;
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
