@@ -20,8 +20,8 @@
     "@arcjet/nest": "file:../../arcjet-nest",
     "@nestjs/common": "^11.0.7",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.0.17",
-    "@nestjs/platform-fastify": "^11.0.17",
+    "@nestjs/core": "^11.0.19",
+    "@nestjs/platform-fastify": "^11.0.19",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
