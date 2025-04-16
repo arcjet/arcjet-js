@@ -22,9 +22,9 @@
     "@nestjs/apollo": "^13.1.0",
     "@nestjs/common": "^11.0.7",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.0.17",
+    "@nestjs/core": "^11.0.19",
     "@nestjs/graphql": "^13.1.0",
-    "@nestjs/platform-express": "^11.0.17",
+    "@nestjs/platform-express": "^11.0.19",
     "graphql": "^16.10.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
