@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
-    "next": "15.3.0-canary.21",
+    "next": "15.3.1-canary.10",
     "pino": "^9",
     "react": "^19",
     "react-dom": "^19"
@@ -23,7 +23,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
     "eslint": "^9",
-    "eslint-config-next": "15.3.0-canary.24",
+    "eslint-config-next": "15.3.1-canary.10",
     "postcss": "^8",
     "tailwindcss": "^4",
     "typescript": "^5"
