@@ -18,11 +18,11 @@
   },
   "dependencies": {
     "@arcjet/nest": "file:../../arcjet-nest",
-    "@launchdarkly/node-server-sdk": "^9.8.0",
+    "@launchdarkly/node-server-sdk": "^9.9.0",
     "@nestjs/common": "^11.0.7",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.0.19",
-    "@nestjs/platform-express": "^11.0.19",
+    "@nestjs/core": "^11.0.20",
+    "@nestjs/platform-express": "^11.0.20",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
