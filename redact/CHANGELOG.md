@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-beta.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.5...@arcjet/redact-v1.0.0-beta.6) (2025-04-17)
+
+
+### 🚀 New Features
+
+* add plaintext param to custom redact ([#3873](https://github.com/arcjet/arcjet-js/issues/3873)) ([dcff4a6](https://github.com/arcjet/arcjet-js/commit/dcff4a6d78d5824d23e5ddb5116afe26b51a3b68))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/redact-wasm bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/rollup-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/tsconfig bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+
 ## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...@arcjet/redact-v1.0.0-beta.5) (2025-03-27)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/next",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0-beta.6",
   "description": "Arcjet SDK for the Next.js framework",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -39,21 +39,21 @@
     "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@arcjet/env": "1.0.0-beta.5",
-    "@arcjet/headers": "1.0.0-beta.5",
-    "@arcjet/ip": "1.0.0-beta.5",
-    "@arcjet/logger": "1.0.0-beta.5",
-    "@arcjet/protocol": "1.0.0-beta.5",
-    "@arcjet/transport": "1.0.0-beta.5",
-    "arcjet": "1.0.0-beta.5"
+    "@arcjet/env": "1.0.0-beta.6",
+    "@arcjet/headers": "1.0.0-beta.6",
+    "@arcjet/ip": "1.0.0-beta.6",
+    "@arcjet/logger": "1.0.0-beta.6",
+    "@arcjet/protocol": "1.0.0-beta.6",
+    "@arcjet/transport": "1.0.0-beta.6",
+    "arcjet": "1.0.0-beta.6"
   },
   "peerDependencies": {
     "next": ">=13"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.5",
-    "@arcjet/rollup-config": "1.0.0-beta.5",
-    "@arcjet/tsconfig": "1.0.0-beta.5",
+    "@arcjet/eslint-config": "1.0.0-beta.6",
+    "@arcjet/rollup-config": "1.0.0-beta.6",
+    "@arcjet/tsconfig": "1.0.0-beta.6",
     "@types/node": "18.18.0",
     "@rollup/wasm-node": "4.40.0",
     "eslint": "9.24.0",

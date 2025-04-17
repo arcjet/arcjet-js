@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.5...arcjet-v1.0.0-beta.6) (2025-04-17)
+
+
+### 🪲 Bug Fixes
+
+* Ensure local rules return DRY_RUN state in dry run mode ([#3820](https://github.com/arcjet/arcjet-js/issues/3820)) ([ab9e3e5](https://github.com/arcjet/arcjet-js/commit/ab9e3e5bf5be7dc65b98b9624643ebd332e8340d)), closes [#3818](https://github.com/arcjet/arcjet-js/issues/3818)
+* Only call decide endpoint when a local rule is in dry run mode ([#3822](https://github.com/arcjet/arcjet-js/issues/3822)) ([0530c73](https://github.com/arcjet/arcjet-js/commit/0530c738c112e0a752a662106f2bb1a080e5a70d)), closes [#3821](https://github.com/arcjet/arcjet-js/issues/3821)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/duration bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/headers bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/protocol bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/runtime bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/rollup-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/tsconfig bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+
 ## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...arcjet-v1.0.0-beta.5) (2025-03-27)
 
 

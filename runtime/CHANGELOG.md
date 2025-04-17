@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.5...@arcjet/runtime-v1.0.0-beta.6) (2025-04-17)
+
+
+### 🪲 Bug Fixes
+
+* **runtime:** Avoid warning during Edge Runtime compilation ([#3905](https://github.com/arcjet/arcjet-js/issues/3905)) ([b156f14](https://github.com/arcjet/arcjet-js/commit/b156f145c183489f9bc2f0be0077bf0a0284620b)), closes [#3876](https://github.com/arcjet/arcjet-js/issues/3876)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/rollup-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/tsconfig bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+
 ## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...@arcjet/runtime-v1.0.0-beta.5) (2025-03-27)
 
 

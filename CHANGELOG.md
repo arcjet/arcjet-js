@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0-beta.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2025-04-17)
+
+
+### 🚀 New Features
+
+* add plaintext param to custom redact ([#3873](https://github.com/arcjet/arcjet-js/issues/3873)) ([dcff4a6](https://github.com/arcjet/arcjet-js/commit/dcff4a6d78d5824d23e5ddb5116afe26b51a3b68))
+* Support Render deployments ([#3904](https://github.com/arcjet/arcjet-js/issues/3904)) ([b586318](https://github.com/arcjet/arcjet-js/commit/b58631803d7c94d4e5f9ff32321d4a35fc33b976)), closes [#3899](https://github.com/arcjet/arcjet-js/issues/3899)
+
+
+### 🪲 Bug Fixes
+
+* Ensure local rules return DRY_RUN state in dry run mode ([#3820](https://github.com/arcjet/arcjet-js/issues/3820)) ([ab9e3e5](https://github.com/arcjet/arcjet-js/commit/ab9e3e5bf5be7dc65b98b9624643ebd332e8340d)), closes [#3818](https://github.com/arcjet/arcjet-js/issues/3818)
+* Only call decide endpoint when a local rule is in dry run mode ([#3822](https://github.com/arcjet/arcjet-js/issues/3822)) ([0530c73](https://github.com/arcjet/arcjet-js/commit/0530c738c112e0a752a662106f2bb1a080e5a70d)), closes [#3821](https://github.com/arcjet/arcjet-js/issues/3821)
+* **runtime:** Avoid warning during Edge Runtime compilation ([#3905](https://github.com/arcjet/arcjet-js/issues/3905)) ([b156f14](https://github.com/arcjet/arcjet-js/commit/b156f145c183489f9bc2f0be0077bf0a0284620b)), closes [#3876](https://github.com/arcjet/arcjet-js/issues/3876)
+
 ## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2025-03-27)
 
 
