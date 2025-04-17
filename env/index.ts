@@ -2,6 +2,7 @@ export type Env = {
   [key: string]: unknown;
   FLY_APP_NAME?: string;
   VERCEL?: string;
+  RENDER?: string;
   MODE?: string;
   NODE_ENV?: string;
   ARCJET_KEY?: string;
@@ -17,6 +18,11 @@ export function platform(env: Env) {
 
   if (typeof env["VERCEL"] === "string" && env["VERCEL"] === "1") {
     return "vercel" as const;
+  }
+
+  // https://render.com/docs/environment-variables
+  if (typeof env["RENDER"] === "string" && env["RENDER"] === "true") {
+    return "render" as const;
   }
 }
 

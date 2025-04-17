@@ -9,6 +9,8 @@ describe("env", () => {
     expect(env.platform({ FLY_APP_NAME: "foobar" })).toEqual("fly-io");
     expect(env.platform({ VERCEL: "" })).toBeUndefined();
     expect(env.platform({ VERCEL: "1" })).toEqual("vercel");
+    expect(env.platform({ RENDER: "" })).toBeUndefined();
+    expect(env.platform({ RENDER: "true" })).toEqual("render");
   });
 
   test("isDevelopment", () => {
