@@ -75,6 +75,26 @@ describe("ArcjetRedact", () => {
         "email redacted-email phone 011234567 ip <Redacted IP address #1>";
       const [redacted] = await redact(text, {
         entities: ["email", "ip-address"],
+        replace: (entityType, plaintext) => {
+          if (entityType === "email") {
+            expect(plaintext).toEqual("test@example.com");
+            return "redacted-email";
+          } else if (entityType === "ip-address") {
+            expect(plaintext).toEqual("10.12.234.2");
+          }
+        },
+      });
+      expect(redacted).toEqual(expected);
+    });
+
+    // This is because we introduced `plaintext` in a non-breaking way.
+    // This test is to ensure that we don't make a change which breaks it in the future.
+    test("it allows replacement functions with no second param", async () => {
+      const text = "email test@example.com phone 011234567 ip 10.12.234.2";
+      const expected =
+        "email redacted-email phone 011234567 ip <Redacted IP address #1>";
+      const [redacted] = await redact(text, {
+        entities: ["email", "ip-address"],
         replace: (entityType) => {
           if (entityType === "email") {
             return "redacted-email";
@@ -177,9 +197,12 @@ describe("ArcjetRedact", () => {
         "email my-custom-email-replacement phone <Redacted phone number #1> ip 10.12.234.2";
       const [redacted, unredact] = await redact(text, {
         entities: ["email", "phone-number"],
-        replace: (entityType) => {
+        replace: (entityType, plaintext) => {
           if (entityType === "email") {
+            expect(plaintext).toEqual("test@example.com");
             return "my-custom-email-replacement";
+          } else if (entityType === "ip-address") {
+            expect(plaintext).toEqual("10.12.234.2");
           }
         },
       });
