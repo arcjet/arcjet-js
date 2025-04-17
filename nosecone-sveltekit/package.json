@@ -1,6 +1,6 @@
 {
   "name": "@nosecone/sveltekit",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0-beta.6",
   "description": "Protect your SvelteKit application with secure headers",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -39,15 +39,15 @@
     "test": "node --test"
   },
   "dependencies": {
-    "nosecone": "1.0.0-beta.5"
+    "nosecone": "1.0.0-beta.6"
   },
   "peerDependencies": {
     "@sveltejs/kit": ">=2"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.5",
-    "@arcjet/rollup-config": "1.0.0-beta.5",
-    "@arcjet/tsconfig": "1.0.0-beta.5",
+    "@arcjet/eslint-config": "1.0.0-beta.6",
+    "@arcjet/rollup-config": "1.0.0-beta.6",
+    "@arcjet/tsconfig": "1.0.0-beta.6",
     "@rollup/wasm-node": "4.40.0",
     "@sveltejs/kit": "2.20.7",
     "@sveltejs/vite-plugin-svelte": "5.0.3",

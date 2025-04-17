@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-beta.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.5...@arcjet/nest-v1.0.0-beta.6) (2025-04-17)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/nest:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/headers bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/ip bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/logger bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/protocol bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/transport bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/body bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * arcjet bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/rollup-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/tsconfig bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+
 ## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...@arcjet/nest-v1.0.0-beta.5) (2025-03-27)
 
 

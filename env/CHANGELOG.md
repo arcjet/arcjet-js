@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.5...@arcjet/env-v1.0.0-beta.6) (2025-04-17)
+
+
+### 🚀 New Features
+
+* Support Render deployments ([#3904](https://github.com/arcjet/arcjet-js/issues/3904)) ([b586318](https://github.com/arcjet/arcjet-js/commit/b58631803d7c94d4e5f9ff32321d4a35fc33b976)), closes [#3899](https://github.com/arcjet/arcjet-js/issues/3899)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/rollup-config bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+    * @arcjet/tsconfig bumped from 1.0.0-beta.5 to 1.0.0-beta.6
+
 ## [1.0.0-beta.5](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.4...@arcjet/env-v1.0.0-beta.5) (2025-03-27)
 
 
