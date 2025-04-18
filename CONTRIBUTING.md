@@ -5,6 +5,23 @@ Welcome to the Arcjet JavaScript SDK! We're excited to have you contribute.
 Please review the guidelines we have below to help us in accepting your
 contribution.
 
+# Setup
+
+We'll use Dev Containers to provide fully configured development enviroment.
+
+1. Prerequisites
+  - Docker
+  - VS Code or a compatible editor.
+  - [Dev Container extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+2. Open in Dev Container
+ - Clone the repository
+ - Open the project in VS Code.
+ - When prompted, click "Reopen in Container" or run "Dev Containers: Open Folder in Container"       command
+ - VS Code will build and start the dev container (this may take a few minutes the first time)
+ 
+That's it! You're all set to start making changes.
+
 ## Adapters
 
 New adapters are added to the root of this monorepo in the format of
