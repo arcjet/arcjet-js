@@ -7,19 +7,23 @@ contribution.
 
 ## Setup
 
-We recommend using [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) to provide a fully configured development environment.
+We recommend using [Dev
+Containers](https://code.visualstudio.com/docs/devcontainers/containers) to
+provide a fully configured development environment.
 
 1. Prerequisites
-  - Docker
-  - VS Code or a compatible editor.
-  - [Dev Container extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-
+   1. Docker
+   2. VS Code or a compatible editor.
+   3. [Dev Container
+      extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 2. Open in Dev Container
- - Clone the repository
- - Open the project in VS Code.
- - When prompted, click "Reopen in Container" or run "Dev Containers: Open Folder in Container" command
- - VS Code will build and start the dev container (this may take a few minutes the first time)
- 
+   1. Clone the repository
+   2. Open the project in VS Code.
+   3. When prompted, click "Reopen in Container" or run "Dev Containers: Open
+      Folder in Container" command
+   4. VS Code will build and start the dev container (this may take a few
+      minutes the first time)
+
 That's it! You're all set to start making changes.
 
 ## Adapters
