@@ -7,7 +7,7 @@ contribution.
 
 # Setup
 
-We'll use Dev Containers to provide fully configured development enviroment.
+We recommend using [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) to provide a fully configured development environment.
 
 1. Prerequisites
   - Docker
