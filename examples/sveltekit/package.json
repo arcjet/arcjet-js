@@ -18,7 +18,7 @@
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.8",
-		"@eslint/js": "^9.24.0",
+		"@eslint/js": "^9.25.0",
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/kit": "^2.19.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
