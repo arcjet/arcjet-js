@@ -17,7 +17,7 @@ We recommend using [Dev Containers](https://code.visualstudio.com/docs/devcontai
 2. Open in Dev Container
  - Clone the repository
  - Open the project in VS Code.
- - When prompted, click "Reopen in Container" or run "Dev Containers: Open Folder in Container"       command
+ - When prompted, click "Reopen in Container" or run "Dev Containers: Open Folder in Container" command
  - VS Code will build and start the dev container (this may take a few minutes the first time)
  
 That's it! You're all set to start making changes.
