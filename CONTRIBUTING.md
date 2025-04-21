@@ -5,7 +5,7 @@ Welcome to the Arcjet JavaScript SDK! We're excited to have you contribute.
 Please review the guidelines we have below to help us in accepting your
 contribution.
 
-# Setup
+## Setup
 
 We recommend using [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) to provide a fully configured development environment.
 
