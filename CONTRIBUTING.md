@@ -23,6 +23,7 @@ provide a fully configured development environment.
       Folder in Container" command
    4. VS Code will build and start the dev container (this may take a few
       minutes the first time)
+3. Ensure you have [signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits) enabled. We recommend 1Password's [Sign Git commits with SSH](https://developer.1password.com/docs/ssh/git-commit-signing/).
 
 That's it! You're all set to start making changes.
 
