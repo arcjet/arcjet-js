@@ -24,14 +24,15 @@ export * from "arcjet";
 // An object with getters that access the `process.env.SOMEVAR` values directly.
 // This allows bundlers to replace the dot-notation access with string literals
 // while still allowing dynamic access in runtime environments.
-// WARNING: This is fragile because any time we add a new key to `Env`, we need
-// to add another getter here.
 const env: Env = {
   get FLY_APP_NAME() {
     return process.env.FLY_APP_NAME;
   },
   get VERCEL() {
     return process.env.VERCEL;
+  },
+  get RENDER() {
+    return process.env.RENDER;
   },
   get MODE() {
     return process.env.MODE;
@@ -51,7 +52,7 @@ const env: Env = {
   get ARCJET_BASE_URL() {
     return process.env.ARCJET_BASE_URL;
   },
-};
+} satisfies { [K in keyof Env]-?: unknown };
 
 // TODO: Deduplicate with other packages
 function errorMessage(err: unknown): string {
