@@ -12,6 +12,7 @@
     "ARCJET_LOG_LEVEL",
     "OPENAI_API_KEY",
     "FLY_APP_NAME",
+    "RENDER",
     "MODE"
   ],
   "tasks": {
