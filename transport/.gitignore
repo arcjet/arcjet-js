@@ -132,8 +132,11 @@ dist
 # Generated files
 bun.js
 bun.d.ts
+bun.d.ts.map
 edge-light.js
 edge-light.d.ts
+edge-light.d.ts.map
 index.js
 index.d.ts
+index.d.ts.map
 test/*.js

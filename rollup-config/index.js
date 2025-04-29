@@ -185,6 +185,7 @@ export function createConfig(root, { plugins = [] } = {}) {
         // generate definition files for our tests
         exclude: ["node_modules", "test/*.ts"],
         declaration: true,
+        declarationMap: true,
         declarationDir: ".",
         noEmitOnError: true,
       }),

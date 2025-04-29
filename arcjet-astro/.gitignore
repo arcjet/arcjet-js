@@ -132,8 +132,11 @@ dist
 # Generated files
 index.js
 index.d.ts
+index.d.ts.map
 internal.js
 internal.d.ts
+internal.d.ts.map
 middleware.js
 middleware.d.ts
+middleware.d.ts.map
 test/*.js

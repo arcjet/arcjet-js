@@ -132,10 +132,14 @@ dist
 # Generated files
 index.js
 index.d.ts
+index.d.ts.map
 client.js
 client.d.ts
+client.d.ts.map
 convert.js
 convert.d.ts
+convert.d.ts.map
 well-known-bots.js
 well-known-bots.d.ts
+well-known-bots.d.ts.map
 test/*.js

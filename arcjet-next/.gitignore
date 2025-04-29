@@ -132,4 +132,5 @@ dist
 # Generated files
 index.js
 index.d.ts
+index.d.ts.map
 test/*.js
