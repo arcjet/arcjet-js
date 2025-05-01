@@ -114,6 +114,13 @@ describe("convert", () => {
     expect(ArcjetStackToProtocol("NODEJS")).toEqual(SDKStack.SDK_STACK_NODEJS);
     expect(ArcjetStackToProtocol("NEXTJS")).toEqual(SDKStack.SDK_STACK_NEXTJS);
     expect(ArcjetStackToProtocol("BUN")).toEqual(SDKStack.SDK_STACK_BUN);
+    expect(ArcjetStackToProtocol("SVELTEKIT")).toEqual(
+      SDKStack.SDK_STACK_SVELTEKIT,
+    );
+    expect(ArcjetStackToProtocol("DENO")).toEqual(SDKStack.SDK_STACK_DENO);
+    expect(ArcjetStackToProtocol("NESTJS")).toEqual(SDKStack.SDK_STACK_NESTJS);
+    expect(ArcjetStackToProtocol("REMIX")).toEqual(SDKStack.SDK_STACK_REMIX);
+    expect(ArcjetStackToProtocol("ASTRO")).toEqual(SDKStack.SDK_STACK_ASTRO);
     expect(
       ArcjetStackToProtocol(
         // @ts-expect-error
