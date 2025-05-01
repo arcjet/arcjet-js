@@ -36,6 +36,8 @@ import type {
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
+  ArcjetRule,
+  ArcjetSensitiveInfoRule,
 } from "../index.js";
 import {
   ArcjetAllowDecision,
@@ -579,91 +581,97 @@ describe("convert", () => {
   });
 
   test("ArcjetRuleToProtocol", () => {
-    expect(
-      ArcjetRuleToProtocol({
-        type: "UNKNOWN",
-        mode: "DRY_RUN",
-        priority: 1,
-      }),
-    ).toEqual(new Rule({}));
-    expect(
-      ArcjetRuleToProtocol(<ArcjetTokenBucketRateLimitRule<{}>>{
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        priority: 1,
-        algorithm: "TOKEN_BUCKET",
-      }),
-    ).toEqual(
+    const unknownRule: ArcjetRule = {
+      type: "UNKNOWN",
+      mode: "DRY_RUN",
+      priority: 1,
+    };
+    expect(ArcjetRuleToProtocol(unknownRule)).toEqual(new Rule({}));
+
+    const tokenBucketRule: ArcjetTokenBucketRateLimitRule<{}> = {
+      type: "RATE_LIMIT",
+      mode: "DRY_RUN",
+      priority: 1,
+      algorithm: "TOKEN_BUCKET",
+      refillRate: 1,
+      interval: 1,
+      capacity: 1,
+    };
+    expect(ArcjetRuleToProtocol(tokenBucketRule)).toEqual(
       new Rule({
         rule: {
           case: "rateLimit",
           value: {
             mode: Mode.DRY_RUN,
             algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
+            refillRate: 1,
+            interval: 1,
+            capacity: 1,
           },
         },
       }),
     );
-    expect(
-      ArcjetRuleToProtocol(<ArcjetFixedWindowRateLimitRule<{}>>{
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        priority: 1,
-        algorithm: "FIXED_WINDOW",
-      }),
-    ).toEqual(
+
+    const fixedWindowRule: ArcjetFixedWindowRateLimitRule<{}> = {
+      type: "RATE_LIMIT",
+      mode: "DRY_RUN",
+      priority: 1,
+      algorithm: "FIXED_WINDOW",
+      max: 1,
+      window: 1,
+    };
+    expect(ArcjetRuleToProtocol(fixedWindowRule)).toEqual(
       new Rule({
         rule: {
           case: "rateLimit",
           value: {
             mode: Mode.DRY_RUN,
             algorithm: RateLimitAlgorithm.FIXED_WINDOW,
+            max: 1,
+            windowInSeconds: 1,
           },
         },
       }),
     );
-    expect(
-      ArcjetRuleToProtocol(<ArcjetSlidingWindowRateLimitRule<{}>>{
-        type: "RATE_LIMIT",
-        mode: "DRY_RUN",
-        priority: 1,
-        algorithm: "SLIDING_WINDOW",
-      }),
-    ).toEqual(
+
+    const slidingWindowRule: ArcjetSlidingWindowRateLimitRule<{}> = {
+      type: "RATE_LIMIT",
+      mode: "DRY_RUN",
+      priority: 1,
+      algorithm: "SLIDING_WINDOW",
+      max: 1,
+      interval: 1,
+    };
+    expect(ArcjetRuleToProtocol(slidingWindowRule)).toEqual(
       new Rule({
         rule: {
           case: "rateLimit",
           value: {
             mode: Mode.DRY_RUN,
             algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
+            max: 1,
+            interval: 1,
           },
         },
       }),
     );
-    expect(
-      ArcjetRuleToProtocol({
-        type: "EMAIL",
-        mode: "DRY_RUN",
-        priority: 1,
-      }),
-    ).toEqual(
-      new Rule({
-        rule: {
-          case: "email",
-          value: {
-            mode: Mode.DRY_RUN,
-          },
-        },
-      }),
-    );
-    expect(
-      ArcjetRuleToProtocol(<ArcjetEmailRule<{ email: string }>>{
-        type: "EMAIL",
-        mode: "DRY_RUN",
-        priority: 1,
-        deny: ["INVALID"],
-      }),
-    ).toEqual(
+
+    const emailRule: ArcjetEmailRule<{ email: string }> = {
+      type: "EMAIL",
+      mode: "DRY_RUN",
+      priority: 1,
+      allow: [],
+      deny: ["INVALID"],
+      requireTopLevelDomain: false,
+      allowDomainLiteral: false,
+      validate() {
+        throw new Error("should not be called");
+      },
+      protect() {
+        throw new Error("should not be called");
+      },
+    };
+    expect(ArcjetRuleToProtocol(emailRule)).toEqual(
       new Rule({
         rule: {
           case: "email",
@@ -675,32 +683,21 @@ describe("convert", () => {
         },
       }),
     );
-    expect(
-      ArcjetRuleToProtocol(<ArcjetEmailRule<{ email: string }>>{
-        type: "EMAIL",
-        mode: "DRY_RUN",
-        priority: 1,
-        allow: ["INVALID"],
-      }),
-    ).toEqual(
-      new Rule({
-        rule: {
-          case: "email",
-          value: {
-            mode: Mode.DRY_RUN,
-            allow: [EmailType.INVALID],
-            deny: [],
-          },
-        },
-      }),
-    );
-    expect(
-      ArcjetRuleToProtocol({
-        type: "BOT",
-        mode: "DRY_RUN",
-        priority: 1,
-      }),
-    ).toEqual(
+
+    const botRule: ArcjetBotRule<{}> = {
+      type: "BOT",
+      mode: "DRY_RUN",
+      priority: 1,
+      allow: [],
+      deny: [],
+      validate() {
+        throw new Error("should not be called");
+      },
+      protect() {
+        throw new Error("should not be called");
+      },
+    };
+    expect(ArcjetRuleToProtocol(botRule)).toEqual(
       new Rule({
         rule: {
           case: "botV2",
@@ -712,19 +709,45 @@ describe("convert", () => {
         },
       }),
     );
-    expect(
-      ArcjetRuleToProtocol(<ArcjetShieldRule<{}>>{
-        type: "SHIELD",
-        mode: "DRY_RUN",
-        priority: 1,
-      }),
-    ).toEqual(
+
+    const shieldRule: ArcjetShieldRule<{}> = {
+      type: "SHIELD",
+      mode: "DRY_RUN",
+      priority: 1,
+    };
+    expect(ArcjetRuleToProtocol(shieldRule)).toEqual(
       new Rule({
         rule: {
           case: "shield",
           value: {
             mode: Mode.DRY_RUN,
             autoAdded: false,
+          },
+        },
+      }),
+    );
+
+    const sensitiveInfoRule: ArcjetSensitiveInfoRule<{}> = {
+      type: "SENSITIVE_INFO",
+      mode: "DRY_RUN",
+      priority: 1,
+      allow: [],
+      deny: [],
+      validate() {
+        throw new Error("should not be called");
+      },
+      protect() {
+        throw new Error("should not be called");
+      },
+    };
+    expect(ArcjetRuleToProtocol(sensitiveInfoRule)).toEqual(
+      new Rule({
+        rule: {
+          case: "sensitiveInfo",
+          value: {
+            mode: Mode.DRY_RUN,
+            allow: [],
+            deny: [],
           },
         },
       }),

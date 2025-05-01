@@ -673,6 +673,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
       rule: {
         case: "sensitiveInfo",
         value: {
+          mode: ArcjetModeToProtocol(rule.mode),
           allow: rule.allow,
           deny: rule.deny,
         },
