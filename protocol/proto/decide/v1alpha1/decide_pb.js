@@ -127,6 +127,56 @@ export const RateLimitAlgorithm = /*@__PURE__*/ proto3.makeEnum(
 );
 
 /**
+ * @generated from enum proto.decide.v1alpha1.RateLimitRuleVersion
+ */
+export const RateLimitRuleVersion = /*@__PURE__*/ proto3.makeEnum(
+  "proto.decide.v1alpha1.RateLimitRuleVersion",
+  [
+    {no: 0, name: "RATE_LIMIT_RULE_VERSION_UNSPECIFIED", localName: "UNSPECIFIED"},
+  ],
+);
+
+/**
+ * @generated from enum proto.decide.v1alpha1.BotV2RuleVersion
+ */
+export const BotV2RuleVersion = /*@__PURE__*/ proto3.makeEnum(
+  "proto.decide.v1alpha1.BotV2RuleVersion",
+  [
+    {no: 0, name: "BOT_V2_RULE_VERSION_UNSPECIFIED", localName: "UNSPECIFIED"},
+  ],
+);
+
+/**
+ * @generated from enum proto.decide.v1alpha1.EmailRuleVersion
+ */
+export const EmailRuleVersion = /*@__PURE__*/ proto3.makeEnum(
+  "proto.decide.v1alpha1.EmailRuleVersion",
+  [
+    {no: 0, name: "EMAIL_RULE_VERSION_UNSPECIFIED", localName: "UNSPECIFIED"},
+  ],
+);
+
+/**
+ * @generated from enum proto.decide.v1alpha1.SensitiveInfoRuleVersion
+ */
+export const SensitiveInfoRuleVersion = /*@__PURE__*/ proto3.makeEnum(
+  "proto.decide.v1alpha1.SensitiveInfoRuleVersion",
+  [
+    {no: 0, name: "SENSITIVE_INFO_RULE_VERSION_UNSPECIFIED", localName: "UNSPECIFIED"},
+  ],
+);
+
+/**
+ * @generated from enum proto.decide.v1alpha1.ShieldRuleVersion
+ */
+export const ShieldRuleVersion = /*@__PURE__*/ proto3.makeEnum(
+  "proto.decide.v1alpha1.ShieldRuleVersion",
+  [
+    {no: 0, name: "SHIELD_RULE_VERSION_UNSPECIFIED", localName: "UNSPECIFIED"},
+  ],
+);
+
+/**
  * Additional information from Arcjet about the IP address associated with a
  * request.
  *
@@ -323,6 +373,7 @@ export const RateLimitRule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 9, name: "interval", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 10, name: "capacity", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
     { no: 12, name: "window_in_seconds", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 13, name: "version", kind: "enum", T: proto3.getEnumType(RateLimitRuleVersion) },
   ],
 );
 
@@ -363,6 +414,7 @@ export const BotV2Rule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
     { no: 2, name: "allow", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 3, name: "deny", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "version", kind: "enum", T: proto3.getEnumType(BotV2RuleVersion) },
   ],
 );
 
@@ -380,6 +432,7 @@ export const EmailRule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 4, name: "allow_domain_literal", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 5, name: "allow", kind: "enum", T: proto3.getEnumType(EmailType), repeated: true },
     { no: 6, name: "deny", kind: "enum", T: proto3.getEnumType(EmailType), repeated: true },
+    { no: 7, name: "version", kind: "enum", T: proto3.getEnumType(EmailRuleVersion) },
   ],
 );
 
@@ -394,6 +447,7 @@ export const SensitiveInfoRule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
     { no: 2, name: "allow", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 3, name: "deny", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "version", kind: "enum", T: proto3.getEnumType(SensitiveInfoRuleVersion) },
   ],
 );
 
@@ -408,6 +462,7 @@ export const ShieldRule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
     { no: 2, name: "auto_added", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 3, name: "characteristics", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "version", kind: "enum", T: proto3.getEnumType(ShieldRuleVersion) },
   ],
 );
 

@@ -352,6 +352,71 @@ export declare enum RateLimitAlgorithm {
 }
 
 /**
+ * @generated from enum proto.decide.v1alpha1.RateLimitRuleVersion
+ */
+export declare enum RateLimitRuleVersion {
+  /**
+   * This is equivalent to V0 since rules without a version specified will
+   * default to this value.
+   *
+   * @generated from enum value: RATE_LIMIT_RULE_VERSION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+}
+
+/**
+ * @generated from enum proto.decide.v1alpha1.BotV2RuleVersion
+ */
+export declare enum BotV2RuleVersion {
+  /**
+   * This is equivalent to V0 since rules without a version specified will
+   * default to this value.
+   *
+   * @generated from enum value: BOT_V2_RULE_VERSION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+}
+
+/**
+ * @generated from enum proto.decide.v1alpha1.EmailRuleVersion
+ */
+export declare enum EmailRuleVersion {
+  /**
+   * This is equivalent to V0 since rules without a version specified will
+   * default to this value.
+   *
+   * @generated from enum value: EMAIL_RULE_VERSION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+}
+
+/**
+ * @generated from enum proto.decide.v1alpha1.SensitiveInfoRuleVersion
+ */
+export declare enum SensitiveInfoRuleVersion {
+  /**
+   * This is equivalent to V0 since rules without a version specified will
+   * default to this value.
+   *
+   * @generated from enum value: SENSITIVE_INFO_RULE_VERSION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+}
+
+/**
+ * @generated from enum proto.decide.v1alpha1.ShieldRuleVersion
+ */
+export declare enum ShieldRuleVersion {
+  /**
+   * This is equivalent to V0 since rules without a version specified will
+   * default to this value.
+   *
+   * @generated from enum value: SHIELD_RULE_VERSION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+}
+
+/**
  * Additional information from Arcjet about the IP address associated with a
  * request.
  *
@@ -1119,6 +1184,14 @@ export declare class RateLimitRule extends Message<RateLimitRule> {
    */
   windowInSeconds: number;
 
+  /**
+   * The version of the rule being executed. This is incremented by SDKs when
+   * a breaking change is made to the configuration or behavior of the rule.
+   *
+   * @generated from field: proto.decide.v1alpha1.RateLimitRuleVersion version = 13;
+   */
+  version: RateLimitRuleVersion;
+
   constructor(data?: PartialMessage<RateLimitRule>);
 
   static readonly runtime: typeof proto3;
@@ -1227,6 +1300,14 @@ export declare class BotV2Rule extends Message<BotV2Rule> {
    */
   deny: string[];
 
+  /**
+   * The version of the rule being executed. This is incremented by SDKs when
+   * a breaking change is made to the configuration or behavior of the rule.
+   *
+   * @generated from field: proto.decide.v1alpha1.BotV2RuleVersion version = 4;
+   */
+  version: BotV2RuleVersion;
+
   constructor(data?: PartialMessage<BotV2Rule>);
 
   static readonly runtime: typeof proto3;
@@ -1282,6 +1363,14 @@ export declare class EmailRule extends Message<EmailRule> {
    */
   deny: EmailType[];
 
+  /**
+   * The version of the rule being executed. This is incremented by SDKs when
+   * a breaking change is made to the configuration or behavior of the rule.
+   *
+   * @generated from field: proto.decide.v1alpha1.EmailRuleVersion version = 7;
+   */
+  version: EmailRuleVersion;
+
   constructor(data?: PartialMessage<EmailRule>);
 
   static readonly runtime: typeof proto3;
@@ -1319,6 +1408,14 @@ export declare class SensitiveInfoRule extends Message<SensitiveInfoRule> {
    * @generated from field: repeated string deny = 3;
    */
   deny: string[];
+
+  /**
+   * The version of the rule being executed. This is incremented by SDKs when
+   * a breaking change is made to the configuration or behavior of the rule.
+   *
+   * @generated from field: proto.decide.v1alpha1.SensitiveInfoRuleVersion version = 4;
+   */
+  version: SensitiveInfoRuleVersion;
 
   constructor(data?: PartialMessage<SensitiveInfoRule>);
 
@@ -1360,6 +1457,14 @@ export declare class ShieldRule extends Message<ShieldRule> {
    * @generated from field: repeated string characteristics = 3;
    */
   characteristics: string[];
+
+  /**
+   * The version of the rule being executed. This is incremented by SDKs when
+   * a breaking change is made to the configuration or behavior of the rule.
+   *
+   * @generated from field: proto.decide.v1alpha1.ShieldRuleVersion version = 4;
+   */
+  version: ShieldRuleVersion;
 
   constructor(data?: PartialMessage<ShieldRule>);
 
@@ -1443,7 +1548,8 @@ export declare class Rule extends Message<Rule> {
  */
 export declare class RuleResult extends Message<RuleResult> {
   /**
-   * The id for the rule this result relates to
+   * The stable, deterministic, and unique identifier of the rule that
+   * generated this result.
    *
    * @generated from field: string rule_id = 1;
    */

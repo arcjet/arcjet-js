@@ -364,6 +364,7 @@ describe("createClient", () => {
       }),
     });
     const rule: ArcjetRule = {
+      version: 0,
       type: "TEST_RULE",
       mode: "DRY_RUN",
       priority: 1,
@@ -1113,6 +1114,7 @@ describe("createClient", () => {
       reason: new ArcjetTestReason(),
       results: [
         new ArcjetRuleResult({
+          ruleId: "test-rule-id",
           ttl: 0,
           state: "RUN",
           conclusion: "DENY",
@@ -1121,6 +1123,7 @@ describe("createClient", () => {
       ],
     });
     const rule: ArcjetRule = {
+      version: 0,
       type: "TEST_RULE",
       mode: "LIVE",
       priority: 1,
@@ -1144,7 +1147,7 @@ describe("createClient", () => {
           reason: new Reason(),
           ruleResults: [
             new RuleResult({
-              ruleId: "",
+              ruleId: "test-rule-id",
               state: RuleState.RUN,
               conclusion: Conclusion.DENY,
               reason: new Reason(),
@@ -1310,6 +1313,7 @@ describe("createClient", () => {
       reason: new ArcjetTestReason(),
       results: [
         new ArcjetRuleResult({
+          ruleId: "test-rule-id",
           ttl: 0,
           state: "RUN",
           conclusion: "DENY",
@@ -1336,7 +1340,7 @@ describe("createClient", () => {
           reason: new Reason(),
           ruleResults: [
             new RuleResult({
-              ruleId: "",
+              ruleId: "test-rule-id",
               state: RuleState.RUN,
               conclusion: Conclusion.DENY,
               reason: new Reason(),

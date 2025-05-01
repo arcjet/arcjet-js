@@ -386,6 +386,7 @@ export function ArcjetRuleResultFromProtocol(
   proto: RuleResult,
 ): ArcjetRuleResult {
   return new ArcjetRuleResult({
+    ruleId: proto.ruleId,
     ttl: proto.ttl,
     state: ArcjetRuleStateFromProtocol(proto.state),
     conclusion: ArcjetConclusionFromProtocol(proto.conclusion),
@@ -579,6 +580,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
       rule: {
         case: "rateLimit",
         value: {
+          version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
           characteristics: rule.characteristics,
           algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
@@ -595,6 +597,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
       rule: {
         case: "rateLimit",
         value: {
+          version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
           characteristics: rule.characteristics,
           algorithm: RateLimitAlgorithm.FIXED_WINDOW,
@@ -610,6 +613,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
       rule: {
         case: "rateLimit",
         value: {
+          version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
           characteristics: rule.characteristics,
           algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
@@ -631,6 +635,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
       rule: {
         case: "email",
         value: {
+          version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
           allow,
           deny,
@@ -648,6 +653,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
       rule: {
         case: "botV2",
         value: {
+          version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
           allow,
           deny,
@@ -661,6 +667,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
       rule: {
         case: "shield",
         value: {
+          version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
           autoAdded: false,
         },
@@ -673,6 +680,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
       rule: {
         case: "sensitiveInfo",
         value: {
+          version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
           allow: rule.allow,
           deny: rule.deny,

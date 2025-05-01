@@ -144,6 +144,10 @@
       "component": "@arcjet/sprintf",
       "skip-github-release": true
     },
+    "stable-hash": {
+      "component": "@arcjet/stable-hash",
+      "skip-github-release": true
+    },
     "transport": {
       "component": "@arcjet/transport",
       "skip-github-release": true
@@ -192,6 +196,7 @@
         "@arcjet/rollup-config",
         "@arcjet/runtime",
         "@arcjet/sprintf",
+        "@arcjet/stable-hash",
         "@arcjet/transport",
         "@arcjet/tsconfig"
       ]

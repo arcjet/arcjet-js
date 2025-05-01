@@ -34,6 +34,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -59,6 +60,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -89,6 +91,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -119,6 +122,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -147,6 +151,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -158,6 +163,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -188,6 +194,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -219,6 +226,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -250,6 +258,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -281,6 +290,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -429,6 +439,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -459,6 +470,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -470,6 +482,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -500,6 +513,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -511,6 +525,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -541,6 +556,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -552,6 +568,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -582,6 +599,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -593,6 +611,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -623,6 +642,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -634,6 +654,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -664,6 +685,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -675,6 +697,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -708,6 +731,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -742,6 +766,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -789,6 +814,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -810,6 +836,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -836,6 +863,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -863,6 +891,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -874,6 +903,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -904,6 +934,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -935,6 +966,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -966,6 +998,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -997,6 +1030,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1145,6 +1179,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1175,6 +1210,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1186,6 +1222,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1218,6 +1255,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1229,6 +1267,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1261,6 +1300,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1272,6 +1312,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1304,6 +1345,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1315,6 +1357,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1347,6 +1390,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1358,6 +1402,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1390,6 +1435,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1401,6 +1447,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1436,6 +1483,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1470,6 +1518,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1517,6 +1566,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1549,6 +1599,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1581,6 +1632,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1613,6 +1665,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1647,6 +1700,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1674,6 +1728,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1685,6 +1740,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1715,6 +1771,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1746,6 +1803,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1777,6 +1835,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1808,6 +1867,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1956,6 +2016,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1986,6 +2047,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1997,6 +2059,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2027,6 +2090,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2038,6 +2102,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2068,6 +2133,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2079,6 +2145,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2111,6 +2178,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2122,6 +2190,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2154,6 +2223,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2165,6 +2235,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2197,6 +2268,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2208,6 +2280,7 @@ describe("setRateLimitHeaders", () => {
               }),
             }),
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2243,6 +2316,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2277,6 +2351,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [
             new ArcjetRuleResult({
+              ruleId: "test-rule-id",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",

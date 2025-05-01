@@ -20,6 +20,7 @@ describe("isSpoofedBot", () => {
       expect(
         isSpoofedBot(
           new ArcjetRuleResult({
+            ruleId: "test-rule-id",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -46,6 +47,7 @@ describe("isSpoofedBot", () => {
       expect(
         isSpoofedBot(
           new ArcjetRuleResult({
+            ruleId: "test-rule-id",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -65,6 +67,7 @@ describe("isSpoofedBot", () => {
     expect(
       isSpoofedBot(
         new ArcjetRuleResult({
+          ruleId: "test-rule-id",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
@@ -82,6 +85,7 @@ describe("isSpoofedBot", () => {
   test("works with array methods", () => {
     const results = [
       new ArcjetRuleResult({
+        ruleId: "test-rule-id",
         ttl: 0,
         state: "RUN",
         conclusion: "DENY",
@@ -138,6 +142,7 @@ describe("isVerifiedBot", () => {
       expect(
         isVerifiedBot(
           new ArcjetRuleResult({
+            ruleId: "test-rule-id",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -164,6 +169,7 @@ describe("isVerifiedBot", () => {
       expect(
         isVerifiedBot(
           new ArcjetRuleResult({
+            ruleId: "test-rule-id",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -182,6 +188,7 @@ describe("isVerifiedBot", () => {
   test("works with array methods", () => {
     const results = [
       new ArcjetRuleResult({
+        ruleId: "test-rule-id",
         ttl: 0,
         state: "RUN",
         conclusion: "DENY",
@@ -202,6 +209,7 @@ describe("isVerifiedBot", () => {
     expect(
       isVerifiedBot(
         new ArcjetRuleResult({
+          ruleId: "test-rule-id",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
@@ -257,6 +265,7 @@ describe("isMissingUserAgent", () => {
       expect(
         isMissingUserAgent(
           new ArcjetRuleResult({
+            ruleId: "test-rule-id",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -268,6 +277,7 @@ describe("isMissingUserAgent", () => {
       expect(
         isMissingUserAgent(
           new ArcjetRuleResult({
+            ruleId: "test-rule-id",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -282,6 +292,7 @@ describe("isMissingUserAgent", () => {
     expect(
       isMissingUserAgent(
         new ArcjetRuleResult({
+          ruleId: "test-rule-id",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
@@ -292,6 +303,7 @@ describe("isMissingUserAgent", () => {
     expect(
       isMissingUserAgent(
         new ArcjetRuleResult({
+          ruleId: "test-rule-id",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
@@ -304,6 +316,7 @@ describe("isMissingUserAgent", () => {
   test("works with array methods", () => {
     const results = [
       new ArcjetRuleResult({
+        ruleId: "test-rule-id",
         ttl: 0,
         state: "RUN",
         conclusion: "DENY",
