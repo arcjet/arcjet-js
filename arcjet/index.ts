@@ -771,24 +771,26 @@ export function tokenBucket<
   validateTokenBucketOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const characteristics = options.characteristics;
+  const characteristics = Array.isArray(options.characteristics)
+    ? options.characteristics
+    : undefined;
 
   const refillRate = options.refillRate;
   const interval = duration.parse(options.interval);
   const capacity = options.capacity;
 
-  return [
-    <ArcjetTokenBucketRateLimitRule<{ requested: number }>>{
-      type: "RATE_LIMIT",
-      priority: Priority.RateLimit,
-      mode,
-      characteristics,
-      algorithm: "TOKEN_BUCKET",
-      refillRate,
-      interval,
-      capacity,
-    },
-  ];
+  const rule: ArcjetTokenBucketRateLimitRule<{ requested: number }> = {
+    type: "RATE_LIMIT",
+    priority: Priority.RateLimit,
+    mode,
+    characteristics,
+    algorithm: "TOKEN_BUCKET",
+    refillRate,
+    interval,
+    capacity,
+  };
+
+  return [rule];
 }
 
 /**
@@ -861,17 +863,17 @@ export function fixedWindow<
   const max = options.max;
   const window = duration.parse(options.window);
 
-  return [
-    <ArcjetFixedWindowRateLimitRule<{}>>{
-      type: "RATE_LIMIT",
-      priority: Priority.RateLimit,
-      mode,
-      characteristics,
-      algorithm: "FIXED_WINDOW",
-      max,
-      window,
-    },
-  ];
+  const rule: ArcjetFixedWindowRateLimitRule<{}> = {
+    type: "RATE_LIMIT",
+    priority: Priority.RateLimit,
+    mode,
+    characteristics,
+    algorithm: "FIXED_WINDOW",
+    max,
+    window,
+  };
+
+  return [rule];
 }
 
 /**
@@ -939,17 +941,17 @@ export function slidingWindow<
   const max = options.max;
   const interval = duration.parse(options.interval);
 
-  return [
-    <ArcjetSlidingWindowRateLimitRule<{}>>{
-      type: "RATE_LIMIT",
-      priority: Priority.RateLimit,
-      mode,
-      characteristics,
-      algorithm: "SLIDING_WINDOW",
-      max,
-      interval,
-    },
-  ];
+  const rule: ArcjetSlidingWindowRateLimitRule<{}> = {
+    type: "RATE_LIMIT",
+    priority: Priority.RateLimit,
+    mode,
+    characteristics,
+    algorithm: "SLIDING_WINDOW",
+    max,
+    interval,
+  };
+
+  return [rule];
 }
 
 function protocolSensitiveInfoEntitiesToAnalyze<Custom extends string>(
@@ -1124,102 +1126,102 @@ export function sensitiveInfo<
     );
   }
 
-  return [
-    <ArcjetSensitiveInfoRule<{}>>{
-      type: "SENSITIVE_INFO",
-      priority: Priority.SensitiveInfo,
-      mode,
-      allow: options.allow || [],
-      deny: options.deny || [],
+  const rule: ArcjetSensitiveInfoRule<{}> = {
+    type: "SENSITIVE_INFO",
+    priority: Priority.SensitiveInfo,
+    mode,
+    allow: options.allow || [],
+    deny: options.deny || [],
 
-      validate(
-        context: ArcjetContext,
-        details: ArcjetRequestDetails,
-      ): asserts details is ArcjetRequestDetails {},
+    validate(
+      context: ArcjetContext,
+      details: ArcjetRequestDetails,
+    ): asserts details is ArcjetRequestDetails {},
 
-      async protect(
-        context: ArcjetContext,
-        details: ArcjetRequestDetails,
-      ): Promise<ArcjetRuleResult> {
-        const body = await context.getBody();
-        if (typeof body === "undefined") {
-          return new ArcjetRuleResult({
-            ttl: 0,
-            state: "NOT_RUN",
-            conclusion: "ERROR",
-            reason: new ArcjetErrorReason(
-              "Couldn't read the body of the request to perform sensitive info identification.",
-            ),
-          });
-        }
-
-        let convertedDetect = undefined;
-        if (typeof options.detect !== "undefined") {
-          const detect = options.detect;
-          convertedDetect = (tokens: string[]) => {
-            return detect(tokens)
-              .filter((e) => typeof e !== "undefined")
-              .map(protocolSensitiveInfoEntitiesToAnalyze);
-          };
-        }
-
-        let entitiesTag: "allow" | "deny" = "allow";
-        let entitiesVal: Array<
-          ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>
-        > = [];
-
-        if (Array.isArray(options.allow)) {
-          entitiesTag = "allow";
-          entitiesVal = options.allow
-            .filter((e) => typeof e !== "undefined")
-            .map(protocolSensitiveInfoEntitiesToAnalyze);
-        }
-
-        if (Array.isArray(options.deny)) {
-          entitiesTag = "deny";
-          entitiesVal = options.deny
-            .filter((e) => typeof e !== "undefined")
-            .map(protocolSensitiveInfoEntitiesToAnalyze);
-        }
-
-        const entities = {
-          tag: entitiesTag,
-          val: entitiesVal,
-        };
-
-        const result = await analyze.detectSensitiveInfo(
-          context,
-          body,
-          entities,
-          options.contextWindowSize || 1,
-          convertedDetect,
-        );
-
-        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-
-        const reason = new ArcjetSensitiveInfoReason({
-          denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
-          allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
+    async protect(
+      context: ArcjetContext,
+      details: ArcjetRequestDetails,
+    ): Promise<ArcjetRuleResult> {
+      const body = await context.getBody();
+      if (typeof body === "undefined") {
+        return new ArcjetRuleResult({
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ERROR",
+          reason: new ArcjetErrorReason(
+            "Couldn't read the body of the request to perform sensitive info identification.",
+          ),
         });
+      }
 
-        if (result.denied.length === 0) {
-          return new ArcjetRuleResult({
-            ttl: 0,
-            state,
-            conclusion: "ALLOW",
-            reason,
-          });
-        } else {
-          return new ArcjetRuleResult({
-            ttl: 0,
-            state,
-            conclusion: "DENY",
-            reason,
-          });
-        }
-      },
+      let convertedDetect = undefined;
+      if (typeof options.detect !== "undefined") {
+        const detect = options.detect;
+        convertedDetect = (tokens: string[]) => {
+          return detect(tokens)
+            .filter((e) => typeof e !== "undefined")
+            .map(protocolSensitiveInfoEntitiesToAnalyze);
+        };
+      }
+
+      let entitiesTag: "allow" | "deny" = "allow";
+      let entitiesVal: Array<
+        ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>
+      > = [];
+
+      if (Array.isArray(options.allow)) {
+        entitiesTag = "allow";
+        entitiesVal = options.allow
+          .filter((e) => typeof e !== "undefined")
+          .map(protocolSensitiveInfoEntitiesToAnalyze);
+      }
+
+      if (Array.isArray(options.deny)) {
+        entitiesTag = "deny";
+        entitiesVal = options.deny
+          .filter((e) => typeof e !== "undefined")
+          .map(protocolSensitiveInfoEntitiesToAnalyze);
+      }
+
+      const entities = {
+        tag: entitiesTag,
+        val: entitiesVal,
+      };
+
+      const result = await analyze.detectSensitiveInfo(
+        context,
+        body,
+        entities,
+        options.contextWindowSize || 1,
+        convertedDetect,
+      );
+
+      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+
+      const reason = new ArcjetSensitiveInfoReason({
+        denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
+        allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
+      });
+
+      if (result.denied.length === 0) {
+        return new ArcjetRuleResult({
+          ttl: 0,
+          state,
+          conclusion: "ALLOW",
+          reason,
+        });
+      } else {
+        return new ArcjetRuleResult({
+          ttl: 0,
+          state,
+          conclusion: "DENY",
+          reason,
+        });
+      }
     },
-  ];
+  };
+
+  return [rule];
 }
 
 /**
@@ -1359,54 +1361,54 @@ export function validateEmail(
     };
   }
 
-  return [
-    <ArcjetEmailRule<{ email: string }>>{
-      type: "EMAIL",
-      priority: Priority.EmailValidation,
-      mode,
-      allow,
-      deny,
-      requireTopLevelDomain,
-      allowDomainLiteral,
+  const rule: ArcjetEmailRule<{ email: string }> = {
+    type: "EMAIL",
+    priority: Priority.EmailValidation,
+    mode,
+    allow,
+    deny,
+    requireTopLevelDomain,
+    allowDomainLiteral,
 
-      validate(
-        context: ArcjetContext,
-        details: Partial<ArcjetRequestDetails & { email: string }>,
-      ): asserts details is ArcjetRequestDetails & { email: string } {
-        assert(
-          typeof details.email !== "undefined",
-          "ValidateEmail requires `email` to be set.",
-        );
-      },
-
-      async protect(
-        context: ArcjetContext,
-        { email }: ArcjetRequestDetails & { email: string },
-      ): Promise<ArcjetRuleResult> {
-        const result = await analyze.isValidEmail(context, email, config);
-        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-        if (result.validity === "valid") {
-          return new ArcjetRuleResult({
-            ttl: 0,
-            state,
-            conclusion: "ALLOW",
-            reason: new ArcjetEmailReason({ emailTypes: [] }),
-          });
-        } else {
-          const typedEmailTypes = result.blocked.filter(isEmailType);
-
-          return new ArcjetRuleResult({
-            ttl: 0,
-            state,
-            conclusion: "DENY",
-            reason: new ArcjetEmailReason({
-              emailTypes: typedEmailTypes,
-            }),
-          });
-        }
-      },
+    validate(
+      context: ArcjetContext,
+      details: Partial<ArcjetRequestDetails & { email: string }>,
+    ): asserts details is ArcjetRequestDetails & { email: string } {
+      assert(
+        typeof details.email !== "undefined",
+        "ValidateEmail requires `email` to be set.",
+      );
     },
-  ];
+
+    async protect(
+      context: ArcjetContext,
+      { email }: ArcjetRequestDetails & { email: string },
+    ): Promise<ArcjetRuleResult> {
+      const result = await analyze.isValidEmail(context, email, config);
+      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+      if (result.validity === "valid") {
+        return new ArcjetRuleResult({
+          ttl: 0,
+          state,
+          conclusion: "ALLOW",
+          reason: new ArcjetEmailReason({ emailTypes: [] }),
+        });
+      } else {
+        const typedEmailTypes = result.blocked.filter(isEmailType);
+
+        return new ArcjetRuleResult({
+          ttl: 0,
+          state,
+          conclusion: "DENY",
+          reason: new ArcjetEmailReason({
+            emailTypes: typedEmailTypes,
+          }),
+        });
+      }
+    },
+  };
+
+  return [rule];
 }
 
 /**
@@ -1533,75 +1535,73 @@ export function detectBot(options: BotOptions): Primitive<{}> {
     };
   }
 
-  return [
-    <ArcjetBotRule<{}>>{
-      type: "BOT",
-      priority: Priority.BotDetection,
-      mode,
-      allow: options.allow ?? [],
-      deny: options.deny ?? [],
+  const rule: ArcjetBotRule<{}> = {
+    type: "BOT",
+    priority: Priority.BotDetection,
+    mode,
+    allow: options.allow ?? [],
+    deny: options.deny ?? [],
 
-      validate(
-        context: ArcjetContext,
-        details: Partial<ArcjetRequestDetails>,
-      ): asserts details is ArcjetRequestDetails {
-        if (typeof details.headers === "undefined") {
-          throw new Error("bot detection requires `headers` to be set");
-        }
-        if (typeof details.headers.has !== "function") {
-          throw new Error(
-            "bot detection requires `headers` to extend `Headers`",
-          );
-        }
-        if (!details.headers.has("user-agent")) {
-          throw new Error("bot detection requires user-agent header");
-        }
-      },
-
-      /**
-       * Attempts to call the bot detection on the headers.
-       */
-      async protect(
-        context: ArcjetContext,
-        request: ArcjetRequestDetails,
-      ): Promise<ArcjetRuleResult> {
-        const result = await analyze.detectBot(
-          context,
-          toAnalyzeRequest(request),
-          config,
-        );
-
-        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-
-        // If this is a bot and of a type that we want to block, then block!
-        if (result.denied.length > 0) {
-          return new ArcjetRuleResult({
-            ttl: 60,
-            state,
-            conclusion: "DENY",
-            reason: new ArcjetBotReason({
-              allowed: result.allowed,
-              denied: result.denied,
-              verified: result.verified,
-              spoofed: result.spoofed,
-            }),
-          });
-        } else {
-          return new ArcjetRuleResult({
-            ttl: 0,
-            state,
-            conclusion: "ALLOW",
-            reason: new ArcjetBotReason({
-              allowed: result.allowed,
-              denied: result.denied,
-              verified: result.verified,
-              spoofed: result.spoofed,
-            }),
-          });
-        }
-      },
+    validate(
+      context: ArcjetContext,
+      details: Partial<ArcjetRequestDetails>,
+    ): asserts details is ArcjetRequestDetails {
+      if (typeof details.headers === "undefined") {
+        throw new Error("bot detection requires `headers` to be set");
+      }
+      if (typeof details.headers.has !== "function") {
+        throw new Error("bot detection requires `headers` to extend `Headers`");
+      }
+      if (!details.headers.has("user-agent")) {
+        throw new Error("bot detection requires user-agent header");
+      }
     },
-  ];
+
+    /**
+     * Attempts to call the bot detection on the headers.
+     */
+    async protect(
+      context: ArcjetContext,
+      request: ArcjetRequestDetails,
+    ): Promise<ArcjetRuleResult> {
+      const result = await analyze.detectBot(
+        context,
+        toAnalyzeRequest(request),
+        config,
+      );
+
+      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+
+      // If this is a bot and of a type that we want to block, then block!
+      if (result.denied.length > 0) {
+        return new ArcjetRuleResult({
+          ttl: 60,
+          state,
+          conclusion: "DENY",
+          reason: new ArcjetBotReason({
+            allowed: result.allowed,
+            denied: result.denied,
+            verified: result.verified,
+            spoofed: result.spoofed,
+          }),
+        });
+      } else {
+        return new ArcjetRuleResult({
+          ttl: 0,
+          state,
+          conclusion: "ALLOW",
+          reason: new ArcjetBotReason({
+            allowed: result.allowed,
+            denied: result.denied,
+            verified: result.verified,
+            spoofed: result.spoofed,
+          }),
+        });
+      }
+    },
+  };
+
+  return [rule];
 }
 
 export type ShieldOptions = {
@@ -1642,13 +1642,14 @@ export function shield(options: ShieldOptions): Primitive<{}> {
   validateShieldOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  return [
-    <ArcjetShieldRule<{}>>{
-      type: "SHIELD",
-      priority: Priority.Shield,
-      mode,
-    },
-  ];
+
+  const rule: ArcjetShieldRule<{}> = {
+    type: "SHIELD",
+    priority: Priority.Shield,
+    mode,
+  };
+
+  return [rule];
 }
 
 export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
