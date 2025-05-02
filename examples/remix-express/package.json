@@ -44,8 +44,10 @@
     "vite": "^6.3.4"
   },
   "overrides": {
+    "@vanilla-extract/integration": ">=8.0.1",
     "cookie": "0.7.1",
-    "esbuild": ">=0.25.0"
+    "esbuild": ">=0.25.0",
+    "vite-node": ">=3.1.2"
   },
   "engines": {
     "node": ">=20.0.0"
