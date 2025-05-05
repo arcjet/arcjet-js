@@ -41,6 +41,7 @@ import type {
 import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
+import * as hasher from "@arcjet/stable-hash";
 
 export * from "@arcjet/protocol";
 
@@ -770,6 +771,8 @@ export function tokenBucket<
 > {
   validateTokenBucketOptions(options);
 
+  const type = "RATE_LIMIT";
+  const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const characteristics = Array.isArray(options.characteristics)
     ? options.characteristics
@@ -780,7 +783,8 @@ export function tokenBucket<
   const capacity = options.capacity;
 
   const rule: ArcjetTokenBucketRateLimitRule<{ requested: number }> = {
-    type: "RATE_LIMIT",
+    type,
+    version,
     priority: Priority.RateLimit,
     mode,
     characteristics,
@@ -855,6 +859,8 @@ export function fixedWindow<
 ): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
   validateFixedWindowOptions(options);
 
+  const type = "RATE_LIMIT";
+  const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const characteristics = Array.isArray(options.characteristics)
     ? options.characteristics
@@ -864,7 +870,8 @@ export function fixedWindow<
   const window = duration.parse(options.window);
 
   const rule: ArcjetFixedWindowRateLimitRule<{}> = {
-    type: "RATE_LIMIT",
+    type,
+    version,
     priority: Priority.RateLimit,
     mode,
     characteristics,
@@ -933,6 +940,8 @@ export function slidingWindow<
 ): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
   validateSlidingWindowOptions(options);
 
+  const type = "RATE_LIMIT";
+  const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const characteristics = Array.isArray(options.characteristics)
     ? options.characteristics
@@ -942,7 +951,8 @@ export function slidingWindow<
   const interval = duration.parse(options.interval);
 
   const rule: ArcjetSlidingWindowRateLimitRule<{}> = {
-    type: "RATE_LIMIT",
+    type,
+    version,
     priority: Priority.RateLimit,
     mode,
     characteristics,
@@ -1108,7 +1118,6 @@ export function sensitiveInfo<
 >(options: SensitiveInfoOptions<Detect>): Primitive<{}> {
   validateSensitiveInfoOptions(options);
 
-  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   if (
     typeof options.allow !== "undefined" &&
     typeof options.deny !== "undefined"
@@ -1126,12 +1135,27 @@ export function sensitiveInfo<
     );
   }
 
+  const type = "SENSITIVE_INFO";
+  const version = 0;
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const allow = options.allow || [];
+  const deny = options.deny || [];
+
+  const id = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    hasher.stringSliceOrdered("allow", allow),
+    hasher.stringSliceOrdered("deny", deny),
+  );
+
   const rule: ArcjetSensitiveInfoRule<{}> = {
-    type: "SENSITIVE_INFO",
+    version,
     priority: Priority.SensitiveInfo,
+    type,
     mode,
-    allow: options.allow || [],
-    deny: options.deny || [],
+    allow,
+    deny,
 
     validate(
       context: ArcjetContext,
@@ -1142,9 +1166,12 @@ export function sensitiveInfo<
       context: ArcjetContext,
       details: ArcjetRequestDetails,
     ): Promise<ArcjetRuleResult> {
+      const ruleId = await id;
+
       const body = await context.getBody();
       if (typeof body === "undefined") {
         return new ArcjetRuleResult({
+          ruleId,
           ttl: 0,
           state: "NOT_RUN",
           conclusion: "ERROR",
@@ -1205,6 +1232,7 @@ export function sensitiveInfo<
 
       if (result.denied.length === 0) {
         return new ArcjetRuleResult({
+          ruleId,
           ttl: 0,
           state,
           conclusion: "ALLOW",
@@ -1212,6 +1240,7 @@ export function sensitiveInfo<
         });
       } else {
         return new ArcjetRuleResult({
+          ruleId,
           ttl: 0,
           state,
           conclusion: "DENY",
@@ -1280,7 +1309,7 @@ export function validateEmail(
   options: EmailOptions,
 ): Primitive<{ email: string }> {
   validateEmailOptions(options);
-  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+
   if (
     typeof options.allow !== "undefined" &&
     typeof options.deny !== "undefined"
@@ -1314,10 +1343,24 @@ export function validateEmail(
       "`validateEmail` options error: either `allow` or `deny` must be specified",
     );
   }
+
+  const type = "EMAIL";
+  const version = 0;
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const allow = options.allow ?? [];
   const deny = options.deny ?? options.block ?? [];
   const requireTopLevelDomain = options.requireTopLevelDomain ?? true;
   const allowDomainLiteral = options.allowDomainLiteral ?? false;
+
+  const id = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    hasher.stringSliceOrdered("allow", allow),
+    hasher.stringSliceOrdered("deny", deny),
+    hasher.bool("requireTopLevelDomain", requireTopLevelDomain),
+    hasher.bool("allowDomainLiteral", allowDomainLiteral),
+  );
 
   let config: EmailValidationConfig = {
     tag: "deny-email-validation-config",
@@ -1362,8 +1405,10 @@ export function validateEmail(
   }
 
   const rule: ArcjetEmailRule<{ email: string }> = {
-    type: "EMAIL",
+    version,
     priority: Priority.EmailValidation,
+
+    type,
     mode,
     allow,
     deny,
@@ -1384,10 +1429,13 @@ export function validateEmail(
       context: ArcjetContext,
       { email }: ArcjetRequestDetails & { email: string },
     ): Promise<ArcjetRuleResult> {
+      const ruleId = await id;
+
       const result = await analyze.isValidEmail(context, email, config);
       const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
       if (result.validity === "valid") {
         return new ArcjetRuleResult({
+          ruleId,
           ttl: 0,
           state,
           conclusion: "ALLOW",
@@ -1397,6 +1445,7 @@ export function validateEmail(
         const typedEmailTypes = result.blocked.filter(isEmailType);
 
         return new ArcjetRuleResult({
+          ruleId,
           ttl: 0,
           state,
           conclusion: "DENY",
@@ -1490,7 +1539,6 @@ export function validateEmail(
 export function detectBot(options: BotOptions): Primitive<{}> {
   validateBotOptions(options);
 
-  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   if (
     typeof options.allow !== "undefined" &&
     typeof options.deny !== "undefined"
@@ -1507,6 +1555,20 @@ export function detectBot(options: BotOptions): Primitive<{}> {
       "`detectBot` options error: either `allow` or `deny` must be specified",
     );
   }
+
+  const type = "BOT";
+  const version = 0;
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const allow = options.allow ?? [];
+  const deny = options.deny ?? [];
+
+  const id = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    hasher.stringSliceOrdered("allow", allow),
+    hasher.stringSliceOrdered("deny", deny),
+  );
 
   let config: BotConfig = {
     tag: "allowed-bot-config",
@@ -1536,11 +1598,13 @@ export function detectBot(options: BotOptions): Primitive<{}> {
   }
 
   const rule: ArcjetBotRule<{}> = {
-    type: "BOT",
+    version,
     priority: Priority.BotDetection,
+
+    type,
     mode,
-    allow: options.allow ?? [],
-    deny: options.deny ?? [],
+    allow,
+    deny,
 
     validate(
       context: ArcjetContext,
@@ -1564,6 +1628,8 @@ export function detectBot(options: BotOptions): Primitive<{}> {
       context: ArcjetContext,
       request: ArcjetRequestDetails,
     ): Promise<ArcjetRuleResult> {
+      const ruleId = await id;
+
       const result = await analyze.detectBot(
         context,
         toAnalyzeRequest(request),
@@ -1575,6 +1641,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
       // If this is a bot and of a type that we want to block, then block!
       if (result.denied.length > 0) {
         return new ArcjetRuleResult({
+          ruleId,
           ttl: 60,
           state,
           conclusion: "DENY",
@@ -1587,6 +1654,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
         });
       } else {
         return new ArcjetRuleResult({
+          ruleId,
           ttl: 0,
           state,
           conclusion: "ALLOW",
@@ -1641,10 +1709,13 @@ export type ShieldOptions = {
 export function shield(options: ShieldOptions): Primitive<{}> {
   validateShieldOptions(options);
 
+  const type = "SHIELD";
+  const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
 
   const rule: ArcjetShieldRule<{}> = {
-    type: "SHIELD",
+    type,
+    version,
     priority: Priority.Shield,
     mode,
   };
@@ -1957,7 +2028,6 @@ export default function arcjet<
     });
 
     if (rules.length < 1) {
-      // TODO(#607): Error if no rules configured after deprecation period
       log.warn(
         "Calling `protect()` with no rules is deprecated. Did you mean to configure the Shield rule?",
       );
@@ -1990,6 +2060,8 @@ export default function arcjet<
     for (let idx = 0; idx < rules.length; idx++) {
       // Default all rules to NOT_RUN/ALLOW before doing anything
       results[idx] = new ArcjetRuleResult({
+        // TODO(#4030): Figure out if we can get each Rule ID before they are run
+        ruleId: "",
         ttl: 0,
         state: "NOT_RUN",
         conclusion: "ALLOW",
@@ -2063,6 +2135,9 @@ export default function arcjet<
           // rule incorrectly.
           if (typeof results[idx] === "undefined") {
             results[idx] = new ArcjetRuleResult({
+              // TODO(#4030): If we can get the Rule ID before running rules,
+              // this can use it
+              ruleId: "",
               ttl: 0,
               state: "RUN",
               conclusion: "ERROR",
@@ -2091,6 +2166,8 @@ export default function arcjet<
           );
 
           results[idx] = new ArcjetRuleResult({
+            // TODO(#4030): Figure out if we can get a Rule ID in this error case
+            ruleId: "",
             ttl: 0,
             state: "RUN",
             conclusion: "ERROR",

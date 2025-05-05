@@ -29,6 +29,7 @@
   "rollup-config": "1.0.0-beta.6",
   "runtime": "1.0.0-beta.6",
   "sprintf": "1.0.0-beta.6",
+  "stable-hash": "1.0.0-beta.6",
   "transport": "1.0.0-beta.6",
   "tsconfig": "1.0.0-beta.6"
 }

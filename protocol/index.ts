@@ -373,6 +373,10 @@ export class ArcjetErrorReason extends ArcjetReason {
 }
 
 export class ArcjetRuleResult {
+  /**
+   * The stable, deterministic, and unique identifier of the rule that generated
+   * this result.
+   */
   ruleId: string;
   /**
    * The duration in seconds this result should be considered valid, also known
@@ -384,14 +388,13 @@ export class ArcjetRuleResult {
   reason: ArcjetReason;
 
   constructor(init: {
+    ruleId: string;
     ttl: number;
     state: ArcjetRuleState;
     conclusion: ArcjetConclusion;
     reason: ArcjetReason;
   }) {
-    // TODO(#230): Generated, stable IDs for Rules
-    this.ruleId = "";
-
+    this.ruleId = init.ruleId;
     this.ttl = init.ttl;
     this.state = init.state;
     this.conclusion = init.conclusion;
@@ -807,6 +810,7 @@ export type ArcjetRule<Props extends {} = {}> = {
   type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | "SENSITIVE_INFO" | string;
   mode: ArcjetMode;
   priority: number;
+  version: number;
 };
 
 // An ArcjetLocalRule provides additional `validate` and `protect` functions

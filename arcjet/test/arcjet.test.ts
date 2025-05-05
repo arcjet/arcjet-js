@@ -2540,6 +2540,7 @@ describe("Products > protectSignup", () => {
 describe("SDK", () => {
   function testRuleLocalAllowed() {
     return {
+      version: 0,
       mode: "LIVE",
       type: "TEST_RULE_LOCAL_ALLOWED",
       priority: 1,
@@ -2547,6 +2548,7 @@ describe("SDK", () => {
       protect: mock.fn(
         async () =>
           new ArcjetRuleResult({
+            ruleId: "test-rule-id",
             ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
@@ -2557,6 +2559,7 @@ describe("SDK", () => {
   }
   function testRuleLocalDenied() {
     return {
+      version: 0,
       mode: "LIVE",
       type: "TEST_RULE_LOCAL_DENIED",
       priority: 1,
@@ -2564,6 +2567,7 @@ describe("SDK", () => {
       protect: mock.fn(
         async () =>
           new ArcjetRuleResult({
+            ruleId: "test-rule-id",
             ttl: 5000,
             state: "RUN",
             conclusion: "DENY",
@@ -2574,6 +2578,7 @@ describe("SDK", () => {
   }
   function testRuleLocalIncorrect() {
     return {
+      version: 0,
       mode: "LIVE",
       type: "TEST_RULE_LOCAL_INCORRECT",
       priority: 1,
@@ -2584,6 +2589,7 @@ describe("SDK", () => {
 
   function testRuleRemote(): ArcjetRule {
     return {
+      version: 0,
       mode: "LIVE",
       type: "TEST_RULE_REMOTE",
       priority: 1,
@@ -2592,14 +2598,15 @@ describe("SDK", () => {
 
   function testRuleMultiple(): ArcjetRule[] {
     return [
-      { mode: "LIVE", type: "TEST_RULE_MULTIPLE", priority: 1 },
-      { mode: "LIVE", type: "TEST_RULE_MULTIPLE", priority: 1 },
-      { mode: "LIVE", type: "TEST_RULE_MULTIPLE", priority: 1 },
+      { version: 0, mode: "LIVE", type: "TEST_RULE_MULTIPLE", priority: 1 },
+      { version: 0, mode: "LIVE", type: "TEST_RULE_MULTIPLE", priority: 1 },
+      { version: 0, mode: "LIVE", type: "TEST_RULE_MULTIPLE", priority: 1 },
     ];
   }
 
   function testRuleInvalidType(): ArcjetRule {
     return {
+      version: 0,
       mode: "LIVE",
       type: "TEST_RULE_INVALID_TYPE",
       priority: 1,
@@ -2608,6 +2615,7 @@ describe("SDK", () => {
 
   function testRuleLocalThrow() {
     return {
+      version: 0,
       mode: "LIVE",
       type: "TEST_RULE_LOCAL_THROW",
       priority: 1,
@@ -2620,12 +2628,14 @@ describe("SDK", () => {
 
   function testRuleLocalDryRun() {
     return {
+      version: 0,
       mode: "DRY_RUN",
       type: "TEST_RULE_LOCAL_DRY_RUN",
       priority: 1,
       validate: mock.fn(),
       protect: mock.fn(async () => {
         return new ArcjetRuleResult({
+          ruleId: "test-rule-id",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
@@ -2636,7 +2646,7 @@ describe("SDK", () => {
   }
 
   function testRuleProps(): Primitive<{ abc: number }> {
-    return [{ mode: "LIVE", type: "test", priority: 10000 }];
+    return [{ version: 0, mode: "LIVE", type: "test", priority: 10000 }];
   }
 
   test("creates a new Arcjet SDK with no rules", () => {
@@ -3803,6 +3813,7 @@ describe("SDK", () => {
 
     function testRuleLocalThrowString(): ArcjetLocalRule {
       return {
+        version: 0,
         mode: "LIVE",
         type: "TEST_RULE_LOCAL_THROW_STRING",
         priority: 1,
@@ -3860,6 +3871,7 @@ describe("SDK", () => {
 
     function testRuleLocalThrowNull(): ArcjetLocalRule {
       return {
+        version: 0,
         mode: "LIVE",
         type: "TEST_RULE_LOCAL_THROW_NULL",
         priority: 1,

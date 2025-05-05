@@ -483,6 +483,7 @@ describe("convert", () => {
     expect(
       ArcjetRuleResultToProtocol(
         new ArcjetRuleResult({
+          ruleId: "test-rule-id",
           ttl: 0,
           state: "RUN",
           conclusion: "ALLOW",
@@ -491,7 +492,7 @@ describe("convert", () => {
       ),
     ).toEqual(
       new RuleResult({
-        ruleId: "",
+        ruleId: "test-rule-id",
         state: RuleState.RUN,
         conclusion: Conclusion.ALLOW,
         reason: new Reason(),
@@ -503,7 +504,7 @@ describe("convert", () => {
     expect(
       ArcjetRuleResultFromProtocol(
         new RuleResult({
-          ruleId: "",
+          ruleId: "test-rule-id",
           state: RuleState.RUN,
           conclusion: Conclusion.ALLOW,
           reason: new Reason(),
@@ -511,6 +512,7 @@ describe("convert", () => {
       ),
     ).toEqual(
       new ArcjetRuleResult({
+        ruleId: "test-rule-id",
         ttl: 0,
         state: "RUN",
         conclusion: "ALLOW",
@@ -589,6 +591,7 @@ describe("convert", () => {
 
   test("ArcjetRuleToProtocol", () => {
     const unknownRule: ArcjetRule = {
+      version: 0,
       type: "UNKNOWN",
       mode: "DRY_RUN",
       priority: 1,
@@ -596,6 +599,7 @@ describe("convert", () => {
     expect(ArcjetRuleToProtocol(unknownRule)).toEqual(new Rule({}));
 
     const tokenBucketRule: ArcjetTokenBucketRateLimitRule<{}> = {
+      version: 0,
       type: "RATE_LIMIT",
       mode: "DRY_RUN",
       priority: 1,
@@ -620,6 +624,7 @@ describe("convert", () => {
     );
 
     const fixedWindowRule: ArcjetFixedWindowRateLimitRule<{}> = {
+      version: 0,
       type: "RATE_LIMIT",
       mode: "DRY_RUN",
       priority: 1,
@@ -642,6 +647,7 @@ describe("convert", () => {
     );
 
     const slidingWindowRule: ArcjetSlidingWindowRateLimitRule<{}> = {
+      version: 0,
       type: "RATE_LIMIT",
       mode: "DRY_RUN",
       priority: 1,
@@ -664,6 +670,7 @@ describe("convert", () => {
     );
 
     const emailRule: ArcjetEmailRule<{ email: string }> = {
+      version: 0,
       type: "EMAIL",
       mode: "DRY_RUN",
       priority: 1,
@@ -692,6 +699,7 @@ describe("convert", () => {
     );
 
     const botRule: ArcjetBotRule<{}> = {
+      version: 0,
       type: "BOT",
       mode: "DRY_RUN",
       priority: 1,
@@ -718,6 +726,7 @@ describe("convert", () => {
     );
 
     const shieldRule: ArcjetShieldRule<{}> = {
+      version: 0,
       type: "SHIELD",
       mode: "DRY_RUN",
       priority: 1,
@@ -735,6 +744,7 @@ describe("convert", () => {
     );
 
     const sensitiveInfoRule: ArcjetSensitiveInfoRule<{}> = {
+      version: 0,
       type: "SENSITIVE_INFO",
       mode: "DRY_RUN",
       priority: 1,
