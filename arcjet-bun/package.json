@@ -52,7 +52,7 @@
     "@types/node": "20.12.12",
     "@rollup/wasm-node": "4.40.1",
     "bun-types": "1.2.12",
-    "eslint": "9.25.1",
+    "eslint": "9.26.0",
     "expect": "29.7.0",
     "typescript": "5.8.3"
   },
