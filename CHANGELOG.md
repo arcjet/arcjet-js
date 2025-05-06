@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0-beta.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2025-05-06)
+
+
+### 🚀 New Features
+
+* **protocol:** Support identifier and version on rules ([#4027](https://github.com/arcjet/arcjet-js/issues/4027)) ([37cd996](https://github.com/arcjet/arcjet-js/commit/37cd996339f167a965e043a35a98a8a35f09ab52))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet-node:** Ensure `process.env.RENDER` is surfaced ([#3969](https://github.com/arcjet/arcjet-js/issues/3969)) ([18f7383](https://github.com/arcjet/arcjet-js/commit/18f7383f672eee31fbc42bdc2db4b46a60a19e87)), closes [#3899](https://github.com/arcjet/arcjet-js/issues/3899)
+* **protocol:** Ensure sensitiveInfo rule sends mode ([#4026](https://github.com/arcjet/arcjet-js/issues/4026)) ([3ce22ed](https://github.com/arcjet/arcjet-js/commit/3ce22ed69cffc1e6488fe09aeab49a9adfcaeecd))
+
+
+### 🧹 Miscellaneous Chores
+
+* Add note about signed commits ([#3958](https://github.com/arcjet/arcjet-js/issues/3958)) ([c76ae28](https://github.com/arcjet/arcjet-js/commit/c76ae2891946227b4245ec8c3d68ea4eff7b38a8))
+* **ci:** Add permissions to each job ([#3976](https://github.com/arcjet/arcjet-js/issues/3976)) ([ce55cd7](https://github.com/arcjet/arcjet-js/commit/ce55cd78aaf787f21a33e380aba2e72f521ea927))
+* Document devcontainer setup ([cf0ccd6](https://github.com/arcjet/arcjet-js/commit/cf0ccd62ccaeffe38985f1df87213ccff654c92a))
+* **protocol:** Increase code coverage on ArcjetStackToProtocol ([#4025](https://github.com/arcjet/arcjet-js/issues/4025)) ([6d89564](https://github.com/arcjet/arcjet-js/commit/6d89564459efaef97bb1eee93c97addf2acda16c))
+
 ## [1.0.0-beta.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2025-04-17)
 
 

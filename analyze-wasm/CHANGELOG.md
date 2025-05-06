@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.6...@arcjet/analyze-wasm-v1.0.0-beta.7) (2025-05-06)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze-wasm:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/rollup-config bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/tsconfig bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+
 ## [1.0.0-beta.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.5...@arcjet/analyze-wasm-v1.0.0-beta.6) (2025-04-17)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "arcjet",
-  "version": "1.0.0-beta.6",
+  "version": "1.0.0-beta.7",
   "description": "Arcjet TypeScript and JavaScript SDK core",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
@@ -39,17 +39,17 @@
     "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.0.0-beta.6",
-    "@arcjet/duration": "1.0.0-beta.6",
-    "@arcjet/headers": "1.0.0-beta.6",
-    "@arcjet/protocol": "1.0.0-beta.6",
-    "@arcjet/runtime": "1.0.0-beta.6",
-    "@arcjet/stable-hash": "1.0.0-beta.6"
+    "@arcjet/analyze": "1.0.0-beta.7",
+    "@arcjet/duration": "1.0.0-beta.7",
+    "@arcjet/headers": "1.0.0-beta.7",
+    "@arcjet/protocol": "1.0.0-beta.7",
+    "@arcjet/runtime": "1.0.0-beta.7",
+    "@arcjet/stable-hash": "1.0.0-beta.7"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.6",
-    "@arcjet/rollup-config": "1.0.0-beta.6",
-    "@arcjet/tsconfig": "1.0.0-beta.6",
+    "@arcjet/eslint-config": "1.0.0-beta.7",
+    "@arcjet/rollup-config": "1.0.0-beta.7",
+    "@arcjet/tsconfig": "1.0.0-beta.7",
     "@rollup/wasm-node": "4.40.1",
     "@types/node": "18.18.0",
     "eslint": "9.26.0",
