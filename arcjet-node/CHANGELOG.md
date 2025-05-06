@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-beta.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.6...@arcjet/node-v1.0.0-beta.7) (2025-05-06)
+
+
+### 🪲 Bug Fixes
+
+* **arcjet-node:** Ensure `process.env.RENDER` is surfaced ([#3969](https://github.com/arcjet/arcjet-js/issues/3969)) ([18f7383](https://github.com/arcjet/arcjet-js/commit/18f7383f672eee31fbc42bdc2db4b46a60a19e87)), closes [#3899](https://github.com/arcjet/arcjet-js/issues/3899)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/headers bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/ip bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/logger bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/protocol bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/transport bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/body bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * arcjet bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/rollup-config bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+    * @arcjet/tsconfig bumped from 1.0.0-beta.6 to 1.0.0-beta.7
+
 ## [1.0.0-beta.6](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.5...@arcjet/node-v1.0.0-beta.6) (2025-04-17)
 
 
