@@ -1,4 +1,4 @@
-import { describe, test, afterEach, mock } from "node:test";
+import { describe, test } from "node:test";
 import * as nodeCrypto from "node:crypto";
 
 import { expect } from "expect";
@@ -34,7 +34,7 @@ describe("hasher", () => {
     }
   }
 
-  describe("bool", () => {
+  test("bool", () => {
     const buf = new StringBuf();
 
     buf.reset();
@@ -46,7 +46,7 @@ describe("hasher", () => {
     expect(buf.toString()).toEqual("false:false");
   });
 
-  describe("uint32", () => {
+  test("uint32", () => {
     const buf = new StringBuf();
 
     buf.reset();
@@ -62,7 +62,7 @@ describe("hasher", () => {
     expect(buf.toString()).toEqual("overflow:0");
   });
 
-  describe("string", () => {
+  test("string", () => {
     const buf = new StringBuf();
 
     buf.reset();
@@ -92,7 +92,7 @@ describe("hasher", () => {
     );
   });
 
-  describe("stringSliceOrdered", () => {
+  test("stringSliceOrdered", () => {
     const buf = new StringBuf();
 
     buf.reset();
@@ -137,7 +137,7 @@ describe("hasher", () => {
     );
   });
 
-  describe("hash", async () => {
+  test("hash", async () => {
     let subtle;
     if ("crypto" in globalThis) {
       subtle = crypto.subtle;
