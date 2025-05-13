@@ -23,7 +23,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
     "eslint": "^9",
-    "eslint-config-next": "15.4.0-canary.23",
+    "eslint-config-next": "15.4.0-canary.33",
     "postcss": "^8",
     "tailwindcss": "^4",
     "typescript": "^5"
