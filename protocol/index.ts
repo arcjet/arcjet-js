@@ -889,13 +889,19 @@ export interface ArcjetLogger {
   error(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
 }
 
-export type ArcjetContext = {
+export interface ArcjetCache<T = unknown> {
+  get(namespace: string, key: string): Promise<[T | undefined, number]>;
+  set(namespace: string, key: string, value: T, expiresAt: number): void;
+}
+
+export type ArcjetContext<T = unknown> = {
   [key: string]: unknown;
   key: string;
   fingerprint: string;
   runtime: string;
   log: ArcjetLogger;
   characteristics: string[];
+  cache: ArcjetCache<T>;
   getBody: () => Promise<string | undefined>;
   waitUntil?: (promise: Promise<unknown>) => void;
 };

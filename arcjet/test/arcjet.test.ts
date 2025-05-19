@@ -89,6 +89,13 @@ expect.addEqualityTesters([areHeadersEqual]);
 
 class ArcjetTestReason extends ArcjetReason {}
 
+class TestCache {
+  async get(): Promise<[unknown, number]> {
+    return [undefined, 0];
+  }
+  set() {}
+}
+
 function mockLogger() {
   return {
     time: mock.fn(),
@@ -403,6 +410,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -423,6 +431,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -447,6 +456,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -475,6 +485,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -516,6 +527,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -557,6 +569,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const curlDetails = {
@@ -622,6 +635,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1375,6 +1389,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1395,6 +1410,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1415,6 +1431,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1449,6 +1466,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1483,6 +1501,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1517,6 +1536,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1551,6 +1571,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1588,6 +1609,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1622,6 +1644,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1656,6 +1679,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1694,6 +1718,7 @@ describe("Primitive > validateEmail", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1866,6 +1891,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1893,6 +1919,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () =>
         Promise.resolve(
           "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
@@ -1954,6 +1981,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve("none of this is sensitive"),
     };
     const details = {
@@ -1991,6 +2019,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () =>
         Promise.resolve(
           "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
@@ -2052,6 +2081,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () =>
         Promise.resolve(
           "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
@@ -2114,6 +2144,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
     };
     const details = {
@@ -2162,6 +2193,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () =>
         Promise.resolve("127.0.0.1 test@example.com +353 87 123 4567"),
     };
@@ -2217,6 +2249,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
     };
     const details = {
@@ -2266,6 +2299,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve("this is bad"),
     };
     const details = {
@@ -2319,6 +2353,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve("this is bad"),
     };
     const details = {
@@ -2361,6 +2396,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve("my email is test@example.com"),
     };
     const details = {
@@ -2414,6 +2450,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve("my email is test@example.com"),
     };
     const details = {
@@ -2450,6 +2487,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: mockLogger(),
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -2538,6 +2576,40 @@ describe("SDK", () => {
             reason: new ArcjetTestReason(),
           }),
       ),
+    } as const;
+  }
+  function testRuleLocalCached() {
+    const ruleId = "test-rule-id";
+    const fingerprint =
+      "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e";
+    return {
+      version: 0,
+      mode: "LIVE",
+      type: "TEST_RULE_LOCAL_CACHED",
+      priority: 1,
+      validate: mock.fn(),
+      protect: mock.fn(async (ctx) => {
+        const [result, ttl] = await ctx.cache.get(ruleId, ctx.fingerprint);
+        if (result) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: "DENY",
+            reason: new ArcjetTestReason(),
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state: "RUN",
+            conclusion: "ALLOW",
+            reason: new ArcjetTestReason(),
+          });
+        }
+      }),
     } as const;
   }
   function testRuleLocalIncorrect() {
@@ -3812,9 +3884,19 @@ describe("SDK", () => {
     const client = {
       decide: mock.fn(async () => {
         return new ArcjetDenyDecision({
-          ttl: 5000,
+          ttl: 10,
           reason: new ArcjetTestReason(),
-          results: [],
+          results: [
+            new ArcjetRuleResult({
+              ruleId: "test-rule-id",
+              fingerprint:
+                "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+              ttl: 10,
+              state: "RUN",
+              conclusion: "DENY",
+              reason: new ArcjetTestReason(),
+            }),
+          ],
         });
       }),
       report: mock.fn(),
@@ -3832,7 +3914,7 @@ describe("SDK", () => {
 
     const aj = arcjet({
       key: "test-key",
-      rules: [],
+      rules: [[testRuleLocalCached()]],
       client,
       log: mockLogger(),
     });
