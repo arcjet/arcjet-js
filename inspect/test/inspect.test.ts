@@ -21,6 +21,7 @@ describe("isSpoofedBot", () => {
         isSpoofedBot(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
+            fingerprint: "test-fingerprint",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -48,6 +49,7 @@ describe("isSpoofedBot", () => {
         isSpoofedBot(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
+            fingerprint: "test-fingerprint",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -68,6 +70,7 @@ describe("isSpoofedBot", () => {
       isSpoofedBot(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
@@ -86,6 +89,7 @@ describe("isSpoofedBot", () => {
     const results = [
       new ArcjetRuleResult({
         ruleId: "test-rule-id",
+        fingerprint: "test-fingerprint",
         ttl: 0,
         state: "RUN",
         conclusion: "DENY",
@@ -143,6 +147,7 @@ describe("isVerifiedBot", () => {
         isVerifiedBot(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
+            fingerprint: "test-fingerprint",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -170,6 +175,7 @@ describe("isVerifiedBot", () => {
         isVerifiedBot(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
+            fingerprint: "test-fingerprint",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -189,6 +195,7 @@ describe("isVerifiedBot", () => {
     const results = [
       new ArcjetRuleResult({
         ruleId: "test-rule-id",
+        fingerprint: "test-fingerprint",
         ttl: 0,
         state: "RUN",
         conclusion: "DENY",
@@ -210,6 +217,7 @@ describe("isVerifiedBot", () => {
       isVerifiedBot(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
@@ -266,6 +274,7 @@ describe("isMissingUserAgent", () => {
         isMissingUserAgent(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
+            fingerprint: "test-fingerprint",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -278,6 +287,7 @@ describe("isMissingUserAgent", () => {
         isMissingUserAgent(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
+            fingerprint: "test-fingerprint",
             ttl: 0,
             state,
             conclusion: "DENY",
@@ -293,6 +303,7 @@ describe("isMissingUserAgent", () => {
       isMissingUserAgent(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
@@ -304,6 +315,7 @@ describe("isMissingUserAgent", () => {
       isMissingUserAgent(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
@@ -317,6 +329,7 @@ describe("isMissingUserAgent", () => {
     const results = [
       new ArcjetRuleResult({
         ruleId: "test-rule-id",
+        fingerprint: "test-fingerprint",
         ttl: 0,
         state: "RUN",
         conclusion: "DENY",

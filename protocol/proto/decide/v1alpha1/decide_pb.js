@@ -494,6 +494,7 @@ export const RuleResult = /*@__PURE__*/ proto3.makeMessageType(
     { no: 3, name: "conclusion", kind: "enum", T: proto3.getEnumType(Conclusion) },
     { no: 4, name: "reason", kind: "message", T: Reason },
     { no: 5, name: "ttl", kind: "scalar", T: 13 /* ScalarType.UINT32 */ },
+    { no: 6, name: "fingerprint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ],
 );
 

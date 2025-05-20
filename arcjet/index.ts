@@ -1168,10 +1168,13 @@ export function sensitiveInfo<
     ): Promise<ArcjetRuleResult> {
       const ruleId = await id;
 
+      const { fingerprint } = context;
+
       const body = await context.getBody();
       if (typeof body === "undefined") {
         return new ArcjetRuleResult({
           ruleId,
+          fingerprint,
           ttl: 0,
           state: "NOT_RUN",
           conclusion: "ERROR",
@@ -1233,6 +1236,7 @@ export function sensitiveInfo<
       if (result.denied.length === 0) {
         return new ArcjetRuleResult({
           ruleId,
+          fingerprint,
           ttl: 0,
           state,
           conclusion: "ALLOW",
@@ -1241,6 +1245,7 @@ export function sensitiveInfo<
       } else {
         return new ArcjetRuleResult({
           ruleId,
+          fingerprint,
           ttl: 0,
           state,
           conclusion: "DENY",
@@ -1431,11 +1436,14 @@ export function validateEmail(
     ): Promise<ArcjetRuleResult> {
       const ruleId = await id;
 
+      const { fingerprint } = context;
+
       const result = await analyze.isValidEmail(context, email, config);
       const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
       if (result.validity === "valid") {
         return new ArcjetRuleResult({
           ruleId,
+          fingerprint,
           ttl: 0,
           state,
           conclusion: "ALLOW",
@@ -1446,6 +1454,7 @@ export function validateEmail(
 
         return new ArcjetRuleResult({
           ruleId,
+          fingerprint,
           ttl: 0,
           state,
           conclusion: "DENY",
@@ -1630,6 +1639,8 @@ export function detectBot(options: BotOptions): Primitive<{}> {
     ): Promise<ArcjetRuleResult> {
       const ruleId = await id;
 
+      const { fingerprint } = context;
+
       const result = await analyze.detectBot(
         context,
         toAnalyzeRequest(request),
@@ -1642,6 +1653,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
       if (result.denied.length > 0) {
         return new ArcjetRuleResult({
           ruleId,
+          fingerprint,
           ttl: 60,
           state,
           conclusion: "DENY",
@@ -1655,6 +1667,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
       } else {
         return new ArcjetRuleResult({
           ruleId,
+          fingerprint,
           ttl: 0,
           state,
           conclusion: "ALLOW",
@@ -2062,6 +2075,7 @@ export default function arcjet<
       results[idx] = new ArcjetRuleResult({
         // TODO(#4030): Figure out if we can get each Rule ID before they are run
         ruleId: "",
+        fingerprint,
         ttl: 0,
         state: "NOT_RUN",
         conclusion: "ALLOW",
@@ -2138,6 +2152,7 @@ export default function arcjet<
               // TODO(#4030): If we can get the Rule ID before running rules,
               // this can use it
               ruleId: "",
+              fingerprint,
               ttl: 0,
               state: "RUN",
               conclusion: "ERROR",
@@ -2168,6 +2183,7 @@ export default function arcjet<
           results[idx] = new ArcjetRuleResult({
             // TODO(#4030): Figure out if we can get a Rule ID in this error case
             ruleId: "",
+            fingerprint,
             ttl: 0,
             state: "RUN",
             conclusion: "ERROR",

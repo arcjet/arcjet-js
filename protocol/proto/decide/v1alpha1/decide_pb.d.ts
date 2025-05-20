@@ -1584,6 +1584,14 @@ export declare class RuleResult extends Message<RuleResult> {
    */
   ttl: number;
 
+  /**
+   * The fingerprint calculated for this rule, which can be used to cache the
+   * result for the amount of time specified by `ttl`.
+   *
+   * @generated from field: string fingerprint = 6;
+   */
+  fingerprint: string;
+
   constructor(data?: PartialMessage<RuleResult>);
 
   static readonly runtime: typeof proto3;
