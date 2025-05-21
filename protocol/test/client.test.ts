@@ -1115,6 +1115,7 @@ describe("createClient", () => {
       results: [
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
           ttl: 0,
           state: "RUN",
           conclusion: "DENY",
@@ -1148,6 +1149,7 @@ describe("createClient", () => {
           ruleResults: [
             new RuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               state: RuleState.RUN,
               conclusion: Conclusion.DENY,
               reason: new Reason(),
@@ -1314,6 +1316,7 @@ describe("createClient", () => {
       results: [
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
           ttl: 0,
           state: "RUN",
           conclusion: "DENY",
@@ -1341,6 +1344,7 @@ describe("createClient", () => {
           ruleResults: [
             new RuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               state: RuleState.RUN,
               conclusion: Conclusion.DENY,
               reason: new Reason(),

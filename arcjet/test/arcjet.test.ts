@@ -2549,6 +2549,7 @@ describe("SDK", () => {
         async () =>
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
+            fingerprint: "test-fingerprint",
             ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
@@ -2568,6 +2569,7 @@ describe("SDK", () => {
         async () =>
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
+            fingerprint: "test-fingerprint",
             ttl: 5000,
             state: "RUN",
             conclusion: "DENY",
@@ -2636,6 +2638,7 @@ describe("SDK", () => {
       protect: mock.fn(async () => {
         return new ArcjetRuleResult({
           ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",

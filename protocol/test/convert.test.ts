@@ -484,6 +484,7 @@ describe("convert", () => {
       ArcjetRuleResultToProtocol(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
           ttl: 0,
           state: "RUN",
           conclusion: "ALLOW",
@@ -493,6 +494,7 @@ describe("convert", () => {
     ).toEqual(
       new RuleResult({
         ruleId: "test-rule-id",
+        fingerprint: "test-fingerprint",
         state: RuleState.RUN,
         conclusion: Conclusion.ALLOW,
         reason: new Reason(),
@@ -505,6 +507,7 @@ describe("convert", () => {
       ArcjetRuleResultFromProtocol(
         new RuleResult({
           ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
           state: RuleState.RUN,
           conclusion: Conclusion.ALLOW,
           reason: new Reason(),
@@ -513,6 +516,7 @@ describe("convert", () => {
     ).toEqual(
       new ArcjetRuleResult({
         ruleId: "test-rule-id",
+        fingerprint: "test-fingerprint",
         ttl: 0,
         state: "RUN",
         conclusion: "ALLOW",

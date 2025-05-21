@@ -375,6 +375,7 @@ export function ArcjetRuleResultToProtocol(
 ): RuleResult {
   return new RuleResult({
     ruleId: ruleResult.ruleId,
+    fingerprint: ruleResult.fingerprint,
     ttl: ruleResult.ttl,
     state: ArcjetRuleStateToProtocol(ruleResult.state),
     conclusion: ArcjetConclusionToProtocol(ruleResult.conclusion),
@@ -387,6 +388,7 @@ export function ArcjetRuleResultFromProtocol(
 ): ArcjetRuleResult {
   return new ArcjetRuleResult({
     ruleId: proto.ruleId,
+    fingerprint: proto.fingerprint,
     ttl: proto.ttl,
     state: ArcjetRuleStateFromProtocol(proto.state),
     conclusion: ArcjetConclusionFromProtocol(proto.conclusion),

@@ -35,6 +35,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -61,6 +62,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -92,6 +94,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -123,6 +126,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -152,6 +156,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -164,6 +169,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -195,6 +201,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -227,6 +234,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -259,6 +267,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -291,6 +300,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -440,6 +450,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -471,6 +482,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -483,6 +495,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -514,6 +527,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -526,6 +540,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -557,6 +572,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -569,6 +585,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -600,6 +617,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -612,6 +630,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -643,6 +662,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -655,6 +675,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -686,6 +707,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -698,6 +720,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -732,6 +755,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -767,6 +791,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -815,6 +840,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -837,6 +863,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -864,6 +891,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -892,6 +920,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -904,6 +933,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -935,6 +965,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -967,6 +998,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -999,6 +1031,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1031,6 +1064,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1180,6 +1214,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1211,6 +1246,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1223,6 +1259,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1256,6 +1293,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1268,6 +1306,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1301,6 +1340,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1313,6 +1353,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1346,6 +1387,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1358,6 +1400,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1391,6 +1434,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1403,6 +1447,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1436,6 +1481,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1448,6 +1494,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1484,6 +1531,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1519,6 +1567,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1567,6 +1616,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1600,6 +1650,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1633,6 +1684,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1666,6 +1718,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1701,6 +1754,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1729,6 +1783,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1741,6 +1796,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1772,6 +1828,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1804,6 +1861,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1836,6 +1894,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -1868,6 +1927,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2017,6 +2077,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2048,6 +2109,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2060,6 +2122,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2091,6 +2154,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2103,6 +2167,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2134,6 +2199,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2146,6 +2212,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2179,6 +2246,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2191,6 +2259,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2224,6 +2293,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2236,6 +2306,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2269,6 +2340,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2281,6 +2353,7 @@ describe("setRateLimitHeaders", () => {
             }),
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2317,6 +2390,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
@@ -2352,6 +2426,7 @@ describe("setRateLimitHeaders", () => {
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
+              fingerprint: "test-fingerprint",
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",

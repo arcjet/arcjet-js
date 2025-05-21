@@ -379,6 +379,11 @@ export class ArcjetRuleResult {
    */
   ruleId: string;
   /**
+   * The fingerprint calculated for this rule, which can be used to cache the
+   * result for the amount of time specified by `ttl`.
+   */
+  fingerprint: string;
+  /**
    * The duration in seconds this result should be considered valid, also known
    * as time-to-live.
    */
@@ -389,12 +394,14 @@ export class ArcjetRuleResult {
 
   constructor(init: {
     ruleId: string;
+    fingerprint: string;
     ttl: number;
     state: ArcjetRuleState;
     conclusion: ArcjetConclusion;
     reason: ArcjetReason;
   }) {
     this.ruleId = init.ruleId;
+    this.fingerprint = init.fingerprint;
     this.ttl = init.ttl;
     this.state = init.state;
     this.conclusion = init.conclusion;
