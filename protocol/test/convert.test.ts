@@ -1,4 +1,4 @@
-import { describe, test } from "node:test";
+import { describe, mock, test } from "node:test";
 import { expect } from "expect";
 import {
   ArcjetModeToProtocol,
@@ -599,6 +599,8 @@ describe("convert", () => {
       type: "UNKNOWN",
       mode: "DRY_RUN",
       priority: 1,
+      validate: mock.fn(),
+      protect: mock.fn(),
     };
     expect(ArcjetRuleToProtocol(unknownRule)).toEqual(new Rule({}));
 
@@ -611,6 +613,8 @@ describe("convert", () => {
       refillRate: 1,
       interval: 1,
       capacity: 1,
+      validate: mock.fn(),
+      protect: mock.fn(),
     };
     expect(ArcjetRuleToProtocol(tokenBucketRule)).toEqual(
       new Rule({
@@ -635,6 +639,8 @@ describe("convert", () => {
       algorithm: "FIXED_WINDOW",
       max: 1,
       window: 1,
+      validate: mock.fn(),
+      protect: mock.fn(),
     };
     expect(ArcjetRuleToProtocol(fixedWindowRule)).toEqual(
       new Rule({
@@ -658,6 +664,8 @@ describe("convert", () => {
       algorithm: "SLIDING_WINDOW",
       max: 1,
       interval: 1,
+      validate: mock.fn(),
+      protect: mock.fn(),
     };
     expect(ArcjetRuleToProtocol(slidingWindowRule)).toEqual(
       new Rule({
@@ -734,6 +742,8 @@ describe("convert", () => {
       type: "SHIELD",
       mode: "DRY_RUN",
       priority: 1,
+      validate: mock.fn(),
+      protect: mock.fn(),
     };
     expect(ArcjetRuleToProtocol(shieldRule)).toEqual(
       new Rule({

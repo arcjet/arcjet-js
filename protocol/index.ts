@@ -183,18 +183,6 @@ export const ArcjetSensitiveInfoType = Object.freeze({
   CREDIT_CARD_NUMBER: "CREDIT_CARD_NUMBER",
 });
 
-export type ArcjetRuleType = "LOCAL" | "REMOTE";
-export const ArcjetRuleType = Object.freeze({
-  /**
-   * @deprecated Use the string `"LOCAL"` instead.
-   **/
-  LOCAL: "LOCAL",
-  /**
-   * @deprecated Use the string `"REMOTE"` instead.
-   **/
-  REMOTE: "REMOTE",
-});
-
 export class ArcjetReason {
   type?:
     | "RATE_LIMIT"
@@ -818,13 +806,6 @@ export type ArcjetRule<Props extends {} = {}> = {
   mode: ArcjetMode;
   priority: number;
   version: number;
-};
-
-// An ArcjetLocalRule provides additional `validate` and `protect` functions
-// which are used to provide local protections before requesting protections
-// from the Arcjet service.
-export interface ArcjetLocalRule<Props extends { [key: string]: unknown } = {}>
-  extends ArcjetRule<Props> {
   validate(
     context: ArcjetContext,
     details: Partial<ArcjetRequestDetails & Props>,
@@ -833,7 +814,7 @@ export interface ArcjetLocalRule<Props extends { [key: string]: unknown } = {}>
     context: ArcjetContext,
     details: ArcjetRequestDetails & Props,
   ): Promise<ArcjetRuleResult>;
-}
+};
 
 export interface ArcjetRateLimitRule<Props extends {}>
   extends ArcjetRule<Props> {
@@ -868,7 +849,7 @@ export interface ArcjetSlidingWindowRateLimitRule<Props extends {}>
 }
 
 export interface ArcjetEmailRule<Props extends { email: string }>
-  extends ArcjetLocalRule<Props> {
+  extends ArcjetRule<Props> {
   type: "EMAIL";
 
   allow: ArcjetEmailType[];
@@ -878,15 +859,14 @@ export interface ArcjetEmailRule<Props extends { email: string }>
 }
 
 export interface ArcjetSensitiveInfoRule<Props extends {}>
-  extends ArcjetLocalRule<Props> {
+  extends ArcjetRule<Props> {
   type: "SENSITIVE_INFO";
 
   allow: string[];
   deny: string[];
 }
 
-export interface ArcjetBotRule<Props extends {}>
-  extends ArcjetLocalRule<Props> {
+export interface ArcjetBotRule<Props extends {}> extends ArcjetRule<Props> {
   type: "BOT";
 
   allow: Array<string>;

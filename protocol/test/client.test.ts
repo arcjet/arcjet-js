@@ -368,6 +368,8 @@ describe("createClient", () => {
       type: "TEST_RULE",
       mode: "DRY_RUN",
       priority: 1,
+      validate: mock.fn(),
+      protect: mock.fn(),
     };
     const _ = await client.decide(context, details, [rule]);
 
@@ -1128,6 +1130,8 @@ describe("createClient", () => {
       type: "TEST_RULE",
       mode: "LIVE",
       priority: 1,
+      validate: mock.fn(),
+      protect: mock.fn(),
     };
     client.report(context, details, decision, [rule]);
 
