@@ -528,48 +528,52 @@ export function ArcjetDecisionFromProtocol(
   }
 }
 
-export function isRateLimitRule<Props extends {}>(
-  rule: ArcjetRule<Props>,
+interface RuleWithType {
+  type: string;
+}
+
+function isRateLimitRule<Props extends {}>(
+  rule: RuleWithType,
 ): rule is ArcjetRateLimitRule<Props> {
   return rule.type === "RATE_LIMIT";
 }
 
 function isTokenBucketRule<Props extends {}>(
-  rule: ArcjetRule<Props>,
+  rule: RuleWithType,
 ): rule is ArcjetTokenBucketRateLimitRule<Props> {
   return isRateLimitRule(rule) && rule.algorithm === "TOKEN_BUCKET";
 }
 function isFixedWindowRule<Props extends {}>(
-  rule: ArcjetRule<Props>,
+  rule: RuleWithType,
 ): rule is ArcjetFixedWindowRateLimitRule<Props> {
   return isRateLimitRule(rule) && rule.algorithm === "FIXED_WINDOW";
 }
 function isSlidingWindowRule<Props extends {}>(
-  rule: ArcjetRule<Props>,
+  rule: RuleWithType,
 ): rule is ArcjetSlidingWindowRateLimitRule<Props> {
   return isRateLimitRule(rule) && rule.algorithm === "SLIDING_WINDOW";
 }
 
 function isBotRule<Props extends {}>(
-  rule: ArcjetRule<Props>,
+  rule: RuleWithType,
 ): rule is ArcjetBotRule<Props> {
   return rule.type === "BOT";
 }
 
 function isEmailRule<Props extends { email: string }>(
-  rule: ArcjetRule<Props>,
+  rule: RuleWithType,
 ): rule is ArcjetEmailRule<Props> {
   return rule.type === "EMAIL";
 }
 
-function isShieldRule<Props extends { email: string }>(
-  rule: ArcjetRule<Props>,
+function isShieldRule<Props extends {}>(
+  rule: RuleWithType,
 ): rule is ArcjetShieldRule<Props> {
   return rule.type === "SHIELD";
 }
 
 function isSensitiveInfoRule<Props extends {}>(
-  rule: ArcjetRule<Props>,
+  rule: RuleWithType,
 ): rule is ArcjetSensitiveInfoRule<Props> {
   return rule.type === "SENSITIVE_INFO";
 }

@@ -3,7 +3,6 @@ import type {
   ArcjetEmailRule,
   ArcjetBotRule,
   ArcjetRule,
-  ArcjetLocalRule,
   ArcjetMode,
   ArcjetRequestDetails,
   ArcjetTokenBucketRateLimitRule,
@@ -17,6 +16,7 @@ import type {
   ArcjetBotCategory,
   ArcjetEmailType,
   ArcjetSensitiveInfoType,
+  ArcjetRateLimitRule,
 } from "@arcjet/protocol";
 import {
   ArcjetBotReason,
@@ -28,8 +28,9 @@ import {
   ArcjetDecision,
   ArcjetDenyDecision,
   ArcjetErrorDecision,
+  ArcjetShieldReason,
+  ArcjetRateLimitReason,
 } from "@arcjet/protocol";
-import { isRateLimitRule } from "@arcjet/protocol/convert.js";
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import type {
@@ -690,15 +691,10 @@ export type ArcjetRequest<Props extends PlainObject> = Simplify<
   } & Props
 >;
 
-function isLocalRule<Props extends PlainObject>(
+function isRateLimitRule<Props extends PlainObject>(
   rule: ArcjetRule<Props>,
-): rule is ArcjetLocalRule<Props> {
-  return (
-    "validate" in rule &&
-    typeof rule.validate === "function" &&
-    "protect" in rule &&
-    typeof rule.protect === "function"
-  );
+): rule is ArcjetRateLimitRule<Props> {
+  return rule.type === "RATE_LIMIT";
 }
 
 /**
@@ -774,6 +770,8 @@ export function tokenBucket<
   const type = "RATE_LIMIT";
   const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  // TODO(#4203): Rules need to receive characteristics via options while
+  // falling back to characteristics defined on the client
   const characteristics = Array.isArray(options.characteristics)
     ? options.characteristics
     : undefined;
@@ -782,7 +780,24 @@ export function tokenBucket<
   const interval = duration.parse(options.interval);
   const capacity = options.capacity;
 
-  const rule: ArcjetTokenBucketRateLimitRule<{ requested: number }> = {
+  const id = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    hasher.string("algorithm", "TOKEN_BUCKET"),
+    hasher.stringSliceOrdered("characteristics", characteristics ?? []),
+    // Match is deprecated so it is always an empty string in the newest SDKs
+    hasher.string("match", ""),
+    hasher.uint32("refillRate", refillRate),
+    hasher.uint32("interval", interval),
+    hasher.uint32("capacity", capacity),
+  );
+
+  const rule: ArcjetTokenBucketRateLimitRule<
+    UnionToIntersection<
+      { requested: number } | CharacteristicProps<Characteristics>
+    >
+  > = {
     type,
     version,
     priority: Priority.RateLimit,
@@ -792,6 +807,26 @@ export function tokenBucket<
     refillRate,
     interval,
     capacity,
+    validate() {},
+    async protect(ctx: ArcjetContext) {
+      const ruleId = await id;
+
+      const { fingerprint } = ctx;
+
+      return new ArcjetRuleResult({
+        ruleId,
+        fingerprint,
+        ttl: 0,
+        state: "NOT_RUN",
+        conclusion: "ALLOW",
+        reason: new ArcjetRateLimitReason({
+          max: 0,
+          remaining: 0,
+          reset: 0,
+          window: 0,
+        }),
+      });
+    },
   };
 
   return [rule];
@@ -869,6 +904,20 @@ export function fixedWindow<
   const max = options.max;
   const window = duration.parse(options.window);
 
+  const id = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    hasher.string("algorithm", "FIXED_WINDOW"),
+    // TODO(#4203): Rules need to receive characteristics via options while
+    // falling back to characteristics defined on the client
+    hasher.stringSliceOrdered("characteristics", characteristics ?? []),
+    // Match is deprecated so it is always an empty string in the newest SDKs
+    hasher.string("match", ""),
+    hasher.uint32("max", max),
+    hasher.uint32("window", window),
+  );
+
   const rule: ArcjetFixedWindowRateLimitRule<{}> = {
     type,
     version,
@@ -878,6 +927,26 @@ export function fixedWindow<
     algorithm: "FIXED_WINDOW",
     max,
     window,
+    validate() {},
+    async protect(ctx: ArcjetContext) {
+      const ruleId = await id;
+
+      const { fingerprint } = ctx;
+
+      return new ArcjetRuleResult({
+        ruleId,
+        fingerprint,
+        ttl: 0,
+        state: "NOT_RUN",
+        conclusion: "ALLOW",
+        reason: new ArcjetRateLimitReason({
+          max: 0,
+          remaining: 0,
+          reset: 0,
+          window: 0,
+        }),
+      });
+    },
   };
 
   return [rule];
@@ -950,6 +1019,20 @@ export function slidingWindow<
   const max = options.max;
   const interval = duration.parse(options.interval);
 
+  const id = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    hasher.string("algorithm", "SLIDING_WINDOW"),
+    // TODO(#4203): Rules need to receive characteristics via options while
+    // falling back to characteristics defined on the client
+    hasher.stringSliceOrdered("characteristics", characteristics ?? []),
+    // Match is deprecated so it is always an empty string in the newest SDKs
+    hasher.string("match", ""),
+    hasher.uint32("max", max),
+    hasher.uint32("interval", interval),
+  );
+
   const rule: ArcjetSlidingWindowRateLimitRule<{}> = {
     type,
     version,
@@ -959,6 +1042,26 @@ export function slidingWindow<
     algorithm: "SLIDING_WINDOW",
     max,
     interval,
+    validate() {},
+    async protect(ctx: ArcjetContext) {
+      const ruleId = await id;
+
+      const { fingerprint } = ctx;
+
+      return new ArcjetRuleResult({
+        ruleId,
+        fingerprint,
+        ttl: 0,
+        state: "NOT_RUN",
+        conclusion: "ALLOW",
+        reason: new ArcjetRateLimitReason({
+          max: 0,
+          remaining: 0,
+          reset: 0,
+          window: 0,
+        }),
+      });
+    },
   };
 
   return [rule];
@@ -1726,11 +1829,37 @@ export function shield(options: ShieldOptions): Primitive<{}> {
   const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
 
+  const id = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    // TODO(#4203): Rules need to receive characteristics via options while
+    // falling back to characteristics defined on the client
+    hasher.stringSliceOrdered("characteristics", []),
+  );
+
   const rule: ArcjetShieldRule<{}> = {
     type,
     version,
     priority: Priority.Shield,
     mode,
+    validate() {},
+    async protect(ctx: ArcjetContext) {
+      const ruleId = await id;
+
+      const { fingerprint } = ctx;
+
+      return new ArcjetRuleResult({
+        ruleId,
+        fingerprint,
+        ttl: 0,
+        state: "NOT_RUN",
+        conclusion: "ALLOW",
+        reason: new ArcjetShieldReason({
+          shieldTriggered: false,
+        }),
+      });
+    },
   };
 
   return [rule];
@@ -2132,16 +2261,18 @@ export default function arcjet<
       for (const [idx, rule] of rules.entries()) {
         // This re-assignment is a workaround to a TypeScript error with
         // assertions where the name was introduced via a destructure
-        let localRule: ArcjetLocalRule;
-        if (isLocalRule(rule)) {
-          localRule = rule;
-        } else {
-          continue;
-        }
+        const localRule: ArcjetRule = rule;
 
         const logRulePerf = perf.measure(rule.type);
         try {
+          if (typeof localRule.validate !== "function") {
+            throw new Error("rule must have a `validate` function");
+          }
           localRule.validate(context, details);
+
+          if (typeof localRule.protect !== "function") {
+            throw new Error("rule must have a `protect` function");
+          }
           results[idx] = await localRule.protect(context, details);
 
           // If a rule didn't return a rule result, we need to stub it to avoid
