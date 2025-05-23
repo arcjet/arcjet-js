@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@arcjet/analyze": "1.0.0-beta.7",
+    "@arcjet/cache": "1.0.0-beta.7",
     "@arcjet/duration": "1.0.0-beta.7",
     "@arcjet/headers": "1.0.0-beta.7",
     "@arcjet/protocol": "1.0.0-beta.7",

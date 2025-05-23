@@ -1,13 +1,13 @@
 {
-  "name": "@arcjet/protocol",
+  "name": "@arcjet/cache",
   "version": "1.0.0-beta.7",
-  "description": "The TypeScript & JavaScript interface into the Arcjet protocol",
+  "description": "Arcjet cache interface and implementations",
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "protocol"
+    "directory": "cache"
   },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
@@ -27,7 +27,6 @@
   "files": [
     "LICENSE",
     "README.md",
-    "proto/",
     "*.js",
     "*.d.ts",
     "!*.config.js"
@@ -39,18 +38,12 @@
     "pretest": "npm run build",
     "test": "node --test --experimental-test-coverage"
   },
-  "dependencies": {
-    "@arcjet/cache": "1.0.0-beta.7",
-    "@bufbuild/protobuf": "1.10.1",
-    "@connectrpc/connect": "1.6.1",
-    "typeid-js": "1.2.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-beta.7",
     "@arcjet/rollup-config": "1.0.0-beta.7",
     "@arcjet/tsconfig": "1.0.0-beta.7",
     "@rollup/wasm-node": "4.40.1",
-    "@types/node": "18.18.0",
     "eslint": "9.26.0",
     "expect": "29.7.0",
     "typescript": "5.8.3"

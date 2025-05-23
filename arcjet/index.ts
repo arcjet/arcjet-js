@@ -30,6 +30,7 @@ import {
   ArcjetErrorDecision,
   ArcjetShieldReason,
   ArcjetRateLimitReason,
+  ArcjetConclusion,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
@@ -43,48 +44,13 @@ import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
+import { MemoryCache } from "@arcjet/cache";
 
 export * from "@arcjet/protocol";
 
 function assert(condition: boolean, msg: string) {
   if (!condition) {
     throw new Error(msg);
-  }
-}
-
-function nowInSeconds(): number {
-  return Math.floor(Date.now() / 1000);
-}
-
-class Cache<T> {
-  expires: Map<string, number>;
-  data: Map<string, T>;
-
-  constructor() {
-    this.expires = new Map();
-    this.data = new Map();
-  }
-
-  get(key: string) {
-    const ttl = this.ttl(key);
-    if (ttl > 0) {
-      return this.data.get(key);
-    } else {
-      // Cleanup if expired
-      this.expires.delete(key);
-      this.data.delete(key);
-    }
-  }
-
-  set(key: string, value: T, expiresAt: number) {
-    this.expires.set(key, expiresAt);
-    this.data.set(key, value);
-  }
-
-  ttl(key: string): number {
-    const now = nowInSeconds();
-    const expiresAt = this.expires.get(key) ?? now;
-    return expiresAt - now;
   }
 }
 
@@ -691,6 +657,11 @@ export type ArcjetRequest<Props extends PlainObject> = Simplify<
   } & Props
 >;
 
+type CachedResult = {
+  conclusion: ArcjetConclusion;
+  reason: ArcjetReason;
+};
+
 function isRateLimitRule<Props extends PlainObject>(
   rule: ArcjetRule<Props>,
 ): rule is ArcjetRateLimitRule<Props> {
@@ -793,7 +764,7 @@ export function tokenBucket<
     interval,
     capacity,
     validate() {},
-    async protect(context: ArcjetContext, details) {
+    async protect(context: ArcjetContext<CachedResult>, details) {
       const localCharacteristics = characteristics ?? context.characteristics;
 
       const ruleId = await hasher.hash(
@@ -819,6 +790,26 @@ export function tokenBucket<
         toAnalyzeRequest(details),
       );
 
+      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+      if (cached && cached.reason.isRateLimit()) {
+        return new ArcjetRuleResult({
+          ruleId,
+          fingerprint,
+          ttl,
+          state: "CACHED",
+          conclusion: cached.conclusion,
+          // We rebuild the `ArcjetRateLimitReason` because we need to adjust
+          // the `reset` based on the current time-to-live
+          reason: new ArcjetRateLimitReason({
+            max: cached.reason.max,
+            remaining: cached.reason.remaining,
+            reset: ttl,
+            window: cached.reason.window,
+            resetTime: cached.reason.resetTime,
+          }),
+        });
+      }
+
       return new ArcjetRuleResult({
         ruleId,
         fingerprint,
@@ -830,6 +821,7 @@ export function tokenBucket<
           remaining: 0,
           reset: 0,
           window: 0,
+          resetTime: new Date(),
         }),
       });
     },
@@ -920,7 +912,7 @@ export function fixedWindow<
     max,
     window,
     validate() {},
-    async protect(context: ArcjetContext, details) {
+    async protect(context: ArcjetContext<CachedResult>, details) {
       const localCharacteristics = characteristics ?? context.characteristics;
 
       const ruleId = await hasher.hash(
@@ -944,6 +936,26 @@ export function fixedWindow<
         analyzeContext,
         toAnalyzeRequest(details),
       );
+
+      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+      if (cached && cached.reason.isRateLimit()) {
+        return new ArcjetRuleResult({
+          ruleId,
+          fingerprint,
+          ttl,
+          state: "CACHED",
+          conclusion: cached.conclusion,
+          // We rebuild the `ArcjetRateLimitReason` because we need to adjust
+          // the `reset` based on the current time-to-live
+          reason: new ArcjetRateLimitReason({
+            max: cached.reason.max,
+            remaining: cached.reason.remaining,
+            reset: ttl,
+            window: cached.reason.window,
+            resetTime: cached.reason.resetTime,
+          }),
+        });
+      }
 
       return new ArcjetRuleResult({
         ruleId,
@@ -1041,7 +1053,7 @@ export function slidingWindow<
     max,
     interval,
     validate() {},
-    async protect(context: ArcjetContext, details) {
+    async protect(context: ArcjetContext<CachedResult>, details) {
       const localCharacteristics = characteristics ?? context.characteristics;
 
       const ruleId = await hasher.hash(
@@ -1065,6 +1077,26 @@ export function slidingWindow<
         analyzeContext,
         toAnalyzeRequest(details),
       );
+
+      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+      if (cached && cached.reason.isRateLimit()) {
+        return new ArcjetRuleResult({
+          ruleId,
+          fingerprint,
+          ttl,
+          state: "CACHED",
+          conclusion: cached.conclusion,
+          // We rebuild the `ArcjetRateLimitReason` because we need to adjust
+          // the `reset` based on the current time-to-live
+          reason: new ArcjetRateLimitReason({
+            max: cached.reason.max,
+            remaining: cached.reason.remaining,
+            reset: ttl,
+            window: cached.reason.window,
+            resetTime: cached.reason.resetTime,
+          }),
+        });
+      }
 
       return new ArcjetRuleResult({
         ruleId,
@@ -1276,7 +1308,7 @@ export function sensitiveInfo<
     ): asserts details is ArcjetRequestDetails {},
 
     async protect(
-      context: ArcjetContext,
+      context: ArcjetContext<CachedResult>,
       details: ArcjetRequestDetails,
     ): Promise<ArcjetRuleResult> {
       const ruleId = await hasher.hash(
@@ -1288,6 +1320,10 @@ export function sensitiveInfo<
       );
 
       const { fingerprint } = context;
+
+      // No cache is implemented here because the fingerprint can be the same
+      // while the request body changes. This is also why the `sensitiveInfo`
+      // rule results always have a `ttl` of 0.
 
       const body = await context.getBody();
       if (typeof body === "undefined") {
@@ -1555,6 +1591,10 @@ export function validateEmail(
 
       const { fingerprint } = context;
 
+      // No cache is implemented here because the fingerprint can be the same
+      // while the email changes. This is also why the `email` rule results
+      // always have a `ttl` of 0.
+
       const result = await analyze.isValidEmail(context, email, config);
       const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
       if (result.validity === "valid") {
@@ -1743,7 +1783,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
      * Attempts to call the bot detection on the headers.
      */
     async protect(
-      context: ArcjetContext,
+      context: ArcjetContext<CachedResult>,
       request: ArcjetRequestDetails,
     ): Promise<ArcjetRuleResult> {
       const ruleId = await hasher.hash(
@@ -1755,6 +1795,18 @@ export function detectBot(options: BotOptions): Primitive<{}> {
       );
 
       const { fingerprint } = context;
+
+      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+      if (cached) {
+        return new ArcjetRuleResult({
+          ruleId,
+          fingerprint,
+          ttl,
+          state: "CACHED",
+          conclusion: cached.conclusion,
+          reason: cached.reason,
+        });
+      }
 
       const result = await analyze.detectBot(
         context,
@@ -1847,7 +1899,7 @@ export function shield(options: ShieldOptions): Primitive<{}> {
     priority: Priority.Shield,
     mode,
     validate() {},
-    async protect(context: ArcjetContext, details) {
+    async protect(context: ArcjetContext<CachedResult>, details) {
       // TODO(#1989): Prefer characteristics defined on rule once available
       const localCharacteristics = context.characteristics;
 
@@ -1867,6 +1919,18 @@ export function shield(options: ShieldOptions): Primitive<{}> {
         analyzeContext,
         toAnalyzeRequest(details),
       );
+
+      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+      if (cached) {
+        return new ArcjetRuleResult({
+          ruleId,
+          fingerprint,
+          ttl,
+          state: "CACHED",
+          conclusion: cached.conclusion,
+          reason: cached.reason,
+        });
+      }
 
       return new ArcjetRuleResult({
         ruleId,
@@ -2105,7 +2169,7 @@ export default function arcjet<
   // A local cache of block decisions. Might be emphemeral per request,
   // depending on the way the runtime works, but it's worth a try.
   // TODO(#132): Support configurable caching
-  const blockCache = new Cache<ArcjetReason>();
+  const cache = new MemoryCache<CachedResult>();
 
   const rootRules: ArcjetRule[] = rules
     .flat(1)
@@ -2184,6 +2248,7 @@ export default function arcjet<
 
     const context: ArcjetContext = Object.freeze({
       ...baseContext,
+      cache,
       fingerprint,
       runtime: rt,
     });
@@ -2243,40 +2308,6 @@ export default function arcjet<
 
     const logLocalPerf = perf.measure("local");
     try {
-      // We have our own local cache which we check first. This doesn't work in
-      // serverless environments where every request is isolated, but there may be
-      // some instances where the instance is not recycled immediately. If so, we
-      // can take advantage of that.
-      const logCachePerf = perf.measure("cache");
-      const existingBlockReason = blockCache.get(fingerprint);
-      logCachePerf();
-
-      // If already blocked then we can async log to the API and return the
-      // decision immediately.
-      if (existingBlockReason) {
-        const decision = new ArcjetDenyDecision({
-          ttl: blockCache.ttl(fingerprint),
-          reason: existingBlockReason,
-          // All results will be NOT_RUN because we used a cached decision
-          results,
-        });
-
-        client.report(context, details, decision, rules);
-
-        log.debug(
-          {
-            id: decision.id,
-            conclusion: decision.conclusion,
-            fingerprint,
-            reason: existingBlockReason,
-            runtime: rt,
-          },
-          "decide: already blocked",
-        );
-
-        return decision;
-      }
-
       for (const [idx, rule] of rules.entries()) {
         // This re-assignment is a workaround to a TypeScript error with
         // assertions where the name was introduced via a destructure
@@ -2343,13 +2374,15 @@ export default function arcjet<
           logRulePerf();
         }
 
-        if (results[idx].isDenied()) {
+        const result = results[idx];
+
+        if (result.isDenied()) {
           // If the rule is not a DRY_RUN, we want to cache non-zero TTL results
           // and return a DENY decision.
-          if (results[idx].state !== "DRY_RUN") {
+          if (result.state !== "DRY_RUN") {
             const decision = new ArcjetDenyDecision({
-              ttl: results[idx].ttl,
-              reason: results[idx].reason,
+              ttl: result.ttl,
+              reason: result.reason,
               results,
             });
 
@@ -2358,21 +2391,25 @@ export default function arcjet<
             // the request.
             client.report(context, details, decision, rules);
 
-            if (results[idx].ttl > 0) {
+            if (result.ttl > 0) {
               log.debug(
                 {
-                  fingerprint,
-                  conclusion: decision.conclusion,
-                  reason: decision.reason,
+                  fingerprint: result.fingerprint,
+                  conclusion: result.conclusion,
+                  reason: result.reason,
                 },
                 "Caching decision for %d seconds",
                 decision.ttl,
               );
 
-              blockCache.set(
-                fingerprint,
-                decision.reason,
-                nowInSeconds() + decision.ttl,
+              cache.set(
+                result.ruleId,
+                result.fingerprint,
+                {
+                  conclusion: result.conclusion,
+                  reason: result.reason,
+                },
+                result.ttl,
               );
             }
 
@@ -2405,11 +2442,20 @@ export default function arcjet<
       if (decision.isDenied() && decision.ttl > 0) {
         log.debug("decide: Caching block locally for %d seconds", decision.ttl);
 
-        blockCache.set(
-          fingerprint,
-          decision.reason,
-          nowInSeconds() + decision.ttl,
-        );
+        for (const result of decision.results) {
+          // Cache all DENY results for local cache lookups
+          if (result.conclusion === "DENY") {
+            cache.set(
+              result.ruleId,
+              result.fingerprint,
+              {
+                conclusion: result.conclusion,
+                reason: result.reason,
+              },
+              result.ttl,
+            );
+          }
+        }
       }
 
       return decision;

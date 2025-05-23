@@ -1,5 +1,6 @@
 import { describe, mock, test } from "node:test";
 import { expect } from "expect";
+import type { Cache } from "@arcjet/cache";
 import { createClient } from "../client.js";
 import { createRouterTransport } from "@connectrpc/connect";
 import { DecideService } from "../proto/decide/v1alpha1/decide_connect.js";
@@ -53,6 +54,13 @@ class ArcjetInvalidDecision extends ArcjetDecision {
   }
 }
 
+class TestCache implements Cache {
+  async get(): Promise<[unknown, number]> {
+    return [undefined, 0];
+  }
+  set() {}
+}
+
 describe("createClient", () => {
   const log = {
     debug() {},
@@ -100,6 +108,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -158,6 +167,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -217,6 +227,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -274,6 +285,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -332,6 +344,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -398,6 +411,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -444,6 +458,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -489,6 +504,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -534,6 +550,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -582,6 +599,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -636,6 +654,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -684,6 +703,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
       waitUntil: mock.fn((promise: Promise<unknown>) => {
         promise.then(() => resolve());
@@ -736,6 +756,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -805,6 +826,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -873,6 +895,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -948,6 +971,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1016,6 +1040,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1080,6 +1105,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1176,6 +1202,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: [],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1224,6 +1251,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: ["src.ip"],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
@@ -1283,6 +1311,7 @@ describe("createClient", () => {
       runtime: "test",
       log,
       characteristics: ["ip.src"],
+      cache: new TestCache(),
       getBody: () => Promise.resolve(undefined),
     };
     const details = {
