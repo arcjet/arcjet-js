@@ -1,3 +1,4 @@
+import type { Cache } from "@arcjet/cache";
 import { typeid } from "typeid-js";
 import { Reason } from "./proto/decide/v1alpha1/decide_pb.js";
 
@@ -889,11 +890,6 @@ export interface ArcjetLogger {
   error(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
 }
 
-export interface ArcjetCache<T = unknown> {
-  get(namespace: string, key: string): Promise<[T | undefined, number]>;
-  set(namespace: string, key: string, value: T, expiresAt: number): void;
-}
-
 export type ArcjetContext<T = unknown> = {
   [key: string]: unknown;
   key: string;
@@ -901,7 +897,7 @@ export type ArcjetContext<T = unknown> = {
   runtime: string;
   log: ArcjetLogger;
   characteristics: string[];
-  cache: ArcjetCache<T>;
+  cache: Cache<T>;
   getBody: () => Promise<string | undefined>;
   waitUntil?: (promise: Promise<unknown>) => void;
 };

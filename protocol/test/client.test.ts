@@ -1,5 +1,6 @@
 import { describe, mock, test } from "node:test";
 import { expect } from "expect";
+import type { Cache } from "@arcjet/cache";
 import { createClient } from "../client.js";
 import { createRouterTransport } from "@connectrpc/connect";
 import { DecideService } from "../proto/decide/v1alpha1/decide_connect.js";
@@ -15,7 +16,7 @@ import {
   RuleState,
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
-import type { ArcjetCache, ArcjetConclusion, ArcjetRule } from "../index.js";
+import type { ArcjetConclusion, ArcjetRule } from "../index.js";
 import {
   ArcjetAllowDecision,
   ArcjetChallengeDecision,
@@ -53,7 +54,7 @@ class ArcjetInvalidDecision extends ArcjetDecision {
   }
 }
 
-class TestCache implements ArcjetCache {
+class TestCache implements Cache {
   async get(): Promise<[unknown, number]> {
     return [undefined, 0];
   }

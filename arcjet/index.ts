@@ -1,5 +1,4 @@
 import type {
-  ArcjetCache,
   ArcjetContext,
   ArcjetEmailRule,
   ArcjetBotRule,
@@ -45,93 +44,13 @@ import * as duration from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
+import { MemoryCache } from "@arcjet/cache";
 
 export * from "@arcjet/protocol";
 
 function assert(condition: boolean, msg: string) {
   if (!condition) {
     throw new Error(msg);
-  }
-}
-
-function nowInSeconds(): number {
-  return Math.floor(Date.now() / 1000);
-}
-
-class Cache<T> {
-  expires: Map<string, number>;
-  data: Map<string, T>;
-
-  constructor() {
-    this.expires = new Map();
-    this.data = new Map();
-  }
-
-  get(key: string) {
-    const ttl = this.ttl(key);
-    if (ttl > 0) {
-      return this.data.get(key);
-    } else {
-      // Cleanup if expired
-      this.expires.delete(key);
-      this.data.delete(key);
-    }
-  }
-
-  set(key: string, value: T, expiresAt: number) {
-    this.expires.set(key, expiresAt);
-    this.data.set(key, value);
-  }
-
-  ttl(key: string): number {
-    const now = nowInSeconds();
-    const expiresAt = this.expires.get(key) ?? now;
-    return expiresAt - now;
-  }
-}
-
-class MemoryCache<T> implements ArcjetCache {
-  namespaces: Map<string, Cache<T>>;
-
-  constructor() {
-    this.namespaces = new Map();
-  }
-
-  async get(namespace: string, key: string): Promise<[T | undefined, number]> {
-    // Empty namespaces are not supported
-    if (typeof namespace !== "string" || namespace === "") {
-      return [undefined, 0];
-    }
-
-    // Empty keys are not supported
-    if (typeof key !== "string" || key === "") {
-      return [undefined, 0];
-    }
-
-    const namespaceCache = this.namespaces.get(namespace);
-
-    if (typeof namespaceCache === "undefined") {
-      return [undefined, 0];
-    }
-
-    // TODO: probably avoid the double lookup
-    return [namespaceCache.get(key), namespaceCache.ttl(key)];
-  }
-
-  set(namespace: string, key: string, value: T, expiresAt: number) {
-    // Empty namespaces are not supported
-    if (typeof namespace !== "string" || namespace === "") {
-      return;
-    }
-
-    // Empty keys are not supported
-    if (typeof key !== "string" || key === "") {
-      return;
-    }
-
-    const namespaceCache = this.namespaces.get(namespace) ?? new Cache();
-    namespaceCache.set(key, value, expiresAt);
-    this.namespaces.set(namespace, namespaceCache);
   }
 }
 
@@ -2490,7 +2409,7 @@ export default function arcjet<
                   conclusion: result.conclusion,
                   reason: result.reason,
                 },
-                nowInSeconds() + result.ttl,
+                result.ttl,
               );
             }
 
@@ -2533,7 +2452,7 @@ export default function arcjet<
                 conclusion: result.conclusion,
                 reason: result.reason,
               },
-              nowInSeconds() + result.ttl,
+              result.ttl,
             );
           }
         }
