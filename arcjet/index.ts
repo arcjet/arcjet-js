@@ -1049,8 +1049,6 @@ export function slidingWindow<
         hasher.uint32("version", version),
         hasher.string("mode", mode),
         hasher.string("algorithm", "SLIDING_WINDOW"),
-        // TODO(#4203): Rules need to receive characteristics via options while
-        // falling back to characteristics defined on the client
         hasher.stringSliceOrdered("characteristics", localCharacteristics),
         // Match is deprecated so it is always an empty string in the newest SDKs
         hasher.string("match", ""),
