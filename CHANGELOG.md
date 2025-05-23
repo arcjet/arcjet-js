@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2025-05-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **arcjet:** Require every rule to have a validate & protect function ([#4204](https://github.com/arcjet/arcjet-js/issues/4204))
+
+### 🚀 New Features
+
+* **arcjet:** Require every rule to have a validate & protect function ([#4204](https://github.com/arcjet/arcjet-js/issues/4204)) ([c5ee233](https://github.com/arcjet/arcjet-js/commit/c5ee233c69e45866c52f1f7c9876ac5cb81ab246))
+* **protocol:** Add fingerprints to rule results ([#4190](https://github.com/arcjet/arcjet-js/issues/4190)) ([143bf2a](https://github.com/arcjet/arcjet-js/commit/143bf2a4575f47391d4fcb31e4d9d9da76cb5a2d))
+
+
+### 🧹 Miscellaneous Chores
+
+* Remove reviewers config ([#4103](https://github.com/arcjet/arcjet-js/issues/4103)) ([778afa9](https://github.com/arcjet/arcjet-js/commit/778afa91dc09a2ea03a202014cfe6d79bebab851))
+* **stable-hash:** Change describe usage to test usage ([#4066](https://github.com/arcjet/arcjet-js/issues/4066)) ([7335e8b](https://github.com/arcjet/arcjet-js/commit/7335e8bdfec9ea181ba1e943bb6c035e16df2538))
+
 ## [1.0.0-beta.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2025-05-06)
 
 
