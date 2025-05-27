@@ -67,11 +67,11 @@ export class MemoryCache<T> implements Cache<T> {
 
   async get(namespace: string, key: string): Promise<[T | undefined, number]> {
     if (typeof namespace !== "string") {
-      throw new Error("`namespace` must be a string")
+      throw new Error("`namespace` must be a string");
     }
 
     if (typeof key !== "string") {
-      throw new Error("`key` must be a string")
+      throw new Error("`key` must be a string");
     }
 
     const namespaceCache = this.namespaces.get(namespace);
@@ -85,11 +85,11 @@ export class MemoryCache<T> implements Cache<T> {
 
   set(namespace: string, key: string, value: T, ttl: number) {
     if (typeof namespace !== "string") {
-      throw new Error("`namespace` must be a string")
+      throw new Error("`namespace` must be a string");
     }
 
     if (typeof key !== "string") {
-      throw new Error("`key` must be a string")
+      throw new Error("`key` must be a string");
     }
 
     const namespaceCache = this.namespaces.get(namespace) ?? new Bucket();
