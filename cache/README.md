@@ -63,13 +63,16 @@ Instantiate the `MemoryCache` using `new MemoryCache()` without any arguments.
 ### `MemoryCache#get(namespace: string, key: string): Promise<[T | undefined, number]>`
 
 Attempts to retrieve a value from the cache. If a value exists, it will be
-returned with the remaining time-to-live (in seconds). Empty namespaces and keys
-are ignored and will always return an empty value and time-to-live.
+returned with the remaining time-to-live (in seconds).
+
+Non-string arguments will cause the returned promise to reject.
 
 ### `MemoryCache#set(namespace: string, key: string, value: T, ttl: number): void`
 
 Makes a best attempt at storing the value provided until the time-to-live
-specified. Empty namespaces and keys are ignored and will never set any values.
+specified.
+
+Non-string arguments will cause the function to throw.
 
 ## Example
 
