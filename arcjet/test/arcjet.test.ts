@@ -22,6 +22,7 @@ import arcjet, {
   shield,
   sensitiveInfo,
   ArcjetSensitiveInfoReason,
+  ArcjetShieldReason,
 } from "../index";
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -90,10 +91,8 @@ expect.addEqualityTesters([areHeadersEqual]);
 class ArcjetTestReason extends ArcjetReason {}
 
 class TestCache {
-  async get(): Promise<[unknown, number]> {
-    return [undefined, 0];
-  }
-  set() {}
+  get = mock.fn<() => Promise<[unknown, number]>>(async () => [undefined, 0]);
+  set = mock.fn();
 }
 
 function mockLogger() {
@@ -476,6 +475,67 @@ describe("Primitive > detectBot", () => {
     expect(() => {
       const _ = rule.validate(context, details);
     }).toThrow();
+  });
+
+  test("uses cache", async () => {
+    const cache = new TestCache();
+    mock.method(cache, "get", async () => [
+      {
+        conclusion: "DENY",
+        reason: new ArcjetBotReason({
+          allowed: [],
+          denied: ["CURL"],
+          verified: false,
+          spoofed: false,
+        }),
+      },
+      10,
+    ]);
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache,
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = detectBot({
+      mode: "LIVE",
+      allow: [],
+    });
+    expect(rule.type).toEqual("BOT");
+    const result = await rule.protect(context, details);
+    expect(cache.get.mock.callCount()).toEqual(1);
+    expect(cache.get.mock.calls[0].arguments).toEqual([
+      "84d7c3e132098fafcd8076e0d70154224336f5de91e23c1e538f203e5e46735f",
+      "test-fingerprint",
+    ]);
+    expect(result).toMatchObject({
+      ttl: 10,
+      state: "CACHED",
+      conclusion: "DENY",
+      reason: new ArcjetBotReason({
+        allowed: [],
+        denied: ["CURL"],
+        verified: false,
+        spoofed: false,
+      }),
+    });
   });
 
   test("denies curl", async () => {
@@ -894,6 +954,71 @@ describe("Primitive > tokenBucket", () => {
     expect(rule.type).toEqual("RATE_LIMIT");
     expect(rule).toHaveProperty("characteristics", undefined);
   });
+
+  test("uses cache", async () => {
+    const cache = new TestCache();
+    mock.method(cache, "get", async () => [
+      {
+        conclusion: "DENY",
+        reason: new ArcjetRateLimitReason({
+          max: 0,
+          remaining: 0,
+          // This will be updated by the rule based on TTL
+          reset: 100,
+          window: 1,
+        }),
+      },
+      10,
+    ]);
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache,
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      requested: 1,
+    };
+
+    const [rule] = tokenBucket({
+      refillRate: 1,
+      interval: 1,
+      capacity: 1,
+    });
+    expect(rule.type).toEqual("RATE_LIMIT");
+    const result = await rule.protect(context, details);
+    expect(cache.get.mock.callCount()).toEqual(1);
+    expect(cache.get.mock.calls[0].arguments).toEqual([
+      "da610f3767d3b939fe2769b489fba4a91da2ab7413184dbbbe6d12519abc1e7b",
+      "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+    ]);
+    expect(result).toMatchObject({
+      ttl: 10,
+      state: "CACHED",
+      conclusion: "DENY",
+      reason: new ArcjetRateLimitReason({
+        max: 0,
+        remaining: 0,
+        // Updated by the rule based on TTL
+        reset: 10,
+        window: 1,
+      }),
+    });
+  });
 });
 
 describe("Primitive > fixedWindow", () => {
@@ -1048,6 +1173,69 @@ describe("Primitive > fixedWindow", () => {
     expect(rule.type).toEqual("RATE_LIMIT");
     expect(rule).toHaveProperty("characteristics", undefined);
   });
+
+  test("uses cache", async () => {
+    const cache = new TestCache();
+    mock.method(cache, "get", async () => [
+      {
+        conclusion: "DENY",
+        reason: new ArcjetRateLimitReason({
+          max: 0,
+          remaining: 0,
+          // This will be updated by the rule based on TTL
+          reset: 100,
+          window: 1,
+        }),
+      },
+      10,
+    ]);
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache,
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = fixedWindow({
+      max: 1,
+      window: 1,
+    });
+    expect(rule.type).toEqual("RATE_LIMIT");
+    const result = await rule.protect(context, details);
+    expect(cache.get.mock.callCount()).toEqual(1);
+    expect(cache.get.mock.calls[0].arguments).toEqual([
+      "c60466a160b56b4cc129995377ef6fbbcacc67f90218920416ae8431a6fd499c",
+      "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+    ]);
+    expect(result).toMatchObject({
+      ttl: 10,
+      state: "CACHED",
+      conclusion: "DENY",
+      reason: new ArcjetRateLimitReason({
+        max: 0,
+        remaining: 0,
+        // Updated by the rule based on TTL
+        reset: 10,
+        window: 1,
+      }),
+    });
+  });
 });
 
 describe("Primitive > slidingWindow", () => {
@@ -1201,6 +1389,69 @@ describe("Primitive > slidingWindow", () => {
     const [rule] = slidingWindow(options);
     expect(rule.type).toEqual("RATE_LIMIT");
     expect(rule).toHaveProperty("characteristics", undefined);
+  });
+
+  test("uses cache", async () => {
+    const cache = new TestCache();
+    mock.method(cache, "get", async () => [
+      {
+        conclusion: "DENY",
+        reason: new ArcjetRateLimitReason({
+          max: 0,
+          remaining: 0,
+          // This will be updated by the rule based on TTL
+          reset: 100,
+          window: 1,
+        }),
+      },
+      10,
+    ]);
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache,
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = slidingWindow({
+      max: 1,
+      interval: 1,
+    });
+    expect(rule.type).toEqual("RATE_LIMIT");
+    const result = await rule.protect(context, details);
+    expect(cache.get.mock.callCount()).toEqual(1);
+    expect(cache.get.mock.calls[0].arguments).toEqual([
+      "64653030723222b3227a642239fbfae3bc53369d858b5ed1a31a2bb0438dacb1",
+      "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+    ]);
+    expect(result).toMatchObject({
+      ttl: 10,
+      state: "CACHED",
+      conclusion: "DENY",
+      reason: new ArcjetRateLimitReason({
+        max: 0,
+        remaining: 0,
+        // Updated by the rule based on TTL
+        reset: 10,
+        window: 1,
+      }),
+    });
   });
 });
 
@@ -1749,6 +2000,58 @@ describe("Primitive > validateEmail", () => {
       }),
     });
   });
+
+  // Email validation is dynamic so all TTL are zero
+  test("does not use cache", async () => {
+    const cache = new TestCache();
+    mock.method(cache, "get", async () => [
+      {
+        conclusion: "DENY",
+        reason: new ArcjetEmailReason({
+          emailTypes: ["INVALID"],
+        }),
+      },
+      10,
+    ]);
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache,
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      email: "test@example.com",
+    };
+
+    const [rule] = validateEmail({
+      mode: "LIVE",
+      allow: [],
+    });
+    expect(rule.type).toEqual("EMAIL");
+    const result = await rule.protect(context, details);
+    expect(cache.get.mock.callCount()).toEqual(0);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetEmailReason({
+        emailTypes: [],
+      }),
+    });
+  });
 });
 
 describe("Primitive > shield", () => {
@@ -1775,6 +2078,100 @@ describe("Primitive > shield", () => {
     const [rule] = shield({});
     expect(rule.type).toEqual("SHIELD");
     expect(rule).toHaveProperty("mode", "DRY_RUN");
+  });
+
+  test("uses cache", async () => {
+    const cache = new TestCache();
+    mock.method(cache, "get", async () => [
+      {
+        conclusion: "DENY",
+        reason: new ArcjetShieldReason({
+          shieldTriggered: true,
+        }),
+      },
+      10,
+    ]);
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache,
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = shield({
+      mode: "LIVE",
+    });
+    expect(rule.type).toEqual("SHIELD");
+    const result = await rule.protect(context, details);
+    expect(cache.get.mock.callCount()).toEqual(1);
+    expect(cache.get.mock.calls[0].arguments).toEqual([
+      "1a506ff95a8c2017894fcb6cc3be55053b144bd15666631945a5c453c477bd16",
+      "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
+    ]);
+    expect(result).toMatchObject({
+      ttl: 10,
+      state: "CACHED",
+      conclusion: "DENY",
+      reason: new ArcjetShieldReason({
+        shieldTriggered: true,
+      }),
+    });
+  });
+
+  test("does not run rule locally", async () => {
+    const cache = new TestCache();
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache,
+      getBody: () => Promise.resolve(undefined),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = shield({
+      mode: "LIVE",
+    });
+    expect(rule.type).toEqual("SHIELD");
+    const result = await rule.protect(context, details);
+    expect(result).toMatchObject({
+      ttl: 0,
+      state: "NOT_RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetShieldReason({
+        shieldTriggered: false,
+      }),
+    });
   });
 });
 
@@ -2512,6 +2909,59 @@ describe("Primitive > sensitiveInfo", () => {
     expect(decision.ttl).toEqual(0);
     expect(decision.state).toEqual("NOT_RUN");
     expect(decision.conclusion).toEqual("ERROR");
+  });
+
+  // Sensitive info detection is dynamic so all TTL are zero
+  test("does not use cache", async () => {
+    const cache = new TestCache();
+    mock.method(cache, "get", async () => [
+      {
+        conclusion: "DENY",
+        reason: new ArcjetSensitiveInfoReason({
+          allowed: [],
+          denied: [],
+        }),
+      },
+      10,
+    ]);
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache,
+      getBody: () => Promise.resolve("nothing to detect"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+      cookies: "",
+      query: "",
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: [],
+    });
+    expect(rule.type).toEqual("SENSITIVE_INFO");
+    const result = await rule.protect(context, details);
+    expect(cache.get.mock.callCount()).toEqual(0);
+    expect(result).toMatchObject({
+      state: "RUN",
+      conclusion: "ALLOW",
+      reason: new ArcjetSensitiveInfoReason({
+        allowed: [],
+        denied: [],
+      }),
+    });
   });
 });
 
