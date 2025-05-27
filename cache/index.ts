@@ -66,14 +66,12 @@ export class MemoryCache<T> implements Cache<T> {
   }
 
   async get(namespace: string, key: string): Promise<[T | undefined, number]> {
-    // Empty namespaces are not supported
-    if (typeof namespace !== "string" || namespace === "") {
-      return [undefined, 0];
+    if (typeof namespace !== "string") {
+      throw new Error("`namespace` must be a string")
     }
 
-    // Empty keys are not supported
-    if (typeof key !== "string" || key === "") {
-      return [undefined, 0];
+    if (typeof key !== "string") {
+      throw new Error("`key` must be a string")
     }
 
     const namespaceCache = this.namespaces.get(namespace);
@@ -86,14 +84,12 @@ export class MemoryCache<T> implements Cache<T> {
   }
 
   set(namespace: string, key: string, value: T, ttl: number) {
-    // Empty namespaces are not supported
-    if (typeof namespace !== "string" || namespace === "") {
-      return;
+    if (typeof namespace !== "string") {
+      throw new Error("`namespace` must be a string")
     }
 
-    // Empty keys are not supported
-    if (typeof key !== "string" || key === "") {
-      return;
+    if (typeof key !== "string") {
+      throw new Error("`key` must be a string")
     }
 
     const namespaceCache = this.namespaces.get(namespace) ?? new Bucket();
