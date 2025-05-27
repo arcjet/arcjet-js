@@ -27,7 +27,7 @@ npm install -S @arcjet/cache
 ## Example
 
 ```ts
-import { MemoryCache } from "@arcjet/cache/memory";
+import { MemoryCache } from "@arcjet/cache";
 
 const cache = new MemoryCache();
 
