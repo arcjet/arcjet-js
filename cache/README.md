@@ -24,6 +24,53 @@
 npm install -S @arcjet/cache
 ```
 
+## API
+
+Caches implement the `Cache` interface over a specific type:
+
+```ts
+interface Cache<T = unknown> {
+  /**
+   * Attempts to retrieve a value from the cache. If a value exists, it will be
+   * returned with the remaining time-to-live (in seconds).
+   *
+   * @param namespace A isolated segement of the cache where keys are tracked.
+   * @param key The identifier used to retrieve the value.
+   * @returns A promise for a 2-element tuple containing the value and TTL in
+   * seconds. If no value is retrieved, the value will be `undefined` and the
+   * TTL will be `0`.
+   */
+  get(namespace: string, key: string): Promise<[T | undefined, number]>;
+  /**
+   * If the cache implementation supports storing values, `set` makes a best
+   * attempt at storing the value provided until the time-to-live specified.
+   *
+   * @param namespace A isolated segement of the cache where keys are tracked.
+   * @param key The identifier used to store the value.
+   * @param value The value to be stored under the key.
+   * @param ttl The amount of seconds the value stays valid in the cache.
+   */
+  set(namespace: string, key: string, value: T, ttl: number): void;
+}
+```
+
+One such implementation is provided as `MemoryCache`:
+
+### `MemoryCache#constructor()`
+
+Instantiate the `MemoryCache` using `new MemoryCache()` without any arguments.
+
+### `MemoryCache#get(namespace: string, key: string): Promise<[T | undefined, number]>`
+
+Attempts to retrieve a value from the cache. If a value exists, it will be
+returned with the remaining time-to-live (in seconds). Empty namespaces and keys
+are ignored and will always return an empty value and time-to-live.
+
+### `MemoryCache#set(namespace: string, key: string, value: T, ttl: number): void`
+
+Makes a best attempt at storing the value provided until the time-to-live
+specified. Empty namespaces and keys are ignored and will never set any values.
+
 ## Example
 
 ```ts
