@@ -221,6 +221,8 @@ See [the docs][nosecone-docs] for details.
 - [`arcjet`](./arcjet/README.md): JS SDK core.
 - [`@arcjet/body`](./body/README.md): utilities for extracting the body from a
   Node.js IncomingMessage.
+- [`@arcjet/cache`](./cache/README.md): Interface and implementations for value
+  caches.
 - [`@arcjet/decorate`](./decorate/README.md): Utilities for decorating responses
   with information.
 - [`@arcjet/duration`](./duration/README.md): Utilities for parsing duration
