@@ -86,7 +86,7 @@ describe("MemoryCache", () => {
       "test-value",
       10,
     ]);
-    // Nothis if value is expired
+    // Nothing if value is expired
     expect(await cache.get("test-namespace-2", "test-key-2")).toEqual([
       undefined,
       0,
