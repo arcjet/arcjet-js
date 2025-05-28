@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...@arcjet/decorate-v1.0.0-beta.8) (2025-05-28)
+
+
+### 🚀 New Features
+
+* **protocol:** Add fingerprints to rule results ([#4190](https://github.com/arcjet/arcjet-js/issues/4190)) ([143bf2a](https://github.com/arcjet/arcjet-js/commit/143bf2a4575f47391d4fcb31e4d9d9da76cb5a2d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+    * @arcjet/sprintf bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+    * @arcjet/rollup-config bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+    * @arcjet/tsconfig bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+
 ## [1.0.0-beta.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.6...@arcjet/decorate-v1.0.0-beta.7) (2025-05-06)
 
 
