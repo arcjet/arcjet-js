@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...@arcjet/protocol-v1.0.0-beta.8) (2025-05-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **arcjet:** Require every rule to have a validate & protect function ([#4204](https://github.com/arcjet/arcjet-js/issues/4204))
+
+### 🚀 New Features
+
+* **arcjet:** Require every rule to have a validate & protect function ([#4204](https://github.com/arcjet/arcjet-js/issues/4204)) ([c5ee233](https://github.com/arcjet/arcjet-js/commit/c5ee233c69e45866c52f1f7c9876ac5cb81ab246))
+* **arcjet:** Segment cache entries by rule ([#4191](https://github.com/arcjet/arcjet-js/issues/4191)) ([2f3c8a8](https://github.com/arcjet/arcjet-js/commit/2f3c8a81bed27608638a8e4a0bfacf3e151b5e8c)), closes [#213](https://github.com/arcjet/arcjet-js/issues/213)
+* **protocol:** Add fingerprints to rule results ([#4190](https://github.com/arcjet/arcjet-js/issues/4190)) ([143bf2a](https://github.com/arcjet/arcjet-js/commit/143bf2a4575f47391d4fcb31e4d9d9da76cb5a2d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+    * @arcjet/rollup-config bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+    * @arcjet/tsconfig bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+
 ## [1.0.0-beta.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.6...@arcjet/protocol-v1.0.0-beta.7) (2025-05-06)
 
 

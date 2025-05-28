@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2025-05-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **arcjet:** Require every rule to have a validate & protect function ([#4204](https://github.com/arcjet/arcjet-js/issues/4204))
+
+### 🚀 New Features
+
+* **arcjet:** Require every rule to have a validate & protect function ([#4204](https://github.com/arcjet/arcjet-js/issues/4204)) ([c5ee233](https://github.com/arcjet/arcjet-js/commit/c5ee233c69e45866c52f1f7c9876ac5cb81ab246))
+* **arcjet:** Segment cache entries by rule ([#4191](https://github.com/arcjet/arcjet-js/issues/4191)) ([2f3c8a8](https://github.com/arcjet/arcjet-js/commit/2f3c8a81bed27608638a8e4a0bfacf3e151b5e8c)), closes [#213](https://github.com/arcjet/arcjet-js/issues/213)
+* **protocol:** Add fingerprints to rule results ([#4190](https://github.com/arcjet/arcjet-js/issues/4190)) ([143bf2a](https://github.com/arcjet/arcjet-js/commit/143bf2a4575f47391d4fcb31e4d9d9da76cb5a2d))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** Default to client characteristics if not specified on rule ([#4209](https://github.com/arcjet/arcjet-js/issues/4209)) ([e4794da](https://github.com/arcjet/arcjet-js/commit/e4794da626a9491dba9ee8beae9795ced6f6796b)), closes [#4203](https://github.com/arcjet/arcjet-js/issues/4203)
+
+
+### 🧹 Miscellaneous Chores
+
+* Output full logs when turbo runs ([#4226](https://github.com/arcjet/arcjet-js/issues/4226)) ([2ba76ec](https://github.com/arcjet/arcjet-js/commit/2ba76ec057ae3720ca5a32dd800bbc34f568da73))
+* Remove reviewers config ([#4103](https://github.com/arcjet/arcjet-js/issues/4103)) ([778afa9](https://github.com/arcjet/arcjet-js/commit/778afa91dc09a2ea03a202014cfe6d79bebab851))
+* **stable-hash:** Change describe usage to test usage ([#4066](https://github.com/arcjet/arcjet-js/issues/4066)) ([7335e8b](https://github.com/arcjet/arcjet-js/commit/7335e8bdfec9ea181ba1e943bb6c035e16df2538))
+
 ## [1.0.0-beta.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2025-05-06)
 
 

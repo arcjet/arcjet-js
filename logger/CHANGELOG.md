@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...@arcjet/logger-v1.0.0-beta.8) (2025-05-28)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/logger:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/sprintf bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+    * @arcjet/rollup-config bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+    * @arcjet/tsconfig bumped from 1.0.0-beta.7 to 1.0.0-beta.8
+
 ## [1.0.0-beta.7](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.6...@arcjet/logger-v1.0.0-beta.7) (2025-05-06)
 
 
