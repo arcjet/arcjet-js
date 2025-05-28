@@ -19,17 +19,17 @@
     "build": {
       "dependsOn": ["^build"],
       "cache": false,
-      "outputLogs": "none"
+      "outputLogs": "full"
     },
     "lint": {
       "dependsOn": ["^lint"],
       "cache": false,
-      "outputLogs": "none"
+      "outputLogs": "full"
     },
     "test": {
       "dependsOn": ["^test"],
       "cache": false,
-      "outputLogs": "none"
+      "outputLogs": "full"
     }
   }
 }

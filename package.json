@@ -10,9 +10,9 @@
     "*"
   ],
   "scripts": {
-    "prepare": "turbo run build --output-logs full",
-    "lint": "turbo run lint --output-logs full",
-    "test": "turbo test --output-logs full"
+    "prepare": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo test"
   },
   "devDependencies": {
     "turbo": "^2.5.3"
