@@ -452,7 +452,16 @@ export default function arcjet<Characteristics extends readonly string[]>(
           order: "pre",
         });
       },
-      "astro:config:done": async ({ injectTypes }) => {
+      "astro:config:done": async ({ buildOutput, injectTypes, logger }) => {
+        if (buildOutput === "static") {
+          logger.error(
+            "✦ Arcjet can only protect Dynamic routes.\n\n" +
+              "  Configure at least 1 Dynamic route to use the Arcjet integration, see Astro's\n" +
+              "  Dynamic routes documentation for configuration details:\n" +
+              "  https://docs.astro.build/en/guides/routing/#dynamic-routes\n",
+          );
+        }
+
         const implTypes = await fs.readFile(
           new URL("./internal.d.ts", import.meta.url),
           { encoding: "utf-8" },
