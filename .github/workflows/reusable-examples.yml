@@ -1079,4 +1079,5 @@ jobs:
         working-directory: examples/astro-integration
         run: npm run build
         env:
-          ARCJET_KEY: "ajkey_dummy"
+          ARCJET_KEY: ajkey_dummy
+          ASTRO_TELEMETRY_DISABLED: 1
