@@ -1038,3 +1038,45 @@ jobs:
       - name: Build
         working-directory: examples/sveltekit
         run: npm run build
+  astro:
+    name: Astro
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Environment security
+      - name: Harden Runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        with:
+          disable-sudo-and-containers: true
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            registry.npmjs.org:443
+            decide.arcjet.com:443
+
+      # Checkout
+      # Most toolchains require checkout first
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Language toolchains
+      - name: Install Node
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 20
+
+      # Workflow
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install example dependencies
+        working-directory: examples/astro-integration
+        run: npm ci
+
+      - name: Build
+        working-directory: examples/astro-integration
+        run: npm run build
+        env:
+          ARCJET_KEY: "ajkey_dummy"
