@@ -15,15 +15,15 @@
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "0.511.0",
+    "lucide-react": "0.512.0",
     "next": "^15",
     "next-themes": "^0.4.6",
     "react": "^19",
     "react-dom": "^19",
-    "react-hook-form": "^7.56.4",
+    "react-hook-form": "^7.57.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.6",
-    "zod": "^3.25.32"
+    "zod": "^3.25.50"
   },
   "devDependencies": {
     "@types/node": "^20",
