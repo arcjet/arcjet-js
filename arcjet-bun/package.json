@@ -51,7 +51,7 @@
     "@arcjet/tsconfig": "1.0.0-beta.8",
     "@types/node": "20.12.12",
     "@rollup/wasm-node": "4.41.1",
-    "bun-types": "1.2.14",
+    "bun-types": "1.2.15",
     "eslint": "9.27.0",
     "expect": "29.7.0",
     "typescript": "5.8.3"
