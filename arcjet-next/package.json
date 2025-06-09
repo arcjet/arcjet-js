@@ -56,7 +56,7 @@
     "@arcjet/tsconfig": "1.0.0-beta.8",
     "@types/node": "18.18.0",
     "@rollup/wasm-node": "4.42.0",
-    "eslint": "9.27.0",
+    "eslint": "9.28.0",
     "next": "15.3.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
