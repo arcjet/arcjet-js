@@ -22,7 +22,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/better-sqlite3": "^7",
     "@types/node": "^20",
-    "@types/react": "19.1.6",
+    "@types/react": "19.1.7",
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
     "eslint": "^9",
