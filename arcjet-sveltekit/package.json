@@ -2,6 +2,16 @@
   "name": "@arcjet/sveltekit",
   "version": "1.0.0-beta.8",
   "description": "Arcjet SDK for SvelteKit",
+  "keywords": [
+    "analyze",
+    "arcjet",
+    "attack",
+    "limit",
+    "protect",
+    "sveltekit",
+    "svelte",
+    "verify"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {

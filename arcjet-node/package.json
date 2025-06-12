@@ -2,6 +2,16 @@
   "name": "@arcjet/node",
   "version": "1.0.0-beta.8",
   "description": "Arcjet SDK for Node.js",
+  "keywords": [
+    "analyze",
+    "arcjet",
+    "attack",
+    "limit",
+    "nodejs",
+    "node",
+    "protect",
+    "verify"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {

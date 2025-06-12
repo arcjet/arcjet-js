@@ -2,6 +2,16 @@
   "name": "@arcjet/astro",
   "version": "1.0.0-beta.8",
   "description": "Arcjet SDK integration for Astro",
+  "keywords": [
+    "analyze",
+    "arcjet",
+    "astro-integration",
+    "astro",
+    "attack",
+    "limit",
+    "protect",
+    "verify"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
@@ -61,8 +71,5 @@
   "publishConfig": {
     "access": "public",
     "tag": "latest"
-  },
-  "keywords": [
-    "astro-integration"
-  ]
+  }
 }
