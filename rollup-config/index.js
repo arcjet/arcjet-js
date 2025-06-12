@@ -131,7 +131,7 @@ export function createConfig(root, { plugins = [] } = {}) {
     // Node lower than 18 used `path` which is now removed in favor of
     // `parentPath`.
     // See: <https://nodejs.org/api/deprecations.html#dep0178-direntpath>.
-    const parentPath = file.parentPath || file.path
+    const parentPath = file.parentPath || file.path;
     return [
       path.relative(rootDir, `${parentPath}${removeExtension(file.name)}`),
       path.relative(rootDir, `${parentPath}${file.name}`),
