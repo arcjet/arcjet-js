@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
-import * as env from "../index";
+import * as env from "../index.ts";
 
 describe("env", () => {
   test("platform", () => {
