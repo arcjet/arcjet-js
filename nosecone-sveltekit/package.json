@@ -4,6 +4,8 @@
   "description": "Protect your SvelteKit application with secure headers",
   "keywords": [
     "arcjet",
+    "coep",
+    "csp",
     "header",
     "http",
     "nosecone",

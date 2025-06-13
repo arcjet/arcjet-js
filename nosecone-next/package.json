@@ -4,6 +4,8 @@
   "description": "Protect your Next.js application with secure headers",
   "keywords": [
     "arcjet",
+    "coep",
+    "csp",
     "header",
     "http",
     "nextjs",
