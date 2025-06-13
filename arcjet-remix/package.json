@@ -9,6 +9,8 @@
     "limit",
     "protect",
     "remix",
+    "secure",
+    "security",
     "verify"
   ],
   "license": "Apache-2.0",
