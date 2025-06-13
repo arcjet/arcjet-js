@@ -2460,7 +2460,7 @@ export default function arcjet<
 
       return decision;
     } catch (err) {
-      log.error(
+      log.info(
         "Encountered problem getting remote decision: %s",
         errorMessage(err),
       );
