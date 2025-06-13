@@ -1,7 +1,8 @@
+import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
-import { expect } from "expect";
 
 import type { ArcjetRule, Primitive, Arcjet } from "../index";
+import ArcjetHeaders from "@arcjet/headers";
 import arcjet, {
   detectBot,
   validateEmail,
@@ -62,32 +63,6 @@ type Props<P extends Primitive> =
 type RuleProps<P extends Primitive, E> = IsEqual<Props<P>, E>;
 type SDKProps<SDK, E> = IsEqual<SDK extends Arcjet<infer P> ? P : never, E>;
 
-// Instances of Headers contain symbols that may be different depending
-// on if they have been iterated or not, so we need this equality tester
-// to only match the items inside the Headers instance.
-function areHeadersEqual(a: unknown, b: unknown): boolean | undefined {
-  const isAHeaders = a instanceof Headers;
-  const isBHeaders = b instanceof Headers;
-
-  if (isAHeaders && isBHeaders) {
-    const aKeys = Array.from(a.keys());
-    const bKeys = Array.from(b.keys());
-    return (
-      aKeys.every((key) => b.has(key)) &&
-      bKeys.every((key) => a.has(key)) &&
-      Array.from(a.entries()).every(([key, value]) => {
-        return b.get(key) === value;
-      })
-    );
-  } else if (isAHeaders === isBHeaders) {
-    return undefined;
-  } else {
-    return false;
-  }
-}
-
-expect.addEqualityTesters([areHeadersEqual]);
-
 class ArcjetTestReason extends ArcjetReason {}
 
 class TestCache {
@@ -113,7 +88,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetTestReason(),
       results: [],
     });
-    expect(decision.id).toMatch(/^lreq_/);
+    assert.match(decision.id, /^lreq_/);
   });
 
   test("the `id` property if to be specified to the constructor", () => {
@@ -123,7 +98,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetTestReason(),
       results: [],
     });
-    expect(decision.id).toEqual("abc_123");
+    assert.equal(decision.id, "abc_123");
   });
 
   // TODO: This test doesn't make sense anymore
@@ -133,10 +108,8 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetErrorReason(new Error("Foo bar baz")),
       results: [],
     });
-    expect(decision.reason).toBeInstanceOf(ArcjetErrorReason);
-    expect(decision.reason).toMatchObject({
-      message: "Foo bar baz",
-    });
+    assert.ok(decision.reason instanceof ArcjetErrorReason);
+    assert.equal(decision.reason.message, "Foo bar baz");
   });
 
   // TODO: This test doesn't make sense anymore
@@ -146,10 +119,8 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetErrorReason("Boom!"),
       results: [],
     });
-    expect(decision.reason).toBeInstanceOf(ArcjetErrorReason);
-    expect(decision.reason).toMatchObject({
-      message: "Boom!",
-    });
+    assert.ok(decision.reason instanceof ArcjetErrorReason);
+    assert.equal(decision.reason.message, "Boom!");
   });
 
   // TODO: This test doesn't make sense anymore
@@ -159,10 +130,8 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetErrorReason(["not", "valid", "error"]),
       results: [],
     });
-    expect(decision.reason).toBeInstanceOf(ArcjetErrorReason);
-    expect(decision.reason).toMatchObject({
-      message: "Unknown error occurred",
-    });
+    assert.ok(decision.reason instanceof ArcjetErrorReason);
+    assert.equal(decision.reason.message, "Unknown error occurred");
   });
 
   test("`isAllowed()` returns true when type is ALLOW", () => {
@@ -171,7 +140,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetTestReason(),
       results: [],
     });
-    expect(decision.isAllowed()).toEqual(true);
+    assert.equal(decision.isAllowed(), true);
   });
 
   test("`isAllowed()` returns true when type is ERROR (fail open)", () => {
@@ -180,7 +149,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetErrorReason("Something"),
       results: [],
     });
-    expect(decision.isAllowed()).toEqual(true);
+    assert.equal(decision.isAllowed(), true);
   });
 
   test("`isAllowed()` returns false when type is DENY", () => {
@@ -189,7 +158,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetTestReason(),
       results: [],
     });
-    expect(decision.isAllowed()).toEqual(false);
+    assert.equal(decision.isAllowed(), false);
   });
 
   test("`isDenied()` returns false when type is ALLOW", () => {
@@ -198,7 +167,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetTestReason(),
       results: [],
     });
-    expect(decision.isDenied()).toEqual(false);
+    assert.equal(decision.isDenied(), false);
   });
 
   test("`isDenied()` returns false when type is ERROR (fail open)", () => {
@@ -207,7 +176,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetErrorReason("Something"),
       results: [],
     });
-    expect(decision.isDenied()).toEqual(false);
+    assert.equal(decision.isDenied(), false);
   });
 
   test("`isDenied()` returns true when type is DENY", () => {
@@ -216,7 +185,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetTestReason(),
       results: [],
     });
-    expect(decision.isDenied()).toEqual(true);
+    assert.equal(decision.isDenied(), true);
   });
 
   test("`isChallenged()` returns true when type is CHALLENGE", () => {
@@ -225,7 +194,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetTestReason(),
       results: [],
     });
-    expect(decision.isChallenged()).toEqual(true);
+    assert.equal(decision.isChallenged(), true);
   });
 
   test("`isErrored()` returns false when type is ALLOW", () => {
@@ -234,7 +203,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetTestReason(),
       results: [],
     });
-    expect(decision.isErrored()).toEqual(false);
+    assert.equal(decision.isErrored(), false);
   });
 
   test("`isErrored()` returns false when type is ERROR", () => {
@@ -243,7 +212,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetErrorReason("Something"),
       results: [],
     });
-    expect(decision.isErrored()).toEqual(true);
+    assert.equal(decision.isErrored(), true);
   });
 
   test("`isErrored()` returns false when type is DENY", () => {
@@ -252,7 +221,7 @@ describe("ArcjetDecision", () => {
       reason: new ArcjetTestReason(),
       results: [],
     });
-    expect(decision.isErrored()).toEqual(false);
+    assert.equal(decision.isErrored(), false);
   });
 
   test("`isRateLimit()` returns true when reason is RATE_LIMIT", () => {
@@ -262,12 +231,12 @@ describe("ArcjetDecision", () => {
       reset: 100,
       window: 100,
     });
-    expect(reason.isRateLimit()).toEqual(true);
+    assert.equal(reason.isRateLimit(), true);
   });
 
   test("`isRateLimit()` returns true when reason is not RATE_LIMIT", () => {
     const reason = new ArcjetTestReason();
-    expect(reason.isRateLimit()).toEqual(false);
+    assert.equal(reason.isRateLimit(), false);
   });
 
   test("`isBot()` returns true when reason is BOT", () => {
@@ -277,7 +246,7 @@ describe("ArcjetDecision", () => {
       verified: false,
       spoofed: false,
     });
-    expect(reason.isBot()).toEqual(true);
+    assert.equal(reason.isBot(), true);
   });
 
   test("isVerified() returns the correct value", () => {
@@ -287,14 +256,14 @@ describe("ArcjetDecision", () => {
       verified: true,
       spoofed: false,
     });
-    expect(reasonTrue.isVerified()).toEqual(true);
+    assert.equal(reasonTrue.isVerified(), true);
     const reasonFalse = new ArcjetBotReason({
       allowed: [],
       denied: [],
       verified: false,
       spoofed: false,
     });
-    expect(reasonFalse.isVerified()).toEqual(false);
+    assert.equal(reasonFalse.isVerified(), false);
   });
 
   test("isSpoofed() returns the correct value", () => {
@@ -304,81 +273,71 @@ describe("ArcjetDecision", () => {
       verified: false,
       spoofed: true,
     });
-    expect(reasonTrue.isSpoofed()).toEqual(true);
+    assert.equal(reasonTrue.isSpoofed(), true);
     const reasonFalse = new ArcjetBotReason({
       allowed: [],
       denied: [],
       verified: false,
       spoofed: false,
     });
-    expect(reasonFalse.isSpoofed()).toEqual(false);
+    assert.equal(reasonFalse.isSpoofed(), false);
   });
 
   test("`isBot()` returns false when reason is not BOT", () => {
     const reason = new ArcjetTestReason();
-    expect(reason.isBot()).toEqual(false);
+    assert.equal(reason.isBot(), false);
   });
 });
 
 describe("Primitive > detectBot", () => {
   test("validates `mode` option if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       detectBot({
         // @ts-expect-error
         mode: "INVALID",
         allow: [],
       });
-    }).toThrow(
-      "`detectBot` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-    );
+    }, /`detectBot` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
   test("validates `allow` option is array if set", async () => {
-    expect(() => {
+    assert.throws(() => {
       const _ = detectBot({
         // @ts-expect-error
         allow: "abc",
       });
-    }).toThrow(
-      "detectBot` options error: invalid type for `allow` - expected an array",
-    );
+    }, /detectBot` options error: invalid type for `allow` - expected an array/);
   });
 
   test("validates `allow` option only contains strings", async () => {
-    expect(() => {
+    assert.throws(() => {
       const _ = detectBot({
         // @ts-expect-error
         allow: [/abc/],
       });
-    }).toThrow(
-      "detectBot` options error: invalid type for `allow[0]` - expected string",
-    );
+    }, /detectBot` options error: invalid type for `allow\[0]` - expected string/);
   });
 
   test("validates `deny` option is an array if set", async () => {
-    expect(() => {
+    assert.throws(() => {
       const _ = detectBot({
         // @ts-expect-error
         deny: "abc",
       });
-    }).toThrow(
-      "detectBot` options error: invalid type for `deny` - expected an array",
-    );
+    }, /detectBot` options error: invalid type for `deny` - expected an array/);
   });
 
   test("validates `deny` option only contains strings", async () => {
-    expect(() => {
+    assert.throws(() => {
       const _ = detectBot({
         // @ts-expect-error
         deny: [/abc/],
       });
-    }).toThrow(
-      "detectBot` options error: invalid type for `deny[0]` - expected string",
-    );
+    }, /detectBot` options error: invalid type for `deny\[0]` - expected string/);
   });
 
   test("validates `allow` and `deny` options are not specified together", async () => {
-    expect(() => {
+    assert.throws(() => {
       const _ = detectBot(
         // @ts-expect-error
         {
@@ -386,20 +345,16 @@ describe("Primitive > detectBot", () => {
           deny: ["GOOGLE_ADSBOT"],
         },
       );
-    }).toThrow(
-      "`detectBot` options error: `allow` and `deny` cannot be provided together",
-    );
+    }, /`detectBot` options error: `allow` and `deny` cannot be provided together/);
   });
 
   test("validates either `allow` or `deny` option is specified", async () => {
-    expect(() => {
+    assert.throws(() => {
       const _ = detectBot(
         // @ts-expect-error
         {},
       );
-    }).toThrow(
-      "`detectBot` options error: either `allow` or `deny` must be specified",
-    );
+    }, /`detectBot` options error: either `allow` or `deny` must be specified/);
   });
 
   test("throws via `validate()` if headers is undefined", () => {
@@ -417,10 +372,10 @@ describe("Primitive > detectBot", () => {
     };
 
     const [rule] = detectBot({ mode: "LIVE", allow: [] });
-    expect(rule.type).toEqual("BOT");
-    expect(() => {
+    assert.equal(rule.type, "BOT");
+    assert.throws(() => {
       const _ = rule.validate(context, details);
-    }).toThrow();
+    });
   });
 
   test("throws via `validate()` if headers does not extend Headers", () => {
@@ -438,14 +393,14 @@ describe("Primitive > detectBot", () => {
     };
 
     const [rule] = detectBot({ mode: "LIVE", allow: [] });
-    expect(rule.type).toEqual("BOT");
-    expect(() => {
+    assert.equal(rule.type, "BOT");
+    assert.throws(() => {
       const _ = rule.validate(
         context,
         //@ts-expect-error
         details,
       );
-    }).toThrow();
+    });
   });
 
   test("throws via `validate()` if user-agent header is missing", async () => {
@@ -471,10 +426,10 @@ describe("Primitive > detectBot", () => {
     };
 
     const [rule] = detectBot({ mode: "LIVE", allow: [] });
-    expect(rule.type).toEqual("BOT");
-    expect(() => {
+    assert.equal(rule.type, "BOT");
+    assert.throws(() => {
       const _ = rule.validate(context, details);
-    }).toThrow();
+    });
   });
 
   test("uses cache", async () => {
@@ -518,24 +473,21 @@ describe("Primitive > detectBot", () => {
       mode: "LIVE",
       allow: [],
     });
-    expect(rule.type).toEqual("BOT");
+    assert.equal(rule.type, "BOT");
     const result = await rule.protect(context, details);
-    expect(cache.get.mock.callCount()).toEqual(1);
-    expect(cache.get.mock.calls[0].arguments).toEqual([
+    assert.equal(cache.get.mock.callCount(), 1);
+    assert.deepEqual(cache.get.mock.calls[0].arguments, [
       "84d7c3e132098fafcd8076e0d70154224336f5de91e23c1e538f203e5e46735f",
       "test-fingerprint",
     ]);
-    expect(result).toMatchObject({
-      ttl: 10,
-      state: "CACHED",
-      conclusion: "DENY",
-      reason: new ArcjetBotReason({
-        allowed: [],
-        denied: ["CURL"],
-        verified: false,
-        spoofed: false,
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetBotReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, ["CURL"]);
+    assert.equal(result.reason.spoofed, false);
+    assert.equal(result.reason.verified, false);
+    assert.equal(result.state, "CACHED");
+    assert.equal(result.ttl, 10);
   });
 
   test("denies curl", async () => {
@@ -566,18 +518,15 @@ describe("Primitive > detectBot", () => {
       mode: "LIVE",
       allow: [],
     });
-    expect(rule.type).toEqual("BOT");
+    assert.equal(rule.type, "BOT");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetBotReason({
-        allowed: [],
-        denied: ["CURL"],
-        verified: false,
-        spoofed: false,
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetBotReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, ["CURL"]);
+    assert.equal(result.reason.spoofed, false);
+    assert.equal(result.reason.verified, false);
+    assert.equal(result.state, "RUN");
   });
 
   test("produces a dry run result in DRY_RUN mode", async () => {
@@ -608,18 +557,15 @@ describe("Primitive > detectBot", () => {
       mode: "DRY_RUN",
       allow: [],
     });
-    expect(rule.type).toEqual("BOT");
+    assert.equal(rule.type, "BOT");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "DRY_RUN",
-      conclusion: "DENY",
-      reason: new ArcjetBotReason({
-        allowed: [],
-        denied: ["CURL"],
-        verified: false,
-        spoofed: false,
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetBotReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, ["CURL"]);
+    assert.equal(result.reason.spoofed, false);
+    assert.equal(result.reason.verified, false);
+    assert.equal(result.state, "DRY_RUN");
   });
 
   test("only denies CURL if configured", async () => {
@@ -663,29 +609,23 @@ describe("Primitive > detectBot", () => {
       mode: "LIVE",
       deny: ["CURL"],
     });
-    expect(rule.type).toEqual("BOT");
+    assert.equal(rule.type, "BOT");
     const curlResult = await rule.protect(context, curlDetails);
-    expect(curlResult).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetBotReason({
-        allowed: [],
-        denied: ["CURL"],
-        verified: false,
-        spoofed: false,
-      }),
-    });
+    assert.equal(curlResult.conclusion, "DENY");
+    assert.ok(curlResult.reason instanceof ArcjetBotReason);
+    assert.deepEqual(curlResult.reason.allowed, []);
+    assert.deepEqual(curlResult.reason.denied, ["CURL"]);
+    assert.equal(curlResult.reason.spoofed, false);
+    assert.equal(curlResult.reason.verified, false);
+    assert.equal(curlResult.state, "RUN");
     const googlebotResults = await rule.protect(context, googlebotDetails);
-    expect(googlebotResults).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetBotReason({
-        allowed: ["GOOGLE_CRAWLER"],
-        denied: [],
-        verified: false,
-        spoofed: false,
-      }),
-    });
+    assert.equal(googlebotResults.conclusion, "ALLOW");
+    assert.ok(googlebotResults.reason instanceof ArcjetBotReason);
+    assert.deepEqual(googlebotResults.reason.allowed, ["GOOGLE_CRAWLER"]);
+    assert.deepEqual(googlebotResults.reason.denied, []);
+    assert.equal(googlebotResults.reason.spoofed, false);
+    assert.equal(googlebotResults.reason.verified, false);
+    assert.equal(googlebotResults.state, "RUN");
   });
 
   test("can be configured to allow curl", async () => {
@@ -716,24 +656,21 @@ describe("Primitive > detectBot", () => {
       mode: "LIVE",
       allow: ["CURL"],
     });
-    expect(rule.type).toEqual("BOT");
+    assert.equal(rule.type, "BOT");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetBotReason({
-        allowed: ["CURL"],
-        denied: [],
-        verified: false,
-        spoofed: false,
-      }),
-    });
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetBotReason);
+    assert.deepEqual(result.reason.allowed, ["CURL"]);
+    assert.deepEqual(result.reason.denied, []);
+    assert.equal(result.reason.spoofed, false);
+    assert.equal(result.reason.verified, false);
+    assert.equal(result.state, "RUN");
   });
 });
 
 describe("Primitive > tokenBucket", () => {
   test("validates `mode` option if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       tokenBucket({
         // @ts-expect-error
         mode: "INVALID",
@@ -741,13 +678,11 @@ describe("Primitive > tokenBucket", () => {
         interval: 1,
         capacity: 1,
       });
-    }).toThrow(
-      "`tokenBucket` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-    );
+    }, /`tokenBucket` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
   test("validates `characteristics` items are strings if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       tokenBucket({
         // @ts-expect-error
         characteristics: [/foobar/],
@@ -755,13 +690,11 @@ describe("Primitive > tokenBucket", () => {
         interval: 1,
         capacity: 1,
       });
-    }).toThrow(
-      "`tokenBucket` options error: invalid type for `characteristics[0]` - expected string",
-    );
+    }, /`tokenBucket` options error: invalid type for `characteristics\[0]` - expected string/);
   });
 
   test("validates `characteristics` option is an array if set", async () => {
-    expect(() => {
+    assert.throws(() => {
       tokenBucket({
         // @ts-expect-error
         characteristics: 12345,
@@ -769,13 +702,11 @@ describe("Primitive > tokenBucket", () => {
         interval: 1,
         capacity: 1,
       });
-    }).toThrow(
-      "`tokenBucket` options error: invalid type for `characteristics` - expected an array",
-    );
+    }, /`tokenBucket` options error: invalid type for `characteristics` - expected an array/);
   });
 
   test("validates `refillRate` option is required", async () => {
-    expect(() => {
+    assert.throws(() => {
       tokenBucket(
         // @ts-expect-error
         {
@@ -783,24 +714,22 @@ describe("Primitive > tokenBucket", () => {
           capacity: 1,
         },
       );
-    }).toThrow("`tokenBucket` options error: `refillRate` is required");
+    }, /`tokenBucket` options error: `refillRate` is required/);
   });
 
   test("validates `refillRate` option is a number", async () => {
-    expect(() => {
+    assert.throws(() => {
       tokenBucket({
         // @ts-expect-error
         refillRate: "abc",
         interval: 1,
         capacity: 1,
       });
-    }).toThrow(
-      "`tokenBucket` options error: invalid type for `refillRate` - expected number",
-    );
+    }, /`tokenBucket` options error: invalid type for `refillRate` - expected number/);
   });
 
   test("validates `interval` option is required", async () => {
-    expect(() => {
+    assert.throws(() => {
       tokenBucket(
         // @ts-expect-error
         {
@@ -808,24 +737,22 @@ describe("Primitive > tokenBucket", () => {
           capacity: 1,
         },
       );
-    }).toThrow("`tokenBucket` options error: `interval` is required");
+    }, /`tokenBucket` options error: `interval` is required/);
   });
 
   test("validates `interval` option is a number or string", async () => {
-    expect(() => {
+    assert.throws(() => {
       tokenBucket({
         refillRate: 1,
         // @ts-expect-error
         interval: /foobar/,
         capacity: 1,
       });
-    }).toThrow(
-      "`tokenBucket` options error: invalid type for `interval` - expected one of string, number",
-    );
+    }, /`tokenBucket` options error: invalid type for `interval` - expected one of string, number/);
   });
 
   test("validates `capacity` option is required", async () => {
-    expect(() => {
+    assert.throws(() => {
       tokenBucket(
         // @ts-expect-error
         {
@@ -833,20 +760,18 @@ describe("Primitive > tokenBucket", () => {
           interval: 1,
         },
       );
-    }).toThrow("`tokenBucket` options error: `capacity` is required");
+    }, /`tokenBucket` options error: `capacity` is required/);
   });
 
   test("validates `capacity` option is a number", async () => {
-    expect(() => {
+    assert.throws(() => {
       tokenBucket({
         refillRate: 1,
         interval: 1,
         // @ts-expect-error
         capacity: "abc",
       });
-    }).toThrow(
-      "`tokenBucket` options error: invalid type for `capacity` - expected number",
-    );
+    }, /`tokenBucket` options error: invalid type for `capacity` - expected number/);
   });
 
   test("sets mode as `LIVE` if specified", async () => {
@@ -857,8 +782,8 @@ describe("Primitive > tokenBucket", () => {
       interval: 1,
       capacity: 1,
     });
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("mode", "LIVE");
+    assert.equal(rule.type, "RATE_LIMIT");
+    assert.equal(rule.mode, "LIVE");
   });
 
   test("can specify interval as a string duration", async () => {
@@ -869,11 +794,15 @@ describe("Primitive > tokenBucket", () => {
     };
 
     const rules = tokenBucket(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("refillRate", 60);
-    expect(rules[0]).toHaveProperty("interval", 60);
-    expect(rules[0]).toHaveProperty("capacity", 120);
+    assert.equal(rules.length, 1);
+    const rule = rules[0];
+    assert.equal(rule.type, "RATE_LIMIT");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rule.refillRate, 60);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rule.interval, 60);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rule.capacity, 120);
   });
 
   test("can specify interval as an integer duration", async () => {
@@ -884,11 +813,14 @@ describe("Primitive > tokenBucket", () => {
     };
 
     const rules = tokenBucket(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("refillRate", 60);
-    expect(rules[0]).toHaveProperty("interval", 60);
-    expect(rules[0]).toHaveProperty("capacity", 120);
+    assert.equal(rules.length, 1);
+    assert.equal(rules[0].type, "RATE_LIMIT");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].refillRate, 60);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].interval, 60);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].capacity, 120);
   });
 
   test("can specify user-defined characteristics which are reflected in required props", async () => {
@@ -933,14 +865,19 @@ describe("Primitive > tokenBucket", () => {
     };
 
     const rules = tokenBucket(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("mode", "DRY_RUN");
-    expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
-    expect(rules[0]).toHaveProperty("algorithm", "TOKEN_BUCKET");
-    expect(rules[0]).toHaveProperty("refillRate", 1);
-    expect(rules[0]).toHaveProperty("interval", 1);
-    expect(rules[0]).toHaveProperty("capacity", 1);
+    assert.equal(rules.length, 1);
+    assert.equal(rules[0].type, "RATE_LIMIT");
+    assert.equal(rules[0].mode, "DRY_RUN");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.deepEqual(rules[0].characteristics, ["ip.src"]);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].algorithm, "TOKEN_BUCKET");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].refillRate, 1);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].interval, 1);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].capacity, 1);
   });
 
   test("does not default `characteristics` if not specified", async () => {
@@ -951,8 +888,9 @@ describe("Primitive > tokenBucket", () => {
     };
 
     const [rule] = tokenBucket(options);
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("characteristics", undefined);
+    assert.equal(rule.type, "RATE_LIMIT");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rule.characteristics, undefined);
   });
 
   test("uses cache", async () => {
@@ -999,86 +937,77 @@ describe("Primitive > tokenBucket", () => {
       interval: 1,
       capacity: 1,
     });
-    expect(rule.type).toEqual("RATE_LIMIT");
+    assert.equal(rule.type, "RATE_LIMIT");
     const result = await rule.protect(context, details);
-    expect(cache.get.mock.callCount()).toEqual(1);
-    expect(cache.get.mock.calls[0].arguments).toEqual([
+    assert.equal(cache.get.mock.callCount(), 1);
+    assert.deepEqual(cache.get.mock.calls[0].arguments, [
       "da610f3767d3b939fe2769b489fba4a91da2ab7413184dbbbe6d12519abc1e7b",
       "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     ]);
-    expect(result).toMatchObject({
-      ttl: 10,
-      state: "CACHED",
-      conclusion: "DENY",
-      reason: new ArcjetRateLimitReason({
-        max: 0,
-        remaining: 0,
-        // Updated by the rule based on TTL
-        reset: 10,
-        window: 1,
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetRateLimitReason);
+    assert.equal(result.reason.max, 0);
+    assert.equal(result.reason.remaining, 0);
+    // Updated by the rule based on TTL.
+    assert.equal(result.reason.reset, 10);
+    assert.equal(result.reason.window, 1);
+    assert.equal(result.state, "CACHED");
+    assert.equal(result.ttl, 10);
   });
 });
 
 describe("Primitive > fixedWindow", () => {
   test("validates `mode` option if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       fixedWindow({
         // @ts-expect-error
         mode: "INVALID",
         window: "1h",
         max: 1,
       });
-    }).toThrow(
-      "`fixedWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-    );
+    }, /`fixedWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
   test("validates `window` option is required", async () => {
-    expect(() => {
+    assert.throws(() => {
       fixedWindow(
         // @ts-expect-error
         {
           max: 1,
         },
       );
-    }).toThrow("`fixedWindow` options error: `window` is required");
+    }, /`fixedWindow` options error: `window` is required/);
   });
 
   test("validates `window` option is string or number", async () => {
-    expect(() => {
+    assert.throws(() => {
       fixedWindow({
         // @ts-expect-error
         window: /foobar/,
         max: 1,
       });
-    }).toThrow(
-      "`fixedWindow` options error: invalid type for `window` - expected one of string, number",
-    );
+    }, /`fixedWindow` options error: invalid type for `window` - expected one of string, number/);
   });
 
   test("validates `max` option is required", async () => {
-    expect(() => {
+    assert.throws(() => {
       fixedWindow(
         // @ts-expect-error
         {
           window: 1,
         },
       );
-    }).toThrow("`fixedWindow` options error: `max` is required");
+    }, /`fixedWindow` options error: `max` is required/);
   });
 
   test("validates `max` option is number", async () => {
-    expect(() => {
+    assert.throws(() => {
       fixedWindow({
         window: 1,
         // @ts-expect-error
         max: "abc",
       });
-    }).toThrow(
-      "`fixedWindow` options error: invalid type for `max` - expected number",
-    );
+    }, /`fixedWindow` options error: invalid type for `max` - expected number/);
   });
 
   test("sets mode as `LIVE` if specified", async () => {
@@ -1088,8 +1017,8 @@ describe("Primitive > fixedWindow", () => {
       window: "1h",
       max: 1,
     });
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("mode", "LIVE");
+    assert.equal(rule.type, "RATE_LIMIT");
+    assert.equal(rule.mode, "LIVE");
   });
 
   test("can specify window as a string duration", async () => {
@@ -1099,10 +1028,12 @@ describe("Primitive > fixedWindow", () => {
     };
 
     const rules = fixedWindow(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("window", 60);
-    expect(rules[0]).toHaveProperty("max", 1);
+    assert.equal(rules.length, 1);
+    assert.equal(rules[0].type, "RATE_LIMIT");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].window, 60);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].max, 1);
   });
 
   test("can specify window as an integer duration", async () => {
@@ -1112,10 +1043,12 @@ describe("Primitive > fixedWindow", () => {
     };
 
     const rules = fixedWindow(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("window", 60);
-    expect(rules[0]).toHaveProperty("max", 1);
+    assert.equal(rules.length, 1);
+    assert.equal(rules[0].type, "RATE_LIMIT");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].window, 60);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].max, 1);
   });
 
   test("can specify user-defined characteristics which are reflected in required props", async () => {
@@ -1154,13 +1087,17 @@ describe("Primitive > fixedWindow", () => {
     };
 
     const rules = fixedWindow(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("mode", "DRY_RUN");
-    expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
-    expect(rules[0]).toHaveProperty("algorithm", "FIXED_WINDOW");
-    expect(rules[0]).toHaveProperty("window", 3600);
-    expect(rules[0]).toHaveProperty("max", 1);
+    assert.equal(rules.length, 1);
+    assert.equal(rules[0].type, "RATE_LIMIT");
+    assert.equal(rules[0].mode, "DRY_RUN");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.deepEqual(rules[0].characteristics, ["ip.src"]);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].algorithm, "FIXED_WINDOW");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].window, 3600);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].max, 1);
   });
 
   test("does not default `characteristics` if not specified", async () => {
@@ -1170,8 +1107,9 @@ describe("Primitive > fixedWindow", () => {
     };
 
     const [rule] = fixedWindow(options);
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("characteristics", undefined);
+    assert.equal(rule.type, "RATE_LIMIT");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rule.characteristics, undefined);
   });
 
   test("uses cache", async () => {
@@ -1216,86 +1154,77 @@ describe("Primitive > fixedWindow", () => {
       max: 1,
       window: 1,
     });
-    expect(rule.type).toEqual("RATE_LIMIT");
+    assert.equal(rule.type, "RATE_LIMIT");
     const result = await rule.protect(context, details);
-    expect(cache.get.mock.callCount()).toEqual(1);
-    expect(cache.get.mock.calls[0].arguments).toEqual([
+    assert.equal(cache.get.mock.callCount(), 1);
+    assert.deepEqual(cache.get.mock.calls[0].arguments, [
       "c60466a160b56b4cc129995377ef6fbbcacc67f90218920416ae8431a6fd499c",
       "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     ]);
-    expect(result).toMatchObject({
-      ttl: 10,
-      state: "CACHED",
-      conclusion: "DENY",
-      reason: new ArcjetRateLimitReason({
-        max: 0,
-        remaining: 0,
-        // Updated by the rule based on TTL
-        reset: 10,
-        window: 1,
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetRateLimitReason);
+    assert.equal(result.reason.max, 0);
+    assert.equal(result.reason.remaining, 0);
+    // Updated by the rule based on TTL
+    assert.equal(result.reason.reset, 10);
+    assert.equal(result.reason.window, 1);
+    assert.equal(result.state, "CACHED");
+    assert.equal(result.ttl, 10);
   });
 });
 
 describe("Primitive > slidingWindow", () => {
   test("validates `mode` option if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       slidingWindow({
         // @ts-expect-error
         mode: "INVALID",
         interval: 3600,
         max: 1,
       });
-    }).toThrow(
-      "`slidingWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-    );
+    }, /`slidingWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
   test("validates `interval` option is required", async () => {
-    expect(() => {
+    assert.throws(() => {
       slidingWindow(
         // @ts-expect-error
         {
           max: 1,
         },
       );
-    }).toThrow("`slidingWindow` options error: `interval` is required");
+    }, /`slidingWindow` options error: `interval` is required/);
   });
 
   test("validates `interval` option is string or number", async () => {
-    expect(() => {
+    assert.throws(() => {
       slidingWindow({
         // @ts-expect-error
         interval: /foobar/,
         max: 1,
       });
-    }).toThrow(
-      "`slidingWindow` options error: invalid type for `interval` - expected one of string, number",
-    );
+    }, /`slidingWindow` options error: invalid type for `interval` - expected one of string, number/);
   });
 
   test("validates `max` option is required", async () => {
-    expect(() => {
+    assert.throws(() => {
       slidingWindow(
         // @ts-expect-error
         {
           interval: 1,
         },
       );
-    }).toThrow("`slidingWindow` options error: `max` is required");
+    }, /`slidingWindow` options error: `max` is required/);
   });
 
   test("validates `max` option is number", async () => {
-    expect(() => {
+    assert.throws(() => {
       slidingWindow({
         interval: 1,
         // @ts-expect-error
         max: "abc",
       });
-    }).toThrow(
-      "`slidingWindow` options error: invalid type for `max` - expected number",
-    );
+    }, /`slidingWindow` options error: invalid type for `max` - expected number/);
   });
 
   test("sets mode as `LIVE` if specified", async () => {
@@ -1305,8 +1234,8 @@ describe("Primitive > slidingWindow", () => {
       interval: 3600,
       max: 1,
     });
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("mode", "LIVE");
+    assert.equal(rule.type, "RATE_LIMIT");
+    assert.equal(rule.mode, "LIVE");
   });
 
   test("can specify interval as a string duration", async () => {
@@ -1316,10 +1245,12 @@ describe("Primitive > slidingWindow", () => {
     };
 
     const rules = slidingWindow(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("interval", 60);
-    expect(rules[0]).toHaveProperty("max", 1);
+    assert.equal(rules.length, 1);
+    assert.equal(rules[0].type, "RATE_LIMIT");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].interval, 60);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].max, 1);
   });
 
   test("can specify interval as an integer duration", async () => {
@@ -1329,10 +1260,12 @@ describe("Primitive > slidingWindow", () => {
     };
 
     const rules = slidingWindow(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("interval", 60);
-    expect(rules[0]).toHaveProperty("max", 1);
+    assert.equal(rules.length, 1);
+    assert.equal(rules[0].type, "RATE_LIMIT");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].interval, 60);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].max, 1);
   });
 
   test("can specify user-defined characteristics which are reflected in required props", async () => {
@@ -1371,13 +1304,17 @@ describe("Primitive > slidingWindow", () => {
     };
 
     const rules = slidingWindow(options);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].type).toEqual("RATE_LIMIT");
-    expect(rules[0]).toHaveProperty("mode", "DRY_RUN");
-    expect(rules[0]).toHaveProperty("characteristics", ["ip.src"]);
-    expect(rules[0]).toHaveProperty("algorithm", "SLIDING_WINDOW");
-    expect(rules[0]).toHaveProperty("interval", 3600);
-    expect(rules[0]).toHaveProperty("max", 1);
+    assert.equal(rules.length, 1);
+    assert.equal(rules[0].type, "RATE_LIMIT");
+    assert.equal(rules[0].mode, "DRY_RUN");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.deepEqual(rules[0].characteristics, ["ip.src"]);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].algorithm, "SLIDING_WINDOW");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].interval, 3600);
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rules[0].max, 1);
   });
 
   test("does not default `characteristics` if not specified", async () => {
@@ -1387,8 +1324,9 @@ describe("Primitive > slidingWindow", () => {
     };
 
     const [rule] = slidingWindow(options);
-    expect(rule.type).toEqual("RATE_LIMIT");
-    expect(rule).toHaveProperty("characteristics", undefined);
+    assert.equal(rule.type, "RATE_LIMIT");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.equal(rule.characteristics, undefined);
   });
 
   test("uses cache", async () => {
@@ -1433,170 +1371,144 @@ describe("Primitive > slidingWindow", () => {
       max: 1,
       interval: 1,
     });
-    expect(rule.type).toEqual("RATE_LIMIT");
+    assert.equal(rule.type, "RATE_LIMIT");
     const result = await rule.protect(context, details);
-    expect(cache.get.mock.callCount()).toEqual(1);
-    expect(cache.get.mock.calls[0].arguments).toEqual([
+    assert.equal(cache.get.mock.callCount(), 1);
+    assert.deepEqual(cache.get.mock.calls[0].arguments, [
       "64653030723222b3227a642239fbfae3bc53369d858b5ed1a31a2bb0438dacb1",
       "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     ]);
-    expect(result).toMatchObject({
-      ttl: 10,
-      state: "CACHED",
-      conclusion: "DENY",
-      reason: new ArcjetRateLimitReason({
-        max: 0,
-        remaining: 0,
-        // Updated by the rule based on TTL
-        reset: 10,
-        window: 1,
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetRateLimitReason);
+    assert.equal(result.reason.max, 0);
+    assert.equal(result.reason.remaining, 0);
+    // Updated by the rule based on TTL
+    assert.equal(result.reason.reset, 10);
+    assert.equal(result.reason.window, 1);
+    assert.equal(result.state, "CACHED");
+    assert.equal(result.ttl, 10);
   });
 });
 
 describe("Primitive > validateEmail", () => {
   test("validates `mode` option if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       validateEmail({
         // @ts-expect-error
         mode: "INVALID",
       });
-    }).toThrow(
-      "`validateEmail` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-    );
+    }, /`validateEmail` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
   test("validates `block` option is array if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       validateEmail({
         // @ts-expect-error
         block: 1234,
       });
-    }).toThrow(
-      "`validateEmail` options error: invalid type for `block` - expected an array",
-    );
+    }, /`validateEmail` options error: invalid type for `block` - expected an array/);
   });
 
   test("validates `deny` option is array if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       validateEmail({
         // @ts-expect-error
         deny: 1234,
       });
-    }).toThrow(
-      "`validateEmail` options error: invalid type for `deny` - expected an array",
-    );
+    }, /`validateEmail` options error: invalid type for `deny` - expected an array/);
   });
 
   test("validates `allow` option is array if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       validateEmail({
         // @ts-expect-error
         allow: 1234,
       });
-    }).toThrow(
-      "`validateEmail` options error: invalid type for `allow` - expected an array",
-    );
+    }, /`validateEmail` options error: invalid type for `allow` - expected an array/);
   });
 
   test("validates `block` option only contains specific values", async () => {
-    expect(() => {
+    assert.throws(() => {
       validateEmail({
         // @ts-expect-error
         block: ["FOOBAR"],
       });
-    }).toThrow(
-      "`validateEmail` options error: invalid value for `block[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
-    );
+    }, /`validateEmail` options error: invalid value for `block\[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'/);
   });
 
   test("validates `deny` option only contains specific values", async () => {
-    expect(() => {
+    assert.throws(() => {
       validateEmail({
         // @ts-expect-error
         deny: ["FOOBAR"],
       });
-    }).toThrow(
-      "`validateEmail` options error: invalid value for `deny[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
-    );
+    }, /`validateEmail` options error: invalid value for `deny\[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'/);
   });
 
   test("validates `allow` option only contains specific values", async () => {
-    expect(() => {
+    assert.throws(() => {
       validateEmail({
         // @ts-expect-error
         allow: ["FOOBAR"],
       });
-    }).toThrow(
-      "`validateEmail` options error: invalid value for `allow[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'",
-    );
+    }, /`validateEmail` options error: invalid value for `allow\[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'/);
   });
 
   test("validates `deny` and `block` cannot be set at the same time", async () => {
-    expect(() => {
+    assert.throws(() => {
       // @ts-expect-error
       validateEmail({
         deny: ["INVALID"],
         block: ["INVALID"],
       });
-    }).toThrow(
-      "`validateEmail` options error: `deny` and `block` cannot be provided together, `block` is now deprecated so `deny` should be preferred.",
-    );
+    }, /`validateEmail` options error: `deny` and `block` cannot be provided together, `block` is now deprecated so `deny` should be preferred./);
   });
 
   test("validates `allow` and `deny` cannot be set at the same time", async () => {
-    expect(() => {
+    assert.throws(() => {
       // @ts-expect-error
       validateEmail({
         allow: ["INVALID"],
         deny: ["INVALID"],
       });
-    }).toThrow(
-      "`validateEmail` options error: `allow` and `deny` cannot be provided together",
-    );
+    }, /`validateEmail` options error: `allow` and `deny` cannot be provided together/);
   });
 
   test("validates `block` and `deny` cannot be set at the same time", async () => {
-    expect(() => {
+    assert.throws(() => {
       // @ts-expect-error
       validateEmail({
         allow: ["INVALID"],
         block: ["INVALID"],
       });
-    }).toThrow(
-      "`validateEmail` options error: `allow` and `block` cannot be provided together",
-    );
+    }, /`validateEmail` options error: `allow` and `block` cannot be provided together/);
   });
 
   test("validates `requireTopLevelDomain` option if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       validateEmail({
         // @ts-expect-error
         requireTopLevelDomain: "abc",
       });
-    }).toThrow(
-      "`validateEmail` options error: invalid type for `requireTopLevelDomain` - expected boolean",
-    );
+    }, /`validateEmail` options error: invalid type for `requireTopLevelDomain` - expected boolean/);
   });
 
   test("validates `allowDomainLiteral` option if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       validateEmail({
         // @ts-expect-error
         allowDomainLiteral: "abc",
       });
-    }).toThrow(
-      "`validateEmail` options error: invalid type for `allowDomainLiteral` - expected boolean",
-    );
+    }, /`validateEmail` options error: invalid type for `allowDomainLiteral` - expected boolean/);
   });
 
   test("allows specifying EmailTypes to deny", async () => {
     const [rule] = validateEmail({
       deny: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
     });
-    expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("deny", [
+    assert.equal(rule.type, "EMAIL");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.deepEqual(rule.deny, [
       "DISPOSABLE",
       "FREE",
       "NO_GRAVATAR",
@@ -1609,8 +1521,9 @@ describe("Primitive > validateEmail", () => {
     const [rule] = validateEmail({
       block: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
     });
-    expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("deny", [
+    assert.equal(rule.type, "EMAIL");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.deepEqual(rule.deny, [
       "DISPOSABLE",
       "FREE",
       "NO_GRAVATAR",
@@ -1623,8 +1536,9 @@ describe("Primitive > validateEmail", () => {
     const [rule] = validateEmail({
       allow: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
     });
-    expect(rule.type).toEqual("EMAIL");
-    expect(rule).toHaveProperty("allow", [
+    assert.equal(rule.type, "EMAIL");
+    // @ts-expect-error: to do: fix types to allow access of properties.
+    assert.deepEqual(rule.allow, [
       "DISPOSABLE",
       "FREE",
       "NO_GRAVATAR",
@@ -1648,10 +1562,10 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({ mode: "LIVE", deny: [] });
-    expect(rule.type).toEqual("EMAIL");
-    expect(() => {
+    assert.equal(rule.type, "EMAIL");
+    assert.doesNotThrow(() => {
       const _ = rule.validate(context, details);
-    }).not.toThrow();
+    });
   });
 
   test("throws via `validate()` if email is undefined", () => {
@@ -1669,10 +1583,10 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({ mode: "LIVE", deny: [] });
-    expect(rule.type).toEqual("EMAIL");
-    expect(() => {
+    assert.equal(rule.type, "EMAIL");
+    assert.throws(() => {
       const _ = rule.validate(context, details);
-    }).toThrow();
+    });
   });
 
   test("produces a dry run result in DRY_RUN mode", async () => {
@@ -1699,15 +1613,12 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({ mode: "DRY_RUN", allow: [] });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "DRY_RUN",
-      conclusion: "DENY",
-      reason: new ArcjetEmailReason({
-        emailTypes: ["INVALID"],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, ["INVALID"]);
+    assert.equal(result.state, "DRY_RUN");
   });
 
   test("allows a valid email", async () => {
@@ -1734,15 +1645,12 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({ mode: "LIVE", allow: [] });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetEmailReason({
-        emailTypes: [],
-      }),
-    });
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, []);
+    assert.equal(result.state, "RUN");
   });
 
   test("denies email with no domain segment", async () => {
@@ -1769,15 +1677,12 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({ mode: "LIVE", allow: [] });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetEmailReason({
-        emailTypes: ["INVALID"],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, ["INVALID"]);
+    assert.equal(result.state, "RUN");
   });
 
   test("denies email with no TLD", async () => {
@@ -1804,15 +1709,12 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({ mode: "LIVE", allow: [] });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetEmailReason({
-        emailTypes: ["INVALID"],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, ["INVALID"]);
+    assert.equal(result.state, "RUN");
   });
 
   test("denies email with no TLD even if some options are specified", async () => {
@@ -1842,15 +1744,12 @@ describe("Primitive > validateEmail", () => {
       mode: "LIVE",
       allow: [],
     });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetEmailReason({
-        emailTypes: ["INVALID"],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, ["INVALID"]);
+    assert.equal(result.state, "RUN");
   });
 
   test("denies email with empty name segment", async () => {
@@ -1877,15 +1776,12 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({ mode: "LIVE", allow: [] });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetEmailReason({
-        emailTypes: ["INVALID"],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, ["INVALID"]);
+    assert.equal(result.state, "RUN");
   });
 
   test("denies email with domain literal", async () => {
@@ -1912,15 +1808,12 @@ describe("Primitive > validateEmail", () => {
     };
 
     const [rule] = validateEmail({ mode: "LIVE", allow: [] });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetEmailReason({
-        emailTypes: ["INVALID"],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, ["INVALID"]);
+    assert.equal(result.state, "RUN");
   });
 
   test("can be configured to allow no TLD", async () => {
@@ -1951,15 +1844,11 @@ describe("Primitive > validateEmail", () => {
       mode: "LIVE",
       allow: [],
     });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetEmailReason({
-        emailTypes: [],
-      }),
-    });
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, []);
   });
 
   test("can be configured to allow domain literals", async () => {
@@ -1990,15 +1879,12 @@ describe("Primitive > validateEmail", () => {
       mode: "LIVE",
       allow: [],
     });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetEmailReason({
-        emailTypes: [],
-      }),
-    });
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, []);
+    assert.equal(result.state, "RUN");
   });
 
   // Email validation is dynamic so all TTL are zero
@@ -2041,43 +1927,38 @@ describe("Primitive > validateEmail", () => {
       mode: "LIVE",
       allow: [],
     });
-    expect(rule.type).toEqual("EMAIL");
+    assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    expect(cache.get.mock.callCount()).toEqual(0);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetEmailReason({
-        emailTypes: [],
-      }),
-    });
+    assert.equal(cache.get.mock.callCount(), 0);
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetEmailReason);
+    assert.deepEqual(result.reason.emailTypes, []);
+    assert.equal(result.state, "RUN");
   });
 });
 
 describe("Primitive > shield", () => {
   test("validates `mode` option if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       shield({
         // @ts-expect-error
         mode: "INVALID",
       });
-    }).toThrow(
-      "`shield` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-    );
+    }, /`shield` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
   test("sets mode as `LIVE` if specified", async () => {
     const [rule] = shield({
       mode: "LIVE",
     });
-    expect(rule.type).toEqual("SHIELD");
-    expect(rule).toHaveProperty("mode", "LIVE");
+    assert.equal(rule.type, "SHIELD");
+    assert.equal(rule.mode, "LIVE");
   });
 
   test("sets mode as `DRY_RUN` if not specified", async () => {
     const [rule] = shield({});
-    expect(rule.type).toEqual("SHIELD");
-    expect(rule).toHaveProperty("mode", "DRY_RUN");
+    assert.equal(rule.type, "SHIELD");
+    assert.equal(rule.mode, "DRY_RUN");
   });
 
   test("uses cache", async () => {
@@ -2117,21 +1998,18 @@ describe("Primitive > shield", () => {
     const [rule] = shield({
       mode: "LIVE",
     });
-    expect(rule.type).toEqual("SHIELD");
+    assert.equal(rule.type, "SHIELD");
     const result = await rule.protect(context, details);
-    expect(cache.get.mock.callCount()).toEqual(1);
-    expect(cache.get.mock.calls[0].arguments).toEqual([
+    assert.equal(cache.get.mock.callCount(), 1);
+    assert.deepEqual(cache.get.mock.calls[0].arguments, [
       "1a506ff95a8c2017894fcb6cc3be55053b144bd15666631945a5c453c477bd16",
       "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
     ]);
-    expect(result).toMatchObject({
-      ttl: 10,
-      state: "CACHED",
-      conclusion: "DENY",
-      reason: new ArcjetShieldReason({
-        shieldTriggered: true,
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetShieldReason);
+    assert.equal(result.reason.shieldTriggered, true);
+    assert.equal(result.state, "CACHED");
+    assert.equal(result.ttl, 10);
   });
 
   test("does not run rule locally", async () => {
@@ -2162,102 +2040,85 @@ describe("Primitive > shield", () => {
     const [rule] = shield({
       mode: "LIVE",
     });
-    expect(rule.type).toEqual("SHIELD");
+    assert.equal(rule.type, "SHIELD");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      ttl: 0,
-      state: "NOT_RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetShieldReason({
-        shieldTriggered: false,
-      }),
-    });
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetShieldReason);
+    assert.equal(result.reason.shieldTriggered, false);
+    assert.equal(result.state, "NOT_RUN");
+    assert.equal(result.ttl, 0);
   });
 });
 
 describe("Primitive > sensitiveInfo", () => {
   test("validates `mode` option if it is set", async () => {
-    expect(() => {
+    assert.throws(() => {
       sensitiveInfo({
         // @ts-expect-error
         mode: "INVALID",
         allow: [],
       });
-    }).toThrow(
-      "`sensitiveInfo` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'",
-    );
+    }, /`sensitiveInfo` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
   test("validates `allow` option is an array if set", async () => {
-    expect(() => {
+    assert.throws(() => {
       sensitiveInfo({
         // @ts-expect-error
         allow: "abc",
       });
-    }).toThrow(
-      "`sensitiveInfo` options error: invalid type for `allow` - expected an array",
-    );
+    }, /`sensitiveInfo` options error: invalid type for `allow` - expected an array/);
   });
 
   test("validates `allow` option only contains strings", async () => {
-    expect(() => {
+    assert.throws(() => {
       sensitiveInfo({
         // @ts-expect-error
         allow: [/foo/],
       });
-    }).toThrow(
-      "`sensitiveInfo` options error: invalid type for `allow[0]` - expected string",
-    );
+    }, /`sensitiveInfo` options error: invalid type for `allow\[0]` - expected string/);
   });
 
   test("validates `deny` option is an array if set", async () => {
-    expect(() => {
+    assert.throws(() => {
       sensitiveInfo({
         // @ts-expect-error
         deny: "abc",
       });
-    }).toThrow(
-      "`sensitiveInfo` options error: invalid type for `deny` - expected an array",
-    );
+    }, /`sensitiveInfo` options error: invalid type for `deny` - expected an array/);
   });
 
   test("validates `deny` option only contains strings", async () => {
-    expect(() => {
+    assert.throws(() => {
       sensitiveInfo({
         // @ts-expect-error
         deny: [/foo/],
       });
-    }).toThrow(
-      "`sensitiveInfo` options error: invalid type for `deny[0]` - expected string",
-    );
+    }, /`sensitiveInfo` options error: invalid type for `deny\[0]` - expected string/);
   });
 
   test("validates `contextWindowSize` option if set", async () => {
-    expect(() => {
+    assert.throws(() => {
       sensitiveInfo({
         allow: [],
         // @ts-expect-error
         contextWindowSize: "abc",
       });
-    }).toThrow(
-      "`sensitiveInfo` options error: invalid type for `contextWindowSize` - expected number",
-    );
+    }, /`sensitiveInfo` options error: invalid type for `contextWindowSize` - expected number/);
   });
 
   test("validates `detect` option if set", async () => {
-    expect(() => {
+    assert.throws(() => {
       sensitiveInfo({
         allow: [],
         // @ts-expect-error
         detect: "abc",
       });
-    }).toThrow(
-      "`sensitiveInfo` options error: invalid type for `detect` - expected function",
-    );
+    }, /`sensitiveInfo` options error: invalid type for `detect` - expected function/);
   });
 
   test("validates `allow` and `deny` options are not specified together", async () => {
-    expect(() => {
+    assert.throws(() => {
       const _ = sensitiveInfo(
         // @ts-expect-error
         {
@@ -2265,20 +2126,16 @@ describe("Primitive > sensitiveInfo", () => {
           deny: [],
         },
       );
-    }).toThrow(
-      "`sensitiveInfo` options error: `allow` and `deny` cannot be provided together",
-    );
+    }, /`sensitiveInfo` options error: `allow` and `deny` cannot be provided together/);
   });
 
   test("validates either `allow` or `deny` option is specified", async () => {
-    expect(() => {
+    assert.throws(() => {
       const _ = sensitiveInfo(
         // @ts-expect-error
         {},
       );
-    }).toThrow(
-      "`sensitiveInfo` options error: either `allow` or `deny` must be specified",
-    );
+    }, /`sensitiveInfo` options error: either `allow` or `deny` must be specified/);
   });
 
   test("does not throw via `validate()`", () => {
@@ -2296,17 +2153,17 @@ describe("Primitive > sensitiveInfo", () => {
     };
 
     const [rule] = sensitiveInfo({ mode: "LIVE", allow: [] });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
-    expect(() => {
+    assert.equal(rule.type, "SENSITIVE_INFO");
+    assert.doesNotThrow(() => {
       const _ = rule.validate(context, details);
-    }).not.toThrow();
+    });
   });
 
   test("allows specifying sensitive info entities to allow", async () => {
     const [rule] = sensitiveInfo({
       allow: ["EMAIL", "CREDIT_CARD_NUMBER"],
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
   });
 
   test("produces a dry run result in DRY_RUN mode", async () => {
@@ -2338,37 +2195,34 @@ describe("Primitive > sensitiveInfo", () => {
       mode: "DRY_RUN",
       allow: [],
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "DRY_RUN",
-      conclusion: "DENY",
-      reason: new ArcjetSensitiveInfoReason({
-        denied: [
-          {
-            start: 0,
-            end: 9,
-            identifiedType: "IP_ADDRESS",
-          },
-          {
-            start: 10,
-            end: 26,
-            identifiedType: "EMAIL",
-          },
-          {
-            start: 27,
-            end: 43,
-            identifiedType: "CREDIT_CARD_NUMBER",
-          },
-          {
-            start: 44,
-            end: 60,
-            identifiedType: "PHONE_NUMBER",
-          },
-        ],
-        allowed: [],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, [
+      {
+        start: 0,
+        end: 9,
+        identifiedType: "IP_ADDRESS",
+      },
+      {
+        start: 10,
+        end: 26,
+        identifiedType: "EMAIL",
+      },
+      {
+        start: 27,
+        end: 43,
+        identifiedType: "CREDIT_CARD_NUMBER",
+      },
+      {
+        start: 44,
+        end: 60,
+        identifiedType: "PHONE_NUMBER",
+      },
+    ]);
+    assert.equal(result.state, "DRY_RUN");
   });
 
   test("it doesnt detect any entities in a non sensitive body", async () => {
@@ -2397,16 +2251,13 @@ describe("Primitive > sensitiveInfo", () => {
       mode: "LIVE",
       allow: [],
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetSensitiveInfoReason({
-        denied: [],
-        allowed: [],
-      }),
-    });
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, []);
+    assert.equal(result.state, "RUN");
   });
 
   test("it identifies built-in entities", async () => {
@@ -2438,37 +2289,34 @@ describe("Primitive > sensitiveInfo", () => {
       mode: "LIVE",
       allow: [],
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetSensitiveInfoReason({
-        denied: [
-          {
-            start: 0,
-            end: 9,
-            identifiedType: "IP_ADDRESS",
-          },
-          {
-            start: 10,
-            end: 26,
-            identifiedType: "EMAIL",
-          },
-          {
-            start: 27,
-            end: 43,
-            identifiedType: "CREDIT_CARD_NUMBER",
-          },
-          {
-            start: 44,
-            end: 60,
-            identifiedType: "PHONE_NUMBER",
-          },
-        ],
-        allowed: [],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, [
+      {
+        start: 0,
+        end: 9,
+        identifiedType: "IP_ADDRESS",
+      },
+      {
+        start: 10,
+        end: 26,
+        identifiedType: "EMAIL",
+      },
+      {
+        start: 27,
+        end: 43,
+        identifiedType: "CREDIT_CARD_NUMBER",
+      },
+      {
+        start: 44,
+        end: 60,
+        identifiedType: "PHONE_NUMBER",
+      },
+    ]);
+    assert.equal(result.state, "RUN");
   });
 
   test("it allows entities on the allow list", async () => {
@@ -2500,38 +2348,35 @@ describe("Primitive > sensitiveInfo", () => {
       mode: "LIVE",
       allow: ["EMAIL", "PHONE_NUMBER"],
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetSensitiveInfoReason({
-        denied: [
-          {
-            start: 0,
-            end: 9,
-            identifiedType: "IP_ADDRESS",
-          },
-          {
-            start: 27,
-            end: 43,
-            identifiedType: "CREDIT_CARD_NUMBER",
-          },
-        ],
-        allowed: [
-          {
-            start: 10,
-            end: 26,
-            identifiedType: "EMAIL",
-          },
-          {
-            start: 44,
-            end: 60,
-            identifiedType: "PHONE_NUMBER",
-          },
-        ],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, [
+      {
+        start: 10,
+        end: 26,
+        identifiedType: "EMAIL",
+      },
+      {
+        start: 44,
+        end: 60,
+        identifiedType: "PHONE_NUMBER",
+      },
+    ]);
+    assert.deepEqual(result.reason.denied, [
+      {
+        start: 0,
+        end: 9,
+        identifiedType: "IP_ADDRESS",
+      },
+      {
+        start: 27,
+        end: 43,
+        identifiedType: "CREDIT_CARD_NUMBER",
+      },
+    ]);
+    assert.equal(result.state, "RUN");
   });
 
   test("it returns an allow decision when all identified types are allowed", async () => {
@@ -2560,27 +2405,24 @@ describe("Primitive > sensitiveInfo", () => {
       mode: "LIVE",
       allow: ["EMAIL", "PHONE_NUMBER"],
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetSensitiveInfoReason({
-        denied: [],
-        allowed: [
-          {
-            start: 0,
-            end: 16,
-            identifiedType: "EMAIL",
-          },
-          {
-            start: 17,
-            end: 33,
-            identifiedType: "PHONE_NUMBER",
-          },
-        ],
-      }),
-    });
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, [
+      {
+        start: 0,
+        end: 16,
+        identifiedType: "EMAIL",
+      },
+      {
+        start: 17,
+        end: 33,
+        identifiedType: "PHONE_NUMBER",
+      },
+    ]);
+    assert.deepEqual(result.reason.denied, []);
+    assert.equal(result.state, "RUN");
   });
 
   test("it only denies listed entities when deny mode is set", async () => {
@@ -2610,33 +2452,30 @@ describe("Primitive > sensitiveInfo", () => {
       mode: "LIVE",
       deny: ["CREDIT_CARD_NUMBER", "IP_ADDRESS"],
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetSensitiveInfoReason({
-        denied: [
-          {
-            start: 0,
-            end: 9,
-            identifiedType: "IP_ADDRESS",
-          },
-        ],
-        allowed: [
-          {
-            start: 10,
-            end: 26,
-            identifiedType: "EMAIL",
-          },
-          {
-            start: 27,
-            end: 43,
-            identifiedType: "PHONE_NUMBER",
-          },
-        ],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, [
+      {
+        start: 10,
+        end: 26,
+        identifiedType: "EMAIL",
+      },
+      {
+        start: 27,
+        end: 43,
+        identifiedType: "PHONE_NUMBER",
+      },
+    ]);
+    assert.deepEqual(result.reason.denied, [
+      {
+        start: 0,
+        end: 9,
+        identifiedType: "IP_ADDRESS",
+      },
+    ]);
+    assert.equal(result.state, "RUN");
   });
 
   test("it returns a deny decision in deny mode when an entity is matched", async () => {
@@ -2665,28 +2504,25 @@ describe("Primitive > sensitiveInfo", () => {
       mode: "LIVE",
       deny: ["EMAIL"],
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetSensitiveInfoReason({
-        denied: [
-          {
-            start: 0,
-            end: 16,
-            identifiedType: "EMAIL",
-          },
-        ],
-        allowed: [
-          {
-            start: 17,
-            end: 33,
-            identifiedType: "PHONE_NUMBER",
-          },
-        ],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, [
+      {
+        start: 17,
+        end: 33,
+        identifiedType: "PHONE_NUMBER",
+      },
+    ]);
+    assert.deepEqual(result.reason.denied, [
+      {
+        start: 0,
+        end: 16,
+        identifiedType: "EMAIL",
+      },
+    ]);
+    assert.equal(result.state, "RUN");
   });
 
   test("it blocks entities identified by a custom function", async () => {
@@ -2725,22 +2561,19 @@ describe("Primitive > sensitiveInfo", () => {
       contextWindowSize: 1,
       detect: customDetect,
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "DENY",
-      reason: new ArcjetSensitiveInfoReason({
-        allowed: [],
-        denied: [
-          {
-            start: 8,
-            end: 11,
-            identifiedType: "CUSTOM",
-          },
-        ],
-      }),
-    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, [
+      {
+        start: 8,
+        end: 11,
+        identifiedType: "CUSTOM",
+      },
+    ]);
+    assert.equal(result.state, "RUN");
   });
 
   test("it throws when custom function returns non-string", async () => {
@@ -2780,10 +2613,10 @@ describe("Primitive > sensitiveInfo", () => {
       // @ts-expect-error
       detect: customDetect,
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
-    expect(async () => {
+    assert.equal(rule.type, "SENSITIVE_INFO");
+    assert.rejects(async () => {
       const _ = await rule.protect(context, details);
-    }).rejects.toEqual(new Error("invalid entity type"));
+    }, new Error("invalid entity type"));
   });
 
   test("it allows custom entities identified by a function that would have otherwise been blocked", async () => {
@@ -2822,22 +2655,19 @@ describe("Primitive > sensitiveInfo", () => {
       detect: customDetect,
       contextWindowSize: 1,
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetSensitiveInfoReason({
-        allowed: [
-          {
-            start: 12,
-            end: 28,
-            identifiedType: "custom",
-          },
-        ],
-        denied: [],
-      }),
-    });
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, [
+      {
+        start: 12,
+        end: 28,
+        identifiedType: "custom",
+      },
+    ]);
+    assert.deepEqual(result.reason.denied, []);
+    assert.equal(result.state, "RUN");
   });
 
   test("it provides the right size context window", async () => {
@@ -2863,7 +2693,7 @@ describe("Primitive > sensitiveInfo", () => {
     };
 
     const customDetect = (tokens: string[]) => {
-      expect(tokens).toHaveLength(3);
+      assert.equal(tokens.length, 3);
       return tokens.map(() => undefined);
     };
 
@@ -2873,7 +2703,7 @@ describe("Primitive > sensitiveInfo", () => {
       detect: customDetect,
       contextWindowSize: 3,
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     await rule.protect(context, details);
   });
 
@@ -2904,11 +2734,11 @@ describe("Primitive > sensitiveInfo", () => {
       allow: [],
       contextWindowSize: 1,
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const decision = await rule.protect(context, details);
-    expect(decision.ttl).toEqual(0);
-    expect(decision.state).toEqual("NOT_RUN");
-    expect(decision.conclusion).toEqual("ERROR");
+    assert.equal(decision.ttl, 0);
+    assert.equal(decision.state, "NOT_RUN");
+    assert.equal(decision.conclusion, "ERROR");
   });
 
   // Sensitive info detection is dynamic so all TTL are zero
@@ -2951,17 +2781,14 @@ describe("Primitive > sensitiveInfo", () => {
       mode: "LIVE",
       allow: [],
     });
-    expect(rule.type).toEqual("SENSITIVE_INFO");
+    assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    expect(cache.get.mock.callCount()).toEqual(0);
-    expect(result).toMatchObject({
-      state: "RUN",
-      conclusion: "ALLOW",
-      reason: new ArcjetSensitiveInfoReason({
-        allowed: [],
-        denied: [],
-      }),
-    });
+    assert.equal(cache.get.mock.callCount(), 0);
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, []);
+    assert.equal(result.state, "RUN");
   });
 });
 
@@ -2983,7 +2810,7 @@ describe("Products > protectSignup", () => {
         mode: "LIVE",
       },
     });
-    expect(rules.length).toEqual(3);
+    assert.equal(rules.length, 3);
   });
 });
 
@@ -3206,8 +3033,8 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    expect(aj).toHaveProperty("protect");
-    expect(typeof aj.protect).toEqual("function");
+    assert.ok("protect" in aj);
+    assert.equal(typeof aj.protect, "function");
   });
 
   test("can augment rules via `withRule` API", async () => {
@@ -3263,12 +3090,10 @@ describe("SDK", () => {
     };
 
     const _ = await aj2.protect(context, request);
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.anything(),
-      expect.anything(),
-      [...tokenBucketRule],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const call = client.decide.mock.calls[0];
+    assert.ok(call);
+    assert.deepEqual(call.arguments.slice(2), [tokenBucketRule]);
   });
 
   test("can chain new rules via multiple `withRule` calls", async () => {
@@ -3335,10 +3160,10 @@ describe("SDK", () => {
     };
 
     const _ = await aj3.protect(context, request);
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.anything(),
-      expect.anything(),
+    assert.equal(client.decide.mock.callCount(), 1);
+    const call = client.decide.mock.calls[0];
+    assert.ok(call);
+    assert.deepEqual(call.arguments.slice(2), [
       [...tokenBucketRule, ...testRule],
     ]);
   });
@@ -3402,12 +3227,10 @@ describe("SDK", () => {
     };
 
     const _ = await aj3.protect(context, request);
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.anything(),
-      expect.anything(),
-      [...testRule],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const call = client.decide.mock.calls[0];
+    assert.ok(call);
+    assert.deepEqual(call.arguments.slice(2), [testRule]);
   });
 
   test("creates a new Arcjet SDK with only local rules", () => {
@@ -3428,8 +3251,8 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    expect(aj).toHaveProperty("protect");
-    expect(typeof aj.protect).toEqual("function");
+    assert.ok("protect" in aj);
+    assert.equal(typeof aj.protect, "function");
   });
 
   test("creates a new Arcjet SDK with only remote rules", () => {
@@ -3450,8 +3273,8 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    expect(aj).toHaveProperty("protect");
-    expect(typeof aj.protect).toEqual("function");
+    assert.ok("protect" in aj);
+    assert.equal(typeof aj.protect, "function");
   });
 
   test("creates a new Arcjet SDK with both local and remote rules", () => {
@@ -3474,23 +3297,23 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    expect(aj).toHaveProperty("protect");
-    expect(typeof aj.protect).toEqual("function");
+    assert.ok("protect" in aj);
+    assert.equal(typeof aj.protect, "function");
   });
 
   // TODO(#207): Remove this once we default the client in the main SDK
   test("throws if no client is specified", () => {
-    expect(() => {
+    assert.throws(() => {
       const aj = arcjet({
         key: "test-key",
         rules: [],
         log: mockLogger(),
       });
-    }).toThrow();
+    });
   });
 
   test("throws if no log is specified", () => {
-    expect(() => {
+    assert.throws(() => {
       const client = {
         decide: mock.fn(async () => {
           return new ArcjetAllowDecision({
@@ -3507,7 +3330,7 @@ describe("SDK", () => {
         rules: [],
         client,
       });
-    }).toThrow();
+    });
   });
 
   test("calls each local rule until a DENY decision is encountered", async () => {
@@ -3546,12 +3369,12 @@ describe("SDK", () => {
     };
 
     const decision = await aj.protect(context, request);
-    expect(decision.conclusion).toEqual("DENY");
+    assert.equal(decision.conclusion, "DENY");
 
-    expect(allowed.validate.mock.callCount()).toEqual(1);
-    expect(allowed.protect.mock.callCount()).toEqual(1);
-    expect(denied.validate.mock.callCount()).toEqual(1);
-    expect(denied.protect.mock.callCount()).toEqual(1);
+    assert.equal(allowed.validate.mock.callCount(), 1);
+    assert.equal(allowed.protect.mock.callCount(), 1);
+    assert.equal(denied.validate.mock.callCount(), 1);
+    assert.equal(denied.protect.mock.callCount(), 1);
   });
 
   test("does not crash if a local rule does not return a result", async () => {
@@ -3595,10 +3418,10 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
     // ALLOW because the remote rule was called and it returned ALLOW
-    expect(decision.conclusion).toEqual("ALLOW");
+    assert.equal(decision.conclusion, "ALLOW");
 
-    expect(rule.validate.mock.callCount()).toEqual(1);
-    expect(rule.protect.mock.callCount()).toEqual(1);
+    assert.equal(rule.validate.mock.callCount(), 1);
+    assert.equal(rule.protect.mock.callCount(), 1);
   });
 
   test("does not crash if a rule does not define `validate` function", async () => {
@@ -3643,16 +3466,14 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
     // DENY because one local rule errored and the other denied
-    expect(decision.conclusion).toEqual("DENY");
-    expect(decision.results).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          reason: {
-            type: "ERROR",
-            message: "rule must have a `validate` function",
-          },
-        }),
-      ]),
+    assert.equal(decision.conclusion, "DENY");
+    const anonymousResult = decision.results.find((d) => d.ruleId === "");
+    assert.ok(anonymousResult);
+    assert.equal(anonymousResult.reason.type, "ERROR");
+    assert.equal(
+      // @ts-expect-error: to do: `message` should be accessible.
+      anonymousResult.reason.message,
+      "rule must have a `validate` function",
     );
   });
 
@@ -3698,16 +3519,14 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
     // DENY because one local rule errored and the other denied
-    expect(decision.conclusion).toEqual("DENY");
-    expect(decision.results).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          reason: {
-            type: "ERROR",
-            message: "rule must have a `protect` function",
-          },
-        }),
-      ]),
+    assert.equal(decision.conclusion, "DENY");
+    const anonymousResult = decision.results.find((d) => d.ruleId === "");
+    assert.ok(anonymousResult);
+    assert.equal(anonymousResult.reason.type, "ERROR");
+    assert.equal(
+      // @ts-expect-error: to do: `message` should be accessible.
+      anonymousResult.reason.message,
+      "rule must have a `protect` function",
     );
   });
 
@@ -3737,7 +3556,7 @@ describe("SDK", () => {
     };
 
     const decision = await aj.protect(context, request);
-    expect(decision.conclusion).toEqual("ERROR");
+    assert.equal(decision.conclusion, "ERROR");
   });
 
   test("returns an ERROR decision with no request object", async () => {
@@ -3761,7 +3580,7 @@ describe("SDK", () => {
 
     // @ts-expect-error
     const decision = await aj.protect();
-    expect(decision.conclusion).toEqual("ERROR");
+    assert.equal(decision.conclusion, "ERROR");
   });
 
   test("returns an ERROR decision when more than 10 rules are generated", async () => {
@@ -3798,7 +3617,7 @@ describe("SDK", () => {
     };
 
     const decision = await aj.protect(context, request);
-    expect(decision.conclusion).toEqual("ERROR");
+    assert.equal(decision.conclusion, "ERROR");
   });
 
   test("won't run a later local rule if a DENY decision is encountered", async () => {
@@ -3837,12 +3656,12 @@ describe("SDK", () => {
     };
 
     const decision = await aj.protect(context, request);
-    expect(decision.conclusion).toEqual("DENY");
+    assert.equal(decision.conclusion, "DENY");
 
-    expect(denied.validate.mock.callCount()).toEqual(1);
-    expect(denied.protect.mock.callCount()).toEqual(1);
-    expect(allowed.validate.mock.callCount()).toEqual(0);
-    expect(allowed.protect.mock.callCount()).toEqual(0);
+    assert.equal(denied.validate.mock.callCount(), 1);
+    assert.equal(denied.protect.mock.callCount(), 1);
+    assert.equal(allowed.validate.mock.callCount(), 0);
+    assert.equal(allowed.protect.mock.callCount(), 0);
   });
 
   test("accepts plain object of headers", async () => {
@@ -3882,22 +3701,22 @@ describe("SDK", () => {
     });
 
     const decision = await aj.protect(context, request);
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.objectContaining(context),
-      expect.objectContaining({
-        ip: request.ip,
-        method: request.method,
-        protocol: request.protocol,
-        host: request.host,
-        path: request.path,
-        headers: new Headers(Object.entries(request.headers)),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      }),
-      [],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const argument: unknown = [...client.decide.mock.calls[0].arguments].at(1);
+    assert.deepEqual(argument, {
+      cookies: undefined,
+      email: undefined,
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      host: request.host,
+      ip: request.ip,
+      method: request.method,
+      path: request.path,
+      protocol: request.protocol,
+      query: undefined,
+    });
   });
 
   test("accepts plain object of `raw` headers", async () => {
@@ -3937,25 +3756,25 @@ describe("SDK", () => {
     });
 
     const decision = await aj.protect(context, request);
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.objectContaining(context),
-      expect.objectContaining({
-        ip: request.ip,
-        method: request.method,
-        protocol: request.protocol,
-        host: request.host,
-        path: request.path,
-        headers: new Headers([
-          ["user-agent", "curl/8.1.2"],
-          ["user-agent", "something"],
-        ]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      }),
-      [],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const argument: unknown = [...client.decide.mock.calls[0].arguments].at(1);
+    assert.deepEqual(argument, {
+      cookies: undefined,
+      email: undefined,
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      headers: new ArcjetHeaders([
+        ["user-agent", "curl/8.1.2"],
+        ["user-agent", "something"],
+      ]),
+      host: request.host,
+      ip: request.ip,
+      method: request.method,
+      path: request.path,
+      protocol: request.protocol,
+      query: undefined,
+    });
   });
 
   test("converts extra keys with non-string values to string values", async () => {
@@ -3998,25 +3817,25 @@ describe("SDK", () => {
     });
 
     const decision = await aj.protect(context, request);
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.objectContaining(context),
-      expect.objectContaining({
-        ip: request.ip,
-        method: request.method,
-        protocol: request.protocol,
-        host: request.host,
-        path: request.path,
-        headers: new Headers(Object.entries(request.headers)),
-        extra: {
-          "extra-number": "123",
-          "extra-false": "false",
-          "extra-true": "true",
-          "extra-unsupported": "<unsupported value>",
-        },
-      }),
-      [],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const argument: unknown = [...client.decide.mock.calls[0].arguments].at(1);
+    assert.deepEqual(argument, {
+      cookies: undefined,
+      email: undefined,
+      extra: {
+        "extra-number": "123",
+        "extra-false": "false",
+        "extra-true": "true",
+        "extra-unsupported": "<unsupported value>",
+      },
+      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      host: request.host,
+      ip: request.ip,
+      method: request.method,
+      path: request.path,
+      protocol: request.protocol,
+      query: undefined,
+    });
   });
 
   test("does not call `client.report()` if the local decision is ALLOW", async () => {
@@ -4054,8 +3873,8 @@ describe("SDK", () => {
     };
 
     const _ = await aj.protect(context, request);
-    expect(client.report.mock.callCount()).toEqual(0);
-    expect(client.decide.mock.callCount()).toEqual(1);
+    assert.equal(client.report.mock.callCount(), 0);
+    assert.equal(client.decide.mock.callCount(), 1);
     // TODO: Validate correct `ruleResults` are sent with `decide` when available
   });
 
@@ -4097,22 +3916,23 @@ describe("SDK", () => {
     });
 
     const decision = await aj.protect(context, request);
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.objectContaining(context),
-      expect.objectContaining({
-        ip: request.ip,
-        method: request.method,
-        protocol: request.protocol,
-        host: request.host,
-        path: request.path,
-        headers: request.headers,
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      }),
-      [rule],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    assert.deepEqual(args.at(1), {
+      cookies: undefined,
+      email: undefined,
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      host: request.host,
+      ip: request.ip,
+      method: request.method,
+      path: request.path,
+      protocol: request.protocol,
+      query: undefined,
+    });
+    assert.deepEqual(args.at(2), [rule]);
   });
 
   test("calls `client.report()` if the local decision is DENY", async () => {
@@ -4153,25 +3973,28 @@ describe("SDK", () => {
     });
 
     const _ = await aj.protect(context, request);
-    expect(client.report.mock.callCount()).toEqual(1);
-    expect(client.report.mock.calls[0].arguments).toEqual([
-      expect.objectContaining(context),
-      expect.objectContaining({
-        ip: request.ip,
-        method: request.method,
-        protocol: request.protocol,
-        host: request.host,
-        path: request.path,
-        headers: request.headers,
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      }),
-      expect.objectContaining({
-        conclusion: "DENY",
-      }),
-      [rule],
-    ]);
+    assert.equal(client.report.mock.callCount(), 1);
+    const args: unknown[] = [...client.report.mock.calls[0].arguments];
+    assert.deepEqual(args.at(1), {
+      cookies: undefined,
+      email: undefined,
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      host: request.host,
+      ip: request.ip,
+      method: request.method,
+      path: request.path,
+      protocol: request.protocol,
+      query: undefined,
+    });
+    const two = args.at(2);
+    assert.ok(two);
+    assert.ok(typeof two === "object");
+    assert.ok("conclusion" in two);
+    assert.equal(two.conclusion, "DENY");
+    assert.deepEqual(args.at(3), [rule]);
   });
 
   test("provides `waitUntil` in context to  `client.report()` if available", async () => {
@@ -4222,15 +4045,14 @@ describe("SDK", () => {
     });
 
     const _ = await aj.protect(context, request);
-    expect(client.report.mock.callCount()).toEqual(1);
-    expect(client.report.mock.calls[0].arguments).toEqual([
-      expect.objectContaining({
-        waitUntil,
-      }),
-      expect.anything(),
-      expect.anything(),
-      [rule],
-    ]);
+    assert.equal(client.report.mock.callCount(), 1);
+
+    const args: unknown[] = [...client.report.mock.calls[0].arguments];
+    const head = args.at(0);
+    assert.ok(head);
+    assert.ok(typeof head === "object");
+    assert.ok("waitUntil" in head);
+    assert.equal(head.waitUntil, waitUntil);
     // @ts-ignore
     delete globalThis[SYMBOL_FOR_REQ_CONTEXT];
   });
@@ -4270,7 +4092,7 @@ describe("SDK", () => {
     };
 
     const _ = await aj.protect(context, request);
-    expect(client.decide.mock.callCount()).toEqual(0);
+    assert.equal(client.decide.mock.callCount(), 0);
   });
 
   test("calls `client.decide()` even with no rules", async () => {
@@ -4311,23 +4133,24 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.report.mock.callCount()).toEqual(0);
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.objectContaining(context),
-      expect.objectContaining({
-        ip: request.ip,
-        method: request.method,
-        protocol: request.protocol,
-        host: request.host,
-        path: request.path,
-        headers: request.headers,
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      }),
-      [],
-    ]);
+    assert.equal(client.report.mock.callCount(), 0);
+    assert.equal(client.decide.mock.callCount(), 1);
+
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    assert.deepEqual(args.at(1), {
+      cookies: undefined,
+      email: undefined,
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      host: request.host,
+      ip: request.ip,
+      method: request.method,
+      path: request.path,
+      protocol: request.protocol,
+      query: undefined,
+    });
   });
 
   test("caches a DENY decision locally and reports when a cached decision is used", async () => {
@@ -4375,20 +4198,20 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
 
-    expect(decision.isErrored()).toBe(false);
+    assert.equal(decision.isErrored(), false);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.report.mock.callCount()).toEqual(0);
+    assert.equal(client.decide.mock.callCount(), 1);
+    assert.equal(client.report.mock.callCount(), 0);
 
-    expect(decision.conclusion).toEqual("DENY");
+    assert.equal(decision.conclusion, "DENY");
 
     const decision2 = await aj.protect(context, request);
 
-    expect(decision2.isErrored()).toBe(false);
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.report.mock.callCount()).toEqual(1);
+    assert.equal(decision2.isErrored(), false);
+    assert.equal(client.decide.mock.callCount(), 1);
+    assert.equal(client.report.mock.callCount(), 1);
 
-    expect(decision2.conclusion).toEqual("DENY");
+    assert.equal(decision2.conclusion, "DENY");
   });
 
   test("does not throw if unknown rule type is passed", () => {
@@ -4403,14 +4226,15 @@ describe("SDK", () => {
       report: mock.fn(),
     };
 
-    expect(() => {
+    // Specifically should not throw `Unknown Rule type`.
+    assert.doesNotThrow(() => {
       const aj = arcjet({
         key: "test-key",
         rules: [[testRuleInvalidType()]],
         client,
         log: mockLogger(),
       });
-    }).not.toThrow("Unknown Rule type");
+    });
   });
 
   test("does not call `client.report()` if a local rule throws", async () => {
@@ -4448,8 +4272,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.report.mock.callCount()).toEqual(0);
-    expect(client.decide.mock.callCount()).toEqual(1);
+    assert.equal(client.report.mock.callCount(), 0);
+    assert.equal(client.decide.mock.callCount(), 1);
     // TODO: Validate correct `ruleResults` are sent with `decide` when available
   });
 
@@ -4503,8 +4327,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(log.error.mock.callCount()).toEqual(1);
-    expect(log.error.mock.calls[0].arguments).toEqual([
+    assert.equal(log.error.mock.callCount(), 1);
+    assert.deepEqual(log.error.mock.calls[0].arguments, [
       "Failure running rule: %s due to %s",
       "TEST_RULE_LOCAL_THROW_STRING",
       "Local rule protect failed",
@@ -4561,8 +4385,8 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(log.error.mock.callCount()).toEqual(1);
-    expect(log.error.mock.calls[0].arguments).toEqual([
+    assert.equal(log.error.mock.callCount(), 1);
+    assert.deepEqual(log.error.mock.calls[0].arguments, [
       "Failure running rule: %s due to %s",
       "TEST_RULE_LOCAL_THROW_NULL",
       "Unknown problem",
@@ -4604,17 +4428,17 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
 
-    expect(decision.isDenied()).toBe(false);
+    assert.equal(decision.isDenied(), false);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.report.mock.callCount()).toEqual(0);
+    assert.equal(client.decide.mock.callCount(), 1);
+    assert.equal(client.report.mock.callCount(), 0);
 
     const decision2 = await aj.protect(context, request);
 
-    expect(decision2.isDenied()).toBe(false);
+    assert.equal(decision2.isDenied(), false);
 
-    expect(client.decide.mock.callCount()).toEqual(2);
-    expect(client.report.mock.callCount()).toEqual(0);
+    assert.equal(client.decide.mock.callCount(), 2);
+    assert.equal(client.report.mock.callCount(), 0);
   });
 
   test("processes a single rule from a REMOTE ArcjetRule", async () => {
@@ -4657,24 +4481,25 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
 
-    expect(decision.isErrored()).toBe(false);
+    assert.equal(decision.isErrored(), false);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.objectContaining(context),
-      expect.objectContaining({
-        ip: request.ip,
-        method: request.method,
-        protocol: request.protocol,
-        host: request.host,
-        path: request.path,
-        headers: request.headers,
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      }),
-      [rule],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    assert.deepEqual(args.at(1), {
+      cookies: undefined,
+      email: undefined,
+      extra: {
+        "extra-test": "extra-test-value",
+      },
+      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      host: request.host,
+      ip: request.ip,
+      method: request.method,
+      path: request.path,
+      protocol: request.protocol,
+      query: undefined,
+    });
+    assert.deepEqual(args.at(2), [rule]);
   });
 
   test("overrides `key` with custom context", async () => {
@@ -4720,24 +4545,15 @@ describe("SDK", () => {
       request,
     );
 
-    expect(decision.isErrored()).toBe(false);
+    assert.equal(decision.isErrored(), false);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.objectContaining({ ...context, key: "overridden-key" }),
-      expect.objectContaining({
-        ip: request.ip,
-        method: request.method,
-        protocol: request.protocol,
-        host: request.host,
-        path: request.path,
-        headers: request.headers,
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      }),
-      [rule],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const head = args.at(0);
+    assert.ok(head);
+    assert.ok(typeof head === "object");
+    assert.ok("key" in head);
+    assert.equal(head.key, "overridden-key");
   });
 
   test("reports and returns an ERROR decision if a `client.decide()` fails", async () => {
@@ -4774,28 +4590,16 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
 
-    expect(decision.isErrored()).toBe(true);
+    assert.equal(decision.isErrored(), true);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.report.mock.callCount()).toEqual(1);
-    expect(client.report.mock.calls[0].arguments).toEqual([
-      expect.objectContaining(context),
-      expect.objectContaining({
-        ip: request.ip,
-        method: request.method,
-        protocol: request.protocol,
-        host: request.host,
-        path: request.path,
-        headers: request.headers,
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      }),
-      expect.objectContaining({
-        conclusion: "ERROR",
-      }),
-      [],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    assert.equal(client.report.mock.callCount(), 1);
+    const args: unknown[] = [...client.report.mock.calls[0].arguments];
+    const item = args.at(2);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("conclusion" in item);
+    assert.equal(item.conclusion, "ERROR");
   });
 
   test("header characteristics are used to generate fingerprints", async () => {
@@ -4833,16 +4637,18 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.objectContaining({
-        fingerprint:
-          "fp::2::6f3a3854134fe3d20fe56387bdcb594f18b182683424757b88da75e8f13b92bd",
-      }),
-      expect.anything(),
-      expect.anything(),
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const head = args.at(0);
+    assert.ok(head);
+    assert.ok(typeof head === "object");
+    assert.ok("fingerprint" in head);
+    assert.equal(
+      head.fingerprint,
+      "fp::2::6f3a3854134fe3d20fe56387bdcb594f18b182683424757b88da75e8f13b92bd",
+    );
   });
+
   test("global characteristics are propagated if they aren't separately specified in fixedWindow", async () => {
     const client = {
       decide: mock.fn(async () => {
@@ -4886,16 +4692,15 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.anything(),
-      expect.anything(),
-      [
-        expect.objectContaining({
-          characteristics: globalCharacteristics,
-        }),
-      ],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, globalCharacteristics);
   });
 
   test("local characteristics are prefered on fixedWindow over global characteristics", async () => {
@@ -4944,16 +4749,15 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.anything(),
-      expect.anything(),
-      [
-        expect.objectContaining({
-          characteristics: localCharacteristics,
-        }),
-      ],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, localCharacteristics);
   });
 
   test("global characteristics are propagated if they aren't separately specified in slidingWindow", async () => {
@@ -4999,16 +4803,15 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.anything(),
-      expect.anything(),
-      [
-        expect.objectContaining({
-          characteristics: globalCharacteristics,
-        }),
-      ],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, globalCharacteristics);
   });
 
   test("local characteristics are prefered on slidingWindow over global characteristics", async () => {
@@ -5058,16 +4861,15 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.anything(),
-      expect.anything(),
-      [
-        expect.objectContaining({
-          characteristics: localCharacteristics,
-        }),
-      ],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, localCharacteristics);
   });
 
   test("global characteristics are propagated if they aren't separately specified in tokenBucket", async () => {
@@ -5115,16 +4917,15 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.anything(),
-      expect.anything(),
-      [
-        expect.objectContaining({
-          characteristics: globalCharacteristics,
-        }),
-      ],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, globalCharacteristics);
   });
 
   test("local characteristics are prefered on tokenBucket over global characteristics", async () => {
@@ -5176,15 +4977,14 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
 
-    expect(client.decide.mock.callCount()).toEqual(1);
-    expect(client.decide.mock.calls[0].arguments).toEqual([
-      expect.anything(),
-      expect.anything(),
-      [
-        expect.objectContaining({
-          characteristics: localCharacteristics,
-        }),
-      ],
-    ]);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, localCharacteristics);
   });
 });
