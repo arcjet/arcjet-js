@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...@arcjet/next-v1.0.0-beta.9) (2025-06-13)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/next:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/headers bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/ip bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/logger bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/protocol bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/transport bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * arcjet bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/rollup-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/tsconfig bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+
 ## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...@arcjet/next-v1.0.0-beta.8) (2025-05-28)
 
 
