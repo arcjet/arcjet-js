@@ -128,9 +128,13 @@ export function createConfig(root, { plugins = [] } = {}) {
 
   // Creates a Rollup input entry that can be used with `Object.fromEntries()`
   function toEntry(file) {
+    // Node lower than 18 used `path` which is now removed in favor of
+    // `parentPath`.
+    // See: <https://nodejs.org/api/deprecations.html#dep0178-direntpath>.
+    const parentPath = file.parentPath || file.path;
     return [
-      path.relative(rootDir, `${file.path}${removeExtension(file.name)}`),
-      path.relative(rootDir, `${file.path}${file.name}`),
+      path.relative(rootDir, `${parentPath}${removeExtension(file.name)}`),
+      path.relative(rootDir, `${parentPath}${file.name}`),
     ];
   }
 
