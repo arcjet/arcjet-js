@@ -2,6 +2,11 @@
   "name": "@arcjet/eslint-config",
   "version": "1.0.0-beta.8",
   "description": "Custom eslint config for Arcjet projects",
+  "keywords": [
+    "arcjet",
+    "config",
+    "eslint"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {

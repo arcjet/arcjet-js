@@ -2,6 +2,18 @@
   "name": "@arcjet/next",
   "version": "1.0.0-beta.8",
   "description": "Arcjet SDK for the Next.js framework",
+  "keywords": [
+    "analyze",
+    "arcjet",
+    "attack",
+    "limit",
+    "nextjs",
+    "next",
+    "protect",
+    "secure",
+    "security",
+    "verify"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {

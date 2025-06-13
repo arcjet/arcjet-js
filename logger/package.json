@@ -2,6 +2,13 @@
   "name": "@arcjet/logger",
   "version": "1.0.0-beta.8",
   "description": "Arcjet lightweight logger which mirrors the Pino structured logger interface",
+  "keywords": [
+    "arcjet",
+    "debug",
+    "log",
+    "utility",
+    "util"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
