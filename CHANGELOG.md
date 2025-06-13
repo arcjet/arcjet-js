@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2025-06-13)
+
+
+### 🧹 Miscellaneous Chores
+
+* Fix `jco` name in dependabot ([#4371](https://github.com/arcjet/arcjet-js/issues/4371)) ([809fe76](https://github.com/arcjet/arcjet-js/commit/809fe7686088c20176cef63f747298e68966a4ef))
+* Fix missing file extension in test ([#4407](https://github.com/arcjet/arcjet-js/issues/4407)) ([b694dad](https://github.com/arcjet/arcjet-js/commit/b694dad98657acaebed4424d55b406ece954beff))
+* Fix Rollup on Node 24 ([#4406](https://github.com/arcjet/arcjet-js/issues/4406)) ([1853b1a](https://github.com/arcjet/arcjet-js/commit/1853b1ac9f6da42b7ac9852273426ea53df67017))
+
 ## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2025-05-28)
 
 

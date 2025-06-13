@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...@arcjet/env-v1.0.0-beta.9) (2025-06-13)
+
+
+### 🧹 Miscellaneous Chores
+
+* Fix missing file extension in test ([#4407](https://github.com/arcjet/arcjet-js/issues/4407)) ([b694dad](https://github.com/arcjet/arcjet-js/commit/b694dad98657acaebed4424d55b406ece954beff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/rollup-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/tsconfig bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+
 ## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...@arcjet/env-v1.0.0-beta.8) (2025-05-28)
 
 

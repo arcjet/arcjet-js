@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...@arcjet/rollup-config-v1.0.0-beta.9) (2025-06-13)
+
+
+### 🧹 Miscellaneous Chores
+
+* Fix Rollup on Node 24 ([#4406](https://github.com/arcjet/arcjet-js/issues/4406)) ([1853b1a](https://github.com/arcjet/arcjet-js/commit/1853b1ac9f6da42b7ac9852273426ea53df67017))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/tsconfig bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+
 ## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...@arcjet/rollup-config-v1.0.0-beta.8) (2025-05-28)
 
 
