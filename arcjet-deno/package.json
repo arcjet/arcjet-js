@@ -52,7 +52,7 @@
     "@types/deno": "2.0.0",
     "@rollup/wasm-node": "4.42.0",
     "eslint": "9.28.0",
-    "expect": "29.7.0",
+    "expect": "30.0.0",
     "typescript": "5.8.3"
   },
   "publishConfig": {
