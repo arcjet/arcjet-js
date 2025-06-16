@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
-import { parseProxy } from "../index";
+import { parseProxy } from "../index.js";
 
 describe("parseProxy", () => {
   test("handles strings proxies without parsing", () => {

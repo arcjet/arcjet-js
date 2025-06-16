@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
-import ArcjetHeaders from "../index";
+import ArcjetHeaders from "../index.js";
 
 describe("ArcjetHeaders", () => {
   test("can be constructed with no initializer", () => {

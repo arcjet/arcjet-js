@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
-import type { Options, RequestLike } from "../index";
-import ip, { parseProxy } from "../index";
+import type { Options, RequestLike } from "../index.js";
+import ip, { parseProxy } from "../index.js";
 
 type MakeTest = (ip: unknown) => [RequestLike, Options | undefined];
 

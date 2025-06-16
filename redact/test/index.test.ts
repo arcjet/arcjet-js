@@ -1,6 +1,6 @@
 import { describe, test, afterEach, mock } from "node:test";
 import { expect } from "expect";
-import { redact } from "../index";
+import { redact } from "../index.js";
 
 describe("ArcjetRedact", () => {
   describe("redact()", () => {

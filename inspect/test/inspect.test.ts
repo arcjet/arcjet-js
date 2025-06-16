@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
-import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../index";
+import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../index.js";
 import {
   ArcjetBotReason,
   ArcjetErrorReason,
