@@ -29,6 +29,7 @@ jobs:
           egress-policy: block
           allowed-endpoints: >
             github.com:443
+            nodejs.org:443
             registry.npmjs.org:443
 
       # Checkout
