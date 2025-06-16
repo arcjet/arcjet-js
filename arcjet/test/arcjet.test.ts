@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 
 import type { ArcjetRule, Primitive, Arcjet } from "../index";
-import ArcjetHeaders from "@arcjet/headers";
 import arcjet, {
   detectBot,
   validateEmail,
@@ -62,6 +61,20 @@ type Props<P extends Primitive> =
   P extends Primitive<infer Props> ? Props : never;
 type RuleProps<P extends Primitive, E> = IsEqual<Props<P>, E>;
 type SDKProps<SDK, E> = IsEqual<SDK extends Arcjet<infer P> ? P : never, E>;
+
+// In Node 18,
+// instances of `Headers` contain symbols that may be different depending on if
+// they have been iterated or not,
+// here we turn them into a regular object for easier comparison.
+// The rest of the request is just plain json.
+function requestAsJson(value: unknown): object {
+  assert(value);
+  assert(typeof value === "object");
+  assert("headers" in value);
+  assert(value.headers);
+  assert(value.headers instanceof Headers);
+  return { ...value, headers: Object.fromEntries(value.headers) };
+}
 
 class ArcjetTestReason extends ArcjetReason {}
 
@@ -3689,7 +3702,7 @@ describe("SDK", () => {
       protocol: "http",
       host: "example.com",
       path: "/",
-      headers: { "User-Agent": "curl/8.1.2" },
+      headers: { "user-agent": "curl/8.1.2" },
       "extra-test": "extra-test-value",
     };
 
@@ -3703,13 +3716,13 @@ describe("SDK", () => {
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
     const argument: unknown = [...client.decide.mock.calls[0].arguments].at(1);
-    assert.deepEqual(argument, {
+    assert.deepEqual(requestAsJson(argument), {
       cookies: undefined,
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
       },
-      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      headers: request.headers,
       host: request.host,
       ip: request.ip,
       method: request.method,
@@ -3758,16 +3771,14 @@ describe("SDK", () => {
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
     const argument: unknown = [...client.decide.mock.calls[0].arguments].at(1);
-    assert.deepEqual(argument, {
+    assert.deepEqual(requestAsJson(argument), {
       cookies: undefined,
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
       },
-      headers: new ArcjetHeaders([
-        ["user-agent", "curl/8.1.2"],
-        ["user-agent", "something"],
-      ]),
+      // Note that the headers are serialized.
+      headers: { "user-agent": "curl/8.1.2, something" },
       host: request.host,
       ip: request.ip,
       method: request.method,
@@ -3802,7 +3813,7 @@ describe("SDK", () => {
       protocol: "http",
       host: "example.com",
       path: "/",
-      headers: { "User-Agent": "curl/8.1.2" },
+      headers: { "user-agent": "curl/8.1.2" },
       "extra-number": 123,
       "extra-false": false,
       "extra-true": true,
@@ -3819,7 +3830,7 @@ describe("SDK", () => {
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
     const argument: unknown = [...client.decide.mock.calls[0].arguments].at(1);
-    assert.deepEqual(argument, {
+    assert.deepEqual(requestAsJson(argument), {
       cookies: undefined,
       email: undefined,
       extra: {
@@ -3828,7 +3839,7 @@ describe("SDK", () => {
         "extra-true": "true",
         "extra-unsupported": "<unsupported value>",
       },
-      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      headers: request.headers,
       host: request.host,
       ip: request.ip,
       method: request.method,
@@ -3918,13 +3929,13 @@ describe("SDK", () => {
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
     const args: unknown[] = [...client.decide.mock.calls[0].arguments];
-    assert.deepEqual(args.at(1), {
+    assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
       },
-      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      headers: { "user-agent": "curl/8.1.2" },
       host: request.host,
       ip: request.ip,
       method: request.method,
@@ -3975,13 +3986,13 @@ describe("SDK", () => {
     const _ = await aj.protect(context, request);
     assert.equal(client.report.mock.callCount(), 1);
     const args: unknown[] = [...client.report.mock.calls[0].arguments];
-    assert.deepEqual(args.at(1), {
+    assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
       },
-      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      headers: { "user-agent": "curl/8.1.2" },
       host: request.host,
       ip: request.ip,
       method: request.method,
@@ -4137,13 +4148,13 @@ describe("SDK", () => {
     assert.equal(client.decide.mock.callCount(), 1);
 
     const args: unknown[] = [...client.decide.mock.calls[0].arguments];
-    assert.deepEqual(args.at(1), {
+    assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
       },
-      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      headers: { "user-agent": "Mozilla/5.0" },
       host: request.host,
       ip: request.ip,
       method: request.method,
@@ -4485,13 +4496,13 @@ describe("SDK", () => {
 
     assert.equal(client.decide.mock.callCount(), 1);
     const args: unknown[] = [...client.decide.mock.calls[0].arguments];
-    assert.deepEqual(args.at(1), {
+    assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
       },
-      headers: new ArcjetHeaders(Object.entries(request.headers)),
+      headers: { "user-agent": "Mozilla/5.0" },
       host: request.host,
       ip: request.ip,
       method: request.method,
