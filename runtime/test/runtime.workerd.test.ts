@@ -1,5 +1,5 @@
+import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { expect } from "expect";
 import { importWithGlobal } from "./import-with-global.js";
 
 describe("workerd detection", () => {
@@ -7,6 +7,6 @@ describe("workerd detection", () => {
     const { runtime } = await importWithGlobal("../index.js", {
       navigator: { userAgent: "Cloudflare-Workers" },
     });
-    expect(runtime()).toEqual("workerd");
+    assert.equal(runtime(), "workerd");
   });
 });
