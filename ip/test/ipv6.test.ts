@@ -1,5 +1,5 @@
+import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { expect } from "expect";
 import type { Options, RequestLike } from "../index";
 import ip, { parseProxy } from "../index";
 
@@ -8,115 +8,116 @@ type MakeTest = (ip: unknown) => [RequestLike, Options | undefined];
 function suite(make: MakeTest) {
   test("returns empty string if unspecified", () => {
     const [request, options] = make("::");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if loopback address", () => {
     const [request, options] = make("::1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if ipv4 mapped address", () => {
     const [request, options] = make("::ffff:127.0.0.1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if ipv4-ipv6 translat range", () => {
     const [request, options] = make("64:ff9b:1::");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if discard range", () => {
     const [request, options] = make("100::");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if documentation range", () => {
     const [request, options] = make("2001:db8::");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if benchmarking range", () => {
     const [request, options] = make("2001:2::");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if unique local range", () => {
     const [request, options] = make("fc02::");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if unicast link local range", () => {
     const [request, options] = make("fe80::");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if the ip address is too short", () => {
     const [request, options] = make("ffff:ffff:");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if the ip address is too long", () => {
     const [request, options] = make(
       "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
     );
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns the ip if it is 'Port Control Protocol Anycast' address", () => {
     const [request, options] = make("2001:1::1");
-    expect(ip(request, options)).toEqual("2001:1::1");
+    assert.equal(ip(request, options), "2001:1::1");
   });
 
   test("returns the ip if it is 'Traversal Using Relays around NAT Anycast' address", () => {
     const [request, options] = make("2001:1::2");
-    expect(ip(request, options)).toEqual("2001:1::2");
+    assert.equal(ip(request, options), "2001:1::2");
   });
 
   test("returns the ip if it is 'AMT' address", () => {
     const [request, options] = make("2001:3::");
-    expect(ip(request, options)).toEqual("2001:3::");
+    assert.equal(ip(request, options), "2001:3::");
   });
 
   test("returns the ip if it is 'AS112-v6' address", () => {
     const [request, options] = make("2001:4:112::");
-    expect(ip(request, options)).toEqual("2001:4:112::");
+    assert.equal(ip(request, options), "2001:4:112::");
   });
 
   test("returns the ip if it is 'ORCHIDv2' address", () => {
     const [request, options] = make("2001:20::");
-    expect(ip(request, options)).toEqual("2001:20::");
+    assert.equal(ip(request, options), "2001:20::");
   });
 
   test("returns the ip if valid", () => {
     const [request, options] = make("::abcd:c00a:2ff");
-    expect(ip(request, options)).toEqual("::abcd:c00a:2ff");
+    assert.equal(ip(request, options), "::abcd:c00a:2ff");
   });
 
   test("returns the ip if valid, after ignoring scope", () => {
     const [request, options] = make("::abcd:c00a:2ff%1");
-    expect(ip(request, options)).toEqual("::abcd:c00a:2ff%1");
+    assert.equal(ip(request, options), "::abcd:c00a:2ff%1");
   });
 
   test("returns empty string if the ip is a trusted proxy", () => {
     const [request, options] = make("::abcd:c00a:2ff");
-    expect(ip(request, { ...options, proxies: ["::abcd:c00a:2ff"] })).toEqual(
+    assert.equal(ip(request, { ...options, proxies: ["::abcd:c00a:2ff"] }), "");
+    assert.equal(
+      ip(request, { ...options, proxies: [parseProxy("::abcd:c00a:2ff/128")] }),
       "",
     );
-    expect(
-      ip(request, { ...options, proxies: [parseProxy("::abcd:c00a:2ff/128")] }),
-    ).toEqual("");
   });
 
   test("returns the string if the ip is not a trusted proxy", () => {
     const [request, options] = make("::abcd:c00a:2ff");
-    expect(ip(request, { ...options, proxies: ["::abcd:c00a:2fa"] })).toEqual(
+    assert.equal(
+      ip(request, { ...options, proxies: ["::abcd:c00a:2fa"] }),
       "::abcd:c00a:2ff",
     );
-    expect(
+    assert.equal(
       ip(request, { ...options, proxies: [parseProxy("::abcd:c00a:2fa/128")] }),
-    ).toEqual("::abcd:c00a:2ff");
-    expect(
+      "::abcd:c00a:2ff",
+    );
+    assert.equal(
       ip(request, {
         ...options,
         proxies: [
@@ -124,7 +125,8 @@ function suite(make: MakeTest) {
           1234,
         ],
       }),
-    ).toEqual("::abcd:c00a:2ff");
+      "::abcd:c00a:2ff",
+    );
   });
 }
 
@@ -205,7 +207,7 @@ describe("find public IPv6", () => {
       const request = {
         headers: new Headers([["X-Forwarded-For", "e123::, 3.3.3.3, abcd::"]]),
       };
-      expect(ip(request)).toEqual("abcd::");
+      assert.equal(ip(request), "abcd::");
     });
 
     test("skips any `unknown` IP", () => {
@@ -214,7 +216,7 @@ describe("find public IPv6", () => {
           ["X-Forwarded-For", "e123::, 3.3.3.3, abcd::, unknown"],
         ]),
       };
-      expect(ip(request)).toEqual("abcd::");
+      assert.equal(ip(request), "abcd::");
     });
 
     test("skips any private IP", () => {
@@ -223,7 +225,7 @@ describe("find public IPv6", () => {
           ["X-Forwarded-For", "e123::, 3.3.3.3, abcd::, ::1"],
         ]),
       };
-      expect(ip(request)).toEqual("abcd::");
+      assert.equal(ip(request), "abcd::");
     });
 
     test("skips any trusted proxy IP", () => {
@@ -233,7 +235,7 @@ describe("find public IPv6", () => {
       const options = {
         proxies: ["abcd::"],
       };
-      expect(ip(request, options)).toEqual("3.3.3.3");
+      assert.equal(ip(request, options), "3.3.3.3");
     });
 
     test("skips multiple trusted proxy IPs", () => {
@@ -243,7 +245,7 @@ describe("find public IPv6", () => {
       const options = {
         proxies: ["3.3.3.3", "abcd::"],
       };
-      expect(ip(request, options)).toEqual("e123::");
+      assert.equal(ip(request, options), "e123::");
     });
   });
 });
