@@ -3716,8 +3716,8 @@ describe("SDK", () => {
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
     const d = client.decide.mock.calls[0].arguments;
-    const argument: unknown = client.decide.mock.calls[0].arguments.at(1);
-    assert.deepEqual(requestAsJson(argument), {
+    const args = client.decide.mock.calls[0].arguments;
+    assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
       extra: {
@@ -3771,8 +3771,8 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
-    const argument: unknown = client.decide.mock.calls[0].arguments.at(1);
-    assert.deepEqual(requestAsJson(argument), {
+    const args = client.decide.mock.calls[0].arguments;
+    assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
       extra: {
@@ -3830,8 +3830,8 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
-    const argument: unknown = client.decide.mock.calls[0].arguments.at(1);
-    assert.deepEqual(requestAsJson(argument), {
+    const args = client.decide.mock.calls[0].arguments;
+    assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
       extra: {
