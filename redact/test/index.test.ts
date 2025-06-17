@@ -19,7 +19,7 @@ describe("ArcjetRedact", () => {
 
     test("it will throw if an empty entities list is given", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      assert.rejects(
+      await assert.rejects(
         async () => await redact(text, { entities: [] }),
         /no entities configured for redaction/,
       );
@@ -27,7 +27,7 @@ describe("ArcjetRedact", () => {
 
     test("it will throw if entities is not an array", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      assert.rejects(
+      await assert.rejects(
         redact(text, {
           // @ts-expect-error
           entities: "foobar",
@@ -38,7 +38,7 @@ describe("ArcjetRedact", () => {
 
     test("it will throw if non-string entities in the array", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      assert.rejects(
+      await assert.rejects(
         redact(text, {
           // @ts-expect-error
           entities: [1234],
@@ -54,7 +54,7 @@ describe("ArcjetRedact", () => {
       });
 
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      assert.rejects(
+      await assert.rejects(
         redact(text),
         /redact failed to run because Wasm is not supported in this environment/,
       );

@@ -2627,7 +2627,7 @@ describe("Primitive > sensitiveInfo", () => {
       detect: customDetect,
     });
     assert.equal(rule.type, "SENSITIVE_INFO");
-    assert.rejects(async () => {
+    await assert.rejects(async () => {
       const _ = await rule.protect(context, details);
     }, new Error("invalid entity type"));
   });
