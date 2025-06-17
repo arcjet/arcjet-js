@@ -1,6 +1,6 @@
 import { describe, test, mock } from "node:test";
 import { expect } from "expect";
-import { setRateLimitHeaders } from "../index";
+import { setRateLimitHeaders } from "../index.js";
 import {
   ArcjetAllowDecision,
   ArcjetRateLimitReason,

@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
-import { parse } from "../index";
+import { parse } from "../index.js";
 
 describe("parse", () => {
   test("always returns 0 if the duration string is just 0", () => {

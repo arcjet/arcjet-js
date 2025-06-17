@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
 import * as http from "http";
-import { readBody } from "../index";
+import { readBody } from "../index.js";
 import type { AddressInfo } from "net";
 
 describe("reads the body from the readable stream", () => {

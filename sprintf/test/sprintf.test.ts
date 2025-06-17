@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import { expect } from "expect";
-import sprintf from "../index";
+import sprintf from "../index.js";
 
 function makeDigitSuite(sequence) {
   test(`replaces ${sequence} with an integer`, () => {
