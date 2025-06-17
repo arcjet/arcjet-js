@@ -3715,7 +3715,8 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
-    const argument: unknown = [...client.decide.mock.calls[0].arguments].at(1);
+    const d = client.decide.mock.calls[0].arguments;
+    const argument: unknown = client.decide.mock.calls[0].arguments.at(1);
     assert.deepEqual(requestAsJson(argument), {
       cookies: undefined,
       email: undefined,
@@ -3770,7 +3771,7 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
-    const argument: unknown = [...client.decide.mock.calls[0].arguments].at(1);
+    const argument: unknown = client.decide.mock.calls[0].arguments.at(1);
     assert.deepEqual(requestAsJson(argument), {
       cookies: undefined,
       email: undefined,
@@ -3829,7 +3830,7 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
-    const argument: unknown = [...client.decide.mock.calls[0].arguments].at(1);
+    const argument: unknown = client.decide.mock.calls[0].arguments.at(1);
     assert.deepEqual(requestAsJson(argument), {
       cookies: undefined,
       email: undefined,
@@ -3928,7 +3929,7 @@ describe("SDK", () => {
 
     const decision = await aj.protect(context, request);
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
@@ -3985,7 +3986,7 @@ describe("SDK", () => {
 
     const _ = await aj.protect(context, request);
     assert.equal(client.report.mock.callCount(), 1);
-    const args: unknown[] = [...client.report.mock.calls[0].arguments];
+    const args: unknown[] = client.report.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
@@ -4058,7 +4059,7 @@ describe("SDK", () => {
     const _ = await aj.protect(context, request);
     assert.equal(client.report.mock.callCount(), 1);
 
-    const args: unknown[] = [...client.report.mock.calls[0].arguments];
+    const args: unknown[] = client.report.mock.calls[0].arguments;
     const head = args.at(0);
     assert.ok(head);
     assert.ok(typeof head === "object");
@@ -4147,7 +4148,7 @@ describe("SDK", () => {
     assert.equal(client.report.mock.callCount(), 0);
     assert.equal(client.decide.mock.callCount(), 1);
 
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
@@ -4495,7 +4496,7 @@ describe("SDK", () => {
     assert.equal(decision.isErrored(), false);
 
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
       cookies: undefined,
       email: undefined,
@@ -4559,7 +4560,7 @@ describe("SDK", () => {
     assert.equal(decision.isErrored(), false);
 
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     const head = args.at(0);
     assert.ok(head);
     assert.ok(typeof head === "object");
@@ -4605,7 +4606,7 @@ describe("SDK", () => {
 
     assert.equal(client.decide.mock.callCount(), 1);
     assert.equal(client.report.mock.callCount(), 1);
-    const args: unknown[] = [...client.report.mock.calls[0].arguments];
+    const args: unknown[] = client.report.mock.calls[0].arguments;
     const item = args.at(2);
     assert.ok(item);
     assert.ok(typeof item === "object");
@@ -4649,7 +4650,7 @@ describe("SDK", () => {
     const _ = await aj.protect(context, request);
 
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     const head = args.at(0);
     assert.ok(head);
     assert.ok(typeof head === "object");
@@ -4704,7 +4705,7 @@ describe("SDK", () => {
     const _ = await aj.protect(context, request);
 
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     const list = args.at(2);
     assert.ok(Array.isArray(list));
     const item = list.at(0);
@@ -4761,7 +4762,7 @@ describe("SDK", () => {
     const _ = await aj.protect(context, request);
 
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     const list = args.at(2);
     assert.ok(Array.isArray(list));
     const item = list.at(0);
@@ -4815,7 +4816,7 @@ describe("SDK", () => {
     const _ = await aj.protect(context, request);
 
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     const list = args.at(2);
     assert.ok(Array.isArray(list));
     const item = list.at(0);
@@ -4873,7 +4874,7 @@ describe("SDK", () => {
     const _ = await aj.protect(context, request);
 
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     const list = args.at(2);
     assert.ok(Array.isArray(list));
     const item = list.at(0);
@@ -4929,7 +4930,7 @@ describe("SDK", () => {
     const _ = await aj.protect(context, request);
 
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     const list = args.at(2);
     assert.ok(Array.isArray(list));
     const item = list.at(0);
@@ -4989,7 +4990,7 @@ describe("SDK", () => {
     const _ = await aj.protect(context, request);
 
     assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = [...client.decide.mock.calls[0].arguments];
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
     const list = args.at(2);
     assert.ok(Array.isArray(list));
     const item = list.at(0);
