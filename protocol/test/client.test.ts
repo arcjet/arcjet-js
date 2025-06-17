@@ -1,5 +1,5 @@
+import assert from "node:assert/strict";
 import { describe, mock, test } from "node:test";
-import { expect } from "expect";
 import type { Cache } from "@arcjet/cache";
 import { createClient } from "../client.js";
 import { createRouterTransport } from "@connectrpc/connect";
@@ -81,8 +81,8 @@ describe("createClient", () => {
       ...defaultRemoteClientOptions,
       transport: createRouterTransport(() => {}),
     });
-    expect(typeof client.decide).toEqual("function");
-    expect(typeof client.report).toEqual("function");
+    assert.equal(typeof client.decide, "function");
+    assert.equal(typeof client.report, "function");
   });
 
   test("allows overriding the default timeout", async () => {
@@ -94,8 +94,8 @@ describe("createClient", () => {
       }),
       timeout: 300,
     });
-    expect(typeof client.decide).toEqual("function");
-    expect(typeof client.report).toEqual("function");
+    assert.equal(typeof client.decide, "function");
+    assert.equal(typeof client.report, "function");
   });
 
   test("allows overriding the sdkStack", async () => {
@@ -142,8 +142,9 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide.mock.callCount()).toEqual(1);
-    expect(router.decide.mock.calls[0].arguments).toEqual([
+    assert.equal(router.decide.mock.callCount(), 1);
+    assert.deepEqual(
+      router.decide.mock.calls[0].arguments.at(0),
       new DecideRequest({
         details: {
           ...details,
@@ -153,8 +154,7 @@ describe("createClient", () => {
         sdkStack: SDKStack.SDK_STACK_NEXTJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("sets the sdkStack as UNSPECIFIED if invalid", async () => {
@@ -202,8 +202,9 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide.mock.callCount()).toEqual(1);
-    expect(router.decide.mock.calls[0].arguments).toEqual([
+    assert.equal(router.decide.mock.callCount(), 1);
+    assert.deepEqual(
+      router.decide.mock.calls[0].arguments.at(0),
       new DecideRequest({
         details: {
           ...details,
@@ -213,8 +214,7 @@ describe("createClient", () => {
         sdkStack: SDKStack.SDK_STACK_UNSPECIFIED,
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `decide` will make RPC call with correct message", async () => {
@@ -260,8 +260,9 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide.mock.callCount()).toEqual(1);
-    expect(router.decide.mock.calls[0].arguments).toEqual([
+    assert.equal(router.decide.mock.callCount(), 1);
+    assert.deepEqual(
+      router.decide.mock.calls[0].arguments.at(0),
       new DecideRequest({
         details: {
           ...details,
@@ -271,8 +272,7 @@ describe("createClient", () => {
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `decide` will make RPC with email included", async () => {
@@ -319,8 +319,9 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide.mock.callCount()).toEqual(1);
-    expect(router.decide.mock.calls[0].arguments).toEqual([
+    assert.equal(router.decide.mock.callCount(), 1);
+    assert.deepEqual(
+      router.decide.mock.calls[0].arguments.at(0),
       new DecideRequest({
         details: {
           ...details,
@@ -330,8 +331,7 @@ describe("createClient", () => {
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `decide` will make RPC with rules included", async () => {
@@ -386,8 +386,9 @@ describe("createClient", () => {
     };
     const _ = await client.decide(context, details, [rule]);
 
-    expect(router.decide.mock.callCount()).toEqual(1);
-    expect(router.decide.mock.calls[0].arguments).toEqual([
+    assert.equal(router.decide.mock.callCount(), 1);
+    assert.deepEqual(
+      router.decide.mock.calls[0].arguments.at(0),
       new DecideRequest({
         details: {
           ...details,
@@ -397,8 +398,7 @@ describe("createClient", () => {
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `decide` creates an ALLOW ArcjetDecision if DecideResponse is allowed", async () => {
@@ -444,8 +444,8 @@ describe("createClient", () => {
     });
     const decision = await client.decide(context, details, []);
 
-    expect(decision.isErrored()).toBe(false);
-    expect(decision.isAllowed()).toBe(true);
+    assert.equal(decision.isErrored(), false);
+    assert.equal(decision.isAllowed(), true);
   });
 
   test("calling `decide` creates a DENY ArcjetDecision if DecideResponse is denied", async () => {
@@ -491,7 +491,7 @@ describe("createClient", () => {
     });
     const decision = await client.decide(context, details, []);
 
-    expect(decision.isDenied()).toBe(true);
+    assert.equal(decision.isDenied(), true);
   });
 
   test("calling `decide` creates a CHALLENGE ArcjetDecision if DecideResponse is challenged", async () => {
@@ -537,7 +537,7 @@ describe("createClient", () => {
     });
     const decision = await client.decide(context, details, []);
 
-    expect(decision.isChallenged()).toBe(true);
+    assert.equal(decision.isChallenged(), true);
   });
 
   test("calling `decide` creates an ERROR ArcjetDecision with default message if DecideResponse is error and no reason", async () => {
@@ -583,10 +583,9 @@ describe("createClient", () => {
     });
     const decision = await client.decide(context, details, []);
 
-    expect(decision.isErrored()).toBe(true);
-    expect(decision.reason).toMatchObject({
-      message: "Unknown error occurred",
-    });
+    assert.equal(decision.isErrored(), true);
+    // @ts-expect-error: to do, improve types: union, or allow `String(reason)`.
+    assert.equal(decision.reason.message, "Unknown error occurred");
   });
 
   test("calling `decide` creates an ERROR ArcjetDecision with message if DecideResponse if error and reason available", async () => {
@@ -638,10 +637,9 @@ describe("createClient", () => {
     });
     const decision = await client.decide(context, details, []);
 
-    expect(decision.isErrored()).toBe(true);
-    expect(decision.reason).toMatchObject({
-      message: "Boom!",
-    });
+    assert.equal(decision.isErrored(), true);
+    // @ts-expect-error: to do, improve types: union, or allow `String(reason)`.
+    assert.equal(decision.reason.message, "Boom!");
   });
 
   test("calling `decide` creates an ERROR ArcjetDecision if DecideResponse is unspecified", async () => {
@@ -687,8 +685,8 @@ describe("createClient", () => {
     });
     const decision = await client.decide(context, details, []);
 
-    expect(decision.isErrored()).toBe(true);
-    expect(decision.isAllowed()).toBe(true);
+    assert.equal(decision.isErrored(), true);
+    assert.equal(decision.isAllowed(), true);
   });
 
   test("calling `report` will use `waitUntil` if available", async () => {
@@ -743,7 +741,7 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(context.waitUntil.mock.callCount()).toEqual(1);
+    assert.equal(context.waitUntil.mock.callCount(), 1);
   });
 
   test("calling `report` will make RPC call with ALLOW decision", async () => {
@@ -796,8 +794,9 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report.mock.callCount()).toEqual(1);
-    expect(router.report.mock.calls[0].arguments).toEqual([
+    assert.equal(router.report.mock.callCount(), 1);
+    assert.deepEqual(
+      router.report.mock.calls[0].arguments.at(0),
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -812,8 +811,7 @@ describe("createClient", () => {
           ruleResults: [],
         },
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `report` will make RPC call with DENY decision", async () => {
@@ -865,8 +863,9 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report.mock.callCount()).toEqual(1);
-    expect(router.report.mock.calls[0].arguments).toEqual([
+    assert.equal(router.report.mock.callCount(), 1);
+    assert.deepEqual(
+      router.report.mock.calls[0].arguments.at(0),
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -881,8 +880,7 @@ describe("createClient", () => {
           ruleResults: [],
         },
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `report` will make RPC call with ERROR decision", async () => {
@@ -934,8 +932,9 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report.mock.callCount()).toEqual(1);
-    expect(router.report.mock.calls[0].arguments).toEqual([
+    assert.equal(router.report.mock.callCount(), 1);
+    assert.deepEqual(
+      router.report.mock.calls[0].arguments.at(0),
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -957,8 +956,7 @@ describe("createClient", () => {
           ruleResults: [],
         },
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `report` will make RPC call with CHALLENGE decision", async () => {
@@ -1010,8 +1008,9 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report.mock.callCount()).toEqual(1);
-    expect(router.report.mock.calls[0].arguments).toEqual([
+    assert.equal(router.report.mock.callCount(), 1);
+    assert.deepEqual(
+      router.report.mock.calls[0].arguments.at(0),
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -1026,8 +1025,7 @@ describe("createClient", () => {
           ruleResults: [],
         },
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `report` will make RPC call with UNSPECIFIED decision if invalid", async () => {
@@ -1075,8 +1073,9 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report.mock.callCount()).toEqual(1);
-    expect(router.report.mock.calls[0].arguments).toEqual([
+    assert.equal(router.report.mock.callCount(), 1);
+    assert.deepEqual(
+      router.report.mock.calls[0].arguments.at(0),
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -1091,8 +1090,7 @@ describe("createClient", () => {
           ruleResults: [],
         },
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `report` will make RPC with rules included", async () => {
@@ -1163,8 +1161,9 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report.mock.callCount()).toEqual(1);
-    expect(router.report.mock.calls[0].arguments).toEqual([
+    assert.equal(router.report.mock.callCount(), 1);
+    assert.deepEqual(
+      router.report.mock.calls[0].arguments.at(0),
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -1188,8 +1187,7 @@ describe("createClient", () => {
         },
         rules: [new Rule()],
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `report` only logs if it fails", async () => {
@@ -1238,7 +1236,7 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(logSpy.mock.callCount()).toEqual(1);
+    assert.equal(logSpy.mock.callCount(), 1);
   });
 
   test("calling `decide` will make RPC with top level characteristics included", async () => {
@@ -1285,8 +1283,9 @@ describe("createClient", () => {
     });
     const _ = await client.decide(context, details, []);
 
-    expect(router.decide.mock.callCount()).toEqual(1);
-    expect(router.decide.mock.calls[0].arguments).toEqual([
+    assert.equal(router.decide.mock.callCount(), 1);
+    assert.deepEqual(
+      router.decide.mock.calls[0].arguments.at(0),
       new DecideRequest({
         details: {
           ...details,
@@ -1297,8 +1296,7 @@ describe("createClient", () => {
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
       }),
-      expect.anything(),
-    ]);
+    );
   });
 
   test("calling `report` will make RPC with top level characteristics included", async () => {
@@ -1361,8 +1359,9 @@ describe("createClient", () => {
 
     await promise;
 
-    expect(router.report.mock.callCount()).toEqual(1);
-    expect(router.report.mock.calls[0].arguments).toEqual([
+    assert.equal(router.report.mock.callCount(), 1);
+    assert.deepEqual(
+      router.report.mock.calls[0].arguments.at(0),
       new ReportRequest({
         sdkStack: SDKStack.SDK_STACK_NODEJS,
         sdkVersion: "__ARCJET_SDK_VERSION__",
@@ -1387,7 +1386,6 @@ describe("createClient", () => {
         rules: [],
         characteristics: ["ip.src"],
       }),
-      expect.anything(),
-    ]);
+    );
   });
 });
