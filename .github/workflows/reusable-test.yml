@@ -28,11 +28,12 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
-            *.githubusercontent.com:443
-            *.github.com:443
+            api.github.com:443
             github.com:443
             nodejs.org:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
