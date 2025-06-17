@@ -30,13 +30,10 @@
     "default": "./index.js"
   },
   "files": [
-    "LICENSE",
-    "README.md",
     "_virtual/",
     "wasm/",
-    "*.js",
     "*.d.ts",
-    "!*.config.js"
+    "*.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",

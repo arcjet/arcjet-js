@@ -29,11 +29,12 @@
     "default": "./index.js"
   },
   "files": [
-    "LICENSE",
-    "README.md",
-    "*.js",
-    "*.d.ts",
-    "!*.config.js"
+    "edge-light.d.ts",
+    "edge-light.js",
+    "hasher.d.ts",
+    "hasher.js",
+    "index.d.ts",
+    "index.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",

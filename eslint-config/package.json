@@ -24,8 +24,6 @@
   "type": "module",
   "main": "./eslint.config.js",
   "files": [
-    "LICENSE",
-    "README.md",
     "eslint.config.js"
   ],
   "scripts": {

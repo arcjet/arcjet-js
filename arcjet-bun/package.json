@@ -23,11 +23,8 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "files": [
-    "LICENSE",
-    "README.md",
-    "*.js",
-    "*.d.ts",
-    "!*.config.js"
+    "index.d.ts",
+    "index.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",

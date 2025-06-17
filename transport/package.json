@@ -30,11 +30,12 @@
     "default": "./index.js"
   },
   "files": [
-    "LICENSE",
-    "README.md",
-    "*.js",
-    "*.d.ts",
-    "!*.config.js"
+    "bun.d.ts",
+    "bun.js",
+    "edge-light.d.ts",
+    "edge-light.js",
+    "index.d.ts",
+    "index.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",

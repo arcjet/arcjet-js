@@ -25,12 +25,15 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "files": [
-    "LICENSE",
-    "README.md",
     "proto/",
-    "*.js",
-    "*.d.ts",
-    "!*.config.js"
+    "client.d.ts",
+    "client.js",
+    "convert.d.ts",
+    "convert.js",
+    "index.d.ts",
+    "index.js",
+    "well-known-bots.d.ts",
+    "well-known-bots.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
