@@ -32,8 +32,12 @@
   "files": [
     "_virtual/",
     "wasm/",
-    "*.d.ts",
-    "*.js"
+    "edge-light.d.ts",
+    "edge-light.js",
+    "index.d.ts",
+    "index.js",
+    "workerd.d.ts",
+    "workerd.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
