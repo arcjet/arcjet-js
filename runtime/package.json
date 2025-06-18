@@ -2,6 +2,13 @@
   "name": "@arcjet/runtime",
   "version": "1.0.0-beta.8",
   "description": "Arcjet runtime detection",
+  "keywords": [
+    "arcjet",
+    "detect",
+    "runtime",
+    "utility",
+    "util"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {

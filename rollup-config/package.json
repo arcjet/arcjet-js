@@ -2,6 +2,10 @@
   "name": "@arcjet/rollup-config",
   "version": "1.0.0-beta.8",
   "description": "Custom rollup config for Arcjet projects",
+  "keywords": [
+    "arcjet",
+    "rollup"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {

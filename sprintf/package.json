@@ -2,6 +2,13 @@
   "name": "@arcjet/sprintf",
   "version": "1.0.0-beta.8",
   "description": "Arcjet platform-independent replacement for util.format",
+  "keywords": [
+    "arcjet",
+    "format",
+    "sprintf",
+    "utility",
+    "util"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {

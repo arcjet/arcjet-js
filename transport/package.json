@@ -2,6 +2,12 @@
   "name": "@arcjet/transport",
   "version": "1.0.0-beta.8",
   "description": "Transport mechanisms for the Arcjet protocol",
+  "keywords": [
+    "arcjet",
+    "transport",
+    "utility",
+    "util"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
