@@ -584,7 +584,7 @@ describe("createClient", () => {
     const decision = await client.decide(context, details, []);
 
     assert.equal(decision.isErrored(), true);
-    // @ts-expect-error: to do, improve types: union, or allow `String(reason)`.
+    // @ts-expect-error: TODO(#4452): union, or allow `String(reason)`.
     assert.equal(decision.reason.message, "Unknown error occurred");
   });
 
@@ -638,7 +638,7 @@ describe("createClient", () => {
     const decision = await client.decide(context, details, []);
 
     assert.equal(decision.isErrored(), true);
-    // @ts-expect-error: to do, improve types: union, or allow `String(reason)`.
+    // @ts-expect-error: TODO(#4452): union, or allow `String(reason)`.
     assert.equal(decision.reason.message, "Boom!");
   });
 

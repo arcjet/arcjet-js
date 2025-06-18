@@ -810,11 +810,11 @@ describe("Primitive > tokenBucket", () => {
     assert.equal(rules.length, 1);
     const rule = rules[0];
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.refillRate, 60);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.interval, 60);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.capacity, 120);
   });
 
@@ -828,11 +828,11 @@ describe("Primitive > tokenBucket", () => {
     const rules = tokenBucket(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].refillRate, 60);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 60);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].capacity, 120);
   });
 
@@ -881,15 +881,15 @@ describe("Primitive > tokenBucket", () => {
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
     assert.equal(rules[0].mode, "DRY_RUN");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rules[0].characteristics, ["ip.src"]);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].algorithm, "TOKEN_BUCKET");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].refillRate, 1);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 1);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].capacity, 1);
   });
 
@@ -902,7 +902,7 @@ describe("Primitive > tokenBucket", () => {
 
     const [rule] = tokenBucket(options);
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.characteristics, undefined);
   });
 
@@ -1043,9 +1043,9 @@ describe("Primitive > fixedWindow", () => {
     const rules = fixedWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].window, 60);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1058,9 +1058,9 @@ describe("Primitive > fixedWindow", () => {
     const rules = fixedWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].window, 60);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1103,13 +1103,13 @@ describe("Primitive > fixedWindow", () => {
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
     assert.equal(rules[0].mode, "DRY_RUN");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rules[0].characteristics, ["ip.src"]);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].algorithm, "FIXED_WINDOW");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].window, 3600);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1121,7 +1121,7 @@ describe("Primitive > fixedWindow", () => {
 
     const [rule] = fixedWindow(options);
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.characteristics, undefined);
   });
 
@@ -1260,9 +1260,9 @@ describe("Primitive > slidingWindow", () => {
     const rules = slidingWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 60);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1275,9 +1275,9 @@ describe("Primitive > slidingWindow", () => {
     const rules = slidingWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 60);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1320,13 +1320,13 @@ describe("Primitive > slidingWindow", () => {
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
     assert.equal(rules[0].mode, "DRY_RUN");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rules[0].characteristics, ["ip.src"]);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].algorithm, "SLIDING_WINDOW");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 3600);
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1338,7 +1338,7 @@ describe("Primitive > slidingWindow", () => {
 
     const [rule] = slidingWindow(options);
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.characteristics, undefined);
   });
 
@@ -1520,7 +1520,7 @@ describe("Primitive > validateEmail", () => {
       deny: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
     });
     assert.equal(rule.type, "EMAIL");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rule.deny, [
       "DISPOSABLE",
       "FREE",
@@ -1535,7 +1535,7 @@ describe("Primitive > validateEmail", () => {
       block: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
     });
     assert.equal(rule.type, "EMAIL");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rule.deny, [
       "DISPOSABLE",
       "FREE",
@@ -1550,7 +1550,7 @@ describe("Primitive > validateEmail", () => {
       allow: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
     });
     assert.equal(rule.type, "EMAIL");
-    // @ts-expect-error: to do: fix types to allow access of properties.
+    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rule.allow, [
       "DISPOSABLE",
       "FREE",
@@ -3484,7 +3484,7 @@ describe("SDK", () => {
     assert.ok(anonymousResult);
     assert.equal(anonymousResult.reason.type, "ERROR");
     assert.equal(
-      // @ts-expect-error: to do: `message` should be accessible.
+      // @ts-expect-error: TODO(#4452): `message` should be accessible.
       anonymousResult.reason.message,
       "rule must have a `validate` function",
     );
@@ -3537,7 +3537,7 @@ describe("SDK", () => {
     assert.ok(anonymousResult);
     assert.equal(anonymousResult.reason.type, "ERROR");
     assert.equal(
-      // @ts-expect-error: to do: `message` should be accessible.
+      // @ts-expect-error: TODO(#4452): `message` should be accessible.
       anonymousResult.reason.message,
       "rule must have a `protect` function",
     );
