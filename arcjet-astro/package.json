@@ -55,7 +55,6 @@
     "@rollup/wasm-node": "4.42.0",
     "astro": "5.9.1",
     "eslint": "9.28.0",
-    "expect": "29.7.0",
     "typescript": "5.8.3"
   },
   "publishConfig": {
