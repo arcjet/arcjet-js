@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import * as http from "http";
-import { readBody } from "../index";
+import { readBody } from "../index.js";
 import type { AddressInfo } from "net";
 
 describe("reads the body from the readable stream", () => {

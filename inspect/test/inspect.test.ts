@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../index";
+import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../index.js";
 import {
   ArcjetBotReason,
   ArcjetErrorReason,

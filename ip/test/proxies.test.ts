@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { parseProxy } from "../index";
+import { parseProxy } from "../index.js";
 
 describe("parseProxy", () => {
   test("handles strings proxies without parsing", () => {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import sprintf from "../index";
+import sprintf from "../index.js";
 
 function makeDigitSuite(sequence) {
   test(`replaces ${sequence} with an integer`, () => {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 
-import type { ArcjetRule, Primitive, Arcjet } from "../index";
+import type { ArcjetRule, Primitive, Arcjet } from "../index.js";
 import arcjet, {
   detectBot,
   validateEmail,
@@ -23,7 +23,7 @@ import arcjet, {
   sensitiveInfo,
   ArcjetSensitiveInfoReason,
   ArcjetShieldReason,
-} from "../index";
+} from "../index.js";
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.

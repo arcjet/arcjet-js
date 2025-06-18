@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { parse } from "../index";
+import { parse } from "../index.js";
 
 describe("parse", () => {
   test("always returns 0 if the duration string is just 0", () => {

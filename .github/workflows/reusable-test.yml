@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [18, 20]
+        node: [18, 20, 22, 24]
         os: [ubuntu-latest]
     permissions:
       contents: read
@@ -28,8 +28,12 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
-import { setRateLimitHeaders } from "../index";
+import { setRateLimitHeaders } from "../index.js";
 import {
   ArcjetAllowDecision,
   ArcjetRateLimitReason,

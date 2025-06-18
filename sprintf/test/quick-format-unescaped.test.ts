@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
-import sprintf from "../index";
+import sprintf from "../index.js";
 
 // This translates the 2nd argument to a spread
 function format(str, args) {

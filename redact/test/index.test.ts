@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test, afterEach, mock } from "node:test";
-import { redact } from "../index";
+import { redact } from "../index.js";
 
 describe("ArcjetRedact", () => {
   describe("redact()", () => {
