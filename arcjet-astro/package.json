@@ -2,6 +2,19 @@
   "name": "@arcjet/astro",
   "version": "1.0.0-beta.8",
   "description": "Arcjet SDK integration for Astro",
+  "keywords": [
+    "analyze",
+    "arcjet",
+    "astro-integration",
+    "astro",
+    "attack",
+    "limit",
+    "protect",
+    "secure",
+    "security",
+    "verify",
+    "withastro"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
@@ -46,7 +59,7 @@
     "arcjet": "1.0.0-beta.8"
   },
   "peerDependencies": {
-    "astro": "^5"
+    "astro": "^5.9.3"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-beta.8",
@@ -60,8 +73,5 @@
   "publishConfig": {
     "access": "public",
     "tag": "latest"
-  },
-  "keywords": [
-    "astro-integration"
-  ]
+  }
 }
