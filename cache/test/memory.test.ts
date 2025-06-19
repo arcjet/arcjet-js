@@ -11,8 +11,8 @@ describe("MemoryCache", () => {
         cache.set(
           // @ts-expect-error: test runtime behavior.
           1234,
-          "test-key",
-          "test-value",
+          "key",
+          "value",
           10,
         );
       });
@@ -21,7 +21,7 @@ describe("MemoryCache", () => {
     test("should support `namespace` as an empty string", () => {
       const cache = new MemoryCache();
 
-      cache.set("", "test-key", "test-value", 10);
+      cache.set("", "key", "value", 10);
       assert.equal(cache.namespaces.size, 1);
     });
 
@@ -30,10 +30,10 @@ describe("MemoryCache", () => {
 
       assert.throws(() => {
         cache.set(
-          "test-namespace",
+          "namespace",
           // @ts-expect-error: test runtime behavior.
           1234,
-          "test-value",
+          "value",
           10,
         );
       });
@@ -42,37 +42,37 @@ describe("MemoryCache", () => {
     test("should support `key` as an empty string", () => {
       const cache = new MemoryCache();
 
-      cache.set("test-namespace", "", "test-value", 10);
+      cache.set("namespace", "", "value", 10);
       assert.equal(cache.namespaces.size, 1);
     });
 
     test("should support a namespace", () => {
       const cache = new MemoryCache();
 
-      cache.set("test-namespace", "test-key", "test-value", 10);
+      cache.set("namespace", "key", "value", 10);
       assert.equal(cache.namespaces.size, 1);
     });
 
     test("should support a re-used namespace", () => {
       const cache = new MemoryCache();
 
-      cache.set("test-namespace", "test-key", "test-value", 10);
-      cache.set("test-namespace", "test-key-2", "test-value-2", 10);
+      cache.set("namespace", "key", "value", 10);
+      cache.set("namespace", "other-key", "other-value", 10);
       assert.equal(cache.namespaces.size, 1);
     });
 
     test("should support another new namespace", () => {
       const cache = new MemoryCache();
 
-      cache.set("test-namespace", "test-key", "test-value", 10);
-      cache.set("test-namespace-2", "test-key", "test-value", 10);
+      cache.set("namespace", "key", "value", 10);
+      cache.set("other-namespace", "key", "value", 10);
       assert.equal(cache.namespaces.size, 2);
     });
 
     test("should support `0` as a TTL", () => {
       const cache = new MemoryCache();
 
-      cache.set("test-namespace-2", "test-key-2", "test-value-2", 0);
+      cache.set("namespace", "key", "value", 0);
       assert.equal(cache.namespaces.size, 1);
     });
   });
@@ -85,7 +85,7 @@ describe("MemoryCache", () => {
         cache.get(
           // @ts-expect-error: test runtime behavior.
           1234,
-          "test-key",
+          "key",
         ),
       );
     });
@@ -93,8 +93,8 @@ describe("MemoryCache", () => {
     test("should support `namespace` as an empty string", async () => {
       const cache = new MemoryCache();
 
-      cache.set("", "test-key", "test-value", 10);
-      assert.deepEqual(await cache.get("", "test-key"), ["test-value", 10]);
+      cache.set("", "key", "value", 10);
+      assert.deepEqual(await cache.get("", "key"), ["value", 10]);
     });
 
     test("should fail on non-string keys", async () => {
@@ -102,7 +102,7 @@ describe("MemoryCache", () => {
 
       await assert.rejects(
         cache.get(
-          "test-namespace",
+          "namespace",
           // @ts-expect-error: test runtime behavior.
           1234,
         ),
@@ -112,48 +112,33 @@ describe("MemoryCache", () => {
     test("should support `key` as an empty string", async () => {
       const cache = new MemoryCache();
 
-      cache.set("test-namespace", "", "test-value", 10);
-      assert.deepEqual(await cache.get("test-namespace", ""), [
-        "test-value",
-        10,
-      ]);
+      cache.set("namespace", "", "value", 10);
+      assert.deepEqual(await cache.get("namespace", ""), ["value", 10]);
     });
 
     test("should resolve empty for a missing `namespace`", async () => {
       const cache = new MemoryCache();
 
-      assert.deepEqual(await cache.get("test-namespace-3", "test-key"), [
-        undefined,
-        0,
-      ]);
+      assert.deepEqual(await cache.get("namespace", "key"), [undefined, 0]);
     });
 
     test("should resolve empty for a missing `key`", async () => {
       const cache = new MemoryCache();
 
-      assert.deepEqual(await cache.get("test-namespace", "test-key-3"), [
-        undefined,
-        0,
-      ]);
+      assert.deepEqual(await cache.get("namespace", "key"), [undefined, 0]);
     });
 
-    test("should resolve a value for a value that’s existing, live", async () => {
+    test("should resolve a value for a value that’s existing and alive", async () => {
       const cache = new MemoryCache();
 
-      cache.set("test-namespace", "test-key", "test-value", 10);
-      assert.deepEqual(await cache.get("test-namespace", "test-key"), [
-        "test-value",
-        10,
-      ]);
+      cache.set("namespace", "key", "value", 10);
+      assert.deepEqual(await cache.get("namespace", "key"), ["value", 10]);
     });
 
     test("should resolve empty for an expired value", async () => {
       const cache = new MemoryCache();
 
-      assert.deepEqual(await cache.get("test-namespace-2", "test-key-2"), [
-        undefined,
-        0,
-      ]);
+      assert.deepEqual(await cache.get("namespace", "key"), [undefined, 0]);
     });
   });
 });
