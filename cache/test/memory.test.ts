@@ -125,7 +125,11 @@ describe("MemoryCache", () => {
     test("should resolve empty for a missing `key`", async () => {
       const cache = new MemoryCache();
 
-      assert.deepEqual(await cache.get("namespace", "key"), [undefined, 0]);
+      cache.set("namespace", "key", "value", 10);
+      assert.deepEqual(await cache.get("namespace", "other-key"), [
+        undefined,
+        0,
+      ]);
     });
 
     test("should resolve a value for a value that’s existing and alive", async () => {
