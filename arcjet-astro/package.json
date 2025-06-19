@@ -36,11 +36,12 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "files": [
-    "LICENSE",
-    "README.md",
-    "*.js",
-    "*.d.ts",
-    "!*.config.js"
+    "index.d.ts",
+    "index.js",
+    "internal.d.ts",
+    "internal.js",
+    "middleware.d.ts",
+    "middleware.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",

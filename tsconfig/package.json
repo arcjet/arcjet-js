@@ -26,9 +26,9 @@
     "node": ">=18"
   },
   "files": [
-    "LICENSE",
-    "README.md",
-    "*.json"
+    "base.json",
+    "nextjs.json",
+    "react-library.json"
   ],
   "scripts": {},
   "dependencies": {},
