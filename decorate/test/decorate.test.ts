@@ -1,6 +1,6 @@
+import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
-import { expect } from "expect";
-import { setRateLimitHeaders } from "../index";
+import { setRateLimitHeaders } from "../index.js";
 import {
   ArcjetAllowDecision,
   ArcjetRateLimitReason,
@@ -23,8 +23,8 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("no rate limit results do not set headers", () => {
@@ -46,8 +46,8 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("does not error if headers is missing `has` function", () => {
@@ -78,8 +78,8 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.get.mock.callCount()).toEqual(0);
-      expect(headers.set.mock.callCount()).toEqual(0);
+      assert.equal(headers.get.mock.callCount(), 0);
+      assert.equal(headers.set.mock.callCount(), 0);
     });
 
     test("does not error if headers is missing `get` function", () => {
@@ -110,8 +110,8 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has.mock.callCount()).toEqual(0);
-      expect(headers.set.mock.callCount()).toEqual(0);
+      assert.equal(headers.has.mock.callCount(), 0);
+      assert.equal(headers.set.mock.callCount(), 0);
     });
 
     test("does not error if headers is missing `set` function", () => {
@@ -142,8 +142,8 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has.mock.callCount()).toEqual(0);
-      expect(headers.get.mock.callCount()).toEqual(0);
+      assert.equal(headers.has.mock.callCount(), 0);
+      assert.equal(headers.get.mock.callCount(), 0);
     });
 
     test("duplicate rate limit policies do not set headers", () => {
@@ -186,9 +186,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `max` does not set headers", () => {
@@ -219,9 +219,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `window` does not set headers", () => {
@@ -252,9 +252,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `remaining` does not set headers", () => {
@@ -285,9 +285,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `reset` does not set headers", () => {
@@ -318,9 +318,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("adds rate limit headers when only top-level reason exists", () => {
@@ -338,12 +338,10 @@ describe("setRateLimitHeaders", () => {
           }),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
-        "limit=1, remaining=0, reset=100",
-      );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "1;w=100");
     });
 
     test("invalid rate limit reason `max` does not set headers", () => {
@@ -365,9 +363,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit reason `window` does not set headers", () => {
@@ -389,9 +387,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit reason `remaining` does not set headers", () => {
@@ -413,9 +411,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit reason `reset` does not set headers", () => {
@@ -437,9 +435,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(false);
-      expect(headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), false);
+      assert.equal(headers.has("RateLimit-Policy"), false);
     });
 
     test("adds rate limit headers when result exists", () => {
@@ -466,12 +464,10 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
-        "limit=1, remaining=0, reset=100",
-      );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "1;w=100");
     });
 
     test("selects nearest limit and sets multiple policies when multiple rate limit headers results exist", () => {
@@ -511,12 +507,10 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
-        "limit=1, remaining=0, reset=100",
-      );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("1;w=100, 100;w=1000");
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
 
     test("selects nearest limit in any order", () => {
@@ -556,12 +550,10 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
-        "limit=1, remaining=0, reset=100",
-      );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("1;w=100, 100;w=1000");
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
 
     test("selects nearest reset if remaining are equal", () => {
@@ -601,12 +593,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(
+        headers.get("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("100;w=100, 1000;w=1000");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("selects nearest reset in any order", () => {
@@ -646,12 +639,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(
+        headers.get("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("100;w=100, 1000;w=1000");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("selects lowest max if reset are equal", () => {
@@ -691,12 +685,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(
+        headers.get("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("100;w=100, 1000;w=1000");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("selects lowest max in any order", () => {
@@ -736,12 +731,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(
+        headers.get("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("100;w=100, 1000;w=1000");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("warns but adds the rate limit header if RateLimit already exists", () => {
@@ -771,13 +767,11 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(warnLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
-        "limit=1, remaining=0, reset=100",
-      );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(warnLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "1;w=100");
     });
 
     test("warns but adds the rate limit header if RateLimit-Policy already exists", () => {
@@ -807,13 +801,11 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(warnLogSpy.mock.callCount()).toEqual(1);
-      expect(headers.has("RateLimit")).toEqual(true);
-      expect(headers.get("RateLimit")).toEqual(
-        "limit=1, remaining=0, reset=100",
-      );
-      expect(headers.has("RateLimit-Policy")).toEqual(true);
-      expect(headers.get("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(warnLogSpy.mock.callCount(), 1);
+      assert.equal(headers.has("RateLimit"), true);
+      assert.equal(headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
+      assert.equal(headers.has("RateLimit-Policy"), true);
+      assert.equal(headers.get("RateLimit-Policy"), "1;w=100");
     });
   });
 
@@ -828,8 +820,8 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("no rate limit results do not set headers", () => {
@@ -851,8 +843,8 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("does not error if headers is undefined", () => {
@@ -879,7 +871,7 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp).toEqual({});
+      assert.deepEqual(resp, {});
     });
 
     test("does not error if headers is not Headers-like", () => {
@@ -907,7 +899,7 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp).toEqual({ headers: {} });
+      assert.deepEqual(resp, { headers: {} });
     });
 
     test("duplicate rate limit policies do not set headers", () => {
@@ -950,9 +942,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `max` does not set headers", () => {
@@ -983,9 +975,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `window` does not set headers", () => {
@@ -1016,9 +1008,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `remaining` does not set headers", () => {
@@ -1049,9 +1041,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `reset` does not set headers", () => {
@@ -1082,9 +1074,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("adds rate limit headers when only top-level reason exists", () => {
@@ -1102,12 +1094,13 @@ describe("setRateLimitHeaders", () => {
           }),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100");
     });
 
     test("invalid rate limit reason `max` does not set headers", () => {
@@ -1129,9 +1122,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit reason `window` does not set headers", () => {
@@ -1153,9 +1146,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit reason `remaining` does not set headers", () => {
@@ -1177,9 +1170,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit reason `reset` does not set headers", () => {
@@ -1201,9 +1194,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(false);
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), false);
+      assert.equal(resp.headers.has("RateLimit-Policy"), false);
     });
 
     test("adds rate limit headers when result exists", () => {
@@ -1230,12 +1223,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100");
     });
 
     test("selects nearest limit and sets multiple policies when multiple rate limit headers results exist", () => {
@@ -1275,14 +1269,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual(
-        "1;w=100, 100;w=1000",
-      );
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
 
     test("selects nearest limit in any order", () => {
@@ -1322,14 +1315,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual(
-        "1;w=100, 100;w=1000",
-      );
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
 
     test("selects nearest reset if remaining are equal", () => {
@@ -1369,12 +1361,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual(
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(
+        resp.headers.get("RateLimit-Policy"),
         "100;w=100, 1000;w=1000",
       );
     });
@@ -1416,12 +1410,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual(
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(
+        resp.headers.get("RateLimit-Policy"),
         "100;w=100, 1000;w=1000",
       );
     });
@@ -1463,12 +1459,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual(
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(
+        resp.headers.get("RateLimit-Policy"),
         "100;w=100, 1000;w=1000",
       );
     });
@@ -1510,12 +1508,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual(
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(
+        resp.headers.get("RateLimit-Policy"),
         "100;w=100, 1000;w=1000",
       );
     });
@@ -1547,13 +1547,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(warnLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(warnLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100");
     });
 
     test("warns but adds the rate limit header if RateLimit-Policy already exists", () => {
@@ -1583,13 +1584,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(warnLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.headers.has("RateLimit")).toEqual(true);
-      expect(resp.headers.get("RateLimit")).toEqual(
+      assert.equal(warnLogSpy.mock.callCount(), 1);
+      assert.equal(resp.headers.has("RateLimit"), true);
+      assert.equal(
+        resp.headers.get("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.headers.has("RateLimit-Policy")).toEqual(true);
-      expect(resp.headers.get("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(resp.headers.has("RateLimit-Policy"), true);
+      assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100");
     });
   });
 
@@ -1604,8 +1606,8 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("no rate limit results do not set headers", () => {
@@ -1627,8 +1629,8 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("does not error if headers have been sent", () => {
@@ -1666,7 +1668,7 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
     });
 
     test("does not error if missing hasHeader", () => {
@@ -1700,7 +1702,7 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp).toEqual({ ...resp });
+      assert.deepEqual(resp, { ...resp });
     });
 
     test("does not error if missing getHeader", () => {
@@ -1734,7 +1736,7 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp).toEqual({ ...resp });
+      assert.deepEqual(resp, { ...resp });
     });
 
     test("does not error if missing setHeader", () => {
@@ -1770,7 +1772,7 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp).toEqual({ ...resp });
+      assert.deepEqual(resp, { ...resp });
     });
 
     test("duplicate rate limit policies do not set headers", () => {
@@ -1813,9 +1815,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `max` does not set headers", () => {
@@ -1846,9 +1848,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `window` does not set headers", () => {
@@ -1879,9 +1881,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `remaining` does not set headers", () => {
@@ -1912,9 +1914,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit result `reset` does not set headers", () => {
@@ -1945,9 +1947,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("adds rate limit headers when only top-level reason exists", () => {
@@ -1965,12 +1967,13 @@ describe("setRateLimitHeaders", () => {
           }),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100");
     });
 
     test("invalid rate limit reason `max` does not set headers", () => {
@@ -1992,9 +1995,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit reason `window` does not set headers", () => {
@@ -2016,9 +2019,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit reason `remaining` does not set headers", () => {
@@ -2040,9 +2043,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("invalid rate limit reason `reset` does not set headers", () => {
@@ -2064,9 +2067,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
 
-      expect(errorLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(false);
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(false);
+      assert.equal(errorLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), false);
+      assert.equal(resp.hasHeader("RateLimit-Policy"), false);
     });
 
     test("adds rate limit headers when result exists", () => {
@@ -2093,12 +2096,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100");
     });
 
     test("selects nearest limit and sets multiple policies when multiple rate limit headers results exist", () => {
@@ -2138,12 +2142,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual("1;w=100, 100;w=1000");
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
 
     test("selects nearest limit in any order", () => {
@@ -2183,12 +2188,13 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual("1;w=100, 100;w=1000");
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
 
     test("selects nearest reset if remaining are equal", () => {
@@ -2228,12 +2234,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(
+        resp.getHeader("RateLimit-Policy"),
         "100;w=100, 1000;w=1000",
       );
     });
@@ -2275,12 +2283,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(
+        resp.getHeader("RateLimit-Policy"),
         "100;w=100, 1000;w=1000",
       );
     });
@@ -2322,12 +2332,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(
+        resp.getHeader("RateLimit-Policy"),
         "100;w=100, 1000;w=1000",
       );
     });
@@ -2369,12 +2381,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=100, remaining=99, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual(
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(
+        resp.getHeader("RateLimit-Policy"),
         "100;w=100, 1000;w=1000",
       );
     });
@@ -2406,13 +2420,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(warnLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(warnLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100");
     });
 
     test("warns but adds the rate limit header if RateLimit-Policy already exists", () => {
@@ -2442,13 +2457,14 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      expect(warnLogSpy.mock.callCount()).toEqual(1);
-      expect(resp.hasHeader("RateLimit")).toEqual(true);
-      expect(resp.getHeader("RateLimit")).toEqual(
+      assert.equal(warnLogSpy.mock.callCount(), 1);
+      assert.equal(resp.hasHeader("RateLimit"), true);
+      assert.equal(
+        resp.getHeader("RateLimit"),
         "limit=1, remaining=0, reset=100",
       );
-      expect(resp.hasHeader("RateLimit-Policy")).toEqual(true);
-      expect(resp.getHeader("RateLimit-Policy")).toEqual("1;w=100");
+      assert.equal(resp.hasHeader("RateLimit-Policy"), true);
+      assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100");
     });
   });
 });

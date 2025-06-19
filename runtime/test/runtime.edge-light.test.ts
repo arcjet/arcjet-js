@@ -1,5 +1,5 @@
+import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { expect } from "expect";
 import { importWithGlobal } from "./import-with-global.js";
 
 describe("edge-light detection", () => {
@@ -7,6 +7,6 @@ describe("edge-light detection", () => {
     const { runtime } = await importWithGlobal("../index.js", {
       EdgeRuntime: {},
     });
-    expect(runtime()).toEqual("edge-light");
+    assert.equal(runtime(), "edge-light");
   });
 });

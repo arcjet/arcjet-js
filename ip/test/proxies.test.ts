@@ -1,83 +1,83 @@
+import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { expect } from "expect";
-import { parseProxy } from "../index";
+import { parseProxy } from "../index.js";
 
 describe("parseProxy", () => {
   test("handles strings proxies without parsing", () => {
     const proxy = parseProxy("127.0.0.1");
-    expect(proxy).toEqual("127.0.0.1");
+    assert.equal(proxy, "127.0.0.1");
   });
 
   test("parses IPv4 CIDR address", () => {
     const proxy = parseProxy("1.1.1.1/22");
     // @ts-ignore
-    expect(proxy.type).toEqual("v4");
+    assert.equal(proxy.type, "v4");
     // @ts-ignore
-    expect(proxy.parts).toHaveLength(4);
+    assert.equal(proxy.parts.length, 4);
     // @ts-ignore
-    expect(proxy.partSize).toEqual(8);
+    assert.equal(proxy.partSize, 8);
     // @ts-ignore
-    expect(proxy.bits).toEqual(22);
+    assert.equal(proxy.bits, 22);
   });
 
   test("fails to parse IPv4 CIDR address if bits is out of range", () => {
-    expect(() => {
+    assert.throws(() => {
       parseProxy("103.21.244.0/99");
-    }).toThrow("invalid CIDR address: incorrect amount of bits");
+    }, /invalid CIDR address: incorrect amount of bits/);
   });
 
   test("fails to parse IPv4 CIDR address if bits is not numeric", () => {
-    expect(() => {
+    assert.throws(() => {
       parseProxy("103.21.244.0/aa");
-    }).toThrow("invalid CIDR address: incorrect amount of bits");
+    }, /invalid CIDR address: incorrect amount of bits/);
   });
 
   test("fails to parse IPv4 CIDR address if contains more than one `/`", () => {
-    expect(() => {
+    assert.throws(() => {
       parseProxy("103.21.244.0/1/2");
-    }).toThrow("invalid CIDR address: must be exactly 2 parts");
+    }, /invalid CIDR address: must be exactly 2 parts/);
   });
 
   test("fails if cannot parse IPv4 address", () => {
-    expect(() => {
+    assert.throws(() => {
       parseProxy("103.a.244.0/1");
-    }).toThrow("invalid CIDR address: could not parse IP address");
+    }, /invalid CIDR address: could not parse IP address/);
   });
 
   test("parses IPv6 CIDR address", () => {
     const proxy = parseProxy("2400:cb00::/32");
     // @ts-ignore
-    expect(proxy.type).toEqual("v6");
+    assert.equal(proxy.type, "v6");
     // @ts-ignore
-    expect(proxy.parts).toHaveLength(8);
+    assert.equal(proxy.parts.length, 8);
     // @ts-ignore
-    expect(proxy.partSize).toEqual(16);
+    assert.equal(proxy.partSize, 16);
     // @ts-ignore
-    expect(proxy.bits).toEqual(32);
+    assert.equal(proxy.bits, 32);
   });
 
   test("fails to parse IPv6 CIDR address if bits is out of range", () => {
-    expect(() => {
+    assert.throws(() => {
       parseProxy("2400:cb00::/256");
-    }).toThrow("invalid CIDR address: incorrect amount of bits");
+    }, /invalid CIDR address: incorrect amount of bits/);
   });
 
   test("fails to parse IPv6 CIDR address if bits is not numeric", () => {
-    expect(() => {
+    assert.throws(() => {
       parseProxy("2400:cb00::/aa");
-    }).toThrow("invalid CIDR address: incorrect amount of bits");
+    }, /invalid CIDR address: incorrect amount of bits/);
   });
 
   test("fails to parse IPv6 CIDR address if bits is not numeric", () => {
-    expect(() => {
+    assert.throws(() => {
       parseProxy("2400:cb00::/1/2");
-    }).toThrow("invalid CIDR address: must be exactly 2 parts");
+    }, /invalid CIDR address: must be exactly 2 parts/);
   });
 
   test("fails if cannot parse IPv6 address", () => {
-    expect(() => {
+    assert.throws(() => {
       parseProxy("2400:cx00::/1");
-    }).toThrow("invalid CIDR address: could not parse IP address");
+    }, /invalid CIDR address: could not parse IP address/);
   });
 
   const ipv4Ranges = [
@@ -135,7 +135,7 @@ describe("parseProxy", () => {
     test(`knows ${readableIP} is in ${cidr} range`, () => {
       const proxy = parseProxy(cidr);
       // @ts-ignore
-      expect(proxy.contains(ip)).toEqual(true);
+      assert.equal(proxy.contains(ip), true);
     });
   }
 
@@ -144,7 +144,7 @@ describe("parseProxy", () => {
     test(`knows ${readableIP} is in ${cidr} range`, () => {
       const proxy = parseProxy(cidr);
       // @ts-ignore
-      expect(proxy.contains(ip)).toEqual(true);
+      assert.equal(proxy.contains(ip), true);
     });
   }
 });

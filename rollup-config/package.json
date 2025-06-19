@@ -2,6 +2,10 @@
   "name": "@arcjet/rollup-config",
   "version": "1.0.0-beta.8",
   "description": "Custom rollup config for Arcjet projects",
+  "keywords": [
+    "arcjet",
+    "rollup"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
@@ -45,7 +49,6 @@
     "@types/node": "18.18.0",
     "@rollup/wasm-node": "4.42.0",
     "eslint": "9.28.0",
-    "expect": "29.7.0",
     "typescript": "5.8.3"
   },
   "publishConfig": {

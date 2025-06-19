@@ -1,5 +1,5 @@
+import assert from "node:assert/strict";
 import { describe, mock, test } from "node:test";
-import { expect } from "expect";
 import {
   ArcjetModeToProtocol,
   ArcjetEmailTypeToProtocol,
@@ -59,143 +59,151 @@ import { Timestamp } from "@bufbuild/protobuf";
 
 describe("convert", () => {
   test("ArcjetModeToProtocol", () => {
-    expect(ArcjetModeToProtocol("LIVE")).toEqual(Mode.LIVE);
-    expect(ArcjetModeToProtocol("DRY_RUN")).toEqual(Mode.DRY_RUN);
-    expect(
+    assert.equal(ArcjetModeToProtocol("LIVE"), Mode.LIVE);
+    assert.equal(ArcjetModeToProtocol("DRY_RUN"), Mode.DRY_RUN);
+    assert.equal(
       ArcjetModeToProtocol(
         // @ts-expect-error
         "NOT_VALID",
       ),
-    ).toEqual(Mode.UNSPECIFIED);
+      Mode.UNSPECIFIED,
+    );
   });
 
   test("ArcjetEmailTypeToProtocol", () => {
-    expect(ArcjetEmailTypeToProtocol("DISPOSABLE")).toEqual(
-      EmailType.DISPOSABLE,
-    );
-    expect(ArcjetEmailTypeToProtocol("FREE")).toEqual(EmailType.FREE);
-    expect(ArcjetEmailTypeToProtocol("INVALID")).toEqual(EmailType.INVALID);
-    expect(ArcjetEmailTypeToProtocol("NO_GRAVATAR")).toEqual(
+    assert.equal(ArcjetEmailTypeToProtocol("DISPOSABLE"), EmailType.DISPOSABLE);
+    assert.equal(ArcjetEmailTypeToProtocol("FREE"), EmailType.FREE);
+    assert.equal(ArcjetEmailTypeToProtocol("INVALID"), EmailType.INVALID);
+    assert.equal(
+      ArcjetEmailTypeToProtocol("NO_GRAVATAR"),
       EmailType.NO_GRAVATAR,
     );
-    expect(ArcjetEmailTypeToProtocol("NO_MX_RECORDS")).toEqual(
+    assert.equal(
+      ArcjetEmailTypeToProtocol("NO_MX_RECORDS"),
       EmailType.NO_MX_RECORDS,
     );
-    expect(
+    assert.equal(
       ArcjetEmailTypeToProtocol(
         // @ts-expect-error
         "NOT_VALID",
       ),
-    ).toEqual(EmailType.UNSPECIFIED);
+      EmailType.UNSPECIFIED,
+    );
   });
 
   test("ArcjetEmailTypeFromProtocol", () => {
-    expect(ArcjetEmailTypeFromProtocol(EmailType.DISPOSABLE)).toEqual(
+    assert.equal(
+      ArcjetEmailTypeFromProtocol(EmailType.DISPOSABLE),
       "DISPOSABLE",
     );
-    expect(ArcjetEmailTypeFromProtocol(EmailType.FREE)).toEqual("FREE");
-    expect(ArcjetEmailTypeFromProtocol(EmailType.INVALID)).toEqual("INVALID");
-    expect(ArcjetEmailTypeFromProtocol(EmailType.NO_GRAVATAR)).toEqual(
+    assert.equal(ArcjetEmailTypeFromProtocol(EmailType.FREE), "FREE");
+    assert.equal(ArcjetEmailTypeFromProtocol(EmailType.INVALID), "INVALID");
+    assert.equal(
+      ArcjetEmailTypeFromProtocol(EmailType.NO_GRAVATAR),
       "NO_GRAVATAR",
     );
-    expect(ArcjetEmailTypeFromProtocol(EmailType.NO_MX_RECORDS)).toEqual(
+    assert.equal(
+      ArcjetEmailTypeFromProtocol(EmailType.NO_MX_RECORDS),
       "NO_MX_RECORDS",
     );
-    expect(() => {
+    assert.throws(() => {
       ArcjetEmailTypeFromProtocol(EmailType.UNSPECIFIED);
-    }).toThrow("Invalid EmailType");
-    expect(() => {
+    }, /Invalid EmailType/);
+    assert.throws(() => {
       ArcjetEmailTypeFromProtocol(
         // @ts-expect-error
         99,
       );
-    }).toThrow("Invalid EmailType");
+    }, /Invalid EmailType/);
   });
 
   test("ArcjetStackToProtocol", () => {
-    expect(ArcjetStackToProtocol("NODEJS")).toEqual(SDKStack.SDK_STACK_NODEJS);
-    expect(ArcjetStackToProtocol("NEXTJS")).toEqual(SDKStack.SDK_STACK_NEXTJS);
-    expect(ArcjetStackToProtocol("BUN")).toEqual(SDKStack.SDK_STACK_BUN);
-    expect(ArcjetStackToProtocol("SVELTEKIT")).toEqual(
+    assert.equal(ArcjetStackToProtocol("NODEJS"), SDKStack.SDK_STACK_NODEJS);
+    assert.equal(ArcjetStackToProtocol("NEXTJS"), SDKStack.SDK_STACK_NEXTJS);
+    assert.equal(ArcjetStackToProtocol("BUN"), SDKStack.SDK_STACK_BUN);
+    assert.equal(
+      ArcjetStackToProtocol("SVELTEKIT"),
       SDKStack.SDK_STACK_SVELTEKIT,
     );
-    expect(ArcjetStackToProtocol("DENO")).toEqual(SDKStack.SDK_STACK_DENO);
-    expect(ArcjetStackToProtocol("NESTJS")).toEqual(SDKStack.SDK_STACK_NESTJS);
-    expect(ArcjetStackToProtocol("REMIX")).toEqual(SDKStack.SDK_STACK_REMIX);
-    expect(ArcjetStackToProtocol("ASTRO")).toEqual(SDKStack.SDK_STACK_ASTRO);
-    expect(
+    assert.equal(ArcjetStackToProtocol("DENO"), SDKStack.SDK_STACK_DENO);
+    assert.equal(ArcjetStackToProtocol("NESTJS"), SDKStack.SDK_STACK_NESTJS);
+    assert.equal(ArcjetStackToProtocol("REMIX"), SDKStack.SDK_STACK_REMIX);
+    assert.equal(ArcjetStackToProtocol("ASTRO"), SDKStack.SDK_STACK_ASTRO);
+    assert.equal(
       ArcjetStackToProtocol(
         // @ts-expect-error
         "NOT_VALID",
       ),
-    ).toEqual(SDKStack.SDK_STACK_UNSPECIFIED);
+      SDKStack.SDK_STACK_UNSPECIFIED,
+    );
   });
 
   test("ArcjetRuleStateToProtocol", () => {
-    expect(ArcjetRuleStateToProtocol("CACHED")).toEqual(RuleState.CACHED);
-    expect(ArcjetRuleStateToProtocol("DRY_RUN")).toEqual(RuleState.DRY_RUN);
-    expect(ArcjetRuleStateToProtocol("NOT_RUN")).toEqual(RuleState.NOT_RUN);
-    expect(ArcjetRuleStateToProtocol("RUN")).toEqual(RuleState.RUN);
-    expect(
+    assert.equal(ArcjetRuleStateToProtocol("CACHED"), RuleState.CACHED);
+    assert.equal(ArcjetRuleStateToProtocol("DRY_RUN"), RuleState.DRY_RUN);
+    assert.equal(ArcjetRuleStateToProtocol("NOT_RUN"), RuleState.NOT_RUN);
+    assert.equal(ArcjetRuleStateToProtocol("RUN"), RuleState.RUN);
+    assert.equal(
       ArcjetRuleStateToProtocol(
         // @ts-expect-error
         "NOT_VALID",
       ),
-    ).toEqual(RuleState.UNSPECIFIED);
+      RuleState.UNSPECIFIED,
+    );
   });
 
   test("ArcjetRuleStateFromProtocol", () => {
-    expect(ArcjetRuleStateFromProtocol(RuleState.CACHED)).toEqual("CACHED");
-    expect(ArcjetRuleStateFromProtocol(RuleState.DRY_RUN)).toEqual("DRY_RUN");
-    expect(ArcjetRuleStateFromProtocol(RuleState.NOT_RUN)).toEqual("NOT_RUN");
-    expect(ArcjetRuleStateFromProtocol(RuleState.RUN)).toEqual("RUN");
-    expect(() => {
+    assert.equal(ArcjetRuleStateFromProtocol(RuleState.CACHED), "CACHED");
+    assert.equal(ArcjetRuleStateFromProtocol(RuleState.DRY_RUN), "DRY_RUN");
+    assert.equal(ArcjetRuleStateFromProtocol(RuleState.NOT_RUN), "NOT_RUN");
+    assert.equal(ArcjetRuleStateFromProtocol(RuleState.RUN), "RUN");
+    assert.throws(() => {
       ArcjetRuleStateFromProtocol(RuleState.UNSPECIFIED);
-    }).toThrow("Invalid RuleState");
-    expect(() => {
+    }, /Invalid RuleState/);
+    assert.throws(() => {
       ArcjetRuleStateFromProtocol(
         // @ts-expect-error
         99,
       );
-    }).toThrow("Invalid RuleState");
+    }, /Invalid RuleState/);
   });
 
   test("ArcjetConclusionToProtocol", () => {
-    expect(ArcjetConclusionToProtocol("ALLOW")).toEqual(Conclusion.ALLOW);
-    expect(ArcjetConclusionToProtocol("CHALLENGE")).toEqual(
-      Conclusion.CHALLENGE,
-    );
-    expect(ArcjetConclusionToProtocol("DENY")).toEqual(Conclusion.DENY);
-    expect(ArcjetConclusionToProtocol("ERROR")).toEqual(Conclusion.ERROR);
-    expect(
+    assert.equal(ArcjetConclusionToProtocol("ALLOW"), Conclusion.ALLOW);
+    assert.equal(ArcjetConclusionToProtocol("CHALLENGE"), Conclusion.CHALLENGE);
+    assert.equal(ArcjetConclusionToProtocol("DENY"), Conclusion.DENY);
+    assert.equal(ArcjetConclusionToProtocol("ERROR"), Conclusion.ERROR);
+    assert.equal(
       ArcjetConclusionToProtocol(
         // @ts-expect-error
         "NOT_VALID",
       ),
-    ).toEqual(Conclusion.UNSPECIFIED);
+      Conclusion.UNSPECIFIED,
+    );
   });
 
   test("ArcjetConclusionFromProtocol", () => {
-    expect(ArcjetConclusionFromProtocol(Conclusion.ALLOW)).toEqual("ALLOW");
-    expect(ArcjetConclusionFromProtocol(Conclusion.CHALLENGE)).toEqual(
+    assert.equal(ArcjetConclusionFromProtocol(Conclusion.ALLOW), "ALLOW");
+    assert.equal(
+      ArcjetConclusionFromProtocol(Conclusion.CHALLENGE),
       "CHALLENGE",
     );
-    expect(ArcjetConclusionFromProtocol(Conclusion.DENY)).toEqual("DENY");
-    expect(ArcjetConclusionFromProtocol(Conclusion.ERROR)).toEqual("ERROR");
-    expect(() => {
+    assert.equal(ArcjetConclusionFromProtocol(Conclusion.DENY), "DENY");
+    assert.equal(ArcjetConclusionFromProtocol(Conclusion.ERROR), "ERROR");
+    assert.throws(() => {
       ArcjetConclusionFromProtocol(Conclusion.UNSPECIFIED);
-    }).toThrow("Invalid Conclusion");
-    expect(() => {
+    }, /Invalid Conclusion/);
+    assert.throws(() => {
       ArcjetConclusionFromProtocol(
         // @ts-expect-error
         99,
       );
-    }).toThrow("Invalid Conclusion");
+    }, /Invalid Conclusion/);
   });
 
   test("ArcjetReasonFromProtocol", () => {
-    expect(ArcjetReasonFromProtocol()).toBeInstanceOf(ArcjetReason);
-    expect(
+    assert.ok(ArcjetReasonFromProtocol() instanceof ArcjetReason);
+    assert.ok(
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -206,9 +214,9 @@ describe("convert", () => {
             },
           },
         }),
-      ),
-    ).toBeInstanceOf(ArcjetBotReason);
-    expect(
+      ) instanceof ArcjetBotReason,
+    );
+    assert.ok(
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -216,9 +224,9 @@ describe("convert", () => {
             value: {},
           },
         }),
-      ),
-    ).toBeInstanceOf(ArcjetEdgeRuleReason);
-    expect(
+      ) instanceof ArcjetEdgeRuleReason,
+    );
+    assert.ok(
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -228,9 +236,9 @@ describe("convert", () => {
             },
           },
         }),
-      ),
-    ).toBeInstanceOf(ArcjetEmailReason);
-    expect(
+      ) instanceof ArcjetEmailReason,
+    );
+    assert.ok(
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -240,9 +248,9 @@ describe("convert", () => {
             },
           },
         }),
-      ),
-    ).toBeInstanceOf(ArcjetErrorReason);
-    expect(
+      ) instanceof ArcjetErrorReason,
+    );
+    assert.ok(
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -257,9 +265,9 @@ describe("convert", () => {
             },
           },
         }),
-      ),
-    ).toBeInstanceOf(ArcjetRateLimitReason);
-    expect(
+      ) instanceof ArcjetRateLimitReason,
+    );
+    assert.ok(
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -274,9 +282,9 @@ describe("convert", () => {
             },
           },
         }),
-      ),
-    ).toBeInstanceOf(ArcjetRateLimitReason);
-    expect(
+      ) instanceof ArcjetRateLimitReason,
+    );
+    assert.ok(
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -292,9 +300,9 @@ describe("convert", () => {
             },
           },
         }),
-      ),
-    ).toBeInstanceOf(ArcjetSensitiveInfoReason);
-    expect(
+      ) instanceof ArcjetSensitiveInfoReason,
+    );
+    assert.ok(
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -304,10 +312,10 @@ describe("convert", () => {
             },
           },
         }),
-      ),
-    ).toBeInstanceOf(ArcjetShieldReason);
-    expect(ArcjetReasonFromProtocol(new Reason())).toBeInstanceOf(ArcjetReason);
-    expect(
+      ) instanceof ArcjetShieldReason,
+    );
+    assert.ok(ArcjetReasonFromProtocol(new Reason()) instanceof ArcjetReason);
+    assert.ok(
       ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -315,25 +323,25 @@ describe("convert", () => {
             case: "NOT_VALID",
           },
         }),
-      ),
-    ).toBeInstanceOf(ArcjetReason);
-    expect(() => {
+      ) instanceof ArcjetReason,
+    );
+    assert.throws(() => {
       ArcjetReasonFromProtocol(
         // @ts-expect-error
         "NOT_VALID",
       );
-    }).toThrow("Invalid Reason");
-    expect(() => {
+    }, /Invalid Reason/);
+    assert.throws(() => {
       ArcjetReasonFromProtocol({
         // @ts-expect-error
         reason: "NOT_VALID",
       });
-    }).toThrow("Invalid Reason");
+    }, /Invalid Reason/);
   });
 
   test("ArcjetReasonToProtocol", () => {
-    expect(ArcjetReasonToProtocol(new ArcjetReason())).toBeInstanceOf(Reason);
-    expect(
+    assert.ok(ArcjetReasonToProtocol(new ArcjetReason()) instanceof Reason);
+    assert.deepEqual(
       ArcjetReasonToProtocol(
         new ArcjetRateLimitReason({
           max: 1,
@@ -342,7 +350,6 @@ describe("convert", () => {
           window: 100,
         }),
       ),
-    ).toEqual(
       new Reason({
         reason: {
           case: "rateLimit",
@@ -355,8 +362,9 @@ describe("convert", () => {
         },
       }),
     );
+
     const resetTime = new Date();
-    expect(
+    assert.deepEqual(
       ArcjetReasonToProtocol(
         new ArcjetRateLimitReason({
           max: 1,
@@ -366,7 +374,6 @@ describe("convert", () => {
           resetTime,
         }),
       ),
-    ).toEqual(
       new Reason({
         reason: {
           case: "rateLimit",
@@ -380,7 +387,8 @@ describe("convert", () => {
         },
       }),
     );
-    expect(
+
+    assert.deepEqual(
       ArcjetReasonToProtocol(
         new ArcjetBotReason({
           allowed: ["GOOGLE_CRAWLER"],
@@ -389,7 +397,6 @@ describe("convert", () => {
           spoofed: false,
         }),
       ),
-    ).toEqual(
       new Reason({
         reason: {
           case: "botV2",
@@ -402,7 +409,8 @@ describe("convert", () => {
         },
       }),
     );
-    expect(
+
+    assert.deepEqual(
       ArcjetReasonToProtocol(
         new ArcjetSensitiveInfoReason({
           denied: [
@@ -415,7 +423,6 @@ describe("convert", () => {
           allowed: [],
         }),
       ),
-    ).toEqual(
       new Reason({
         reason: {
           case: "sensitiveInfo",
@@ -431,7 +438,9 @@ describe("convert", () => {
         },
       }),
     );
-    expect(ArcjetReasonToProtocol(new ArcjetEdgeRuleReason())).toEqual(
+
+    assert.deepEqual(
+      ArcjetReasonToProtocol(new ArcjetEdgeRuleReason()),
       new Reason({
         reason: {
           case: "edgeRule",
@@ -439,9 +448,9 @@ describe("convert", () => {
         },
       }),
     );
-    expect(
+
+    assert.deepEqual(
       ArcjetReasonToProtocol(new ArcjetShieldReason({ shieldTriggered: true })),
-    ).toEqual(
       new Reason({
         reason: {
           case: "shield",
@@ -451,13 +460,13 @@ describe("convert", () => {
         },
       }),
     );
-    expect(
+
+    assert.deepEqual(
       ArcjetReasonToProtocol(
         new ArcjetEmailReason({
           emailTypes: ["DISPOSABLE"],
         }),
       ),
-    ).toEqual(
       new Reason({
         reason: {
           case: "email",
@@ -467,7 +476,9 @@ describe("convert", () => {
         },
       }),
     );
-    expect(ArcjetReasonToProtocol(new ArcjetErrorReason("Test error"))).toEqual(
+
+    assert.deepEqual(
+      ArcjetReasonToProtocol(new ArcjetErrorReason("Test error")),
       new Reason({
         reason: {
           case: "error",
@@ -480,7 +491,7 @@ describe("convert", () => {
   });
 
   test("ArcjetRuleResultToProtocol", () => {
-    expect(
+    assert.deepEqual(
       ArcjetRuleResultToProtocol(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
@@ -491,7 +502,6 @@ describe("convert", () => {
           reason: new ArcjetReason(),
         }),
       ),
-    ).toEqual(
       new RuleResult({
         ruleId: "test-rule-id",
         fingerprint: "test-fingerprint",
@@ -503,7 +513,7 @@ describe("convert", () => {
   });
 
   test("ArcjetRuleResultFromProtocol", () => {
-    expect(
+    assert.deepEqual(
       ArcjetRuleResultFromProtocol(
         new RuleResult({
           ruleId: "test-rule-id",
@@ -513,7 +523,6 @@ describe("convert", () => {
           reason: new Reason(),
         }),
       ),
-    ).toEqual(
       new ArcjetRuleResult({
         ruleId: "test-rule-id",
         fingerprint: "test-fingerprint",
@@ -526,7 +535,7 @@ describe("convert", () => {
   });
 
   test("ArcjetDecisionToProtocol", () => {
-    expect(
+    assert.deepEqual(
       ArcjetDecisionToProtocol(
         new ArcjetAllowDecision({
           id: "abc123",
@@ -536,7 +545,6 @@ describe("convert", () => {
           ip: new ArcjetIpDetails(),
         }),
       ),
-    ).toEqual(
       new Decision({
         id: "abc123",
         conclusion: Conclusion.ALLOW,
@@ -547,50 +555,56 @@ describe("convert", () => {
   });
 
   test("ArcjetDecisionFromProtocol", () => {
-    expect(ArcjetDecisionFromProtocol()).toBeInstanceOf(ArcjetErrorDecision);
-    expect(ArcjetDecisionFromProtocol(new Decision())).toBeInstanceOf(
-      ArcjetErrorDecision,
+    assert.ok(ArcjetDecisionFromProtocol() instanceof ArcjetErrorDecision);
+    assert.ok(
+      ArcjetDecisionFromProtocol(new Decision()) instanceof ArcjetErrorDecision,
     );
-    expect(
+
+    assert.ok(
       ArcjetDecisionFromProtocol(
         new Decision({
           conclusion: Conclusion.ALLOW,
         }),
-      ),
-    ).toBeInstanceOf(ArcjetAllowDecision);
-    expect(
+      ) instanceof ArcjetAllowDecision,
+    );
+
+    assert.ok(
       ArcjetDecisionFromProtocol(
         new Decision({
           conclusion: Conclusion.DENY,
         }),
-      ),
-    ).toBeInstanceOf(ArcjetDenyDecision);
-    expect(
+      ) instanceof ArcjetDenyDecision,
+    );
+
+    assert.ok(
       ArcjetDecisionFromProtocol(
         new Decision({
           conclusion: Conclusion.CHALLENGE,
         }),
-      ),
-    ).toBeInstanceOf(ArcjetChallengeDecision);
-    expect(
+      ) instanceof ArcjetChallengeDecision,
+    );
+
+    assert.ok(
       ArcjetDecisionFromProtocol(
         new Decision({
           conclusion: Conclusion.ERROR,
         }),
-      ),
-    ).toBeInstanceOf(ArcjetErrorDecision);
-    expect(
+      ) instanceof ArcjetErrorDecision,
+    );
+
+    assert.ok(
       ArcjetDecisionFromProtocol({
         // @ts-expect-error
         conclusion: "NOT_VALID",
-      }),
-    ).toBeInstanceOf(ArcjetErrorDecision);
-    expect(
+      }) instanceof ArcjetErrorDecision,
+    );
+
+    assert.ok(
       ArcjetDecisionFromProtocol(
         // @ts-expect-error
         "NOT_VALID",
-      ),
-    ).toBeInstanceOf(ArcjetErrorDecision);
+      ) instanceof ArcjetErrorDecision,
+    );
   });
 
   test("ArcjetRuleToProtocol", () => {
@@ -602,7 +616,8 @@ describe("convert", () => {
       validate: mock.fn(),
       protect: mock.fn(),
     };
-    expect(ArcjetRuleToProtocol(unknownRule)).toEqual(new Rule({}));
+
+    assert.deepEqual(ArcjetRuleToProtocol(unknownRule), new Rule({}));
 
     const tokenBucketRule: ArcjetTokenBucketRateLimitRule<{}> = {
       version: 0,
@@ -616,7 +631,9 @@ describe("convert", () => {
       validate: mock.fn(),
       protect: mock.fn(),
     };
-    expect(ArcjetRuleToProtocol(tokenBucketRule)).toEqual(
+
+    assert.deepEqual(
+      ArcjetRuleToProtocol(tokenBucketRule),
       new Rule({
         rule: {
           case: "rateLimit",
@@ -642,7 +659,9 @@ describe("convert", () => {
       validate: mock.fn(),
       protect: mock.fn(),
     };
-    expect(ArcjetRuleToProtocol(fixedWindowRule)).toEqual(
+
+    assert.deepEqual(
+      ArcjetRuleToProtocol(fixedWindowRule),
       new Rule({
         rule: {
           case: "rateLimit",
@@ -667,7 +686,9 @@ describe("convert", () => {
       validate: mock.fn(),
       protect: mock.fn(),
     };
-    expect(ArcjetRuleToProtocol(slidingWindowRule)).toEqual(
+
+    assert.deepEqual(
+      ArcjetRuleToProtocol(slidingWindowRule),
       new Rule({
         rule: {
           case: "rateLimit",
@@ -697,7 +718,9 @@ describe("convert", () => {
         throw new Error("should not be called");
       },
     };
-    expect(ArcjetRuleToProtocol(emailRule)).toEqual(
+
+    assert.deepEqual(
+      ArcjetRuleToProtocol(emailRule),
       new Rule({
         rule: {
           case: "email",
@@ -724,7 +747,8 @@ describe("convert", () => {
         throw new Error("should not be called");
       },
     };
-    expect(ArcjetRuleToProtocol(botRule)).toEqual(
+    assert.deepEqual(
+      ArcjetRuleToProtocol(botRule),
       new Rule({
         rule: {
           case: "botV2",
@@ -745,7 +769,8 @@ describe("convert", () => {
       validate: mock.fn(),
       protect: mock.fn(),
     };
-    expect(ArcjetRuleToProtocol(shieldRule)).toEqual(
+    assert.deepEqual(
+      ArcjetRuleToProtocol(shieldRule),
       new Rule({
         rule: {
           case: "shield",
@@ -771,7 +796,9 @@ describe("convert", () => {
         throw new Error("should not be called");
       },
     };
-    expect(ArcjetRuleToProtocol(sensitiveInfoRule)).toEqual(
+
+    assert.deepEqual(
+      ArcjetRuleToProtocol(sensitiveInfoRule),
       new Rule({
         rule: {
           case: "sensitiveInfo",

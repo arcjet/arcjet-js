@@ -2,6 +2,12 @@
   "name": "@arcjet/decorate",
   "version": "1.0.0-beta.8",
   "description": "Arcjet utilities for decorating responses with information",
+  "keywords": [
+    "arcjet",
+    "decore",
+    "utility",
+    "util"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
   "repository": {
@@ -46,7 +52,6 @@
     "@rollup/wasm-node": "4.42.0",
     "@types/node": "18.18.0",
     "eslint": "9.28.0",
-    "expect": "29.7.0",
     "typescript": "5.8.3"
   },
   "publishConfig": {

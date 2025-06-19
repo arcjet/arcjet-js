@@ -18,7 +18,7 @@ import nosecone, {
   createXssProtection,
   NoseconeValidationError,
   withVercelToolbar,
-} from "../index";
+} from "../index.js";
 
 describe("nosecone", () => {
   describe("NoseconeValidationError", () => {
