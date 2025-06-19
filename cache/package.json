@@ -39,7 +39,7 @@
     "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
     "pretest": "npm run build",
-    "test": "node --test --experimental-test-coverage"
+    "test": "node --experimental-test-coverage --test -- test/**/*.ts"
   },
   "dependencies": {},
   "devDependencies": {
