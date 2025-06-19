@@ -1,5 +1,5 @@
+import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { expect } from "expect";
 import type { Options, RequestLike } from "../index.js";
 import ip, { parseProxy } from "../index.js";
 
@@ -7,30 +7,33 @@ type MakeTest = (ip: unknown) => [RequestLike, Options | undefined];
 
 function suite(make: MakeTest) {
   test("returns empty string if headers not set", () => {
-    expect(
+    assert.equal(
       ip(
         // @ts-expect-error
         {},
       ),
-    ).toEqual("");
+      "",
+    );
   });
 
   test("returns empty string if headers is null", () => {
-    expect(
+    assert.equal(
       ip({
         // @ts-expect-error
         headers: null,
       }),
-    ).toEqual("");
+      "",
+    );
   });
 
   test("returns empty string if headers is not object", () => {
-    expect(
+    assert.equal(
       ip({
         // @ts-expect-error
         headers: "",
       }),
-    ).toEqual("");
+      "",
+    );
   });
 
   // Support for Node.js IncomingMessage
@@ -41,7 +44,7 @@ function suite(make: MakeTest) {
         "x-real-ip": "1.1.1.1",
       },
     };
-    expect(ip(request)).toEqual("1.1.1.1");
+    assert.equal(ip(request), "1.1.1.1");
   });
 
   // Support for Node.js IncomingMessage
@@ -52,141 +55,141 @@ function suite(make: MakeTest) {
         "x-forwarded-for": ["1.1.1.1", "2.2.2.2", "3.3.3.3"],
       },
     };
-    expect(ip(request)).toEqual("3.3.3.3");
+    assert.equal(ip(request), "3.3.3.3");
   });
 
   test("returns empty string if unspecified", () => {
     const [request, options] = make("0.0.0.0");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if 'this network' address", () => {
     const [request, options] = make("0.1.2.3");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the shared address range", () => {
     const [request, options] = make("100.127.255.255");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the link local address range", () => {
     const [request, options] = make("169.254.255.255");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the future protocol range", () => {
     const [request, options] = make("192.0.0.1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the 192.0.2.x documentation range", () => {
     const [request, options] = make("192.0.2.1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the 198.51.100.x documentation range", () => {
     const [request, options] = make("198.51.100.1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the 203.0.113.x documentation range", () => {
     const [request, options] = make("203.0.113.1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the benchmarking range", () => {
     const [request, options] = make("198.19.255.255");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the reserved range", () => {
     const [request, options] = make("240.0.0.0");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the broadcast address", () => {
     const [request, options] = make("255.255.255.255");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if loopback", () => {
     const [request, options] = make("127.0.0.1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if not full ip", () => {
     const [request, options] = make("12.3.4");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if more than 3 digits in an octet", () => {
     const [request, options] = make("1111.2.3.4");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if more than full ip", () => {
     const [request, options] = make("1.2.3.4.5");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if any octet has leading 0", () => {
     const [request, options] = make("1.02.3.4");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if not a string", () => {
     const [request, options] = make(["12", "3", "4"]);
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the 10.x.x.x private range", () => {
     const [request, options] = make("10.1.1.1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the 172.16.x.x-172.31.x.x private range", () => {
     const [request, options] = make("172.18.1.1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string if in the 192.168.x.x private range", () => {
     const [request, options] = make("192.168.1.1");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns empty string outside of the valid range", () => {
     const [request, options] = make("1.1.1.256");
-    expect(ip(request, options)).toEqual("");
+    assert.equal(ip(request, options), "");
   });
 
   test("returns the ip if valid", () => {
     const [request, options] = make("1.1.1.1");
-    expect(ip(request, options)).toEqual("1.1.1.1");
+    assert.equal(ip(request, options), "1.1.1.1");
   });
 
   test("returns the full ip if valid, after ignoring port", () => {
     const [request, options] = make("1.1.1.1:443");
-    expect(ip(request, options)).toEqual("1.1.1.1:443");
+    assert.equal(ip(request, options), "1.1.1.1:443");
   });
 
   test("returns empty string if the ip is a trusted proxy", () => {
     const [request, options] = make("1.1.1.1");
-    expect(ip(request, { ...options, proxies: ["1.1.1.1"] })).toEqual("");
-    expect(
+    assert.equal(ip(request, { ...options, proxies: ["1.1.1.1"] }), "");
+    assert.equal(
       ip(request, { ...options, proxies: [parseProxy("1.1.1.1/32")] }),
-    ).toEqual("");
+      "",
+    );
   });
 
   test("returns the string if the ip is not a trusted proxy", () => {
     const [request, options] = make("1.1.1.1");
-    expect(ip(request, { ...options, proxies: ["1.1.1.2"] })).toEqual(
+    assert.equal(ip(request, { ...options, proxies: ["1.1.1.2"] }), "1.1.1.1");
+    assert.equal(
+      ip(request, { ...options, proxies: [parseProxy("1.1.1.2/32")] }),
       "1.1.1.1",
     );
-    expect(
-      ip(request, { ...options, proxies: [parseProxy("1.1.1.2/32")] }),
-    ).toEqual("1.1.1.1");
-    expect(
+    assert.equal(
       ip(request, {
         ...options,
         proxies: [
@@ -194,7 +197,8 @@ function suite(make: MakeTest) {
           1234,
         ],
       }),
-    ).toEqual("1.1.1.1");
+      "1.1.1.1",
+    );
   });
 }
 
@@ -276,7 +280,7 @@ describe("find public IPv4", () => {
           ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3"],
         ]),
       };
-      expect(ip(request)).toEqual("3.3.3.3");
+      assert.equal(ip(request), "3.3.3.3");
     });
 
     test("skips any `unknown` IP", () => {
@@ -285,7 +289,7 @@ describe("find public IPv4", () => {
           ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3, unknown"],
         ]),
       };
-      expect(ip(request)).toEqual("3.3.3.3");
+      assert.equal(ip(request), "3.3.3.3");
     });
 
     test("skips any private IP", () => {
@@ -294,7 +298,7 @@ describe("find public IPv4", () => {
           ["X-Forwarded-For", "1.1.1.1, 2.2.2.2, 3.3.3.3, 127.0.0.1"],
         ]),
       };
-      expect(ip(request)).toEqual("3.3.3.3");
+      assert.equal(ip(request), "3.3.3.3");
     });
 
     test("skips any trusted proxy IP", () => {
@@ -306,7 +310,7 @@ describe("find public IPv4", () => {
       const options = {
         proxies: ["3.3.3.3"],
       };
-      expect(ip(request, options)).toEqual("2.2.2.2");
+      assert.equal(ip(request, options), "2.2.2.2");
     });
 
     test("skips multiple trusted proxy IPs", () => {
@@ -318,7 +322,7 @@ describe("find public IPv4", () => {
       const options = {
         proxies: ["3.3.3.3", "2.2.2.2"],
       };
-      expect(ip(request, options)).toEqual("1.1.1.1");
+      assert.equal(ip(request, options), "1.1.1.1");
     });
   });
 });

@@ -1,90 +1,100 @@
+import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { expect } from "expect";
 import * as env from "../index.ts";
 
 describe("env", () => {
   test("platform", () => {
-    expect(env.platform({})).toBeUndefined();
-    expect(env.platform({ FLY_APP_NAME: "" })).toBeUndefined();
-    expect(env.platform({ FLY_APP_NAME: "foobar" })).toEqual("fly-io");
-    expect(env.platform({ VERCEL: "" })).toBeUndefined();
-    expect(env.platform({ VERCEL: "1" })).toEqual("vercel");
-    expect(env.platform({ RENDER: "" })).toBeUndefined();
-    expect(env.platform({ RENDER: "true" })).toEqual("render");
+    assert.equal(env.platform({}), undefined);
+    assert.equal(env.platform({ FLY_APP_NAME: "" }), undefined);
+    assert.equal(env.platform({ FLY_APP_NAME: "foobar" }), "fly-io");
+    assert.equal(env.platform({ VERCEL: "" }), undefined);
+    assert.equal(env.platform({ VERCEL: "1" }), "vercel");
+    assert.equal(env.platform({ RENDER: "" }), undefined);
+    assert.equal(env.platform({ RENDER: "true" }), "render");
   });
 
   test("isDevelopment", () => {
-    expect(env.isDevelopment({})).toEqual(false);
-    expect(env.isDevelopment({ NODE_ENV: "production" })).toEqual(false);
-    expect(env.isDevelopment({ NODE_ENV: "development" })).toEqual(true);
-    expect(env.isDevelopment({ MODE: "production" })).toEqual(false);
-    expect(env.isDevelopment({ MODE: "development" })).toEqual(true);
-    expect(env.isDevelopment({ ARCJET_ENV: "production" })).toEqual(false);
-    expect(env.isDevelopment({ ARCJET_ENV: "development" })).toEqual(true);
+    assert.equal(env.isDevelopment({}), false);
+    assert.equal(env.isDevelopment({ NODE_ENV: "production" }), false);
+    assert.equal(env.isDevelopment({ NODE_ENV: "development" }), true);
+    assert.equal(env.isDevelopment({ MODE: "production" }), false);
+    assert.equal(env.isDevelopment({ MODE: "development" }), true);
+    assert.equal(env.isDevelopment({ ARCJET_ENV: "production" }), false);
+    assert.equal(env.isDevelopment({ ARCJET_ENV: "development" }), true);
   });
 
   test("logLevel", () => {
-    expect(env.logLevel({})).toEqual("warn");
-    expect(env.logLevel({ ARCJET_LOG_LEVEL: "" })).toEqual("warn");
-    expect(env.logLevel({ ARCJET_LOG_LEVEL: "invalid" })).toEqual("warn");
-    expect(env.logLevel({ ARCJET_LOG_LEVEL: "debug" })).toEqual("debug");
-    expect(env.logLevel({ ARCJET_LOG_LEVEL: "info" })).toEqual("info");
-    expect(env.logLevel({ ARCJET_LOG_LEVEL: "warn" })).toEqual("warn");
-    expect(env.logLevel({ ARCJET_LOG_LEVEL: "error" })).toEqual("error");
+    assert.equal(env.logLevel({}), "warn");
+    assert.equal(env.logLevel({ ARCJET_LOG_LEVEL: "" }), "warn");
+    assert.equal(env.logLevel({ ARCJET_LOG_LEVEL: "invalid" }), "warn");
+    assert.equal(env.logLevel({ ARCJET_LOG_LEVEL: "debug" }), "debug");
+    assert.equal(env.logLevel({ ARCJET_LOG_LEVEL: "info" }), "info");
+    assert.equal(env.logLevel({ ARCJET_LOG_LEVEL: "warn" }), "warn");
+    assert.equal(env.logLevel({ ARCJET_LOG_LEVEL: "error" }), "error");
   });
 
   test("baseUrl", () => {
     // dev
-    expect(env.baseUrl({ NODE_ENV: "development" })).toEqual(
+    assert.equal(
+      env.baseUrl({ NODE_ENV: "development" }),
       "https://decide.arcjet.com",
     );
-    expect(
+    assert.equal(
       env.baseUrl({
         NODE_ENV: "development",
         ARCJET_BASE_URL: "anything-in-dev",
       }),
-    ).toEqual("anything-in-dev");
-    expect(env.baseUrl({ NODE_ENV: "development", FLY_APP_NAME: "" })).toEqual(
+      "anything-in-dev",
+    );
+    assert.equal(
+      env.baseUrl({ NODE_ENV: "development", FLY_APP_NAME: "" }),
       "https://decide.arcjet.com",
     );
-    expect(
+    assert.equal(
       env.baseUrl({ NODE_ENV: "development", FLY_APP_NAME: "foobar" }),
-    ).toEqual("https://fly.decide.arcjet.com");
+      "https://fly.decide.arcjet.com",
+    );
     // prod
-    expect(env.baseUrl({})).toEqual("https://decide.arcjet.com");
-    expect(
+    assert.equal(env.baseUrl({}), "https://decide.arcjet.com");
+    assert.equal(
       env.baseUrl({
         ARCJET_BASE_URL: "https://decide.arcjet.com",
       }),
-    ).toEqual("https://decide.arcjet.com");
-    expect(
+      "https://decide.arcjet.com",
+    );
+    assert.equal(
       env.baseUrl({
         ARCJET_BASE_URL: "https://decide.arcjettest.com",
       }),
-    ).toEqual("https://decide.arcjettest.com");
-    expect(
+      "https://decide.arcjettest.com",
+    );
+    assert.equal(
       env.baseUrl({
         ARCJET_BASE_URL: "https://fly.decide.arcjet.com",
       }),
-    ).toEqual("https://fly.decide.arcjet.com");
-    expect(
+      "https://fly.decide.arcjet.com",
+    );
+    assert.equal(
       env.baseUrl({
         ARCJET_BASE_URL: "https://fly.decide.arcjettest.com",
       }),
-    ).toEqual("https://fly.decide.arcjettest.com");
-    expect(
+      "https://fly.decide.arcjettest.com",
+    );
+    assert.equal(
       env.baseUrl({
         ARCJET_BASE_URL: "https://decide.arcjet.orb.local:4082",
       }),
-    ).toEqual("https://decide.arcjet.orb.local:4082");
-    expect(env.baseUrl({ FLY_APP_NAME: "foobar" })).toEqual(
+      "https://decide.arcjet.orb.local:4082",
+    );
+    assert.equal(
+      env.baseUrl({ FLY_APP_NAME: "foobar" }),
       "https://fly.decide.arcjet.com",
     );
   });
 
   test("apiKey", () => {
-    expect(env.apiKey({})).toBeUndefined();
-    expect(env.apiKey({ ARCJET_KEY: "invalid" })).toBeUndefined();
-    expect(env.apiKey({ ARCJET_KEY: "ajkey_abc123" })).toEqual("ajkey_abc123");
+    assert.equal(env.apiKey({}), undefined);
+    assert.equal(env.apiKey({ ARCJET_KEY: "invalid" }), undefined);
+    assert.equal(env.apiKey({ ARCJET_KEY: "ajkey_abc123" }), "ajkey_abc123");
   });
 });

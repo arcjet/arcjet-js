@@ -1,5 +1,5 @@
+import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { expect } from "expect";
 import * as http from "http";
 import { readBody } from "../index.js";
 import type { AddressInfo } from "net";
@@ -30,9 +30,9 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          expect(body).toEqual("hello, world!");
+          assert.equal(body, "hello, world!");
         } catch (err) {
-          expect(err).toBeUndefined();
+          assert.equal(err, undefined);
         } finally {
           server.close(done);
         }
@@ -44,9 +44,9 @@ describe("reads the body from the readable stream", () => {
     const server = http.createServer(async (req, res) => {
       try {
         await readBody(req, { limit: 4 });
-        throw new Error("this should not return successfully");
+        assert.fail("this should not return successfully");
       } catch (err) {
-        expect(err).toEqual(new Error("request entity too large"));
+        assert.equal(String(err), "Error: request entity too large");
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -66,7 +66,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          expect(body).toEqual("request entity too large");
+          assert.equal(body, "request entity too large");
         } finally {
           server.close(done);
         }
@@ -78,10 +78,11 @@ describe("reads the body from the readable stream", () => {
     const server = http.createServer(async (req, res) => {
       try {
         await readBody(req, { limit: 1024, expectedLength: 4 });
-        throw new Error("this should not return successfully");
+        assert.fail("this should not return successfully");
       } catch (err) {
-        expect(err).toEqual(
-          new Error("request size did not match content length"),
+        assert.equal(
+          String(err),
+          "Error: request size did not match content length",
         );
         req.resume();
         res.statusCode = 500;
@@ -102,7 +103,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          expect(body).toEqual("request size did not match content length");
+          assert.equal(body, "request size did not match content length");
         } finally {
           server.close(done);
         }
@@ -118,9 +119,9 @@ describe("reads the body from the readable stream", () => {
           readable: req.readable,
         };
         await readBody(reqNoOn, { limit: 1024 });
-        throw new Error("this should not return successfully");
+        assert.fail("this should not return successfully");
       } catch (err) {
-        expect(err).toEqual(new Error("missing `on` function"));
+        assert.equal(String(err), "Error: missing `on` function");
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -140,7 +141,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          expect(body).toEqual("missing `on` function");
+          assert.equal(body, "missing `on` function");
         } finally {
           server.close(done);
         }
@@ -156,9 +157,9 @@ describe("reads the body from the readable stream", () => {
           readable: req.readable,
         };
         await readBody(reqNoOn, { limit: 1024 });
-        throw new Error("this should not return successfully");
+        assert.fail("this should not return successfully");
       } catch (err) {
-        expect(err).toEqual(new Error("missing `removeListener` function"));
+        assert.equal(String(err), "Error: missing `removeListener` function");
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -178,7 +179,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          expect(body).toEqual("missing `removeListener` function");
+          assert.equal(body, "missing `removeListener` function");
         } finally {
           server.close(done);
         }
@@ -195,9 +196,9 @@ describe("reads the body from the readable stream", () => {
           readable: false,
         };
         await readBody(reqNoOn, { limit: 1024 });
-        throw new Error("this should not return successfully");
+        assert.fail("this should not return successfully");
       } catch (err) {
-        expect(err).toEqual(new Error("stream is not readable"));
+        assert.equal(String(err), "Error: stream is not readable");
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -217,7 +218,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          expect(body).toEqual("stream is not readable");
+          assert.equal(body, "stream is not readable");
         } finally {
           server.close(done);
         }
@@ -234,9 +235,9 @@ describe("reads the body from the readable stream", () => {
           readable: req.readable,
         };
         await readBody(reqNoOn, { limit: undefined as any });
-        throw new Error("this should not return successfully");
+        assert.fail("this should not return successfully");
       } catch (err) {
-        expect(err).toEqual(new Error("must set a limit"));
+        assert.equal(String(err), "Error: must set a limit");
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -256,7 +257,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          expect(body).toEqual("must set a limit");
+          assert.equal(body, "must set a limit");
         } finally {
           server.close(done);
         }
@@ -266,10 +267,8 @@ describe("reads the body from the readable stream", () => {
 
   test(
     "should timeout if no chunks are sent",
-    {
-      // setting test timeout to 200 because the promise should throw after 100ms
-      timeout: 200,
-    },
+    // setting test timeout to 200 because the promise should throw after 100ms
+    { timeout: 200 },
     async () => {
       const stream = {
         on: () => undefined,
@@ -279,9 +278,9 @@ describe("reads the body from the readable stream", () => {
 
       try {
         await readBody(stream, { limit: 100 });
-        throw new Error("this should not return successfully");
-      } catch (e) {
-        expect(e).toEqual(new Error("received no body chunks after 100ms"));
+        assert.fail("this should not return successfully");
+      } catch (err) {
+        assert.equal(String(err), "Error: received no body chunks after 100ms");
       }
     },
   );
@@ -300,9 +299,9 @@ describe("reads the body from the readable stream", () => {
 
     try {
       await readBody(stream, { limit: 100 });
-      throw new Error("this should not return successfully");
-    } catch (e) {
-      expect(e).toEqual(new Error("stream was aborted"));
+      assert.fail("this should not return successfully");
+    } catch (err) {
+      assert.equal(String(err), "Error: stream was aborted");
     }
   });
 
@@ -319,9 +318,9 @@ describe("reads the body from the readable stream", () => {
 
     try {
       await readBody(stream, { limit: 100 });
-      throw new Error("this should not return successfully");
-    } catch (e) {
-      expect(e).toEqual(new Error("test error"));
+      assert.fail("this should not return successfully");
+    } catch (err) {
+      assert.equal(String(err), "Error: test error");
     }
   });
 
@@ -338,6 +337,6 @@ describe("reads the body from the readable stream", () => {
     };
 
     const body = await readBody(stream, { limit: 100 });
-    expect(body).toEqual("");
+    assert.equal(body, "");
   });
 });

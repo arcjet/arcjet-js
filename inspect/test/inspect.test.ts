@@ -1,5 +1,5 @@
+import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { expect } from "expect";
 import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../index.js";
 import {
   ArcjetBotReason,
@@ -17,7 +17,7 @@ describe("isSpoofedBot", () => {
     ];
 
     for (const state of activeStates) {
-      expect(
+      assert.equal(
         isSpoofedBot(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
@@ -33,7 +33,8 @@ describe("isSpoofedBot", () => {
             }),
           }),
         ),
-      ).toEqual(true);
+        true,
+      );
     }
   });
 
@@ -45,7 +46,7 @@ describe("isSpoofedBot", () => {
     ];
 
     for (const state of activeStates) {
-      expect(
+      assert.equal(
         isSpoofedBot(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
@@ -61,12 +62,13 @@ describe("isSpoofedBot", () => {
             }),
           }),
         ),
-      ).toEqual(false);
+        false,
+      );
     }
   });
 
   test("returns undefined for dry run bots that are spoofed", () => {
-    expect(
+    assert.equal(
       isSpoofedBot(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
@@ -82,7 +84,8 @@ describe("isSpoofedBot", () => {
           }),
         }),
       ),
-    ).toBeUndefined();
+      undefined,
+    );
   });
 
   test("works with array methods", () => {
@@ -102,35 +105,39 @@ describe("isSpoofedBot", () => {
       }),
     ];
 
-    expect(results.some(isSpoofedBot)).toEqual(true);
-    expect(results.find(isSpoofedBot)).toEqual(results[0]);
+    assert.equal(results.some(isSpoofedBot), true);
+    assert.equal(results.find(isSpoofedBot), results[0]);
   });
 
   test("returns undefined for non-bot values", () => {
-    expect(
+    assert.equal(
       isSpoofedBot(
         // @ts-expect-error
         1,
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isSpoofedBot(
         // @ts-expect-error
         "",
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isSpoofedBot(
         // @ts-expect-error
         [],
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isSpoofedBot(
         // @ts-expect-error
         {},
       ),
-    ).toBeUndefined();
+      undefined,
+    );
   });
 });
 
@@ -143,7 +150,7 @@ describe("isVerifiedBot", () => {
     ];
 
     for (const state of activeStates) {
-      expect(
+      assert.equal(
         isVerifiedBot(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
@@ -159,7 +166,8 @@ describe("isVerifiedBot", () => {
             }),
           }),
         ),
-      ).toEqual(true);
+        true,
+      );
     }
   });
 
@@ -171,7 +179,7 @@ describe("isVerifiedBot", () => {
     ];
 
     for (const state of activeStates) {
-      expect(
+      assert.equal(
         isVerifiedBot(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
@@ -187,7 +195,8 @@ describe("isVerifiedBot", () => {
             }),
           }),
         ),
-      ).toEqual(false);
+        false,
+      );
     }
   });
 
@@ -208,12 +217,12 @@ describe("isVerifiedBot", () => {
       }),
     ];
 
-    expect(results.some(isVerifiedBot)).toEqual(true);
-    expect(results.find(isVerifiedBot)).toEqual(results[0]);
+    assert.equal(results.some(isVerifiedBot), true);
+    assert.equal(results.find(isVerifiedBot), results[0]);
   });
 
   test("returns undefined for dry run bots that are verified", () => {
-    expect(
+    assert.equal(
       isVerifiedBot(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
@@ -229,34 +238,39 @@ describe("isVerifiedBot", () => {
           }),
         }),
       ),
-    ).toBeUndefined();
+      undefined,
+    );
   });
 
   test("returns undefined for non-bot values", () => {
-    expect(
+    assert.equal(
       isVerifiedBot(
         // @ts-expect-error
         1,
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isVerifiedBot(
         // @ts-expect-error
         "",
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isVerifiedBot(
         // @ts-expect-error
         [],
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isVerifiedBot(
         // @ts-expect-error
         {},
       ),
-    ).toBeUndefined();
+      undefined,
+    );
   });
 });
 
@@ -270,7 +284,7 @@ describe("isMissingUserAgent", () => {
 
     for (const state of activeStates) {
       // Server error message
-      expect(
+      assert.equal(
         isMissingUserAgent(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
@@ -281,9 +295,10 @@ describe("isMissingUserAgent", () => {
             reason: new ArcjetErrorReason("missing User-Agent header"),
           }),
         ),
-      ).toEqual(true);
+        true,
+      );
       // Local error message
-      expect(
+      assert.equal(
         isMissingUserAgent(
           new ArcjetRuleResult({
             ruleId: "test-rule-id",
@@ -294,12 +309,13 @@ describe("isMissingUserAgent", () => {
             reason: new ArcjetErrorReason("requires user-agent header"),
           }),
         ),
-      ).toEqual(true);
+        true,
+      );
     }
   });
 
   test("returns undefined for dry run errors about missing user-agent header", () => {
-    expect(
+    assert.equal(
       isMissingUserAgent(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
@@ -310,8 +326,9 @@ describe("isMissingUserAgent", () => {
           reason: new ArcjetErrorReason("missing User-Agent header"),
         }),
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isMissingUserAgent(
         new ArcjetRuleResult({
           ruleId: "test-rule-id",
@@ -322,7 +339,8 @@ describe("isMissingUserAgent", () => {
           reason: new ArcjetErrorReason("requires user-agent header"),
         }),
       ),
-    ).toBeUndefined();
+      undefined,
+    );
   });
 
   test("works with array methods", () => {
@@ -337,34 +355,38 @@ describe("isMissingUserAgent", () => {
       }),
     ];
 
-    expect(results.some(isMissingUserAgent)).toEqual(true);
-    expect(results.find(isMissingUserAgent)).toEqual(results[0]);
+    assert.equal(results.some(isMissingUserAgent), true);
+    assert.equal(results.find(isMissingUserAgent), results[0]);
   });
 
   test("returns undefined for non-error values", () => {
-    expect(
+    assert.equal(
       isMissingUserAgent(
         // @ts-expect-error
         1,
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isMissingUserAgent(
         // @ts-expect-error
         "",
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isMissingUserAgent(
         // @ts-expect-error
         [],
       ),
-    ).toBeUndefined();
-    expect(
+      undefined,
+    );
+    assert.equal(
       isMissingUserAgent(
         // @ts-expect-error
         {},
       ),
-    ).toBeUndefined();
+      undefined,
+    );
   });
 });

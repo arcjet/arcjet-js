@@ -1,5 +1,5 @@
+import assert from "node:assert/strict";
 import { describe, test, afterEach, mock } from "node:test";
-import { expect } from "expect";
 import { redact } from "../index.js";
 
 describe("ArcjetRedact", () => {
@@ -14,34 +14,37 @@ describe("ArcjetRedact", () => {
       const expected =
         "email <Redacted email #0> phone <Redacted phone number #1> credit <Redacted credit card number #2> ip <Redacted IP address #3>";
       const [redacted] = await redact(text);
-      expect(redacted).toEqual(expected);
+      assert.equal(redacted, expected);
     });
 
     test("it will throw if an empty entities list is given", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      expect(async () => await redact(text, { entities: [] })).rejects.toThrow(
-        new Error("no entities configured for redaction"),
+      await assert.rejects(
+        async () => await redact(text, { entities: [] }),
+        /no entities configured for redaction/,
       );
     });
 
     test("it will throw if entities is not an array", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      expect(
+      await assert.rejects(
         redact(text, {
           // @ts-expect-error
           entities: "foobar",
         }),
-      ).rejects.toThrow(new Error("entities must be an array"));
+        /entities must be an array/,
+      );
     });
 
     test("it will throw if non-string entities in the array", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      expect(
+      await assert.rejects(
         redact(text, {
           // @ts-expect-error
           entities: [1234],
         }),
-      ).rejects.toThrow(new Error("redaction entities must be strings"));
+        /redaction entities must be strings/,
+      );
     });
 
     test("it will throw WebAssembly is not available", async () => {
@@ -51,10 +54,9 @@ describe("ArcjetRedact", () => {
       });
 
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      expect(redact(text)).rejects.toThrow(
-        new Error(
-          "redact failed to run because Wasm is not supported in this environment",
-        ),
+      await assert.rejects(
+        redact(text),
+        /redact failed to run because Wasm is not supported in this environment/,
       );
     });
 
@@ -66,7 +68,7 @@ describe("ArcjetRedact", () => {
       const [redacted] = await redact(text, {
         entities: ["email", "phone-number", "credit-card-number"],
       });
-      expect(redacted).toEqual(expected);
+      assert.equal(redacted, expected);
     });
 
     test("it will use a custom replacement where configured", async () => {
@@ -77,14 +79,14 @@ describe("ArcjetRedact", () => {
         entities: ["email", "ip-address"],
         replace: (entityType, plaintext) => {
           if (entityType === "email") {
-            expect(plaintext).toEqual("test@example.com");
+            assert.equal(plaintext, "test@example.com");
             return "redacted-email";
           } else if (entityType === "ip-address") {
-            expect(plaintext).toEqual("10.12.234.2");
+            assert.equal(plaintext, "10.12.234.2");
           }
         },
       });
-      expect(redacted).toEqual(expected);
+      assert.equal(redacted, expected);
     });
 
     // This is because we introduced `plaintext` in a non-breaking way.
@@ -101,7 +103,7 @@ describe("ArcjetRedact", () => {
           }
         },
       });
-      expect(redacted).toEqual(expected);
+      assert.equal(redacted, expected);
     });
 
     test("it can detect entities using a custom detect function", async () => {
@@ -119,7 +121,7 @@ describe("ArcjetRedact", () => {
           }
         },
       });
-      expect(redacted).toEqual(expected);
+      assert.equal(redacted, expected);
     });
 
     test("it can detect entities using a custom detect function and redact custom entities using a custom redactor", async () => {
@@ -142,7 +144,7 @@ describe("ArcjetRedact", () => {
           }
         },
       });
-      expect(redacted).toEqual(expected);
+      assert.equal(redacted, expected);
     });
 
     test("it will pass the number of tokens requested by the context window size parameter to the custom detect function", async () => {
@@ -150,7 +152,7 @@ describe("ArcjetRedact", () => {
       await redact(text, {
         contextWindowSize: 3,
         detect: (tokens) => {
-          expect(tokens).toHaveLength(3);
+          assert.equal(tokens.length, 3);
           return new Array(tokens.length).fill(undefined);
         },
       });
@@ -164,14 +166,14 @@ describe("ArcjetRedact", () => {
       const [redacted, unredact] = await redact(text, {
         entities: ["email", "phone-number"],
       });
-      expect(redacted).toEqual(expectedRedacted);
+      assert.equal(redacted, expectedRedacted);
 
       const newText =
         "hello <Redacted email #0> your phone number is <Redacted phone number #1>";
       const expectedUnredacted =
         "hello test@example.com your phone number is 011234567";
       const unredacted = unredact(newText);
-      expect(unredacted).toEqual(expectedUnredacted);
+      assert.equal(unredacted, expectedUnredacted);
     });
 
     test("it will redact and unredact configured entities multiple times", async () => {
@@ -181,14 +183,14 @@ describe("ArcjetRedact", () => {
       const [redacted, unredact] = await redact(text, {
         entities: ["email", "phone-number"],
       });
-      expect(redacted).toEqual(expectedRedacted);
+      assert.equal(redacted, expectedRedacted);
 
       const newText =
         "hello <Redacted email #0> your phone number is <Redacted phone number #1> <Redacted phone number #1>";
       const expectedUnredacted =
         "hello test@example.com your phone number is 011234567 011234567";
       const unredacted = unredact(newText);
-      expect(unredacted).toEqual(expectedUnredacted);
+      assert.equal(unredacted, expectedUnredacted);
     });
 
     test("it will redact and unredact custom entities", async () => {
@@ -199,21 +201,21 @@ describe("ArcjetRedact", () => {
         entities: ["email", "phone-number"],
         replace: (entityType, plaintext) => {
           if (entityType === "email") {
-            expect(plaintext).toEqual("test@example.com");
+            assert.equal(plaintext, "test@example.com");
             return "my-custom-email-replacement";
           } else if (entityType === "ip-address") {
-            expect(plaintext).toEqual("10.12.234.2");
+            assert.equal(plaintext, "10.12.234.2");
           }
         },
       });
-      expect(redacted).toEqual(expectedRedacted);
+      assert.equal(redacted, expectedRedacted);
 
       const newText =
         "hello my-custom-email-replacement your phone number is <Redacted phone number #1>";
       const expectedUnredacted =
         "hello test@example.com your phone number is 011234567";
       const unredacted = unredact(newText);
-      expect(unredacted).toEqual(expectedUnredacted);
+      assert.equal(unredacted, expectedUnredacted);
     });
   });
 });
