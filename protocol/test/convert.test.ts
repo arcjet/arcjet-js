@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { describe, mock, test } from "node:test";
+import { mock, test } from "node:test";
 import {
   ArcjetModeToProtocol,
   ArcjetEmailTypeToProtocol,
@@ -57,8 +57,8 @@ import {
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
 
-describe("convert", () => {
-  test("ArcjetModeToProtocol", () => {
+test("convert", async (t) => {
+  await t.test("ArcjetModeToProtocol", () => {
     assert.equal(ArcjetModeToProtocol("LIVE"), Mode.LIVE);
     assert.equal(ArcjetModeToProtocol("DRY_RUN"), Mode.DRY_RUN);
     assert.equal(
@@ -70,7 +70,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetEmailTypeToProtocol", () => {
+  await t.test("ArcjetEmailTypeToProtocol", () => {
     assert.equal(ArcjetEmailTypeToProtocol("DISPOSABLE"), EmailType.DISPOSABLE);
     assert.equal(ArcjetEmailTypeToProtocol("FREE"), EmailType.FREE);
     assert.equal(ArcjetEmailTypeToProtocol("INVALID"), EmailType.INVALID);
@@ -91,7 +91,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetEmailTypeFromProtocol", () => {
+  await t.test("ArcjetEmailTypeFromProtocol", () => {
     assert.equal(
       ArcjetEmailTypeFromProtocol(EmailType.DISPOSABLE),
       "DISPOSABLE",
@@ -117,7 +117,7 @@ describe("convert", () => {
     }, /Invalid EmailType/);
   });
 
-  test("ArcjetStackToProtocol", () => {
+  await t.test("ArcjetStackToProtocol", () => {
     assert.equal(ArcjetStackToProtocol("NODEJS"), SDKStack.SDK_STACK_NODEJS);
     assert.equal(ArcjetStackToProtocol("NEXTJS"), SDKStack.SDK_STACK_NEXTJS);
     assert.equal(ArcjetStackToProtocol("BUN"), SDKStack.SDK_STACK_BUN);
@@ -138,7 +138,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetRuleStateToProtocol", () => {
+  await t.test("ArcjetRuleStateToProtocol", () => {
     assert.equal(ArcjetRuleStateToProtocol("CACHED"), RuleState.CACHED);
     assert.equal(ArcjetRuleStateToProtocol("DRY_RUN"), RuleState.DRY_RUN);
     assert.equal(ArcjetRuleStateToProtocol("NOT_RUN"), RuleState.NOT_RUN);
@@ -152,7 +152,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetRuleStateFromProtocol", () => {
+  await t.test("ArcjetRuleStateFromProtocol", () => {
     assert.equal(ArcjetRuleStateFromProtocol(RuleState.CACHED), "CACHED");
     assert.equal(ArcjetRuleStateFromProtocol(RuleState.DRY_RUN), "DRY_RUN");
     assert.equal(ArcjetRuleStateFromProtocol(RuleState.NOT_RUN), "NOT_RUN");
@@ -168,7 +168,7 @@ describe("convert", () => {
     }, /Invalid RuleState/);
   });
 
-  test("ArcjetConclusionToProtocol", () => {
+  await t.test("ArcjetConclusionToProtocol", () => {
     assert.equal(ArcjetConclusionToProtocol("ALLOW"), Conclusion.ALLOW);
     assert.equal(ArcjetConclusionToProtocol("CHALLENGE"), Conclusion.CHALLENGE);
     assert.equal(ArcjetConclusionToProtocol("DENY"), Conclusion.DENY);
@@ -182,7 +182,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetConclusionFromProtocol", () => {
+  await t.test("ArcjetConclusionFromProtocol", () => {
     assert.equal(ArcjetConclusionFromProtocol(Conclusion.ALLOW), "ALLOW");
     assert.equal(
       ArcjetConclusionFromProtocol(Conclusion.CHALLENGE),
@@ -201,7 +201,7 @@ describe("convert", () => {
     }, /Invalid Conclusion/);
   });
 
-  test("ArcjetReasonFromProtocol", () => {
+  await t.test("ArcjetReasonFromProtocol", () => {
     assert.ok(ArcjetReasonFromProtocol() instanceof ArcjetReason);
     assert.ok(
       ArcjetReasonFromProtocol(
@@ -339,7 +339,7 @@ describe("convert", () => {
     }, /Invalid Reason/);
   });
 
-  test("ArcjetReasonToProtocol", () => {
+  await t.test("ArcjetReasonToProtocol", () => {
     assert.ok(ArcjetReasonToProtocol(new ArcjetReason()) instanceof Reason);
     assert.deepEqual(
       ArcjetReasonToProtocol(
@@ -490,7 +490,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetRuleResultToProtocol", () => {
+  await t.test("ArcjetRuleResultToProtocol", () => {
     assert.deepEqual(
       ArcjetRuleResultToProtocol(
         new ArcjetRuleResult({
@@ -512,7 +512,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetRuleResultFromProtocol", () => {
+  await t.test("ArcjetRuleResultFromProtocol", () => {
     assert.deepEqual(
       ArcjetRuleResultFromProtocol(
         new RuleResult({
@@ -534,7 +534,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetDecisionToProtocol", () => {
+  await t.test("ArcjetDecisionToProtocol", () => {
     assert.deepEqual(
       ArcjetDecisionToProtocol(
         new ArcjetAllowDecision({
@@ -554,7 +554,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetDecisionFromProtocol", () => {
+  await t.test("ArcjetDecisionFromProtocol", () => {
     assert.ok(ArcjetDecisionFromProtocol() instanceof ArcjetErrorDecision);
     assert.ok(
       ArcjetDecisionFromProtocol(new Decision()) instanceof ArcjetErrorDecision,
@@ -607,7 +607,7 @@ describe("convert", () => {
     );
   });
 
-  test("ArcjetRuleToProtocol", () => {
+  await t.test("ArcjetRuleToProtocol", () => {
     const unknownRule: ArcjetRule = {
       version: 0,
       type: "UNKNOWN",
