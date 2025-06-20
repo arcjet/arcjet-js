@@ -2,9 +2,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "tsc --project .",
     "prestart": "npm run build",
-    "start": "node --env-file .env.local ./index.js",
-    "build": "tsc -p ."
+    "start": "node --env-file .env.local index.js"
   },
   "dependencies": {
     "@arcjet/node": "file:../../arcjet-node",

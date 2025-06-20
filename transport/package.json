@@ -44,9 +44,9 @@
     "index.js"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build",
     "build": "rollup --config rollup.config.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@bufbuild/protobuf": "1.10.1",

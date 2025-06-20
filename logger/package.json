@@ -36,9 +36,9 @@
     "index.js"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build",
     "build": "rollup --config rollup.config.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@arcjet/sprintf": "1.0.0-beta.8"

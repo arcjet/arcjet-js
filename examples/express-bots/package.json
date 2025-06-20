@@ -2,7 +2,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file .env.local ./index.js"
+    "start": "node --env-file .env.local index.js"
   },
   "dependencies": {
     "@arcjet/inspect": "file:../../inspect",
