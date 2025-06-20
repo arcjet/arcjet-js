@@ -21,6 +21,7 @@ import {
   Conclusion,
   Decision,
   EmailType,
+  IpDetails,
   Mode,
   RateLimitAlgorithm,
   Reason,
@@ -871,6 +872,67 @@ test("convert", async (t) => {
 
         assert.ok(decision instanceof ArcjetErrorDecision);
         assert.equal(decision.conclusion, "ERROR");
+      },
+    );
+
+    await t.test(
+      "should create an arcjet decision w/ an IP detail proto (full)",
+      () => {
+        const latitude = 40.7127;
+        const longitude = 74.0059;
+        const decision = ArcjetDecisionFromProtocol(
+          new Decision({
+            ipDetails: new IpDetails({
+              asnCountry: "a",
+              asnDomain: "b",
+              asnName: "c",
+              asnType: "d",
+              asn: "e",
+              city: "f",
+              continentName: "g",
+              continent: "h",
+              countryName: "i",
+              country: "j",
+              latitude,
+              longitude,
+              postalCode: "k",
+              region: "l",
+              service: "m",
+              timezone: "America/New_York",
+            }),
+          }),
+        );
+
+        assert.deepEqual(JSON.parse(JSON.stringify(decision.ip)), {
+          accuracyRadius: 0,
+          asnCountry: "a",
+          asnDomain: "b",
+          asnName: "c",
+          asnType: "d",
+          asn: "e",
+          city: "f",
+          continentName: "g",
+          continent: "h",
+          countryName: "i",
+          country: "j",
+          latitude,
+          longitude,
+          postalCode: "k",
+          region: "l",
+          service: "m",
+          timezone: "America/New_York",
+        });
+      },
+    );
+
+    await t.test(
+      "should create an arcjet decision w/ an IP detail proto (empty)",
+      () => {
+        const decision = ArcjetDecisionFromProtocol(
+          new Decision({ ipDetails: new IpDetails() }),
+        );
+
+        assert.deepEqual(JSON.parse(JSON.stringify(decision.ip)), {});
       },
     );
   });

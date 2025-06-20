@@ -412,7 +412,6 @@ export function ArcjetIpDetailsFromProtocol(
   if (!ipDetails) {
     return new ArcjetIpDetails();
   }
-  // TODO(@wooorm-arcjet): uncovered.
 
   // A default value from the Decide service means we don't have data for the
   // field so we translate to `undefined`. Some fields have interconnected logic
