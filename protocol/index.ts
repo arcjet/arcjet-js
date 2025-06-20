@@ -320,13 +320,7 @@ export class ArcjetEmailReason extends ArcjetReason {
 
   constructor(init: { emailTypes?: ArcjetEmailType[] }) {
     super();
-
-    // TODO(@wooorm-arcjet): this is impossible per the types.
-    if (typeof init === "undefined") {
-      this.emailTypes = [];
-    } else {
-      this.emailTypes = init.emailTypes ?? [];
-    }
+    this.emailTypes = init.emailTypes ?? [];
   }
 }
 
