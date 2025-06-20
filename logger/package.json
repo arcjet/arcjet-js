@@ -38,9 +38,7 @@
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "pretest": "npm run build",
-    "test": "node --test --experimental-test-coverage"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@arcjet/sprintf": "1.0.0-beta.8"
