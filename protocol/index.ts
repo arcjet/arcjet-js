@@ -288,10 +288,12 @@ export class ArcjetBotReason extends ArcjetReason {
     this.spoofed = init.spoofed;
   }
 
+  // TODO(@wooorm-arcjet): uncovered.
   isVerified(): boolean {
     return this.verified;
   }
 
+  // TODO(@wooorm-arcjet): uncovered.
   isSpoofed(): boolean {
     return this.spoofed;
   }
@@ -309,6 +311,7 @@ export class ArcjetShieldReason extends ArcjetReason {
   constructor(init: { shieldTriggered?: boolean }) {
     super();
 
+    // TODO(@wooorm-arcjet): uncovered.
     this.shieldTriggered = init.shieldTriggered ?? false;
   }
 }
@@ -321,8 +324,10 @@ export class ArcjetEmailReason extends ArcjetReason {
   constructor(init: { emailTypes?: ArcjetEmailType[] }) {
     super();
     if (typeof init === "undefined") {
+      // TODO(@wooorm-arcjet): uncovered.
       this.emailTypes = [];
     } else {
+      // TODO(@wooorm-arcjet): uncovered.
       this.emailTypes = init.emailTypes ?? [];
     }
   }
@@ -348,6 +353,7 @@ export class ArcjetErrorReason extends ArcjetReason {
 
     // TODO: Get rid of instanceof check
     if (error instanceof Error) {
+      // TODO(@wooorm-arcjet): uncovered.
       this.message = error.message;
       return;
     }
@@ -398,6 +404,7 @@ export class ArcjetRuleResult {
   }
 
   isDenied() {
+    // TODO(@wooorm-arcjet): uncovered.
     return this.conclusion === "DENY";
   }
 }
@@ -558,10 +565,12 @@ export class ArcjetIpDetails {
   }
 
   hasLatitude(): this is RequiredProps<this, "latitude" | "accuracyRadius"> {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.latitude !== "undefined";
   }
 
   hasLongitude(): this is RequiredProps<this, "longitude" | "accuracyRadius"> {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.longitude !== "undefined";
   }
 
@@ -569,35 +578,42 @@ export class ArcjetIpDetails {
     this,
     "latitude" | "longitude" | "accuracyRadius"
   > {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.accuracyRadius !== "undefined";
   }
 
   hasTimezone(): this is RequiredProps<this, "timezone"> {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.timezone !== "undefined";
   }
 
   hasPostalCode(): this is RequiredProps<this, "postalCode"> {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.postalCode !== "undefined";
   }
 
   // TODO: If we have city, what other data are we sure to have?
   hasCity(): this is RequiredProps<this, "city"> {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.city !== "undefined";
   }
 
   // TODO: If we have region, what other data are we sure to have?
   hasRegion(): this is RequiredProps<this, "region"> {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.region !== "undefined";
   }
 
   // If we have country, we should have country name
   // TODO: If we have country, should we also have continent?
   hasCountry(): this is RequiredProps<this, "country" | "countryName"> {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.country !== "undefined";
   }
 
   // If we have continent, we should have continent name
   hasContintent(): this is RequiredProps<this, "continent" | "continentName"> {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.continent !== "undefined";
   }
 
@@ -606,10 +622,12 @@ export class ArcjetIpDetails {
     this,
     "asn" | "asnName" | "asnDomain" | "asnType" | "asnCountry"
   > {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.asn !== "undefined";
   }
 
   hasService(): this is RequiredProps<this, "service"> {
+    // TODO(@wooorm-arcjet): uncovered.
     return typeof this.service !== "undefined";
   }
 
@@ -617,6 +635,7 @@ export class ArcjetIpDetails {
    * @returns `true` if the IP address belongs to a hosting provider.
    */
   isHosting(): boolean {
+    // TODO(@wooorm-arcjet): uncovered.
     // @ts-expect-error because we attach this with Object.defineProperties
     return this._isHosting;
   }
@@ -625,6 +644,7 @@ export class ArcjetIpDetails {
    * @returns `true` if the IP address belongs to a VPN provider.
    */
   isVpn(): boolean {
+    // TODO(@wooorm-arcjet): uncovered.
     // @ts-expect-error because we attach this with Object.defineProperties
     return this._isVpn;
   }
@@ -633,6 +653,7 @@ export class ArcjetIpDetails {
    * @returns `true` if the IP address belongs to a proxy provider.
    */
   isProxy(): boolean {
+    // TODO(@wooorm-arcjet): uncovered.
     // @ts-expect-error because we attach this with Object.defineProperties
     return this._isProxy;
   }
@@ -641,6 +662,7 @@ export class ArcjetIpDetails {
    * @returns `true` if the IP address belongs to a Tor node.
    */
   isTor(): boolean {
+    // TODO(@wooorm-arcjet): uncovered.
     // @ts-expect-error because we attach this with Object.defineProperties
     return this._isTor;
   }
@@ -649,6 +671,7 @@ export class ArcjetIpDetails {
    * @returns `true` if the the IP address belongs to a relay service.
    */
   isRelay(): boolean {
+    // TODO(@wooorm-arcjet): uncovered.
     // @ts-expect-error because we attach this with Object.defineProperties
     return this._isRelay;
   }
