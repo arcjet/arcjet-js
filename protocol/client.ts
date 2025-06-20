@@ -105,8 +105,7 @@ export function createClient(options: ClientOptions): Client {
           // TODO(#208): Re-add body
           // body: details.body,
           extra: details.extra,
-          // TODO(@wooorm-arcjet): uncovered.
-          email: typeof details.email === "string" ? details.email : undefined,
+          email: details.email,
         },
         rules: protoRules,
       });
@@ -164,7 +163,7 @@ export function createClient(options: ClientOptions): Client {
           // TODO(#208): Re-add body
           // body: details.body,
           extra: details.extra,
-          email: typeof details.email === "string" ? details.email : undefined,
+          email: details.email,
         },
         decision: ArcjetDecisionToProtocol(decision),
         rules: rules.map(ArcjetRuleToProtocol),
