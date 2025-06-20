@@ -33,8 +33,7 @@
     "index.js"
   ],
   "scripts": {
-    "lint": "eslint .",
-    "test": "node --test --experimental-test-coverage"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@rollup/plugin-replace": "6.0.2",
