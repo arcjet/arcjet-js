@@ -3,8 +3,9 @@
   "private": true,
   "description": "An example project for Auth.js with Next.js and Nosecone",
   "scripts": {
-    "dev": "next",
     "build": "next build",
+    "dev": "next dev",
+    "lint": "next lint",
     "start": "next start"
   },
   "dependencies": {

@@ -10,8 +10,9 @@
     "*"
   ],
   "scripts": {
-    "prepare": "turbo run build",
+    "build": "turbo run build",
     "lint": "turbo run lint",
+    "prepare": "turbo run build",
     "test": "turbo test"
   },
   "devDependencies": {
