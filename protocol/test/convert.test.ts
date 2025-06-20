@@ -765,18 +765,18 @@ test("convert", async (t) => {
           ArcjetRuleResultToProtocol(
             new ArcjetRuleResult({
               conclusion: "ALLOW",
-              fingerprint: "test-fingerprint",
+              fingerprint: "fingerprint",
               reason: new ArcjetReason(),
-              ruleId: "test-rule-id",
+              ruleId: "rule-id",
               state: "RUN",
               ttl: 0,
             }),
           ),
           new RuleResult({
             conclusion: Conclusion.ALLOW,
-            fingerprint: "test-fingerprint",
+            fingerprint: "fingerprint",
             reason: new Reason(),
-            ruleId: "test-rule-id",
+            ruleId: "rule-id",
             state: RuleState.RUN,
           }),
         );
@@ -792,17 +792,17 @@ test("convert", async (t) => {
           ArcjetRuleResultFromProtocol(
             new RuleResult({
               conclusion: Conclusion.ALLOW,
-              fingerprint: "test-fingerprint",
+              fingerprint: "fingerprint",
               reason: new Reason(),
-              ruleId: "test-rule-id",
+              ruleId: "rule-id",
               state: RuleState.RUN,
             }),
           ),
           new ArcjetRuleResult({
             conclusion: "ALLOW",
-            fingerprint: "test-fingerprint",
+            fingerprint: "fingerprint",
             reason: new ArcjetReason(),
-            ruleId: "test-rule-id",
+            ruleId: "rule-id",
             state: "RUN",
             ttl: 0,
           }),
@@ -815,9 +815,9 @@ test("convert", async (t) => {
     await t.test("ArcjetRuleResult#isDenied", () => {
       const result = new ArcjetRuleResult({
         conclusion: "ALLOW",
-        fingerprint: "test-fingerprint",
+        fingerprint: "fingerprint",
         reason: new ArcjetReason(),
-        ruleId: "test-rule-id",
+        ruleId: "rule-id",
         state: "RUN",
         ttl: 0,
       });
