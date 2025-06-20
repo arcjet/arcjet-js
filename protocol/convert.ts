@@ -264,7 +264,6 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         denied: reason.denied,
       });
     }
-    // TODO(@wooorm-arcjet): uncovered.
     case "bot": {
       return new ArcjetErrorReason("bot detection v1 is deprecated");
     }

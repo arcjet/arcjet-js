@@ -472,6 +472,17 @@ test("convert", async (t) => {
       assert.equal(reason.type, "SENSITIVE_INFO");
     });
 
+    await t.test("should create an error reason on a bot reason", () => {
+      const reason = ArcjetReasonFromProtocol(
+        new Reason({
+          reason: { case: "bot", value: {} },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetErrorReason);
+      assert.equal(reason.type, "ERROR");
+    });
+
     await t.test("should create a shield reason", () => {
       const reason = ArcjetReasonFromProtocol(
         new Reason({
