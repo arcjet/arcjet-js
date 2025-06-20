@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file .env.local ./index.js",
-    "test": "node --test --env-file .env.local"
+    "start": "node --env-file .env.local index.js",
+    "test": "node --env-file .env.local --test"
   },
   "dependencies": {
     "@arcjet/node": "file:../../arcjet-node",

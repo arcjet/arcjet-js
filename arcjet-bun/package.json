@@ -39,10 +39,9 @@
     "index.js"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build",
     "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
-    "pretest": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@arcjet/env": "1.0.0-beta.8",
