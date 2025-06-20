@@ -799,8 +799,9 @@ export interface ArcjetRequestDetails {
 }
 
 export type ArcjetRule<Props extends {} = {}> = {
-  // TODO(@wooorm-arcjet): investigate how to do type augmentation so we can ditch `string`
-  // and instead let types be strong.
+  // TODO(@wooorm-arcjet):
+  // if it is intentional that people can extend rules,
+  // then we need to allow that in the types.
   type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | "SENSITIVE_INFO" | string;
   mode: ArcjetMode;
   priority: number;

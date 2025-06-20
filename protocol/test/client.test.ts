@@ -34,7 +34,10 @@ class ArcjetInvalidDecision extends ArcjetDecision {
 
   constructor() {
     super({ results: [], ttl: 0 });
-    // @ts-expect-error: TODO(@wooorm-arcjet): add support for registering custom conclusions.
+    // @ts-expect-error: TODO(@wooorm-arcjet):
+    // if it is intentional that people can extend decisions with such things as `INVALID`
+    // decisions,
+    // then we need to allow that in the types.
     this.conclusion = "INVALID";
     this.reason = new ArcjetReason();
   }
@@ -111,7 +114,6 @@ test("createClient", async (t) => {
       ...exampleClientOptions,
       timeout: 9876,
       transport: createRouterTransport(function ({ service }) {
-        // TODO(@wooorm-arcjet): there is no type error if this `implementation` object passed to `service` is an empty object?
         service(DecideService, {
           decide(_, handlerContext) {
             assert.equal(calls, 0);
