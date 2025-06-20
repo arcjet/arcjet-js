@@ -1,22 +1,22 @@
 import assert from "node:assert/strict";
-import { mock, test } from "node:test";
+import test from "node:test";
 import type { Cache } from "@arcjet/cache";
-import { createClient } from "../client.js";
 import { createRouterTransport } from "@connectrpc/connect";
 import { DecideService } from "../proto/decide/v1alpha1/decide_connect.js";
 import {
   Conclusion,
-  DecideRequest,
   DecideResponse,
-  Reason,
-  ReportRequest,
   ReportResponse,
   Rule,
-  RuleResult,
-  RuleState,
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
-import type { ArcjetConclusion, ArcjetRule } from "../index.js";
+import { type ClientOptions, createClient } from "../client.js";
+import type {
+  ArcjetConclusion,
+  ArcjetContext,
+  ArcjetLogger,
+  ArcjetRequestDetails,
+} from "../index.js";
 import {
   ArcjetAllowDecision,
   ArcjetChallengeDecision,
@@ -28,29 +28,15 @@ import {
   ArcjetRuleResult,
 } from "../index.js";
 
-function deferred(): [Promise<void>, () => void, (reason?: unknown) => void] {
-  let resolve: () => void;
-  let reject: (reason?: unknown) => void;
-  const promise = new Promise<void>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-
-  // @ts-expect-error
-  return [promise, resolve, reject];
-}
-
-class ArcjetTestReason extends ArcjetReason {}
-
 class ArcjetInvalidDecision extends ArcjetDecision {
-  reason: ArcjetReason;
   conclusion: ArcjetConclusion;
+  reason: ArcjetReason;
 
   constructor() {
-    super({ ttl: 0, results: [] });
-    // @ts-expect-error
+    super({ results: [], ttl: 0 });
+    // @ts-expect-error: TODO(@wooorm-arcjet): add support for registering custom conclusions.
     this.conclusion = "INVALID";
-    this.reason = new ArcjetTestReason();
+    this.reason = new ArcjetReason();
   }
 }
 
@@ -61,1385 +47,762 @@ class TestCache implements Cache {
   set() {}
 }
 
+/**
+ * Arcjet logger that does nothing.
+ */
+const exampleLogger: ArcjetLogger = {
+  debug() {},
+  error() {},
+  info() {},
+  warn() {},
+};
+
+/**
+ * Empty values for client options.
+ */
+const exampleClientOptions: ClientOptions = {
+  baseUrl: "",
+  sdkStack: "NODEJS",
+  sdkVersion: "__ARCJET_SDK_VERSION__",
+  timeout: 0,
+  transport: createRouterTransport(() => {}),
+};
+
+/**
+ * Empty values for context.
+ */
+const exampleContext: ArcjetContext = {
+  characteristics: [],
+  cache: new TestCache(),
+  fingerprint: "b",
+  getBody() {
+    return Promise.resolve(undefined);
+  },
+  key: "a",
+  log: exampleLogger,
+  runtime: "c",
+};
+
+/**
+ * Empty values for details.
+ */
+const exampleDetails: Partial<ArcjetRequestDetails> = {
+  extra: {},
+  headers: new Headers([["User-Agent", "curl/8.1.2"]]),
+  host: "example.com",
+  ip: "172.100.1.1",
+  method: "GET",
+  path: "/",
+  protocol: "http",
+};
+
 test("createClient", async (t) => {
-  const log = {
-    debug() {},
-    info() {},
-    warn() {},
-    error() {},
-  };
+  await t.test("should work", () => {
+    const client = createClient(exampleClientOptions);
 
-  const defaultRemoteClientOptions = {
-    baseUrl: "",
-    timeout: 0,
-    sdkStack: "NODEJS" as const,
-    sdkVersion: "__ARCJET_SDK_VERSION__",
-  };
-
-  await t.test("can be called with only a transport", () => {
-    const client = createClient({
-      ...defaultRemoteClientOptions,
-      transport: createRouterTransport(() => {}),
-    });
     assert.equal(typeof client.decide, "function");
     assert.equal(typeof client.report, "function");
   });
 
-  await t.test("allows overriding the default timeout", async () => {
-    // TODO(#32): createRouterTransport doesn't seem to handle timeouts/promises correctly
+  await t.test("should allow overriding `timeout`", async () => {
+    let calls = 0;
+
     const client = createClient({
-      ...defaultRemoteClientOptions,
-      transport: createRouterTransport(({ service }) => {
-        service(DecideService, {});
-      }),
-      timeout: 300,
-    });
-    assert.equal(typeof client.decide, "function");
-    assert.equal(typeof client.report, "function");
-  });
+      ...exampleClientOptions,
+      timeout: 9876,
+      transport: createRouterTransport(function ({ service }) {
+        // TODO(@wooorm-arcjet): there is no type error if this `implementation` object passed to `service` is an empty object?
+        service(DecideService, {
+          decide(_, handlerContext) {
+            assert.equal(calls, 0);
+            calls++;
 
-  await t.test("allows overriding the sdkStack", async () => {
-    const key = "test-key";
-    const fingerprint =
-      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-    const context = {
-      key,
-      fingerprint,
-      runtime: "test",
-      log,
-      characteristics: [],
-      cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
-    };
-    const details = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-    };
-
-    const router = {
-      decide: mock.fn((args) => {
-        return new DecideResponse({
-          decision: {
-            conclusion: Conclusion.ALLOW,
+            const ms = handlerContext.timeoutMs();
+            // The code above takes about 1 or 2 ms off the timeout we pass.
+            // Allow a very large number to prevent flakey tests.
+            assert.ok(typeof ms === "number");
+            assert.ok(ms > 9000);
+            return new DecideResponse();
           },
         });
       }),
-    };
+    });
+
+    await client.decide(exampleContext, exampleDetails, []);
+
+    assert.equal(calls, 1);
+  });
+
+  await t.test("should allow overriding `sdkStack` (valid)", async () => {
+    let calls = 0;
 
     const client = createClient({
-      ...defaultRemoteClientOptions,
+      ...exampleClientOptions,
       transport: createRouterTransport(({ service }) => {
-        service(DecideService, router);
+        service(DecideService, {
+          decide(decideRequest) {
+            assert.equal(calls, 0);
+            calls++;
+
+            assert.equal(decideRequest.sdkStack, SDKStack.SDK_STACK_NEXTJS);
+
+            return new DecideResponse({
+              decision: { conclusion: Conclusion.ALLOW },
+            });
+          },
+        });
       }),
       sdkStack: "NEXTJS",
     });
-    const _ = await client.decide(context, details, []);
 
-    assert.equal(router.decide.mock.callCount(), 1);
-    assert.deepEqual(
-      router.decide.mock.calls[0].arguments.at(0),
-      new DecideRequest({
-        details: {
-          ...details,
-          headers: { "user-agent": "curl/8.1.2" },
-        },
-        rules: [],
-        sdkStack: SDKStack.SDK_STACK_NEXTJS,
-        sdkVersion: "__ARCJET_SDK_VERSION__",
-      }),
-    );
+    await client.decide(exampleContext, exampleDetails, []);
+
+    assert.equal(calls, 1);
   });
 
-  await t.test("sets the sdkStack as UNSPECIFIED if invalid", async () => {
-    const key = "test-key";
-    const fingerprint =
-      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-    const context = {
-      key,
-      fingerprint,
-      runtime: "test",
-      log,
-      characteristics: [],
-      cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
-    };
-    const details = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-    };
+  await t.test(
+    "should allow overriding `sdkStack` (invalid, UNSPECIFIED)",
+    async () => {
+      let calls = 0;
 
-    const router = {
-      decide: mock.fn((args) => {
-        return new DecideResponse({
-          decision: {
-            conclusion: Conclusion.ALLOW,
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            decide(decideRequest) {
+              assert.equal(calls, 0);
+              calls++;
+
+              assert.equal(
+                decideRequest.sdkStack,
+                SDKStack.SDK_STACK_UNSPECIFIED,
+              );
+
+              return new DecideResponse({
+                decision: { conclusion: Conclusion.ALLOW },
+              });
+            },
+          });
+        }),
+        // @ts-expect-error
+        sdkStack: "SOMETHING_INVALID",
+      });
+
+      await client.decide(exampleContext, exampleDetails, []);
+
+      assert.equal(calls, 1);
+    },
+  );
+
+  await t.test("should support rules", async () => {
+    let calls = 0;
+
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide(decideRequest) {
+            assert.equal(calls, 0);
+            calls++;
+
+            // TODO(@wooorm-arcjet): is it intentional that this is an *empty* rule, not like `rule` at all?
+            assert.deepEqual(decideRequest.rules, [new Rule()]);
+
+            return new DecideResponse({
+              decision: { conclusion: Conclusion.ALLOW },
+            });
           },
         });
       }),
-    };
-
-    const client = createClient({
-      ...defaultRemoteClientOptions,
-      transport: createRouterTransport(({ service }) => {
-        service(DecideService, router);
-      }),
-      // @ts-expect-error
-      sdkStack: "SOMETHING_INVALID",
     });
-    const _ = await client.decide(context, details, []);
 
-    assert.equal(router.decide.mock.callCount(), 1);
-    assert.deepEqual(
-      router.decide.mock.calls[0].arguments.at(0),
-      new DecideRequest({
-        details: {
-          ...details,
-          headers: { "user-agent": "curl/8.1.2" },
-        },
-        rules: [],
-        sdkStack: SDKStack.SDK_STACK_UNSPECIFIED,
-        sdkVersion: "__ARCJET_SDK_VERSION__",
-      }),
-    );
-  });
-
-  await t.test(
-    "calling `decide` will make RPC call with correct message",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.ALLOW,
-            },
-          });
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const _ = await client.decide(context, details, []);
-
-      assert.equal(router.decide.mock.callCount(), 1);
-      assert.deepEqual(
-        router.decide.mock.calls[0].arguments.at(0),
-        new DecideRequest({
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          rules: [],
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-        }),
-      );
-    },
-  );
-
-  await t.test(
-    "calling `decide` will make RPC with email included",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-        email: "abc@example.com",
-      };
-
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.ALLOW,
-            },
-          });
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const _ = await client.decide(context, details, []);
-
-      assert.equal(router.decide.mock.callCount(), 1);
-      assert.deepEqual(
-        router.decide.mock.calls[0].arguments.at(0),
-        new DecideRequest({
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          rules: [],
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-        }),
-      );
-    },
-  );
-
-  await t.test(
-    "calling `decide` will make RPC with rules included",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-        email: "abc@example.com",
-      };
-
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.ALLOW,
-            },
-          });
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const rule: ArcjetRule = {
-        version: 0,
-        type: "TEST_RULE",
+    await client.decide(exampleContext, exampleDetails, [
+      {
         mode: "DRY_RUN",
         priority: 1,
-        validate: mock.fn(),
-        protect: mock.fn(),
-      };
-      const _ = await client.decide(context, details, [rule]);
-
-      assert.equal(router.decide.mock.callCount(), 1);
-      assert.deepEqual(
-        router.decide.mock.calls[0].arguments.at(0),
-        new DecideRequest({
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          rules: [new Rule()],
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-        }),
-      );
-    },
-  );
-
-  await t.test(
-    "calling `decide` creates an ALLOW ArcjetDecision if DecideResponse is allowed",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
+        protect() {
+          assert.fail();
         },
-      };
-
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.ALLOW,
-            },
-          });
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = await client.decide(context, details, []);
-
-      assert.equal(decision.isErrored(), false);
-      assert.equal(decision.isAllowed(), true);
-    },
-  );
-
-  await t.test(
-    "calling `decide` creates a DENY ArcjetDecision if DecideResponse is denied",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.DENY,
-            },
-          });
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = await client.decide(context, details, []);
-
-      assert.equal(decision.isDenied(), true);
-    },
-  );
-
-  await t.test(
-    "calling `decide` creates a CHALLENGE ArcjetDecision if DecideResponse is challenged",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.CHALLENGE,
-            },
-          });
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = await client.decide(context, details, []);
-
-      assert.equal(decision.isChallenged(), true);
-    },
-  );
-
-  await t.test(
-    "calling `decide` creates an ERROR ArcjetDecision with default message if DecideResponse is error and no reason",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.ERROR,
-            },
-          });
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = await client.decide(context, details, []);
-
-      assert.equal(decision.isErrored(), true);
-      // @ts-expect-error: TODO(#4452): union, or allow `String(reason)`.
-      assert.equal(decision.reason.message, "Unknown error occurred");
-    },
-  );
-
-  await t.test(
-    "calling `decide` creates an ERROR ArcjetDecision with message if DecideResponse if error and reason available",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.ERROR,
-              reason: {
-                reason: {
-                  case: "error",
-                  value: { message: "Boom!" },
-                },
-              },
-            },
-          });
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = await client.decide(context, details, []);
-
-      assert.equal(decision.isErrored(), true);
-      // @ts-expect-error: TODO(#4452): union, or allow `String(reason)`.
-      assert.equal(decision.reason.message, "Boom!");
-    },
-  );
-
-  await t.test(
-    "calling `decide` creates an ERROR ArcjetDecision if DecideResponse is unspecified",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.UNSPECIFIED,
-            },
-          });
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = await client.decide(context, details, []);
-
-      assert.equal(decision.isErrored(), true);
-      assert.equal(decision.isAllowed(), true);
-    },
-  );
-
-  await t.test(
-    "calling `report` will use `waitUntil` if available",
-    async () => {
-      const [promise, resolve] = deferred();
-
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-        waitUntil: mock.fn((promise: Promise<unknown>) => {
-          promise.then(() => resolve());
-        }),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-        email: "test@example.com",
-      };
-
-      const router = {
-        report: () => {
-          return new ReportResponse({});
-        },
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = new ArcjetAllowDecision({
-        ttl: 0,
-        reason: new ArcjetTestReason(),
-        results: [],
-      });
-      client.report(context, details, decision, []);
-
-      await promise;
-
-      assert.equal(context.waitUntil.mock.callCount(), 1);
-    },
-  );
-
-  await t.test(
-    "calling `report` will make RPC call with ALLOW decision",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-        email: "test@example.com",
-      };
-
-      const [promise, resolve] = deferred();
-
-      const router = {
-        report: mock.fn((args) => {
-          resolve();
-          return new ReportResponse({});
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = new ArcjetAllowDecision({
-        ttl: 0,
-        reason: new ArcjetTestReason(),
-        results: [],
-      });
-      client.report(context, details, decision, []);
-
-      await promise;
-
-      assert.equal(router.report.mock.callCount(), 1);
-      assert.deepEqual(
-        router.report.mock.calls[0].arguments.at(0),
-        new ReportRequest({
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          decision: {
-            id: decision.id,
-            conclusion: Conclusion.ALLOW,
-            reason: new Reason(),
-            ruleResults: [],
-          },
-        }),
-      );
-    },
-  );
-
-  await t.test(
-    "calling `report` will make RPC call with DENY decision",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const [promise, resolve] = deferred();
-
-      const router = {
-        report: mock.fn((args) => {
-          resolve();
-          return new ReportResponse({});
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = new ArcjetDenyDecision({
-        ttl: 0,
-        reason: new ArcjetTestReason(),
-        results: [],
-      });
-      client.report(context, details, decision, []);
-
-      await promise;
-
-      assert.equal(router.report.mock.callCount(), 1);
-      assert.deepEqual(
-        router.report.mock.calls[0].arguments.at(0),
-        new ReportRequest({
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          decision: {
-            id: decision.id,
-            conclusion: Conclusion.DENY,
-            reason: new Reason(),
-            ruleResults: [],
-          },
-        }),
-      );
-    },
-  );
-
-  await t.test(
-    "calling `report` will make RPC call with ERROR decision",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const [promise, resolve] = deferred();
-
-      const router = {
-        report: mock.fn((args) => {
-          resolve();
-          return new ReportResponse({});
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = new ArcjetErrorDecision({
-        ttl: 0,
-        reason: new ArcjetErrorReason("Failure"),
-        results: [],
-      });
-      client.report(context, details, decision, []);
-
-      await promise;
-
-      assert.equal(router.report.mock.callCount(), 1);
-      assert.deepEqual(
-        router.report.mock.calls[0].arguments.at(0),
-        new ReportRequest({
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          decision: {
-            id: decision.id,
-            conclusion: Conclusion.ERROR,
-            reason: new Reason({
-              reason: {
-                case: "error",
-                value: {
-                  message: "Failure",
-                },
-              },
-            }),
-            ruleResults: [],
-          },
-        }),
-      );
-    },
-  );
-
-  await t.test(
-    "calling `report` will make RPC call with CHALLENGE decision",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const [promise, resolve] = deferred();
-
-      const router = {
-        report: mock.fn((args) => {
-          resolve();
-          return new ReportResponse({});
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = new ArcjetChallengeDecision({
-        ttl: 0,
-        reason: new ArcjetTestReason(),
-        results: [],
-      });
-      client.report(context, details, decision, []);
-
-      await promise;
-
-      assert.equal(router.report.mock.callCount(), 1);
-      assert.deepEqual(
-        router.report.mock.calls[0].arguments.at(0),
-        new ReportRequest({
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          decision: {
-            id: decision.id,
-            conclusion: Conclusion.CHALLENGE,
-            reason: new Reason(),
-            ruleResults: [],
-          },
-        }),
-      );
-    },
-  );
-
-  await t.test(
-    "calling `report` will make RPC call with UNSPECIFIED decision if invalid",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-      };
-
-      const [promise, resolve] = deferred();
-
-      const router = {
-        report: mock.fn((args) => {
-          resolve();
-          return new ReportResponse({});
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-      const decision = new ArcjetInvalidDecision();
-      client.report(context, details, decision, []);
-
-      await promise;
-
-      assert.equal(router.report.mock.callCount(), 1);
-      assert.deepEqual(
-        router.report.mock.calls[0].arguments.at(0),
-        new ReportRequest({
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          decision: {
-            id: decision.id,
-            conclusion: Conclusion.UNSPECIFIED,
-            reason: new Reason(),
-            ruleResults: [],
-          },
-        }),
-      );
-    },
-  );
-
-  await t.test(
-    "calling `report` will make RPC with rules included",
-    async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: [],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-        email: "abc@example.com",
-      };
-
-      const [promise, resolve] = deferred();
-
-      const router = {
-        report: mock.fn((args) => {
-          resolve();
-          return new ReportResponse({});
-        }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-
-      const decision = new ArcjetDenyDecision({
-        ttl: 0,
-        reason: new ArcjetTestReason(),
-        results: [
-          new ArcjetRuleResult({
-            ruleId: "test-rule-id",
-            fingerprint: "test-fingerprint",
-            ttl: 0,
-            state: "RUN",
-            conclusion: "DENY",
-            reason: new ArcjetReason(),
-          }),
-        ],
-      });
-      const rule: ArcjetRule = {
-        version: 0,
         type: "TEST_RULE",
-        mode: "LIVE",
-        priority: 1,
-        validate: mock.fn(),
-        protect: mock.fn(),
-      };
-      client.report(context, details, decision, [rule]);
-
-      await promise;
-
-      assert.equal(router.report.mock.callCount(), 1);
-      assert.deepEqual(
-        router.report.mock.calls[0].arguments.at(0),
-        new ReportRequest({
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          decision: {
-            id: decision.id,
-            conclusion: Conclusion.DENY,
-            reason: new Reason(),
-            ruleResults: [
-              new RuleResult({
-                ruleId: "test-rule-id",
-                fingerprint: "test-fingerprint",
-                state: RuleState.RUN,
-                conclusion: Conclusion.DENY,
-                reason: new Reason(),
-              }),
-            ],
-          },
-          rules: [new Rule()],
-        }),
-      );
-    },
-  );
-
-  await t.test("calling `report` only logs if it fails", async () => {
-    const key = "test-key";
-    const fingerprint =
-      "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-    const context = {
-      key,
-      fingerprint,
-      runtime: "test",
-      log,
-      characteristics: [],
-      cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
-    };
-    const details = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      extra: {
-        "extra-test": "extra-test-value",
+        validate() {
+          assert.fail();
+        },
+        version: 0,
       },
-    };
+    ]);
 
-    const [promise, resolve] = deferred();
+    assert.equal(calls, 1);
+  });
 
-    const logSpy = mock.method(log, "info", () => {
-      resolve();
-    });
-
+  await t.test("should support an `ALLOW` decision", async () => {
     const client = createClient({
-      ...defaultRemoteClientOptions,
+      ...exampleClientOptions,
       transport: createRouterTransport(({ service }) => {
-        service(DecideService, {});
+        service(DecideService, {
+          decide() {
+            return new DecideResponse({
+              decision: { conclusion: Conclusion.ALLOW },
+            });
+          },
+        });
       }),
     });
-    const decision = new ArcjetAllowDecision({
-      ttl: 0,
-      reason: new ArcjetTestReason(),
-      results: [],
+
+    const decision = await client.decide(exampleContext, exampleDetails, []);
+
+    assert.equal(decision.isAllowed(), true);
+  });
+
+  await t.test("should support a `DENY` decision", async () => {
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide() {
+            return new DecideResponse({
+              decision: { conclusion: Conclusion.DENY },
+            });
+          },
+        });
+      }),
     });
-    client.report(context, details, decision, []);
 
-    await promise;
+    const decision = await client.decide(exampleContext, exampleDetails, []);
 
-    assert.equal(logSpy.mock.callCount(), 1);
+    assert.equal(decision.isDenied(), true);
+  });
+
+  await t.test("should support a `CHALLENGE` decision", async () => {
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide() {
+            return new DecideResponse({
+              decision: { conclusion: Conclusion.CHALLENGE },
+            });
+          },
+        });
+      }),
+    });
+
+    const decision = await client.decide(exampleContext, exampleDetails, []);
+
+    assert.equal(decision.isChallenged(), true);
+  });
+
+  await t.test("should support an `ERROR` decision", async () => {
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide() {
+            return new DecideResponse({
+              decision: { conclusion: Conclusion.ERROR },
+            });
+          },
+        });
+      }),
+    });
+
+    const decision = await client.decide(exampleContext, exampleDetails, []);
+
+    assert.equal(decision.isErrored(), true);
+    // @ts-expect-error: TODO(#4452): union, or allow `String(reason)`.
+    assert.equal(decision.reason.message, "Unknown error occurred");
+  });
+
+  await t.test("should support an `ERROR` decision w/ message", async () => {
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide() {
+            return new DecideResponse({
+              decision: {
+                conclusion: Conclusion.ERROR,
+                reason: {
+                  reason: { case: "error", value: { message: "Boom!" } },
+                },
+              },
+            });
+          },
+        });
+      }),
+    });
+
+    const decision = await client.decide(exampleContext, exampleDetails, []);
+
+    assert.equal(decision.isErrored(), true);
+    // @ts-expect-error: TODO(#4452): union, or allow `String(reason)`.
+    assert.equal(decision.reason.message, "Boom!");
+  });
+
+  await t.test("should support an `UNSPECIFIED` decision", async () => {
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide() {
+            return new DecideResponse({
+              decision: { conclusion: Conclusion.UNSPECIFIED },
+            });
+          },
+        });
+      }),
+    });
+
+    const decision = await client.decide(exampleContext, exampleDetails, []);
+
+    assert.equal(decision.isErrored(), true);
+    assert.equal(decision.isAllowed(), true);
+  });
+
+  await t.test("should support `waitUntil` in a report context", async () => {
+    return new Promise((resolve) => {
+      let calls = 0;
+
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            report() {
+              return new ReportResponse();
+            },
+          });
+        }),
+      });
+
+      client.report(
+        {
+          ...exampleContext,
+          waitUntil(promise) {
+            assert.equal(calls, 0);
+            calls++;
+
+            promise.then(() => {
+              assert.equal(calls, 1);
+              calls++;
+
+              resolve(undefined);
+            });
+          },
+        },
+        exampleDetails,
+        new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        }),
+        [],
+      );
+
+      assert.equal(calls, 1);
+    });
+  });
+
+  await t.test("should support a report w/ an allow decision", async () => {
+    return new Promise((resolve, reject) => {
+      let calls = 0;
+
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            report(reportRequest) {
+              try {
+                assert.equal(calls, 0);
+                calls++;
+
+                assert.ok(typeof reportRequest.decision === "object");
+                assert.equal(
+                  reportRequest.decision.conclusion,
+                  Conclusion.ALLOW,
+                );
+                setTimeout(resolve);
+              } catch (error) {
+                reject(error);
+              }
+
+              return new ReportResponse();
+            },
+          });
+        }),
+      });
+
+      client.report(
+        exampleContext,
+        exampleDetails,
+        new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        }),
+        [],
+      );
+
+      assert.equal(calls, 0);
+    });
+  });
+
+  await t.test("should support a report w/ a deny decision", async () => {
+    return new Promise((resolve, reject) => {
+      let calls = 0;
+
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            report(reportRequest) {
+              try {
+                assert.equal(calls, 0);
+                calls++;
+
+                assert.ok(typeof reportRequest.decision === "object");
+                assert.equal(
+                  reportRequest.decision.conclusion,
+                  Conclusion.DENY,
+                );
+
+                setTimeout(resolve);
+              } catch (error) {
+                reject(error);
+              }
+
+              return new ReportResponse();
+            },
+          });
+        }),
+      });
+
+      client.report(
+        exampleContext,
+        exampleDetails,
+        new ArcjetDenyDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        }),
+        [],
+      );
+
+      assert.equal(calls, 0);
+    });
+  });
+
+  await t.test("should support a report w/ an error decision", async () => {
+    return new Promise((resolve, reject) => {
+      let calls = 0;
+
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            report(reportRequest) {
+              try {
+                assert.equal(calls, 0);
+                calls++;
+
+                assert.ok(typeof reportRequest.decision === "object");
+                assert.equal(
+                  reportRequest.decision.conclusion,
+                  Conclusion.ERROR,
+                );
+
+                setTimeout(resolve);
+              } catch (error) {
+                reject(error);
+              }
+
+              return new ReportResponse();
+            },
+          });
+        }),
+      });
+
+      client.report(
+        exampleContext,
+        exampleDetails,
+        new ArcjetErrorDecision({
+          reason: new ArcjetErrorReason("Failure"),
+          results: [],
+          ttl: 0,
+        }),
+        [],
+      );
+
+      assert.equal(calls, 0);
+    });
+  });
+
+  await t.test("should support a report w/ an error decision", async () => {
+    return new Promise((resolve, reject) => {
+      let calls = 0;
+
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            report(reportRequest) {
+              try {
+                assert.equal(calls, 0);
+                calls++;
+
+                assert.ok(typeof reportRequest.decision === "object");
+                assert.equal(
+                  reportRequest.decision.conclusion,
+                  Conclusion.CHALLENGE,
+                );
+
+                setTimeout(resolve);
+              } catch (error) {
+                reject(error);
+              }
+
+              return new ReportResponse();
+            },
+          });
+        }),
+      });
+
+      client.report(
+        exampleContext,
+        exampleDetails,
+        new ArcjetChallengeDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        }),
+        [],
+      );
+
+      assert.equal(calls, 0);
+    });
   });
 
   await t.test(
-    "calling `decide` will make RPC with top level characteristics included",
+    "should support a report w/ an unspecified decision",
     async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: ["src.ip"],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-        email: "abc@example.com",
-      };
+      return new Promise((resolve, reject) => {
+        let calls = 0;
 
-      const router = {
-        decide: mock.fn((args) => {
-          return new DecideResponse({
-            decision: {
-              conclusion: Conclusion.ALLOW,
+        const client = createClient({
+          ...exampleClientOptions,
+          transport: createRouterTransport(({ service }) => {
+            service(DecideService, {
+              report(reportRequest) {
+                try {
+                  assert.equal(calls, 0);
+                  calls++;
+
+                  assert.ok(typeof reportRequest.decision === "object");
+                  assert.equal(
+                    reportRequest.decision.conclusion,
+                    Conclusion.UNSPECIFIED,
+                  );
+
+                  setTimeout(resolve);
+                } catch (error) {
+                  reject(error);
+                }
+
+                return new ReportResponse();
+              },
+            });
+          }),
+        });
+
+        client.report(
+          exampleContext,
+          exampleDetails,
+          new ArcjetInvalidDecision(),
+          [],
+        );
+
+        assert.equal(calls, 0);
+      });
+    },
+  );
+
+  await t.test("should support a report w/ a rule", async () => {
+    return new Promise((resolve, reject) => {
+      let calls = 0;
+
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            report(reportRequest) {
+              try {
+                assert.equal(calls, 0);
+                calls++;
+
+                // TODO(@wooorm-arcjet): is it intentional that this is an *empty* rule, not like `rule` at all?
+                assert.deepEqual(reportRequest.rules, [new Rule()]);
+                assert.ok(typeof reportRequest.decision === "object");
+                assert.equal(
+                  reportRequest.decision.conclusion,
+                  Conclusion.DENY,
+                );
+
+                setTimeout(resolve);
+              } catch (error) {
+                reject(error);
+              }
+
+              return new ReportResponse();
             },
           });
         }),
-      };
-
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
       });
-      const _ = await client.decide(context, details, []);
 
-      assert.equal(router.decide.mock.callCount(), 1);
-      assert.deepEqual(
-        router.decide.mock.calls[0].arguments.at(0),
-        new DecideRequest({
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          characteristics: ["src.ip"],
-          rules: [],
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
+      client.report(
+        exampleContext,
+        exampleDetails,
+        new ArcjetDenyDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
         }),
+        [
+          {
+            mode: "LIVE",
+            priority: 1,
+            protect() {
+              assert.fail();
+            },
+            type: "rule",
+            validate() {
+              assert.fail();
+            },
+            version: 0,
+          },
+        ],
       );
-    },
-  );
+
+      assert.equal(calls, 0);
+    });
+  });
 
   await t.test(
-    "calling `report` will make RPC with top level characteristics included",
+    "should call `info`, not `error`, `warn` on allow reports",
     async () => {
-      const key = "test-key";
-      const fingerprint =
-        "fp_1_ac8547705f1f45c5050f1424700dfa3f6f2f681b550ca4f3c19571585aea7a2c";
-      const context = {
-        key,
-        fingerprint,
-        runtime: "test",
-        log,
-        characteristics: ["ip.src"],
-        cache: new TestCache(),
-        getBody: () => Promise.resolve(undefined),
-      };
-      const details = {
-        ip: "172.100.1.1",
-        method: "GET",
-        protocol: "http",
-        host: "example.com",
-        path: "/",
-        headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-        extra: {
-          "extra-test": "extra-test-value",
-        },
-        email: "abc@example.com",
-      };
+      return new Promise((resolve) => {
+        let calls = 0;
 
-      const [promise, resolve] = deferred();
+        const client = createClient(exampleClientOptions);
 
-      const router = {
-        report: mock.fn((args) => {
-          resolve();
-          return new ReportResponse({});
-        }),
-      };
+        client.report(
+          {
+            ...exampleContext,
+            log: {
+              ...exampleLogger,
+              error() {
+                assert.fail();
+              },
+              info() {
+                assert.equal(calls, 0);
+                calls++;
 
-      const client = createClient({
-        ...defaultRemoteClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, router);
-        }),
-      });
-
-      const decision = new ArcjetDenyDecision({
-        ttl: 0,
-        reason: new ArcjetTestReason(),
-        results: [
-          new ArcjetRuleResult({
-            ruleId: "test-rule-id",
-            fingerprint: "test-fingerprint",
-            ttl: 0,
-            state: "RUN",
-            conclusion: "DENY",
+                resolve(undefined);
+              },
+              warn() {
+                assert.fail();
+              },
+            },
+          },
+          exampleDetails,
+          new ArcjetAllowDecision({
             reason: new ArcjetReason(),
+            results: [],
+            ttl: 0,
           }),
-        ],
+          [],
+        );
+
+        assert.equal(calls, 0);
       });
-      client.report(context, details, decision, []);
-
-      await promise;
-
-      assert.equal(router.report.mock.callCount(), 1);
-      assert.deepEqual(
-        router.report.mock.calls[0].arguments.at(0),
-        new ReportRequest({
-          sdkStack: SDKStack.SDK_STACK_NODEJS,
-          sdkVersion: "__ARCJET_SDK_VERSION__",
-          details: {
-            ...details,
-            headers: { "user-agent": "curl/8.1.2" },
-          },
-          decision: {
-            id: decision.id,
-            conclusion: Conclusion.DENY,
-            reason: new Reason(),
-            ruleResults: [
-              new RuleResult({
-                ruleId: "test-rule-id",
-                fingerprint: "test-fingerprint",
-                state: RuleState.RUN,
-                conclusion: Conclusion.DENY,
-                reason: new Reason(),
-              }),
-            ],
-          },
-          rules: [],
-          characteristics: ["ip.src"],
-        }),
-      );
     },
   );
+
+  await t.test("should decide with top-level `characteristics`", async () => {
+    let calls = 0;
+
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide(decideRequest) {
+            assert.equal(calls, 0);
+            calls++;
+
+            assert.deepEqual(decideRequest.characteristics, ["src.ip"]);
+
+            return new DecideResponse({
+              decision: { conclusion: Conclusion.ALLOW },
+            });
+          },
+        });
+      }),
+    });
+
+    await client.decide(
+      { ...exampleContext, characteristics: ["src.ip"] },
+      exampleDetails,
+      [],
+    );
+
+    assert.equal(calls, 1);
+  });
+
+  await t.test("should report with top-level `characteristics`", async () => {
+    return new Promise((resolve, reject) => {
+      let calls = 0;
+
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            report(reportRequest) {
+              try {
+                assert.equal(calls, 0);
+                calls++;
+
+                assert.ok(reportRequest.characteristics);
+                assert.deepEqual(reportRequest.characteristics, ["src.ip"]);
+
+                setTimeout(resolve);
+              } catch (error) {
+                reject(error);
+              }
+
+              return new ReportResponse();
+            },
+          });
+        }),
+      });
+
+      client.report(
+        { ...exampleContext, characteristics: ["src.ip"] },
+        exampleDetails,
+        new ArcjetDenyDecision({
+          reason: new ArcjetReason(),
+          results: [
+            new ArcjetRuleResult({
+              conclusion: "DENY",
+              fingerprint: "fingerprint",
+              reason: new ArcjetReason(),
+              ruleId: "rule",
+              state: "RUN",
+              ttl: 0,
+            }),
+          ],
+          ttl: 0,
+        }),
+        [],
+      );
+
+      assert.equal(calls, 0);
+    });
+  });
 });

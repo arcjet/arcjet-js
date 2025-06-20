@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mock, test } from "node:test";
+import test from "node:test";
 import {
   ArcjetModeToProtocol,
   ArcjetEmailTypeToProtocol,
@@ -58,757 +58,1060 @@ import {
 import { Timestamp } from "@bufbuild/protobuf";
 
 test("convert", async (t) => {
-  await t.test("ArcjetModeToProtocol", () => {
-    assert.equal(ArcjetModeToProtocol("LIVE"), Mode.LIVE);
-    assert.equal(ArcjetModeToProtocol("DRY_RUN"), Mode.DRY_RUN);
-    assert.equal(
-      ArcjetModeToProtocol(
-        // @ts-expect-error
-        "NOT_VALID",
-      ),
-      Mode.UNSPECIFIED,
+  await t.test("ArcjetModeToProtocol", async (t) => {
+    await t.test("should turn `DRY_RUN` into a mode", () => {
+      assert.equal(ArcjetModeToProtocol("DRY_RUN"), Mode.DRY_RUN);
+    });
+
+    await t.test("should turn `LIVE` into a mode", () => {
+      assert.equal(ArcjetModeToProtocol("LIVE"), Mode.LIVE);
+    });
+
+    await t.test(
+      "should turn unknown values into the `UNSPECIFIED` mode",
+      () => {
+        assert.equal(
+          ArcjetModeToProtocol(
+            // @ts-expect-error: test runtime behavior.
+            "NOT_VALID",
+          ),
+          Mode.UNSPECIFIED,
+        );
+      },
     );
   });
 
-  await t.test("ArcjetEmailTypeToProtocol", () => {
-    assert.equal(ArcjetEmailTypeToProtocol("DISPOSABLE"), EmailType.DISPOSABLE);
-    assert.equal(ArcjetEmailTypeToProtocol("FREE"), EmailType.FREE);
-    assert.equal(ArcjetEmailTypeToProtocol("INVALID"), EmailType.INVALID);
-    assert.equal(
-      ArcjetEmailTypeToProtocol("NO_GRAVATAR"),
-      EmailType.NO_GRAVATAR,
-    );
-    assert.equal(
-      ArcjetEmailTypeToProtocol("NO_MX_RECORDS"),
-      EmailType.NO_MX_RECORDS,
-    );
-    assert.equal(
-      ArcjetEmailTypeToProtocol(
-        // @ts-expect-error
-        "NOT_VALID",
-      ),
-      EmailType.UNSPECIFIED,
-    );
-  });
-
-  await t.test("ArcjetEmailTypeFromProtocol", () => {
-    assert.equal(
-      ArcjetEmailTypeFromProtocol(EmailType.DISPOSABLE),
-      "DISPOSABLE",
-    );
-    assert.equal(ArcjetEmailTypeFromProtocol(EmailType.FREE), "FREE");
-    assert.equal(ArcjetEmailTypeFromProtocol(EmailType.INVALID), "INVALID");
-    assert.equal(
-      ArcjetEmailTypeFromProtocol(EmailType.NO_GRAVATAR),
-      "NO_GRAVATAR",
-    );
-    assert.equal(
-      ArcjetEmailTypeFromProtocol(EmailType.NO_MX_RECORDS),
-      "NO_MX_RECORDS",
-    );
-    assert.throws(() => {
-      ArcjetEmailTypeFromProtocol(EmailType.UNSPECIFIED);
-    }, /Invalid EmailType/);
-    assert.throws(() => {
-      ArcjetEmailTypeFromProtocol(
-        // @ts-expect-error
-        99,
+  await t.test("ArcjetEmailTypeToProtocol", async (t) => {
+    await t.test("should turn `DISPOSABLE` into an email type", () => {
+      assert.equal(
+        ArcjetEmailTypeToProtocol("DISPOSABLE"),
+        EmailType.DISPOSABLE,
       );
-    }, /Invalid EmailType/);
-  });
+    });
 
-  await t.test("ArcjetStackToProtocol", () => {
-    assert.equal(ArcjetStackToProtocol("NODEJS"), SDKStack.SDK_STACK_NODEJS);
-    assert.equal(ArcjetStackToProtocol("NEXTJS"), SDKStack.SDK_STACK_NEXTJS);
-    assert.equal(ArcjetStackToProtocol("BUN"), SDKStack.SDK_STACK_BUN);
-    assert.equal(
-      ArcjetStackToProtocol("SVELTEKIT"),
-      SDKStack.SDK_STACK_SVELTEKIT,
-    );
-    assert.equal(ArcjetStackToProtocol("DENO"), SDKStack.SDK_STACK_DENO);
-    assert.equal(ArcjetStackToProtocol("NESTJS"), SDKStack.SDK_STACK_NESTJS);
-    assert.equal(ArcjetStackToProtocol("REMIX"), SDKStack.SDK_STACK_REMIX);
-    assert.equal(ArcjetStackToProtocol("ASTRO"), SDKStack.SDK_STACK_ASTRO);
-    assert.equal(
-      ArcjetStackToProtocol(
-        // @ts-expect-error
-        "NOT_VALID",
-      ),
-      SDKStack.SDK_STACK_UNSPECIFIED,
-    );
-  });
+    await t.test("should turn `FREE` into an email type", () => {
+      assert.equal(ArcjetEmailTypeToProtocol("FREE"), EmailType.FREE);
+    });
 
-  await t.test("ArcjetRuleStateToProtocol", () => {
-    assert.equal(ArcjetRuleStateToProtocol("CACHED"), RuleState.CACHED);
-    assert.equal(ArcjetRuleStateToProtocol("DRY_RUN"), RuleState.DRY_RUN);
-    assert.equal(ArcjetRuleStateToProtocol("NOT_RUN"), RuleState.NOT_RUN);
-    assert.equal(ArcjetRuleStateToProtocol("RUN"), RuleState.RUN);
-    assert.equal(
-      ArcjetRuleStateToProtocol(
-        // @ts-expect-error
-        "NOT_VALID",
-      ),
-      RuleState.UNSPECIFIED,
-    );
-  });
+    await t.test("should turn `INVALID` into an email type", () => {
+      assert.equal(ArcjetEmailTypeToProtocol("INVALID"), EmailType.INVALID);
+    });
 
-  await t.test("ArcjetRuleStateFromProtocol", () => {
-    assert.equal(ArcjetRuleStateFromProtocol(RuleState.CACHED), "CACHED");
-    assert.equal(ArcjetRuleStateFromProtocol(RuleState.DRY_RUN), "DRY_RUN");
-    assert.equal(ArcjetRuleStateFromProtocol(RuleState.NOT_RUN), "NOT_RUN");
-    assert.equal(ArcjetRuleStateFromProtocol(RuleState.RUN), "RUN");
-    assert.throws(() => {
-      ArcjetRuleStateFromProtocol(RuleState.UNSPECIFIED);
-    }, /Invalid RuleState/);
-    assert.throws(() => {
-      ArcjetRuleStateFromProtocol(
-        // @ts-expect-error
-        99,
+    await t.test("should turn `NO_GRAVATAR` into an email type", () => {
+      assert.equal(
+        ArcjetEmailTypeToProtocol("NO_GRAVATAR"),
+        EmailType.NO_GRAVATAR,
       );
-    }, /Invalid RuleState/);
-  });
+    });
 
-  await t.test("ArcjetConclusionToProtocol", () => {
-    assert.equal(ArcjetConclusionToProtocol("ALLOW"), Conclusion.ALLOW);
-    assert.equal(ArcjetConclusionToProtocol("CHALLENGE"), Conclusion.CHALLENGE);
-    assert.equal(ArcjetConclusionToProtocol("DENY"), Conclusion.DENY);
-    assert.equal(ArcjetConclusionToProtocol("ERROR"), Conclusion.ERROR);
-    assert.equal(
-      ArcjetConclusionToProtocol(
-        // @ts-expect-error
-        "NOT_VALID",
-      ),
-      Conclusion.UNSPECIFIED,
-    );
-  });
-
-  await t.test("ArcjetConclusionFromProtocol", () => {
-    assert.equal(ArcjetConclusionFromProtocol(Conclusion.ALLOW), "ALLOW");
-    assert.equal(
-      ArcjetConclusionFromProtocol(Conclusion.CHALLENGE),
-      "CHALLENGE",
-    );
-    assert.equal(ArcjetConclusionFromProtocol(Conclusion.DENY), "DENY");
-    assert.equal(ArcjetConclusionFromProtocol(Conclusion.ERROR), "ERROR");
-    assert.throws(() => {
-      ArcjetConclusionFromProtocol(Conclusion.UNSPECIFIED);
-    }, /Invalid Conclusion/);
-    assert.throws(() => {
-      ArcjetConclusionFromProtocol(
-        // @ts-expect-error
-        99,
+    await t.test("should turn `NO_MX_RECORDS` into an email type", () => {
+      assert.equal(
+        ArcjetEmailTypeToProtocol("NO_MX_RECORDS"),
+        EmailType.NO_MX_RECORDS,
       );
-    }, /Invalid Conclusion/);
+    });
+
+    await t.test(
+      "should turn unknown values into the `UNSPECIFIED` email type",
+      () => {
+        assert.equal(
+          ArcjetEmailTypeToProtocol(
+            // @ts-expect-error
+            "NOT_VALID",
+          ),
+          EmailType.UNSPECIFIED,
+        );
+      },
+    );
   });
 
-  await t.test("ArcjetReasonFromProtocol", () => {
-    assert.ok(ArcjetReasonFromProtocol() instanceof ArcjetReason);
-    assert.ok(
-      ArcjetReasonFromProtocol(
+  await t.test("ArcjetEmailTypeFromProtocol", async (t) => {
+    await t.test("should turn a `DISPOSABLE` email type into a string", () => {
+      assert.equal(
+        ArcjetEmailTypeFromProtocol(EmailType.DISPOSABLE),
+        "DISPOSABLE",
+      );
+    });
+
+    await t.test("should turn a `FREE` email type into a string", () => {
+      assert.equal(ArcjetEmailTypeFromProtocol(EmailType.FREE), "FREE");
+    });
+
+    await t.test("should turn an `INVALID` email type into a string", () => {
+      assert.equal(ArcjetEmailTypeFromProtocol(EmailType.INVALID), "INVALID");
+    });
+
+    await t.test("should turn a `NO_GRAVATAR` email type into a string", () => {
+      assert.equal(
+        ArcjetEmailTypeFromProtocol(EmailType.NO_GRAVATAR),
+        "NO_GRAVATAR",
+      );
+    });
+
+    await t.test(
+      "should turn a `NO_MX_RECORDS` email type into a string",
+      () => {
+        assert.equal(
+          ArcjetEmailTypeFromProtocol(EmailType.NO_MX_RECORDS),
+          "NO_MX_RECORDS",
+        );
+      },
+    );
+
+    await t.test("should fail on an `UNSPECIFIED` email type", () => {
+      assert.throws(() => {
+        ArcjetEmailTypeFromProtocol(EmailType.UNSPECIFIED);
+      }, /Invalid EmailType/);
+    });
+
+    await t.test("should fail on an unknown email type", () => {
+      assert.throws(() => {
+        ArcjetEmailTypeFromProtocol(
+          // @ts-expect-error
+          99,
+        );
+      }, /Invalid EmailType/);
+    });
+  });
+
+  await t.test("ArcjetStackToProtocol", async (t) => {
+    await t.test("should turn a `ASTRO` stack into an SDK stack", () => {
+      assert.equal(ArcjetStackToProtocol("ASTRO"), SDKStack.SDK_STACK_ASTRO);
+    });
+
+    await t.test("should turn a `BUN` stack into an SDK stack", () => {
+      assert.equal(ArcjetStackToProtocol("BUN"), SDKStack.SDK_STACK_BUN);
+    });
+
+    await t.test("should turn a `DENO` stack into an SDK stack", () => {
+      assert.equal(ArcjetStackToProtocol("DENO"), SDKStack.SDK_STACK_DENO);
+    });
+
+    await t.test("should turn a `NESTJS` stack into an SDK stack", () => {
+      assert.equal(ArcjetStackToProtocol("NESTJS"), SDKStack.SDK_STACK_NESTJS);
+    });
+
+    await t.test("should turn a `NEXTJS` stack into an SDK stack", () => {
+      assert.equal(ArcjetStackToProtocol("NEXTJS"), SDKStack.SDK_STACK_NEXTJS);
+    });
+
+    await t.test("should turn a `NODEJS` stack into an SDK stack", () => {
+      assert.equal(ArcjetStackToProtocol("NODEJS"), SDKStack.SDK_STACK_NODEJS);
+    });
+
+    await t.test("should turn a `REMIX` stack into an SDK stack", () => {
+      assert.equal(ArcjetStackToProtocol("REMIX"), SDKStack.SDK_STACK_REMIX);
+    });
+
+    await t.test("should turn a `SVELTEKIT` stack into an SDK stack", () => {
+      assert.equal(
+        ArcjetStackToProtocol("SVELTEKIT"),
+        SDKStack.SDK_STACK_SVELTEKIT,
+      );
+    });
+
+    await t.test("should fail on an unknown stack", () => {
+      assert.equal(
+        ArcjetStackToProtocol(
+          // @ts-expect-error
+          "NOT_VALID",
+        ),
+        SDKStack.SDK_STACK_UNSPECIFIED,
+      );
+    });
+  });
+
+  await t.test("ArcjetRuleStateToProtocol", async (t) => {
+    await t.test("should turn a `CACHED` value into a rule state", () => {
+      assert.equal(ArcjetRuleStateToProtocol("CACHED"), RuleState.CACHED);
+    });
+
+    await t.test("should turn a `DRY_RUN` value into a rule state", () => {
+      assert.equal(ArcjetRuleStateToProtocol("DRY_RUN"), RuleState.DRY_RUN);
+    });
+
+    await t.test("should turn a `NOT_RUN` value into a rule state", () => {
+      assert.equal(ArcjetRuleStateToProtocol("NOT_RUN"), RuleState.NOT_RUN);
+    });
+
+    await t.test("should turn a `RUN` value into a rule state", () => {
+      assert.equal(ArcjetRuleStateToProtocol("RUN"), RuleState.RUN);
+    });
+
+    await t.test("should fail on an unknown rule state", () => {
+      assert.equal(
+        ArcjetRuleStateToProtocol(
+          // @ts-expect-error
+          "NOT_VALID",
+        ),
+        RuleState.UNSPECIFIED,
+      );
+    });
+  });
+
+  await t.test("ArcjetRuleStateFromProtocol", async (t) => {
+    await t.test("should turn a `CACHED` state into a string", () => {
+      assert.equal(ArcjetRuleStateFromProtocol(RuleState.CACHED), "CACHED");
+    });
+
+    await t.test("should turn a `DRY_RUN` state into a string", () => {
+      assert.equal(ArcjetRuleStateFromProtocol(RuleState.DRY_RUN), "DRY_RUN");
+    });
+
+    await t.test("should turn a `NOT_RUN` state into a string", () => {
+      assert.equal(ArcjetRuleStateFromProtocol(RuleState.NOT_RUN), "NOT_RUN");
+    });
+
+    await t.test("should turn a `RUN` state into a string", () => {
+      assert.equal(ArcjetRuleStateFromProtocol(RuleState.RUN), "RUN");
+    });
+
+    await t.test("should fail on an `UNSPECIFIED` state", () => {
+      assert.throws(() => {
+        ArcjetRuleStateFromProtocol(RuleState.UNSPECIFIED);
+      }, /Invalid RuleState/);
+    });
+
+    await t.test("should fail on an unknown state", () => {
+      assert.throws(() => {
+        ArcjetRuleStateFromProtocol(
+          // @ts-expect-error
+          99,
+        );
+      }, /Invalid RuleState/);
+    });
+  });
+
+  await t.test("ArcjetConclusionToProtocol", async (t) => {
+    await t.test("should turn an `ALLOW` value into a conclusion", () => {
+      assert.equal(ArcjetConclusionToProtocol("ALLOW"), Conclusion.ALLOW);
+    });
+
+    await t.test("should turn a `CHALLENGE` value into a conclusion", () => {
+      assert.equal(
+        ArcjetConclusionToProtocol("CHALLENGE"),
+        Conclusion.CHALLENGE,
+      );
+    });
+
+    await t.test("should turn a `DENY` value into a conclusion", () => {
+      assert.equal(ArcjetConclusionToProtocol("DENY"), Conclusion.DENY);
+    });
+
+    await t.test("should turn an `ERROR` value into a conclusion", () => {
+      assert.equal(ArcjetConclusionToProtocol("ERROR"), Conclusion.ERROR);
+    });
+
+    await t.test("should fail on a `NOT_VALID` value", () => {
+      assert.equal(
+        ArcjetConclusionToProtocol(
+          // @ts-expect-error
+          "NOT_VALID",
+        ),
+        Conclusion.UNSPECIFIED,
+      );
+    });
+  });
+
+  await t.test("ArcjetConclusionFromProtocol", async (t) => {
+    await t.test("should turn an `ALLOW` conclusion into a string", () => {
+      assert.equal(ArcjetConclusionFromProtocol(Conclusion.ALLOW), "ALLOW");
+    });
+
+    await t.test("should turn a `CHALLENGE` conclusion into a string", () => {
+      assert.equal(
+        ArcjetConclusionFromProtocol(Conclusion.CHALLENGE),
+        "CHALLENGE",
+      );
+    });
+
+    await t.test("should turn a `DENY` conclusion into a string", () => {
+      assert.equal(ArcjetConclusionFromProtocol(Conclusion.DENY), "DENY");
+    });
+
+    await t.test("should turn an `ERROR` conclusion into a string", () => {
+      assert.equal(ArcjetConclusionFromProtocol(Conclusion.ERROR), "ERROR");
+    });
+
+    await t.test("should fail on an `UNSPECIFIED` conclusion", () => {
+      assert.throws(() => {
+        ArcjetConclusionFromProtocol(Conclusion.UNSPECIFIED);
+      }, /Invalid Conclusion/);
+    });
+
+    await t.test("should fail on an unknown conclusion", () => {
+      assert.throws(() => {
+        ArcjetConclusionFromProtocol(
+          // @ts-expect-error
+          99,
+        );
+      }, /Invalid Conclusion/);
+    });
+  });
+
+  await t.test("ArcjetReasonFromProtocol", async (t) => {
+    await t.test("should create an anonymous reason w/o proto", () => {
+      const reason = ArcjetReasonFromProtocol();
+
+      assert.ok(reason instanceof ArcjetReason);
+      assert.equal(reason.type, undefined);
+    });
+
+    await t.test("should create an anonymous reason w/ an empty proto", () => {
+      const reason = ArcjetReasonFromProtocol(new Reason());
+
+      assert.ok(reason instanceof ArcjetReason);
+      assert.equal(reason.type, undefined);
+    });
+
+    await t.test("should create a bot reason", () => {
+      const reason = ArcjetReasonFromProtocol(
         new Reason({
-          reason: {
-            case: "botV2",
-            value: {
-              allowed: [],
-              denied: [],
-            },
-          },
+          reason: { case: "botV2", value: { allowed: [], denied: [] } },
         }),
-      ) instanceof ArcjetBotReason,
-    );
-    assert.ok(
-      ArcjetReasonFromProtocol(
-        new Reason({
-          reason: {
-            case: "edgeRule",
-            value: {},
-          },
-        }),
-      ) instanceof ArcjetEdgeRuleReason,
-    );
-    assert.ok(
-      ArcjetReasonFromProtocol(
+      );
+
+      assert.ok(reason instanceof ArcjetBotReason);
+      assert.equal(reason.type, "BOT");
+    });
+
+    await t.test("should create an edge rule reason", () => {
+      const reason = ArcjetReasonFromProtocol(
+        new Reason({ reason: { case: "edgeRule", value: {} } }),
+      );
+
+      assert.ok(reason instanceof ArcjetEdgeRuleReason);
+      assert.equal(reason.type, "EDGE_RULE");
+    });
+
+    await t.test("should create an email reason", () => {
+      const reason = ArcjetReasonFromProtocol(
         new Reason({
           reason: {
             case: "email",
-            value: {
-              emailTypes: [EmailType.DISPOSABLE],
-            },
+            value: { emailTypes: [EmailType.DISPOSABLE] },
           },
         }),
-      ) instanceof ArcjetEmailReason,
-    );
-    assert.ok(
-      ArcjetReasonFromProtocol(
+      );
+
+      assert.ok(reason instanceof ArcjetEmailReason);
+      assert.equal(reason.type, "EMAIL");
+    });
+
+    await t.test("should create an error reason", () => {
+      const reason = ArcjetReasonFromProtocol(
         new Reason({
           reason: {
             case: "error",
-            value: {
-              message: "Test error",
-            },
+            value: { message: "Test error" },
           },
         }),
-      ) instanceof ArcjetErrorReason,
-    );
-    assert.ok(
-      ArcjetReasonFromProtocol(
+      );
+
+      assert.ok(reason instanceof ArcjetErrorReason);
+      assert.equal(reason.type, "ERROR");
+    });
+
+    await t.test("should create a rate limit reason", () => {
+      const reason = ArcjetReasonFromProtocol(
         new Reason({
           reason: {
             case: "rateLimit",
             value: {
-              max: 1,
               count: 2,
+              max: 1,
               remaining: -1,
               resetInSeconds: 1000,
-              windowInSeconds: 1000,
               resetTime: undefined,
+              windowInSeconds: 1000,
             },
           },
         }),
-      ) instanceof ArcjetRateLimitReason,
-    );
-    assert.ok(
-      ArcjetReasonFromProtocol(
+      );
+
+      assert.ok(reason instanceof ArcjetRateLimitReason);
+      assert.equal(reason.type, "RATE_LIMIT");
+    });
+
+    await t.test("should create another rate limit reason", () => {
+      const reason = ArcjetReasonFromProtocol(
         new Reason({
           reason: {
             case: "rateLimit",
             value: {
-              max: 1,
               count: 2,
+              max: 1,
               remaining: -1,
               resetInSeconds: 1000,
-              windowInSeconds: 1000,
               resetTime: Timestamp.now(),
+              windowInSeconds: 1000,
             },
           },
         }),
-      ) instanceof ArcjetRateLimitReason,
-    );
-    assert.ok(
-      ArcjetReasonFromProtocol(
+      );
+
+      assert.ok(reason instanceof ArcjetRateLimitReason);
+      assert.equal(reason.type, "RATE_LIMIT");
+    });
+
+    await t.test("should create a sensitive info reason", () => {
+      const reason = ArcjetReasonFromProtocol(
         new Reason({
           reason: {
             case: "sensitiveInfo",
             value: {
               denied: [
-                {
-                  start: 0,
-                  end: 16,
-                  identifiedType: "credit-card-number",
-                },
+                { end: 16, identifiedType: "credit-card-number", start: 0 },
               ],
             },
           },
         }),
-      ) instanceof ArcjetSensitiveInfoReason,
-    );
-    assert.ok(
-      ArcjetReasonFromProtocol(
-        new Reason({
-          reason: {
-            case: "shield",
-            value: {
-              shieldTriggered: true,
-            },
-          },
-        }),
-      ) instanceof ArcjetShieldReason,
-    );
-    assert.ok(ArcjetReasonFromProtocol(new Reason()) instanceof ArcjetReason);
-    assert.ok(
-      ArcjetReasonFromProtocol(
-        new Reason({
-          reason: {
-            // @ts-expect-error
-            case: "NOT_VALID",
-          },
-        }),
-      ) instanceof ArcjetReason,
-    );
-    assert.throws(() => {
-      ArcjetReasonFromProtocol(
-        // @ts-expect-error
-        "NOT_VALID",
       );
-    }, /Invalid Reason/);
-    assert.throws(() => {
-      ArcjetReasonFromProtocol({
-        // @ts-expect-error
-        reason: "NOT_VALID",
-      });
-    }, /Invalid Reason/);
-  });
 
-  await t.test("ArcjetReasonToProtocol", () => {
-    assert.ok(ArcjetReasonToProtocol(new ArcjetReason()) instanceof Reason);
-    assert.deepEqual(
-      ArcjetReasonToProtocol(
-        new ArcjetRateLimitReason({
-          max: 1,
-          remaining: -1,
-          reset: 100,
-          window: 100,
+      assert.ok(reason instanceof ArcjetSensitiveInfoReason);
+      assert.equal(reason.type, "SENSITIVE_INFO");
+    });
+
+    await t.test("should create a shield reason", () => {
+      const reason = ArcjetReasonFromProtocol(
+        new Reason({
+          reason: { case: "shield", value: { shieldTriggered: true } },
         }),
-      ),
-      new Reason({
-        reason: {
-          case: "rateLimit",
-          value: {
-            max: 1,
-            remaining: -1,
-            resetInSeconds: 100,
-            windowInSeconds: 100,
-          },
-        },
-      }),
-    );
+      );
 
-    const resetTime = new Date();
-    assert.deepEqual(
-      ArcjetReasonToProtocol(
-        new ArcjetRateLimitReason({
-          max: 1,
-          remaining: -1,
-          reset: 100,
-          window: 100,
-          resetTime,
-        }),
-      ),
-      new Reason({
-        reason: {
-          case: "rateLimit",
-          value: {
-            max: 1,
-            remaining: -1,
-            resetInSeconds: 100,
-            windowInSeconds: 100,
-            resetTime: Timestamp.fromDate(resetTime),
-          },
-        },
-      }),
-    );
+      assert.ok(reason instanceof ArcjetShieldReason);
+      assert.equal(reason.type, "SHIELD");
+    });
 
-    assert.deepEqual(
-      ArcjetReasonToProtocol(
-        new ArcjetBotReason({
-          allowed: ["GOOGLE_CRAWLER"],
-          denied: [],
-          verified: true,
-          spoofed: false,
-        }),
-      ),
-      new Reason({
-        reason: {
-          case: "botV2",
-          value: {
-            allowed: ["GOOGLE_CRAWLER"],
-            denied: [],
-            verified: true,
-            spoofed: false,
-          },
-        },
-      }),
-    );
-
-    assert.deepEqual(
-      ArcjetReasonToProtocol(
-        new ArcjetSensitiveInfoReason({
-          denied: [
-            {
-              start: 0,
-              end: 16,
-              identifiedType: "credit-card-number",
+    await t.test(
+      "should create an anonymous reason w/ an unknown `case` proto",
+      () => {
+        const reason = ArcjetReasonFromProtocol(
+          new Reason({
+            reason: {
+              // @ts-expect-error: test runtime behavior.
+              case: "NOT_VALID",
             },
-          ],
-          allowed: [],
-        }),
-      ),
-      new Reason({
-        reason: {
-          case: "sensitiveInfo",
-          value: {
-            denied: [
-              {
-                start: 0,
-                end: 16,
-                identifiedType: "credit-card-number",
+          }),
+        );
+
+        assert.ok(reason instanceof ArcjetReason);
+        assert.equal(reason.type, undefined);
+      },
+    );
+
+    await t.test("should fail on an invalid reason (string)", () => {
+      assert.throws(() => {
+        ArcjetReasonFromProtocol(
+          // @ts-expect-error: test runtime behavior.
+          "NOT_VALID",
+        );
+      }, /Invalid Reason/);
+    });
+
+    await t.test("should fail on an invalid reason (object)", () => {
+      assert.throws(() => {
+        ArcjetReasonFromProtocol({
+          // @ts-expect-error: test runtime behavior.
+          reason: "NOT_VALID",
+        });
+      }, /Invalid Reason/);
+    });
+  });
+
+  await t.test("ArcjetReasonToProtocol", async (t) => {
+    await t.test("should create an anonymous reason w/ an empty proto", () => {
+      const reason = ArcjetReasonToProtocol(new ArcjetReason());
+
+      assert.ok(reason instanceof Reason);
+      assert.equal(reason.reason.case, undefined);
+    });
+
+    await t.test(
+      "should create a protocol reason from an arcjet rate limit reason",
+      () => {
+        assert.deepEqual(
+          ArcjetReasonToProtocol(
+            new ArcjetRateLimitReason({
+              max: 1,
+              remaining: -1,
+              reset: 100,
+              window: 100,
+            }),
+          ),
+          new Reason({
+            reason: {
+              case: "rateLimit",
+              value: {
+                max: 1,
+                remaining: -1,
+                resetInSeconds: 100,
+                windowInSeconds: 100,
               },
-            ],
-          },
-        },
-      }),
+            },
+          }),
+        );
+      },
     );
 
-    assert.deepEqual(
-      ArcjetReasonToProtocol(new ArcjetEdgeRuleReason()),
-      new Reason({
-        reason: {
-          case: "edgeRule",
-          value: {},
-        },
-      }),
+    await t.test(
+      "should create a protocol reason from an arcjet rate limit reason w/ `resetTime`",
+      () => {
+        const resetTime = new Date();
+
+        assert.deepEqual(
+          ArcjetReasonToProtocol(
+            new ArcjetRateLimitReason({
+              max: 1,
+              remaining: -1,
+              resetTime,
+              reset: 100,
+              window: 100,
+            }),
+          ),
+          new Reason({
+            reason: {
+              case: "rateLimit",
+              value: {
+                max: 1,
+                remaining: -1,
+                resetInSeconds: 100,
+                resetTime: Timestamp.fromDate(resetTime),
+                windowInSeconds: 100,
+              },
+            },
+          }),
+        );
+      },
     );
 
-    assert.deepEqual(
-      ArcjetReasonToProtocol(new ArcjetShieldReason({ shieldTriggered: true })),
-      new Reason({
-        reason: {
-          case: "shield",
-          value: {
-            shieldTriggered: true,
-          },
-        },
-      }),
+    await t.test(
+      "should create a protocol reason from an arcjet bot reason",
+      () => {
+        assert.deepEqual(
+          ArcjetReasonToProtocol(
+            new ArcjetBotReason({
+              allowed: ["GOOGLE_CRAWLER"],
+              denied: [],
+              spoofed: false,
+              verified: true,
+            }),
+          ),
+          new Reason({
+            reason: {
+              case: "botV2",
+              value: {
+                allowed: ["GOOGLE_CRAWLER"],
+                denied: [],
+                spoofed: false,
+                verified: true,
+              },
+            },
+          }),
+        );
+      },
     );
 
-    assert.deepEqual(
-      ArcjetReasonToProtocol(
-        new ArcjetEmailReason({
-          emailTypes: ["DISPOSABLE"],
-        }),
-      ),
-      new Reason({
-        reason: {
-          case: "email",
-          value: {
-            emailTypes: [EmailType.DISPOSABLE],
-          },
-        },
-      }),
+    await t.test(
+      "should create a protocol reason from an arcjet sensitive info reason",
+      () => {
+        assert.deepEqual(
+          ArcjetReasonToProtocol(
+            new ArcjetSensitiveInfoReason({
+              allowed: [],
+              denied: [
+                { end: 16, identifiedType: "credit-card-number", start: 0 },
+              ],
+            }),
+          ),
+          new Reason({
+            reason: {
+              case: "sensitiveInfo",
+              value: {
+                denied: [
+                  { end: 16, identifiedType: "credit-card-number", start: 0 },
+                ],
+              },
+            },
+          }),
+        );
+      },
     );
 
-    assert.deepEqual(
-      ArcjetReasonToProtocol(new ArcjetErrorReason("Test error")),
-      new Reason({
-        reason: {
-          case: "error",
-          value: {
-            message: "Test error",
-          },
-        },
-      }),
+    await t.test(
+      "should create a protocol reason from an arcjet edge rule reason",
+      () => {
+        assert.deepEqual(
+          ArcjetReasonToProtocol(new ArcjetEdgeRuleReason()),
+          new Reason({ reason: { case: "edgeRule", value: {} } }),
+        );
+      },
+    );
+
+    await t.test(
+      "should create a protocol reason from an arcjet shield reason",
+      (t) => {
+        assert.deepEqual(
+          ArcjetReasonToProtocol(
+            new ArcjetShieldReason({ shieldTriggered: true }),
+          ),
+          new Reason({
+            reason: { case: "shield", value: { shieldTriggered: true } },
+          }),
+        );
+      },
+    );
+
+    await t.test(
+      "should create a protocol reason from an arcjet email reason",
+      () => {
+        assert.deepEqual(
+          ArcjetReasonToProtocol(
+            new ArcjetEmailReason({ emailTypes: ["DISPOSABLE"] }),
+          ),
+          new Reason({
+            reason: {
+              case: "email",
+              value: { emailTypes: [EmailType.DISPOSABLE] },
+            },
+          }),
+        );
+      },
+    );
+
+    await t.test(
+      "should create a protocol reason from an arcjet error reason",
+      () => {
+        assert.deepEqual(
+          ArcjetReasonToProtocol(new ArcjetErrorReason("Test error")),
+          new Reason({
+            reason: { case: "error", value: { message: "Test error" } },
+          }),
+        );
+      },
     );
   });
 
-  await t.test("ArcjetRuleResultToProtocol", () => {
-    assert.deepEqual(
-      ArcjetRuleResultToProtocol(
-        new ArcjetRuleResult({
-          ruleId: "test-rule-id",
-          fingerprint: "test-fingerprint",
-          ttl: 0,
-          state: "RUN",
-          conclusion: "ALLOW",
-          reason: new ArcjetReason(),
-        }),
-      ),
-      new RuleResult({
-        ruleId: "test-rule-id",
-        fingerprint: "test-fingerprint",
-        state: RuleState.RUN,
-        conclusion: Conclusion.ALLOW,
-        reason: new Reason(),
-      }),
+  await t.test("ArcjetRuleResultToProtocol", async (t) => {
+    await t.test(
+      "should create a protocol rule result from an arcjet rule result",
+      () => {
+        assert.deepEqual(
+          ArcjetRuleResultToProtocol(
+            new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "test-fingerprint",
+              reason: new ArcjetReason(),
+              ruleId: "test-rule-id",
+              state: "RUN",
+              ttl: 0,
+            }),
+          ),
+          new RuleResult({
+            conclusion: Conclusion.ALLOW,
+            fingerprint: "test-fingerprint",
+            reason: new Reason(),
+            ruleId: "test-rule-id",
+            state: RuleState.RUN,
+          }),
+        );
+      },
     );
   });
 
-  await t.test("ArcjetRuleResultFromProtocol", () => {
-    assert.deepEqual(
-      ArcjetRuleResultFromProtocol(
-        new RuleResult({
-          ruleId: "test-rule-id",
-          fingerprint: "test-fingerprint",
-          state: RuleState.RUN,
-          conclusion: Conclusion.ALLOW,
-          reason: new Reason(),
-        }),
-      ),
-      new ArcjetRuleResult({
-        ruleId: "test-rule-id",
-        fingerprint: "test-fingerprint",
-        ttl: 0,
-        state: "RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetReason(),
-      }),
+  await t.test("ArcjetRuleResultFromProtocol", async (t) => {
+    await t.test(
+      "should create an arcjet rule result from a protocol rule result",
+      () => {
+        assert.deepEqual(
+          ArcjetRuleResultFromProtocol(
+            new RuleResult({
+              conclusion: Conclusion.ALLOW,
+              fingerprint: "test-fingerprint",
+              reason: new Reason(),
+              ruleId: "test-rule-id",
+              state: RuleState.RUN,
+            }),
+          ),
+          new ArcjetRuleResult({
+            conclusion: "ALLOW",
+            fingerprint: "test-fingerprint",
+            reason: new ArcjetReason(),
+            ruleId: "test-rule-id",
+            state: "RUN",
+            ttl: 0,
+          }),
+        );
+      },
     );
   });
 
-  await t.test("ArcjetDecisionToProtocol", () => {
-    assert.deepEqual(
-      ArcjetDecisionToProtocol(
-        new ArcjetAllowDecision({
-          id: "abc123",
-          ttl: 0,
-          results: [],
-          reason: new ArcjetReason(),
-          ip: new ArcjetIpDetails(),
-        }),
-      ),
-      new Decision({
-        id: "abc123",
-        conclusion: Conclusion.ALLOW,
-        ruleResults: [],
-        reason: new Reason(),
-      }),
+  await t.test("ArcjetDecisionToProtocol", async (t) => {
+    await t.test(
+      "should create a protocol decision from an arcjet decision",
+      () => {
+        assert.deepEqual(
+          ArcjetDecisionToProtocol(
+            new ArcjetAllowDecision({
+              id: "abc123",
+              ip: new ArcjetIpDetails(),
+              reason: new ArcjetReason(),
+              results: [],
+              ttl: 0,
+            }),
+          ),
+          new Decision({
+            conclusion: Conclusion.ALLOW,
+            id: "abc123",
+            reason: new Reason(),
+            ruleResults: [],
+          }),
+        );
+      },
     );
   });
 
-  await t.test("ArcjetDecisionFromProtocol", () => {
-    assert.ok(ArcjetDecisionFromProtocol() instanceof ArcjetErrorDecision);
-    assert.ok(
-      ArcjetDecisionFromProtocol(new Decision()) instanceof ArcjetErrorDecision,
+  await t.test("ArcjetDecisionFromProtocol", async (t) => {
+    await t.test("should create an arcjet error decision w/o proto", () => {
+      const decision = ArcjetDecisionFromProtocol();
+
+      assert.ok(decision instanceof ArcjetErrorDecision);
+      assert.equal(decision.conclusion, "ERROR");
+    });
+
+    await t.test(
+      "should create an arcjet error decision w/ empty proto",
+      () => {
+        const decision = ArcjetDecisionFromProtocol(new Decision());
+
+        assert.ok(decision instanceof ArcjetErrorDecision);
+        assert.equal(decision.conclusion, "ERROR");
+      },
     );
 
-    assert.ok(
-      ArcjetDecisionFromProtocol(
-        new Decision({
-          conclusion: Conclusion.ALLOW,
-        }),
-      ) instanceof ArcjetAllowDecision,
+    await t.test(
+      "should create an arcjet allow decision w/ an allow conclusion proto",
+      () => {
+        const decision = ArcjetDecisionFromProtocol(
+          new Decision({ conclusion: Conclusion.ALLOW }),
+        );
+
+        assert.ok(decision instanceof ArcjetAllowDecision);
+        assert.equal(decision.conclusion, "ALLOW");
+      },
     );
 
-    assert.ok(
-      ArcjetDecisionFromProtocol(
-        new Decision({
-          conclusion: Conclusion.DENY,
-        }),
-      ) instanceof ArcjetDenyDecision,
+    await t.test(
+      "should create an arcjet deny decision w/ a deny conclusion proto",
+      () => {
+        const decision = ArcjetDecisionFromProtocol(
+          new Decision({ conclusion: Conclusion.DENY }),
+        );
+
+        assert.ok(decision instanceof ArcjetDenyDecision);
+        assert.equal(decision.conclusion, "DENY");
+      },
     );
 
-    assert.ok(
-      ArcjetDecisionFromProtocol(
-        new Decision({
-          conclusion: Conclusion.CHALLENGE,
-        }),
-      ) instanceof ArcjetChallengeDecision,
+    await t.test(
+      "should create an arcjet challenge decision w/ a challenge conclusion proto",
+      () => {
+        const decision = ArcjetDecisionFromProtocol(
+          new Decision({ conclusion: Conclusion.CHALLENGE }),
+        );
+
+        assert.ok(decision instanceof ArcjetChallengeDecision);
+        assert.equal(decision.conclusion, "CHALLENGE");
+      },
     );
 
-    assert.ok(
-      ArcjetDecisionFromProtocol(
-        new Decision({
-          conclusion: Conclusion.ERROR,
-        }),
-      ) instanceof ArcjetErrorDecision,
+    await t.test(
+      "should create an arcjet error decision w/ an error conclusion proto",
+      () => {
+        const decision = ArcjetDecisionFromProtocol(
+          new Decision({ conclusion: Conclusion.ERROR }),
+        );
+
+        assert.ok(decision instanceof ArcjetErrorDecision);
+        assert.equal(decision.conclusion, "ERROR");
+      },
     );
 
-    assert.ok(
-      ArcjetDecisionFromProtocol({
-        // @ts-expect-error
-        conclusion: "NOT_VALID",
-      }) instanceof ArcjetErrorDecision,
+    await t.test(
+      "should create an arcjet error decision w/ an invalid conclusion proto",
+      () => {
+        const decision = ArcjetDecisionFromProtocol({
+          // @ts-expect-error: test runtime behavior.
+          conclusion: "NOT_VALID",
+        });
+
+        assert.ok(decision instanceof ArcjetErrorDecision);
+        assert.equal(decision.conclusion, "ERROR");
+      },
     );
 
-    assert.ok(
-      ArcjetDecisionFromProtocol(
-        // @ts-expect-error
-        "NOT_VALID",
-      ) instanceof ArcjetErrorDecision,
+    await t.test(
+      "should create an arcjet error decision w/ an invalid proto",
+      () => {
+        const decision = ArcjetDecisionFromProtocol(
+          // @ts-expect-error: test runtime behavior.
+          "NOT_VALID",
+        );
+
+        assert.ok(decision instanceof ArcjetErrorDecision);
+        assert.equal(decision.conclusion, "ERROR");
+      },
     );
   });
 
-  await t.test("ArcjetRuleToProtocol", () => {
-    const unknownRule: ArcjetRule = {
-      version: 0,
-      type: "UNKNOWN",
-      mode: "DRY_RUN",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(),
-    };
-
-    assert.deepEqual(ArcjetRuleToProtocol(unknownRule), new Rule({}));
-
-    const tokenBucketRule: ArcjetTokenBucketRateLimitRule<{}> = {
-      version: 0,
-      type: "RATE_LIMIT",
-      mode: "DRY_RUN",
-      priority: 1,
-      algorithm: "TOKEN_BUCKET",
-      refillRate: 1,
-      interval: 1,
-      capacity: 1,
-      validate: mock.fn(),
-      protect: mock.fn(),
-    };
-
-    assert.deepEqual(
-      ArcjetRuleToProtocol(tokenBucketRule),
-      new Rule({
-        rule: {
-          case: "rateLimit",
-          value: {
-            mode: Mode.DRY_RUN,
-            algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
-            refillRate: 1,
-            interval: 1,
-            capacity: 1,
-          },
+  await t.test("ArcjetRuleToProtocol", async (t) => {
+    await t.test("should create an anonymous protocol rule", () => {
+      const rule = ArcjetRuleToProtocol({
+        mode: "DRY_RUN",
+        priority: 1,
+        protect() {
+          assert.fail("should not call `protect`");
         },
-      }),
-    );
-
-    const fixedWindowRule: ArcjetFixedWindowRateLimitRule<{}> = {
-      version: 0,
-      type: "RATE_LIMIT",
-      mode: "DRY_RUN",
-      priority: 1,
-      algorithm: "FIXED_WINDOW",
-      max: 1,
-      window: 1,
-      validate: mock.fn(),
-      protect: mock.fn(),
-    };
-
-    assert.deepEqual(
-      ArcjetRuleToProtocol(fixedWindowRule),
-      new Rule({
-        rule: {
-          case: "rateLimit",
-          value: {
-            mode: Mode.DRY_RUN,
-            algorithm: RateLimitAlgorithm.FIXED_WINDOW,
-            max: 1,
-            windowInSeconds: 1,
-          },
+        type: "UNKNOWN",
+        validate() {
+          assert.fail("should not call `validate`");
         },
-      }),
-    );
+        version: 0,
+      });
 
-    const slidingWindowRule: ArcjetSlidingWindowRateLimitRule<{}> = {
-      version: 0,
-      type: "RATE_LIMIT",
-      mode: "DRY_RUN",
-      priority: 1,
-      algorithm: "SLIDING_WINDOW",
-      max: 1,
-      interval: 1,
-      validate: mock.fn(),
-      protect: mock.fn(),
-    };
+      assert.deepEqual(rule, new Rule({}));
+      assert.equal(rule.rule.case, undefined);
+    });
 
-    assert.deepEqual(
-      ArcjetRuleToProtocol(slidingWindowRule),
-      new Rule({
-        rule: {
-          case: "rateLimit",
-          value: {
-            mode: Mode.DRY_RUN,
-            algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
-            max: 1,
-            interval: 1,
+    await t.test(
+      "should create a rate limit protocol rule (token bucket)",
+      () => {
+        const rule = ArcjetRuleToProtocol({
+          algorithm: "TOKEN_BUCKET",
+          capacity: 1,
+          interval: 1,
+          mode: "DRY_RUN",
+          priority: 1,
+          protect() {
+            assert.fail("should not call `protect`");
           },
-        },
-      }),
-    );
+          refillRate: 1,
+          type: "RATE_LIMIT",
+          validate() {
+            assert.fail("should not call `validate`");
+          },
+          version: 0,
+          // TODO: `{}` is confusing in TypeScript, and likely points to a bug.
+        } as ArcjetTokenBucketRateLimitRule<{}>);
 
-    const emailRule: ArcjetEmailRule<{ email: string }> = {
-      version: 0,
-      type: "EMAIL",
-      mode: "DRY_RUN",
-      priority: 1,
-      allow: [],
-      deny: ["INVALID"],
-      requireTopLevelDomain: false,
-      allowDomainLiteral: false,
-      validate() {
-        throw new Error("should not be called");
+        assert.deepEqual(
+          rule,
+          new Rule({
+            rule: {
+              case: "rateLimit",
+              value: {
+                algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
+                capacity: 1,
+                interval: 1,
+                mode: Mode.DRY_RUN,
+                refillRate: 1,
+              },
+            },
+          }),
+        );
+        assert.equal(rule.rule.case, "rateLimit");
       },
-      protect() {
-        throw new Error("should not be called");
-      },
-    };
-
-    assert.deepEqual(
-      ArcjetRuleToProtocol(emailRule),
-      new Rule({
-        rule: {
-          case: "email",
-          value: {
-            mode: Mode.DRY_RUN,
-            allow: [],
-            deny: [EmailType.INVALID],
-          },
-        },
-      }),
     );
 
-    const botRule: ArcjetBotRule<{}> = {
-      version: 0,
-      type: "BOT",
-      mode: "DRY_RUN",
-      priority: 1,
-      allow: [],
-      deny: [],
-      validate() {
-        throw new Error("should not be called");
-      },
-      protect() {
-        throw new Error("should not be called");
-      },
-    };
-    assert.deepEqual(
-      ArcjetRuleToProtocol(botRule),
-      new Rule({
-        rule: {
-          case: "botV2",
-          value: {
-            mode: Mode.DRY_RUN,
-            allow: [],
-            deny: [],
+    await t.test(
+      "should create a rate limit protocol rule (fixed window)",
+      () => {
+        const rule = ArcjetRuleToProtocol({
+          algorithm: "FIXED_WINDOW",
+          max: 1,
+          mode: "DRY_RUN",
+          type: "RATE_LIMIT",
+          validate() {
+            assert.fail("should not call `validate`");
           },
-        },
-      }),
+          version: 0,
+          priority: 1,
+          protect() {
+            assert.fail("should not call `protect`");
+          },
+          window: 1,
+          // TODO: `{}` is confusing in TypeScript, and likely points to a bug.
+        } as ArcjetFixedWindowRateLimitRule<{}>);
+
+        assert.deepEqual(
+          rule,
+          new Rule({
+            rule: {
+              case: "rateLimit",
+              value: {
+                algorithm: RateLimitAlgorithm.FIXED_WINDOW,
+                max: 1,
+                mode: Mode.DRY_RUN,
+                windowInSeconds: 1,
+              },
+            },
+          }),
+        );
+        assert.equal(rule.rule.case, "rateLimit");
+      },
     );
 
-    const shieldRule: ArcjetShieldRule<{}> = {
-      version: 0,
-      type: "SHIELD",
-      mode: "DRY_RUN",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(),
-    };
-    assert.deepEqual(
-      ArcjetRuleToProtocol(shieldRule),
-      new Rule({
-        rule: {
-          case: "shield",
-          value: {
-            mode: Mode.DRY_RUN,
-            autoAdded: false,
+    await t.test(
+      "should create a rate limit protocol rule (sliding window)",
+      () => {
+        const rule = ArcjetRuleToProtocol({
+          algorithm: "SLIDING_WINDOW",
+          interval: 1,
+          max: 1,
+          mode: "DRY_RUN",
+          priority: 1,
+          protect() {
+            assert.fail("should not call `protect`");
           },
-        },
-      }),
+          type: "RATE_LIMIT",
+          validate() {
+            assert.fail("should not call `validate`");
+          },
+          version: 0,
+          // TODO: `{}` is confusing in TypeScript, and likely points to a bug.
+        } as ArcjetSlidingWindowRateLimitRule<{}>);
+
+        assert.deepEqual(
+          rule,
+          new Rule({
+            rule: {
+              case: "rateLimit",
+              value: {
+                algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
+                interval: 1,
+                max: 1,
+                mode: Mode.DRY_RUN,
+              },
+            },
+          }),
+        );
+        assert.equal(rule.rule.case, "rateLimit");
+      },
     );
 
-    const sensitiveInfoRule: ArcjetSensitiveInfoRule<{}> = {
-      version: 0,
-      type: "SENSITIVE_INFO",
-      mode: "DRY_RUN",
-      priority: 1,
-      allow: [],
-      deny: [],
-      validate() {
-        throw new Error("should not be called");
-      },
-      protect() {
-        throw new Error("should not be called");
-      },
-    };
-
-    assert.deepEqual(
-      ArcjetRuleToProtocol(sensitiveInfoRule),
-      new Rule({
-        rule: {
-          case: "sensitiveInfo",
-          value: {
-            mode: Mode.DRY_RUN,
-            allow: [],
-            deny: [],
-          },
+    await t.test("should create an email protocol rule", () => {
+      const rule = ArcjetRuleToProtocol({
+        allowDomainLiteral: false,
+        allow: [],
+        deny: ["INVALID"],
+        mode: "DRY_RUN",
+        priority: 1,
+        protect() {
+          assert.fail("should not call `protect`");
         },
-      }),
-    );
+        requireTopLevelDomain: false,
+        type: "EMAIL",
+        validate() {
+          assert.fail("should not call `validate`");
+        },
+        version: 0,
+      } as ArcjetEmailRule<{ email: string }>);
+
+      assert.deepEqual(
+        rule,
+        new Rule({
+          rule: {
+            case: "email",
+            value: { allow: [], deny: [EmailType.INVALID], mode: Mode.DRY_RUN },
+          },
+        }),
+      );
+      assert.equal(rule.rule.case, "email");
+    });
+
+    await t.test("should create a bot protocol rule", () => {
+      const rule = ArcjetRuleToProtocol({
+        allow: [],
+        deny: [],
+        mode: "DRY_RUN",
+        type: "BOT",
+        priority: 1,
+        protect() {
+          assert.fail("should not call `protect`");
+        },
+        validate() {
+          assert.fail("should not call `validate`");
+        },
+        version: 0,
+        // TODO: `{}` is confusing in TypeScript, and likely points to a bug.
+      } as ArcjetBotRule<{}>);
+
+      assert.deepEqual(
+        rule,
+        new Rule({
+          rule: {
+            case: "botV2",
+            value: { allow: [], mode: Mode.DRY_RUN, deny: [] },
+          },
+        }),
+      );
+      assert.equal(rule.rule.case, "botV2");
+    });
+
+    await t.test("should create a shield protocol rule", () => {
+      const rule = ArcjetRuleToProtocol({
+        mode: "DRY_RUN",
+        priority: 1,
+        protect() {
+          assert.fail("should not call `protect`");
+        },
+        type: "SHIELD",
+        validate() {
+          assert.fail("should not call `validate`");
+        },
+        version: 0,
+        // TODO: `{}` is confusing in TypeScript, and likely points to a bug.
+      } as ArcjetShieldRule<{}>);
+
+      assert.deepEqual(
+        rule,
+        new Rule({
+          rule: {
+            case: "shield",
+            value: { autoAdded: false, mode: Mode.DRY_RUN },
+          },
+        }),
+      );
+      assert.equal(rule.rule.case, "shield");
+    });
+
+    await t.test("should create a sensitive info protocol rule", () => {
+      const rule = ArcjetRuleToProtocol({
+        allow: [],
+        deny: [],
+        mode: "DRY_RUN",
+        priority: 1,
+        protect() {
+          assert.fail("should not call `protect`");
+        },
+        type: "SENSITIVE_INFO",
+        validate() {
+          assert.fail("should not call `validate`");
+        },
+        version: 0,
+        // TODO: `{}` is confusing in TypeScript, and likely points to a bug.
+      } as ArcjetSensitiveInfoRule<{}>);
+
+      assert.deepEqual(
+        rule,
+        new Rule({
+          rule: {
+            case: "sensitiveInfo",
+            value: { allow: [], deny: [], mode: Mode.DRY_RUN },
+          },
+        }),
+      );
+      assert.equal(rule.rule.case, "sensitiveInfo");
+    });
   });
 });
