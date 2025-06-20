@@ -49,9 +49,7 @@
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "pretest": "npm run build",
-    "test": "node --test"
+    "lint": "eslint ."
   },
   "dependencies": {
     "nosecone": "1.0.0-beta.8"

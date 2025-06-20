@@ -52,9 +52,7 @@
     "prepublishOnly": "npm run build",
     "jco": "jco transpile wasm/arcjet_analyze_js_req.component.wasm --no-wasi-shim --instantiation async -o wasm",
     "build": "npm run jco; rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "pretest": "npm run build",
-    "test": "node --test"
+    "lint": "eslint ."
   },
   "dependencies": {},
   "devDependencies": {
