@@ -374,6 +374,26 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetBotReason);
       assert.equal(reason.type, "BOT");
+
+      assert.equal(reason.isVerified(), false);
+      assert.equal(reason.isSpoofed(), false);
+    });
+
+    await t.test("should create a bot reason (spoofed, verified)", () => {
+      const reason = ArcjetReasonFromProtocol(
+        new Reason({
+          reason: {
+            case: "botV2",
+            value: { allowed: [], denied: [], spoofed: true, verified: true },
+          },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetBotReason);
+      assert.equal(reason.type, "BOT");
+
+      assert.equal(reason.isVerified(), true);
+      assert.equal(reason.isSpoofed(), true);
     });
 
     await t.test("should create an edge rule reason", () => {
@@ -385,7 +405,18 @@ test("convert", async (t) => {
       assert.equal(reason.type, "EDGE_RULE");
     });
 
-    await t.test("should create an email reason", () => {
+    await t.test("should create an email reason (empty)", () => {
+      const reason = ArcjetReasonFromProtocol(
+        new Reason({
+          reason: { case: "email", value: {} },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetEmailReason);
+      assert.equal(reason.type, "EMAIL");
+    });
+
+    await t.test("should create an email reason (type)", () => {
       const reason = ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -484,7 +515,7 @@ test("convert", async (t) => {
       assert.equal(reason.type, "ERROR");
     });
 
-    await t.test("should create a shield reason", () => {
+    await t.test("should create a shield reason (triggered)", () => {
       const reason = ArcjetReasonFromProtocol(
         new Reason({
           reason: { case: "shield", value: { shieldTriggered: true } },
@@ -493,6 +524,21 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetShieldReason);
       assert.equal(reason.type, "SHIELD");
+
+      assert.equal(reason.shieldTriggered, true);
+    });
+
+    await t.test("should create a shield reason (not triggered)", () => {
+      const reason = ArcjetReasonFromProtocol(
+        new Reason({
+          reason: { case: "shield", value: {} },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetShieldReason);
+      assert.equal(reason.type, "SHIELD");
+
+      assert.equal(reason.shieldTriggered, false);
     });
 
     await t.test(
@@ -678,26 +724,33 @@ test("convert", async (t) => {
       "should create a protocol reason from an arcjet email reason",
       () => {
         assert.deepEqual(
-          ArcjetReasonToProtocol(
-            new ArcjetEmailReason({ emailTypes: ["DISPOSABLE"] }),
-          ),
+          ArcjetReasonToProtocol(new ArcjetEmailReason({})),
           new Reason({
-            reason: {
-              case: "email",
-              value: { emailTypes: [EmailType.DISPOSABLE] },
-            },
+            reason: { case: "email", value: { emailTypes: [] } },
           }),
         );
       },
     );
 
     await t.test(
-      "should create a protocol reason from an arcjet error reason",
+      "should create a protocol reason from an arcjet error reason (string)",
       () => {
         assert.deepEqual(
           ArcjetReasonToProtocol(new ArcjetErrorReason("Test error")),
           new Reason({
             reason: { case: "error", value: { message: "Test error" } },
+          }),
+        );
+      },
+    );
+
+    await t.test(
+      "should create a protocol reason from an arcjet error reason (error)",
+      () => {
+        assert.deepEqual(
+          ArcjetReasonToProtocol(new ArcjetErrorReason(new Error("hi"))),
+          new Reason({
+            reason: { case: "error", value: { message: "hi" } },
           }),
         );
       },
@@ -756,6 +809,21 @@ test("convert", async (t) => {
         );
       },
     );
+  });
+
+  await t.test("ArcjetRuleResult", async (t) => {
+    await t.test("ArcjetRuleResult#isDenied", () => {
+      const result = new ArcjetRuleResult({
+        conclusion: "ALLOW",
+        fingerprint: "test-fingerprint",
+        reason: new ArcjetReason(),
+        ruleId: "test-rule-id",
+        state: "RUN",
+        ttl: 0,
+      });
+
+      assert.equal(result.isDenied(), false);
+    });
   });
 
   await t.test("ArcjetDecisionToProtocol", async (t) => {
@@ -1185,6 +1253,93 @@ test("convert", async (t) => {
         }),
       );
       assert.equal(rule.rule.case, "sensitiveInfo");
+    });
+  });
+
+  await t.test("ArcjetIpDetails", async (t) => {
+    const ipDetails = new ArcjetIpDetails(
+      new IpDetails({
+        asnCountry: "a",
+        asnDomain: "b",
+        asnName: "c",
+        asnType: "d",
+        asn: "e",
+        city: "f",
+        continentName: "g",
+        continent: "h",
+        countryName: "i",
+        country: "j",
+        latitude: 40.7127,
+        longitude: 74.0059,
+        postalCode: "k",
+        region: "l",
+        service: "m",
+        timezone: "America/New_York",
+      }),
+    );
+
+    await t.test("hasASN", () => {
+      assert.equal(ipDetails.hasASN(), true);
+    });
+
+    await t.test("hasAccuracyRadius", () => {
+      assert.equal(ipDetails.hasAccuracyRadius(), true);
+    });
+
+    await t.test("hasCity", () => {
+      assert.equal(ipDetails.hasCity(), true);
+    });
+
+    await t.test("hasContintent", () => {
+      assert.equal(ipDetails.hasContintent(), true);
+    });
+
+    await t.test("hasCountry", () => {
+      assert.equal(ipDetails.hasCountry(), true);
+    });
+
+    await t.test("hasLatitude", () => {
+      assert.equal(ipDetails.hasLatitude(), true);
+    });
+
+    await t.test("hasLongitude", () => {
+      assert.equal(ipDetails.hasLongitude(), true);
+    });
+
+    await t.test("hasPostalCode", () => {
+      assert.equal(ipDetails.hasPostalCode(), true);
+    });
+
+    await t.test("hasRegion", () => {
+      assert.equal(ipDetails.hasRegion(), true);
+    });
+
+    await t.test("hasService", () => {
+      assert.equal(ipDetails.hasService(), true);
+    });
+
+    await t.test("hasTimezone", () => {
+      assert.equal(ipDetails.hasTimezone(), true);
+    });
+
+    await t.test("isHosting", () => {
+      assert.equal(ipDetails.isHosting(), false);
+    });
+
+    await t.test("isProxy", () => {
+      assert.equal(ipDetails.isProxy(), false);
+    });
+
+    await t.test("isRelay", () => {
+      assert.equal(ipDetails.isRelay(), false);
+    });
+
+    await t.test("isTor", () => {
+      assert.equal(ipDetails.isTor(), false);
+    });
+
+    await t.test("isVpn", () => {
+      assert.equal(ipDetails.isVpn(), false);
     });
   });
 });
