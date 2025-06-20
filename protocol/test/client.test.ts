@@ -122,6 +122,7 @@ test("createClient", async (t) => {
             // Allow a very large number to prevent flakey tests.
             assert.ok(typeof ms === "number");
             assert.ok(ms > 9000);
+            assert.ok(ms < 10000);
             return new DecideResponse();
           },
         });
@@ -132,6 +133,49 @@ test("createClient", async (t) => {
 
     assert.equal(calls, 1);
   });
+
+  await t.test(
+    "should double the given `timeout` if there is an email rule",
+    async () => {
+      let calls = 0;
+
+      const client = createClient({
+        ...exampleClientOptions,
+        timeout: 9876,
+        transport: createRouterTransport(function ({ service }) {
+          service(DecideService, {
+            decide(_, handlerContext) {
+              assert.equal(calls, 0);
+              calls++;
+
+              const ms = handlerContext.timeoutMs();
+              // The code above takes about 1 or 2 ms off the timeout we pass.
+              // Allow a very large number to prevent flakey tests.
+              assert.ok(typeof ms === "number");
+              assert.ok(ms > 18000);
+              assert.ok(ms < 20000);
+              return new DecideResponse();
+            },
+          });
+        }),
+      });
+
+      await client.decide(exampleContext, exampleDetails, [
+        {
+          mode: "LIVE",
+          priority: 1,
+          protect() {
+            assert.fail();
+          },
+          type: "EMAIL",
+          validate() {},
+          version: 0,
+        },
+      ]);
+
+      assert.equal(calls, 1);
+    },
+  );
 
   await t.test("should allow overriding `sdkStack` (valid)", async () => {
     let calls = 0;

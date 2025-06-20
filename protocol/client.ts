@@ -78,7 +78,6 @@ export function createClient(options: ClientOptions): Client {
     ): Promise<ArcjetDecision> {
       const { log } = context;
 
-      // TODO(@wooorm-arcjet): uncovered.
       let hasValidateEmail = false;
       const protoRules: Rule[] = [];
       for (const rule of rules) {
@@ -118,7 +117,6 @@ export function createClient(options: ClientOptions): Client {
         headers: { Authorization: `Bearer ${context.key}` },
         // If an email rule is configured, we double the timeout.
         // See https://github.com/arcjet/arcjet-js/issues/1697
-        // TODO(@wooorm-arcjet): uncovered.
         timeoutMs: hasValidateEmail ? timeout * 2 : timeout,
       });
 
