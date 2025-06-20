@@ -103,6 +103,7 @@ export function createClient(options: ClientOptions): Client {
           cookies: details.cookies,
           query: details.query,
           // TODO(#208): Re-add body
+          // TODO(@wooorm-arcjet): `#208` refers to a dependabot PR: figure out why the above TODO exists.
           // body: details.body,
           extra: details.extra,
           email: details.email,
@@ -161,6 +162,7 @@ export function createClient(options: ClientOptions): Client {
           cookies: details.cookies,
           query: details.query,
           // TODO(#208): Re-add body
+          // TODO(@wooorm-arcjet): `#208` refers to a dependabot PR: figure out why the above TODO exists.
           // body: details.body,
           extra: details.extra,
           email: details.email,
