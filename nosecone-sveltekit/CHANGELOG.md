@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...@nosecone/sveltekit-v1.0.0-beta.9) (2025-06-21)
+
+
+### 🧹 Miscellaneous Chores
+
+* Add `keywords` to `package.json`s ([#4408](https://github.com/arcjet/arcjet-js/issues/4408)) ([4f09478](https://github.com/arcjet/arcjet-js/commit/4f094781c3e2fb80df4186b92185cbc295880b5c))
+
+
+### ⌨️ Code Refactoring
+
+* Clean `files` fields in `package.json`s ([#4441](https://github.com/arcjet/arcjet-js/issues/4441)) ([fd7913b](https://github.com/arcjet/arcjet-js/commit/fd7913bf0c28d05740d94cf50f5939ee2b6f98fa))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/rollup-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/tsconfig bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+
 ## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...@nosecone/sveltekit-v1.0.0-beta.8) (2025-05-28)
 
 
