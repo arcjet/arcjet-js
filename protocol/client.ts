@@ -103,9 +103,10 @@ export function createClient(options: ClientOptions): Client {
           cookies: details.cookies,
           query: details.query,
           // TODO(#208): Re-add body
+          // TODO(@wooorm-arcjet): `#208` refers to a dependabot PR: figure out why the above TODO exists.
           // body: details.body,
           extra: details.extra,
-          email: typeof details.email === "string" ? details.email : undefined,
+          email: details.email,
         },
         rules: protoRules,
       });
@@ -161,9 +162,10 @@ export function createClient(options: ClientOptions): Client {
           cookies: details.cookies,
           query: details.query,
           // TODO(#208): Re-add body
+          // TODO(@wooorm-arcjet): `#208` refers to a dependabot PR: figure out why the above TODO exists.
           // body: details.body,
           extra: details.extra,
-          email: typeof details.email === "string" ? details.email : undefined,
+          email: details.email,
         },
         decision: ArcjetDecisionToProtocol(decision),
         rules: rules.map(ArcjetRuleToProtocol),
