@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { isBuiltin } from "node:module";
 import replace from "@rollup/plugin-replace";
 import typescript from "@rollup/plugin-typescript";
@@ -162,7 +162,28 @@ export function createConfig(root, { plugins = [] } = {}) {
       // Stop rollup from creating additional chunks that it thinks we need
       preserveModules: true,
     },
-    external(id) {
+    external(id, from) {
+      // Inline all paths in the monorepo that start with `/inline-`.
+      const inlinePrefix = fileURLToPath(
+        new URL("../inline-", import.meta.url),
+      );
+
+      // Only if we are outside such an `inline-` itself.
+      if (!from.startsWith(inlinePrefix)) {
+        // Absolute.
+        if (id.startsWith(inlinePrefix)) {
+          return false;
+        }
+
+        // Relative.
+        if (id.startsWith(".") || id.startsWith("..")) {
+          const absolute = fileURLToPath(new URL(id, pathToFileURL(from)).href);
+          if (absolute.startsWith(inlinePrefix)) {
+            return false;
+          }
+        }
+      }
+
       return (
         isBuiltin(id) ||
         isDependency(id) ||

@@ -32,28 +32,10 @@ import type {
   OptionalFactoryDependency,
   Provider,
 } from "@nestjs/common";
+import { causeToString } from "../inline-helpers/index.js";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
-
-// TODO: Deduplicate with other packages
-function errorMessage(err: unknown): string {
-  if (err) {
-    if (typeof err === "string") {
-      return err;
-    }
-
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
-      return err.message;
-    }
-  }
-
-  return "Unknown problem";
-}
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
@@ -390,7 +372,7 @@ function arcjet<
             log.warn("no body available");
             return;
           } catch (e) {
-            log.error("failed to get request body: %s", errorMessage(e));
+            log.error("failed to get request body: %s", causeToString(e));
             return;
           }
         };

@@ -45,6 +45,7 @@ import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
 import { MemoryCache } from "@arcjet/cache";
+import { causeToString } from "../inline-helpers/index.js";
 
 export * from "@arcjet/protocol";
 
@@ -52,24 +53,6 @@ function assert(condition: boolean, msg: string) {
   if (!condition) {
     throw new Error(msg);
   }
-}
-
-function errorMessage(err: unknown): string {
-  if (err) {
-    if (typeof err === "string") {
-      return err;
-    }
-
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
-      return err.message;
-    }
-  }
-
-  return "Unknown problem";
 }
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -343,7 +326,7 @@ function createValidator({
         try {
           validate(key, value);
         } catch (err) {
-          throw new Error(`\`${rule}\` options error: ${errorMessage(err)}`);
+          throw new Error(`\`${rule}\` options error: ${causeToString(err)}`);
         }
       }
     }
@@ -2233,7 +2216,7 @@ export default function arcjet<
       const decision = new ArcjetErrorDecision({
         ttl: 0,
         reason: new ArcjetErrorReason(
-          `Failed to build fingerprint - ${errorMessage(error)}`,
+          `Failed to build fingerprint - ${causeToString(error)}`,
         ),
         // No results because we couldn't create a fingerprint
         results: [],
@@ -2358,7 +2341,7 @@ export default function arcjet<
           log.error(
             "Failure running rule: %s due to %s",
             rule.type,
-            errorMessage(err),
+            causeToString(err),
           );
 
           results[idx] = new ArcjetRuleResult({
@@ -2462,7 +2445,7 @@ export default function arcjet<
     } catch (err) {
       log.info(
         "Encountered problem getting remote decision: %s",
-        errorMessage(err),
+        causeToString(err),
       );
       const decision = new ArcjetErrorDecision({
         ttl: 0,
