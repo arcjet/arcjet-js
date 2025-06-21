@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2025-06-21)
+
+
+### 🧹 Miscellaneous Chores
+
+* Add `keywords` to `package.json`s ([#4408](https://github.com/arcjet/arcjet-js/issues/4408)) ([4f09478](https://github.com/arcjet/arcjet-js/commit/4f094781c3e2fb80df4186b92185cbc295880b5c))
+* **arcjet:** Reduce timeouts and other transport issues to info log ([#4411](https://github.com/arcjet/arcjet-js/issues/4411)) ([c148bab](https://github.com/arcjet/arcjet-js/commit/c148babca42be753629641c51a8e8a0bac5730c0))
+* **astro:** add temporary warning message for fully static sites ([#4278](https://github.com/arcjet/arcjet-js/issues/4278)) ([6d093be](https://github.com/arcjet/arcjet-js/commit/6d093be4508b6898f752f566df832313b0688a56))
+* **astro:** Increase minimum peerDependency ([#4432](https://github.com/arcjet/arcjet-js/issues/4432)) ([a0453e2](https://github.com/arcjet/arcjet-js/commit/a0453e246cda9c6abf90c446351a9405c1d873f4)), closes [#3094](https://github.com/arcjet/arcjet-js/issues/3094)
+* Fix `jco` name in dependabot ([#4371](https://github.com/arcjet/arcjet-js/issues/4371)) ([809fe76](https://github.com/arcjet/arcjet-js/commit/809fe7686088c20176cef63f747298e68966a4ef))
+* Fix missing file extension in test ([#4407](https://github.com/arcjet/arcjet-js/issues/4407)) ([b694dad](https://github.com/arcjet/arcjet-js/commit/b694dad98657acaebed4424d55b406ece954beff))
+* Fix Rollup on Node 24 ([#4406](https://github.com/arcjet/arcjet-js/issues/4406)) ([1853b1a](https://github.com/arcjet/arcjet-js/commit/1853b1ac9f6da42b7ac9852273426ea53df67017))
+* remove `expect`, references to `jest` ([#4415](https://github.com/arcjet/arcjet-js/issues/4415)) ([2c44c39](https://github.com/arcjet/arcjet-js/commit/2c44c39dfeccee74321a3425a3e5b2d5fa480c42))
+
+
+### ⌨️ Code Refactoring
+
+* Clean `files` fields in `package.json`s ([#4441](https://github.com/arcjet/arcjet-js/issues/4441)) ([fd7913b](https://github.com/arcjet/arcjet-js/commit/fd7913bf0c28d05740d94cf50f5939ee2b6f98fa))
+
+
+### ✅ Continuous Integration
+
+* Add Node.js 22, 24 ([#4414](https://github.com/arcjet/arcjet-js/issues/4414)) ([0fa6743](https://github.com/arcjet/arcjet-js/commit/0fa6743f10402bc082c50a716273165db5a9da22))
+
 ## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2025-05-28)
 
 
