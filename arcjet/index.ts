@@ -142,21 +142,38 @@ type LiteralCheck<
     : false;
 type IsStringLiteral<T> = LiteralCheck<T, string>;
 
-const knownFields = [
+/**
+ * List of known fields.
+ */
+const knownRequestProperties = [
+  "body",
+  "cookies",
+  "email",
+  "headers",
+  "host",
   "ip",
   "method",
-  "protocol",
-  "host",
   "path",
-  "headers",
-  "body",
-  "email",
-  "cookies",
+  "protocol",
   "query",
-];
+] as const;
 
-function isUnknownRequestProperty(key: string) {
-  return !knownFields.includes(key);
+/**
+ * Type of known fields.
+ */
+type KnownRequestProperty = (typeof knownRequestProperties)[number];
+
+/**
+ * Check that a (`string`) property key is a known request property.
+ *
+ * @param
+ *   Key.
+ * @returns
+ *   Whether `key` is a known field.
+ */
+function isKnownRequestProperty(key: string): key is KnownRequestProperty {
+  const properties = knownRequestProperties as readonly string[];
+  return properties.includes(key);
 }
 
 function isEmailType(type: string): type is ArcjetEmailType {
@@ -251,7 +268,7 @@ function extraProps<Props extends PlainObject>(
 ): Record<string, string> {
   const extra: Map<string, string> = new Map();
   for (const [key, value] of Object.entries(details)) {
-    if (isUnknownRequestProperty(key)) {
+    if (!isKnownRequestProperty(key)) {
       extra.set(key, toString(value));
     }
   }
