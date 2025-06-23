@@ -212,22 +212,6 @@ class Performance {
   }
 }
 
-function toString(value: unknown) {
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (typeof value === "number") {
-    return `${value}`;
-  }
-
-  if (typeof value === "boolean") {
-    return value ? "true" : "false";
-  }
-
-  return "<unsupported value>";
-}
-
 // This is the Symbol that Vercel defines in their infrastructure to access the
 // Context (where available). The Context can contain the `waitUntil` function.
 // https://github.com/vercel/vercel/blob/930d7fb892dc26f240f2b950d963931c45e1e661/packages/functions/src/get-context.ts#L6
@@ -271,15 +255,33 @@ function toAnalyzeRequest(request: Partial<ArcjetRequestDetails>) {
   };
 }
 
-function extraProps<Props extends PlainObject>(
-  details: ArcjetRequest<Props>,
+/**
+ * Get the unknown request properties.
+ *
+ * @param properties
+ *   Raw properties.
+ * @returns
+ *   Extra properties.
+ */
+function unknownRequestProperties(
+  properties: Record<string, unknown>,
 ): Record<string, string> {
   const extra: Map<string, string> = new Map();
-  for (const [key, value] of Object.entries(details)) {
+
+  // We only support the basic primitives.
+  for (const [key, value] of Object.entries(properties)) {
     if (!isKnownRequestProperty(key)) {
-      extra.set(key, toString(value));
+      extra.set(
+        key,
+        typeof value === "boolean" ||
+          typeof value === "number" ||
+          typeof value === "string"
+          ? String(value)
+          : "<unsupported value>",
+      );
     }
   }
+
   return Object.fromEntries(extra.entries());
 }
 
@@ -2220,7 +2222,7 @@ export default function arcjet<
       headers: new ArcjetHeaders(request.headers),
       cookies: request.cookies,
       query: request.query,
-      extra: extraProps(request),
+      extra: unknownRequestProperties(request),
       email: typeof request.email === "string" ? request.email : undefined,
     });
 
