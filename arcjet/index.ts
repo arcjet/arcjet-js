@@ -241,20 +241,6 @@ function lookupWaitUntil(): WaitUntil | undefined {
   }
 }
 
-function toAnalyzeRequest(request: Partial<ArcjetRequestDetails>) {
-  const headers: Record<string, string> = {};
-  if (typeof request.headers !== "undefined") {
-    for (const [key, value] of request.headers.entries()) {
-      headers[key] = value;
-    }
-  }
-
-  return {
-    ...request,
-    headers,
-  };
-}
-
 /**
  * Get the unknown request properties.
  *
@@ -812,10 +798,10 @@ export function tokenBucket<
         log: context.log,
       };
 
-      const fingerprint = await analyze.generateFingerprint(
-        analyzeContext,
-        toAnalyzeRequest(details),
-      );
+      const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+        ...details,
+        headers: Object.fromEntries(details.headers),
+      });
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
       if (cached && cached.reason.isRateLimit()) {
@@ -959,10 +945,10 @@ export function fixedWindow<
         log: context.log,
       };
 
-      const fingerprint = await analyze.generateFingerprint(
-        analyzeContext,
-        toAnalyzeRequest(details),
-      );
+      const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+        ...details,
+        headers: Object.fromEntries(details.headers),
+      });
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
       if (cached && cached.reason.isRateLimit()) {
@@ -1100,10 +1086,10 @@ export function slidingWindow<
         log: context.log,
       };
 
-      const fingerprint = await analyze.generateFingerprint(
-        analyzeContext,
-        toAnalyzeRequest(details),
-      );
+      const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+        ...details,
+        headers: Object.fromEntries(details.headers),
+      });
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
       if (cached && cached.reason.isRateLimit()) {
@@ -1837,7 +1823,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
 
       const result = await analyze.detectBot(
         context,
-        toAnalyzeRequest(request),
+        { ...request, headers: Object.fromEntries(request.headers) },
         config,
       );
 
@@ -1942,10 +1928,10 @@ export function shield(options: ShieldOptions): Primitive<{}> {
         log: context.log,
       };
 
-      const fingerprint = await analyze.generateFingerprint(
-        analyzeContext,
-        toAnalyzeRequest(details),
-      );
+      const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+        ...details,
+        headers: Object.fromEntries(details.headers),
+      });
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
       if (cached) {
@@ -2244,10 +2230,10 @@ export default function arcjet<
 
     const logFingerprintPerf = perf.measure("fingerprint");
     try {
-      fingerprint = await analyze.generateFingerprint(
-        baseContext,
-        toAnalyzeRequest(details),
-      );
+      fingerprint = await analyze.generateFingerprint(baseContext, {
+        ...details,
+        headers: details.headers ? Object.fromEntries(details.headers) : {},
+      });
       log.debug("fingerprint (%s): %s", rt, fingerprint);
     } catch (error) {
       log.error(
