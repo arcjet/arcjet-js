@@ -161,10 +161,10 @@ function cookiesToString(cookies: string | string[] | undefined): string {
  * The options used to configure an {@link ArcjetNest} client.
  */
 export type ArcjetOptions<
-  Rules extends [...Array<Primitive | Product>],
+  Rule extends Primitive | Product,
   Characteristic extends string,
 > = Simplify<
-  CoreOptions<Rules, Characteristic> & {
+  CoreOptions<Rule, Characteristic> & {
     /**
      * One or more IP Address of trusted proxies in front of the application.
      * These addresses will be excluded when Arcjet detects a public IP address.
@@ -207,12 +207,12 @@ export interface ArcjetNest<Props extends PlainObject = {}> {
 }
 
 function arcjet<
-  const Rules extends (Primitive | Product)[],
+  const Rule extends Primitive | Product,
   const Characteristic extends string,
 >(
-  options: ArcjetOptions<Rules, Characteristic>,
+  options: ArcjetOptions<Rule, Characteristic>,
 ): ArcjetNest<
-  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristic>>
+  Simplify<ExtraProps<Rule> & CharacteristicProps<Characteristic>>
 > {
   const client = options.client ?? createRemoteClient();
 
@@ -327,9 +327,9 @@ function arcjet<
     };
   }
 
-  function withClient<const Rules extends (Primitive | Product)[]>(
-    aj: Arcjet<ExtraProps<Rules>>,
-  ): ArcjetNest<ExtraProps<Rules>> {
+  function withClient<const Rule extends Primitive | Product>(
+    aj: Arcjet<ExtraProps<Rule>>,
+  ): ArcjetNest<ExtraProps<Rule>> {
     return Object.freeze({
       withRule(rule: Primitive | Product) {
         const client = aj.withRule(rule);
@@ -337,15 +337,15 @@ function arcjet<
       },
       async protect(
         request: ArcjetNestRequest,
-        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
+        ...[props]: ExtraProps<Rule> extends WithoutCustomProps
           ? []
-          : [ExtraProps<Rules>]
+          : [ExtraProps<Rule>]
       ): Promise<ArcjetDecision> {
         // TODO(#220): The generic manipulations get really mad here, so we cast
         // Further investigation makes it seem like it has something to do with
         // the definition of `props` in the signature but it's hard to track down
         const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-          ExtraProps<Rules>
+          ExtraProps<Rule>
         >;
 
         const getBody = async () => {
@@ -486,16 +486,16 @@ export { ArcjetGuard };
 
 export class ArcjetModule {
   static forRoot<
-    const Rules extends (Primitive | Product)[],
+    const Rule extends Primitive | Product,
     const Characteristic extends string,
   >(
-    options: ArcjetOptions<Rules, Characteristic> & {
+    options: ArcjetOptions<Rule, Characteristic> & {
       isGlobal?: boolean | undefined;
     },
   ): DynamicModule {
     const ArcjetProvider = {
       provide: ARCJET,
-      useFactory(options: ArcjetOptions<Rules, Characteristic>) {
+      useFactory(options: ArcjetOptions<Rule, Characteristic>) {
         return arcjet(options);
       },
       inject: [ARCJET_OPTIONS],
@@ -515,16 +515,16 @@ export class ArcjetModule {
     };
   }
   static forRootAsync<
-    const Rules extends (Primitive | Product)[],
+    const Rule extends Primitive | Product,
     const Characteristic extends string,
   >(
     options: ConfigurableModuleAsyncOptions<
-      ArcjetOptions<Rules, Characteristic>
+      ArcjetOptions<Rule, Characteristic>
     > & { isGlobal?: boolean | undefined },
   ): DynamicModule {
     const ArcjetProvider = {
       provide: ARCJET,
-      useFactory(options: ArcjetOptions<Rules, Characteristic>) {
+      useFactory(options: ArcjetOptions<Rule, Characteristic>) {
         return arcjet(options);
       },
       inject: [ARCJET_OPTIONS],

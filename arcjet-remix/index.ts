@@ -113,10 +113,10 @@ export type ArcjetRemixRequest = {
  * The options used to configure an {@link ArcjetRemix} client.
  */
 export type ArcjetOptions<
-  Rules extends [...Array<Primitive | Product>],
+  Rule extends Primitive | Product,
   Characteristic extends string,
 > = Simplify<
-  CoreOptions<Rules, Characteristic> & {
+  CoreOptions<Rule, Characteristic> & {
     /**
      * One or more IP Address of trusted proxies in front of the application.
      * These addresses will be excluded when Arcjet detects a public IP address.
@@ -167,12 +167,12 @@ export interface ArcjetRemix<Props extends PlainObject> {
  * @param options - Arcjet configuration options to apply to all requests.
  */
 export default function arcjet<
-  const Rules extends (Primitive | Product)[],
+  const Rule extends Primitive | Product,
   const Characteristic extends string,
 >(
-  options: ArcjetOptions<Rules, Characteristic>,
+  options: ArcjetOptions<Rule, Characteristic>,
 ): ArcjetRemix<
-  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristic>>
+  Simplify<ExtraProps<Rule> & CharacteristicProps<Characteristic>>
 > {
   const client = options.client ?? createRemoteClient();
 
@@ -235,9 +235,9 @@ export default function arcjet<
     };
   }
 
-  function withClient<const Rules extends (Primitive | Product)[]>(
-    aj: Arcjet<ExtraProps<Rules>>,
-  ): ArcjetRemix<ExtraProps<Rules>> {
+  function withClient<const Rule extends Primitive | Product>(
+    aj: Arcjet<ExtraProps<Rule>>,
+  ): ArcjetRemix<ExtraProps<Rule>> {
     return Object.freeze({
       withRule(rule: Primitive | Product) {
         const client = aj.withRule(rule);
@@ -245,15 +245,15 @@ export default function arcjet<
       },
       async protect(
         details: ArcjetRemixRequest,
-        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
+        ...[props]: ExtraProps<Rule> extends WithoutCustomProps
           ? []
-          : [ExtraProps<Rules>]
+          : [ExtraProps<Rule>]
       ): Promise<ArcjetDecision> {
         // TODO(#220): The generic manipulations get really mad here, so we cast
         // Further investigation makes it seem like it has something to do with
         // the definition of `props` in the signature but it's hard to track down
         const req = toArcjetRequest(details, props ?? {}) as ArcjetRequest<
-          ExtraProps<Rules>
+          ExtraProps<Rule>
         >;
 
         const getBody = async () => {

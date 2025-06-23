@@ -2077,7 +2077,7 @@ export function protectSignup<Characteristic extends string = string>(
 }
 
 export interface ArcjetOptions<
-  Rules extends readonly (Primitive | Product)[],
+  Rule extends Primitive | Product,
   Characteristics extends string,
 > {
   /**
@@ -2087,7 +2087,7 @@ export interface ArcjetOptions<
   /**
    * Rules to apply when protecting a request.
    */
-  rules: Rules;
+  rules: ReadonlyArray<Rule>;
   /**
    * Characteristics to be used to uniquely identify clients.
    */
@@ -2139,11 +2139,16 @@ export interface Arcjet<Props extends PlainObject> {
  * @param options {ArcjetOptions} Arcjet configuration options.
  */
 export default function arcjet<
-  const Rules extends [...(Primitive | Product)[]] = [],
-  const Characteristic extends string = string,
+  const Rule extends Primitive | Product,
+  const Characteristic extends string,
 >(
-  options: ArcjetOptions<Rules, Characteristic>,
-): Arcjet<Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristic>>> {
+  options: ArcjetOptions<Rule, Characteristic>,
+): Arcjet<
+  Simplify<
+    UnionToIntersection<PropsForRule<Array<Rule>>> &
+      CharacteristicProps<Characteristic>
+  >
+> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
 
