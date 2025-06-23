@@ -49,9 +49,9 @@
     "@arcjet/eslint-config": "1.0.0-beta.8",
     "@arcjet/rollup-config": "1.0.0-beta.8",
     "@arcjet/tsconfig": "1.0.0-beta.8",
-    "@rollup/wasm-node": "4.42.0",
+    "@rollup/wasm-node": "4.44.0",
     "@types/node": "18.18.0",
-    "eslint": "9.28.0",
+    "eslint": "9.29.0",
     "typescript": "5.8.3"
   },
   "publishConfig": {
