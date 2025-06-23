@@ -166,7 +166,7 @@ type KnownRequestProperty = (typeof knownRequestProperties)[number];
 /**
  * Check that a (`string`) property key is a known request property.
  *
- * @param
+ * @param key
  *   Key.
  * @returns
  *   Whether `key` is a known field.
@@ -176,13 +176,21 @@ function isKnownRequestProperty(key: string): key is KnownRequestProperty {
   return properties.includes(key);
 }
 
-function isEmailType(type: string): type is ArcjetEmailType {
+/**
+ * Check that a value is a known email type.
+ *
+ * @param value
+ *   Value.
+ * @returns
+ *   Whether `value` is a known email type.
+ */
+function isEmailType(value: string): value is ArcjetEmailType {
   return (
-    type === "FREE" ||
-    type === "DISPOSABLE" ||
-    type === "NO_MX_RECORDS" ||
-    type === "NO_GRAVATAR" ||
-    type === "INVALID"
+    value === "DISPOSABLE" ||
+    value === "FREE" ||
+    value === "INVALID" ||
+    value === "NO_GRAVATAR" ||
+    value === "NO_MX_RECORDS"
   );
 }
 
