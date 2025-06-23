@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 
-import type { ArcjetRule, Primitive, Arcjet } from "../index.js";
+import type { ArcjetRule, Arcjet } from "../index.js";
 import arcjet, {
   detectBot,
   validateEmail,
@@ -57,9 +57,9 @@ type IsEqual<A, B> =
 
 // Type testing utilities
 type Assert<T extends true> = T;
-type Props<P extends Primitive> =
-  P extends Primitive<infer Props> ? Props : never;
-type RuleProps<P extends Primitive, E> = IsEqual<Props<P>, E>;
+type Props<P extends ArcjetRule[]> =
+  P extends Array<ArcjetRule<infer Props>> ? Props : never;
+type RuleProps<P extends ArcjetRule[], E> = IsEqual<Props<P>, E>;
 type SDKProps<SDK, E> = IsEqual<SDK extends Arcjet<infer P> ? P : never, E>;
 
 // In Node 18,
@@ -3015,7 +3015,7 @@ describe("SDK", () => {
     } as const;
   }
 
-  function testRuleProps(): Primitive<{ abc: number }> {
+  function testRuleProps(): [ArcjetRule<{ abc: number }>] {
     return [
       {
         version: 0,

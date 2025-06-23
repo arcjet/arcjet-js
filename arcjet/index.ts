@@ -588,6 +588,10 @@ type PlainObject = { [key: string]: unknown };
 // Primitives and Products external names for Rules even though they are defined
 // the same.
 // See ExtraProps below for further explanation on why we define them like this.
+/**
+ * @deprecated
+ *   Please use `[ArcjetRule<Props>]` or `ArcjetRule<Props>[]` directly.
+ */
 export type Primitive<Props extends PlainObject = {}> = [ArcjetRule<Props>];
 
 /**
@@ -708,7 +712,7 @@ function isRateLimitRule<Props extends PlainObject>(
  * @param {number} options.capacity - The maximum number of tokens the bucket
  * can hold. The bucket starts at full capacity and will refill until it hits
  * the capacity.
- * @returns {Primitive} The token bucket rule to provide to the SDK in the
+ * @returns {[ArcjetRule<{}>]} The token bucket rule to provide to the SDK in the
  * `rules` option.
  *
  * @example
@@ -735,13 +739,15 @@ function isRateLimitRule<Props extends PlainObject>(
  */
 export function tokenBucket<const Characteristic extends string = string>(
   options: TokenBucketRateLimitOptions<Characteristic>,
-): Primitive<
-  Simplify<
-    UnionToIntersection<
-      { requested: number } | CharacteristicProps<Characteristic>
+): [
+  ArcjetRule<
+    Simplify<
+      UnionToIntersection<
+        { requested: number } | CharacteristicProps<Characteristic>
+      >
     >
-  >
-> {
+  >,
+] {
   validateTokenBucketOptions(options);
 
   const type = "RATE_LIMIT";
@@ -867,7 +873,7 @@ export function tokenBucket<const Characteristic extends string = string>(
  * - `d` for days.
  * @param {number} options.max - The maximum number of requests allowed in the
  * fixed time window.
- * @returns {Primitive} The fixed window rule to provide to the SDK in the
+ * @returns {[ArcjetRule<{}>]} The fixed window rule to provide to the SDK in the
  * `rules` option.
  *
  * @example
@@ -893,7 +899,7 @@ export function tokenBucket<const Characteristic extends string = string>(
  */
 export function fixedWindow<const Characteristic extends string = string>(
   options: FixedWindowRateLimitOptions<Characteristic>,
-): Primitive<Simplify<CharacteristicProps<Characteristic>>> {
+): [ArcjetRule<Simplify<CharacteristicProps<Characteristic>>>] {
   validateFixedWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -1006,7 +1012,7 @@ export function fixedWindow<const Characteristic extends string = string>(
  * - `d` for days.
  * @param {number} options.max - The maximum number of requests allowed in the
  * sliding time window.
- * @returns {Primitive} The sliding window rule to provide to the SDK in the
+ * @returns {[ArcjetRule<{}>]} The sliding window rule to provide to the SDK in the
  * `rules` option.
  *
  * @example
@@ -1032,7 +1038,7 @@ export function fixedWindow<const Characteristic extends string = string>(
  */
 export function slidingWindow<const Characteristic extends string = string>(
   options: SlidingWindowRateLimitOptions<Characteristic>,
-): Primitive<Simplify<CharacteristicProps<Characteristic>>> {
+): [ArcjetRule<Simplify<CharacteristicProps<Characteristic>>>] {
   validateSlidingWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -1222,7 +1228,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * detections then you can increase this value.
  * @param {number} options.contextWindowSize - The number of tokens to provide
  * to the custom detection function. This defaults to 1 if not specified.
- * @returns {Primitive} The sensitive information rule to provide to the SDK in
+ * @returns {[ArcjetRule<{}>]} The sensitive information rule to provide to the SDK in
  * the `rules` option.
  *
  * @example
@@ -1270,7 +1276,9 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
 export function sensitiveInfo<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
->(options: SensitiveInfoOptions<Detect>): Primitive<{}> {
+>(
+  options: SensitiveInfoOptions<Detect>,
+): [ArcjetRule<Simplify<CharacteristicProps<string>>>] {
   validateSensitiveInfoOptions(options);
 
   if (
@@ -1445,7 +1453,7 @@ export function sensitiveInfo<
  * allow. If provided, email addresses in this list will be allowed and all
  * others will be denied. You may only provide either `allow` or `deny`, not
  * both. The same options apply as for `deny`.
- * @returns {Primitive} The email rule to provide to the SDK in the `rules`
+ * @returns {[ArcjetRule<{}>]} The email rule to provide to the SDK in the `rules`
  * option.
  *
  * @example
@@ -1469,7 +1477,7 @@ export function sensitiveInfo<
  */
 export function validateEmail(
   options: EmailOptions,
-): Primitive<{ email: string }> {
+): [ArcjetRule<{ email?: string | undefined }>] {
   validateEmailOptions(options);
 
   if (
@@ -1658,7 +1666,7 @@ export function validateEmail(
  * list of bots to deny. If provided, the bots in this list will be denied and
  * all other detected bots will be allowed. You may only provide either `allow`
  * or `deny`, not both. The same options apply as for `allow`.
- * @returns {Primitive} The bot rule to provide to the SDK in the `rules`
+ * @returns {[ArcjetRule<{}>]} The bot rule to provide to the SDK in the `rules`
  * option.
  *
  * @example
@@ -1704,7 +1712,7 @@ export function validateEmail(
  * @link https://docs.arcjet.com/bot-protection/identifying-bots
  * @link https://docs.arcjet.com/bot-protection/reference
  */
-export function detectBot(options: BotOptions): Primitive<{}> {
+export function detectBot(options: BotOptions): [ArcjetRule<{}>] {
   validateBotOptions(options);
 
   if (
@@ -1871,7 +1879,7 @@ export type ShieldOptions = {
  * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block suspicious requests, and
  * `"DRY_RUN"` will allow all requests while still providing access to the rule
  * results. Defaults to `"DRY_RUN"` if not specified.
- * @returns {Primitive} The Shield rule to provide to the SDK in the `rules`
+ * @returns {[ArcjetRule<{}>]} The Shield rule to provide to the SDK in the `rules`
  * option.
  *
  * @example
@@ -1888,7 +1896,7 @@ export type ShieldOptions = {
  * @link https://docs.arcjet.com/shield/concepts
  * @link https://docs.arcjet.com/shield/reference
  */
-export function shield(options: ShieldOptions): Primitive<{}> {
+export function shield(options: ShieldOptions): [ArcjetRule<{}>] {
   validateShieldOptions(options);
 
   const type = "SHIELD";
@@ -2026,7 +2034,7 @@ export type ProtectSignupOptions<Characteristic extends string> = {
  * - `d` for days.
  * @param {number} options.rateLimit.max - The maximum number of requests
  * allowed in the sliding time window.
- * @returns {Primitive} The signup form protection rule to provide to the SDK in
+ * @returns {[ArcjetRule<{}>]} The signup form protection rule to provide to the SDK in
  * the `rules` option.
  *
  * @example
@@ -2082,7 +2090,7 @@ export function protectSignup<Characteristic extends string = string>(
 }
 
 export interface ArcjetOptions<
-  Rule extends Primitive | Array<ArcjetRule<{}>>,
+  Rule extends Array<ArcjetRule<{}>>,
   Characteristics extends string,
 > {
   /**
@@ -2133,7 +2141,7 @@ export interface Arcjet<Props extends PlainObject> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link Arcjet} client.
    */
-  withRule<Rule extends Primitive | Array<ArcjetRule<{}>>>(
+  withRule<Rule extends Array<ArcjetRule<{}>>>(
     rule: Rule,
   ): Arcjet<Simplify<Props & ExtraProps<Rule>>>;
 }
@@ -2144,7 +2152,7 @@ export interface Arcjet<Props extends PlainObject> {
  * @param options {ArcjetOptions} Arcjet configuration options.
  */
 export default function arcjet<
-  const Rule extends Primitive | Array<ArcjetRule<{}>>,
+  const Rule extends Array<ArcjetRule<{}>>,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -2486,7 +2494,7 @@ export default function arcjet<
   }
 
   // This is a separate function so it can be called recursively
-  function withRule<Rule extends Primitive | Array<ArcjetRule<{}>>>(
+  function withRule<Rule extends Array<ArcjetRule<{}>>>(
     baseRules: ArcjetRule[],
     rule: Rule,
   ) {
@@ -2495,7 +2503,7 @@ export default function arcjet<
     );
 
     return Object.freeze({
-      withRule(rule: Primitive | Array<ArcjetRule<{}>>) {
+      withRule(rule: Array<ArcjetRule<{}>>) {
         return withRule(rules, rule);
       },
       async protect(
@@ -2508,7 +2516,7 @@ export default function arcjet<
   }
 
   return Object.freeze({
-    withRule(rule: Primitive | Array<ArcjetRule<{}>>) {
+    withRule(rule: Array<ArcjetRule<{}>>) {
       return withRule(rootRules, rule);
     },
     async protect(

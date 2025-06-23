@@ -12,7 +12,6 @@ import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
   ArcjetRule,
-  Primitive,
   ArcjetRequest,
   ExtraProps,
   Arcjet,
@@ -194,7 +193,7 @@ function cookiesToString(cookies?: ArcjetNextRequest["cookies"]): string {
  * The options used to configure an {@link ArcjetNest} client.
  */
 export type ArcjetOptions<
-  Rule extends Primitive | Array<ArcjetRule<{}>>,
+  Rule extends Array<ArcjetRule<{}>>,
   Characteristic extends string,
 > = Simplify<
   CoreOptions<Rule, Characteristic> & {
@@ -390,7 +389,7 @@ export interface ArcjetNext<Props extends PlainObject> {
    * @link https://docs.arcjet.com/reference/nextjs#ad-hoc-rules
    * @link https://github.com/arcjet/example-nextjs
    */
-  withRule<Rule extends Primitive | Array<ArcjetRule<{}>>>(
+  withRule<Rule extends Array<ArcjetRule<{}>>>(
     rule: Rule,
   ): ArcjetNext<Simplify<Props & ExtraProps<Rule>>>;
 }
@@ -404,7 +403,7 @@ export interface ArcjetNext<Props extends PlainObject> {
  * @param options - Arcjet configuration options to apply to all requests.
  */
 export default function arcjet<
-  const Rule extends Primitive | Array<ArcjetRule<{}>>,
+  const Rule extends Array<ArcjetRule<{}>>,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -532,11 +531,11 @@ export default function arcjet<
     };
   }
 
-  function withClient<const Rule extends Primitive | Array<ArcjetRule<{}>>>(
+  function withClient<const Rule extends Array<ArcjetRule<{}>>>(
     aj: Arcjet<ExtraProps<Rule>>,
   ): ArcjetNext<ExtraProps<Rule>> {
     return Object.freeze({
-      withRule(rule: Primitive | Array<ArcjetRule<{}>>) {
+      withRule(rule: Array<ArcjetRule<{}>>) {
         const client = aj.withRule(rule);
         return withClient(client);
       },

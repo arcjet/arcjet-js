@@ -7,7 +7,6 @@ import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
   ArcjetRule,
-  Primitive,
   ArcjetRequest,
   ExtraProps,
   Arcjet,
@@ -161,7 +160,7 @@ function cookiesToString(cookies: string | string[] | undefined): string {
  * The options used to configure an {@link ArcjetNest} client.
  */
 export type ArcjetOptions<
-  Rule extends Primitive | Array<ArcjetRule<{}>>,
+  Rule extends Array<ArcjetRule<{}>>,
   Characteristic extends string,
 > = Simplify<
   CoreOptions<Rule, Characteristic> & {
@@ -201,13 +200,13 @@ export interface ArcjetNest<Props extends PlainObject = {}> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link ArcjetNest} client.
    */
-  withRule<Rule extends Primitive | Array<ArcjetRule<{}>>>(
+  withRule<Rule extends Array<ArcjetRule<{}>>>(
     rule: Rule,
   ): ArcjetNest<Simplify<Props & ExtraProps<Rule>>>;
 }
 
 function arcjet<
-  const Rule extends Primitive | Array<ArcjetRule<{}>>,
+  const Rule extends Array<ArcjetRule<{}>>,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -327,11 +326,11 @@ function arcjet<
     };
   }
 
-  function withClient<const Rule extends Primitive | Array<ArcjetRule<{}>>>(
+  function withClient<const Rule extends Array<ArcjetRule<{}>>>(
     aj: Arcjet<ExtraProps<Rule>>,
   ): ArcjetNest<ExtraProps<Rule>> {
     return Object.freeze({
-      withRule(rule: Primitive | Array<ArcjetRule<{}>>) {
+      withRule(rule: Array<ArcjetRule<{}>>) {
         const client = aj.withRule(rule);
         return withClient(client);
       },
@@ -486,7 +485,7 @@ export { ArcjetGuard };
 
 export class ArcjetModule {
   static forRoot<
-    const Rule extends Primitive | Array<ArcjetRule<{}>>,
+    const Rule extends Array<ArcjetRule<{}>>,
     const Characteristic extends string,
   >(
     options: ArcjetOptions<Rule, Characteristic> & {
@@ -515,7 +514,7 @@ export class ArcjetModule {
     };
   }
   static forRootAsync<
-    const Rule extends Primitive | Array<ArcjetRule<{}>>,
+    const Rule extends Array<ArcjetRule<{}>>,
     const Characteristic extends string,
   >(
     options: ConfigurableModuleAsyncOptions<
@@ -582,9 +581,7 @@ export class ArcjetModule {
   }
 }
 
-export function WithArcjetRules(
-  rules: Array<Primitive | Array<ArcjetRule<{}>>>,
-) {
+export function WithArcjetRules(rules: Array<Array<ArcjetRule<{}>>>) {
   return SetMetadata(ARCJET_WITH_RULES, rules);
 }
 
