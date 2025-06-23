@@ -177,9 +177,9 @@ function cookiesToString(cookies: string | string[] | undefined): string {
  */
 export type ArcjetOptions<
   Rules extends [...Array<Primitive | Product>],
-  Characteristics extends readonly string[],
+  Characteristic extends string,
 > = Simplify<
-  CoreOptions<Rules, Characteristics> & {
+  CoreOptions<Rules, Characteristic> & {
     /**
      * One or more IP Address of trusted proxies in front of the application.
      * These addresses will be excluded when Arcjet detects a public IP address.
@@ -231,11 +231,11 @@ export interface ArcjetNode<Props extends PlainObject> {
  */
 export default function arcjet<
   const Rules extends (Primitive | Product)[],
-  const Characteristics extends readonly string[],
+  const Characteristic extends string,
 >(
-  options: ArcjetOptions<Rules, Characteristics>,
+  options: ArcjetOptions<Rules, Characteristic>,
 ): ArcjetNode<
-  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>
+  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristic>>
 > {
   const client = options.client ?? createRemoteClient();
 

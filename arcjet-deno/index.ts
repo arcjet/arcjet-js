@@ -113,9 +113,9 @@ export function createRemoteClient(options?: RemoteClientOptions) {
  */
 export type ArcjetOptions<
   Rules extends [...Array<Primitive | Product>],
-  Characteristics extends readonly string[],
+  Characteristic extends string,
 > = Simplify<
-  CoreOptions<Rules, Characteristics> & {
+  CoreOptions<Rules, Characteristic> & {
     /**
      * One or more IP Address of trusted proxies in front of the application.
      * These addresses will be excluded when Arcjet detects a public IP address.
@@ -183,11 +183,11 @@ export interface ArcjetDeno<Props extends PlainObject> {
  */
 export default function arcjet<
   const Rules extends (Primitive | Product)[],
-  const Characteristics extends readonly string[],
+  const Characteristic extends string,
 >(
-  options: ArcjetOptions<Rules, Characteristics>,
+  options: ArcjetOptions<Rules, Characteristic>,
 ): ArcjetDeno<
-  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>
+  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristic>>
 > {
   // We technically build this twice but they happen at startup.
   const env = Deno.env.toObject();

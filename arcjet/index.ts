@@ -468,30 +468,24 @@ const validateShieldOptions = createValidator({
   validations: [{ key: "mode", required: false, validate: validateMode }],
 });
 
-export type TokenBucketRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+export type TokenBucketRateLimitOptions<Characteristic extends string> = {
   mode?: ArcjetMode;
-  characteristics?: Characteristics;
+  characteristics?: ReadonlyArray<Characteristic>;
   refillRate: number;
   interval: string | number;
   capacity: number;
 };
 
-export type FixedWindowRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+export type FixedWindowRateLimitOptions<Characteristic extends string> = {
   mode?: ArcjetMode;
-  characteristics?: Characteristics;
+  characteristics?: ReadonlyArray<Characteristic>;
   window: string | number;
   max: number;
 };
 
-export type SlidingWindowRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+export type SlidingWindowRateLimitOptions<Characteristic extends string> = {
   mode?: ArcjetMode;
-  characteristics?: Characteristics;
+  characteristics?: ReadonlyArray<Characteristic>;
   interval: string | number;
   max: number;
 };
@@ -616,8 +610,8 @@ type PropsForCharacteristic<T> =
         ? Record<T, string | number | boolean>
         : never
     : {};
-export type CharacteristicProps<Characteristics extends readonly string[]> =
-  UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>;
+export type CharacteristicProps<Characteristic extends string> =
+  UnionToIntersection<PropsForCharacteristic<Characteristic>>;
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 // We theoretically support an arbitrary amount of rule flattening,
@@ -738,14 +732,12 @@ function isRateLimitRule<Props extends PlainObject>(
  * @link https://docs.arcjet.com/rate-limiting/algorithms#token-bucket
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function tokenBucket<
-  const Characteristics extends readonly string[] = [],
->(
-  options: TokenBucketRateLimitOptions<Characteristics>,
+export function tokenBucket<const Characteristic extends string = string>(
+  options: TokenBucketRateLimitOptions<Characteristic>,
 ): Primitive<
   Simplify<
     UnionToIntersection<
-      { requested: number } | CharacteristicProps<Characteristics>
+      { requested: number } | CharacteristicProps<Characteristic>
     >
   >
 > {
@@ -764,7 +756,7 @@ export function tokenBucket<
 
   const rule: ArcjetTokenBucketRateLimitRule<
     UnionToIntersection<
-      { requested: number } | CharacteristicProps<Characteristics>
+      { requested: number } | CharacteristicProps<Characteristic>
     >
   > = {
     type,
@@ -898,11 +890,9 @@ export function tokenBucket<
  * @link https://docs.arcjet.com/rate-limiting/algorithms#fixed-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function fixedWindow<
-  const Characteristics extends readonly string[] = [],
->(
-  options: FixedWindowRateLimitOptions<Characteristics>,
-): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
+export function fixedWindow<const Characteristic extends string = string>(
+  options: FixedWindowRateLimitOptions<Characteristic>,
+): Primitive<Simplify<CharacteristicProps<Characteristic>>> {
   validateFixedWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -1039,11 +1029,9 @@ export function fixedWindow<
  * @link https://docs.arcjet.com/rate-limiting/algorithms#sliding-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function slidingWindow<
-  const Characteristics extends readonly string[] = [],
->(
-  options: SlidingWindowRateLimitOptions<Characteristics>,
-): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
+export function slidingWindow<const Characteristic extends string = string>(
+  options: SlidingWindowRateLimitOptions<Characteristic>,
+): Primitive<Simplify<CharacteristicProps<Characteristic>>> {
   validateSlidingWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -1961,8 +1949,8 @@ export function shield(options: ShieldOptions): Primitive<{}> {
   return [rule];
 }
 
-export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
-  rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
+export type ProtectSignupOptions<Characteristic extends string> = {
+  rateLimit: SlidingWindowRateLimitOptions<Characteristic>;
   bots: BotOptions;
   email: EmailOptions;
 };
@@ -2074,13 +2062,11 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
  * @link https://docs.arcjet.com/signup-protection/concepts
  * @link https://docs.arcjet.com/signup-protection/reference
  */
-export function protectSignup<const Characteristics extends string[] = []>(
-  options: ProtectSignupOptions<Characteristics>,
+export function protectSignup<Characteristic extends string = string>(
+  options: ProtectSignupOptions<Characteristic>,
 ): Product<
   Simplify<
-    UnionToIntersection<
-      { email: string } | CharacteristicProps<Characteristics>
-    >
+    UnionToIntersection<{ email: string } | CharacteristicProps<Characteristic>>
   >
 > {
   return [
@@ -2091,8 +2077,8 @@ export function protectSignup<const Characteristics extends string[] = []>(
 }
 
 export interface ArcjetOptions<
-  Rules extends [...(Primitive | Product)[]],
-  Characteristics extends readonly string[],
+  Rules extends readonly (Primitive | Product)[],
+  Characteristics extends string,
 > {
   /**
    * The API key to identify the site in Arcjet.
@@ -2101,11 +2087,11 @@ export interface ArcjetOptions<
   /**
    * Rules to apply when protecting a request.
    */
-  rules: readonly [...Rules];
+  rules: Rules;
   /**
    * Characteristics to be used to uniquely identify clients.
    */
-  characteristics?: Characteristics;
+  characteristics?: ReadonlyArray<Characteristics>;
   /**
    * The client used to make requests to the Arcjet API. This must be set
    * when creating the SDK, such as inside @arcjet/next or mocked in tests.
@@ -2154,10 +2140,10 @@ export interface Arcjet<Props extends PlainObject> {
  */
 export default function arcjet<
   const Rules extends [...(Primitive | Product)[]] = [],
-  const Characteristics extends readonly string[] = [],
+  const Characteristic extends string = string,
 >(
-  options: ArcjetOptions<Rules, Characteristics>,
-): Arcjet<Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>> {
+  options: ArcjetOptions<Rules, Characteristic>,
+): Arcjet<Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristic>>> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
 
