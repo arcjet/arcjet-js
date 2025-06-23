@@ -465,7 +465,7 @@ test("convert", async (t) => {
       assert.equal(reason.type, "RATE_LIMIT");
     });
 
-    await t.test("should create another rate limit reason", () => {
+    await t.test("should create a rate limit reason w/ `resetTime`", () => {
       const reason = ArcjetReasonFromProtocol(
         new Reason({
           reason: {
