@@ -7,11 +7,11 @@
     "gatsby"
   ],
   "scripts": {
-    "build": "gatsby build",
-    "clean": "gatsby clean",
     "develop": "gatsby develop",
-    "serve": "gatsby serve",
     "start": "gatsby develop",
+    "build": "gatsby build",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -4,13 +4,13 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "vite build",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig tsconfig.json --watch",
-		"check": "svelte-kit sync && svelte-check --tsconfig tsconfig.json",
 		"dev": "vite dev",
-		"format": "prettier --log-level warn --write .",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"preview": "vite preview"
+		"format": "prettier --write ."
 	},
 	"dependencies": {
 		"@arcjet/sveltekit": "file:../../arcjet-sveltekit",
