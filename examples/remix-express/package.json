@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "remix vite:build",
-    "dev": "node server.js",
-    "lint": "eslint --cache-location ./node_modules/.cache/eslint --cache --ignore-path .gitignore -- .",
-    "start": "node --env-file=.env server.js",
+    "dev": "node ./server.js",
+    "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
+    "start": "node --env-file=.env ./server.js",
     "typecheck": "tsc"
   },
   "dependencies": {

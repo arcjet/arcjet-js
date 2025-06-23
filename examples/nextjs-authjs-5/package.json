@@ -3,9 +3,8 @@
   "private": true,
   "description": "An example project for NextAuth.js with Next.js",
   "scripts": {
+    "dev": "next",
     "build": "next build",
-    "dev": "next dev",
-    "lint": "next lint",
     "start": "next start"
   },
   "dependencies": {

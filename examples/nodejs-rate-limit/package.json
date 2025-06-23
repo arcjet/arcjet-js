@@ -2,14 +2,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file .env.local ./index.js"
+      "start": "node --env-file .env.local ./index.js"
   },
   "dependencies": {
-    "@arcjet/node": "../../arcjet-node",
-    "nosecone": "../../nosecone"
+      "@arcjet/node": "../../arcjet-node",
+      "nosecone": "../../nosecone"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "typescript": "^5"
+      "@types/node": "^20",
+      "typescript": "^5"
   }
 }
