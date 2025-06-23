@@ -589,6 +589,11 @@ type PlainObject = { [key: string]: unknown };
 // the same.
 // See ExtraProps below for further explanation on why we define them like this.
 export type Primitive<Props extends PlainObject = {}> = [ArcjetRule<Props>];
+
+/**
+ * @deprecated
+ *   Please use `ArcjetRule<Props>[]` directly.
+ */
 export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 
 // User-defined characteristics alter the required props of an ArcjetRequest
@@ -615,16 +620,12 @@ export type CharacteristicProps<Characteristic extends string> =
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 // We theoretically support an arbitrary amount of rule flattening,
-// but one level seems to be easiest; however, this puts a constraint of
-// the definition of `Product` such that they need to spread each `Primitive`
-// they are re-exporting.
-export type ExtraProps<Rules> = Rules extends []
-  ? {}
-  : Rules extends ArcjetRule[][]
-    ? UnionToIntersection<PropsForRule<Rules[number][number]>>
-    : Rules extends ArcjetRule[]
-      ? UnionToIntersection<PropsForRule<Rules[number]>>
-      : never;
+// but one level seems to be easiest.
+export type ExtraProps<T> = T extends ArcjetRule[]
+  ? UnionToIntersection<PropsForRule<T[number]>>
+  : T extends ArcjetRule
+    ? UnionToIntersection<PropsForRule<T>>
+    : never;
 
 /**
  * Additional context that can be provided by adapters.
@@ -2064,9 +2065,13 @@ export type ProtectSignupOptions<Characteristic extends string> = {
  */
 export function protectSignup<Characteristic extends string = string>(
   options: ProtectSignupOptions<Characteristic>,
-): Product<
-  Simplify<
-    UnionToIntersection<{ email: string } | CharacteristicProps<Characteristic>>
+): Array<
+  ArcjetRule<
+    Simplify<
+      UnionToIntersection<
+        { email: string } | CharacteristicProps<Characteristic>
+      >
+    >
   >
 > {
   return [
@@ -2077,7 +2082,7 @@ export function protectSignup<Characteristic extends string = string>(
 }
 
 export interface ArcjetOptions<
-  Rule extends Primitive | Product,
+  Rule extends Primitive | Array<ArcjetRule<{}>>,
   Characteristics extends string,
 > {
   /**
@@ -2128,7 +2133,7 @@ export interface Arcjet<Props extends PlainObject> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link Arcjet} client.
    */
-  withRule<Rule extends Primitive | Product>(
+  withRule<Rule extends Primitive | Array<ArcjetRule<{}>>>(
     rule: Rule,
   ): Arcjet<Simplify<Props & ExtraProps<Rule>>>;
 }
@@ -2139,7 +2144,7 @@ export interface Arcjet<Props extends PlainObject> {
  * @param options {ArcjetOptions} Arcjet configuration options.
  */
 export default function arcjet<
-  const Rule extends Primitive | Product,
+  const Rule extends Primitive | Array<ArcjetRule<{}>>,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -2481,7 +2486,7 @@ export default function arcjet<
   }
 
   // This is a separate function so it can be called recursively
-  function withRule<Rule extends Primitive | Product>(
+  function withRule<Rule extends Primitive | Array<ArcjetRule<{}>>>(
     baseRules: ArcjetRule[],
     rule: Rule,
   ) {
@@ -2490,12 +2495,12 @@ export default function arcjet<
     );
 
     return Object.freeze({
-      withRule(rule: Primitive | Product) {
+      withRule(rule: Primitive | Array<ArcjetRule<{}>>) {
         return withRule(rules, rule);
       },
       async protect(
         ctx: ArcjetAdapterContext,
-        request: ArcjetRequest<ExtraProps<typeof rules>>,
+        request: ArcjetRequest<{}>,
       ): Promise<ArcjetDecision> {
         return protect(rules, ctx, request);
       },
@@ -2503,12 +2508,12 @@ export default function arcjet<
   }
 
   return Object.freeze({
-    withRule(rule: Primitive | Product) {
+    withRule(rule: Primitive | Array<ArcjetRule<{}>>) {
       return withRule(rootRules, rule);
     },
     async protect(
       ctx: ArcjetAdapterContext,
-      request: ArcjetRequest<ExtraProps<typeof rootRules>>,
+      request: ArcjetRequest<{}>,
     ): Promise<ArcjetDecision> {
       return protect(rootRules, ctx, request);
     },

@@ -2,8 +2,8 @@ import core from "arcjet";
 import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
+  ArcjetRule,
   Primitive,
-  Product,
   ArcjetRequest,
   ExtraProps,
   Arcjet,
@@ -130,7 +130,7 @@ function cookiesToString(
  * The options used to configure an {@link ArcjetSvelteKit} client.
  */
 export type ArcjetOptions<
-  Rule extends Primitive | Product,
+  Rule extends Primitive | Array<ArcjetRule<{}>>,
   Characteristic extends string,
 > = Simplify<
   CoreOptions<Rule, Characteristic> & {
@@ -170,7 +170,7 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link ArcjetSvelteKit} client.
    */
-  withRule<Rule extends Primitive | Product>(
+  withRule<Rule extends Primitive | Array<ArcjetRule<{}>>>(
     rule: Rule,
   ): ArcjetSvelteKit<Simplify<Props & ExtraProps<Rule>>>;
 }
@@ -184,7 +184,7 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
  * @param options - Arcjet configuration options to apply to all requests.
  */
 export default function arcjet<
-  const Rule extends Primitive | Product,
+  const Rule extends Primitive | Array<ArcjetRule<{}>>,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -255,11 +255,11 @@ export default function arcjet<
     };
   }
 
-  function withClient<const Rule extends Primitive | Product>(
+  function withClient<const Rule extends Primitive | Array<ArcjetRule<{}>>>(
     aj: Arcjet<ExtraProps<Rule>>,
   ): ArcjetSvelteKit<ExtraProps<Rule>> {
     return Object.freeze({
-      withRule(rule: Primitive | Product) {
+      withRule(rule: Primitive | Array<ArcjetRule<{}>>) {
         const client = aj.withRule(rule);
         return withClient(client);
       },
