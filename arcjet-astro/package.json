@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/astro",
   "version": "1.0.0-beta.8",
-  "description": "Arcjet SDK integration for Astro",
+  "description": "Arcjet helps developers protect their Astro sites in just a few lines of code. Bot detection. Rate limiting. Email validation. Attack protection. Data redaction. A developer-first approach to security.",
   "keywords": [
     "analyze",
     "arcjet",
