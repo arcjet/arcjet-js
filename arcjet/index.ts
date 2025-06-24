@@ -595,17 +595,15 @@ export type CharacteristicProps<Characteristic extends string = string> =
         ? Record<Characteristic, string | number | boolean>
         : never
     : {};
-// Rules can specify they require specific props on an ArcjetRequest
-type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 
 /**
  * @deprecated
  *   Please use `T extends ArcjetRule<infer P> ? P : {}` directly.
  */
-export type ExtraProps<T> = T extends ArcjetRule[]
-  ? PropsForRule<T[number]>
-  : T extends ArcjetRule
-    ? PropsForRule<T>
+export type ExtraProps<T> = T extends ArcjetRule<infer Props>[]
+  ? Props
+  : T extends ArcjetRule<infer Props>
+    ? Props
     : never;
 
 /**
@@ -2099,7 +2097,7 @@ export interface Arcjet<Props extends Record<string, unknown>> {
    */
   withRule<Rule extends ArcjetRule<{}>>(
     rules: ReadonlyArray<Rule>,
-  ): Arcjet<Props & PropsForRule<Rule>>;
+  ): Arcjet<Props & (Rule extends ArcjetRule<infer Props> ? Props : {})>;
 }
 
 /**
@@ -2112,7 +2110,10 @@ export default function arcjet<
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
-): Arcjet<PropsForRule<Array<Rule>> & CharacteristicProps<Characteristic>> {
+): Arcjet<
+  (Rule extends ArcjetRule<infer Props> ? Props : {}) &
+    CharacteristicProps<Characteristic>
+> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
 
