@@ -192,10 +192,10 @@ export default function arcjet<const Options extends ArcjetOptions>(
     );
   }
 
-  function toArcjetRequest<Props extends Record<string, unknown>>(
+  function toArcjetRequest(
     event: ArcjetSvelteKitRequestEvent,
-    props: Props,
-  ): ArcjetRequest<Props> {
+    props: Record<string, unknown>,
+  ): ArcjetRequest {
     const cookies = cookiesToString(event.cookies.getAll());
 
     // We construct an ArcjetHeaders to normalize over Headers
@@ -257,9 +257,7 @@ export default function arcjet<const Options extends ArcjetOptions>(
         // TODO(#220): The generic manipulations get really mad here, so we cast
         // Further investigation makes it seem like it has something to do with
         // the definition of `props` in the signature but it's hard to track down
-        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-          Rule extends ArcjetRule<infer T> ? T : {}
-        >;
+        const req = toArcjetRequest(request, props ?? {});
 
         const getBody = async () => {
           try {

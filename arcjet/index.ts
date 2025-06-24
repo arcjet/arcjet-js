@@ -583,7 +583,8 @@ export type ArcjetAdapterContext = {
  * @property {string} email - An email address related to the request.
  * @property ...extra - Extra data that might be useful for Arcjet. For example, requested tokens are specified as the `requested` property.
  */
-export type ArcjetRequest<Props extends Record<string, unknown>> = Props & {
+export type ArcjetRequest = {
+  [key: string]: unknown;
   ip?: string;
   method?: string;
   protocol?: string;
@@ -2057,7 +2058,7 @@ export interface Arcjet<Props extends Record<string, unknown>> {
    */
   protect(
     ctx: ArcjetAdapterContext,
-    request: ArcjetRequest<Props>,
+    request: ArcjetRequest,
   ): Promise<ArcjetDecision>;
 
   /**
@@ -2112,10 +2113,10 @@ export default function arcjet<const Options extends ArcjetOptions>(
     .flat(1)
     .sort((a, b) => a.priority - b.priority);
 
-  async function protect<Props extends Record<string, unknown>>(
+  async function protect(
     rules: ArcjetRule[],
     ctx: ArcjetAdapterContext,
-    request: ArcjetRequest<Props>,
+    request: ArcjetRequest,
   ) {
     // This goes against the type definition above, but users might call
     // `protect()` with no value and we don't want to crash
@@ -2428,7 +2429,7 @@ export default function arcjet<const Options extends ArcjetOptions>(
       },
       async protect(
         ctx: ArcjetAdapterContext,
-        request: ArcjetRequest<{}>,
+        request: ArcjetRequest,
       ): Promise<ArcjetDecision> {
         return protect(sortedRules, ctx, request);
       },
@@ -2441,7 +2442,7 @@ export default function arcjet<const Options extends ArcjetOptions>(
     },
     async protect(
       ctx: ArcjetAdapterContext,
-      request: ArcjetRequest<{}>,
+      request: ArcjetRequest,
     ): Promise<ArcjetDecision> {
       return protect(rootRules, ctx, request);
     },

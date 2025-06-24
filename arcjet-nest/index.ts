@@ -215,10 +215,10 @@ function arcjet<const Options extends ArcjetOptions>(
     );
   }
 
-  function toArcjetRequest<Props extends Record<string, unknown>>(
+  function toArcjetRequest(
     request: ArcjetNestRequest,
-    props: Props,
-  ): ArcjetRequest<Props> {
+    props: Record<string, unknown>,
+  ): ArcjetRequest {
     // We pull the cookies from the request before wrapping them in ArcjetHeaders
     const cookies = cookiesToString(request.headers?.cookie);
 
@@ -329,9 +329,7 @@ function arcjet<const Options extends ArcjetOptions>(
         // TODO(#220): The generic manipulations get really mad here, so we cast
         // Further investigation makes it seem like it has something to do with
         // the definition of `props` in the signature but it's hard to track down
-        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-          Rule extends ArcjetRule<infer T> ? T : {}
-        >;
+        const req = toArcjetRequest(request, props ?? {});
 
         const getBody = async () => {
           try {
