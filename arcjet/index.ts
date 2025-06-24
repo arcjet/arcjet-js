@@ -647,7 +647,7 @@ function isRateLimitRule(rule: ArcjetRule): rule is ArcjetRateLimitRule<{}> {
 export function tokenBucket<const Options extends TokenBucketRateLimitOptions>(
   options: Options,
 ): [
-  ArcjetRule<
+  ArcjetTokenBucketRateLimitRule<
     { requested: number } & CharacteristicProps<
       Exclude<Options["characteristics"], undefined>[number]
     >
@@ -666,85 +666,84 @@ export function tokenBucket<const Options extends TokenBucketRateLimitOptions>(
   const interval = duration.parse(options.interval);
   const capacity = options.capacity;
 
-  const rule: ArcjetTokenBucketRateLimitRule<
-    { requested: number } & CharacteristicProps<
-      Exclude<Options["characteristics"], undefined>[number]
-    >
-  > = {
-    type,
-    version,
-    priority: Priority.RateLimit,
-    mode,
-    characteristics,
-    algorithm: "TOKEN_BUCKET",
-    refillRate,
-    interval,
-    capacity,
-    validate() {},
-    async protect(context: ArcjetContext<CachedResult>, details) {
-      const localCharacteristics = characteristics ?? context.characteristics;
+  return [
+    {
+      type,
+      version,
+      priority: Priority.RateLimit,
+      mode,
+      characteristics,
+      algorithm: "TOKEN_BUCKET",
+      refillRate,
+      interval,
+      capacity,
+      validate() {},
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        details: ArcjetRequestDetails,
+      ) {
+        const localCharacteristics = characteristics ?? context.characteristics;
 
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.string("algorithm", "TOKEN_BUCKET"),
-        hasher.stringSliceOrdered("characteristics", localCharacteristics),
-        // Match is deprecated so it is always an empty string in the newest SDKs
-        hasher.string("match", ""),
-        hasher.uint32("refillRate", refillRate),
-        hasher.uint32("interval", interval),
-        hasher.uint32("capacity", capacity),
-      );
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.string("algorithm", "TOKEN_BUCKET"),
+          hasher.stringSliceOrdered("characteristics", localCharacteristics),
+          // Match is deprecated so it is always an empty string in the newest SDKs
+          hasher.string("match", ""),
+          hasher.uint32("refillRate", refillRate),
+          hasher.uint32("interval", interval),
+          hasher.uint32("capacity", capacity),
+        );
 
-      const analyzeContext = {
-        characteristics: localCharacteristics,
-        log: context.log,
-      };
+        const analyzeContext = {
+          characteristics: localCharacteristics,
+          log: context.log,
+        };
 
-      const fingerprint = await analyze.generateFingerprint(analyzeContext, {
-        ...details,
-        headers: Object.fromEntries(details.headers),
-      });
+        const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+          ...details,
+          headers: Object.fromEntries(details.headers),
+        });
 
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached && cached.reason.isRateLimit()) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            // We rebuild the `ArcjetRateLimitReason` because we need to adjust
+            // the `reset` based on the current time-to-live
+            reason: new ArcjetRateLimitReason({
+              max: cached.reason.max,
+              remaining: cached.reason.remaining,
+              reset: ttl,
+              window: cached.reason.window,
+              resetTime: cached.reason.resetTime,
+            }),
+          });
+        }
+
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          // We rebuild the `ArcjetRateLimitReason` because we need to adjust
-          // the `reset` based on the current time-to-live
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ALLOW",
           reason: new ArcjetRateLimitReason({
-            max: cached.reason.max,
-            remaining: cached.reason.remaining,
-            reset: ttl,
-            window: cached.reason.window,
-            resetTime: cached.reason.resetTime,
+            max: 0,
+            remaining: 0,
+            reset: 0,
+            window: 0,
+            resetTime: new Date(),
           }),
         });
-      }
-
-      return new ArcjetRuleResult({
-        ruleId,
-        fingerprint,
-        ttl: 0,
-        state: "NOT_RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetRateLimitReason({
-          max: 0,
-          remaining: 0,
-          reset: 0,
-          window: 0,
-          resetTime: new Date(),
-        }),
-      });
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
 /**
@@ -805,7 +804,7 @@ export function tokenBucket<const Options extends TokenBucketRateLimitOptions>(
 export function fixedWindow<const Options extends FixedWindowRateLimitOptions>(
   options: Options,
 ): [
-  ArcjetRule<
+  ArcjetFixedWindowRateLimitRule<
     CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
   >,
 ] {
@@ -821,78 +820,81 @@ export function fixedWindow<const Options extends FixedWindowRateLimitOptions>(
   const max = options.max;
   const window = duration.parse(options.window);
 
-  const rule: ArcjetFixedWindowRateLimitRule<{}> = {
-    type,
-    version,
-    priority: Priority.RateLimit,
-    mode,
-    characteristics,
-    algorithm: "FIXED_WINDOW",
-    max,
-    window,
-    validate() {},
-    async protect(context: ArcjetContext<CachedResult>, details) {
-      const localCharacteristics = characteristics ?? context.characteristics;
+  return [
+    {
+      type,
+      version,
+      priority: Priority.RateLimit,
+      mode,
+      characteristics,
+      algorithm: "FIXED_WINDOW",
+      max,
+      window,
+      validate() {},
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        details: ArcjetRequestDetails,
+      ) {
+        const localCharacteristics = characteristics ?? context.characteristics;
 
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.string("algorithm", "FIXED_WINDOW"),
-        hasher.stringSliceOrdered("characteristics", localCharacteristics),
-        // Match is deprecated so it is always an empty string in the newest SDKs
-        hasher.string("match", ""),
-        hasher.uint32("max", max),
-        hasher.uint32("window", window),
-      );
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.string("algorithm", "FIXED_WINDOW"),
+          hasher.stringSliceOrdered("characteristics", localCharacteristics),
+          // Match is deprecated so it is always an empty string in the newest SDKs
+          hasher.string("match", ""),
+          hasher.uint32("max", max),
+          hasher.uint32("window", window),
+        );
 
-      const analyzeContext = {
-        characteristics: localCharacteristics,
-        log: context.log,
-      };
+        const analyzeContext = {
+          characteristics: localCharacteristics,
+          log: context.log,
+        };
 
-      const fingerprint = await analyze.generateFingerprint(analyzeContext, {
-        ...details,
-        headers: Object.fromEntries(details.headers),
-      });
+        const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+          ...details,
+          headers: Object.fromEntries(details.headers),
+        });
 
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached && cached.reason.isRateLimit()) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            // We rebuild the `ArcjetRateLimitReason` because we need to adjust
+            // the `reset` based on the current time-to-live
+            reason: new ArcjetRateLimitReason({
+              max: cached.reason.max,
+              remaining: cached.reason.remaining,
+              reset: ttl,
+              window: cached.reason.window,
+              resetTime: cached.reason.resetTime,
+            }),
+          });
+        }
+
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          // We rebuild the `ArcjetRateLimitReason` because we need to adjust
-          // the `reset` based on the current time-to-live
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ALLOW",
           reason: new ArcjetRateLimitReason({
-            max: cached.reason.max,
-            remaining: cached.reason.remaining,
-            reset: ttl,
-            window: cached.reason.window,
-            resetTime: cached.reason.resetTime,
+            max: 0,
+            remaining: 0,
+            reset: 0,
+            window: 0,
           }),
         });
-      }
-
-      return new ArcjetRuleResult({
-        ruleId,
-        fingerprint,
-        ttl: 0,
-        state: "NOT_RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetRateLimitReason({
-          max: 0,
-          remaining: 0,
-          reset: 0,
-          window: 0,
-        }),
-      });
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
 /**
@@ -950,7 +952,7 @@ export function slidingWindow<
 >(
   options: Options,
 ): [
-  ArcjetRule<
+  ArcjetSlidingWindowRateLimitRule<
     CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
   >,
 ] {
@@ -966,78 +968,81 @@ export function slidingWindow<
   const max = options.max;
   const interval = duration.parse(options.interval);
 
-  const rule: ArcjetSlidingWindowRateLimitRule<{}> = {
-    type,
-    version,
-    priority: Priority.RateLimit,
-    mode,
-    characteristics,
-    algorithm: "SLIDING_WINDOW",
-    max,
-    interval,
-    validate() {},
-    async protect(context: ArcjetContext<CachedResult>, details) {
-      const localCharacteristics = characteristics ?? context.characteristics;
+  return [
+    {
+      type,
+      version,
+      priority: Priority.RateLimit,
+      mode,
+      characteristics,
+      algorithm: "SLIDING_WINDOW",
+      max,
+      interval,
+      validate() {},
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        details: ArcjetRequestDetails,
+      ) {
+        const localCharacteristics = characteristics ?? context.characteristics;
 
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.string("algorithm", "SLIDING_WINDOW"),
-        hasher.stringSliceOrdered("characteristics", localCharacteristics),
-        // Match is deprecated so it is always an empty string in the newest SDKs
-        hasher.string("match", ""),
-        hasher.uint32("max", max),
-        hasher.uint32("interval", interval),
-      );
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.string("algorithm", "SLIDING_WINDOW"),
+          hasher.stringSliceOrdered("characteristics", localCharacteristics),
+          // Match is deprecated so it is always an empty string in the newest SDKs
+          hasher.string("match", ""),
+          hasher.uint32("max", max),
+          hasher.uint32("interval", interval),
+        );
 
-      const analyzeContext = {
-        characteristics: localCharacteristics,
-        log: context.log,
-      };
+        const analyzeContext = {
+          characteristics: localCharacteristics,
+          log: context.log,
+        };
 
-      const fingerprint = await analyze.generateFingerprint(analyzeContext, {
-        ...details,
-        headers: Object.fromEntries(details.headers),
-      });
+        const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+          ...details,
+          headers: Object.fromEntries(details.headers),
+        });
 
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached && cached.reason.isRateLimit()) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            // We rebuild the `ArcjetRateLimitReason` because we need to adjust
+            // the `reset` based on the current time-to-live
+            reason: new ArcjetRateLimitReason({
+              max: cached.reason.max,
+              remaining: cached.reason.remaining,
+              reset: ttl,
+              window: cached.reason.window,
+              resetTime: cached.reason.resetTime,
+            }),
+          });
+        }
+
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          // We rebuild the `ArcjetRateLimitReason` because we need to adjust
-          // the `reset` based on the current time-to-live
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ALLOW",
           reason: new ArcjetRateLimitReason({
-            max: cached.reason.max,
-            remaining: cached.reason.remaining,
-            reset: ttl,
-            window: cached.reason.window,
-            resetTime: cached.reason.resetTime,
+            max: 0,
+            remaining: 0,
+            reset: 0,
+            window: 0,
           }),
         });
-      }
-
-      return new ArcjetRuleResult({
-        ruleId,
-        fingerprint,
-        ttl: 0,
-        state: "NOT_RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetRateLimitReason({
-          max: 0,
-          remaining: 0,
-          reset: 0,
-          window: 0,
-        }),
-      });
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
 function protocolSensitiveInfoEntitiesToAnalyze(
@@ -1186,7 +1191,9 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * @link https://docs.arcjet.com/sensitive-info/concepts
  * @link https://docs.arcjet.com/sensitive-info/reference
  */
-export function sensitiveInfo(options: SensitiveInfoOptions): [ArcjetRule] {
+export function sensitiveInfo(
+  options: SensitiveInfoOptions,
+): [ArcjetSensitiveInfoRule<{}>] {
   validateSensitiveInfoOptions(options);
 
   if (
@@ -1212,121 +1219,118 @@ export function sensitiveInfo(options: SensitiveInfoOptions): [ArcjetRule] {
   const allow = options.allow || [];
   const deny = options.deny || [];
 
-  const rule: ArcjetSensitiveInfoRule<{}> = {
-    version,
-    priority: Priority.SensitiveInfo,
-    type,
-    mode,
-    allow,
-    deny,
+  return [
+    {
+      version,
+      priority: Priority.SensitiveInfo,
+      type,
+      mode,
+      allow,
+      deny,
 
-    validate(
-      context: ArcjetContext,
-      details: ArcjetRequestDetails,
-    ): asserts details is ArcjetRequestDetails {},
+      validate() {},
 
-    async protect(
-      context: ArcjetContext<CachedResult>,
-      details: ArcjetRequestDetails,
-    ): Promise<ArcjetRuleResult> {
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.stringSliceOrdered("allow", allow),
-        hasher.stringSliceOrdered("deny", deny),
-      );
+      async protect(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.stringSliceOrdered("allow", allow),
+          hasher.stringSliceOrdered("deny", deny),
+        );
 
-      const { fingerprint } = context;
+        const { fingerprint } = context;
 
-      // No cache is implemented here because the fingerprint can be the same
-      // while the request body changes. This is also why the `sensitiveInfo`
-      // rule results always have a `ttl` of 0.
+        // No cache is implemented here because the fingerprint can be the same
+        // while the request body changes. This is also why the `sensitiveInfo`
+        // rule results always have a `ttl` of 0.
 
-      const body = await context.getBody();
-      if (typeof body === "undefined") {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state: "NOT_RUN",
-          conclusion: "ERROR",
-          reason: new ArcjetErrorReason(
-            "Couldn't read the body of the request to perform sensitive info identification.",
-          ),
-        });
-      }
+        const body = await context.getBody();
+        if (typeof body === "undefined") {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state: "NOT_RUN",
+            conclusion: "ERROR",
+            reason: new ArcjetErrorReason(
+              "Couldn't read the body of the request to perform sensitive info identification.",
+            ),
+          });
+        }
 
-      let convertedDetect = undefined;
-      if (typeof options.detect !== "undefined") {
-        const detect = options.detect;
-        convertedDetect = (tokens: string[]) => {
-          return detect(tokens)
+        let convertedDetect = undefined;
+        if (typeof options.detect !== "undefined") {
+          const detect = options.detect;
+          convertedDetect = (tokens: string[]) => {
+            return detect(tokens)
+              .filter((e) => typeof e !== "undefined")
+              .map(protocolSensitiveInfoEntitiesToAnalyze);
+          };
+        }
+
+        let entitiesTag: "allow" | "deny" = "allow";
+        let entitiesVal: Array<SensitiveInfoEntity> = [];
+
+        if (Array.isArray(options.allow)) {
+          entitiesTag = "allow";
+          entitiesVal = options.allow
             .filter((e) => typeof e !== "undefined")
             .map(protocolSensitiveInfoEntitiesToAnalyze);
+        }
+
+        if (Array.isArray(options.deny)) {
+          entitiesTag = "deny";
+          entitiesVal = options.deny
+            .filter((e) => typeof e !== "undefined")
+            .map(protocolSensitiveInfoEntitiesToAnalyze);
+        }
+
+        const entities = {
+          tag: entitiesTag,
+          val: entitiesVal,
         };
-      }
 
-      let entitiesTag: "allow" | "deny" = "allow";
-      let entitiesVal: Array<SensitiveInfoEntity> = [];
+        const result = await analyze.detectSensitiveInfo(
+          context,
+          body,
+          entities,
+          options.contextWindowSize || 1,
+          convertedDetect,
+        );
 
-      if (Array.isArray(options.allow)) {
-        entitiesTag = "allow";
-        entitiesVal = options.allow
-          .filter((e) => typeof e !== "undefined")
-          .map(protocolSensitiveInfoEntitiesToAnalyze);
-      }
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
-      if (Array.isArray(options.deny)) {
-        entitiesTag = "deny";
-        entitiesVal = options.deny
-          .filter((e) => typeof e !== "undefined")
-          .map(protocolSensitiveInfoEntitiesToAnalyze);
-      }
-
-      const entities = {
-        tag: entitiesTag,
-        val: entitiesVal,
-      };
-
-      const result = await analyze.detectSensitiveInfo(
-        context,
-        body,
-        entities,
-        options.contextWindowSize || 1,
-        convertedDetect,
-      );
-
-      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-
-      const reason = new ArcjetSensitiveInfoReason({
-        denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
-        allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
-      });
-
-      if (result.denied.length === 0) {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "ALLOW",
-          reason,
+        const reason = new ArcjetSensitiveInfoReason({
+          denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
+          allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
         });
-      } else {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "DENY",
-          reason,
-        });
-      }
+
+        if (result.denied.length === 0) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "ALLOW",
+            reason,
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "DENY",
+            reason,
+          });
+        }
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
 /**
@@ -1383,7 +1387,7 @@ export function sensitiveInfo(options: SensitiveInfoOptions): [ArcjetRule] {
  */
 export function validateEmail(
   options: EmailOptions,
-): [ArcjetRule<{ email?: string | undefined }>] {
+): [ArcjetEmailRule<{ email: string }>] {
   validateEmailOptions(options);
 
   if (
@@ -1470,76 +1474,77 @@ export function validateEmail(
     };
   }
 
-  const rule: ArcjetEmailRule<{ email: string }> = {
-    version,
-    priority: Priority.EmailValidation,
+  return [
+    {
+      version,
+      priority: Priority.EmailValidation,
 
-    type,
-    mode,
-    allow,
-    deny,
-    requireTopLevelDomain,
-    allowDomainLiteral,
+      type,
+      mode,
+      allow,
+      deny,
+      requireTopLevelDomain,
+      allowDomainLiteral,
 
-    validate(
-      context: ArcjetContext,
-      details: Partial<ArcjetRequestDetails & { email: string }>,
-    ): asserts details is ArcjetRequestDetails & { email: string } {
-      assert(
-        typeof details.email !== "undefined",
-        "ValidateEmail requires `email` to be set.",
-      );
+      validate(context: ArcjetContext, details: ArcjetRequestDetails) {
+        assert(
+          typeof details.email !== "undefined",
+          "ValidateEmail requires `email` to be set.",
+        );
+      },
+
+      async protect(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.stringSliceOrdered("allow", allow),
+          hasher.stringSliceOrdered("deny", deny),
+          hasher.bool("requireTopLevelDomain", requireTopLevelDomain),
+          hasher.bool("allowDomainLiteral", allowDomainLiteral),
+        );
+
+        const { fingerprint } = context;
+
+        // No cache is implemented here because the fingerprint can be the same
+        // while the email changes. This is also why the `email` rule results
+        // always have a `ttl` of 0.
+        // Cast because we know `email` is there after `validate`.
+        const result = await analyze.isValidEmail(
+          context,
+          details.email as string,
+          config,
+        );
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+        if (result.validity === "valid") {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "ALLOW",
+            reason: new ArcjetEmailReason({ emailTypes: [] }),
+          });
+        } else {
+          const typedEmailTypes = result.blocked.filter(isEmailType);
+
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "DENY",
+            reason: new ArcjetEmailReason({
+              emailTypes: typedEmailTypes,
+            }),
+          });
+        }
+      },
     },
-
-    async protect(
-      context: ArcjetContext,
-      { email }: ArcjetRequestDetails & { email: string },
-    ): Promise<ArcjetRuleResult> {
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.stringSliceOrdered("allow", allow),
-        hasher.stringSliceOrdered("deny", deny),
-        hasher.bool("requireTopLevelDomain", requireTopLevelDomain),
-        hasher.bool("allowDomainLiteral", allowDomainLiteral),
-      );
-
-      const { fingerprint } = context;
-
-      // No cache is implemented here because the fingerprint can be the same
-      // while the email changes. This is also why the `email` rule results
-      // always have a `ttl` of 0.
-
-      const result = await analyze.isValidEmail(context, email, config);
-      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-      if (result.validity === "valid") {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "ALLOW",
-          reason: new ArcjetEmailReason({ emailTypes: [] }),
-        });
-      } else {
-        const typedEmailTypes = result.blocked.filter(isEmailType);
-
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "DENY",
-          reason: new ArcjetEmailReason({
-            emailTypes: typedEmailTypes,
-          }),
-        });
-      }
-    },
-  };
-
-  return [rule];
+  ];
 }
 
 /**
@@ -1618,7 +1623,7 @@ export function validateEmail(
  * @link https://docs.arcjet.com/bot-protection/identifying-bots
  * @link https://docs.arcjet.com/bot-protection/reference
  */
-export function detectBot(options: BotOptions): [ArcjetRule] {
+export function detectBot(options: BotOptions): [ArcjetBotRule<{}>] {
   validateBotOptions(options);
 
   if (
@@ -1671,101 +1676,103 @@ export function detectBot(options: BotOptions): [ArcjetRule] {
     };
   }
 
-  const rule: ArcjetBotRule<{}> = {
-    version,
-    priority: Priority.BotDetection,
+  return [
+    {
+      version,
+      priority: Priority.BotDetection,
 
-    type,
-    mode,
-    allow,
-    deny,
+      type,
+      mode,
+      allow,
+      deny,
 
-    validate(
-      context: ArcjetContext,
-      details: Partial<ArcjetRequestDetails>,
-    ): asserts details is ArcjetRequestDetails {
-      if (typeof details.headers === "undefined") {
-        throw new Error("bot detection requires `headers` to be set");
-      }
-      if (typeof details.headers.has !== "function") {
-        throw new Error("bot detection requires `headers` to extend `Headers`");
-      }
-      if (!details.headers.has("user-agent")) {
-        throw new Error("bot detection requires user-agent header");
-      }
+      validate(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): undefined {
+        if (typeof details.headers === "undefined") {
+          throw new Error("bot detection requires `headers` to be set");
+        }
+        if (typeof details.headers.has !== "function") {
+          throw new Error(
+            "bot detection requires `headers` to extend `Headers`",
+          );
+        }
+        if (!details.headers.has("user-agent")) {
+          throw new Error("bot detection requires user-agent header");
+        }
+      },
+
+      /**
+       * Attempts to call the bot detection on the headers.
+       */
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        request: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.stringSliceOrdered("allow", allow),
+          hasher.stringSliceOrdered("deny", deny),
+        );
+
+        const { fingerprint } = context;
+
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            reason: cached.reason,
+          });
+        }
+
+        const result = await analyze.detectBot(
+          context,
+          { ...request, headers: Object.fromEntries(request.headers) },
+          config,
+        );
+
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+
+        // If this is a bot and of a type that we want to block, then block!
+        if (result.denied.length > 0) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 60,
+            state,
+            conclusion: "DENY",
+            reason: new ArcjetBotReason({
+              allowed: result.allowed,
+              denied: result.denied,
+              verified: result.verified,
+              spoofed: result.spoofed,
+            }),
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "ALLOW",
+            reason: new ArcjetBotReason({
+              allowed: result.allowed,
+              denied: result.denied,
+              verified: result.verified,
+              spoofed: result.spoofed,
+            }),
+          });
+        }
+      },
     },
-
-    /**
-     * Attempts to call the bot detection on the headers.
-     */
-    async protect(
-      context: ArcjetContext<CachedResult>,
-      request: ArcjetRequestDetails,
-    ): Promise<ArcjetRuleResult> {
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.stringSliceOrdered("allow", allow),
-        hasher.stringSliceOrdered("deny", deny),
-      );
-
-      const { fingerprint } = context;
-
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached) {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          reason: cached.reason,
-        });
-      }
-
-      const result = await analyze.detectBot(
-        context,
-        { ...request, headers: Object.fromEntries(request.headers) },
-        config,
-      );
-
-      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-
-      // If this is a bot and of a type that we want to block, then block!
-      if (result.denied.length > 0) {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 60,
-          state,
-          conclusion: "DENY",
-          reason: new ArcjetBotReason({
-            allowed: result.allowed,
-            denied: result.denied,
-            verified: result.verified,
-            spoofed: result.spoofed,
-          }),
-        });
-      } else {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "ALLOW",
-          reason: new ArcjetBotReason({
-            allowed: result.allowed,
-            denied: result.denied,
-            verified: result.verified,
-            spoofed: result.spoofed,
-          }),
-        });
-      }
-    },
-  };
-
-  return [rule];
+  ];
 }
 
 export type ShieldOptions = {
@@ -1802,66 +1809,69 @@ export type ShieldOptions = {
  * @link https://docs.arcjet.com/shield/concepts
  * @link https://docs.arcjet.com/shield/reference
  */
-export function shield(options: ShieldOptions): [ArcjetRule] {
+export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
   validateShieldOptions(options);
 
   const type = "SHIELD";
   const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
 
-  const rule: ArcjetShieldRule<{}> = {
-    type,
-    version,
-    priority: Priority.Shield,
-    mode,
-    validate() {},
-    async protect(context: ArcjetContext<CachedResult>, details) {
-      // TODO(#1989): Prefer characteristics defined on rule once available
-      const localCharacteristics = context.characteristics;
+  return [
+    {
+      type,
+      version,
+      priority: Priority.Shield,
+      mode,
+      validate() {},
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        details: ArcjetRequestDetails,
+      ) {
+        // TODO(#1989): Prefer characteristics defined on rule once available
+        const localCharacteristics = context.characteristics;
 
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.stringSliceOrdered("characteristics", localCharacteristics),
-      );
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.stringSliceOrdered("characteristics", localCharacteristics),
+        );
 
-      const analyzeContext = {
-        characteristics: localCharacteristics,
-        log: context.log,
-      };
+        const analyzeContext = {
+          characteristics: localCharacteristics,
+          log: context.log,
+        };
 
-      const fingerprint = await analyze.generateFingerprint(analyzeContext, {
-        ...details,
-        headers: Object.fromEntries(details.headers),
-      });
+        const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+          ...details,
+          headers: Object.fromEntries(details.headers),
+        });
 
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached) {
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            reason: cached.reason,
+          });
+        }
+
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          reason: cached.reason,
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ALLOW",
+          reason: new ArcjetShieldReason({
+            shieldTriggered: false,
+          }),
         });
-      }
-
-      return new ArcjetRuleResult({
-        ruleId,
-        fingerprint,
-        ttl: 0,
-        state: "NOT_RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetShieldReason({
-          shieldTriggered: false,
-        }),
-      });
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
 export type ProtectSignupOptions = {
