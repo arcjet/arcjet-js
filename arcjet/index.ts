@@ -582,6 +582,7 @@ type CachedResult = {
   reason: ArcjetReason;
 };
 
+// TODO(@wooorm-arcjet): fix types to make `type` a discriminating union.
 function isRateLimitRule(rule: ArcjetRule): rule is ArcjetRateLimitRule<{}> {
   return rule.type === "RATE_LIMIT";
 }
@@ -1039,33 +1040,31 @@ export function slidingWindow<
   return [rule];
 }
 
-function protocolSensitiveInfoEntitiesToAnalyze<Custom extends string>(
-  entity: ArcjetSensitiveInfoType | Custom,
-) {
+function protocolSensitiveInfoEntitiesToAnalyze(
+  entity: string,
+): SensitiveInfoEntity {
+  // Handle invalid `entity`.
   if (typeof entity !== "string") {
     throw new Error("invalid entity type");
   }
 
   if (entity === "EMAIL") {
-    return { tag: "email" as const };
+    return { tag: "email" };
   }
 
   if (entity === "PHONE_NUMBER") {
-    return { tag: "phone-number" as const };
+    return { tag: "phone-number" };
   }
 
   if (entity === "IP_ADDRESS") {
-    return { tag: "ip-address" as const };
+    return { tag: "ip-address" };
   }
 
   if (entity === "CREDIT_CARD_NUMBER") {
-    return { tag: "credit-card-number" as const };
+    return { tag: "credit-card-number" };
   }
 
-  return {
-    tag: "custom" as const,
-    val: entity,
-  };
+  return { tag: "custom", val: entity };
 }
 
 function analyzeSensitiveInfoEntitiesToString(
@@ -1269,9 +1268,7 @@ export function sensitiveInfo(options: SensitiveInfoOptions): [ArcjetRule] {
       }
 
       let entitiesTag: "allow" | "deny" = "allow";
-      let entitiesVal: Array<
-        ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>
-      > = [];
+      let entitiesVal: Array<SensitiveInfoEntity> = [];
 
       if (Array.isArray(options.allow)) {
         entitiesTag = "allow";
