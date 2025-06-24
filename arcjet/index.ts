@@ -580,9 +580,9 @@ export type Product<Props extends Record<string, unknown> = {}> =
 // Note: If a user doesn't provide the object literal to our primitives
 // directly, we fallback to no required props. They can opt-in by adding the
 // `as const` suffix to the characteristics array.
-type PropsForCharacteristic<T> =
-  IsStringLiteral<T> extends true
-    ? T extends
+export type CharacteristicProps<Characteristic extends string = string> =
+  IsStringLiteral<Characteristic> extends true
+    ? Characteristic extends
         | "ip.src"
         | "http.host"
         | "http.method"
@@ -591,12 +591,10 @@ type PropsForCharacteristic<T> =
         | `http.request.cookie["${string}"]`
         | `http.request.uri.args["${string}"]`
       ? {}
-      : T extends string
-        ? Record<T, string | number | boolean>
+      : Characteristic extends string
+        ? Record<Characteristic, string | number | boolean>
         : never
     : {};
-export type CharacteristicProps<Characteristic extends string> =
-  PropsForCharacteristic<Characteristic>;
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 
