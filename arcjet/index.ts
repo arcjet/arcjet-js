@@ -517,7 +517,7 @@ const Priority = {
  * @deprecated
  *   Please use `[ArcjetRule<Props>]` or `ArcjetRule<Props>[]` directly.
  */
-export type Primitive<Props extends Record<string, unknown> = {}> = [
+export type Primitive<Props extends Record<string, unknown>> = [
   ArcjetRule<Props>,
 ];
 
@@ -525,7 +525,7 @@ export type Primitive<Props extends Record<string, unknown> = {}> = [
  * @deprecated
  *   Please use `ArcjetRule<Props>[]` directly.
  */
-export type Product<Props extends Record<string, unknown> = {}> =
+export type Product<Props extends Record<string, unknown>> =
   ArcjetRule<Props>[];
 
 // User-defined characteristics alter the required props of an ArcjetRequest
@@ -600,9 +600,7 @@ type CachedResult = {
   reason: ArcjetReason;
 };
 
-function isRateLimitRule<Props extends Record<string, unknown>>(
-  rule: ArcjetRule<Props>,
-): rule is ArcjetRateLimitRule<Props> {
+function isRateLimitRule(rule: ArcjetRule): rule is ArcjetRateLimitRule<{}> {
   return rule.type === "RATE_LIMIT";
 }
 
@@ -2047,7 +2045,7 @@ export interface ArcjetOptions {
  * The Arcjet client provides a public `protect()` method to
  * make a decision about how a request should be handled.
  */
-export interface Arcjet<Props extends Record<string, unknown>> {
+export interface Arcjet<Props> {
   /**
    * Make a decision about how to handle a request. This will analyze the
    * request locally where possible and call the Arcjet decision API.
