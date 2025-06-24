@@ -793,7 +793,7 @@ export interface ArcjetRequestDetails {
   headers: Headers;
   cookies: string;
   query: string;
-  extra: { [key: string]: string };
+  extra: Record<string, string>;
   // TODO: Consider moving email to `extra` map
   email?: string;
 }

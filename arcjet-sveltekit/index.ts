@@ -71,10 +71,6 @@ type WithoutCustomProps = {
   [emptyObjectSymbol]?: never;
 };
 
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 export type RemoteClientOptions = {
   baseUrl?: string;
   timeout?: number;
@@ -145,7 +141,7 @@ export type ArcjetOptions<
  * The ArcjetSvelteKit client provides a public `protect()` method to
  * make a decision about how a SvelteKit request should be handled.
  */
-export interface ArcjetSvelteKit<Props extends PlainObject> {
+export interface ArcjetSvelteKit<Props extends Record<string, unknown>> {
   /**
    * Runs a `RequestEvent` through the configured protections. The request is
    * analyzed and then a decision made on whether to allow, deny, or challenge
@@ -208,7 +204,7 @@ export default function arcjet<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest<Props extends Record<string, unknown>>(
     event: ArcjetSvelteKitRequestEvent,
     props: Props,
   ): ArcjetRequest<Props> {

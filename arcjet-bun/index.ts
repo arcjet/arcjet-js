@@ -73,10 +73,6 @@ type WithoutCustomProps = {
   [emptyObjectSymbol]?: never;
 };
 
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 export type RemoteClientOptions = {
   baseUrl?: string;
   timeout?: number;
@@ -126,7 +122,7 @@ export type ArcjetOptions<
  * The ArcjetBun client provides a public `protect()` method to
  * make a decision about how a Bun.sh request should be handled.
  */
-export interface ArcjetBun<Props extends PlainObject> {
+export interface ArcjetBun<Props extends Record<string, unknown>> {
   /**
    * Runs a request through the configured protections. The request is
    * analyzed and then a decision made on whether to allow, deny, or challenge
@@ -210,7 +206,7 @@ export default function arcjet<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest<Props extends Record<string, unknown>>(
     request: Request,
     props: Props,
   ): ArcjetRequest<Props> {

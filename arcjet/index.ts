@@ -583,19 +583,20 @@ const Priority = {
   EmailValidation: 5,
 };
 
-type PlainObject = { [key: string]: unknown };
-
 /**
  * @deprecated
  *   Please use `[ArcjetRule<Props>]` or `ArcjetRule<Props>[]` directly.
  */
-export type Primitive<Props extends PlainObject = {}> = [ArcjetRule<Props>];
+export type Primitive<Props extends Record<string, unknown> = {}> = [
+  ArcjetRule<Props>,
+];
 
 /**
  * @deprecated
  *   Please use `ArcjetRule<Props>[]` directly.
  */
-export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
+export type Product<Props extends Record<string, unknown> = {}> =
+  ArcjetRule<Props>[];
 
 // User-defined characteristics alter the required props of an ArcjetRequest
 // Note: If a user doesn't provide the object literal to our primitives
@@ -652,26 +653,23 @@ export type ArcjetAdapterContext = {
  * @property {string} email - An email address related to the request.
  * @property ...extra - Extra data that might be useful for Arcjet. For example, requested tokens are specified as the `requested` property.
  */
-export type ArcjetRequest<Props extends PlainObject> = Simplify<
-  {
-    [key: string]: unknown;
-    ip?: string;
-    method?: string;
-    protocol?: string;
-    host?: string;
-    path?: string;
-    headers?: Headers | Record<string, string | string[] | undefined>;
-    cookies?: string;
-    query?: string;
-  } & Props
->;
+export type ArcjetRequest<Props extends Record<string, unknown>> = Props & {
+  ip?: string;
+  method?: string;
+  protocol?: string;
+  host?: string;
+  path?: string;
+  headers?: Headers | Record<string, string | string[] | undefined>;
+  cookies?: string;
+  query?: string;
+};
 
 type CachedResult = {
   conclusion: ArcjetConclusion;
   reason: ArcjetReason;
 };
 
-function isRateLimitRule<Props extends PlainObject>(
+function isRateLimitRule<Props extends Record<string, unknown>>(
   rule: ArcjetRule<Props>,
 ): rule is ArcjetRateLimitRule<Props> {
   return rule.type === "RATE_LIMIT";
@@ -2117,7 +2115,7 @@ export interface ArcjetOptions<
  * The Arcjet client provides a public `protect()` method to
  * make a decision about how a request should be handled.
  */
-export interface Arcjet<Props extends PlainObject> {
+export interface Arcjet<Props extends Record<string, unknown>> {
   /**
    * Make a decision about how to handle a request. This will analyze the
    * request locally where possible and call the Arcjet decision API.
@@ -2189,7 +2187,7 @@ export default function arcjet<
     .flat(1)
     .sort((a, b) => a.priority - b.priority);
 
-  async function protect<Props extends PlainObject>(
+  async function protect<Props extends Record<string, unknown>>(
     rules: ArcjetRule[],
     ctx: ArcjetAdapterContext,
     request: ArcjetRequest<Props>,

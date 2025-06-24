@@ -93,10 +93,6 @@ type WithoutCustomProps = {
   [emptyObjectSymbol]?: never;
 };
 
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 export type RemoteClientOptions = {
   baseUrl?: string;
   timeout?: number;
@@ -154,7 +150,7 @@ export interface ArcjetNextRequest {
           [string, { name: string; value: string }]
         >;
       }
-    | Partial<{ [key: string]: string }>;
+    | Record<string, string>;
 
   clone?: () => Request;
   body?: unknown;
@@ -209,7 +205,7 @@ export type ArcjetOptions<
  * The ArcjetNext client provides a public `protect()` method to
  * make a decision about how a Next.js request should be handled.
  */
-export interface ArcjetNext<Props extends PlainObject> {
+export interface ArcjetNext<Props extends Record<string, unknown>> {
   /**
    * Makes a decision about the provided request using your configured rules.
    *
@@ -428,7 +424,7 @@ export default function arcjet<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest<Props extends Record<string, unknown>>(
     request: ArcjetNextRequest,
     props: Props,
   ): ArcjetRequest<Props> {
@@ -500,7 +496,7 @@ export default function arcjet<
     }
     const cookies = cookiesToString(request.cookies);
 
-    const extra: { [key: string]: string } = {};
+    const extra: Record<string, string> = {};
 
     // If we're running on Vercel, we can add some extra information
     if (process.env["VERCEL"]) {

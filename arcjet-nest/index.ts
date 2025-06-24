@@ -87,10 +87,6 @@ type WithoutCustomProps = {
   [emptyObjectSymbol]?: never;
 };
 
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 export type RemoteClientOptions = {
   baseUrl?: string;
   timeout?: number;
@@ -176,7 +172,7 @@ export type ArcjetOptions<
  * The ArcjetNest client provides a public `protect()` method to
  * make a decision about how a NestJS request should be handled.
  */
-export interface ArcjetNest<Props extends PlainObject = {}> {
+export interface ArcjetNest<Props extends Record<string, unknown> = {}> {
   /**
    * Runs a request through the configured protections. The request is
    * analyzed and then a decision made on whether to allow, deny, or challenge
@@ -231,7 +227,7 @@ function arcjet<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest<Props extends Record<string, unknown>>(
     request: ArcjetNestRequest,
     props: Props,
   ): ArcjetRequest<Props> {
