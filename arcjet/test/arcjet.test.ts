@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
+import type { Simplify } from "type-fest";
 
 import type { ArcjetRule, Arcjet } from "../index.js";
 import arcjet, {
@@ -59,8 +60,11 @@ type IsEqual<A, B> =
 type Assert<T extends true> = T;
 type Props<P extends ArcjetRule[]> =
   P extends Array<ArcjetRule<infer Props>> ? Props : never;
-type RuleProps<P extends ArcjetRule[], E> = IsEqual<Props<P>, E>;
-type SDKProps<SDK, E> = IsEqual<SDK extends Arcjet<infer P> ? P : never, E>;
+type RuleProps<P extends ArcjetRule[], E> = IsEqual<Simplify<Props<P>>, E>;
+type SDKProps<SDK, E> = IsEqual<
+  SDK extends Arcjet<infer P> ? Simplify<P> : never,
+  E
+>;
 
 // In Node 18,
 // instances of `Headers` contain symbols that may be different depending on if

@@ -4,7 +4,6 @@ import type {
   ArcjetOptions as CoreOptions,
   ArcjetRule,
   ArcjetRequest,
-  ExtraProps,
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
@@ -41,8 +40,6 @@ function errorMessage(err: unknown): string {
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
 //
-// Simplify:
-// https://github.com/sindresorhus/type-fest/blob/964466c9d59c711da57a5297ad954c13132a0001/source/simplify.d.ts
 // EmptyObject:
 // https://github.com/sindresorhus/type-fest/blob/b9723d4785f01f8d2487c09ee5871a1f615781aa/source/empty-object.d.ts
 //
@@ -65,7 +62,6 @@ function errorMessage(err: unknown): string {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 declare const emptyObjectSymbol: unique symbol;
 type WithoutCustomProps = {
   [emptyObjectSymbol]?: never;
@@ -127,15 +123,13 @@ function cookiesToString(
 export type ArcjetOptions<
   Rule extends ArcjetRule<{}>,
   Characteristic extends string,
-> = Simplify<
-  CoreOptions<Rule, Characteristic> & {
-    /**
-     * One or more IP Address of trusted proxies in front of the application.
-     * These addresses will be excluded when Arcjet detects a public IP address.
-     */
-    proxies?: Array<string>;
-  }
->;
+> = CoreOptions<Rule, Characteristic> & {
+  /**
+   * One or more IP Address of trusted proxies in front of the application.
+   * These addresses will be excluded when Arcjet detects a public IP address.
+   */
+  proxies?: Array<string>;
+};
 
 /**
  * The ArcjetSvelteKit client provides a public `protect()` method to
@@ -167,7 +161,7 @@ export interface ArcjetSvelteKit<Props extends Record<string, unknown>> {
    */
   withRule<Rule extends ArcjetRule<{}>>(
     rules: ReadonlyArray<Rule>,
-  ): ArcjetSvelteKit<Simplify<Props & ExtraProps<Rule>>>;
+  ): ArcjetSvelteKit<Props & (Rule extends ArcjetRule<infer T> ? T : {})>;
 }
 
 /**
@@ -184,7 +178,8 @@ export default function arcjet<
 >(
   options: ArcjetOptions<Rule, Characteristic>,
 ): ArcjetSvelteKit<
-  Simplify<ExtraProps<Rule> & CharacteristicProps<Characteristic>>
+  (Rule extends ArcjetRule<infer T> ? T : {}) &
+    CharacteristicProps<Characteristic>
 > {
   const client = options.client ?? createRemoteClient();
 
@@ -251,8 +246,8 @@ export default function arcjet<
   }
 
   function withClient<const Rule extends ArcjetRule<{}>>(
-    aj: Arcjet<ExtraProps<Rule>>,
-  ): ArcjetSvelteKit<ExtraProps<Rule>> {
+    aj: Arcjet<Rule extends ArcjetRule<infer T> ? T : {}>,
+  ): ArcjetSvelteKit<Rule extends ArcjetRule<infer T> ? T : {}> {
     return Object.freeze({
       withRule(rules: ReadonlyArray<ArcjetRule<{}>>) {
         const client = aj.withRule(rules);
@@ -260,15 +255,17 @@ export default function arcjet<
       },
       async protect(
         request: ArcjetSvelteKitRequestEvent,
-        ...[props]: ExtraProps<Rule> extends WithoutCustomProps
+        ...[props]: (
+          Rule extends ArcjetRule<infer T> ? T : {}
+        ) extends WithoutCustomProps
           ? []
-          : [ExtraProps<Rule>]
+          : [Rule extends ArcjetRule<infer T> ? T : {}]
       ): Promise<ArcjetDecision> {
         // TODO(#220): The generic manipulations get really mad here, so we cast
         // Further investigation makes it seem like it has something to do with
         // the definition of `props` in the signature but it's hard to track down
         const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-          ExtraProps<Rule>
+          Rule extends ArcjetRule<infer T> ? T : {}
         >;
 
         const getBody = async () => {

@@ -75,8 +75,6 @@ function errorMessage(err: unknown): string {
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
 //
-// Simplify:
-// https://github.com/sindresorhus/type-fest/blob/964466c9d59c711da57a5297ad954c13132a0001/source/simplify.d.ts
 // UnionToIntersection:
 // https://github.com/sindresorhus/type-fest/blob/017bf38ebb52df37c297324d97bcc693ec22e920/source/union-to-intersection.d.ts
 // IsNever:
@@ -103,7 +101,6 @@ function errorMessage(err: unknown): string {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 type UnionToIntersection<Union> =
   // `extends unknown` is always going to be the case and is used to convert the
   // `Union` into a [distributive conditional
@@ -621,8 +618,11 @@ export type CharacteristicProps<Characteristic extends string> =
   UnionToIntersection<PropsForCharacteristic<Characteristic>>;
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
-// We theoretically support an arbitrary amount of rule flattening,
-// but one level seems to be easiest.
+
+/**
+ * @deprecated
+ *   Please use `T extends ArcjetRule<infer P> ? P : {}` directly.
+ */
 export type ExtraProps<T> = T extends ArcjetRule[]
   ? UnionToIntersection<PropsForRule<T[number]>>
   : T extends ArcjetRule
@@ -736,10 +736,8 @@ export function tokenBucket<const Characteristic extends string = string>(
   options: TokenBucketRateLimitOptions<Characteristic>,
 ): [
   ArcjetRule<
-    Simplify<
-      UnionToIntersection<
-        { requested: number } | CharacteristicProps<Characteristic>
-      >
+    UnionToIntersection<
+      { requested: number } | CharacteristicProps<Characteristic>
     >
   >,
 ] {
@@ -894,7 +892,7 @@ export function tokenBucket<const Characteristic extends string = string>(
  */
 export function fixedWindow<const Characteristic extends string = string>(
   options: FixedWindowRateLimitOptions<Characteristic>,
-): [ArcjetRule<Simplify<CharacteristicProps<Characteristic>>>] {
+): [ArcjetRule<CharacteristicProps<Characteristic>>] {
   validateFixedWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -1033,7 +1031,7 @@ export function fixedWindow<const Characteristic extends string = string>(
  */
 export function slidingWindow<const Characteristic extends string = string>(
   options: SlidingWindowRateLimitOptions<Characteristic>,
-): [ArcjetRule<Simplify<CharacteristicProps<Characteristic>>>] {
+): [ArcjetRule<CharacteristicProps<Characteristic>>] {
   validateSlidingWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -1273,7 +1271,7 @@ export function sensitiveInfo<
   const CustomEntities extends string,
 >(
   options: SensitiveInfoOptions<Detect>,
-): [ArcjetRule<Simplify<CharacteristicProps<string>>>] {
+): [ArcjetRule<CharacteristicProps<string>>] {
   validateSensitiveInfoOptions(options);
 
   if (
@@ -2070,11 +2068,7 @@ export function protectSignup<Characteristic extends string = string>(
   options: ProtectSignupOptions<Characteristic>,
 ): Array<
   ArcjetRule<
-    Simplify<
-      UnionToIntersection<
-        { email: string } | CharacteristicProps<Characteristic>
-      >
-    >
+    UnionToIntersection<{ email: string } | CharacteristicProps<Characteristic>>
   >
 > {
   return [
@@ -2138,7 +2132,7 @@ export interface Arcjet<Props extends Record<string, unknown>> {
    */
   withRule<Rule extends ArcjetRule<{}>>(
     rules: ReadonlyArray<Rule>,
-  ): Arcjet<Simplify<Props & UnionToIntersection<PropsForRule<Rule>>>>;
+  ): Arcjet<Props & UnionToIntersection<PropsForRule<Rule>>>;
 }
 
 /**
@@ -2152,10 +2146,8 @@ export default function arcjet<
 >(
   options: ArcjetOptions<Rule, Characteristic>,
 ): Arcjet<
-  Simplify<
-    UnionToIntersection<PropsForRule<Array<Rule>>> &
-      CharacteristicProps<Characteristic>
-  >
+  UnionToIntersection<PropsForRule<Array<Rule>>> &
+    CharacteristicProps<Characteristic>
 > {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
