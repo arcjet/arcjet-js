@@ -147,7 +147,7 @@ type IntegrationRule =
       // TODO: This only supports serializable options, so no custom detect
       // functions are supported but maybe they could be supported via a module
       // import
-      options?: SensitiveInfoOptions<never>;
+      options?: SensitiveInfoOptions;
     }
   | {
       type: "fixedWindow";
@@ -286,7 +286,7 @@ export function validateEmail(options?: EmailOptions) {
   return { type: "email", options } as const;
 }
 
-export function sensitiveInfo(options?: SensitiveInfoOptions<never>) {
+export function sensitiveInfo(options?: SensitiveInfoOptions) {
   return { type: "sensitiveInfo", options } as const;
 }
 

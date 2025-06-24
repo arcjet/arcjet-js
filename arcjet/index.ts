@@ -467,43 +467,25 @@ export type EmailOptions =
   | EmailOptionsDeny
   | EmailOptionsBlock;
 
-type DetectSensitiveInfoEntities<T> = (
-  tokens: string[],
-) => Array<ArcjetSensitiveInfoType | T | undefined>;
-
-type ValidEntities<Detect> = Array<
-  // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/
-  // Conditional types distribute over unions. If you have ((string | undefined)
-  // extends undefined ? 1 : 0) it is evaluated separately for each member of
-  // the union, then union-ed together again. The result is (string extends
-  // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
-  // to 0 | 1
-  undefined extends Detect
-    ? ArcjetSensitiveInfoType
-    : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
-      ? ArcjetSensitiveInfoType | CustomEntities
-      : never
->;
-
-export type SensitiveInfoOptionsAllow<Detect> = {
-  allow: ValidEntities<Detect>;
+export type SensitiveInfoOptionsAllow = {
+  allow: Array<ArcjetSensitiveInfoType | (string & {})>;
   deny?: never;
   contextWindowSize?: number;
   mode?: ArcjetMode;
-  detect?: Detect;
+  detect?(tokens: ReadonlyArray<string>): Array<string | undefined>;
 };
 
-export type SensitiveInfoOptionsDeny<Detect> = {
+export type SensitiveInfoOptionsDeny = {
   allow?: never;
-  deny: ValidEntities<Detect>;
+  deny: Array<ArcjetSensitiveInfoType | (string & {})>;
   contextWindowSize?: number;
   mode?: ArcjetMode;
-  detect?: Detect;
+  detect?(tokens: ReadonlyArray<string>): Array<string | undefined>;
 };
 
-export type SensitiveInfoOptions<Detect> =
-  | SensitiveInfoOptionsAllow<Detect>
-  | SensitiveInfoOptionsDeny<Detect>;
+export type SensitiveInfoOptions =
+  | SensitiveInfoOptionsAllow
+  | SensitiveInfoOptionsDeny;
 
 const Priority = {
   SensitiveInfo: 1,
@@ -1205,10 +1187,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * @link https://docs.arcjet.com/sensitive-info/concepts
  * @link https://docs.arcjet.com/sensitive-info/reference
  */
-export function sensitiveInfo<
-  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
-  const CustomEntities extends string,
->(options: SensitiveInfoOptions<Detect>): [ArcjetRule] {
+export function sensitiveInfo(options: SensitiveInfoOptions): [ArcjetRule] {
   validateSensitiveInfoOptions(options);
 
   if (
