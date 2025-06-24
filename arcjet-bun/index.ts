@@ -101,16 +101,14 @@ export function createRemoteClient(options?: RemoteClientOptions) {
 /**
  * The options used to configure an {@link ArcjetBun} client.
  */
-export type ArcjetOptions<
-  Rule extends ArcjetRule,
-  Characteristic extends string,
-> = CoreOptions<Rule, Characteristic> & {
-  /**
-   * One or more IP Address of trusted proxies in front of the application.
-   * These addresses will be excluded when Arcjet detects a public IP address.
-   */
-  proxies?: Array<string>;
-};
+export type ArcjetOptions<Characteristic extends string> =
+  CoreOptions<Characteristic> & {
+    /**
+     * One or more IP Address of trusted proxies in front of the application.
+     * These addresses will be excluded when Arcjet detects a public IP address.
+     */
+    proxies?: Array<string>;
+  };
 
 /**
  * The ArcjetBun client provides a public `protect()` method to
@@ -171,15 +169,9 @@ export interface ArcjetBun<Props extends Record<string, unknown>> {
  *
  * @param options - Arcjet configuration options to apply to all requests.
  */
-export default function arcjet<
-  const Rule extends ArcjetRule,
-  const Characteristic extends string,
->(
-  options: ArcjetOptions<Rule, Characteristic>,
-): ArcjetBun<
-  (Rule extends ArcjetRule<infer T> ? T : {}) &
-    CharacteristicProps<Characteristic>
-> {
+export default function arcjet<const Characteristic extends string>(
+  options: ArcjetOptions<Characteristic>,
+): ArcjetBun<CharacteristicProps<Characteristic>> {
   const client = options.client ?? createRemoteClient();
 
   // Assuming the `handler()` function was used around Bun's fetch handler this

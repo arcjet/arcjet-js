@@ -1994,10 +1994,7 @@ export function protectSignup<Characteristic extends string>(
   ];
 }
 
-export interface ArcjetOptions<
-  Rule extends ArcjetRule,
-  Characteristic extends string,
-> {
+export interface ArcjetOptions<Characteristic extends string> {
   /**
    * The API key to identify the site in Arcjet.
    */
@@ -2005,7 +2002,7 @@ export interface ArcjetOptions<
   /**
    * Rules to apply when protecting a request.
    */
-  rules: ReadonlyArray<ReadonlyArray<Rule>>;
+  rules: ReadonlyArray<ReadonlyArray<ArcjetRule>>;
   /**
    * Characteristics to be used to uniquely identify clients.
    */
@@ -2056,15 +2053,9 @@ export interface Arcjet<Props extends Record<string, unknown>> {
  *
  * @param options {ArcjetOptions} Arcjet configuration options.
  */
-export default function arcjet<
-  const Rule extends ArcjetRule,
-  const Characteristic extends string,
->(
-  options: ArcjetOptions<Rule, Characteristic>,
-): Arcjet<
-  (Rule extends ArcjetRule<infer Props> ? Props : {}) &
-    CharacteristicProps<Characteristic>
-> {
+export default function arcjet<const Characteristic extends string>(
+  options: ArcjetOptions<Characteristic>,
+): Arcjet<CharacteristicProps<Characteristic>> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
 

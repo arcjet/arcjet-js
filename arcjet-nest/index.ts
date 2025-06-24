@@ -151,16 +151,14 @@ function cookiesToString(cookies: string | string[] | undefined): string {
 /**
  * The options used to configure an {@link ArcjetNest} client.
  */
-export type ArcjetOptions<
-  Rule extends ArcjetRule,
-  Characteristic extends string,
-> = CoreOptions<Rule, Characteristic> & {
-  /**
-   * One or more IP Address of trusted proxies in front of the application.
-   * These addresses will be excluded when Arcjet detects a public IP address.
-   */
-  proxies?: Array<string>;
-};
+export type ArcjetOptions<Characteristic extends string> =
+  CoreOptions<Characteristic> & {
+    /**
+     * One or more IP Address of trusted proxies in front of the application.
+     * These addresses will be excluded when Arcjet detects a public IP address.
+     */
+    proxies?: Array<string>;
+  };
 
 /**
  * The ArcjetNest client provides a public `protect()` method to
@@ -195,15 +193,9 @@ export interface ArcjetNest<Props extends Record<string, unknown> = {}> {
   ): ArcjetNest<Props & (Rule extends ArcjetRule<infer T> ? T : {})>;
 }
 
-function arcjet<
-  const Rule extends ArcjetRule,
-  const Characteristic extends string,
->(
-  options: ArcjetOptions<Rule, Characteristic>,
-): ArcjetNest<
-  (Rule extends ArcjetRule<infer T> ? T : {}) &
-    CharacteristicProps<Characteristic>
-> {
+function arcjet<const Characteristic extends string>(
+  options: ArcjetOptions<Characteristic>,
+): ArcjetNest<CharacteristicProps<Characteristic>> {
   const client = options.client ?? createRemoteClient();
 
   const log = options.log
@@ -481,13 +473,13 @@ export class ArcjetModule {
     const Rule extends ArcjetRule,
     const Characteristic extends string,
   >(
-    options: ArcjetOptions<Rule, Characteristic> & {
+    options: ArcjetOptions<Characteristic> & {
       isGlobal?: boolean | undefined;
     },
   ): DynamicModule {
     const ArcjetProvider = {
       provide: ARCJET,
-      useFactory(options: ArcjetOptions<Rule, Characteristic>) {
+      useFactory(options: ArcjetOptions<Characteristic>) {
         return arcjet(options);
       },
       inject: [ARCJET_OPTIONS],
@@ -510,13 +502,13 @@ export class ArcjetModule {
     const Rule extends ArcjetRule,
     const Characteristic extends string,
   >(
-    options: ConfigurableModuleAsyncOptions<
-      ArcjetOptions<Rule, Characteristic>
-    > & { isGlobal?: boolean | undefined },
+    options: ConfigurableModuleAsyncOptions<ArcjetOptions<Characteristic>> & {
+      isGlobal?: boolean | undefined;
+    },
   ): DynamicModule {
     const ArcjetProvider = {
       provide: ARCJET,
-      useFactory(options: ArcjetOptions<Rule, Characteristic>) {
+      useFactory(options: ArcjetOptions<Characteristic>) {
         return arcjet(options);
       },
       inject: [ARCJET_OPTIONS],

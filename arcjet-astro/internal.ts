@@ -123,16 +123,14 @@ export function createRemoteClient(options?: RemoteClientOptions) {
 /**
  * The options used to configure an {@link ArcjetAstro} client.
  */
-export type ArcjetOptions<
-  Rule extends ArcjetRule,
-  Characteristic extends string,
-> = CoreOptions<Rule, Characteristic> & {
-  /**
-   * One or more IP Address of trusted proxies in front of the application.
-   * These addresses will be excluded when Arcjet detects a public IP address.
-   */
-  proxies?: Array<string>;
-};
+export type ArcjetOptions<Characteristic extends string> =
+  CoreOptions<Characteristic> & {
+    /**
+     * One or more IP Address of trusted proxies in front of the application.
+     * These addresses will be excluded when Arcjet detects a public IP address.
+     */
+    proxies?: Array<string>;
+  };
 
 /**
  * The ArcjetAstro client provides a public `protect()` method to
@@ -175,15 +173,9 @@ export interface ArcjetAstro<Props extends Record<string, unknown>> {
  *
  * @param options - Arcjet configuration options to apply to all requests.
  */
-export function createArcjetClient<
-  const Rule extends ArcjetRule,
-  const Characteristic extends string,
->(
-  options: ArcjetOptions<Rule, Characteristic>,
-): ArcjetAstro<
-  (Rule extends ArcjetRule<infer T> ? T : {}) &
-    CharacteristicProps<Characteristic>
-> {
+export function createArcjetClient<const Characteristic extends string>(
+  options: ArcjetOptions<Characteristic>,
+): ArcjetAstro<CharacteristicProps<Characteristic>> {
   const client = options.client ?? createRemoteClient();
 
   const log = options.log
