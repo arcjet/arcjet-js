@@ -103,7 +103,8 @@ export function createClient(options: ClientOptions): Client {
           cookies: details.cookies,
           query: details.query,
           extra: details.extra,
-          email: details.email,
+          // Note: `email` is passed to `protect` and dynamic, hence the extra check.
+          email: typeof details.email === "string" ? details.email : undefined,
         },
         rules: protoRules,
       });
@@ -159,7 +160,8 @@ export function createClient(options: ClientOptions): Client {
           cookies: details.cookies,
           query: details.query,
           extra: details.extra,
-          email: details.email,
+          // Note: `email` is passed to `protect` and dynamic, hence the extra check.
+          email: typeof details.email === "string" ? details.email : undefined,
         },
         decision: ArcjetDecisionToProtocol(decision),
         rules: rules.map(ArcjetRuleToProtocol),
