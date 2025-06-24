@@ -251,7 +251,6 @@ test("createClient", async (t) => {
             assert.equal(calls, 0);
             calls++;
 
-            // TODO(@wooorm-arcjet): is it intentional that this is an *empty* rule, not like `rule` at all?
             assert.deepEqual(decideRequest.rules, [new Rule()]);
 
             return new DecideResponse({
@@ -683,7 +682,6 @@ test("createClient", async (t) => {
                 assert.equal(calls, 0);
                 calls++;
 
-                // TODO(@wooorm-arcjet): is it intentional that this is an *empty* rule, not like `rule` at all?
                 assert.deepEqual(reportRequest.rules, [new Rule()]);
                 assert.ok(typeof reportRequest.decision === "object");
                 assert.equal(
