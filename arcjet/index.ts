@@ -72,54 +72,6 @@ function errorMessage(err: unknown): string {
   return "Unknown problem";
 }
 
-// Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
-// our use.
-//
-// IsNever:
-// https://github.com/sindresorhus/type-fest/blob/e02f228f6391bb2b26c32a55dfe1e3aa2386d515/source/primitive.d.ts
-// LiteralCheck & IsStringLiteral:
-// https://github.com/sindresorhus/type-fest/blob/e02f228f6391bb2b26c32a55dfe1e3aa2386d515/source/is-literal.d.ts
-//
-// Licensed: MIT License Copyright (c) Sindre Sorhus <sindresorhus@gmail.com>
-// (https://sindresorhus.com)
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions: The above copyright
-// notice and this permission notice shall be included in all copies or
-// substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-type IsNever<T> = [T] extends [never] ? true : false;
-type LiteralCheck<
-  T,
-  LiteralType extends
-    | null
-    | undefined
-    | string
-    | number
-    | boolean
-    | symbol
-    | bigint,
-> =
-  IsNever<T> extends false // Must be wider than `never`
-    ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
-      ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
-        ? false
-        : true
-      : false
-    : false;
-type IsStringLiteral<T> = LiteralCheck<T, string>;
-
 /**
  * List of known fields.
  */
@@ -581,20 +533,21 @@ export type Product<Props extends Record<string, unknown> = {}> =
 // directly, we fallback to no required props. They can opt-in by adding the
 // `as const` suffix to the characteristics array.
 export type CharacteristicProps<Characteristic extends string> =
-  IsStringLiteral<Characteristic> extends true
-    ? Characteristic extends
-        | "ip.src"
-        | "http.host"
-        | "http.method"
-        | "http.request.uri.path"
-        | `http.request.headers["${string}"]`
-        | `http.request.cookie["${string}"]`
-        | `http.request.uri.args["${string}"]`
-      ? {}
-      : Characteristic extends string
-        ? Record<Characteristic, string | number | boolean>
-        : never
-    : {};
+  // Ignore the wide `string` itself, only allow narrower unions.
+  [string] extends [Characteristic]
+    ? {}
+    : {
+        [K in Characteristic extends  // Ignore these fields:
+          | "ip.src"
+          | "http.host"
+          | "http.method"
+          | "http.request.uri.path"
+          | `http.request.headers["${string}"]`
+          | `http.request.cookie["${string}"]`
+          | `http.request.uri.args["${string}"]`
+          ? never
+          : Characteristic]: string | number | boolean;
+      };
 
 /**
  * @deprecated
