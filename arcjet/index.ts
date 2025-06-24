@@ -75,8 +75,6 @@ function errorMessage(err: unknown): string {
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
 //
-// UnionToIntersection:
-// https://github.com/sindresorhus/type-fest/blob/017bf38ebb52df37c297324d97bcc693ec22e920/source/union-to-intersection.d.ts
 // IsNever:
 // https://github.com/sindresorhus/type-fest/blob/e02f228f6391bb2b26c32a55dfe1e3aa2386d515/source/primitive.d.ts
 // LiteralCheck & IsStringLiteral:
@@ -101,23 +99,6 @@ function errorMessage(err: unknown): string {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-type UnionToIntersection<Union> =
-  // `extends unknown` is always going to be the case and is used to convert the
-  // `Union` into a [distributive conditional
-  // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
-  (
-    Union extends unknown
-      ? // The union type is used as the only argument to a function since the union
-        // of function arguments is an intersection.
-        (distributedUnion: Union) => void
-      : // This won't happen.
-        never
-  ) extends // Infer the `Intersection` type since TypeScript represents the positional
-  // arguments of unions of functions as an intersection of the union.
-  (mergedIntersection: infer Intersection) => void
-    ? // The `& Union` is to allow indexing by the resulting type
-      Intersection & Union
-    : never;
 type IsNever<T> = [T] extends [never] ? true : false;
 type LiteralCheck<
   T,
@@ -615,7 +596,7 @@ type PropsForCharacteristic<T> =
         : never
     : {};
 export type CharacteristicProps<Characteristic extends string> =
-  UnionToIntersection<PropsForCharacteristic<Characteristic>>;
+  PropsForCharacteristic<Characteristic>;
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 
@@ -624,9 +605,9 @@ type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
  *   Please use `T extends ArcjetRule<infer P> ? P : {}` directly.
  */
 export type ExtraProps<T> = T extends ArcjetRule[]
-  ? UnionToIntersection<PropsForRule<T[number]>>
+  ? PropsForRule<T[number]>
   : T extends ArcjetRule
-    ? UnionToIntersection<PropsForRule<T>>
+    ? PropsForRule<T>
     : never;
 
 /**
@@ -734,13 +715,7 @@ function isRateLimitRule<Props extends Record<string, unknown>>(
  */
 export function tokenBucket<const Characteristic extends string = string>(
   options: TokenBucketRateLimitOptions<Characteristic>,
-): [
-  ArcjetRule<
-    UnionToIntersection<
-      { requested: number } | CharacteristicProps<Characteristic>
-    >
-  >,
-] {
+): [ArcjetRule<{ requested: number } & CharacteristicProps<Characteristic>>] {
   validateTokenBucketOptions(options);
 
   const type = "RATE_LIMIT";
@@ -755,9 +730,7 @@ export function tokenBucket<const Characteristic extends string = string>(
   const capacity = options.capacity;
 
   const rule: ArcjetTokenBucketRateLimitRule<
-    UnionToIntersection<
-      { requested: number } | CharacteristicProps<Characteristic>
-    >
+    { requested: number } & CharacteristicProps<Characteristic>
   > = {
     type,
     version,
@@ -2066,11 +2039,7 @@ export type ProtectSignupOptions<Characteristic extends string> = {
  */
 export function protectSignup<Characteristic extends string = string>(
   options: ProtectSignupOptions<Characteristic>,
-): Array<
-  ArcjetRule<
-    UnionToIntersection<{ email: string } | CharacteristicProps<Characteristic>>
-  >
-> {
+): Array<ArcjetRule<{ email: string } & CharacteristicProps<Characteristic>>> {
   return [
     ...slidingWindow(options.rateLimit),
     ...detectBot(options.bots),
@@ -2132,7 +2101,7 @@ export interface Arcjet<Props extends Record<string, unknown>> {
    */
   withRule<Rule extends ArcjetRule<{}>>(
     rules: ReadonlyArray<Rule>,
-  ): Arcjet<Props & UnionToIntersection<PropsForRule<Rule>>>;
+  ): Arcjet<Props & PropsForRule<Rule>>;
 }
 
 /**
@@ -2145,10 +2114,7 @@ export default function arcjet<
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
-): Arcjet<
-  UnionToIntersection<PropsForRule<Array<Rule>>> &
-    CharacteristicProps<Characteristic>
-> {
+): Arcjet<PropsForRule<Array<Rule>> & CharacteristicProps<Characteristic>> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
 
