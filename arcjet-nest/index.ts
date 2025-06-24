@@ -152,7 +152,7 @@ function cookiesToString(cookies: string | string[] | undefined): string {
  * The options used to configure an {@link ArcjetNest} client.
  */
 export type ArcjetOptions<
-  Rule extends ArcjetRule<{}>,
+  Rule extends ArcjetRule,
   Characteristic extends string,
 > = CoreOptions<Rule, Characteristic> & {
   /**
@@ -190,13 +190,13 @@ export interface ArcjetNest<Props extends Record<string, unknown> = {}> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link ArcjetNest} client.
    */
-  withRule<Rule extends ArcjetRule<{}>>(
+  withRule<Rule extends ArcjetRule>(
     rules: ReadonlyArray<Rule>,
   ): ArcjetNest<Props & (Rule extends ArcjetRule<infer T> ? T : {})>;
 }
 
 function arcjet<
-  const Rule extends ArcjetRule<{}>,
+  const Rule extends ArcjetRule,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -317,11 +317,11 @@ function arcjet<
     };
   }
 
-  function withClient<const Rule extends ArcjetRule<{}>>(
+  function withClient<const Rule extends ArcjetRule>(
     aj: Arcjet<Rule extends ArcjetRule<infer T> ? T : {}>,
   ): ArcjetNest<Rule extends ArcjetRule<infer T> ? T : {}> {
     return Object.freeze({
-      withRule(rules: ReadonlyArray<ArcjetRule<{}>>) {
+      withRule(rules: ReadonlyArray<ArcjetRule>) {
         const client = aj.withRule(rules);
         return withClient(client);
       },
@@ -478,7 +478,7 @@ export { ArcjetGuard };
 
 export class ArcjetModule {
   static forRoot<
-    const Rule extends ArcjetRule<{}>,
+    const Rule extends ArcjetRule,
     const Characteristic extends string,
   >(
     options: ArcjetOptions<Rule, Characteristic> & {
@@ -507,7 +507,7 @@ export class ArcjetModule {
     };
   }
   static forRootAsync<
-    const Rule extends ArcjetRule<{}>,
+    const Rule extends ArcjetRule,
     const Characteristic extends string,
   >(
     options: ConfigurableModuleAsyncOptions<
@@ -575,7 +575,7 @@ export class ArcjetModule {
 }
 
 export function WithArcjetRules(
-  rules: ReadonlyArray<ReadonlyArray<ArcjetRule<{}>>>,
+  rules: ReadonlyArray<ReadonlyArray<ArcjetRule>>,
 ) {
   return SetMetadata(ARCJET_WITH_RULES, rules);
 }

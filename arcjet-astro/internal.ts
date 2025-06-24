@@ -124,7 +124,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
  * The options used to configure an {@link ArcjetAstro} client.
  */
 export type ArcjetOptions<
-  Rule extends ArcjetRule<{}>,
+  Rule extends ArcjetRule,
   Characteristic extends string,
 > = CoreOptions<Rule, Characteristic> & {
   /**
@@ -162,7 +162,7 @@ export interface ArcjetAstro<Props extends Record<string, unknown>> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link ArcjetAstro} client.
    */
-  withRule<Rule extends ArcjetRule<{}>>(
+  withRule<Rule extends ArcjetRule>(
     rules: ReadonlyArray<Rule>,
   ): ArcjetAstro<Props & (Rule extends ArcjetRule<infer T> ? T : {})>;
 }
@@ -176,7 +176,7 @@ export interface ArcjetAstro<Props extends Record<string, unknown>> {
  * @param options - Arcjet configuration options to apply to all requests.
  */
 export function createArcjetClient<
-  const Rule extends ArcjetRule<{}>,
+  const Rule extends ArcjetRule,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -249,11 +249,11 @@ export function createArcjetClient<
     };
   }
 
-  function withClient<const Rule extends ArcjetRule<{}>>(
+  function withClient<const Rule extends ArcjetRule>(
     aj: Arcjet<Rule extends ArcjetRule<infer T> ? T : {}>,
   ): ArcjetAstro<Rule extends ArcjetRule<infer T> ? T : {}> {
     return Object.freeze({
-      withRule(rules: ReadonlyArray<ArcjetRule<{}>>) {
+      withRule(rules: ReadonlyArray<ArcjetRule>) {
         const client = aj.withRule(rules);
         return withClient(client);
       },

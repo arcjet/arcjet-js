@@ -684,7 +684,7 @@ function isRateLimitRule<Props extends Record<string, unknown>>(
  * @param {number} options.capacity - The maximum number of tokens the bucket
  * can hold. The bucket starts at full capacity and will refill until it hits
  * the capacity.
- * @returns {[ArcjetRule<{}>]} The token bucket rule to provide to the SDK in the
+ * @returns {[ArcjetRule]} The token bucket rule to provide to the SDK in the
  * `rules` option.
  *
  * @example
@@ -835,7 +835,7 @@ export function tokenBucket<const Characteristic extends string = string>(
  * - `d` for days.
  * @param {number} options.max - The maximum number of requests allowed in the
  * fixed time window.
- * @returns {[ArcjetRule<{}>]} The fixed window rule to provide to the SDK in the
+ * @returns {[ArcjetRule]} The fixed window rule to provide to the SDK in the
  * `rules` option.
  *
  * @example
@@ -974,7 +974,7 @@ export function fixedWindow<const Characteristic extends string = string>(
  * - `d` for days.
  * @param {number} options.max - The maximum number of requests allowed in the
  * sliding time window.
- * @returns {[ArcjetRule<{}>]} The sliding window rule to provide to the SDK in the
+ * @returns {[ArcjetRule]} The sliding window rule to provide to the SDK in the
  * `rules` option.
  *
  * @example
@@ -1190,7 +1190,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * detections then you can increase this value.
  * @param {number} options.contextWindowSize - The number of tokens to provide
  * to the custom detection function. This defaults to 1 if not specified.
- * @returns {[ArcjetRule<{}>]} The sensitive information rule to provide to the SDK in
+ * @returns {[ArcjetRule]} The sensitive information rule to provide to the SDK in
  * the `rules` option.
  *
  * @example
@@ -1415,7 +1415,7 @@ export function sensitiveInfo<
  * allow. If provided, email addresses in this list will be allowed and all
  * others will be denied. You may only provide either `allow` or `deny`, not
  * both. The same options apply as for `deny`.
- * @returns {[ArcjetRule<{}>]} The email rule to provide to the SDK in the `rules`
+ * @returns {[ArcjetRule]} The email rule to provide to the SDK in the `rules`
  * option.
  *
  * @example
@@ -1628,7 +1628,7 @@ export function validateEmail(
  * list of bots to deny. If provided, the bots in this list will be denied and
  * all other detected bots will be allowed. You may only provide either `allow`
  * or `deny`, not both. The same options apply as for `allow`.
- * @returns {[ArcjetRule<{}>]} The bot rule to provide to the SDK in the `rules`
+ * @returns {[ArcjetRule]} The bot rule to provide to the SDK in the `rules`
  * option.
  *
  * @example
@@ -1674,7 +1674,7 @@ export function validateEmail(
  * @link https://docs.arcjet.com/bot-protection/identifying-bots
  * @link https://docs.arcjet.com/bot-protection/reference
  */
-export function detectBot(options: BotOptions): [ArcjetRule<{}>] {
+export function detectBot(options: BotOptions): [ArcjetRule] {
   validateBotOptions(options);
 
   if (
@@ -1841,7 +1841,7 @@ export type ShieldOptions = {
  * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block suspicious requests, and
  * `"DRY_RUN"` will allow all requests while still providing access to the rule
  * results. Defaults to `"DRY_RUN"` if not specified.
- * @returns {[ArcjetRule<{}>]} The Shield rule to provide to the SDK in the `rules`
+ * @returns {[ArcjetRule]} The Shield rule to provide to the SDK in the `rules`
  * option.
  *
  * @example
@@ -1858,7 +1858,7 @@ export type ShieldOptions = {
  * @link https://docs.arcjet.com/shield/concepts
  * @link https://docs.arcjet.com/shield/reference
  */
-export function shield(options: ShieldOptions): [ArcjetRule<{}>] {
+export function shield(options: ShieldOptions): [ArcjetRule] {
   validateShieldOptions(options);
 
   const type = "SHIELD";
@@ -1996,7 +1996,7 @@ export type ProtectSignupOptions<Characteristic extends string> = {
  * - `d` for days.
  * @param {number} options.rateLimit.max - The maximum number of requests
  * allowed in the sliding time window.
- * @returns {[ArcjetRule<{}>]} The signup form protection rule to provide to the SDK in
+ * @returns {[ArcjetRule]} The signup form protection rule to provide to the SDK in
  * the `rules` option.
  *
  * @example
@@ -2044,7 +2044,7 @@ export function protectSignup<Characteristic extends string = string>(
 }
 
 export interface ArcjetOptions<
-  Rule extends ArcjetRule<{}>,
+  Rule extends ArcjetRule,
   Characteristics extends string,
 > {
   /**
@@ -2095,7 +2095,7 @@ export interface Arcjet<Props extends Record<string, unknown>> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link Arcjet} client.
    */
-  withRule<Rule extends ArcjetRule<{}>>(
+  withRule<Rule extends ArcjetRule>(
     rules: ReadonlyArray<Rule>,
   ): Arcjet<Props & (Rule extends ArcjetRule<infer Props> ? Props : {})>;
 }
@@ -2106,7 +2106,7 @@ export interface Arcjet<Props extends Record<string, unknown>> {
  * @param options {ArcjetOptions} Arcjet configuration options.
  */
 export default function arcjet<
-  const Rule extends ArcjetRule<{}>,
+  const Rule extends ArcjetRule,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -2446,7 +2446,7 @@ export default function arcjet<
   }
 
   // This is a separate function so it can be called recursively
-  function withRule<Rule extends ArcjetRule<{}>>(
+  function withRule<Rule extends ArcjetRule>(
     baseRules: ReadonlyArray<ArcjetRule>,
     rules: ReadonlyArray<Rule>,
   ) {
@@ -2455,7 +2455,7 @@ export default function arcjet<
     );
 
     return Object.freeze({
-      withRule(rules: ReadonlyArray<ArcjetRule<{}>>) {
+      withRule(rules: ReadonlyArray<ArcjetRule>) {
         return withRule(sortedRules, rules);
       },
       async protect(
@@ -2468,7 +2468,7 @@ export default function arcjet<
   }
 
   return Object.freeze({
-    withRule(rules: ReadonlyArray<ArcjetRule<{}>>) {
+    withRule(rules: ReadonlyArray<ArcjetRule>) {
       return withRule(rootRules, rules);
     },
     async protect(
