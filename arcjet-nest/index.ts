@@ -151,14 +151,13 @@ function cookiesToString(cookies: string | string[] | undefined): string {
 /**
  * The options used to configure an {@link ArcjetNest} client.
  */
-export type ArcjetOptions<Characteristic extends string> =
-  CoreOptions<Characteristic> & {
-    /**
-     * One or more IP Address of trusted proxies in front of the application.
-     * These addresses will be excluded when Arcjet detects a public IP address.
-     */
-    proxies?: Array<string>;
-  };
+export interface ArcjetOptions extends CoreOptions {
+  /**
+   * One or more IP Address of trusted proxies in front of the application.
+   * These addresses will be excluded when Arcjet detects a public IP address.
+   */
+  proxies?: Array<string>;
+}
 
 /**
  * The ArcjetNest client provides a public `protect()` method to
@@ -193,9 +192,11 @@ export interface ArcjetNest<Props extends Record<string, unknown> = {}> {
   ): ArcjetNest<Props & (Rule extends ArcjetRule<infer T> ? T : {})>;
 }
 
-function arcjet<const Characteristic extends string>(
-  options: ArcjetOptions<Characteristic>,
-): ArcjetNest<CharacteristicProps<Characteristic>> {
+function arcjet<const Options extends ArcjetOptions>(
+  options: Options,
+): ArcjetNest<
+  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+> {
   const client = options.client ?? createRemoteClient();
 
   const log = options.log
@@ -469,17 +470,14 @@ ArcjetGuard = decorate([param(0, Inject(ARCJET))], ArcjetGuard);
 export { ArcjetGuard };
 
 export class ArcjetModule {
-  static forRoot<
-    const Rule extends ArcjetRule,
-    const Characteristic extends string,
-  >(
-    options: ArcjetOptions<Characteristic> & {
+  static forRoot(
+    options: ArcjetOptions & {
       isGlobal?: boolean | undefined;
     },
   ): DynamicModule {
     const ArcjetProvider = {
       provide: ARCJET,
-      useFactory(options: ArcjetOptions<Characteristic>) {
+      useFactory(options: ArcjetOptions) {
         return arcjet(options);
       },
       inject: [ARCJET_OPTIONS],
@@ -498,17 +496,14 @@ export class ArcjetModule {
       exports: [ARCJET],
     };
   }
-  static forRootAsync<
-    const Rule extends ArcjetRule,
-    const Characteristic extends string,
-  >(
-    options: ConfigurableModuleAsyncOptions<ArcjetOptions<Characteristic>> & {
+  static forRootAsync(
+    options: ConfigurableModuleAsyncOptions<ArcjetOptions> & {
       isGlobal?: boolean | undefined;
     },
   ): DynamicModule {
     const ArcjetProvider = {
       provide: ARCJET,
-      useFactory(options: ArcjetOptions<Characteristic>) {
+      useFactory(options: ArcjetOptions) {
         return arcjet(options);
       },
       inject: [ARCJET_OPTIONS],

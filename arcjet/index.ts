@@ -398,24 +398,24 @@ const validateShieldOptions = createValidator({
   validations: [{ key: "mode", required: false, validate: validateMode }],
 });
 
-export type TokenBucketRateLimitOptions<Characteristic extends string> = {
+export type TokenBucketRateLimitOptions = {
   mode?: ArcjetMode;
-  characteristics?: ReadonlyArray<Characteristic>;
+  characteristics?: ReadonlyArray<string>;
   refillRate: number;
   interval: string | number;
   capacity: number;
 };
 
-export type FixedWindowRateLimitOptions<Characteristic extends string> = {
+export type FixedWindowRateLimitOptions = {
   mode?: ArcjetMode;
-  characteristics?: ReadonlyArray<Characteristic>;
+  characteristics?: ReadonlyArray<string>;
   window: string | number;
   max: number;
 };
 
-export type SlidingWindowRateLimitOptions<Characteristic extends string> = {
+export type SlidingWindowRateLimitOptions = {
   mode?: ArcjetMode;
-  characteristics?: ReadonlyArray<Characteristic>;
+  characteristics?: ReadonlyArray<string>;
   interval: string | number;
   max: number;
 };
@@ -662,9 +662,15 @@ function isRateLimitRule<Props extends Record<string, unknown>>(
  * @link https://docs.arcjet.com/rate-limiting/algorithms#token-bucket
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function tokenBucket<const Characteristic extends string>(
-  options: TokenBucketRateLimitOptions<Characteristic>,
-): [ArcjetRule<{ requested: number } & CharacteristicProps<Characteristic>>] {
+export function tokenBucket<const Options extends TokenBucketRateLimitOptions>(
+  options: Options,
+): [
+  ArcjetRule<
+    { requested: number } & CharacteristicProps<
+      Exclude<Options["characteristics"], undefined>[number]
+    >
+  >,
+] {
   validateTokenBucketOptions(options);
 
   const type = "RATE_LIMIT";
@@ -679,7 +685,9 @@ export function tokenBucket<const Characteristic extends string>(
   const capacity = options.capacity;
 
   const rule: ArcjetTokenBucketRateLimitRule<
-    { requested: number } & CharacteristicProps<Characteristic>
+    { requested: number } & CharacteristicProps<
+      Exclude<Options["characteristics"], undefined>[number]
+    >
   > = {
     type,
     version,
@@ -812,9 +820,13 @@ export function tokenBucket<const Characteristic extends string>(
  * @link https://docs.arcjet.com/rate-limiting/algorithms#fixed-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function fixedWindow<const Characteristic extends string>(
-  options: FixedWindowRateLimitOptions<Characteristic>,
-): [ArcjetRule<CharacteristicProps<Characteristic>>] {
+export function fixedWindow<const Options extends FixedWindowRateLimitOptions>(
+  options: Options,
+): [
+  ArcjetRule<
+    CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+  >,
+] {
   validateFixedWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -951,9 +963,15 @@ export function fixedWindow<const Characteristic extends string>(
  * @link https://docs.arcjet.com/rate-limiting/algorithms#sliding-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function slidingWindow<const Characteristic extends string>(
-  options: SlidingWindowRateLimitOptions<Characteristic>,
-): [ArcjetRule<CharacteristicProps<Characteristic>>] {
+export function slidingWindow<
+  const Options extends SlidingWindowRateLimitOptions,
+>(
+  options: Options,
+): [
+  ArcjetRule<
+    CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+  >,
+] {
   validateSlidingWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -1871,8 +1889,8 @@ export function shield(options: ShieldOptions): [ArcjetRule] {
   return [rule];
 }
 
-export type ProtectSignupOptions<Characteristic extends string> = {
-  rateLimit: SlidingWindowRateLimitOptions<Characteristic>;
+export type ProtectSignupOptions = {
+  rateLimit: SlidingWindowRateLimitOptions;
   bots: BotOptions;
   email: EmailOptions;
 };
@@ -1984,9 +2002,15 @@ export type ProtectSignupOptions<Characteristic extends string> = {
  * @link https://docs.arcjet.com/signup-protection/concepts
  * @link https://docs.arcjet.com/signup-protection/reference
  */
-export function protectSignup<Characteristic extends string>(
-  options: ProtectSignupOptions<Characteristic>,
-): Array<ArcjetRule<{ email: string } & CharacteristicProps<Characteristic>>> {
+export function protectSignup<const Options extends ProtectSignupOptions>(
+  options: Options,
+): Array<
+  ArcjetRule<
+    { email: string } & CharacteristicProps<
+      Exclude<Options["rateLimit"]["characteristics"], undefined>[number]
+    >
+  >
+> {
   return [
     ...slidingWindow(options.rateLimit),
     ...detectBot(options.bots),
@@ -1994,7 +2018,7 @@ export function protectSignup<Characteristic extends string>(
   ];
 }
 
-export interface ArcjetOptions<Characteristic extends string> {
+export interface ArcjetOptions {
   /**
    * The API key to identify the site in Arcjet.
    */
@@ -2006,7 +2030,7 @@ export interface ArcjetOptions<Characteristic extends string> {
   /**
    * Characteristics to be used to uniquely identify clients.
    */
-  characteristics?: ReadonlyArray<Characteristic>;
+  characteristics?: ReadonlyArray<string>;
   /**
    * The client used to make requests to the Arcjet API. This must be set
    * when creating the SDK, such as inside @arcjet/next or mocked in tests.
@@ -2053,9 +2077,11 @@ export interface Arcjet<Props extends Record<string, unknown>> {
  *
  * @param options {ArcjetOptions} Arcjet configuration options.
  */
-export default function arcjet<const Characteristic extends string>(
-  options: ArcjetOptions<Characteristic>,
-): Arcjet<CharacteristicProps<Characteristic>> {
+export default function arcjet<const Options extends ArcjetOptions>(
+  options: Options,
+): Arcjet<
+  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
 
