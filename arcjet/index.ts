@@ -585,9 +585,6 @@ const Priority = {
 
 type PlainObject = { [key: string]: unknown };
 
-// Primitives and Products external names for Rules even though they are defined
-// the same.
-// See ExtraProps below for further explanation on why we define them like this.
 /**
  * @deprecated
  *   Please use `[ArcjetRule<Props>]` or `ArcjetRule<Props>[]` directly.
@@ -2090,7 +2087,7 @@ export function protectSignup<Characteristic extends string = string>(
 }
 
 export interface ArcjetOptions<
-  Rule extends Array<ArcjetRule<{}>>,
+  Rule extends ArcjetRule<{}>,
   Characteristics extends string,
 > {
   /**
@@ -2100,7 +2097,7 @@ export interface ArcjetOptions<
   /**
    * Rules to apply when protecting a request.
    */
-  rules: ReadonlyArray<Rule>;
+  rules: ReadonlyArray<ReadonlyArray<Rule>>;
   /**
    * Characteristics to be used to uniquely identify clients.
    */
@@ -2141,9 +2138,9 @@ export interface Arcjet<Props extends PlainObject> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link Arcjet} client.
    */
-  withRule<Rule extends Array<ArcjetRule<{}>>>(
-    rule: Rule,
-  ): Arcjet<Simplify<Props & ExtraProps<Rule>>>;
+  withRule<Rule extends ArcjetRule<{}>>(
+    rules: ReadonlyArray<Rule>,
+  ): Arcjet<Simplify<Props & UnionToIntersection<PropsForRule<Rule>>>>;
 }
 
 /**
@@ -2152,7 +2149,7 @@ export interface Arcjet<Props extends PlainObject> {
  * @param options {ArcjetOptions} Arcjet configuration options.
  */
 export default function arcjet<
-  const Rule extends Array<ArcjetRule<{}>>,
+  const Rule extends ArcjetRule<{}>,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -2494,30 +2491,30 @@ export default function arcjet<
   }
 
   // This is a separate function so it can be called recursively
-  function withRule<Rule extends Array<ArcjetRule<{}>>>(
-    baseRules: ArcjetRule[],
-    rule: Rule,
+  function withRule<Rule extends ArcjetRule<{}>>(
+    baseRules: ReadonlyArray<ArcjetRule>,
+    rules: ReadonlyArray<Rule>,
   ) {
-    const rules = [...baseRules, ...rule].sort(
+    const sortedRules = [...baseRules, ...rules].sort(
       (a, b) => a.priority - b.priority,
     );
 
     return Object.freeze({
-      withRule(rule: Array<ArcjetRule<{}>>) {
-        return withRule(rules, rule);
+      withRule(rules: ReadonlyArray<ArcjetRule<{}>>) {
+        return withRule(sortedRules, rules);
       },
       async protect(
         ctx: ArcjetAdapterContext,
         request: ArcjetRequest<{}>,
       ): Promise<ArcjetDecision> {
-        return protect(rules, ctx, request);
+        return protect(sortedRules, ctx, request);
       },
     });
   }
 
   return Object.freeze({
-    withRule(rule: Array<ArcjetRule<{}>>) {
-      return withRule(rootRules, rule);
+    withRule(rules: ReadonlyArray<ArcjetRule<{}>>) {
+      return withRule(rootRules, rules);
     },
     async protect(
       ctx: ArcjetAdapterContext,

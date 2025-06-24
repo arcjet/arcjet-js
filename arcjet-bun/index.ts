@@ -110,7 +110,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
  * The options used to configure an {@link ArcjetBun} client.
  */
 export type ArcjetOptions<
-  Rule extends Array<ArcjetRule<{}>>,
+  Rule extends ArcjetRule<{}>,
   Characteristic extends string,
 > = Simplify<
   CoreOptions<Rule, Characteristic> & {
@@ -150,8 +150,8 @@ export interface ArcjetBun<Props extends PlainObject> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link ArcjetBun} client.
    */
-  withRule<Rule extends Array<ArcjetRule<{}>>>(
-    rule: Rule,
+  withRule<Rule extends ArcjetRule<{}>>(
+    rules: ReadonlyArray<Rule>,
   ): ArcjetBun<Simplify<Props & ExtraProps<Rule>>>;
 
   /**
@@ -182,7 +182,7 @@ export interface ArcjetBun<Props extends PlainObject> {
  * @param options - Arcjet configuration options to apply to all requests.
  */
 export default function arcjet<
-  const Rule extends Array<ArcjetRule<{}>>,
+  const Rule extends ArcjetRule<{}>,
   const Characteristic extends string,
 >(
   options: ArcjetOptions<Rule, Characteristic>,
@@ -255,12 +255,12 @@ export default function arcjet<
     };
   }
 
-  function withClient<const Rule extends Array<ArcjetRule<{}>>>(
+  function withClient<const Rule extends ArcjetRule<{}>>(
     aj: Arcjet<ExtraProps<Rule>>,
   ): ArcjetBun<ExtraProps<Rule>> {
     return Object.freeze({
-      withRule(rule: Array<ArcjetRule<{}>>) {
-        const client = aj.withRule(rule);
+      withRule(rules: ReadonlyArray<ArcjetRule<{}>>) {
+        const client = aj.withRule(rules);
         return withClient(client);
       },
       async protect(
