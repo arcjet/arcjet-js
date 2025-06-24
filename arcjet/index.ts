@@ -580,7 +580,7 @@ export type Product<Props extends Record<string, unknown> = {}> =
 // Note: If a user doesn't provide the object literal to our primitives
 // directly, we fallback to no required props. They can opt-in by adding the
 // `as const` suffix to the characteristics array.
-export type CharacteristicProps<Characteristic extends string = string> =
+export type CharacteristicProps<Characteristic extends string> =
   IsStringLiteral<Characteristic> extends true
     ? Characteristic extends
         | "ip.src"
@@ -709,7 +709,7 @@ function isRateLimitRule<Props extends Record<string, unknown>>(
  * @link https://docs.arcjet.com/rate-limiting/algorithms#token-bucket
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function tokenBucket<const Characteristic extends string = string>(
+export function tokenBucket<const Characteristic extends string>(
   options: TokenBucketRateLimitOptions<Characteristic>,
 ): [ArcjetRule<{ requested: number } & CharacteristicProps<Characteristic>>] {
   validateTokenBucketOptions(options);
@@ -859,7 +859,7 @@ export function tokenBucket<const Characteristic extends string = string>(
  * @link https://docs.arcjet.com/rate-limiting/algorithms#fixed-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function fixedWindow<const Characteristic extends string = string>(
+export function fixedWindow<const Characteristic extends string>(
   options: FixedWindowRateLimitOptions<Characteristic>,
 ): [ArcjetRule<CharacteristicProps<Characteristic>>] {
   validateFixedWindowOptions(options);
@@ -998,7 +998,7 @@ export function fixedWindow<const Characteristic extends string = string>(
  * @link https://docs.arcjet.com/rate-limiting/algorithms#sliding-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function slidingWindow<const Characteristic extends string = string>(
+export function slidingWindow<const Characteristic extends string>(
   options: SlidingWindowRateLimitOptions<Characteristic>,
 ): [ArcjetRule<CharacteristicProps<Characteristic>>] {
   validateSlidingWindowOptions(options);
@@ -1238,9 +1238,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
 export function sensitiveInfo<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
->(
-  options: SensitiveInfoOptions<Detect>,
-): [ArcjetRule<CharacteristicProps<string>>] {
+>(options: SensitiveInfoOptions<Detect>): [ArcjetRule] {
   validateSensitiveInfoOptions(options);
 
   if (
@@ -2033,7 +2031,7 @@ export type ProtectSignupOptions<Characteristic extends string> = {
  * @link https://docs.arcjet.com/signup-protection/concepts
  * @link https://docs.arcjet.com/signup-protection/reference
  */
-export function protectSignup<Characteristic extends string = string>(
+export function protectSignup<Characteristic extends string>(
   options: ProtectSignupOptions<Characteristic>,
 ): Array<ArcjetRule<{ email: string } & CharacteristicProps<Characteristic>>> {
   return [
@@ -2045,7 +2043,7 @@ export function protectSignup<Characteristic extends string = string>(
 
 export interface ArcjetOptions<
   Rule extends ArcjetRule,
-  Characteristics extends string,
+  Characteristic extends string,
 > {
   /**
    * The API key to identify the site in Arcjet.
@@ -2058,7 +2056,7 @@ export interface ArcjetOptions<
   /**
    * Characteristics to be used to uniquely identify clients.
    */
-  characteristics?: ReadonlyArray<Characteristics>;
+  characteristics?: ReadonlyArray<Characteristic>;
   /**
    * The client used to make requests to the Arcjet API. This must be set
    * when creating the SDK, such as inside @arcjet/next or mocked in tests.
