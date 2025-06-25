@@ -353,6 +353,7 @@ export class ArcjetErrorReason extends ArcjetReason {
     // TODO: Get rid of instanceof check
     if (error instanceof Error) {
       this.message = error.message;
+      // @ts-ignore: this line fails if compiling with TS `lib` before `es2022`, ignore it then.
       this.cause = error.cause;
       return;
     }
