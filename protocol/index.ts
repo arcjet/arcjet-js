@@ -327,6 +327,8 @@ export class ArcjetEmailReason extends ArcjetReason {
 export class ArcjetErrorReason extends ArcjetReason {
   type = "ERROR" as const;
 
+  cause: unknown;
+
   message: string;
 
   constructor(error: unknown) {
@@ -339,12 +341,14 @@ export class ArcjetErrorReason extends ArcjetReason {
         return;
       } else {
         this.message = "Missing error reason";
+        // TODO(@wooorm-arcjet): why is this falling through?
       }
     }
 
     // TODO: Get rid of instanceof check
     if (error instanceof Error) {
       this.message = error.message;
+      this.cause = error.cause;
       return;
     }
 
