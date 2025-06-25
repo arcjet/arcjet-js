@@ -85,8 +85,7 @@ class TestCache {
 
 function mockLogger() {
   return {
-    time: mock.fn(),
-    timeEnd: mock.fn(),
+    level: "error" as const,
     debug: mock.fn(),
     info: mock.fn(),
     warn: mock.fn(),

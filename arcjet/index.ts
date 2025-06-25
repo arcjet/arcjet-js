@@ -176,10 +176,13 @@ class Performance {
     this.log = logger;
   }
 
-  // TODO(#2020): We should no-op this if loglevel is not `debug` to do less work
   measure(label: string) {
+    if (this.log.level !== "debug") {
+      return Function.prototype;
+    }
+
     const start = performance.now();
-    return () => {
+    return (): undefined => {
       const end = performance.now();
       const diff = end - start;
       this.log.debug("LATENCY %s: %sms", label, diff.toFixed(3));
