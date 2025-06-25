@@ -2233,11 +2233,12 @@ export default function arcjet<
         "Failed to build fingerprint. Please verify your Characteristics.",
       );
 
+      const reason = new ArcjetErrorReason("Failed to build fingerprint");
+      reason.cause = error;
+
       const decision = new ArcjetErrorDecision({
         ttl: 0,
-        reason: new ArcjetErrorReason(
-          `Failed to build fingerprint - ${errorMessage(error)}`,
-        ),
+        reason,
         // No results because we couldn't create a fingerprint
         results: [],
       });
