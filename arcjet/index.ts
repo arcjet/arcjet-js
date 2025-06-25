@@ -343,7 +343,12 @@ function createValidator({
         try {
           validate(key, value);
         } catch (err) {
-          throw new Error(`\`${rule}\` options error: ${errorMessage(err)}`);
+          // Prefix to message.
+          if (err instanceof Error) {
+            err.message = `\`${rule}\` options error: ${err.message}`;
+          }
+
+          throw err;
         }
       }
     }
