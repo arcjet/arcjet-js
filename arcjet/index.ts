@@ -2195,8 +2195,6 @@ export default function arcjet<
       headers: new ArcjetHeaders(request.headers),
       cookies: request.cookies,
       query: request.query,
-      // TODO(#208): Re-add body
-      // body: request.body,
       extra: extraProps(request),
       email: typeof request.email === "string" ? request.email : undefined,
     });

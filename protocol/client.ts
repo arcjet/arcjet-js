@@ -102,9 +102,8 @@ export function createClient(options: ClientOptions): Client {
           headers: Object.fromEntries(details.headers.entries()),
           cookies: details.cookies,
           query: details.query,
-          // TODO(#208): Re-add body
-          // body: details.body,
           extra: details.extra,
+          // Note: `email` is passed to `protect` and dynamic, hence the extra check.
           email: typeof details.email === "string" ? details.email : undefined,
         },
         rules: protoRules,
@@ -160,9 +159,8 @@ export function createClient(options: ClientOptions): Client {
           headers: Object.fromEntries(details.headers.entries()),
           cookies: details.cookies,
           query: details.query,
-          // TODO(#208): Re-add body
-          // body: details.body,
           extra: details.extra,
+          // Note: `email` is passed to `protect` and dynamic, hence the extra check.
           email: typeof details.email === "string" ? details.email : undefined,
         },
         decision: ArcjetDecisionToProtocol(decision),
