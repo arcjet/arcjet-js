@@ -1,5 +1,5 @@
 import type { Transport } from "@connectrpc/connect";
-import { createPromiseClient } from "@connectrpc/connect";
+import { createClient as createConnectRpcClient } from "@connectrpc/connect";
 import {
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,
@@ -68,7 +68,7 @@ export function createClient(options: ClientOptions): Client {
 
   const sdkStack = ArcjetStackToProtocol(options.sdkStack);
 
-  const client = createPromiseClient(DecideService, transport);
+  const client = createConnectRpcClient(DecideService, transport);
 
   return Object.freeze({
     async decide(
