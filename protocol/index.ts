@@ -883,7 +883,7 @@ export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {
 }
 
 export interface ArcjetLogger {
-  level: "debug" | "error" | "info" | "warn";
+  level: string;
   // Pino-compatible logging functions are required.
   debug(msg: string, ...args: unknown[]): void;
   debug(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
