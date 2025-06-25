@@ -146,7 +146,7 @@ export interface ArcjetNextRequest {
           [string, { name: string; value: string }]
         >;
       }
-    | Record<string, string>;
+    | Record<string, string | undefined>;
 
   clone?: () => Request;
   body?: unknown;
