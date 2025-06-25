@@ -40,7 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Language toolchains
+      # Language toolchains
       - name: Install Node
         uses: actions/setup-node@v4.4.0
         with:
