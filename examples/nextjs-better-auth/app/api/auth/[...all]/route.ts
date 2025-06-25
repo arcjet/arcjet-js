@@ -44,7 +44,7 @@ const rateLimitOptions = {
   mode: "LIVE",
   interval: "2m", // counts requests over a 2 minute sliding window
   max: 5, // allows 5 submissions within the window
-} satisfies SlidingWindowRateLimitOptions<[]>;
+} satisfies SlidingWindowRateLimitOptions;
 
 const signupOptions = {
   email: emailOptions,
@@ -53,7 +53,7 @@ const signupOptions = {
   // It would be unusual for a form to be submitted more than 5 times in 10
   // minutes from the same IP address
   rateLimit: rateLimitOptions,
-} satisfies ProtectSignupOptions<[]>;
+} satisfies ProtectSignupOptions;
 
 async function protect(req: NextRequest): Promise<ArcjetDecision> {
   const session = await auth.api.getSession({
