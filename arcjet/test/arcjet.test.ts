@@ -3052,7 +3052,7 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
+    type WithoutRuleTest = Assert<SDKProps<typeof aj, Record<string, unknown>>>;
 
     const tokenBucketRule = tokenBucket({
       characteristics: ["userId"],
@@ -3065,7 +3065,11 @@ describe("SDK", () => {
     type WithRuleTest = Assert<
       SDKProps<
         typeof aj2,
-        { requested: number; userId: string | number | boolean }
+        {
+          [key: string]: unknown;
+          requested: number;
+          userId: string | number | boolean;
+        }
       >
     >;
 
@@ -3112,7 +3116,9 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
+    type WithoutRuleTest = Assert<
+      SDKProps<typeof aj, { [key: string]: unknown }>
+    >;
 
     const tokenBucketRule = tokenBucket({
       characteristics: ["userId"],
@@ -3125,7 +3131,11 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       SDKProps<
         typeof aj2,
-        { requested: number; userId: string | number | boolean }
+        {
+          [key: string]: unknown;
+          requested: number;
+          userId: string | number | boolean;
+        }
       >
     >;
 
@@ -3135,7 +3145,12 @@ describe("SDK", () => {
     type WithRuleTestTwo = Assert<
       SDKProps<
         typeof aj3,
-        { requested: number; userId: string | number | boolean; abc: number }
+        {
+          [key: string]: unknown;
+          requested: number;
+          userId: string | number | boolean;
+          abc: number;
+        }
       >
     >;
 
@@ -3184,7 +3199,9 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
+    type WithoutRuleTest = Assert<
+      SDKProps<typeof aj, { [key: string]: unknown }>
+    >;
 
     const tokenBucketRule = tokenBucket({
       characteristics: ["userId"],
@@ -3197,14 +3214,20 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       SDKProps<
         typeof aj2,
-        { requested: number; userId: string | number | boolean }
+        {
+          [key: string]: unknown;
+          requested: number;
+          userId: string | number | boolean;
+        }
       >
     >;
 
     const testRule = testRuleProps();
 
     const aj3 = aj.withRule(testRule);
-    type WithRuleTestTwo = Assert<SDKProps<typeof aj3, { abc: number }>>;
+    type WithRuleTestTwo = Assert<
+      SDKProps<typeof aj3, { [key: string]: unknown; abc: number }>
+    >;
 
     const context = {
       getBody: () => Promise.resolve(undefined),

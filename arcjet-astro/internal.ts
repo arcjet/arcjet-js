@@ -175,7 +175,8 @@ export interface ArcjetAstro<Props extends Record<string, unknown>> {
 export function createArcjetClient<const Options extends ArcjetOptions>(
   options: Options,
 ): ArcjetAstro<
-  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]> &
+    (Options["rules"][number][number] extends ArcjetRule<infer P> ? P : {})
 > {
   const client = options.client ?? createRemoteClient();
 

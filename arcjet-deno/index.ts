@@ -170,7 +170,8 @@ export interface ArcjetDeno<Props extends Record<string, unknown>> {
 export default function arcjet<const Options extends ArcjetOptions>(
   options: Options,
 ): ArcjetDeno<
-  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]> &
+    (Options["rules"][number][number] extends ArcjetRule<infer P> ? P : {})
 > {
   // We technically build this twice but they happen at startup.
   const env = Deno.env.toObject();

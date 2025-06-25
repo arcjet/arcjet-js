@@ -851,7 +851,7 @@ export interface ArcjetSlidingWindowRateLimitRule<
   interval: number;
 }
 
-export interface ArcjetEmailRule<Props extends { email: string }>
+export interface ArcjetEmailRule<Props extends Record<string, unknown>>
   extends ArcjetRule<Props> {
   type: "EMAIL";
 

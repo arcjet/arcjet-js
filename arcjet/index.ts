@@ -2065,7 +2065,8 @@ export interface Arcjet<Props> {
 export default function arcjet<const Options extends ArcjetOptions>(
   options: Options,
 ): Arcjet<
-  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]> &
+    (Options["rules"][number][number] extends ArcjetRule<infer P> ? P : {})
 > {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;

@@ -171,7 +171,8 @@ export interface ArcjetBun<Props extends Record<string, unknown>> {
 export default function arcjet<const Options extends ArcjetOptions>(
   options: Options,
 ): ArcjetBun<
-  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]> &
+    (Options["rules"][number][number] extends ArcjetRule<infer P> ? P : {})
 > {
   const client = options.client ?? createRemoteClient();
 
