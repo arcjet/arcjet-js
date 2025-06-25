@@ -53,7 +53,8 @@ class TestCache implements Cache {
 /**
  * Arcjet logger that does nothing.
  */
-const exampleLogger: ArcjetLogger = {
+const exampleLogger = {
+  level: "error" as const,
   debug() {},
   error() {},
   info() {},
