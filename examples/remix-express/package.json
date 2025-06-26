@@ -31,7 +31,7 @@
     "@types/morgan": "^1.9.10",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
     "@typescript-eslint/parser": "^8.32.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.38.0",
@@ -41,7 +41,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.0.3",
     "typescript": "^5.1.6",
-    "vite": "^6.3.5"
+    "vite": "^7.0.0"
   },
   "overrides": {
     "@vanilla-extract/integration": ">=8.0.1",
