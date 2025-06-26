@@ -22,8 +22,6 @@ against common attacks.
 
 This is the [Arcjet][arcjet] local analysis engine.
 
-## Links
-
 - [npm package (`@arcjet/analyze`)](https://www.npmjs.com/package/@arcjet/analyze)
 - [GitHub source code (`analyze/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/analyze)
 
