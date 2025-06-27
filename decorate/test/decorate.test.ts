@@ -1671,7 +1671,7 @@ describe("setRateLimitHeaders", () => {
       assert.equal(errorLogSpy.mock.callCount(), 1);
     });
 
-    test("does not error if missing hasHeader", () => {
+    test("does not fail if given a `response` w/o `hasHeader` method", () => {
       const resp = {
         headersSent: false,
         getHeader(name: string) {
@@ -1702,10 +1702,9 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      assert.deepEqual(resp, { ...resp });
     });
 
-    test("does not error if missing getHeader", () => {
+    test("does not fail if given a `response` w/o `getHeader` method", () => {
       const resp = {
         headersSent: false,
         hasHeader(name: string) {
@@ -1736,10 +1735,9 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      assert.deepEqual(resp, { ...resp });
     });
 
-    test("does not error if missing setHeader", () => {
+    test("does not fail if given a `response` w/o `setHeader` method", () => {
       const resp = {
         headersSent: false,
         hasHeader(name: string) {
@@ -1772,7 +1770,6 @@ describe("setRateLimitHeaders", () => {
           reason: new ArcjetReason(),
         }),
       );
-      assert.deepEqual(resp, { ...resp });
     });
 
     test("duplicate rate limit policies do not set headers", () => {
