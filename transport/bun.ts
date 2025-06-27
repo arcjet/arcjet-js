@@ -1,9 +1,8 @@
-import { createConnectTransport } from "@connectrpc/connect-node";
+// Bun doesn't properly support connect-node so we need to use connect-web
+import { createConnectTransport } from "@connectrpc/connect-web";
 
 export function createTransport(baseUrl: string) {
   return createConnectTransport({
     baseUrl,
-    // Bun doesn't properly support HTTP/2 so we need to force HTTP/1.1
-    httpVersion: "1.1",
   });
 }
