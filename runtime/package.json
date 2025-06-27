@@ -31,15 +31,36 @@
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
-  "exports": {
-    "edge-light": "./edge-light.js",
-    "default": "./index.js"
+  "exports": "./index.js",
+  "imports": {
+    "#bun": {
+      "bun": "./yes.js",
+      "default": "./no.js"
+    },
+    "#deno": {
+      "deno": "./yes.js",
+      "default": "./no.js"
+    },
+    "#edge-light": {
+      "edge-light": "./yes.js",
+      "default": "./no.js"
+    },
+    "#node": {
+      "node": "./yes.js",
+      "default": "./no.js"
+    },
+    "#workerd": {
+      "workerd": "./yes.js",
+      "default": "./no.js"
+    }
   },
   "files": [
-    "edge-light.d.ts",
-    "edge-light.js",
     "index.d.ts",
-    "index.js"
+    "index.js",
+    "no.d.ts",
+    "no.js",
+    "yes.d.ts",
+    "yes.js"
   ],
   "scripts": {
     "prepublishOnly": "npm run build",
