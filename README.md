@@ -258,6 +258,15 @@ This repository follows the [Arcjet Support Policy][arcjet-support].
 
 This repository follows the [Arcjet Security Policy][arcjet-security].
 
+## Compatibility
+
+Packages maintained in this repository are compatible with maintained
+versions of Node.js and the current minor release of TypeScript.
+
+The current release line,
+`@arcjet/*` on `1.0.0-beta.*`,
+is compatible with Node.js 18.
+
 ## License
 
 Licensed under the [Apache License, Version 2.0][apache-license].
