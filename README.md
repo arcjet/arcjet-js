@@ -189,6 +189,7 @@ find a specific one through the categories and descriptions below.
 
 - [`@arcjet/bun`](./arcjet-bun/README.md): SDK for Bun.sh.
 - [`@arcjet/deno`](./arcjet-deno/README.md): SDK for Deno.
+- [`@arcjet/fastify`](./arcjet-fastify/README.md): SDK for Fastify.
 - [`@arcjet/nest`](./arcjet-nest/README.md): SDK for NestJS.
 - [`@arcjet/next`](./arcjet-next/README.md): SDK for Next.js.
 - [`@arcjet/node`](./arcjet-node/README.md): SDK for Node.js.

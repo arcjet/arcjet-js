@@ -1,0 +1,72 @@
+{
+  "name": "@arcjet/fastify",
+  "version": "1.0.0-beta.8",
+  "description": "Arcjet SDK for Fastify",
+  "keywords": [
+    "analyze",
+    "arcjet",
+    "attack",
+    "fastify",
+    "limit",
+    "nodejs",
+    "node",
+    "protect",
+    "secure",
+    "security",
+    "verify"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://arcjet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "arcjet-fastify"
+  },
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "exports": "./index.js",
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "rollup --config",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@arcjet/body": "1.0.0-beta.8",
+    "@arcjet/env": "1.0.0-beta.8",
+    "@arcjet/headers": "1.0.0-beta.8",
+    "@arcjet/ip": "1.0.0-beta.8",
+    "@arcjet/logger": "1.0.0-beta.8",
+    "@arcjet/protocol": "1.0.0-beta.8",
+    "@arcjet/transport": "1.0.0-beta.8",
+    "arcjet": "1.0.0-beta.8",
+    "fastify": "^5.4.0"
+  },
+  "devDependencies": {
+    "@arcjet/eslint-config": "1.0.0-beta.8",
+    "@arcjet/rollup-config": "1.0.0-beta.8",
+    "@arcjet/tsconfig": "1.0.0-beta.8",
+    "@rollup/wasm-node": "4.44.1",
+    "@types/node": "18.18.0",
+    "eslint": "9.29.0",
+    "typescript": "5.8.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  }
+}

@@ -52,6 +52,10 @@
       "component": "@arcjet/deno",
       "skip-github-release": true
     },
+    "arcjet-fastify": {
+      "component": "@arcjet/fastify",
+      "skip-github-release": true
+    },
     "arcjet-nest": {
       "component": "@arcjet/nest",
       "skip-github-release": true
@@ -177,6 +181,7 @@
         "@arcjet/astro",
         "@arcjet/bun",
         "@arcjet/deno",
+        "@arcjet/fastify",
         "@arcjet/nest",
         "@arcjet/next",
         "@arcjet/node",
