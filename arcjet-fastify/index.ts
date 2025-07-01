@@ -1,3 +1,4 @@
+import process from "node:process";
 import { readBody } from "@arcjet/body";
 import type { Env } from "@arcjet/env";
 import {
@@ -32,41 +33,6 @@ import type { FastifyRequest } from "fastify";
 // resulting in unneeded breaking changes,
 // we must be explicit about what is exported.
 export * from "arcjet";
-
-// An object with getters that access the `process.env.SOMEVAR` values directly.
-// This allows bundlers to replace the dot-notation access with string literals
-// while still allowing dynamic access in runtime environments.
-// TODO(@wooorm-arcjet): this looks like unneeded duplication that can likely be
-// removed.
-const env: Env = {
-  get ARCJET_BASE_URL() {
-    return process.env.ARCJET_BASE_URL;
-  },
-  get ARCJET_ENV() {
-    return process.env.ARCJET_ENV;
-  },
-  get ARCJET_KEY() {
-    return process.env.ARCJET_KEY;
-  },
-  get ARCJET_LOG_LEVEL() {
-    return process.env.ARCJET_LOG_LEVEL;
-  },
-  get FLY_APP_NAME() {
-    return process.env.FLY_APP_NAME;
-  },
-  get MODE() {
-    return process.env.MODE;
-  },
-  get NODE_ENV() {
-    return process.env.NODE_ENV;
-  },
-  get RENDER() {
-    return process.env.RENDER;
-  },
-  get VERCEL() {
-    return process.env.VERCEL;
-  },
-};
 
 // TODO(@wooorm-arcjet): deduplicate.
 function errorMessage(err: unknown): string {
@@ -152,14 +118,14 @@ export function createRemoteClient(
   options?: RemoteClientOptions | null | undefined,
 ) {
   const settings = options ?? {};
-  const baseUrl = settings.baseUrl ?? baseUrlFromEnvironment(env);
+  const baseUrl = settings.baseUrl ?? baseUrlFromEnvironment(process.env);
 
   return createClient({
     baseUrl,
     // @ts-expect-error: TODO(@wooorm-arcjet): register label in protocol.
     sdkStack: "FASTIFY",
     sdkVersion: "__ARCJET_SDK_VERSION__",
-    timeout: settings.timeout ?? (isDevelopment(env) ? 1000 : 500),
+    timeout: settings.timeout ?? (isDevelopment(process.env) ? 1000 : 500),
     transport: createTransport(baseUrl),
   });
 }
@@ -247,7 +213,9 @@ export default function arcjet<
   options: ArcjetOptions<Rules, Characteristics>,
 ): ArcjetFastify<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
   const client = options.client ?? createRemoteClient();
-  const log = options.log ? options.log : new Logger({ level: logLevel(env) });
+  const log = options.log
+    ? options.log
+    : new Logger({ level: logLevel(process.env) });
   const proxies = options.proxies ? options.proxies.map(parseProxy) : undefined;
 
   // TODO(@wooorm-arcjet): being in development doesn’t seem like something that
@@ -255,7 +223,7 @@ export default function arcjet<
   // but an `info` log?
   // Also, the message is about a public IP but this check doesn’t seem to be?
   // Why not warn below, and track whether it’s been warned for zero-or-one time?
-  if (isDevelopment(env)) {
+  if (isDevelopment(process.env)) {
     log.warn(
       "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
     );
@@ -361,11 +329,11 @@ function toArcjetRequest<Properties extends PlainObject>(
   let ip = findIp(
     { headers, socket: request.socket },
     // TODO(@wooorm-arcjet): readonly support in `findIp`.
-    { platform: platform(env), proxies: proxies ? [...proxies] : [] },
+    { platform: platform(process.env), proxies: proxies ? [...proxies] : [] },
   );
 
   if (ip === "") {
-    if (isDevelopment(env)) {
+    if (isDevelopment(process.env)) {
       ip = "127.0.0.1";
     } else {
       // TODO(@wooorm-arcjet): should this warn on every request?
