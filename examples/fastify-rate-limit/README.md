@@ -7,7 +7,8 @@
 
 # Arcjet Rate Limit with Fastify
 
-This example shows how to use Arcjet with a [Fastify][] server.
+This example shows how to use Arcjet with a [Fastify][] server to rate limit
+with a fixed window.
 
 ## Use
 
