@@ -113,7 +113,7 @@ await fastify.listen({ port: 3000 });
 This example shows a _[Arcjet Shield][arcjet-shield-docs]_ which protects
 against common attacks including the OWASP Top 10.
 
-```ts
+```js
 import arcjetFastify, { shield } from "@arcjet/fastify";
 import Fastify from "fastify";
 
