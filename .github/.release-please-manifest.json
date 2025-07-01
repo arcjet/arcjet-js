@@ -6,6 +6,7 @@
   "arcjet-astro": "1.0.0-beta.8",
   "arcjet-bun": "1.0.0-beta.8",
   "arcjet-deno": "1.0.0-beta.8",
+  "arcjet-fastify": "1.0.0-beta.8",
   "arcjet-nest": "1.0.0-beta.8",
   "arcjet-next": "1.0.0-beta.8",
   "arcjet-node": "1.0.0-beta.8",
