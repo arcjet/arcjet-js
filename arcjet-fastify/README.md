@@ -49,8 +49,8 @@ It also shows how rate limiting could for logged in users could work with a
 token bucket strategy.
 
 ```js
-import Fastify from "fastify";
 import arcjetFastify, { detectBot, tokenBucket } from "@arcjet/fastify";
+import Fastify from "fastify";
 
 // Get your Arcjet key at <https://app.arcjet.com>.
 // Set it as an environment variable instead of hard coding it.
