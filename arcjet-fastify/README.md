@@ -61,15 +61,15 @@ if (!arcjetKey) {
 }
 
 const arcjet = arcjetFastify({
-  // Track requests by a custom user ID.
+  // Track requests per ID of authenticated users.
   characteristics: ["userId"],
   key: arcjetKey,
   rules: [
     // Manage automated clients and bots.
     // See <https://docs.arcjet.com/bot-protection/reference> for more info.
     detectBot({
-      // This empty allow array denies all bots.
-      // You can now allow specific bots from <https://arcjet.com/bot-list>.
+      // This empty array for `allow` denies all bots.
+      // You can allow specific bots from <https://arcjet.com/bot-list>.
       allow: [],
       mode: "LIVE", // Use `DRY_RUN` instead of `LIVE` to only log.
     }),
@@ -89,8 +89,10 @@ const arcjet = arcjetFastify({
 const fastify = Fastify({ logger: true });
 
 fastify.get("/", async function (request, reply) {
-  const userId = "user123"; // Replace with an authenticated user ID.
-  const decision = await arcjet.protect(request, { requested: 5, userId }); // Deduct `5` tokens from the bucket
+  // Replace with an authenticated user ID.
+  const userId = "user123";
+  // Deduct `5` tokens from the bucket.
+  const decision = await arcjet.protect(request, { requested: 5, userId });
 
   if (decision.isDenied()) {
     return reply
