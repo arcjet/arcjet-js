@@ -37,7 +37,7 @@ npm install @arcjet/fastify
 
 ## Example: app
 
-<!-- TODO(@wooorm-arcjet): this does not exist yet. -->
+<!-- TODO(@wooorm-arcjet): there is no fastify example there yet. -->
 
 Try an Arcjet protected app live at [https://example.arcjet.com][arcjet-examples]
 ([source code][github-arcjet-examples]).
