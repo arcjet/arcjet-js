@@ -37,7 +37,6 @@ import type {
   ArcjetFixedWindowRateLimitRule,
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
-  ArcjetRule,
   ArcjetSensitiveInfoRule,
 } from "../index.js";
 import {
@@ -374,9 +373,12 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetBotReason);
       assert.equal(reason.type, "BOT");
-
       assert.equal(reason.isVerified(), false);
       assert.equal(reason.isSpoofed(), false);
+      assert.deepEqual(reason.allowed, []);
+      assert.deepEqual(reason.denied, []);
+      assert.equal(reason.spoofed, false);
+      assert.equal(reason.verified, false);
     });
 
     await t.test("should create a bot reason (spoofed, verified)", () => {
@@ -391,9 +393,12 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetBotReason);
       assert.equal(reason.type, "BOT");
-
       assert.equal(reason.isVerified(), true);
       assert.equal(reason.isSpoofed(), true);
+      assert.deepEqual(reason.allowed, []);
+      assert.deepEqual(reason.denied, []);
+      assert.equal(reason.spoofed, true);
+      assert.equal(reason.verified, true);
     });
 
     await t.test("should create an edge rule reason", () => {
@@ -414,6 +419,7 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetEmailReason);
       assert.equal(reason.type, "EMAIL");
+      assert.deepEqual(reason.emailTypes, []);
     });
 
     await t.test("should create an email reason (type)", () => {
@@ -428,6 +434,7 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetEmailReason);
       assert.equal(reason.type, "EMAIL");
+      assert.deepEqual(reason.emailTypes, ["DISPOSABLE"]);
     });
 
     await t.test("should create an error reason", () => {
@@ -442,6 +449,7 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetErrorReason);
       assert.equal(reason.type, "ERROR");
+      assert.equal(reason.message, "Test error");
     });
 
     await t.test("should create a rate limit reason", () => {
@@ -463,9 +471,15 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetRateLimitReason);
       assert.equal(reason.type, "RATE_LIMIT");
+      assert.equal(reason.max, 1);
+      assert.equal(reason.remaining, -1);
+      assert.equal(reason.resetTime, undefined);
+      assert.equal(reason.reset, 1000);
+      assert.equal(reason.window, 1000);
     });
 
     await t.test("should create a rate limit reason w/ `resetTime`", () => {
+      const now = Timestamp.now();
       const reason = ArcjetReasonFromProtocol(
         new Reason({
           reason: {
@@ -475,7 +489,7 @@ test("convert", async (t) => {
               max: 1,
               remaining: -1,
               resetInSeconds: 1000,
-              resetTime: Timestamp.now(),
+              resetTime: now,
               windowInSeconds: 1000,
             },
           },
@@ -484,6 +498,11 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetRateLimitReason);
       assert.equal(reason.type, "RATE_LIMIT");
+      assert.equal(reason.max, 1);
+      assert.equal(reason.remaining, -1);
+      assert.deepEqual(reason.resetTime, now.toDate());
+      assert.equal(reason.reset, 1000);
+      assert.equal(reason.window, 1000);
     });
 
     await t.test("should create a sensitive info reason", () => {
@@ -502,6 +521,15 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetSensitiveInfoReason);
       assert.equal(reason.type, "SENSITIVE_INFO");
+      assert.deepEqual(reason.allowed, []);
+      // Pass through `JSON` to drop info on the internal class `IdentifiedEntity`.
+      assert.deepEqual(JSON.parse(JSON.stringify(reason.denied)), [
+        {
+          end: 16,
+          identifiedType: "credit-card-number",
+          start: 0,
+        },
+      ]);
     });
 
     await t.test("should create an error reason on a bot reason", () => {
@@ -513,6 +541,7 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetErrorReason);
       assert.equal(reason.type, "ERROR");
+      assert.equal(reason.message, "bot detection v1 is deprecated");
     });
 
     await t.test("should create a shield reason (triggered)", () => {
@@ -524,7 +553,6 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetShieldReason);
       assert.equal(reason.type, "SHIELD");
-
       assert.equal(reason.shieldTriggered, true);
     });
 
@@ -537,7 +565,6 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetShieldReason);
       assert.equal(reason.type, "SHIELD");
-
       assert.equal(reason.shieldTriggered, false);
     });
 
