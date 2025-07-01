@@ -1,7 +1,7 @@
-<a href="https://arcjet.com" target="_arcjet-home">
+<a href="https://arcjet.com" target="_blank">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
-    <img src="https://arcjet.com/logo/arcjet-light-lockup-voyage-horizontal.svg" alt="Arcjet Logo" height="128" width="auto">
+    <img alt="Arcjet" height="128" src="https://arcjet.com/logo/arcjet-light-lockup-voyage-horizontal.svg" width="auto">
   </picture>
 </a>
 
@@ -11,7 +11,7 @@
   <a href="https://www.npmjs.com/package/@arcjet/fastify">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/%40arcjet%2Ffastify?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
-      <img alt="npm badge" src="https://img.shields.io/npm/v/%40arcjet%2Ffastify?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
+      <img alt="npm" src="https://img.shields.io/npm/v/%40arcjet%2Ffastify?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
     </picture>
   </a>
 </p>
