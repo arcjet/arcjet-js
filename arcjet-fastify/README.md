@@ -23,11 +23,17 @@ against common attacks.
 
 This is the [Arcjet][] SDK for [Fastify][].
 
+<!--
+
 ## Getting started
 
-<!-- TODO(@wooorm-arcjet): this does not exist yet. -->
+TODO(@wooorm-arcjet): this does not exist yet.
 
 Visit the [quick start guide][arcjet-quick-start-fastify] to get started.
+
+[arcjet-quick-start-fastify]: https://docs.arcjet.com/get-started/fastify
+
+-->
 
 ## Install
 
@@ -35,12 +41,18 @@ Visit the [quick start guide][arcjet-quick-start-fastify] to get started.
 npm install @arcjet/fastify
 ```
 
+<!--
+
 ## Example: app
 
-<!-- TODO(@wooorm-arcjet): there is no fastify example there yet. -->
+TODO(@wooorm-arcjet): there is no fastify example there yet.
 
 Try an Arcjet protected app live at [https://example.arcjet.com][arcjet-examples]
 ([source code][github-arcjet-examples]).
+
+[arcjet-examples]: https://example.arcjet.com
+
+-->
 
 ## Example: Bot detection and rate limiting
 
@@ -165,8 +177,6 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
-[arcjet-examples]: https://example.arcjet.com
-[arcjet-quick-start-fastify]: https://docs.arcjet.com/get-started/fastify
 [arcjet-shield-docs]: https://docs.arcjet.com/shield/concepts
 [fastify]: https://fastify.dev/
 [github-arcjet-examples]: https://github.com/arcjet/arcjet-js-example
