@@ -332,8 +332,6 @@ function toArcjetRequest<Properties extends PlainObject>(
     if (isDevelopment(process.env)) {
       ip = "127.0.0.1";
     } else {
-      // TODO(@wooorm-arcjet): should this warn on every request?
-      // Is once enough?
       log.warn(
         `Client IP address is missing. If this is a dev environment set the ARCJET_ENV env var to "development"`,
       );
