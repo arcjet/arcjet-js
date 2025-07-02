@@ -136,7 +136,8 @@ export function createRemoteClient(
  *
  * @typeParam Props
  *   Accumulated properties that are needed when calling `protect`;
- *   these come from (repeatedly) calling `withRule` with different rules.
+ *   these come from (repeatedly) calling `withRule` with different rules
+ *   and from the rules passed to the initial `arcjetFastify` call.
  */
 // TODO(@wooorm-arcjet): this looks like an interface is shared with other clients.
 // Move upwards and extend here.
@@ -149,7 +150,7 @@ export interface ArcjetFastify<Props> {
    * @param properties
    *   Properties that are needed for the configured rules.
    * @returns
-   *   Promise to a decision about the request.
+   *   Promise for a decision about the request.
    */
   protect(
     request: FastifyRequest,
