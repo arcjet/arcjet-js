@@ -124,7 +124,7 @@ await fastify.listen({ port: 3000 });
 
 ## Example: Shield
 
-This example shows a _[Arcjet Shield][arcjet-shield-docs]_ which protects
+This example shows _[Arcjet Shield][arcjet-shield-docs]_ which protects
 against common attacks including the OWASP Top 10.
 
 ```js
