@@ -219,11 +219,6 @@ export default function arcjet<
     : new Logger({ level: logLevel(process.env) });
   const proxies = options.proxies ? options.proxies.map(parseProxy) : undefined;
 
-  // TODO(@wooorm-arcjet): being in development doesn’t seem like something that
-  // should be warned about,
-  // but an `info` log?
-  // Also, the message is about a public IP but this check doesn’t seem to be?
-  // Why not warn below, and track whether it’s been warned for zero-or-one time?
   if (isDevelopment(process.env)) {
     log.warn(
       "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
