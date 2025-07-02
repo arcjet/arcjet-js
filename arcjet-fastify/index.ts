@@ -160,14 +160,14 @@ export interface ArcjetFastify<Props> {
   /**
    * Add more rules.
    *
-   * @param rules
-   *   List of rules.
+   * @param rule
+   *   Rule.
    * @returns
    *   New client with more rules configured.
    */
-  withRule<Rules extends Primitive | Product>(
-    rules: Rules,
-  ): ArcjetFastify<Props & ExtraProps<Rules>>;
+  withRule<Rule extends Primitive | Product>(
+    rules: Rule,
+  ): ArcjetFastify<Props & ExtraProps<Rule>>;
 }
 
 /**
