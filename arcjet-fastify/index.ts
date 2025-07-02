@@ -268,9 +268,7 @@ export default function arcjet<
             // TODO(@wooorm-arcjet): the try/catch seems to be too big to know definitely that only redirects throw.
             const body = await readBody(fastifyRequest.raw, {
               expectedLength,
-              // TODO(@wooorm-arcjet): this looks like a security vulnerability:
-              // what if there is more data after that 1mb?
-              // We will process 1mb bodies
+              // This will throw `Request entity too large` at `1mb`.
               // TODO(@wooorm-arcjet): configurable? Otherwise, some constant instead of magic number.
               limit: 1048576,
             });
