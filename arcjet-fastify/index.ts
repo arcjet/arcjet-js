@@ -313,9 +313,11 @@ function toArcjetRequest<Properties extends PlainObject>(
   properties: Properties,
 ): ArcjetRequest<Properties> {
   const requestHeaders = request.headers || {};
-  // Extract cookies from original request headers.
-  // TODO(@wooorm-arcjet): why?
-  // And, why is there dead code for arrays?
+  // Extract cookies from original headers.
+  // `ArcjetHeaders` removes the cookie header because it often contains
+  // sensitive information.
+  // We send cookies to the server as a separate field on the protobuf and
+  // handle them differently than other headers due to that potential.
   const cookies =
     typeof requestHeaders.cookie === "string" ? requestHeaders.cookie : "";
   const headers = new ArcjetHeaders(requestHeaders);
