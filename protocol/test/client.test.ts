@@ -15,6 +15,7 @@ import type {
   ArcjetConclusion,
   ArcjetContext,
   ArcjetLogger,
+  ArcjetReasons,
   ArcjetRequestDetails,
 } from "../index.js";
 import {
@@ -24,13 +25,13 @@ import {
   ArcjetDenyDecision,
   ArcjetErrorDecision,
   ArcjetErrorReason,
-  ArcjetReason,
   ArcjetRuleResult,
+  ArcjetUnknownReason,
 } from "../index.js";
 
 class ArcjetInvalidDecision extends ArcjetDecision {
   conclusion: ArcjetConclusion;
-  reason: ArcjetReason;
+  reason: ArcjetReasons;
 
   constructor() {
     super({ results: [], ttl: 0 });
@@ -39,7 +40,7 @@ class ArcjetInvalidDecision extends ArcjetDecision {
     // decisions,
     // then we need to allow that in the types.
     this.conclusion = "INVALID";
-    this.reason = new ArcjetReason();
+    this.reason = new ArcjetUnknownReason();
   }
 }
 
@@ -435,7 +436,7 @@ test("createClient", async (t) => {
         },
         exampleDetails,
         new ArcjetAllowDecision({
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
           ttl: 0,
         }),
@@ -479,7 +480,7 @@ test("createClient", async (t) => {
         exampleContext,
         exampleDetails,
         new ArcjetAllowDecision({
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
           ttl: 0,
         }),
@@ -524,7 +525,7 @@ test("createClient", async (t) => {
         exampleContext,
         exampleDetails,
         new ArcjetDenyDecision({
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
           ttl: 0,
         }),
@@ -614,7 +615,7 @@ test("createClient", async (t) => {
         exampleContext,
         exampleDetails,
         new ArcjetChallengeDecision({
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
           ttl: 0,
         }),
@@ -704,7 +705,7 @@ test("createClient", async (t) => {
         exampleContext,
         exampleDetails,
         new ArcjetDenyDecision({
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
           ttl: 0,
         }),
@@ -757,7 +758,7 @@ test("createClient", async (t) => {
           },
           exampleDetails,
           new ArcjetAllowDecision({
-            reason: new ArcjetReason(),
+            reason: new ArcjetUnknownReason(),
             results: [],
             ttl: 0,
           }),
@@ -830,12 +831,12 @@ test("createClient", async (t) => {
         { ...exampleContext, characteristics: ["src.ip"] },
         exampleDetails,
         new ArcjetDenyDecision({
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
           results: [
             new ArcjetRuleResult({
               conclusion: "DENY",
               fingerprint: "fingerprint",
-              reason: new ArcjetReason(),
+              reason: new ArcjetUnknownReason(),
               ruleId: "rule",
               state: "RUN",
               ttl: 0,

@@ -245,7 +245,7 @@ export interface ArcjetNext<Props extends PlainObject> {
    *   conclusion based on evaluating each of the configured rules. If you wish
    *   to accept Arcjet’s recommended action based on the configured rules then
    *   you can use this property.
-   * - `reason` (`ArcjetReason`) - An object containing more detailed
+   * - `reason` (`ArcjetReasons`) - An object containing more detailed
    *   information about the conclusion.
    * - `results` (`ArcjetRuleResult[]`) - An array of {@link ArcjetRuleResult} objects
    *   containing the results of each rule that was executed.

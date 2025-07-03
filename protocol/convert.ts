@@ -1,5 +1,6 @@
 import { Timestamp } from "@bufbuild/protobuf";
 import type {
+  ArcjetReasons,
   ArcjetRule,
   ArcjetRateLimitRule,
   ArcjetBotRule,
@@ -16,6 +17,7 @@ import type {
   ArcjetSensitiveInfoRule,
 } from "./index.js";
 import {
+  ArcjetUnknownReason,
   ArcjetAllowDecision,
   ArcjetBotReason,
   ArcjetChallengeDecision,
@@ -28,7 +30,6 @@ import {
   ArcjetRuleResult,
   ArcjetShieldReason,
   ArcjetDecision,
-  ArcjetReason,
   ArcjetIpDetails,
   ArcjetSensitiveInfoReason,
 } from "./index.js";
@@ -215,9 +216,9 @@ export function ArcjetConclusionFromProtocol(
   }
 }
 
-export function ArcjetReasonFromProtocol(proto?: Reason) {
+export function ArcjetReasonFromProtocol(proto?: Reason): ArcjetReasons {
   if (typeof proto === "undefined") {
-    return new ArcjetReason();
+    return new ArcjetUnknownReason();
   }
 
   if (typeof proto !== "object" || typeof proto.reason !== "object") {
@@ -274,16 +275,16 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
       return new ArcjetErrorReason(reason.message);
     }
     case undefined: {
-      return new ArcjetReason();
+      return new ArcjetUnknownReason();
     }
     default: {
       const _exhaustive: never = proto.reason;
-      return new ArcjetReason();
+      return new ArcjetUnknownReason();
     }
   }
 }
 
-export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
+export function ArcjetReasonToProtocol(reason: ArcjetReasons): Reason {
   if (reason.isRateLimit()) {
     return new Reason({
       reason: {

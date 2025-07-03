@@ -4,8 +4,8 @@ import { setRateLimitHeaders } from "../index.js";
 import {
   ArcjetAllowDecision,
   ArcjetRateLimitReason,
-  ArcjetReason,
   ArcjetRuleResult,
+  ArcjetUnknownReason,
 } from "@arcjet/protocol";
 import { OutgoingMessage } from "http";
 
@@ -28,7 +28,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has("RateLimit"), false);
@@ -47,11 +47,11 @@ describe("setRateLimitHeaders", () => {
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
-              reason: new ArcjetReason(),
+              reason: new ArcjetUnknownReason(),
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has("RateLimit"), false);
@@ -83,7 +83,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.get.mock.callCount(), 0);
@@ -115,7 +115,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has.mock.callCount(), 0);
@@ -147,7 +147,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has.mock.callCount(), 0);
@@ -190,7 +190,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -223,7 +223,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -256,7 +256,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -289,7 +289,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -322,7 +322,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -469,7 +469,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
@@ -512,7 +512,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
@@ -555,7 +555,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
@@ -598,7 +598,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
@@ -644,7 +644,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
@@ -690,7 +690,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
@@ -736,7 +736,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
@@ -772,7 +772,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
@@ -806,7 +806,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
@@ -825,7 +825,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), false);
@@ -844,11 +844,11 @@ describe("setRateLimitHeaders", () => {
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
-              reason: new ArcjetReason(),
+              reason: new ArcjetUnknownReason(),
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), false);
@@ -876,7 +876,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.deepEqual(resp, {});
@@ -904,7 +904,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.deepEqual(resp, { headers: {} });
@@ -946,7 +946,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -979,7 +979,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -1012,7 +1012,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -1045,7 +1045,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -1078,7 +1078,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -1228,7 +1228,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
@@ -1274,7 +1274,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
@@ -1320,7 +1320,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
@@ -1366,7 +1366,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
@@ -1415,7 +1415,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
@@ -1464,7 +1464,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
@@ -1513,7 +1513,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
@@ -1552,7 +1552,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
@@ -1589,7 +1589,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
@@ -1611,7 +1611,7 @@ describe("setRateLimitHeaders", () => {
         new ArcjetAllowDecision({
           results: [],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), false);
@@ -1630,11 +1630,11 @@ describe("setRateLimitHeaders", () => {
               ttl: 0,
               state: "RUN",
               conclusion: "ALLOW",
-              reason: new ArcjetReason(),
+              reason: new ArcjetUnknownReason(),
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), false);
@@ -1673,7 +1673,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(errorLogSpy.mock.callCount(), 1);
@@ -1707,7 +1707,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
     });
@@ -1740,7 +1740,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
     });
@@ -1775,7 +1775,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
     });
@@ -1816,7 +1816,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -1849,7 +1849,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -1882,7 +1882,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -1915,7 +1915,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -1948,7 +1948,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
 
@@ -2098,7 +2098,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
@@ -2144,7 +2144,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
@@ -2190,7 +2190,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
@@ -2236,7 +2236,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
@@ -2285,7 +2285,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
@@ -2334,7 +2334,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
@@ -2383,7 +2383,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
@@ -2422,7 +2422,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
@@ -2459,7 +2459,7 @@ describe("setRateLimitHeaders", () => {
             }),
           ],
           ttl: 0,
-          reason: new ArcjetReason(),
+          reason: new ArcjetUnknownReason(),
         }),
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
