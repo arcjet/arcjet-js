@@ -43,7 +43,7 @@
     "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
     "pretest": "npm run build",
-    "test": "node --test --experimental-test-coverage"
+    "test": "node --test --experimental-test-coverage -- test/**/*.ts"
   },
   "dependencies": {
     "@arcjet/analyze": "1.0.0-beta.8",
