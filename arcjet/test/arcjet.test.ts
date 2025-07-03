@@ -2429,9 +2429,9 @@ test("SDK", async (t) => {
     async () => {
       let parameters: unknown;
 
-      const client = {
-        async decide() {
-          parameters = [...arguments].slice(2);
+      const client: Client = {
+        async decide(a, b, ...rest) {
+          parameters = rest;
           return new ArcjetAllowDecision({
             ttl: 0,
             reason: new ArcjetTestReason(),
@@ -2496,9 +2496,9 @@ test("SDK", async (t) => {
   await t.test("should not add rules to the parent client", async () => {
     let parameters: unknown;
 
-    const client = {
-      async decide() {
-        parameters = [...arguments].slice(2);
+    const client: Client = {
+      async decide(a, b, ...rest) {
+        parameters = rest;
         return new ArcjetAllowDecision({
           ttl: 0,
           reason: new ArcjetTestReason(),
@@ -3200,9 +3200,9 @@ test("SDK", async (t) => {
   await t.test("should call `decide` if all rules decide `ALLOW`", async () => {
     let parameters: unknown;
 
-    const client = {
-      async decide() {
-        parameters = [...arguments].slice(2);
+    const client: Client = {
+      async decide(a, b, ...rest) {
+        parameters = rest;
         return new ArcjetErrorDecision({
           ttl: 0,
           reason: new ArcjetErrorReason("reason"),
@@ -3313,9 +3313,9 @@ test("SDK", async (t) => {
     async () => {
       let parameters: unknown;
 
-      const client = {
-        async decide() {
-          parameters = [...arguments].slice(2);
+      const client: Client = {
+        async decide(a, b, ...rest) {
+          parameters = rest;
           return new ArcjetErrorDecision({
             ttl: 0,
             reason: new ArcjetErrorReason("reason"),
@@ -3645,17 +3645,14 @@ test("SDK", async (t) => {
       rules: [[rule]],
       log: {
         ...exampleLogger,
-        error() {
+        error(...parameters) {
           assert.equal(calls, 1);
           calls++;
-          assert.deepEqual(
-            [...arguments],
-            [
-              "Failure running rule: %s due to %s",
-              "TEST_RULE_LOCAL_THROW_STRING",
-              "Local rule protect failed",
-            ],
-          );
+          assert.deepEqual(parameters, [
+            "Failure running rule: %s due to %s",
+            "TEST_RULE_LOCAL_THROW_STRING",
+            "Local rule protect failed",
+          ]);
         },
       },
     }).protect(exampleContext, exampleDetails);
@@ -3686,17 +3683,14 @@ test("SDK", async (t) => {
       rules: [[rule]],
       log: {
         ...exampleLogger,
-        error() {
+        error(...parameters) {
           assert.equal(calls, 1);
           calls++;
-          assert.deepEqual(
-            [...arguments],
-            [
-              "Failure running rule: %s due to %s",
-              "TEST_RULE_LOCAL_THROW_NULL",
-              "Unknown problem",
-            ],
-          );
+          assert.deepEqual(parameters, [
+            "Failure running rule: %s due to %s",
+            "TEST_RULE_LOCAL_THROW_NULL",
+            "Unknown problem",
+          ]);
         },
       },
     }).protect(exampleContext, exampleDetails);
