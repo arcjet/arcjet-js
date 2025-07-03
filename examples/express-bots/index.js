@@ -1,4 +1,5 @@
 import arcjet, { detectBot, shield } from "@arcjet/node";
+import { isSpoofedBot } from "@arcjet/inspect";
 import express from "express";
 
 const app = express();
@@ -24,23 +25,28 @@ const aj = arcjet({
 
 app.get('/', async (req, res) => {
   const decision = await aj.protect(req);
-  // We need to check that the bot is who they say they are.
-  if (decision.reason.isSpoofed()) {
-    return NextResponse.json(
-      { error: "You are pretending to be a good bot!" },
-      { status: 403, headers },
-    );
-  }
 
-  if (decision.isBot()) {
-    // We want to check for disallowed bots, or spoofed bots
-    if (decision.isDenied() || decision.reason.isSpoofed()) {
+  if (decision.isDenied()) {
+    // We want to check for disallowed bots
+    if (decision.reason.isBot()) {
       res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({
+      return res.end(JSON.stringify({
         error: "You are a bot",
-        detected: decision.reason.denied[0]
       }));
     }
+
+    res.writeHead(403, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({
+      error: "Forbidden",
+    }));
+  }
+
+  // We need to check that the bot is who they say they are.
+  if (decision.results.some(isSpoofedBot)) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({
+      error: "You are pretending to be a good bot!",
+    }));
   }
 
   res.writeHead(200, { "Content-Type": "application/json" });
