@@ -23,6 +23,9 @@ redaction. A developer-first approach to security.
 This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework. **Find
 our other [SDKs on GitHub][sdks-github]**.
 
+- [npm package (`@arcjet/next`)](https://www.npmjs.com/package/@arcjet/next)
+- [GitHub source code (`arcjet-next/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-next)
+
 ## Example app
 
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]

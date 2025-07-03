@@ -22,6 +22,9 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [SvelteKit][sveltekit].
 
+- [npm package (`@arcjet/sveltekit`)](https://www.npmjs.com/package/@arcjet/sveltekit)
+- [GitHub source code (`arcjet-sveltekit/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-sveltekit)
+
 ## Getting started
 
 Visit the [quick start guide][quick-start] to get started.

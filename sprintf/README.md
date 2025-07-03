@@ -20,6 +20,9 @@
 
 This package is platform-independent in order to support multiple runtimes in varying environments, such as Edge Runtime, Node.js, Bun, Deno, and Cloudflare Workers.
 
+- [npm package (`@arcjet/sprintf`)](https://www.npmjs.com/package/@arcjet/sprintf)
+- [GitHub source code (`sprintf/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/sprintf)
+
 ## Installation
 
 ```shell

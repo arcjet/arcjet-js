@@ -18,6 +18,9 @@
 
 [Arcjet][arcjet] extension of the Headers class.
 
+- [npm package (`@arcjet/headers`)](https://www.npmjs.com/package/@arcjet/headers)
+- [GitHub source code (`headers/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/headers)
+
 ## Installation
 
 ```shell

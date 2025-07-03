@@ -22,6 +22,9 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Remix][remix].
 
+- [npm package (`@arcjet/remix`)](https://www.npmjs.com/package/@arcjet/remix)
+- [GitHub source code (`arcjet-remix/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-remix)
+
 ## Example app
 
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]

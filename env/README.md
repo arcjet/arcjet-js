@@ -31,6 +31,9 @@ type Env = {
 };
 ```
 
+- [npm package (`@arcjet/env`)](https://www.npmjs.com/package/@arcjet/env)
+- [GitHub source code (`env/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/env)
+
 ## Installation
 
 ```shell

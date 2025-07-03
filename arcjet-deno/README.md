@@ -22,6 +22,9 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Deno][deno].
 
+- [npm package (`@arcjet/deno`)](https://www.npmjs.com/package/@arcjet/deno)
+- [GitHub source code (`arcjet-deno/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-deno)
+
 ## Rate limit + bot detection example
 
 The [Arcjet rate limit][rate-limit-concepts-docs] example below applies a token

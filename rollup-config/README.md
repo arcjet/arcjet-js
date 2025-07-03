@@ -18,6 +18,9 @@
 
 Custom rollup config for [Arcjet][arcjet] projects.
 
+- [npm package (`@arcjet/rollup-config`)](https://www.npmjs.com/package/@arcjet/rollup-config)
+- [GitHub source code (`rollup-config/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/rollup-config)
+
 ## Installation
 
 ```shell

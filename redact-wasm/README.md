@@ -18,6 +18,9 @@
 
 [Arcjet][arcjet] sensitive information redaction detection engine.
 
+- [npm package (`@arcjet/redact-wasm`)](https://www.npmjs.com/package/@arcjet/redact-wasm)
+- [GitHub source code (`redact-wasm/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/redact-wasm)
+
 ## Installation
 
 ```shell

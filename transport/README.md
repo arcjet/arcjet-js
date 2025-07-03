@@ -18,6 +18,9 @@
 
 Transport mechanisms for the [Arcjet][arcjet] protocol.
 
+- [npm package (`@arcjet/transport`)](https://www.npmjs.com/package/@arcjet/transport)
+- [GitHub source code (`transport/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/transport)
+
 ## Installation
 
 ```shell

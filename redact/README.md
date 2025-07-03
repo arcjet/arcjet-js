@@ -23,6 +23,9 @@ against common attacks.
 This is the [Arcjet][arcjet] TypeScript and JavaScript sensitive information
 redaction library.
 
+- [npm package (`@arcjet/redact`)](https://www.npmjs.com/package/@arcjet/redact)
+- [GitHub source code (`redact/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/redact)
+
 ## Installation
 
 ```shell

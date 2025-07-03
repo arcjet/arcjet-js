@@ -25,6 +25,9 @@ This is the [Arcjet][arcjet] SDK for [Node.js][node-js].
 **Looking for our Next.js framework SDK?** Check out the
 [`@arcjet/next`][alt-sdk] package.
 
+- [npm package (`@arcjet/node`)](https://www.npmjs.com/package/@arcjet/node)
+- [GitHub source code (`arcjet-node/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-node)
+
 ## Getting started
 
 Visit the [quick start guide][quick-start] to get started.

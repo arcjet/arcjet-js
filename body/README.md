@@ -18,6 +18,9 @@
 
 [Arcjet][arcjet] utilities for getting the body from a Node.js Stream.
 
+- [npm package (`@arcjet/body`)](https://www.npmjs.com/package/@arcjet/body)
+- [GitHub source code (`body/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/body)
+
 ## Installation
 
 ```shell

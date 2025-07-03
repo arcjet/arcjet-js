@@ -22,6 +22,9 @@ against common attacks.
 
 This package provides WebAssembly bindings to [Arcjet's][arcjet] local analysis engine.
 
+- [npm package (`@arcjet/analyze-wasm`)](https://www.npmjs.com/package/@arcjet/analyze-wasm)
+- [GitHub source code (`analyze-wasm/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/analyze-wasm)
+
 ## Installation
 
 ```shell

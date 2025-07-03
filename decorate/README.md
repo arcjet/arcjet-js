@@ -18,6 +18,9 @@
 
 [Arcjet][arcjet] utilities for decorating responses with information.
 
+- [npm package (`@arcjet/decorate`)](https://www.npmjs.com/package/@arcjet/decorate)
+- [GitHub source code (`decorate/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/decorate)
+
 ## Installation
 
 ```shell
