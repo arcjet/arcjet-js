@@ -120,7 +120,7 @@ function extractReason(result: ArcjetRuleResult): ArcjetReasons {
 function isRateLimitReason(
   reason: ArcjetReasons,
 ): reason is ArcjetRateLimitReason {
-  return reason.isRateLimit();
+  return reason.type === "RATE_LIMIT";
 }
 
 function nearestLimit(
