@@ -1,10 +1,6 @@
 import format from "@arcjet/sprintf";
-import type { ArcjetDecision } from "@arcjet/protocol";
-import {
-  ArcjetRateLimitReason,
-  ArcjetReason,
-  ArcjetRuleResult,
-} from "@arcjet/protocol";
+import type { ArcjetDecision, ArcjetReasons } from "@arcjet/protocol";
+import { ArcjetRateLimitReason, ArcjetRuleResult } from "@arcjet/protocol";
 
 interface HeaderLike {
   has(name: string): boolean;
@@ -117,12 +113,12 @@ function toLimitString({
   return `limit=${max}, remaining=${remaining}, reset=${reset}`;
 }
 
-function extractReason(result: ArcjetRuleResult): ArcjetReason {
+function extractReason(result: ArcjetRuleResult): ArcjetReasons {
   return result.reason;
 }
 
 function isRateLimitReason(
-  reason: ArcjetReason,
+  reason: ArcjetReasons,
 ): reason is ArcjetRateLimitReason {
   return reason.isRateLimit();
 }

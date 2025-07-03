@@ -49,11 +49,11 @@ import {
   ArcjetErrorDecision,
   ArcjetErrorReason,
   ArcjetRateLimitReason,
-  ArcjetReason,
   ArcjetRuleResult,
   ArcjetShieldReason,
   ArcjetIpDetails,
   ArcjetSensitiveInfoReason,
+  ArcjetUnknownReason,
 } from "../index.js";
 import { Timestamp } from "@bufbuild/protobuf";
 
@@ -352,15 +352,11 @@ test("convert", async (t) => {
   await t.test("ArcjetReasonFromProtocol", async (t) => {
     await t.test("should create an anonymous reason w/o proto", () => {
       const reason = ArcjetReasonFromProtocol();
-
-      assert.ok(reason instanceof ArcjetReason);
       assert.equal(reason.type, undefined);
     });
 
     await t.test("should create an anonymous reason w/ an empty proto", () => {
       const reason = ArcjetReasonFromProtocol(new Reason());
-
-      assert.ok(reason instanceof ArcjetReason);
       assert.equal(reason.type, undefined);
     });
 
@@ -579,8 +575,6 @@ test("convert", async (t) => {
             },
           }),
         );
-
-        assert.ok(reason instanceof ArcjetReason);
         assert.equal(reason.type, undefined);
       },
     );
@@ -606,7 +600,7 @@ test("convert", async (t) => {
 
   await t.test("ArcjetReasonToProtocol", async (t) => {
     await t.test("should create an anonymous reason w/ an empty proto", () => {
-      const reason = ArcjetReasonToProtocol(new ArcjetReason());
+      const reason = ArcjetReasonToProtocol(new ArcjetUnknownReason());
 
       assert.ok(reason instanceof Reason);
       assert.equal(reason.reason.case, undefined);
@@ -793,7 +787,7 @@ test("convert", async (t) => {
             new ArcjetRuleResult({
               conclusion: "ALLOW",
               fingerprint: "fingerprint",
-              reason: new ArcjetReason(),
+              reason: new ArcjetUnknownReason(),
               ruleId: "rule-id",
               state: "RUN",
               ttl: 0,
@@ -828,7 +822,7 @@ test("convert", async (t) => {
           new ArcjetRuleResult({
             conclusion: "ALLOW",
             fingerprint: "fingerprint",
-            reason: new ArcjetReason(),
+            reason: new ArcjetUnknownReason(),
             ruleId: "rule-id",
             state: "RUN",
             ttl: 0,
@@ -847,7 +841,7 @@ test("convert", async (t) => {
             new ArcjetAllowDecision({
               id: "abc123",
               ip: new ArcjetIpDetails(),
-              reason: new ArcjetReason(),
+              reason: new ArcjetUnknownReason(),
               results: [],
               ttl: 0,
             }),

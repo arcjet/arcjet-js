@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ArcjetIpDetails, ArcjetReason, ArcjetRuleResult } from "../index.js";
+import {
+  ArcjetIpDetails,
+  ArcjetRuleResult,
+  ArcjetUnknownReason,
+} from "../index.js";
 import { IpDetails } from "../proto/decide/v1alpha1/decide_pb.js";
 
 test("protocol", async (t) => {
@@ -9,7 +13,7 @@ test("protocol", async (t) => {
       const result = new ArcjetRuleResult({
         conclusion: "ALLOW",
         fingerprint: "fingerprint",
-        reason: new ArcjetReason(),
+        reason: new ArcjetUnknownReason(),
         ruleId: "rule-id",
         state: "RUN",
         ttl: 0,
