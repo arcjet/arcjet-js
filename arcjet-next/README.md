@@ -117,12 +117,12 @@ export async function GET(req: Request) {
   console.log("Arcjet decision", decision);
 
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return NextResponse.json(
         { error: "Too Many Requests", reason: decision.reason },
         { status: 429 },
       );
-    } else if (decision.reason.isBot()) {
+    } else if (decision.reason.type === "BOT") {
       return NextResponse.json(
         { error: "No bots allowed", reason: decision.reason },
         { status: 403 },
@@ -189,7 +189,7 @@ and results.
 ```ts
 for (const result of decision.results) {
   // Check the rate limit rule results
-  if (result.reason.isRateLimit()) {
+  if (result.reason.type === "RATE_LIMIT") {
     if (result.isDenied()) {
       console.log("Rate limit rule returned deny conclusion", result);
     }
@@ -200,7 +200,7 @@ for (const result of decision.results) {
   }
 
   // Log the name of any denied bots
-  if (result.reason.isBot()) {
+  if (result.reason.type === "BOT") {
     if (result.isDenied()) {
       console.log("Detected bot", reason.denied);
     }

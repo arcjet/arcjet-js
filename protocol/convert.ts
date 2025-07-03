@@ -283,7 +283,7 @@ export function ArcjetReasonFromProtocol(proto?: Reason): ArcjetReasons {
 }
 
 export function ArcjetReasonToProtocol(reason: ArcjetReasons): Reason {
-  if (reason.isRateLimit()) {
+  if (reason.type === "RATE_LIMIT") {
     return new Reason({
       reason: {
         case: "rateLimit",
@@ -300,7 +300,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReasons): Reason {
     });
   }
 
-  if (reason.isBot()) {
+  if (reason.type === "BOT") {
     return new Reason({
       reason: {
         case: "botV2",
@@ -314,7 +314,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReasons): Reason {
     });
   }
 
-  if (reason.isEdgeRule()) {
+  if (reason.type === "EDGE_RULE") {
     return new Reason({
       reason: {
         case: "edgeRule",
@@ -323,7 +323,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReasons): Reason {
     });
   }
 
-  if (reason.isShield()) {
+  if (reason.type === "SHIELD") {
     return new Reason({
       reason: {
         case: "shield",
@@ -334,7 +334,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReasons): Reason {
     });
   }
 
-  if (reason.isEmail()) {
+  if (reason.type === "EMAIL") {
     return new Reason({
       reason: {
         case: "email",
@@ -345,7 +345,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReasons): Reason {
     });
   }
 
-  if (reason.isError()) {
+  if (reason.type === "ERROR") {
     return new Reason({
       reason: {
         case: "error",
@@ -356,7 +356,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReasons): Reason {
     });
   }
 
-  if (reason.isSensitiveInfo()) {
+  if (reason.type === "SENSITIVE_INFO") {
     return new Reason({
       reason: {
         case: "sensitiveInfo",
