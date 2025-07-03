@@ -13,7 +13,7 @@ export const server = {
         .withRule(sensitiveInfo({ mode: "LIVE", allow: [] }))
         .protect(request);
       if (decision.isDenied()) {
-        if (decision.reason.isSensitiveInfo()) {
+        if (decision.reason.type === 'SENSITIVE_INFO') {
           throw new ActionError({
             code: "BAD_REQUEST",
             message: `Your message contains sensitive information.`,
@@ -36,7 +36,7 @@ export const server = {
         .withRule(validateEmail({ mode: "LIVE", allow: [] }))
         .protect(request, { email });
       if (decision.isDenied()) {
-        if (decision.reason.isEmail()) {
+        if (decision.reason.type === "EMAIL") {
           throw new ActionError({
             code: "BAD_REQUEST",
             message: `Invalid email address provided.`,

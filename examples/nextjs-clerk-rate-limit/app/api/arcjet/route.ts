@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return NextResponse.json(
         {
           error: "Too Many Requests",
@@ -78,11 +78,11 @@ export async function GET(req: NextRequest) {
       }
     );
   }
-  
+
   let reset: Date | undefined;
   let remaining: number | undefined;
 
-  if (decision.reason.isRateLimit()) {
+  if (decision.reason.type === "RATE_LIMIT") {
     reset = decision.reason.resetTime;
     remaining = decision.reason.remaining;
   }

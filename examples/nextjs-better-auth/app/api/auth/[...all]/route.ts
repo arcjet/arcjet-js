@@ -107,9 +107,9 @@ export const POST = async (req: NextRequest) => {
   console.log("Arcjet Decision:", decision);
 
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return new Response(null, { status: 429 });
-    } else if (decision.reason.isEmail()) {
+    } else if (decision.reason.type === "EMAIL") {
       let message: string;
 
       if (decision.reason.emailTypes.includes("INVALID")) {

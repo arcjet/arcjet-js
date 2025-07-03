@@ -34,7 +34,7 @@ export async function GET(req: Request) {
   }
 
   const headers = new Headers();
-  if (decision.reason.isBot()) {
+  if (decision.reason.type === "BOT") {
     // WARNING: This is illustrative! Don't share this metadata with users;
     // otherwise they may use it to subvert bot detection!
     headers.set("X-Arcjet-Bot-Allowed", decision.reason.allowed.join(", "))

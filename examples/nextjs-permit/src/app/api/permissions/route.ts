@@ -21,7 +21,7 @@ export async function GET(req: Request) {
 
   // If the decision is denied then return an error response
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return NextResponse.json(
         { error: "Too Many Requests", reason: decision.reason },
         { status: 429 }

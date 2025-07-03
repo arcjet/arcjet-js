@@ -792,7 +792,7 @@ export function tokenBucket<
       );
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+      if (cached && cached.reason.type === "RATE_LIMIT") {
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
@@ -939,7 +939,7 @@ export function fixedWindow<
       );
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+      if (cached && cached.reason.type === "RATE_LIMIT") {
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
@@ -1080,7 +1080,7 @@ export function slidingWindow<
       );
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+      if (cached && cached.reason.type === "RATE_LIMIT") {
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,

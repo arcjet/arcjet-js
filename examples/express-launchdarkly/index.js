@@ -11,7 +11,7 @@ app.get("/", async (req, res) => {
 
   // If the decision is denied, return an appropriate status code
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return res.status(429).send("Too many requests");
     } else {
       return res.status(403).send("Forbidden");

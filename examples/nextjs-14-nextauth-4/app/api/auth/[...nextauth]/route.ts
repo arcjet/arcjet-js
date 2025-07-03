@@ -42,7 +42,7 @@ const ajProtectedPOST = async (req: Request, res: Response) => {
   console.log("Arcjet decision", decision);
 
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return NextResponse.json({ error: "Too Many Requests" }, { status: 429 });
     } else {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });

@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 
   // If the decision is denied then return an error response
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return NextResponse.json(
         { error: "Too Many Requests", reason: decision.reason },
         { status: 429 }
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
   let ratelimitData = null;
   for (const result of decision.results) {
     console.log("Results", ratelimitData);
-    if (result.reason.isRateLimit()) {
+    if (result.reason.type === "RATE_LIMIT") {
       ratelimitData = result.reason;
     }
   }

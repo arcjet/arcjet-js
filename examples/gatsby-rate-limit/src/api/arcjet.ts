@@ -26,7 +26,7 @@ export default async function handler(
     }
 
     if (decision.isDenied()) {
-        if (decision.reason.isRateLimit()) {
+        if (decision.reason.type === "RATE_LIMIT") {
             return res.status(429).json({ error: "Too many requests" });
         }
 

@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   console.log("Arcjet decision: ", decision);
 
   if (decision.isDenied()) {
-    if (decision.reason.isEmail()) {
+    if (decision.reason.type === "EMAIL") {
       let message: string;
 
       // These are specific errors to help the user, but will also reveal the
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
         { message, reason: decision.reason },
         { status: 400 }
       );
-    } else if (decision.reason.isRateLimit()) {
+    } else if (decision.reason.type === "RATE_LIMIT") {
       const reset = decision.reason.resetTime;
 
       if (reset === undefined) {
