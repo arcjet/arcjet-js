@@ -43,8 +43,8 @@
     "lint": "eslint .",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
-    "test-api": "node --test",
-    "test-coverage": "node --experimental-test-coverage --test",
+    "test-api": "node --test -- test/**/*.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/**/*.ts",
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
