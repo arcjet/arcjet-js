@@ -84,7 +84,7 @@ export async function GET(req: NextRequest, res: Response) {
   }
 
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return NextResponse.json(
         {
           error: "Too Many Requests",

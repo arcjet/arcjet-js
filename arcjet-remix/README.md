@@ -74,7 +74,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const decision = await aj.protect(args);
 
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       throw new Response(null, {
         status: 429,
         statusText: "Too Many Requests",
