@@ -1,6 +1,4 @@
 import process from "node:process";
-import { readBody } from "@arcjet/body";
-import type { Env } from "@arcjet/env";
 import {
   baseUrl as baseUrlFromEnvironment,
   isDevelopment,
@@ -250,30 +248,11 @@ export default function arcjet<
 
         async function getBody() {
           try {
-            // TODO(@wooorm-arcjet): fix types of `ArcjetRequest` and use `arcjetRequest.headers`
-            // here: it exists but the types are wrong.
-            const headers = new ArcjetHeaders(fastifyRequest.headers);
-            const contentLength = headers.get("content-length");
-            let expectedLength: number | undefined;
-
-            if (typeof contentLength === "string") {
-              try {
-                expectedLength = parseInt(contentLength, 10);
-              } catch {
-                // Ignore unparsable `content-length`.
-              }
+            if (typeof fastifyRequest.body === "string") {
+              return fastifyRequest.body;
+            } else {
+              return JSON.stringify(fastifyRequest.body);
             }
-
-            // Awaited to throw if it rejects and we'll just return undefined
-            // TODO(@wooorm-arcjet): the try/catch seems to be too big to know definitely that only redirects throw.
-            const body = await readBody(fastifyRequest.raw, {
-              expectedLength,
-              // This will throw `Request entity too large` at `1mb`.
-              // TODO(@wooorm-arcjet): configurable? Otherwise, some constant instead of magic number.
-              limit: 1048576,
-            });
-
-            return body;
           } catch (e) {
             log.error("failed to get request body: %s", errorMessage(e));
             return;
