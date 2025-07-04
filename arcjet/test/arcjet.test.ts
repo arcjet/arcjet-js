@@ -3087,7 +3087,7 @@ test("SDK", async (t) => {
     });
 
     await t.test(
-      "should not call `report` if all rules decide `ALLOW`",
+      "should call `decide` instead of `report` if all rules decide `ALLOW`",
       async () => {
         let parameters: unknown;
 
