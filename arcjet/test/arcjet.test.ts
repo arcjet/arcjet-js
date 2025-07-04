@@ -1842,7 +1842,7 @@ test("shield", async (t) => {
   });
 
   await t.test("should set `mode: DRY_RUN` w/o `mode`", async () => {
-    // TODO(@wooorm-arcjet): if `{}` is allowed than so should ``? But types do not allow it?
+    // TODO(#4560): if `{}` is allowed then so could/should ``.
     const [rule] = shield({});
     assert.equal(rule.mode, "DRY_RUN");
   });
