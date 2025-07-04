@@ -2027,6 +2027,7 @@ test("sensitiveInfo", async (t) => {
       },
       exampleDetails,
     );
+    // TODO(#4561): should be `ALLOW` in dry run mode.
     assert.equal(result.conclusion, "DENY");
     assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
     assert.deepEqual(result.reason.allowed, []);
