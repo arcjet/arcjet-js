@@ -212,58 +212,30 @@ export type ArcjetReasons =
 export class ArcjetReason {
   type: ArcjetReasons["type"];
 
-  /**
-   * @deprecated
-   *   Use the `type` property instead.
-   */
   isSensitiveInfo(): this is ArcjetSensitiveInfoReason {
     return this.type === "SENSITIVE_INFO";
   }
 
-  /**
-   * @deprecated
-   *   Use the `type` property instead.
-   */
   isRateLimit(): this is ArcjetRateLimitReason {
     return this.type === "RATE_LIMIT";
   }
 
-  /**
-   * @deprecated
-   *   Use the `type` property instead.
-   */
   isBot(): this is ArcjetBotReason {
     return this.type === "BOT";
   }
 
-  /**
-   * @deprecated
-   *   Use the `type` property instead.
-   */
   isEdgeRule(): this is ArcjetEdgeRuleReason {
     return this.type === "EDGE_RULE";
   }
 
-  /**
-   * @deprecated
-   *   Use the `type` property instead.
-   */
   isShield(): this is ArcjetShieldReason {
     return this.type === "SHIELD";
   }
 
-  /**
-   * @deprecated
-   *   Use the `type` property instead.
-   */
   isEmail(): this is ArcjetEmailReason {
     return this.type === "EMAIL";
   }
 
-  /**
-   * @deprecated
-   *   Use the `type` property instead.
-   */
   isError(): this is ArcjetErrorReason {
     return this.type === "ERROR";
   }
