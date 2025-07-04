@@ -9,8 +9,7 @@ import ArcjetHeaders from "@arcjet/headers";
 // TODO(@wooorm-arcjet): Expose `Cidr` from `@arcjet/ip`.
 import findIp, { parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
-// TODO(@wooorm-arcjet): we use export maps, this export map leaks files.
-// Export maps should be clean, no file extensions.
+// TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 import type {
