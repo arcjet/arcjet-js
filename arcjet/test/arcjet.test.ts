@@ -2923,7 +2923,6 @@ test("SDK", async (t) => {
     "should conclude an error if fingerprint cannot be generated (empty request)",
     async () => {
       const aj = arcjet(exampleOptions);
-      // TODO(@wooorm-arcjet): if this so clearly throws, then why is an empty object allowed by the types?
       const decision = await aj.protect(exampleContext, {});
       assert.equal(decision.conclusion, "ERROR");
     },
