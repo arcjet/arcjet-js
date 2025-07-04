@@ -3017,7 +3017,7 @@ test("SDK", async (t) => {
     );
 
     await t.test(
-      "should not call `decide` if a rule decides `DENY",
+      "should call `report` instead of `decide` if a rule decides `DENY`",
       async () => {
         // TODO(@wooorm-arcjet): investigate why typescript does not allow this object to be passed as a regular object
         // or even as an `as const` object.
