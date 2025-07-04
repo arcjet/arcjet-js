@@ -18,6 +18,9 @@
 
 [Arcjet][arcjet] utilities for inspecting decisions made by an SDK.
 
+- [npm package (`@arcjet/inspect`)](https://www.npmjs.com/package/@arcjet/inspect)
+- [GitHub source code (`inspect/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/inspect)
+
 ## Installation
 
 ```shell

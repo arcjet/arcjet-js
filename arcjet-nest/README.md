@@ -25,6 +25,9 @@ This is the [Arcjet][arcjet] SDK for [NestJS][nest-js].
 **Looking for our Next.js framework SDK?** Check out the
 [`@arcjet/next`][alt-sdk] package.
 
+- [npm package (`@arcjet/nest`)](https://www.npmjs.com/package/@arcjet/nest)
+- [GitHub source code (`arcjet-nest/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-nest)
+
 ## Getting started
 
 Visit the [quick start guide][quick-start] to get started.

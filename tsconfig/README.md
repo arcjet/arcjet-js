@@ -18,6 +18,9 @@
 
 Custom tsconfig for [Arcjet][arcjet] projects.
 
+- [npm package (`@arcjet/tsconfig`)](https://www.npmjs.com/package/@arcjet/tsconfig)
+- [GitHub source code (`tsconfig/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/tsconfig)
+
 ## Installation
 
 ```shell

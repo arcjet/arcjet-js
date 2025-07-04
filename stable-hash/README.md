@@ -18,6 +18,9 @@
 
 [Arcjet][arcjet] stable hashing utility.
 
+- [npm package (`@arcjet/stable-hash`)](https://www.npmjs.com/package/@arcjet/stable-hash)
+- [GitHub source code (`stable-hash/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/stable-hash)
+
 ## Installation
 
 ```shell

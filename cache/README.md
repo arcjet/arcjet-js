@@ -18,6 +18,9 @@
 
 [Arcjet][arcjet] cache interface and implementations.
 
+- [npm package (`@arcjet/cache`)](https://www.npmjs.com/package/@arcjet/cache)
+- [GitHub source code (`cache/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/cache)
+
 ## Installation
 
 ```shell

@@ -18,6 +18,9 @@
 
 [Arcjet][arcjet] utilities for parsing duration strings.
 
+- [npm package (`@arcjet/duration`)](https://www.npmjs.com/package/@arcjet/duration)
+- [GitHub source code (`duration/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/duration)
+
 ## Installation
 
 ```shell

@@ -22,6 +22,9 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK for [Bun.sh][bun-sh].
 
+- [npm package (`@arcjet/bun`)](https://www.npmjs.com/package/@arcjet/bun)
+- [GitHub source code (`arcjet-bun/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-bun)
+
 ## Getting started
 
 Visit the [quick start guide][quick-start] to get started.

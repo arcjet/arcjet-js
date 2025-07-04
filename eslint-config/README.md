@@ -18,6 +18,9 @@
 
 Custom eslint config for [Arcjet][arcjet] projects.
 
+- [npm package (`@arcjet/eslint-config`)](https://www.npmjs.com/package/@arcjet/eslint-config)
+- [GitHub source code (`eslint-config/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/eslint-config)
+
 ## Installation
 
 ```shell

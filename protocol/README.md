@@ -18,6 +18,9 @@
 
 The TypeScript & JavaScript interface into the [Arcjet][arcjet] protocol.
 
+- [npm package (`@arcjet/protocol`)](https://www.npmjs.com/package/@arcjet/protocol)
+- [GitHub source code (`protocol/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/protocol)
+
 ## Installation
 
 ```shell

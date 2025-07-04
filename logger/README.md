@@ -19,6 +19,9 @@
 [Arcjet][arcjet] lightweight logger which mirrors the [Pino][pino-api]
 structured logger interface.
 
+- [npm package (`@arcjet/logger`)](https://www.npmjs.com/package/@arcjet/logger)
+- [GitHub source code (`logger/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/logger)
+
 ## Installation
 
 ```shell

@@ -22,6 +22,9 @@ against common attacks.
 
 This is the [Arcjet][arcjet] SDK integration for [Astro][astro].
 
+- [npm package (`@arcjet/astro`)](https://www.npmjs.com/package/@arcjet/astro)
+- [GitHub source code (`arcjet-astro/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-astro)
+
 ## Getting started
 
 Visit the [quick start guide][quick-start] to get started.

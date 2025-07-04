@@ -22,6 +22,9 @@ against common attacks.
 
 This is the [Arcjet][arcjet] TypeScript and JavaScript SDK core.
 
+- [npm package (`arcjet`)](https://www.npmjs.com/package/arcjet)
+- [GitHub source code (`arcjet/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet)
+
 ## Getting started
 
 Visit [docs.arcjet.com](https://docs.arcjet.com) to get started.

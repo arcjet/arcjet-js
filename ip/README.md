@@ -18,6 +18,9 @@
 
 [Arcjet][arcjet] utilities for finding the originating IP of a request.
 
+- [npm package (`@arcjet/ip`)](https://www.npmjs.com/package/@arcjet/ip)
+- [GitHub source code (`ip/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/ip)
+
 ## Installation
 
 ```shell

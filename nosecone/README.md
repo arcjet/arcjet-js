@@ -18,6 +18,9 @@
 
 Protect your `Response` with secure headers.
 
+- [npm package (`nosecone`)](https://www.npmjs.com/package/nosecone)
+- [GitHub source code (`nosecone/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/nosecone)
+
 ## Installation
 
 ```shell
