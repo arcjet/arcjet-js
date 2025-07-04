@@ -3324,7 +3324,7 @@ test("SDK", async (t) => {
   });
 
   await t.test(
-    "should detect `@vercel/request-context` and provide it to `report`",
+    "should detect `@vercel/request-context` and provide `waitUntil` to `report`",
     async () => {
       let calls = 0;
       const client: Client = {
