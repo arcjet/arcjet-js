@@ -2208,7 +2208,7 @@ test("sensitiveInfo", async (t) => {
   });
 
   await t.test(
-    "should fail id custom `detect` returns non-string",
+    "should fail if custom `detect` returns non-string",
     async () => {
       function detect(tokens: string[]) {
         return tokens.map((token) => {
