@@ -75,8 +75,6 @@ if (!arcjetKey) {
 }
 
 const arcjet = arcjetFastify({
-  // Track requests per ID of authenticated users.
-  characteristics: ["userId"],
   key: arcjetKey,
   rules: [
     // Manage automated clients and bots.
@@ -93,6 +91,7 @@ const arcjet = arcjetFastify({
     // See <https://docs.arcjet.com/rate-limiting/reference/> for more info.
     tokenBucket({
       capacity: 10, // Max capacity of `x` tokens.
+      characteristics: ["userId"], // Track per ID of authenticated users.
       interval: 10, // Refill every `x` seconds.
       mode: "LIVE", // Use `DRY_RUN` instead of `LIVE` to only log.
       refillRate: 5, // Refill `x` tokens per interval.
