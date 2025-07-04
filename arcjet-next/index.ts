@@ -245,7 +245,7 @@ export interface ArcjetNext<Props extends PlainObject> {
    *   conclusion based on evaluating each of the configured rules. If you wish
    *   to accept Arcjet’s recommended action based on the configured rules then
    *   you can use this property.
-   * - `reason` (`ArcjetReason`) - An object containing more detailed
+   * - `reason` (`ArcjetReasons`) - An object containing more detailed
    *   information about the conclusion.
    * - `results` (`ArcjetRuleResult[]`) - An array of {@link ArcjetRuleResult} objects
    *   containing the results of each rule that was executed.
@@ -614,7 +614,7 @@ export function createMiddleware(
 
     if (decision.isDenied()) {
       // TODO(#222): Content type negotiation using `Accept` header
-      if (decision.reason.isRateLimit()) {
+      if (decision.reason.type === "RATE_LIMIT") {
         return NextResponse.json(
           { code: 429, message: "Too Many Requests" },
           { status: 429 },
@@ -680,7 +680,7 @@ export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
     if (decision.isDenied()) {
       if (isNextApiResponse(response)) {
         // TODO(#222): Content type negotiation using `Accept` header
-        if (decision.reason.isRateLimit()) {
+        if (decision.reason.type === "RATE_LIMIT") {
           return response
             .status(429)
             .json({ code: 429, message: "Too Many Requests" });
@@ -689,7 +689,7 @@ export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
         }
       } else {
         // TODO(#222): Content type negotiation using `Accept` header
-        if (decision.reason.isRateLimit()) {
+        if (decision.reason.type === "RATE_LIMIT") {
           return NextResponse.json(
             { code: 429, message: "Too Many Requests" },
             { status: 429 },

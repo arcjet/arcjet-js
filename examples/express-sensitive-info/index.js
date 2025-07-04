@@ -27,7 +27,7 @@ app.use(express.text());
 app.post('/', async (req, res) => {
   const decision = await aj.protect(req);
 
-  if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
+  if (decision.isDenied() && decision.reason.type === "SENSITIVE_INFO") {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Sensitive Information Detected", denied: decision.reason.denied }));
   } else {

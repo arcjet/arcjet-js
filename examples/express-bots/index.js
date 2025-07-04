@@ -32,7 +32,7 @@ app.get('/', async (req, res) => {
     );
   }
 
-  if (decision.isBot()) {
+  if (decision.type === "BOT") {
     // We want to check for disallowed bots, or spoofed bots
     if (decision.isDenied() || decision.reason.isSpoofed()) {
       res.writeHead(400, { "Content-Type": "application/json" });

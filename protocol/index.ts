@@ -184,15 +184,28 @@ export const ArcjetSensitiveInfoType = Object.freeze({
   CREDIT_CARD_NUMBER: "CREDIT_CARD_NUMBER",
 });
 
+/**
+ * Map of concrete Arcjet reasons.
+ */
+export interface ArcjetReasonMap {
+  BOT: ArcjetBotReason;
+  EDGE_RULE: ArcjetEdgeRuleReason;
+  EMAIL: ArcjetEmailReason;
+  ERROR: ArcjetErrorReason;
+  RATE_LIMIT: ArcjetRateLimitReason;
+  SENSITIVE_INFO: ArcjetSensitiveInfoReason;
+  SHIELD: ArcjetShieldReason;
+}
+
+/**
+ * Union of all concrete Arcjet reasons.
+ */
+export type ArcjetReasons =
+  | ArcjetReasonMap[keyof ArcjetReasonMap]
+  | ArcjetUnknownReason;
+
 export class ArcjetReason {
-  type?:
-    | "RATE_LIMIT"
-    | "BOT"
-    | "EDGE_RULE"
-    | "SHIELD"
-    | "EMAIL"
-    | "ERROR"
-    | "SENSITIVE_INFO";
+  type: ArcjetReasons["type"];
 
   isSensitiveInfo(): this is ArcjetSensitiveInfoReason {
     return this.type === "SENSITIVE_INFO";
@@ -357,6 +370,10 @@ export class ArcjetErrorReason extends ArcjetReason {
   }
 }
 
+export class ArcjetUnknownReason extends ArcjetReason {
+  type = undefined;
+}
+
 export class ArcjetRuleResult {
   /**
    * The stable, deterministic, and unique identifier of the rule that generated
@@ -375,7 +392,7 @@ export class ArcjetRuleResult {
   ttl: number;
   state: ArcjetRuleState;
   conclusion: ArcjetConclusion;
-  reason: ArcjetReason;
+  reason: ArcjetReasons;
 
   constructor(init: {
     ruleId: string;
@@ -383,7 +400,7 @@ export class ArcjetRuleResult {
     ttl: number;
     state: ArcjetRuleState;
     conclusion: ArcjetConclusion;
-    reason: ArcjetReason;
+    reason: ArcjetReasons;
   }) {
     this.ruleId = init.ruleId;
     this.fingerprint = init.fingerprint;
@@ -681,7 +698,7 @@ export abstract class ArcjetDecision {
   ip: ArcjetIpDetails;
 
   abstract conclusion: ArcjetConclusion;
-  abstract reason: ArcjetReason;
+  abstract reason: ArcjetReasons;
 
   constructor(init: {
     id?: string;
@@ -719,13 +736,13 @@ export abstract class ArcjetDecision {
 
 export class ArcjetAllowDecision extends ArcjetDecision {
   conclusion = "ALLOW" as const;
-  reason: ArcjetReason;
+  reason: ArcjetReasons;
 
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
     ttl: number;
-    reason: ArcjetReason;
+    reason: ArcjetReasons;
     ip?: ArcjetIpDetails;
   }) {
     super(init);
@@ -736,13 +753,13 @@ export class ArcjetAllowDecision extends ArcjetDecision {
 
 export class ArcjetDenyDecision extends ArcjetDecision {
   conclusion = "DENY" as const;
-  reason: ArcjetReason;
+  reason: ArcjetReasons;
 
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
     ttl: number;
-    reason: ArcjetReason;
+    reason: ArcjetReasons;
     ip?: ArcjetIpDetails;
   }) {
     super(init);
@@ -752,13 +769,13 @@ export class ArcjetDenyDecision extends ArcjetDecision {
 }
 export class ArcjetChallengeDecision extends ArcjetDecision {
   conclusion = "CHALLENGE" as const;
-  reason: ArcjetReason;
+  reason: ArcjetReasons;
 
   constructor(init: {
     id?: string;
     results: ArcjetRuleResult[];
     ttl: number;
-    reason: ArcjetReason;
+    reason: ArcjetReasons;
     ip?: ArcjetIpDetails;
   }) {
     super(init);
