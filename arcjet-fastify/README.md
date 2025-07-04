@@ -51,6 +51,7 @@ Try an Arcjet protected app live at [https://example.arcjet.com][arcjet-examples
 ([source code][github-arcjet-examples]).
 
 [arcjet-examples]: https://example.arcjet.com
+[github-arcjet-examples]: https://github.com/arcjet/arcjet-js-example
 
 -->
 
@@ -181,4 +182,3 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [arcjet-shield-docs]: https://docs.arcjet.com/shield/concepts
 [arcjet-bot-categories]: https://docs.arcjet.com/bot-protection/identifying-bots#bot-categories
 [fastify]: https://fastify.dev/
-[github-arcjet-examples]: https://github.com/arcjet/arcjet-js-example
