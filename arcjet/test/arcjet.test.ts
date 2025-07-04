@@ -3315,8 +3315,6 @@ test("SDK", async (t) => {
     const aj = arcjet({ ...exampleOptions, client });
     await aj.protect(exampleContext, {
       ...details,
-      // To do: should we drop values of `null`, `undefined`, etc?
-      // Now they result in `<unsupported value>`.
       "extra-number": 123,
       "extra-false": false,
       "extra-true": true,
