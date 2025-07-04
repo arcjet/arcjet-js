@@ -244,7 +244,7 @@ export default function arcjet<
 
         return aj.protect(
           { getBody },
-          // @ts-expect-error: TODO(@wooorm-arcjet): fix types for arcjet requests.
+          // @ts-expect-error: TODO(#220): fix types for arcjet requests.
           arcjetRequest,
         );
 
