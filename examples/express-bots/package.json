@@ -5,6 +5,7 @@
     "start": "node --env-file .env.local ./index.js"
   },
   "dependencies": {
+    "@arcjet/inspect": "file:../../inspect",
     "@arcjet/node": "file:../../arcjet-node",
     "express": "^5.1.0"
   },

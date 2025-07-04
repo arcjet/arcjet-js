@@ -68,6 +68,15 @@ export async function GET(req: NextRequest) {
         }
       );
     }
+    return NextResponse.json(
+      {
+        error: "Forbidden",
+        reason: decision.reason,
+      },
+      {
+        status: 403,
+      }
+    );
   }
   
   let reset: Date | undefined;

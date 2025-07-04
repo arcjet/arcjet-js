@@ -27,13 +27,17 @@ app.use(express.text());
 app.post('/', async (req, res) => {
   const decision = await aj.protect(req);
 
-  if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Sensitive Information Detected", denied: decision.reason.denied }));
-  } else {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: `You said: ${req.body}` }));
+  if (decision.isDenied()) {
+    if (decision.reason.isSensitiveInfo()) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Sensitive Information Detected", denied: decision.reason.denied }));
+    }
+    res.writeHead(403, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ error: "Forbidden" }));
   }
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ message: `You said: ${req.body}` }));
 });
 
 app.listen(port, () => {
