@@ -2175,7 +2175,7 @@ test("sensitiveInfo", async (t) => {
   );
 
   await t.test("should support a custom `detect` function", async () => {
-    function detect(tokens: string[]): Array<"CUSTOM" | undefined> {
+    function detect(tokens: string[]) {
       return tokens.map((token) => {
         if (token === "bad") {
           return "CUSTOM";
