@@ -136,8 +136,6 @@ export function createRemoteClient(
  *   these come from (repeatedly) calling `withRule` with different rules
  *   and from the rules passed to the initial `arcjetFastify` call.
  */
-// TODO(@wooorm-arcjet): this looks like an interface is shared with other clients.
-// Move upwards and extend here.
 export interface ArcjetFastify<Props> {
   /**
    * Decide what to do with the given Fastify request using the configured rules.
