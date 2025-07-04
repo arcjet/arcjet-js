@@ -138,7 +138,7 @@ const exampleDetails = {
   query: "",
 };
 
-test("ArcjetDecision", async (t) => {
+test("Arcjet*Decision", async (t) => {
   await t.test("id", async (t) => {
     await t.test("should generate an `id` field if not given", () => {
       const decision = new ArcjetAllowDecision({
