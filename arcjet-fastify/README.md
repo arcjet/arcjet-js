@@ -56,9 +56,11 @@ Try an Arcjet protected app live at [https://example.arcjet.com][arcjet-examples
 
 ## Example: Bot detection and rate limiting
 
-This example shows a rather crude block of all automated clients and bots.
-It also shows how rate limiting could for logged in users could work with a
-token bucket strategy.
+This example shows a basic block of all automated clients and bots.
+In a real world scenario you would probably
+[allow several bots][arcjet-bot-categories] such as search engines.
+It also shows how rate limiting could work for logged in users with a token
+bucket strategy.
 
 ```js
 import arcjetFastify, { detectBot, tokenBucket } from "@arcjet/fastify";
@@ -178,5 +180,6 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
 [arcjet-shield-docs]: https://docs.arcjet.com/shield/concepts
+[arcjet-bot-categories]: https://docs.arcjet.com/bot-protection/identifying-bots#bot-categories
 [fastify]: https://fastify.dev/
 [github-arcjet-examples]: https://github.com/arcjet/arcjet-js-example
