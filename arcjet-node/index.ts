@@ -2,10 +2,8 @@ import core from "arcjet";
 import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
-  Primitive,
-  Product,
+  ArcjetRule,
   ArcjetRequest,
-  ExtraProps,
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
@@ -76,8 +74,6 @@ function errorMessage(err: unknown): string {
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
 //
-// Simplify:
-// https://github.com/sindresorhus/type-fest/blob/964466c9d59c711da57a5297ad954c13132a0001/source/simplify.d.ts
 // EmptyObject:
 // https://github.com/sindresorhus/type-fest/blob/b9723d4785f01f8d2487c09ee5871a1f615781aa/source/empty-object.d.ts
 //
@@ -100,14 +96,9 @@ function errorMessage(err: unknown): string {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 declare const emptyObjectSymbol: unique symbol;
 type WithoutCustomProps = {
   [emptyObjectSymbol]?: never;
-};
-
-type PlainObject = {
-  [key: string]: unknown;
 };
 
 export type RemoteClientOptions = {
@@ -175,24 +166,19 @@ function cookiesToString(cookies: string | string[] | undefined): string {
 /**
  * The options used to configure an {@link ArcjetNode} client.
  */
-export type ArcjetOptions<
-  Rules extends [...Array<Primitive | Product>],
-  Characteristics extends readonly string[],
-> = Simplify<
-  CoreOptions<Rules, Characteristics> & {
-    /**
-     * One or more IP Address of trusted proxies in front of the application.
-     * These addresses will be excluded when Arcjet detects a public IP address.
-     */
-    proxies?: Array<string>;
-  }
->;
+export interface ArcjetOptions extends CoreOptions {
+  /**
+   * One or more IP Address of trusted proxies in front of the application.
+   * These addresses will be excluded when Arcjet detects a public IP address.
+   */
+  proxies?: Array<string>;
+}
 
 /**
  * The ArcjetNode client provides a public `protect()` method to
  * make a decision about how a Node.js request should be handled.
  */
-export interface ArcjetNode<Props extends PlainObject> {
+export interface ArcjetNode<Props extends Record<string, unknown>> {
   /**
    * Runs a request through the configured protections. The request is
    * analyzed and then a decision made on whether to allow, deny, or challenge
@@ -216,9 +202,9 @@ export interface ArcjetNode<Props extends PlainObject> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link ArcjetNode} client.
    */
-  withRule<Rule extends Primitive | Product>(
-    rule: Rule,
-  ): ArcjetNode<Simplify<Props & ExtraProps<Rule>>>;
+  withRule<Rule extends ArcjetRule>(
+    rules: ReadonlyArray<Rule>,
+  ): ArcjetNode<Props & (Rule extends ArcjetRule<infer T> ? T : {})>;
 }
 
 /**
@@ -229,13 +215,11 @@ export interface ArcjetNode<Props extends PlainObject> {
  *
  * @param options - Arcjet configuration options to apply to all requests.
  */
-export default function arcjet<
-  const Rules extends (Primitive | Product)[],
-  const Characteristics extends readonly string[],
->(
-  options: ArcjetOptions<Rules, Characteristics>,
+export default function arcjet<const Options extends ArcjetOptions>(
+  options: Options,
 ): ArcjetNode<
-  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>
+  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]> &
+    (Options["rules"][number][number] extends ArcjetRule<infer P> ? P : {})
 > {
   const client = options.client ?? createRemoteClient();
 
@@ -255,10 +239,10 @@ export default function arcjet<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest(
     request: ArcjetNodeRequest,
-    props: Props,
-  ): ArcjetRequest<Props> {
+    props: Record<string, unknown>,
+  ): ArcjetRequest {
     // We pull the cookies from the request before wrapping them in ArcjetHeaders
     const cookies = cookiesToString(request.headers?.cookie);
 
@@ -329,26 +313,26 @@ export default function arcjet<
     };
   }
 
-  function withClient<const Rules extends (Primitive | Product)[]>(
-    aj: Arcjet<ExtraProps<Rules>>,
-  ): ArcjetNode<ExtraProps<Rules>> {
+  function withClient<const Rule extends ArcjetRule>(
+    aj: Arcjet<Rule extends ArcjetRule<infer T> ? T : {}>,
+  ): ArcjetNode<Rule extends ArcjetRule<infer T> ? T : {}> {
     return Object.freeze({
-      withRule(rule: Primitive | Product) {
-        const client = aj.withRule(rule);
+      withRule(rules: ReadonlyArray<ArcjetRule>) {
+        const client = aj.withRule(rules);
         return withClient(client);
       },
       async protect(
         request: ArcjetNodeRequest,
-        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
+        ...[props]: (
+          Rule extends ArcjetRule<infer T> ? T : {}
+        ) extends WithoutCustomProps
           ? []
-          : [ExtraProps<Rules>]
+          : [Rule extends ArcjetRule<infer T> ? T : {}]
       ): Promise<ArcjetDecision> {
         // TODO(#220): The generic manipulations get really mad here, so we cast
         // Further investigation makes it seem like it has something to do with
         // the definition of `props` in the signature but it's hard to track down
-        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-          ExtraProps<Rules>
-        >;
+        const req = toArcjetRequest(request, props ?? {});
 
         const getBody = async () => {
           try {

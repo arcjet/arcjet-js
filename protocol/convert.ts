@@ -578,7 +578,7 @@ function isSensitiveInfoRule<Props extends {}>(
   return rule.type === "SENSITIVE_INFO";
 }
 
-export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
+export function ArcjetRuleToProtocol<Props extends Record<string, unknown>>(
   rule: ArcjetRule<Props>,
 ): Rule {
   if (isTokenBucketRule(rule)) {

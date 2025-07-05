@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
+import type { Simplify } from "type-fest";
 
-import type { ArcjetRule, Primitive, Arcjet } from "../index.js";
+import type { ArcjetRule, Arcjet } from "../index.js";
 import arcjet, {
   detectBot,
   validateEmail,
@@ -57,10 +58,13 @@ type IsEqual<A, B> =
 
 // Type testing utilities
 type Assert<T extends true> = T;
-type Props<P extends Primitive> =
-  P extends Primitive<infer Props> ? Props : never;
-type RuleProps<P extends Primitive, E> = IsEqual<Props<P>, E>;
-type SDKProps<SDK, E> = IsEqual<SDK extends Arcjet<infer P> ? P : never, E>;
+type Props<P extends ArcjetRule[]> =
+  P extends Array<ArcjetRule<infer Props>> ? Props : never;
+type RuleProps<P extends ArcjetRule[], E> = IsEqual<Simplify<Props<P>>, E>;
+type SDKProps<SDK, E> = IsEqual<
+  SDK extends Arcjet<infer P> ? Simplify<P> : never,
+  E
+>;
 
 // In Node 18,
 // instances of `Headers` contain symbols that may be different depending on if
@@ -810,11 +814,8 @@ describe("Primitive > tokenBucket", () => {
     assert.equal(rules.length, 1);
     const rule = rules[0];
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.refillRate, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.interval, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.capacity, 120);
   });
 
@@ -828,11 +829,8 @@ describe("Primitive > tokenBucket", () => {
     const rules = tokenBucket(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].refillRate, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].capacity, 120);
   });
 
@@ -881,15 +879,10 @@ describe("Primitive > tokenBucket", () => {
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
     assert.equal(rules[0].mode, "DRY_RUN");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rules[0].characteristics, ["ip.src"]);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].algorithm, "TOKEN_BUCKET");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].refillRate, 1);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 1);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].capacity, 1);
   });
 
@@ -902,7 +895,6 @@ describe("Primitive > tokenBucket", () => {
 
     const [rule] = tokenBucket(options);
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.characteristics, undefined);
   });
 
@@ -1043,9 +1035,7 @@ describe("Primitive > fixedWindow", () => {
     const rules = fixedWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].window, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1058,9 +1048,7 @@ describe("Primitive > fixedWindow", () => {
     const rules = fixedWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].window, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1103,13 +1091,9 @@ describe("Primitive > fixedWindow", () => {
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
     assert.equal(rules[0].mode, "DRY_RUN");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rules[0].characteristics, ["ip.src"]);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].algorithm, "FIXED_WINDOW");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].window, 3600);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1121,7 +1105,6 @@ describe("Primitive > fixedWindow", () => {
 
     const [rule] = fixedWindow(options);
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.characteristics, undefined);
   });
 
@@ -1260,9 +1243,7 @@ describe("Primitive > slidingWindow", () => {
     const rules = slidingWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1275,9 +1256,7 @@ describe("Primitive > slidingWindow", () => {
     const rules = slidingWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1320,13 +1299,9 @@ describe("Primitive > slidingWindow", () => {
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
     assert.equal(rules[0].mode, "DRY_RUN");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rules[0].characteristics, ["ip.src"]);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].algorithm, "SLIDING_WINDOW");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 3600);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -1338,7 +1313,6 @@ describe("Primitive > slidingWindow", () => {
 
     const [rule] = slidingWindow(options);
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.characteristics, undefined);
   });
 
@@ -1520,7 +1494,6 @@ describe("Primitive > validateEmail", () => {
       deny: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
     });
     assert.equal(rule.type, "EMAIL");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rule.deny, [
       "DISPOSABLE",
       "FREE",
@@ -1535,7 +1508,6 @@ describe("Primitive > validateEmail", () => {
       block: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
     });
     assert.equal(rule.type, "EMAIL");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rule.deny, [
       "DISPOSABLE",
       "FREE",
@@ -1550,7 +1522,6 @@ describe("Primitive > validateEmail", () => {
       allow: ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"],
     });
     assert.equal(rule.type, "EMAIL");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rule.allow, [
       "DISPOSABLE",
       "FREE",
@@ -3015,7 +2986,7 @@ describe("SDK", () => {
     } as const;
   }
 
-  function testRuleProps(): Primitive<{ abc: number }> {
+  function testRuleProps(): [ArcjetRule<{ abc: number }>] {
     return [
       {
         version: 0,
@@ -3081,7 +3052,7 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
+    type WithoutRuleTest = Assert<SDKProps<typeof aj, Record<string, unknown>>>;
 
     const tokenBucketRule = tokenBucket({
       characteristics: ["userId"],
@@ -3094,7 +3065,11 @@ describe("SDK", () => {
     type WithRuleTest = Assert<
       SDKProps<
         typeof aj2,
-        { requested: number; userId: string | number | boolean }
+        {
+          [key: string]: unknown;
+          requested: number;
+          userId: string | number | boolean;
+        }
       >
     >;
 
@@ -3141,7 +3116,9 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
+    type WithoutRuleTest = Assert<
+      SDKProps<typeof aj, { [key: string]: unknown }>
+    >;
 
     const tokenBucketRule = tokenBucket({
       characteristics: ["userId"],
@@ -3154,7 +3131,11 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       SDKProps<
         typeof aj2,
-        { requested: number; userId: string | number | boolean }
+        {
+          [key: string]: unknown;
+          requested: number;
+          userId: string | number | boolean;
+        }
       >
     >;
 
@@ -3164,7 +3145,12 @@ describe("SDK", () => {
     type WithRuleTestTwo = Assert<
       SDKProps<
         typeof aj3,
-        { requested: number; userId: string | number | boolean; abc: number }
+        {
+          [key: string]: unknown;
+          requested: number;
+          userId: string | number | boolean;
+          abc: number;
+        }
       >
     >;
 
@@ -3213,7 +3199,9 @@ describe("SDK", () => {
       client,
       log: mockLogger(),
     });
-    type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
+    type WithoutRuleTest = Assert<
+      SDKProps<typeof aj, { [key: string]: unknown }>
+    >;
 
     const tokenBucketRule = tokenBucket({
       characteristics: ["userId"],
@@ -3226,14 +3214,20 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       SDKProps<
         typeof aj2,
-        { requested: number; userId: string | number | boolean }
+        {
+          [key: string]: unknown;
+          requested: number;
+          userId: string | number | boolean;
+        }
       >
     >;
 
     const testRule = testRuleProps();
 
     const aj3 = aj.withRule(testRule);
-    type WithRuleTestTwo = Assert<SDKProps<typeof aj3, { abc: number }>>;
+    type WithRuleTestTwo = Assert<
+      SDKProps<typeof aj3, { [key: string]: unknown; abc: number }>
+    >;
 
     const context = {
       getBody: () => Promise.resolve(undefined),

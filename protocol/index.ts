@@ -793,12 +793,12 @@ export interface ArcjetRequestDetails {
   headers: Headers;
   cookies: string;
   query: string;
-  extra: { [key: string]: string };
+  extra: Record<string, string>;
   // TODO: Consider moving email to `extra` map
   email?: string;
 }
 
-export type ArcjetRule<Props extends {} = {}> = {
+export type ArcjetRule<Props extends Record<string, unknown> = {}> = {
   // TODO(@wooorm-arcjet):
   // if it is intentional that people can extend rules,
   // then we need to allow that in the types.
@@ -816,15 +816,16 @@ export type ArcjetRule<Props extends {} = {}> = {
   ): Promise<ArcjetRuleResult>;
 };
 
-export interface ArcjetRateLimitRule<Props extends {}>
+export interface ArcjetRateLimitRule<Props extends Record<string, unknown>>
   extends ArcjetRule<Props> {
   type: "RATE_LIMIT";
   algorithm: ArcjetRateLimitAlgorithm;
   characteristics?: string[];
 }
 
-export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
-  extends ArcjetRateLimitRule<Props> {
+export interface ArcjetTokenBucketRateLimitRule<
+  Props extends Record<string, unknown>,
+> extends ArcjetRateLimitRule<Props> {
   algorithm: "TOKEN_BUCKET";
 
   refillRate: number;
@@ -832,23 +833,25 @@ export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
   capacity: number;
 }
 
-export interface ArcjetFixedWindowRateLimitRule<Props extends {}>
-  extends ArcjetRateLimitRule<Props> {
+export interface ArcjetFixedWindowRateLimitRule<
+  Props extends Record<string, unknown>,
+> extends ArcjetRateLimitRule<Props> {
   algorithm: "FIXED_WINDOW";
 
   max: number;
   window: number;
 }
 
-export interface ArcjetSlidingWindowRateLimitRule<Props extends {}>
-  extends ArcjetRateLimitRule<Props> {
+export interface ArcjetSlidingWindowRateLimitRule<
+  Props extends Record<string, unknown>,
+> extends ArcjetRateLimitRule<Props> {
   algorithm: "SLIDING_WINDOW";
 
   max: number;
   interval: number;
 }
 
-export interface ArcjetEmailRule<Props extends { email: string }>
+export interface ArcjetEmailRule<Props extends Record<string, unknown>>
   extends ArcjetRule<Props> {
   type: "EMAIL";
 
@@ -858,7 +861,7 @@ export interface ArcjetEmailRule<Props extends { email: string }>
   allowDomainLiteral: boolean;
 }
 
-export interface ArcjetSensitiveInfoRule<Props extends {}>
+export interface ArcjetSensitiveInfoRule<Props extends Record<string, unknown>>
   extends ArcjetRule<Props> {
   type: "SENSITIVE_INFO";
 
@@ -866,14 +869,16 @@ export interface ArcjetSensitiveInfoRule<Props extends {}>
   deny: string[];
 }
 
-export interface ArcjetBotRule<Props extends {}> extends ArcjetRule<Props> {
+export interface ArcjetBotRule<Props extends Record<string, unknown>>
+  extends ArcjetRule<Props> {
   type: "BOT";
 
   allow: Array<string>;
   deny: Array<string>;
 }
 
-export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {
+export interface ArcjetShieldRule<Props extends Record<string, unknown>>
+  extends ArcjetRule<Props> {
   type: "SHIELD";
 }
 

@@ -129,7 +129,7 @@ const validateProtectSignupOptions = z
   .strict()
   .optional();
 
-type IntegrationRule<Characteristics extends readonly string[]> =
+type IntegrationRule =
   | {
       type: "shield";
       options?: ShieldOptions;
@@ -147,30 +147,30 @@ type IntegrationRule<Characteristics extends readonly string[]> =
       // TODO: This only supports serializable options, so no custom detect
       // functions are supported but maybe they could be supported via a module
       // import
-      options?: SensitiveInfoOptions<never>;
+      options?: SensitiveInfoOptions;
     }
   | {
       type: "fixedWindow";
-      options?: FixedWindowRateLimitOptions<Characteristics>;
+      options?: FixedWindowRateLimitOptions;
     }
   | {
       type: "slidingWindow";
-      options?: SlidingWindowRateLimitOptions<Characteristics>;
+      options?: SlidingWindowRateLimitOptions;
     }
   | {
       type: "tokenBucket";
-      options?: TokenBucketRateLimitOptions<Characteristics>;
+      options?: TokenBucketRateLimitOptions;
     }
   | {
       type: "protectSignup";
-      options?: ProtectSignupOptions<Characteristics>;
+      options?: ProtectSignupOptions;
     };
 
 // TODO: This only supports serializable options, so no custom loggers are
 // supported but maybe they could be supported via a module import
-type ArcjetIntegrationOptions<Characteristics extends readonly string[]> = {
-  rules: IntegrationRule<Characteristics>[];
-  characteristics?: Characteristics;
+type ArcjetIntegrationOptions = {
+  rules: IntegrationRule[];
+  characteristics?: ReadonlyArray<string>;
   client?: RemoteClientOptions;
   proxies?: string[];
 };
@@ -184,9 +184,7 @@ function validateAndSerialize<
   return v ? JSON.stringify(v) : "";
 }
 
-function integrationRuleToClientRule<Characteristics extends readonly string[]>(
-  rule: IntegrationRule<Characteristics>,
-) {
+function integrationRuleToClientRule(rule: IntegrationRule) {
   switch (rule.type) {
     case "shield": {
       const serializedOpts = validateAndSerialize(
@@ -288,31 +286,23 @@ export function validateEmail(options?: EmailOptions) {
   return { type: "email", options } as const;
 }
 
-export function sensitiveInfo(options?: SensitiveInfoOptions<never>) {
+export function sensitiveInfo(options?: SensitiveInfoOptions) {
   return { type: "sensitiveInfo", options } as const;
 }
 
-export function fixedWindow<Characteristics extends readonly string[]>(
-  options?: FixedWindowRateLimitOptions<Characteristics>,
-) {
+export function fixedWindow(options?: FixedWindowRateLimitOptions) {
   return { type: "fixedWindow", options } as const;
 }
 
-export function slidingWindow<Characteristics extends readonly string[]>(
-  options?: SlidingWindowRateLimitOptions<Characteristics>,
-) {
+export function slidingWindow(options?: SlidingWindowRateLimitOptions) {
   return { type: "slidingWindow", options } as const;
 }
 
-export function tokenBucket<Characteristics extends readonly string[]>(
-  options?: TokenBucketRateLimitOptions<Characteristics>,
-) {
+export function tokenBucket(options?: TokenBucketRateLimitOptions) {
   return { type: "tokenBucket", options } as const;
 }
 
-export function protectSignup<Characteristics extends readonly string[]>(
-  options?: ProtectSignupOptions<Characteristics>,
-) {
+export function protectSignup(options?: ProtectSignupOptions) {
   return { type: "protectSignup", options } as const;
 }
 
@@ -325,13 +315,10 @@ export function createRemoteClient({ baseUrl, timeout }: RemoteClientOptions) {
   return { baseUrl, timeout } as const;
 }
 
-export default function arcjet<Characteristics extends readonly string[]>(
-  {
-    rules,
-    characteristics,
-    client,
-    proxies,
-  }: ArcjetIntegrationOptions<Characteristics> = { rules: [] },
+export default function arcjet(
+  { rules, characteristics, client, proxies }: ArcjetIntegrationOptions = {
+    rules: [],
+  },
 ): AstroIntegration {
   const arcjetImports = new Set();
   const arcjetRules: string[] = [];
