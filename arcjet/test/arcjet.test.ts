@@ -4400,7 +4400,7 @@ describe("SDK", () => {
     assert.deepEqual(log.error.mock.calls[0].arguments, [
       "Failure running rule: %s due to %s",
       "TEST_RULE_LOCAL_THROW_NULL",
-      "Unknown problem",
+      "null",
     ]);
   });
 

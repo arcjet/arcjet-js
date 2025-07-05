@@ -20,25 +20,6 @@ import {
   Rule,
 } from "./proto/decide/v1alpha1/decide_pb.js";
 
-// TODO: Dedupe with `errorMessage` in core
-function errorMessage(err: unknown): string {
-  if (err) {
-    if (typeof err === "string") {
-      return err;
-    }
-
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
-      return err.message;
-    }
-  }
-
-  return "Unknown problem";
-}
-
 export interface Client {
   decide(
     context: ArcjetContext,
@@ -191,7 +172,7 @@ export function createClient(options: ClientOptions): Client {
           );
         })
         .catch((err: unknown) => {
-          log.info("Encountered problem sending report: %s", errorMessage(err));
+          log.info("Encountered problem sending report: %s", String(err));
         });
 
       if (typeof context.waitUntil === "function") {
