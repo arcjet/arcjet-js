@@ -79,9 +79,11 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
         return "unknown";
       },
     },
+    // TODO(@wooorm-arcjet): figure out a test case for this with the default `detect`.
     "arcjet:js-req/sensitive-information-identifier": {
       detect,
     },
+    // TODO(@wooorm-arcjet): figure out a test case for this that calls `verify`.
     "arcjet:js-req/verify-bot": {
       verify() {
         return "unverifiable";
@@ -90,6 +92,7 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
   };
 }
 
+// TODO(@wooorm-arcjet): document what is used to fingerprint.
 /**
  * Generate a fingerprint for the client. This is used to identify the client
  * across multiple requests.
@@ -110,13 +113,15 @@ export async function generateFingerprint(
       JSON.stringify(request),
       context.characteristics,
     );
-  } else {
-    log.debug("WebAssembly is not supported in this runtime");
+    // Ignore the `else` branch as we test in places that have WebAssembly.
+    /* node:coverage ignore next 4 */
   }
 
+  log.debug("WebAssembly is not supported in this runtime");
   return "";
 }
 
+// TODO(@wooorm-arcjet): docs.
 export async function isValidEmail(
   context: AnalyzeContext,
   candidate: string,
@@ -128,16 +133,15 @@ export async function isValidEmail(
 
   if (typeof analyze !== "undefined") {
     return analyze.isValidEmail(candidate, options);
-  } else {
-    log.debug("WebAssembly is not supported in this runtime");
-    // Skip the local evaluation of the rule if WASM is not available
-    return {
-      validity: "valid",
-      blocked: [],
-    };
+    // Ignore the `else` branch as we test in places that have WebAssembly.
+    /* node:coverage ignore next 4 */
   }
+
+  log.debug("WebAssembly is not supported in this runtime");
+  return { blocked: [], validity: "valid" };
 }
 
+// TODO(@wooorm-arcjet): docs.
 export async function detectBot(
   context: AnalyzeContext,
   request: AnalyzeRequest,
@@ -149,18 +153,15 @@ export async function detectBot(
 
   if (typeof analyze !== "undefined") {
     return analyze.detectBot(JSON.stringify(request), options);
-  } else {
-    log.debug("WebAssembly is not supported in this runtime");
-    // Skip the local evaluation of the rule if Wasm is not available
-    return {
-      allowed: [],
-      denied: [],
-      spoofed: false,
-      verified: false,
-    };
+    // Ignore the `else` branch as we test in places that have WebAssembly.
+    /* node:coverage ignore next 4 */
   }
+
+  log.debug("WebAssembly is not supported in this runtime");
+  return { allowed: [], denied: [], spoofed: false, verified: false };
 }
 
+// TODO(@wooorm-arcjet): docs.
 export async function detectSensitiveInfo(
   context: AnalyzeContext,
   candidate: string,
@@ -179,10 +180,12 @@ export async function detectSensitiveInfo(
       contextWindowSize,
       skipCustomDetect,
     });
-  } else {
-    log.debug("WebAssembly is not supported in this runtime");
-    throw new Error(
-      "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
-    );
+    // Ignore the `else` branch as we test in places that have WebAssembly.
+    /* node:coverage ignore next 4 */
   }
+
+  log.debug("WebAssembly is not supported in this runtime");
+  throw new Error(
+    "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
+  );
 }

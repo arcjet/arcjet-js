@@ -33,6 +33,12 @@ npm install -S @arcjet/analyze
 
 ## Example
 
+<!--
+  TODO(@wooorm-arcjet): I think this example is out of date?
+  Either remove it if we don’t want people to use this.
+  Or, change the API to allow simpler use?
+-->
+
 ```ts
 import { generateFingerprint, isValidEmail } from "@arcjet/analyze";
 
