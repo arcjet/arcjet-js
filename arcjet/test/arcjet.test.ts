@@ -2969,188 +2969,62 @@ test("SDK", async (t) => {
       ],
     );
 
-    await t.test(
-      "should call `decide` if all rules decide `ALLOW`",
-      async () => {
-        let parameters: unknown;
-
-        const client: Client = {
-          async decide(a, b, ...rest) {
-            parameters = rest;
-            return new ArcjetErrorDecision({
-              ttl: 0,
-              reason: new ArcjetErrorReason("reason"),
-              results: [],
-            });
-          },
-          report() {
-            assert.fail();
-          },
-        };
-
-        const rule: ArcjetRule = {
-          version: 0,
-          mode: "LIVE",
-          type: "example-allow",
-          priority: 1,
-          validate() {},
-          async protect() {
-            return new ArcjetRuleResult({
-              ruleId: "test-rule-id",
-              fingerprint: "test-fingerprint",
-              ttl: 0,
-              state: "RUN",
-              conclusion: "ALLOW",
-              reason: new ArcjetTestReason(),
-            });
-          },
-        };
-
-        await arcjet({
-          ...exampleOptions,
-          client,
-          rules: [[rule]],
-        }).protect(exampleContext, exampleDetails);
-
-        assert.deepEqual(parameters, [[rule]]);
-      },
+    const decision = await arcjet({ ...exampleOptions, rules }).protect(
+      exampleContext,
+      exampleDetails,
     );
+    assert.equal(decision.conclusion, "ERROR");
+  });
 
-    await t.test(
-      "should call `report` instead of `decide` if a rule decides `DENY`",
-      async () => {
-        // TODO(@wooorm-arcjet): investigate why typescript does not allow this object to be passed as a regular object
-        // or even as an `as const` object.
-        const rule: ArcjetRule = {
-          version: 0,
-          mode: "LIVE",
-          type: "example-deny",
-          priority: 1,
-          validate() {},
-          async protect() {
-            return new ArcjetRuleResult({
-              ruleId: "test-rule-id",
-              fingerprint: "test-fingerprint",
-              ttl: 5000,
-              state: "RUN",
-              conclusion: "DENY",
-              reason: new ArcjetTestReason(),
-            });
-          },
-        };
+  await t.test("should call `decide` if all rules decide `ALLOW`", async () => {
+    let parameters: unknown;
 
-        let called = 0;
-
-        await arcjet({
-          ...exampleOptions,
-          client: {
-            async decide() {
-              // Should not be called.
-              called++;
-              assert.fail();
-            },
-            report() {
-              assert.equal(called, 0);
-              called++;
-            },
-          },
-          rules: [[rule]],
-        }).protect(exampleContext, exampleDetails);
-
-        assert.equal(called, 1);
+    const client: Client = {
+      async decide(a, b, ...rest) {
+        parameters = rest;
+        return new ArcjetErrorDecision({
+          ttl: 0,
+          reason: new ArcjetErrorReason("reason"),
+          results: [],
+        });
       },
-    );
-
-    await t.test("should call `decide` w/o rules", async () => {
-      let calls = 0;
-
-      const client = {
-        async decide() {
-          assert.equal(calls, 0);
-          calls++;
-          return new ArcjetAllowDecision({
-            ttl: 0,
-            reason: new ArcjetTestReason(),
-            results: [],
-          });
-        },
-        report() {
-          assert.fail();
-        },
-      };
-
-      await arcjet({ ...exampleOptions, client }).protect(
-        exampleContext,
-        exampleDetails,
-      );
-      assert.equal(calls, 1);
-    });
-
-    await t.test(
-      "should call `decide` instead of `report` if all rules decide `ALLOW`",
-      async () => {
-        let parameters: unknown;
-
-        const client: Client = {
-          async decide(a, b, ...rest) {
-            parameters = rest;
-            return new ArcjetErrorDecision({
-              ttl: 0,
-              reason: new ArcjetErrorReason("reason"),
-              results: [],
-            });
-          },
-          report() {
-            assert.fail();
-          },
-        };
-
-        const rule: ArcjetRule = {
-          version: 0,
-          mode: "LIVE",
-          type: "example-allow",
-          priority: 1,
-          validate() {},
-          async protect() {
-            return new ArcjetRuleResult({
-              ruleId: "test-rule-id",
-              fingerprint: "test-fingerprint",
-              ttl: 0,
-              state: "RUN",
-              conclusion: "ALLOW",
-              reason: new ArcjetTestReason(),
-            });
-          },
-        };
-
-        await arcjet({ ...exampleOptions, client, rules: [[rule]] }).protect(
-          exampleContext,
-          exampleDetails,
-        );
-
-        assert.deepEqual(parameters, [[rule]]);
+      report() {
+        assert.fail();
       },
-    );
+    };
 
-    await t.test("should call `report` if a rule decides `DENY`", async () => {
-      let calls = 0;
+    const rule: ArcjetRule = {
+      version: 0,
+      mode: "LIVE",
+      type: "example-allow",
+      priority: 1,
+      validate() {},
+      async protect() {
+        return new ArcjetRuleResult({
+          ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
+          ttl: 0,
+          state: "RUN",
+          conclusion: "ALLOW",
+          reason: new ArcjetTestReason(),
+        });
+      },
+    };
 
-      const client: Client = {
-        async decide() {
-          return new ArcjetErrorDecision({
-            ttl: 0,
-            reason: new ArcjetErrorReason("reason"),
-            results: [],
-          });
-        },
-        report(context, request, decision, rules) {
-          assert.equal(calls, 0);
-          calls++;
-          assert.equal(decision.conclusion, "DENY");
-          assert.equal(rules.length, 1);
-        },
-      };
+    await arcjet({
+      ...exampleOptions,
+      client,
+      rules: [[rule]],
+    }).protect(exampleContext, exampleDetails);
 
+    assert.deepEqual(parameters, [[rule]]);
+  });
+
+  await t.test(
+    "should call `report` instead of `decide` if a rule decides `DENY`",
+    async () => {
+      // TODO(@wooorm-arcjet): investigate why typescript does not allow this object to be passed as a regular object
+      // or even as an `as const` object.
       const rule: ArcjetRule = {
         version: 0,
         mode: "LIVE",
@@ -3169,20 +3043,143 @@ test("SDK", async (t) => {
         },
       };
 
+      let called = 0;
+
       await arcjet({
         ...exampleOptions,
-        client,
+        client: {
+          async decide() {
+            // Should not be called.
+            called++;
+            assert.fail();
+          },
+          report() {
+            assert.equal(called, 0);
+            called++;
+          },
+        },
         rules: [[rule]],
       }).protect(exampleContext, exampleDetails);
 
-      assert.equal(calls, 1);
-    });
+      assert.equal(called, 1);
+    },
+  );
 
-    const decision = await arcjet({ ...exampleOptions, rules }).protect(
+  await t.test("should call `decide` w/o rules", async () => {
+    let calls = 0;
+
+    const client = {
+      async decide() {
+        assert.equal(calls, 0);
+        calls++;
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      },
+      report() {
+        assert.fail();
+      },
+    };
+
+    await arcjet({ ...exampleOptions, client }).protect(
       exampleContext,
       exampleDetails,
     );
-    assert.equal(decision.conclusion, "ERROR");
+    assert.equal(calls, 1);
+  });
+
+  await t.test(
+    "should call `decide` instead of `report` if all rules decide `ALLOW`",
+    async () => {
+      let parameters: unknown;
+
+      const client: Client = {
+        async decide(a, b, ...rest) {
+          parameters = rest;
+          return new ArcjetErrorDecision({
+            ttl: 0,
+            reason: new ArcjetErrorReason("reason"),
+            results: [],
+          });
+        },
+        report() {
+          assert.fail();
+        },
+      };
+
+      const rule: ArcjetRule = {
+        version: 0,
+        mode: "LIVE",
+        type: "example-allow",
+        priority: 1,
+        validate() {},
+        async protect() {
+          return new ArcjetRuleResult({
+            ruleId: "test-rule-id",
+            fingerprint: "test-fingerprint",
+            ttl: 0,
+            state: "RUN",
+            conclusion: "ALLOW",
+            reason: new ArcjetTestReason(),
+          });
+        },
+      };
+
+      await arcjet({ ...exampleOptions, client, rules: [[rule]] }).protect(
+        exampleContext,
+        exampleDetails,
+      );
+
+      assert.deepEqual(parameters, [[rule]]);
+    },
+  );
+
+  await t.test("should call `report` if a rule decides `DENY`", async () => {
+    let calls = 0;
+
+    const client: Client = {
+      async decide() {
+        return new ArcjetErrorDecision({
+          ttl: 0,
+          reason: new ArcjetErrorReason("reason"),
+          results: [],
+        });
+      },
+      report(context, request, decision, rules) {
+        assert.equal(calls, 0);
+        calls++;
+        assert.equal(decision.conclusion, "DENY");
+        assert.equal(rules.length, 1);
+      },
+    };
+
+    const rule: ArcjetRule = {
+      version: 0,
+      mode: "LIVE",
+      type: "example-deny",
+      priority: 1,
+      validate() {},
+      async protect() {
+        return new ArcjetRuleResult({
+          ruleId: "test-rule-id",
+          fingerprint: "test-fingerprint",
+          ttl: 5000,
+          state: "RUN",
+          conclusion: "DENY",
+          reason: new ArcjetTestReason(),
+        });
+      },
+    };
+
+    await arcjet({
+      ...exampleOptions,
+      client,
+      rules: [[rule]],
+    }).protect(exampleContext, exampleDetails);
+
+    assert.equal(calls, 1);
   });
 
   await t.test("should support headers as a regular object", async () => {
