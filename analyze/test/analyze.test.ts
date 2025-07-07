@@ -162,7 +162,6 @@ test("generateFingerprint", async function (t) {
       result,
       "fp::2::30cc6b092efff7b35f658730073f40ceae0a724873e1ff175826fc57e1462149",
     );
-    assert.ok(result);
   });
 
   await t.test("should fail", async function () {
