@@ -5,10 +5,9 @@
   </picture>
 </a>
 
-# Arcjet Rate Limit with Fastify
+# Arcjet Protection with Fastify
 
-This example shows how to use Arcjet with a [Fastify][] server to rate limit
-with a fixed window.
+This example shows how to use Arcjet to protect [Fastify][] servers.
 
 ## Use
 
@@ -21,7 +20,7 @@ npm ci
 Install this example’s dependencies from its folder:
 
 ```sh
-cd examples/fastify-rate-limit/
+cd examples/fastify/
 npm ci
 ```
 
@@ -44,5 +43,9 @@ npm start
 Now visit `http://localhost:3000/`: you should see “Hello world”.
 
 Finally, refresh the page to trigger the rate limit: you should see “Too many requests”.
+
+You'll be blocked for 10 seconds, but you can also POST after the rate limit resets:
+- `curl http://localhost:3000 -H "Content-Type: text/plain" -X POST --data "my email is test@example.com"`
+- `curl http://localhost:3000 -H "Content-Type: text/plain" -X POST --data "here's a string that contains-a-dash"`
 
 [fastify]: https://fastify.dev/
