@@ -26,6 +26,16 @@
       "cache": false,
       "outputLogs": "full"
     },
+    "test-api": {
+      "dependsOn": ["^test-api"],
+      "cache": false,
+      "outputLogs": "full"
+    },
+    "test-coverage": {
+      "dependsOn": ["^test-coverage"],
+      "cache": false,
+      "outputLogs": "full"
+    },
     "test": {
       "dependsOn": ["^test"],
       "cache": false,

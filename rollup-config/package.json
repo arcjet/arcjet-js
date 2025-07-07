@@ -34,7 +34,7 @@
   ],
   "scripts": {
     "lint": "eslint .",
-    "test": "node --test --experimental-test-coverage"
+    "test": "npm run lint"
   },
   "dependencies": {
     "@rollup/plugin-replace": "6.0.2",

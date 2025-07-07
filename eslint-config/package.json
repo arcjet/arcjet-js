@@ -32,7 +32,8 @@
     "eslint.config.js"
   ],
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "npm run lint"
   },
   "dependencies": {
     "@eslint/js": "9.29.0",
