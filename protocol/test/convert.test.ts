@@ -187,6 +187,13 @@ test("convert", async (t) => {
       assert.equal(ArcjetStackToProtocol("DENO"), SDKStack.SDK_STACK_DENO);
     });
 
+    await t.test("should turn a `FASTIFY` stack into an SDK stack", () => {
+      assert.equal(
+        ArcjetStackToProtocol("FASTIFY"),
+        SDKStack.SDK_STACK_FASTIFY,
+      );
+    });
+
     await t.test("should turn a `NESTJS` stack into an SDK stack", () => {
       assert.equal(ArcjetStackToProtocol("NESTJS"), SDKStack.SDK_STACK_NESTJS);
     });

@@ -324,6 +324,11 @@ export declare enum SDKStack {
    * @generated from enum value: SDK_STACK_ASTRO = 12;
    */
   SDK_STACK_ASTRO = 12,
+
+  /**
+   * @generated from enum value: SDK_STACK_FASTIFY = 13;
+   */
+  SDK_STACK_FASTIFY = 13,
 }
 
 /**

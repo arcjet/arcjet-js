@@ -84,7 +84,8 @@ export type ArcjetStack =
   | "DENO"
   | "NESTJS"
   | "REMIX"
-  | "ASTRO";
+  | "ASTRO"
+  | "FASTIFY";
 export const ArcjetStack = Object.freeze({
   /**
    * @deprecated Use the string `"NODEJS"` instead.
@@ -118,6 +119,10 @@ export const ArcjetStack = Object.freeze({
    * @deprecated Use the string `"ASTRO"` instead.
    **/
   ASTRO: "ASTRO",
+  /**
+   * @deprecated Use the string `"FASTIFY"` instead.
+   **/
+  FASTIFY: "FASTIFY",
 });
 
 export type ArcjetRuleState = "RUN" | "NOT_RUN" | "CACHED" | "DRY_RUN";

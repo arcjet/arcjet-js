@@ -128,6 +128,8 @@ export function ArcjetStackToProtocol(stack: ArcjetStack): SDKStack {
       return SDKStack.SDK_STACK_REMIX;
     case "ASTRO":
       return SDKStack.SDK_STACK_ASTRO;
+    case "FASTIFY":
+      return SDKStack.SDK_STACK_FASTIFY;
     default: {
       const _exhaustive: never = stack;
       return SDKStack.SDK_STACK_UNSPECIFIED;
