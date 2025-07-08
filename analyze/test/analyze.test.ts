@@ -153,6 +153,21 @@ test("generateFingerprint", async function (t) {
     );
   });
 
+  await t.test(
+    "should generate a fingerprin w/ `characteristics`",
+    async function () {
+      const result = await generateFingerprint(
+        { ...exampleContext, characteristics: ["a"] },
+        { extra: { a: "b" }, ip: "127.0.0.1" },
+      );
+
+      assert.equal(
+        result,
+        "fp::2::83e4b462812b844fc17cd81eee04088c832ffbe00b714338a773ad458e472686",
+      );
+    },
+  );
+
   await t.test("should generate another fingerprint", async function () {
     const result = await generateFingerprint(exampleContext, {
       ip: "76.76.21.21",
