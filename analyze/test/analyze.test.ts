@@ -183,8 +183,8 @@ test("generateFingerprint", async function (t) {
     await assert.rejects(
       generateFingerprint(
         exampleContext,
-        // Note: not sure why `cookies` existing should fail but it does.
-        { cookies: "test-cookie", ip: "127.0.0.1" },
+        // Note: this is a broken cookie.
+        { cookies: "a", ip: "127.0.0.1" },
       ),
       /Failed to generate fingerprint/,
     );
