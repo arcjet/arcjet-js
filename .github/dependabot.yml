@@ -143,7 +143,7 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /examples/fastify-rate-limit
+    directory: /examples/fastify
     schedule:
       # Our dependencies should be checked daily
       interval: daily

@@ -5,10 +5,9 @@
   </picture>
 </a>
 
-# Arcjet Rate Limit with Fastify
+# Arcjet Protection with Fastify
 
-This example shows how to use Arcjet with a [Fastify][] server to rate limit
-with a fixed window.
+This example shows how to use Arcjet with a [Fastify][] servers.
 
 ## Use
 
@@ -21,7 +20,7 @@ npm ci
 Install this example’s dependencies from its folder:
 
 ```sh
-cd examples/fastify-rate-limit/
+cd examples/fastify/
 npm ci
 ```
 
@@ -42,7 +41,16 @@ npm start
 > Node.js 20 or later.
 
 Now visit `http://localhost:3000/`: you should see “Hello world”.
+Refresh the page to trigger the rate limit: you should see “Too many requests”.
+You’ll be blocked for 10 seconds.
 
-Finally, refresh the page to trigger the rate limit: you should see “Too many requests”.
+You can also send a `POST` request to hit sensitive info protection:
+
+```sh
+$ curl http://localhost:3000 --data "My email is test@example.com" --header "Content-Type: text/plain" --request POST
+{"message":"Message contains sensitive info"}
+$ curl http://localhost:3000 --data "Here’s a string that contains-some-dashes" --header "Content-Type: text/plain" --request POST
+{"message":"Thanks for the submission"}
+```
 
 [fastify]: https://fastify.dev/
