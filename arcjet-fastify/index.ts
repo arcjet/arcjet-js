@@ -126,8 +126,7 @@ export function createRemoteClient(
 }
 
 /**
- * Type that represents a sort-of instance of our `ArcjetFastify` clients:
- * plain objects that we build on the fly.
+ * Type that represents an instance of our `ArcjetFastify` client.
  *
  * @typeParam Props
  *   Accumulated properties that are needed when calling `protect`;
