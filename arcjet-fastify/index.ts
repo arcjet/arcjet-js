@@ -244,6 +244,11 @@ export default function arcjet<
           try {
             if (typeof fastifyRequest.body === "string") {
               return fastifyRequest.body;
+            } else if (
+              fastifyRequest.body === null ||
+              fastifyRequest.body === undefined
+            ) {
+              return undefined;
             } else {
               return JSON.stringify(fastifyRequest.body);
             }
