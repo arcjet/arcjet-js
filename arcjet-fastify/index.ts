@@ -94,8 +94,7 @@ type PlainObject = {
 /**
  * Configuration for {@linkcode createRemoteClient}.
  */
-// TODO(@wooorm-arcjet): this looks like an undocumented feature leaking into the public API.
-// Keep it internal.
+// TODO(@wooorm-arcjet): document this undocumented feature.
 export interface RemoteClientOptions {
   baseUrl?: string | null | undefined;
   timeout?: number | null | undefined;
@@ -109,8 +108,7 @@ export interface RemoteClientOptions {
  * @returns
  *   Client.
  */
-// TODO(@wooorm-arcjet): this looks like an undocumented feature leaking into the public API.
-// Keep it internal.
+// TODO(@wooorm-arcjet): document this undocumented feature.
 export function createRemoteClient(
   options?: RemoteClientOptions | null | undefined,
 ) {
