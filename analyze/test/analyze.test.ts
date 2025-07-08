@@ -99,7 +99,7 @@ test("detectSensitiveInfo", async function (t) {
     });
   });
 
-  await t.test("should not detect regular stuff", async function () {
+  await t.test("should not detect non-sensitive info", async function () {
     const result = await detectSensitiveInfo(
       exampleContext,
       "a b c d e",
