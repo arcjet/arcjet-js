@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "@arcjet/fastify": "file:../../arcjet-fastify",
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "name": "examples-fastify",
+  "private": true,
+  "scripts": {
+    "start": "node --env-file .env.local index.js"
+  },
+  "type": "module"
+}

@@ -143,6 +143,19 @@ updates:
           - "*"
 
   - package-ecosystem: npm
+    directory: /examples/fastify
+    schedule:
+      # Our dependencies should be checked daily
+      interval: daily
+    commit-message:
+      prefix: deps(example)
+      prefix-development: deps(example)
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: npm
     directory: /examples/gatsby-rate-limit
     schedule:
       # Our dependencies should be checked daily
