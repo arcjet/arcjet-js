@@ -34,6 +34,7 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
     return componentCore3WasmPromise;
   }
 
+  // TODO(@wooorm-arcjet): figure out a test case that makes this throw.
   throw new Error(`Unknown path: ${path}`);
 }
 
