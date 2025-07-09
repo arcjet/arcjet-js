@@ -58,7 +58,7 @@
     "@arcjet/tsconfig": "1.0.0-beta.8",
     "@types/deno": "2.0.0",
     "@rollup/wasm-node": "4.44.2",
-    "eslint": "9.29.0",
+    "eslint": "9.30.1",
     "typescript": "5.8.3"
   },
   "publishConfig": {

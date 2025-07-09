@@ -50,7 +50,7 @@
     "@arcjet/tsconfig": "1.0.0-beta.8",
     "@rollup/wasm-node": "4.44.2",
     "@types/node": "18.18.0",
-    "eslint": "9.29.0",
+    "eslint": "9.30.1",
     "typescript": "5.8.3"
   },
   "publishConfig": {
