@@ -1,5 +1,56 @@
 # Changelog
 
+## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...arcjet-v1.0.0-beta.9) (2025-07-09)
+
+
+### 📝 Documentation
+
+* Add relevant links to each package readme ([#4429](https://github.com/arcjet/arcjet-js/issues/4429)) ([2653ab0](https://github.com/arcjet/arcjet-js/commit/2653ab0ea93eee7a1b921e7cf3ab403a825bef3d))
+
+
+### 🧹 Miscellaneous Chores
+
+* Add `keywords` to `package.json`s ([#4408](https://github.com/arcjet/arcjet-js/issues/4408)) ([4f09478](https://github.com/arcjet/arcjet-js/commit/4f094781c3e2fb80df4186b92185cbc295880b5c))
+* **arcjet:** Reduce timeouts and other transport issues to info log ([#4411](https://github.com/arcjet/arcjet-js/issues/4411)) ([c148bab](https://github.com/arcjet/arcjet-js/commit/c148babca42be753629641c51a8e8a0bac5730c0))
+* remove `expect`, references to `jest` ([#4415](https://github.com/arcjet/arcjet-js/issues/4415)) ([2c44c39](https://github.com/arcjet/arcjet-js/commit/2c44c39dfeccee74321a3425a3e5b2d5fa480c42))
+
+
+### ⌨️ Code Refactoring
+
+* Clean `files` fields in `package.json`s ([#4441](https://github.com/arcjet/arcjet-js/issues/4441)) ([fd7913b](https://github.com/arcjet/arcjet-js/commit/fd7913bf0c28d05740d94cf50f5939ee2b6f98fa))
+
+
+### 📚 Tests
+
+* clean protocol tests ([#4479](https://github.com/arcjet/arcjet-js/issues/4479)) ([c67d517](https://github.com/arcjet/arcjet-js/commit/c67d5179a5be2d64fea5e0f046da043f2c6f5b60))
+
+
+### 🔨 Build System
+
+* add separate core, coverage tests ([#4480](https://github.com/arcjet/arcjet-js/issues/4480)) ([61c2c50](https://github.com/arcjet/arcjet-js/commit/61c2c50a94ac9712dfebd1a972e067cc0788c44a))
+
+
+### ✅ Continuous Integration
+
+* Add Node.js 22, 24 ([#4414](https://github.com/arcjet/arcjet-js/issues/4414)) ([0fa6743](https://github.com/arcjet/arcjet-js/commit/0fa6743f10402bc082c50a716273165db5a9da22))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/cache bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/duration bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/headers bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/protocol bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/runtime bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/stable-hash bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/rollup-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/tsconfig bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+
 ## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...arcjet-v1.0.0-beta.8) (2025-05-28)
 
 

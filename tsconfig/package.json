@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/tsconfig",
-  "version": "1.0.0-beta.8",
+  "version": "1.0.0-beta.9",
   "description": "Custom tsconfig for Arcjet projects",
   "keywords": [
     "arcjet",
