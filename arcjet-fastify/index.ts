@@ -117,7 +117,6 @@ export function createRemoteClient(
 
   return createClient({
     baseUrl,
-    // @ts-expect-error: TODO(@wooorm-arcjet): register label in protocol.
     sdkStack: "FASTIFY",
     sdkVersion: "__ARCJET_SDK_VERSION__",
     timeout: settings.timeout ?? (isDevelopment(process.env) ? 1000 : 500),
