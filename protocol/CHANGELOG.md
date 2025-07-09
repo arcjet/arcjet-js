@@ -1,5 +1,51 @@
 # Changelog
 
+## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...@arcjet/protocol-v1.0.0-beta.9) (2025-07-09)
+
+
+### 🚀 New Features
+
+* **protocol:** Add Fastify stack ([#4570](https://github.com/arcjet/arcjet-js/issues/4570)) ([538818d](https://github.com/arcjet/arcjet-js/commit/538818d63b4e4925accab003c0ffdc693b519d82))
+
+
+### 📝 Documentation
+
+* Add relevant links to each package readme ([#4429](https://github.com/arcjet/arcjet-js/issues/4429)) ([2653ab0](https://github.com/arcjet/arcjet-js/commit/2653ab0ea93eee7a1b921e7cf3ab403a825bef3d))
+
+
+### 🧹 Miscellaneous Chores
+
+* Add `keywords` to `package.json`s ([#4408](https://github.com/arcjet/arcjet-js/issues/4408)) ([4f09478](https://github.com/arcjet/arcjet-js/commit/4f094781c3e2fb80df4186b92185cbc295880b5c))
+* remove `expect`, references to `jest` ([#4415](https://github.com/arcjet/arcjet-js/issues/4415)) ([2c44c39](https://github.com/arcjet/arcjet-js/commit/2c44c39dfeccee74321a3425a3e5b2d5fa480c42))
+
+
+### ⌨️ Code Refactoring
+
+* Clean `files` fields in `package.json`s ([#4441](https://github.com/arcjet/arcjet-js/issues/4441)) ([fd7913b](https://github.com/arcjet/arcjet-js/commit/fd7913bf0c28d05740d94cf50f5939ee2b6f98fa))
+* rename use of deprecated method name ([#4504](https://github.com/arcjet/arcjet-js/issues/4504)) ([2b30a4d](https://github.com/arcjet/arcjet-js/commit/2b30a4dd2f13dcaaf0391f7192c29e73b585cedb))
+
+
+### 📚 Tests
+
+* add actual tests for reasons ([#4516](https://github.com/arcjet/arcjet-js/issues/4516)) ([768f85e](https://github.com/arcjet/arcjet-js/commit/768f85ef46a1372916b322f2c0a085cc4b95714f))
+* clean protocol tests ([#4479](https://github.com/arcjet/arcjet-js/issues/4479)) ([c67d517](https://github.com/arcjet/arcjet-js/commit/c67d5179a5be2d64fea5e0f046da043f2c6f5b60))
+
+
+### 🔨 Build System
+
+* add separate core, coverage tests ([#4480](https://github.com/arcjet/arcjet-js/issues/4480)) ([61c2c50](https://github.com/arcjet/arcjet-js/commit/61c2c50a94ac9712dfebd1a972e067cc0788c44a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/rollup-config bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+    * @arcjet/tsconfig bumped from 1.0.0-beta.8 to 1.0.0-beta.9
+
 ## [1.0.0-beta.8](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.7...@arcjet/protocol-v1.0.0-beta.8) (2025-05-28)
 
 
