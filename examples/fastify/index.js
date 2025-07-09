@@ -19,10 +19,6 @@ const arcjet = arcjetFastify({
     // Arcjet also supports other types (sliding window, token bucket).
     // See <https://docs.arcjet.com/rate-limiting/reference/> for more info.
     fixedWindow({
-      // You can add a `characteristics` field here to track clients.
-      // The default is `["ip.src"]`.
-      // See <https://docs.arcjet.com/architecture/#fingerprinting> for more info.
-
       max: 1, // Allow a single request (for demo purposes).
       mode: "LIVE", // Use `DRY_RUN` instead of `LIVE` to only log.
       window: "1m", // …reset after this duration.
