@@ -11,6 +11,14 @@ import { OutgoingMessage } from "http";
 
 function noop() {}
 
+test("@arcjet/decorate", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "setRateLimitHeaders",
+    ]);
+  });
+});
+
 describe("setRateLimitHeaders", () => {
   describe("Header object", () => {
     test("empty results do not set headers", () => {

@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { parse } from "../index.js";
 
+test("@arcjet/duration", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "parse",
+    ]);
+  });
+});
+
 describe("parse", () => {
   test("always returns 0 if the duration string is just 0", () => {
     assert.equal(parse("0"), 0);

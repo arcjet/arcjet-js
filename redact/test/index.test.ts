@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import { describe, test, afterEach, mock } from "node:test";
 import { redact } from "../index.js";
 
+test("@arcjet/redact", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "redact",
+    ]);
+  });
+});
+
 describe("ArcjetRedact", () => {
   describe("redact()", () => {
     afterEach(() => {

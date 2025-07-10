@@ -3,6 +3,36 @@ import test from "node:test";
 import { ArcjetIpDetails, ArcjetReason, ArcjetRuleResult } from "../index.js";
 import { IpDetails } from "../proto/decide/v1alpha1/decide_pb.js";
 
+test("@arcjet/protocol", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "ArcjetAllowDecision",
+      "ArcjetBotReason",
+      "ArcjetChallengeDecision",
+      "ArcjetConclusion",
+      "ArcjetDecision",
+      "ArcjetDenyDecision",
+      "ArcjetEdgeRuleReason",
+      "ArcjetEmailReason",
+      "ArcjetEmailType",
+      "ArcjetErrorDecision",
+      "ArcjetErrorReason",
+      "ArcjetIpDetails",
+      "ArcjetMode",
+      "ArcjetRateLimitAlgorithm",
+      "ArcjetRateLimitReason",
+      "ArcjetReason",
+      "ArcjetRuleResult",
+      "ArcjetRuleState",
+      "ArcjetSensitiveInfoReason",
+      "ArcjetSensitiveInfoType",
+      "ArcjetShieldReason",
+      "ArcjetStack",
+      "botCategories",
+    ]);
+  });
+});
+
 test("protocol", async (t) => {
   await t.test("ArcjetRuleResult", async (t) => {
     await t.test("ArcjetRuleResult#isDenied", () => {

@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { describe, it } from "node:test";
+import { describe, it, test } from "node:test";
 
 import nosecone, {
   defaults,
@@ -19,6 +19,41 @@ import nosecone, {
   NoseconeValidationError,
   withVercelToolbar,
 } from "../index.js";
+
+test("nosecone", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      // TODO(@wooorm-arcjet): that’s a ton, perhaps make it smaller.
+      "CONTENT_SECURITY_POLICY_DIRECTIVES",
+      "CROSS_ORIGIN_EMBEDDER_POLICIES",
+      "CROSS_ORIGIN_OPENER_POLICIES",
+      "CROSS_ORIGIN_RESOURCE_POLICIES",
+      "NoseconeValidationError",
+      "PERMITTED_CROSS_DOMAIN_POLICIES",
+      "QUOTED",
+      "REFERRER_POLICIES",
+      "SANDBOX_DIRECTIVES",
+      "createContentSecurityPolicy",
+      "createContentTypeOptions",
+      "createCrossOriginEmbedderPolicy",
+      "createCrossOriginOpenerPolicy",
+      "createCrossOriginResourcePolicy",
+      "createDnsPrefetchControl",
+      "createDownloadOptions",
+      "createFrameOptions",
+      "createOriginAgentCluster",
+      "createPermittedCrossDomainPolicies",
+      "createReferrerPolicy",
+      "createStrictTransportSecurity",
+      "createXssProtection",
+      // TODO(@wooorm-arcjet): use named exports.
+      "default",
+      // TODO(@wooorm-arcjet): use a clearer name: defaults for what, function to generate them?
+      "defaults",
+      "withVercelToolbar",
+    ]);
+  });
+});
 
 describe("nosecone", () => {
   describe("NoseconeValidationError", () => {

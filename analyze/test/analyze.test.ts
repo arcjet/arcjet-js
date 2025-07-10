@@ -14,6 +14,17 @@ const exampleEmailOptions = {
   requireTopLevelDomain: true,
 };
 
+test("@arcjet/analyze", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "detectBot",
+      "detectSensitiveInfo",
+      "generateFingerprint",
+      "isValidEmail",
+    ]);
+  });
+});
+
 test("detectBot", async function (t) {
   await t.test("should fail w/o user agent", async function () {
     await assert.rejects(
