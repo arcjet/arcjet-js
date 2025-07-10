@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../index.js";
 import {
+  type ArcjetRuleState,
   ArcjetBotReason,
   ArcjetErrorReason,
   ArcjetRuleResult,
-  ArcjetRuleState,
 } from "@arcjet/protocol";
 
 describe("isSpoofedBot", () => {
