@@ -79,65 +79,6 @@ class ExampleCache {
   set() {}
 }
 
-/**
- * Arcjet logger that does nothing.
- */
-const exampleLogger: ArcjetLogger = {
-  debug() {},
-  error() {},
-  info() {},
-  warn() {},
-};
-
-/**
- * Empty values for context.
- */
-const exampleContext: ArcjetContext = {
-  characteristics: [],
-  cache: new ExampleCache(),
-  fingerprint: "b",
-  getBody() {
-    return Promise.resolve(undefined);
-  },
-  key: "a",
-  log: exampleLogger,
-  runtime: "c",
-};
-
-/**
- * Empty values for options.
- */
-const exampleOptions: ArcjetOptions<Array<Array<ArcjetRule>>, []> = {
-  client: {
-    async decide() {
-      return new ArcjetAllowDecision({
-        ttl: 0,
-        reason: new ArcjetTestReason(),
-        results: [],
-      });
-    },
-    report() {},
-  },
-  key: "a",
-  log: exampleLogger,
-  rules: [],
-};
-
-/**
- * Empty values for details.
- */
-const exampleDetails = {
-  cookies: "",
-  extra: {},
-  headers: new Headers(),
-  host: "example.com",
-  ip: "172.100.1.1",
-  method: "GET",
-  path: "/",
-  protocol: "http",
-  query: "",
-};
-
 test("Arcjet*Decision", async (t) => {
   await t.test("id", async (t) => {
     await t.test("should generate an `id` field if not given", () => {
@@ -450,8 +391,8 @@ test("detectBot", async (t) => {
     const [rule] = detectBot({ allow: [], mode: "LIVE" });
 
     assert.throws(() => {
-      const _ = rule.validate(exampleContext, {
-        ...exampleDetails,
+      const _ = rule.validate(createExampleContext(), {
+        ...createExampleDetails(),
         headers: undefined,
       });
     }, /bot detection requires `headers` to be set/);
@@ -461,8 +402,8 @@ test("detectBot", async (t) => {
     const [rule] = detectBot({ allow: [], mode: "LIVE" });
 
     assert.throws(() => {
-      const _ = rule.validate(exampleContext, {
-        ...exampleDetails,
+      const _ = rule.validate(createExampleContext(), {
+        ...createExampleDetails(),
         // @ts-expect-error: test runtime behavior of invalid `headers`.
         headers: {},
       });
@@ -475,8 +416,8 @@ test("detectBot", async (t) => {
       const [rule] = detectBot({ allow: [], mode: "LIVE" });
 
       assert.throws(() => {
-        const _ = rule.validate(exampleContext, {
-          ...exampleDetails,
+        const _ = rule.validate(createExampleContext(), {
+          ...createExampleDetails(),
           headers: new Headers(),
         });
       }, /bot detection requires user-agent header/);
@@ -485,8 +426,8 @@ test("detectBot", async (t) => {
 
   await t.test("should support `mode: DRY_RUN`", async () => {
     const [rule] = detectBot({ allow: [], mode: "DRY_RUN" });
-    const result = await rule.protect(exampleContext, {
-      ...exampleDetails,
+    const result = await rule.protect(createExampleContext(), {
+      ...createExampleDetails(),
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
     });
     assert.equal(result.conclusion, "DENY");
@@ -500,8 +441,8 @@ test("detectBot", async (t) => {
 
   await t.test("should deny a well-known bot w/ empty `allow`", async () => {
     const [rule] = detectBot({ allow: [], mode: "LIVE" });
-    const result = await rule.protect(exampleContext, {
-      ...exampleDetails,
+    const result = await rule.protect(createExampleContext(), {
+      ...createExampleDetails(),
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
     });
     assert.equal(result.conclusion, "DENY");
@@ -517,8 +458,8 @@ test("detectBot", async (t) => {
     "should allow a well-known bot if listed in `allow`",
     async () => {
       const [rule] = detectBot({ allow: ["CURL"], mode: "LIVE" });
-      const result = await rule.protect(exampleContext, {
-        ...exampleDetails,
+      const result = await rule.protect(createExampleContext(), {
+        ...createExampleDetails(),
         headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       });
       assert.equal(result.conclusion, "ALLOW");
@@ -535,8 +476,8 @@ test("detectBot", async (t) => {
     "should deny a well-known both if listed in `deny`",
     async () => {
       const [rule] = detectBot({ deny: ["CURL"], mode: "LIVE" });
-      const result = await rule.protect(exampleContext, {
-        ...exampleDetails,
+      const result = await rule.protect(createExampleContext(), {
+        ...createExampleDetails(),
         headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       });
       assert.equal(result.conclusion, "DENY");
@@ -554,7 +495,7 @@ test("detectBot", async (t) => {
     const [rule] = detectBot({ allow: [], mode: "LIVE" });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         cache: {
           async get(namespace, key) {
             calls++;
@@ -579,7 +520,7 @@ test("detectBot", async (t) => {
           set() {},
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
 
     assert.equal(calls, 1);
@@ -815,7 +756,7 @@ test("tokenBucket", async (t) => {
     const [rule] = tokenBucket({ capacity: 1, interval: 1, refillRate: 1 });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         cache: {
           async get(namespace, key) {
             calls++;
@@ -844,7 +785,7 @@ test("tokenBucket", async (t) => {
           set() {},
         },
       },
-      { ...exampleDetails, requested: 1 },
+      { ...createExampleDetails(), requested: 1 },
     );
 
     assert.equal(calls, 1);
@@ -885,7 +826,7 @@ test("tokenBucket", async (t) => {
     };
 
     const aj = arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       characteristics: ["someGlobalCharacteristic"],
       rules: [
         tokenBucket({
@@ -898,8 +839,8 @@ test("tokenBucket", async (t) => {
       client,
     });
 
-    await aj.protect(exampleContext, {
-      ...exampleDetails,
+    await aj.protect(createExampleContext(), {
+      ...createExampleDetails(),
       requested: 1,
       someGlobalCharacteristic: "test",
     });
@@ -932,7 +873,7 @@ test("tokenBucket", async (t) => {
     };
 
     const aj = arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       characteristics: ["someGlobalCharacteristic"],
       rules: [
         tokenBucket({
@@ -946,8 +887,8 @@ test("tokenBucket", async (t) => {
       client,
     });
 
-    await aj.protect(exampleContext, {
-      ...exampleDetails,
+    await aj.protect(createExampleContext(), {
+      ...createExampleDetails(),
       requested: 1,
       someGlobalCharacteristic: "test",
       someLocalCharacteristic: "test",
@@ -1110,7 +1051,7 @@ test("fixedWindow", async (t) => {
     const [rule] = fixedWindow({ max: 1, window: 1 });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         cache: {
           async get(namespace, key) {
             calls++;
@@ -1139,7 +1080,7 @@ test("fixedWindow", async (t) => {
           set() {},
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
 
     assert.equal(calls, 1);
@@ -1180,14 +1121,14 @@ test("fixedWindow", async (t) => {
     };
 
     const aj = arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       characteristics: ["someGlobalCharacteristic"],
       rules: [fixedWindow({ max: 60, mode: "LIVE", window: "1h" })],
       client,
     });
 
-    await aj.protect(exampleContext, {
-      ...exampleDetails,
+    await aj.protect(createExampleContext(), {
+      ...createExampleDetails(),
       someGlobalCharacteristic: "test",
     });
     assert.equal(calls, 1);
@@ -1219,7 +1160,7 @@ test("fixedWindow", async (t) => {
     };
 
     const aj = arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       characteristics: ["someGlobalCharacteristic"],
       rules: [
         fixedWindow({
@@ -1232,8 +1173,8 @@ test("fixedWindow", async (t) => {
       client,
     });
 
-    await aj.protect(exampleContext, {
-      ...exampleDetails,
+    await aj.protect(createExampleContext(), {
+      ...createExampleDetails(),
       someGlobalCharacteristic: "test",
       someLocalCharacteristic: "test",
     });
@@ -1395,7 +1336,7 @@ test("slidingWindow", async (t) => {
     const [rule] = slidingWindow({ interval: 1, max: 1 });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         cache: {
           async get(namespace, key) {
             calls++;
@@ -1424,7 +1365,7 @@ test("slidingWindow", async (t) => {
           set() {},
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
     assert.equal(calls, 1);
     assert.equal(result.conclusion, "DENY");
@@ -1464,14 +1405,14 @@ test("slidingWindow", async (t) => {
     };
 
     const aj = arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       characteristics: ["someGlobalCharacteristic"],
       rules: [slidingWindow({ interval: "1h", max: 60, mode: "LIVE" })],
       client,
     });
 
-    await aj.protect(exampleContext, {
-      ...exampleDetails,
+    await aj.protect(createExampleContext(), {
+      ...createExampleDetails(),
       someGlobalCharacteristic: "test",
     });
     assert.equal(calls, 1);
@@ -1503,7 +1444,7 @@ test("slidingWindow", async (t) => {
     };
 
     const aj = arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       characteristics: ["someGlobalCharacteristic"],
       rules: [
         slidingWindow({
@@ -1516,8 +1457,8 @@ test("slidingWindow", async (t) => {
       client,
     });
 
-    await aj.protect(exampleContext, {
-      ...exampleDetails,
+    await aj.protect(createExampleContext(), {
+      ...createExampleDetails(),
       someGlobalCharacteristic: "test",
       someLocalCharacteristic: "test",
     });
@@ -1686,8 +1627,8 @@ test("validateEmail", async (t) => {
     const [rule] = validateEmail({ deny: [], mode: "LIVE" });
 
     assert.throws(() => {
-      const _ = rule.validate(exampleContext, {
-        ...exampleDetails,
+      const _ = rule.validate(createExampleContext(), {
+        ...createExampleDetails(),
         email: undefined,
       });
     });
@@ -1697,8 +1638,8 @@ test("validateEmail", async (t) => {
     const [rule] = validateEmail({ deny: [], mode: "LIVE" });
 
     assert.doesNotThrow(() => {
-      const _ = rule.validate(exampleContext, {
-        ...exampleDetails,
+      const _ = rule.validate(createExampleContext(), {
+        ...createExampleDetails(),
         email: "abc@example.com",
       });
     });
@@ -1709,8 +1650,8 @@ test("validateEmail", async (t) => {
     async () => {
       const [rule] = validateEmail({ allow: [], mode: "DRY_RUN" });
 
-      const result = await rule.protect(exampleContext, {
-        ...exampleDetails,
+      const result = await rule.protect(createExampleContext(), {
+        ...createExampleDetails(),
         email: "foobarbaz",
       });
       assert.equal(result.conclusion, "DENY");
@@ -1722,8 +1663,8 @@ test("validateEmail", async (t) => {
 
   await t.test("should allow a valid email", async () => {
     const [rule] = validateEmail({ allow: [], mode: "LIVE" });
-    const result = await rule.protect(exampleContext, {
-      ...exampleDetails,
+    const result = await rule.protect(createExampleContext(), {
+      ...createExampleDetails(),
       email: "foobarbaz@example.com",
     });
     assert.equal(result.conclusion, "ALLOW");
@@ -1734,8 +1675,8 @@ test("validateEmail", async (t) => {
 
   await t.test("should deny an email w/o domain segment", async () => {
     const [rule] = validateEmail({ allow: [], mode: "LIVE" });
-    const result = await rule.protect(exampleContext, {
-      ...exampleDetails,
+    const result = await rule.protect(createExampleContext(), {
+      ...createExampleDetails(),
       email: "foobarbaz",
     });
     assert.equal(result.conclusion, "DENY");
@@ -1746,8 +1687,8 @@ test("validateEmail", async (t) => {
 
   await t.test("should deny an email w/o TLD", async () => {
     const [rule] = validateEmail({ allow: [], mode: "LIVE" });
-    const result = await rule.protect(exampleContext, {
-      ...exampleDetails,
+    const result = await rule.protect(createExampleContext(), {
+      ...createExampleDetails(),
       email: "foobarbaz@localhost",
     });
     assert.equal(result.conclusion, "DENY");
@@ -1765,8 +1706,8 @@ test("validateEmail", async (t) => {
         requireTopLevelDomain: false,
       });
       assert.equal(rule.type, "EMAIL");
-      const result = await rule.protect(exampleContext, {
-        ...exampleDetails,
+      const result = await rule.protect(createExampleContext(), {
+        ...createExampleDetails(),
         email: "foobarbaz@localhost",
       });
       assert.equal(result.conclusion, "ALLOW");
@@ -1778,8 +1719,8 @@ test("validateEmail", async (t) => {
   await t.test("should deny an email w/ domain literal", async () => {
     const [rule] = validateEmail({ allow: [], mode: "LIVE" });
     assert.equal(rule.type, "EMAIL");
-    const result = await rule.protect(exampleContext, {
-      ...exampleDetails,
+    const result = await rule.protect(createExampleContext(), {
+      ...createExampleDetails(),
       email: "foobarbaz@[127.0.0.1]",
     });
     assert.equal(result.conclusion, "DENY");
@@ -1797,8 +1738,8 @@ test("validateEmail", async (t) => {
         allow: [],
       });
       assert.equal(rule.type, "EMAIL");
-      const result = await rule.protect(exampleContext, {
-        ...exampleDetails,
+      const result = await rule.protect(createExampleContext(), {
+        ...createExampleDetails(),
         email: "foobarbaz@[127.0.0.1]",
       });
       assert.equal(result.conclusion, "ALLOW");
@@ -1814,7 +1755,7 @@ test("validateEmail", async (t) => {
     assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         cache: {
           get() {
             assert.fail();
@@ -1822,7 +1763,7 @@ test("validateEmail", async (t) => {
           set() {},
         },
       },
-      { ...exampleDetails, email: "test@example.com" },
+      { ...createExampleDetails(), email: "test@example.com" },
     );
     assert.equal(result.conclusion, "ALLOW");
     assert.ok(result.reason instanceof ArcjetEmailReason);
@@ -1857,7 +1798,7 @@ test("shield", async (t) => {
     const [rule] = shield({ mode: "LIVE" });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         cache: {
           async get(namespace, key) {
             calls++;
@@ -1880,7 +1821,7 @@ test("shield", async (t) => {
           set() {},
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
     assert.equal(calls, 1);
     assert.equal(result.conclusion, "DENY");
@@ -1892,7 +1833,10 @@ test("shield", async (t) => {
 
   await t.test("should not run locally", async () => {
     const [rule] = shield({ mode: "LIVE" });
-    const result = await rule.protect(exampleContext, exampleDetails);
+    const result = await rule.protect(
+      createExampleContext(),
+      createExampleDetails(),
+    );
     assert.equal(result.conclusion, "ALLOW");
     assert.ok(result.reason instanceof ArcjetShieldReason);
     assert.equal(result.reason.shieldTriggered, false);
@@ -1994,7 +1938,7 @@ test("sensitiveInfo", async (t) => {
   await t.test("should not fail when calling `validate`", () => {
     const [rule] = sensitiveInfo({ allow: [], mode: "LIVE" });
     assert.doesNotThrow(() => {
-      const _ = rule.validate(exampleContext, exampleDetails);
+      const _ = rule.validate(createExampleContext(), createExampleDetails());
     });
   });
 
@@ -2002,12 +1946,12 @@ test("sensitiveInfo", async (t) => {
     const [rule] = sensitiveInfo({ allow: [], mode: "LIVE" });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         async getBody() {
           return "none of this is sensitive";
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
     assert.equal(result.conclusion, "ALLOW");
     assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
@@ -2020,12 +1964,12 @@ test("sensitiveInfo", async (t) => {
     const [rule] = sensitiveInfo({ allow: [], mode: "DRY_RUN" });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         async getBody() {
           return "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567";
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
     // TODO(#4561): should be `ALLOW` in dry run mode.
     assert.equal(result.conclusion, "DENY");
@@ -2044,12 +1988,12 @@ test("sensitiveInfo", async (t) => {
     const [rule] = sensitiveInfo({ allow: [], mode: "LIVE" });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         async getBody() {
           return "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567";
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
     assert.equal(result.conclusion, "DENY");
     assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
@@ -2072,12 +2016,12 @@ test("sensitiveInfo", async (t) => {
       });
       const result = await rule.protect(
         {
-          ...exampleContext,
+          ...createExampleContext(),
           async getBody() {
             return "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567";
           },
         },
-        exampleDetails,
+        createExampleDetails(),
       );
       assert.equal(result.conclusion, "DENY");
       assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
@@ -2102,12 +2046,12 @@ test("sensitiveInfo", async (t) => {
       });
       const result = await rule.protect(
         {
-          ...exampleContext,
+          ...createExampleContext(),
           async getBody() {
             return "test@example.com +353 87 123 4567";
           },
         },
-        exampleDetails,
+        createExampleDetails(),
       );
       assert.equal(result.conclusion, "ALLOW");
       assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
@@ -2129,12 +2073,12 @@ test("sensitiveInfo", async (t) => {
       });
       const result = await rule.protect(
         {
-          ...exampleContext,
+          ...createExampleContext(),
           async getBody() {
             return "127.0.0.1 test@example.com +353 87 123 4567";
           },
         },
-        exampleDetails,
+        createExampleDetails(),
       );
       assert.equal(result.conclusion, "DENY");
       assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
@@ -2155,12 +2099,12 @@ test("sensitiveInfo", async (t) => {
       const [rule] = sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" });
       const result = await rule.protect(
         {
-          ...exampleContext,
+          ...createExampleContext(),
           async getBody() {
             return "test@example.com +353 87 123 4567";
           },
         },
-        exampleDetails,
+        createExampleDetails(),
       );
       assert.equal(result.conclusion, "DENY");
       assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
@@ -2191,12 +2135,12 @@ test("sensitiveInfo", async (t) => {
     });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         async getBody() {
           return "this is bad";
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
     assert.equal(result.conclusion, "DENY");
     assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
@@ -2228,12 +2172,12 @@ test("sensitiveInfo", async (t) => {
       await assert.rejects(async () => {
         await rule.protect(
           {
-            ...exampleContext,
+            ...createExampleContext(),
             async getBody() {
               return "this is bad";
             },
           },
-          exampleDetails,
+          createExampleDetails(),
         );
       }, /invalid entity type/);
     },
@@ -2258,12 +2202,12 @@ test("sensitiveInfo", async (t) => {
       });
       const result = await rule.protect(
         {
-          ...exampleContext,
+          ...createExampleContext(),
           async getBody() {
             return "my email is test@example.com";
           },
         },
-        exampleDetails,
+        createExampleDetails(),
       );
       assert.equal(result.conclusion, "ALLOW");
       assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
@@ -2294,12 +2238,12 @@ test("sensitiveInfo", async (t) => {
       });
       await rule.protect(
         {
-          ...exampleContext,
+          ...createExampleContext(),
           async getBody() {
             return "my email is test@example.com";
           },
         },
-        exampleDetails,
+        createExampleDetails(),
       );
 
       assert.ok(called);
@@ -2310,12 +2254,12 @@ test("sensitiveInfo", async (t) => {
     const [rule] = sensitiveInfo({ allow: [], mode: "LIVE" });
     const decision = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         getBody() {
           return Promise.resolve(undefined);
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
     assert.equal(decision.ttl, 0);
     assert.equal(decision.state, "NOT_RUN");
@@ -2326,12 +2270,12 @@ test("sensitiveInfo", async (t) => {
     const [rule] = sensitiveInfo({ allow: [], mode: "LIVE" });
     const decision = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         getBody() {
           return Promise.resolve("");
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
     assert.equal(decision.ttl, 0);
     assert.equal(decision.state, "RUN");
@@ -2343,7 +2287,7 @@ test("sensitiveInfo", async (t) => {
     const [rule] = sensitiveInfo({ allow: [], mode: "LIVE" });
     const result = await rule.protect(
       {
-        ...exampleContext,
+        ...createExampleContext(),
         cache: {
           get() {
             assert.fail();
@@ -2354,7 +2298,7 @@ test("sensitiveInfo", async (t) => {
           return "nothing to detect";
         },
       },
-      exampleDetails,
+      createExampleDetails(),
     );
     assert.equal(result.conclusion, "ALLOW");
     assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
@@ -2382,7 +2326,7 @@ test("protectSignup", async (t) => {
 
 test("SDK", async (t) => {
   await t.test("should work w/o rules", () => {
-    const aj = arcjet(exampleOptions);
+    const aj = arcjet(createExampleOptions());
     assert.equal(typeof aj.protect, "function");
   });
 
@@ -2407,7 +2351,7 @@ test("SDK", async (t) => {
       },
     };
 
-    const aj = arcjet({ ...exampleOptions, client });
+    const aj = arcjet({ ...createExampleOptions(), client });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
     const ajOther = aj.withRule(rule);
@@ -2418,8 +2362,8 @@ test("SDK", async (t) => {
       >
     >;
 
-    await ajOther.protect(exampleContext, {
-      ...exampleDetails,
+    await ajOther.protect(createExampleContext(), {
+      ...createExampleDetails(),
       userId: "abc123",
       requested: 1,
     });
@@ -2444,7 +2388,7 @@ test("SDK", async (t) => {
         },
       };
 
-      const aj = arcjet({ ...exampleOptions, client });
+      const aj = arcjet({ ...createExampleOptions(), client });
       type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
       const rule = tokenBucket({
@@ -2484,8 +2428,8 @@ test("SDK", async (t) => {
         >
       >;
 
-      await ajYetAnother.protect(exampleContext, {
-        ...exampleDetails,
+      await ajYetAnother.protect(createExampleContext(), {
+        ...createExampleDetails(),
         userId: "abc123",
         requested: 1,
         abc: 123,
@@ -2511,7 +2455,7 @@ test("SDK", async (t) => {
       },
     };
 
-    const aj = arcjet({ ...exampleOptions, client });
+    const aj = arcjet({ ...createExampleOptions(), client });
     type WithoutRuleTest = Assert<SDKProps<typeof aj, {}>>;
 
     const tokenBucketRule = tokenBucket({
@@ -2548,8 +2492,8 @@ test("SDK", async (t) => {
       SDKProps<typeof ajYetAnother, { abc: number }>
     >;
 
-    await ajYetAnother.protect(exampleContext, {
-      ...exampleDetails,
+    await ajYetAnother.protect(createExampleContext(), {
+      ...createExampleDetails(),
       userId: "abc123",
       requested: 1,
       abc: 123,
@@ -2560,14 +2504,14 @@ test("SDK", async (t) => {
   // TODO(#207): Remove this once we default the client in the main SDK
   await t.test("should fail if `client` is missing", () => {
     assert.throws(() => {
-      arcjet({ ...exampleOptions, client: undefined });
+      arcjet({ ...createExampleOptions(), client: undefined });
     }, /Client is required/);
   });
 
   // TODO(@wooorm-arcjet): `log` sounds like something we can allow and provide by default.
   await t.test("should fail if `log` is missing", () => {
     assert.throws(() => {
-      arcjet({ ...exampleOptions, log: undefined });
+      arcjet({ ...createExampleOptions(), log: undefined });
     }, /Log is required/);
   });
 
@@ -2590,7 +2534,7 @@ test("SDK", async (t) => {
     };
 
     const aj = arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       rules: [
         [
           {
@@ -2620,7 +2564,10 @@ test("SDK", async (t) => {
       client,
     });
 
-    const decision = await aj.protect(exampleContext, exampleDetails);
+    const decision = await aj.protect(
+      createExampleContext(),
+      createExampleDetails(),
+    );
     assert.equal(decision.conclusion, "ALLOW");
     assert.equal(calls, 3);
   });
@@ -2631,7 +2578,7 @@ test("SDK", async (t) => {
       let calls = 0;
 
       const aj = arcjet({
-        ...exampleOptions,
+        ...createExampleOptions(),
         rules: [
           [
             {
@@ -2684,7 +2631,10 @@ test("SDK", async (t) => {
         ],
       });
 
-      const decision = await aj.protect(exampleContext, exampleDetails);
+      const decision = await aj.protect(
+        createExampleContext(),
+        createExampleDetails(),
+      );
       assert.equal(decision.conclusion, "DENY");
       assert.equal(calls, 4);
     },
@@ -2696,7 +2646,7 @@ test("SDK", async (t) => {
       let calls = 0;
 
       const aj = arcjet({
-        ...exampleOptions,
+        ...createExampleOptions(),
         rules: [
           [
             {
@@ -2759,7 +2709,10 @@ test("SDK", async (t) => {
         ],
       });
 
-      const decision = await aj.protect(exampleContext, exampleDetails);
+      const decision = await aj.protect(
+        createExampleContext(),
+        createExampleDetails(),
+      );
       assert.equal(decision.conclusion, "DENY");
       assert.equal(calls, 4);
     },
@@ -2771,7 +2724,7 @@ test("SDK", async (t) => {
       let calls = 0;
 
       const aj = arcjet({
-        ...exampleOptions,
+        ...createExampleOptions(),
         rules: [
           [
             {
@@ -2790,7 +2743,10 @@ test("SDK", async (t) => {
         ],
       });
 
-      const decision = await aj.protect(exampleContext, exampleDetails);
+      const decision = await aj.protect(
+        createExampleContext(),
+        createExampleDetails(),
+      );
       assert.equal(decision.conclusion, "ALLOW");
       assert.equal(calls, 1);
     },
@@ -2800,7 +2756,7 @@ test("SDK", async (t) => {
     let calls = 0;
 
     const aj = arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       rules: [
         [
           // @ts-expect-error: test runtime behavior of no `validate`.
@@ -2839,7 +2795,10 @@ test("SDK", async (t) => {
       ],
     });
 
-    const decision = await aj.protect(exampleContext, exampleDetails);
+    const decision = await aj.protect(
+      createExampleContext(),
+      createExampleDetails(),
+    );
     assert.equal(calls, 2);
     assert.equal(decision.conclusion, "DENY");
     const result = decision.results.find((d) => d.ruleId === "");
@@ -2856,7 +2815,7 @@ test("SDK", async (t) => {
     let calls = 0;
 
     const aj = arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       rules: [
         [
           // @ts-expect-error: test runtime behavior of missing `protect`.
@@ -2896,7 +2855,10 @@ test("SDK", async (t) => {
       ],
     });
 
-    const decision = await aj.protect(exampleContext, exampleDetails);
+    const decision = await aj.protect(
+      createExampleContext(),
+      createExampleDetails(),
+    );
     assert.equal(calls, 3);
     assert.equal(decision.conclusion, "DENY");
     const result = decision.results.find((d) => d.ruleId === "");
@@ -2912,9 +2874,9 @@ test("SDK", async (t) => {
   await t.test(
     "should conclude an error if fingerprint cannot be generated (no request)",
     async () => {
-      const aj = arcjet(exampleOptions);
+      const aj = arcjet(createExampleOptions());
       // @ts-expect-error: test runtime behavior of no request object.
-      const decision = await aj.protect(exampleContext);
+      const decision = await aj.protect(createExampleContext());
       assert.equal(decision.conclusion, "ERROR");
     },
   );
@@ -2922,8 +2884,8 @@ test("SDK", async (t) => {
   await t.test(
     "should conclude an error if fingerprint cannot be generated (empty request)",
     async () => {
-      const aj = arcjet(exampleOptions);
-      const decision = await aj.protect(exampleContext, {});
+      const aj = arcjet(createExampleOptions());
+      const decision = await aj.protect(createExampleContext(), {});
       assert.equal(decision.conclusion, "ERROR");
     },
   );
@@ -2945,9 +2907,9 @@ test("SDK", async (t) => {
       ],
     );
 
-    const decision = await arcjet({ ...exampleOptions, rules }).protect(
-      exampleContext,
-      exampleDetails,
+    const decision = await arcjet({ ...createExampleOptions(), rules }).protect(
+      createExampleContext(),
+      createExampleDetails(),
     );
     assert.equal(decision.conclusion, "ALLOW");
   });
@@ -2969,9 +2931,9 @@ test("SDK", async (t) => {
       ],
     );
 
-    const decision = await arcjet({ ...exampleOptions, rules }).protect(
-      exampleContext,
-      exampleDetails,
+    const decision = await arcjet({ ...createExampleOptions(), rules }).protect(
+      createExampleContext(),
+      createExampleDetails(),
     );
     assert.equal(decision.conclusion, "ERROR");
   });
@@ -3012,10 +2974,10 @@ test("SDK", async (t) => {
     };
 
     await arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       client,
       rules: [[rule]],
-    }).protect(exampleContext, exampleDetails);
+    }).protect(createExampleContext(), createExampleDetails());
 
     assert.deepEqual(parameters, [[rule]]);
   });
@@ -3046,7 +3008,7 @@ test("SDK", async (t) => {
       let called = 0;
 
       await arcjet({
-        ...exampleOptions,
+        ...createExampleOptions(),
         client: {
           async decide() {
             // Should not be called.
@@ -3059,7 +3021,7 @@ test("SDK", async (t) => {
           },
         },
         rules: [[rule]],
-      }).protect(exampleContext, exampleDetails);
+      }).protect(createExampleContext(), createExampleDetails());
 
       assert.equal(called, 1);
     },
@@ -3083,9 +3045,9 @@ test("SDK", async (t) => {
       },
     };
 
-    await arcjet({ ...exampleOptions, client }).protect(
-      exampleContext,
-      exampleDetails,
+    await arcjet({ ...createExampleOptions(), client }).protect(
+      createExampleContext(),
+      createExampleDetails(),
     );
     assert.equal(calls, 1);
   });
@@ -3127,10 +3089,11 @@ test("SDK", async (t) => {
         },
       };
 
-      await arcjet({ ...exampleOptions, client, rules: [[rule]] }).protect(
-        exampleContext,
-        exampleDetails,
-      );
+      await arcjet({
+        ...createExampleOptions(),
+        client,
+        rules: [[rule]],
+      }).protect(createExampleContext(), createExampleDetails());
 
       assert.deepEqual(parameters, [[rule]]);
     },
@@ -3174,10 +3137,10 @@ test("SDK", async (t) => {
     };
 
     await arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       client,
       rules: [[rule]],
-    }).protect(exampleContext, exampleDetails);
+    }).protect(createExampleContext(), createExampleDetails());
 
     assert.equal(calls, 1);
   });
@@ -3204,10 +3167,13 @@ test("SDK", async (t) => {
       },
     };
 
-    await arcjet({ ...exampleOptions, client }).protect(exampleContext, {
-      ...exampleDetails,
-      headers: { "user-agent": "curl/8.1.2" },
-    });
+    await arcjet({ ...createExampleOptions(), client }).protect(
+      createExampleContext(),
+      {
+        ...createExampleDetails(),
+        headers: { "user-agent": "curl/8.1.2" },
+      },
+    );
     assert.equal(calls, 1);
   });
 
@@ -3238,9 +3204,9 @@ test("SDK", async (t) => {
         },
       };
 
-      const aj = arcjet({ ...exampleOptions, client });
-      await aj.protect(exampleContext, {
-        ...exampleDetails,
+      const aj = arcjet({ ...createExampleOptions(), client });
+      await aj.protect(createExampleContext(), {
+        ...createExampleDetails(),
         headers: { "User-Agent": ["curl/8.1.2", "something"] },
       });
       assert.equal(calls, 1);
@@ -3266,12 +3232,15 @@ test("SDK", async (t) => {
       };
 
       await arcjet({
-        ...exampleOptions,
+        ...createExampleOptions(),
         characteristics: ['http.request.headers["abcxyz"]'],
         client,
       }).protect(
-        { getBody: exampleContext.getBody },
-        { ...exampleDetails, headers: new Headers([["abcxyz", "test1234"]]) },
+        { getBody: createExampleContext().getBody },
+        {
+          ...createExampleDetails(),
+          headers: new Headers([["abcxyz", "test1234"]]),
+        },
       );
 
       assert.equal(
@@ -3307,10 +3276,10 @@ test("SDK", async (t) => {
       },
     };
 
-    const { extra, ...details } = exampleDetails;
+    const { extra, ...details } = createExampleDetails();
 
-    const aj = arcjet({ ...exampleOptions, client });
-    await aj.protect(exampleContext, {
+    const aj = arcjet({ ...createExampleOptions(), client });
+    await aj.protect(createExampleContext(), {
       ...details,
       "extra-number": 123,
       "extra-false": false,
@@ -3367,10 +3336,10 @@ test("SDK", async (t) => {
       };
 
       await arcjet({
-        ...exampleOptions,
+        ...createExampleOptions(),
         client,
         rules: [[rule]],
-      }).protect(exampleContext, exampleDetails);
+      }).protect(createExampleContext(), createExampleDetails());
       assert.equal(calls, 1);
 
       // @ts-expect-error: TODO(@wooorm-arcjet): investigate if this can be typed.
@@ -3452,13 +3421,19 @@ test("SDK", async (t) => {
         },
       };
 
-      const aj = arcjet({ ...exampleOptions, client, rules: [[rule]] });
-      const decision = await aj.protect(exampleContext, exampleDetails);
+      const aj = arcjet({ ...createExampleOptions(), client, rules: [[rule]] });
+      const decision = await aj.protect(
+        createExampleContext(),
+        createExampleDetails(),
+      );
       assert.equal(decision.isErrored(), false);
       assert.equal(decision.conclusion, "DENY");
       assert.equal(calls, 2);
 
-      const decision2 = await aj.protect(exampleContext, exampleDetails);
+      const decision2 = await aj.protect(
+        createExampleContext(),
+        createExampleDetails(),
+      );
       assert.equal(decision2.isErrored(), false);
       assert.equal(decision2.conclusion, "DENY");
       assert.equal(calls, 4);
@@ -3502,10 +3477,10 @@ test("SDK", async (t) => {
     };
 
     await arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       rules: [[rule]],
       client,
-    }).protect(exampleContext, exampleDetails);
+    }).protect(createExampleContext(), createExampleDetails());
     assert.equal(calls, 2);
   });
 
@@ -3527,10 +3502,10 @@ test("SDK", async (t) => {
     } as const;
 
     await arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       rules: [[rule]],
       log: {
-        ...exampleLogger,
+        ...createExampleLogger(),
         error(...parameters) {
           assert.equal(calls, 1);
           calls++;
@@ -3541,7 +3516,7 @@ test("SDK", async (t) => {
           ]);
         },
       },
-    }).protect(exampleContext, exampleDetails);
+    }).protect(createExampleContext(), createExampleDetails());
 
     assert.equal(calls, 2);
   });
@@ -3565,10 +3540,10 @@ test("SDK", async (t) => {
     } as const;
 
     await arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       rules: [[rule]],
       log: {
-        ...exampleLogger,
+        ...createExampleLogger(),
         error(...parameters) {
           assert.equal(calls, 1);
           calls++;
@@ -3579,7 +3554,7 @@ test("SDK", async (t) => {
           ]);
         },
       },
-    }).protect(exampleContext, exampleDetails);
+    }).protect(createExampleContext(), createExampleDetails());
     assert.equal(calls, 2);
   });
 
@@ -3603,7 +3578,7 @@ test("SDK", async (t) => {
       };
 
       const aj = arcjet({
-        ...exampleOptions,
+        ...createExampleOptions(),
         rules: [
           [
             {
@@ -3628,11 +3603,17 @@ test("SDK", async (t) => {
         client,
       });
 
-      const decision = await aj.protect(exampleContext, exampleDetails);
+      const decision = await aj.protect(
+        createExampleContext(),
+        createExampleDetails(),
+      );
       assert.equal(decision.isDenied(), false);
       assert.equal(calls, 1);
 
-      const decision2 = await aj.protect(exampleContext, exampleDetails);
+      const decision2 = await aj.protect(
+        createExampleContext(),
+        createExampleDetails(),
+      );
       assert.equal(decision2.isDenied(), false);
       assert.equal(calls, 2);
     },
@@ -3656,10 +3637,13 @@ test("SDK", async (t) => {
       },
     };
     const decision = await arcjet({
-      ...exampleOptions,
+      ...createExampleOptions(),
       client,
       rules: [],
-    }).protect({ ...exampleContext, key: "overridden-key" }, exampleDetails);
+    }).protect(
+      { ...createExampleContext(), key: "overridden-key" },
+      createExampleDetails(),
+    );
     assert.equal(decision.isErrored(), false);
     assert.equal(calls, 1);
   });
@@ -3679,11 +3663,90 @@ test("SDK", async (t) => {
       },
     };
 
-    const decision = await arcjet({ ...exampleOptions, client }).protect(
-      exampleContext,
-      exampleDetails,
-    );
+    const decision = await arcjet({
+      ...createExampleOptions(),
+      client,
+    }).protect(createExampleContext(), createExampleDetails());
     assert.equal(decision.isErrored(), true);
     assert.equal(calls, 2);
   });
 });
+
+/**
+ * Create empty values for context.
+ *
+ * @returns
+ *   Context.
+ */
+function createExampleContext(): ArcjetContext {
+  return {
+    characteristics: [],
+    cache: new ExampleCache(),
+    fingerprint: "b",
+    getBody() {
+      return Promise.resolve(undefined);
+    },
+    key: "a",
+    log: createExampleLogger(),
+    runtime: "c",
+  };
+}
+
+/**
+ * Create empty values for details.
+ *
+ * @returns
+ *   Details.
+ */
+function createExampleDetails() {
+  return {
+    cookies: "",
+    extra: {},
+    headers: new Headers(),
+    host: "example.com",
+    ip: "172.100.1.1",
+    method: "GET",
+    path: "/",
+    protocol: "http",
+    query: "",
+  };
+}
+
+/**
+ * Create empty values for options.
+ *
+ * @returns
+ *   Options.
+ */
+function createExampleOptions(): ArcjetOptions<Array<Array<ArcjetRule>>, []> {
+  return {
+    client: {
+      async decide() {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetTestReason(),
+          results: [],
+        });
+      },
+      report() {},
+    },
+    key: "a",
+    log: createExampleLogger(),
+    rules: [],
+  };
+}
+
+/**
+ * Create an arcjet logger that logs nothing.
+ *
+ * @returns
+ *   Logger.
+ */
+function createExampleLogger(): ArcjetLogger {
+  return {
+    debug() {},
+    error() {},
+    info() {},
+    warn() {},
+  };
+}
