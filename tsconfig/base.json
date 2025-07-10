@@ -4,13 +4,13 @@
     "composite": false,
     "esModuleInterop": true,
     "incremental": false,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "moduleResolution": "Node",
-    "module": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "moduleResolution": "node",
+    "module": "esnext",
     "preserveWatchOutput": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2022",
+    "target": "es2022",
     "verbatimModuleSyntax": true
   },
   "exclude": ["node_modules"]
