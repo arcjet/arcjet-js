@@ -28,16 +28,12 @@
       "component": "root",
       "include-component-in-tag": false
     },
-    "analyze": {
-      "component": "@arcjet/analyze",
-      "skip-github-release": true
-    },
     "analyze-wasm": {
       "component": "@arcjet/analyze-wasm",
       "skip-github-release": true
     },
-    "arcjet": {
-      "component": "arcjet",
+    "analyze": {
+      "component": "@arcjet/analyze",
       "skip-github-release": true
     },
     "arcjet-astro": {
@@ -74,6 +70,10 @@
     },
     "arcjet-sveltekit": {
       "component": "@arcjet/sveltekit",
+      "skip-github-release": true
+    },
+    "arcjet": {
+      "component": "arcjet",
       "skip-github-release": true
     },
     "body": {
@@ -116,28 +116,16 @@
       "component": "@arcjet/logger",
       "skip-github-release": true
     },
-    "nosecone": {
-      "component": "nosecone",
-      "skip-github-release": true
-    },
-    "nosecone-next": {
-      "component": "@nosecone/next",
-      "skip-github-release": true
-    },
-    "nosecone-sveltekit": {
-      "component": "@nosecone/sveltekit",
-      "skip-github-release": true
-    },
     "protocol": {
       "component": "@arcjet/protocol",
       "skip-github-release": true
     },
-    "redact": {
-      "component": "@arcjet/redact",
-      "skip-github-release": true
-    },
     "redact-wasm": {
       "component": "@arcjet/redact-wasm",
+      "skip-github-release": true
+    },
+    "redact": {
+      "component": "@arcjet/redact",
       "skip-github-release": true
     },
     "rollup-config": {
@@ -163,6 +151,18 @@
     "tsconfig": {
       "component": "@arcjet/tsconfig",
       "skip-github-release": true
+    },
+    "nosecone-next": {
+      "component": "@nosecone/next",
+      "skip-github-release": true
+    },
+    "nosecone-sveltekit": {
+      "component": "@nosecone/sveltekit",
+      "skip-github-release": true
+    },
+    "nosecone": {
+      "component": "nosecone",
+      "skip-github-release": true
     }
   },
   "plugins": [
@@ -175,40 +175,40 @@
       "groupName": "arcjet-js",
       "components": [
         "root",
-        "@arcjet/analyze",
         "@arcjet/analyze-wasm",
-        "arcjet",
+        "@arcjet/analyze",
         "@arcjet/astro",
+        "@arcjet/body",
         "@arcjet/bun",
-        "@arcjet/deno",
-        "@arcjet/fastify",
-        "@arcjet/nest",
-        "@arcjet/next",
-        "@arcjet/node",
-        "@arcjet/remix",
-        "@arcjet/sveltekit",
+        "@arcjet/cache",
         "@arcjet/decorate",
+        "@arcjet/deno",
         "@arcjet/duration",
         "@arcjet/env",
         "@arcjet/eslint-config",
+        "@arcjet/fastify",
         "@arcjet/headers",
         "@arcjet/inspect",
         "@arcjet/ip",
-        "@arcjet/body",
-        "@arcjet/cache",
         "@arcjet/logger",
-        "nosecone",
-        "@nosecone/next",
-        "@nosecone/sveltekit",
+        "@arcjet/nest",
+        "@arcjet/next",
+        "@arcjet/node",
         "@arcjet/protocol",
-        "@arcjet/redact",
         "@arcjet/redact-wasm",
+        "@arcjet/redact",
+        "@arcjet/remix",
         "@arcjet/rollup-config",
         "@arcjet/runtime",
         "@arcjet/sprintf",
         "@arcjet/stable-hash",
+        "@arcjet/sveltekit",
         "@arcjet/transport",
-        "@arcjet/tsconfig"
+        "@arcjet/tsconfig",
+        "@nosecone/next",
+        "@nosecone/sveltekit",
+        "arcjet",
+        "nosecone"
       ]
     }
   ]
