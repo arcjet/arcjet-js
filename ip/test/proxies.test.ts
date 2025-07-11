@@ -10,13 +10,10 @@ test("parseProxy", async (t) => {
 
   await t.test("parses IPv4 CIDR address", () => {
     const proxy = parseProxy("1.1.1.1/22");
-    // @ts-ignore
+    assert(typeof proxy === "object");
     assert.equal(proxy.type, "v4");
-    // @ts-ignore
     assert.equal(proxy.parts.length, 4);
-    // @ts-ignore
     assert.equal(proxy.partSize, 8);
-    // @ts-ignore
     assert.equal(proxy.bits, 22);
   });
 
@@ -55,13 +52,10 @@ test("parseProxy", async (t) => {
 
   await t.test("parses IPv6 CIDR address", () => {
     const proxy = parseProxy("2400:cb00::/32");
-    // @ts-ignore
+    assert(typeof proxy === "object");
     assert.equal(proxy.type, "v6");
-    // @ts-ignore
     assert.equal(proxy.parts.length, 8);
-    // @ts-ignore
     assert.equal(proxy.partSize, 16);
-    // @ts-ignore
     assert.equal(proxy.bits, 32);
   });
 
@@ -123,7 +117,7 @@ test("Cloudflare IPv4 ranges", async (t) => {
     const readableIP = ip.join(".");
     await t.test(`knows ${readableIP} is in ${cidr} range`, () => {
       const proxy = parseProxy(cidr);
-      // @ts-ignore
+      assert(typeof proxy === "object");
       assert.equal(proxy.contains(ip), true);
     });
   }
@@ -166,7 +160,7 @@ test("Cloudflare IPv6 ranges", async (t) => {
     const readableIP = ip.map((val) => val.toString(16)).join(":");
     await t.test(`knows ${readableIP} is in ${cidr} range`, () => {
       const proxy = parseProxy(cidr);
-      // @ts-ignore
+      assert(typeof proxy === "object");
       assert.equal(proxy.contains(ip), true);
     });
   }

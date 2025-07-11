@@ -182,7 +182,7 @@ async function ipv4(t: TestContext, make: Make) {
       ip(request, {
         ...options,
         proxies: [
-          // @ts-ignore
+          // @ts-expect-error: test how runtime handles non-string proxy.
           1234,
         ],
       }),
@@ -313,7 +313,7 @@ async function ipv6(t: TestContext, make: Make) {
       ip(request, {
         ...options,
         proxies: [
-          // @ts-ignore
+          // @ts-expect-error: test how runtime handles non-string proxy.
           1234,
         ],
       }),
