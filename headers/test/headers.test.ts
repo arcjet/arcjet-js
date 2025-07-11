@@ -2,6 +2,15 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import ArcjetHeaders from "../index.js";
 
+test("@arcjet/headers", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      // TODO(@wooorm-arcjet): use named exports.
+      "default",
+    ]);
+  });
+});
+
 describe("ArcjetHeaders", () => {
   test("can be constructed with no initializer", () => {
     const headers = new ArcjetHeaders();

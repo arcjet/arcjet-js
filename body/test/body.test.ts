@@ -4,6 +4,14 @@ import * as http from "http";
 import { readBody } from "../index.js";
 import type { AddressInfo } from "net";
 
+test("@arcjet/body", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "readBody",
+    ]);
+  });
+});
+
 describe("reads the body from the readable stream", () => {
   test("should read normal body streams", (t, done) => {
     const server = http.createServer(async (req, res) => {

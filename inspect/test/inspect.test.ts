@@ -8,6 +8,16 @@ import {
   ArcjetRuleResult,
 } from "@arcjet/protocol";
 
+test("@arcjet/inspect", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "isMissingUserAgent",
+      "isSpoofedBot",
+      "isVerifiedBot",
+    ]);
+  });
+});
+
 describe("isSpoofedBot", () => {
   test("returns true for active bots that are spoofed", () => {
     const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = [
