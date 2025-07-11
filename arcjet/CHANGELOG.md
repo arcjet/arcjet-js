@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...arcjet-v1.0.0-beta.10) (2025-07-11)
+
+
+### 📚 Tests
+
+* add tests for public interface ([#4587](https://github.com/arcjet/arcjet-js/issues/4587)) ([f7aabec](https://github.com/arcjet/arcjet-js/commit/f7aabecbcd351b31fc2b94bc9c871a1123e2c7cd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/cache bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/duration bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/headers bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/protocol bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/runtime bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/stable-hash bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/rollup-config bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/tsconfig bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+
 ## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...arcjet-v1.0.0-beta.9) (2025-07-09)
 
 

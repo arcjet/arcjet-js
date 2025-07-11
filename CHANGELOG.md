@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...v1.0.0-beta.10) (2025-07-11)
+
+
+### 🧹 Miscellaneous Chores
+
+* fix unused import in tests ([#4588](https://github.com/arcjet/arcjet-js/issues/4588)) ([1a9bdb1](https://github.com/arcjet/arcjet-js/commit/1a9bdb112a9ce7d83d7a8124e5c7f7908f95fe6e))
+
+
+### ⌨️ Code Refactoring
+
+* sort packages in release please config ([#4589](https://github.com/arcjet/arcjet-js/issues/4589)) ([80ef9eb](https://github.com/arcjet/arcjet-js/commit/80ef9eb37f8bbd690f6d672a3c1b3eb3e136cdf8))
+
+
+### 📚 Tests
+
+* add tests for public interface ([#4587](https://github.com/arcjet/arcjet-js/issues/4587)) ([f7aabec](https://github.com/arcjet/arcjet-js/commit/f7aabecbcd351b31fc2b94bc9c871a1123e2c7cd))
+
+
+### ✅ Continuous Integration
+
+* add `githubusercontent` to examples ([#4598](https://github.com/arcjet/arcjet-js/issues/4598)) ([1109272](https://github.com/arcjet/arcjet-js/commit/11092724f90b32672d15596267ac8b50f38b93d3))
+
 ## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2025-07-09)
 
 
