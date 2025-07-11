@@ -23,10 +23,12 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
             unpkg.com:443
-            raw.githubusercontent.com:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -65,8 +67,11 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -105,8 +110,11 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -145,8 +153,11 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -185,8 +196,11 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -225,11 +239,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -268,11 +285,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -311,11 +331,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -354,11 +377,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -399,11 +425,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -444,14 +473,16 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            binaries.prisma.sh:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
-            registry.npmjs.org:443
-            decide.arcjet.com:443
             nodejs.org:443
-            binaries.prisma.sh:443
             objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -492,11 +523,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -535,11 +569,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -581,11 +618,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -627,11 +667,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -670,11 +713,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -713,11 +759,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -756,11 +805,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -799,11 +851,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -845,11 +900,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -888,11 +946,14 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
             fonts.googleapis.com:443
             fonts.gstatic.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
-            decide.arcjet.com:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -931,8 +992,11 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -971,8 +1035,11 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -1011,9 +1078,12 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
-            github.com:443
-            registry.npmjs.org:443
+            api.github.com:443
             decide.arcjet.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
@@ -1051,8 +1121,11 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             github.com:443
+            objects.githubusercontent.com:443
             registry.npmjs.org:443
+            release-assets.githubusercontent:443
 
       # Checkout
       # Most toolchains require checkout first
