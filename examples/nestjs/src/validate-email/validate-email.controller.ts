@@ -36,7 +36,7 @@ export class ValidateEmailController {
       .protect(req, { email });
 
     if (decision.isDenied()) {
-      if (decision.reason.isEmail()) {
+      if (decision.reason.type === "EMAIL") {
         throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
       } else {
         throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);

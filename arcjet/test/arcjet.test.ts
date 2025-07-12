@@ -10,7 +10,7 @@ import arcjet, {
   ArcjetDenyDecision,
   ArcjetErrorDecision,
   ArcjetChallengeDecision,
-  ArcjetReason,
+  ArcjetUnknownReason,
   ArcjetErrorReason,
   ArcjetRuleResult,
   ArcjetEmailReason,
@@ -76,8 +76,6 @@ function requestAsJson(value: unknown): object {
   return { ...value, headers: Object.fromEntries(value.headers) };
 }
 
-class ArcjetTestReason extends ArcjetReason {}
-
 class TestCache {
   get = mock.fn<() => Promise<[unknown, number]>>(async () => [undefined, 0]);
   set = mock.fn();
@@ -98,7 +96,7 @@ describe("ArcjetDecision", () => {
   test("will default the `id` property if not specified", () => {
     const decision = new ArcjetAllowDecision({
       ttl: 0,
-      reason: new ArcjetTestReason(),
+      reason: new ArcjetUnknownReason(),
       results: [],
     });
     assert.match(decision.id, /^lreq_/);
@@ -108,7 +106,7 @@ describe("ArcjetDecision", () => {
     const decision = new ArcjetAllowDecision({
       id: "abc_123",
       ttl: 0,
-      reason: new ArcjetTestReason(),
+      reason: new ArcjetUnknownReason(),
       results: [],
     });
     assert.equal(decision.id, "abc_123");
@@ -150,7 +148,7 @@ describe("ArcjetDecision", () => {
   test("`isAllowed()` returns true when type is ALLOW", () => {
     const decision = new ArcjetAllowDecision({
       ttl: 0,
-      reason: new ArcjetTestReason(),
+      reason: new ArcjetUnknownReason(),
       results: [],
     });
     assert.equal(decision.isAllowed(), true);
@@ -168,7 +166,7 @@ describe("ArcjetDecision", () => {
   test("`isAllowed()` returns false when type is DENY", () => {
     const decision = new ArcjetDenyDecision({
       ttl: 0,
-      reason: new ArcjetTestReason(),
+      reason: new ArcjetUnknownReason(),
       results: [],
     });
     assert.equal(decision.isAllowed(), false);
@@ -177,7 +175,7 @@ describe("ArcjetDecision", () => {
   test("`isDenied()` returns false when type is ALLOW", () => {
     const decision = new ArcjetAllowDecision({
       ttl: 0,
-      reason: new ArcjetTestReason(),
+      reason: new ArcjetUnknownReason(),
       results: [],
     });
     assert.equal(decision.isDenied(), false);
@@ -195,7 +193,7 @@ describe("ArcjetDecision", () => {
   test("`isDenied()` returns true when type is DENY", () => {
     const decision = new ArcjetDenyDecision({
       ttl: 0,
-      reason: new ArcjetTestReason(),
+      reason: new ArcjetUnknownReason(),
       results: [],
     });
     assert.equal(decision.isDenied(), true);
@@ -204,7 +202,7 @@ describe("ArcjetDecision", () => {
   test("`isChallenged()` returns true when type is CHALLENGE", () => {
     const decision = new ArcjetChallengeDecision({
       ttl: 0,
-      reason: new ArcjetTestReason(),
+      reason: new ArcjetUnknownReason(),
       results: [],
     });
     assert.equal(decision.isChallenged(), true);
@@ -213,7 +211,7 @@ describe("ArcjetDecision", () => {
   test("`isErrored()` returns false when type is ALLOW", () => {
     const decision = new ArcjetAllowDecision({
       ttl: 0,
-      reason: new ArcjetTestReason(),
+      reason: new ArcjetUnknownReason(),
       results: [],
     });
     assert.equal(decision.isErrored(), false);
@@ -231,7 +229,7 @@ describe("ArcjetDecision", () => {
   test("`isErrored()` returns false when type is DENY", () => {
     const decision = new ArcjetDenyDecision({
       ttl: 0,
-      reason: new ArcjetTestReason(),
+      reason: new ArcjetUnknownReason(),
       results: [],
     });
     assert.equal(decision.isErrored(), false);
@@ -248,7 +246,7 @@ describe("ArcjetDecision", () => {
   });
 
   test("`isRateLimit()` returns true when reason is not RATE_LIMIT", () => {
-    const reason = new ArcjetTestReason();
+    const reason = new ArcjetUnknownReason();
     assert.equal(reason.isRateLimit(), false);
   });
 
@@ -297,7 +295,7 @@ describe("ArcjetDecision", () => {
   });
 
   test("`isBot()` returns false when reason is not BOT", () => {
-    const reason = new ArcjetTestReason();
+    const reason = new ArcjetUnknownReason();
     assert.equal(reason.isBot(), false);
   });
 });
@@ -2843,7 +2841,7 @@ describe("SDK", () => {
             ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
-            reason: new ArcjetTestReason(),
+            reason: new ArcjetUnknownReason(),
           }),
       ),
     } as const;
@@ -2863,7 +2861,7 @@ describe("SDK", () => {
             ttl: 5000,
             state: "RUN",
             conclusion: "DENY",
-            reason: new ArcjetTestReason(),
+            reason: new ArcjetUnknownReason(),
           }),
       ),
     } as const;
@@ -2887,7 +2885,7 @@ describe("SDK", () => {
             ttl,
             state: "CACHED",
             conclusion: "DENY",
-            reason: new ArcjetTestReason(),
+            reason: new ArcjetUnknownReason(),
           });
         } else {
           return new ArcjetRuleResult({
@@ -2896,7 +2894,7 @@ describe("SDK", () => {
             ttl: 0,
             state: "RUN",
             conclusion: "ALLOW",
-            reason: new ArcjetTestReason(),
+            reason: new ArcjetUnknownReason(),
           });
         }
       }),
@@ -3009,7 +3007,7 @@ describe("SDK", () => {
           ttl: 0,
           state: "DRY_RUN",
           conclusion: "DENY",
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
         });
       }),
     } as const;
@@ -3033,7 +3031,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3055,7 +3053,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3114,7 +3112,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3186,7 +3184,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3251,7 +3249,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3273,7 +3271,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3295,7 +3293,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3331,7 +3329,7 @@ describe("SDK", () => {
         decide: mock.fn(async () => {
           return new ArcjetAllowDecision({
             ttl: 0,
-            reason: new ArcjetTestReason(),
+            reason: new ArcjetUnknownReason(),
             results: [],
           });
         }),
@@ -3351,7 +3349,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3395,7 +3393,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3442,7 +3440,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3484,7 +3482,6 @@ describe("SDK", () => {
     assert.ok(anonymousResult);
     assert.equal(anonymousResult.reason.type, "ERROR");
     assert.equal(
-      // @ts-expect-error: TODO(#4452): `message` should be accessible.
       anonymousResult.reason.message,
       "rule must have a `validate` function",
     );
@@ -3495,7 +3492,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3537,7 +3534,6 @@ describe("SDK", () => {
     assert.ok(anonymousResult);
     assert.equal(anonymousResult.reason.type, "ERROR");
     assert.equal(
-      // @ts-expect-error: TODO(#4452): `message` should be accessible.
       anonymousResult.reason.message,
       "rule must have a `protect` function",
     );
@@ -3548,7 +3544,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3577,7 +3573,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3601,7 +3597,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3638,7 +3634,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3682,7 +3678,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3737,7 +3733,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -3793,7 +3789,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4111,7 +4107,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4169,7 +4165,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetDenyDecision({
           ttl: 10,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [
             new ArcjetRuleResult({
               ruleId: "test-rule-id",
@@ -4178,7 +4174,7 @@ describe("SDK", () => {
               ttl: 10,
               state: "RUN",
               conclusion: "DENY",
-              reason: new ArcjetTestReason(),
+              reason: new ArcjetUnknownReason(),
             }),
           ],
         });
@@ -4230,7 +4226,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4253,7 +4249,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4293,7 +4289,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4351,7 +4347,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4409,7 +4405,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4457,7 +4453,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4518,7 +4514,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4618,7 +4614,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4665,7 +4661,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4719,7 +4715,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4776,7 +4772,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4830,7 +4826,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4888,7 +4884,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),
@@ -4944,7 +4940,7 @@ describe("SDK", () => {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetTestReason(),
+          reason: new ArcjetUnknownReason(),
           results: [],
         });
       }),

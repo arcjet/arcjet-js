@@ -17,12 +17,12 @@ import type {
   ArcjetEmailType,
   ArcjetSensitiveInfoType,
   ArcjetRateLimitRule,
+  ArcjetReasons,
 } from "@arcjet/protocol";
 import {
   ArcjetBotReason,
   ArcjetEmailReason,
   ArcjetErrorReason,
-  ArcjetReason,
   ArcjetRuleResult,
   ArcjetSensitiveInfoReason,
   ArcjetDecision,
@@ -31,6 +31,7 @@ import {
   ArcjetShieldReason,
   ArcjetRateLimitReason,
   ArcjetConclusion,
+  ArcjetUnknownReason,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
@@ -659,7 +660,7 @@ export type ArcjetRequest<Props extends PlainObject> = Simplify<
 
 type CachedResult = {
   conclusion: ArcjetConclusion;
-  reason: ArcjetReason;
+  reason: ArcjetReasons;
 };
 
 function isRateLimitRule<Props extends PlainObject>(
@@ -791,7 +792,7 @@ export function tokenBucket<
       );
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+      if (cached && cached.reason.type === "RATE_LIMIT") {
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
@@ -938,7 +939,7 @@ export function fixedWindow<
       );
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+      if (cached && cached.reason.type === "RATE_LIMIT") {
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
@@ -1079,7 +1080,7 @@ export function slidingWindow<
       );
 
       const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+      if (cached && cached.reason.type === "RATE_LIMIT") {
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
@@ -2290,7 +2291,7 @@ export default function arcjet<
         ttl: 0,
         state: "NOT_RUN",
         conclusion: "ALLOW",
-        reason: new ArcjetReason(),
+        reason: new ArcjetUnknownReason(),
       });
 
       // Add top-level characteristics to all Rate Limit rules that don't already have

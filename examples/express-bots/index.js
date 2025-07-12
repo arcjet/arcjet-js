@@ -28,7 +28,7 @@ app.get('/', async (req, res) => {
 
   if (decision.isDenied()) {
     // We want to check for disallowed bots
-    if (decision.reason.isBot()) {
+    if (decision.reason.type === "BOT") {
       res.writeHead(400, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({
         error: "You are a bot",
