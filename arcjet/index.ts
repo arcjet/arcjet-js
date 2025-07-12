@@ -72,100 +72,55 @@ function errorMessage(err: unknown): string {
   return "Unknown problem";
 }
 
-// Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
-// our use.
-//
-// Simplify:
-// https://github.com/sindresorhus/type-fest/blob/964466c9d59c711da57a5297ad954c13132a0001/source/simplify.d.ts
-// UnionToIntersection:
-// https://github.com/sindresorhus/type-fest/blob/017bf38ebb52df37c297324d97bcc693ec22e920/source/union-to-intersection.d.ts
-// IsNever:
-// https://github.com/sindresorhus/type-fest/blob/e02f228f6391bb2b26c32a55dfe1e3aa2386d515/source/primitive.d.ts
-// LiteralCheck & IsStringLiteral:
-// https://github.com/sindresorhus/type-fest/blob/e02f228f6391bb2b26c32a55dfe1e3aa2386d515/source/is-literal.d.ts
-//
-// Licensed: MIT License Copyright (c) Sindre Sorhus <sindresorhus@gmail.com>
-// (https://sindresorhus.com)
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions: The above copyright
-// notice and this permission notice shall be included in all copies or
-// substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
-type UnionToIntersection<Union> =
-  // `extends unknown` is always going to be the case and is used to convert the
-  // `Union` into a [distributive conditional
-  // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
-  (
-    Union extends unknown
-      ? // The union type is used as the only argument to a function since the union
-        // of function arguments is an intersection.
-        (distributedUnion: Union) => void
-      : // This won't happen.
-        never
-  ) extends // Infer the `Intersection` type since TypeScript represents the positional
-  // arguments of unions of functions as an intersection of the union.
-  (mergedIntersection: infer Intersection) => void
-    ? // The `& Union` is to allow indexing by the resulting type
-      Intersection & Union
-    : never;
-type IsNever<T> = [T] extends [never] ? true : false;
-type LiteralCheck<
-  T,
-  LiteralType extends
-    | null
-    | undefined
-    | string
-    | number
-    | boolean
-    | symbol
-    | bigint,
-> =
-  IsNever<T> extends false // Must be wider than `never`
-    ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
-      ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
-        ? false
-        : true
-      : false
-    : false;
-type IsStringLiteral<T> = LiteralCheck<T, string>;
-
-const knownFields = [
+/**
+ * List of known fields.
+ */
+const knownRequestProperties = [
+  "body",
+  "cookies",
+  "email",
+  "headers",
+  "host",
   "ip",
   "method",
-  "protocol",
-  "host",
   "path",
-  "headers",
-  "body",
-  "email",
-  "cookies",
+  "protocol",
   "query",
-];
+] as const;
 
-function isUnknownRequestProperty(key: string) {
-  return !knownFields.includes(key);
+/**
+ * Type of known fields.
+ */
+type KnownRequestProperty = (typeof knownRequestProperties)[number];
+
+/**
+ * Check that a (`string`) property key is a known request property.
+ *
+ * @param key
+ *   Key.
+ * @returns
+ *   Whether `key` is a known field.
+ */
+function isKnownRequestProperty(key: string): key is KnownRequestProperty {
+  const properties = knownRequestProperties as readonly string[];
+  return properties.includes(key);
 }
 
-function isEmailType(type: string): type is ArcjetEmailType {
+/**
+ * Check that a value is a known email type.
+ *
+ * @param value
+ *   Value.
+ * @returns
+ *   Whether `value` is a known email type.
+ */
+function isEmailType(value: string): value is ArcjetEmailType {
   return (
-    type === "FREE" ||
-    type === "DISPOSABLE" ||
-    type === "NO_MX_RECORDS" ||
-    type === "NO_GRAVATAR" ||
-    type === "INVALID"
+    value === "DISPOSABLE" ||
+    value === "FREE" ||
+    value === "INVALID" ||
+    value === "NO_GRAVATAR" ||
+    value === "NO_MX_RECORDS"
   );
 }
 
@@ -185,22 +140,6 @@ class Performance {
       this.log.debug("LATENCY %s: %sms", label, diff.toFixed(3));
     };
   }
-}
-
-function toString(value: unknown) {
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (typeof value === "number") {
-    return `${value}`;
-  }
-
-  if (typeof value === "boolean") {
-    return value ? "true" : "false";
-  }
-
-  return "<unsupported value>";
 }
 
 // This is the Symbol that Vercel defines in their infrastructure to access the
@@ -232,29 +171,33 @@ function lookupWaitUntil(): WaitUntil | undefined {
   }
 }
 
-function toAnalyzeRequest(request: Partial<ArcjetRequestDetails>) {
-  const headers: Record<string, string> = {};
-  if (typeof request.headers !== "undefined") {
-    for (const [key, value] of request.headers.entries()) {
-      headers[key] = value;
-    }
-  }
-
-  return {
-    ...request,
-    headers,
-  };
-}
-
-function extraProps<Props extends PlainObject>(
-  details: ArcjetRequest<Props>,
+/**
+ * Get the unknown request properties.
+ *
+ * @param properties
+ *   Raw properties.
+ * @returns
+ *   Extra properties.
+ */
+function unknownRequestProperties(
+  properties: Record<string, unknown>,
 ): Record<string, string> {
   const extra: Map<string, string> = new Map();
-  for (const [key, value] of Object.entries(details)) {
-    if (isUnknownRequestProperty(key)) {
-      extra.set(key, toString(value));
+
+  // We only support the basic primitives.
+  for (const [key, value] of Object.entries(properties)) {
+    if (!isKnownRequestProperty(key)) {
+      extra.set(
+        key,
+        typeof value === "boolean" ||
+          typeof value === "number" ||
+          typeof value === "string"
+          ? String(value)
+          : "<unsupported value>",
+      );
     }
   }
+
   return Object.fromEntries(extra.entries());
 }
 
@@ -455,30 +398,24 @@ const validateShieldOptions = createValidator({
   validations: [{ key: "mode", required: false, validate: validateMode }],
 });
 
-export type TokenBucketRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+export type TokenBucketRateLimitOptions = {
   mode?: ArcjetMode;
-  characteristics?: Characteristics;
+  characteristics?: ReadonlyArray<string>;
   refillRate: number;
   interval: string | number;
   capacity: number;
 };
 
-export type FixedWindowRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+export type FixedWindowRateLimitOptions = {
   mode?: ArcjetMode;
-  characteristics?: Characteristics;
+  characteristics?: ReadonlyArray<string>;
   window: string | number;
   max: number;
 };
 
-export type SlidingWindowRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+export type SlidingWindowRateLimitOptions = {
   mode?: ArcjetMode;
-  characteristics?: Characteristics;
+  characteristics?: ReadonlyArray<string>;
   interval: string | number;
   max: number;
 };
@@ -530,43 +467,25 @@ export type EmailOptions =
   | EmailOptionsDeny
   | EmailOptionsBlock;
 
-type DetectSensitiveInfoEntities<T> = (
-  tokens: string[],
-) => Array<ArcjetSensitiveInfoType | T | undefined>;
-
-type ValidEntities<Detect> = Array<
-  // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/
-  // Conditional types distribute over unions. If you have ((string | undefined)
-  // extends undefined ? 1 : 0) it is evaluated separately for each member of
-  // the union, then union-ed together again. The result is (string extends
-  // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
-  // to 0 | 1
-  undefined extends Detect
-    ? ArcjetSensitiveInfoType
-    : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
-      ? ArcjetSensitiveInfoType | CustomEntities
-      : never
->;
-
-export type SensitiveInfoOptionsAllow<Detect> = {
-  allow: ValidEntities<Detect>;
+export type SensitiveInfoOptionsAllow = {
+  allow: Array<ArcjetSensitiveInfoType | (string & {})>;
   deny?: never;
   contextWindowSize?: number;
   mode?: ArcjetMode;
-  detect?: Detect;
+  detect?(tokens: ReadonlyArray<string>): Array<string | undefined>;
 };
 
-export type SensitiveInfoOptionsDeny<Detect> = {
+export type SensitiveInfoOptionsDeny = {
   allow?: never;
-  deny: ValidEntities<Detect>;
+  deny: Array<ArcjetSensitiveInfoType | (string & {})>;
   contextWindowSize?: number;
   mode?: ArcjetMode;
-  detect?: Detect;
+  detect?(tokens: ReadonlyArray<string>): Array<string | undefined>;
 };
 
-export type SensitiveInfoOptions<Detect> =
-  | SensitiveInfoOptionsAllow<Detect>
-  | SensitiveInfoOptionsDeny<Detect>;
+export type SensitiveInfoOptions =
+  | SensitiveInfoOptionsAllow
+  | SensitiveInfoOptionsDeny;
 
 const Priority = {
   SensitiveInfo: 1,
@@ -576,48 +495,51 @@ const Priority = {
   EmailValidation: 5,
 };
 
-type PlainObject = { [key: string]: unknown };
+/**
+ * @deprecated
+ *   Please use `[ArcjetRule<Props>]` or `ArcjetRule<Props>[]` directly.
+ */
+export type Primitive<Props extends Record<string, unknown>> = [
+  ArcjetRule<Props>,
+];
 
-// Primitives and Products external names for Rules even though they are defined
-// the same.
-// See ExtraProps below for further explanation on why we define them like this.
-export type Primitive<Props extends PlainObject = {}> = [ArcjetRule<Props>];
-export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
+/**
+ * @deprecated
+ *   Please use `ArcjetRule<Props>[]` directly.
+ */
+export type Product<Props extends Record<string, unknown>> =
+  ArcjetRule<Props>[];
 
 // User-defined characteristics alter the required props of an ArcjetRequest
 // Note: If a user doesn't provide the object literal to our primitives
 // directly, we fallback to no required props. They can opt-in by adding the
 // `as const` suffix to the characteristics array.
-type PropsForCharacteristic<T> =
-  IsStringLiteral<T> extends true
-    ? T extends
-        | "ip.src"
-        | "http.host"
-        | "http.method"
-        | "http.request.uri.path"
-        | `http.request.headers["${string}"]`
-        | `http.request.cookie["${string}"]`
-        | `http.request.uri.args["${string}"]`
-      ? {}
-      : T extends string
-        ? Record<T, string | number | boolean>
-        : never
-    : {};
-export type CharacteristicProps<Characteristics extends readonly string[]> =
-  UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>;
-// Rules can specify they require specific props on an ArcjetRequest
-type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
-// We theoretically support an arbitrary amount of rule flattening,
-// but one level seems to be easiest; however, this puts a constraint of
-// the definition of `Product` such that they need to spread each `Primitive`
-// they are re-exporting.
-export type ExtraProps<Rules> = Rules extends []
-  ? {}
-  : Rules extends ArcjetRule[][]
-    ? UnionToIntersection<PropsForRule<Rules[number][number]>>
-    : Rules extends ArcjetRule[]
-      ? UnionToIntersection<PropsForRule<Rules[number]>>
-      : never;
+export type CharacteristicProps<Characteristic extends string> =
+  // Ignore the wide `string` itself, only allow narrower unions.
+  [string] extends [Characteristic]
+    ? {}
+    : {
+        [K in Characteristic extends  // Ignore these fields:
+          | "ip.src"
+          | "http.host"
+          | "http.method"
+          | "http.request.uri.path"
+          | `http.request.headers["${string}"]`
+          | `http.request.cookie["${string}"]`
+          | `http.request.uri.args["${string}"]`
+          ? never
+          : Characteristic]: string | number | boolean;
+      };
+
+/**
+ * @deprecated
+ *   Please use `T extends ArcjetRule<infer P> ? P : {}` directly.
+ */
+export type ExtraProps<T> = T extends ArcjetRule<infer Props>[]
+  ? Props
+  : T extends ArcjetRule<infer Props>
+    ? Props
+    : never;
 
 /**
  * Additional context that can be provided by adapters.
@@ -643,28 +565,25 @@ export type ArcjetAdapterContext = {
  * @property {string} email - An email address related to the request.
  * @property ...extra - Extra data that might be useful for Arcjet. For example, requested tokens are specified as the `requested` property.
  */
-export type ArcjetRequest<Props extends PlainObject> = Simplify<
-  {
-    [key: string]: unknown;
-    ip?: string;
-    method?: string;
-    protocol?: string;
-    host?: string;
-    path?: string;
-    headers?: Headers | Record<string, string | string[] | undefined>;
-    cookies?: string;
-    query?: string;
-  } & Props
->;
+export type ArcjetRequest = {
+  [key: string]: unknown;
+  ip?: string;
+  method?: string;
+  protocol?: string;
+  host?: string;
+  path?: string;
+  headers?: Headers | Record<string, string | string[] | undefined>;
+  cookies?: string;
+  query?: string;
+};
 
 type CachedResult = {
   conclusion: ArcjetConclusion;
   reason: ArcjetReason;
 };
 
-function isRateLimitRule<Props extends PlainObject>(
-  rule: ArcjetRule<Props>,
-): rule is ArcjetRateLimitRule<Props> {
+// TODO(@wooorm-arcjet): fix types to make `type` a discriminating union.
+function isRateLimitRule(rule: ArcjetRule): rule is ArcjetRateLimitRule<{}> {
   return rule.type === "RATE_LIMIT";
 }
 
@@ -700,7 +619,7 @@ function isRateLimitRule<Props extends PlainObject>(
  * @param {number} options.capacity - The maximum number of tokens the bucket
  * can hold. The bucket starts at full capacity and will refill until it hits
  * the capacity.
- * @returns {Primitive} The token bucket rule to provide to the SDK in the
+ * @returns {[ArcjetRule]} The token bucket rule to provide to the SDK in the
  * `rules` option.
  *
  * @example
@@ -725,17 +644,15 @@ function isRateLimitRule<Props extends PlainObject>(
  * @link https://docs.arcjet.com/rate-limiting/algorithms#token-bucket
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function tokenBucket<
-  const Characteristics extends readonly string[] = [],
->(
-  options: TokenBucketRateLimitOptions<Characteristics>,
-): Primitive<
-  Simplify<
-    UnionToIntersection<
-      { requested: number } | CharacteristicProps<Characteristics>
+export function tokenBucket<const Options extends TokenBucketRateLimitOptions>(
+  options: Options,
+): [
+  ArcjetTokenBucketRateLimitRule<
+    { requested: number } & CharacteristicProps<
+      Exclude<Options["characteristics"], undefined>[number]
     >
-  >
-> {
+  >,
+] {
   validateTokenBucketOptions(options);
 
   const type = "RATE_LIMIT";
@@ -749,85 +666,84 @@ export function tokenBucket<
   const interval = duration.parse(options.interval);
   const capacity = options.capacity;
 
-  const rule: ArcjetTokenBucketRateLimitRule<
-    UnionToIntersection<
-      { requested: number } | CharacteristicProps<Characteristics>
-    >
-  > = {
-    type,
-    version,
-    priority: Priority.RateLimit,
-    mode,
-    characteristics,
-    algorithm: "TOKEN_BUCKET",
-    refillRate,
-    interval,
-    capacity,
-    validate() {},
-    async protect(context: ArcjetContext<CachedResult>, details) {
-      const localCharacteristics = characteristics ?? context.characteristics;
+  return [
+    {
+      type,
+      version,
+      priority: Priority.RateLimit,
+      mode,
+      characteristics,
+      algorithm: "TOKEN_BUCKET",
+      refillRate,
+      interval,
+      capacity,
+      validate() {},
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        details: ArcjetRequestDetails,
+      ) {
+        const localCharacteristics = characteristics ?? context.characteristics;
 
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.string("algorithm", "TOKEN_BUCKET"),
-        hasher.stringSliceOrdered("characteristics", localCharacteristics),
-        // Match is deprecated so it is always an empty string in the newest SDKs
-        hasher.string("match", ""),
-        hasher.uint32("refillRate", refillRate),
-        hasher.uint32("interval", interval),
-        hasher.uint32("capacity", capacity),
-      );
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.string("algorithm", "TOKEN_BUCKET"),
+          hasher.stringSliceOrdered("characteristics", localCharacteristics),
+          // Match is deprecated so it is always an empty string in the newest SDKs
+          hasher.string("match", ""),
+          hasher.uint32("refillRate", refillRate),
+          hasher.uint32("interval", interval),
+          hasher.uint32("capacity", capacity),
+        );
 
-      const analyzeContext = {
-        characteristics: localCharacteristics,
-        log: context.log,
-      };
+        const analyzeContext = {
+          characteristics: localCharacteristics,
+          log: context.log,
+        };
 
-      const fingerprint = await analyze.generateFingerprint(
-        analyzeContext,
-        toAnalyzeRequest(details),
-      );
+        const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+          ...details,
+          headers: Object.fromEntries(details.headers),
+        });
 
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached && cached.reason.isRateLimit()) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            // We rebuild the `ArcjetRateLimitReason` because we need to adjust
+            // the `reset` based on the current time-to-live
+            reason: new ArcjetRateLimitReason({
+              max: cached.reason.max,
+              remaining: cached.reason.remaining,
+              reset: ttl,
+              window: cached.reason.window,
+              resetTime: cached.reason.resetTime,
+            }),
+          });
+        }
+
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          // We rebuild the `ArcjetRateLimitReason` because we need to adjust
-          // the `reset` based on the current time-to-live
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ALLOW",
           reason: new ArcjetRateLimitReason({
-            max: cached.reason.max,
-            remaining: cached.reason.remaining,
-            reset: ttl,
-            window: cached.reason.window,
-            resetTime: cached.reason.resetTime,
+            max: 0,
+            remaining: 0,
+            reset: 0,
+            window: 0,
+            resetTime: new Date(),
           }),
         });
-      }
-
-      return new ArcjetRuleResult({
-        ruleId,
-        fingerprint,
-        ttl: 0,
-        state: "NOT_RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetRateLimitReason({
-          max: 0,
-          remaining: 0,
-          reset: 0,
-          window: 0,
-          resetTime: new Date(),
-        }),
-      });
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
 /**
@@ -861,7 +777,7 @@ export function tokenBucket<
  * - `d` for days.
  * @param {number} options.max - The maximum number of requests allowed in the
  * fixed time window.
- * @returns {Primitive} The fixed window rule to provide to the SDK in the
+ * @returns {[ArcjetRule]} The fixed window rule to provide to the SDK in the
  * `rules` option.
  *
  * @example
@@ -885,11 +801,13 @@ export function tokenBucket<
  * @link https://docs.arcjet.com/rate-limiting/algorithms#fixed-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function fixedWindow<
-  const Characteristics extends readonly string[] = [],
->(
-  options: FixedWindowRateLimitOptions<Characteristics>,
-): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
+export function fixedWindow<const Options extends FixedWindowRateLimitOptions>(
+  options: Options,
+): [
+  ArcjetFixedWindowRateLimitRule<
+    CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+  >,
+] {
   validateFixedWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -902,78 +820,81 @@ export function fixedWindow<
   const max = options.max;
   const window = duration.parse(options.window);
 
-  const rule: ArcjetFixedWindowRateLimitRule<{}> = {
-    type,
-    version,
-    priority: Priority.RateLimit,
-    mode,
-    characteristics,
-    algorithm: "FIXED_WINDOW",
-    max,
-    window,
-    validate() {},
-    async protect(context: ArcjetContext<CachedResult>, details) {
-      const localCharacteristics = characteristics ?? context.characteristics;
+  return [
+    {
+      type,
+      version,
+      priority: Priority.RateLimit,
+      mode,
+      characteristics,
+      algorithm: "FIXED_WINDOW",
+      max,
+      window,
+      validate() {},
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        details: ArcjetRequestDetails,
+      ) {
+        const localCharacteristics = characteristics ?? context.characteristics;
 
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.string("algorithm", "FIXED_WINDOW"),
-        hasher.stringSliceOrdered("characteristics", localCharacteristics),
-        // Match is deprecated so it is always an empty string in the newest SDKs
-        hasher.string("match", ""),
-        hasher.uint32("max", max),
-        hasher.uint32("window", window),
-      );
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.string("algorithm", "FIXED_WINDOW"),
+          hasher.stringSliceOrdered("characteristics", localCharacteristics),
+          // Match is deprecated so it is always an empty string in the newest SDKs
+          hasher.string("match", ""),
+          hasher.uint32("max", max),
+          hasher.uint32("window", window),
+        );
 
-      const analyzeContext = {
-        characteristics: localCharacteristics,
-        log: context.log,
-      };
+        const analyzeContext = {
+          characteristics: localCharacteristics,
+          log: context.log,
+        };
 
-      const fingerprint = await analyze.generateFingerprint(
-        analyzeContext,
-        toAnalyzeRequest(details),
-      );
+        const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+          ...details,
+          headers: Object.fromEntries(details.headers),
+        });
 
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached && cached.reason.isRateLimit()) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            // We rebuild the `ArcjetRateLimitReason` because we need to adjust
+            // the `reset` based on the current time-to-live
+            reason: new ArcjetRateLimitReason({
+              max: cached.reason.max,
+              remaining: cached.reason.remaining,
+              reset: ttl,
+              window: cached.reason.window,
+              resetTime: cached.reason.resetTime,
+            }),
+          });
+        }
+
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          // We rebuild the `ArcjetRateLimitReason` because we need to adjust
-          // the `reset` based on the current time-to-live
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ALLOW",
           reason: new ArcjetRateLimitReason({
-            max: cached.reason.max,
-            remaining: cached.reason.remaining,
-            reset: ttl,
-            window: cached.reason.window,
-            resetTime: cached.reason.resetTime,
+            max: 0,
+            remaining: 0,
+            reset: 0,
+            window: 0,
           }),
         });
-      }
-
-      return new ArcjetRuleResult({
-        ruleId,
-        fingerprint,
-        ttl: 0,
-        state: "NOT_RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetRateLimitReason({
-          max: 0,
-          remaining: 0,
-          reset: 0,
-          window: 0,
-        }),
-      });
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
 /**
@@ -1002,7 +923,7 @@ export function fixedWindow<
  * - `d` for days.
  * @param {number} options.max - The maximum number of requests allowed in the
  * sliding time window.
- * @returns {Primitive} The sliding window rule to provide to the SDK in the
+ * @returns {[ArcjetRule]} The sliding window rule to provide to the SDK in the
  * `rules` option.
  *
  * @example
@@ -1027,10 +948,14 @@ export function fixedWindow<
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
 export function slidingWindow<
-  const Characteristics extends readonly string[] = [],
+  const Options extends SlidingWindowRateLimitOptions,
 >(
-  options: SlidingWindowRateLimitOptions<Characteristics>,
-): Primitive<Simplify<CharacteristicProps<Characteristics>>> {
+  options: Options,
+): [
+  ArcjetSlidingWindowRateLimitRule<
+    CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]>
+  >,
+] {
   validateSlidingWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -1043,107 +968,108 @@ export function slidingWindow<
   const max = options.max;
   const interval = duration.parse(options.interval);
 
-  const rule: ArcjetSlidingWindowRateLimitRule<{}> = {
-    type,
-    version,
-    priority: Priority.RateLimit,
-    mode,
-    characteristics,
-    algorithm: "SLIDING_WINDOW",
-    max,
-    interval,
-    validate() {},
-    async protect(context: ArcjetContext<CachedResult>, details) {
-      const localCharacteristics = characteristics ?? context.characteristics;
+  return [
+    {
+      type,
+      version,
+      priority: Priority.RateLimit,
+      mode,
+      characteristics,
+      algorithm: "SLIDING_WINDOW",
+      max,
+      interval,
+      validate() {},
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        details: ArcjetRequestDetails,
+      ) {
+        const localCharacteristics = characteristics ?? context.characteristics;
 
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.string("algorithm", "SLIDING_WINDOW"),
-        hasher.stringSliceOrdered("characteristics", localCharacteristics),
-        // Match is deprecated so it is always an empty string in the newest SDKs
-        hasher.string("match", ""),
-        hasher.uint32("max", max),
-        hasher.uint32("interval", interval),
-      );
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.string("algorithm", "SLIDING_WINDOW"),
+          hasher.stringSliceOrdered("characteristics", localCharacteristics),
+          // Match is deprecated so it is always an empty string in the newest SDKs
+          hasher.string("match", ""),
+          hasher.uint32("max", max),
+          hasher.uint32("interval", interval),
+        );
 
-      const analyzeContext = {
-        characteristics: localCharacteristics,
-        log: context.log,
-      };
+        const analyzeContext = {
+          characteristics: localCharacteristics,
+          log: context.log,
+        };
 
-      const fingerprint = await analyze.generateFingerprint(
-        analyzeContext,
-        toAnalyzeRequest(details),
-      );
+        const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+          ...details,
+          headers: Object.fromEntries(details.headers),
+        });
 
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached && cached.reason.isRateLimit()) {
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached && cached.reason.isRateLimit()) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            // We rebuild the `ArcjetRateLimitReason` because we need to adjust
+            // the `reset` based on the current time-to-live
+            reason: new ArcjetRateLimitReason({
+              max: cached.reason.max,
+              remaining: cached.reason.remaining,
+              reset: ttl,
+              window: cached.reason.window,
+              resetTime: cached.reason.resetTime,
+            }),
+          });
+        }
+
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          // We rebuild the `ArcjetRateLimitReason` because we need to adjust
-          // the `reset` based on the current time-to-live
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ALLOW",
           reason: new ArcjetRateLimitReason({
-            max: cached.reason.max,
-            remaining: cached.reason.remaining,
-            reset: ttl,
-            window: cached.reason.window,
-            resetTime: cached.reason.resetTime,
+            max: 0,
+            remaining: 0,
+            reset: 0,
+            window: 0,
           }),
         });
-      }
-
-      return new ArcjetRuleResult({
-        ruleId,
-        fingerprint,
-        ttl: 0,
-        state: "NOT_RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetRateLimitReason({
-          max: 0,
-          remaining: 0,
-          reset: 0,
-          window: 0,
-        }),
-      });
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
-function protocolSensitiveInfoEntitiesToAnalyze<Custom extends string>(
-  entity: ArcjetSensitiveInfoType | Custom,
-) {
+function protocolSensitiveInfoEntitiesToAnalyze(
+  entity: string,
+): SensitiveInfoEntity {
+  // Handle invalid `entity`.
   if (typeof entity !== "string") {
     throw new Error("invalid entity type");
   }
 
   if (entity === "EMAIL") {
-    return { tag: "email" as const };
+    return { tag: "email" };
   }
 
   if (entity === "PHONE_NUMBER") {
-    return { tag: "phone-number" as const };
+    return { tag: "phone-number" };
   }
 
   if (entity === "IP_ADDRESS") {
-    return { tag: "ip-address" as const };
+    return { tag: "ip-address" };
   }
 
   if (entity === "CREDIT_CARD_NUMBER") {
-    return { tag: "credit-card-number" as const };
+    return { tag: "credit-card-number" };
   }
 
-  return {
-    tag: "custom" as const,
-    val: entity,
-  };
+  return { tag: "custom", val: entity };
 }
 
 function analyzeSensitiveInfoEntitiesToString(
@@ -1220,7 +1146,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * detections then you can increase this value.
  * @param {number} options.contextWindowSize - The number of tokens to provide
  * to the custom detection function. This defaults to 1 if not specified.
- * @returns {Primitive} The sensitive information rule to provide to the SDK in
+ * @returns {[ArcjetRule]} The sensitive information rule to provide to the SDK in
  * the `rules` option.
  *
  * @example
@@ -1265,10 +1191,9 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * @link https://docs.arcjet.com/sensitive-info/concepts
  * @link https://docs.arcjet.com/sensitive-info/reference
  */
-export function sensitiveInfo<
-  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
-  const CustomEntities extends string,
->(options: SensitiveInfoOptions<Detect>): Primitive<{}> {
+export function sensitiveInfo(
+  options: SensitiveInfoOptions,
+): [ArcjetSensitiveInfoRule<{}>] {
   validateSensitiveInfoOptions(options);
 
   if (
@@ -1294,123 +1219,118 @@ export function sensitiveInfo<
   const allow = options.allow || [];
   const deny = options.deny || [];
 
-  const rule: ArcjetSensitiveInfoRule<{}> = {
-    version,
-    priority: Priority.SensitiveInfo,
-    type,
-    mode,
-    allow,
-    deny,
+  return [
+    {
+      version,
+      priority: Priority.SensitiveInfo,
+      type,
+      mode,
+      allow,
+      deny,
 
-    validate(
-      context: ArcjetContext,
-      details: ArcjetRequestDetails,
-    ): asserts details is ArcjetRequestDetails {},
+      validate() {},
 
-    async protect(
-      context: ArcjetContext<CachedResult>,
-      details: ArcjetRequestDetails,
-    ): Promise<ArcjetRuleResult> {
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.stringSliceOrdered("allow", allow),
-        hasher.stringSliceOrdered("deny", deny),
-      );
+      async protect(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.stringSliceOrdered("allow", allow),
+          hasher.stringSliceOrdered("deny", deny),
+        );
 
-      const { fingerprint } = context;
+        const { fingerprint } = context;
 
-      // No cache is implemented here because the fingerprint can be the same
-      // while the request body changes. This is also why the `sensitiveInfo`
-      // rule results always have a `ttl` of 0.
+        // No cache is implemented here because the fingerprint can be the same
+        // while the request body changes. This is also why the `sensitiveInfo`
+        // rule results always have a `ttl` of 0.
 
-      const body = await context.getBody();
-      if (typeof body === "undefined") {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state: "NOT_RUN",
-          conclusion: "ERROR",
-          reason: new ArcjetErrorReason(
-            "Couldn't read the body of the request to perform sensitive info identification.",
-          ),
-        });
-      }
+        const body = await context.getBody();
+        if (typeof body === "undefined") {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state: "NOT_RUN",
+            conclusion: "ERROR",
+            reason: new ArcjetErrorReason(
+              "Couldn't read the body of the request to perform sensitive info identification.",
+            ),
+          });
+        }
 
-      let convertedDetect = undefined;
-      if (typeof options.detect !== "undefined") {
-        const detect = options.detect;
-        convertedDetect = (tokens: string[]) => {
-          return detect(tokens)
+        let convertedDetect = undefined;
+        if (typeof options.detect !== "undefined") {
+          const detect = options.detect;
+          convertedDetect = (tokens: string[]) => {
+            return detect(tokens)
+              .filter((e) => typeof e !== "undefined")
+              .map(protocolSensitiveInfoEntitiesToAnalyze);
+          };
+        }
+
+        let entitiesTag: "allow" | "deny" = "allow";
+        let entitiesVal: Array<SensitiveInfoEntity> = [];
+
+        if (Array.isArray(options.allow)) {
+          entitiesTag = "allow";
+          entitiesVal = options.allow
             .filter((e) => typeof e !== "undefined")
             .map(protocolSensitiveInfoEntitiesToAnalyze);
+        }
+
+        if (Array.isArray(options.deny)) {
+          entitiesTag = "deny";
+          entitiesVal = options.deny
+            .filter((e) => typeof e !== "undefined")
+            .map(protocolSensitiveInfoEntitiesToAnalyze);
+        }
+
+        const entities = {
+          tag: entitiesTag,
+          val: entitiesVal,
         };
-      }
 
-      let entitiesTag: "allow" | "deny" = "allow";
-      let entitiesVal: Array<
-        ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>
-      > = [];
+        const result = await analyze.detectSensitiveInfo(
+          context,
+          body,
+          entities,
+          options.contextWindowSize || 1,
+          convertedDetect,
+        );
 
-      if (Array.isArray(options.allow)) {
-        entitiesTag = "allow";
-        entitiesVal = options.allow
-          .filter((e) => typeof e !== "undefined")
-          .map(protocolSensitiveInfoEntitiesToAnalyze);
-      }
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
-      if (Array.isArray(options.deny)) {
-        entitiesTag = "deny";
-        entitiesVal = options.deny
-          .filter((e) => typeof e !== "undefined")
-          .map(protocolSensitiveInfoEntitiesToAnalyze);
-      }
-
-      const entities = {
-        tag: entitiesTag,
-        val: entitiesVal,
-      };
-
-      const result = await analyze.detectSensitiveInfo(
-        context,
-        body,
-        entities,
-        options.contextWindowSize || 1,
-        convertedDetect,
-      );
-
-      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-
-      const reason = new ArcjetSensitiveInfoReason({
-        denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
-        allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
-      });
-
-      if (result.denied.length === 0) {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "ALLOW",
-          reason,
+        const reason = new ArcjetSensitiveInfoReason({
+          denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
+          allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
         });
-      } else {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "DENY",
-          reason,
-        });
-      }
+
+        if (result.denied.length === 0) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "ALLOW",
+            reason,
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "DENY",
+            reason,
+          });
+        }
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
 /**
@@ -1443,7 +1363,7 @@ export function sensitiveInfo<
  * allow. If provided, email addresses in this list will be allowed and all
  * others will be denied. You may only provide either `allow` or `deny`, not
  * both. The same options apply as for `deny`.
- * @returns {Primitive} The email rule to provide to the SDK in the `rules`
+ * @returns {[ArcjetRule]} The email rule to provide to the SDK in the `rules`
  * option.
  *
  * @example
@@ -1467,7 +1387,7 @@ export function sensitiveInfo<
  */
 export function validateEmail(
   options: EmailOptions,
-): Primitive<{ email: string }> {
+): [ArcjetEmailRule<{ email: string }>] {
   validateEmailOptions(options);
 
   if (
@@ -1554,76 +1474,77 @@ export function validateEmail(
     };
   }
 
-  const rule: ArcjetEmailRule<{ email: string }> = {
-    version,
-    priority: Priority.EmailValidation,
+  return [
+    {
+      version,
+      priority: Priority.EmailValidation,
 
-    type,
-    mode,
-    allow,
-    deny,
-    requireTopLevelDomain,
-    allowDomainLiteral,
+      type,
+      mode,
+      allow,
+      deny,
+      requireTopLevelDomain,
+      allowDomainLiteral,
 
-    validate(
-      context: ArcjetContext,
-      details: Partial<ArcjetRequestDetails & { email: string }>,
-    ): asserts details is ArcjetRequestDetails & { email: string } {
-      assert(
-        typeof details.email !== "undefined",
-        "ValidateEmail requires `email` to be set.",
-      );
+      validate(context: ArcjetContext, details: ArcjetRequestDetails) {
+        assert(
+          typeof details.email !== "undefined",
+          "ValidateEmail requires `email` to be set.",
+        );
+      },
+
+      async protect(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.stringSliceOrdered("allow", allow),
+          hasher.stringSliceOrdered("deny", deny),
+          hasher.bool("requireTopLevelDomain", requireTopLevelDomain),
+          hasher.bool("allowDomainLiteral", allowDomainLiteral),
+        );
+
+        const { fingerprint } = context;
+
+        // No cache is implemented here because the fingerprint can be the same
+        // while the email changes. This is also why the `email` rule results
+        // always have a `ttl` of 0.
+        // Cast because we know `email` is there after `validate`.
+        const result = await analyze.isValidEmail(
+          context,
+          details.email as string,
+          config,
+        );
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+        if (result.validity === "valid") {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "ALLOW",
+            reason: new ArcjetEmailReason({ emailTypes: [] }),
+          });
+        } else {
+          const typedEmailTypes = result.blocked.filter(isEmailType);
+
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "DENY",
+            reason: new ArcjetEmailReason({
+              emailTypes: typedEmailTypes,
+            }),
+          });
+        }
+      },
     },
-
-    async protect(
-      context: ArcjetContext,
-      { email }: ArcjetRequestDetails & { email: string },
-    ): Promise<ArcjetRuleResult> {
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.stringSliceOrdered("allow", allow),
-        hasher.stringSliceOrdered("deny", deny),
-        hasher.bool("requireTopLevelDomain", requireTopLevelDomain),
-        hasher.bool("allowDomainLiteral", allowDomainLiteral),
-      );
-
-      const { fingerprint } = context;
-
-      // No cache is implemented here because the fingerprint can be the same
-      // while the email changes. This is also why the `email` rule results
-      // always have a `ttl` of 0.
-
-      const result = await analyze.isValidEmail(context, email, config);
-      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-      if (result.validity === "valid") {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "ALLOW",
-          reason: new ArcjetEmailReason({ emailTypes: [] }),
-        });
-      } else {
-        const typedEmailTypes = result.blocked.filter(isEmailType);
-
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "DENY",
-          reason: new ArcjetEmailReason({
-            emailTypes: typedEmailTypes,
-          }),
-        });
-      }
-    },
-  };
-
-  return [rule];
+  ];
 }
 
 /**
@@ -1656,7 +1577,7 @@ export function validateEmail(
  * list of bots to deny. If provided, the bots in this list will be denied and
  * all other detected bots will be allowed. You may only provide either `allow`
  * or `deny`, not both. The same options apply as for `allow`.
- * @returns {Primitive} The bot rule to provide to the SDK in the `rules`
+ * @returns {[ArcjetRule]} The bot rule to provide to the SDK in the `rules`
  * option.
  *
  * @example
@@ -1702,7 +1623,7 @@ export function validateEmail(
  * @link https://docs.arcjet.com/bot-protection/identifying-bots
  * @link https://docs.arcjet.com/bot-protection/reference
  */
-export function detectBot(options: BotOptions): Primitive<{}> {
+export function detectBot(options: BotOptions): [ArcjetBotRule<{}>] {
   validateBotOptions(options);
 
   if (
@@ -1755,101 +1676,103 @@ export function detectBot(options: BotOptions): Primitive<{}> {
     };
   }
 
-  const rule: ArcjetBotRule<{}> = {
-    version,
-    priority: Priority.BotDetection,
+  return [
+    {
+      version,
+      priority: Priority.BotDetection,
 
-    type,
-    mode,
-    allow,
-    deny,
+      type,
+      mode,
+      allow,
+      deny,
 
-    validate(
-      context: ArcjetContext,
-      details: Partial<ArcjetRequestDetails>,
-    ): asserts details is ArcjetRequestDetails {
-      if (typeof details.headers === "undefined") {
-        throw new Error("bot detection requires `headers` to be set");
-      }
-      if (typeof details.headers.has !== "function") {
-        throw new Error("bot detection requires `headers` to extend `Headers`");
-      }
-      if (!details.headers.has("user-agent")) {
-        throw new Error("bot detection requires user-agent header");
-      }
+      validate(
+        context: ArcjetContext,
+        details: ArcjetRequestDetails,
+      ): undefined {
+        if (typeof details.headers === "undefined") {
+          throw new Error("bot detection requires `headers` to be set");
+        }
+        if (typeof details.headers.has !== "function") {
+          throw new Error(
+            "bot detection requires `headers` to extend `Headers`",
+          );
+        }
+        if (!details.headers.has("user-agent")) {
+          throw new Error("bot detection requires user-agent header");
+        }
+      },
+
+      /**
+       * Attempts to call the bot detection on the headers.
+       */
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        request: ArcjetRequestDetails,
+      ): Promise<ArcjetRuleResult> {
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.stringSliceOrdered("allow", allow),
+          hasher.stringSliceOrdered("deny", deny),
+        );
+
+        const { fingerprint } = context;
+
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            reason: cached.reason,
+          });
+        }
+
+        const result = await analyze.detectBot(
+          context,
+          { ...request, headers: Object.fromEntries(request.headers) },
+          config,
+        );
+
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+
+        // If this is a bot and of a type that we want to block, then block!
+        if (result.denied.length > 0) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 60,
+            state,
+            conclusion: "DENY",
+            reason: new ArcjetBotReason({
+              allowed: result.allowed,
+              denied: result.denied,
+              verified: result.verified,
+              spoofed: result.spoofed,
+            }),
+          });
+        } else {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "ALLOW",
+            reason: new ArcjetBotReason({
+              allowed: result.allowed,
+              denied: result.denied,
+              verified: result.verified,
+              spoofed: result.spoofed,
+            }),
+          });
+        }
+      },
     },
-
-    /**
-     * Attempts to call the bot detection on the headers.
-     */
-    async protect(
-      context: ArcjetContext<CachedResult>,
-      request: ArcjetRequestDetails,
-    ): Promise<ArcjetRuleResult> {
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.stringSliceOrdered("allow", allow),
-        hasher.stringSliceOrdered("deny", deny),
-      );
-
-      const { fingerprint } = context;
-
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached) {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          reason: cached.reason,
-        });
-      }
-
-      const result = await analyze.detectBot(
-        context,
-        toAnalyzeRequest(request),
-        config,
-      );
-
-      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-
-      // If this is a bot and of a type that we want to block, then block!
-      if (result.denied.length > 0) {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 60,
-          state,
-          conclusion: "DENY",
-          reason: new ArcjetBotReason({
-            allowed: result.allowed,
-            denied: result.denied,
-            verified: result.verified,
-            spoofed: result.spoofed,
-          }),
-        });
-      } else {
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state,
-          conclusion: "ALLOW",
-          reason: new ArcjetBotReason({
-            allowed: result.allowed,
-            denied: result.denied,
-            verified: result.verified,
-            spoofed: result.spoofed,
-          }),
-        });
-      }
-    },
-  };
-
-  return [rule];
+  ];
 }
 
 export type ShieldOptions = {
@@ -1869,7 +1792,7 @@ export type ShieldOptions = {
  * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block suspicious requests, and
  * `"DRY_RUN"` will allow all requests while still providing access to the rule
  * results. Defaults to `"DRY_RUN"` if not specified.
- * @returns {Primitive} The Shield rule to provide to the SDK in the `rules`
+ * @returns {[ArcjetRule]} The Shield rule to provide to the SDK in the `rules`
  * option.
  *
  * @example
@@ -1886,70 +1809,73 @@ export type ShieldOptions = {
  * @link https://docs.arcjet.com/shield/concepts
  * @link https://docs.arcjet.com/shield/reference
  */
-export function shield(options: ShieldOptions): Primitive<{}> {
+export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
   validateShieldOptions(options);
 
   const type = "SHIELD";
   const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
 
-  const rule: ArcjetShieldRule<{}> = {
-    type,
-    version,
-    priority: Priority.Shield,
-    mode,
-    validate() {},
-    async protect(context: ArcjetContext<CachedResult>, details) {
-      // TODO(#1989): Prefer characteristics defined on rule once available
-      const localCharacteristics = context.characteristics;
+  return [
+    {
+      type,
+      version,
+      priority: Priority.Shield,
+      mode,
+      validate() {},
+      async protect(
+        context: ArcjetContext<CachedResult>,
+        details: ArcjetRequestDetails,
+      ) {
+        // TODO(#1989): Prefer characteristics defined on rule once available
+        const localCharacteristics = context.characteristics;
 
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.stringSliceOrdered("characteristics", localCharacteristics),
-      );
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.stringSliceOrdered("characteristics", localCharacteristics),
+        );
 
-      const analyzeContext = {
-        characteristics: localCharacteristics,
-        log: context.log,
-      };
+        const analyzeContext = {
+          characteristics: localCharacteristics,
+          log: context.log,
+        };
 
-      const fingerprint = await analyze.generateFingerprint(
-        analyzeContext,
-        toAnalyzeRequest(details),
-      );
+        const fingerprint = await analyze.generateFingerprint(analyzeContext, {
+          ...details,
+          headers: Object.fromEntries(details.headers),
+        });
 
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
-      if (cached) {
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            reason: cached.reason,
+          });
+        }
+
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
-          ttl,
-          state: "CACHED",
-          conclusion: cached.conclusion,
-          reason: cached.reason,
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ALLOW",
+          reason: new ArcjetShieldReason({
+            shieldTriggered: false,
+          }),
         });
-      }
-
-      return new ArcjetRuleResult({
-        ruleId,
-        fingerprint,
-        ttl: 0,
-        state: "NOT_RUN",
-        conclusion: "ALLOW",
-        reason: new ArcjetShieldReason({
-          shieldTriggered: false,
-        }),
-      });
+      },
     },
-  };
-
-  return [rule];
+  ];
 }
 
-export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
-  rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
+export type ProtectSignupOptions = {
+  rateLimit: SlidingWindowRateLimitOptions;
   bots: BotOptions;
   email: EmailOptions;
 };
@@ -2024,7 +1950,7 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
  * - `d` for days.
  * @param {number} options.rateLimit.max - The maximum number of requests
  * allowed in the sliding time window.
- * @returns {Primitive} The signup form protection rule to provide to the SDK in
+ * @returns {[ArcjetRule]} The signup form protection rule to provide to the SDK in
  * the `rules` option.
  *
  * @example
@@ -2061,12 +1987,12 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
  * @link https://docs.arcjet.com/signup-protection/concepts
  * @link https://docs.arcjet.com/signup-protection/reference
  */
-export function protectSignup<const Characteristics extends string[] = []>(
-  options: ProtectSignupOptions<Characteristics>,
-): Product<
-  Simplify<
-    UnionToIntersection<
-      { email: string } | CharacteristicProps<Characteristics>
+export function protectSignup<const Options extends ProtectSignupOptions>(
+  options: Options,
+): Array<
+  ArcjetRule<
+    { email: string } & CharacteristicProps<
+      Exclude<Options["rateLimit"]["characteristics"], undefined>[number]
     >
   >
 > {
@@ -2077,10 +2003,7 @@ export function protectSignup<const Characteristics extends string[] = []>(
   ];
 }
 
-export interface ArcjetOptions<
-  Rules extends [...(Primitive | Product)[]],
-  Characteristics extends readonly string[],
-> {
+export interface ArcjetOptions {
   /**
    * The API key to identify the site in Arcjet.
    */
@@ -2088,11 +2011,11 @@ export interface ArcjetOptions<
   /**
    * Rules to apply when protecting a request.
    */
-  rules: readonly [...Rules];
+  rules: ReadonlyArray<ReadonlyArray<ArcjetRule>>;
   /**
    * Characteristics to be used to uniquely identify clients.
    */
-  characteristics?: Characteristics;
+  characteristics?: ReadonlyArray<string>;
   /**
    * The client used to make requests to the Arcjet API. This must be set
    * when creating the SDK, such as inside @arcjet/next or mocked in tests.
@@ -2108,7 +2031,7 @@ export interface ArcjetOptions<
  * The Arcjet client provides a public `protect()` method to
  * make a decision about how a request should be handled.
  */
-export interface Arcjet<Props extends PlainObject> {
+export interface Arcjet<Props> {
   /**
    * Make a decision about how to handle a request. This will analyze the
    * request locally where possible and call the Arcjet decision API.
@@ -2119,7 +2042,7 @@ export interface Arcjet<Props extends PlainObject> {
    */
   protect(
     ctx: ArcjetAdapterContext,
-    request: ArcjetRequest<Props>,
+    request: ArcjetRequest,
   ): Promise<ArcjetDecision>;
 
   /**
@@ -2129,9 +2052,9 @@ export interface Arcjet<Props extends PlainObject> {
    * @param rule The rule to add to this execution.
    * @returns An augmented {@link Arcjet} client.
    */
-  withRule<Rule extends Primitive | Product>(
-    rule: Rule,
-  ): Arcjet<Simplify<Props & ExtraProps<Rule>>>;
+  withRule<Rule extends ArcjetRule>(
+    rules: ReadonlyArray<Rule>,
+  ): Arcjet<Props & (Rule extends ArcjetRule<infer Props> ? Props : {})>;
 }
 
 /**
@@ -2139,12 +2062,12 @@ export interface Arcjet<Props extends PlainObject> {
  *
  * @param options {ArcjetOptions} Arcjet configuration options.
  */
-export default function arcjet<
-  const Rules extends [...(Primitive | Product)[]] = [],
-  const Characteristics extends readonly string[] = [],
->(
-  options: ArcjetOptions<Rules, Characteristics>,
-): Arcjet<Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>> {
+export default function arcjet<const Options extends ArcjetOptions>(
+  options: Options,
+): Arcjet<
+  CharacteristicProps<Exclude<Options["characteristics"], undefined>[number]> &
+    (Options["rules"][number][number] extends ArcjetRule<infer P> ? P : {})
+> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
 
@@ -2175,10 +2098,10 @@ export default function arcjet<
     .flat(1)
     .sort((a, b) => a.priority - b.priority);
 
-  async function protect<Props extends PlainObject>(
+  async function protect(
     rules: ArcjetRule[],
     ctx: ArcjetAdapterContext,
-    request: ArcjetRequest<Props>,
+    request: ArcjetRequest,
   ) {
     // This goes against the type definition above, but users might call
     // `protect()` with no value and we don't want to crash
@@ -2195,7 +2118,7 @@ export default function arcjet<
       headers: new ArcjetHeaders(request.headers),
       cookies: request.cookies,
       query: request.query,
-      extra: extraProps(request),
+      extra: unknownRequestProperties(request),
       email: typeof request.email === "string" ? request.email : undefined,
     });
 
@@ -2217,10 +2140,10 @@ export default function arcjet<
 
     const logFingerprintPerf = perf.measure("fingerprint");
     try {
-      fingerprint = await analyze.generateFingerprint(
-        baseContext,
-        toAnalyzeRequest(details),
-      );
+      fingerprint = await analyze.generateFingerprint(baseContext, {
+        ...details,
+        headers: details.headers ? Object.fromEntries(details.headers) : {},
+      });
       log.debug("fingerprint (%s): %s", rt, fingerprint);
     } catch (error) {
       log.error(
@@ -2477,34 +2400,34 @@ export default function arcjet<
   }
 
   // This is a separate function so it can be called recursively
-  function withRule<Rule extends Primitive | Product>(
-    baseRules: ArcjetRule[],
-    rule: Rule,
+  function withRule<Rule extends ArcjetRule>(
+    baseRules: ReadonlyArray<ArcjetRule>,
+    rules: ReadonlyArray<Rule>,
   ) {
-    const rules = [...baseRules, ...rule].sort(
+    const sortedRules = [...baseRules, ...rules].sort(
       (a, b) => a.priority - b.priority,
     );
 
     return Object.freeze({
-      withRule(rule: Primitive | Product) {
-        return withRule(rules, rule);
+      withRule(rules: ReadonlyArray<ArcjetRule>) {
+        return withRule(sortedRules, rules);
       },
       async protect(
         ctx: ArcjetAdapterContext,
-        request: ArcjetRequest<ExtraProps<typeof rules>>,
+        request: ArcjetRequest,
       ): Promise<ArcjetDecision> {
-        return protect(rules, ctx, request);
+        return protect(sortedRules, ctx, request);
       },
     });
   }
 
   return Object.freeze({
-    withRule(rule: Primitive | Product) {
-      return withRule(rootRules, rule);
+    withRule(rules: ReadonlyArray<ArcjetRule>) {
+      return withRule(rootRules, rules);
     },
     async protect(
       ctx: ArcjetAdapterContext,
-      request: ArcjetRequest<ExtraProps<typeof rootRules>>,
+      request: ArcjetRequest,
     ): Promise<ArcjetDecision> {
       return protect(rootRules, ctx, request);
     },
