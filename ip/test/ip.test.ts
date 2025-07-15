@@ -12,7 +12,7 @@ type Case = [
   options?: Options,
 ];
 
-const ipv4Tests: Array<Case> = [
+const cases: Array<Case> = [
   ["returns empty string if unspecified", "0.0.0.0", ""],
   ["returns empty string if 'this network' address", "0.1.2.3", ""],
   [
@@ -108,10 +108,7 @@ const ipv4Tests: Array<Case> = [
       ],
     },
   ],
-];
-
-const ipv6Tests: Array<Case> = [
-  ["returns empty string if unspecified", "::", ""],
+  ["returns empty string if unspecified (ipv6)", "::", ""],
   ["returns empty string if loopback address", "::1", ""],
   ["returns empty string if ipv4 mapped address", "::ffff:127.0.0.1", ""],
   ["returns empty string if ipv4-ipv6 translat range", "64:ff9b:1::", ""],
@@ -120,7 +117,11 @@ const ipv6Tests: Array<Case> = [
   ["returns empty string if benchmarking range", "2001:2::", ""],
   ["returns empty string if unique local range", "fc02::", ""],
   ["returns empty string if unicast link local range", "fe80::", ""],
-  ["returns empty string if the ip address is too short", "ffff:ffff:", ""],
+  [
+    "returns empty string if the ip address is too short (ipv6)",
+    "ffff:ffff:",
+    "",
+  ],
   [
     "returns empty string if the ip address is too long",
     "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
@@ -143,38 +144,38 @@ const ipv6Tests: Array<Case> = [
     "2001:4:112::",
   ],
   ["returns the ip if it is 'ORCHIDv2' address", "2001:20::", "2001:20::"],
-  ["returns the ip if valid", "::abcd:c00a:2ff", "::abcd:c00a:2ff"],
+  ["returns the ip if valid (ipv6)", "::abcd:c00a:2ff", "::abcd:c00a:2ff"],
   [
-    "returns the ip if valid, after ignoring scope",
+    "returns the ip if valid, after ignoring scope (ipv6)",
     "::abcd:c00a:2ff%1",
     "::abcd:c00a:2ff%1",
   ],
   [
-    "returns empty string if the ip is a trusted proxy (literal)",
+    "returns empty string if the ip is a trusted proxy (ipv6, literal)",
     "::abcd:c00a:2ff",
     "",
     { proxies: ["::abcd:c00a:2ff"] },
   ],
   [
-    "returns empty string if the ip is a trusted proxy (range)",
+    "returns empty string if the ip is a trusted proxy (ipv6, range)",
     "::abcd:c00a:2ff",
     "",
     { proxies: [parseProxy("::abcd:c00a:2ff/128")] },
   ],
   [
-    "returns the string if the ip is not a trusted proxy (literal)",
+    "returns the string if the ip is not a trusted proxy (ipv6, literal)",
     "::abcd:c00a:2ff",
     "::abcd:c00a:2ff",
     { proxies: ["::abcd:c00a:2fa"] },
   ],
   [
-    "returns the string if the ip is not a trusted proxy (range)",
+    "returns the string if the ip is not a trusted proxy (ipv6, range)",
     "::abcd:c00a:2ff",
     "::abcd:c00a:2ff",
     { proxies: [parseProxy("::abcd:c00a:2fa/128")] },
   ],
   [
-    "returns the string if the ip is not a trusted proxy (invalid)",
+    "returns the string if the ip is not a trusted proxy (ipv6, invalid)",
     "::abcd:c00a:2ff",
     "::abcd:c00a:2ff",
     {
@@ -190,26 +191,18 @@ async function suite(
   t: TestContext,
   label: string,
   check: Check,
-  options?: { ipv4?: boolean },
+  suiteOptions?: { ipv4?: boolean },
 ) {
   await t.test(label, async (t) => {
-    if (!options || options.ipv4 !== false) {
-      await t.test("ipv4", async (t) => {
-        for (const [message, actual, expected, options] of ipv4Tests) {
-          await t.test(message, () => {
-            assert.equal(check(actual, options), expected);
-          });
-        }
-      });
-    }
-
-    await t.test("ipv6", async (t) => {
-      for (const [message, actual, expected, options] of ipv6Tests) {
+    for (const [message, actual, expected, options] of cases) {
+      if (suiteOptions && suiteOptions.ipv4 === false && actual.includes(".")) {
+        t.skip(message);
+      } else {
         await t.test(message, () => {
           assert.equal(check(actual, options), expected);
         });
       }
-    });
+    }
   });
 }
 
