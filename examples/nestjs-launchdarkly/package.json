@@ -27,7 +27,7 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.30.1",
+    "@eslint/js": "^9.31.0",
     "@nestjs/cli": "^11.0.7",
     "@nestjs/schematics": "^11.0.5",
     "@types/express": "^5.0.3",
@@ -38,6 +38,6 @@
     "globals": "^16.3.0",
     "prettier": "^3.6.2",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.36.0"
+    "typescript-eslint": "^8.37.0"
   }
 }
