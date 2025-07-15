@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { Options } from "../index.js";
 import findIp, { parseProxy } from "../index.js";
+
+type Proxy = ReturnType<typeof parseProxy>;
 
 type Case = [
   message: string,
   input: string,
   expected: string,
-  options?: Options,
+  proxies?: Array<Proxy>,
 ];
 
 const cases: Array<Case> = [
@@ -75,36 +76,34 @@ const cases: Array<Case> = [
     "returns empty string if the ip is a trusted proxy (literal)",
     "1.1.1.1",
     "",
-    { proxies: ["1.1.1.1"] },
+    ["1.1.1.1"],
   ],
   [
     "returns empty string if the ip is a trusted proxy (range)",
     "1.1.1.1",
     "",
-    { proxies: [parseProxy("1.1.1.1/32")] },
+    [parseProxy("1.1.1.1/32")],
   ],
   [
     "returns the string if the ip is not a trusted proxy (literal)",
     "1.1.1.1",
     "1.1.1.1",
-    { proxies: ["1.1.1.2"] },
+    ["1.1.1.2"],
   ],
   [
     "returns the string if the ip is not a trusted proxy (range)",
     "1.1.1.1",
     "1.1.1.1",
-    { proxies: [parseProxy("1.1.1.2/32")] },
+    [parseProxy("1.1.1.2/32")],
   ],
   [
     "returns the string if the ip is not a trusted proxy (invalid proxy)",
     "1.1.1.1",
     "1.1.1.1",
-    {
-      proxies: [
-        // @ts-expect-error: test how runtime handles non-string proxy.
-        1234,
-      ],
-    },
+    [
+      // @ts-expect-error: test how runtime handles non-string proxy.
+      1234,
+    ],
   ],
   ["returns empty string if unspecified (ipv6)", "::", ""],
   ["returns empty string if loopback address", "::1", ""],
@@ -152,36 +151,34 @@ const cases: Array<Case> = [
     "returns empty string if the ip is a trusted proxy (ipv6, literal)",
     "::abcd:c00a:2ff",
     "",
-    { proxies: ["::abcd:c00a:2ff"] },
+    ["::abcd:c00a:2ff"],
   ],
   [
     "returns empty string if the ip is a trusted proxy (ipv6, range)",
     "::abcd:c00a:2ff",
     "",
-    { proxies: [parseProxy("::abcd:c00a:2ff/128")] },
+    [parseProxy("::abcd:c00a:2ff/128")],
   ],
   [
     "returns the string if the ip is not a trusted proxy (ipv6, literal)",
     "::abcd:c00a:2ff",
     "::abcd:c00a:2ff",
-    { proxies: ["::abcd:c00a:2fa"] },
+    ["::abcd:c00a:2fa"],
   ],
   [
     "returns the string if the ip is not a trusted proxy (ipv6, range)",
     "::abcd:c00a:2ff",
     "::abcd:c00a:2ff",
-    { proxies: [parseProxy("::abcd:c00a:2fa/128")] },
+    [parseProxy("::abcd:c00a:2fa/128")],
   ],
   [
     "returns the string if the ip is not a trusted proxy (ipv6, invalid)",
     "::abcd:c00a:2ff",
     "::abcd:c00a:2ff",
-    {
-      proxies: [
-        // @ts-expect-error: test how runtime handles non-string proxy.
-        1234,
-      ],
-    },
+    [
+      // @ts-expect-error: test how runtime handles non-string proxy.
+      1234,
+    ],
   ],
 ];
 
@@ -243,10 +240,10 @@ test("`findIp`", async (t) => {
   );
 
   await t.test("request: `ip`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
-          findIp({ headers: new Headers(), ip: input }, options),
+          findIp({ headers: new Headers(), ip: input }, { proxies }),
           expected,
         );
       });
@@ -254,12 +251,12 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("request: `socket.remoteAddress`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers(), socket: { remoteAddress: input } },
-            options,
+            { proxies },
           ),
           expected,
         );
@@ -268,12 +265,12 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("request: `info.remoteAddress`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers(), info: { remoteAddress: input } },
-            options,
+            { proxies },
           ),
           expected,
         );
@@ -282,7 +279,7 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("request: `requestContext.identity.sourceIp`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
@@ -290,7 +287,7 @@ test("`findIp`", async (t) => {
               headers: new Headers(),
               requestContext: { identity: { sourceIp: input } },
             },
-            options,
+            { proxies },
           ),
           expected,
         );
@@ -299,10 +296,13 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `X-Client-IP`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
-          findIp({ headers: new Headers([["X-Client-IP", input]]) }, options),
+          findIp(
+            { headers: new Headers([["X-Client-IP", input]]) },
+            { proxies },
+          ),
           expected,
         );
       });
@@ -342,34 +342,34 @@ test("`findIp`", async (t) => {
         "skips any trusted proxy IP (ipv4)",
         "1.1.1.1, 2.2.2.2, 3.3.3.3",
         "2.2.2.2",
-        { proxies: ["3.3.3.3"] },
+        ["3.3.3.3"],
       ],
       [
         "skips any trusted proxy IP (ipv6)",
         "e123::, 3.3.3.3, abcd::",
         "3.3.3.3",
-        { proxies: ["abcd::"] },
+        ["abcd::"],
       ],
       [
         "skips multiple trusted proxy IPs (ipv4)",
         "1.1.1.1, 2.2.2.2, 3.3.3.3",
         "1.1.1.1",
-        { proxies: ["3.3.3.3", "2.2.2.2"] },
+        ["3.3.3.3", "2.2.2.2"],
       ],
       [
         "skips multiple trusted proxy IP (ipv6)",
         "e123::, 3.3.3.3, abcd::",
         "e123::",
-        { proxies: ["3.3.3.3", "abcd::"] },
+        ["3.3.3.3", "abcd::"],
       ],
     ];
 
-    for (const [message, input, expected, options] of all) {
+    for (const [message, input, expected, proxies] of all) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["X-Forwarded-For", input]]) },
-            options,
+            { proxies },
           ),
           expected,
         );
@@ -380,12 +380,12 @@ test("`findIp`", async (t) => {
   await t.test(
     "header: `CF-Connecting-IP` (platform: `cloudflare`)",
     async (t) => {
-      for (const [message, input, expected, options] of cases) {
+      for (const [message, input, expected, proxies] of cases) {
         await t.test(message, () => {
           assert.equal(
             findIp(
               { headers: new Headers([["CF-Connecting-IP", input]]) },
-              { ...options, platform: "cloudflare" },
+              { platform: "cloudflare", proxies },
             ),
             expected,
           );
@@ -397,7 +397,7 @@ test("`findIp`", async (t) => {
   await t.test(
     "header: `CF-Connecting-IPv6` (platform: `cloudflare`)",
     async (t) => {
-      for (const [message, input, expected, options] of cases) {
+      for (const [message, input, expected, proxies] of cases) {
         // `CF-Connecting-IPv6` is only used for IPv6 addresses.`
         if (input.includes(".")) continue;
 
@@ -405,7 +405,7 @@ test("`findIp`", async (t) => {
           assert.equal(
             findIp(
               { headers: new Headers([["CF-Connecting-IPv6", input]]) },
-              { ...options, platform: "cloudflare" },
+              { platform: "cloudflare", proxies },
             ),
             expected,
           );
@@ -415,12 +415,12 @@ test("`findIp`", async (t) => {
   );
 
   await t.test("header: `X-Real-IP` (platform: `vercel`)", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["X-Real-IP", input]]) },
-            { ...options, platform: "vercel" },
+            { platform: "vercel", proxies },
           ),
           expected,
         );
@@ -431,12 +431,12 @@ test("`findIp`", async (t) => {
   await t.test(
     "header: `X-Vercel-Forwarded-For` (platform: `vercel`)",
     async (t) => {
-      for (const [message, input, expected, options] of cases) {
+      for (const [message, input, expected, proxies] of cases) {
         await t.test(message, () => {
           assert.equal(
             findIp(
               { headers: new Headers([["X-Vercel-Forwarded-For", input]]) },
-              { ...options, platform: "vercel" },
+              { platform: "vercel", proxies },
             ),
             expected,
           );
@@ -446,12 +446,12 @@ test("`findIp`", async (t) => {
   );
 
   await t.test("header: `X-Forwarded-For` (platform: `vercel`)", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["X-Forwarded-For", input]]) },
-            { ...options, platform: "vercel" },
+            { platform: "vercel", proxies },
           ),
           expected,
         );
@@ -460,12 +460,12 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `True-Client-IP` (platform: `render`)", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["True-Client-IP", input]]) },
-            { ...options, platform: "render" },
+            { platform: "render", proxies },
           ),
           expected,
         );
@@ -474,12 +474,12 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `DO-Connecting-IP`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["DO-Connecting-IP", input]]) },
-            options,
+            { proxies },
           ),
           expected,
         );
@@ -488,12 +488,12 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `Fastly-Client-IP`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["Fastly-Client-IP", input]]) },
-            options,
+            { proxies },
           ),
           expected,
         );
@@ -502,12 +502,12 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `Fly-Client-IP` (platform: `fly-io`)", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["Fly-Client-IP", input]]) },
-            { ...options, platform: "fly-io" },
+            { platform: "fly-io", proxies },
           ),
           expected,
         );
@@ -516,12 +516,12 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `True-Client-IP`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["True-Client-IP", input]]) },
-            options,
+            { proxies },
           ),
           expected,
         );
@@ -530,10 +530,10 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `X-Real-IP`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
-          findIp({ headers: new Headers([["X-Real-IP", input]]) }, options),
+          findIp({ headers: new Headers([["X-Real-IP", input]]) }, { proxies }),
           expected,
         );
       });
@@ -541,12 +541,12 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `X-Cluster-Client-IP`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["X-Cluster-Client-IP", input]]) },
-            options,
+            { proxies },
           ),
           expected,
         );
@@ -555,10 +555,13 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `X-Forwarded`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
-          findIp({ headers: new Headers([["X-Forwarded", input]]) }, options),
+          findIp(
+            { headers: new Headers([["X-Forwarded", input]]) },
+            { proxies },
+          ),
           expected,
         );
       });
@@ -566,10 +569,13 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `Forwarded-For`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
-          findIp({ headers: new Headers([["Forwarded-For", input]]) }, options),
+          findIp(
+            { headers: new Headers([["Forwarded-For", input]]) },
+            { proxies },
+          ),
           expected,
         );
       });
@@ -577,10 +583,10 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `Forwarded`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
-          findIp({ headers: new Headers([["Forwarded", input]]) }, options),
+          findIp({ headers: new Headers([["Forwarded", input]]) }, { proxies }),
           expected,
         );
       });
@@ -588,12 +594,12 @@ test("`findIp`", async (t) => {
   });
 
   await t.test("header: `X-Appengine-User-IP`", async (t) => {
-    for (const [message, input, expected, options] of cases) {
+    for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
         assert.equal(
           findIp(
             { headers: new Headers([["X-Appengine-User-IP", input]]) },
-            options,
+            { proxies },
           ),
           expected,
         );
