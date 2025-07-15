@@ -3,11 +3,9 @@ import test from "node:test";
 import type { Options } from "../index.js";
 import findIp, { parseProxy } from "../index.js";
 
-type Check = (ip: string, options?: Options | undefined) => string;
-type TestContext = Parameters<Required<Parameters<typeof test>>[0]>[0];
 type Case = [
   message: string,
-  actual: string,
+  input: string,
   expected: string,
   options?: Options,
 ];
@@ -187,25 +185,6 @@ const cases: Array<Case> = [
   ],
 ];
 
-async function suite(
-  t: TestContext,
-  label: string,
-  check: Check,
-  suiteOptions?: { ipv4?: boolean },
-) {
-  await t.test(label, async (t) => {
-    for (const [message, actual, expected, options] of cases) {
-      if (suiteOptions && suiteOptions.ipv4 === false && actual.includes(".")) {
-        t.skip(message);
-      } else {
-        await t.test(message, () => {
-          assert.equal(check(actual, options), expected);
-        });
-      }
-    }
-  });
-}
-
 test("`findIp`", async (t) => {
   await t.test("returns empty string if headers not set", () => {
     assert.equal(
@@ -263,144 +242,300 @@ test("`findIp`", async (t) => {
     },
   );
 
-  await suite(t, "request: `ip`", (ip, options) => {
-    return findIp({ headers: new Headers(), ip }, options);
+  await t.test("request: `ip`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp({ headers: new Headers(), ip: input }, options),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(
-    t,
-    "request: `socket.remoteAddress`",
-    (remoteAddress, options) => {
-      return findIp(
-        { headers: new Headers(), socket: { remoteAddress } },
-        options,
-      );
-    },
-  );
-
-  await suite(t, "request: `info.remoteAddress`", (remoteAddress, options) => {
-    return findIp({ headers: new Headers(), info: { remoteAddress } }, options);
+  await t.test("request: `socket.remoteAddress`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers(), socket: { remoteAddress: input } },
+            options,
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(
-    t,
-    "request: `requestContext.identity.sourceIp`",
-    (sourceIp, options) => {
-      return findIp(
-        { headers: new Headers(), requestContext: { identity: { sourceIp } } },
-        options,
-      );
-    },
-  );
-
-  await suite(t, "header: `X-Client-IP`", (ip, options) => {
-    return findIp({ headers: new Headers([["X-Client-IP", ip]]) }, options);
+  await t.test("request: `info.remoteAddress`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers(), info: { remoteAddress: input } },
+            options,
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `X-Forwarded-For`", (ip, options) => {
-    return findIp({ headers: new Headers([["X-Forwarded-For", ip]]) }, options);
+  await t.test("request: `requestContext.identity.sourceIp`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            {
+              headers: new Headers(),
+              requestContext: { identity: { sourceIp: input } },
+            },
+            options,
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `CF-Connecting-IP`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["CF-Connecting-IP", ip]]) },
-      { ...options, platform: "cloudflare" },
-    );
+  await t.test("header: `X-Client-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp({ headers: new Headers([["X-Client-IP", input]]) }, options),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(
-    t,
-    "header: `CF-Connecting-IPv6`",
-    (ip, options) => {
-      return findIp(
-        { headers: new Headers([["CF-Connecting-IPv6", ip]]) },
-        { ...options, platform: "cloudflare" },
-      );
-    },
-    { ipv4: false },
-  );
-
-  await suite(t, "header: `X-Real-IP`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["X-Real-IP", ip]]) },
-      { ...options, platform: "vercel" },
-    );
+  await t.test("header: `X-Forwarded-For`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["X-Forwarded-For", input]]) },
+            options,
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `X-Vercel-Forwarded-For`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["X-Vercel-Forwarded-For", ip]]) },
-      { ...options, platform: "vercel" },
-    );
+  await t.test("header: `CF-Connecting-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["CF-Connecting-IP", input]]) },
+            { ...options, platform: "cloudflare" },
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `X-Forwarded-For`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["X-Forwarded-For", ip]]) },
-      { ...options, platform: "vercel" },
-    );
+  await t.test("header: `CF-Connecting-IPv6`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      // `CF-Connecting-IPv6` is only used for IPv6 addresses.`
+      if (input.includes(".")) return;
+
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["CF-Connecting-IPv6", input]]) },
+            { ...options, platform: "cloudflare" },
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `True-Client-IP`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["True-Client-IP", ip]]) },
-      { ...options, platform: "render" },
-    );
+  await t.test("header: `X-Real-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["X-Real-IP", input]]) },
+            { ...options, platform: "vercel" },
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `DO-Connecting-IP`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["DO-Connecting-IP", ip]]) },
-      options,
-    );
+  await t.test("header: `X-Vercel-Forwarded-For`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["X-Vercel-Forwarded-For", input]]) },
+            { ...options, platform: "vercel" },
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `Fastly-Client-IP`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["Fastly-Client-IP", ip]]) },
-      options,
-    );
+  await t.test("header: `X-Forwarded-For`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["X-Forwarded-For", input]]) },
+            { ...options, platform: "vercel" },
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `Fly-Client-IP`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["Fly-Client-IP", ip]]) },
-      { ...options, platform: "fly-io" },
-    );
+  await t.test("header: `True-Client-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["True-Client-IP", input]]) },
+            { ...options, platform: "render" },
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `True-Client-IP`", (ip, options) => {
-    return findIp({ headers: new Headers([["True-Client-IP", ip]]) }, options);
+  await t.test("header: `DO-Connecting-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["DO-Connecting-IP", input]]) },
+            options,
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `X-Real-IP`", (ip, options) => {
-    return findIp({ headers: new Headers([["X-Real-IP", ip]]) }, options);
+  await t.test("header: `Fastly-Client-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["Fastly-Client-IP", input]]) },
+            options,
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `X-Cluster-Client-IP`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["X-Cluster-Client-IP", ip]]) },
-      options,
-    );
+  await t.test("header: `Fly-Client-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["Fly-Client-IP", input]]) },
+            { ...options, platform: "fly-io" },
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `X-Forwarded`", (ip, options) => {
-    return findIp({ headers: new Headers([["X-Forwarded", ip]]) }, options);
+  await t.test("header: `True-Client-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["True-Client-IP", input]]) },
+            options,
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `Forwarded-For`", (ip, options) => {
-    return findIp({ headers: new Headers([["Forwarded-For", ip]]) }, options);
+  await t.test("header: `X-Real-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp({ headers: new Headers([["X-Real-IP", input]]) }, options),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `Forwarded`", (ip, options) => {
-    return findIp({ headers: new Headers([["Forwarded", ip]]) }, options);
+  await t.test("header: `X-Cluster-Client-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["X-Cluster-Client-IP", input]]) },
+            options,
+          ),
+          expected,
+        );
+      });
+    }
   });
 
-  await suite(t, "header: `X-Appengine-User-IP`", (ip, options) => {
-    return findIp(
-      { headers: new Headers([["X-Appengine-User-IP", ip]]) },
-      options,
-    );
+  await t.test("header: `X-Forwarded`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp({ headers: new Headers([["X-Forwarded", input]]) }, options),
+          expected,
+        );
+      });
+    }
+  });
+
+  await t.test("header: `Forwarded-For`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp({ headers: new Headers([["Forwarded-For", input]]) }, options),
+          expected,
+        );
+      });
+    }
+  });
+
+  await t.test("header: `Forwarded`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp({ headers: new Headers([["Forwarded", input]]) }, options),
+          expected,
+        );
+      });
+    }
+  });
+
+  await t.test("header: `X-Appengine-User-IP`", async (t) => {
+    for (const [message, input, expected, options] of cases) {
+      await t.test(message, () => {
+        assert.equal(
+          findIp(
+            { headers: new Headers([["X-Appengine-User-IP", input]]) },
+            options,
+          ),
+          expected,
+        );
+      });
+    }
   });
 });
 
