@@ -34,10 +34,13 @@ as [`@arcjet/next`](../arcjet-next/README.md) for Next.js. However, this package
 can be used to interact with Arcjet if your framework does not have an
 integration.
 
-## Installation
+## Install
 
-```shell
-npm install -S arcjet
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install arcjet
 ```
 
 ## Use

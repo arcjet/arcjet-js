@@ -21,10 +21,13 @@
 - [npm package (`@arcjet/cache`)](https://www.npmjs.com/package/@arcjet/cache)
 - [GitHub source code (`cache/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/cache)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/cache
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/cache
 ```
 
 ## Use

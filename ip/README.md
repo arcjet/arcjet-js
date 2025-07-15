@@ -21,10 +21,13 @@
 - [npm package (`@arcjet/ip`)](https://www.npmjs.com/package/@arcjet/ip)
 - [GitHub source code (`ip/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/ip)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/ip
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/ip
 ```
 
 ## Example

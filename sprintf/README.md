@@ -23,10 +23,13 @@ This package is platform-independent in order to support multiple runtimes in va
 - [npm package (`@arcjet/sprintf`)](https://www.npmjs.com/package/@arcjet/sprintf)
 - [GitHub source code (`sprintf/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/sprintf)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/sprintf
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/sprintf
 ```
 
 ## Use

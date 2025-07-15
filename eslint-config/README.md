@@ -21,10 +21,13 @@ Custom eslint config for [Arcjet][arcjet] projects.
 - [npm package (`@arcjet/eslint-config`)](https://www.npmjs.com/package/@arcjet/eslint-config)
 - [GitHub source code (`eslint-config/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/eslint-config)
 
-## Installation
+## Install
 
-```shell
-npm install -D @arcjet/eslint-config
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install --save-dev @arcjet/eslint-config
 ```
 
 ## Use

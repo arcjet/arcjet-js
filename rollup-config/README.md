@@ -21,10 +21,13 @@ Custom rollup config for [Arcjet][arcjet] projects.
 - [npm package (`@arcjet/rollup-config`)](https://www.npmjs.com/package/@arcjet/rollup-config)
 - [GitHub source code (`rollup-config/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/rollup-config)
 
-## Installation
+## Install
 
-```shell
-npm install -D @arcjet/rollup-config
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/rollup-config
 ```
 
 ## Use

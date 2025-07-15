@@ -21,10 +21,13 @@ Protect your Next.js application with secure headers.
 - [npm package (`@nosecone/next`)](https://www.npmjs.com/package/@nosecone/next)
 - [GitHub source code (`nosecone-next/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/nosecone-next)
 
-## Installation
+## Install
 
-```shell
-npm install -S @nosecone/next
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @nosecone/next
 ```
 
 ## Use

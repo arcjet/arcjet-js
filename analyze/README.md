@@ -25,10 +25,13 @@ This is the [Arcjet][arcjet] local analysis engine.
 - [npm package (`@arcjet/analyze`)](https://www.npmjs.com/package/@arcjet/analyze)
 - [GitHub source code (`analyze/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/analyze)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/analyze
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/analyze
 ```
 
 ## Use

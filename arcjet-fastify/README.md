@@ -29,6 +29,9 @@ Visit the [quick start guide][arcjet-quick-start-fastify] to get started.
 
 ## Install
 
+This package is ESM only.
+Install with npm in Node.js:
+
 ```sh
 npm install @arcjet/fastify
 ```

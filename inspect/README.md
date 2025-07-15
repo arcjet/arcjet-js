@@ -21,10 +21,13 @@
 - [npm package (`@arcjet/inspect`)](https://www.npmjs.com/package/@arcjet/inspect)
 - [GitHub source code (`inspect/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/inspect)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/inspect
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/inspect
 ```
 
 ## Example
