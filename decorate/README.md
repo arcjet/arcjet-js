@@ -21,10 +21,13 @@
 - [npm package (`@arcjet/decorate`)](https://www.npmjs.com/package/@arcjet/decorate)
 - [GitHub source code (`decorate/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/decorate)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/decorate
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/decorate
 ```
 
 ## Example

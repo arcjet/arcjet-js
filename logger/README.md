@@ -22,10 +22,13 @@ structured logger interface.
 - [npm package (`@arcjet/logger`)](https://www.npmjs.com/package/@arcjet/logger)
 - [GitHub source code (`logger/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/logger)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/logger
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/logger
 ```
 
 ## Example

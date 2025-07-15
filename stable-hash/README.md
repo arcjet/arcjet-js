@@ -21,10 +21,13 @@
 - [npm package (`@arcjet/stable-hash`)](https://www.npmjs.com/package/@arcjet/stable-hash)
 - [GitHub source code (`stable-hash/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/stable-hash)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/stable-hash
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/stable-hash
 ```
 
 ## Example

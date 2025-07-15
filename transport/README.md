@@ -21,10 +21,13 @@ Transport mechanisms for the [Arcjet][arcjet] protocol.
 - [npm package (`@arcjet/transport`)](https://www.npmjs.com/package/@arcjet/transport)
 - [GitHub source code (`transport/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/transport)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/transport
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/transport
 ```
 
 ## Example
