@@ -398,7 +398,7 @@ test("`findIp`", async (t) => {
     "header: `CF-Connecting-IPv6` (platform: `cloudflare`)",
     async (t) => {
       for (const [message, input, expected, proxies] of cases) {
-        // `CF-Connecting-IPv6` is only used for IPv6 addresses.`
+        // `CF-Connecting-IPv6` is only used for IPv6 addresses.
         if (input.includes(".")) continue;
 
         await t.test(message, () => {
