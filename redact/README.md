@@ -52,8 +52,8 @@ console.log(unredacted); // Your email address is john@example.com
 
 ## License
 
-Licensed under the [Apache License, Version 2.0][apache-license].
+[Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
 [redact-ref]: https://docs.arcjet.com/redact/reference
-[apache-license]: http://www.apache.org/licenses/LICENSE-2.0

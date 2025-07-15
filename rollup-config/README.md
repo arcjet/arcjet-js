@@ -39,7 +39,7 @@ export default createConfig(import.meta.url);
 
 ## License
 
-Licensed under the [Apache License, Version 2.0][apache-license].
+[Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
-[arcjet]: https://arcjet.com
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[arcjet]: https://arcjet.com
