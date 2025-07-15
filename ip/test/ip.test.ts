@@ -137,27 +137,54 @@ async function ipv4(t: TestContext, check: Check) {
     assert.equal(check("1.1.1.1:443"), "1.1.1.1:443");
   });
 
-  await t.test("returns empty string if the ip is a trusted proxy", () => {
-    assert.equal(check("1.1.1.1", { proxies: ["1.1.1.1"] }), "");
-    assert.equal(check("1.1.1.1", { proxies: [parseProxy("1.1.1.1/32")] }), "");
-  });
+  await t.test(
+    "returns empty string if the ip is a trusted proxy (literal)",
+    () => {
+      assert.equal(check("1.1.1.1", { proxies: ["1.1.1.1"] }), "");
+    },
+  );
 
-  await t.test("returns the string if the ip is not a trusted proxy", () => {
-    assert.equal(check("1.1.1.1", { proxies: ["1.1.1.2"] }), "1.1.1.1");
-    assert.equal(
-      check("1.1.1.1", { proxies: [parseProxy("1.1.1.2/32")] }),
-      "1.1.1.1",
-    );
-    assert.equal(
-      check("1.1.1.1", {
-        proxies: [
-          // @ts-expect-error: test how runtime handles non-string proxy.
-          1234,
-        ],
-      }),
-      "1.1.1.1",
-    );
-  });
+  await t.test(
+    "returns empty string if the ip is a trusted proxy (range)",
+    () => {
+      assert.equal(
+        check("1.1.1.1", { proxies: [parseProxy("1.1.1.1/32")] }),
+        "",
+      );
+    },
+  );
+
+  await t.test(
+    "returns the string if the ip is not a trusted proxy (literal)",
+    () => {
+      assert.equal(check("1.1.1.1", { proxies: ["1.1.1.2"] }), "1.1.1.1");
+    },
+  );
+
+  await t.test(
+    "returns the string if the ip is not a trusted proxy (range)",
+    () => {
+      assert.equal(
+        check("1.1.1.1", { proxies: [parseProxy("1.1.1.2/32")] }),
+        "1.1.1.1",
+      );
+    },
+  );
+
+  await t.test(
+    "returns the string if the ip is not a trusted proxy (invalid proxy)",
+    () => {
+      assert.equal(
+        check("1.1.1.1", {
+          proxies: [
+            // @ts-expect-error: test how runtime handles non-string proxy.
+            1234,
+          ],
+        }),
+        "1.1.1.1",
+      );
+    },
+  );
 }
 
 async function ipv6(t: TestContext, check: Check) {
@@ -239,40 +266,64 @@ async function ipv6(t: TestContext, check: Check) {
     assert.equal(check("::abcd:c00a:2ff%1"), "::abcd:c00a:2ff%1");
   });
 
-  await t.test("returns empty string if the ip is a trusted proxy", () => {
-    assert.equal(
-      check("::abcd:c00a:2ff", { proxies: ["::abcd:c00a:2ff"] }),
-      "",
-    );
-    assert.equal(
-      check("::abcd:c00a:2ff", {
-        proxies: [parseProxy("::abcd:c00a:2ff/128")],
-      }),
-      "",
-    );
-  });
+  await t.test(
+    "returns empty string if the ip is a trusted proxy (literal)",
+    () => {
+      assert.equal(
+        check("::abcd:c00a:2ff", { proxies: ["::abcd:c00a:2ff"] }),
+        "",
+      );
+    },
+  );
 
-  await t.test("returns the string if the ip is not a trusted proxy", () => {
-    assert.equal(
-      check("::abcd:c00a:2ff", { proxies: ["::abcd:c00a:2fa"] }),
-      "::abcd:c00a:2ff",
-    );
-    assert.equal(
-      check("::abcd:c00a:2ff", {
-        proxies: [parseProxy("::abcd:c00a:2fa/128")],
-      }),
-      "::abcd:c00a:2ff",
-    );
-    assert.equal(
-      check("::abcd:c00a:2ff", {
-        proxies: [
-          // @ts-expect-error: test how runtime handles non-string proxy.
-          1234,
-        ],
-      }),
-      "::abcd:c00a:2ff",
-    );
-  });
+  await t.test(
+    "returns empty string if the ip is a trusted proxy (range)",
+    () => {
+      assert.equal(
+        check("::abcd:c00a:2ff", {
+          proxies: [parseProxy("::abcd:c00a:2ff/128")],
+        }),
+        "",
+      );
+    },
+  );
+
+  await t.test(
+    "returns the string if the ip is not a trusted proxy (literal)",
+    () => {
+      assert.equal(
+        check("::abcd:c00a:2ff", { proxies: ["::abcd:c00a:2fa"] }),
+        "::abcd:c00a:2ff",
+      );
+    },
+  );
+
+  await t.test(
+    "returns the string if the ip is not a trusted proxy (range)",
+    () => {
+      assert.equal(
+        check("::abcd:c00a:2ff", {
+          proxies: [parseProxy("::abcd:c00a:2fa/128")],
+        }),
+        "::abcd:c00a:2ff",
+      );
+    },
+  );
+
+  await t.test(
+    "returns the string if the ip is not a trusted proxy (invalid)",
+    () => {
+      assert.equal(
+        check("::abcd:c00a:2ff", {
+          proxies: [
+            // @ts-expect-error: test how runtime handles non-string proxy.
+            1234,
+          ],
+        }),
+        "::abcd:c00a:2ff",
+      );
+    },
+  );
 }
 
 test("`findIp`", async (t) => {
