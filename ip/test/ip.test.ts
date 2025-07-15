@@ -5,6 +5,186 @@ import findIp, { parseProxy } from "../index.js";
 
 type Check = (ip: string, options?: Options | undefined) => string;
 type TestContext = Parameters<Required<Parameters<typeof test>>[0]>[0];
+type Case = [
+  message: string,
+  actual: string,
+  expected: string,
+  options?: Options,
+];
+
+const ipv4Tests: Array<Case> = [
+  ["returns empty string if unspecified", "0.0.0.0", ""],
+  ["returns empty string if 'this network' address", "0.1.2.3", ""],
+  [
+    "returns empty string if in the shared address range",
+    "100.127.255.255",
+    "",
+  ],
+  [
+    "returns empty string if in the link local address range",
+    "169.254.255.255",
+    "",
+  ],
+  ["returns empty string if in the future protocol range", "192.0.0.1", ""],
+  [
+    "returns empty string if in the 192.0.2.x documentation range",
+    "192.0.2.1",
+    "",
+  ],
+  [
+    "returns empty string if in the 198.51.100.x documentation range",
+    "198.51.100.1",
+    "",
+  ],
+  [
+    "returns empty string if in the 203.0.113.x documentation range",
+    "203.0.113.1",
+    "",
+  ],
+  ["returns empty string if in the benchmarking range", "198.19.255.255", ""],
+  ["returns empty string if in the reserved range", "240.0.0.0", ""],
+  ["returns empty string if in the broadcast address", "255.255.255.255", ""],
+  ["returns empty string if loopback", "127.0.0.1", ""],
+  ["returns empty string if not full ip", "12.3.4", ""],
+  ["returns empty string if more than 3 digits in an octet", "1111.2.3.4", ""],
+  ["returns empty string if more than full ip", "1.2.3.4.5", ""],
+  ["returns empty string if any octet has leading 0", "1.02.3.4", ""],
+  [
+    "returns empty string if not a string",
+    // @ts-expect-error: test how runtime handles non-string input.
+    ["12", "3", "4"],
+    "",
+  ],
+  ["returns empty string if in the 10.x.x.x private range", "10.1.1.1", ""],
+  [
+    "returns empty string if in the 172.16.x.x-172.31.x.x private range",
+    "172.18.1.1",
+    "",
+  ],
+  [
+    "returns empty string if in the 192.168.x.x private range",
+    "192.168.1.1",
+    "",
+  ],
+  ["returns empty string outside of the valid range", "1.1.1.256", ""],
+  ["returns the ip if valid", "1.1.1.1", "1.1.1.1"],
+  [
+    "returns the full ip if valid, after ignoring port",
+    "1.1.1.1:443",
+    "1.1.1.1:443",
+  ],
+  [
+    "returns empty string if the ip is a trusted proxy (literal)",
+    "1.1.1.1",
+    "",
+    { proxies: ["1.1.1.1"] },
+  ],
+  [
+    "returns empty string if the ip is a trusted proxy (range)",
+    "1.1.1.1",
+    "",
+    { proxies: [parseProxy("1.1.1.1/32")] },
+  ],
+  [
+    "returns the string if the ip is not a trusted proxy (literal)",
+    "1.1.1.1",
+    "1.1.1.1",
+    { proxies: ["1.1.1.2"] },
+  ],
+  [
+    "returns the string if the ip is not a trusted proxy (range)",
+    "1.1.1.1",
+    "1.1.1.1",
+    { proxies: [parseProxy("1.1.1.2/32")] },
+  ],
+  [
+    "returns the string if the ip is not a trusted proxy (invalid proxy)",
+    "1.1.1.1",
+    "1.1.1.1",
+    {
+      proxies: [
+        // @ts-expect-error: test how runtime handles non-string proxy.
+        1234,
+      ],
+    },
+  ],
+];
+
+const ipv6Tests: Array<Case> = [
+  ["returns empty string if unspecified", "::", ""],
+  ["returns empty string if loopback address", "::1", ""],
+  ["returns empty string if ipv4 mapped address", "::ffff:127.0.0.1", ""],
+  ["returns empty string if ipv4-ipv6 translat range", "64:ff9b:1::", ""],
+  ["returns empty string if discard range", "100::", ""],
+  ["returns empty string if documentation range", "2001:db8::", ""],
+  ["returns empty string if benchmarking range", "2001:2::", ""],
+  ["returns empty string if unique local range", "fc02::", ""],
+  ["returns empty string if unicast link local range", "fe80::", ""],
+  ["returns empty string if the ip address is too short", "ffff:ffff:", ""],
+  [
+    "returns empty string if the ip address is too long",
+    "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+    "",
+  ],
+  [
+    "returns the ip if it is 'Port Control Protocol Anycast' address",
+    "2001:1::1",
+    "2001:1::1",
+  ],
+  [
+    "returns the ip if it is 'Traversal Using Relays around NAT Anycast' address",
+    "2001:1::2",
+    "2001:1::2",
+  ],
+  ["returns the ip if it is 'AMT' address", "2001:3::", "2001:3::"],
+  [
+    "returns the ip if it is 'AS112-v6' address",
+    "2001:4:112::",
+    "2001:4:112::",
+  ],
+  ["returns the ip if it is 'ORCHIDv2' address", "2001:20::", "2001:20::"],
+  ["returns the ip if valid", "::abcd:c00a:2ff", "::abcd:c00a:2ff"],
+  [
+    "returns the ip if valid, after ignoring scope",
+    "::abcd:c00a:2ff%1",
+    "::abcd:c00a:2ff%1",
+  ],
+  [
+    "returns empty string if the ip is a trusted proxy (literal)",
+    "::abcd:c00a:2ff",
+    "",
+    { proxies: ["::abcd:c00a:2ff"] },
+  ],
+  [
+    "returns empty string if the ip is a trusted proxy (range)",
+    "::abcd:c00a:2ff",
+    "",
+    { proxies: [parseProxy("::abcd:c00a:2ff/128")] },
+  ],
+  [
+    "returns the string if the ip is not a trusted proxy (literal)",
+    "::abcd:c00a:2ff",
+    "::abcd:c00a:2ff",
+    { proxies: ["::abcd:c00a:2fa"] },
+  ],
+  [
+    "returns the string if the ip is not a trusted proxy (range)",
+    "::abcd:c00a:2ff",
+    "::abcd:c00a:2ff",
+    { proxies: [parseProxy("::abcd:c00a:2fa/128")] },
+  ],
+  [
+    "returns the string if the ip is not a trusted proxy (invalid)",
+    "::abcd:c00a:2ff",
+    "::abcd:c00a:2ff",
+    {
+      proxies: [
+        // @ts-expect-error: test how runtime handles non-string proxy.
+        1234,
+      ],
+    },
+  ],
+];
 
 async function suite(
   t: TestContext,
@@ -15,315 +195,22 @@ async function suite(
   await t.test(label, async (t) => {
     if (!options || options.ipv4 !== false) {
       await t.test("ipv4", async (t) => {
-        await ipv4(t, check);
+        for (const [message, actual, expected, options] of ipv4Tests) {
+          await t.test(message, () => {
+            assert.equal(check(actual, options), expected);
+          });
+        }
       });
     }
 
     await t.test("ipv6", async (t) => {
-      await ipv6(t, check);
+      for (const [message, actual, expected, options] of ipv6Tests) {
+        await t.test(message, () => {
+          assert.equal(check(actual, options), expected);
+        });
+      }
     });
   });
-}
-
-async function ipv4(t: TestContext, check: Check) {
-  await t.test("returns empty string if unspecified", () => {
-    assert.equal(check("0.0.0.0"), "");
-  });
-
-  await t.test("returns empty string if 'this network' address", () => {
-    assert.equal(check("0.1.2.3"), "");
-  });
-
-  await t.test("returns empty string if in the shared address range", () => {
-    assert.equal(check("100.127.255.255"), "");
-  });
-
-  await t.test(
-    "returns empty string if in the link local address range",
-    () => {
-      assert.equal(check("169.254.255.255"), "");
-    },
-  );
-
-  await t.test("returns empty string if in the future protocol range", () => {
-    assert.equal(check("192.0.0.1"), "");
-  });
-
-  await t.test(
-    "returns empty string if in the 192.0.2.x documentation range",
-    () => {
-      assert.equal(check("192.0.2.1"), "");
-    },
-  );
-
-  await t.test(
-    "returns empty string if in the 198.51.100.x documentation range",
-    () => {
-      assert.equal(check("198.51.100.1"), "");
-    },
-  );
-
-  await t.test(
-    "returns empty string if in the 203.0.113.x documentation range",
-    () => {
-      assert.equal(check("203.0.113.1"), "");
-    },
-  );
-
-  await t.test("returns empty string if in the benchmarking range", () => {
-    assert.equal(check("198.19.255.255"), "");
-  });
-
-  await t.test("returns empty string if in the reserved range", () => {
-    assert.equal(check("240.0.0.0"), "");
-  });
-
-  await t.test("returns empty string if in the broadcast address", () => {
-    assert.equal(check("255.255.255.255"), "");
-  });
-
-  await t.test("returns empty string if loopback", () => {
-    assert.equal(check("127.0.0.1"), "");
-  });
-
-  await t.test("returns empty string if not full ip", () => {
-    assert.equal(check("12.3.4"), "");
-  });
-
-  await t.test("returns empty string if more than 3 digits in an octet", () => {
-    assert.equal(check("1111.2.3.4"), "");
-  });
-
-  await t.test("returns empty string if more than full ip", () => {
-    assert.equal(check("1.2.3.4.5"), "");
-  });
-
-  await t.test("returns empty string if any octet has leading 0", () => {
-    assert.equal(check("1.02.3.4"), "");
-  });
-
-  await t.test("returns empty string if not a string", () => {
-    // @ts-expect-error: test how runtime handles non-string input.
-    assert.equal(check(["12", "3", "4"]), "");
-  });
-
-  await t.test("returns empty string if in the 10.x.x.x private range", () => {
-    assert.equal(check("10.1.1.1"), "");
-  });
-
-  await t.test(
-    "returns empty string if in the 172.16.x.x-172.31.x.x private range",
-    () => {
-      assert.equal(check("172.18.1.1"), "");
-    },
-  );
-
-  await t.test(
-    "returns empty string if in the 192.168.x.x private range",
-    () => {
-      assert.equal(check("192.168.1.1"), "");
-    },
-  );
-
-  await t.test("returns empty string outside of the valid range", () => {
-    assert.equal(check("1.1.1.256"), "");
-  });
-
-  await t.test("returns the ip if valid", () => {
-    assert.equal(check("1.1.1.1"), "1.1.1.1");
-  });
-
-  await t.test("returns the full ip if valid, after ignoring port", () => {
-    assert.equal(check("1.1.1.1:443"), "1.1.1.1:443");
-  });
-
-  await t.test(
-    "returns empty string if the ip is a trusted proxy (literal)",
-    () => {
-      assert.equal(check("1.1.1.1", { proxies: ["1.1.1.1"] }), "");
-    },
-  );
-
-  await t.test(
-    "returns empty string if the ip is a trusted proxy (range)",
-    () => {
-      assert.equal(
-        check("1.1.1.1", { proxies: [parseProxy("1.1.1.1/32")] }),
-        "",
-      );
-    },
-  );
-
-  await t.test(
-    "returns the string if the ip is not a trusted proxy (literal)",
-    () => {
-      assert.equal(check("1.1.1.1", { proxies: ["1.1.1.2"] }), "1.1.1.1");
-    },
-  );
-
-  await t.test(
-    "returns the string if the ip is not a trusted proxy (range)",
-    () => {
-      assert.equal(
-        check("1.1.1.1", { proxies: [parseProxy("1.1.1.2/32")] }),
-        "1.1.1.1",
-      );
-    },
-  );
-
-  await t.test(
-    "returns the string if the ip is not a trusted proxy (invalid proxy)",
-    () => {
-      assert.equal(
-        check("1.1.1.1", {
-          proxies: [
-            // @ts-expect-error: test how runtime handles non-string proxy.
-            1234,
-          ],
-        }),
-        "1.1.1.1",
-      );
-    },
-  );
-}
-
-async function ipv6(t: TestContext, check: Check) {
-  await t.test("returns empty string if unspecified", () => {
-    assert.equal(check("::"), "");
-  });
-
-  await t.test("returns empty string if loopback address", () => {
-    assert.equal(check("::1"), "");
-  });
-
-  await t.test("returns empty string if ipv4 mapped address", () => {
-    assert.equal(check("::ffff:127.0.0.1"), "");
-  });
-
-  await t.test("returns empty string if ipv4-ipv6 translat range", () => {
-    assert.equal(check("64:ff9b:1::"), "");
-  });
-
-  await t.test("returns empty string if discard range", () => {
-    assert.equal(check("100::"), "");
-  });
-
-  await t.test("returns empty string if documentation range", () => {
-    assert.equal(check("2001:db8::"), "");
-  });
-
-  await t.test("returns empty string if benchmarking range", () => {
-    assert.equal(check("2001:2::"), "");
-  });
-
-  await t.test("returns empty string if unique local range", () => {
-    assert.equal(check("fc02::"), "");
-  });
-
-  await t.test("returns empty string if unicast link local range", () => {
-    assert.equal(check("fe80::"), "");
-  });
-
-  await t.test("returns empty string if the ip address is too short", () => {
-    assert.equal(check("ffff:ffff:"), "");
-  });
-
-  await t.test("returns empty string if the ip address is too long", () => {
-    assert.equal(check("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"), "");
-  });
-
-  await t.test(
-    "returns the ip if it is 'Port Control Protocol Anycast' address",
-    () => {
-      assert.equal(check("2001:1::1"), "2001:1::1");
-    },
-  );
-
-  await t.test(
-    "returns the ip if it is 'Traversal Using Relays around NAT Anycast' address",
-    () => {
-      assert.equal(check("2001:1::2"), "2001:1::2");
-    },
-  );
-
-  await t.test("returns the ip if it is 'AMT' address", () => {
-    assert.equal(check("2001:3::"), "2001:3::");
-  });
-
-  await t.test("returns the ip if it is 'AS112-v6' address", () => {
-    assert.equal(check("2001:4:112::"), "2001:4:112::");
-  });
-
-  await t.test("returns the ip if it is 'ORCHIDv2' address", () => {
-    assert.equal(check("2001:20::"), "2001:20::");
-  });
-
-  await t.test("returns the ip if valid", () => {
-    assert.equal(check("::abcd:c00a:2ff"), "::abcd:c00a:2ff");
-  });
-
-  await t.test("returns the ip if valid, after ignoring scope", () => {
-    assert.equal(check("::abcd:c00a:2ff%1"), "::abcd:c00a:2ff%1");
-  });
-
-  await t.test(
-    "returns empty string if the ip is a trusted proxy (literal)",
-    () => {
-      assert.equal(
-        check("::abcd:c00a:2ff", { proxies: ["::abcd:c00a:2ff"] }),
-        "",
-      );
-    },
-  );
-
-  await t.test(
-    "returns empty string if the ip is a trusted proxy (range)",
-    () => {
-      assert.equal(
-        check("::abcd:c00a:2ff", {
-          proxies: [parseProxy("::abcd:c00a:2ff/128")],
-        }),
-        "",
-      );
-    },
-  );
-
-  await t.test(
-    "returns the string if the ip is not a trusted proxy (literal)",
-    () => {
-      assert.equal(
-        check("::abcd:c00a:2ff", { proxies: ["::abcd:c00a:2fa"] }),
-        "::abcd:c00a:2ff",
-      );
-    },
-  );
-
-  await t.test(
-    "returns the string if the ip is not a trusted proxy (range)",
-    () => {
-      assert.equal(
-        check("::abcd:c00a:2ff", {
-          proxies: [parseProxy("::abcd:c00a:2fa/128")],
-        }),
-        "::abcd:c00a:2ff",
-      );
-    },
-  );
-
-  await t.test(
-    "returns the string if the ip is not a trusted proxy (invalid)",
-    () => {
-      assert.equal(
-        check("::abcd:c00a:2ff", {
-          proxies: [
-            // @ts-expect-error: test how runtime handles non-string proxy.
-            1234,
-          ],
-        }),
-        "::abcd:c00a:2ff",
-      );
-    },
-  );
 }
 
 test("`findIp`", async (t) => {
