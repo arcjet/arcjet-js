@@ -29,8 +29,6 @@
     "node": ">=18"
   },
   "type": "module",
-  "types#": "TODO: for some reason `@rollup/typescript-plugin` needs this field",
-  "types": "./index.d.ts",
   "exports": {
     "edge-light": "./edge-light.js",
     "workerd": "./workerd.js",
