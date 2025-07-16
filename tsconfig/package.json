@@ -25,7 +25,6 @@
   "engines": {
     "node": ">=18"
   },
-  "exports": null,
   "files": [
     "base.json",
     "nextjs.json",
