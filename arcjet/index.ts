@@ -32,7 +32,7 @@ import {
   ArcjetRateLimitReason,
   ArcjetConclusion,
 } from "@arcjet/protocol";
-import type { Client } from "@arcjet/protocol/client.js";
+import type { Client } from "@arcjet/protocol/client";
 import * as analyze from "@arcjet/analyze";
 import type {
   DetectedSensitiveInfoEntity,

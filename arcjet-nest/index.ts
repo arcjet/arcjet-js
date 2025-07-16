@@ -17,7 +17,7 @@ import findIP, { parseProxy } from "@arcjet/ip";
 import ArcjetHeaders from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
-import { createClient } from "@arcjet/protocol/client.js";
+import { createClient } from "@arcjet/protocol/client";
 import { createTransport } from "@arcjet/transport";
 import { readBody } from "@arcjet/body";
 import { Inject, SetMetadata } from "@nestjs/common";

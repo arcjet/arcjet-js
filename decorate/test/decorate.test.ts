@@ -1,19 +1,19 @@
 import assert from "node:assert/strict";
+import { OutgoingMessage } from "node:http";
 import { describe, test, mock } from "node:test";
-import { setRateLimitHeaders } from "../index.js";
+import { setRateLimitHeaders } from "@arcjet/decorate";
 import {
   ArcjetAllowDecision,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
 } from "@arcjet/protocol";
-import { OutgoingMessage } from "http";
 
 function noop() {}
 
 test("@arcjet/decorate", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("@arcjet/decorate")).sort(), [
       "setRateLimitHeaders",
     ]);
   });
