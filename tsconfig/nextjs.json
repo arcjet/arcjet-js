@@ -16,7 +16,7 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "strict": true,
-    "target": "es2015",
+    "target": "es2017",
     "moduleResolution": "node",
     "paths": {
       "@/*": ["./*"]
