@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import type { Options, RequestLike } from "../index.js";
-import ip, { parseProxy } from "../index.js";
+import type { Options, RequestLike } from "@arcjet/ip";
+import ip, { parseProxy } from "@arcjet/ip";
 
 type MakeTest = (ip: unknown) => [RequestLike, Options | undefined];
 

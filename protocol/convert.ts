@@ -14,7 +14,7 @@ import type {
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
   ArcjetSensitiveInfoRule,
-} from "./index.js";
+} from "@arcjet/protocol";
 import {
   ArcjetAllowDecision,
   ArcjetBotReason,
@@ -31,7 +31,7 @@ import {
   ArcjetReason,
   ArcjetIpDetails,
   ArcjetSensitiveInfoReason,
-} from "./index.js";
+} from "@arcjet/protocol";
 import type { IpDetails } from "./proto/decide/v1alpha1/decide_pb.js";
 import {
   BotV2Reason,
