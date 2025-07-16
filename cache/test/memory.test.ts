@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MemoryCache } from "../index.js";
+import { MemoryCache } from "@arcjet/cache";
 
 test("MemoryCache", async (t) => {
   await t.test("MemoryCache#set", async (t) => {

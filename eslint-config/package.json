@@ -27,7 +27,7 @@
     "node": ">=18"
   },
   "type": "module",
-  "main": "./eslint.config.js",
+  "exports": "./eslint.config.js",
   "files": [
     "eslint.config.js"
   ],

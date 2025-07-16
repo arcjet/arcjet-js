@@ -1,4 +1,4 @@
-import { createContext, runInContext, SourceTextModule } from "node:vm";
+import { SourceTextModule, createContext, runInContext } from "node:vm";
 import { readFile } from "node:fs/promises";
 
 export async function importWithGlobal(
@@ -9,7 +9,8 @@ export async function importWithGlobal(
   const mod = new SourceTextModule(`export * from "${target}"`, { context });
   await mod.link(async (specifier) => {
     if (specifier === target) {
-      const src = await readFile(new URL(specifier, import.meta.url), "utf-8");
+      const href = import.meta.resolve(specifier);
+      const src = await readFile(new URL(href), "utf-8");
       return new SourceTextModule(src, { context });
     }
 

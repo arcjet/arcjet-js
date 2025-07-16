@@ -14,7 +14,7 @@ import ArcjetHeaders from "@arcjet/headers";
 import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
-import { createClient } from "@arcjet/protocol/client.js";
+import { createClient } from "@arcjet/protocol/client";
 import { createTransport } from "@arcjet/transport";
 import { readBody } from "@arcjet/body";
 

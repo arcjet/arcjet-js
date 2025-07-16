@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import * as nodeCrypto from "node:crypto";
 import {
+  type StringWriter,
   bool,
   uint32,
   string,
   stringSliceOrdered,
   makeHasher,
-} from "../hasher.js";
-import type { StringWriter } from "../hasher.js";
+} from "@arcjet/stable-hash";
 
 describe("hasher", () => {
   const maxUint32 = 4294967295;

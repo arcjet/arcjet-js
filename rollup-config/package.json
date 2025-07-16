@@ -26,8 +26,7 @@
     "node": ">=18"
   },
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "exports": "./index.js",
   "files": [
     "index.d.ts",
     "index.js"
@@ -37,6 +36,7 @@
     "test": "npm run lint"
   },
   "dependencies": {
+    "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-replace": "6.0.2",
     "@rollup/plugin-typescript": "12.1.4"
   },

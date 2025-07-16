@@ -16,7 +16,7 @@ import type { Server } from "bun";
 import { env } from "bun";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
-import { createClient } from "@arcjet/protocol/client.js";
+import { createClient } from "@arcjet/protocol/client";
 import { createTransport } from "@arcjet/transport";
 
 // Re-export all named exports from the generic SDK

@@ -5,7 +5,7 @@ import {
   detectSensitiveInfo,
   generateFingerprint,
   isValidEmail,
-} from "../index.js";
+} from "@arcjet/analyze";
 
 const exampleContext = { characteristics: [], log: console };
 const exampleEmailOptions = {
@@ -16,7 +16,7 @@ const exampleEmailOptions = {
 
 test("@arcjet/analyze", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("@arcjet/analyze")).sort(), [
       "detectBot",
       "detectSensitiveInfo",
       "generateFingerprint",

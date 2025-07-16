@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import findIp, { parseProxy } from "../index.js";
+import findIp, { parseProxy } from "@arcjet/ip";
 
 type Proxy = ReturnType<typeof parseProxy>;
 
@@ -184,7 +184,7 @@ const cases: Array<Case> = [
 
 test("@arcjet/ip", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("@arcjet/ip")).sort(), [
       // TODO(@wooorm-arcjet): use named exports.
       "default",
       "parseProxy",

@@ -29,8 +29,6 @@
     "node": ">=18"
   },
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
   "exports": {
     "edge-light": "./edge-light.js",
     "default": "./index.js"

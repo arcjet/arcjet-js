@@ -1,18 +1,18 @@
 import type { Transport } from "@connectrpc/connect";
 import { createClient as createConnectRpcClient } from "@connectrpc/connect";
+import type {
+  ArcjetContext,
+  ArcjetRequestDetails,
+  ArcjetRule,
+  ArcjetStack,
+} from "@arcjet/protocol";
+import { ArcjetDecision } from "@arcjet/protocol";
 import {
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,
   ArcjetRuleToProtocol,
   ArcjetStackToProtocol,
 } from "./convert.js";
-import type {
-  ArcjetContext,
-  ArcjetRequestDetails,
-  ArcjetRule,
-  ArcjetStack,
-} from "./index.js";
-import { ArcjetDecision } from "./index.js";
 import { DecideService } from "./proto/decide/v1alpha1/decide_connect.js";
 import {
   DecideRequest,

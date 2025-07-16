@@ -28,8 +28,10 @@
     "node": ">=18"
   },
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "exports": {
+    "./client": "./client.js",
+    ".": "./index.js"
+  },
   "files": [
     "proto/",
     "client.d.ts",

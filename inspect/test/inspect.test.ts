@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../index.js";
+import {
+  isSpoofedBot,
+  isVerifiedBot,
+  isMissingUserAgent,
+} from "@arcjet/inspect";
 import {
   type ArcjetRuleState,
   ArcjetBotReason,
@@ -10,7 +14,7 @@ import {
 
 test("@arcjet/inspect", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("@arcjet/inspect")).sort(), [
       "isMissingUserAgent",
       "isSpoofedBot",
       "isVerifiedBot",

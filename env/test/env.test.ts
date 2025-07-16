@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import * as env from "../index.ts";
+import * as env from "@arcjet/env";
 
 test("@arcjet/env", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("@arcjet/env")).sort(), [
       "apiKey",
       "baseUrl",
       "isDevelopment",

@@ -1,6 +1,20 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Cache } from "@arcjet/cache";
+import {
+  type ArcjetConclusion,
+  type ArcjetContext,
+  type ArcjetLogger,
+  type ArcjetRequestDetails,
+  ArcjetAllowDecision,
+  ArcjetChallengeDecision,
+  ArcjetDecision,
+  ArcjetDenyDecision,
+  ArcjetErrorDecision,
+  ArcjetErrorReason,
+  ArcjetReason,
+  ArcjetRuleResult,
+} from "@arcjet/protocol";
 import { createRouterTransport } from "@connectrpc/connect";
 import { DecideService } from "../proto/decide/v1alpha1/decide_connect.js";
 import {
@@ -11,22 +25,6 @@ import {
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
 import { type ClientOptions, createClient } from "../client.js";
-import type {
-  ArcjetConclusion,
-  ArcjetContext,
-  ArcjetLogger,
-  ArcjetRequestDetails,
-} from "../index.js";
-import {
-  ArcjetAllowDecision,
-  ArcjetChallengeDecision,
-  ArcjetDecision,
-  ArcjetDenyDecision,
-  ArcjetErrorDecision,
-  ArcjetErrorReason,
-  ArcjetReason,
-  ArcjetRuleResult,
-} from "../index.js";
 
 class ArcjetInvalidDecision extends ArcjetDecision {
   conclusion: ArcjetConclusion;
@@ -98,6 +96,15 @@ const exampleDetails: Partial<ArcjetRequestDetails> = {
   path: "/",
   protocol: "http",
 };
+
+test("@arcjet/protocol/client", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(
+      Object.keys(await import("@arcjet/protocol/client")).sort(),
+      ["createClient"],
+    );
+  });
+});
 
 test("createClient", async (t) => {
   await t.test("should work", () => {
