@@ -33,16 +33,22 @@ import {
   ArcjetConclusion,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
-import * as analyze from "@arcjet/analyze";
+import {
+  detectBot as analyzeDetectBot,
+  detectSensitiveInfo,
+  generateFingerprint,
+  isValidEmail,
+} from "@arcjet/analyze";
 import type {
   DetectedSensitiveInfoEntity,
   SensitiveInfoEntity,
   BotConfig,
   EmailValidationConfig,
 } from "@arcjet/analyze";
-import * as duration from "@arcjet/duration";
+import { parse as parseDuration } from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
+// TODO(@wooorm-arcjet): discuss different names and remove `import *`.
 import * as hasher from "@arcjet/stable-hash";
 import { MemoryCache } from "@arcjet/cache";
 
@@ -746,7 +752,7 @@ export function tokenBucket<
     : undefined;
 
   const refillRate = options.refillRate;
-  const interval = duration.parse(options.interval);
+  const interval = parseDuration(options.interval);
   const capacity = options.capacity;
 
   const rule: ArcjetTokenBucketRateLimitRule<
@@ -785,7 +791,7 @@ export function tokenBucket<
         log: context.log,
       };
 
-      const fingerprint = await analyze.generateFingerprint(
+      const fingerprint = await generateFingerprint(
         analyzeContext,
         toAnalyzeRequest(details),
       );
@@ -900,7 +906,7 @@ export function fixedWindow<
     : undefined;
 
   const max = options.max;
-  const window = duration.parse(options.window);
+  const window = parseDuration(options.window);
 
   const rule: ArcjetFixedWindowRateLimitRule<{}> = {
     type,
@@ -932,7 +938,7 @@ export function fixedWindow<
         log: context.log,
       };
 
-      const fingerprint = await analyze.generateFingerprint(
+      const fingerprint = await generateFingerprint(
         analyzeContext,
         toAnalyzeRequest(details),
       );
@@ -1041,7 +1047,7 @@ export function slidingWindow<
     : undefined;
 
   const max = options.max;
-  const interval = duration.parse(options.interval);
+  const interval = parseDuration(options.interval);
 
   const rule: ArcjetSlidingWindowRateLimitRule<{}> = {
     type,
@@ -1073,7 +1079,7 @@ export function slidingWindow<
         log: context.log,
       };
 
-      const fingerprint = await analyze.generateFingerprint(
+      const fingerprint = await generateFingerprint(
         analyzeContext,
         toAnalyzeRequest(details),
       );
@@ -1373,7 +1379,7 @@ export function sensitiveInfo<
         val: entitiesVal,
       };
 
-      const result = await analyze.detectSensitiveInfo(
+      const result = await detectSensitiveInfo(
         context,
         body,
         entities,
@@ -1595,7 +1601,7 @@ export function validateEmail(
       // while the email changes. This is also why the `email` rule results
       // always have a `ttl` of 0.
 
-      const result = await analyze.isValidEmail(context, email, config);
+      const result = await isValidEmail(context, email, config);
       const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
       if (result.validity === "valid") {
         return new ArcjetRuleResult({
@@ -1808,7 +1814,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
         });
       }
 
-      const result = await analyze.detectBot(
+      const result = await analyzeDetectBot(
         context,
         toAnalyzeRequest(request),
         config,
@@ -1915,7 +1921,7 @@ export function shield(options: ShieldOptions): Primitive<{}> {
         log: context.log,
       };
 
-      const fingerprint = await analyze.generateFingerprint(
+      const fingerprint = await generateFingerprint(
         analyzeContext,
         toAnalyzeRequest(details),
       );
@@ -2217,7 +2223,7 @@ export default function arcjet<
 
     const logFingerprintPerf = perf.measure("fingerprint");
     try {
-      fingerprint = await analyze.generateFingerprint(
+      fingerprint = await generateFingerprint(
         baseContext,
         toAnalyzeRequest(details),
       );

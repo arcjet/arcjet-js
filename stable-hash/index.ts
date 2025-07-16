@@ -1,6 +1,14 @@
-import * as crypto from "node:crypto";
+import { subtle } from "node:crypto";
 
 import { makeHasher } from "./hasher.js";
 
-export * from "./hasher.js";
-export const hash = makeHasher(crypto.subtle);
+export {
+  type FieldHasher,
+  type StringWriter,
+  bool,
+  makeHasher,
+  stringSliceOrdered,
+  string,
+  uint32,
+} from "./hasher.js";
+export const hash = makeHasher(subtle);
