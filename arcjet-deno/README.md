@@ -78,6 +78,4 @@ see the [Arcjet Deno SDK reference][arcjet-reference-deno] on our website.
 
 [arcjet]: https://arcjet.com
 [deno]: https://deno.com/
-[rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
-[shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

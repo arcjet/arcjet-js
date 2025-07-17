@@ -89,6 +89,4 @@ see the [Arcjet Bun SDK reference][arcjet-reference-bun] on our website.
 [example-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/bun
 [example-source]: https://github.com/arcjet/arcjet-js-example
-[rate-limit-concepts-docs]: https://docs.arcjet.com/rate-limiting/concepts
-[shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

@@ -95,5 +95,4 @@ see the [Arcjet NestJS SDK reference][arcjet-reference-nest] on our website.
 [example-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/nestjs
 [example-source]: https://github.com/arcjet/arcjet-js-example
-[shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
