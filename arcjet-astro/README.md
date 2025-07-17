@@ -231,7 +231,7 @@ export const GET: APIRoute = async ({ request }) => {
 
 ## License
 
-Licensed under the [Apache License, Version 2.0][apache-license].
+[Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
 [astro]: https://astro.build/

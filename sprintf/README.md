@@ -66,10 +66,10 @@ format strings.
 
 ## License
 
-Licensed under the [Apache License, Version 2.0][apache-license].
+[Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
 [node-util]: https://nodejs.org/docs/latest-v18.x/api/util.html#utilformatformat-args
 [quick-format-unescaped]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64c2f2e182f97923a423d468757b9a24a63/index.js
 [pino]: https://github.com/pinojs/pino
-[apache-license]: http://www.apache.org/licenses/LICENSE-2.0

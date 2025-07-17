@@ -136,7 +136,7 @@ export async function handle({
 
 ## License
 
-Licensed under the [Apache License, Version 2.0][apache-license].
+[Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
 [sveltekit]: https://kit.svelte.dev/

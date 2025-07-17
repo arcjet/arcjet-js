@@ -48,10 +48,10 @@ with licenses included in our source code.
 
 ## License
 
-Licensed under the [Apache License, Version 2.0][apache-license].
+[Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
 [runtime-keys]: https://runtime-keys.proposal.wintercg.org/
 [wintercg]: https://wintercg.org/
 [std-env]: https://github.com/unjs/std-env
-[apache-license]: http://www.apache.org/licenses/LICENSE-2.0

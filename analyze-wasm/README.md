@@ -57,7 +57,7 @@ properly support consistent asset bundling techniques.
 
 ## License
 
-Licensed under the [Apache License, Version 2.0][apache-license].
+[Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
 [mdn-data-url]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
