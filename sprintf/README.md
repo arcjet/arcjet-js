@@ -86,4 +86,3 @@ possible.
 [node-util]: https://nodejs.org/docs/latest-v18.x/api/util.html#utilformatformat-args
 [quick-format-unescaped-license]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64/LICENSE
 [quick-format-unescaped]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64/index.js
-[pino]: https://github.com/pinojs/pino
