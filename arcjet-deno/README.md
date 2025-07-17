@@ -25,86 +25,52 @@ This is the [Arcjet][arcjet] SDK for [Deno][deno].
 - [npm package (`@arcjet/deno`)](https://www.npmjs.com/package/@arcjet/deno)
 - [GitHub source code (`arcjet-deno/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-deno)
 
-## Rate limit + bot detection example
-
-The [Arcjet rate limit][rate-limit-concepts-docs] example below applies a token
-bucket rate limit rule to a route where we identify the user based on their ID
-e.g. if they are logged in. The bucket is configured with a maximum capacity of
-10 tokens and refills by 5 tokens every 10 seconds. Each request consumes 5
-tokens.
+## Use
 
 ```ts
 import "jsr:@std/dotenv/load";
-
-import arcjet, { tokenBucket, detectBot } from "npm:@arcjet/deno";
-
-const aj = arcjet({
-  key: Deno.env.get("ARCJET_KEY")!, // Get your site key from https://app.arcjet.com
-  characteristics: ["userId"], // track requests by a custom user ID
-  rules: [
-    // Create a token bucket rate limit. Other algorithms are supported.
-    tokenBucket({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      refillRate: 5, // refill 5 tokens per interval
-      interval: 10, // refill every 10 seconds
-      capacity: 10, // bucket maximum capacity of 10 tokens
-    }),
-    detectBot({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      // configured with a list of bots to allow from
-      // https://arcjet.com/bot-list
-      allow: [], // "allow none" will block all detected bots
-    }),
-  ],
-});
-
-Deno.serve(
-  aj.handler(async function (req: Request) {
-    const userId = "user123"; // Replace with your authenticated user ID
-    const decision = await aj.protect(req, { userId, requested: 5 }); // Deduct 5 tokens from the bucket
-    console.log("Arcjet decision", decision);
-
-    if (decision.isDenied()) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
-    } else {
-      return Response.json({ message: "Hello world" });
-    }
-  }),
-);
-```
-
-## Shield example
-
-[Arcjet Shield][shield-concepts-docs] protects your application against common
-attacks, including the OWASP Top 10. You can run Shield on every request with
-negligible performance impact.
-
-```ts
-import "jsr:@std/dotenv/load";
-
 import arcjet, { shield } from "npm:@arcjet/deno";
 
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = Deno.env.get("ARCJET_KEY");
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
+
 const aj = arcjet({
-  key: Deno.env.get("ARCJET_KEY")!, // Get your site key from https://app.arcjet.com
+  key: arcjetKey,
   rules: [
-    shield({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-    }),
+    // Shield protects your app from common attacks.
+    // Use `DRY_RUN` instead of `LIVE` to only log.
+    shield({ mode: "LIVE" }),
   ],
 });
 
 Deno.serve(
-  aj.handler(async function (req: Request) {
-    const decision = await aj.protect(req);
+  aj.handler(async function (request: Request) {
+    const decision = await aj.protect(request);
 
     if (decision.isDenied()) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
-    } else {
-      return Response.json({ message: "Hello world" });
+      return Response.json({ message: "Forbidden" }, { status: 403 });
     }
+
+    return Response.json({ message: "Hello world" });
   }),
 );
 ```
+
+<!--
+
+TODO(@wooorm-arcjet): This is missing?
+
+For more on how to configure Arcjet with Deno and how to protect Deno,
+see the [Arcjet Deno SDK reference][arcjet-reference-deno] on our website.
+
+[arcjet-reference-deno]: https://docs.arcjet.com/reference/deno
+
+-->
 
 ## License
 

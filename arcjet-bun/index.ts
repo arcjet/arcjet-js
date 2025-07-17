@@ -1,4 +1,4 @@
-/// <reference types="bun-types/bun.d.ts" />
+/// <reference types="bun-types" />
 import core from "arcjet";
 import type {
   ArcjetDecision,

@@ -27,15 +27,12 @@ Custom eslint config for [Arcjet][arcjet] projects.
 npm install -D @arcjet/eslint-config
 ```
 
-## Example
-
-In your `.eslintrc.cjs` file:
+## Use
 
 ```ts
-module.exports = {
-  root: true,
-  extends: ["@arcjet/eslint-config"],
-};
+import arcjetEslintConfig from "@arcjet/eslint-config";
+
+export default [...arcjetEslintConfig];
 ```
 
 ## License

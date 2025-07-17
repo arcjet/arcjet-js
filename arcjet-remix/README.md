@@ -36,81 +36,27 @@ Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 npm install @arcjet/remix
 ```
 
-## Rate limit + bot detection example
-
-The [Arcjet rate limit][rate-limit-concepts-docs] example below applies a token
-bucket rate limit rule to a route where we identify the user based on their ID
-e.g. if they are logged in. The bucket is configured with a maximum capacity of
-10 tokens and refills by 5 tokens every 10 seconds. Each request consumes 5
-tokens.
+## Use
 
 ```tsx
-import { useLoaderData } from "@remix-run/react";
-import { json, LoaderFunctionArgs } from "@remix-run/node";
-
-import arcjet, { tokenBucket, detectBot } from "@arcjet/remix";
-
-const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
-  characteristics: ["userId"], // track requests by a custom user ID
-  rules: [
-    // Create a token bucket rate limit. Other algorithms are supported.
-    tokenBucket({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      refillRate: 5, // refill 5 tokens per interval
-      interval: 10, // refill every 10 seconds
-      capacity: 10, // bucket maximum capacity of 10 tokens
-    }),
-    detectBot({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      // configured with a list of bots to allow from
-      // https://arcjet.com/bot-list
-      allow: [], // "allow none" will block all detected bots
-    }),
-  ],
-});
-
-export async function loader(args: LoaderFunctionArgs) {
-  const decision = await aj.protect(args);
-
-  if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
-      throw new Response(null, {
-        status: 429,
-        statusText: "Too Many Requests",
-      });
-    } else {
-      throw new Response(null, { status: 403, statusText: "Forbidden" });
-    }
-  }
-
-  return json({ message: "Hello Arcjet" });
-}
-
-export default function Index() {
-  const data = useLoaderData<typeof loader>();
-  return <h1>{data.message}</h1>;
-}
-```
-
-## Shield example
-
-[Arcjet Shield][shield-concepts-docs] protects your application against common
-attacks, including the OWASP Top 10. You can run Shield on every request with
-negligible performance impact.
-
-```tsx
-import { useLoaderData } from "@remix-run/react";
-import { json, LoaderFunctionArgs } from "@remix-run/node";
-
 import arcjet, { shield } from "@arcjet/remix";
+import { useLoaderData } from "@remix-run/react";
+import { LoaderFunctionArgs } from "@remix-run/node";
+
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY, // Get your site key from https://app.arcjet.com
+  key: arcjetKey,
   rules: [
-    shield({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-    }),
+    // Shield protects your app from common attacks.
+    // Use `DRY_RUN` instead of `LIVE` to only log.
+    shield({ mode: "LIVE" }),
   ],
 });
 
@@ -118,10 +64,10 @@ export async function loader(args: LoaderFunctionArgs) {
   const decision = await aj.protect(args);
 
   if (decision.isDenied()) {
-    throw new Response(null, { status: 403, statusText: "Forbidden" });
+    throw Response.json({ message: "Forbidden" }, { status: 403 });
   }
 
-  return json({ message: "Hello Arcjet" });
+  return Response.json({ message: "Hello world" });
 }
 
 export default function Index() {
@@ -129,11 +75,15 @@ export default function Index() {
   return <h1>{data.message}</h1>;
 }
 ```
+
+For more on how to configure Arcjet with Remix and how to protect Remix,
+see the [Arcjet Remix SDK reference][arcjet-reference-remix] on our website.
 
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-reference-remix]: https://docs.arcjet.com/reference/remix
 [arcjet]: https://arcjet.com
 [remix]: https://remix.run/
 [example-url]: https://example.arcjet.com

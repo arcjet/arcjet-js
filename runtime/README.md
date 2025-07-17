@@ -30,15 +30,12 @@ defined by the [WinterCG][wintercg].
 npm install -S @arcjet/runtime
 ```
 
-## Example
+## Use
 
 ```ts
-import { runtime, hasWebAssembly } from "@arcjet/runtime";
+import { runtime } from "@arcjet/runtime";
 
-runtime() === "node"; // in Node.js
-runtime() === "bun"; // in Bun.sh
-runtime() === "edge-light"; // in Vercel Edge
-runtime() === "workerd"; // in Cloudflare Workers
+console.log(runtime()); // => "bun" or "node" and such
 ```
 
 ## Implementation

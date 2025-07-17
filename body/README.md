@@ -27,16 +27,13 @@
 npm install -S @arcjet/body
 ```
 
-## Example
+## Use
 
 ```ts
-import { readBody } from "../index";
+import fs from "node:fs";
+import { readBody } from "@arcjet/body";
 
-// Some stream.Readable-like object, such as node's `http.IncomingMessage`
-const request = new IncomingMessage();
-
-// Returns the body as a utf-8 encoded string
-const body = await readBody(request, { limit: 1024 });
+const body = await readBody(fs.createReadStream("example.ts"), { limit: 1024 });
 console.log(body);
 ```
 

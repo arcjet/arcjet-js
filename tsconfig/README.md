@@ -27,14 +27,13 @@ Custom tsconfig for [Arcjet][arcjet] projects.
 npm install -D @arcjet/tsconfig
 ```
 
-## Example
+## Use
 
-In your `tsconfig.json` file:
+In `tsconfig.json`:
 
 ```json
 {
-  "extends": "@arcjet/tsconfig/base",
-  "include": ["*.ts"]
+  "extends": "@arcjet/tsconfig/base"
 }
 ```
 

@@ -29,32 +29,31 @@ npm install -S @nosecone/sveltekit
 
 ## Example
 
-Update your `svelte.config.js` file for `csp`:
+Configure `csp` from Nosecone in `svelte.config.js`:
 
 ```diff
-import adapter from "@sveltejs/adapter-auto";
-import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
-+ import { csp } from "@nosecone/sveltekit"
++import { csp } from "@nosecone/sveltekit"
+ import adapter from "@sveltejs/adapter-auto";
+ import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
-/** @type {import('@sveltejs/kit').Config} */
-const config = {
-  // Consult https://kit.svelte.dev/docs/integrations#preprocessors
-  // for more information about preprocessors
-  preprocess: vitePreprocess(),
+ /** @type {import('@sveltejs/kit').Config} */
+ const config = {
+   kit: {
+     // adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
+     // If your environment is not supported, or you settled on a specific environment, switch out the adapter.
+     // See https://kit.svelte.dev/docs/adapters for more information about adapters.
+     adapter: adapter(),
++    csp: csp(),
+   },
+   // Consult https://kit.svelte.dev/docs/integrations#preprocessors
+   // for more information about preprocessors
+   preprocess: vitePreprocess(),
+ };
 
-  kit: {
-+   csp: csp(),
-    // adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
-    // If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-    // See https://kit.svelte.dev/docs/adapters for more information about adapters.
-    adapter: adapter(),
-  },
-};
-
-export default config;
+ export default config;
 ```
 
-Create a `src/hooks.server.ts` file with the contents:
+…then use `createHook` from Nosecone in a `src/hooks.server.ts` file:
 
 ```ts
 import { createHook } from "@nosecone/sveltekit";

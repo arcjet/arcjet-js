@@ -31,22 +31,28 @@ This is the [Arcjet][arcjet] local analysis engine.
 npm install -S @arcjet/analyze
 ```
 
-## Example
+## Use
 
-<!--
-  TODO(@wooorm-arcjet): I think this example is out of date?
-  Either remove it if we don’t want people to use this.
-  Or, change the API to allow simpler use?
--->
-
-```ts
+```js
 import { generateFingerprint, isValidEmail } from "@arcjet/analyze";
 
-const fingerprint = generateFingerprint("127.0.0.1");
-console.log("fingerprint: ", fingerprint);
+const fingerprint = await generateFingerprint(
+  { characteristics: [] },
+  { ip: "127.0.0.1" },
+);
+console.log(fingerprint);
+// => "fp::2::0d219da6100b99f95cf639b77e088c6df3c096aa5fd61dec5287c5cf94d5e545"
 
-const valid = isValidEmail("hello@example.com");
-console.log("is email valid?", valid);
+const result = await isValidEmail({}, "hello@example.com", {
+  tag: "allow-email-validation-config",
+  val: {
+    allowDomainLiteral: false,
+    allow: [],
+    requireTopLevelDomain: true,
+  },
+});
+console.log(result);
+// => { blocked: [], validity: "valid" }
 ```
 
 ## Implementation

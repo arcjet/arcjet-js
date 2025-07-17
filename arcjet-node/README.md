@@ -43,100 +43,56 @@ Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 npm install -S @arcjet/node
 ```
 
-## Rate limit example
-
-The example below applies a token bucket rate limit rule to a route where we
-identify the user based on their ID e.g. if they are logged in. The bucket is
-configured with a maximum capacity of 10 tokens and refills by 5 tokens every 10
-seconds. Each request consumes 5 tokens.
-
-Bot detection is also enabled to block requests from known bots.
+## Use
 
 ```ts
-import arcjet, { tokenBucket, detectBot } from "@arcjet/node";
 import http from "node:http";
-
-const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
-  characteristics: ["userId"], // track requests by a custom user ID
-  rules: [
-    // Create a token bucket rate limit. Other algorithms are supported.
-    tokenBucket({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      refillRate: 5, // refill 5 tokens per interval
-      interval: 10, // refill every 10 seconds
-      capacity: 10, // bucket maximum capacity of 10 tokens
-    }),
-    detectBot({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      // configured with a list of bots to allow from
-      // https://arcjet.com/bot-list
-      allow: [], // "allow none" will block all detected bots
-    }),
-  ],
-});
-
-const server = http.createServer(async function (
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-) {
-  const userId = "user123"; // Replace with your authenticated user ID
-  const decision = await aj.protect(req, { userId, requested: 5 }); // Deduct 5 tokens from the bucket
-  console.log("Arcjet decision", decision);
-
-  if (decision.isDenied()) {
-    res.writeHead(403, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Forbidden" }));
-  } else {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Hello world" }));
-  }
-});
-
-server.listen(8000);
-```
-
-## Shield example
-
-[Arcjet Shield][shield-concepts-docs] protects your application against common
-attacks, including the OWASP Top 10. You can run Shield on every request with
-negligible performance impact.
-
-```ts
 import arcjet, { shield } from "@arcjet/node";
-import http from "node:http";
+
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  key: arcjetKey,
   rules: [
-    shield({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-    }),
+    // Shield protects your app from common attacks.
+    // Use `DRY_RUN` instead of `LIVE` to only log.
+    shield({ mode: "LIVE" }),
   ],
 });
 
 const server = http.createServer(async function (
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
+  request: http.IncomingMessage,
+  response: http.ServerResponse,
 ) {
-  const decision = await aj.protect(req);
+  const decision = await aj.protect(request);
 
   if (decision.isDenied()) {
-    res.writeHead(403, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Forbidden" }));
-  } else {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Hello world" }));
+    response.writeHead(403, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ message: "Forbidden" }));
+    return;
   }
+
+  response.writeHead(200, { "Content-Type": "application/json" });
+  response.end(JSON.stringify({ message: "Hello world" }));
 });
 
 server.listen(8000);
 ```
+
+For more on how to configure Arcjet with Node.js and how to protect Node,
+see the [Arcjet Node.js SDK reference][arcjet-reference-node] on our website.
 
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-reference-node]: https://docs.arcjet.com/reference/nodejs
 [arcjet]: https://arcjet.com
 [node-js]: https://nodejs.org/
 [alt-sdk]: https://www.npmjs.com/package/@arcjet/next
