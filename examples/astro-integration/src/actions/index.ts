@@ -8,7 +8,7 @@ export const server = {
     input: z.object({
       content: z.string(),
     }),
-    handler: async (input, { request }) => {
+    handler: async (_input, { request }) => {
       const decision = await aj
         .withRule(sensitiveInfo({ mode: "LIVE", allow: [] }))
         .protect(request);

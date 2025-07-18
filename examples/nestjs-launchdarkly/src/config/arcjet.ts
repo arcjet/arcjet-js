@@ -16,8 +16,9 @@ export class ArcjetConfig {
   constructor(private configService: ConfigService) {}
 
   async create() {
+    const launchdarklySdkKey = this.configService.get('LAUNCHDARKLY_SDK_KEY')
     // Initialize LaunchDarkly client
-    const client = ld.init(this.configService.get('LAUNCHDARKLY_SDK_KEY'));
+    const client = ld.init(launchdarklySdkKey);
 
     // Wait for the LaunchDarkly client to be initialized
     await client.waitForInitialization({ timeout: 1 });
@@ -47,7 +48,11 @@ export class ArcjetConfig {
       ArcjetConfig.defaultConfig.rateLimitWindow,
     )) as string | number;
 
-    const key: string = this.configService.get('ARCJET_KEY');
+    const key = this.configService.get('ARCJET_KEY');
+
+    if (!key) {
+      throw new Error("Cannot find `ARCJET_KEY` environment variable");
+    }
 
     return {
       key,

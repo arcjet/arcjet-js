@@ -4,7 +4,8 @@
   "scripts": {
     "prestart": "npm run build",
     "start": "node --env-file .env.local ./index.js",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@arcjet/node": "file:../../arcjet-node",

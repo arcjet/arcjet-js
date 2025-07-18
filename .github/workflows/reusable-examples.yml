@@ -54,6 +54,9 @@ jobs:
         working-directory: examples/gatsby-rate-limit
         run: npm run build
 
+      - working-directory: examples/gatsby-rate-limit
+        run: npm run typecheck
+
   nestjs:
     name: NestJS
     runs-on: ubuntu-latest
@@ -96,6 +99,9 @@ jobs:
       - name: Build
         working-directory: examples/nestjs
         run: npm run build
+
+      - working-directory: examples/nestjs
+        run: npm run typecheck
 
   nestjs-fastify:
     name: NestJS + Fastify
@@ -140,6 +146,9 @@ jobs:
         working-directory: examples/nestjs-fastify
         run: npm run build
 
+      - working-directory: examples/nestjs-fastify
+        run: npm run typecheck
+
   nestjs-graphql:
     name: NestJS + GraphQL
     runs-on: ubuntu-latest
@@ -183,6 +192,9 @@ jobs:
         working-directory: examples/nestjs-graphql
         run: npm run build
 
+      - working-directory: examples/nestjs-graphql
+        run: npm run typecheck
+
   nestjs-launchdarkly:
     name: NestJS + LaunchDarkly
     runs-on: ubuntu-latest
@@ -225,6 +237,9 @@ jobs:
       - name: Build
         working-directory: examples/nestjs-launchdarkly
         run: npm run build
+
+      - working-directory: examples/nestjs-launchdarkly
+        run: npm run typecheck
 
   nextjs-14-nextauth-4:
     name: Next.js 14 + NextAuth 4
@@ -272,6 +287,9 @@ jobs:
         working-directory: examples/nextjs-14-nextauth-4
         run: npm run build
 
+      - working-directory: examples/nextjs-14-nextauth-4
+        run: npm run typecheck
+
   nextjs-app-dir-rate-limit:
     name: Next.js + App Router + Rate Limit
     runs-on: ubuntu-latest
@@ -318,6 +336,9 @@ jobs:
         working-directory: examples/nextjs-app-dir-rate-limit
         run: npm run build
 
+      - working-directory: examples/nextjs-app-dir-rate-limit
+        run: npm run typecheck
+
   nextjs-app-dir-validate-email:
     name: Next.js + App Router + Validate Email
     runs-on: ubuntu-latest
@@ -363,6 +384,9 @@ jobs:
       - name: Build
         working-directory: examples/nextjs-app-dir-validate-email
         run: npm run build
+
+      - working-directory: examples/nextjs-app-dir-validate-email
+        run: npm run typecheck
 
   nextjs-authjs-5:
     name: Next.js + Auth.js 5
@@ -412,6 +436,9 @@ jobs:
           AUTH_SECRET: TEST_SECRET
         run: npm run build
 
+      - working-directory: examples/nextjs-authjs-5
+        run: npm run typecheck
+
   nextjs-authjs-nosecone:
     name: Next.js + Auth.js 5 + Nosecone
     runs-on: ubuntu-latest
@@ -459,6 +486,9 @@ jobs:
         env:
           AUTH_SECRET: TEST_SECRET
         run: npm run build
+
+      - working-directory: examples/nextjs-authjs-nosecone
+        run: npm run typecheck
 
   nextjs-better-auth:
     name: Next.js + Better-Auth
@@ -510,6 +540,9 @@ jobs:
           BETTER_AUTH_SECRET: TEST_SECRET
         run: npm run build
 
+      - working-directory: examples/nextjs-better-auth
+        run: npm run typecheck
+
   nextjs-bot-categories:
     name: Next.js + Bot categories
     runs-on: ubuntu-latest
@@ -555,6 +588,9 @@ jobs:
       - name: Build
         working-directory: examples/nextjs-bot-categories
         run: npm run build
+
+      - working-directory: examples/nextjs-bot-categories
+        run: npm run typecheck
 
   nextjs-clerk-rate-limit:
     name: Next.js + Clerk + Rate Limit
@@ -605,6 +641,9 @@ jobs:
           # This is the smallest dummy token that passes the Clerk validation
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_LiQ=
 
+      - working-directory: examples/nextjs-clerk-rate-limit
+        run: npm run typecheck
+
   nextjs-clerk-shield:
     name: Next.js + Clerk + Shield
     runs-on: ubuntu-latest
@@ -654,6 +693,9 @@ jobs:
           # This is the smallest dummy token that passes the Clerk validation
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_LiQ=
 
+      - working-directory: examples/nextjs-clerk-shield
+        run: npm run typecheck
+
   nextjs-decorate:
     name: Next.js + Decorate
     runs-on: ubuntu-latest
@@ -699,6 +741,9 @@ jobs:
       - name: Build
         working-directory: examples/nextjs-decorate
         run: npm run build
+
+      - working-directory: examples/nextjs-decorate
+        run: npm run typecheck
 
   nextjs-ip-details:
     name: Next.js + IP Details
@@ -746,6 +791,9 @@ jobs:
         working-directory: examples/nextjs-ip-details
         run: npm run build
 
+      - working-directory: examples/nextjs-ip-details
+        run: npm run typecheck
+
   nextjs-openai:
     name: Next.js + OpenAI
     runs-on: ubuntu-latest
@@ -792,6 +840,9 @@ jobs:
         working-directory: examples/nextjs-openai
         run: npm run build
 
+      - working-directory: examples/nextjs-openai
+        run: npm run typecheck
+
   nextjs-pages-wrap:
     name: Next.js + Page Router + withArcjet
     runs-on: ubuntu-latest
@@ -837,6 +888,9 @@ jobs:
       - name: Build
         working-directory: examples/nextjs-pages-wrap
         run: npm run build
+
+      - working-directory: examples/nextjs-pages-wrap
+        run: npm run typecheck
 
   nextjs-permit:
     name: Next.js + Permit
@@ -887,6 +941,9 @@ jobs:
           # This is the smallest dummy token that passes the Clerk validation
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_LiQ=
 
+      - working-directory: examples/nextjs-permit
+        run: npm run typecheck
+
   nextjs-sensitive-info:
     name: Next.js + Sensitive Info
     runs-on: ubuntu-latest
@@ -932,6 +989,9 @@ jobs:
       - name: Build
         working-directory: examples/nextjs-sensitive-info
         run: npm run build
+
+      - working-directory: examples/nextjs-sensitive-info
+        run: npm run typecheck
 
   nextjs-server-actions:
     name: Next.js + Server Actions
@@ -979,6 +1039,9 @@ jobs:
         working-directory: examples/nextjs-server-actions
         run: npm run build
 
+      - working-directory: examples/nextjs-server-actions
+        run: npm run typecheck
+
   nodejs-hono-rate-limit:
     name: Node.js + Hono + Rate Limit
     runs-on: ubuntu-latest
@@ -1021,6 +1084,9 @@ jobs:
       - name: Build
         working-directory: examples/nodejs-hono-rate-limit
         run: npm run build
+
+      - working-directory: examples/nodejs-hono-rate-limit
+        run: npm run typecheck
 
   remix-express:
     name: Remix + Express
@@ -1065,6 +1131,9 @@ jobs:
         working-directory: examples/remix-express
         run: npm run build
 
+      - working-directory: examples/remix-express
+        run: npm run typecheck
+
   sveltekit:
     name: SvelteKit
     runs-on: ubuntu-latest
@@ -1108,6 +1177,10 @@ jobs:
       - name: Build
         working-directory: examples/sveltekit
         run: npm run build
+
+      - working-directory: examples/sveltekit
+        run: npm run typecheck
+
   astro:
     name: Astro
     runs-on: ubuntu-latest
@@ -1153,3 +1226,6 @@ jobs:
         env:
           ARCJET_KEY: ajkey_dummy
           ASTRO_TELEMETRY_DISABLED: 1
+
+      - working-directory: examples/astro-integration
+        run: npm run typecheck

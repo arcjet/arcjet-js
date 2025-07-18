@@ -1,9 +1,10 @@
 {
-    "compilerOptions": {
-        "module": "ESNext",
-        "moduleResolution": "Node",
-        "target": "ES2022"
-    },
-    "include": ["index.ts"],
-    "exclude": ["node_modules"]
+  "compilerOptions": {
+    "lib": ["dom.iterable", "dom", "es2022"],
+    "module": "node16",
+    "strict": true,
+    "target": "es2022"
+  },
+  "exclude": ["node_modules/"],
+  "include": ["**/*.ts"]
 }
