@@ -20,7 +20,8 @@ import { RecipesModule } from './recipes/recipes.module.js';
     }),
     ArcjetModule.forRoot({
       isGlobal: true,
-      key: process.env.ARCJET_KEY,
+      // `!` because `envFilePath` loads it.
+      key: process.env.ARCJET_KEY!,
       rules: [shield({ mode: 'LIVE' }), detectBot({ mode: 'LIVE', allow: [] })],
     }),
   ],

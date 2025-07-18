@@ -6,11 +6,13 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@arcjet/astro": "file:../../arcjet-astro",
     "@astrojs/node": "^9.3.0",
-    "astro": "^5.5.5"
+    "astro": "^5.5.5",
+    "typescript": "^5.8.3"
   }
 }
