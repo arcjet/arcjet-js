@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import * as nodeCrypto from "node:crypto";
+import { subtle as nodeCryptoSubtle } from "node:crypto";
 import {
   bool,
   uint32,
@@ -145,7 +145,7 @@ describe("hasher", () => {
     if ("crypto" in globalThis) {
       subtle = crypto.subtle;
     } else {
-      subtle = nodeCrypto.subtle;
+      subtle = nodeCryptoSubtle;
     }
     const hash = makeHasher(subtle);
 
