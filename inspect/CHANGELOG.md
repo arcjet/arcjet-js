@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/inspect-v1.0.0-beta.10) (2025-07-18)
+
+
+### 📝 Documentation
+
+* add uniform license section to readmes ([#4634](https://github.com/arcjet/arcjet-js/issues/4634)) ([af1c322](https://github.com/arcjet/arcjet-js/commit/af1c322213daa016adb01ce9a26f96b7c546b107))
+
+
+### 🧹 Miscellaneous Chores
+
+* fix unused import in tests ([#4588](https://github.com/arcjet/arcjet-js/issues/4588)) ([1a9bdb1](https://github.com/arcjet/arcjet-js/commit/1a9bdb112a9ce7d83d7a8124e5c7f7908f95fe6e))
+
+
+### 📚 Tests
+
+* add tests for public interface ([#4587](https://github.com/arcjet/arcjet-js/issues/4587)) ([f7aabec](https://github.com/arcjet/arcjet-js/commit/f7aabecbcd351b31fc2b94bc9c871a1123e2c7cd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/rollup-config bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/tsconfig bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+
 ## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...@arcjet/inspect-v1.0.0-beta.9) (2025-07-09)
 
 
