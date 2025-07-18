@@ -26,10 +26,13 @@ redaction library.
 - [npm package (`@arcjet/redact`)](https://www.npmjs.com/package/@arcjet/redact)
 - [GitHub source code (`redact/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/redact)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/redact
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/redact
 ```
 
 ## Reference
