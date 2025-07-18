@@ -10,7 +10,7 @@ import ArcjetHeaders from "@arcjet/headers";
 import findIp, { parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
-import { createClient } from "@arcjet/protocol/client.js";
+import { createClient } from "@arcjet/protocol/client";
 import { createTransport } from "@arcjet/transport";
 import type {
   ArcjetDecision,

@@ -1,6 +1,30 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  type ArcjetBotRule,
+  type ArcjetEmailRule,
+  type ArcjetTokenBucketRateLimitRule,
+  type ArcjetFixedWindowRateLimitRule,
+  type ArcjetSlidingWindowRateLimitRule,
+  type ArcjetShieldRule,
+  type ArcjetSensitiveInfoRule,
+  ArcjetAllowDecision,
+  ArcjetBotReason,
+  ArcjetChallengeDecision,
+  ArcjetDenyDecision,
+  ArcjetEdgeRuleReason,
+  ArcjetEmailReason,
+  ArcjetErrorDecision,
+  ArcjetErrorReason,
+  ArcjetRateLimitReason,
+  ArcjetReason,
+  ArcjetRuleResult,
+  ArcjetShieldReason,
+  ArcjetIpDetails,
+  ArcjetSensitiveInfoReason,
+} from "@arcjet/protocol";
+import { Timestamp } from "@bufbuild/protobuf";
+import {
   ArcjetModeToProtocol,
   ArcjetEmailTypeToProtocol,
   ArcjetEmailTypeFromProtocol,
@@ -30,32 +54,6 @@ import {
   RuleState,
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
-import type {
-  ArcjetBotRule,
-  ArcjetEmailRule,
-  ArcjetTokenBucketRateLimitRule,
-  ArcjetFixedWindowRateLimitRule,
-  ArcjetSlidingWindowRateLimitRule,
-  ArcjetShieldRule,
-  ArcjetSensitiveInfoRule,
-} from "../index.js";
-import {
-  ArcjetAllowDecision,
-  ArcjetBotReason,
-  ArcjetChallengeDecision,
-  ArcjetDenyDecision,
-  ArcjetEdgeRuleReason,
-  ArcjetEmailReason,
-  ArcjetErrorDecision,
-  ArcjetErrorReason,
-  ArcjetRateLimitReason,
-  ArcjetReason,
-  ArcjetRuleResult,
-  ArcjetShieldReason,
-  ArcjetIpDetails,
-  ArcjetSensitiveInfoReason,
-} from "../index.js";
-import { Timestamp } from "@bufbuild/protobuf";
 
 test("convert", async (t) => {
   await t.test("ArcjetModeToProtocol", async (t) => {

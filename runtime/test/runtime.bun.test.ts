@@ -4,7 +4,7 @@ import { importWithGlobal } from "./import-with-global.js";
 
 describe("bun detection", () => {
   test("detects bun if appropriate globals are available", async () => {
-    const { runtime } = await importWithGlobal("../index.js", { Bun: {} });
+    const { runtime } = await importWithGlobal("@arcjet/runtime", { Bun: {} });
     assert.equal(runtime(), "bun");
   });
 });
