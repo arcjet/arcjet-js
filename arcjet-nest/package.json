@@ -67,7 +67,7 @@
     "@nestjs/common": "^11.1.4",
     "@rollup/wasm-node": "4.45.1",
     "@types/node": "18.18.0",
-    "eslint": "9.30.1",
+    "eslint": "9.31.0",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
     "typescript": "5.8.3"
