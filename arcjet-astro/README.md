@@ -64,7 +64,7 @@ export default defineConfig({
 });
 ```
 
-…then use Arcjet in dynamic Astro pages (such as `src/pages/api.json.ts`):
+…then use Arcjet in on-demand routes (such as `src/pages/api.json.ts`):
 
 ```ts
 import type { APIRoute } from "astro";
