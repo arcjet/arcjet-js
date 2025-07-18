@@ -32,6 +32,7 @@ test("@arcjet/protocol", async function (t) {
       "ArcjetSensitiveInfoType",
       "ArcjetShieldReason",
       "ArcjetStack",
+      "ArcjetUnknownReason",
       "botCategories",
     ]);
   });
