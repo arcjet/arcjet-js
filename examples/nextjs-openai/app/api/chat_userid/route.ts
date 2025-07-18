@@ -32,7 +32,7 @@ const aj = arcjet({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
     }),
     tokenBucket({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only      
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
       refillRate: 2_000, // fill the bucket up by 2,000 tokens
       interval: "1h", // every hour
       capacity: 5_000, // up to 5,000 tokens
@@ -64,13 +64,13 @@ export async function POST(req: Request) {
   const decision = await aj.protect(req, { requested: estimate, userId });
   console.log("Arcjet decision", decision.conclusion);
 
-  if (decision.reason.isRateLimit()) {
+  if (decision.reason.type === "RATE_LIMIT") {
     console.log("Requests remaining", decision.reason.remaining);
   }
 
   // If the request is denied, return a 429
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return new Response("Too Many Requests", {
         status: 429,
       });
