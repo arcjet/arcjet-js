@@ -32,13 +32,16 @@ npm install -S @arcjet/stable-hash
 ```ts
 import * as hasher from "@arcjet/stable-hash";
 
-const id = hasher.hash(
+const id = await hasher.hash(
   hasher.string("type", "EMAIL"),
   hasher.uint32("version", 0),
   hasher.string("mode", "LIVE"),
   hasher.stringSliceOrdered("allow", []),
   hasher.stringSliceOrdered("deny", []),
 );
+
+console.log(id);
+// => 49573b7df8d854c2cd5d8a755a4c03aff4014493a41b963490861a279ad675b2
 ```
 
 ## License

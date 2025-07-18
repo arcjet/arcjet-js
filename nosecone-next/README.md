@@ -27,9 +27,9 @@ Protect your Next.js application with secure headers.
 npm install -S @nosecone/next
 ```
 
-## Example
+## Use
 
-Create a `middleware.ts` file with the contents:
+Configure Nosecone in a `middleware.ts` file:
 
 ```ts
 import { createMiddleware } from "@nosecone/next";
@@ -42,25 +42,25 @@ export const config = {
 export default createMiddleware();
 ```
 
-Add `await connection()` in your `app/layout.tsx` file:
+…then use `connection` from `next/server` in `app/layout.tsx`:
 
 ```diff
-+ import { connection } from "next/server";
++import { connection } from "next/server";
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+ export default async function RootLayout({
+   children,
+ }: {
+   children: React.ReactNode;
+ }) {
 +  // Opt-out of static generation for every page so the CSP nonce can be applied
 +  await connection()
 
-  return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
-  );
-}
+   return (
+     <html lang="en">
+       <body className={inter.className}>{children}</body>
+     </html>
+   );
+ }
 ```
 
 ## License

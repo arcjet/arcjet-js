@@ -30,39 +30,46 @@ npm install -S @arcjet/decorate
 ## Example
 
 ```ts
-import arcjet, { fixedWindow } from "@arcjet/next";
+import http from "node:http";
 import { setRateLimitHeaders } from "@arcjet/decorate";
-import { NextApiRequest, NextApiResponse } from "next";
+import arcjet, { shield } from "@arcjet/node";
+
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  key: arcjetKey,
   rules: [
-    // Create a fixed window rate limit. Other algorithms are supported.
-    fixedWindow({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      window: "1m", // 1 min fixed window
-      max: 1, // allow a single request
-    }),
+    // Shield protects your app from common attacks.
+    // Use `DRY_RUN` instead of `LIVE` to only log.
+    shield({ mode: "LIVE" }),
   ],
 });
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
+const server = http.createServer(async function (
+  request: http.IncomingMessage,
+  response: http.ServerResponse,
 ) {
-  const decision = await aj.protect(req);
+  const decision = await aj.protect(request);
 
-  setRateLimitHeaders(res, decision);
+  setRateLimitHeaders(response, decision);
 
   if (decision.isDenied()) {
-    return res.status(429).json({
-      error: "Too Many Requests",
-      reason: decision.reason,
-    });
+    response.writeHead(403, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ message: "Forbidden" }));
+    return;
   }
 
-  res.status(200).json({ name: "Hello world" });
-}
+  response.writeHead(200, { "Content-Type": "application/json" });
+  response.end(JSON.stringify({ message: "Hello world" }));
+});
+
+server.listen(8000);
 ```
 
 ## License

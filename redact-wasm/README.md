@@ -27,38 +27,9 @@
 npm install -S @arcjet/redact-wasm
 ```
 
-## Example
+## Use
 
-```ts
-import { initializeWasm } from "@arcjet/redact-wasm";
-import type { SensitiveInfoEntity } from "@arcjet/redact-wasm";
-
-function noOpDetect(_tokens: string[]): Array<SensitiveInfoEntity | undefined> {
-  return [];
-}
-function noOpReplace(_input: SensitiveInfoEntity): string | undefined {
-  return undefined;
-}
-
-const wasm = await initializeWasm(noOpDetect, noOpReplace);
-
-// If WebAssembly isn't available in the environment then it will be undefined.
-if (typeof wasm !== "undefined") {
-  const config = {
-    entities: [],
-    contextWindowSize: 1,
-    skipCustomDetect: true,
-    skipCustomRedact: true,
-  };
-
-  const entities = wasm.redact("I am a string", config);
-  // Do something with entities that should be redacted.
-} else {
-  throw new Error(
-    "redact failed to run because Wasm is not supported in this environment",
-  );
-}
-```
+Use [`@arcjet/redact`][file-redact] instead.
 
 ## Implementation
 
@@ -90,5 +61,6 @@ properly support consistent asset bundling techniques.
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
+[file-redact]: ../redact/
 [mdn-data-url]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
 [wasm-base64-blog]: https://blobfolio.com/2019/better-binary-batter-mixing-base64-and-uint8array/

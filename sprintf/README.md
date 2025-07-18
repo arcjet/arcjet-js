@@ -29,13 +29,13 @@ This package is platform-independent in order to support multiple runtimes in va
 npm install -S @arcjet/sprintf
 ```
 
-## Example
+## Use
 
 ```ts
 import format from "@arcjet/sprintf";
 
-format("Hello %s", "world") === "Hello world";
-format("1 %i %d", 2, 3.0) === "1 2 3";
+console.log(format("Hello %s", "world")); // => "Hello world"
+console.log(format("1 %i %d", 2, 3.0)); // => "1 2 3"
 ```
 
 ## Substitutions

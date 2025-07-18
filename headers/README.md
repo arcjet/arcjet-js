@@ -27,14 +27,14 @@
 npm install -S @arcjet/headers
 ```
 
-## Example
+## Use
 
 ```ts
 import ArcjetHeaders from "@arcjet/headers";
 
 const headers = new ArcjetHeaders({ abc: "123" });
 
-console.log(headers.get("abc"));
+console.log(headers.get("abc")); // => "123"
 ```
 
 ## Considerations

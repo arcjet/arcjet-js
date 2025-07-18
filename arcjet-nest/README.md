@@ -43,61 +43,56 @@ Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 npm install -S @arcjet/nest
 ```
 
-## Shield example
-
-[Arcjet Shield][shield-concepts-docs] protects your application against common
-attacks, including the OWASP Top 10. You can run Shield on every request with
-negligible performance impact.
+## Use
 
 ```ts
+import { ArcjetModule, shield } from "@arcjet/nest";
 import { Module } from "@nestjs/common";
-import { NestFactory, APP_GUARD } from "@nestjs/core";
-import { ConfigModule } from "@nestjs/config";
-import { ArcjetModule, ArcjetGuard, shield } from "@arcjet/nest";
+import { NestFactory } from "@nestjs/core";
+
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: ".env.local",
-    }),
     ArcjetModule.forRoot({
       isGlobal: true,
-      key: process.env.ARCJET_KEY!,
-      rules: [shield({ mode: "LIVE" })],
+      key: arcjetKey,
+      rules: [
+        // Shield protects your app from common attacks.
+        // Use `DRY_RUN` instead of `LIVE` to only log.
+        shield({ mode: "LIVE" }),
+      ],
     }),
-  ],
-  controllers: [],
-  providers: [
-    // You can enable ArcjetGuard globally on every route using the `APP_GUARD`
-    // token; however, this is generally NOT recommended. If you need to inject
-    // the ArcjetNest client, you want to make sure you aren't also running
-    // ArcjetGuard on the handlers calling `protect()` to avoid making multiple
-    // requests to Arcjet and you can't opt-out of this global Guard.
-    {
-      provide: APP_GUARD,
-      useClass: ArcjetGuard,
-    },
   ],
 })
 class AppModule {}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
+  await app.listen(8000);
 }
+
 bootstrap();
 ```
+
+For more on how to configure Arcjet with NestJS and how to protect Nest,
+see the [Arcjet NestJS SDK reference][arcjet-reference-nest] on our website.
 
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-reference-nest]: https://docs.arcjet.com/reference/nestjs
 [arcjet]: https://arcjet.com
 [nest-js]: https://nestjs.com/
 [alt-sdk]: https://www.npmjs.com/package/@arcjet/next
 [example-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/nestjs
 [example-source]: https://github.com/arcjet/arcjet-js-example
-[shield-concepts-docs]: https://docs.arcjet.com/shield/concepts
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

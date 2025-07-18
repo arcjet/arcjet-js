@@ -31,13 +31,15 @@ npm install -S @arcjet/logger
 ## Example
 
 ```ts
-import logger from "@arcjet/logger";
+import { Logger } from "@arcjet/logger";
+
+const logger = new Logger({ level: "debug" });
 
 logger.debug("only printed in debug mode");
-logger.log("only printed in log mode");
-logger.warn("printed in default mode");
-// printf-style printing
-logger.error("printed always: %s", new Error("oops"));
+// Logs ✦Aj DEBUG only printed in debug mode
+
+logger.error("%d + %d = %d", 1, 2, 3);
+// Logs ✦Aj ERROR 1 + 2 = 3
 ```
 
 ## Log levels

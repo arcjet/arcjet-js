@@ -55,79 +55,7 @@ Try an Arcjet protected app live at [https://example.arcjet.com][arcjet-examples
 
 -->
 
-## Example: Bot detection and rate limiting
-
-This example shows a basic block of all automated clients and bots.
-In a real world scenario you would probably
-[allow several bots][arcjet-bot-categories] such as search engines.
-It also shows how rate limiting could work for logged in users with a token
-bucket strategy.
-
-```js
-import arcjetFastify, { detectBot, tokenBucket } from "@arcjet/fastify";
-import Fastify from "fastify";
-
-// Get your Arcjet key at <https://app.arcjet.com>.
-// Set it as an environment variable instead of hard coding it.
-const arcjetKey = process.env.ARCJET_KEY;
-
-if (!arcjetKey) {
-  throw new Error("Cannot find `ARCJET_KEY` environment variable");
-}
-
-const arcjet = arcjetFastify({
-  key: arcjetKey,
-  rules: [
-    // Manage automated clients and bots.
-    // See <https://docs.arcjet.com/bot-protection/reference> for more info.
-    detectBot({
-      // This empty array for `allow` denies all bots.
-      // You can allow specific bots from <https://arcjet.com/bot-list>.
-      allow: [],
-      mode: "LIVE", // Use `DRY_RUN` instead of `LIVE` to only log.
-    }),
-
-    // Rate limit with a token bucket.
-    // Arcjet also supports other types (sliding window, fixed window).
-    // See <https://docs.arcjet.com/rate-limiting/reference/> for more info.
-    tokenBucket({
-      capacity: 10, // Max capacity of `x` tokens.
-      characteristics: ["userId"], // Track per ID of authenticated users.
-      interval: 10, // Refill every `x` seconds.
-      mode: "LIVE", // Use `DRY_RUN` instead of `LIVE` to only log.
-      refillRate: 5, // Refill `x` tokens per interval.
-    }),
-  ],
-});
-
-const fastify = Fastify({ logger: true });
-
-fastify.get("/", async function (request, reply) {
-  // Replace with an authenticated user ID.
-  const userId = "user123";
-  // Deduct `5` tokens from the bucket.
-  const decision = await arcjet.protect(request, { requested: 5, userId });
-
-  if (decision.isDenied()) {
-    return reply
-      .status(403)
-      .header("Content-Type", "application/json")
-      .send({ message: "Forbidden" });
-  }
-
-  return reply
-    .status(200)
-    .header("Content-Type", "application/json")
-    .send({ message: "Hello world" });
-});
-
-await fastify.listen({ port: 3000 });
-```
-
-## Example: Shield
-
-This example shows _[Arcjet Shield][arcjet-shield-docs]_ which protects
-against common attacks including the OWASP Top 10.
+## Use
 
 ```js
 import arcjetFastify, { shield } from "@arcjet/fastify";
@@ -144,11 +72,9 @@ if (!arcjetKey) {
 const arcjet = arcjetFastify({
   key: arcjetKey,
   rules: [
-    // Protect against common attacks.
-    // See <https://docs.arcjet.com/shield/reference> for more info.
-    shield({
-      mode: "LIVE", // Use `DRY_RUN` instead of `LIVE` to only log.
-    }),
+    // Shield protects your app from common attacks.
+    // Use `DRY_RUN` instead of `LIVE` to only log.
+    shield({ mode: "LIVE" }),
   ],
 });
 
@@ -170,8 +96,19 @@ fastify.get("/", async function (request, reply) {
     .send({ message: "Hello world" });
 });
 
-await fastify.listen({ port: 3000 });
+await fastify.listen({ port: 8000 });
 ```
+
+<!--
+
+TODO(@wooorm-arcjet): this does not exist yet.
+
+For more on how to configure Arcjet with Fastify and how to protect Fastify,
+see the [Arcjet Fastify SDK reference][arcjet-reference-fastify] on our website.
+
+[arcjet-reference-fastify]: https://docs.arcjet.com/reference/fastify
+
+-->
 
 ## License
 
@@ -179,6 +116,4 @@ await fastify.listen({ port: 3000 });
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
-[arcjet-shield-docs]: https://docs.arcjet.com/shield/concepts
-[arcjet-bot-categories]: https://docs.arcjet.com/bot-protection/identifying-bots#bot-categories
 [fastify]: https://fastify.dev/

@@ -30,43 +30,49 @@ npm install -S @arcjet/inspect
 ## Example
 
 ```ts
+import http from "node:http";
 import arcjet, { detectBot } from "@arcjet/next";
-import { isSpoofedBot, isMissingUserAgent } from "@arcjet/inspect";
-import { NextApiRequest, NextApiResponse } from "next";
+import { isMissingUserAgent } from "@arcjet/inspect";
+
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  key: arcjetKey,
   rules: [
-    detectBot({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      allow: [], // "allow none" will block all detected bots
-    }),
+    // `detectBot` lets you manage automated clients and bots.
+    detectBot({ allow: [], mode: "LIVE" }),
   ],
 });
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
+const server = http.createServer(async function (
+  request: http.IncomingMessage,
+  response: http.ServerResponse,
 ) {
-  const decision = await aj.protect(req);
+  const decision = await aj.protect(request);
 
   if (decision.isDenied()) {
-    return res.status(403).json({ error: "Forbidden" });
+    response.writeHead(403, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ message: "Forbidden" }));
+    return;
   }
 
-  // We expect all non-bot clients to have the User-Agent header
   if (decision.results.some(isMissingUserAgent)) {
-    return res.status(403).json({ error: "You are a bot!" });
+    response.writeHead(403, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ message: "You are a bot!" }));
+    return;
   }
 
-  if (decision.results.some(isSpoofedBot)) {
-    return res
-      .status(403)
-      .json({ error: "You are pretending to be a good bot!" });
-  }
+  response.writeHead(200, { "Content-Type": "application/json" });
+  response.end(JSON.stringify({ message: "Hello world" }));
+});
 
-  res.status(200).json({ name: "Hello world" });
-}
+server.listen(8000);
 ```
 
 ## License

@@ -32,9 +32,18 @@ npm install -S nosecone
 ```ts
 import nosecone from "nosecone";
 
-const secureResponse = new Response(null, {
-  headers: nosecone(),
-});
+const response = new Response(null, { headers: nosecone() });
+
+console.log(response);
+// => Response {
+//   status: 200,
+//   statusText: '',
+//   headers: Headers {
+//     'content-security-policy': "base-uri 'none'; …",
+//     …
+//   }
+//   …
+// }
 ```
 
 ## License
