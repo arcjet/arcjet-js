@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/sveltekit-v1.0.0-beta.10) (2025-07-18)
+
+
+### 📝 Documentation
+
+* add uniform license section to readmes ([#4634](https://github.com/arcjet/arcjet-js/issues/4634)) ([af1c322](https://github.com/arcjet/arcjet-js/commit/af1c322213daa016adb01ce9a26f96b7c546b107))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/headers bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/ip bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/logger bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/protocol bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/transport bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * arcjet bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/rollup-config bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/tsconfig bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+
 ## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...@arcjet/sveltekit-v1.0.0-beta.9) (2025-07-09)
 
 
