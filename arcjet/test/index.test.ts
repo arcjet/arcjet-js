@@ -26,6 +26,7 @@ test("arcjet", async function (t) {
       "ArcjetSensitiveInfoType",
       "ArcjetShieldReason",
       "ArcjetStack",
+      "ArcjetUnknownReason",
       "botCategories",
       "default",
       "detectBot",
