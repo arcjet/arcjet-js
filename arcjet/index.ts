@@ -48,7 +48,7 @@ import type {
 import { parse as parseDuration } from "@arcjet/duration";
 import ArcjetHeaders from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
-// TODO(@wooorm-arcjet): discuss different names and remove `import *`.
+// TODO(@wooorm-arcjet): discuss exposing `hasher` as a named export.
 import * as hasher from "@arcjet/stable-hash";
 import { MemoryCache } from "@arcjet/cache";
 
