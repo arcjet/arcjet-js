@@ -24,9 +24,9 @@ jobs:
             objects.githubusercontent.com:443
             registry.npmjs.org:443
             release-assets.githubusercontent:443
-            unpkg.com:443
           disable-sudo-and-containers: true
           egress-policy: block
+          # unpkg.com:443
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.4.0
         with:
