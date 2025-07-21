@@ -1,3 +1,5 @@
+/// <reference types="https://deno.land/x/pkg@1.0.0/types.d.ts" />
+
 import "jsr:@std/dotenv/load";
 
 import arcjet, { sensitiveInfo, shield } from "npm:@arcjet/deno"

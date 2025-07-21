@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    // "lib": ["deno.ns"],
     "paths": {
       "npm:@arcjet/deno": ["../../arcjet-deno/index"],
       "arcjet": ["../../arcjet/index"]
