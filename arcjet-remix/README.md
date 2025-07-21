@@ -30,9 +30,12 @@ This is the [Arcjet][arcjet] SDK for [Remix][remix].
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 ([source code][example-source]).
 
-## Installation
+## Install
 
-```shell
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
 npm install @arcjet/remix
 ```
 
