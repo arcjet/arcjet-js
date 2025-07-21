@@ -10,18 +10,14 @@ env:
   TURBO_TELEMETRY_DISABLED: "1"
 
 jobs:
-  gatsby-rate-limit:
-    name: Gatsby + Rate Limit
-    runs-on: ubuntu-latest
+  all-examples:
+    name: examples / ${{matrix.folder}} / ${{matrix.os}} / ${{matrix.node}}
     permissions:
       contents: read
+    runs-on: ${{matrix.os}}
     steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+      - uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
         with:
-          disable-sudo-and-containers: true
-          egress-policy: block
           allowed-endpoints: >
             api.github.com:443
             github.com:443
@@ -29,34 +25,27 @@ jobs:
             registry.npmjs.org:443
             release-assets.githubusercontent:443
             unpkg.com:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.4.0
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4.4.0
         with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/gatsby-rate-limit
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/gatsby-rate-limit
-        run: npm run build
-
-      - working-directory: examples/gatsby-rate-limit
-        run: npm run typecheck
-
+          node-version: ${{matrix.node}}
+      - run: npm ci
+      - run: npm ci
+        working-directory: ${{matrix.folder}}
+      - run: npm run build
+        working-directory: ${{matrix.folder}}
+      - run: npm run typecheck
+        working-directory: ${{matrix.folder}}
+    strategy:
+      matrix:
+        folder:
+          - examples/gatsby-rate-limit
+        node:
+          - 20
+        os:
+          - ubuntu-latest
   nestjs:
     name: NestJS
     runs-on: ubuntu-latest
