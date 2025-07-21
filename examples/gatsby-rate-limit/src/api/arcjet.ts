@@ -1,3 +1,4 @@
+// @ts-expect-error: TS1479: TS emits ESM/CJS error, which Gatsby solves.
 import arcjet, { slidingWindow } from "@arcjet/node";
 import type { GatsbyFunctionRequest, GatsbyFunctionResponse } from 'gatsby';
 
