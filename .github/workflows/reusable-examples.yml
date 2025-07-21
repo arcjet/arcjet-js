@@ -110,10 +110,13 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: block
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 20
       - uses: denoland/setup-deno@2f7698fd116bfedbd1c3cd4119337b5a787ef53a # v2.0.3
         with:
           deno-version: v2.4.2
-      # - run: deno install
+      - run: npm ci
       - run: deno install
         working-directory: "examples/${{matrix.folder}}"
       - run: deno check
