@@ -305,91 +305,268 @@ test("`findIp`", async (t) => {
     }
   });
 
-  await t.test("header: `X-Client-IP`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
+  await t.test("platform: `undefined`", async (t) => {
+    await t.test("should support an `X-Client-IP` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["X-Client-IP", input]]) },
+              { proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should support an `X-Forwarded-For` header", async (t) => {
+      const all: Array<Case> = [
+        ...cases,
+        [
+          "returns the last public IP (ipv4)",
+          "1.1.1.1, 2.2.2.2, 3.3.3.3",
+          "3.3.3.3",
+        ],
+        [
+          "returns the last public IP (ipv6)",
+          "e123::, 3.3.3.3, abcd::",
+          "abcd::",
+        ],
+        [
+          "skips any `unknown` IP (ipv4)",
+          "1.1.1.1, 2.2.2.2, 3.3.3.3, unknown",
+          "3.3.3.3",
+        ],
+        [
+          "skips any `unknown` IP (ipv6)",
+          "e123::, 3.3.3.3, abcd::, unknown",
+          "abcd::",
+        ],
+        [
+          "skips any private IP (ipv4)",
+          "1.1.1.1, 2.2.2.2, 3.3.3.3, 127.0.0.1",
+          "3.3.3.3",
+        ],
+        [
+          "skips any private IP (ipv6)",
+          "e123::, 3.3.3.3, abcd::, ::1",
+          "abcd::",
+        ],
+        [
+          "skips any trusted proxy IP (ipv4)",
+          "1.1.1.1, 2.2.2.2, 3.3.3.3",
+          "2.2.2.2",
+          ["3.3.3.3"],
+        ],
+        [
+          "skips any trusted proxy IP (ipv6)",
+          "e123::, 3.3.3.3, abcd::",
+          "3.3.3.3",
+          ["abcd::"],
+        ],
+        [
+          "skips multiple trusted proxy IPs (ipv4)",
+          "1.1.1.1, 2.2.2.2, 3.3.3.3",
+          "1.1.1.1",
+          ["3.3.3.3", "2.2.2.2"],
+        ],
+        [
+          "skips multiple trusted proxy IP (ipv6)",
+          "e123::, 3.3.3.3, abcd::",
+          "e123::",
+          ["3.3.3.3", "abcd::"],
+        ],
+      ];
+
+      for (const [message, input, expected, proxies] of all) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["X-Forwarded-For", input]]) },
+              { proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should not support `CF-Connecting-IP` header", async (t) => {
+      assert.equal(
+        findIp({ headers: new Headers([["CF-Connecting-IP", "1.1.1.1"]]) }),
+        "",
+      );
+    });
+
+    await t.test(
+      "should not support `CF-Connecting-IPv6` header",
+      async (t) => {
         assert.equal(
-          findIp(
-            { headers: new Headers([["X-Client-IP", input]]) },
-            { proxies },
-          ),
-          expected,
+          findIp({
+            headers: new Headers([["CF-Connecting-IPv6", "2001:1::"]]),
+          }),
+          "",
         );
-      });
-    }
+      },
+    );
+
+    await t.test("should not support `Fly-Client-IP` header", async (t) => {
+      assert.equal(
+        findIp({
+          headers: new Headers([["Fly-Client-IP", "1.1.1.1"]]),
+        }),
+        "",
+      );
+    });
+
+    await t.test(
+      "should not support `X-Vercel-Forwarded-For` header",
+      async (t) => {
+        assert.equal(
+          findIp({
+            headers: new Headers([["X-Vercel-Forwarded-For", "1.1.1.1"]]),
+          }),
+          "",
+        );
+      },
+    );
+
+    await t.test("should support a `DO-Connecting-IP` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["DO-Connecting-IP", input]]) },
+              { proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should support a `Fastly-Client-IP` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["Fastly-Client-IP", input]]) },
+              { proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should support a `True-Client-IP` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["True-Client-IP", input]]) },
+              { proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should support an `X-Real-IP` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["X-Real-IP", input]]) },
+              { proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test(
+      "should support an `X-Cluster-Client-IP` header",
+      async (t) => {
+        for (const [message, input, expected, proxies] of cases) {
+          await t.test(message, () => {
+            assert.equal(
+              findIp(
+                { headers: new Headers([["X-Cluster-Client-IP", input]]) },
+                { proxies },
+              ),
+              expected,
+            );
+          });
+        }
+      },
+    );
+
+    await t.test("should support an `X-Forwarded` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["X-Forwarded", input]]) },
+              { proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should support a `Forwarded-For` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["Forwarded-For", input]]) },
+              { proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should support a `Forwarded` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["Forwarded", input]]) },
+              { proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test(
+      "should support an `X-Appengine-User-IP` header",
+      async (t) => {
+        for (const [message, input, expected, proxies] of cases) {
+          await t.test(message, () => {
+            assert.equal(
+              findIp(
+                { headers: new Headers([["X-Appengine-User-IP", input]]) },
+                { proxies },
+              ),
+              expected,
+            );
+          });
+        }
+      },
+    );
   });
 
-  await t.test("header: `X-Forwarded-For`", async (t) => {
-    const all: Array<Case> = [
-      ...cases,
-      [
-        "returns the last public IP (ipv4)",
-        "1.1.1.1, 2.2.2.2, 3.3.3.3",
-        "3.3.3.3",
-      ],
-      [
-        "returns the last public IP (ipv6)",
-        "e123::, 3.3.3.3, abcd::",
-        "abcd::",
-      ],
-      [
-        "skips any `unknown` IP (ipv4)",
-        "1.1.1.1, 2.2.2.2, 3.3.3.3, unknown",
-        "3.3.3.3",
-      ],
-      [
-        "skips any `unknown` IP (ipv6)",
-        "e123::, 3.3.3.3, abcd::, unknown",
-        "abcd::",
-      ],
-      [
-        "skips any private IP (ipv4)",
-        "1.1.1.1, 2.2.2.2, 3.3.3.3, 127.0.0.1",
-        "3.3.3.3",
-      ],
-      ["skips any private IP (ipv6)", "e123::, 3.3.3.3, abcd::, ::1", "abcd::"],
-      [
-        "skips any trusted proxy IP (ipv4)",
-        "1.1.1.1, 2.2.2.2, 3.3.3.3",
-        "2.2.2.2",
-        ["3.3.3.3"],
-      ],
-      [
-        "skips any trusted proxy IP (ipv6)",
-        "e123::, 3.3.3.3, abcd::",
-        "3.3.3.3",
-        ["abcd::"],
-      ],
-      [
-        "skips multiple trusted proxy IPs (ipv4)",
-        "1.1.1.1, 2.2.2.2, 3.3.3.3",
-        "1.1.1.1",
-        ["3.3.3.3", "2.2.2.2"],
-      ],
-      [
-        "skips multiple trusted proxy IP (ipv6)",
-        "e123::, 3.3.3.3, abcd::",
-        "e123::",
-        ["3.3.3.3", "abcd::"],
-      ],
-    ];
-
-    for (const [message, input, expected, proxies] of all) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["X-Forwarded-For", input]]) },
-            { proxies },
-          ),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test(
-    "header: `CF-Connecting-IP` (platform: `cloudflare`)",
-    async (t) => {
+  await t.test("platform: `cloudflare`", async (t) => {
+    await t.test("should support a `CF-Connecting-IP` header", async (t) => {
       for (const [message, input, expected, proxies] of cases) {
         await t.test(message, () => {
           assert.equal(
@@ -401,12 +578,9 @@ test("`findIp`", async (t) => {
           );
         });
       }
-    },
-  );
+    });
 
-  await t.test(
-    "header: `CF-Connecting-IPv6` (platform: `cloudflare`)",
-    async (t) => {
+    await t.test("should support a `CF-Connecting-IPv6` header", async (t) => {
       for (const [message, input, expected, proxies] of cases) {
         // `CF-Connecting-IPv6` is only used for IPv6 addresses.
         if (input.includes(".")) continue;
@@ -421,199 +595,125 @@ test("`findIp`", async (t) => {
           );
         });
       }
-    },
-  );
+    });
 
-  await t.test("header: `X-Real-IP` (platform: `vercel`)", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["X-Real-IP", input]]) },
-            { platform: "vercel", proxies },
-          ),
-          expected,
-        );
-      });
-    }
+    await t.test("should ignore other headers", () => {
+      assert.equal(
+        findIp(
+          { headers: new Headers([["X-Real-IP", "1.1.1.1"]]) },
+          { platform: "cloudflare" },
+        ),
+        "",
+      );
+    });
   });
 
-  await t.test(
-    "header: `X-Vercel-Forwarded-For` (platform: `vercel`)",
-    async (t) => {
+  await t.test("platform: `fly-io`", async (t) => {
+    await t.test("should support a `Fly-Client-IP` header", async (t) => {
       for (const [message, input, expected, proxies] of cases) {
         await t.test(message, () => {
           assert.equal(
             findIp(
-              { headers: new Headers([["X-Vercel-Forwarded-For", input]]) },
+              { headers: new Headers([["Fly-Client-IP", input]]) },
+              { platform: "fly-io", proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should ignore other headers", () => {
+      assert.equal(
+        findIp(
+          { headers: new Headers([["X-Real-IP", "1.1.1.1"]]) },
+          { platform: "fly-io" },
+        ),
+        "",
+      );
+    });
+  });
+
+  await t.test("platform: `vercel`", async (t) => {
+    await t.test("should support an `X-Real-IP` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["X-Real-IP", input]]) },
               { platform: "vercel", proxies },
             ),
             expected,
           );
         });
       }
-    },
-  );
+    });
 
-  await t.test("header: `X-Forwarded-For` (platform: `vercel`)", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["X-Forwarded-For", input]]) },
-            { platform: "vercel", proxies },
-          ),
-          expected,
-        );
-      });
-    }
+    await t.test(
+      "should support an `X-Vercel-Forwarded-For` header",
+      async (t) => {
+        for (const [message, input, expected, proxies] of cases) {
+          await t.test(message, () => {
+            assert.equal(
+              findIp(
+                { headers: new Headers([["X-Vercel-Forwarded-For", input]]) },
+                { platform: "vercel", proxies },
+              ),
+              expected,
+            );
+          });
+        }
+      },
+    );
+
+    await t.test("should support an `X-Forwarded-For` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["X-Forwarded-For", input]]) },
+              { platform: "vercel", proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should ignore other headers", () => {
+      assert.equal(
+        findIp(
+          { headers: new Headers([["Forwarded", "1.1.1.1"]]) },
+          { platform: "vercel" },
+        ),
+        "",
+      );
+    });
   });
 
-  await t.test("header: `True-Client-IP` (platform: `render`)", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["True-Client-IP", input]]) },
-            { platform: "render", proxies },
-          ),
-          expected,
-        );
-      });
-    }
-  });
+  await t.test("platform: `render`", async (t) => {
+    await t.test("should support a `True-Client-IP` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: new Headers([["True-Client-IP", input]]) },
+              { platform: "render", proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
 
-  await t.test("header: `DO-Connecting-IP`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["DO-Connecting-IP", input]]) },
-            { proxies },
-          ),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test("header: `Fastly-Client-IP`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["Fastly-Client-IP", input]]) },
-            { proxies },
-          ),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test("header: `Fly-Client-IP` (platform: `fly-io`)", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["Fly-Client-IP", input]]) },
-            { platform: "fly-io", proxies },
-          ),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test("header: `True-Client-IP`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["True-Client-IP", input]]) },
-            { proxies },
-          ),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test("header: `X-Real-IP`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp({ headers: new Headers([["X-Real-IP", input]]) }, { proxies }),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test("header: `X-Cluster-Client-IP`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["X-Cluster-Client-IP", input]]) },
-            { proxies },
-          ),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test("header: `X-Forwarded`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["X-Forwarded", input]]) },
-            { proxies },
-          ),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test("header: `Forwarded-For`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["Forwarded-For", input]]) },
-            { proxies },
-          ),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test("header: `Forwarded`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp({ headers: new Headers([["Forwarded", input]]) }, { proxies }),
-          expected,
-        );
-      });
-    }
-  });
-
-  await t.test("header: `X-Appengine-User-IP`", async (t) => {
-    for (const [message, input, expected, proxies] of cases) {
-      await t.test(message, () => {
-        assert.equal(
-          findIp(
-            { headers: new Headers([["X-Appengine-User-IP", input]]) },
-            { proxies },
-          ),
-          expected,
-        );
-      });
-    }
+    await t.test("should ignore other headers", () => {
+      assert.equal(
+        findIp(
+          { headers: new Headers([["X-Real-IP", "1.1.1.1"]]) },
+          { platform: "render" },
+        ),
+        "",
+      );
+    });
   });
 });
