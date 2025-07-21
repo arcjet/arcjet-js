@@ -1,16 +1,10 @@
-# Our reusable workflow files only use the `workflow_call` event and don't
-# specify a `concurrency` limit so those things can be managed by the caller.
-name: Reusable examples workflow
-
-on: [workflow_call]
-
 env:
+  ASTRO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: "1"
   NEXT_TELEMETRY_DISABLED: "1"
   TURBO_TELEMETRY_DISABLED: "1"
-
 jobs:
-  all-examples:
+  examples:
     name: ${{matrix.folder}}
     permissions:
       contents: read
@@ -34,8 +28,6 @@ jobs:
       - run: npm ci
         working-directory: "examples/${{matrix.folder}}"
       - env:
-          # Disable telemetry for Astro.
-          ASTRO_TELEMETRY_DISABLED: 1
           # Used by Clerk examples: the smallest dummy token that passes the Clerk validation.
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_LiQ=
         run: npm run build
@@ -70,3 +62,8 @@ jobs:
           - nodejs-hono-rate-limit
           - remix-express
           - sveltekit
+name: Reusable examples workflow
+# This workflow only uses the `workflow_call` event and no `concurrency`
+# limit so those things can be managed by the caller.
+on:
+  - workflow_call
