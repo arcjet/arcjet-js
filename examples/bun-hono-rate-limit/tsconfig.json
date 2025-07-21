@@ -1,20 +1,10 @@
 {
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "allowJs": true,
-    "jsx": "react-jsx",
     "lib": ["dom.iterable", "dom", "esnext"],
-    "target": "esnext",
-    "moduleDetection": "force",
     "moduleResolution": "bundler",
     "module": "esnext",
-    "noEmit": true,
-    "noPropertyAccessFromIndexSignature": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "strict": true,
     "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "verbatimModuleSyntax": true,
+    "strict": true,
+    "target": "es2022"
   }
 }
