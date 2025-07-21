@@ -11,7 +11,7 @@ env:
 
 jobs:
   all-examples:
-    name: examples / ${{matrix.folder}} / ${{matrix.os}} / ${{matrix.node}}
+    name: ${{matrix.folder}} / ${{matrix.os}} / ${{matrix.node}}
     permissions:
       contents: read
     runs-on: ${{matrix.os}}
@@ -33,15 +33,15 @@ jobs:
           node-version: ${{matrix.node}}
       - run: npm ci
       - run: npm ci
-        working-directory: ${{matrix.folder}}
+        working-directory: "examples/${{matrix.folder}}"
       - run: npm run build
-        working-directory: ${{matrix.folder}}
+        working-directory: "examples/${{matrix.folder}}"
       - run: npm run typecheck
-        working-directory: ${{matrix.folder}}
+        working-directory: "examples/${{matrix.folder}}"
     strategy:
       matrix:
         folder:
-          - examples/gatsby-rate-limit
+          - gatsby-rate-limit
         node:
           - 20
         os:
