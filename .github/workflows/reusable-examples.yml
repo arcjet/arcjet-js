@@ -26,7 +26,6 @@ jobs:
             release-assets.githubusercontent:443
           disable-sudo-and-containers: true
           egress-policy: block
-          # unpkg.com:443
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.4.0
         with:
@@ -42,101 +41,12 @@ jobs:
       matrix:
         folder:
           - gatsby-rate-limit
+          - nestjs-fastify
+          - nestjs
         node:
           - 20
         os:
           - ubuntu-latest
-  nestjs:
-    name: NestJS
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
-        with:
-          disable-sudo-and-containers: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
-            github.com:443
-            objects.githubusercontent.com:443
-            registry.npmjs.org:443
-            release-assets.githubusercontent:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.4.0
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nestjs
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nestjs
-        run: npm run build
-
-      - working-directory: examples/nestjs
-        run: npm run typecheck
-
-  nestjs-fastify:
-    name: NestJS + Fastify
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # Environment security
-      - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
-        with:
-          disable-sudo-and-containers: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
-            github.com:443
-            objects.githubusercontent.com:443
-            registry.npmjs.org:443
-            release-assets.githubusercontent:443
-
-      # Checkout
-      # Most toolchains require checkout first
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Language toolchains
-      - name: Install Node
-        uses: actions/setup-node@v4.4.0
-        with:
-          node-version: 20
-
-      # Workflow
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install example dependencies
-        working-directory: examples/nestjs-fastify
-        run: npm ci
-
-      - name: Build
-        working-directory: examples/nestjs-fastify
-        run: npm run build
-
-      - working-directory: examples/nestjs-fastify
-        run: npm run typecheck
 
   nestjs-graphql:
     name: NestJS + GraphQL
