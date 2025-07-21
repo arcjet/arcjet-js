@@ -94,34 +94,34 @@ jobs:
         folder:
           - bun-hono-rate-limit
           - bun-rate-limit
-  # deno-examples:
-  #   name: ${{matrix.folder}}
-  #   permissions:
-  #     contents: read
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
-  #       with:
-  #         allowed-endpoints: >
-  #           api.github.com:443
-  #           github.com:443
-  #           objects.githubusercontent.com:443
-  #           release-assets.githubusercontent:443
-  #         disable-sudo-and-containers: true
-  #         egress-policy: block
-  #     - uses: actions/checkout@v4
-  #     - uses: denoland/setup-deno@v2.0.3
-  #       with:
-  #         deno-version: v2.4.2
-  #     # - run: deno install
-  #     - run: deno install
-  #       working-directory: "examples/${{matrix.folder}}"
-  #     - run: deno check
-  #       working-directory: "examples/${{matrix.folder}}"
-  #   strategy:
-  #     matrix:
-  #       folder:
-  #         - deno-sensitive-info
+  deno-examples:
+    name: ${{matrix.folder}}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent:443
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@2f7698fd116bfedbd1c3cd4119337b5a787ef53a # v2.0.3
+        with:
+          deno-version: v2.4.2
+      # - run: deno install
+      - run: deno install
+        working-directory: "examples/${{matrix.folder}}"
+      - run: deno check
+        working-directory: "examples/${{matrix.folder}}"
+    strategy:
+      matrix:
+        folder:
+          - deno-sensitive-info
 name: Reusable examples workflow
 # This workflow only uses the `workflow_call` event and no `concurrency`
 # limit so those things can be managed by the caller.
