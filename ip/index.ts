@@ -55,8 +55,8 @@ function isIPv6Cidr(cidr: unknown): cidr is IPv6CIDR {
 
 function isTrustedProxy(
   ip: string,
-  segments: number[],
-  proxies?: Array<string | CIDR>,
+  segments: ReadonlyArray<number>,
+  proxies?: ReadonlyArray<string | CIDR> | null | undefined,
 ) {
   if (Array.isArray(proxies) && proxies.length > 0) {
     return proxies.some((proxy) => {
@@ -471,7 +471,7 @@ const IPV4_BROADCAST = u32FromBytes([255, 255, 255, 255]);
 
 function isGlobalIPv4(
   s: unknown,
-  proxies: Array<string | CIDR> | undefined,
+  proxies: ReadonlyArray<string | CIDR> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -570,7 +570,7 @@ function isGlobalIPv4(
 
 function isGlobalIPv6(
   s: unknown,
-  proxies: Array<string | CIDR> | undefined,
+  proxies: ReadonlyArray<string | CIDR> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -721,7 +721,7 @@ function isGlobalIPv6(
 
 function isGlobalIP(
   s: unknown,
-  proxies: Array<string | CIDR> | undefined,
+  proxies: ReadonlyArray<string | CIDR> | null | undefined,
 ): s is string {
   if (isGlobalIPv4(s, proxies)) {
     return true;
@@ -761,18 +761,18 @@ export type HeaderLike =
 export type RequestLike = {
   ip?: unknown;
 
-  socket?: PartialSocket;
+  socket?: PartialSocket | null | undefined;
 
-  info?: PartialInfo;
+  info?: PartialInfo | null | undefined;
 
-  requestContext?: PartialRequestContext;
+  requestContext?: PartialRequestContext | null | undefined;
 } & HeaderLike;
 
 export type Platform = "cloudflare" | "fly-io" | "vercel" | "render";
 
 export interface Options {
-  platform?: Platform;
-  proxies?: Array<string | CIDR>;
+  platform?: Platform | null | undefined;
+  proxies?: ReadonlyArray<string | CIDR> | null | undefined;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
@@ -813,8 +813,11 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-function findIP(request: RequestLike, options: Options = {}): string {
-  const { platform, proxies } = options;
+function findIP(
+  request: RequestLike,
+  options?: Options | null | undefined,
+): string {
+  const { platform, proxies } = options || {};
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.

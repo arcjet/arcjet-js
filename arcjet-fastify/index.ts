@@ -301,8 +301,7 @@ function toArcjetRequest<Properties extends PlainObject>(
 
   let ip = findIp(
     { headers, socket: request.socket },
-    // TODO(@wooorm-arcjet): readonly support in `findIp`.
-    { platform: platform(process.env), proxies: proxies ? [...proxies] : [] },
+    { platform: platform(process.env), proxies },
   );
 
   if (ip === "") {
