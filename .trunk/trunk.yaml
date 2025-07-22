@@ -62,25 +62,28 @@ merge:
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 20)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 22)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 24)"
-    - Build examples / Gatsby + Rate Limit
-    - Build examples / NestJS
-    - Build examples / NestJS + Fastify
-    - Build examples / NestJS + GraphQL
-    - Build examples / NestJS + LaunchDarkly
-    - Build examples / Next.js 14 + NextAuth 4
-    - Build examples / Next.js + App Router + Rate Limit
-    - Build examples / Next.js + App Router + Validate Email
-    - Build examples / Next.js + Auth.js 5
-    - Build examples / Next.js + Bot categories
-    - Build examples / Next.js + Clerk + Rate Limit
-    - Build examples / Next.js + Clerk + Shield
-    - Build examples / Next.js + Decorate
-    - Build examples / Next.js + IP Details
-    - Build examples / Next.js + OpenAI
-    - Build examples / Next.js + Page Router + withArcjet
-    - Build examples / Next.js + Permit
-    - Build examples / Next.js + Sensitive Info
-    - Build examples / Next.js + Server Actions
-    - Build examples / Node.js + Hono + Rate Limit
-    - Build examples / Remix + Express
-    - Build examples / SvelteKit
+    - Build examples / astro-integration
+    - Build examples / gatsby-rate-limit
+    - Build examples / nestjs-fastify
+    - Build examples / nestjs-launchdarkly
+    - Build examples / nestjs-graphql
+    - Build examples / nestjs
+    - Build examples / nextjs-14-nextauth-4
+    - Build examples / nextjs-app-dir-rate-limit
+    - Build examples / nextjs-app-dir-validate-email
+    - Build examples / nextjs-authjs-5
+    - Build examples / nextjs-authjs-nosecone
+    - Build examples / nextjs-better-auth
+    - Build examples / nextjs-bot-categories
+    - Build examples / nextjs-clerk-rate-limit
+    - Build examples / nextjs-clerk-shield
+    - Build examples / nextjs-decorate
+    - Build examples / nextjs-ip-details
+    - Build examples / nextjs-openai
+    - Build examples / nextjs-pages-wrap
+    - Build examples / nextjs-permit
+    - Build examples / nextjs-sensitive-info
+    - Build examples / nextjs-server-actions
+    - Build examples / nodejs-hono-rate-limit
+    - Build examples / remix-express
+    - Build examples / sveltekit
