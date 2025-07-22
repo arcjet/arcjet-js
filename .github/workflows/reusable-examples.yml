@@ -4,7 +4,67 @@ env:
   NEXT_TELEMETRY_DISABLED: "1"
   TURBO_TELEMETRY_DISABLED: "1"
 jobs:
-  examples:
+  bun-examples:
+    name: ${{matrix.folder}}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent:443
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+        with:
+          bun-version: 1.2.19
+      - run: bun install
+      - run: bun install
+        working-directory: "examples/${{matrix.folder}}"
+      - run: bun tsc --noEmit
+        working-directory: "examples/${{matrix.folder}}"
+    strategy:
+      matrix:
+        folder:
+          - bun-hono-rate-limit
+          - bun-rate-limit
+  deno-examples:
+    name: ${{matrix.folder}}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent:443
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 20
+      - uses: denoland/setup-deno@2f7698fd116bfedbd1c3cd4119337b5a787ef53a # v2.0.3
+        with:
+          deno-version: v2.4.2
+      - run: npm ci
+      - run: deno install
+        working-directory: "examples/${{matrix.folder}}"
+      - run: deno check
+        working-directory: "examples/${{matrix.folder}}"
+    strategy:
+      matrix:
+        folder:
+          - deno-sensitive-info
+  node-examples:
     name: ${{matrix.folder}}
     permissions:
       contents: read

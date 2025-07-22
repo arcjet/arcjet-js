@@ -1,8 +1,13 @@
 {
   "compilerOptions": {
+    "lib": ["dom.iterable", "dom", "esnext"],
+    "moduleResolution": "bundler",
+    "module": "esnext",
     "paths": {
-      "npm:@arcjet/deno": ["../../arcjet-deno/index"],
-      "arcjet": ["../../arcjet/index"]
-    }
+      "npm:@arcjet/deno": ["../../arcjet-deno/index.ts"]
+    },
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2022"
   }
 }
