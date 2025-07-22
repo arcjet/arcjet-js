@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...v1.0.0-beta.10) (2025-07-22)
+
+
+### 🪲 Bug Fixes
+
+* **ip:** support readonly arrays, null, and exact optional props ([#4695](https://github.com/arcjet/arcjet-js/issues/4695)) ([9c0b93a](https://github.com/arcjet/arcjet-js/commit/9c0b93abfd97a1f15972806fc34ad760abfb3521))
+
+
+### 📝 Documentation
+
+* add uniform license section to readmes ([#4634](https://github.com/arcjet/arcjet-js/issues/4634)) ([af1c322](https://github.com/arcjet/arcjet-js/commit/af1c322213daa016adb01ce9a26f96b7c546b107))
+* add uniform use section to readmes ([#4655](https://github.com/arcjet/arcjet-js/issues/4655)) ([ac27256](https://github.com/arcjet/arcjet-js/commit/ac272568098e43ed70700625ed605ae76cb63fec))
+
+
+### 🧹 Miscellaneous Chores
+
+* **bindings:** regenerate WebAssembly bindings ([#4600](https://github.com/arcjet/arcjet-js/issues/4600)) ([4377b20](https://github.com/arcjet/arcjet-js/commit/4377b20c32130bf70d9e5273929ae8d766bcc40f))
+* fix unused import in tests ([#4588](https://github.com/arcjet/arcjet-js/issues/4588)) ([1a9bdb1](https://github.com/arcjet/arcjet-js/commit/1a9bdb112a9ce7d83d7a8124e5c7f7908f95fe6e))
+
+
+### ⌨️ Code Refactoring
+
+* sort packages in release please config ([#4589](https://github.com/arcjet/arcjet-js/issues/4589)) ([80ef9eb](https://github.com/arcjet/arcjet-js/commit/80ef9eb37f8bbd690f6d672a3c1b3eb3e136cdf8))
+
+
+### 📚 Tests
+
+* add tests for public interface ([#4587](https://github.com/arcjet/arcjet-js/issues/4587)) ([f7aabec](https://github.com/arcjet/arcjet-js/commit/f7aabecbcd351b31fc2b94bc9c871a1123e2c7cd))
+* add tests for unsupported headers per platform ([#4694](https://github.com/arcjet/arcjet-js/issues/4694)) ([8de2603](https://github.com/arcjet/arcjet-js/commit/8de260357f46f5e76ee36e1269efa41dfca7936f))
+* clean `ip` tests ([#4632](https://github.com/arcjet/arcjet-js/issues/4632)) ([aea416a](https://github.com/arcjet/arcjet-js/commit/aea416a6d85a4709bee69ac27dbbaa10e8574bea))
+
+
+### 🔨 Build System
+
+* **examples:** add bun, deno examples ([#4693](https://github.com/arcjet/arcjet-js/issues/4693)) ([4e73f95](https://github.com/arcjet/arcjet-js/commit/4e73f9595992ebee814a69e4a382cc0511a904f7))
+* **examples:** add strict type checking ([#4666](https://github.com/arcjet/arcjet-js/issues/4666)) ([7b3f4d0](https://github.com/arcjet/arcjet-js/commit/7b3f4d0df81043ecf118c3b906f9033c4d7faa00))
+* **examples:** simplify reusable examples ([#4692](https://github.com/arcjet/arcjet-js/issues/4692)) ([ef12202](https://github.com/arcjet/arcjet-js/commit/ef122022f79b09e8cbecc88fe0647861717d6d1b))
+
+
+### ✅ Continuous Integration
+
+* add `githubusercontent` to examples ([#4598](https://github.com/arcjet/arcjet-js/issues/4598)) ([1109272](https://github.com/arcjet/arcjet-js/commit/11092724f90b32672d15596267ac8b50f38b93d3))
+
 ## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2025-07-09)
 
 
