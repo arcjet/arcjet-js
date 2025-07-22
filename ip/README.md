@@ -30,21 +30,10 @@ npm install -S @arcjet/ip
 ## Example
 
 ```ts
-import ip from "@arcjet/ip";
+import findIp from "@arcjet/ip";
 
-// Some Request-like object, such as node's `http.IncomingMessage`, `Request` or
-// Next.js' `NextRequest`
-const request = new Request();
-
-// Returns the first non-private IP address detected
-const globalIp = ip(request);
-console.log(globalIp);
-
-// Also optionally takes a platform for additional protection
-const platformGuardedGloablIp = ip(request, { platform: "fly-io" });
-
-// You can also pass a list of trusted proxies to ignore
-const proxyExcludedGlobalIp = ip(request, { proxies: ["103.31.4.0"] });
+const ip = findIp({ headers: { "x-real-ip": "1.1.1.1" } });
+console.log(ip); // => "1.1.1.1"
 ```
 
 ## Considerations

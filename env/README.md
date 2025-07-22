@@ -43,27 +43,29 @@ npm install -S @arcjet/env
 ## Example
 
 ```ts
-import * as env from "@arcjet/env";
+import process from "node:process";
+import {
+  apiKey,
+  baseUrl,
+  isDevelopment,
+  logLevel,
+  platform,
+} from "@arcjet/env";
 
-env.platform({ FLY_APP_NAME: "foobar" }) === "fly-io";
-env.platform({}) === undefined;
-
-env.isDevelopment({ NODE_ENV: "production" }) === false;
-env.isDevelopment({ NODE_ENV: "development" }) === true;
-env.isDevelopment({ ARCJET_ENV: "production" }) === false;
-env.isDevelopment({ ARCJET_ENV: "development" }) === true;
-
-env.logLevel({ ARCJET_LOG_LEVEL: "debug" }) === "debug";
-env.logLevel({ ARCJET_LOG_LEVEL: "info" }) === "info";
-env.logLevel({ ARCJET_LOG_LEVEL: "warn" }) === "warn";
-env.logLevel({ ARCJET_LOG_LEVEL: "error" }) === "error";
-env.logLevel({ ARCJET_LOG_LEVEL: "" }) === "warn"; // default
-
-// Will use various environment variables to detect the proper base URL
-env.baseUrl(process.env);
-
-env.apiKey({ ARCJET_KEY: "ajkey_abc123" }) === "ajkey_abc123";
-env.apiKey({ ARCJET_KEY: "invalid" }) === undefined;
+console.log(platform({ FLY_APP_NAME: "foobar" })); // => "fly-io"
+console.log(platform({})); // => undefined
+console.log(isDevelopment({ NODE_ENV: "production" })); // => false
+console.log(isDevelopment({ NODE_ENV: "development" })); // => true
+console.log(isDevelopment({ ARCJET_ENV: "production" })); // => false
+console.log(isDevelopment({ ARCJET_ENV: "development" })); // => true
+console.log(logLevel({ ARCJET_LOG_LEVEL: "debug" })); // => "debug"
+console.log(logLevel({ ARCJET_LOG_LEVEL: "info" })); // => "info"
+console.log(logLevel({ ARCJET_LOG_LEVEL: "warn" })); // => "warn"
+console.log(logLevel({ ARCJET_LOG_LEVEL: "error" })); // => "error"
+console.log(logLevel({ ARCJET_LOG_LEVEL: "" })); // => "warn"
+console.log(baseUrl(process.env)); // => "https://decide.arcjet.com"
+console.log(apiKey({ ARCJET_KEY: "ajkey_abc123" })); // => "ajkey_abc123"
+console.log(apiKey({ ARCJET_KEY: "invalid" })); // => undefined
 ```
 
 ## License

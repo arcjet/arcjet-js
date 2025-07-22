@@ -30,10 +30,15 @@ npm install -S @arcjet/protocol
 ## Example
 
 ```ts
-// Many types and constants can be imported from package
-import { ArcjetMode } from "@arcjet/protocol";
+import { botCategories } from "@arcjet/protocol";
 
-const mode: ArcjetMode = ArcjetMode.DRY_RUN;
+console.log(botCategories);
+// ==> {
+//   'CATEGORY:ACADEMIC': [
+//     'BLACKBOARD_CRAWLER',
+//     'CISPA_CRAWLER',
+//     'COMMONCRAWL_CRAWLER',
+//     …
 ```
 
 ## API

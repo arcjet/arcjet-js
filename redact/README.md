@@ -36,18 +36,21 @@ npm install -S @arcjet/redact
 
 The full reference documentation can be found in the [Arcjet docs][redact-ref].
 
-## Example
+## Use
 
-```typescript
-const text = "Hi, my name is John and my email adress is john@example.com";
-const [redacted, unredact] = await redact(text, {
-  redact: ["email", "phone-number"],
+```ts
+import { redact } from "@arcjet/redact";
+
+const value = "Hi, my name is John and my email adress is john@example.com";
+
+const [redacted, unredact] = await redact(value, {
+  entities: ["email", "phone-number"],
 });
 console.log(redacted);
-// Hi, my name is John and my email address is <Redacted email #0>
+// => "Hi, my name is John and my email adress is <Redacted email #0>"
 
 const unredacted = unredact("Your email address is <Redacted email #0>");
-console.log(unredacted); // Your email address is john@example.com
+console.log(unredacted); // "Your email address is john@example.com"
 ```
 
 ## License

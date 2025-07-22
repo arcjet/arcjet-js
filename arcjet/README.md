@@ -40,77 +40,70 @@ integration.
 npm install -S arcjet
 ```
 
-## Rate limit + bot detection example
-
-The example below applies a token bucket rate limit rule to a route where we
-identify the user based on their ID e.g. if they are logged in. The bucket is
-configured with a maximum capacity of 10 tokens and refills by 5 tokens every 10
-seconds. Each request consumes 5 tokens.
-
-Bot detection is also enabled to block requests from known bots.
+## Use
 
 ```ts
-import http from "http";
-import arcjet, { createRemoteClient, tokenBucket, detectBot } from "arcjet";
-import { baseUrl } from "@arcjet/env";
-import { createConnectTransport } from "@connectrpc/connect-node";
+import http from "node:http";
+import { readBody } from "@arcjet/body";
+import arcjet, { ArcjetAllowDecision, ArcjetReason, shield } from "arcjet";
+
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
 
 const aj = arcjet({
-  // Get your site key from https://app.arcjet.com
-  // and set it as an environment variable rather than hard coding.
-  // See: https://www.npmjs.com/package/dotenv
-  key: process.env.ARCJET_KEY,
-  characteristics: ["userId"], // track requests by a custom user ID
+  // Your adapter takes care of this: this is a naïve example.
+  client: {
+    async decide() {
+      return new ArcjetAllowDecision({
+        reason: new ArcjetReason(),
+        results: [],
+        ttl: 0,
+      });
+    },
+    report() {},
+  },
+  key: arcjetKey,
+  log: console,
   rules: [
-    // Create a token bucket rate limit. Other algorithms are supported.
-    tokenBucket({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      refillRate: 5, // refill 5 tokens per interval
-      interval: 10, // refill every 10 seconds
-      capacity: 10, // bucket maximum capacity of 10 tokens
-    }),
-    detectBot({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      // configured with a list of bots to allow from
-      // https://arcjet.com/bot-list
-      allow: [], // "allow none" will block all detected bots
-    }),
+    // Shield protects your app from common attacks.
+    // Use `DRY_RUN` instead of `LIVE` to only log.
+    shield({ mode: "LIVE" }),
   ],
-  client: createRemoteClient({
-    transport: createConnectTransport({
-      baseUrl: baseUrl(process.env),
-      httpVersion: "2",
-    }),
-  }),
 });
 
 const server = http.createServer(async function (
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
+  request: http.IncomingMessage,
+  response: http.ServerResponse,
 ) {
-  // Any sort of additional context that might want to be included for the
-  // execution of `protect()`. This is mostly only useful for writing adapters.
-  const ctx = {};
-
-  // Construct an object with Arcjet request details
-  const path = new URL(req.url || "", `http://${req.headers.host}`);
-  const details = {
-    ip: req.socket.remoteAddress,
-    method: req.method,
-    host: req.headers.host,
-    path: path.pathname,
+  const url = new URL(request.url || "", "http://" + request.headers.host);
+  // Your adapter takes care of this: this is a naïve example.
+  const context = {
+    getBody() {
+      return readBody(request, { limit: 1024 });
+    },
+    host: request.headers.host,
+    ip: request.socket.remoteAddress,
+    method: request.method,
+    path: url.pathname,
   };
 
-  const decision = await aj.protect(ctx, details, { requested: 5 }); // Deduct 5 tokens from the bucket
+  const decision = await aj.protect(context, {});
+
   console.log(decision);
 
   if (decision.isDenied()) {
-    res.writeHead(403, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Forbidden" }));
-  } else {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ data: "Hello World!" }));
+    response.writeHead(403, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ message: "Forbidden" }));
+    return;
   }
+
+  response.writeHead(200, { "Content-Type": "application/json" });
+  response.end(JSON.stringify({ message: "Hello world" }));
 });
 
 server.listen(8000);

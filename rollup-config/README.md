@@ -27,11 +27,11 @@ Custom rollup config for [Arcjet][arcjet] projects.
 npm install -D @arcjet/rollup-config
 ```
 
-## Example
+## Use
 
-In your `rollup.config.js` file:
+In `rollup.config.js`:
 
-```ts
+```js
 import { createConfig } from "@arcjet/rollup-config";
 
 export default createConfig(import.meta.url);

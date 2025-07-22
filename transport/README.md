@@ -32,8 +32,8 @@ npm install -S @arcjet/transport
 ```ts
 import { createTransport } from "@arcjet/transport";
 
-// The tranport can be used with the Arcjet protocol's `createClient` function.
 const transport = createTransport("https://decide.arcjet.com");
+// This can now be passed to `createClient` from `@arcjet/protocol`.
 ```
 
 ## License
