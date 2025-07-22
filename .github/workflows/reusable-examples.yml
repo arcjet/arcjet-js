@@ -4,66 +4,6 @@ env:
   NEXT_TELEMETRY_DISABLED: "1"
   TURBO_TELEMETRY_DISABLED: "1"
 jobs:
-  examples:
-    name: ${{matrix.folder}}
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    steps:
-      - uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
-        with:
-          allowed-endpoints: >
-            api.github.com:443
-            github.com:443
-            objects.githubusercontent.com:443
-            registry.npmjs.org:443
-            release-assets.githubusercontent:443
-          disable-sudo-and-containers: true
-          egress-policy: block
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4.4.0
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npm ci
-        working-directory: "examples/${{matrix.folder}}"
-      - env:
-          # Astro integration checks for an `ARCJET_KEY`.
-          ARCJET_KEY: ajkey_dummy
-          # Used by Clerk examples: the smallest dummy token that passes the Clerk validation.
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_LiQ=
-        run: npm run build
-        working-directory: "examples/${{matrix.folder}}"
-      - run: npm run typecheck
-        working-directory: "examples/${{matrix.folder}}"
-    strategy:
-      matrix:
-        folder:
-          - astro-integration
-          - gatsby-rate-limit
-          - nestjs-fastify
-          - nestjs-launchdarkly
-          - nestjs-graphql
-          - nestjs
-          - nextjs-14-nextauth-4
-          - nextjs-app-dir-rate-limit
-          - nextjs-app-dir-validate-email
-          - nextjs-authjs-5
-          - nextjs-authjs-nosecone
-          - nextjs-better-auth
-          - nextjs-bot-categories
-          - nextjs-clerk-rate-limit
-          - nextjs-clerk-shield
-          - nextjs-decorate
-          - nextjs-ip-details
-          - nextjs-openai
-          - nextjs-pages-wrap
-          - nextjs-permit
-          - nextjs-sensitive-info
-          - nextjs-server-actions
-          - nodejs-hono-rate-limit
-          - remix-express
-          - sveltekit
   bun-examples:
     name: ${{matrix.folder}}
     permissions:
@@ -124,6 +64,66 @@ jobs:
       matrix:
         folder:
           - deno-sensitive-info
+  node-examples:
+    name: ${{matrix.folder}}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent:443
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm ci
+        working-directory: "examples/${{matrix.folder}}"
+      - env:
+          # Astro integration checks for an `ARCJET_KEY`.
+          ARCJET_KEY: ajkey_dummy
+          # Used by Clerk examples: the smallest dummy token that passes the Clerk validation.
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_LiQ=
+        run: npm run build
+        working-directory: "examples/${{matrix.folder}}"
+      - run: npm run typecheck
+        working-directory: "examples/${{matrix.folder}}"
+    strategy:
+      matrix:
+        folder:
+          - astro-integration
+          - gatsby-rate-limit
+          - nestjs-fastify
+          - nestjs-launchdarkly
+          - nestjs-graphql
+          - nestjs
+          - nextjs-14-nextauth-4
+          - nextjs-app-dir-rate-limit
+          - nextjs-app-dir-validate-email
+          - nextjs-authjs-5
+          - nextjs-authjs-nosecone
+          - nextjs-better-auth
+          - nextjs-bot-categories
+          - nextjs-clerk-rate-limit
+          - nextjs-clerk-shield
+          - nextjs-decorate
+          - nextjs-ip-details
+          - nextjs-openai
+          - nextjs-pages-wrap
+          - nextjs-permit
+          - nextjs-sensitive-info
+          - nextjs-server-actions
+          - nodejs-hono-rate-limit
+          - remix-express
+          - sveltekit
 name: Reusable examples workflow
 # This workflow only uses the `workflow_call` event and no `concurrency`
 # limit so those things can be managed by the caller.
