@@ -61,15 +61,15 @@ export type ContentSecurityPolicyConfig = {
   /**
    * Mode of the `Content-Security-Policy` header.
    */
-  mode?: SvelteKitCsp["mode"];
+  mode?: SvelteKitCsp["mode"] | undefined;
   /**
    * Directives to use in the `Content-Security-Policy` header.
    */
-  directives?: CspDirectives;
+  directives?: CspDirectives | undefined;
   // TODO: Support `reportOnly`
 };
 
-function unquote(value?: string) {
+function unquote(value?: string | undefined) {
   for (const [unquoted, quoted] of QUOTED) {
     if (value === quoted) {
       return unquoted;
@@ -135,11 +135,11 @@ function directivesToSvelteKitConfig(
  * @returns
  *   SvelteKit Content Security Policy configuration.
  */
-export function csp(options?: ContentSecurityPolicyConfig): SvelteKitCsp {
+export function csp(options?: ContentSecurityPolicyConfig | undefined): SvelteKitCsp {
   return {
-    mode: options?.mode ?? "auto",
+    mode: options?.mode ? options.mode : "auto",
     directives: directivesToSvelteKitConfig(
-      options?.directives ?? defaults.contentSecurityPolicy.directives,
-    ),
+        options?.directives ?? defaults.contentSecurityPolicy.directives,
+      ) || {},
   };
 }
