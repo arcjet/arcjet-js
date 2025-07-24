@@ -56,7 +56,7 @@ function isIpv6Cidr(cidr: unknown): cidr is Ipv6Cidr {
 function isTrustedProxy(
   ip: string,
   segments: ReadonlyArray<number>,
-  proxies?: ReadonlyArray<string | Cidr> | null | undefined,
+  proxies?: ReadonlyArray<string | CidrBase> | null | undefined,
 ) {
   if (Array.isArray(proxies) && proxies.length > 0) {
     return proxies.some((proxy) => {
@@ -76,7 +76,7 @@ function isTrustedProxy(
   return false;
 }
 
-abstract class Cidr {
+abstract class CidrBase {
   abstract type: "v4" | "v6";
   abstract partSize: 8 | 16;
   abstract parts: readonly number[];
@@ -129,7 +129,7 @@ abstract class Cidr {
   }
 }
 
-class Ipv4Cidr extends Cidr {
+class Ipv4Cidr extends CidrBase {
   type = "v4" as const;
   partSize = 8 as const;
   parts: Readonly<Ipv4Tuple>;
@@ -147,7 +147,7 @@ class Ipv4Cidr extends Cidr {
   }
 }
 
-class Ipv6Cidr extends Cidr {
+class Ipv6Cidr extends CidrBase {
   type = "v6" as const;
   partSize = 16 as const;
   parts: Readonly<Ipv6Tuple>;
@@ -165,7 +165,7 @@ class Ipv6Cidr extends Cidr {
   }
 }
 
-function parseCidr(cidr: `${string}/${string}`): Ipv4Cidr | Ipv6Cidr {
+function parseCidr(cidr: `${string}/${string}`): Cidr {
   // Pre-condition: `cidr` has be verified to have at least one `/`
 
   const cidrParts = cidr.split("/");
@@ -203,7 +203,7 @@ function isCidr(address: string): address is `${string}/${string}` {
 
 // Converts a string that looks like a Cidr address into the corresponding class
 // while ignoring non-Cidr IP addresses.
-export function parseProxy(proxy: string): string | Cidr {
+export function parseProxy(proxy: string): string | CidrBase {
   if (isCidr(proxy)) {
     return parseCidr(proxy);
   } else {
@@ -471,7 +471,7 @@ const IPV4_BROADCAST = u32FromBytes([255, 255, 255, 255]);
 
 function isGlobalIpv4(
   s: unknown,
-  proxies: ReadonlyArray<string | Cidr> | null | undefined,
+  proxies: ReadonlyArray<string | CidrBase> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -570,7 +570,7 @@ function isGlobalIpv4(
 
 function isGlobalIpv6(
   s: unknown,
-  proxies: ReadonlyArray<string | Cidr> | null | undefined,
+  proxies: ReadonlyArray<string | CidrBase> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -721,7 +721,7 @@ function isGlobalIpv6(
 
 function isGlobalIp(
   s: unknown,
-  proxies: ReadonlyArray<string | Cidr> | null | undefined,
+  proxies: ReadonlyArray<string | CidrBase> | null | undefined,
 ): s is string {
   if (isGlobalIpv4(s, proxies)) {
     return true;
@@ -772,7 +772,7 @@ export type Platform = "cloudflare" | "fly-io" | "vercel" | "render";
 
 export interface Options {
   platform?: Platform | null | undefined;
-  proxies?: ReadonlyArray<string | Cidr> | null | undefined;
+  proxies?: ReadonlyArray<string | CidrBase> | null | undefined;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
@@ -1028,6 +1028,11 @@ export function findIp(
 
   return "";
 }
+
+/**
+ * One of the CIDR ranges.
+ */
+export type Cidr = Ipv4Cidr | Ipv6Cidr;
 
 /**
  * @deprecated
