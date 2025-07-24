@@ -101,8 +101,11 @@ jobs:
         folder:
           - astro-integration
           - express-bots
+          - express-launchdarkly
           - express-newman
+          - express-rate-limit
           - express-sensitive-info
+          - express-validate-email
           - gatsby-rate-limit
           - nestjs-fastify
           - nestjs-launchdarkly
