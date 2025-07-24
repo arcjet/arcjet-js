@@ -56,7 +56,7 @@ function isIpv6Cidr(cidr: unknown): cidr is Ipv6Cidr {
 function isTrustedProxy(
   ip: string,
   segments: ReadonlyArray<number>,
-  proxies?: ReadonlyArray<string | CidrBase> | null | undefined,
+  proxies?: ReadonlyArray<string | Cidr> | null | undefined,
 ) {
   if (Array.isArray(proxies) && proxies.length > 0) {
     return proxies.some((proxy) => {
@@ -76,92 +76,83 @@ function isTrustedProxy(
   return false;
 }
 
-abstract class CidrBase {
-  abstract type: "v4" | "v6";
-  abstract partSize: 8 | 16;
-  abstract parts: readonly number[];
-  abstract bits: number;
+// Based on CIDR matching implementation in `ipaddr.js`
+// Source code:
+// https://github.com/whitequark/ipaddr.js/blob/08c2cd41e2cb3400683cbd503f60421bfdf66921/lib/ipaddr.js#L107-L130
+//
+// Licensed: The MIT License (MIT)
+// Copyright (C) 2011-2017 whitequark <whitequark@whitequark.org>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 
-  // Based on CIDR matching implementation in `ipaddr.js`
-  // Source code:
-  // https://github.com/whitequark/ipaddr.js/blob/08c2cd41e2cb3400683cbd503f60421bfdf66921/lib/ipaddr.js#L107-L130
-  //
-  // Licensed: The MIT License (MIT)
-  // Copyright (C) 2011-2017 whitequark <whitequark@whitequark.org>
-  //
-  // Permission is hereby granted, free of charge, to any person obtaining a copy
-  // of this software and associated documentation files (the "Software"), to deal
-  // in the Software without restriction, including without limitation the rights
-  // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  // copies of the Software, and to permit persons to whom the Software is
-  // furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
-  // The above copyright notice and this permission notice shall be included in
-  // all copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+function cidrContains(cidr: Cidr, ip: number[]): boolean {
+  let part = 0;
+  let shift;
+  let cidrBits = cidr.bits;
 
-  // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  // THE SOFTWARE.
-  contains(ip: number[]): boolean {
-    let part = 0;
-    let shift;
-    let cidrBits = this.bits;
-
-    while (cidrBits > 0) {
-      shift = this.partSize - cidrBits;
-      if (shift < 0) {
-        shift = 0;
-      }
-
-      if (ip[part] >> shift !== this.parts[part] >> shift) {
-        return false;
-      }
-
-      cidrBits -= this.partSize;
-      part += 1;
+  while (cidrBits > 0) {
+    shift = cidr.partSize - cidrBits;
+    if (shift < 0) {
+      shift = 0;
     }
 
-    return true;
+    if (ip[part] >> shift !== cidr.parts[part] >> shift) {
+      return false;
+    }
+
+    cidrBits -= cidr.partSize;
+    part += 1;
   }
+
+  return true;
 }
 
-class Ipv4Cidr extends CidrBase {
+class Ipv4Cidr {
   type = "v4" as const;
   partSize = 8 as const;
   parts: Readonly<Ipv4Tuple>;
   bits: number;
 
   constructor(parts: Ipv4Tuple, bits: number) {
-    super();
     this.bits = bits;
     this.parts = parts;
     Object.freeze(this);
   }
 
-  contains(ip: Ipv4Tuple): boolean {
-    return super.contains(ip);
+  contains(ip: Array<number>): boolean {
+    return cidrContains(this, ip);
   }
 }
 
-class Ipv6Cidr extends CidrBase {
+class Ipv6Cidr {
   type = "v6" as const;
   partSize = 16 as const;
   parts: Readonly<Ipv6Tuple>;
   bits: number;
 
   constructor(parts: Ipv6Tuple, bits: number) {
-    super();
     this.bits = bits;
     this.parts = parts;
     Object.freeze(this);
   }
 
-  contains(ip: Ipv6Tuple): boolean {
-    return super.contains(ip);
+  contains(ip: Array<number>): boolean {
+    return cidrContains(this, ip);
   }
 }
 
@@ -203,7 +194,7 @@ function isCidr(address: string): address is `${string}/${string}` {
 
 // Converts a string that looks like a Cidr address into the corresponding class
 // while ignoring non-Cidr IP addresses.
-export function parseProxy(proxy: string): string | CidrBase {
+export function parseProxy(proxy: string): string | Cidr {
   if (isCidr(proxy)) {
     return parseCidr(proxy);
   } else {
@@ -471,7 +462,7 @@ const IPV4_BROADCAST = u32FromBytes([255, 255, 255, 255]);
 
 function isGlobalIpv4(
   s: unknown,
-  proxies: ReadonlyArray<string | CidrBase> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -570,7 +561,7 @@ function isGlobalIpv4(
 
 function isGlobalIpv6(
   s: unknown,
-  proxies: ReadonlyArray<string | CidrBase> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -721,7 +712,7 @@ function isGlobalIpv6(
 
 function isGlobalIp(
   s: unknown,
-  proxies: ReadonlyArray<string | CidrBase> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (isGlobalIpv4(s, proxies)) {
     return true;
@@ -772,7 +763,7 @@ export type Platform = "cloudflare" | "fly-io" | "vercel" | "render";
 
 export interface Options {
   platform?: Platform | null | undefined;
-  proxies?: ReadonlyArray<string | CidrBase> | null | undefined;
+  proxies?: ReadonlyArray<string | Cidr> | null | undefined;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
