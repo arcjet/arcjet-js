@@ -29,7 +29,7 @@ type IPv6Tuple = [
   number,
 ];
 
-function isIPv4Cidr(cidr: unknown): cidr is IPv4CIDR {
+function isIPv4Cidr(cidr: unknown): cidr is IPv4Cidr {
   return (
     typeof cidr === "object" &&
     cidr !== null &&
@@ -41,7 +41,7 @@ function isIPv4Cidr(cidr: unknown): cidr is IPv4CIDR {
   );
 }
 
-function isIPv6Cidr(cidr: unknown): cidr is IPv6CIDR {
+function isIPv6Cidr(cidr: unknown): cidr is IPv6Cidr {
   return (
     typeof cidr === "object" &&
     cidr !== null &&
@@ -56,7 +56,7 @@ function isIPv6Cidr(cidr: unknown): cidr is IPv6CIDR {
 function isTrustedProxy(
   ip: string,
   segments: ReadonlyArray<number>,
-  proxies?: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies?: ReadonlyArray<string | Cidr> | null | undefined,
 ) {
   if (Array.isArray(proxies) && proxies.length > 0) {
     return proxies.some((proxy) => {
@@ -76,7 +76,7 @@ function isTrustedProxy(
   return false;
 }
 
-abstract class CIDR {
+abstract class Cidr {
   abstract type: "v4" | "v6";
   abstract partSize: 8 | 16;
   abstract parts: readonly number[];
@@ -129,7 +129,7 @@ abstract class CIDR {
   }
 }
 
-class IPv4CIDR extends CIDR {
+class IPv4Cidr extends Cidr {
   type = "v4" as const;
   partSize = 8 as const;
   parts: Readonly<IPv4Tuple>;
@@ -147,7 +147,7 @@ class IPv4CIDR extends CIDR {
   }
 }
 
-class IPv6CIDR extends CIDR {
+class IPv6Cidr extends Cidr {
   type = "v6" as const;
   partSize = 16 as const;
   parts: Readonly<IPv6Tuple>;
@@ -165,7 +165,7 @@ class IPv6CIDR extends CIDR {
   }
 }
 
-function parseCIDR(cidr: `${string}/${string}`): IPv4CIDR | IPv6CIDR {
+function parseCidr(cidr: `${string}/${string}`): IPv4Cidr | IPv6Cidr {
   // Pre-condition: `cidr` has be verified to have at least one `/`
 
   const cidrParts = cidr.split("/");
@@ -181,7 +181,7 @@ function parseCIDR(cidr: `${string}/${string}`): IPv4CIDR | IPv6CIDR {
       throw new Error("invalid CIDR address: incorrect amount of bits");
     }
 
-    return new IPv4CIDR(maybeIPv4, bits);
+    return new IPv4Cidr(maybeIPv4, bits);
   }
 
   const maybeIPv6 = parser.readIPv6Address();
@@ -191,21 +191,21 @@ function parseCIDR(cidr: `${string}/${string}`): IPv4CIDR | IPv6CIDR {
       throw new Error("invalid CIDR address: incorrect amount of bits");
     }
 
-    return new IPv6CIDR(maybeIPv6, bits);
+    return new IPv6Cidr(maybeIPv6, bits);
   }
 
   throw new Error("invalid CIDR address: could not parse IP address");
 }
 
-function isCIDR(address: string): address is `${string}/${string}` {
+function isCidr(address: string): address is `${string}/${string}` {
   return address.includes("/");
 }
 
-// Converts a string that looks like a CIDR address into the corresponding class
-// while ignoring non-CIDR IP addresses.
-export function parseProxy(proxy: string): string | CIDR {
-  if (isCIDR(proxy)) {
-    return parseCIDR(proxy);
+// Converts a string that looks like a Cidr address into the corresponding class
+// while ignoring non-Cidr IP addresses.
+export function parseProxy(proxy: string): string | Cidr {
+  if (isCidr(proxy)) {
+    return parseCidr(proxy);
   } else {
     return proxy;
   }
@@ -469,9 +469,9 @@ class Parser {
 
 const IPV4_BROADCAST = u32FromBytes([255, 255, 255, 255]);
 
-function isGlobalIPv4(
+function isGlobalIpv4(
   s: unknown,
-  proxies: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -568,9 +568,9 @@ function isGlobalIPv4(
   return true;
 }
 
-function isGlobalIPv6(
+function isGlobalIpv6(
   s: unknown,
-  proxies: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -719,15 +719,15 @@ function isGlobalIPv6(
   return true;
 }
 
-function isGlobalIP(
+function isGlobalIp(
   s: unknown,
-  proxies: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
-  if (isGlobalIPv4(s, proxies)) {
+  if (isGlobalIpv4(s, proxies)) {
     return true;
   }
 
-  if (isGlobalIPv6(s, proxies)) {
+  if (isGlobalIpv6(s, proxies)) {
     return true;
   }
 
@@ -772,7 +772,7 @@ export type Platform = "cloudflare" | "fly-io" | "vercel" | "render";
 
 export interface Options {
   platform?: Platform | null | undefined;
-  proxies?: ReadonlyArray<string | CIDR> | null | undefined;
+  proxies?: ReadonlyArray<string | Cidr> | null | undefined;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
@@ -813,7 +813,7 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-function findIP(
+function findIp(
   request: RequestLike,
   options?: Options | null | undefined,
 ): string {
@@ -821,25 +821,25 @@ function findIP(
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.
-  if (isGlobalIP(request.ip, proxies)) {
+  if (isGlobalIp(request.ip, proxies)) {
     return request.ip;
   }
 
   const socketRemoteAddress = request.socket?.remoteAddress;
-  if (isGlobalIP(socketRemoteAddress, proxies)) {
+  if (isGlobalIp(socketRemoteAddress, proxies)) {
     return socketRemoteAddress;
   }
 
   const infoRemoteAddress = request.info?.remoteAddress;
-  if (isGlobalIP(infoRemoteAddress, proxies)) {
+  if (isGlobalIp(infoRemoteAddress, proxies)) {
     return infoRemoteAddress;
   }
 
   // AWS Api Gateway + Lambda
-  const requestContextIdentitySourceIP =
+  const requestContextIdentitySourceIp =
     request.requestContext?.identity?.sourceIp;
-  if (isGlobalIP(requestContextIdentitySourceIP, proxies)) {
-    return requestContextIdentitySourceIP;
+  if (isGlobalIp(requestContextIdentitySourceIp, proxies)) {
+    return requestContextIdentitySourceIp;
   }
 
   // Validate we have some object for `request.headers`
@@ -854,15 +854,15 @@ function findIP(
 
   if (platform === "cloudflare") {
     // CF-Connecting-IPv6: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ipv6
-    const cfConnectingIPv6 = getHeader(request.headers, "cf-connecting-ipv6");
-    if (isGlobalIPv6(cfConnectingIPv6, proxies)) {
-      return cfConnectingIPv6;
+    const cfConnectingIpv6 = getHeader(request.headers, "cf-connecting-ipv6");
+    if (isGlobalIpv6(cfConnectingIpv6, proxies)) {
+      return cfConnectingIpv6;
     }
 
     // CF-Connecting-IP: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ip
-    const cfConnectingIP = getHeader(request.headers, "cf-connecting-ip");
-    if (isGlobalIP(cfConnectingIP, proxies)) {
-      return cfConnectingIP;
+    const cfConnectingIp = getHeader(request.headers, "cf-connecting-ip");
+    if (isGlobalIp(cfConnectingIp, proxies)) {
+      return cfConnectingIp;
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
@@ -874,9 +874,9 @@ function findIP(
   // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
   if (platform === "fly-io") {
     // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
-    const flyClientIP = getHeader(request.headers, "fly-client-ip");
-    if (isGlobalIP(flyClientIP, proxies)) {
-      return flyClientIP;
+    const flyClientIp = getHeader(request.headers, "fly-client-ip");
+    if (isGlobalIp(flyClientIp, proxies)) {
+      return flyClientIp;
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
@@ -889,9 +889,9 @@ function findIP(
     // https://vercel.com/docs/edge-network/headers/request-headers#x-real-ip
     // Also used by `@vercel/functions`, see:
     // https://github.com/vercel/vercel/blob/d7536d52c87712b1b3f83e4b0fd535a1fb7e384c/packages/functions/src/headers.ts#L12
-    const xRealIP = getHeader(request.headers, "x-real-ip");
-    if (isGlobalIP(xRealIP, proxies)) {
-      return xRealIP;
+    const xRealIp = getHeader(request.headers, "x-real-ip");
+    if (isGlobalIp(xRealIp, proxies)) {
+      return xRealIp;
     }
 
     // https://vercel.com/docs/edge-network/headers/request-headers#x-vercel-forwarded-for
@@ -909,7 +909,7 @@ function findIP(
     // first IP will be closest to the user (and the most likely to be spoofed),
     // we want to iterate tail-to-head so we reverse the list.
     for (const item of xVercelForwardedForItems.reverse()) {
-      if (isGlobalIP(item, proxies)) {
+      if (isGlobalIp(item, proxies)) {
         return item;
       }
     }
@@ -926,7 +926,7 @@ function findIP(
     // first IP will be closest to the user (and the most likely to be spoofed),
     // we want to iterate tail-to-head so we reverse the list.
     for (const item of xForwardedForItems.reverse()) {
-      if (isGlobalIP(item, proxies)) {
+      if (isGlobalIp(item, proxies)) {
         return item;
       }
     }
@@ -939,9 +939,9 @@ function findIP(
 
   if (platform === "render") {
     // True-Client-IP: https://community.render.com/t/what-number-of-proxies-sit-in-front-of-an-express-app-deployed-on-render/35981/2
-    const trueClientIP = getHeader(request.headers, "true-client-ip");
-    if (isGlobalIP(trueClientIP, proxies)) {
-      return trueClientIP;
+    const trueClientIp = getHeader(request.headers, "true-client-ip");
+    if (isGlobalIp(trueClientIp, proxies)) {
+      return trueClientIp;
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
@@ -951,9 +951,9 @@ function findIP(
   }
 
   // Standard headers used by Amazon EC2, Heroku, and others.
-  const xClientIP = getHeader(request.headers, "x-client-ip");
-  if (isGlobalIP(xClientIP, proxies)) {
-    return xClientIP;
+  const xClientIp = getHeader(request.headers, "x-client-ip");
+  if (isGlobalIp(xClientIp, proxies)) {
+    return xClientIp;
   }
 
   // Load-balancers (AWS ELB) or proxies.
@@ -965,68 +965,68 @@ function findIP(
   // first IP will be closest to the user (and the most likely to be spoofed),
   // we want to iterate tail-to-head so we reverse the list.
   for (const item of xForwardedForItems.reverse()) {
-    if (isGlobalIP(item, proxies)) {
+    if (isGlobalIp(item, proxies)) {
       return item;
     }
   }
 
   // DigitalOcean.
   // DO-Connecting-IP: https://www.digitalocean.com/community/questions/app-platform-client-ip
-  const doConnectingIP = getHeader(request.headers, "do-connecting-ip");
-  if (isGlobalIP(doConnectingIP, proxies)) {
-    return doConnectingIP;
+  const doConnectingIp = getHeader(request.headers, "do-connecting-ip");
+  if (isGlobalIp(doConnectingIp, proxies)) {
+    return doConnectingIp;
   }
 
   // Fastly and Firebase hosting header (When forwared to cloud function)
   // Fastly-Client-IP
-  const fastlyClientIP = getHeader(request.headers, "fastly-client-ip");
-  if (isGlobalIP(fastlyClientIP, proxies)) {
-    return fastlyClientIP;
+  const fastlyClientIp = getHeader(request.headers, "fastly-client-ip");
+  if (isGlobalIp(fastlyClientIp, proxies)) {
+    return fastlyClientIp;
   }
 
   // Akamai
   // True-Client-IP
-  const trueClientIP = getHeader(request.headers, "true-client-ip");
-  if (isGlobalIP(trueClientIP, proxies)) {
-    return trueClientIP;
+  const trueClientIp = getHeader(request.headers, "true-client-ip");
+  if (isGlobalIp(trueClientIp, proxies)) {
+    return trueClientIp;
   }
 
   // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies
   // X-Real-IP
-  const xRealIP = getHeader(request.headers, "x-real-ip");
-  if (isGlobalIP(xRealIP, proxies)) {
-    return xRealIP;
+  const xRealIp = getHeader(request.headers, "x-real-ip");
+  if (isGlobalIp(xRealIp, proxies)) {
+    return xRealIp;
   }
 
   // Rackspace LB and Riverbed's Stingray?
-  const xClusterClientIP = getHeader(request.headers, "x-cluster-client-ip");
-  if (isGlobalIP(xClusterClientIP, proxies)) {
-    return xClusterClientIP;
+  const xClusterClientIp = getHeader(request.headers, "x-cluster-client-ip");
+  if (isGlobalIp(xClusterClientIp, proxies)) {
+    return xClusterClientIp;
   }
 
   const xForwarded = getHeader(request.headers, "x-forwarded");
-  if (isGlobalIP(xForwarded, proxies)) {
+  if (isGlobalIp(xForwarded, proxies)) {
     return xForwarded;
   }
 
   const forwardedFor = getHeader(request.headers, "forwarded-for");
-  if (isGlobalIP(forwardedFor, proxies)) {
+  if (isGlobalIp(forwardedFor, proxies)) {
     return forwardedFor;
   }
 
   const forwarded = getHeader(request.headers, "forwarded");
-  if (isGlobalIP(forwarded, proxies)) {
+  if (isGlobalIp(forwarded, proxies)) {
     return forwarded;
   }
 
   // Google Cloud App Engine
   // X-Appengine-User-IP: https://cloud.google.com/appengine/docs/standard/reference/request-headers?tab=node.js
-  const xAppEngineUserIP = getHeader(request.headers, "x-appengine-user-ip");
-  if (isGlobalIP(xAppEngineUserIP, proxies)) {
-    return xAppEngineUserIP;
+  const xAppEngineUserIp = getHeader(request.headers, "x-appengine-user-ip");
+  if (isGlobalIp(xAppEngineUserIp, proxies)) {
+    return xAppEngineUserIp;
   }
 
   return "";
 }
 
-export default findIP;
+export default findIp;
