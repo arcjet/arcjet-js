@@ -55,21 +55,17 @@ Object substitution supports any value that is not `undefined`.
 - `%s` - Replaced if provided with a string.
 - `%%` - Replaced by the literal `%` character.
 
-## Implementation
-
-This implementation of this library is based on [quick-format-unescaped], which
-is licensed MIT with licenses included in our source code.
-
-The goal of this library is to be more restrictive than `quick-format-unescaped`
-while maintaining as much compatibility as possible, since [pino] uses it to
-format strings.
-
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+Derivative work based on [`quick-format-unescaped`][quick-format-unescaped]
+licensed under [MIT][quick-format-unescaped-license] © David Mark Clements.
+Our work is more restrictive while maintaining as much compatibility as
+possible.
+
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
 [node-util]: https://nodejs.org/docs/latest-v18.x/api/util.html#utilformatformat-args
-[quick-format-unescaped]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64c2f2e182f97923a423d468757b9a24a63/index.js
-[pino]: https://github.com/pinojs/pino
+[quick-format-unescaped-license]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64/LICENSE
+[quick-format-unescaped]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64/index.js
