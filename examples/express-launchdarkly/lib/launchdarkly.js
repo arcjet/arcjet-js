@@ -1,7 +1,15 @@
 import * as ld from "@launchdarkly/node-server-sdk";
 
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const launchDarklyKey = process.env.LAUNCHDARKLY_SDK_KEY;
+
+if (!launchDarklyKey) {
+  throw new Error("Cannot find `LAUNCHDARKLY_SDK_KEY` environment variable");
+}
+
 // Initialize LaunchDarkly client
-const client = ld.init(process.env.LAUNCHDARKLY_SDK_KEY);
+const client = ld.init(launchDarklyKey);
 
 // Define default values for the LaunchDarkly flags
 const defaultConfig = {

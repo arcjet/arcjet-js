@@ -2,7 +2,8 @@
   "compilerOptions": {
     "checkJs": true,
     "lib": ["dom.iterable", "dom", "esnext"],
-    "module": "node16"
+    "module": "node16",
+    "strict": true
   },
   "include": ["**/*.js"]
 }

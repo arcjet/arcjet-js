@@ -5,10 +5,16 @@ import express from "express";
 const app = express();
 const port = 3000;
 
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
+
 const aj = arcjet({
-  // Get your site key from https://app.arcjet.com and set it as an environment
-  // variable rather than hard coding.
-  key: process.env.ARCJET_KEY,
+  key: arcjetKey,
   rules: [
     // Protect against common attacks with Arcjet Shield
     shield({
@@ -30,23 +36,26 @@ app.get('/', async (req, res) => {
     // We want to check for disallowed bots
     if (decision.reason.isBot()) {
       res.writeHead(400, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({
+      res.end(JSON.stringify({
         error: "You are a bot",
       }));
+      return
     }
 
     res.writeHead(403, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({
+    res.end(JSON.stringify({
       error: "Forbidden",
     }));
+    return
   }
 
   // We need to check that the bot is who they say they are.
   if (decision.results.some(isSpoofedBot)) {
     res.writeHead(400, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({
+    res.end(JSON.stringify({
       error: "You are pretending to be a good bot!",
     }));
+    return
   }
 
   res.writeHead(200, { "Content-Type": "application/json" });
