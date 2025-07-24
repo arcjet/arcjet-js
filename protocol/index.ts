@@ -197,7 +197,8 @@ export class ArcjetReason {
     | "SHIELD"
     | "EMAIL"
     | "ERROR"
-    | "SENSITIVE_INFO";
+    | "SENSITIVE_INFO"
+    | undefined;
 
   isSensitiveInfo(): this is ArcjetSensitiveInfoReason {
     return this.type === "SENSITIVE_INFO";
@@ -252,14 +253,14 @@ export class ArcjetRateLimitReason extends ArcjetReason {
   remaining: number;
   reset: number;
   window: number;
-  resetTime?: Date;
+  resetTime?: Date | undefined;
 
   constructor(init: {
     max: number;
     remaining: number;
     reset: number;
     window: number;
-    resetTime?: Date;
+    resetTime?: Date | undefined;
   }) {
     super();
 
@@ -311,7 +312,7 @@ export class ArcjetShieldReason extends ArcjetReason {
 
   shieldTriggered: boolean;
 
-  constructor(init: { shieldTriggered?: boolean }) {
+  constructor(init: { shieldTriggered?: boolean | undefined }) {
     super();
 
     this.shieldTriggered = init.shieldTriggered ?? false;
@@ -323,7 +324,7 @@ export class ArcjetEmailReason extends ArcjetReason {
 
   emailTypes: ArcjetEmailType[];
 
-  constructor(init: { emailTypes?: ArcjetEmailType[] }) {
+  constructor(init: { emailTypes?: ArcjetEmailType[] | undefined }) {
     super();
     this.emailTypes = init.emailTypes ?? [];
   }
@@ -408,97 +409,97 @@ export class ArcjetIpDetails {
    * The estimated latitude of the IP address within the `accuracyRadius` margin
    * of error.
    */
-  latitude?: number;
+  latitude?: number | undefined;
   /**
    * The estimated longitude of the IP address - see accuracy_radius for the
    * margin of error.
    */
-  longitude?: number;
+  longitude?: number | undefined;
   /**
    * The accuracy radius of the IP address location in kilometers.
    */
-  accuracyRadius?: number;
+  accuracyRadius?: number | undefined;
   /**
    * The timezone of the IP address.
    */
-  timezone?: string;
+  timezone?: string | undefined;
   /**
    * The postal code of the IP address.
    */
-  postalCode?: string;
+  postalCode?: string | undefined;
   /**
    * The city the IP address is located in.
    */
-  city?: string;
+  city?: string | undefined;
   /**
    * The region the IP address is located in.
    */
-  region?: string;
+  region?: string | undefined;
   /**
    * The country code the IP address is located in.
    */
-  country?: string;
+  country?: string | undefined;
   /**
    * The country name the IP address is located in.
    */
-  countryName?: string;
+  countryName?: string | undefined;
   /**
    * The continent code the IP address is located in.
    */
-  continent?: string;
+  continent?: string | undefined;
   /**
    * The continent name the IP address is located in.
    */
-  continentName?: string;
+  continentName?: string | undefined;
   /**
    * The AS number the IP address belongs to.
    */
-  asn?: string;
+  asn?: string | undefined;
   /**
    * The AS name the IP address belongs to.
    */
-  asnName?: string;
+  asnName?: string | undefined;
   /**
    * The AS domain the IP address belongs to.
    */
-  asnDomain?: string;
+  asnDomain?: string | undefined;
   /**
    * The ASN type: ISP, hosting, business, or education
    */
-  asnType?: string;
+  asnType?: string | undefined;
   /**
    * The ASN country code the IP address belongs to.
    */
-  asnCountry?: string;
+  asnCountry?: string | undefined;
   /**
    * The name of the service the IP address belongs to.
    */
-  service?: string;
+  service?: string | undefined;
 
   constructor(
     init: {
-      latitude?: number;
-      longitude?: number;
-      accuracyRadius?: number;
-      timezone?: string;
-      postalCode?: string;
-      city?: string;
-      region?: string;
-      country?: string;
-      countryName?: string;
-      continent?: string;
-      continentName?: string;
-      asn?: string;
-      asnName?: string;
-      asnDomain?: string;
-      asnType?: string;
-      asnCountry?: string;
-      service?: string;
-      isHosting?: boolean;
-      isVpn?: boolean;
-      isProxy?: boolean;
-      isTor?: boolean;
-      isRelay?: boolean;
+      latitude?: number | undefined;
+      longitude?: number | undefined;
+      accuracyRadius?: number | undefined;
+      timezone?: string | undefined;
+      postalCode?: string | undefined;
+      city?: string | undefined;
+      region?: string | undefined;
+      country?: string | undefined;
+      countryName?: string | undefined;
+      continent?: string | undefined;
+      continentName?: string | undefined;
+      asn?: string | undefined;
+      asnName?: string | undefined;
+      asnDomain?: string | undefined;
+      asnType?: string | undefined;
+      asnCountry?: string | undefined;
+      service?: string | undefined;
+      isHosting?: boolean | undefined;
+      isVpn?: boolean | undefined;
+      isProxy?: boolean | undefined;
+      isTor?: boolean | undefined;
+      isRelay?: boolean | undefined;
     } = {},
   ) {
     this.latitude = init.latitude;
