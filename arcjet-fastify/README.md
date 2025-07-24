@@ -23,17 +23,9 @@ against common attacks.
 
 This is the [Arcjet][] SDK for [Fastify][].
 
-<!--
-
 ## Getting started
 
-TODO(@wooorm-arcjet): this does not exist yet.
-
 Visit the [quick start guide][arcjet-quick-start-fastify] to get started.
-
-[arcjet-quick-start-fastify]: https://docs.arcjet.com/get-started/fastify
-
--->
 
 ## Install
 
@@ -115,5 +107,6 @@ see the [Arcjet Fastify SDK reference][arcjet-reference-fastify] on our website.
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[arcjet-quick-start-fastify]: https://docs.arcjet.com/get-started/fastify
 [arcjet]: https://arcjet.com
 [fastify]: https://fastify.dev/
