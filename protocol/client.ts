@@ -88,24 +88,28 @@ export function createClient(options: ClientOptions): Client {
         protoRules.push(ArcjetRuleToProtocol(rule));
       }
 
+      const cleanDetails = {
+        ip: details.ip,
+        method: details.method,
+        protocol: details.protocol,
+        host: details.host,
+        path: details.path,
+        headers: Object.fromEntries(details.headers.entries()),
+        cookies: details.cookies,
+        query: details.query,
+        extra: details.extra,
+      };
+
       // Build the request object from the Protobuf generated class.
       const decideRequest = new DecideRequest({
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
-        details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          headers: Object.fromEntries(details.headers.entries()),
-          cookies: details.cookies,
-          query: details.query,
-          extra: details.extra,
-          // Note: `email` is passed to `protect` and dynamic, hence the extra check.
-          email: typeof details.email === "string" ? details.email : undefined,
-        },
+        // `email` is an optional field but not allowed to be `undefined`.
+        details:
+          typeof details.email === "string"
+            ? { ...cleanDetails, email: details.email }
+            : cleanDetails,
         rules: protoRules,
       });
 
@@ -145,24 +149,28 @@ export function createClient(options: ClientOptions): Client {
     ): void {
       const { log } = context;
 
+      const cleanDetails = {
+        ip: details.ip,
+        method: details.method,
+        protocol: details.protocol,
+        host: details.host,
+        path: details.path,
+        headers: Object.fromEntries(details.headers.entries()),
+        cookies: details.cookies,
+        query: details.query,
+        extra: details.extra,
+      };
+
       // Build the request object from the Protobuf generated class.
       const reportRequest = new ReportRequest({
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
-        details: {
-          ip: details.ip,
-          method: details.method,
-          protocol: details.protocol,
-          host: details.host,
-          path: details.path,
-          headers: Object.fromEntries(details.headers.entries()),
-          cookies: details.cookies,
-          query: details.query,
-          extra: details.extra,
-          // Note: `email` is passed to `protect` and dynamic, hence the extra check.
-          email: typeof details.email === "string" ? details.email : undefined,
-        },
+        // `email` is an optional field but not allowed to be `undefined`.
+        details:
+          typeof details.email === "string"
+            ? { ...cleanDetails, email: details.email }
+            : cleanDetails,
         decision: ArcjetDecisionToProtocol(decision),
         rules: rules.map(ArcjetRuleToProtocol),
       });
