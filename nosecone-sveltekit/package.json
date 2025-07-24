@@ -71,7 +71,7 @@
     "eslint": "9.31.0",
     "svelte": "5.36.7",
     "typescript": "5.8.3",
-    "vite": "7.0.5"
+    "vite": "7.0.6"
   },
   "publishConfig": {
     "access": "public",
