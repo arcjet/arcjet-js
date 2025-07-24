@@ -100,6 +100,9 @@ jobs:
       matrix:
         folder:
           - astro-integration
+          - express-bots
+          - express-newman
+          - express-sensitive-info
           - gatsby-rate-limit
           - nestjs-fastify
           - nestjs-launchdarkly

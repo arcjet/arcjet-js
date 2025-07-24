@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "noEmit": true
+    "checkJs": true,
+    "lib": ["dom.iterable", "dom", "esnext"],
+    "module": "node16"
   },
-  "include": ["index.js"],
-  "exclude": ["node_modules"]
+  "include": ["**/*.js"]
 }

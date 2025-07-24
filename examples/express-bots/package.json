@@ -2,7 +2,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file .env.local ./index.js"
+    "start": "node --env-file .env.local ./index.js",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@arcjet/inspect": "file:../../inspect",

@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "node --env-file .env.local ./index.js",
-    "test": "node --test --env-file .env.local"
+    "test": "node --test --env-file .env.local",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@arcjet/node": "file:../../arcjet-node",
