@@ -129,6 +129,7 @@ jobs:
           - nextjs-sensitive-info
           - nextjs-server-actions
           - nodejs-hono-rate-limit
+          - nodejs-rate-limit
           - remix-express
           - sveltekit
 name: Reusable examples workflow

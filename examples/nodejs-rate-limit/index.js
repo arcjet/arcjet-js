@@ -2,10 +2,18 @@ import arcjet, { fixedWindow, shield } from "@arcjet/node";
 import * as http from "node:http";
 import nosecone from "nosecone";
 
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
+
 const aj = arcjet({
   // Get your site key from https://app.arcjet.com and set it as an environment
   // variable rather than hard coding.
-  key: process.env.ARCJET_KEY,
+  key: arcjetKey,
   // Limiting by ip.src is the default if not specified
   //characteristics: ["ip.src"],
   rules: [
