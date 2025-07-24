@@ -114,8 +114,9 @@ export function csp(
 ): SvelteKitCsp {
   return {
     mode: options.mode ? options.mode : "auto",
-    directives: directivesToSvelteKitConfig(
-      options.directives ?? defaults.contentSecurityPolicy.directives,
-    ),
+    directives:
+      directivesToSvelteKitConfig(
+        options.directives ?? defaults.contentSecurityPolicy.directives,
+      ) || {},
   };
 }

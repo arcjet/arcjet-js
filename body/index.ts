@@ -1,6 +1,6 @@
 export type ReadBodyOpts = {
   limit: number;
-  expectedLength?: number;
+  expectedLength?: number | null | undefined;
 };
 
 type EventHandlerLike = (
@@ -10,9 +10,9 @@ type EventHandlerLike = (
 
 // The fields from stream.Readable that we use
 export interface ReadableStreamLike {
-  on?: EventHandlerLike;
-  removeListener?: EventHandlerLike;
-  readable?: boolean;
+  on?: EventHandlerLike | null | undefined;
+  removeListener?: EventHandlerLike | null | undefined;
+  readable?: boolean | null | undefined;
 }
 
 // This `readBody` function is a derivitive of the `getRawBody` function in the `raw-body`
@@ -81,7 +81,10 @@ export async function readBody(
       stream.on("error", onEnd);
     }
 
-    function done(err?: Error, buffer?: string) {
+    function done(
+      err?: Error | null | undefined,
+      buffer?: string | null | undefined,
+    ) {
       // Ensure we avoid double resolve/reject if called more than once
       if (complete) return;
 
@@ -90,7 +93,7 @@ export async function readBody(
       cleanup();
       if (typeof err !== "undefined") {
         reject(err);
-      } else if (typeof buffer !== "undefined") {
+      } else if (buffer !== null && buffer !== undefined) {
         // Need to call it one final time to flush any remaining chars.
         buffer += decoder.decode();
         resolve(buffer);
