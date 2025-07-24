@@ -1,5 +1,5 @@
 import arcjet, { fixedWindow, shield } from "@arcjet/node";
-import * as http from "node:http";
+import http from "node:http";
 import nosecone from "nosecone";
 
 const aj = arcjet({

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import * as http from "http";
+import http from "http";
 import { readBody } from "../index.js";
 import type { AddressInfo } from "net";
 
