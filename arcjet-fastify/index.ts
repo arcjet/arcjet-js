@@ -6,8 +6,7 @@ import {
   platform,
 } from "@arcjet/env";
 import ArcjetHeaders from "@arcjet/headers";
-// TODO(@wooorm-arcjet): Expose `Cidr` from `@arcjet/ip`.
-import findIp, { parseProxy } from "@arcjet/ip";
+import { type Cidr, findIp, parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
 import { createClient } from "@arcjet/protocol/client.js";
@@ -285,8 +284,7 @@ export default function arcjet<
 function toArcjetRequest<Properties extends PlainObject>(
   request: FastifyRequest,
   log: ArcjetLogger,
-  // TODO(@wooorm-arcjet): use `Cidr` type here.
-  proxies: ReadonlyArray<ReturnType<typeof parseProxy>> | undefined,
+  proxies: ReadonlyArray<Cidr | string> | undefined,
   properties: Properties,
 ): ArcjetRequest<Properties> {
   const requestHeaders = request.headers || {};
