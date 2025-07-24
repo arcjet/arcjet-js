@@ -106,8 +106,8 @@ jobs:
           - express-rate-limit
           - express-sensitive-info
           - express-validate-email
-          - gatsby-rate-limit
           - fastify
+          - gatsby-rate-limit
           - nestjs-fastify
           - nestjs-launchdarkly
           - nestjs-graphql
