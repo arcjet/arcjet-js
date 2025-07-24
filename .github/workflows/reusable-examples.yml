@@ -119,6 +119,7 @@ jobs:
           - nextjs-openai
           - nextjs-pages-wrap
           - nextjs-permit
+          - nextjs-react-hook-form
           - nextjs-sensitive-info
           - nextjs-server-actions
           - nodejs-hono-rate-limit
