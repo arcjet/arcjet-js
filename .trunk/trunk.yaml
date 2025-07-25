@@ -66,6 +66,13 @@ merge:
     - Build examples / bun-hono-rate-limit
     - Build examples / bun-rate-limit
     - Build examples / deno-sensitive-info
+    - Build examples / express-bots
+    - Build examples / express-launchdarkly
+    - Build examples / express-newman
+    - Build examples / express-rate-limit
+    - Build examples / express-sensitive-info
+    - Build examples / express-validate-email
+    - Build examples / fastify
     - Build examples / gatsby-rate-limit
     - Build examples / nestjs-fastify
     - Build examples / nestjs-launchdarkly
@@ -85,8 +92,10 @@ merge:
     - Build examples / nextjs-openai
     - Build examples / nextjs-pages-wrap
     - Build examples / nextjs-permit
+    - Build examples / nextjs-react-hook-form
     - Build examples / nextjs-sensitive-info
     - Build examples / nextjs-server-actions
     - Build examples / nodejs-hono-rate-limit
+    - Build examples / nodejs-rate-limit
     - Build examples / remix-express
     - Build examples / sveltekit

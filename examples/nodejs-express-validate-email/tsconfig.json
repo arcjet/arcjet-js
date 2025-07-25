@@ -1,8 +1,0 @@
-{
-    "compilerOptions": {
-        "allowJs": true,
-        "noEmit": true
-    },
-    "include": ["index.js"],
-    "exclude": ["node_modules"]
-}

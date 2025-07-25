@@ -22,7 +22,7 @@ This example shows how to dynamically configure Arcjet via
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/nodejs-express-launchdarkly
+   cd examples/express-launchdarkly
    npm ci
    ```
 

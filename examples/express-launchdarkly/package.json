@@ -2,7 +2,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file .env.local ./index.js"
+    "start": "node --env-file .env.local ./index.js",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@arcjet/node": "file:../../arcjet-node",
@@ -10,6 +11,7 @@
     "express": "^5.1.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.3",
     "@types/node": "^20",
     "typescript": "^5"
   }

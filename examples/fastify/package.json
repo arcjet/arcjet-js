@@ -10,7 +10,8 @@
   "name": "examples-fastify",
   "private": true,
   "scripts": {
-    "start": "node --env-file .env.local index.js"
+    "start": "node --env-file .env.local index.js",
+    "typecheck": "tsc --noEmit"
   },
   "type": "module"
 }

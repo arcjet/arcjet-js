@@ -92,7 +92,7 @@ jobs:
           ARCJET_KEY: ajkey_dummy
           # Used by Clerk examples: the smallest dummy token that passes the Clerk validation.
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_LiQ=
-        run: npm run build
+        run: npm run build --if-present
         working-directory: "examples/${{matrix.folder}}"
       - run: npm run typecheck
         working-directory: "examples/${{matrix.folder}}"
@@ -100,6 +100,13 @@ jobs:
       matrix:
         folder:
           - astro-integration
+          - express-bots
+          - express-launchdarkly
+          - express-newman
+          - express-rate-limit
+          - express-sensitive-info
+          - express-validate-email
+          - fastify
           - gatsby-rate-limit
           - nestjs-fastify
           - nestjs-launchdarkly
@@ -119,9 +126,11 @@ jobs:
           - nextjs-openai
           - nextjs-pages-wrap
           - nextjs-permit
+          - nextjs-react-hook-form
           - nextjs-sensitive-info
           - nextjs-server-actions
           - nodejs-hono-rate-limit
+          - nodejs-rate-limit
           - remix-express
           - sveltekit
 name: Reusable examples workflow

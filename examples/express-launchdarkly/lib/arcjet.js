@@ -1,12 +1,17 @@
 import arcjet, { shield, slidingWindow } from "@arcjet/node";
 import { getArcjetConfig } from "./launchdarkly.js";
 
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
+
 // Initialize Arcjet with your site key and rules
 const aj = arcjet({
-  // Get your site key from https://app.arcjet.com
-  // and set it as an environment variable rather than hard coding.
-  // See: https://www.npmjs.com/package/dotenv
-  key: process.env.ARCJET_KEY,
+  key: arcjetKey,
   rules: [],
 });
 
