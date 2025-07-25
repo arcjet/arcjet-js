@@ -2,7 +2,7 @@ import arcjet, { sensitiveInfo, shield } from "@arcjet/node";
 import express from "express";
 
 const app = express();
-const port = 300
+const port = 3000;
 
 // Get your Arcjet key at <https://app.arcjet.com>.
 // Set it as an environment variable instead of hard coding it.
