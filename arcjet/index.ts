@@ -1345,6 +1345,7 @@ export function sensitiveInfo<
         convertedDetect = (tokens: string[]) => {
           return detect(tokens)
             .filter((e) => typeof e !== "undefined")
+            // @ts-ignore: TODO(@wooorm-arcjet): this fails when building on Bun, investigate.
             .map(protocolSensitiveInfoEntitiesToAnalyze);
         };
       }
@@ -1378,6 +1379,7 @@ export function sensitiveInfo<
         body,
         entities,
         options.contextWindowSize || 1,
+        // @ts-ignore: TODO(@wooorm-arcjet): this fails when building on Bun, investigate.
         convertedDetect,
       );
 
