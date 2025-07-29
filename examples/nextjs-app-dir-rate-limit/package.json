@@ -24,7 +24,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
     "eslint": "^9",
-    "eslint-config-next": "15.4.1",
+    "eslint-config-next": "15.4.4",
     "postcss": "^8",
     "tailwindcss": "^4",
     "typescript": "^5"
