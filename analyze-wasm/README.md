@@ -25,10 +25,13 @@ This package provides WebAssembly bindings to [Arcjet's][arcjet] local analysis 
 - [npm package (`@arcjet/analyze-wasm`)](https://www.npmjs.com/package/@arcjet/analyze-wasm)
 - [GitHub source code (`analyze-wasm/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/analyze-wasm)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/analyze-wasm
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/analyze-wasm
 ```
 
 ## Use

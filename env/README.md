@@ -34,10 +34,13 @@ type Env = {
 - [npm package (`@arcjet/env`)](https://www.npmjs.com/package/@arcjet/env)
 - [GitHub source code (`env/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/env)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/env
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/env
 ```
 
 ## Example

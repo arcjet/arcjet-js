@@ -21,10 +21,13 @@
 - [npm package (`@arcjet/body`)](https://www.npmjs.com/package/@arcjet/body)
 - [GitHub source code (`body/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/body)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/body
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/body
 ```
 
 ## Use

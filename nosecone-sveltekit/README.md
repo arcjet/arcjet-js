@@ -21,10 +21,13 @@ Protect your SvelteKit application with secure headers.
 - [npm package (`@nosecone/sveltekit`)](https://www.npmjs.com/package/@nosecone/sveltekit)
 - [GitHub source code (`nosecone-sveltekit/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/nosecone-sveltekit)
 
-## Installation
+## Install
 
-```shell
-npm install -S @nosecone/sveltekit
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @nosecone/sveltekit
 ```
 
 ## Example

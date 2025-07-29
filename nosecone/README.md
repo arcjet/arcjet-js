@@ -21,10 +21,13 @@ Protect your `Response` with secure headers.
 - [npm package (`nosecone`)](https://www.npmjs.com/package/nosecone)
 - [GitHub source code (`nosecone/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/nosecone)
 
-## Installation
+## Install
 
-```shell
-npm install -S nosecone
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install nosecone
 ```
 
 ## Example

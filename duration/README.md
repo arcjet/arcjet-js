@@ -21,10 +21,13 @@
 - [npm package (`@arcjet/duration`)](https://www.npmjs.com/package/@arcjet/duration)
 - [GitHub source code (`duration/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/duration)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/duration
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/duration
 ```
 
 ## Example

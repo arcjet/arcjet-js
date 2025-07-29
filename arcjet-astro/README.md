@@ -34,9 +34,12 @@ Visit the [quick start guide][quick-start] to get started.
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 ([source code][example-source]).
 
-## Installation
+## Install
 
-```shell
+This package is ESM only.
+Install with npm and the Astro CLI in Node.js:
+
+```sh
 npx astro add @arcjet/astro
 ```
 

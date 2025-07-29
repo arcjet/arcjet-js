@@ -25,6 +25,15 @@ This is the [Arcjet][arcjet] SDK for [Deno][deno].
 - [npm package (`@arcjet/deno`)](https://www.npmjs.com/package/@arcjet/deno)
 - [GitHub source code (`arcjet-deno/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-deno)
 
+## Install
+
+This package is ESM only.
+Install with Deno:
+
+```sh
+deno install npm:@arcjet/deno
+```
+
 ## Use
 
 ```ts

@@ -24,10 +24,13 @@ defined by the [WinterCG][wintercg].
 - [npm package (`@arcjet/runtime`)](https://www.npmjs.com/package/@arcjet/runtime)
 - [GitHub source code (`runtime/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/runtime)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/runtime
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/runtime
 ```
 
 ## Use

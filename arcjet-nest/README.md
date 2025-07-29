@@ -37,10 +37,13 @@ Visit the [quick start guide][quick-start] to get started.
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 ([source code][example-source]).
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/nest
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/nest
 ```
 
 ## Use

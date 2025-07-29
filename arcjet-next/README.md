@@ -57,10 +57,13 @@ and Shield WAF.
 
 You can also find this [quick start guide][quick-start] in the docs.
 
-### 1. Installation
+## Install
 
-```shell
-npm i @arcjet/next
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/next
 ```
 
 ## Use

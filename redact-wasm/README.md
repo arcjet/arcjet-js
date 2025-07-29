@@ -21,10 +21,13 @@
 - [npm package (`@arcjet/redact-wasm`)](https://www.npmjs.com/package/@arcjet/redact-wasm)
 - [GitHub source code (`redact-wasm/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/redact-wasm)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/redact-wasm
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/redact-wasm
 ```
 
 ## Use

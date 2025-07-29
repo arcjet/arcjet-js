@@ -21,10 +21,13 @@
 - [npm package (`@arcjet/headers`)](https://www.npmjs.com/package/@arcjet/headers)
 - [GitHub source code (`headers/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/headers)
 
-## Installation
+## Install
 
-```shell
-npm install -S @arcjet/headers
+This package is ESM only.
+Install with npm in Node.js:
+
+```sh
+npm install @arcjet/headers
 ```
 
 ## Use
