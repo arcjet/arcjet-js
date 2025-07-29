@@ -12,8 +12,8 @@
     "@nosecone/next": "file:../../nosecone-next",
     "next": "^15",
     "next-auth": "beta",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@types/node": "^18",
