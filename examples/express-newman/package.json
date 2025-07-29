@@ -14,7 +14,7 @@
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/newman": "^5.3.6",
-    "@types/node": "^20",
+    "@types/node": "^24.0.0",
     "newman": "^6.2.1",
     "typescript": "^5"
   },
