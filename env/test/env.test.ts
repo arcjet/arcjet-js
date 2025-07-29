@@ -54,9 +54,9 @@ describe("env", () => {
     assert.equal(
       env.baseUrl({
         NODE_ENV: "development",
-        ARCJET_BASE_URL: "anything-in-dev",
+        ARCJET_BASE_URL: "anything-in-dev?",
       }),
-      "anything-in-dev",
+      "https://decide.arcjet.com",
     );
     assert.equal(
       env.baseUrl({ NODE_ENV: "development", FLY_APP_NAME: "" }),
