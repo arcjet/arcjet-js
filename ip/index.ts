@@ -56,7 +56,7 @@ function isIPv6Cidr(cidr: unknown): cidr is IPv6CIDR {
 function isTrustedProxy(
   ip: string,
   segments: ReadonlyArray<number>,
-  proxies?: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies?: ReadonlyArray<string | Cidr> | null | undefined,
 ) {
   if (Array.isArray(proxies) && proxies.length > 0) {
     return proxies.some((proxy) => {
@@ -76,7 +76,7 @@ function isTrustedProxy(
   return false;
 }
 
-abstract class CIDR {
+abstract class Cidr {
   abstract type: "v4" | "v6";
   abstract partSize: 8 | 16;
   abstract parts: readonly number[];
@@ -129,7 +129,7 @@ abstract class CIDR {
   }
 }
 
-class IPv4CIDR extends CIDR {
+class IPv4CIDR extends Cidr {
   type = "v4" as const;
   partSize = 8 as const;
   parts: Readonly<IPv4Tuple>;
@@ -147,7 +147,7 @@ class IPv4CIDR extends CIDR {
   }
 }
 
-class IPv6CIDR extends CIDR {
+class IPv6CIDR extends Cidr {
   type = "v6" as const;
   partSize = 16 as const;
   parts: Readonly<IPv6Tuple>;
@@ -201,13 +201,19 @@ function isCIDR(address: string): address is `${string}/${string}` {
   return address.includes("/");
 }
 
-// Converts a string that looks like a CIDR address into the corresponding class
-// while ignoring non-CIDR IP addresses.
-export function parseProxy(proxy: string): string | CIDR {
-  if (isCIDR(proxy)) {
-    return parseCIDR(proxy);
+/**
+ * Parse CIDR addresses and keep non-CIDR IP addresses.
+ *
+ * @param value
+ *   Value to parse.
+ * @returns
+ *   Parsed CIDR or given `value`.
+ */
+export function parseProxy(value: string): Cidr | string {
+  if (isCIDR(value)) {
+    return parseCIDR(value);
   } else {
-    return proxy;
+    return value;
   }
 }
 
@@ -471,7 +477,7 @@ const IPV4_BROADCAST = u32FromBytes([255, 255, 255, 255]);
 
 function isGlobalIPv4(
   s: unknown,
-  proxies: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -570,7 +576,7 @@ function isGlobalIPv4(
 
 function isGlobalIPv6(
   s: unknown,
-  proxies: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
@@ -721,7 +727,7 @@ function isGlobalIPv6(
 
 function isGlobalIP(
   s: unknown,
-  proxies: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (isGlobalIPv4(s, proxies)) {
     return true;
@@ -734,45 +740,88 @@ function isGlobalIP(
   return false;
 }
 
+/**
+ * Socket-like interface.
+ */
 interface PartialSocket {
   remoteAddress?: string;
 }
 
+/**
+ * Interface that looks like info.
+ */
 interface PartialInfo {
   remoteAddress?: string;
 }
 
-interface PartialIdentiy {
+/**
+ * Interface that looks like an identity.
+ */
+interface PartialIdentity {
   sourceIp?: string;
 }
 
+/**
+ * Interface that looks like a request context.
+ */
 interface PartialRequestContext {
-  identity?: PartialIdentiy;
+  identity?: PartialIdentity;
 }
 
-export type HeaderLike =
-  | {
-      headers: Headers;
-    }
-  | {
-      headers: Record<string, string | string[] | undefined>;
-    };
+/**
+ * Interface with `headers`.
+ */
+// TODO(@wooorm-arcjet): do not expose.
+export interface HeaderLike {
+  /**
+   * Headers.
+   */
+  headers: Headers | Record<string, string[] | string | undefined>;
+}
 
-export type RequestLike = {
-  ip?: unknown;
-
-  socket?: PartialSocket | null | undefined;
-
+/**
+ * Interface that looks like a request,
+ * of which `headers` is required and several other fields may exist.
+ */
+// TODO(@wooorm-arcjet): rename to `Request`.
+export interface RequestLike extends HeaderLike {
+  /**
+   * Some platforms pass `info`.
+   */
   info?: PartialInfo | null | undefined;
-
+  /**
+   * Some platforms such as Cloudflare and Vercel provide `ip` directly on
+   * `request`.
+   */
+  ip?: unknown;
+  /**
+   * Some platforms pass info in `requestContext`.
+   */
   requestContext?: PartialRequestContext | null | undefined;
-} & HeaderLike;
+  /**
+   * Some platforms pass a `socket`.
+   */
+  socket?: PartialSocket | null | undefined;
+}
 
-export type Platform = "cloudflare" | "fly-io" | "vercel" | "render";
+/**
+ * Platform name.
+ */
+export type Platform = "cloudflare" | "fly-io" | "render" | "vercel";
 
+/**
+ * Configuration.
+ */
 export interface Options {
+  /**
+   * Platform the code is running on;
+   * used to allow only known more trustworthy headers.
+   */
   platform?: Platform | null | undefined;
-  proxies?: ReadonlyArray<string | CIDR> | null | undefined;
+  /**
+   * Trusted proxies.
+   */
+  proxies?: ReadonlyArray<Cidr | string> | null | undefined;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
@@ -813,7 +862,19 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-function findIP(
+/**
+ * Find the IP address on a request.
+ *
+ * @param request
+ *   Something that looks like a request,
+ *   of which `headers` is required and several other fields may exist.
+ * @param options
+ *   Configuration (optional).
+ * @returns
+ *   IP address or empty string.
+ */
+// TODO(@wooorm-arcjet): return `undefined` instead of empty string when no IP is found?
+function findIp(
   request: RequestLike,
   options?: Options | null | undefined,
 ): string {
@@ -1029,4 +1090,4 @@ function findIP(
   return "";
 }
 
-export default findIP;
+export default findIp;
