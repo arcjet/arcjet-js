@@ -1,8 +1,11 @@
 {
-    "compilerOptions": {
-        "allowJs": true,
-        "noEmit": true
-    },
-    "include": ["index.js"],
-    "exclude": ["node_modules"]
+  "compilerOptions": {
+    "checkJs": true,
+    "lib": ["dom.iterable", "dom", "es2022"],
+    "module": "node16",
+    "strict": true,
+    "target": "es2022"
+  },
+  "exclude": ["node_modules/"],
+  "include": ["**/*.js"]
 }

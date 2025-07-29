@@ -5,7 +5,7 @@
   </picture>
 </a>
 
-# Arcjet email verification with Express for Node.js
+# Arcjet Rate Limit with Express for Node.js
 
 This example shows how to use Arcjet with a Node.js
 [Express](https://expressjs.com/) server.
@@ -21,7 +21,7 @@ This example shows how to use Arcjet with a Node.js
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/nodejs-express-validate-email
+   cd examples/express-rate-limit
    npm ci
    ```
 
@@ -38,10 +38,5 @@ This example shows how to use Arcjet with a Node.js
    version of Node.js, you can use a package like
    [dotenv](https://www.npmjs.com/package/dotenv) to load the environment file.
 
-5. Execute a curl request with an invalid email e.g.
-
-   ```bash
-   curl -X POST -d 'email=test@arcjet.io' http://localhost:3000/
-   ```
-
-6. The request will be blocked and the server logs will show the details.
+5. Visit `http://localhost:3000/`.
+6. Refresh the page to trigger the rate limit.
