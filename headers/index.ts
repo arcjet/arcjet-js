@@ -3,21 +3,17 @@ function isIterable(val: any): val is Iterable<any> {
 }
 
 /**
- * This Fetch API interface allows you to perform various actions on HTTP
- * request and response headers. These actions include retrieving, setting,
- * adding to, and removing. A Headers object has an associated header list,
- * which is initially empty and consists of zero or more name and value pairs.
+ * Arcjet headers.
  *
- * You can add to this using methods like `append()`.
+ * This exists to prevent the `cookie` header from being set
+ * and non-string values from being set.
  *
- * In all methods of this interface, header names are matched by
- * case-insensitive byte sequence.
- *
- * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers)
+ * @see
+ *   [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers).
  */
 export class ArcjetHeaders extends Headers {
   constructor(
-    init?: HeadersInit | Record<string, string | string[] | undefined>,
+    init?: HeadersInit | Record<string, string[] | string | undefined>,
   ) {
     super();
     if (
@@ -31,7 +27,7 @@ export class ArcjetHeaders extends Headers {
         }
       } else {
         for (const [key, value] of Object.entries(
-          init as Record<string, string | string[] | undefined>,
+          init as Record<string, string[] | string | undefined>,
         )) {
           if (typeof value === "undefined") {
             continue;
@@ -50,13 +46,17 @@ export class ArcjetHeaders extends Headers {
   }
 
   /**
-   * Append a key and value to the headers, while filtering any key named
-   * `cookie`.
+   * Append a header while ignoring `cookie`.
    *
-   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/append)
+   * @see
+   *   [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/append)
    *
-   * @param key The key to append in the headers
-   * @param value The value to append for the key in the headers
+   * @param key
+   *   Header name.
+   * @param value
+   *   Header value.
+   * @returns
+   *   Nothing.
    */
   append(key: string, value: string): void {
     if (typeof key !== "string" || typeof value !== "string") {
@@ -68,12 +68,17 @@ export class ArcjetHeaders extends Headers {
     }
   }
   /**
-   * Set a key and value in the headers, but filtering any key named `cookie`.
+   * Set a header while ignoring `cookie`.
    *
-   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/set)
+   * @see
+   *   [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers/set)
    *
-   * @param key The key to set in the headers
-   * @param value The value to set for the key in the headers
+   * @param key
+   *   Header key.
+   * @param value
+   *   Header value.
+   * @returns
+   *   Nothing.
    */
   set(key: string, value: string): void {
     if (typeof key !== "string" || typeof value !== "string") {
