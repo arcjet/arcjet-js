@@ -50,15 +50,6 @@ Arcjet security features for protecting Next.js apps:
 - 🚅 [Nosecone][nosecone-quick-start] - set security headers such as
   `Content-Security-Policy` (CSP).
 
-## Install
-
-This package is ESM only.
-Install with npm in Node.js:
-
-```sh
-npm install @arcjet/next
-```
-
 ## Quick start
 
 This example will protect a Next.js API route with a rate limit, bot detection,
