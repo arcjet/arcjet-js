@@ -40,21 +40,15 @@ const body = await readBody(fs.createReadStream("example.ts"), { limit: 1024 });
 console.log(body);
 ```
 
-## Implementation
-
-The implementation of this library is based on the [raw-body][node-raw-body]
-package. Licensed MIT with licenses included in our source code.
-
-We've chosen to re-implement the logic to read the body from the stream to keep
-the dependency tree for our packages as light as possible. Our implementation only
-provides the functionality that we need, specifically it excludes the functionality
-to return the stream as a buffer and always parses it as a utf-8 string. The interface
-was also changed to only support promises rather than the sync implementation provided by `raw-body`.
-
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+Derivative work based on [`raw-body`][node-raw-body] licensed under
+[MIT][node-raw-body-license] © Jonathan Ong and Douglas Christopher Wilson.
+Our work removes features that we do not use: no buffers, no sync interface.
+
 [arcjet]: https://arcjet.com
-[node-raw-body]: https://github.com/stream-utils/raw-body/blob/191e4b6506dcf77198eed01c8feb4b6817008342/test/index.js
+[node-raw-body-license]: https://github.com/stream-utils/raw-body/blob/191e4b6/LICENSE
+[node-raw-body]: https://github.com/stream-utils/raw-body/blob/191e4b6/test/index.js
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

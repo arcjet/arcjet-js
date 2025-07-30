@@ -39,22 +39,15 @@ const seconds = parse("1h");
 console.log(seconds); // prints 3600
 ```
 
-## Implementation
-
-The implementation of this library is based on the [ParseDuration][go-parser]
-function in the Go stdlib. Originally licensed BSD-3.0 with the license included
-in our source code.
-
-We've chosen the approach of porting this to TypeScript because our protocol
-operates exclusively on unsigned 32-bit integers representing seconds. However,
-we don't want to require our SDK users to manually calculate seconds. By
-providing this utility, our SDK can accept duration strings and numbers while
-normalizing the values for our protocol.
-
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+Derivative work based on [`time.ParseDuration`][go-parse-duration] from
+`golang/go` licensed under [BSD-3.0][go-parse-duration-license] © The Go Authors.
+Our work ports to TypeScript.
+
 [arcjet]: https://arcjet.com
-[go-parser]: https://github.com/golang/go/blob/c18ddc84e1ec6406b26f7e9d0e1ee3d1908d7c27/src/time/format.go#L1589-L1686
+[go-parse-duration-license]: https://github.com/golang/go/blob/c18ddc84e/LICENSE
+[go-parse-duration]: https://github.com/golang/go/blob/c18ddc84e/src/time/format.go#L1589-L1686
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
