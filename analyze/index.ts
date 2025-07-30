@@ -92,6 +92,14 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
   };
 }
 
+export async function NewBotRule() {
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(coreImports);
+  if (typeof analyze !== "undefined") {
+    return new analyze.rule.BotRule();
+  }
+}
+
 // TODO(@wooorm-arcjet): document what is used to fingerprint.
 /**
  * Generate a fingerprint for the client. This is used to identify the client

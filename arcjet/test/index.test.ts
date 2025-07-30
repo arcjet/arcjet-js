@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { botRule } from "../index.js";
 
 test("arcjet", async function (t) {
   await t.test("should expose the public api", async function () {
+    const fn = botRule();
+    fn();
     assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
       "ArcjetAllowDecision",
       "ArcjetBotReason",

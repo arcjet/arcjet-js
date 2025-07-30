@@ -11,6 +11,45 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
   let dv = new DataView(new ArrayBuffer());
   const dataView = mem => dv.buffer === mem.buffer ? dv : dv = new DataView(mem.buffer);
   
+  const emptyFunc = () => {};
+  
+  function finalizationRegistryCreate (unregister) {
+    if (typeof FinalizationRegistry === 'undefined') {
+      return { unregister () {} };
+    }
+    return new FinalizationRegistry(unregister);
+  }
+  
+  const T_FLAG = 1 << 30;
+  
+  function rscTableCreateOwn (table, rep) {
+    const free = table[0] & ~T_FLAG;
+    if (free === 0) {
+      table.push(0);
+      table.push(rep | T_FLAG);
+      return (table.length >> 1) - 1;
+    }
+    table[0] = table[free << 1];
+    table[free << 1] = 0;
+    table[(free << 1) + 1] = rep | T_FLAG;
+    return free;
+  }
+  
+  function rscTableRemove (table, handle) {
+    const scope = table[handle << 1];
+    const val = table[(handle << 1) + 1];
+    const own = (val & T_FLAG) !== 0;
+    const rep = val & ~T_FLAG;
+    if (val === 0 || (scope & T_FLAG) !== 0) throw new TypeError('Invalid handle');
+    table[handle << 1] = table[0] | T_FLAG;
+    table[0] = handle | T_FLAG;
+    return { rep, scope, own };
+  }
+  
+  const symbolRscHandle = Symbol('handle');
+  
+  const symbolDispose = Symbol.dispose || Symbol.for('dispose');
+  
   function throwInvalidBool() {
     throw new TypeError('invalid variant discriminant for bool');
   }
@@ -52,7 +91,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     let memory0;
     let realloc0;
     
-    function trampoline0(arg0, arg1, arg2) {
+    function trampoline1(arg0, arg1, arg2) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -71,7 +110,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       dataView(memory0).setInt32(arg2 + 0, result2, true);
     }
     
-    function trampoline1(arg0, arg1, arg2, arg3) {
+    function trampoline2(arg0, arg1, arg2, arg3) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -105,7 +144,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum2;
     }
     
-    function trampoline2(arg0, arg1) {
+    function trampoline3(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -136,7 +175,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline3(arg0, arg1) {
+    function trampoline4(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -167,7 +206,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline4(arg0, arg1) {
+    function trampoline5(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -198,7 +237,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline5(arg0, arg1) {
+    function trampoline6(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -229,7 +268,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline6(arg0, arg1, arg2) {
+    function trampoline7(arg0, arg1, arg2) {
       var len1 = arg1;
       var base1 = arg0;
       var result1 = [];
@@ -294,9 +333,19 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     let postReturn2;
     let postReturn3;
     let postReturn4;
+    let postReturn5;
+    const handleTable0 = [T_FLAG, 0];
+    const finalizationRegistry0 = finalizationRegistryCreate((handle) => {
+      const { rep } = rscTableRemove(handleTable0, handle);
+      exports0['7'](rep);
+    });
+    const trampoline0 = rscTableCreateOwn.bind(null, handleTable0);
     Promise.all([module0, module1, module2]).catch(() => {});
     ({ exports: exports0 } = yield instantiateCore(yield module1));
     ({ exports: exports1 } = yield instantiateCore(yield module0, {
+      '[export]arcjet:js-req/rule': {
+        '[resource-new]bot-rule': trampoline0,
+      },
       'arcjet:js-req/bot-identifier': {
         detect: exports0['0'],
       },
@@ -318,13 +367,14 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     ({ exports: exports2 } = yield instantiateCore(yield module2, {
       '': {
         $imports: exports0.$imports,
-        '0': trampoline0,
-        '1': trampoline1,
-        '2': trampoline2,
-        '3': trampoline3,
-        '4': trampoline4,
-        '5': trampoline5,
-        '6': trampoline6,
+        '0': trampoline1,
+        '1': trampoline2,
+        '2': trampoline3,
+        '3': trampoline4,
+        '4': trampoline5,
+        '5': trampoline6,
+        '6': trampoline7,
+        '7': exports1['arcjet:js-req/rule#[dtor]bot-rule'],
       },
     }));
     postReturn0 = exports1['cabi_post_detect-bot'];
@@ -332,6 +382,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     postReturn2 = exports1['cabi_post_validate-characteristics'];
     postReturn3 = exports1['cabi_post_is-valid-email'];
     postReturn4 = exports1['cabi_post_detect-sensitive-info'];
+    postReturn5 = exports1['cabi_post_arcjet:js-req/rule#[method]bot-rule.protect'];
     
     function detectBot(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
@@ -872,7 +923,49 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal;
     }
     
-    return { detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail, validateCharacteristics,  };
+    class BotRule{
+      constructor() {
+        const ret = exports1['arcjet:js-req/rule#[constructor]bot-rule']();
+        var handle1 = ret;
+        var rsc0 = new.target === BotRule ? this : Object.create(BotRule.prototype);
+        Object.defineProperty(rsc0, symbolRscHandle, { writable: true, value: handle1});
+        finalizationRegistry0.register(rsc0, handle1, rsc0);
+        Object.defineProperty(rsc0, symbolDispose, { writable: true, value: function () {
+          finalizationRegistry0.unregister(rsc0);
+          rscTableRemove(handleTable0, handle1);
+          rsc0[symbolDispose] = emptyFunc;
+          rsc0[symbolRscHandle] = null;
+          exports0['7'](handleTable0[(handle1 << 1) + 1] & ~T_FLAG);
+        }});
+        return rsc0;
+      }
+    }
+    
+    BotRule.prototype.protect = function protect(arg1) {
+      var handle1 = this[symbolRscHandle];
+      if (!handle1 || (handleTable0[(handle1 << 1) + 1] & T_FLAG) === 0) {
+        throw new TypeError('Resource error: Not a valid "BotRule" resource.');
+      }
+      var handle0 = handleTable0[(handle1 << 1) + 1] & ~T_FLAG;
+      var val2 = arg1;
+      var len2 = val2.byteLength;
+      var ptr2 = realloc0(0, 0, 1, len2 * 1);
+      var src2 = new Uint8Array(val2.buffer || val2, val2.byteOffset, len2 * 1);
+      (new Uint8Array(memory0.buffer, ptr2, len2 * 1)).set(src2);
+      const ret = exports1['arcjet:js-req/rule#[method]bot-rule.protect'](handle0, ptr2, len2);
+      var ptr3 = dataView(memory0).getInt32(ret + 0, true);
+      var len3 = dataView(memory0).getInt32(ret + 4, true);
+      var result3 = new Uint8Array(memory0.buffer.slice(ptr3, ptr3 + len3 * 1));
+      const retVal = result3;
+      postReturn5(ret);
+      return retVal;
+    };
+    const rule = {
+      BotRule: BotRule,
+      
+    };
+    
+    return { rule, 'arcjet:js-req/rule': rule, detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail, validateCharacteristics,  };
   })();
   let promise, resolve, reject;
   function runNext (value) {

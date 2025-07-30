@@ -83,6 +83,7 @@ import { ArcjetJsReqBotIdentifier } from './interfaces/arcjet-js-req-bot-identif
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
 import { ArcjetJsReqSensitiveInformationIdentifier } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
 import { ArcjetJsReqVerifyBot } from './interfaces/arcjet-js-req-verify-bot.js';
+import { ArcjetJsReqRule } from './interfaces/arcjet-js-req-rule.js';
 export interface ImportObject {
   'arcjet:js-req/bot-identifier': typeof ArcjetJsReqBotIdentifier,
   'arcjet:js-req/email-validator-overrides': typeof ArcjetJsReqEmailValidatorOverrides,
@@ -90,6 +91,8 @@ export interface ImportObject {
   'arcjet:js-req/verify-bot': typeof ArcjetJsReqVerifyBot,
 }
 export interface Root {
+  'arcjet:js-req/rule': typeof ArcjetJsReqRule,
+  rule: typeof ArcjetJsReqRule,
   detectBot(request: string, options: BotConfig): BotResult,
   generateFingerprint(request: string, characteristics: Array<string>): string,
   validateCharacteristics(request: string, characteristics: Array<string>): void,

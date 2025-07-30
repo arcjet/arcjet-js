@@ -1852,6 +1852,16 @@ export function detectBot(options: BotOptions): Primitive<{}> {
   return [rule];
 }
 
+export function botRule() {
+  const botRule = analyze.NewBotRule();
+
+  return async function () {
+    const rule = await botRule;
+    const result = rule?.protect(new Uint8Array());
+    console.log(result);
+  };
+}
+
 export type ShieldOptions = {
   mode?: ArcjetMode;
 };
