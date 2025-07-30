@@ -57,37 +57,22 @@ const baseUrlAllowed = [
 ];
 
 export function baseUrl(env: Env) {
-  // TODO(#90): Remove this conditional before 1.0.0
-  if (isDevelopment(env)) {
-    if (env["ARCJET_BASE_URL"]) {
-      return env["ARCJET_BASE_URL"];
-    }
-
-    // If we're running on fly.io, use the Arcjet Decide Service hosted on fly
-    // Ref: https://fly.io/docs/machines/runtime-environment/#environment-variables
-    if (platform(env) === "fly-io") {
-      return "https://fly.decide.arcjet.com";
-    }
-
-    return "https://decide.arcjet.com";
-  } else {
-    // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
-    // use the hardcoded default.
-    if (
-      typeof env["ARCJET_BASE_URL"] === "string" &&
-      baseUrlAllowed.includes(env["ARCJET_BASE_URL"])
-    ) {
-      return env["ARCJET_BASE_URL"];
-    }
-
-    // If we're running on fly.io, use the Arcjet Decide Service hosted on fly
-    // Ref: https://fly.io/docs/machines/runtime-environment/#environment-variables
-    if (platform(env) === "fly-io") {
-      return "https://fly.decide.arcjet.com";
-    }
-
-    return "https://decide.arcjet.com";
+  // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
+  // use the hardcoded default.
+  if (
+    typeof env["ARCJET_BASE_URL"] === "string" &&
+    baseUrlAllowed.includes(env["ARCJET_BASE_URL"])
+  ) {
+    return env["ARCJET_BASE_URL"];
   }
+
+  // If we're running on fly.io, use the Arcjet Decide Service hosted on fly
+  // Ref: https://fly.io/docs/machines/runtime-environment/#environment-variables
+  if (platform(env) === "fly-io") {
+    return "https://fly.decide.arcjet.com";
+  }
+
+  return "https://decide.arcjet.com";
 }
 
 export function apiKey(env: Env) {
