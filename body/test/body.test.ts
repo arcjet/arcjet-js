@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
+import * as http from "node:http";
+import type { AddressInfo } from "node:net";
 import { describe, test } from "node:test";
-import * as http from "http";
-import { readBody } from "../index.js";
-import type { AddressInfo } from "net";
+import { readBody } from "@arcjet/body";
 
 test("@arcjet/body", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("@arcjet/body")).sort(), [
       "readBody",
     ]);
   });

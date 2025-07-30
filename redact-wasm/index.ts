@@ -1,3 +1,5 @@
+/// <reference types="./wasm.js" />
+
 import { instantiate } from "./wasm/arcjet_analyze_bindings_redact.component.js";
 import type {
   ImportObject,
