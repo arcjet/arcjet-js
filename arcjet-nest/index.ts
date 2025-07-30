@@ -502,7 +502,7 @@ export class ArcjetModule {
     };
 
     return {
-      global: options.isGlobal,
+      global: options.isGlobal || false,
       module: this,
       providers: [
         {
@@ -574,7 +574,7 @@ export class ArcjetModule {
     }
 
     return {
-      global: options.isGlobal,
+      global: options.isGlobal || false,
       module: this,
       providers,
       exports: [ARCJET],
