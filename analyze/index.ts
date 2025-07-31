@@ -1,10 +1,14 @@
 import { initializeWasm } from "@arcjet/analyze-wasm";
 import type {
+  // TODO(@wooorm-arcjet): rename to `DetectBotOptions`.
   BotConfig,
+  // TODO(@wooorm-arcjet): expose, rename to `DetectBotResult`.
   BotResult,
   DetectedSensitiveInfoEntity,
   DetectSensitiveInfoFunction,
+  // TODO(@wooorm-arcjet): rename to `ValidateEmailOptions`.
   EmailValidationConfig,
+  // TODO(@wooorm-arcjet): expose, rename to `ValidateEmailResult`.
   EmailValidationResult,
   SensitiveInfoEntities,
   SensitiveInfoEntity,
@@ -13,11 +17,13 @@ import type {
 } from "@arcjet/analyze-wasm";
 import type { ArcjetLogger } from "@arcjet/protocol";
 
+/// TODO(@wooorm-arcjet): expose, as `Context`.
 interface AnalyzeContext {
   log: ArcjetLogger;
   characteristics: string[];
 }
 
+/// TODO(@wooorm-arcjet): expose, as `Request`.
 type AnalyzeRequest = {
   ip?: string;
   method?: string;
@@ -92,13 +98,20 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
   };
 }
 
-// TODO(@wooorm-arcjet): document what is used to fingerprint.
 /**
- * Generate a fingerprint for the client. This is used to identify the client
- * across multiple requests.
- * @param context - The Arcjet Analyze context.
- * @param request - The request to fingerprint.
- * @returns A SHA-256 string fingerprint.
+ * Generate a fingerprint.
+ *
+ * Fingerprints can be used to identify the client across multiple requests.
+ *
+ * This considers different things on the `request` based on the passed
+ * `context.characteristics`.
+ *
+ * @param context
+ *   Context.
+ * @param request
+ *   Request.
+ * @returns
+ *   Promise to a SHA-256 fingerprint.
  */
 export async function generateFingerprint(
   context: AnalyzeContext,
@@ -121,10 +134,21 @@ export async function generateFingerprint(
   return "";
 }
 
-// TODO(@wooorm-arcjet): docs.
+/**
+ * Check whether an email is valid.
+ *
+ * @param context
+ *   Context.
+ * @param value
+ *   Value.
+ * @param options
+ *   Configuration.
+ * @returns
+ *   Promise to a result.
+ */
 export async function isValidEmail(
   context: AnalyzeContext,
-  candidate: string,
+  value: string,
   options: EmailValidationConfig,
 ): Promise<EmailValidationResult> {
   const { log } = context;
@@ -132,7 +156,7 @@ export async function isValidEmail(
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
-    return analyze.isValidEmail(candidate, options);
+    return analyze.isValidEmail(value, options);
     // Ignore the `else` branch as we test in places that have WebAssembly.
     /* node:coverage ignore next 4 */
   }
@@ -141,7 +165,19 @@ export async function isValidEmail(
   return { blocked: [], validity: "valid" };
 }
 
-// TODO(@wooorm-arcjet): docs.
+/**
+ * Detect whether a request is by a bot.
+ *
+ * @param context
+ *   Context.
+ * @param request
+ *   Request.
+ * @param options
+ *   Configuration.
+ * @returns
+ *   Promise to a result.
+ */
+/// TODO(@wooorm-arcjet): expose `BotEntity`, `BotResult`.
 export async function detectBot(
   context: AnalyzeContext,
   request: AnalyzeRequest,
@@ -161,12 +197,30 @@ export async function detectBot(
   return { allowed: [], denied: [], spoofed: false, verified: false };
 }
 
-// TODO(@wooorm-arcjet): docs.
+/**
+ * Detect sensitive info in a value.
+ *
+ * @param context
+ *   Context.
+ * @param value
+ *   Value.
+ * @param entities
+ *   Entities to detect.
+ * @param contextWindowSize
+ *   Number of tokens to pass to `detect`.
+ * @param detect
+ *   Function to detect sensitive info (optional).
+ * @returns
+ *   Promise to a result.
+ */
+// TODO(@wooorm-arcjet): expose `DetectSensitiveInfoFunction`, `SensitiveInfoEntities`, `SensitiveInfoResult`.
+// TODO(@wooorm-arcjet): less parameters, `5` is a lot.
 export async function detectSensitiveInfo(
   context: AnalyzeContext,
-  candidate: string,
+  value: string,
   entities: SensitiveInfoEntities,
   contextWindowSize: number,
+  // TODO(@wooorm-arcjet): allow `null`, `undefined`.
   detect?: DetectSensitiveInfoFunction,
 ): Promise<SensitiveInfoResult> {
   const { log } = context;
@@ -175,7 +229,7 @@ export async function detectSensitiveInfo(
 
   if (typeof analyze !== "undefined") {
     const skipCustomDetect = typeof detect !== "function";
-    return analyze.detectSensitiveInfo(candidate, {
+    return analyze.detectSensitiveInfo(value, {
       entities,
       contextWindowSize,
       skipCustomDetect,
