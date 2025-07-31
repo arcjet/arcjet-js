@@ -64,7 +64,20 @@ function getOutput(obj: unknown, msg: unknown, args: unknown[]) {
 }
 
 export class Logger {
-  #logLevel: number;
+  #logLevel: 0 | 1 | 2 | 3;
+
+  get level(): string {
+    switch (this.#logLevel) {
+      case 0:
+        return "debug";
+      case 1:
+        return "info";
+      case 2:
+        return "info";
+      case 3:
+        return "error";
+    }
+  }
 
   constructor(opts: LoggerOptions) {
     if (typeof opts.level !== "string") {
