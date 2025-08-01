@@ -34,6 +34,20 @@ Visit the [quick start guide][quick-start] to get started.
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 ([source code][example-source]).
 
+## What is this?
+
+This is our adapter to integrate Arcjet into Astro.
+Arcjet helps you secure your Astro website.
+This package exists so that we can provide the best possible experience to
+Astro users.
+
+## When should I use this?
+
+You can use this if you are using Astro.
+Use a different adapter if you use a different framework.
+
+<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+
 ## Install
 
 This package is ESM only.

@@ -23,6 +23,20 @@ This package is platform-independent in order to support multiple runtimes in va
 - [npm package (`@arcjet/sprintf`)](https://www.npmjs.com/package/@arcjet/sprintf)
 - [GitHub source code (`sprintf/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/sprintf)
 
+## What is this?
+
+This is an internal utility to help us format log messages.
+It’s a fork of [`pinojs/quick-format-unescaped`][quick-format-unescaped].
+We chose to fork so that we can maintain as much compatibility as possible
+while being more restrictive.
+
+## When should I use this?
+
+You should not use this but use
+[`pinojs/quick-format-unescaped`][quick-format-unescaped] or one of the
+alternatives instead.
+This package matches our current needs which are likely different from yours.
+
 ## Install
 
 This package is ESM only.
@@ -57,15 +71,6 @@ Object substitution supports any value that is not `undefined`.
   or `<anonymous>` if unnamed.
 - `%s` - Replaced if provided with a string.
 - `%%` - Replaced by the literal `%` character.
-
-## Implementation
-
-This implementation of this library is based on [quick-format-unescaped], which
-is licensed MIT with licenses included in our source code.
-
-The goal of this library is to be more restrictive than `quick-format-unescaped`
-while maintaining as much compatibility as possible, since [pino] uses it to
-format strings.
 
 ## License
 

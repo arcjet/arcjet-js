@@ -26,6 +26,23 @@ redaction library.
 - [npm package (`@arcjet/redact`)](https://www.npmjs.com/package/@arcjet/redact)
 - [GitHub source code (`redact/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/redact)
 
+## What is this?
+
+This package provides functionality to redact sensitive info.
+The work is done in WebAssembly but is called here from JavaScript.
+
+The WebAssembly files are in [`@arcjet/redact-wasm`][github-arcjet-redact-wasm].
+For more info on why we maintain our WebAssembly and JavaScript projects like
+this,
+see [“What is this?” in the readme of
+`@arcjet/analyze-wasm`][github-arcjet-analyze-wasm-what].
+
+## When should I use this?
+
+You can use this package to redact sensitive information locally.
+You can redact email addresses, credit card numbers, and more.
+It is also possible to reverse the process: to un-redact what was found.
+
 ## Install
 
 This package is ESM only.
@@ -63,3 +80,5 @@ console.log(unredacted); // "Your email address is john@example.com"
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
 [redact-ref]: https://docs.arcjet.com/redact/reference
+[github-arcjet-analyze-wasm-what]: https://github.com/arcjet/arcjet-js/tree/main/analyze-wasm#what-is-this
+[github-arcjet-redact-wasm]: https://github.com/arcjet/arcjet-js/tree/main/redact-wasm

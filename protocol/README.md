@@ -21,6 +21,15 @@ The TypeScript & JavaScript interface into the [Arcjet][arcjet] protocol.
 - [npm package (`@arcjet/protocol`)](https://www.npmjs.com/package/@arcjet/protocol)
 - [GitHub source code (`protocol/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/protocol)
 
+## What is this?
+
+This package provides access to our protocol.
+It talks with our API from JavaScript.
+
+## When should I use this?
+
+Do not use this!
+
 ## Install
 
 This package is ESM only.

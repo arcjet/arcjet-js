@@ -21,6 +21,14 @@ Custom rollup config for [Arcjet][arcjet] projects.
 - [npm package (`@arcjet/rollup-config`)](https://www.npmjs.com/package/@arcjet/rollup-config)
 - [GitHub source code (`rollup-config/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/rollup-config)
 
+## What is this?
+
+This is our Rollup configuration that we share across our codebase.
+
+## When should I use this?
+
+You should not use this but instead configure Rollup yourself.
+
 ## Install
 
 This package is ESM only.

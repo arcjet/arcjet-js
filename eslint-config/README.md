@@ -21,6 +21,14 @@ Custom eslint config for [Arcjet][arcjet] projects.
 - [npm package (`@arcjet/eslint-config`)](https://www.npmjs.com/package/@arcjet/eslint-config)
 - [GitHub source code (`eslint-config/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/eslint-config)
 
+## What is this?
+
+This is our ESLint configuration that we share across our codebase.
+
+## When should I use this?
+
+You should not use this but instead configure ESLint yourself.
+
 ## Install
 
 This package is ESM only.

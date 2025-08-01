@@ -27,6 +27,20 @@ This is the [Arcjet][] SDK for [Fastify][].
 
 Visit the [quick start guide][arcjet-quick-start-fastify] to get started.
 
+## What is this?
+
+This is our adapter to integrate Arcjet into Fastify.
+Arcjet helps you secure your Fastify server.
+This package exists so that we can provide the best possible experience to
+Fastify users.
+
+## When should I use this?
+
+You can use this if you are using Fastify.
+Use a different adapter if you use a different framework.
+
+<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+
 ## Install
 
 This package is ESM only.

@@ -21,6 +21,14 @@ Custom tsconfig for [Arcjet][arcjet] projects.
 - [npm package (`@arcjet/tsconfig`)](https://www.npmjs.com/package/@arcjet/tsconfig)
 - [GitHub source code (`tsconfig/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/tsconfig)
 
+## What is this?
+
+This is our TypeScript configuration that we share across our codebase.
+
+## When should I use this?
+
+You should not use this but instead configure TypeScript yourself.
+
 ## Install
 
 This package is ESM only.

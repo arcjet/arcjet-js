@@ -34,6 +34,17 @@ type Env = {
 - [npm package (`@arcjet/env`)](https://www.npmjs.com/package/@arcjet/env)
 - [GitHub source code (`env/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/env)
 
+## What is this?
+
+This is a utility that reads configuration for us from `process.env` and
+similar.
+It exists so that we can access that configuration throughout our packages.
+
+## When should I use this?
+
+You should probably not use this but there are some edge cases where we let
+users swap more advanced features out and then it may be useful.
+
 ## Install
 
 This package is ESM only.

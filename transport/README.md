@@ -21,6 +21,14 @@ Transport mechanisms for the [Arcjet][arcjet] protocol.
 - [npm package (`@arcjet/transport`)](https://www.npmjs.com/package/@arcjet/transport)
 - [GitHub source code (`transport/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/transport)
 
+## What is this?
+
+This package provides a way to talk to our protocol.
+
+## When should I use this?
+
+Do not use this!
+
 ## Install
 
 This package is ESM only.
