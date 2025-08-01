@@ -21,6 +21,18 @@
 - [npm package (`@arcjet/decorate`)](https://www.npmjs.com/package/@arcjet/decorate)
 - [GitHub source code (`decorate/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/decorate)
 
+## What is this?
+
+This is a utility that lets you decorate responses based on Arcjet decisions.
+It currently supports experimental rate limit headers.
+
+## When should I use this?
+
+You can use this package if you use the rate limit rule and want to set
+experimental `RateLimit-Policy` and `RateLimit` headers.
+See [_RateLimit header fields for HTTP_ on `ietf.org`][ietf-rate-limit] for
+more info.
+
 ## Install
 
 This package is ESM only.
@@ -81,3 +93,4 @@ server.listen(8000);
 
 [arcjet]: https://arcjet.com
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[ietf-rate-limit]: https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-ratelimit-headers-08

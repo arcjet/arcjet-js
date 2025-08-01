@@ -21,6 +21,20 @@ Protect your `Response` with secure headers.
 - [npm package (`nosecone`)](https://www.npmjs.com/package/nosecone)
 - [GitHub source code (`nosecone/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/nosecone)
 
+## What is this?
+
+Nosecone makes it easy to add and configure security headers.
+This package exists so that you can secure your server even if you do not use
+Arcjet.
+
+## When should I use this?
+
+You can use this package with or without Arcjet to protect your server.
+You can use `@nosecone/next` or `@nosecone/sveltekit` if you are using those
+frameworks.
+
+<!-- TODO(@wooorm-arcjet): discuss when someone should use Helmet instead. -->
+
 ## Install
 
 This package is ESM only.

@@ -21,6 +21,16 @@
 - [npm package (`@arcjet/stable-hash`)](https://www.npmjs.com/package/@arcjet/stable-hash)
 - [GitHub source code (`stable-hash/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/stable-hash)
 
+## What is this?
+
+This is an internal utility to help us create stable hashes.
+It’s super minimal and matches similar internal code in other languages.
+This exists to make sure things work the same across languages.
+
+## When should I use this?
+
+Do not use this!
+
 ## Install
 
 This package is ESM only.

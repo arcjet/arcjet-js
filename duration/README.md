@@ -21,6 +21,20 @@
 - [npm package (`@arcjet/duration`)](https://www.npmjs.com/package/@arcjet/duration)
 - [GitHub source code (`duration/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/duration)
 
+## What is this?
+
+This is an internal utility that exists so our users can pass meaningful
+duration strings such as `1h` instead of having to manually calculate seconds
+or milliseconds.
+We turned the Go [`ParseDuration`][go-parser] into TypeScript so that we have
+the exact same functionality in both languages.
+
+## When should I use this?
+
+You should not use this but use one of the many alternatives such as
+[`vercel/ms`][github-vercel-ms].
+This package matches our current needs which are likely different from yours.
+
 ## Install
 
 This package is ESM only.
@@ -39,18 +53,6 @@ const seconds = parse("1h");
 console.log(seconds); // prints 3600
 ```
 
-## Implementation
-
-The implementation of this library is based on the [ParseDuration][go-parser]
-function in the Go stdlib. Originally licensed BSD-3.0 with the license included
-in our source code.
-
-We've chosen the approach of porting this to TypeScript because our protocol
-operates exclusively on unsigned 32-bit integers representing seconds. However,
-we don't want to require our SDK users to manually calculate seconds. By
-providing this utility, our SDK can accept duration strings and numbers while
-normalizing the values for our protocol.
-
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
@@ -58,3 +60,4 @@ normalizing the values for our protocol.
 [arcjet]: https://arcjet.com
 [go-parser]: https://github.com/golang/go/blob/c18ddc84e1ec6406b26f7e9d0e1ee3d1908d7c27/src/time/format.go#L1589-L1686
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[github-vercel-ms]: https://github.com/vercel/ms

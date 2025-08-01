@@ -21,6 +21,21 @@
 - [npm package (`@arcjet/body`)](https://www.npmjs.com/package/@arcjet/body)
 - [GitHub source code (`body/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/body)
 
+## What is this?
+
+This is an internal utility to help us read streams from various frameworks.
+It’s a fork of [`stream-utils/raw-body`][node-raw-body].
+We chose to fork so that we can cut away functionality that we do not use
+and keep our dependency tree as light as possible.
+Specifically it always parses the stream as a UTF-8 string instead of a `Buffer`
+and only supports promises instead of callbacks.
+
+## When should I use this?
+
+You should not use this but use [`stream-utils/raw-body`][node-raw-body] or one
+of the alternatives instead.
+This package matches our current needs which are likely different from yours.
+
 ## Install
 
 This package is ESM only.
@@ -39,17 +54,6 @@ import { readBody } from "@arcjet/body";
 const body = await readBody(fs.createReadStream("example.ts"), { limit: 1024 });
 console.log(body);
 ```
-
-## Implementation
-
-The implementation of this library is based on the [raw-body][node-raw-body]
-package. Licensed MIT with licenses included in our source code.
-
-We've chosen to re-implement the logic to read the body from the stream to keep
-the dependency tree for our packages as light as possible. Our implementation only
-provides the functionality that we need, specifically it excludes the functionality
-to return the stream as a buffer and always parses it as a utf-8 string. The interface
-was also changed to only support promises rather than the sync implementation provided by `raw-body`.
 
 ## License
 

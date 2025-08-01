@@ -57,6 +57,20 @@ and Shield WAF.
 
 You can also find this [quick start guide][quick-start] in the docs.
 
+## What is this?
+
+This is our adapter to integrate Arcjet into Next.js.
+Arcjet helps you secure your Next web application.
+This package exists so that we can provide the best possible experience to
+Next users.
+
+## When should I use this?
+
+You can use this if you are using Next.js.
+Use a different adapter if you use a different framework.
+
+<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+
 ## Install
 
 This package is ESM only.

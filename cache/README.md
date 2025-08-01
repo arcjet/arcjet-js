@@ -21,6 +21,14 @@
 - [npm package (`@arcjet/cache`)](https://www.npmjs.com/package/@arcjet/cache)
 - [GitHub source code (`cache/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/cache)
 
+## What is this?
+
+This is an internal utility to help us cache some things in memory.
+
+## When should I use this?
+
+Do not use this!
+
 ## Install
 
 This package is ESM only.

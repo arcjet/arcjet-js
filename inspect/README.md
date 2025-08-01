@@ -21,6 +21,17 @@
 - [npm package (`@arcjet/inspect`)](https://www.npmjs.com/package/@arcjet/inspect)
 - [GitHub source code (`inspect/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/inspect)
 
+## What is this?
+
+Arcjet attaches lots of metadata to every decision.
+This package exists to more easily interact with Arcjet decisions for common
+patterns.
+
+## When should I use this?
+
+You can access metadata on decisions directly but you can use this package for
+common patterns.
+
 ## Install
 
 This package is ESM only.

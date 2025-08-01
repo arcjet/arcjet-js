@@ -22,6 +22,17 @@ structured logger interface.
 - [npm package (`@arcjet/logger`)](https://www.npmjs.com/package/@arcjet/logger)
 - [GitHub source code (`logger/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/logger)
 
+## What is this?
+
+This is an internal utility to help us log things.
+It provides a small interface, a bit like [Pino][github-pino],
+so that users with custom needs can swap it for their own logger.
+
+## When should I use this?
+
+You should probably not use this but use one of the alternatives instead.
+This package matches our current needs which are likely different from yours.
+
 ## Install
 
 This package is ESM only.
@@ -55,5 +66,6 @@ to one of: `"DEBUG"`, `"LOG"`, `"WARN"`, or `"ERROR"`.
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[github-pino]: https://github.com/pinojs/pino
 [pino-api]: https://github.com/pinojs/pino/blob/8db130eba0439e61c802448d31eb1998cebfbc98/docs/api.md#logger
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

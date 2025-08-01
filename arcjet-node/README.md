@@ -37,6 +37,21 @@ Visit the [quick start guide][quick-start] to get started.
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 ([source code][example-source]).
 
+## What is this?
+
+This is our adapter to integrate Arcjet into Node.js.
+Arcjet helps you secure your Node server.
+This package exists so that we can provide the best possible experience to
+Node users.
+
+## When should I use this?
+
+You can use this if you are using Node.js.
+Use a different adapter if you use a different runtime.
+There are also adapters that are more specific such as Astro or Next.js.
+
+<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+
 ## Install
 
 This package is ESM only.

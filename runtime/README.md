@@ -24,6 +24,20 @@ defined by the [WinterCG][wintercg].
 - [npm package (`@arcjet/runtime`)](https://www.npmjs.com/package/@arcjet/runtime)
 - [GitHub source code (`runtime/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/runtime)
 
+## What is this?
+
+This is an internal utility to help us figure out what platform we are running on.
+It’s a fork of [`unjs/std-env`][std-env].
+We chose to fork so that we can cut away functionality that we do not use
+and keep our dependency tree as light as possible.
+We only need the runtime detection.
+
+## When should I use this?
+
+You should not use this but use [`unjs/std-env`][std-env] or one of the
+alternatives instead.
+This package matches our current needs which are likely different from yours.
+
 ## Install
 
 This package is ESM only.
@@ -40,11 +54,6 @@ import { runtime } from "@arcjet/runtime";
 
 console.log(runtime()); // => "bun" or "node" and such
 ```
-
-## Implementation
-
-Improvements of this library were informed by [std-env], which is licensed MIT
-with licenses included in our source code.
 
 ## License
 
