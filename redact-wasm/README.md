@@ -56,7 +56,5 @@ Use [`@arcjet/redact`][file-redact] instead.
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
 [file-redact]: ../redact/
-[mdn-data-url]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
-[wasm-base64-blog]: https://blobfolio.com/2019/better-binary-batter-mixing-base64-and-uint8array/
 [github-arcjet-analyze-wasm-what]: https://github.com/arcjet/arcjet-js/tree/main/analyze-wasm#what-is-this
 [github-arcjet-redact]: https://github.com/arcjet/arcjet-js/tree/main/redact

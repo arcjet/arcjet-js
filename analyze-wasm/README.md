@@ -82,3 +82,4 @@ Use [`@arcjet/analyze`][file-analyze] instead.
 [wasm-base64-blog]: https://blobfolio.com/2019/better-binary-batter-mixing-base64-and-uint8array/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [github-arcjet-analyze]: https://github.com/arcjet/arcjet-js/tree/main/analyze
+[tc39-proposal-import-bytes]: https://github.com/tc39/proposal-import-bytes
