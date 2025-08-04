@@ -11,20 +11,20 @@
   },
   "dependencies": {
     "@arcjet/next": "latest",
-    "@hookform/resolvers": "^5.1.1",
+    "@hookform/resolvers": "^5.2.1",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "0.525.0",
+    "lucide-react": "0.536.0",
     "next": "^15",
     "next-themes": "^0.4.6",
     "react": "^19",
     "react-dom": "^19",
-    "react-hook-form": "^7.60.0",
+    "react-hook-form": "^7.62.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.6",
-    "zod": "^4.0.5"
+    "zod": "^4.0.14"
   },
   "devDependencies": {
     "@types/node": "^20",
