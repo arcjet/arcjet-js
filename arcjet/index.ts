@@ -1343,10 +1343,12 @@ export function sensitiveInfo<
       if (typeof options.detect !== "undefined") {
         const detect = options.detect;
         convertedDetect = (tokens: string[]) => {
-          return detect(tokens)
-            .filter((e) => typeof e !== "undefined")
-            // @ts-ignore: TODO(@wooorm-arcjet): this fails when building on Bun, investigate.
-            .map(protocolSensitiveInfoEntitiesToAnalyze);
+          return (
+            detect(tokens)
+              .filter((e) => typeof e !== "undefined")
+              // @ts-ignore: TODO(@wooorm-arcjet): this fails when building on Bun, investigate.
+              .map(protocolSensitiveInfoEntitiesToAnalyze)
+          );
         };
       }
 
