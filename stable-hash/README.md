@@ -21,6 +21,18 @@
 - [npm package (`@arcjet/stable-hash`)](https://www.npmjs.com/package/@arcjet/stable-hash)
 - [GitHub source code (`stable-hash/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/stable-hash)
 
+## What is this?
+
+This is an internal utility to help us create stable hashes.
+It’s super minimal and matches similar internal code in other languages.
+This exists to make sure things work the same across languages.
+
+## When should I use this?
+
+This is an internal Arcjet package not designed for public use.
+See our [_Get started_ guide][arcjet-get-started] for how to use Arcjet in your
+application.
+
 ## Install
 
 This package is ESM only.
@@ -53,3 +65,4 @@ console.log(id);
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
+[arcjet-get-started]: https://docs.arcjet.com/get-started

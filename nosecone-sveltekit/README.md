@@ -21,6 +21,20 @@ Protect your SvelteKit application with secure headers.
 - [npm package (`@nosecone/sveltekit`)](https://www.npmjs.com/package/@nosecone/sveltekit)
 - [GitHub source code (`nosecone-sveltekit/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/nosecone-sveltekit)
 
+## What is this?
+
+This is our adapter to integrate Nosecone into SvelteKit.
+Nosecone makes it easy to add and configure security headers.
+This package exists so that we can provide the best possible experience to
+SvelteKit users.
+
+## When should I use this?
+
+You can use this package with or without Arcjet to protect your app if you are
+using SvelteKit.
+Use [`@nosecone/next`][github-nosecone-next] if you use Next.js and
+use [`nosecone`][github-nosecone] itself if you use a different framework.
+
 ## Install
 
 This package is ESM only.
@@ -74,3 +88,5 @@ export const handle = sequence(
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
+[github-nosecone-next]: https://github.com/arcjet/arcjet-js/tree/main/nosecone-next
+[github-nosecone]: https://github.com/arcjet/arcjet-js/tree/main/nosecone

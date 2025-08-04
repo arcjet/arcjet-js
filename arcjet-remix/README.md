@@ -30,6 +30,19 @@ This is the [Arcjet][arcjet] SDK for [Remix][remix].
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 ([source code][example-source]).
 
+## What is this?
+
+This is our adapter to integrate Arcjet into Remix.
+Arcjet helps you secure your Remix website.
+This package exists so that we can provide the best possible experience to
+Remix users.
+
+## When should I use this?
+
+You can use this if you are using Remix.
+See our [_Get started_ guide][arcjet-get-started] for other supported
+frameworks.
+
 ## Install
 
 This package is ESM only.
@@ -86,6 +99,7 @@ see the [Arcjet Remix SDK reference][arcjet-reference-remix] on our website.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-remix]: https://docs.arcjet.com/reference/remix
 [arcjet]: https://arcjet.com
 [remix]: https://remix.run/

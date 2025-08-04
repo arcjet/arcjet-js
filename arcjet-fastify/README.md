@@ -27,6 +27,19 @@ This is the [Arcjet][] SDK for [Fastify][].
 
 Visit the [quick start guide][arcjet-quick-start-fastify] to get started.
 
+## What is this?
+
+This is our adapter to integrate Arcjet into Fastify.
+Arcjet helps you secure your Fastify server.
+This package exists so that we can provide the best possible experience to
+Fastify users.
+
+## When should I use this?
+
+You can use this if you are using Fastify.
+See our [_Get started_ guide][arcjet-get-started] for other supported
+frameworks.
+
 ## Install
 
 This package is ESM only.
@@ -110,6 +123,7 @@ see the [Arcjet Fastify SDK reference][arcjet-reference-fastify] on our website.
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-quick-start-fastify]: https://docs.arcjet.com/get-started/fastify
 [arcjet]: https://arcjet.com
 [fastify]: https://fastify.dev/

@@ -25,6 +25,19 @@ This is the [Arcjet][arcjet] SDK for [Deno][deno].
 - [npm package (`@arcjet/deno`)](https://www.npmjs.com/package/@arcjet/deno)
 - [GitHub source code (`arcjet-deno/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-deno)
 
+## What is this?
+
+This is our adapter to integrate Arcjet into Deno.
+Arcjet helps you secure your Deno server.
+This package exists so that we can provide the best possible experience to
+Deno users.
+
+## When should I use this?
+
+You can use this if you are using Deno.
+See our [_Get started_ guide][arcjet-get-started] for other supported
+runtimes.
+
 ## Install
 
 This package is ESM only.
@@ -85,6 +98,7 @@ see the [Arcjet Deno SDK reference][arcjet-reference-deno] on our website.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet]: https://arcjet.com
 [deno]: https://deno.com/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

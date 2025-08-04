@@ -21,6 +21,28 @@
 - [npm package (`@arcjet/ip`)](https://www.npmjs.com/package/@arcjet/ip)
 - [GitHub source code (`ip/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/ip)
 
+## What is this?
+
+This is an internal utility to help us deal with IP addresses.
+It includes code from the Rust standard library code to parse
+[IPv4 and IPv6][rust-parser] and also contains some code from
+[`pbojinov/request-ip`][request-ip].
+We turned the Rust IP parser into TypeScript so that we have the exact same
+functionality in both languages.
+Similar functionality in alternative JavaScript libraries often uses regular
+expressions but those can cause ReDoS attacks.
+We sidestep that problem because the Rust IP parser algorithm does not use
+regular expressions.
+We chose to copy code from `request-ip` so that we only keep the functionality
+that we use and keep our dependency tree as light as possible.
+Our code is different: if we know we are running on Cloudflare for example then
+we do not trust headers typically set by fly.io.
+
+## When should I use this?
+
+You should not use this but use one of the alternatives instead.
+This package matches our current needs which are likely different from yours.
+
 ## Install
 
 This package is ESM only.
@@ -48,29 +70,11 @@ platform is supplied in the `options` argument.
 If a private/internal address is encountered, it will be skipped. If only those
 are detected, an empty string is returned.
 
-## Implementation
-
-The implementation of this library is based on the [Parser][rust-parser],
-[global ipv4 comparisons][rust-global-ipv4], and
-[global ipv6 comparisons][rust-global-ipv6] in the Rust stdlib and the [header
-lookups][request-ip-headers] in the [request-ip] package. Both licensed MIT with
-licenses included in our source code.
-
-We've chosen the approach of porting Rust's IP Parser because capturing RegExps
-can be the source of ReDoS attacks, which we need to avoid. We also wanted to
-keep our implementation as close to Rust as possible because we will be relying
-on the Rust stdlib implementation in the future, with a fallback to this
-implementation. As such, we'll need to track changes in Rust's implementation,
-even though it seems to change infrequently.
-
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
 [rust-parser]: https://github.com/rust-lang/rust/blob/07921b50ba6dcb5b2984a1dba039a38d85bffba2/library/core/src/net/parser.rs#L34
-[rust-global-ipv4]: https://github.com/rust-lang/rust/blob/87e1447aadaa2899ff6ccabe1fa669eb50fb60a1/library/core/src/net/ip_addr.rs#L749
-[rust-global-ipv6]: https://github.com/rust-lang/rust/blob/87e1447aadaa2899ff6ccabe1fa669eb50fb60a1/library/core/src/net/ip_addr.rs#L1453
-[request-ip-headers]: https://github.com/pbojinov/request-ip/blob/e1d0f4b89edf26c77cf62b5ef662ba1a0bd1c9fd/src/index.js#L55
 [request-ip]: https://github.com/pbojinov/request-ip/tree/e1d0f4b89edf26c77cf62b5ef662ba1a0bd1c9fd
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
