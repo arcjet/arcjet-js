@@ -62,6 +62,86 @@ function isActive(
  * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
  * for more info.
  *
+ * @example
+ *   ```ts
+ *   import { isSpoofedBot } from "@arcjet/inspect";
+ *   import arcjet, { detectBot } from "@arcjet/next";
+ *   import type { NextApiRequest, NextApiResponse } from "next";
+ *
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY!,
+ *     rules: [
+ *       detectBot({
+ *         mode: "LIVE",
+ *         allow: [
+ *           "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *         ],
+ *       }),
+ *     ],
+ *   });
+ *
+ *   export async function GET(request: NextApiRequest, response: NextApiResponse) {
+ *     const decision = await aj.protect(request);
+ *
+ *     if (decision.isDenied()) {
+ *       return response.status(403).json({ message: "Forbidden" });
+ *     }
+ *
+ *     if (decision.results.some(isSpoofedBot)) {
+ *       return response
+ *         .status(403)
+ *         .json({ message: "You are pretending to be a good bot!" });
+ *     }
+ *
+ *     response.status(200).json({ message: "Hello world" });
+ *   }
+ *   ```
+ *
+ * @example
+ *   ```ts
+ *   import http from "node:http";
+ *   import { isSpoofedBot } from "@arcjet/inspect";
+ *   import arcjet, { detectBot } from "@arcjet/node";
+ *
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY!,
+ *     rules: [
+ *       detectBot({
+ *         mode: "LIVE",
+ *         allow: [
+ *           "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *         ],
+ *       }),
+ *     ],
+ *   });
+ *
+ *   const server = http.createServer(async function (
+ *     request: http.IncomingMessage,
+ *     response: http.ServerResponse,
+ *   ) {
+ *     const decision = await aj.protect(request);
+ *
+ *     if (decision.isDenied()) {
+ *       response.writeHead(403, { "Content-Type": "application/json" });
+ *       response.end(JSON.stringify({ message: "Forbidden" }));
+ *       return;
+ *     }
+ *
+ *     if (decision.results.some(isSpoofedBot)) {
+ *       response.writeHead(403, { "Content-Type": "application/json" });
+ *       response.end(
+ *         JSON.stringify({ message: "You are pretending to be a good bot!" }),
+ *       );
+ *       return;
+ *     }
+ *
+ *     response.writeHead(200, { "Content-Type": "application/json" });
+ *     response.end(JSON.stringify({ message: "Hello world" }));
+ *   });
+ *
+ *   server.listen(8000);
+ *   ```
+ *
  * @param result
  *   Rule result.
  * @returns
@@ -99,6 +179,84 @@ export function isSpoofedBot(result: ArcjetRuleResult): boolean | undefined {
  * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
  * for more info.
  *
+ * @example
+ *   ```ts
+ *   import { isVerifiedBot } from "@arcjet/inspect";
+ *   import arcjet, { detectBot } from "@arcjet/next";
+ *   import type { NextApiRequest, NextApiResponse } from "next";
+ *
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY!,
+ *     rules: [
+ *       detectBot({
+ *         mode: "LIVE",
+ *         allow: [
+ *           "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *         ],
+ *       }),
+ *     ],
+ *   });
+ *
+ *   export async function GET(request: NextApiRequest, response: NextApiResponse) {
+ *     const decision = await aj.protect(request);
+ *
+ *     // Ignore all other signals and always allow verified search engine bots
+ *     if (decision.results.some(isVerifiedBot)) {
+ *       return response.status(200).json({ message: "Hello bot!" });
+ *     }
+ *
+ *     if (decision.isDenied()) {
+ *       return response.status(403).json({ message: "Forbidden" });
+ *     }
+ *
+ *     response.status(200).json({ message: "Hello world" });
+ *   }
+ *   ```
+ *
+ * @example
+ *   ```ts
+ *   import http from "node:http";
+ *   import { isVerifiedBot } from "@arcjet/inspect";
+ *   import arcjet, { detectBot } from "@arcjet/next";
+ *
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY!,
+ *     rules: [
+ *       detectBot({
+ *         mode: "LIVE",
+ *         allow: [
+ *           "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *         ],
+ *       }),
+ *     ],
+ *   });
+ *
+ *   const server = http.createServer(async function (
+ *     request: http.IncomingMessage,
+ *     response: http.ServerResponse,
+ *   ) {
+ *     const decision = await aj.protect(request);
+ *
+ *     // Ignore all other signals and always allow verified search engine bots
+ *     if (decision.results.some(isVerifiedBot)) {
+ *       response.writeHead(200, { "Content-Type": "application/json" });
+ *       response.end(JSON.stringify({ message: "Hello bot!" }));
+ *       return;
+ *     }
+ *
+ *     if (decision.isDenied()) {
+ *       response.writeHead(403, { "Content-Type": "application/json" });
+ *       response.end(JSON.stringify({ message: "Forbidden" }));
+ *       return;
+ *     }
+ *
+ *     response.writeHead(200, { "Content-Type": "application/json" });
+ *     response.end(JSON.stringify({ message: "Hello world" }));
+ *   });
+ *
+ *   server.listen(8000);
+ *   ```
+ *
  * @param result
  *   Rule result.
  * @returns
@@ -135,6 +293,84 @@ export function isVerifiedBot(result: ArcjetRuleResult): boolean | undefined {
  * See [*Error handling* on
  * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#error-handling)
  * for more info.
+ *
+ * @example
+ *   ```ts
+ *  import { isMissingUserAgent } from "@arcjet/inspect";
+ *  import arcjet, { detectBot } from "@arcjet/next";
+ *  import type { NextApiRequest, NextApiResponse } from "next";
+ *
+ *  const aj = arcjet({
+ *    key: process.env.ARCJET_KEY!,
+ *    rules: [
+ *      detectBot({
+ *        mode: "LIVE",
+ *        allow: [
+ *          "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *        ],
+ *      }),
+ *    ],
+ *  });
+ *
+ *  export async function GET(request: NextApiRequest, response: NextApiResponse) {
+ *    const decision = await aj.protect(request);
+ *
+ *    if (decision.isDenied()) {
+ *      return response.status(403).json({ message: "Forbidden" });
+ *    }
+ *
+ *    // We expect all non-bot clients to have the User-Agent header
+ *    if (decision.results.some(isMissingUserAgent)) {
+ *      return response.status(403).json({ message: "You are a bot!" });
+ *    }
+ *
+ *    response.status(200).json({ message: "Hello world" });
+ *  }
+ *   ```
+ *
+ * @example
+ *   ```ts
+ *   import http from "node:http";
+ *   import { isMissingUserAgent } from "@arcjet/inspect";
+ *   import arcjet, { detectBot } from "@arcjet/next";
+ *
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY!,
+ *     rules: [
+ *       detectBot({
+ *         mode: "LIVE",
+ *         allow: [
+ *           "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *         ],
+ *       }),
+ *     ],
+ *   });
+ *
+ *   const server = http.createServer(async function (
+ *     request: http.IncomingMessage,
+ *     response: http.ServerResponse,
+ *   ) {
+ *     const decision = await aj.protect(request);
+ *
+ *     if (decision.isDenied()) {
+ *       response.writeHead(403, { "Content-Type": "application/json" });
+ *       response.end(JSON.stringify({ message: "Forbidden" }));
+ *       return;
+ *     }
+ *
+ *     // We expect all non-bot clients to have the User-Agent header
+ *     if (decision.results.some(isMissingUserAgent)) {
+ *       response.writeHead(403, { "Content-Type": "application/json" });
+ *       response.end(JSON.stringify({ message: "You are a bot!" }));
+ *       return;
+ *     }
+ *
+ *     response.writeHead(200, { "Content-Type": "application/json" });
+ *     response.end(JSON.stringify({ message: "Hello world" }));
+ *   });
+ *
+ *   server.listen(8000);
+ *   ```
  *
  * @param result
  *   Rule result.
