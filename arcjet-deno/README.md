@@ -35,9 +35,8 @@ Deno users.
 ## When should I use this?
 
 You can use this if you are using Deno.
-Use a different adapter if you use a different runtime.
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+See our [_Get started_ guide][arcjet-get-started] for other supported
+runtimes.
 
 ## Install
 
@@ -99,6 +98,7 @@ see the [Arcjet Deno SDK reference][arcjet-reference-deno] on our website.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet]: https://arcjet.com
 [deno]: https://deno.com/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

@@ -27,7 +27,9 @@ This is our ESLint configuration that we share across our codebase.
 
 ## When should I use this?
 
-You should not use this but instead configure ESLint yourself.
+This is an internal Arcjet package not designed for public use.
+See our [_Get started_ guide][arcjet-get-started] for how to use Arcjet in your
+application.
 
 ## Install
 
@@ -51,4 +53,5 @@ export default [...arcjetEslintConfig];
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

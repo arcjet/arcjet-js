@@ -47,10 +47,8 @@ Node users.
 ## When should I use this?
 
 You can use this if you are using Node.js.
-Use a different adapter if you use a different runtime.
-There are also adapters that are more specific such as Astro or Next.js.
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+See our [_Get started_ guide][arcjet-get-started] for other supported
+frameworks and runtimes.
 
 ## Install
 
@@ -110,6 +108,7 @@ see the [Arcjet Node.js SDK reference][arcjet-reference-node] on our website.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-node]: https://docs.arcjet.com/reference/nodejs
 [arcjet]: https://arcjet.com
 [node-js]: https://nodejs.org/

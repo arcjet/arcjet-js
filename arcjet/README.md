@@ -41,11 +41,9 @@ that each integrate with a particular framework.
 
 ## When should I use this?
 
-You should generally use an adapters that integrates with your framework.
-This package can be used to interact with Arcjet if your framework does not
-yet have an integration.
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+We recommend using one of our runtime or framework specific packages rather
+than this one.
+See our [_Get started_ guide][arcjet-get-started] for more info.
 
 ## Install
 

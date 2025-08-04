@@ -67,9 +67,8 @@ Next users.
 ## When should I use this?
 
 You can use this if you are using Next.js.
-Use a different adapter if you use a different framework.
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+See our [_Get started_ guide][arcjet-get-started] for other supported
+frameworks.
 
 ## Install
 
@@ -121,6 +120,7 @@ see the [Arcjet Next.js SDK reference][arcjet-reference-next] on our website.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-next]: https://docs.arcjet.com/reference/nextjs
 [arcjet]: https://arcjet.com
 [next-js]: https://nextjs.org/

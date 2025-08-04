@@ -44,9 +44,8 @@ Astro users.
 ## When should I use this?
 
 You can use this if you are using Astro.
-Use a different adapter if you use a different framework.
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+See our [_Get started_ guide][arcjet-get-started] for other supported
+frameworks.
 
 ## Install
 
@@ -105,6 +104,7 @@ see the [Arcjet Astro SDK reference][arcjet-reference-astro] on our website.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-astro]: https://docs.arcjet.com/reference/astro
 [arcjet]: https://arcjet.com
 [astro]: https://astro.build/

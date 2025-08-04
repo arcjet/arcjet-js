@@ -27,7 +27,9 @@ This is an internal utility to help us cache some things in memory.
 
 ## When should I use this?
 
-Do not use this!
+This is an internal Arcjet package not designed for public use.
+See our [_Get started_ guide][arcjet-get-started] for how to use Arcjet in your
+application.
 
 ## Install
 
@@ -82,4 +84,5 @@ Non-string arguments will cause the function to throw.
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

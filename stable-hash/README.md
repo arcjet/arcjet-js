@@ -29,7 +29,9 @@ This exists to make sure things work the same across languages.
 
 ## When should I use this?
 
-Do not use this!
+This is an internal Arcjet package not designed for public use.
+See our [_Get started_ guide][arcjet-get-started] for how to use Arcjet in your
+application.
 
 ## Install
 
@@ -63,3 +65,4 @@ console.log(id);
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
+[arcjet-get-started]: https://docs.arcjet.com/get-started

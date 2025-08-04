@@ -44,9 +44,8 @@ SvelteKit users.
 ## When should I use this?
 
 You can use this if you are using SvelteKit.
-Use a different adapter if you use a different framework.
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+See our [_Get started_ guide][arcjet-get-started] for other supported
+frameworks.
 
 ## Install
 
@@ -110,6 +109,7 @@ website.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-sveltekit]: https://docs.arcjet.com/reference/sveltekit
 [arcjet]: https://arcjet.com
 [sveltekit]: https://kit.svelte.dev/

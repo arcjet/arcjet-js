@@ -54,10 +54,9 @@ and our adapters (such as `@arcjet/next`).
 
 ## When should I use this?
 
-You should not use this but use one of the adapters that integrate with a
-framework instead.
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+This is an internal Arcjet package not designed for public use.
+See our [_Get started_ guide][arcjet-get-started] for how to use Arcjet in your
+application.
 
 ## Install
 
@@ -77,6 +76,7 @@ Use [`@arcjet/analyze`][file-analyze] instead.
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [file-analyze]: ../analyze/
 [mdn-data-url]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
 [wasm-base64-blog]: https://blobfolio.com/2019/better-binary-batter-mixing-base64-and-uint8array/
