@@ -29,6 +29,7 @@ test("arcjet", async function (t) {
       "botCategories",
       "default",
       "detectBot",
+      "filter",
       "fixedWindow",
       "protectSignup",
       "sensitiveInfo",
