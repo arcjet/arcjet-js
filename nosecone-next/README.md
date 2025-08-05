@@ -21,6 +21,20 @@ Protect your Next.js application with secure headers.
 - [npm package (`@nosecone/next`)](https://www.npmjs.com/package/@nosecone/next)
 - [GitHub source code (`nosecone-next/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/nosecone-next)
 
+## What is this?
+
+This is our adapter to integrate Nosecone into Next.js.
+Nosecone makes it easy to add and configure security headers.
+This package exists so that we can provide the best possible experience to
+Next users.
+
+## When should I use this?
+
+You can use this package with or without Arcjet to protect your app if you are
+using Next.js.
+Use [`@nosecone/sveltekit`][github-nosecone-sveltekit] if you use Sveltekit and
+use [`nosecone`][github-nosecone] itself if you use a different framework.
+
 ## Install
 
 This package is ESM only.
@@ -72,3 +86,5 @@ export default createMiddleware();
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
+[github-nosecone-sveltekit]: https://github.com/arcjet/arcjet-js/tree/main/nosecone-sveltekit
+[github-nosecone]: https://github.com/arcjet/arcjet-js/tree/main/nosecone

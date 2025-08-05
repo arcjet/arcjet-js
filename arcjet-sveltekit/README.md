@@ -34,6 +34,19 @@ Visit the [quick start guide][quick-start] to get started.
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 ([source code][example-source]).
 
+## What is this?
+
+This is our adapter to integrate Arcjet into SvelteKit.
+Arcjet helps you secure your SvelteKit web application.
+This package exists so that we can provide the best possible experience to
+SvelteKit users.
+
+## When should I use this?
+
+You can use this if you are using SvelteKit.
+See our [_Get started_ guide][arcjet-get-started] for other supported
+frameworks.
+
 ## Install
 
 This package is ESM only.
@@ -96,6 +109,7 @@ website.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-sveltekit]: https://docs.arcjet.com/reference/sveltekit
 [arcjet]: https://arcjet.com
 [sveltekit]: https://kit.svelte.dev/

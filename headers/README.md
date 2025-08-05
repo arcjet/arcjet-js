@@ -21,6 +21,17 @@
 - [npm package (`@arcjet/headers`)](https://www.npmjs.com/package/@arcjet/headers)
 - [GitHub source code (`headers/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/headers)
 
+## What is this?
+
+This is an internal utility to help us deal with [`Headers`][mdn-headers].
+This exists to prevent the `cookie` header from being set and non-string values
+from being set.
+
+## When should I use this?
+
+You should not use this but use `Headers` or plain objects instead.
+This package matches our current needs which are likely different from yours.
+
 ## Install
 
 This package is ESM only.
@@ -40,14 +51,10 @@ const headers = new ArcjetHeaders({ abc: "123" });
 console.log(headers.get("abc")); // => "123"
 ```
 
-## Considerations
-
-This package will filter the `cookie` header and all headers with keys or values
-that are not strings, such as `{ "abc": undefined }`.
-
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[mdn-headers]: https://developer.mozilla.org/en-US/docs/Web/API/Headers

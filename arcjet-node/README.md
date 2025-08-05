@@ -37,6 +37,19 @@ Visit the [quick start guide][quick-start] to get started.
 Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
 ([source code][example-source]).
 
+## What is this?
+
+This is our adapter to integrate Arcjet into Node.js.
+Arcjet helps you secure your Node server.
+This package exists so that we can provide the best possible experience to
+Node users.
+
+## When should I use this?
+
+You can use this if you are using Node.js.
+See our [_Get started_ guide][arcjet-get-started] for other supported
+frameworks and runtimes.
+
 ## Install
 
 This package is ESM only.
@@ -95,6 +108,7 @@ see the [Arcjet Node.js SDK reference][arcjet-reference-node] on our website.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-node]: https://docs.arcjet.com/reference/nodejs
 [arcjet]: https://arcjet.com
 [node-js]: https://nodejs.org/

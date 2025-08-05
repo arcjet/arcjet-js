@@ -5,8 +5,10 @@
   "type": "module",
   "workspaces": [
     "../../analyze",
+    "../../analyze-wasm",
     "../../arcjet",
     "../../arcjet-bun",
+    "../../cache",
     "../../duration",
     "../../env",
     "../../eslint-config",
@@ -17,6 +19,7 @@
     "../../rollup-config",
     "../../runtime",
     "../../sprintf",
+    "../../stable-hash",
     "../../transport",
     "../../tsconfig"
   ],

@@ -21,6 +21,16 @@ Transport mechanisms for the [Arcjet][arcjet] protocol.
 - [npm package (`@arcjet/transport`)](https://www.npmjs.com/package/@arcjet/transport)
 - [GitHub source code (`transport/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/transport)
 
+## What is this?
+
+This package provides a way to talk to our protocol.
+
+## When should I use this?
+
+This is an internal Arcjet package not designed for public use.
+See our [_Get started_ guide][arcjet-get-started] for how to use Arcjet in your
+application.
+
 ## Install
 
 This package is ESM only.
@@ -45,3 +55,4 @@ const transport = createTransport("https://decide.arcjet.com");
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
+[arcjet-get-started]: https://docs.arcjet.com/get-started

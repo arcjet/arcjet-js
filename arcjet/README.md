@@ -29,10 +29,21 @@ This is the [Arcjet][arcjet] TypeScript and JavaScript SDK core.
 
 Visit [docs.arcjet.com](https://docs.arcjet.com) to get started.
 
-Generally, you'll want to use the Arcjet SDK for your specific framework, such
-as [`@arcjet/next`](../arcjet-next/README.md) for Next.js. However, this package
-can be used to interact with Arcjet if your framework does not have an
-integration.
+## What is this?
+
+This is our core package.
+It exposes the functionality for the many types of protection that Arcjet
+provides which can be configured and combined by users.
+The functionality here is exposed from our adapters (such as `@arcjet/next`)
+that each integrate with a particular framework.
+
+<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+
+## When should I use this?
+
+We recommend using one of our runtime or framework specific packages rather
+than this one.
+See our [_Get started_ guide][arcjet-get-started] for more info.
 
 ## Install
 
