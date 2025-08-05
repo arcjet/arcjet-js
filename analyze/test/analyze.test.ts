@@ -285,10 +285,24 @@ test("isValidEmail", async function (t) {
 
 test("matchFilter", async function (t) {
   await t.test("should work (match)", async function () {
-    assert.equal(await matchFilter(exampleContext, {ip: "127.0.0.1"}, "src.ip == 127.0.0.1"), true);
+    assert.equal(
+      await matchFilter(
+        exampleContext,
+        { ip: "127.0.0.1" },
+        "src.ip == 127.0.0.1",
+      ),
+      true,
+    );
   });
 
   await t.test("should work (mismatch)", async function () {
-    assert.equal(await matchFilter(exampleContext, {ip: "127.0.0.1"}, "src.ip == 127.0.0.2"), false);
+    assert.equal(
+      await matchFilter(
+        exampleContext,
+        { ip: "127.0.0.1" },
+        "src.ip == 127.0.0.2",
+      ),
+      false,
+    );
   });
 });
