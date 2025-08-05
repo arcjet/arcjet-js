@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/astro",
-  "version": "1.0.0-beta.9",
+  "version": "1.0.0-beta.10",
   "description": "Arcjet helps developers protect their Astro sites in just a few lines of code. Bot detection. Rate limiting. Email validation. Attack protection. Data redaction. A developer-first approach to security.",
   "keywords": [
     "analyze",
@@ -50,21 +50,21 @@
     "test": "npm run build && npm run lint"
   },
   "dependencies": {
-    "@arcjet/env": "1.0.0-beta.9",
-    "@arcjet/headers": "1.0.0-beta.9",
-    "@arcjet/ip": "1.0.0-beta.9",
-    "@arcjet/logger": "1.0.0-beta.9",
-    "@arcjet/protocol": "1.0.0-beta.9",
-    "@arcjet/transport": "1.0.0-beta.9",
-    "arcjet": "1.0.0-beta.9"
+    "@arcjet/env": "1.0.0-beta.10",
+    "@arcjet/headers": "1.0.0-beta.10",
+    "@arcjet/ip": "1.0.0-beta.10",
+    "@arcjet/logger": "1.0.0-beta.10",
+    "@arcjet/protocol": "1.0.0-beta.10",
+    "@arcjet/transport": "1.0.0-beta.10",
+    "arcjet": "1.0.0-beta.10"
   },
   "peerDependencies": {
     "astro": "^5.9.3"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.9",
-    "@arcjet/rollup-config": "1.0.0-beta.9",
-    "@arcjet/tsconfig": "1.0.0-beta.9",
+    "@arcjet/eslint-config": "1.0.0-beta.10",
+    "@arcjet/rollup-config": "1.0.0-beta.10",
+    "@arcjet/tsconfig": "1.0.0-beta.10",
     "@rollup/wasm-node": "4.46.2",
     "astro": "5.12.8",
     "eslint": "9.32.0",

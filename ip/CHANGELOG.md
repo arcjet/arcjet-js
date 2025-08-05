@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/ip-v1.0.0-beta.10) (2025-08-04)
+
+
+### 🪲 Bug Fixes
+
+* **ip:** support readonly arrays, null, and exact optional props ([#4695](https://github.com/arcjet/arcjet-js/issues/4695)) ([9c0b93a](https://github.com/arcjet/arcjet-js/commit/9c0b93abfd97a1f15972806fc34ad760abfb3521))
+
+
+### 📝 Documentation
+
+* add uniform install section to readmes ([#4633](https://github.com/arcjet/arcjet-js/issues/4633)) ([709ff1e](https://github.com/arcjet/arcjet-js/commit/709ff1e2e2c182dcafe1f15a630c026e97f59d76))
+* add uniform license section to readmes ([#4634](https://github.com/arcjet/arcjet-js/issues/4634)) ([af1c322](https://github.com/arcjet/arcjet-js/commit/af1c322213daa016adb01ce9a26f96b7c546b107))
+* add uniform use section to readmes ([#4655](https://github.com/arcjet/arcjet-js/issues/4655)) ([ac27256](https://github.com/arcjet/arcjet-js/commit/ac272568098e43ed70700625ed605ae76cb63fec))
+
+
+### 📚 Tests
+
+* add tests for public interface ([#4587](https://github.com/arcjet/arcjet-js/issues/4587)) ([f7aabec](https://github.com/arcjet/arcjet-js/commit/f7aabecbcd351b31fc2b94bc9c871a1123e2c7cd))
+* add tests for unsupported headers per platform ([#4694](https://github.com/arcjet/arcjet-js/issues/4694)) ([8de2603](https://github.com/arcjet/arcjet-js/commit/8de260357f46f5e76ee36e1269efa41dfca7936f))
+* clean `ip` tests ([#4632](https://github.com/arcjet/arcjet-js/issues/4632)) ([aea416a](https://github.com/arcjet/arcjet-js/commit/aea416a6d85a4709bee69ac27dbbaa10e8574bea))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/rollup-config bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+    * @arcjet/tsconfig bumped from 1.0.0-beta.9 to 1.0.0-beta.10
+
 ## [1.0.0-beta.9](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.8...@arcjet/ip-v1.0.0-beta.9) (2025-07-09)
 
 

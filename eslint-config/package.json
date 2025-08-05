@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/eslint-config",
-  "version": "1.0.0-beta.9",
+  "version": "1.0.0-beta.10",
   "description": "Custom eslint config for Arcjet projects",
   "keywords": [
     "arcjet",
