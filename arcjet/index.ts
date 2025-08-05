@@ -2165,7 +2165,6 @@ export function protectSignup<const Characteristics extends string[] = []>(
   ];
 }
 
-
 /**
  * Arcjet filter rule.
  *
