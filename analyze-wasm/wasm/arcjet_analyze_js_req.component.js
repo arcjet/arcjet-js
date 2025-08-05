@@ -328,8 +328,8 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       },
     }));
     postReturn0 = exports1['cabi_post_detect-bot'];
-    postReturn1 = exports1['cabi_post_generate-fingerprint'];
-    postReturn2 = exports1['cabi_post_validate-characteristics'];
+    postReturn1 = exports1['cabi_post_match-filter'];
+    postReturn2 = exports1['cabi_post_generate-fingerprint'];
     postReturn3 = exports1['cabi_post_is-valid-email'];
     postReturn4 = exports1['cabi_post_detect-sensitive-info'];
     
@@ -443,6 +443,44 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal.val;
     }
     
+    function matchFilter(arg0, arg1) {
+      var ptr0 = utf8Encode(arg0, realloc0, memory0);
+      var len0 = utf8EncodedLen;
+      var ptr1 = utf8Encode(arg1, realloc0, memory0);
+      var len1 = utf8EncodedLen;
+      const ret = exports1['match-filter'](ptr0, len0, ptr1, len1);
+      let variant4;
+      switch (dataView(memory0).getUint8(ret + 0, true)) {
+        case 0: {
+          var bool2 = dataView(memory0).getUint8(ret + 4, true);
+          variant4= {
+            tag: 'ok',
+            val: bool2 == 0 ? false : (bool2 == 1 ? true : throwInvalidBool())
+          };
+          break;
+        }
+        case 1: {
+          var ptr3 = dataView(memory0).getInt32(ret + 4, true);
+          var len3 = dataView(memory0).getInt32(ret + 8, true);
+          var result3 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr3, len3));
+          variant4= {
+            tag: 'err',
+            val: result3
+          };
+          break;
+        }
+        default: {
+          throw new TypeError('invalid variant discriminant for expected');
+        }
+      }
+      const retVal = variant4;
+      postReturn1(ret);
+      if (typeof retVal === 'object' && retVal.tag === 'err') {
+        throw new ComponentError(retVal.val);
+      }
+      return retVal.val;
+    }
+    
     function generateFingerprint(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
@@ -484,7 +522,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant5;
-      postReturn1(ret);
+      postReturn2(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -529,7 +567,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant4;
-      postReturn2(ret);
+      postReturn1(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -872,7 +910,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal;
     }
     
-    return { detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail, validateCharacteristics,  };
+    return { detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail, matchFilter, validateCharacteristics,  };
   })();
   let promise, resolve, reject;
   function runNext (value) {
