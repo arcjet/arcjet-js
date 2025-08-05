@@ -238,3 +238,33 @@ export async function detectSensitiveInfo(
     "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
   );
 }
+
+/**
+ * Check if a filter matches a request.
+ *
+ * @param context
+ *   Arcjet context.
+ * @param request
+ *   Request.
+ * @param expression
+ *   Filter expression.
+ * @returns
+ *   Promise to whether the filter matches the request.
+ */
+export async function matchFilter(
+  context: AnalyzeContext,
+  request: AnalyzeRequest,
+  expression: string,
+): Promise<boolean | undefined> {
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(coreImports);
+
+  if (typeof analyze !== "undefined") {
+    return analyze.matchFilter(JSON.stringify(request), expression);
+    // Ignore the `else` branch as we test in places that have WebAssembly.
+    /* node:coverage ignore next 4 */
+  }
+
+  context.log.debug("WebAssembly is not supported in this runtime");
+  return undefined;
+}
