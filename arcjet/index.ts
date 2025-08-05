@@ -48,7 +48,7 @@ import { MemoryCache } from "@arcjet/cache";
 
 export * from "@arcjet/protocol";
 
-function assert(condition: boolean, msg: string) {
+function assert(condition: unknown, msg: string): asserts condition {
   if (!condition) {
     throw new Error(msg);
   }
@@ -350,11 +350,39 @@ function createValidator({
   };
 }
 
+/**
+ * Validate a filter.
+ *
+ * @param path
+ *   Path to `value`.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ */
+function validateFilter(path: string, value: unknown): undefined {
+  if (typeof value === "string") {
+    // Perfect.
+  } else if (typeof value === "object" && value !== null) {
+    if ("displayName" in value) {
+      validateString(path + ".displayName", value.displayName);
+    }
+
+    validateString(
+      path + ".expression",
+      "expression" in value ? value.expression : undefined,
+    );
+  } else {
+    throw new Error(`invalid type for \`${path}\` - expected string or object`);
+  }
+}
+
 const validateString = createTypeValidator("string");
 const validateNumber = createTypeValidator("number");
 const validateBoolean = createTypeValidator("boolean");
 const validateFunction = createTypeValidator("function");
 const validateStringOrNumber = createTypeValidator("string", "number");
+const validateFilterArray = createArrayValidator(validateFilter);
 const validateStringArray = createArrayValidator(validateString);
 const validateMode = createValueValidator("LIVE", "DRY_RUN");
 const validateEmailTypes = createArrayValidator(
@@ -453,6 +481,18 @@ const validateBotOptions = createValidator({
 const validateShieldOptions = createValidator({
   rule: "shield",
   validations: [{ key: "mode", required: false, validate: validateMode }],
+});
+
+/**
+ * Validate filter options.
+ */
+const validateFilterOptions = createValidator({
+  rule: "filter",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "allow", required: false, validate: validateFilterArray },
+    { key: "deny", required: false, validate: validateFilterArray },
+  ],
 });
 
 /**
@@ -982,12 +1022,60 @@ export type SensitiveInfoOptions<Detect> =
   | SensitiveInfoOptionsAllow<Detect>
   | SensitiveInfoOptionsDeny<Detect>;
 
+/**
+ * Filter.
+ */
+export interface Filter {
+  /**
+   * Human readable name of the filter;
+   * used for debugging and logging.
+   */
+  displayName?: string | null | undefined;
+  /**
+   * Expression to match against the request.
+   */
+  expression: string;
+}
+
+/**
+ * Configuration to allow if a filter matches and deny otherwise.
+ */
+export type FilterOptionsAllow = {
+  /**
+   * Filters.
+   */
+  allow: ReadonlyArray<Filter | string>;
+  deny?: never;
+  /**
+   * Mode.
+   */
+  mode?: ArcjetMode;
+};
+
+/**
+ * Configuration to deny if a filter matches and allow otherwise.
+ */
+export type FilterOptionsDeny = {
+  allow?: never;
+  /**
+   * Filters.
+   */
+  deny: ReadonlyArray<Filter | string>;
+  /**
+   * Mode.
+   */
+  mode?: ArcjetMode;
+};
+
+export type FilterOptions = FilterOptionsAllow | FilterOptionsDeny;
+
 const Priority = {
   SensitiveInfo: 1,
   Shield: 2,
   RateLimit: 3,
   BotDetection: 4,
   EmailValidation: 5,
+  Filter: 6,
 };
 
 type PlainObject = { [key: string]: unknown };
@@ -2475,6 +2563,170 @@ export function protectSignup<const Characteristics extends string[] = []>(
     ...detectBot(options.bots),
     ...validateEmail(options.email),
   ];
+}
+
+/**
+ * Arcjet filter rule.
+ *
+ * @param options
+ *   Configuration (required).
+ * @returns
+ *   Filter rule.
+ */
+export function filter(options: FilterOptions): Primitive<{}> {
+  validateFilterOptions(options);
+
+  const type = "FILTER";
+  const version = 0;
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const allow = options.allow;
+  const allowExpressions = (allow || []).map((d) =>
+    typeof d === "string" ? d : d.expression,
+  );
+  const deny = options.deny;
+  const denyExpressions = (deny || []).map((d) =>
+    typeof d === "string" ? d : d.expression,
+  );
+
+  if (allow && deny) {
+    throw new Error(
+      "`filter` options error: `allow` and `deny` cannot be provided together",
+    );
+  }
+  if (!allow && !deny) {
+    throw new Error(
+      "`filter` options error: either `allow` or `deny` must be specified",
+    );
+  }
+
+  const rule: ArcjetRule<{}> = {
+    version,
+    priority: Priority.Filter,
+
+    type,
+    mode,
+    // TODO(@wooorm-arcjet): maybe expose?
+    // allow,
+    // deny,
+
+    /**
+     * Validate a request for filters.
+     */
+    validate(
+      _: ArcjetContext,
+      details: Partial<ArcjetRequestDetails>,
+    ): undefined {
+      if (!details.ip) {
+        throw new Error("Request filtering requires `ip` to be set");
+      }
+    },
+
+    /**
+     * Protect a request with filters.
+     */
+    async protect(
+      context: ArcjetContext<CachedResult>,
+      request: ArcjetRequestDetails,
+    ): Promise<ArcjetRuleResult> {
+      const request_ = toAnalyzeRequest(request);
+      const fingerprint = context.fingerprint;
+      const ruleId = await hasher.hash(
+        hasher.string("type", type),
+        hasher.uint32("version", version),
+        hasher.string("mode", mode),
+        hasher.stringSliceOrdered("allow", allowExpressions),
+        hasher.stringSliceOrdered("deny", denyExpressions),
+      );
+
+      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+
+      if (cached) {
+        return new ArcjetRuleResult({
+          conclusion: cached.conclusion,
+          fingerprint,
+          reason: cached.reason,
+          ruleId,
+          state: "CACHED",
+          ttl,
+        });
+      }
+
+      let result: ArcjetRuleResult | undefined = undefined;
+      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+
+      try {
+        if (allow) {
+          for (const filter of allow) {
+            const expression =
+              typeof filter === "string" ? filter : filter.expression;
+            if (await analyze.matchFilter(context, request_, expression)) {
+              result = new ArcjetRuleResult({
+                conclusion: "ALLOW",
+                fingerprint,
+                // TODO(@Wooorm-arcjet): expose `displayName`.
+                reason: new ArcjetReason(),
+                ruleId,
+                state,
+                ttl: 60,
+              });
+              break;
+            }
+          }
+
+          result ||= new ArcjetRuleResult({
+            conclusion: "DENY",
+            fingerprint,
+            reason: new ArcjetReason(),
+            ruleId,
+            state,
+            ttl: 60,
+          });
+        } else {
+          // Above we checked that either `allow` or `deny` is defined.
+          assert(deny, "`deny` is now defined");
+          for (const filter of deny) {
+            const expression =
+              typeof filter === "string" ? filter : filter.expression;
+            if (await analyze.matchFilter(context, request_, expression)) {
+              result = new ArcjetRuleResult({
+                conclusion: "DENY",
+                fingerprint,
+                // TODO(@Wooorm-arcjet): expose `displayName`.
+                reason: new ArcjetReason(),
+                ruleId,
+                state,
+                ttl: 60,
+              });
+              break;
+            }
+          }
+
+          result ||= new ArcjetRuleResult({
+            conclusion: "ALLOW",
+            fingerprint,
+            reason: new ArcjetReason(),
+            ruleId,
+            state,
+            ttl: 60,
+          });
+        }
+      } catch (error) {
+        result = new ArcjetRuleResult({
+          conclusion: "ERROR",
+          fingerprint,
+          reason: new ArcjetErrorReason(String(error)),
+          ruleId,
+          state,
+          ttl: 60,
+        });
+      }
+
+      await context.cache.set(ruleId, fingerprint, result, result.ttl);
+      return result;
+    },
+  };
+
+  return [rule];
 }
 
 /**
