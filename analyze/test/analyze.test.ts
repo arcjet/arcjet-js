@@ -5,6 +5,7 @@ import {
   detectSensitiveInfo,
   generateFingerprint,
   isValidEmail,
+  matchFilter,
 } from "../index.js";
 
 const exampleContext = { characteristics: [], log: console };
@@ -280,4 +281,14 @@ test("isValidEmail", async function (t) {
   );
 
   // TODO: test `allow` option.
+});
+
+test("matchFilter", async function (t) {
+  await t.test("should work (match)", async function () {
+    assert.equal(await matchFilter(exampleContext, {ip: "127.0.0.1"}, "src.ip == 127.0.0.1"), true);
+  });
+
+  await t.test("should work (mismatch)", async function () {
+    assert.equal(await matchFilter(exampleContext, {ip: "127.0.0.1"}, "src.ip == 127.0.0.2"), false);
+  });
 });
