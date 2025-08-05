@@ -218,7 +218,12 @@ test("filter: `protect`", async function (t) {
 
   await t.test("should support an object filter", async function () {
     const [rule] = filter({
-      allow: [{ displayName: "Chrome user", expression: 'http.request.headers["user-agent"] ~ "Chrome"' }],
+      allow: [
+        {
+          displayName: "Chrome user",
+          expression: 'http.request.headers["user-agent"] ~ "Chrome"',
+        },
+      ],
     });
     const result = await rule.protect(createContext(), createRequest());
     assert.equal(result.conclusion, "ALLOW");
