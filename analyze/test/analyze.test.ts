@@ -21,6 +21,7 @@ test("@arcjet/analyze", async function (t) {
       "detectSensitiveInfo",
       "generateFingerprint",
       "isValidEmail",
+      "matchFilter",
     ]);
   });
 });
