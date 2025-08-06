@@ -2674,8 +2674,38 @@ export function filter(options: FilterOptions): Primitive<{}> {
       const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
       const remoteIdentifiers = await remoteIdentifiersPromise;
-      // TODO(@wooorm-arcjet): get extra data from remote somehow.
-      const extra: Record<string, unknown> | undefined = remoteIdentifiers.size > 0 ? { vpn: false } : undefined;
+
+      let extra: Record<string, unknown> = {};
+
+      if (remoteIdentifiers.size > 0) {
+        const client = context.client;
+
+        // TODO(@wooorm-arcjet): silently ignore?
+        if (!client) {
+          throw new Error("Unexpected remote filter without `client`");
+        }
+
+        // An empty rules array will still try to get IP details.
+        const decision = await client.decide(context, request, []);
+        let key: keyof typeof decision.ip;
+        const found =
+          decision.ip.latitude !== undefined ||
+          decision.ip.continent !== undefined ||
+          decision.ip.timezone !== undefined;
+
+        // TODO(@wooorm-arcjet): silently ignore?
+        if (!found) {
+          throw new Error("Unexpected remote filter without `ip`");
+        }
+
+        // TODO(@wooorm-arcjet): other stuff.
+        extra = {
+          vpn: decision.ip.isVpn(),
+        };
+
+        // TODO(@wooorm-arcjet): remove.
+        console.log("xxx:debug:remote-data:extra:", extra);
+      }
 
       try {
         if (allow) {
@@ -2926,6 +2956,7 @@ export default function arcjet<
     const waitUntil = lookupWaitUntil();
 
     const baseContext = {
+      client,
       key,
       log,
       characteristics,
