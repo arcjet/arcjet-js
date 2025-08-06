@@ -24,7 +24,7 @@
     "react-hook-form": "^7.62.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.6",
-    "zod": "^4.0.14"
+    "zod": "^4.0.15"
   },
   "devDependencies": {
     "@types/node": "^20",
