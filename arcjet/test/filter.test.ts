@@ -433,6 +433,20 @@ test("expressions", async function (t) {
   });
 });
 
+test("remote fields", async function (t) {
+  await t.test("local only", async function () {
+    const [rule] = filter({ allow: ['http.host == "localhost:3000"'] });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+  });
+
+  await t.test("remote fields", async function () {
+    const [rule] = filter({ allow: ['not vpn'] });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+  });
+});
+
 /**
  * Create empty values for context.
  *
