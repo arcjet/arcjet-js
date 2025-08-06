@@ -1,7 +1,7 @@
 import type { Cache } from "@arcjet/cache";
 import { typeid } from "typeid-js";
 import { Reason } from "./proto/decide/v1alpha1/decide_pb.js";
-import type { Client } from "@arcjet/protocol/client";
+import type { Client } from "@arcjet/protocol/client.js";
 
 // Re-export the Well Known Bots from the generated file
 export type * from "./well-known-bots.js";
