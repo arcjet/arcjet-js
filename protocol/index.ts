@@ -1,6 +1,7 @@
 import type { Cache } from "@arcjet/cache";
 import { typeid } from "typeid-js";
 import { Reason } from "./proto/decide/v1alpha1/decide_pb.js";
+import type { Client } from "@arcjet/protocol/client";
 
 // Re-export the Well Known Bots from the generated file
 export type * from "./well-known-bots.js";
@@ -1914,6 +1915,8 @@ export type ArcjetContext<T = unknown> = {
    * Arbitrary indexing into context is currently allowed but not typed.
    */
   [key: string]: unknown;
+
+  client?: Client | undefined;
 
   /**
    * API key.
