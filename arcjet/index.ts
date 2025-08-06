@@ -2576,17 +2576,9 @@ export function protectSignup<const Characteristics extends string[] = []>(
 export function filter(options: FilterOptions): Primitive<{}> {
   validateFilterOptions(options);
 
-  const type = "FILTER";
-  const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const allow = options.allow;
-  const allowExpressions = (allow || []).map((d) =>
-    typeof d === "string" ? d : d.expression,
-  );
   const deny = options.deny;
-  const denyExpressions = (deny || []).map((d) =>
-    typeof d === "string" ? d : d.expression,
-  );
 
   if (allow && deny) {
     throw new Error(
@@ -2598,6 +2590,33 @@ export function filter(options: FilterOptions): Primitive<{}> {
       "`filter` options error: either `allow` or `deny` must be specified",
     );
   }
+
+  const type = "FILTER";
+  const version = 0;
+  const allowExpressions = (allow || []).map((d) =>
+    typeof d === "string" ? d : d.expression,
+  );
+  const denyExpressions = (deny || []).map((d) =>
+    typeof d === "string" ? d : d.expression,
+  );
+  const expressions = [...allowExpressions, ...denyExpressions];
+
+  const remoteIdentifiersPromise = Promise.all(
+    expressions.map(function (expression) {
+      return (
+        analyze
+          .remoteIdentifiersInFilter(expression)
+          // Swallow parse errors.
+          // Invalid expressions will throw later when matching and whether they
+          // need remote or local data then doesn’t affect them.
+          .catch(function () {
+            return [];
+          })
+      );
+    }),
+  ).then(function (results) {
+    return new Set(results.flat());
+  });
 
   const rule: ArcjetRule<{}> = {
     version,
@@ -2654,12 +2673,23 @@ export function filter(options: FilterOptions): Primitive<{}> {
       let result: ArcjetRuleResult | undefined = undefined;
       const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
+      const remoteIdentifiers = await remoteIdentifiersPromise;
+      // TODO(@wooorm-arcjet): get extra data from remote somehow.
+      const extra: Record<string, unknown> | undefined = remoteIdentifiers.size > 0 ? { vpn: false } : undefined;
+
       try {
         if (allow) {
           for (const filter of allow) {
             const expression =
               typeof filter === "string" ? filter : filter.expression;
-            if (await analyze.matchFilter(context, request_, expression)) {
+            const matches = await analyze.matchFilter(
+              context,
+              request_,
+              expression,
+              extra,
+            );
+
+            if (matches) {
               result = new ArcjetRuleResult({
                 conclusion: "ALLOW",
                 fingerprint,
@@ -2687,7 +2717,14 @@ export function filter(options: FilterOptions): Primitive<{}> {
           for (const filter of deny) {
             const expression =
               typeof filter === "string" ? filter : filter.expression;
-            if (await analyze.matchFilter(context, request_, expression)) {
+            const matches = await analyze.matchFilter(
+              context,
+              request_,
+              expression,
+              extra,
+            );
+
+            if (matches) {
               result = new ArcjetRuleResult({
                 conclusion: "DENY",
                 fingerprint,

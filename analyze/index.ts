@@ -255,16 +255,48 @@ export async function matchFilter(
   context: AnalyzeContext,
   request: AnalyzeRequest,
   expression: string,
+  data?: Record<string, unknown> | null | undefined,
 ): Promise<boolean | undefined> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
-    return analyze.matchFilter(JSON.stringify(request), expression);
+    return data
+      ? analyze.matchFilterWithData(
+          JSON.stringify(request),
+          expression,
+          JSON.stringify(data),
+        )
+      : analyze.matchFilter(JSON.stringify(request), expression);
     // Ignore the `else` branch as we test in places that have WebAssembly.
     /* node:coverage ignore next 4 */
   }
 
   context.log.debug("WebAssembly is not supported in this runtime");
   return undefined;
+}
+
+/**
+ * Check if a filter matches a request.
+ *
+ * @param expression
+ *   Filter expression.
+ * @returns
+ *   Promise to list of used remote identifiers.
+ */
+export async function remoteIdentifiersInFilter(
+  expression: string,
+): Promise<Array<string>> {
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(coreImports);
+
+  if (typeof analyze !== "undefined") {
+    return analyze.remoteIdentifiersInFilter(expression);
+    // Ignore the `else` branch as we test in places that have WebAssembly.
+    /* node:coverage ignore next 4 */
+  }
+
+  // No log here, because we otherwise do not need the `context`.
+  // If WebAssembly is not supported, other functions will warn.
+  return [];
 }
