@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
+import arcjet, {
   type ArcjetContext,
   type ArcjetRequestDetails,
+  ArcjetAllowDecision,
   ArcjetErrorReason,
+  ArcjetReason,
   filter,
 } from "../index.js";
 import { MemoryCache } from "@arcjet/cache";
+import { ArcjetIpDetails } from "@arcjet/protocol";
 
 test("filter", async function (t) {
   await t.test("should fail if `mode` is invalid", async function () {
@@ -440,10 +443,73 @@ test("remote fields", async function (t) {
     assert.equal(result.conclusion, "ALLOW");
   });
 
-  await t.test("remote fields", async function () {
-    const [rule] = filter({ allow: ['not vpn'] });
-    const result = await rule.protect(createContext(), createRequest());
-    assert.equal(result.conclusion, "ALLOW");
+  await t.test("should fail on rules w/ remote values", async function () {
+    assert.rejects(async function () {
+      const [rule] = filter({ allow: ["not vpn"] });
+      await rule.protect(createContext(), createRequest());
+    }, /Unexpected remote filter without `client`/);
+  });
+
+  await t.test("remote fields w/ `client`", async function () {
+    const client = {
+      async decide() {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetReason(),
+          results: [],
+          ip: new ArcjetIpDetails({
+            latitude: 39.90008,
+            longitude: -79.71643,
+            accuracyRadius: 2,
+            timezone: "America/New_York",
+            postalCode: "15472",
+            city: "Uniontown",
+            region: "Pennsylvania",
+            country: "US",
+            countryName: "United States",
+            continent: "NA",
+            continentName: "North America",
+            asn: "54113",
+            asnName: "Fastly, Inc.",
+            asnDomain: "fastly.com",
+            service: undefined,
+            isHosting: false,
+            isProxy: false,
+            // For testing purposes.
+            isVpn: true,
+            isTor: false,
+            isRelay: false,
+          }),
+        });
+      },
+      report() {},
+    };
+
+    const notVpn = arcjet({
+      client,
+      key: "test-key",
+      log: console,
+      rules: [filter({ allow: ["not vpn"], mode: "LIVE" })],
+    });
+
+    const resultNotVpn = await notVpn.protect(createContext(), {
+      ...createRequest(),
+    });
+
+    assert.equal(resultNotVpn.conclusion, "DENY");
+
+    const vpn = arcjet({
+      client,
+      key: "test-key",
+      log: console,
+      rules: [filter({ allow: ["vpn"], mode: "LIVE" })],
+    });
+
+    const resultVpn = await vpn.protect(createContext(), {
+      ...createRequest(),
+    });
+
+    assert.equal(resultVpn.conclusion, "ALLOW");
   });
 });
 
