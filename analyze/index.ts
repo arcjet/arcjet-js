@@ -12,8 +12,10 @@ import type {
   ImportObject,
 } from "@arcjet/analyze-wasm";
 import type { ArcjetLogger } from "@arcjet/protocol";
+import type { Client } from "@arcjet/protocol/client";
 
 interface AnalyzeContext {
+  client?: Client | undefined;
   log: ArcjetLogger;
   characteristics: string[];
 }
