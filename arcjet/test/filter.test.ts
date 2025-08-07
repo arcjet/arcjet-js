@@ -498,12 +498,14 @@ test("remote fields", async function (t) {
     assert.equal(result.conclusion, "ALLOW");
   });
 
-  await t.test("should fail on rules w/ remote values", async function () {
-    assert.rejects(async function () {
+  await t.test(
+    "should conclude undetermined for local rules w/ remote values",
+    async function () {
       const [rule] = filter({ allow: "not vpn" });
-      await rule.protect(createContext(), createRequest());
-    }, /Unexpected remote filter without `client`/);
-  });
+      const result = await rule.protect(createContext(), createRequest());
+      assert.equal(result.conclusion, "UNDETERMINED");
+    },
+  );
 
   await t.test("remote fields w/ `client`", async function () {
     const client = {
@@ -512,29 +514,7 @@ test("remote fields", async function (t) {
           ttl: 0,
           reason: new ArcjetReason(),
           results: [],
-          ip: new ArcjetIpDetails({
-            accuracyRadius: 2,
-            asnName: "Fastly, Inc.",
-            asnDomain: "fastly.com",
-            asn: "54113",
-            city: "Uniontown",
-            continentName: "North America",
-            continent: "NA",
-            countryName: "United States",
-            country: "US",
-            isHosting: false,
-            isProxy: false,
-            isRelay: false,
-            isTor: false,
-            // For testing purposes.
-            isVpn: true,
-            latitude: 39.90008,
-            longitude: -79.71643,
-            postalCode: "15472",
-            region: "Pennsylvania",
-            service: undefined,
-            timezone: "America/New_York",
-          }),
+          ip: new ArcjetIpDetails(createIpDetails()),
         });
       },
       report() {},
@@ -543,7 +523,7 @@ test("remote fields", async function (t) {
     const notVpn = arcjet({
       client,
       key: "test-key",
-      log: console,
+      log: { ...console, debug() {} },
       rules: [filter({ allow: "not vpn", mode: "LIVE" })],
     });
 
@@ -556,7 +536,7 @@ test("remote fields", async function (t) {
     const vpn = arcjet({
       client,
       key: "test-key",
-      log: console,
+      log: { ...console, debug() {} },
       rules: [filter({ allow: "vpn", mode: "LIVE" })],
     });
 
@@ -585,6 +565,38 @@ function createContext(): ArcjetContext {
     key: "b",
     log: console,
     runtime: "c",
+  };
+}
+
+/**
+ * Create empty values for IP details.
+ *
+ * @returns
+ *   Details.
+ */
+function createIpDetails(): ConstructorParameters<typeof ArcjetIpDetails>[0] {
+  return {
+    accuracyRadius: 2,
+    asnName: "Fastly, Inc.",
+    asnDomain: "fastly.com",
+    asn: "54113",
+    city: "Uniontown",
+    continentName: "North America",
+    continent: "NA",
+    countryName: "United States",
+    country: "US",
+    isHosting: false,
+    isProxy: false,
+    isRelay: false,
+    isTor: false,
+    // For testing purposes.
+    isVpn: true,
+    latitude: 39.90008,
+    longitude: -79.71643,
+    postalCode: "15472",
+    region: "Pennsylvania",
+    service: undefined,
+    timezone: "America/New_York",
   };
 }
 

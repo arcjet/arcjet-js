@@ -19,6 +19,7 @@ import type {
   ArcjetRateLimitRule,
 } from "@arcjet/protocol";
 import {
+  ArcjetAllowDecision,
   ArcjetBotReason,
   ArcjetEmailReason,
   ArcjetErrorReason,
@@ -45,6 +46,7 @@ import { ArcjetHeaders } from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
 import { MemoryCache } from "@arcjet/cache";
+import { ArcjetChallengeDecision } from "@arcjet/protocol";
 
 export * from "@arcjet/protocol";
 
@@ -387,7 +389,7 @@ function validateFilter(path: string, value: unknown): undefined {
  * @returns
  *   Nothing.
  */
-function validateFilters(path: string, value: unknown) {
+function validateFilters(path: string, value: unknown): undefined {
   if (Array.isArray(value)) {
     for (const [idx, item] of value.entries()) {
       validateFilter(`${path}[${idx}]`, item);
@@ -2625,8 +2627,10 @@ export function filter(options: FilterOptions): Primitive<{}> {
     );
   }
 
+  const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
   const type = "FILTER";
   const version = 0;
+
   const allowExpressions = allow.map((d) =>
     typeof d === "string" ? d : d.expression,
   );
@@ -2634,6 +2638,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
     typeof d === "string" ? d : d.expression,
   );
   const expressions = [...allowExpressions, ...denyExpressions];
+
   const remoteIdentifiersPromise = Promise.allSettled(
     expressions.map(function (expression) {
       return analyze.remoteIdentifiersInFilter(expression);
@@ -2644,6 +2649,14 @@ export function filter(options: FilterOptions): Primitive<{}> {
     // need remote or local data then doesn’t affect them.
     return new Set(results.map((d) => ("value" in d ? d.value : [])).flat());
   });
+
+  const ruleIdPromise = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    hasher.stringSliceOrdered("allow", allowExpressions),
+    hasher.stringSliceOrdered("deny", denyExpressions),
+  );
 
   const rule: ArcjetRule<{}> = {
     version,
@@ -2674,22 +2687,16 @@ export function filter(options: FilterOptions): Primitive<{}> {
       context: ArcjetContext<CachedResult>,
       request: ArcjetRequestDetails,
     ): Promise<ArcjetRuleResult> {
-      const request_ = toAnalyzeRequest(request);
-      const fingerprint = context.fingerprint;
-      const ruleId = await hasher.hash(
-        hasher.string("type", type),
-        hasher.uint32("version", version),
-        hasher.string("mode", mode),
-        hasher.stringSliceOrdered("allow", allowExpressions),
-        hasher.stringSliceOrdered("deny", denyExpressions),
+      const ruleId = await ruleIdPromise;
+      const [cached, ttl] = await context.cache.get(
+        ruleId,
+        context.fingerprint,
       );
-
-      const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
 
       if (cached) {
         return new ArcjetRuleResult({
           conclusion: cached.conclusion,
-          fingerprint,
+          fingerprint: context.fingerprint,
           reason: cached.reason,
           ruleId,
           state: "CACHED",
@@ -2697,129 +2704,173 @@ export function filter(options: FilterOptions): Primitive<{}> {
         });
       }
 
-      let result: ArcjetRuleResult | undefined = undefined;
-      const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
-
       const remoteIdentifiers = await remoteIdentifiersPromise;
 
-      let extra: Record<string, unknown> = {};
-
+      // We cannot decide locally if there are remote identifiers.
       if (remoteIdentifiers.size > 0) {
-        const client = context.client;
-
-        // TODO(@wooorm-arcjet): silently ignore?
-        if (!client) {
-          throw new Error("Unexpected remote filter without `client`");
-        }
-
-        // An empty rules array will still try to get IP details.
-        const decision = await client.decide(context, request, []);
-        let key: keyof typeof decision.ip;
-        const found =
-          decision.ip.latitude !== undefined ||
-          decision.ip.continent !== undefined ||
-          decision.ip.timezone !== undefined;
-
-        // TODO(@wooorm-arcjet): silently ignore?
-        if (!found) {
-          throw new Error("Unexpected remote filter without `ip`");
-        }
-
-        // TODO(@wooorm-arcjet): other stuff.
-        extra = {
-          vpn: decision.ip.isVpn(),
-        };
-
-        // TODO(@wooorm-arcjet): remove.
-        console.log("xxx:debug:remote-data:extra:", extra);
-      }
-
-      try {
-        if (allow.length > 0) {
-          for (const filter of allow) {
-            const expression =
-              typeof filter === "string" ? filter : filter.expression;
-            const matches = await analyze.matchFilter(
-              context,
-              request_,
-              expression,
-              extra,
-            );
-
-            if (matches) {
-              result = new ArcjetRuleResult({
-                conclusion: "ALLOW",
-                fingerprint,
-                // TODO(@Wooorm-arcjet): expose `displayName`.
-                reason: new ArcjetReason(),
-                ruleId,
-                state,
-                ttl: 60,
-              });
-              break;
-            }
-          }
-
-          result ||= new ArcjetRuleResult({
-            conclusion: "DENY",
-            fingerprint,
-            reason: new ArcjetReason(),
-            ruleId,
-            state,
-            ttl: 60,
-          });
-        } else {
-          // Above we checked that either `allow` or `deny` is defined.
-          for (const filter of deny) {
-            const expression =
-              typeof filter === "string" ? filter : filter.expression;
-            const matches = await analyze.matchFilter(
-              context,
-              request_,
-              expression,
-              extra,
-            );
-
-            if (matches) {
-              result = new ArcjetRuleResult({
-                conclusion: "DENY",
-                fingerprint,
-                // TODO(@Wooorm-arcjet): expose `displayName`.
-                reason: new ArcjetReason(),
-                ruleId,
-                state,
-                ttl: 60,
-              });
-              break;
-            }
-          }
-
-          result ||= new ArcjetRuleResult({
-            conclusion: "ALLOW",
-            fingerprint,
-            reason: new ArcjetReason(),
-            ruleId,
-            state,
-            ttl: 60,
-          });
-        }
-      } catch (error) {
-        result = new ArcjetRuleResult({
-          conclusion: "ERROR",
-          fingerprint,
-          reason: new ArcjetErrorReason(String(error)),
+        return new ArcjetRuleResult({
+          // @ts-expect-error: TODO(@wooorm-arcjet): choose if this is a great or terrible idea.
+          conclusion: "UNDETERMINED",
+          fingerprint: context.fingerprint,
+          // TODO(@wooorm-arcjet): some other reason?
+          reason: new ArcjetErrorReason(
+            "Cannot decide filters with remote identifiers locally",
+          ),
           ruleId,
           state,
-          ttl: 60,
         });
       }
 
-      await context.cache.set(ruleId, fingerprint, result, result.ttl);
+      const result = await match(context, request);
+      context.cache.set(ruleId, context.fingerprint, result, result.ttl);
+      return result;
+    },
+
+    /**
+     * Protect a request with filters, after `decide`.
+     */
+    async protectPost(
+      context: ArcjetContext<CachedResult>,
+      request: ArcjetRequestDetails,
+      decision: ArcjetDecision,
+    ): Promise<ArcjetRuleResult | undefined> {
+      const ruleId = await ruleIdPromise;
+
+      // TODO(@wooorm-arcjet): not sure if checking the cache again makes sense.
+      const [cached, ttl] = await context.cache.get(
+        ruleId,
+        context.fingerprint,
+      );
+
+      if (cached) {
+        return new ArcjetRuleResult({
+          conclusion: cached.conclusion,
+          fingerprint: context.fingerprint,
+          reason: cached.reason,
+          ruleId,
+          state: "CACHED",
+          ttl,
+        });
+      }
+
+      const remoteIdentifiers = await remoteIdentifiersPromise;
+
+      // No remote identifiers so checking again won’t change the result.
+      if (remoteIdentifiers.size < 0) {
+        return;
+      }
+
+      const found =
+        decision.ip.continent !== undefined ||
+        decision.ip.latitude !== undefined ||
+        decision.ip.timezone !== undefined;
+
+      // TODO(@wooorm-arcjet): silently ignore?
+      if (!found) {
+        throw new Error("Unexpected remote decision without `ip`");
+      }
+
+      // TODO(@wooorm-arcjet): other stuff.
+      const extra = {
+        vpn: decision.ip.isVpn(),
+      };
+
+      // TODO(@wooorm-arcjet): remove.
+      console.log("xxx:debug:remote-data:extra:", extra);
+      const result = await match(context, request, extra);
+      context.cache.set(ruleId, context.fingerprint, result, result.ttl);
       return result;
     },
   };
 
   return [rule];
+
+  async function match(
+    context: ArcjetContext<CachedResult>,
+    request: ArcjetRequestDetails,
+    extra?: Record<string, unknown> | undefined,
+  ): Promise<ArcjetRuleResult> {
+    const ruleId = await ruleIdPromise;
+    const request_ = toAnalyzeRequest(request);
+
+    try {
+      if (allow.length > 0) {
+        for (const filter of allow) {
+          const expression =
+            typeof filter === "string" ? filter : filter.expression;
+          const matches = await analyze.matchFilter(
+            context,
+            request_,
+            expression,
+            extra,
+          );
+
+          if (matches) {
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: context.fingerprint,
+              // TODO(@wooorm-arcjet): expose `displayName`.
+              reason: new ArcjetReason(),
+              ruleId,
+              state,
+              ttl: 60,
+            });
+          }
+        }
+
+        return new ArcjetRuleResult({
+          conclusion: "DENY",
+          fingerprint: context.fingerprint,
+          reason: new ArcjetReason(),
+          ruleId,
+          state,
+          ttl: 60,
+        });
+      } else {
+        // Above we checked that either `allow` or `deny` is defined.
+        for (const filter of deny) {
+          const expression =
+            typeof filter === "string" ? filter : filter.expression;
+          const matches = await analyze.matchFilter(
+            context,
+            request_,
+            expression,
+            extra,
+          );
+
+          if (matches) {
+            return new ArcjetRuleResult({
+              conclusion: "DENY",
+              fingerprint: context.fingerprint,
+              // TODO(@Wooorm-arcjet): expose `displayName`.
+              reason: new ArcjetReason(),
+              ruleId,
+              state,
+              ttl: 60,
+            });
+          }
+        }
+
+        return new ArcjetRuleResult({
+          conclusion: "ALLOW",
+          fingerprint: context.fingerprint,
+          reason: new ArcjetReason(),
+          ruleId,
+          state,
+          ttl: 60,
+        });
+      }
+    } catch (error) {
+      return new ArcjetRuleResult({
+        conclusion: "ERROR",
+        fingerprint: context.fingerprint,
+        reason: new ArcjetErrorReason(String(error)),
+        ruleId,
+        state,
+        ttl: 60,
+      });
+    }
+  }
 }
 
 /**
@@ -3206,11 +3257,46 @@ export default function arcjet<
     const logRemotePerf = perf.measure("remote");
     try {
       const logDediceApiPerf = perf.measure("decideApi");
-      const decision = await client
+      let decision = await client
         .decide(context, details, rules)
         .finally(() => {
           logDediceApiPerf();
         });
+
+      for (const [_, rule] of rules.entries()) {
+        // We may still have some local rules that want to do things with the server
+        // decision.
+        // We run those if the server is fine with things.
+        // TODO(@wooorm-arcjet): maybe a different condition?
+        if (decision.isAllowed() && rule.protectPost) {
+          const ruleResult = await rule.protectPost(
+            context,
+            // @ts-expect-error: TODO(@wooorm-arcjet): fix types to remove the assertion for `validate`.
+            details,
+            decision,
+          );
+
+          if (ruleResult && ruleResult.state !== "DRY_RUN") {
+            const Constructor =
+              ruleResult.conclusion === "ALLOW"
+                ? ArcjetAllowDecision
+                : ruleResult.conclusion === "DENY"
+                  ? ArcjetDenyDecision
+                  : ruleResult.conclusion === "CHALLENGE"
+                    ? ArcjetChallengeDecision
+                    : // Errors and unknown conclusion are ignored.
+                      undefined;
+
+            if (Constructor) {
+              decision = new Constructor({
+                ttl: ruleResult.ttl,
+                reason: ruleResult.reason,
+                results: [...decision.results, ruleResult],
+              });
+            }
+          }
+        }
+      }
 
       // If the decision is to block and we have a non-zero TTL, we cache the
       // block locally
