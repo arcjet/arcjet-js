@@ -16,7 +16,7 @@ const arcjet = arcjetFastify({
 
   rules: [
     filter({
-      allow: ['not vpn'],
+      allow: ['not ip.vpn'],
       mode: "LIVE",
     }),
   ],

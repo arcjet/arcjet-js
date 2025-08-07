@@ -2771,9 +2771,36 @@ export function filter(options: FilterOptions): Primitive<{}> {
         throw new Error("Unexpected remote decision without `ip`");
       }
 
-      // TODO(@wooorm-arcjet): other stuff.
+      // TODO(@wooorm-arcjet): confirm names.
       const extra = {
-        vpn: decision.ip.isVpn(),
+        ip: {
+          accuracy_radius: decision.ip.accuracyRadius
+            ? String(decision.ip.accuracyRadius)
+            : undefined,
+          asn_name: decision.ip.asnName,
+          asn_domain: decision.ip.asnDomain,
+          asn: decision.ip.asn,
+          city: decision.ip.city,
+          continent_name: decision.ip.continentName,
+          continent: decision.ip.continent,
+          country_name: decision.ip.countryName,
+          country: decision.ip.country,
+          hosting: decision.ip.isHosting(),
+          latitude: decision.ip.latitude
+            ? String(decision.ip.latitude)
+            : undefined,
+          longitude: decision.ip.longitude
+            ? String(decision.ip.longitude)
+            : undefined,
+          postal_code: decision.ip.postalCode,
+          proxy: decision.ip.isProxy(),
+          region: decision.ip.region,
+          relay: decision.ip.isRelay(),
+          service: decision.ip.service,
+          timezone: decision.ip.timezone,
+          tor: decision.ip.isTor(),
+          vpn: decision.ip.isVpn(),
+        },
       };
 
       // TODO(@wooorm-arcjet): remove.
