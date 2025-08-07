@@ -2634,22 +2634,15 @@ export function filter(options: FilterOptions): Primitive<{}> {
     typeof d === "string" ? d : d.expression,
   );
   const expressions = [...allowExpressions, ...denyExpressions];
-
-  const remoteIdentifiersPromise = Promise.all(
+  const remoteIdentifiersPromise = Promise.allSettled(
     expressions.map(function (expression) {
-      return (
-        analyze
-          .remoteIdentifiersInFilter(expression)
-          // Swallow parse errors.
-          // Invalid expressions will throw later when matching and whether they
-          // need remote or local data then doesn’t affect them.
-          .catch(function () {
-            return [];
-          })
-      );
+      return analyze.remoteIdentifiersInFilter(expression);
     }),
   ).then(function (results) {
-    return new Set(results.flat());
+    // Swallow parse errors.
+    // Invalid expressions will throw later when matching and whether they
+    // need remote or local data then doesn’t affect them.
+    return new Set(results.map((d) => ("value" in d ? d.value : [])).flat());
   });
 
   const rule: ArcjetRule<{}> = {
