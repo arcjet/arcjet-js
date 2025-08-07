@@ -377,12 +377,38 @@ function validateFilter(path: string, value: unknown): undefined {
   }
 }
 
+/**
+ * Validate one or more filters.
+ *
+ * @param path
+ *   Path to `value`.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ */
+function validateFilters(path: string, value: unknown) {
+  if (Array.isArray(value)) {
+    for (const [idx, item] of value.entries()) {
+      validateFilter(`${path}[${idx}]`, item);
+    }
+  } else if (
+    typeof value === "string" ||
+    (typeof value === "object" && value !== null)
+  ) {
+    validateFilter(path, value);
+  } else {
+    throw new Error(
+      `invalid type for \`${path}\` - expected an array or filter`,
+    );
+  }
+}
+
 const validateString = createTypeValidator("string");
 const validateNumber = createTypeValidator("number");
 const validateBoolean = createTypeValidator("boolean");
 const validateFunction = createTypeValidator("function");
 const validateStringOrNumber = createTypeValidator("string", "number");
-const validateFilterArray = createArrayValidator(validateFilter);
 const validateStringArray = createArrayValidator(validateString);
 const validateMode = createValueValidator("LIVE", "DRY_RUN");
 const validateEmailTypes = createArrayValidator(
@@ -490,8 +516,8 @@ const validateFilterOptions = createValidator({
   rule: "filter",
   validations: [
     { key: "mode", required: false, validate: validateMode },
-    { key: "allow", required: false, validate: validateFilterArray },
-    { key: "deny", required: false, validate: validateFilterArray },
+    { key: "allow", required: false, validate: validateFilters },
+    { key: "deny", required: false, validate: validateFilters },
   ],
 });
 
@@ -1042,9 +1068,9 @@ export interface Filter {
  */
 export type FilterOptionsAllow = {
   /**
-   * Filters.
+   * One or more filters.
    */
-  allow: ReadonlyArray<Filter | string>;
+  allow: ReadonlyArray<Filter | string> | Filter | string;
   deny?: never;
   /**
    * Mode.
@@ -1058,9 +1084,9 @@ export type FilterOptionsAllow = {
 export type FilterOptionsDeny = {
   allow?: never;
   /**
-   * Filters.
+   * One or more filters.
    */
-  deny: ReadonlyArray<Filter | string>;
+  deny: ReadonlyArray<Filter | string> | Filter | string;
   /**
    * Mode.
    */
@@ -2577,26 +2603,34 @@ export function filter(options: FilterOptions): Primitive<{}> {
   validateFilterOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const allow = options.allow;
-  const deny = options.deny;
+  const allow: ReadonlyArray<Filter | string> = Array.isArray(options.allow)
+    ? options.allow
+    : options.allow
+      ? [options.allow]
+      : [];
+  const deny: ReadonlyArray<Filter | string> = Array.isArray(options.deny)
+    ? options.deny
+    : options.deny
+      ? [options.deny]
+      : [];
 
-  if (allow && deny) {
+  if (allow.length > 0 && deny.length > 0) {
     throw new Error(
-      "`filter` options error: `allow` and `deny` cannot be provided together",
+      "`filter` options error: filters must be passed in either `allow` or `deny` instead of both",
     );
   }
-  if (!allow && !deny) {
+  if (allow.length === 0 && deny.length === 0) {
     throw new Error(
-      "`filter` options error: either `allow` or `deny` must be specified",
+      "`filter` options error: one or more filters must be passed in `allow` or `deny`",
     );
   }
 
   const type = "FILTER";
   const version = 0;
-  const allowExpressions = (allow || []).map((d) =>
+  const allowExpressions = allow.map((d) =>
     typeof d === "string" ? d : d.expression,
   );
-  const denyExpressions = (deny || []).map((d) =>
+  const denyExpressions = deny.map((d) =>
     typeof d === "string" ? d : d.expression,
   );
   const expressions = [...allowExpressions, ...denyExpressions];
@@ -2708,7 +2742,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
       }
 
       try {
-        if (allow) {
+        if (allow.length > 0) {
           for (const filter of allow) {
             const expression =
               typeof filter === "string" ? filter : filter.expression;
@@ -2743,7 +2777,6 @@ export function filter(options: FilterOptions): Primitive<{}> {
           });
         } else {
           // Above we checked that either `allow` or `deny` is defined.
-          assert(deny, "`deny` is now defined");
           for (const filter of deny) {
             const expression =
               typeof filter === "string" ? filter : filter.expression;

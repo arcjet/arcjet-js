@@ -22,16 +22,49 @@ test("filter", async function (t) {
     }, /`filter` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
-  await t.test("should fail if `allow` is not an array", async function () {
+  await t.test(
+    "should fail if `allow` is an unsupported value",
+    async function () {
+      assert.throws(function () {
+        filter({
+          // @ts-expect-error: test runtime behavior of invalid `allow` value.
+          allow: 1,
+        });
+      }, /`filter` options error: invalid type for `allow` - expected an array or filter/);
+    },
+  );
+
+  await t.test(
+    "should fail if `allow.displayName` is invalid",
+    async function () {
+      assert.throws(function () {
+        filter({
+          // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
+          allow: { displayName: 1, expression: "a" },
+        });
+      }, /invalid type for `allow\.displayName` - expected string/);
+    },
+  );
+
+  await t.test(
+    "should fail if `allow.expression` is invalid",
+    async function () {
+      assert.throws(function () {
+        filter({
+          // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
+          allow: { expression: 1 },
+        });
+      }, /invalid type for `allow\.expression` - expected string/);
+    },
+  );
+
+  await t.test("should fail w/ empty `allow`", async function () {
     assert.throws(function () {
-      filter({
-        // @ts-expect-error: test runtime behavior of invalid `allow` value.
-        allow: "a",
-      });
-    }, /invalid type for `allow` - expected an array/);
+      filter({ allow: [] });
+    }, /`filter` options error: one or more filters must be passed in `allow` or `deny`/);
   });
 
-  await t.test("should fail `allow[]` is invalid", async function () {
+  await t.test("should fail if `allow[]` is invalid", async function () {
     assert.throws(function () {
       filter({
         // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
@@ -41,39 +74,74 @@ test("filter", async function (t) {
   });
 
   await t.test(
-    "should fail `allow[].displayName` is invalid",
+    "should fail if `allow[].displayName` is invalid",
     async function () {
       assert.throws(function () {
         filter({
           // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
-          allow: [{ expression: "a", displayName: 1 }],
+          allow: [{ displayName: 1, expression: "a" }],
         });
-      }, /invalid type for `allow\[0].displayName` - expected string/);
+      }, /invalid type for `allow\[0]\.displayName` - expected string/);
     },
   );
 
   await t.test(
-    "should fail `allow[].expression` is invalid",
+    "should fail if `allow[].expression` is invalid",
     async function () {
       assert.throws(function () {
         filter({
           // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
           allow: [{ expression: 1 }],
         });
-      }, /invalid type for `allow\[0].expression` - expected string/);
+      }, /invalid type for `allow\[0]\.expression` - expected string/);
     },
   );
 
-  await t.test("should fail if `deny` is not an array", async function () {
+  await t.test(
+    "should fail if `deny` is an unsupported value",
+    async function () {
+      assert.throws(function () {
+        filter({
+          // @ts-expect-error: test runtime behavior of invalid `deny` value.
+          deny: 1,
+        });
+      }, /`filter` options error: invalid type for `deny` - expected an array or filter/);
+    },
+  );
+
+  await t.test(
+    "should fail if `deny.displayName` is invalid",
+    async function () {
+      assert.throws(function () {
+        filter({
+          // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
+          deny: { displayName: 1, expression: "a" },
+        });
+      }, /invalid type for `deny\.displayName` - expected string/);
+    },
+  );
+
+  await t.test(
+    "should fail if `deny.expression` is invalid",
+    async function () {
+      assert.throws(function () {
+        filter({
+          // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
+          deny: { expression: 1 },
+        });
+      }, /invalid type for `deny\.expression` - expected string/);
+    },
+  );
+
+  await t.test("should fail w/ empty `deny`", async function () {
     assert.throws(function () {
       filter({
-        // @ts-expect-error: test runtime behavior of invalid `deny` value.
-        deny: "a",
+        deny: [],
       });
-    }, /invalid type for `deny` - expected an array/);
+    }, /`filter` options error: one or more filters must be passed in `allow` or `deny`/);
   });
 
-  await t.test("should fail `deny[]` is invalid", async function () {
+  await t.test("should fail if `deny[]` is invalid", async function () {
     assert.throws(function () {
       filter({
         // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
@@ -83,25 +151,28 @@ test("filter", async function (t) {
   });
 
   await t.test(
-    "should fail `deny[].displayName` is invalid",
+    "should fail if `deny[].displayName` is invalid",
     async function () {
       assert.throws(function () {
         filter({
           // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
-          deny: [{ expression: "a", displayName: 1 }],
+          deny: [{ displayName: 1, expression: "a" }],
         });
-      }, /invalid type for `deny\[0].displayName` - expected string/);
+      }, /invalid type for `deny\[0]\.displayName` - expected string/);
     },
   );
 
-  await t.test("should fail `deny[].expression` is invalid", async function () {
-    assert.throws(function () {
-      filter({
-        // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
-        deny: [{ expression: 1 }],
-      });
-    }, /invalid type for `deny\[0].expression` - expected string/);
-  });
+  await t.test(
+    "should fail if `deny[].expression` is invalid",
+    async function () {
+      assert.throws(function () {
+        filter({
+          // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
+          deny: [{ expression: 1 }],
+        });
+      }, /invalid type for `deny\[0]\.expression` - expected string/);
+    },
+  );
 
   await t.test(
     "should fail if `allow` and `deny` are both given",
@@ -111,7 +182,7 @@ test("filter", async function (t) {
           // @ts-expect-error: test runtime behavior of invalid combination of both fields.
           { allow: [], deny: [] },
         );
-      }, /`filter` options error: `allow` and `deny` cannot be provided together/);
+      }, /`filter` options error: one or more filters must be passed in `allow` or `deny`/);
     },
   );
 
@@ -123,14 +194,14 @@ test("filter", async function (t) {
           // @ts-expect-error: test runtime behavior of neither `allow` nor `deny`.
           {},
         );
-      }, /`filter` options error: either `allow` or `deny` must be specified/);
+      }, /`filter` options error: one or more filters must be passed in `allow` or `deny`/);
     },
   );
 });
 
 test("filter: `validate`", async function (t) {
   await t.test("should fail when calling `validate` w/o `ip`", function () {
-    const [rule] = filter({ allow: [] });
+    const [rule] = filter({ allow: "not vpn" });
     assert.throws(function () {
       const _ = rule.validate(createContext(), {
         ...createRequest(),
@@ -140,7 +211,7 @@ test("filter: `validate`", async function (t) {
   });
 
   await t.test("should pass when calling `validate` w/ `ip`", function () {
-    const [rule] = filter({ allow: [] });
+    const [rule] = filter({ allow: "not vpn" });
     const _ = rule.validate(createContext(), {
       ...createRequest(),
       ip: "127.0.0.1",
@@ -151,7 +222,7 @@ test("filter: `validate`", async function (t) {
 test("filter: `protect`", async function (t) {
   await t.test("should allow if an `allow` matches", async function () {
     const [rule] = filter({
-      allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+      allow: 'http.request.headers["user-agent"] ~ "Chrome"',
     });
     const result = await rule.protect(createContext(), createRequest());
     assert.equal(result.conclusion, "ALLOW");
@@ -159,21 +230,15 @@ test("filter: `protect`", async function (t) {
 
   await t.test("should deny if no `allow` matches", async function () {
     const [rule] = filter({
-      allow: ['http.request.headers["user-agent"] ~ "Firefox"'],
+      allow: 'http.request.headers["user-agent"] ~ "Firefox"',
     });
-    const result = await rule.protect(createContext(), createRequest());
-    assert.equal(result.conclusion, "DENY");
-  });
-
-  await t.test("should deny w/ empty `allow`", async function () {
-    const [rule] = filter({ allow: [] });
     const result = await rule.protect(createContext(), createRequest());
     assert.equal(result.conclusion, "DENY");
   });
 
   await t.test("should deny if a `deny` matches", async function () {
     const [rule] = filter({
-      deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+      deny: 'http.request.headers["user-agent"] ~ "Chrome"',
     });
     const result = await rule.protect(createContext(), createRequest());
     assert.equal(result.conclusion, "DENY");
@@ -181,20 +246,14 @@ test("filter: `protect`", async function (t) {
 
   await t.test("should allow if no `deny` matches", async function () {
     const [rule] = filter({
-      deny: ['http.request.headers["user-agent"] ~ "Firefox"'],
+      deny: 'http.request.headers["user-agent"] ~ "Firefox"',
     });
     const result = await rule.protect(createContext(), createRequest());
     assert.equal(result.conclusion, "ALLOW");
   });
 
-  await t.test("should allow w/ empty `deny`", async function () {
-    const [rule] = filter({ deny: [] });
-    const result = await rule.protect(createContext(), createRequest());
-    assert.equal(result.conclusion, "ALLOW");
-  });
-
   await t.test("should error", async function () {
-    const [rule] = filter({ deny: ['http.blob ~ "Chrome"'] });
+    const [rule] = filter({ deny: 'http.blob ~ "Chrome"' });
     const result = await rule.protect(createContext(), createRequest());
     assert.equal(result.conclusion, "ERROR");
     assert(result.reason instanceof ArcjetErrorReason);
@@ -207,7 +266,7 @@ test("filter: `protect`", async function (t) {
   await t.test("should cache", async function () {
     const context = createContext();
     const [rule] = filter({
-      deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+      deny: 'http.request.headers["user-agent"] ~ "Chrome"',
       mode: "LIVE",
     });
     const first = await rule.protect(context, createRequest());
@@ -221,12 +280,10 @@ test("filter: `protect`", async function (t) {
 
   await t.test("should support an object filter", async function () {
     const [rule] = filter({
-      allow: [
-        {
-          displayName: "Chrome user",
-          expression: 'http.request.headers["user-agent"] ~ "Chrome"',
-        },
-      ],
+      allow: {
+        displayName: "Chrome user",
+        expression: 'http.request.headers["user-agent"] ~ "Chrome"',
+      },
     });
     const result = await rule.protect(createContext(), createRequest());
     assert.equal(result.conclusion, "ALLOW");
@@ -237,13 +294,13 @@ test("expressions", async function (t) {
   await t.test("fields", async function (t) {
     await t.test("`http.host`", async function (t) {
       await t.test("match", async function () {
-        const [rule] = filter({ allow: ['http.host == "localhost:3000"'] });
+        const [rule] = filter({ allow: 'http.host == "localhost:3000"' });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
       });
 
       await t.test("mismatch", async function () {
-        const [rule] = filter({ allow: ['http.host == "localhost:8000"'] });
+        const [rule] = filter({ allow: 'http.host == "localhost:8000"' });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
       });
@@ -252,7 +309,7 @@ test("expressions", async function (t) {
     await t.test("`http.request.cookie`", async function (t) {
       await t.test("match", async function () {
         const [rule] = filter({
-          allow: ['http.request.cookie["NEXT_LOCALE"] ~ "en-"'],
+          allow: 'http.request.cookie["NEXT_LOCALE"] ~ "en-"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
@@ -260,7 +317,7 @@ test("expressions", async function (t) {
 
       await t.test("mismatch", async function () {
         const [rule] = filter({
-          allow: ['http.request.cookie["NEXT_LOCALE"] ~ "de-"'],
+          allow: 'http.request.cookie["NEXT_LOCALE"] ~ "de-"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
@@ -270,7 +327,7 @@ test("expressions", async function (t) {
     await t.test("`http.request.headers`", async function (t) {
       await t.test("match", async function () {
         const [rule] = filter({
-          allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+          allow: 'http.request.headers["user-agent"] ~ "Chrome"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
@@ -278,7 +335,7 @@ test("expressions", async function (t) {
 
       await t.test("mismatch", async function () {
         const [rule] = filter({
-          allow: ['http.request.headers["user-agent"] ~ "Firefox"'],
+          allow: 'http.request.headers["user-agent"] ~ "Firefox"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
@@ -287,13 +344,13 @@ test("expressions", async function (t) {
 
     await t.test("`http.request.method`", async function (t) {
       await t.test("match", async function () {
-        const [rule] = filter({ allow: ['http.request.method == "GET"'] });
+        const [rule] = filter({ allow: 'http.request.method == "GET"' });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
       });
 
       await t.test("mismatch", async function () {
-        const [rule] = filter({ allow: ['http.request.method == "POST"'] });
+        const [rule] = filter({ allow: 'http.request.method == "POST"' });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
       });
@@ -302,7 +359,7 @@ test("expressions", async function (t) {
     await t.test("`http.request.uri.args`", async function (t) {
       await t.test("match", async function () {
         const [rule] = filter({
-          allow: ['http.request.uri.args["q"] == "alpha"'],
+          allow: 'http.request.uri.args["q"] == "alpha"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
@@ -310,7 +367,7 @@ test("expressions", async function (t) {
 
       await t.test("mismatch", async function () {
         const [rule] = filter({
-          allow: ['http.request.uri.args["q"] == "bravo"'],
+          allow: 'http.request.uri.args["q"] == "bravo"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
@@ -320,7 +377,7 @@ test("expressions", async function (t) {
     await t.test("`http.request.uri.path`", async function (t) {
       await t.test("match", async function () {
         const [rule] = filter({
-          allow: ['http.request.uri.path ~ "/quick-start"'],
+          allow: 'http.request.uri.path ~ "/quick-start"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
@@ -328,7 +385,7 @@ test("expressions", async function (t) {
 
       await t.test("mismatch", async function () {
         const [rule] = filter({
-          allow: ['http.request.uri.path ~ "/concepts"'],
+          allow: 'http.request.uri.path ~ "/concepts"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
@@ -337,13 +394,13 @@ test("expressions", async function (t) {
 
     await t.test("`src.ip`", async function (t) {
       await t.test("match", async function () {
-        const [rule] = filter({ allow: ["src.ip == 127.0.0.1"] });
+        const [rule] = filter({ allow: "src.ip == 127.0.0.1" });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
       });
 
       await t.test("mismatch", async function () {
-        const [rule] = filter({ allow: ["src.ip == 192.168.1.1"] });
+        const [rule] = filter({ allow: "src.ip == 192.168.1.1" });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
       });
@@ -353,13 +410,13 @@ test("expressions", async function (t) {
   await t.test("functions", async function (t) {
     await t.test("`len`", async function (t) {
       await t.test("match", async function () {
-        const [rule] = filter({ allow: ["len(http.request.method) == 3"] });
+        const [rule] = filter({ allow: "len(http.request.method) == 3" });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
       });
 
       await t.test("mismatch", async function () {
-        const [rule] = filter({ allow: ["len(http.request.method) == 4"] });
+        const [rule] = filter({ allow: "len(http.request.method) == 4" });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
       });
@@ -367,16 +424,14 @@ test("expressions", async function (t) {
 
     await t.test("`lower`", async function (t) {
       await t.test("match", async function () {
-        const [rule] = filter({
-          allow: ['lower(http.request.method) == "get"'],
-        });
+        const [rule] = filter({ allow: 'lower(http.request.method) == "get"' });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
       });
 
       await t.test("mismatch", async function () {
         const [rule] = filter({
-          allow: ['lower(http.request.method) == "post"'],
+          allow: 'lower(http.request.method) == "post"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
@@ -386,14 +441,14 @@ test("expressions", async function (t) {
     await t.test("`upper`", async function (t) {
       await t.test("match", async function () {
         const [rule] = filter({
-          allow: ['upper(http.host) == "LOCALHOST:3000"'],
+          allow: 'upper(http.host) == "LOCALHOST:3000"',
         });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
       });
 
       await t.test("mismatch", async function () {
-        const [rule] = filter({ allow: ['upper(http.host) == "EXAMPLE.COM"'] });
+        const [rule] = filter({ allow: 'upper(http.host) == "EXAMPLE.COM"' });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
       });
@@ -402,7 +457,7 @@ test("expressions", async function (t) {
 
   await t.test("errors", async function (t) {
     await t.test("unknown fields", async function () {
-      const [rule] = filter({ allow: ["http.request.blob == 1"] });
+      const [rule] = filter({ allow: "http.request.blob == 1" });
       const result = await rule.protect(createContext(), createRequest());
       assert.equal(result.conclusion, "ERROR");
       assert(result.reason instanceof ArcjetErrorReason);
@@ -413,7 +468,7 @@ test("expressions", async function (t) {
     });
 
     await t.test("unknown functions", async function () {
-      const [rule] = filter({ allow: ["blob(http.request) == 1"] });
+      const [rule] = filter({ allow: "blob(http.request) == 1" });
       const result = await rule.protect(createContext(), createRequest());
       assert.equal(result.conclusion, "ERROR");
       assert(result.reason instanceof ArcjetErrorReason);
@@ -424,7 +479,7 @@ test("expressions", async function (t) {
     });
 
     await t.test("incorrect comparison", async function () {
-      const [rule] = filter({ allow: ["http.host == 1"] });
+      const [rule] = filter({ allow: "http.host == 1" });
       const result = await rule.protect(createContext(), createRequest());
       assert.equal(result.conclusion, "ERROR");
       assert(result.reason instanceof ArcjetErrorReason);
@@ -438,14 +493,14 @@ test("expressions", async function (t) {
 
 test("remote fields", async function (t) {
   await t.test("local only", async function () {
-    const [rule] = filter({ allow: ['http.host == "localhost:3000"'] });
+    const [rule] = filter({ allow: 'http.host == "localhost:3000"' });
     const result = await rule.protect(createContext(), createRequest());
     assert.equal(result.conclusion, "ALLOW");
   });
 
   await t.test("should fail on rules w/ remote values", async function () {
     assert.rejects(async function () {
-      const [rule] = filter({ allow: ["not vpn"] });
+      const [rule] = filter({ allow: "not vpn" });
       await rule.protect(createContext(), createRequest());
     }, /Unexpected remote filter without `client`/);
   });
@@ -458,27 +513,27 @@ test("remote fields", async function (t) {
           reason: new ArcjetReason(),
           results: [],
           ip: new ArcjetIpDetails({
-            latitude: 39.90008,
-            longitude: -79.71643,
             accuracyRadius: 2,
-            timezone: "America/New_York",
-            postalCode: "15472",
-            city: "Uniontown",
-            region: "Pennsylvania",
-            country: "US",
-            countryName: "United States",
-            continent: "NA",
-            continentName: "North America",
-            asn: "54113",
             asnName: "Fastly, Inc.",
             asnDomain: "fastly.com",
-            service: undefined,
+            asn: "54113",
+            city: "Uniontown",
+            continentName: "North America",
+            continent: "NA",
+            countryName: "United States",
+            country: "US",
             isHosting: false,
             isProxy: false,
+            isRelay: false,
+            isTor: false,
             // For testing purposes.
             isVpn: true,
-            isTor: false,
-            isRelay: false,
+            latitude: 39.90008,
+            longitude: -79.71643,
+            postalCode: "15472",
+            region: "Pennsylvania",
+            service: undefined,
+            timezone: "America/New_York",
           }),
         });
       },
@@ -489,7 +544,7 @@ test("remote fields", async function (t) {
       client,
       key: "test-key",
       log: console,
-      rules: [filter({ allow: ["not vpn"], mode: "LIVE" })],
+      rules: [filter({ allow: "not vpn", mode: "LIVE" })],
     });
 
     const resultNotVpn = await notVpn.protect(createContext(), {
@@ -502,7 +557,7 @@ test("remote fields", async function (t) {
       client,
       key: "test-key",
       log: console,
-      rules: [filter({ allow: ["vpn"], mode: "LIVE" })],
+      rules: [filter({ allow: "vpn", mode: "LIVE" })],
     });
 
     const resultVpn = await vpn.protect(createContext(), {
