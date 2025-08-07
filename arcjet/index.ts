@@ -50,7 +50,8 @@ import { ArcjetChallengeDecision } from "@arcjet/protocol";
 
 export * from "@arcjet/protocol";
 
-function assert(condition: unknown, msg: string): asserts condition {
+// TODO(@wooorm-arcjet): use `function assert(condition: unknown, msg: string): asserts condition {`
+function assert(condition: boolean, msg: string) {
   if (!condition) {
     throw new Error(msg);
   }
@@ -2756,7 +2757,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
       const remoteIdentifiers = await remoteIdentifiersPromise;
 
       // No remote identifiers so checking again won’t change the result.
-      if (remoteIdentifiers.size < 0) {
+      if (remoteIdentifiers.size === 0) {
         return;
       }
 
@@ -2826,40 +2827,39 @@ export function filter(options: FilterOptions): Primitive<{}> {
           state,
           ttl: 60,
         });
-      } else {
-        // Above we checked that either `allow` or `deny` is defined.
-        for (const filter of deny) {
-          const expression =
-            typeof filter === "string" ? filter : filter.expression;
-          const matches = await analyze.matchFilter(
-            context,
-            request_,
-            expression,
-            extra,
-          );
-
-          if (matches) {
-            return new ArcjetRuleResult({
-              conclusion: "DENY",
-              fingerprint: context.fingerprint,
-              // TODO(@Wooorm-arcjet): expose `displayName`.
-              reason: new ArcjetReason(),
-              ruleId,
-              state,
-              ttl: 60,
-            });
-          }
-        }
-
-        return new ArcjetRuleResult({
-          conclusion: "ALLOW",
-          fingerprint: context.fingerprint,
-          reason: new ArcjetReason(),
-          ruleId,
-          state,
-          ttl: 60,
-        });
       }
+
+      for (const filter of deny) {
+        const expression =
+          typeof filter === "string" ? filter : filter.expression;
+        const matches = await analyze.matchFilter(
+          context,
+          request_,
+          expression,
+          extra,
+        );
+
+        if (matches) {
+          return new ArcjetRuleResult({
+            conclusion: "DENY",
+            fingerprint: context.fingerprint,
+            // TODO(@Wooorm-arcjet): expose `displayName`.
+            reason: new ArcjetReason(),
+            ruleId,
+            state,
+            ttl: 60,
+          });
+        }
+      }
+
+      return new ArcjetRuleResult({
+        conclusion: "ALLOW",
+        fingerprint: context.fingerprint,
+        reason: new ArcjetReason(),
+        ruleId,
+        state,
+        ttl: 60,
+      });
     } catch (error) {
       return new ArcjetRuleResult({
         conclusion: "ERROR",
@@ -3033,7 +3033,6 @@ export default function arcjet<
     const waitUntil = lookupWaitUntil();
 
     const baseContext = {
-      client,
       key,
       log,
       characteristics,
@@ -3277,6 +3276,7 @@ export default function arcjet<
           );
 
           if (ruleResult && ruleResult.state !== "DRY_RUN") {
+            // Errors and unknown conclusion are ignored.
             const Constructor =
               ruleResult.conclusion === "ALLOW"
                 ? ArcjetAllowDecision
@@ -3284,14 +3284,13 @@ export default function arcjet<
                   ? ArcjetDenyDecision
                   : ruleResult.conclusion === "CHALLENGE"
                     ? ArcjetChallengeDecision
-                    : // Errors and unknown conclusion are ignored.
-                      undefined;
+                    : undefined;
 
             if (Constructor) {
               decision = new Constructor({
-                ttl: ruleResult.ttl,
                 reason: ruleResult.reason,
                 results: [...decision.results, ruleResult],
+                ttl: ruleResult.ttl,
               });
             }
           }
