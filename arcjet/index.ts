@@ -329,13 +329,20 @@ function createValidator({
   rule: string;
   validations: ValidationSchema[];
 }) {
-  return (options: Record<string, unknown>) => {
+  return (options: unknown) => {
+    if (options === null || typeof options !== "object") {
+      throw new Error(`\`${rule}\` options error: expected an object`);
+    }
+
+    // Cast to allow arbitrary indexing.
+    const record = options as Record<string, unknown>;
+
     for (const { key, validate, required } of validations) {
-      if (required && !Object.hasOwn(options, key)) {
+      if (required && !Object.hasOwn(record, key)) {
         throw new Error(`\`${rule}\` options error: \`${key}\` is required`);
       }
 
-      const value = options[key];
+      const value = record[key];
 
       // The `required` flag is checked above, so these should only be validated
       // if the value is not undefined.
@@ -455,75 +462,73 @@ const validateShieldOptions = createValidator({
   validations: [{ key: "mode", required: false, validate: validateMode }],
 });
 
-export type TokenBucketRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+interface RateLimitOptionsShared<Characteristics extends readonly string[]> {
   mode?: ArcjetMode;
   characteristics?: Characteristics;
+}
+
+export interface TokenBucketRateLimitOptions<
+  Characteristics extends readonly string[],
+> extends RateLimitOptionsShared<Characteristics> {
   refillRate: number;
   interval: string | number;
   capacity: number;
-};
+}
 
-export type FixedWindowRateLimitOptions<
+export interface FixedWindowRateLimitOptions<
   Characteristics extends readonly string[],
-> = {
-  mode?: ArcjetMode;
-  characteristics?: Characteristics;
+> extends RateLimitOptionsShared<Characteristics> {
   window: string | number;
   max: number;
-};
+}
 
-export type SlidingWindowRateLimitOptions<
+export interface SlidingWindowRateLimitOptions<
   Characteristics extends readonly string[],
-> = {
-  mode?: ArcjetMode;
-  characteristics?: Characteristics;
+> extends RateLimitOptionsShared<Characteristics> {
   interval: string | number;
   max: number;
-};
+}
 
-export type BotOptionsAllow = {
+interface BotOptionsShared {
   mode?: ArcjetMode;
+}
+
+export interface BotOptionsAllow extends BotOptionsShared {
   allow: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
   deny?: never;
-};
+}
 
-export type BotOptionsDeny = {
-  mode?: ArcjetMode;
+export interface BotOptionsDeny extends BotOptionsShared {
   allow?: never;
   deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
-};
+}
 
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 
-export type EmailOptionsAllow = {
+interface EmailOptionsShared {
   mode?: ArcjetMode;
+  requireTopLevelDomain?: boolean;
+  allowDomainLiteral?: boolean;
+}
+
+export interface EmailOptionsAllow extends EmailOptionsShared {
   allow: ArcjetEmailType[];
   block?: never;
   deny?: never;
-  requireTopLevelDomain?: boolean;
-  allowDomainLiteral?: boolean;
-};
+}
 
-export type EmailOptionsDeny = {
-  mode?: ArcjetMode;
+export interface EmailOptionsDeny extends EmailOptionsShared {
   allow?: never;
   block?: never;
   deny: ArcjetEmailType[];
-  requireTopLevelDomain?: boolean;
-  allowDomainLiteral?: boolean;
-};
+}
 
-type EmailOptionsBlock = {
-  mode?: ArcjetMode;
+export interface EmailOptionsBlock extends EmailOptionsShared {
   allow?: never;
   /** @deprecated use `deny` instead */
   block: ArcjetEmailType[];
   deny?: never;
-  requireTopLevelDomain?: boolean;
-  allowDomainLiteral?: boolean;
-};
+}
 
 export type EmailOptions =
   | EmailOptionsAllow
@@ -548,21 +553,23 @@ type ValidEntities<Detect> = Array<
       : never
 >;
 
-export type SensitiveInfoOptionsAllow<Detect> = {
+interface SensitiveInfoOptionsShared<Detect> {
+  mode?: ArcjetMode;
+  contextWindowSize?: number;
+  detect?: Detect;
+}
+
+export interface SensitiveInfoOptionsAllow<Detect>
+  extends SensitiveInfoOptionsShared<Detect> {
   allow: ValidEntities<Detect>;
   deny?: never;
-  contextWindowSize?: number;
-  mode?: ArcjetMode;
-  detect?: Detect;
-};
+}
 
-export type SensitiveInfoOptionsDeny<Detect> = {
+export interface SensitiveInfoOptionsDeny<Detect>
+  extends SensitiveInfoOptionsShared<Detect> {
   allow?: never;
   deny: ValidEntities<Detect>;
-  contextWindowSize?: number;
-  mode?: ArcjetMode;
-  detect?: Detect;
-};
+}
 
 export type SensitiveInfoOptions<Detect> =
   | SensitiveInfoOptionsAllow<Detect>
@@ -625,11 +632,11 @@ export type ExtraProps<Rules> = Rules extends []
  * Among other things, this could include the Arcjet API Key if it were only
  * available in a runtime handler or IP details provided by a platform.
  */
-export type ArcjetAdapterContext = {
+export interface ArcjetAdapterContext {
   [key: string]: unknown;
   getBody(): Promise<string | undefined>;
   waitUntil?: (promise: Promise<unknown>) => void;
-};
+}
 
 /**
  * @property {string} ip - The IP address of the client.
@@ -1852,9 +1859,9 @@ export function detectBot(options: BotOptions): Primitive<{}> {
   return [rule];
 }
 
-export type ShieldOptions = {
+export interface ShieldOptions {
   mode?: ArcjetMode;
-};
+}
 
 /**
  * Arcjet Shield WAF rule. Applying this rule protects your application against
@@ -1948,11 +1955,13 @@ export function shield(options: ShieldOptions): Primitive<{}> {
   return [rule];
 }
 
-export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
+export interface ProtectSignupOptions<
+  Characteristics extends readonly string[],
+> {
   rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
   bots: BotOptions;
   email: EmailOptions;
-};
+}
 
 /**
  * Arcjet signup form protection rule. Applying this rule combines rate
