@@ -17,7 +17,7 @@ function random() {
 export const GET: APIRoute = async ({ request }) => {
   const decision = await ajWithRateLimit.protect(request);
   if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
+    if (decision.reason.type === "RATE_LIMIT") {
       return new Response(null, {
         status: 429,
         statusText: "Too many requests",
