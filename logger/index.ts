@@ -17,9 +17,18 @@ function tryStringify(o: unknown) {
   }
 }
 
+/**
+ * Supported log levels.
+ */
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
+/**
+ * Configuration.
+ */
 export interface LoggerOptions {
+  /**
+   * Log level.
+   */
   level: LogLevel;
 }
 
@@ -63,9 +72,20 @@ function getOutput(obj: unknown, msg: unknown, args: unknown[]) {
   return output;
 }
 
+/**
+ * Logger.
+ */
 export class Logger {
   #logLevel: number;
 
+  /**
+   * Configuration.
+   *
+   * @param opts
+   *   Configuration.
+   * @returns
+   *   Logger.
+   */
   constructor(opts: LoggerOptions) {
     if (typeof opts.level !== "string") {
       throw new Error(`Invalid log level`);
@@ -90,7 +110,29 @@ export class Logger {
     }
   }
 
+  /**
+   * Debug.
+   *
+   * @param msg
+   *   Template.
+   * @param args
+   *   Parameters to interpolate.
+   * @returns
+   *   Nothing.
+   */
   debug(msg: string, ...args: unknown[]): void;
+  /**
+   * Debug.
+   *
+   * @param obj
+   *   Merging object copied into the JSON log line.
+   * @param msg
+   *   Template.
+   * @param args
+   *   Parameters to interpolate.
+   * @returns
+   *   Nothing.
+   */
   debug(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
   debug(obj: unknown, msg?: unknown, ...args: unknown[]): void {
     if (this.#logLevel <= 0) {
@@ -101,7 +143,29 @@ export class Logger {
     }
   }
 
+  /**
+   * Info.
+   *
+   * @param msg
+   *   Template.
+   * @param args
+   *   Parameters to interpolate.
+   * @returns
+   *   Nothing.
+   */
   info(msg: string, ...args: unknown[]): void;
+  /**
+   * Info.
+   *
+   * @param obj
+   *   Merging object copied into the JSON log line.
+   * @param msg
+   *   Template.
+   * @param args
+   *   Parameters to interpolate.
+   * @returns
+   *   Nothing.
+   */
   info(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
   info(obj: unknown, msg?: unknown, ...args: unknown[]): void {
     if (this.#logLevel <= 1) {
@@ -112,7 +176,29 @@ export class Logger {
     }
   }
 
+  /**
+   * Warn.
+   *
+   * @param msg
+   *   Template.
+   * @param args
+   *   Parameters to interpolate.
+   * @returns
+   *   Nothing.
+   */
   warn(msg: string, ...args: unknown[]): void;
+  /**
+   * Warn.
+   *
+   * @param obj
+   *   Merging object copied into the JSON log line.
+   * @param msg
+   *   Template.
+   * @param args
+   *   Parameters to interpolate.
+   * @returns
+   *   Nothing.
+   */
   warn(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
   warn(obj: unknown, msg?: unknown, ...args: unknown[]): void {
     if (this.#logLevel <= 2) {
@@ -123,7 +209,29 @@ export class Logger {
     }
   }
 
+  /**
+   * Error.
+   *
+   * @param msg
+   *   Template.
+   * @param args
+   *   Parameters to interpolate.
+   * @returns
+   *   Nothing.
+   */
   error(msg: string, ...args: unknown[]): void;
+  /**
+   * Error.
+   *
+   * @param obj
+   *   Merging object copied into the JSON log line.
+   * @param msg
+   *   Template.
+   * @param args
+   *   Parameters to interpolate.
+   * @returns
+   *   Nothing.
+   */
   error(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
   error(obj: unknown, msg?: unknown, ...args: unknown[]): void {
     if (this.#logLevel <= 3) {
