@@ -135,10 +135,13 @@ function directivesToSvelteKitConfig(
  * @returns
  *   SvelteKit Content Security Policy configuration.
  */
-export function csp(options?: ContentSecurityPolicyConfig | undefined): SvelteKitCsp {
+export function csp(
+  options?: ContentSecurityPolicyConfig | undefined,
+): SvelteKitCsp {
   return {
     mode: options?.mode ? options.mode : "auto",
-    directives: directivesToSvelteKitConfig(
+    directives:
+      directivesToSvelteKitConfig(
         options?.directives ?? defaults.contentSecurityPolicy.directives,
       ) || {},
   };

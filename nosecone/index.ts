@@ -137,7 +137,11 @@ export interface CrossOriginOpenerPolicyConfig {
   /**
    * Policy.
    */
-  policy?: "same-origin" | "same-origin-allow-popups" | "unsafe-none" | undefined;
+  policy?:
+    | "same-origin"
+    | "same-origin-allow-popups"
+    | "unsafe-none"
+    | undefined;
 }
 
 /**
@@ -205,7 +209,12 @@ export interface PermittedCrossDomainPoliciesConfig {
   /**
    * Permitted policies.
    */
-  permittedPolicies?: "none" | "master-only" | "by-content-type" | "all" | undefined;
+  permittedPolicies?:
+    | "none"
+    | "master-only"
+    | "by-content-type"
+    | "all"
+    | undefined;
 }
 
 /**
@@ -775,7 +784,9 @@ export function createOriginAgentCluster() {
  * @returns
  *   `Referrer-Policy` header.
  */
-export function createReferrerPolicy(options?: ReferrerPolicyConfig | undefined) {
+export function createReferrerPolicy(
+  options?: ReferrerPolicyConfig | undefined,
+) {
   const policy = options?.policy ?? defaults.referrerPolicy.policy;
 
   if (Array.isArray(policy)) {
@@ -857,7 +868,9 @@ export function createContentTypeOptions() {
  * @returns
  *   `X-DNS-Prefetch-Control` header.
  */
-export function createDnsPrefetchControl(options?: DnsPrefetchControlConfig | undefined) {
+export function createDnsPrefetchControl(
+  options?: DnsPrefetchControlConfig | undefined,
+) {
   const allow = options?.allow ?? defaults.xDnsPrefetchControl.allow;
   const headerValue = allow ? "on" : "off";
   return ["x-dns-prefetch-control", headerValue] as const;
