@@ -5,7 +5,7 @@ import {
   logLevel,
   platform,
 } from "@arcjet/env";
-import ArcjetHeaders from "@arcjet/headers";
+import { ArcjetHeaders } from "@arcjet/headers";
 // TODO(@wooorm-arcjet): Expose `Cidr` from `@arcjet/ip`.
 import findIp, { parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";

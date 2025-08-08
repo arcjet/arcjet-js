@@ -41,7 +41,7 @@ import type {
   EmailValidationConfig,
 } from "@arcjet/analyze";
 import * as duration from "@arcjet/duration";
-import ArcjetHeaders from "@arcjet/headers";
+import { ArcjetHeaders } from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
 import { MemoryCache } from "@arcjet/cache";
