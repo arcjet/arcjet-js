@@ -17,8 +17,8 @@ function parseXForwardedFor(value?: string | null): string[] {
   return forwardedIps;
 }
 
-type IPv4Tuple = [number, number, number, number];
-type IPv6Tuple = [
+type Ipv4Tuple = [number, number, number, number];
+type Ipv6Tuple = [
   number,
   number,
   number,
@@ -29,7 +29,7 @@ type IPv6Tuple = [
   number,
 ];
 
-function isIPv4Cidr(cidr: unknown): cidr is IPv4CIDR {
+function isIpv4Cidr(cidr: unknown): cidr is Ipv4Cidr {
   return (
     typeof cidr === "object" &&
     cidr !== null &&
@@ -41,7 +41,7 @@ function isIPv4Cidr(cidr: unknown): cidr is IPv4CIDR {
   );
 }
 
-function isIPv6Cidr(cidr: unknown): cidr is IPv6CIDR {
+function isIpv6Cidr(cidr: unknown): cidr is Ipv6Cidr {
   return (
     typeof cidr === "object" &&
     cidr !== null &&
@@ -56,17 +56,17 @@ function isIPv6Cidr(cidr: unknown): cidr is IPv6CIDR {
 function isTrustedProxy(
   ip: string,
   segments: ReadonlyArray<number>,
-  proxies?: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies?: ReadonlyArray<string | Cidr> | null | undefined,
 ) {
   if (Array.isArray(proxies) && proxies.length > 0) {
     return proxies.some((proxy) => {
       if (typeof proxy === "string") {
         return proxy === ip;
       }
-      if (isIPv4Tuple(segments) && isIPv4Cidr(proxy)) {
+      if (isIpv4Tuple(segments) && isIpv4Cidr(proxy)) {
         return proxy.contains(segments);
       }
-      if (isIPv6Tuple(segments) && isIPv6Cidr(proxy)) {
+      if (isIpv6Tuple(segments) && isIpv6Cidr(proxy)) {
         return proxy.contains(segments);
       }
       return false;
@@ -76,96 +76,87 @@ function isTrustedProxy(
   return false;
 }
 
-abstract class CIDR {
-  abstract type: "v4" | "v6";
-  abstract partSize: 8 | 16;
-  abstract parts: readonly number[];
-  abstract bits: number;
+// Based on CIDR matching implementation in `ipaddr.js`
+// Source code:
+// https://github.com/whitequark/ipaddr.js/blob/08c2cd41e2cb3400683cbd503f60421bfdf66921/lib/ipaddr.js#L107-L130
+//
+// Licensed: The MIT License (MIT)
+// Copyright (C) 2011-2017 whitequark <whitequark@whitequark.org>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 
-  // Based on CIDR matching implementation in `ipaddr.js`
-  // Source code:
-  // https://github.com/whitequark/ipaddr.js/blob/08c2cd41e2cb3400683cbd503f60421bfdf66921/lib/ipaddr.js#L107-L130
-  //
-  // Licensed: The MIT License (MIT)
-  // Copyright (C) 2011-2017 whitequark <whitequark@whitequark.org>
-  //
-  // Permission is hereby granted, free of charge, to any person obtaining a copy
-  // of this software and associated documentation files (the "Software"), to deal
-  // in the Software without restriction, including without limitation the rights
-  // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  // copies of the Software, and to permit persons to whom the Software is
-  // furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
-  // The above copyright notice and this permission notice shall be included in
-  // all copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+function cidrContains(cidr: Cidr, ip: number[]): boolean {
+  let part = 0;
+  let shift;
+  let cidrBits = cidr.bits;
 
-  // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  // THE SOFTWARE.
-  contains(ip: number[]): boolean {
-    let part = 0;
-    let shift;
-    let cidrBits = this.bits;
-
-    while (cidrBits > 0) {
-      shift = this.partSize - cidrBits;
-      if (shift < 0) {
-        shift = 0;
-      }
-
-      if (ip[part] >> shift !== this.parts[part] >> shift) {
-        return false;
-      }
-
-      cidrBits -= this.partSize;
-      part += 1;
+  while (cidrBits > 0) {
+    shift = cidr.partSize - cidrBits;
+    if (shift < 0) {
+      shift = 0;
     }
 
-    return true;
+    if (ip[part] >> shift !== cidr.parts[part] >> shift) {
+      return false;
+    }
+
+    cidrBits -= cidr.partSize;
+    part += 1;
   }
+
+  return true;
 }
 
-class IPv4CIDR extends CIDR {
+class Ipv4Cidr {
   type = "v4" as const;
   partSize = 8 as const;
-  parts: Readonly<IPv4Tuple>;
+  parts: Readonly<Ipv4Tuple>;
   bits: number;
 
-  constructor(parts: IPv4Tuple, bits: number) {
-    super();
+  constructor(parts: Ipv4Tuple, bits: number) {
     this.bits = bits;
     this.parts = parts;
     Object.freeze(this);
   }
 
-  contains(ip: IPv4Tuple): boolean {
-    return super.contains(ip);
+  contains(ip: Array<number>): boolean {
+    return cidrContains(this, ip);
   }
 }
 
-class IPv6CIDR extends CIDR {
+class Ipv6Cidr {
   type = "v6" as const;
   partSize = 16 as const;
-  parts: Readonly<IPv6Tuple>;
+  parts: Readonly<Ipv6Tuple>;
   bits: number;
 
-  constructor(parts: IPv6Tuple, bits: number) {
-    super();
+  constructor(parts: Ipv6Tuple, bits: number) {
     this.bits = bits;
     this.parts = parts;
     Object.freeze(this);
   }
 
-  contains(ip: IPv6Tuple): boolean {
-    return super.contains(ip);
+  contains(ip: Array<number>): boolean {
+    return cidrContains(this, ip);
   }
 }
 
-function parseCIDR(cidr: `${string}/${string}`): IPv4CIDR | IPv6CIDR {
+function parseCidr(cidr: `${string}/${string}`): Cidr {
   // Pre-condition: `cidr` has be verified to have at least one `/`
 
   const cidrParts = cidr.split("/");
@@ -174,44 +165,44 @@ function parseCIDR(cidr: `${string}/${string}`): IPv4CIDR | IPv6CIDR {
   }
 
   const parser = new Parser(cidrParts[0]);
-  const maybeIPv4 = parser.readIPv4Address();
-  if (isIPv4Tuple(maybeIPv4)) {
+  const maybeIpv4 = parser.readIpv4Address();
+  if (isIpv4Tuple(maybeIpv4)) {
     const bits = parseInt(cidrParts[1], 10);
     if (isNaN(bits) || bits < 0 || bits > 32) {
       throw new Error("invalid CIDR address: incorrect amount of bits");
     }
 
-    return new IPv4CIDR(maybeIPv4, bits);
+    return new Ipv4Cidr(maybeIpv4, bits);
   }
 
-  const maybeIPv6 = parser.readIPv6Address();
-  if (isIPv6Tuple(maybeIPv6)) {
+  const maybeIpv6 = parser.readIpv6Address();
+  if (isIpv6Tuple(maybeIpv6)) {
     const bits = parseInt(cidrParts[1], 10);
     if (isNaN(bits) || bits < 0 || bits > 128) {
       throw new Error("invalid CIDR address: incorrect amount of bits");
     }
 
-    return new IPv6CIDR(maybeIPv6, bits);
+    return new Ipv6Cidr(maybeIpv6, bits);
   }
 
   throw new Error("invalid CIDR address: could not parse IP address");
 }
 
-function isCIDR(address: string): address is `${string}/${string}` {
+function isCidr(address: string): address is `${string}/${string}` {
   return address.includes("/");
 }
 
-// Converts a string that looks like a CIDR address into the corresponding class
-// while ignoring non-CIDR IP addresses.
-export function parseProxy(proxy: string): string | CIDR {
-  if (isCIDR(proxy)) {
-    return parseCIDR(proxy);
+// Converts a string that looks like a Cidr address into the corresponding class
+// while ignoring non-Cidr IP addresses.
+export function parseProxy(proxy: string): string | Cidr {
+  if (isCidr(proxy)) {
+    return parseCidr(proxy);
   } else {
     return proxy;
   }
 }
 
-function isIPv4Tuple(segements?: ArrayLike<number>): segements is IPv4Tuple {
+function isIpv4Tuple(segements?: ArrayLike<number>): segements is Ipv4Tuple {
   if (typeof segements === "undefined") {
     return false;
   }
@@ -219,7 +210,7 @@ function isIPv4Tuple(segements?: ArrayLike<number>): segements is IPv4Tuple {
   return segements.length === 4;
 }
 
-function isIPv6Tuple(segements?: ArrayLike<number>): segements is IPv6Tuple {
+function isIpv6Tuple(segements?: ArrayLike<number>): segements is Ipv6Tuple {
   if (typeof segements === "undefined") {
     return false;
   }
@@ -232,7 +223,7 @@ function u16FromBytes(bytes: [number, number]) {
   return new Uint16Array(u8.buffer)[0];
 }
 
-function u32FromBytes(bytes: IPv4Tuple) {
+function u32FromBytes(bytes: Ipv4Tuple) {
   const u8 = new Uint8Array(bytes);
   return new Uint32Array(u8.buffer)[0];
 }
@@ -361,7 +352,7 @@ class Parser {
     });
   }
 
-  readIPv4Address(): number[] | undefined {
+  readIpv4Address(): number[] | undefined {
     return this.readAtomically((p) => {
       const groups: number[] = [];
       for (let idx = 0; idx < 4; idx++) {
@@ -381,7 +372,7 @@ class Parser {
     });
   }
 
-  readIPv6Address(): Uint16Array | undefined {
+  readIpv6Address(): Uint16Array | undefined {
     // Read a chunk of an IPv6 address into `groups`. Returns the number of
     // groups read, along with a bool indicating if an embedded trailing IPv4
     // address was read. Specifically, read a series of colon-separated IPv6
@@ -393,8 +384,8 @@ class Parser {
         // Try to read a trailing embedded IPv4 address. There must be at least
         // two groups left
         if (i < limit - 1) {
-          const ipv4 = p.readSeparator(":", i, (p) => p.readIPv4Address());
-          if (isIPv4Tuple(ipv4)) {
+          const ipv4 = p.readSeparator(":", i, (p) => p.readIpv4Address());
+          if (isIpv4Tuple(ipv4)) {
             const [one, two, three, four] = ipv4;
             groups[i + 0] = u16FromBytes([one, two]);
             groups[i + 1] = u16FromBytes([three, four]);
@@ -418,14 +409,14 @@ class Parser {
       // Read the front part of the address; either the whole thing, or up
       // to the first ::
       const head = new Uint16Array(8);
-      const [headSize, headIPv4] = readGroups(p, head);
+      const [headSize, headIpv4] = readGroups(p, head);
 
       if (headSize === 8) {
         return head;
       }
 
       // IPv4 part is not allowed before `::`
-      if (headIPv4) {
+      if (headIpv4) {
         return;
       }
 
@@ -469,18 +460,18 @@ class Parser {
 
 const IPV4_BROADCAST = u32FromBytes([255, 255, 255, 255]);
 
-function isGlobalIPv4(
+function isGlobalIpv4(
   s: unknown,
-  proxies: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
   }
 
   const parser = new Parser(s);
-  const octets = parser.readIPv4Address();
+  const octets = parser.readIpv4Address();
 
-  if (!isIPv4Tuple(octets)) {
+  if (!isIpv4Tuple(octets)) {
     return false;
   }
 
@@ -568,18 +559,18 @@ function isGlobalIPv4(
   return true;
 }
 
-function isGlobalIPv6(
+function isGlobalIpv6(
   s: unknown,
-  proxies: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
   if (typeof s !== "string") {
     return false;
   }
 
   const parser = new Parser(s);
-  const segments = parser.readIPv6Address();
+  const segments = parser.readIpv6Address();
 
-  if (!isIPv6Tuple(segments)) {
+  if (!isIpv6Tuple(segments)) {
     return false;
   }
 
@@ -719,15 +710,15 @@ function isGlobalIPv6(
   return true;
 }
 
-function isGlobalIP(
+function isGlobalIp(
   s: unknown,
-  proxies: ReadonlyArray<string | CIDR> | null | undefined,
+  proxies: ReadonlyArray<string | Cidr> | null | undefined,
 ): s is string {
-  if (isGlobalIPv4(s, proxies)) {
+  if (isGlobalIpv4(s, proxies)) {
     return true;
   }
 
-  if (isGlobalIPv6(s, proxies)) {
+  if (isGlobalIpv6(s, proxies)) {
     return true;
   }
 
@@ -772,7 +763,7 @@ export type Platform = "cloudflare" | "fly-io" | "vercel" | "render";
 
 export interface Options {
   platform?: Platform | null | undefined;
-  proxies?: ReadonlyArray<string | CIDR> | null | undefined;
+  proxies?: ReadonlyArray<string | Cidr> | null | undefined;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
@@ -813,7 +804,7 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-function findIP(
+function findIp(
   request: RequestLike,
   options?: Options | null | undefined,
 ): string {
@@ -821,25 +812,25 @@ function findIP(
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.
-  if (isGlobalIP(request.ip, proxies)) {
+  if (isGlobalIp(request.ip, proxies)) {
     return request.ip;
   }
 
   const socketRemoteAddress = request.socket?.remoteAddress;
-  if (isGlobalIP(socketRemoteAddress, proxies)) {
+  if (isGlobalIp(socketRemoteAddress, proxies)) {
     return socketRemoteAddress;
   }
 
   const infoRemoteAddress = request.info?.remoteAddress;
-  if (isGlobalIP(infoRemoteAddress, proxies)) {
+  if (isGlobalIp(infoRemoteAddress, proxies)) {
     return infoRemoteAddress;
   }
 
   // AWS Api Gateway + Lambda
-  const requestContextIdentitySourceIP =
+  const requestContextIdentitySourceIp =
     request.requestContext?.identity?.sourceIp;
-  if (isGlobalIP(requestContextIdentitySourceIP, proxies)) {
-    return requestContextIdentitySourceIP;
+  if (isGlobalIp(requestContextIdentitySourceIp, proxies)) {
+    return requestContextIdentitySourceIp;
   }
 
   // Validate we have some object for `request.headers`
@@ -854,15 +845,15 @@ function findIP(
 
   if (platform === "cloudflare") {
     // CF-Connecting-IPv6: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ipv6
-    const cfConnectingIPv6 = getHeader(request.headers, "cf-connecting-ipv6");
-    if (isGlobalIPv6(cfConnectingIPv6, proxies)) {
-      return cfConnectingIPv6;
+    const cfConnectingIpv6 = getHeader(request.headers, "cf-connecting-ipv6");
+    if (isGlobalIpv6(cfConnectingIpv6, proxies)) {
+      return cfConnectingIpv6;
     }
 
     // CF-Connecting-IP: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ip
-    const cfConnectingIP = getHeader(request.headers, "cf-connecting-ip");
-    if (isGlobalIP(cfConnectingIP, proxies)) {
-      return cfConnectingIP;
+    const cfConnectingIp = getHeader(request.headers, "cf-connecting-ip");
+    if (isGlobalIp(cfConnectingIp, proxies)) {
+      return cfConnectingIp;
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
@@ -874,9 +865,9 @@ function findIP(
   // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
   if (platform === "fly-io") {
     // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
-    const flyClientIP = getHeader(request.headers, "fly-client-ip");
-    if (isGlobalIP(flyClientIP, proxies)) {
-      return flyClientIP;
+    const flyClientIp = getHeader(request.headers, "fly-client-ip");
+    if (isGlobalIp(flyClientIp, proxies)) {
+      return flyClientIp;
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
@@ -889,9 +880,9 @@ function findIP(
     // https://vercel.com/docs/edge-network/headers/request-headers#x-real-ip
     // Also used by `@vercel/functions`, see:
     // https://github.com/vercel/vercel/blob/d7536d52c87712b1b3f83e4b0fd535a1fb7e384c/packages/functions/src/headers.ts#L12
-    const xRealIP = getHeader(request.headers, "x-real-ip");
-    if (isGlobalIP(xRealIP, proxies)) {
-      return xRealIP;
+    const xRealIp = getHeader(request.headers, "x-real-ip");
+    if (isGlobalIp(xRealIp, proxies)) {
+      return xRealIp;
     }
 
     // https://vercel.com/docs/edge-network/headers/request-headers#x-vercel-forwarded-for
@@ -909,7 +900,7 @@ function findIP(
     // first IP will be closest to the user (and the most likely to be spoofed),
     // we want to iterate tail-to-head so we reverse the list.
     for (const item of xVercelForwardedForItems.reverse()) {
-      if (isGlobalIP(item, proxies)) {
+      if (isGlobalIp(item, proxies)) {
         return item;
       }
     }
@@ -926,7 +917,7 @@ function findIP(
     // first IP will be closest to the user (and the most likely to be spoofed),
     // we want to iterate tail-to-head so we reverse the list.
     for (const item of xForwardedForItems.reverse()) {
-      if (isGlobalIP(item, proxies)) {
+      if (isGlobalIp(item, proxies)) {
         return item;
       }
     }
@@ -939,9 +930,9 @@ function findIP(
 
   if (platform === "render") {
     // True-Client-IP: https://community.render.com/t/what-number-of-proxies-sit-in-front-of-an-express-app-deployed-on-render/35981/2
-    const trueClientIP = getHeader(request.headers, "true-client-ip");
-    if (isGlobalIP(trueClientIP, proxies)) {
-      return trueClientIP;
+    const trueClientIp = getHeader(request.headers, "true-client-ip");
+    if (isGlobalIp(trueClientIp, proxies)) {
+      return trueClientIp;
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
@@ -951,9 +942,9 @@ function findIP(
   }
 
   // Standard headers used by Amazon EC2, Heroku, and others.
-  const xClientIP = getHeader(request.headers, "x-client-ip");
-  if (isGlobalIP(xClientIP, proxies)) {
-    return xClientIP;
+  const xClientIp = getHeader(request.headers, "x-client-ip");
+  if (isGlobalIp(xClientIp, proxies)) {
+    return xClientIp;
   }
 
   // Load-balancers (AWS ELB) or proxies.
@@ -965,68 +956,73 @@ function findIP(
   // first IP will be closest to the user (and the most likely to be spoofed),
   // we want to iterate tail-to-head so we reverse the list.
   for (const item of xForwardedForItems.reverse()) {
-    if (isGlobalIP(item, proxies)) {
+    if (isGlobalIp(item, proxies)) {
       return item;
     }
   }
 
   // DigitalOcean.
   // DO-Connecting-IP: https://www.digitalocean.com/community/questions/app-platform-client-ip
-  const doConnectingIP = getHeader(request.headers, "do-connecting-ip");
-  if (isGlobalIP(doConnectingIP, proxies)) {
-    return doConnectingIP;
+  const doConnectingIp = getHeader(request.headers, "do-connecting-ip");
+  if (isGlobalIp(doConnectingIp, proxies)) {
+    return doConnectingIp;
   }
 
   // Fastly and Firebase hosting header (When forwared to cloud function)
   // Fastly-Client-IP
-  const fastlyClientIP = getHeader(request.headers, "fastly-client-ip");
-  if (isGlobalIP(fastlyClientIP, proxies)) {
-    return fastlyClientIP;
+  const fastlyClientIp = getHeader(request.headers, "fastly-client-ip");
+  if (isGlobalIp(fastlyClientIp, proxies)) {
+    return fastlyClientIp;
   }
 
   // Akamai
   // True-Client-IP
-  const trueClientIP = getHeader(request.headers, "true-client-ip");
-  if (isGlobalIP(trueClientIP, proxies)) {
-    return trueClientIP;
+  const trueClientIp = getHeader(request.headers, "true-client-ip");
+  if (isGlobalIp(trueClientIp, proxies)) {
+    return trueClientIp;
   }
 
   // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies
   // X-Real-IP
-  const xRealIP = getHeader(request.headers, "x-real-ip");
-  if (isGlobalIP(xRealIP, proxies)) {
-    return xRealIP;
+  const xRealIp = getHeader(request.headers, "x-real-ip");
+  if (isGlobalIp(xRealIp, proxies)) {
+    return xRealIp;
   }
 
   // Rackspace LB and Riverbed's Stingray?
-  const xClusterClientIP = getHeader(request.headers, "x-cluster-client-ip");
-  if (isGlobalIP(xClusterClientIP, proxies)) {
-    return xClusterClientIP;
+  const xClusterClientIp = getHeader(request.headers, "x-cluster-client-ip");
+  if (isGlobalIp(xClusterClientIp, proxies)) {
+    return xClusterClientIp;
   }
 
   const xForwarded = getHeader(request.headers, "x-forwarded");
-  if (isGlobalIP(xForwarded, proxies)) {
+  if (isGlobalIp(xForwarded, proxies)) {
     return xForwarded;
   }
 
   const forwardedFor = getHeader(request.headers, "forwarded-for");
-  if (isGlobalIP(forwardedFor, proxies)) {
+  if (isGlobalIp(forwardedFor, proxies)) {
     return forwardedFor;
   }
 
   const forwarded = getHeader(request.headers, "forwarded");
-  if (isGlobalIP(forwarded, proxies)) {
+  if (isGlobalIp(forwarded, proxies)) {
     return forwarded;
   }
 
   // Google Cloud App Engine
   // X-Appengine-User-IP: https://cloud.google.com/appengine/docs/standard/reference/request-headers?tab=node.js
-  const xAppEngineUserIP = getHeader(request.headers, "x-appengine-user-ip");
-  if (isGlobalIP(xAppEngineUserIP, proxies)) {
-    return xAppEngineUserIP;
+  const xAppEngineUserIp = getHeader(request.headers, "x-appengine-user-ip");
+  if (isGlobalIp(xAppEngineUserIp, proxies)) {
+    return xAppEngineUserIp;
   }
 
   return "";
 }
 
-export default findIP;
+/**
+ * One of the CIDR ranges.
+ */
+type Cidr = Ipv4Cidr | Ipv6Cidr;
+
+export default findIp;
