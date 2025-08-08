@@ -51,137 +51,141 @@ const LOWERCASE_S_CODE = 115; /* s */
 /**
  * Format a string with placeholders using the provided arguments.
  *
- * @param str
+ * @param template
  *   Template.
- * @param args
+ * @param values
  *   Values to interpolate.
  * @returns
  *   Formatted string.
  */
-export default function sprintf(str: string, ...args: unknown[]): string {
-  if (typeof str !== "string") {
+export default function sprintf(
+  template: string,
+  ...values: unknown[]
+): string {
+  if (typeof template !== "string") {
     throw new TypeError("First argument must be a string");
   }
 
-  const argsLength = args.length;
-  if (argsLength === 0) {
-    return str;
+  if (values.length === 0) {
+    return template;
   }
 
   let output = "";
-  let argIdx = 0;
+  let valueIndex = 0;
   let lastPosition = -1;
-  const strLength = str.length;
-  for (let i = 0; i < strLength; ) {
-    if (str.charCodeAt(i) === PERCENT_CODE && i + 1 < strLength) {
+  for (let index = 0; index < template.length; ) {
+    if (
+      template.charCodeAt(index) === PERCENT_CODE &&
+      index + 1 < template.length
+    ) {
       lastPosition = lastPosition > -1 ? lastPosition : 0;
-      switch (str.charCodeAt(i + 1)) {
+      switch (template.charCodeAt(index + 1)) {
         case LOWERCASE_D_CODE:
         case LOWERCASE_F_CODE: {
-          if (argIdx >= argsLength) {
+          if (valueIndex >= values.length) {
             break;
           }
-          const arg = args[argIdx];
-          if (typeof arg !== "number") {
+          const value = values[valueIndex];
+          if (typeof value !== "number") {
             break;
           }
-          if (lastPosition < i) {
-            output += str.slice(lastPosition, i);
+          if (lastPosition < index) {
+            output += template.slice(lastPosition, index);
           }
-          output += arg;
-          lastPosition = i + 2;
-          i++;
+          output += value;
+          lastPosition = index + 2;
+          index++;
           break;
         }
         case LOWERCASE_I_CODE: {
-          if (argIdx >= argsLength) {
+          if (valueIndex >= values.length) {
             break;
           }
-          const arg = args[argIdx];
-          if (typeof arg !== "number") {
+          const value = values[valueIndex];
+          if (typeof value !== "number") {
             break;
           }
-          if (lastPosition < i) {
-            output += str.slice(lastPosition, i);
+          if (lastPosition < index) {
+            output += template.slice(lastPosition, index);
           }
-          output += Math.floor(arg);
-          lastPosition = i + 2;
-          i++;
+          output += Math.floor(value);
+          lastPosition = index + 2;
+          index++;
           break;
         }
         case UPPERCASE_O_CODE:
         case LOWERCASE_O_CODE:
         case LOWERCASE_J_CODE: {
-          if (argIdx >= argsLength) {
+          if (valueIndex >= values.length) {
             break;
           }
-          const arg = args[argIdx];
-          if (arg === undefined) {
+          const value = values[valueIndex];
+          if (value === undefined) {
             break;
           }
-          if (lastPosition < i) {
-            output += str.slice(lastPosition, i);
+          if (lastPosition < index) {
+            output += template.slice(lastPosition, index);
           }
-          if (typeof arg === "string") {
-            output += `'${arg}'`;
-            lastPosition = i + 2;
-            i++;
+          if (typeof value === "string") {
+            output += `'${value}'`;
+            lastPosition = index + 2;
+            index++;
             break;
           }
-          if (typeof arg === "bigint") {
+          if (typeof value === "bigint") {
             output += `"[BigInt]"`;
-            lastPosition = i + 2;
-            i++;
+            lastPosition = index + 2;
+            index++;
             break;
           }
-          if (typeof arg === "function") {
-            output += arg.name || "<anonymous>";
-            lastPosition = i + 2;
-            i++;
+          if (typeof value === "function") {
+            output += value.name || "<anonymous>";
+            lastPosition = index + 2;
+            index++;
             break;
           }
-          output += tryStringify(arg);
-          lastPosition = i + 2;
-          i++;
+          output += tryStringify(value);
+          lastPosition = index + 2;
+          index++;
           break;
         }
         case LOWERCASE_S_CODE: {
-          if (argIdx >= argsLength) {
+          if (valueIndex >= values.length) {
             break;
           }
-          const arg = args[argIdx];
-          if (typeof arg !== "string") {
+          const value = values[valueIndex];
+          if (typeof value !== "string") {
             break;
           }
-          if (lastPosition < i) {
-            output += str.slice(lastPosition, i);
+          if (lastPosition < index) {
+            output += template.slice(lastPosition, index);
           }
-          output += arg;
-          lastPosition = i + 2;
-          i++;
+          output += value;
+          lastPosition = index + 2;
+          index++;
           break;
         }
         case PERCENT_CODE: {
-          if (lastPosition < i) {
-            output += str.slice(lastPosition, i);
+          if (lastPosition < index) {
+            output += template.slice(lastPosition, index);
           }
           output += "%";
-          lastPosition = i + 2;
-          i++;
-          argIdx--;
+          lastPosition = index + 2;
+          index++;
+          valueIndex--;
           break;
         }
       }
-      ++argIdx;
+      ++valueIndex;
     }
-    ++i;
+    ++index;
   }
   if (lastPosition === -1) {
-    return str;
+    return template;
   }
 
-  if (lastPosition < strLength) {
-    output += str.slice(lastPosition);
+  if (lastPosition < template.length) {
+    output += template.slice(lastPosition);
   }
 
   return output;
