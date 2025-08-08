@@ -72,7 +72,7 @@ Derivative work based on
 licensed under
 [MIT][github-csp-typed-directives-license] © Joshua Hemphill and
 Tecnico Corporation.
-Our work picks the couple types the we need.
+Our work picks the couple types that we need.
 It is also based on
 [`helmetjs/helmet`][github-helmet] licensed under
 [MIT][github-helmet-license] © Evan Hahn and Adam Baldwin.
