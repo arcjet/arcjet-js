@@ -47,6 +47,17 @@ const LOWERCASE_S_CODE = 115; /* s */
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+/**
+ * Format a string with placeholders using the provided arguments.
+ *
+ * @param str
+ *   Template.
+ * @param args
+ *   Values to interpolate.
+ * @returns
+ *   Formatted string.
+ */
 export default function sprintf(str: string, ...args: unknown[]): string {
   if (typeof str !== "string") {
     throw new TypeError("First argument must be a string");
