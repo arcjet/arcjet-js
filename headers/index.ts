@@ -15,7 +15,7 @@ function isIterable(val: any): val is Iterable<any> {
  *
  * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers)
  */
-export default class ArcjetHeaders extends Headers {
+export class ArcjetHeaders extends Headers {
   constructor(
     init?: HeadersInit | Record<string, string | string[] | undefined>,
   ) {
@@ -85,3 +85,9 @@ export default class ArcjetHeaders extends Headers {
     }
   }
 }
+
+/**
+ * @deprecated
+ *   Use the named export `ArcjetHeaders` instead.
+ */
+export default ArcjetHeaders;
