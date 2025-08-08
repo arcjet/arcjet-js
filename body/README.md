@@ -59,6 +59,11 @@ console.log(body);
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+Derivative work based on [`raw-body`][node-raw-body] licensed under
+[MIT][node-raw-body-license] © Jonathan Ong and Douglas Christopher Wilson.
+Our work removes features that we do not use: no buffers, no sync interface.
+
 [arcjet]: https://arcjet.com
-[node-raw-body]: https://github.com/stream-utils/raw-body/blob/191e4b6506dcf77198eed01c8feb4b6817008342/test/index.js
+[node-raw-body-license]: https://github.com/stream-utils/raw-body/blob/191e4b6/LICENSE
+[node-raw-body]: https://github.com/stream-utils/raw-body/blob/191e4b6/test/index.js
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
