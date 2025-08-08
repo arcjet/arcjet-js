@@ -1,9 +1,9 @@
-import { type NoseconeOptions, createMiddleware, defaults } from "@nosecone/next";
+import { type Options, createMiddleware, defaults } from "@nosecone/next";
 import { auth } from "auth";
 
 // Nosecone security headers configuration
 // https://docs.arcjet.com/nosecone/quick-start
-const noseconeOptions: NoseconeOptions = {
+const noseconeOptions: Options = {
   ...defaults,
 };
 
