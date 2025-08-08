@@ -1,3 +1,14 @@
+/**
+ * @import {RollupTypescriptOptions} from "@rollup/plugin-typescript";
+ */
+
+/**
+ * @typedef Options
+ *   Configuration.
+ * @property {ReadonlyArray<RollupTypescriptOptions> | undefined} [plugins]
+ *   Additional plugins to use in the Rollup configuration.
+ */
+
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -94,7 +105,19 @@ function isTypeScript(file) {
   );
 }
 
-export function createConfig(root, { plugins = [] } = {}) {
+/**
+ * Create Rollup configuration for bundling TypeScript files in the Arcjet SDK.
+ *
+ * @param {string} root
+ *   Folder.
+ * @param {Options | undefined} [options]
+ *   Configuration.
+ * @returns
+ *   Rollup configuration object.
+ */
+export function createConfig(root, options) {
+  const settings = options || {};
+  const plugins = settings.plugins || [];
   const packageJson = fileURLToPath(new URL("./package.json", root));
   const pkg = JSON.parse(fs.readFileSync(packageJson));
   const dependencies = Object.keys(pkg.dependencies ?? {});
