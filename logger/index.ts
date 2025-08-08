@@ -9,9 +9,9 @@ function bigintReplacer(key: string, value: unknown) {
 }
 
 // TODO: Deduplicate this and sprintf implementation
-function tryStringify(o: unknown) {
+function tryStringify(value: unknown) {
   try {
-    return JSON.stringify(o, bigintReplacer);
+    return JSON.stringify(value, bigintReplacer);
   } catch {
     return "[Circular]";
   }
@@ -34,37 +34,45 @@ export interface LoggerOptions {
 
 const PREFIX = "✦Aj";
 
-function getMessage(obj: unknown, msg: unknown, args: unknown[]) {
-  // The first argument was the message so juggle the args
-  if (typeof obj === "string") {
-    args = [msg, ...args];
-    msg = obj;
+function getMessage(
+  mergingObject: unknown,
+  message: unknown,
+  interpolationValues: unknown[],
+) {
+  // The first argument was the message so juggle the arguments
+  if (typeof mergingObject === "string") {
+    interpolationValues = [message, ...interpolationValues];
+    message = mergingObject;
   }
 
-  // Prefer a string message over `obj.msg`, as per Pino:
+  // Prefer a string message over `mergingObject.msg`, as per Pino:
   // https://github.com/pinojs/pino/blob/8db130eba0439e61c802448d31eb1998cebfbc98/docs/api.md#message-string
-  if (typeof msg === "string") {
-    return format(msg, ...args);
+  if (typeof message === "string") {
+    return format(message, ...interpolationValues);
   }
 
   if (
-    typeof obj === "object" &&
-    obj !== null &&
-    "msg" in obj &&
-    typeof obj.msg === "string"
+    typeof mergingObject === "object" &&
+    mergingObject !== null &&
+    "msg" in mergingObject &&
+    typeof mergingObject.msg === "string"
   ) {
-    return format(obj.msg, [msg, ...args]);
+    return format(mergingObject.msg, [message, ...interpolationValues]);
   }
 }
 
-function getOutput(obj: unknown, msg: unknown, args: unknown[]) {
-  let output = getMessage(obj, msg, args);
+function getOutput(
+  mergingObject: unknown,
+  message: unknown,
+  interpolationValues: unknown[],
+) {
+  let output = getMessage(mergingObject, message, interpolationValues);
   if (typeof output !== "string") {
     return;
   }
 
-  if (typeof obj === "object" && obj !== null) {
-    for (const [key, value] of Object.entries(obj)) {
+  if (typeof mergingObject === "object" && mergingObject !== null) {
+    for (const [key, value] of Object.entries(mergingObject)) {
       output += `\n      ${key}: ${tryStringify(value)}`;
     }
   }
@@ -81,17 +89,17 @@ export class Logger {
   /**
    * Configuration.
    *
-   * @param opts
+   * @param options
    *   Configuration.
    * @returns
    *   Logger.
    */
-  constructor(opts: LoggerOptions) {
-    if (typeof opts.level !== "string") {
+  constructor(options: LoggerOptions) {
+    if (typeof options.level !== "string") {
       throw new Error(`Invalid log level`);
     }
 
-    switch (opts.level) {
+    switch (options.level) {
       case "debug":
         this.#logLevel = 0;
         break;
@@ -105,7 +113,7 @@ export class Logger {
         this.#logLevel = 3;
         break;
       default: {
-        throw new Error(`Unknown log level: ${opts.level}`);
+        throw new Error(`Unknown log level: ${options.level}`);
       }
     }
   }
@@ -113,30 +121,38 @@ export class Logger {
   /**
    * Debug.
    *
-   * @param msg
+   * @param message
    *   Template.
-   * @param args
+   * @param interpolationValues
    *   Parameters to interpolate.
    * @returns
    *   Nothing.
    */
-  debug(msg: string, ...args: unknown[]): void;
+  debug(message: string, ...interpolationValues: unknown[]): void;
   /**
    * Debug.
    *
-   * @param obj
+   * @param mergingObject
    *   Merging object copied into the JSON log line.
-   * @param msg
+   * @param message
    *   Template.
-   * @param args
+   * @param interpolationValues
    *   Parameters to interpolate.
    * @returns
    *   Nothing.
    */
-  debug(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
-  debug(obj: unknown, msg?: unknown, ...args: unknown[]): void {
+  debug(
+    mergingObject: Record<string, unknown>,
+    message?: string,
+    ...interpolationValues: unknown[]
+  ): void;
+  debug(
+    mergingObject: unknown,
+    message?: unknown,
+    ...interpolationValues: unknown[]
+  ): void {
     if (this.#logLevel <= 0) {
-      const output = getOutput(obj, msg, args);
+      const output = getOutput(mergingObject, message, interpolationValues);
       if (typeof output !== "undefined") {
         console.debug(`${PREFIX} DEBUG ${output}`);
       }
@@ -146,30 +162,38 @@ export class Logger {
   /**
    * Info.
    *
-   * @param msg
+   * @param message
    *   Template.
-   * @param args
+   * @param interpolationValues
    *   Parameters to interpolate.
    * @returns
    *   Nothing.
    */
-  info(msg: string, ...args: unknown[]): void;
+  info(message: string, ...interpolationValues: unknown[]): void;
   /**
    * Info.
    *
-   * @param obj
+   * @param mergingObject
    *   Merging object copied into the JSON log line.
-   * @param msg
+   * @param message
    *   Template.
-   * @param args
+   * @param interpolationValues
    *   Parameters to interpolate.
    * @returns
    *   Nothing.
    */
-  info(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
-  info(obj: unknown, msg?: unknown, ...args: unknown[]): void {
+  info(
+    mergingObject: Record<string, unknown>,
+    message?: string,
+    ...interpolationValues: unknown[]
+  ): void;
+  info(
+    mergingObject: unknown,
+    message?: unknown,
+    ...interpolationValues: unknown[]
+  ): void {
     if (this.#logLevel <= 1) {
-      const output = getOutput(obj, msg, args);
+      const output = getOutput(mergingObject, message, interpolationValues);
       if (typeof output !== "undefined") {
         console.info(`${PREFIX} INFO ${output}`);
       }
@@ -179,30 +203,38 @@ export class Logger {
   /**
    * Warn.
    *
-   * @param msg
+   * @param message
    *   Template.
-   * @param args
+   * @param interpolationValues
    *   Parameters to interpolate.
    * @returns
    *   Nothing.
    */
-  warn(msg: string, ...args: unknown[]): void;
+  warn(message: string, ...interpolationValues: unknown[]): void;
   /**
    * Warn.
    *
-   * @param obj
+   * @param mergingObject
    *   Merging object copied into the JSON log line.
-   * @param msg
+   * @param message
    *   Template.
-   * @param args
+   * @param interpolationValues
    *   Parameters to interpolate.
    * @returns
    *   Nothing.
    */
-  warn(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
-  warn(obj: unknown, msg?: unknown, ...args: unknown[]): void {
+  warn(
+    mergingObject: Record<string, unknown>,
+    message?: string,
+    ...interpolationValues: unknown[]
+  ): void;
+  warn(
+    mergingObject: unknown,
+    message?: unknown,
+    ...interpolationValues: unknown[]
+  ): void {
     if (this.#logLevel <= 2) {
-      const output = getOutput(obj, msg, args);
+      const output = getOutput(mergingObject, message, interpolationValues);
       if (typeof output !== "undefined") {
         console.warn(`${PREFIX} WARN ${output}`);
       }
@@ -212,30 +244,38 @@ export class Logger {
   /**
    * Error.
    *
-   * @param msg
+   * @param message
    *   Template.
-   * @param args
+   * @param interpolationValues
    *   Parameters to interpolate.
    * @returns
    *   Nothing.
    */
-  error(msg: string, ...args: unknown[]): void;
+  error(message: string, ...interpolationValues: unknown[]): void;
   /**
    * Error.
    *
-   * @param obj
+   * @param mergingObject
    *   Merging object copied into the JSON log line.
-   * @param msg
+   * @param message
    *   Template.
-   * @param args
+   * @param interpolationValues
    *   Parameters to interpolate.
    * @returns
    *   Nothing.
    */
-  error(obj: Record<string, unknown>, msg?: string, ...args: unknown[]): void;
-  error(obj: unknown, msg?: unknown, ...args: unknown[]): void {
+  error(
+    mergingObject: Record<string, unknown>,
+    message?: string,
+    ...interpolationValues: unknown[]
+  ): void;
+  error(
+    mergingObject: unknown,
+    message?: unknown,
+    ...interpolationValues: unknown[]
+  ): void {
     if (this.#logLevel <= 3) {
-      const output = getOutput(obj, msg, args);
+      const output = getOutput(mergingObject, message, interpolationValues);
       if (typeof output !== "undefined") {
         console.error(`${PREFIX} ERROR ${output}`);
       }
