@@ -1,14 +1,14 @@
 export type Env = {
   [key: string]: unknown;
-  FLY_APP_NAME?: string;
-  VERCEL?: string;
-  RENDER?: string;
-  MODE?: string;
-  NODE_ENV?: string;
-  ARCJET_KEY?: string;
-  ARCJET_ENV?: string;
-  ARCJET_LOG_LEVEL?: string;
-  ARCJET_BASE_URL?: string;
+  FLY_APP_NAME?: string | undefined;
+  VERCEL?: string | undefined;
+  RENDER?: string | undefined;
+  MODE?: string | undefined;
+  NODE_ENV?: string | undefined;
+  ARCJET_KEY?: string | undefined;
+  ARCJET_ENV?: string | undefined;
+  ARCJET_LOG_LEVEL?: string | undefined;
+  ARCJET_BASE_URL?: string | undefined;
 };
 
 export function platform(env: Env) {

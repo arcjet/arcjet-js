@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true
+  },
   "extends": "@arcjet/tsconfig/base",
   "include": ["edge-light.ts", "index.ts", "test/*.ts"]
 }
