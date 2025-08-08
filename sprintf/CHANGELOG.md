@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/sprintf-v1.0.0-beta.11) (2025-08-08)
+
+
+### 📝 Documentation
+
+* **sprintf:** add JSDocs ([#4847](https://github.com/arcjet/arcjet-js/issues/4847)) ([a5b5084](https://github.com/arcjet/arcjet-js/commit/a5b50840f13ee03371166fa2655a54180d30aacc))
+* **sprintf:** add JSDocs ([#4848](https://github.com/arcjet/arcjet-js/issues/4848)) ([d9b0adb](https://github.com/arcjet/arcjet-js/commit/d9b0adb94c243cf5894f64005ad722ad4264145d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/tsconfig bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/sprintf-v1.0.0-beta.10) (2025-08-04)
 
 

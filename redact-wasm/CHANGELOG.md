@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/redact-wasm-v1.0.0-beta.11) (2025-08-08)
+
+
+### 📝 Documentation
+
+* **redact-wasm:** add JSDocs ([#4844](https://github.com/arcjet/arcjet-js/issues/4844)) ([e187ff8](https://github.com/arcjet/arcjet-js/commit/e187ff855e1f4873957b131f747bd7cb876ee25a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/tsconfig bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/redact-wasm-v1.0.0-beta.10) (2025-08-04)
 
 

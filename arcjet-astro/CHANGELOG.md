@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/astro-v1.0.0-beta.11) (2025-08-08)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/astro:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/headers bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/ip bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/logger bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/protocol bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/transport bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * arcjet bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/tsconfig bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/astro-v1.0.0-beta.10) (2025-08-04)
 
 
