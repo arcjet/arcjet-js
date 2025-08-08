@@ -1,5 +1,5 @@
 import arcjet, { fixedWindow, shield } from "@arcjet/node";
-import * as http from "node:http";
+import http from "node:http";
 import nosecone from "nosecone";
 
 // Get your Arcjet key at <https://app.arcjet.com>.
