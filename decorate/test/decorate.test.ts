@@ -65,6 +65,7 @@ describe("setRateLimitHeaders", () => {
       };
 
       setRateLimitHeaders(
+        // @ts-expect-error: test runtime handling of no `has`.
         headers,
         new ArcjetAllowDecision({
           results: [
@@ -97,6 +98,7 @@ describe("setRateLimitHeaders", () => {
       };
 
       setRateLimitHeaders(
+        // @ts-expect-error: test runtime handling of no `get`.
         headers,
         new ArcjetAllowDecision({
           results: [
@@ -129,6 +131,7 @@ describe("setRateLimitHeaders", () => {
       };
 
       setRateLimitHeaders(
+        // @ts-expect-error: test runtime handling of no `set`.
         headers,
         new ArcjetAllowDecision({
           results: [
@@ -858,6 +861,7 @@ describe("setRateLimitHeaders", () => {
     test("does not error if headers is undefined", () => {
       const resp = {};
       setRateLimitHeaders(
+        // @ts-expect-error: test runtime handling of no `headers`.
         resp,
         new ArcjetAllowDecision({
           results: [
@@ -1689,6 +1693,7 @@ describe("setRateLimitHeaders", () => {
       };
 
       setRateLimitHeaders(
+        // @ts-expect-error: test runtime handling of no `hasHeader`.
         resp,
         new ArcjetAllowDecision({
           results: [
@@ -1722,6 +1727,7 @@ describe("setRateLimitHeaders", () => {
       };
 
       setRateLimitHeaders(
+        // @ts-expect-error: test runtime handling of no `getHeader`.
         resp,
         new ArcjetAllowDecision({
           results: [
@@ -1757,6 +1763,7 @@ describe("setRateLimitHeaders", () => {
       };
 
       setRateLimitHeaders(
+        // @ts-expect-error: test runtime handling of no `setHeader`.
         resp,
         new ArcjetAllowDecision({
           results: [

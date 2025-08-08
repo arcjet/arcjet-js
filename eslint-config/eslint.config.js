@@ -1,8 +1,17 @@
+/**
+ * @import {Linter} from "eslint";
+ */
+
 import js from "@eslint/js";
 import ts from "typescript-eslint";
 import turbo from "eslint-config-turbo/flat";
 import prettier from "eslint-config-prettier";
 
+/**
+ * ESLint configuration for internal Arcjet projects.
+ *
+ * @type {Array<Linter.Config>}
+ */
 export default [
   {
     files: ["**/*.ts"],
