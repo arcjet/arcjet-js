@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2025-08-08)
+
+
+### 📝 Documentation
+
+* **logger:** add JSDocs ([#4839](https://github.com/arcjet/arcjet-js/issues/4839)) ([107c145](https://github.com/arcjet/arcjet-js/commit/107c1455cc2ae36bbc75909097a50c67a4e67129))
+* **nosecone-next:** add JSDocs ([#4841](https://github.com/arcjet/arcjet-js/issues/4841)) ([689ea3c](https://github.com/arcjet/arcjet-js/commit/689ea3c94ef75d574466190c5938a016932801bc))
+* **nosecone-sveltekit:** add JSDocs ([#4842](https://github.com/arcjet/arcjet-js/issues/4842)) ([de708af](https://github.com/arcjet/arcjet-js/commit/de708af03090b2c6f299067719d3e038d4e44063))
+* **nosecone:** add JSDocs ([#4840](https://github.com/arcjet/arcjet-js/issues/4840)) ([ead53e5](https://github.com/arcjet/arcjet-js/commit/ead53e510ecb93ded2400557333868eed63875bb))
+* **protocol:** add JSDocs ([#4851](https://github.com/arcjet/arcjet-js/issues/4851)) ([c1021e9](https://github.com/arcjet/arcjet-js/commit/c1021e9b6319297d718f2926fcccab2a28a91a93))
+* **redact-wasm:** add JSDocs ([#4844](https://github.com/arcjet/arcjet-js/issues/4844)) ([e187ff8](https://github.com/arcjet/arcjet-js/commit/e187ff855e1f4873957b131f747bd7cb876ee25a))
+* **redact:** add JSDocs ([#4843](https://github.com/arcjet/arcjet-js/issues/4843)) ([b6b14bb](https://github.com/arcjet/arcjet-js/commit/b6b14bb5e5b161d334a1fcd6eb6ed7f565c49f24))
+* **rollup-config:** add JSDocs ([#4845](https://github.com/arcjet/arcjet-js/issues/4845)) ([3b5b477](https://github.com/arcjet/arcjet-js/commit/3b5b477f6087e3374c778a0749e5cb5c798e5908))
+* **runtime:** add JSDocs ([#4846](https://github.com/arcjet/arcjet-js/issues/4846)) ([a740694](https://github.com/arcjet/arcjet-js/commit/a7406942dbeed93304e0724228e745040ee93822))
+* **sprintf:** add JSDocs ([#4847](https://github.com/arcjet/arcjet-js/issues/4847)) ([a5b5084](https://github.com/arcjet/arcjet-js/commit/a5b50840f13ee03371166fa2655a54180d30aacc))
+* **sprintf:** add JSDocs ([#4848](https://github.com/arcjet/arcjet-js/issues/4848)) ([d9b0adb](https://github.com/arcjet/arcjet-js/commit/d9b0adb94c243cf5894f64005ad722ad4264145d))
+* **transport:** add JSDocs ([#4849](https://github.com/arcjet/arcjet-js/issues/4849)) ([a59390b](https://github.com/arcjet/arcjet-js/commit/a59390be6c248d641f910fe4ed4a72f8119fe1f1))
+
+
+### 🧹 Miscellaneous Chores
+
+* **nosecone:** expose `Options`, deprecate `NoseconeOptions` ([#4855](https://github.com/arcjet/arcjet-js/issues/4855)) ([c504315](https://github.com/arcjet/arcjet-js/commit/c5043154836c04d3106be333c418682212b9602f))
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...v1.0.0-beta.10) (2025-08-04)
 
 

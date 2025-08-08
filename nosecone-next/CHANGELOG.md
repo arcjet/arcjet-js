@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@nosecone/next-v1.0.0-beta.11) (2025-08-08)
+
+
+### 📝 Documentation
+
+* **nosecone-next:** add JSDocs ([#4841](https://github.com/arcjet/arcjet-js/issues/4841)) ([689ea3c](https://github.com/arcjet/arcjet-js/commit/689ea3c94ef75d574466190c5938a016932801bc))
+
+
+### 🧹 Miscellaneous Chores
+
+* **nosecone:** expose `Options`, deprecate `NoseconeOptions` ([#4855](https://github.com/arcjet/arcjet-js/issues/4855)) ([c504315](https://github.com/arcjet/arcjet-js/commit/c5043154836c04d3106be333c418682212b9602f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/tsconfig bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@nosecone/next-v1.0.0-beta.10) (2025-08-04)
 
 
