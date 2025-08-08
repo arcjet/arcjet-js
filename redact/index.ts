@@ -1,14 +1,17 @@
 import { initializeWasm } from "@arcjet/redact-wasm";
-import type { SensitiveInfoEntity } from "@arcjet/redact-wasm";
+import type {
+  RedactedSensitiveInfoEntity as RedactedSensitiveInfoEntityWasm,
+  RedactSensitiveInfoConfig,
+  SensitiveInfoEntity,
+} from "@arcjet/redact-wasm";
 
 /**
- * Types of sensitive information.
+ * Types of standard sensitive information that can be detected.
  */
-export type ArcjetSensitiveInfoType =
-  | "email"
-  | "phone-number"
-  | "ip-address"
-  | "credit-card-number";
+export type ArcjetSensitiveInfoType = Exclude<
+  SensitiveInfoEntity["tag"],
+  "custom"
+>;
 
 type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
@@ -65,34 +68,34 @@ export type RedactOptions<Detect> = {
   replace?: Replace<Detect>;
 };
 
-function userEntitiesToWasm(entity: unknown) {
+function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
   if (typeof entity !== "string") {
     throw new Error("redaction entities must be strings");
   }
 
   if (entity === "email") {
-    return { tag: "email" as const };
+    return { tag: "email" };
   }
 
   if (entity === "phone-number") {
-    return { tag: "phone-number" as const };
+    return { tag: "phone-number" };
   }
 
   if (entity === "ip-address") {
-    return { tag: "ip-address" as const };
+    return { tag: "ip-address" };
   }
 
   if (entity === "credit-card-number") {
-    return { tag: "credit-card-number" as const };
+    return { tag: "credit-card-number" };
   }
 
   return {
-    tag: "custom" as const,
+    tag: "custom",
     val: entity,
   };
 }
 
-function wasmEntitiesToString(entity: SensitiveInfoEntity) {
+function wasmEntitiesToString(entity: SensitiveInfoEntity): string {
   if (entity.tag === "email") {
     return "email";
   }
@@ -135,18 +138,15 @@ function noOpReplace(
 }
 /* c8 ignore stop */
 
-interface RedactedSensitiveInfoEntity {
-  original: string;
-  redacted: string;
-  start: number;
-  end: number;
+interface RedactedSensitiveInfoEntity
+  extends Omit<RedactedSensitiveInfoEntityWasm, "identifiedType"> {
   identifiedType: string;
 }
 
 function getWasmOptions<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
->(options?: RedactOptions<Detect>) {
+>(options?: RedactOptions<Detect>): RedactSensitiveInfoConfig {
   if (typeof options === "object" && options !== null) {
     if (typeof options.entities !== "undefined") {
       if (Array.isArray(options.entities)) {
