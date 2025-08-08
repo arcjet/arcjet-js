@@ -1,4 +1,13 @@
+/**
+ * Writer.
+ */
 export interface StringWriter {
+  /**
+   * Write data.
+   *
+   * @param data
+   *   Value.
+   */
   writeString(data: string): void;
 }
 
@@ -37,8 +46,21 @@ const maxUint32 = 4294967295;
 const fieldSeparator = ":";
 const itemSeparator = ",";
 
+/**
+ * Hash a field.
+ */
 export type FieldHasher = (data: StringWriter) => void;
 
+/**
+ * Create a hasher for a boolean.
+ *
+ * @param key
+ *   Key.
+ * @param value
+ *   Value.
+ * @returns
+ *   Hasher.
+ */
 export function bool(key: string, value: boolean): FieldHasher {
   return (data: StringWriter) => {
     data.writeString(key);
@@ -51,6 +73,16 @@ export function bool(key: string, value: boolean): FieldHasher {
   };
 }
 
+/**
+ * Create a hasher for an unsigned 32-bit integer.
+ *
+ * @param key
+ *   Key.
+ * @param value
+ *   Value.
+ * @returns
+ *   Hasher.
+ */
 export function uint32(key: string, value: number): FieldHasher {
   return (data: StringWriter) => {
     data.writeString(key);
@@ -63,6 +95,16 @@ export function uint32(key: string, value: number): FieldHasher {
   };
 }
 
+/**
+ * Create a hasher for a string.
+ *
+ * @param key
+ *   Key.
+ * @param value
+ *   Value.
+ * @returns
+ *   Hasher.
+ */
 export function string(key: string, value: string): FieldHasher {
   return (data: StringWriter) => {
     data.writeString(key);
@@ -73,6 +115,16 @@ export function string(key: string, value: string): FieldHasher {
   };
 }
 
+/**
+ * Create a hasher for an array of strings.
+ *
+ * @param key
+ *   Key.
+ * @param values
+ *   Values.
+ * @returns
+ *   Hasher.
+ */
 export function stringSliceOrdered(key: string, values: string[]): FieldHasher {
   return (data: StringWriter) => {
     data.writeString(key);
@@ -88,7 +140,23 @@ export function stringSliceOrdered(key: string, values: string[]): FieldHasher {
   };
 }
 
+/**
+ * Create a hasher.
+ *
+ * @param subtle
+ *   Subtle crypto.
+ * @returns
+ *   Hasher.
+ */
 export function makeHasher(subtle: SubtleCryptoLike) {
+  /**
+   * Hash fields.
+   *
+   * @param hashers
+   *   Hashers.
+   * @returns
+   *   Promise to a hash.
+   */
   return async function hash(...hashers: FieldHasher[]): Promise<string> {
     const h = new Sha256(subtle);
     for (const hasher of hashers) {
