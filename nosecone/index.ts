@@ -205,7 +205,7 @@ export interface PermittedCrossDomainPoliciesConfig {
 /**
  * Configuration.
  */
-export interface NoseconeOptions {
+export interface Options {
   /**
    * Configure the `Content-Security-Policy` header, which helps mitigate a
    * large number of attacks, such as cross-site scripting.
@@ -370,6 +370,14 @@ export interface NoseconeOptions {
    */
   xXssProtection?: boolean;
 }
+
+/**
+ * Nosecone options.
+ *
+ * @deprecated
+ *   Use `Options` instead.
+ */
+export type NoseconeOptions = Options;
 
 /**
  * Map of configuration options to the kebab-case names for
@@ -907,7 +915,7 @@ export function createXssProtection() {
  * @returns
  *   `Headers` with the configured security headers.
  */
-export default function nosecone(options?: NoseconeOptions) {
+export default function nosecone(options?: Options) {
   let contentSecurityPolicy =
     options?.contentSecurityPolicy ?? defaults.contentSecurityPolicy;
   let crossOriginEmbedderPolicy =
@@ -1056,7 +1064,7 @@ export default function nosecone(options?: NoseconeOptions) {
  * @returns
  *   Augmented configuration to allow Vercel Toolbar
  */
-export function withVercelToolbar(config: NoseconeOptions) {
+export function withVercelToolbar(config: Options) {
   let contentSecurityPolicy = config.contentSecurityPolicy;
   if (contentSecurityPolicy === true) {
     contentSecurityPolicy = defaults.contentSecurityPolicy;
