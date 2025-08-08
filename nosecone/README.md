@@ -67,5 +67,20 @@ console.log(response);
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+Derivative work based on
+[`josh-hemphill/csp-typed-directives`][github-csp-typed-directives]
+licensed under
+[MIT][github-csp-typed-directives-license] © Joshua Hemphill and
+Tecnico Corporation.
+Our work picks the couple types that we need.
+It is also based on
+[`helmetjs/helmet`][github-helmet] licensed under
+[MIT][github-helmet-license] © Evan Hahn and Adam Baldwin.
+We were inspired by their defaults.
+
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
+[github-csp-typed-directives-license]: https://github.com/josh-hemphill/csp-typed-directives/blob/6e2cbc6d3cc18bbdc9b13d42c4556e786e28b243/LICENSE
+[github-csp-typed-directives]: https://github.com/josh-hemphill/csp-typed-directives/tree/6e2cbc6d3cc18bbdc9b13d42c4556e786e28b243
+[github-helmet-license]: https://github.com/helmetjs/helmet/blob/9a8e6d5322aad6090394b0bb2e81448c5f5b3e74/LICENSE
+[github-helmet]: https://github.com/helmetjs/helmet/tree/9a8e6d5322aad6090394b0bb2e81448c5f5b3e74
