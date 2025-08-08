@@ -4,10 +4,14 @@ import nosecone, {
   defaults as baseDefaults,
   NoseconeValidationError,
 } from "nosecone";
-import type { CspDirectives, NoseconeOptions } from "nosecone";
+import type { CspDirectives, Options } from "nosecone";
 import type { Handle, KitConfig } from "@sveltejs/kit";
 
-export { withVercelToolbar, type NoseconeOptions } from "nosecone";
+export {
+  withVercelToolbar,
+  type Options,
+  type NoseconeOptions,
+} from "nosecone";
 
 /**
  * Nosecone SvelteKit defaults.
@@ -31,7 +35,7 @@ export default nosecone;
  * @returns
  *   SvelteKit hook that sets secure headers.
  */
-export function createHook(options: NoseconeOptions = defaults): Handle {
+export function createHook(options: Options = defaults): Handle {
   return async ({ event, resolve }) => {
     const response = await resolve(event);
 

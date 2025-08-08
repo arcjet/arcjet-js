@@ -1,7 +1,11 @@
 import nosecone, { defaults as baseDefaults } from "nosecone";
-import type { NoseconeOptions } from "nosecone";
+import type { Options } from "nosecone";
 
-export { withVercelToolbar, type NoseconeOptions } from "nosecone";
+export {
+  withVercelToolbar,
+  type Options,
+  type NoseconeOptions,
+} from "nosecone";
 
 /**
  * Nosecone Next.js defaults.
@@ -49,7 +53,7 @@ function nextStyleSrc() {
  * @returns
  *   Next.js middleware that sets secure headers.
  */
-export function createMiddleware(options: NoseconeOptions = defaults) {
+export function createMiddleware(options: Options = defaults) {
   return async () => {
     const headers = nosecone(options);
     // Setting this specific header is the way that Next.js implements
