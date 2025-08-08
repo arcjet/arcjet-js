@@ -1,3 +1,6 @@
+/**
+ * Runtime environment that can be detected.
+ */
 export type Runtime = "workerd" | "deno" | "node" | "bun" | "edge-light" | "";
 
 declare const navigator: Navigator | undefined;
@@ -30,6 +33,13 @@ declare const process: any | undefined;
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+/**
+ * Detect the current runtime environment at runtime.
+ *
+ * @returns
+ *   Runtime.
+ */
 export function runtime(): Runtime {
   // The detection order matters in this function because some platforms will
   // implement compatibility layers, but we want to detect them accurately.
