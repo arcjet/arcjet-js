@@ -29,6 +29,16 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
+/**
+ * Initialize the WebAssembly.
+ *
+ * @param detect
+ *   Custom detection function.
+ * @param replace
+ *   Custom replacement function.
+ * @returns
+ *   Promise to the initialized WebAssembly instance.
+ */
 export async function initializeWasm(
   detect: CustomDetect,
   replace: CustomRedact,
@@ -48,12 +58,29 @@ export async function initializeWasm(
   }
 }
 
-type CustomDetect = typeof ArcjetRedactCustomRedact.detectSensitiveInfo;
-type CustomRedact = typeof ArcjetRedactCustomRedact.redactSensitiveInfo;
+/**
+ * Detect sensitive info.
+ *
+ * @param tokens
+ *   Tokens to detect in.
+ * @returns
+ *   Array of detected entities.
+ */
+export type CustomDetect = typeof ArcjetRedactCustomRedact.detectSensitiveInfo;
+
+/**
+ * Redact sensitive info.
+ *
+ * @param entityType
+ *   Entity to redact.
+ * @param plaintext
+ *   The plaintext string to redact.
+ * @returns
+ *   Redacted string.
+ */
+export type CustomRedact = typeof ArcjetRedactCustomRedact.redactSensitiveInfo;
 
 export {
-  type CustomDetect,
-  type CustomRedact,
   type RedactedSensitiveInfoEntity,
   type RedactSensitiveInfoConfig,
   type SensitiveInfoEntity,
