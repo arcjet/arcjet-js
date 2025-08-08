@@ -32,7 +32,7 @@ import {
   ArcjetRateLimitReason,
   ArcjetConclusion,
 } from "@arcjet/protocol";
-import type { Client } from "@arcjet/protocol/client.js";
+import type { Client } from "@arcjet/protocol/client";
 import * as analyze from "@arcjet/analyze";
 import type {
   DetectedSensitiveInfoEntity,
@@ -1343,9 +1343,12 @@ export function sensitiveInfo<
       if (typeof options.detect !== "undefined") {
         const detect = options.detect;
         convertedDetect = (tokens: string[]) => {
-          return detect(tokens)
-            .filter((e) => typeof e !== "undefined")
-            .map(protocolSensitiveInfoEntitiesToAnalyze);
+          return (
+            detect(tokens)
+              .filter((e) => typeof e !== "undefined")
+              // @ts-ignore: TODO(@wooorm-arcjet): this fails when building on Bun, investigate.
+              .map(protocolSensitiveInfoEntitiesToAnalyze)
+          );
         };
       }
 
@@ -1378,6 +1381,7 @@ export function sensitiveInfo<
         body,
         entities,
         options.contextWindowSize || 1,
+        // @ts-ignore: TODO(@wooorm-arcjet): this fails when building on Bun, investigate.
         convertedDetect,
       );
 

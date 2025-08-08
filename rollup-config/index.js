@@ -14,6 +14,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isBuiltin } from "node:module";
 import replace from "@rollup/plugin-replace";
+import nodeResolve from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
 
 function generateJs(wasm) {
@@ -206,6 +207,7 @@ export function createConfig(root, options) {
         },
         preventAssignment: true,
       }),
+      nodeResolve(),
       typescript({
         tsconfig: "./tsconfig.json",
         // Override the `excludes` specified in the tsconfig so we don't

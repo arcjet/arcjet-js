@@ -4,7 +4,7 @@ import { importWithGlobal } from "./import-with-global.js";
 
 describe("workerd detection", () => {
   test("detects workerd if appropriate globals are available", async () => {
-    const { runtime } = await importWithGlobal("../index.js", {
+    const { runtime } = await importWithGlobal("@arcjet/runtime", {
       navigator: { userAgent: "Cloudflare-Workers" },
     });
     assert.equal(runtime(), "workerd");
