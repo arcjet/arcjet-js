@@ -9,7 +9,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import findIP, { parseProxy } from "@arcjet/ip";
+import findIp, { parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
@@ -227,7 +227,7 @@ export function createArcjetClient<
     const headers = new ArcjetHeaders(request.headers);
 
     const url = new URL(request.url);
-    let ip = findIP(
+    let ip = findIp(
       {
         ip: clientAddress,
         headers,

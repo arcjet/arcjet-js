@@ -10,7 +10,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import findIP, { parseProxy } from "@arcjet/ip";
+import findIp, { parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import type { Server } from "bun";
 import { env } from "bun";
@@ -223,7 +223,7 @@ export default function arcjet<
     const headers = new ArcjetHeaders(request.headers);
 
     const url = new URL(request.url);
-    let ip = findIP(
+    let ip = findIp(
       {
         // This attempts to lookup the IP in the `ipCache`. This is primarily a
         // workaround to the API design in Bun that requires access to the
