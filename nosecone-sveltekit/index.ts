@@ -9,6 +9,9 @@ import type { Handle, KitConfig } from "@sveltejs/kit";
 
 export { withVercelToolbar, type NoseconeOptions } from "nosecone";
 
+/**
+ * Nosecone SvelteKit defaults.
+ */
 export const defaults = {
   ...baseDefaults,
   directives: {
@@ -23,8 +26,10 @@ export default nosecone;
 /**
  * Create a SvelteKit hook that sets secure headers on every request.
  *
- * @param options: Configuration to provide to Nosecone
- * @returns A SvelteKit hook that sets secure headers
+ * @param options
+ *   Configuration to provide to Nosecone.
+ * @returns
+ *   SvelteKit hook that sets secure headers.
  */
 export function createHook(options: NoseconeOptions = defaults): Handle {
   return async ({ event, resolve }) => {
@@ -45,8 +50,17 @@ export function createHook(options: NoseconeOptions = defaults): Handle {
 
 type SvelteKitCsp = Exclude<KitConfig["csp"], undefined>;
 
+/**
+ * Content Security Policy configuration for SvelteKit.
+ */
 export type ContentSecurityPolicyConfig = {
+  /**
+   * Mode of the `Content-Security-Policy` header.
+   */
   mode?: SvelteKitCsp["mode"];
+  /**
+   * Directives to use in the `Content-Security-Policy` header.
+   */
   directives?: CspDirectives;
   // TODO: Support `reportOnly`
 };
@@ -109,13 +123,19 @@ function directivesToSvelteKitConfig(
   return sveltekitDirectives;
 }
 
-export function csp(
-  options: ContentSecurityPolicyConfig = { mode: "auto" },
-): SvelteKitCsp {
+/**
+ * Create a SvelteKit Content Security Policy configuration.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   SvelteKit Content Security Policy configuration.
+ */
+export function csp(options?: ContentSecurityPolicyConfig): SvelteKitCsp {
   return {
-    mode: options.mode ? options.mode : "auto",
+    mode: options?.mode ?? "auto",
     directives: directivesToSvelteKitConfig(
-      options.directives ?? defaults.contentSecurityPolicy.directives,
+      options?.directives ?? defaults.contentSecurityPolicy.directives,
     ),
   };
 }
