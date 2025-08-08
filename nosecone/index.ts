@@ -104,44 +104,107 @@ export type ReferrerPolicyToken =
   | "unsafe-url"
   | "";
 
+/**
+ * Configuration.
+ */
 export interface ContentSecurityPolicyConfig {
+  /**
+   * Directives to use in the `Content-Security-Policy` header.
+   */
   directives?: Readonly<CspDirectives>;
 }
 
+/**
+ * Configuration for the `Cross-Origin-Embedder-Policy` header.
+ */
 export interface CrossOriginEmbedderPolicyConfig {
+  /**
+   * Policy.
+   */
   policy?: "require-corp" | "credentialless" | "unsafe-none";
 }
 
+/**
+ * Configuration for the `Cross-Origin-Opener-Policy` header.
+ */
 export interface CrossOriginOpenerPolicyConfig {
+  /**
+   * Policy.
+   */
   policy?: "same-origin" | "same-origin-allow-popups" | "unsafe-none";
 }
 
+/**
+ * Configuration for the `Cross-Origin-Resource-Policy` header.
+ */
 export interface CrossOriginResourcePolicyConfig {
+  /**
+   * Policy.
+   */
   policy?: "same-origin" | "same-site" | "cross-origin";
 }
 
+/**
+ * Configuration for the `Referrer-Policy` header.
+ */
 export interface ReferrerPolicyConfig {
+  /**
+   * Policy.
+   */
   policy?: ReadonlyArray<ReferrerPolicyToken>;
 }
 
+/**
+ * Configuration for the `Strict-Transport-Security` header.
+ */
 export interface StrictTransportSecurityConfig {
+  /**
+   * Max age in seconds.
+   */
   maxAge?: number;
+  /**
+   * Include subdomains.
+   */
   includeSubDomains?: boolean;
+  /**
+   * Preload.
+   */
   preload?: boolean;
 }
 
+/**
+ * Configuration for the `X-DNS-Prefetch-Control` header.
+ */
 export interface DnsPrefetchControlConfig {
+  /**
+   * Allow DNS prefetching.
+   */
   allow?: boolean;
 }
 
+/**
+ * Configuration for the `X-Frame-Options` header.
+ */
 export interface FrameOptionsConfig {
+  /**
+   * Action.
+   */
   action?: "deny" | "sameorigin";
 }
 
+/**
+ * Configuration for the `X-Permitted-Cross-Domain-Policies` header.
+ */
 export interface PermittedCrossDomainPoliciesConfig {
+  /**
+   * Permitted policies.
+   */
   permittedPolicies?: "none" | "master-only" | "by-content-type" | "all";
 }
 
+/**
+ * Configuration.
+ */
 export interface NoseconeOptions {
   /**
    * Configure the `Content-Security-Policy` header, which helps mitigate a
@@ -308,8 +371,10 @@ export interface NoseconeOptions {
   xXssProtection?: boolean;
 }
 
-// Map of configuration options to the kebab-case names for
-// `Content-Security-Policy` directives
+/**
+ * Map of configuration options to the kebab-case names for
+ * `Content-Security-Policy` directives.
+ */
 export const CONTENT_SECURITY_POLICY_DIRECTIVES = new Map([
   ["baseUri", "base-uri"],
   ["childSrc", "child-src"],
@@ -340,28 +405,36 @@ export const CONTENT_SECURITY_POLICY_DIRECTIVES = new Map([
   ["upgradeInsecureRequests", "upgrade-insecure-requests"],
 ] as const);
 
-// Set of valid `Cross-Origin-Embedder-Policy` values
+/**
+ * Set of valid `Cross-Origin-Embedder-Policy` values.
+ */
 export const CROSS_ORIGIN_EMBEDDER_POLICIES = new Set([
   "require-corp",
   "credentialless",
   "unsafe-none",
 ] as const);
 
-// Set of valid `Cross-Origin-Opener-Policy` values
+/**
+ * Set of valid `Cross-Origin-Opener-Policy` values.
+ */
 export const CROSS_ORIGIN_OPENER_POLICIES = new Set([
   "same-origin",
   "same-origin-allow-popups",
   "unsafe-none",
 ] as const);
 
-// Set of valid `Cross-Origin-Resource-Policy` values
+/**
+ * Set of valid `Cross-Origin-Resource-Policy` values.
+ */
 export const CROSS_ORIGIN_RESOURCE_POLICIES = new Set([
   "same-origin",
   "same-site",
   "cross-origin",
 ] as const);
 
-// Set of valid `Resource-Policy` tokens
+/**
+ * Set of valid `Resource-Policy` tokens.
+ */
 export const REFERRER_POLICIES = new Set([
   "no-referrer",
   "no-referrer-when-downgrade",
@@ -374,7 +447,9 @@ export const REFERRER_POLICIES = new Set([
   "",
 ] as const);
 
-// Set of valid `X-Permitted-Cross-Domain-Policies` values
+/**
+ * Set of valid `X-Permitted-Cross-Domain-Policies` values.
+ */
 export const PERMITTED_CROSS_DOMAIN_POLICIES = new Set([
   "none",
   "master-only",
@@ -382,7 +457,9 @@ export const PERMITTED_CROSS_DOMAIN_POLICIES = new Set([
   "all",
 ] as const);
 
-// Set of valid values for the `sandbox` directive of `Content-Security-Policy`
+/**
+ * Set of valid values for the `sandbox` directive of `Content-Security-Policy`.
+ */
 export const SANDBOX_DIRECTIVES = new Set([
   "allow-downloads-without-user-activation",
   "allow-forms",
@@ -399,8 +476,10 @@ export const SANDBOX_DIRECTIVES = new Set([
   "allow-top-navigation-by-user-activation",
 ] as const);
 
-// Mapping of values that need to be quoted in `Content-Security-Policy`;
-// however, it does not include `nonce-*` or `sha*-*` because those are dynamic
+/**
+ * Mapping of values that need to be quoted in `Content-Security-Policy`;
+ * however, it does not include `nonce-*` or `sha*-*` because those are dynamic.
+ */
 export const QUOTED = new Map([
   ["self", "'self'"],
   ["unsafe-eval", "'unsafe-eval'"],
@@ -431,6 +510,9 @@ const directives = {
   workerSrc: ["'self'"],
 } as const;
 
+/**
+ * Default configuration for headers.
+ */
 export const defaults = {
   contentSecurityPolicy: {
     directives,
@@ -475,7 +557,16 @@ function resolveValue<S extends string>(v: (() => S) | S): S {
   }
 }
 
+/**
+ * Kind of error thrown when configuration is invalid.
+ */
 export class NoseconeValidationError extends Error {
+  /**
+   * Create a new `NoseconeValidationError`.
+   *
+   * @param message
+   *   Error message.
+   */
   constructor(message: string) {
     super(`validation error: ${message}`);
   }
@@ -507,11 +598,19 @@ export class NoseconeValidationError extends Error {
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+/**
+ * Create a `Content-Security-Policy` header.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `Content-Security-Policy` header.
+ */
 export function createContentSecurityPolicy(
-  {
-    directives = defaults.contentSecurityPolicy.directives,
-  }: ContentSecurityPolicyConfig = defaults.contentSecurityPolicy,
+  options?: ContentSecurityPolicyConfig,
 ) {
+  const directives =
+    options?.directives ?? defaults.contentSecurityPolicy.directives;
   const cspEntries = [];
   for (const [optionKey, optionValues] of Object.entries(directives)) {
     const key = CONTENT_SECURITY_POLICY_DIRECTIVES.get(
@@ -569,11 +668,19 @@ export function createContentSecurityPolicy(
   return ["content-security-policy", cspEntries.join(" ")] as const;
 }
 
+/**
+ * Create a `Cross-Origin-Embedder-Policy` header.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `Cross-Origin-Embedder-Policy` header.
+ */
 export function createCrossOriginEmbedderPolicy(
-  {
-    policy = defaults.crossOriginEmbedderPolicy.policy,
-  }: CrossOriginEmbedderPolicyConfig = defaults.crossOriginEmbedderPolicy,
+  options?: CrossOriginEmbedderPolicyConfig,
 ) {
+  const policy = options?.policy ?? defaults.crossOriginEmbedderPolicy.policy;
+
   if (CROSS_ORIGIN_EMBEDDER_POLICIES.has(policy)) {
     return ["cross-origin-embedder-policy", policy] as const;
   } else {
@@ -583,11 +690,19 @@ export function createCrossOriginEmbedderPolicy(
   }
 }
 
+/**
+ * Create a `Cross-Origin-Opener-Policy` header.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `Cross-Origin-Opener-Policy` header.
+ */
 export function createCrossOriginOpenerPolicy(
-  {
-    policy = defaults.crossOriginOpenerPolicy.policy,
-  }: CrossOriginOpenerPolicyConfig = defaults.crossOriginOpenerPolicy,
+  options?: CrossOriginOpenerPolicyConfig,
 ) {
+  const policy = options?.policy ?? defaults.crossOriginOpenerPolicy.policy;
+
   if (CROSS_ORIGIN_OPENER_POLICIES.has(policy)) {
     return ["cross-origin-opener-policy", policy] as const;
   } else {
@@ -597,11 +712,19 @@ export function createCrossOriginOpenerPolicy(
   }
 }
 
+/**
+ * Create a `Cross-Origin-Resource-Policy` header.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `Cross-Origin-Resource-Policy` header.
+ */
 export function createCrossOriginResourcePolicy(
-  {
-    policy = defaults.crossOriginResourcePolicy.policy,
-  }: CrossOriginResourcePolicyConfig = defaults.crossOriginResourcePolicy,
+  options?: CrossOriginResourcePolicyConfig,
 ) {
+  const policy = options?.policy ?? defaults.crossOriginResourcePolicy.policy;
+
   if (CROSS_ORIGIN_RESOURCE_POLICIES.has(policy)) {
     return ["cross-origin-resource-policy", policy] as const;
   } else {
@@ -611,15 +734,27 @@ export function createCrossOriginResourcePolicy(
   }
 }
 
+/**
+ * Create a `Origin-Agent-Cluster` header.
+ *
+ * @returns
+ *   `Origin-Agent-Cluster` header.
+ */
 export function createOriginAgentCluster() {
   return ["origin-agent-cluster", "?1"] as const;
 }
 
-export function createReferrerPolicy(
-  {
-    policy = defaults.referrerPolicy.policy,
-  }: ReferrerPolicyConfig = defaults.referrerPolicy,
-) {
+/**
+ * Create a `Referrer-Policy` header.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `Referrer-Policy` header.
+ */
+export function createReferrerPolicy(options?: ReferrerPolicyConfig) {
+  const policy = options?.policy ?? defaults.referrerPolicy.policy;
+
   if (Array.isArray(policy)) {
     if (policy.length > 0) {
       const tokens = new Set<ReferrerPolicyToken>();
@@ -644,13 +779,23 @@ export function createReferrerPolicy(
   throw new NoseconeValidationError("must provide array for Referrer-Policy");
 }
 
+/**
+ * Create a `Strict-Transport-Security` header.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `Strict-Transport-Security` header.
+ */
 export function createStrictTransportSecurity(
-  {
-    maxAge = defaults.strictTransportSecurity.maxAge,
-    includeSubDomains = defaults.strictTransportSecurity.includeSubDomains,
-    preload = defaults.strictTransportSecurity.preload,
-  }: StrictTransportSecurityConfig = defaults.strictTransportSecurity,
+  options?: StrictTransportSecurityConfig,
 ) {
+  let maxAge = options?.maxAge ?? defaults.strictTransportSecurity.maxAge;
+  const includeSubDomains =
+    options?.includeSubDomains ??
+    defaults.strictTransportSecurity.includeSubDomains;
+  const preload = options?.preload ?? defaults.strictTransportSecurity.preload;
+
   if (maxAge >= 0 && Number.isFinite(maxAge)) {
     maxAge = Math.floor(maxAge);
   } else {
@@ -671,15 +816,26 @@ export function createStrictTransportSecurity(
   return ["strict-transport-security", directives.join("; ")] as const;
 }
 
+/**
+ * Create an `X-Content-Type-Options` header.
+ *
+ * @returns
+ *   `X-Content-Type-Options` header.
+ */
 export function createContentTypeOptions() {
   return ["x-content-type-options", "nosniff"] as const;
 }
 
-export function createDnsPrefetchControl(
-  {
-    allow = defaults.xDnsPrefetchControl.allow,
-  }: DnsPrefetchControlConfig = defaults.xDnsPrefetchControl,
-) {
+/**
+ * Create an `X-DNS-Prefetch-Control` header.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `X-DNS-Prefetch-Control` header.
+ */
+export function createDnsPrefetchControl(options?: DnsPrefetchControlConfig) {
+  const allow = options?.allow ?? defaults.xDnsPrefetchControl.allow;
   const headerValue = allow ? "on" : "off";
   return ["x-dns-prefetch-control", headerValue] as const;
 }
@@ -688,11 +844,17 @@ export function createDownloadOptions() {
   return ["x-download-options", "noopen"] as const;
 }
 
-export function createFrameOptions(
-  {
-    action = defaults.xFrameOptions.action,
-  }: FrameOptionsConfig = defaults.xFrameOptions,
-) {
+/**
+ * Create an `X-Frame-Options` header.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `X-Frame-Options` header.
+ */
+export function createFrameOptions(options?: FrameOptionsConfig) {
+  const action = options?.action ?? defaults.xFrameOptions.action;
+
   if (typeof action === "string") {
     const headerValue = action.toUpperCase();
     if (headerValue === "SAMEORIGIN" || headerValue === "DENY") {
@@ -703,12 +865,21 @@ export function createFrameOptions(
   throw new NoseconeValidationError("invalid value for X-Frame-Options");
 }
 
+/**
+ * Create an `X-Permitted-Cross-Domain-Policies` header.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `X-Permitted-Cross-Domain-Policies` header.
+ */
 export function createPermittedCrossDomainPolicies(
-  {
-    permittedPolicies = defaults.xPermittedCrossDomainPolicies
-      .permittedPolicies,
-  }: PermittedCrossDomainPoliciesConfig = defaults.xPermittedCrossDomainPolicies,
+  options?: PermittedCrossDomainPoliciesConfig,
 ) {
+  const permittedPolicies =
+    options?.permittedPolicies ??
+    defaults.xPermittedCrossDomainPolicies.permittedPolicies;
+
   if (PERMITTED_CROSS_DOMAIN_POLICIES.has(permittedPolicies)) {
     return ["x-permitted-cross-domain-policies", permittedPolicies] as const;
   } else {
@@ -718,25 +889,50 @@ export function createPermittedCrossDomainPolicies(
   }
 }
 
+/**
+ * Create an `X-XSS-Protection` header.
+ *
+ * @returns
+ *   `X-XSS-Protection` header.
+ */
 export function createXssProtection() {
   return ["x-xss-protection", "0"] as const;
 }
 
-export default function nosecone({
-  contentSecurityPolicy = defaults.contentSecurityPolicy,
-  crossOriginEmbedderPolicy = defaults.crossOriginEmbedderPolicy,
-  crossOriginOpenerPolicy = defaults.crossOriginOpenerPolicy,
-  crossOriginResourcePolicy = defaults.crossOriginResourcePolicy,
-  originAgentCluster = defaults.originAgentCluster,
-  referrerPolicy = defaults.referrerPolicy,
-  strictTransportSecurity = defaults.strictTransportSecurity,
-  xContentTypeOptions = defaults.xContentTypeOptions,
-  xDnsPrefetchControl = defaults.xDnsPrefetchControl,
-  xDownloadOptions = defaults.xDownloadOptions,
-  xFrameOptions = defaults.xFrameOptions,
-  xPermittedCrossDomainPolicies = defaults.xPermittedCrossDomainPolicies,
-  xXssProtection = defaults.xXssProtection,
-}: NoseconeOptions = defaults) {
+/**
+ * Create security headers.
+ *
+ * @param options
+ *   Configuration.
+ * @returns
+ *   `Headers` with the configured security headers.
+ */
+export default function nosecone(options?: NoseconeOptions) {
+  let contentSecurityPolicy =
+    options?.contentSecurityPolicy ?? defaults.contentSecurityPolicy;
+  let crossOriginEmbedderPolicy =
+    options?.crossOriginEmbedderPolicy ?? defaults.crossOriginEmbedderPolicy;
+  let crossOriginOpenerPolicy =
+    options?.crossOriginOpenerPolicy ?? defaults.crossOriginOpenerPolicy;
+  let crossOriginResourcePolicy =
+    options?.crossOriginResourcePolicy ?? defaults.crossOriginResourcePolicy;
+  const originAgentCluster =
+    options?.originAgentCluster ?? defaults.originAgentCluster;
+  let referrerPolicy = options?.referrerPolicy ?? defaults.referrerPolicy;
+  let strictTransportSecurity =
+    options?.strictTransportSecurity ?? defaults.strictTransportSecurity;
+  const xContentTypeOptions =
+    options?.xContentTypeOptions ?? defaults.xContentTypeOptions;
+  let xDnsPrefetchControl =
+    options?.xDnsPrefetchControl ?? defaults.xDnsPrefetchControl;
+  const xDownloadOptions =
+    options?.xDownloadOptions ?? defaults.xDownloadOptions;
+  let xFrameOptions = options?.xFrameOptions ?? defaults.xFrameOptions;
+  let xPermittedCrossDomainPolicies =
+    options?.xPermittedCrossDomainPolicies ??
+    defaults.xPermittedCrossDomainPolicies;
+  const xXssProtection = options?.xXssProtection ?? defaults.xXssProtection;
+
   if (contentSecurityPolicy === true) {
     contentSecurityPolicy = defaults.contentSecurityPolicy;
   }
@@ -852,11 +1048,13 @@ export default function nosecone({
  * Augment some Nosecone configuration with the values necessary for using the
  * Vercel Toolbar.
  *
- * Follows the guidance at
- * https://vercel.com/docs/workflow-collaboration/vercel-toolbar/managing-toolbar#using-a-content-security-policy
+ * Follows the guidance at [*Using a Content Security Policy* on
+ * `vercel.com`](https://vercel.com/docs/vercel-toolbar/managing-toolbar#using-a-content-security-policy).
  *
- * @param config Base configuration for you application
- * @returns Augmented configuration to allow Vercel Toolbar
+ * @param config
+ *   Base configuration for your application
+ * @returns
+ *   Augmented configuration to allow Vercel Toolbar
  */
 export function withVercelToolbar(config: NoseconeOptions) {
   let contentSecurityPolicy = config.contentSecurityPolicy;
