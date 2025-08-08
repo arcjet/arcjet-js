@@ -11,7 +11,7 @@ import type {
   CharacteristicProps,
 } from "arcjet";
 import findIP, { parseProxy } from "@arcjet/ip";
-import ArcjetHeaders from "@arcjet/headers";
+import { ArcjetHeaders } from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";

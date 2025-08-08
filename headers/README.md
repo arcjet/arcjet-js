@@ -44,7 +44,7 @@ npm install @arcjet/headers
 ## Use
 
 ```ts
-import ArcjetHeaders from "@arcjet/headers";
+import { ArcjetHeaders } from "@arcjet/headers";
 
 const headers = new ArcjetHeaders({ abc: "123" });
 
