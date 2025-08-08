@@ -8,8 +8,6 @@ export type * from "./well-known-bots.js";
 // Re-export the Bot categories from the generated file
 export { categories as botCategories } from "./well-known-bots.js";
 
-type RequiredProps<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
-
 /**
  * Mode of a rule.
  */
@@ -1035,7 +1033,7 @@ export class ArcjetIpDetails {
    * @returns
    *   Whether the IP address has latitude info.
    */
-  hasLatitude(): this is RequiredProps<this, "latitude" | "accuracyRadius"> {
+  hasLatitude(): this is { accuracyRadius: number; latitude: number } {
     return typeof this.latitude !== "undefined";
   }
 
@@ -1046,7 +1044,7 @@ export class ArcjetIpDetails {
    * @returns
    *   Whether the IP address has longitude info.
    */
-  hasLongitude(): this is RequiredProps<this, "longitude" | "accuracyRadius"> {
+  hasLongitude(): this is { accuracyRadius: number; longitude: number } {
     return typeof this.longitude !== "undefined";
   }
 
@@ -1057,10 +1055,11 @@ export class ArcjetIpDetails {
    * @returns
    *   Whether the IP address has accuracy info.
    */
-  hasAccuracyRadius(): this is RequiredProps<
-    this,
-    "latitude" | "longitude" | "accuracyRadius"
-  > {
+  hasAccuracyRadius(): this is {
+    accuracyRadius: number;
+    latitude: number;
+    longitude: number;
+  } {
     return typeof this.accuracyRadius !== "undefined";
   }
 
@@ -1070,7 +1069,7 @@ export class ArcjetIpDetails {
    * @returns
    *   Whether the IP address has timezone info.
    */
-  hasTimezone(): this is RequiredProps<this, "timezone"> {
+  hasTimezone(): this is { timezone: string } {
     return typeof this.timezone !== "undefined";
   }
 
@@ -1080,7 +1079,7 @@ export class ArcjetIpDetails {
    * @returns
    *   Whether the IP address has postcal code info.
    */
-  hasPostalCode(): this is RequiredProps<this, "postalCode"> {
+  hasPostalCode(): this is { postalCode: string } {
     return typeof this.postalCode !== "undefined";
   }
 
@@ -1091,7 +1090,7 @@ export class ArcjetIpDetails {
    *   Whether the IP address has city info.
    */
   // TODO: If we have city, what other data are we sure to have?
-  hasCity(): this is RequiredProps<this, "city"> {
+  hasCity(): this is { city: string } {
     return typeof this.city !== "undefined";
   }
 
@@ -1102,7 +1101,7 @@ export class ArcjetIpDetails {
    *   Whether the IP address has region info.
    */
   // TODO: If we have region, what other data are we sure to have?
-  hasRegion(): this is RequiredProps<this, "region"> {
+  hasRegion(): this is { region: string } {
     return typeof this.region !== "undefined";
   }
 
@@ -1114,7 +1113,7 @@ export class ArcjetIpDetails {
    *   Whether the IP address has country info.
    */
   // TODO: If we have country, should we also have continent?
-  hasCountry(): this is RequiredProps<this, "country" | "countryName"> {
+  hasCountry(): this is { countryName: string; country: string } {
     return typeof this.country !== "undefined";
   }
 
@@ -1125,7 +1124,7 @@ export class ArcjetIpDetails {
    * @returns
    *   Whether the IP address has continent info.
    */
-  hasContintent(): this is RequiredProps<this, "continent" | "continentName"> {
+  hasContintent(): this is { continentName: string; continent: string } {
     return typeof this.continent !== "undefined";
   }
 
@@ -1136,10 +1135,13 @@ export class ArcjetIpDetails {
    * @returns
    *   Whether the IP address has ASN info.
    */
-  hasASN(): this is RequiredProps<
-    this,
-    "asn" | "asnName" | "asnDomain" | "asnType" | "asnCountry"
-  > {
+  hasASN(): this is {
+    asnCountry: string;
+    asnDomain: string;
+    asnName: string;
+    asnType: string;
+    asn: string;
+  } {
     return typeof this.asn !== "undefined";
   }
 
@@ -1149,7 +1151,7 @@ export class ArcjetIpDetails {
    * @returns
    *   Whether the IP address has a service.
    */
-  hasService(): this is RequiredProps<this, "service"> {
+  hasService(): this is { service: string } {
     return typeof this.service !== "undefined";
   }
 
