@@ -1,6 +1,9 @@
 import { initializeWasm } from "@arcjet/redact-wasm";
 import type { SensitiveInfoEntity } from "@arcjet/redact-wasm";
 
+/**
+ * Types of sensitive information.
+ */
 export type ArcjetSensitiveInfoType =
   | "email"
   | "phone-number"
@@ -25,14 +28,41 @@ type ValidEntities<Detect> = Array<
       : never
 >;
 
+/**
+ * Redact sensitive information.
+ *
+ * @param entity
+ *   Entity to redact.
+ * @param plaintext
+ *   The plaintext string to redact.
+ * @returns
+ *   Redacted string or nothing.
+ */
+type Replace<Detect> = (
+  entity: ValidEntities<Detect>[number],
+  plaintext: string,
+) => string | undefined;
+
+/**
+ * Options for the `redact` function.
+ */
 export type RedactOptions<Detect> = {
+  /**
+   * Entities to redact.
+   */
   entities?: ValidEntities<Detect>;
+  /**
+   * Size of tokens to consider.
+   */
   contextWindowSize?: number;
+  /**
+   * Custom detection function to identify sensitive information.
+   */
   detect?: Detect;
-  replace?: (
-    entity: ValidEntities<Detect>[number],
-    plaintext: string,
-  ) => string | undefined;
+  /**
+   * Custom replace function to redact sensitive information.
+   */
+  replace?: Replace<Detect>;
 };
 
 function userEntitiesToWasm(entity: unknown) {
@@ -196,6 +226,16 @@ async function callRedactWasm<
 
 type Unredact = (input: string) => string;
 
+/**
+ * Redact sensitive info.
+ *
+ * @param candidate
+ *   Value to redact.
+ * @param options
+ *   Configuration.
+ * @returns
+ *   Promise to a tuple with the redacted string and a function to unredact it.
+ */
 export async function redact<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
