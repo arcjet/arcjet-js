@@ -17,8 +17,8 @@ function parseXForwardedFor(value?: string | null): string[] {
   return forwardedIps;
 }
 
-type IPv4Tuple = [number, number, number, number];
-type IPv6Tuple = [
+type Ipv4Tuple = [number, number, number, number];
+type Ipv6Tuple = [
   number,
   number,
   number,
@@ -29,7 +29,7 @@ type IPv6Tuple = [
   number,
 ];
 
-function isIPv4Cidr(cidr: unknown): cidr is IPv4Cidr {
+function isIpv4Cidr(cidr: unknown): cidr is Ipv4Cidr {
   return (
     typeof cidr === "object" &&
     cidr !== null &&
@@ -41,7 +41,7 @@ function isIPv4Cidr(cidr: unknown): cidr is IPv4Cidr {
   );
 }
 
-function isIPv6Cidr(cidr: unknown): cidr is IPv6Cidr {
+function isIpv6Cidr(cidr: unknown): cidr is Ipv6Cidr {
   return (
     typeof cidr === "object" &&
     cidr !== null &&
@@ -63,10 +63,10 @@ function isTrustedProxy(
       if (typeof proxy === "string") {
         return proxy === ip;
       }
-      if (isIPv4Tuple(segments) && isIPv4Cidr(proxy)) {
+      if (isIpv4Tuple(segments) && isIpv4Cidr(proxy)) {
         return proxy.contains(segments);
       }
-      if (isIPv6Tuple(segments) && isIPv6Cidr(proxy)) {
+      if (isIpv6Tuple(segments) && isIpv6Cidr(proxy)) {
         return proxy.contains(segments);
       }
       return false;
@@ -76,96 +76,87 @@ function isTrustedProxy(
   return false;
 }
 
-abstract class Cidr {
-  abstract type: "v4" | "v6";
-  abstract partSize: 8 | 16;
-  abstract parts: readonly number[];
-  abstract bits: number;
+// Based on CIDR matching implementation in `ipaddr.js`
+// Source code:
+// https://github.com/whitequark/ipaddr.js/blob/08c2cd41e2cb3400683cbd503f60421bfdf66921/lib/ipaddr.js#L107-L130
+//
+// Licensed: The MIT License (MIT)
+// Copyright (C) 2011-2017 whitequark <whitequark@whitequark.org>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 
-  // Based on CIDR matching implementation in `ipaddr.js`
-  // Source code:
-  // https://github.com/whitequark/ipaddr.js/blob/08c2cd41e2cb3400683cbd503f60421bfdf66921/lib/ipaddr.js#L107-L130
-  //
-  // Licensed: The MIT License (MIT)
-  // Copyright (C) 2011-2017 whitequark <whitequark@whitequark.org>
-  //
-  // Permission is hereby granted, free of charge, to any person obtaining a copy
-  // of this software and associated documentation files (the "Software"), to deal
-  // in the Software without restriction, including without limitation the rights
-  // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  // copies of the Software, and to permit persons to whom the Software is
-  // furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
-  // The above copyright notice and this permission notice shall be included in
-  // all copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+function cidrContains(cidr: Cidr, ip: number[]): boolean {
+  let part = 0;
+  let shift;
+  let cidrBits = cidr.bits;
 
-  // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  // THE SOFTWARE.
-  contains(ip: number[]): boolean {
-    let part = 0;
-    let shift;
-    let cidrBits = this.bits;
-
-    while (cidrBits > 0) {
-      shift = this.partSize - cidrBits;
-      if (shift < 0) {
-        shift = 0;
-      }
-
-      if (ip[part] >> shift !== this.parts[part] >> shift) {
-        return false;
-      }
-
-      cidrBits -= this.partSize;
-      part += 1;
+  while (cidrBits > 0) {
+    shift = cidr.partSize - cidrBits;
+    if (shift < 0) {
+      shift = 0;
     }
 
-    return true;
+    if (ip[part] >> shift !== cidr.parts[part] >> shift) {
+      return false;
+    }
+
+    cidrBits -= cidr.partSize;
+    part += 1;
   }
+
+  return true;
 }
 
-class IPv4Cidr extends Cidr {
+class Ipv4Cidr {
   type = "v4" as const;
   partSize = 8 as const;
-  parts: Readonly<IPv4Tuple>;
+  parts: Readonly<Ipv4Tuple>;
   bits: number;
 
-  constructor(parts: IPv4Tuple, bits: number) {
-    super();
+  constructor(parts: Ipv4Tuple, bits: number) {
     this.bits = bits;
     this.parts = parts;
     Object.freeze(this);
   }
 
-  contains(ip: IPv4Tuple): boolean {
-    return super.contains(ip);
+  contains(ip: Array<number>): boolean {
+    return cidrContains(this, ip);
   }
 }
 
-class IPv6Cidr extends Cidr {
+class Ipv6Cidr {
   type = "v6" as const;
   partSize = 16 as const;
-  parts: Readonly<IPv6Tuple>;
+  parts: Readonly<Ipv6Tuple>;
   bits: number;
 
-  constructor(parts: IPv6Tuple, bits: number) {
-    super();
+  constructor(parts: Ipv6Tuple, bits: number) {
     this.bits = bits;
     this.parts = parts;
     Object.freeze(this);
   }
 
-  contains(ip: IPv6Tuple): boolean {
-    return super.contains(ip);
+  contains(ip: Array<number>): boolean {
+    return cidrContains(this, ip);
   }
 }
 
-function parseCidr(cidr: `${string}/${string}`): IPv4Cidr | IPv6Cidr {
+function parseCidr(cidr: `${string}/${string}`): Cidr {
   // Pre-condition: `cidr` has be verified to have at least one `/`
 
   const cidrParts = cidr.split("/");
@@ -174,24 +165,24 @@ function parseCidr(cidr: `${string}/${string}`): IPv4Cidr | IPv6Cidr {
   }
 
   const parser = new Parser(cidrParts[0]);
-  const maybeIPv4 = parser.readIPv4Address();
-  if (isIPv4Tuple(maybeIPv4)) {
+  const maybeIpv4 = parser.readIpv4Address();
+  if (isIpv4Tuple(maybeIpv4)) {
     const bits = parseInt(cidrParts[1], 10);
     if (isNaN(bits) || bits < 0 || bits > 32) {
       throw new Error("invalid CIDR address: incorrect amount of bits");
     }
 
-    return new IPv4Cidr(maybeIPv4, bits);
+    return new Ipv4Cidr(maybeIpv4, bits);
   }
 
-  const maybeIPv6 = parser.readIPv6Address();
-  if (isIPv6Tuple(maybeIPv6)) {
+  const maybeIpv6 = parser.readIpv6Address();
+  if (isIpv6Tuple(maybeIpv6)) {
     const bits = parseInt(cidrParts[1], 10);
     if (isNaN(bits) || bits < 0 || bits > 128) {
       throw new Error("invalid CIDR address: incorrect amount of bits");
     }
 
-    return new IPv6Cidr(maybeIPv6, bits);
+    return new Ipv6Cidr(maybeIpv6, bits);
   }
 
   throw new Error("invalid CIDR address: could not parse IP address");
@@ -211,7 +202,7 @@ export function parseProxy(proxy: string): string | Cidr {
   }
 }
 
-function isIPv4Tuple(segements?: ArrayLike<number>): segements is IPv4Tuple {
+function isIpv4Tuple(segements?: ArrayLike<number>): segements is Ipv4Tuple {
   if (typeof segements === "undefined") {
     return false;
   }
@@ -219,7 +210,7 @@ function isIPv4Tuple(segements?: ArrayLike<number>): segements is IPv4Tuple {
   return segements.length === 4;
 }
 
-function isIPv6Tuple(segements?: ArrayLike<number>): segements is IPv6Tuple {
+function isIpv6Tuple(segements?: ArrayLike<number>): segements is Ipv6Tuple {
   if (typeof segements === "undefined") {
     return false;
   }
@@ -232,7 +223,7 @@ function u16FromBytes(bytes: [number, number]) {
   return new Uint16Array(u8.buffer)[0];
 }
 
-function u32FromBytes(bytes: IPv4Tuple) {
+function u32FromBytes(bytes: Ipv4Tuple) {
   const u8 = new Uint8Array(bytes);
   return new Uint32Array(u8.buffer)[0];
 }
@@ -361,7 +352,7 @@ class Parser {
     });
   }
 
-  readIPv4Address(): number[] | undefined {
+  readIpv4Address(): number[] | undefined {
     return this.readAtomically((p) => {
       const groups: number[] = [];
       for (let idx = 0; idx < 4; idx++) {
@@ -381,7 +372,7 @@ class Parser {
     });
   }
 
-  readIPv6Address(): Uint16Array | undefined {
+  readIpv6Address(): Uint16Array | undefined {
     // Read a chunk of an IPv6 address into `groups`. Returns the number of
     // groups read, along with a bool indicating if an embedded trailing IPv4
     // address was read. Specifically, read a series of colon-separated IPv6
@@ -393,8 +384,8 @@ class Parser {
         // Try to read a trailing embedded IPv4 address. There must be at least
         // two groups left
         if (i < limit - 1) {
-          const ipv4 = p.readSeparator(":", i, (p) => p.readIPv4Address());
-          if (isIPv4Tuple(ipv4)) {
+          const ipv4 = p.readSeparator(":", i, (p) => p.readIpv4Address());
+          if (isIpv4Tuple(ipv4)) {
             const [one, two, three, four] = ipv4;
             groups[i + 0] = u16FromBytes([one, two]);
             groups[i + 1] = u16FromBytes([three, four]);
@@ -418,14 +409,14 @@ class Parser {
       // Read the front part of the address; either the whole thing, or up
       // to the first ::
       const head = new Uint16Array(8);
-      const [headSize, headIPv4] = readGroups(p, head);
+      const [headSize, headIpv4] = readGroups(p, head);
 
       if (headSize === 8) {
         return head;
       }
 
       // IPv4 part is not allowed before `::`
-      if (headIPv4) {
+      if (headIpv4) {
         return;
       }
 
@@ -478,9 +469,9 @@ function isGlobalIpv4(
   }
 
   const parser = new Parser(s);
-  const octets = parser.readIPv4Address();
+  const octets = parser.readIpv4Address();
 
-  if (!isIPv4Tuple(octets)) {
+  if (!isIpv4Tuple(octets)) {
     return false;
   }
 
@@ -577,9 +568,9 @@ function isGlobalIpv6(
   }
 
   const parser = new Parser(s);
-  const segments = parser.readIPv6Address();
+  const segments = parser.readIpv6Address();
 
-  if (!isIPv6Tuple(segments)) {
+  if (!isIpv6Tuple(segments)) {
     return false;
   }
 
@@ -1028,5 +1019,10 @@ function findIp(
 
   return "";
 }
+
+/**
+ * One of the CIDR ranges.
+ */
+type Cidr = Ipv4Cidr | Ipv6Cidr;
 
 export default findIp;
