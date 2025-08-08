@@ -63,6 +63,12 @@ console.log(id);
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+Derivative work based on [`feross/buffer`][github-buffer] licensed under
+[MIT][github-buffer-license] © Feross Aboukhadijeh and contributors.
+Our work picks its internal hex encoding logic adjusted for our use.
+
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
 [arcjet-get-started]: https://docs.arcjet.com/get-started
+[github-buffer-license]: https://github.com/feross/buffer/blob/5857e295f4d37e3ad02c3abcbf7e8e5ef51f3be6/LICENSE
+[github-buffer]: https://github.com/feross/buffer/tree/5857e295f4d37e3ad02c3abcbf7e8e5ef51f3be6
