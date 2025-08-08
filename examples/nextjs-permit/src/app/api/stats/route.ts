@@ -39,14 +39,9 @@ async function getClient() {
 }
 
 export async function GET(req: NextRequest) {
-  // Get the user's ID if they are logged in, otherwise use
-  // their IP address as a fingerprint
-  const user = await currentUser();
-  const fingerprint: string = user ? user.id : ip(req);
-
   // Get the Arcjet client and request a decision
   const aj = await getClient();
-  const decision = await aj.protect(req, { fingerprint: fingerprint });
+  const decision = await aj.protect(req);
 
   // If the decision is denied then return an error response
   if (decision.isDenied()) {

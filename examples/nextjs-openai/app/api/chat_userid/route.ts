@@ -26,12 +26,12 @@ const aj = arcjet({
   // and set it as an environment variable rather than hard coding.
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
   key: process.env.ARCJET_KEY,
-  characteristics: ["userId"], // track requests by user ID
   rules: [
     shield({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
     }),
     tokenBucket({
+      characteristics: ["userId"], // track requests by user ID
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only      
       refillRate: 2_000, // fill the bucket up by 2,000 tokens
       interval: "1h", // every hour
