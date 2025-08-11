@@ -76,7 +76,13 @@ Object substitution supports any value that is not `undefined`.
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+Derivative work based on [`quick-format-unescaped`][quick-format-unescaped]
+licensed under [MIT][quick-format-unescaped-license] © David Mark Clements.
+Our work is more restrictive while maintaining as much compatibility as
+possible.
+
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet]: https://arcjet.com
 [node-util]: https://nodejs.org/docs/latest-v18.x/api/util.html#utilformatformat-args
-[quick-format-unescaped]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64c2f2e182f97923a423d468757b9a24a63/index.js
+[quick-format-unescaped-license]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64/LICENSE
+[quick-format-unescaped]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64/index.js
