@@ -25,12 +25,20 @@ export type LogLevel = "debug" | "info" | "warn" | "error";
 /**
  * Configuration.
  */
-export interface LoggerOptions {
+export interface Options {
   /**
    * Log level.
    */
   level: LogLevel;
 }
+
+/**
+ * Configuration.
+ *
+ * @deprecated
+ *   Use `Options` instead.
+ */
+export type LoggerOptions = Options;
 
 const PREFIX = "✦Aj";
 
@@ -94,7 +102,7 @@ export class Logger {
    * @returns
    *   Logger.
    */
-  constructor(options: LoggerOptions) {
+  constructor(options: Options) {
     if (typeof options.level !== "string") {
       throw new Error(`Invalid log level`);
     }
