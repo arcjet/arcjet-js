@@ -111,7 +111,7 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
  * @param request
  *   Request.
  * @returns
- *   Promise to a SHA-256 fingerprint.
+ *   Promise for a SHA-256 fingerprint.
  */
 export async function generateFingerprint(
   context: AnalyzeContext,
@@ -144,7 +144,7 @@ export async function generateFingerprint(
  * @param options
  *   Configuration.
  * @returns
- *   Promise to a result.
+ *   Promise for a result.
  */
 export async function isValidEmail(
   context: AnalyzeContext,
@@ -175,7 +175,7 @@ export async function isValidEmail(
  * @param options
  *   Configuration.
  * @returns
- *   Promise to a result.
+ *   Promise for a result.
  */
 /// TODO(@wooorm-arcjet): expose `BotEntity`, `BotResult`.
 export async function detectBot(
@@ -211,7 +211,7 @@ export async function detectBot(
  * @param detect
  *   Function to detect sensitive info (optional).
  * @returns
- *   Promise to a result.
+ *   Promise for a result.
  */
 // TODO(@wooorm-arcjet): expose `DetectSensitiveInfoFunction`, `SensitiveInfoEntities`, `SensitiveInfoResult`.
 // TODO(@wooorm-arcjet): less parameters, `5` is a lot.
