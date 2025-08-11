@@ -1145,7 +1145,7 @@ export class ArcjetIpDetails {
     asnType: string;
     asn: string;
   } {
-    return typeof this.asn !== "undefined";
+    return this.hasAsn();
   }
 
   /**
