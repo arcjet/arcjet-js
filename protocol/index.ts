@@ -316,7 +316,8 @@ export class ArcjetReason {
     | "SHIELD"
     | "EMAIL"
     | "ERROR"
-    | "SENSITIVE_INFO";
+    | "SENSITIVE_INFO"
+    | undefined;
 
   /**
    * Check if this reason is a sensitive info reason.
@@ -466,7 +467,7 @@ interface ArcjetRateLimitReasonInit {
   /**
    * Time when the rate limit resets.
    */
-  resetTime?: Date;
+  resetTime?: Date | undefined;
 }
 
 /**
@@ -501,7 +502,7 @@ export class ArcjetRateLimitReason extends ArcjetReason {
   /**
    * Time when the rate limit resets.
    */
-  resetTime?: Date;
+  resetTime?: Date | undefined;
 
   /**
    * Create an `ArcjetRateLimitReason`.
@@ -634,7 +635,7 @@ interface ArcjetShieldReasonInit {
   /**
    * Whether the shield was triggered.
    */
-  shieldTriggered?: boolean;
+  shieldTriggered?: boolean | undefined;
 }
 
 /**
@@ -673,7 +674,7 @@ interface ArcjetEmailReasonInit {
   /**
    * List of email types that are allowed.
    */
-  emailTypes?: ArcjetEmailType[];
+  emailTypes?: ArcjetEmailType[] | undefined;
 }
 
 /**
@@ -861,28 +862,28 @@ export class ArcjetRuleResult {
  * Configuration for `ArcjetIpDetails`.
  */
 interface ArcjetIpDetailsInit {
-  latitude?: number;
-  longitude?: number;
-  accuracyRadius?: number;
-  timezone?: string;
-  postalCode?: string;
-  city?: string;
-  region?: string;
-  country?: string;
-  countryName?: string;
-  continent?: string;
-  continentName?: string;
-  asn?: string;
-  asnName?: string;
-  asnDomain?: string;
-  asnType?: string;
-  asnCountry?: string;
-  service?: string;
-  isHosting?: boolean;
-  isVpn?: boolean;
-  isProxy?: boolean;
-  isTor?: boolean;
-  isRelay?: boolean;
+  latitude?: number | undefined;
+  longitude?: number | undefined;
+  accuracyRadius?: number | undefined;
+  timezone?: string | undefined;
+  postalCode?: string | undefined;
+  city?: string | undefined;
+  region?: string | undefined;
+  country?: string | undefined;
+  countryName?: string | undefined;
+  continent?: string | undefined;
+  continentName?: string | undefined;
+  asn?: string | undefined;
+  asnName?: string | undefined;
+  asnDomain?: string | undefined;
+  asnType?: string | undefined;
+  asnCountry?: string | undefined;
+  service?: string | undefined;
+  isHosting?: boolean | undefined;
+  isVpn?: boolean | undefined;
+  isProxy?: boolean | undefined;
+  isTor?: boolean | undefined;
+  isRelay?: boolean | undefined;
 }
 
 /**
@@ -893,72 +894,72 @@ export class ArcjetIpDetails {
    * Estimated latitude of the IP address within the `accuracyRadius` margin
    * of error.
    */
-  latitude?: number;
+  latitude?: number | undefined;
   /**
    * Estimated longitude of the IP address - see accuracy_radius for the
    * margin of error.
    */
-  longitude?: number;
+  longitude?: number | undefined;
   /**
    * Accuracy radius of the IP address location in kilometers.
    */
-  accuracyRadius?: number;
+  accuracyRadius?: number | undefined;
   /**
    * Timezone of the IP address.
    */
-  timezone?: string;
+  timezone?: string | undefined;
   /**
    * Postal code of the IP address.
    */
-  postalCode?: string;
+  postalCode?: string | undefined;
   /**
    * City the IP address is located in.
    */
-  city?: string;
+  city?: string | undefined;
   /**
    * Region the IP address is located in.
    */
-  region?: string;
+  region?: string | undefined;
   /**
    * Country code the IP address is located in.
    */
-  country?: string;
+  country?: string | undefined;
   /**
    * Country name the IP address is located in.
    */
-  countryName?: string;
+  countryName?: string | undefined;
   /**
    * Continent code the IP address is located in.
    */
-  continent?: string;
+  continent?: string | undefined;
   /**
    * Continent name the IP address is located in.
    */
-  continentName?: string;
+  continentName?: string | undefined;
   /**
    * AS number the IP address belongs to.
    */
-  asn?: string;
+  asn?: string | undefined;
   /**
    * AS name the IP address belongs to.
    */
-  asnName?: string;
+  asnName?: string | undefined;
   /**
    * ASN domain the IP address belongs to.
    */
-  asnDomain?: string;
+  asnDomain?: string | undefined;
   /**
    * ASN type: ISP, hosting, business, or education
    */
-  asnType?: string;
+  asnType?: string | undefined;
   /**
    * ASN country code the IP address belongs to.
    */
-  asnCountry?: string;
+  asnCountry?: string | undefined;
   /**
    * Name of service the IP address belongs to.
    */
-  service?: string;
+  service?: string | undefined;
 
   /**
    * Create an `ArcjetIpDetails`.

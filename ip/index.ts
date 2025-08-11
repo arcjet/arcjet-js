@@ -307,7 +307,7 @@ class Parser {
 
   readNumber(
     radix: 10 | 16,
-    maxDigits?: number,
+    maxDigits?: number | undefined,
     allowZeroPrefix: boolean = false,
   ) {
     return this.readAtomically((p) => {
@@ -726,19 +726,19 @@ function isGlobalIp(
 }
 
 interface PartialSocket {
-  remoteAddress?: string;
+  remoteAddress?: string | null | undefined;
 }
 
 interface PartialInfo {
-  remoteAddress?: string;
+  remoteAddress?: string | null | undefined;
 }
 
 interface PartialIdentiy {
-  sourceIp?: string;
+  sourceIp?: string | null | undefined;
 }
 
 interface PartialRequestContext {
-  identity?: PartialIdentiy;
+  identity?: PartialIdentiy | null | undefined;
 }
 
 export type HeaderLike =

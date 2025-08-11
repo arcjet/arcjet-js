@@ -50,47 +50,53 @@ export type Source = HostSource | SchemeSource | CryptoSource | BaseSource;
 export type StaticOrDynamic<S> = boolean | null | ReadonlyArray<S | (() => S)>;
 
 export interface CspDirectives {
-  baseUri?: StaticOrDynamic<Source | ActionSource>;
-  childSrc?: StaticOrDynamic<Source>;
-  defaultSrc?: StaticOrDynamic<Source | ActionSource>;
-  frameSrc?: StaticOrDynamic<Source>;
-  workerSrc?: StaticOrDynamic<Source>;
-  connectSrc?: StaticOrDynamic<Source>;
-  fontSrc?: StaticOrDynamic<Source>;
-  imgSrc?: StaticOrDynamic<Source>;
-  manifestSrc?: StaticOrDynamic<Source>;
-  mediaSrc?: StaticOrDynamic<Source>;
-  objectSrc?: StaticOrDynamic<Source>;
-  prefetchSrc?: StaticOrDynamic<Source>;
-  scriptSrc?: StaticOrDynamic<Source | ActionSource>;
-  scriptSrcElem?: StaticOrDynamic<Source>;
-  scriptSrcAttr?: StaticOrDynamic<Source>;
-  styleSrc?: StaticOrDynamic<Source | ActionSource>;
-  styleSrcElem?: StaticOrDynamic<Source>;
-  styleSrcAttr?: StaticOrDynamic<Source>;
-  sandbox?: ReadonlyArray<
-    | "allow-downloads-without-user-activation"
-    | "allow-forms"
-    | "allow-modals"
-    | "allow-orientation-lock"
-    | "allow-pointer-lock"
-    | "allow-popups"
-    | "allow-popups-to-escape-sandbox"
-    | "allow-presentation"
-    | "allow-same-origin"
-    | "allow-scripts"
-    | "allow-storage-access-by-user-activation"
-    | "allow-top-navigation"
-    | "allow-top-navigation-by-user-activation"
-  >;
-  formAction?: StaticOrDynamic<Source | ActionSource>;
-  frameAncestors?: StaticOrDynamic<HostSource | SchemeSource | FrameSource>;
-  navigateTo?: StaticOrDynamic<Source | ActionSource>;
-  reportUri?: string[];
-  reportTo?: string[];
-  requireTrustedTypesFor?: ReadonlyArray<"script">;
-  trustedTypes?: ReadonlyArray<"none" | "allow-duplicates" | "*" | string>;
-  upgradeInsecureRequests?: boolean;
+  baseUri?: StaticOrDynamic<Source | ActionSource> | undefined;
+  childSrc?: StaticOrDynamic<Source> | undefined;
+  defaultSrc?: StaticOrDynamic<Source | ActionSource> | undefined;
+  frameSrc?: StaticOrDynamic<Source> | undefined;
+  workerSrc?: StaticOrDynamic<Source> | undefined;
+  connectSrc?: StaticOrDynamic<Source> | undefined;
+  fontSrc?: StaticOrDynamic<Source> | undefined;
+  imgSrc?: StaticOrDynamic<Source> | undefined;
+  manifestSrc?: StaticOrDynamic<Source> | undefined;
+  mediaSrc?: StaticOrDynamic<Source> | undefined;
+  objectSrc?: StaticOrDynamic<Source> | undefined;
+  prefetchSrc?: StaticOrDynamic<Source> | undefined;
+  scriptSrc?: StaticOrDynamic<Source | ActionSource> | undefined;
+  scriptSrcElem?: StaticOrDynamic<Source> | undefined;
+  scriptSrcAttr?: StaticOrDynamic<Source> | undefined;
+  styleSrc?: StaticOrDynamic<Source | ActionSource> | undefined;
+  styleSrcElem?: StaticOrDynamic<Source> | undefined;
+  styleSrcAttr?: StaticOrDynamic<Source> | undefined;
+  sandbox?:
+    | ReadonlyArray<
+        | "allow-downloads-without-user-activation"
+        | "allow-forms"
+        | "allow-modals"
+        | "allow-orientation-lock"
+        | "allow-pointer-lock"
+        | "allow-popups"
+        | "allow-popups-to-escape-sandbox"
+        | "allow-presentation"
+        | "allow-same-origin"
+        | "allow-scripts"
+        | "allow-storage-access-by-user-activation"
+        | "allow-top-navigation"
+        | "allow-top-navigation-by-user-activation"
+      >
+    | undefined;
+  formAction?: StaticOrDynamic<Source | ActionSource> | undefined;
+  frameAncestors?:
+    | StaticOrDynamic<HostSource | SchemeSource | FrameSource>
+    | undefined;
+  navigateTo?: StaticOrDynamic<Source | ActionSource> | undefined;
+  reportUri?: string[] | undefined;
+  reportTo?: string[] | undefined;
+  requireTrustedTypesFor?: ReadonlyArray<"script"> | undefined;
+  trustedTypes?:
+    | ReadonlyArray<"none" | "allow-duplicates" | "*" | string>
+    | undefined;
+  upgradeInsecureRequests?: boolean | undefined;
 }
 
 export type ReferrerPolicyToken =
@@ -111,7 +117,7 @@ export interface ContentSecurityPolicyConfig {
   /**
    * Directives to use in the `Content-Security-Policy` header.
    */
-  directives?: Readonly<CspDirectives>;
+  directives?: Readonly<CspDirectives> | undefined;
 }
 
 /**
@@ -121,7 +127,7 @@ export interface CrossOriginEmbedderPolicyConfig {
   /**
    * Policy.
    */
-  policy?: "require-corp" | "credentialless" | "unsafe-none";
+  policy?: "require-corp" | "credentialless" | "unsafe-none" | undefined;
 }
 
 /**
@@ -131,7 +137,11 @@ export interface CrossOriginOpenerPolicyConfig {
   /**
    * Policy.
    */
-  policy?: "same-origin" | "same-origin-allow-popups" | "unsafe-none";
+  policy?:
+    | "same-origin"
+    | "same-origin-allow-popups"
+    | "unsafe-none"
+    | undefined;
 }
 
 /**
@@ -141,7 +151,7 @@ export interface CrossOriginResourcePolicyConfig {
   /**
    * Policy.
    */
-  policy?: "same-origin" | "same-site" | "cross-origin";
+  policy?: "same-origin" | "same-site" | "cross-origin" | undefined;
 }
 
 /**
@@ -151,7 +161,7 @@ export interface ReferrerPolicyConfig {
   /**
    * Policy.
    */
-  policy?: ReadonlyArray<ReferrerPolicyToken>;
+  policy?: ReadonlyArray<ReferrerPolicyToken> | undefined;
 }
 
 /**
@@ -161,15 +171,15 @@ export interface StrictTransportSecurityConfig {
   /**
    * Max age in seconds.
    */
-  maxAge?: number;
+  maxAge?: number | undefined;
   /**
    * Include subdomains.
    */
-  includeSubDomains?: boolean;
+  includeSubDomains?: boolean | undefined;
   /**
    * Preload.
    */
-  preload?: boolean;
+  preload?: boolean | undefined;
 }
 
 /**
@@ -179,7 +189,7 @@ export interface DnsPrefetchControlConfig {
   /**
    * Allow DNS prefetching.
    */
-  allow?: boolean;
+  allow?: boolean | undefined;
 }
 
 /**
@@ -189,7 +199,7 @@ export interface FrameOptionsConfig {
   /**
    * Action.
    */
-  action?: "deny" | "sameorigin";
+  action?: "deny" | "sameorigin" | undefined;
 }
 
 /**
@@ -199,7 +209,12 @@ export interface PermittedCrossDomainPoliciesConfig {
   /**
    * Permitted policies.
    */
-  permittedPolicies?: "none" | "master-only" | "by-content-type" | "all";
+  permittedPolicies?:
+    | "none"
+    | "master-only"
+    | "by-content-type"
+    | "all"
+    | undefined;
 }
 
 /**
@@ -218,7 +233,7 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
    * - https://owasp.org/www-project-secure-headers/#content-security-policy
    */
-  contentSecurityPolicy?: ContentSecurityPolicyConfig | boolean;
+  contentSecurityPolicy?: ContentSecurityPolicyConfig | boolean | undefined;
   /**
    * Configure the `Cross-Origin-Embedder-Policy` header, which helps control
    * what resources can be loaded cross-origin.
@@ -231,7 +246,10 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy
    * - https://owasp.org/www-project-secure-headers/#cross-origin-embedder-policy
    */
-  crossOriginEmbedderPolicy?: CrossOriginEmbedderPolicyConfig | boolean;
+  crossOriginEmbedderPolicy?:
+    | CrossOriginEmbedderPolicyConfig
+    | boolean
+    | undefined;
   /**
    * Configure the `Cross-Origin-Opener-Policy` header, which helps
    * process-isolate your page.
@@ -244,7 +262,7 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Opener-Policy
    * - https://owasp.org/www-project-secure-headers/#cross-origin-opener-policy
    */
-  crossOriginOpenerPolicy?: CrossOriginOpenerPolicyConfig | boolean;
+  crossOriginOpenerPolicy?: CrossOriginOpenerPolicyConfig | boolean | undefined;
   /**
    * Configure the `Cross-Origin-Resource-Policy` header, which blocks others
    * from loading your resources cross-origin in some cases.
@@ -258,7 +276,10 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Resource-Policy
    * - https://owasp.org/www-project-secure-headers/#cross-origin-resource-policy
    */
-  crossOriginResourcePolicy?: CrossOriginResourcePolicyConfig | boolean;
+  crossOriginResourcePolicy?:
+    | CrossOriginResourcePolicyConfig
+    | boolean
+    | undefined;
   /**
    * Configure the `Origin-Agent-Cluster` header, which provides a mechanism to
    * allow web applications to isolate their origins from other processes.
@@ -268,7 +289,7 @@ export interface Options {
    * See also:
    * - https://whatpr.org/html/6214/origin.html#origin-keyed-agent-clusters
    */
-  originAgentCluster?: boolean;
+  originAgentCluster?: boolean | undefined;
   /**
    * Configure the `Referrer-Policy` header, which controls what information is
    * set in the `Referer` request header.
@@ -281,7 +302,7 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
    * - https://owasp.org/www-project-secure-headers/#referrer-policy
    */
-  referrerPolicy?: ReferrerPolicyConfig | boolean;
+  referrerPolicy?: ReferrerPolicyConfig | boolean | undefined;
   /**
    * Configure the `Strict-Transport-Security` header, which tells browsers to
    * prefer HTTPS instead of insecure HTTP.
@@ -294,7 +315,7 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
    * - https://owasp.org/www-project-secure-headers/#strict-transport-security
    */
-  strictTransportSecurity?: StrictTransportSecurityConfig | boolean;
+  strictTransportSecurity?: StrictTransportSecurityConfig | boolean | undefined;
   /**
    * Configure the `X-Content-Type-Options` header, which helps mitigate MIME
    * type sniffing that can cause security issues.
@@ -306,7 +327,7 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types#mime_sniffing
    * - https://owasp.org/www-project-secure-headers/#x-content-type-options
    */
-  xContentTypeOptions?: boolean;
+  xContentTypeOptions?: boolean | undefined;
   /**
    * Configure the `X-DNS-Prefetch-Control` header, which helps control DNS
    * prefetching to improve user privacy at the expense of performance.
@@ -317,7 +338,7 @@ export interface Options {
    * See also:
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-DNS-Prefetch-Control
    */
-  xDnsPrefetchControl?: DnsPrefetchControlConfig | boolean;
+  xDnsPrefetchControl?: DnsPrefetchControlConfig | boolean | undefined;
   /**
    * Configure the `X-Download-Options` header, which prevents a user from
    * opening a file directly in Internet Explorer 8 to avoid prevent script
@@ -328,7 +349,7 @@ export interface Options {
    * See also:
    * - https://learn.microsoft.com/en-us/archive/blogs/ie/ie8-security-part-v-comprehensive-protection#mime-handling-force-save
    */
-  xDownloadOptions?: boolean;
+  xDownloadOptions?: boolean | undefined;
   /**
    * Configure the `X-Frame-Options` header, which help mitigate clickjacking
    * attacks in legacy browsers. This header is superceded by a directive in the
@@ -341,7 +362,7 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
    * - https://owasp.org/www-project-secure-headers/#x-frame-options
    */
-  xFrameOptions?: FrameOptionsConfig | boolean;
+  xFrameOptions?: FrameOptionsConfig | boolean | undefined;
   /**
    * Configure the `X-Permitted-Cross-Domain-Policies` header, which tells some
    * clients, like Adobe products, your domain's policy for loading cross-domain
@@ -354,7 +375,10 @@ export interface Options {
    * See also:
    * - https://owasp.org/www-project-secure-headers/#x-permitted-cross-domain-policies
    */
-  xPermittedCrossDomainPolicies?: PermittedCrossDomainPoliciesConfig | boolean;
+  xPermittedCrossDomainPolicies?:
+    | PermittedCrossDomainPoliciesConfig
+    | boolean
+    | undefined;
   /**
    * Disable the `X-XSS-Protection` header, which could introduce a browser
    * side-channel in legacy browsers if enabled.
@@ -368,7 +392,7 @@ export interface Options {
    * - https://owasp.org/www-project-secure-headers/#x-xss-protection
    * - https://portswigger.net/daily-swig/new-xs-leak-techniques-reveal-fresh-ways-to-expose-user-information
    */
-  xXssProtection?: boolean;
+  xXssProtection?: boolean | undefined;
 }
 
 /**
@@ -615,7 +639,7 @@ export class NoseconeValidationError extends Error {
  *   `Content-Security-Policy` header.
  */
 export function createContentSecurityPolicy(
-  options?: ContentSecurityPolicyConfig,
+  options?: ContentSecurityPolicyConfig | undefined,
 ) {
   const directives =
     options?.directives ?? defaults.contentSecurityPolicy.directives;
@@ -685,7 +709,7 @@ export function createContentSecurityPolicy(
  *   `Cross-Origin-Embedder-Policy` header.
  */
 export function createCrossOriginEmbedderPolicy(
-  options?: CrossOriginEmbedderPolicyConfig,
+  options?: CrossOriginEmbedderPolicyConfig | undefined,
 ) {
   const policy = options?.policy ?? defaults.crossOriginEmbedderPolicy.policy;
 
@@ -707,7 +731,7 @@ export function createCrossOriginEmbedderPolicy(
  *   `Cross-Origin-Opener-Policy` header.
  */
 export function createCrossOriginOpenerPolicy(
-  options?: CrossOriginOpenerPolicyConfig,
+  options?: CrossOriginOpenerPolicyConfig | undefined,
 ) {
   const policy = options?.policy ?? defaults.crossOriginOpenerPolicy.policy;
 
@@ -729,7 +753,7 @@ export function createCrossOriginOpenerPolicy(
  *   `Cross-Origin-Resource-Policy` header.
  */
 export function createCrossOriginResourcePolicy(
-  options?: CrossOriginResourcePolicyConfig,
+  options?: CrossOriginResourcePolicyConfig | undefined,
 ) {
   const policy = options?.policy ?? defaults.crossOriginResourcePolicy.policy;
 
@@ -760,7 +784,9 @@ export function createOriginAgentCluster() {
  * @returns
  *   `Referrer-Policy` header.
  */
-export function createReferrerPolicy(options?: ReferrerPolicyConfig) {
+export function createReferrerPolicy(
+  options?: ReferrerPolicyConfig | undefined,
+) {
   const policy = options?.policy ?? defaults.referrerPolicy.policy;
 
   if (Array.isArray(policy)) {
@@ -796,7 +822,7 @@ export function createReferrerPolicy(options?: ReferrerPolicyConfig) {
  *   `Strict-Transport-Security` header.
  */
 export function createStrictTransportSecurity(
-  options?: StrictTransportSecurityConfig,
+  options?: StrictTransportSecurityConfig | undefined,
 ) {
   let maxAge = options?.maxAge ?? defaults.strictTransportSecurity.maxAge;
   const includeSubDomains =
@@ -842,7 +868,9 @@ export function createContentTypeOptions() {
  * @returns
  *   `X-DNS-Prefetch-Control` header.
  */
-export function createDnsPrefetchControl(options?: DnsPrefetchControlConfig) {
+export function createDnsPrefetchControl(
+  options?: DnsPrefetchControlConfig | undefined,
+) {
   const allow = options?.allow ?? defaults.xDnsPrefetchControl.allow;
   const headerValue = allow ? "on" : "off";
   return ["x-dns-prefetch-control", headerValue] as const;
@@ -860,7 +888,7 @@ export function createDownloadOptions() {
  * @returns
  *   `X-Frame-Options` header.
  */
-export function createFrameOptions(options?: FrameOptionsConfig) {
+export function createFrameOptions(options?: FrameOptionsConfig | undefined) {
   const action = options?.action ?? defaults.xFrameOptions.action;
 
   if (typeof action === "string") {
@@ -882,7 +910,7 @@ export function createFrameOptions(options?: FrameOptionsConfig) {
  *   `X-Permitted-Cross-Domain-Policies` header.
  */
 export function createPermittedCrossDomainPolicies(
-  options?: PermittedCrossDomainPoliciesConfig,
+  options?: PermittedCrossDomainPoliciesConfig | undefined,
 ) {
   const permittedPolicies =
     options?.permittedPolicies ??
@@ -915,7 +943,7 @@ export function createXssProtection() {
  * @returns
  *   `Headers` with the configured security headers.
  */
-export default function nosecone(options?: Options) {
+export default function nosecone(options?: Options | undefined) {
   let contentSecurityPolicy =
     options?.contentSecurityPolicy ?? defaults.contentSecurityPolicy;
   let crossOriginEmbedderPolicy =
@@ -1183,18 +1211,12 @@ export function withVercelToolbar(config: Options) {
     crossOriginEmbedderPolicy = defaults.crossOriginEmbedderPolicy;
   }
 
-  let augmentedCrossOriginEmbedderPolicy = crossOriginEmbedderPolicy;
-  if (crossOriginEmbedderPolicy) {
-    augmentedCrossOriginEmbedderPolicy = {
-      policy: crossOriginEmbedderPolicy.policy
-        ? "unsafe-none"
-        : crossOriginEmbedderPolicy.policy,
-    };
-  }
-
   return {
     ...config,
     contentSecurityPolicy: augmentedContentSecurityPolicy,
-    crossOriginEmbedderPolicy: augmentedCrossOriginEmbedderPolicy,
+    crossOriginEmbedderPolicy:
+      crossOriginEmbedderPolicy && crossOriginEmbedderPolicy.policy
+        ? ({ policy: "unsafe-none" } as const)
+        : crossOriginEmbedderPolicy,
   } as const;
 }

@@ -469,7 +469,6 @@ test("convert", async (t) => {
               max: 1,
               remaining: -1,
               resetInSeconds: 1000,
-              resetTime: undefined,
               windowInSeconds: 1000,
             },
           },

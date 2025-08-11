@@ -285,18 +285,25 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
 
 export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
   if (reason.isRateLimit()) {
+    const cleanOptions = {
+      max: reason.max,
+      remaining: reason.remaining,
+      resetInSeconds: reason.reset,
+      windowInSeconds: reason.window,
+    };
+
     return new Reason({
       reason: {
         case: "rateLimit",
-        value: new RateLimitReason({
-          max: reason.max,
-          remaining: reason.remaining,
-          resetInSeconds: reason.reset,
-          windowInSeconds: reason.window,
-          resetTime: reason.resetTime
-            ? Timestamp.fromDate(reason.resetTime)
-            : undefined,
-        }),
+        // `resetTime` is an optional field but not allowed to be `undefined`.
+        value: new RateLimitReason(
+          reason.resetTime
+            ? {
+                ...cleanOptions,
+                resetTime: Timestamp.fromDate(reason.resetTime),
+              }
+            : cleanOptions,
+        ),
       },
     });
   }
@@ -590,7 +597,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         value: {
           version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
-          characteristics: rule.characteristics,
+          characteristics: rule.characteristics || [],
           algorithm: RateLimitAlgorithm.TOKEN_BUCKET,
           refillRate: rule.refillRate,
           interval: rule.interval,
@@ -607,7 +614,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         value: {
           version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
-          characteristics: rule.characteristics,
+          characteristics: rule.characteristics || [],
           algorithm: RateLimitAlgorithm.FIXED_WINDOW,
           max: rule.max,
           windowInSeconds: rule.window,
@@ -623,7 +630,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         value: {
           version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
-          characteristics: rule.characteristics,
+          characteristics: rule.characteristics || [],
           algorithm: RateLimitAlgorithm.SLIDING_WINDOW,
           max: rule.max,
           interval: rule.interval,

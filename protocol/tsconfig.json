@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true
+  },
   "extends": "@arcjet/tsconfig/base",
   "include": ["*.ts", "test/*.ts"]
 }

@@ -146,27 +146,35 @@ interface RedactedSensitiveInfoEntity
 function getWasmOptions<
   const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
   const CustomEntities extends string,
->(options?: RedactOptions<Detect>): RedactSensitiveInfoConfig {
+>(options?: RedactOptions<Detect> | undefined): RedactSensitiveInfoConfig {
   if (typeof options === "object" && options !== null) {
-    if (typeof options.entities !== "undefined") {
-      if (Array.isArray(options.entities)) {
-        if (options.entities.length < 1) {
-          throw new Error("no entities configured for redaction");
-        }
-      } else {
+    const entities = options.entities;
+
+    if (entities !== undefined) {
+      if (!Array.isArray(entities)) {
         throw new Error("entities must be an array");
+      }
+
+      if (entities.length < 1) {
+        throw new Error("no entities configured for redaction");
       }
     }
 
-    return {
-      entities: options.entities?.map(userEntitiesToWasm),
-      contextWindowSize: options.contextWindowSize || 1,
-      skipCustomDetect: typeof options.detect !== "function",
-      skipCustomRedact: typeof options.replace !== "function",
-    };
+    // `entities` is an optional field but not allowed to be `undefined`.
+    return entities
+      ? {
+          entities: entities.map(userEntitiesToWasm),
+          contextWindowSize: options.contextWindowSize || 1,
+          skipCustomDetect: typeof options.detect !== "function",
+          skipCustomRedact: typeof options.replace !== "function",
+        }
+      : {
+          contextWindowSize: options.contextWindowSize || 1,
+          skipCustomDetect: typeof options.detect !== "function",
+          skipCustomRedact: typeof options.replace !== "function",
+        };
   } else {
     return {
-      entities: undefined,
       contextWindowSize: 1,
       skipCustomDetect: true,
       skipCustomRedact: true,
@@ -179,7 +187,7 @@ async function callRedactWasm<
   const CustomEntities extends string,
 >(
   candidate: string,
-  options?: RedactOptions<Detect>,
+  options?: RedactOptions<Detect> | undefined,
 ): Promise<RedactedSensitiveInfoEntity[]> {
   let convertedDetect = noOpDetect;
   if (typeof options?.detect === "function") {
