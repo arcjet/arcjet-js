@@ -37,9 +37,13 @@ type AnalyzeRequest = {
 };
 
 export {
+  // TODO(@wooorm-arcjet): add JSDocs to values from WebAssembly.
   type EmailValidationConfig,
+  // TODO(@wooorm-arcjet): add JSDocs to values from WebAssembly.
   type BotConfig,
+  // TODO(@wooorm-arcjet): add JSDocs to values from WebAssembly.
   type SensitiveInfoEntity,
+  // TODO(@wooorm-arcjet): add JSDocs to values from WebAssembly.
   type DetectedSensitiveInfoEntity,
 };
 
