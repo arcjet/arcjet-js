@@ -62,17 +62,17 @@ function getMessage(
 }
 
 function getOutput(
-  mergingObject: unknown,
+  messageOrObject: Record<string, unknown> | string,
   message: unknown,
   interpolationValues: unknown[],
 ) {
-  let output = getMessage(mergingObject, message, interpolationValues);
+  let output = getMessage(messageOrObject, message, interpolationValues);
   if (typeof output !== "string") {
     return;
   }
 
-  if (typeof mergingObject === "object" && mergingObject !== null) {
-    for (const [key, value] of Object.entries(mergingObject)) {
+  if (typeof messageOrObject === "object" && messageOrObject !== null) {
+    for (const [key, value] of Object.entries(messageOrObject)) {
       output += `\n      ${key}: ${tryStringify(value)}`;
     }
   }
@@ -147,12 +147,12 @@ export class Logger {
     ...interpolationValues: unknown[]
   ): void;
   debug(
-    mergingObject: unknown,
+    messageOrObject: Record<string, unknown> | string,
     message?: unknown,
     ...interpolationValues: unknown[]
   ): void {
     if (this.#logLevel <= 0) {
-      const output = getOutput(mergingObject, message, interpolationValues);
+      const output = getOutput(messageOrObject, message, interpolationValues);
       if (typeof output !== "undefined") {
         console.debug(`${PREFIX} DEBUG ${output}`);
       }
@@ -188,12 +188,12 @@ export class Logger {
     ...interpolationValues: unknown[]
   ): void;
   info(
-    mergingObject: unknown,
+    messageOrObject: Record<string, unknown> | string,
     message?: unknown,
     ...interpolationValues: unknown[]
   ): void {
     if (this.#logLevel <= 1) {
-      const output = getOutput(mergingObject, message, interpolationValues);
+      const output = getOutput(messageOrObject, message, interpolationValues);
       if (typeof output !== "undefined") {
         console.info(`${PREFIX} INFO ${output}`);
       }
@@ -229,12 +229,12 @@ export class Logger {
     ...interpolationValues: unknown[]
   ): void;
   warn(
-    mergingObject: unknown,
+    messageOrObject: Record<string, unknown> | string,
     message?: unknown,
     ...interpolationValues: unknown[]
   ): void {
     if (this.#logLevel <= 2) {
-      const output = getOutput(mergingObject, message, interpolationValues);
+      const output = getOutput(messageOrObject, message, interpolationValues);
       if (typeof output !== "undefined") {
         console.warn(`${PREFIX} WARN ${output}`);
       }
@@ -270,12 +270,12 @@ export class Logger {
     ...interpolationValues: unknown[]
   ): void;
   error(
-    mergingObject: unknown,
+    messageOrObject: Record<string, unknown> | string,
     message?: unknown,
     ...interpolationValues: unknown[]
   ): void {
     if (this.#logLevel <= 3) {
-      const output = getOutput(mergingObject, message, interpolationValues);
+      const output = getOutput(messageOrObject, message, interpolationValues);
       if (typeof output !== "undefined") {
         console.error(`${PREFIX} ERROR ${output}`);
       }
