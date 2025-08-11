@@ -73,20 +73,13 @@ function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
     throw new Error("redaction entities must be strings");
   }
 
-  if (entity === "email") {
-    return { tag: "email" };
-  }
-
-  if (entity === "phone-number") {
-    return { tag: "phone-number" };
-  }
-
-  if (entity === "ip-address") {
-    return { tag: "ip-address" };
-  }
-
-  if (entity === "credit-card-number") {
-    return { tag: "credit-card-number" };
+  if (
+    entity === "credit-card-number" ||
+    entity === "email" ||
+    entity === "ip-address" ||
+    entity === "phone-number"
+  ) {
+    return { tag: entity };
   }
 
   return {
@@ -96,20 +89,13 @@ function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
 }
 
 function wasmEntitiesToString(entity: SensitiveInfoEntity): string {
-  if (entity.tag === "email") {
-    return "email";
-  }
-
-  if (entity.tag === "ip-address") {
-    return "ip-address";
-  }
-
-  if (entity.tag === "credit-card-number") {
-    return "credit-card-number";
-  }
-
-  if (entity.tag === "phone-number") {
-    return "phone-number";
+  if (
+    entity.tag === "credit-card-number" ||
+    entity.tag === "email" ||
+    entity.tag === "ip-address" ||
+    entity.tag === "phone-number"
+  ) {
+    return entity.tag;
   }
 
   return entity.val;
