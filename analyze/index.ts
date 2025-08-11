@@ -209,7 +209,9 @@ export async function detectBot(
  * @param value
  *   Value.
  * @param entities
- *   Entities to detect.
+ *   Strategy to use for detecting sensitive info;
+ *   either by denying everything and allowing certain tags or by allowing
+ *   everything and denying certain tags.
  * @param contextWindowSize
  *   Number of tokens to pass to `detect`.
  * @param detect
