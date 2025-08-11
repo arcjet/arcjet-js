@@ -1023,6 +1023,6 @@ function findIp(
 /**
  * One of the CIDR ranges.
  */
-type Cidr = Ipv4Cidr | Ipv6Cidr;
+export type Cidr = Ipv4Cidr | Ipv6Cidr;
 
 export default findIp;
