@@ -58,10 +58,7 @@ const LOWERCASE_S_CODE = 115; /* s */
  * @returns
  *   Formatted string.
  */
-export default function sprintf(
-  template: string,
-  ...values: unknown[]
-): string {
+export function sprintf(template: string, ...values: unknown[]): string {
   if (typeof template !== "string") {
     throw new TypeError("First argument must be a string");
   }
@@ -190,3 +187,11 @@ export default function sprintf(
 
   return output;
 }
+
+/**
+ * Format a string.
+ *
+ * @deprecated
+ *   Use `sprintf` instead.
+ */
+export default sprintf;
