@@ -18,7 +18,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import findIP, { parseProxy } from "@arcjet/ip";
+import findIp, { parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
@@ -436,7 +436,7 @@ export default function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    let ip = findIP(
+    let ip = findIp(
       {
         ip: request.ip,
         socket: request.socket,
