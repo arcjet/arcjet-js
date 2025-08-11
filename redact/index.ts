@@ -13,59 +13,53 @@ export type ArcjetSensitiveInfoType = Exclude<
   "custom"
 >;
 
-type DetectSensitiveInfoEntities<T> = (
-  tokens: string[],
-) => Array<ArcjetSensitiveInfoType | T | undefined>;
-
-type ValidEntities<Detect> = Array<
-  // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/
-  // Conditional types distribute over unions. If you have ((string | undefined)
-  // extends undefined ? 1 : 0) it is evaluated separately for each member of
-  // the union, then union-ed together again. The result is (string extends
-  // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
-  // to 0 | 1
-  undefined extends Detect
-    ? ArcjetSensitiveInfoType
-    : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
-      ? ArcjetSensitiveInfoType | CustomEntities
-      : never
->;
-
 /**
- * Redact sensitive information.
- *
- * @param entity
- *   Entity to redact.
- * @param plaintext
- *   The plaintext string to redact.
- * @returns
- *   Redacted string or nothing.
+ * Types of sensitive information that can be detected which also allows
+ * custom tags (arbitrary strings) while still retaining autocompletion and other IDE features
+ * associated with the known standard types.
  */
-type Replace<Detect> = (
-  entity: ValidEntities<Detect>[number],
-  plaintext: string,
-) => string | undefined;
+// See: <https://stackoverflow.com/questions/69793164/typescript-weird-type-intersection-of-string>.
+type SensitiveInfoTags = ArcjetSensitiveInfoType | (string & {});
 
 /**
  * Options for the `redact` function.
+ *
+ * @template Entities
+ *   Tags to find and redact.
  */
-export type RedactOptions<Detect> = {
+export type RedactOptions<Entities extends SensitiveInfoTags> = {
   /**
    * Entities to redact.
    */
-  entities?: ValidEntities<Detect>;
+  entities?: ReadonlyArray<Entities>;
   /**
    * Size of tokens to consider.
    */
   contextWindowSize?: number;
   /**
    * Custom detection function to identify sensitive information.
+   *
+   * @template Entities
+   *   Tags to redact.
+   * @param tokens
+   *   Tokens.
+   * @returns
+   *   List of entities (or undefined).
    */
-  detect?: Detect;
+  detect?: (tokens: string[]) => Array<Entities | undefined>;
   /**
    * Custom replace function to redact sensitive information.
+   *
+   * @template Entities
+   *   Tags to redact.
+   * @param entity
+   *   Entity to redact.
+   * @param plaintext
+   *   The plaintext string to redact.
+   * @returns
+   *   Redacted string or nothing.
    */
-  replace?: Replace<Detect>;
+  replace?: (entity: Entities, plaintext: string) => string | undefined;
 };
 
 function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
@@ -143,10 +137,9 @@ interface RedactedSensitiveInfoEntity
   identifiedType: string;
 }
 
-function getWasmOptions<
-  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
-  const CustomEntities extends string,
->(options?: RedactOptions<Detect> | undefined): RedactSensitiveInfoConfig {
+function getWasmOptions<const Entities extends SensitiveInfoTags>(
+  options?: RedactOptions<Entities> | undefined,
+): RedactSensitiveInfoConfig {
   if (typeof options === "object" && options !== null) {
     const entities = options.entities;
 
@@ -182,12 +175,9 @@ function getWasmOptions<
   }
 }
 
-async function callRedactWasm<
-  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
-  const CustomEntities extends string,
->(
+async function callRedactWasm<const Entities extends SensitiveInfoTags>(
   candidate: string,
-  options?: RedactOptions<Detect> | undefined,
+  options?: RedactOptions<Entities> | undefined,
 ): Promise<RedactedSensitiveInfoEntity[]> {
   let convertedDetect = noOpDetect;
   if (typeof options?.detect === "function") {
@@ -237,6 +227,8 @@ type Unredact = (input: string) => string;
 /**
  * Redact sensitive info.
  *
+ * @template Entities
+ *   Tags to find and redact.
  * @param candidate
  *   Value to redact.
  * @param options
@@ -244,12 +236,9 @@ type Unredact = (input: string) => string;
  * @returns
  *   Promise to a tuple with the redacted string and a function to unredact it.
  */
-export async function redact<
-  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
-  const CustomEntities extends string,
->(
+export async function redact<const Entities extends SensitiveInfoTags>(
   candidate: string,
-  options?: RedactOptions<Detect>,
+  options?: RedactOptions<Entities>,
 ): Promise<[string, Unredact]> {
   const redactions = await callRedactWasm(candidate, options);
 
