@@ -17,6 +17,20 @@ test("ArcjetIpDetails", async function (t) {
     }
   });
 
+  await t.test("hasAsn", function () {
+    const details = createIpDetails();
+
+    if (details.hasAsn()) {
+      const asnCountry_: string = details.asnCountry;
+      const asnDomain_: string = details.asnDomain;
+      const asnName_: string = details.asnName;
+      const asnType_: string = details.asnType;
+      const asn_: string = details.asn;
+    } else {
+      assert.fail();
+    }
+  });
+
   await t.test("hasAccuracyRadius", function () {
     const details = createIpDetails();
 

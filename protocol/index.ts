@@ -1130,13 +1130,32 @@ export class ArcjetIpDetails {
   }
 
   /**
+   * Check if the IP address has ASN info.
+   *
+   * @deprecated
+   *   Use `hasAsn()` instead.
+   *
+   * @returns
+   *   Whether the IP address has ASN info.
+   */
+  hasASN(): this is {
+    asnCountry: string;
+    asnDomain: string;
+    asnName: string;
+    asnType: string;
+    asn: string;
+  } {
+    return typeof this.asn !== "undefined";
+  }
+
+  /**
    * Check if the IP address has ASN info:
    * `asnCountry`, `asnDomain`, `asnName`, `asnType`, and `asn` fields.
    *
    * @returns
    *   Whether the IP address has ASN info.
    */
-  hasASN(): this is {
+  hasAsn(): this is {
     asnCountry: string;
     asnDomain: string;
     asnName: string;
