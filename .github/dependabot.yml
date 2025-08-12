@@ -25,10 +25,6 @@ updates:
       prefix: deps
       prefix-development: deps(dev)
     ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
       # Ignore updates for Buf and ConnectRPC v2 and above
       - dependency-name: "@bufbuild/protobuf"
         versions: [">=2"]
@@ -283,10 +279,6 @@ updates:
         patterns:
           - "*"
     ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
       # NextAuth 4 doesn't support Next.js 15+ so the dependencies below are
       # restricted.
       - dependency-name: next
@@ -316,11 +308,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-app-dir-validate-email
@@ -334,11 +321,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-authjs-5
@@ -353,10 +335,6 @@ updates:
         patterns:
           - "*"
     ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
       # Tailwind v4 is not supported by shadcn/ui. See:
       # https://github.com/shadcn-ui/ui/discussions/2996
       - dependency-name: tailwindcss
@@ -376,11 +354,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-better-auth
@@ -394,11 +367,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-bot-categories
@@ -412,11 +380,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-clerk-rate-limit
@@ -430,11 +393,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-clerk-shield
@@ -448,11 +406,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-decorate
@@ -466,11 +419,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-ip-details
@@ -484,11 +432,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-openai
@@ -502,11 +445,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-pages-wrap
@@ -520,11 +458,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-permit
@@ -538,11 +471,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-react-hook-form
@@ -557,10 +485,6 @@ updates:
         patterns:
           - "*"
     ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
       # Tailwind v4 is not supported by eslint-plugin-tailwindcss. See:
       # https://github.com/francoismassart/eslint-plugin-tailwindcss/pull/381
       - dependency-name: tailwindcss
@@ -580,11 +504,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-server-actions
@@ -598,11 +517,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Ignore updates to the @types/node package due to conflict between
-      # Headers in DOM.
-      - dependency-name: "@types/node"
-        versions: [">18.18"]
 
   - package-ecosystem: npm
     directory: /examples/nodejs-hono-rate-limit
