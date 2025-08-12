@@ -56,10 +56,19 @@ Arcjet security features for protecting JS apps:
 
 ## Example apps
 
-- [NestJS][example-nestjs]
-- [Next.js][example-nextjs] ([try live][example-url])
-- [Remix][example-remix]
-- ... [more examples][example-examples-folder]
+- [Astro][github-arcjet-example-astro]
+- [Express][github-arcjet-example-express]
+- [Fastify][github-arcjet-example-fastify]
+- [NestJS][github-arcjet-example-nestjs]
+- [Next.js: Bot protection][github-arcjet-example-nextjs-bot-protection]
+- [Next.js: Server action][github-arcjet-example-nextjs-server-action]
+- [Next.js: Fly][github-arcjet-example-nextjs-fly]
+- [Next.js: Form][github-arcjet-example-nextjs-form]
+- [Next.js: Prisma][github-arcjet-example-nextjs-prisma]
+- [Next.js][github-arcjet-example-nextjs] ([try live][arcjet-example])
+- [Remix][github-arcjet-example-remix]
+- [Tanstack Start][github-arcjet-example-tanstack-start]
+- …see also [many more examples here in `examples/`][file-examples]
 
 ## Blueprints
 
@@ -272,7 +281,21 @@ is compatible with Node.js 18.
 
 Licensed under the [Apache License, Version 2.0][apache-license].
 
+[arcjet-example]: https://example.arcjet.com
 [arcjet]: https://arcjet.com
+[file-examples]: ./examples/
+[github-arcjet-example-astro]: https://github.com/arcjet/example-astro
+[github-arcjet-example-express]: https://github.com/arcjet/example-expressjs
+[github-arcjet-example-fastify]: https://github.com/arcjet/example-fastify
+[github-arcjet-example-nestjs]: https://github.com/arcjet/example-nestjs
+[github-arcjet-example-nextjs-bot-protection]: https://github.com/arcjet/example-nextjs-bot-protection
+[github-arcjet-example-nextjs-server-action]: https://github.com/arcjet/example-nextjs-server-action
+[github-arcjet-example-nextjs-fly]: https://github.com/arcjet/example-nextjs-fly
+[github-arcjet-example-nextjs-form]: https://github.com/arcjet/example-nextjs-form
+[github-arcjet-example-nextjs-prisma]: https://github.com/arcjet/example-nextjs-prisma
+[github-arcjet-example-nextjs]: https://github.com/arcjet/example-nextjs
+[github-arcjet-example-remix]: https://github.com/arcjet/example-remix
+[github-arcjet-example-tanstack-start]: https://github.com/arcjet/example-tanstack-start
 [bun-quick-start]: https://docs.arcjet.com/get-started?f=bun
 [deno-quick-start]: https://docs.arcjet.com/get-started?f=deno
 [nest-quick-start]: https://docs.arcjet.com/get-started?f=nest-js
@@ -282,17 +305,12 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [sveltekit-quick-start]: https://docs.arcjet.com/get-started?f=sveltekit
 [discord-invite]: https://arcjet.com/discord
 [support]: https://docs.arcjet.com/support
-[example-url]: https://example.arcjet.com
 [bot-protection-concepts-docs]: https://docs.arcjet.com/bot-protection/concepts
 [arcjet-docs]: https://docs.arcjet.com/
 [arcjet-support]: https://docs.arcjet.com/support
 [arcjet-security]: https://docs.arcjet.com/security
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [nosecone-docs]: https://docs.arcjet.com/nosecone/quick-start
-[example-nestjs]: https://github.com/arcjet/example-nestjs
-[example-nextjs]: https://github.com/arcjet/example-nextjs
-[example-remix]: https://github.com/arcjet/example-remix
-[example-examples-folder]: ./examples
 [blueprint-ai-quota-control]: https://docs.arcjet.com/blueprints/ai-quota-control
 [blueprint-ip-geolocation]: https://docs.arcjet.com/blueprints/ip-geolocation
 [blueprint-cookie-banner]: https://docs.arcjet.com/blueprints/cookie-banner
