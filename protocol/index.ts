@@ -8,7 +8,9 @@ export type * from "./well-known-bots.js";
 // Re-export the Bot categories from the generated file
 export { categories as botCategories } from "./well-known-bots.js";
 
-type RequiredProps<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
+type RequiredProps<T, K extends keyof T> = {
+  [P in K]-?: Exclude<T[P], undefined>;
+};
 
 /**
  * Mode of a rule.
