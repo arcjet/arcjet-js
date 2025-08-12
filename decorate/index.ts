@@ -6,18 +6,21 @@ import {
   ArcjetRuleResult,
 } from "@arcjet/protocol";
 
+// If these are defined, we can expect to be working with `Headers` directly.
 interface HeaderLike {
   has(name: string): boolean;
   get(name: string): string | null;
   set(name: string, value: string): void;
 }
 
+// If this is defined, we can expect to be working with a `Response` or
+// `NextResponse`.
 interface ResponseLike {
-  // If this is defined, we can expect to be working with a `Response` or
-  // `NextResponse`.
   headers: HeaderLike;
 }
 
+// Otherwise, we'll be working with an `http.OutgoingMessage` and we'll need
+// to use these values.
 interface OutgoingMessageLike {
   headersSent: boolean;
   hasHeader: (name: string) => boolean;
@@ -28,26 +31,15 @@ interface OutgoingMessageLike {
   ) => unknown;
 }
 
-export interface ArcjetCanDecorate {
-  // If these are defined, we can expect to be working with `Headers` directly
-  has?: (name: string) => boolean;
-  get?: (name: string) => string | null;
-  set?: (name: string, value: string) => void;
-
-  // If this is defined, we can expect to be working with a `Response` or
-  // `NextResponse`.
-  headers?: HeaderLike;
-
-  // Otherwise, we'll be working with an `http.OutgoingMessage` and we'll need
-  // to use these values.
-  headersSent?: boolean;
-  hasHeader?: (name: string) => boolean;
-  getHeader?: (name: string) => number | string | string[] | undefined;
-  setHeader?: (
-    name: string,
-    value: number | string | ReadonlyArray<string>,
-  ) => unknown;
-}
+/**
+ * Decorable value.
+ *
+ * Something that looks like `Headers` (Fetch),
+ * `OutgoingMessage` (Node.js), or
+ * `Response` (Fetch).
+ */
+// TODO(@wooorm-arcjet): rename to `Decorable`.
+export type ArcjetCanDecorate = HeaderLike | OutgoingMessageLike | ResponseLike;
 
 function isHeaderLike(value: ArcjetCanDecorate): value is HeaderLike {
   if (
@@ -65,7 +57,7 @@ function isHeaderLike(value: ArcjetCanDecorate): value is HeaderLike {
 }
 
 function isResponseLike(value: ArcjetCanDecorate): value is ResponseLike {
-  if (typeof value.headers === "undefined") {
+  if (!("headers" in value) || typeof value.headers === "undefined") {
     return false;
   }
 
@@ -75,7 +67,10 @@ function isResponseLike(value: ArcjetCanDecorate): value is ResponseLike {
 function isOutgoingMessageLike(
   response: ArcjetCanDecorate,
 ): response is OutgoingMessageLike {
-  if (typeof response.headersSent !== "boolean") {
+  if (
+    !("headersSent" in response) ||
+    typeof response.headersSent !== "boolean"
+  ) {
     return false;
   }
 
