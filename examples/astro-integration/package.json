@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@arcjet/astro": "file:../../arcjet-astro",
-    "@astrojs/node": "^9.3.3",
-    "astro": "^5.5.5",
+    "@astrojs/node": "^9.4.0",
+    "astro": "^5.12.9",
     "typescript": "^5.8.3"
   }
 }
