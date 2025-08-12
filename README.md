@@ -42,13 +42,18 @@ Arcjet security features for protecting JS apps:
 
 ## Quick start
 
-- [Bun][bun-quick-start]
-- [Deno][deno-quick-start]
-- [NestJS][nest-quick-start]
-- [Next.js][next-quick-start]
-- [Node.js][node-quick-start]
-- [Remix][remix-quick-start]
-- [SvelteKit][sveltekit-quick-start]
+- [Astro][quick-start-astro]
+- [Bun + Hono][quick-start-bun-hono]
+- [Bun][quick-start-bun]
+- [Deno][quick-start-deno]
+- [Fastify][quick-start-fastify]
+- [NestJS][quick-start-nest-js]
+- [Next.js][quick-start-next-js]
+- [Node.js + Express][quick-start-node-js-express]
+- [Node.js + Hono][quick-start-node-js-hono]
+- [Node.js][quick-start-node-js]
+- [Remix][quick-start-remix]
+- [SvelteKit][quick-start-sveltekit]
 
 ### Get help
 
@@ -319,3 +324,15 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [signup-protection-quick-start]: https://docs.arcjet.com/signup-protection/quick-start
 [sensitive-info-quick-start]: https://docs.arcjet.com/sensitive-info/quick-start
 [nosecone-quick-start]: https://docs.arcjet.com/nosecone/quick-start
+[quick-start-astro]: https://docs.arcjet.com/get-started?f=astro
+[quick-start-bun-hono]: https://docs.arcjet.com/get-started?f=bun-hono
+[quick-start-bun]: https://docs.arcjet.com/get-started?f=bun
+[quick-start-deno]: https://docs.arcjet.com/get-started?f=deno
+[quick-start-fastify]: https://docs.arcjet.com/get-started?f=fastify
+[quick-start-nest-js]: https://docs.arcjet.com/get-started?f=nest-js
+[quick-start-next-js]: https://docs.arcjet.com/get-started?f=next-js
+[quick-start-node-js-express]: https://docs.arcjet.com/get-started?f=node-js-express
+[quick-start-node-js-hono]: https://docs.arcjet.com/get-started?f=node-js-hono
+[quick-start-node-js]: https://docs.arcjet.com/get-started?f=node-js
+[quick-start-remix]: https://docs.arcjet.com/get-started?f=remix
+[quick-start-sveltekit]: https://docs.arcjet.com/get-started?f=sveltekit
