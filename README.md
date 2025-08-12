@@ -62,9 +62,7 @@ Arcjet security features for protecting JS apps:
 - [NestJS][github-arcjet-example-nestjs]
 - [Next.js: Bot protection][github-arcjet-example-nextjs-bot-protection]
 - [Next.js: Server action][github-arcjet-example-nextjs-server-action]
-- [Next.js: Fly][github-arcjet-example-nextjs-fly]
 - [Next.js: Form][github-arcjet-example-nextjs-form]
-- [Next.js: Prisma][github-arcjet-example-nextjs-prisma]
 - [Next.js][github-arcjet-example-nextjs] ([try live][arcjet-example])
 - [Remix][github-arcjet-example-remix]
 - [Tanstack Start][github-arcjet-example-tanstack-start]
@@ -290,9 +288,7 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [github-arcjet-example-nestjs]: https://github.com/arcjet/example-nestjs
 [github-arcjet-example-nextjs-bot-protection]: https://github.com/arcjet/example-nextjs-bot-protection
 [github-arcjet-example-nextjs-server-action]: https://github.com/arcjet/example-nextjs-server-action
-[github-arcjet-example-nextjs-fly]: https://github.com/arcjet/example-nextjs-fly
 [github-arcjet-example-nextjs-form]: https://github.com/arcjet/example-nextjs-form
-[github-arcjet-example-nextjs-prisma]: https://github.com/arcjet/example-nextjs-prisma
 [github-arcjet-example-nextjs]: https://github.com/arcjet/example-nextjs
 [github-arcjet-example-remix]: https://github.com/arcjet/example-remix
 [github-arcjet-example-tanstack-start]: https://github.com/arcjet/example-tanstack-start
