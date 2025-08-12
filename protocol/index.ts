@@ -1029,23 +1029,31 @@ export class ArcjetIpDetails {
 
   /**
    * Check if the IP address has geo `latitude` info.
-   * This also implies that `accuracyRadius` is available.
+   * This also implies that `accuracyRadius` and `longitude` are available.
    *
    * @returns
    *   Whether the IP address has latitude info.
    */
-  hasLatitude(): this is { accuracyRadius: number; latitude: number } {
+  hasLatitude(): this is {
+    accuracyRadius: number;
+    latitude: number;
+    longitude: number;
+  } {
     return typeof this.latitude !== "undefined";
   }
 
   /**
    * Check if the IP address has geo `longitude` info.
-   * This also implies that `accuracyRadius` is available.
+   * This also implies that `accuracyRadius` and `latitude` are available.
    *
    * @returns
    *   Whether the IP address has longitude info.
    */
-  hasLongitude(): this is { accuracyRadius: number; longitude: number } {
+  hasLongitude(): this is {
+    accuracyRadius: number;
+    latitude: number;
+    longitude: number;
+  } {
     return typeof this.longitude !== "undefined";
   }
 
