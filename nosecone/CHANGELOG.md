@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...nosecone-v1.0.0-beta.11) (2025-08-13)
+
+
+### 📝 Documentation
+
+* **nosecone:** add derivative works to readme ([#4854](https://github.com/arcjet/arcjet-js/issues/4854)) ([73f2bcb](https://github.com/arcjet/arcjet-js/commit/73f2bcb87faca426938d5186287321be6e3f8915))
+* **nosecone:** add JSDocs ([#4840](https://github.com/arcjet/arcjet-js/issues/4840)) ([ead53e5](https://github.com/arcjet/arcjet-js/commit/ead53e510ecb93ded2400557333868eed63875bb))
+
+
+### 🧹 Miscellaneous Chores
+
+* **nosecone:** expose `Options`, deprecate `NoseconeOptions` ([#4855](https://github.com/arcjet/arcjet-js/issues/4855)) ([c504315](https://github.com/arcjet/arcjet-js/commit/c5043154836c04d3106be333c418682212b9602f))
+* **nosecone:** expose named export, deprecate default ([#4878](https://github.com/arcjet/arcjet-js/issues/4878)) ([e7607de](https://github.com/arcjet/arcjet-js/commit/e7607de8dd79f12ec28f0a50a7fb835955520365))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/tsconfig bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...nosecone-v1.0.0-beta.10) (2025-08-04)
 
 
