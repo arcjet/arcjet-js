@@ -24,7 +24,14 @@ export const defaults = {
   },
 } as const;
 
-// We export `nosecone` as the default so it can be used with `new Response()`
+export { nosecone };
+
+/**
+ * Create security headers.
+ *
+ * @deprecated
+ *   Use the named export `nosecone` instead.
+ */
 export default nosecone;
 
 /**

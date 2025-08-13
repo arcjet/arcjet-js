@@ -6,10 +6,10 @@ test("@nosecone/sveltekit", async function (t) {
     assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
       "createHook",
       "csp",
-      // TODO(@wooorm-arcjet): use named exports.
       "default",
       // TODO(@wooorm-arcjet): use a clearer name: defaults for what, function to generate them?
       "defaults",
+      "nosecone",
       "withVercelToolbar",
     ]);
   });
