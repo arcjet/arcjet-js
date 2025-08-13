@@ -804,7 +804,7 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-function findIp(
+export function findIp(
   request: RequestLike,
   options?: Options | null | undefined,
 ): string {
@@ -1025,4 +1025,10 @@ function findIp(
  */
 export type Cidr = Ipv4Cidr | Ipv6Cidr;
 
+/**
+ * Find an IP address.
+ *
+ * @deprecated
+ *   Use the named export `findIp` instead.
+ */
 export default findIp;
