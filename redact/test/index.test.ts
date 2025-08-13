@@ -201,7 +201,7 @@ describe("ArcjetRedact", () => {
       assert.equal(unredacted, expectedUnredacted);
     });
 
-    test("it will redact and unredact custom entities", async () => {
+    test("it will redact and unredact custom `detect` functions", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       const expectedRedacted =
         "email my-custom-email-replacement phone <Redacted phone number #1> ip 10.12.234.2";
@@ -211,8 +211,14 @@ describe("ArcjetRedact", () => {
           if (entityType === "email") {
             assert.equal(plaintext, "test@example.com");
             return "my-custom-email-replacement";
-          } else if (entityType === "ip-address") {
-            assert.equal(plaintext, "10.12.234.2");
+          }
+          // @ts-expect-error: this type error is expected because `ip-address` is not listed in `entities` above.
+          else if (entityType === "ip-address") {
+            assert.fail();
+          } else if (entityType === "phone-number") {
+            assert.equal(plaintext, "011234567");
+            // No return type to test for the default.
+            return undefined;
           }
         },
       });
