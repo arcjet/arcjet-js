@@ -46,10 +46,10 @@ test("nosecone", async function (t) {
       "createReferrerPolicy",
       "createStrictTransportSecurity",
       "createXssProtection",
-      // TODO(@wooorm-arcjet): use named exports.
       "default",
       // TODO(@wooorm-arcjet): use a clearer name: defaults for what, function to generate them?
       "defaults",
+      "nosecone",
       "withVercelToolbar",
     ]);
   });
