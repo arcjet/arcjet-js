@@ -300,7 +300,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   const headers = new ArcjetHeaders(requestHeaders);
 
   let ip = findIp(
-    { headers, socket: request.socket },
+    { headers, ip: request.ip, socket: request.socket },
     { platform: platform(process.env), proxies },
   );
 
@@ -313,12 +313,11 @@ function toArcjetRequest<Properties extends PlainObject>(
       );
     }
   }
-
   const method = request.method ?? "";
   const host = headers.get("host") ?? "";
   let path = "";
   // Note: there may be a better way to detect `https`, no clue.
-  let protocol = request.server.initialConfig.https ? "https:" : "http:";
+  let protocol = request.server?.initialConfig.https ? "https:" : "http:";
   let query = "";
 
   // Do some very simple validation, but also try/catch around URL parsing

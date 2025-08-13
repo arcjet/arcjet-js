@@ -19,6 +19,7 @@ import type {
   ArcjetRateLimitRule,
 } from "@arcjet/protocol";
 import {
+  ArcjetAllowDecision,
   ArcjetBotReason,
   ArcjetEmailReason,
   ArcjetErrorReason,
@@ -45,9 +46,11 @@ import { ArcjetHeaders } from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
 import { MemoryCache } from "@arcjet/cache";
+import { ArcjetChallengeDecision } from "@arcjet/protocol";
 
 export * from "@arcjet/protocol";
 
+// TODO(@wooorm-arcjet): use `function assert(condition: unknown, msg: string): asserts condition {`
 function assert(condition: boolean, msg: string) {
   if (!condition) {
     throw new Error(msg);
@@ -350,6 +353,60 @@ function createValidator({
   };
 }
 
+/**
+ * Validate a filter.
+ *
+ * @param path
+ *   Path to `value`.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ */
+function validateFilter(path: string, value: unknown): undefined {
+  if (typeof value === "string") {
+    // Perfect.
+  } else if (typeof value === "object" && value !== null) {
+    if ("displayName" in value) {
+      validateString(path + ".displayName", value.displayName);
+    }
+
+    validateString(
+      path + ".expression",
+      "expression" in value ? value.expression : undefined,
+    );
+  } else {
+    throw new Error(`invalid type for \`${path}\` - expected string or object`);
+  }
+}
+
+/**
+ * Validate one or more filters.
+ *
+ * @param path
+ *   Path to `value`.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ */
+function validateFilters(path: string, value: unknown): undefined {
+  if (Array.isArray(value)) {
+    for (const [idx, item] of value.entries()) {
+      validateFilter(`${path}[${idx}]`, item);
+    }
+  } else if (
+    typeof value === "string" ||
+    (typeof value === "object" && value !== null)
+  ) {
+    validateFilter(path, value);
+  } else {
+    throw new Error(
+      `invalid type for \`${path}\` - expected an array or filter`,
+    );
+  }
+}
+
 const validateString = createTypeValidator("string");
 const validateNumber = createTypeValidator("number");
 const validateBoolean = createTypeValidator("boolean");
@@ -453,6 +510,18 @@ const validateBotOptions = createValidator({
 const validateShieldOptions = createValidator({
   rule: "shield",
   validations: [{ key: "mode", required: false, validate: validateMode }],
+});
+
+/**
+ * Validate filter options.
+ */
+const validateFilterOptions = createValidator({
+  rule: "filter",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "allow", required: false, validate: validateFilters },
+    { key: "deny", required: false, validate: validateFilters },
+  ],
 });
 
 export type TokenBucketRateLimitOptions<
@@ -568,12 +637,60 @@ export type SensitiveInfoOptions<Detect> =
   | SensitiveInfoOptionsAllow<Detect>
   | SensitiveInfoOptionsDeny<Detect>;
 
+/**
+ * Filter.
+ */
+export interface Filter {
+  /**
+   * Human readable name of the filter;
+   * used for debugging and logging.
+   */
+  displayName?: string | null | undefined;
+  /**
+   * Expression to match against the request.
+   */
+  expression: string;
+}
+
+/**
+ * Configuration to allow if a filter matches and deny otherwise.
+ */
+export type FilterOptionsAllow = {
+  /**
+   * One or more filters.
+   */
+  allow: ReadonlyArray<Filter | string> | Filter | string;
+  deny?: never;
+  /**
+   * Mode.
+   */
+  mode?: ArcjetMode;
+};
+
+/**
+ * Configuration to deny if a filter matches and allow otherwise.
+ */
+export type FilterOptionsDeny = {
+  allow?: never;
+  /**
+   * One or more filters.
+   */
+  deny: ReadonlyArray<Filter | string> | Filter | string;
+  /**
+   * Mode.
+   */
+  mode?: ArcjetMode;
+};
+
+export type FilterOptions = FilterOptionsAllow | FilterOptionsDeny;
+
 const Priority = {
   SensitiveInfo: 1,
   Shield: 2,
   RateLimit: 3,
   BotDetection: 4,
   EmailValidation: 5,
+  Filter: 6,
 };
 
 type PlainObject = { [key: string]: unknown };
@@ -2077,6 +2194,312 @@ export function protectSignup<const Characteristics extends string[] = []>(
   ];
 }
 
+/**
+ * Arcjet filter rule.
+ *
+ * @param options
+ *   Configuration (required).
+ * @returns
+ *   Filter rule.
+ */
+export function filter(options: FilterOptions): Primitive<{}> {
+  validateFilterOptions(options);
+
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const allow: ReadonlyArray<Filter | string> = Array.isArray(options.allow)
+    ? options.allow
+    : options.allow
+      ? [options.allow]
+      : [];
+  const deny: ReadonlyArray<Filter | string> = Array.isArray(options.deny)
+    ? options.deny
+    : options.deny
+      ? [options.deny]
+      : [];
+
+  if (allow.length > 0 && deny.length > 0) {
+    throw new Error(
+      "`filter` options error: filters must be passed in either `allow` or `deny` instead of both",
+    );
+  }
+  if (allow.length === 0 && deny.length === 0) {
+    throw new Error(
+      "`filter` options error: one or more filters must be passed in `allow` or `deny`",
+    );
+  }
+
+  const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+  const type = "FILTER";
+  const version = 0;
+
+  const allowExpressions = allow.map((d) =>
+    typeof d === "string" ? d : d.expression,
+  );
+  const denyExpressions = deny.map((d) =>
+    typeof d === "string" ? d : d.expression,
+  );
+  const expressions = [...allowExpressions, ...denyExpressions];
+
+  const remoteIdentifiersPromise = Promise.allSettled(
+    expressions.map(function (expression) {
+      return analyze.remoteIdentifiersInFilter(expression);
+    }),
+  ).then(function (results) {
+    // Swallow parse errors.
+    // Invalid expressions will throw later when matching and whether they
+    // need remote or local data then doesn’t affect them.
+    return new Set(results.map((d) => ("value" in d ? d.value : [])).flat());
+  });
+
+  const ruleIdPromise = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    hasher.stringSliceOrdered("allow", allowExpressions),
+    hasher.stringSliceOrdered("deny", denyExpressions),
+  );
+
+  const rule: ArcjetRule<{}> = {
+    version,
+    priority: Priority.Filter,
+
+    type,
+    mode,
+    // TODO(@wooorm-arcjet): maybe expose?
+    // allow,
+    // deny,
+
+    /**
+     * Validate a request for filters.
+     */
+    validate(
+      _: ArcjetContext,
+      details: Partial<ArcjetRequestDetails>,
+    ): undefined {
+      if (!details.ip) {
+        throw new Error("Request filtering requires `ip` to be set");
+      }
+    },
+
+    /**
+     * Protect a request with filters.
+     */
+    async protect(
+      context: ArcjetContext<CachedResult>,
+      request: ArcjetRequestDetails,
+    ): Promise<ArcjetRuleResult> {
+      const ruleId = await ruleIdPromise;
+      const [cached, ttl] = await context.cache.get(
+        ruleId,
+        context.fingerprint,
+      );
+
+      if (cached) {
+        return new ArcjetRuleResult({
+          conclusion: cached.conclusion,
+          fingerprint: context.fingerprint,
+          reason: cached.reason,
+          ruleId,
+          state: "CACHED",
+          ttl,
+        });
+      }
+
+      const remoteIdentifiers = await remoteIdentifiersPromise;
+
+      // We cannot decide locally if there are remote identifiers.
+      if (remoteIdentifiers.size > 0) {
+        return new ArcjetRuleResult({
+          // @ts-expect-error: TODO(@wooorm-arcjet): choose if this is a great or terrible idea.
+          conclusion: "UNDETERMINED",
+          fingerprint: context.fingerprint,
+          // TODO(@wooorm-arcjet): some other reason?
+          reason: new ArcjetErrorReason(
+            "Cannot decide filters with remote identifiers locally",
+          ),
+          ruleId,
+          state,
+        });
+      }
+
+      const result = await match(context, request);
+      context.cache.set(ruleId, context.fingerprint, result, result.ttl);
+      return result;
+    },
+
+    /**
+     * Protect a request with filters, after `decide`.
+     */
+    async protectPost(
+      context: ArcjetContext<CachedResult>,
+      request: ArcjetRequestDetails,
+      decision: ArcjetDecision,
+    ): Promise<ArcjetRuleResult | undefined> {
+      const ruleId = await ruleIdPromise;
+
+      // TODO(@wooorm-arcjet): not sure if checking the cache again makes sense.
+      const [cached, ttl] = await context.cache.get(
+        ruleId,
+        context.fingerprint,
+      );
+
+      if (cached) {
+        return new ArcjetRuleResult({
+          conclusion: cached.conclusion,
+          fingerprint: context.fingerprint,
+          reason: cached.reason,
+          ruleId,
+          state: "CACHED",
+          ttl,
+        });
+      }
+
+      const remoteIdentifiers = await remoteIdentifiersPromise;
+
+      // No remote identifiers so checking again won’t change the result.
+      if (remoteIdentifiers.size === 0) {
+        return;
+      }
+
+      const found =
+        decision.ip.continent !== undefined ||
+        decision.ip.latitude !== undefined ||
+        decision.ip.timezone !== undefined;
+
+      // TODO(@wooorm-arcjet): silently ignore?
+      if (!found) {
+        throw new Error("Unexpected remote decision without `ip`");
+      }
+
+      // TODO(@wooorm-arcjet): confirm names.
+      const extra = {
+        ip: {
+          accuracy_radius: decision.ip.accuracyRadius
+            ? String(decision.ip.accuracyRadius)
+            : undefined,
+          asn_name: decision.ip.asnName,
+          asn_domain: decision.ip.asnDomain,
+          asn: decision.ip.asn,
+          city: decision.ip.city,
+          continent_name: decision.ip.continentName,
+          continent: decision.ip.continent,
+          country_name: decision.ip.countryName,
+          country: decision.ip.country,
+          hosting: decision.ip.isHosting(),
+          latitude: decision.ip.latitude
+            ? String(decision.ip.latitude)
+            : undefined,
+          longitude: decision.ip.longitude
+            ? String(decision.ip.longitude)
+            : undefined,
+          postal_code: decision.ip.postalCode,
+          proxy: decision.ip.isProxy(),
+          region: decision.ip.region,
+          relay: decision.ip.isRelay(),
+          service: decision.ip.service,
+          timezone: decision.ip.timezone,
+          tor: decision.ip.isTor(),
+          vpn: decision.ip.isVpn(),
+        },
+      };
+
+      // TODO(@wooorm-arcjet): remove.
+      console.log("xxx:debug:remote-data:extra:", extra);
+      const result = await match(context, request, extra);
+      context.cache.set(ruleId, context.fingerprint, result, result.ttl);
+      return result;
+    },
+  };
+
+  return [rule];
+
+  async function match(
+    context: ArcjetContext<CachedResult>,
+    request: ArcjetRequestDetails,
+    extra?: Record<string, unknown> | undefined,
+  ): Promise<ArcjetRuleResult> {
+    const ruleId = await ruleIdPromise;
+    const request_ = toAnalyzeRequest(request);
+
+    try {
+      if (allow.length > 0) {
+        for (const filter of allow) {
+          const expression =
+            typeof filter === "string" ? filter : filter.expression;
+          const matches = await analyze.matchFilter(
+            context,
+            request_,
+            expression,
+            extra,
+          );
+
+          if (matches) {
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: context.fingerprint,
+              // TODO(@wooorm-arcjet): expose `displayName`.
+              reason: new ArcjetReason(),
+              ruleId,
+              state,
+              ttl: 60,
+            });
+          }
+        }
+
+        return new ArcjetRuleResult({
+          conclusion: "DENY",
+          fingerprint: context.fingerprint,
+          reason: new ArcjetReason(),
+          ruleId,
+          state,
+          ttl: 60,
+        });
+      }
+
+      for (const filter of deny) {
+        const expression =
+          typeof filter === "string" ? filter : filter.expression;
+        const matches = await analyze.matchFilter(
+          context,
+          request_,
+          expression,
+          extra,
+        );
+
+        if (matches) {
+          return new ArcjetRuleResult({
+            conclusion: "DENY",
+            fingerprint: context.fingerprint,
+            // TODO(@Wooorm-arcjet): expose `displayName`.
+            reason: new ArcjetReason(),
+            ruleId,
+            state,
+            ttl: 60,
+          });
+        }
+      }
+
+      return new ArcjetRuleResult({
+        conclusion: "ALLOW",
+        fingerprint: context.fingerprint,
+        reason: new ArcjetReason(),
+        ruleId,
+        state,
+        ttl: 60,
+      });
+    } catch (error) {
+      return new ArcjetRuleResult({
+        conclusion: "ERROR",
+        fingerprint: context.fingerprint,
+        reason: new ArcjetErrorReason(String(error)),
+        ruleId,
+        state,
+        ttl: 60,
+      });
+    }
+  }
+}
+
 export interface ArcjetOptions<
   Rules extends [...(Primitive | Product)[]],
   Characteristics extends readonly string[],
@@ -2429,11 +2852,46 @@ export default function arcjet<
     const logRemotePerf = perf.measure("remote");
     try {
       const logDediceApiPerf = perf.measure("decideApi");
-      const decision = await client
+      let decision = await client
         .decide(context, details, rules)
         .finally(() => {
           logDediceApiPerf();
         });
+
+      for (const [_, rule] of rules.entries()) {
+        // We may still have some local rules that want to do things with the server
+        // decision.
+        // We run those if the server is fine with things.
+        // TODO(@wooorm-arcjet): maybe a different condition?
+        if (decision.isAllowed() && rule.protectPost) {
+          const ruleResult = await rule.protectPost(
+            context,
+            // @ts-expect-error: TODO(@wooorm-arcjet): fix types to remove the assertion for `validate`.
+            details,
+            decision,
+          );
+
+          if (ruleResult && ruleResult.state !== "DRY_RUN") {
+            // Errors and unknown conclusion are ignored.
+            const Constructor =
+              ruleResult.conclusion === "ALLOW"
+                ? ArcjetAllowDecision
+                : ruleResult.conclusion === "DENY"
+                  ? ArcjetDenyDecision
+                  : ruleResult.conclusion === "CHALLENGE"
+                    ? ArcjetChallengeDecision
+                    : undefined;
+
+            if (Constructor) {
+              decision = new Constructor({
+                reason: ruleResult.reason,
+                results: [...decision.results, ruleResult],
+                ttl: ruleResult.ttl,
+              });
+            }
+          }
+        }
+      }
 
       // If the decision is to block and we have a non-zero TTL, we cache the
       // block locally
