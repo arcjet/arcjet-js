@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/redact-v1.0.0-beta.11) (2025-08-13)
+
+
+### 📝 Documentation
+
+* **redact:** add JSDocs ([#4843](https://github.com/arcjet/arcjet-js/issues/4843)) ([b6b14bb](https://github.com/arcjet/arcjet-js/commit/b6b14bb5e5b161d334a1fcd6eb6ed7f565c49f24))
+
+
+### ⌨️ Code Refactoring
+
+* **redact:** remove repetition in code ([#4881](https://github.com/arcjet/arcjet-js/issues/4881)) ([191ccb7](https://github.com/arcjet/arcjet-js/commit/191ccb7105e6cc6f8e949ff56163dba0758c5d79))
+* **redact:** reuse exposed types ([#4856](https://github.com/arcjet/arcjet-js/issues/4856)) ([2380307](https://github.com/arcjet/arcjet-js/commit/2380307a7b82ed1a9dc4c3bb3167475a9cfe12eb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/redact-wasm bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/tsconfig bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/redact-v1.0.0-beta.10) (2025-08-04)
 
 

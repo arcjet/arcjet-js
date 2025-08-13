@@ -1,5 +1,68 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2025-08-13)
+
+
+### 🚀 New Features
+
+* **ip:** expose `Cidr` type ([#4877](https://github.com/arcjet/arcjet-js/issues/4877)) ([96674f4](https://github.com/arcjet/arcjet-js/commit/96674f447e4f79d0592453f548bdb706ac30b49a))
+
+
+### 🪲 Bug Fixes
+
+* **protocol:** Remove change that disjoined IP details and assertions ([#4859](https://github.com/arcjet/arcjet-js/issues/4859)) ([#4913](https://github.com/arcjet/arcjet-js/issues/4913)) ([3304e9c](https://github.com/arcjet/arcjet-js/commit/3304e9c4280cf616f6a7f6466b8088e796425e53))
+
+
+### 📝 Documentation
+
+* add info on derivative works to license sections ([#4654](https://github.com/arcjet/arcjet-js/issues/4654)) ([d427c39](https://github.com/arcjet/arcjet-js/commit/d427c394098b4dfde8756a7d8ab25eb291b278a0))
+* **logger:** add JSDocs ([#4839](https://github.com/arcjet/arcjet-js/issues/4839)) ([107c145](https://github.com/arcjet/arcjet-js/commit/107c1455cc2ae36bbc75909097a50c67a4e67129))
+* **nosecone-next:** add JSDocs ([#4841](https://github.com/arcjet/arcjet-js/issues/4841)) ([689ea3c](https://github.com/arcjet/arcjet-js/commit/689ea3c94ef75d574466190c5938a016932801bc))
+* **nosecone-sveltekit:** add JSDocs ([#4842](https://github.com/arcjet/arcjet-js/issues/4842)) ([de708af](https://github.com/arcjet/arcjet-js/commit/de708af03090b2c6f299067719d3e038d4e44063))
+* **nosecone:** add derivative works to readme ([#4854](https://github.com/arcjet/arcjet-js/issues/4854)) ([73f2bcb](https://github.com/arcjet/arcjet-js/commit/73f2bcb87faca426938d5186287321be6e3f8915))
+* **nosecone:** add JSDocs ([#4840](https://github.com/arcjet/arcjet-js/issues/4840)) ([ead53e5](https://github.com/arcjet/arcjet-js/commit/ead53e510ecb93ded2400557333868eed63875bb))
+* **protocol:** add JSDocs ([#4851](https://github.com/arcjet/arcjet-js/issues/4851)) ([c1021e9](https://github.com/arcjet/arcjet-js/commit/c1021e9b6319297d718f2926fcccab2a28a91a93))
+* **readme:** fix list of example apps ([#4891](https://github.com/arcjet/arcjet-js/issues/4891)) ([36ea1ca](https://github.com/arcjet/arcjet-js/commit/36ea1ca0f3adfb05f99f7856b3101d2b7c326075))
+* **redact-wasm:** add JSDocs ([#4844](https://github.com/arcjet/arcjet-js/issues/4844)) ([e187ff8](https://github.com/arcjet/arcjet-js/commit/e187ff855e1f4873957b131f747bd7cb876ee25a))
+* **redact:** add JSDocs ([#4843](https://github.com/arcjet/arcjet-js/issues/4843)) ([b6b14bb](https://github.com/arcjet/arcjet-js/commit/b6b14bb5e5b161d334a1fcd6eb6ed7f565c49f24))
+* **rollup-config:** add JSDocs ([#4845](https://github.com/arcjet/arcjet-js/issues/4845)) ([3b5b477](https://github.com/arcjet/arcjet-js/commit/3b5b477f6087e3374c778a0749e5cb5c798e5908))
+* **runtime:** add JSDocs ([#4846](https://github.com/arcjet/arcjet-js/issues/4846)) ([a740694](https://github.com/arcjet/arcjet-js/commit/a7406942dbeed93304e0724228e745040ee93822))
+* **sprintf:** add JSDocs ([#4847](https://github.com/arcjet/arcjet-js/issues/4847)) ([a5b5084](https://github.com/arcjet/arcjet-js/commit/a5b50840f13ee03371166fa2655a54180d30aacc))
+* **sprintf:** add JSDocs ([#4848](https://github.com/arcjet/arcjet-js/issues/4848)) ([d9b0adb](https://github.com/arcjet/arcjet-js/commit/d9b0adb94c243cf5894f64005ad722ad4264145d))
+* **stable-hash:** add derivative work to readme ([#4858](https://github.com/arcjet/arcjet-js/issues/4858)) ([b693f2b](https://github.com/arcjet/arcjet-js/commit/b693f2b7125076edc19a15b58e5e8f0a8d226175))
+* **transport:** add JSDocs ([#4849](https://github.com/arcjet/arcjet-js/issues/4849)) ([a59390b](https://github.com/arcjet/arcjet-js/commit/a59390be6c248d641f910fe4ed4a72f8119fe1f1))
+
+
+### 🧹 Miscellaneous Chores
+
+* **decorate:** add type errors for invalid values ([#4865](https://github.com/arcjet/arcjet-js/issues/4865)) ([0f73483](https://github.com/arcjet/arcjet-js/commit/0f73483b8e8430af9d327a880a363b54bf4ef2fe))
+* **headers:** expose named export, deprecate default ([#4860](https://github.com/arcjet/arcjet-js/issues/4860)) ([8d716b9](https://github.com/arcjet/arcjet-js/commit/8d716b99430470a842f2648092736098abdaab66))
+* **ip:** expose named export, deprecate default ([#4876](https://github.com/arcjet/arcjet-js/issues/4876)) ([fcb83a3](https://github.com/arcjet/arcjet-js/commit/fcb83a304e1b9ba16b788e7a1209a61af2193f94))
+* **logger:** rename `LoggerOptions` to `Options` ([#4874](https://github.com/arcjet/arcjet-js/issues/4874)) ([78962de](https://github.com/arcjet/arcjet-js/commit/78962de6ef97485f1aa8c24fabbfb70cab414fee))
+* normalize `package-lock.json` ([#4794](https://github.com/arcjet/arcjet-js/issues/4794)) ([e17962b](https://github.com/arcjet/arcjet-js/commit/e17962be6f229186817001ff5a4f7f7d78c31e47))
+* **nosecone-next:** expose named export, deprecate default ([#4879](https://github.com/arcjet/arcjet-js/issues/4879)) ([605e647](https://github.com/arcjet/arcjet-js/commit/605e647fbc721e841bf037fe59f47a6089ec7f37))
+* **nosecone-sveltekit:** expose named export, deprecate default ([#4880](https://github.com/arcjet/arcjet-js/issues/4880)) ([d0e9aaf](https://github.com/arcjet/arcjet-js/commit/d0e9aaf83c7b3fc2609ade169af4641308d8c513))
+* **nosecone:** expose `Options`, deprecate `NoseconeOptions` ([#4855](https://github.com/arcjet/arcjet-js/issues/4855)) ([c504315](https://github.com/arcjet/arcjet-js/commit/c5043154836c04d3106be333c418682212b9602f))
+* **nosecone:** expose named export, deprecate default ([#4878](https://github.com/arcjet/arcjet-js/issues/4878)) ([e7607de](https://github.com/arcjet/arcjet-js/commit/e7607de8dd79f12ec28f0a50a7fb835955520365))
+* **protocol:** add `hasAsn`, deprecate `hasASN` ([#4889](https://github.com/arcjet/arcjet-js/issues/4889)) ([4990e80](https://github.com/arcjet/arcjet-js/commit/4990e8084ae193c20955e76abe7a1619eac82a80))
+* **sprintf:** expose named export, deprecate default ([#4875](https://github.com/arcjet/arcjet-js/issues/4875)) ([a2624b4](https://github.com/arcjet/arcjet-js/commit/a2624b4998e2e9d05e83b417411eb3cddfcab18b))
+
+
+### ⌨️ Code Refactoring
+
+* **ip:** rename identifiers to match other casing ([#4723](https://github.com/arcjet/arcjet-js/issues/4723)) ([4cbd844](https://github.com/arcjet/arcjet-js/commit/4cbd84471216eee6183a686774897bc7ce95f348))
+* **logger:** replace abbreviations with words ([#4853](https://github.com/arcjet/arcjet-js/issues/4853)) ([de963dc](https://github.com/arcjet/arcjet-js/commit/de963dc45df4ecbd4fe15127ca945f1934466ba0))
+* **logger:** use more specific type than `unknown` ([#4873](https://github.com/arcjet/arcjet-js/issues/4873)) ([5025378](https://github.com/arcjet/arcjet-js/commit/5025378577b40a2c6dad9a41929bca94aedf6a4b))
+* **protocol:** remove unneeded type utility ([#4859](https://github.com/arcjet/arcjet-js/issues/4859)) ([0a638ae](https://github.com/arcjet/arcjet-js/commit/0a638ae8e2d680fbe3c33556f3011f4ad733f5ad))
+* **redact:** remove repetition in code ([#4881](https://github.com/arcjet/arcjet-js/issues/4881)) ([191ccb7](https://github.com/arcjet/arcjet-js/commit/191ccb7105e6cc6f8e949ff56163dba0758c5d79))
+* **redact:** reuse exposed types ([#4856](https://github.com/arcjet/arcjet-js/issues/4856)) ([2380307](https://github.com/arcjet/arcjet-js/commit/2380307a7b82ed1a9dc4c3bb3167475a9cfe12eb))
+* **sprintf:** replace abbreviations with words ([#4857](https://github.com/arcjet/arcjet-js/issues/4857)) ([13bac85](https://github.com/arcjet/arcjet-js/commit/13bac85d164ca6b86e78bd8cded03403abb087bc))
+
+
+### 📚 Tests
+
+* **protocol:** add type guard tests for `ArcjetIpDetails` ([#4888](https://github.com/arcjet/arcjet-js/issues/4888)) ([98072bc](https://github.com/arcjet/arcjet-js/commit/98072bcb146f99f6983f9fe4dbe225b3c7e3fe82))
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...v1.0.0-beta.10) (2025-08-04)
 
 
