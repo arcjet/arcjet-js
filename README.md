@@ -297,13 +297,6 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [github-arcjet-example-nextjs]: https://github.com/arcjet/example-nextjs
 [github-arcjet-example-remix]: https://github.com/arcjet/example-remix
 [github-arcjet-example-tanstack-start]: https://github.com/arcjet/example-tanstack-start
-[bun-quick-start]: https://docs.arcjet.com/get-started?f=bun
-[deno-quick-start]: https://docs.arcjet.com/get-started?f=deno
-[nest-quick-start]: https://docs.arcjet.com/get-started?f=nest-js
-[next-quick-start]: https://docs.arcjet.com/get-started?f=next-js
-[node-quick-start]: https://docs.arcjet.com/get-started?f=node-js
-[remix-quick-start]: https://docs.arcjet.com/get-started?f=remix
-[sveltekit-quick-start]: https://docs.arcjet.com/get-started?f=sveltekit
 [discord-invite]: https://arcjet.com/discord
 [support]: https://docs.arcjet.com/support
 [bot-protection-concepts-docs]: https://docs.arcjet.com/bot-protection/concepts
