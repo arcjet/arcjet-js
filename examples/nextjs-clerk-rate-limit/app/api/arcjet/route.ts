@@ -6,9 +6,6 @@ import ip from "@arcjet/ip";
 // The root Arcjet client is created outside of the handler.
 const aj = arcjet({
   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
-  // We specify a custom fingerprint so we can dynamically build it within each
-  // demo route.
-  characteristics: ["fingerprint"],
   rules: [
     shield({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
@@ -37,7 +34,7 @@ export async function GET(req: NextRequest) {
     const fingerprint = user.id; // Use the user ID as the fingerprint
 
     // Deduct 5 tokens from the token bucket
-    decision = await rl.protect(req, { fingerprint, requested: 5 });
+    decision = await rl.protect(req, { requested: 5 });
   } else {
     // Limit the amount of requests for anonymous users.
     const rl = aj.withRule(
@@ -53,7 +50,7 @@ export async function GET(req: NextRequest) {
     const fingerprint = ip(req) || "127.0.0.1"; // Fall back to local IP if none
 
     // Deduct 5 tokens from the token bucket
-    decision = await rl.protect(req, { fingerprint, requested: 5 });
+    decision = await rl.protect(req, { requested: 5 });
   }
 
   if (decision.isDenied()) {

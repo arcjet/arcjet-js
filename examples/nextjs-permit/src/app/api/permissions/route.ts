@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   }
 
   // Request a decision from Arcjet with the user's ID as a fingerprint
-  const decision = await aj.protect(req, { fingerprint: user.id });
+  const decision = await aj.protect(req);
 
   // If the decision is denied then return an error response
   if (decision.isDenied()) {

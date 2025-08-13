@@ -18,9 +18,6 @@ const authOptions = {
 // The arcjet instance is created outside of the handler
 const aj = arcjet({
   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
-  // We specify a custom fingerprint so we can dynamically build it within each
-  // demo route.
-  characteristics: ["fingerprint"],
   rules: [
     // Protect against common attacks with Arcjet Shield
     shield({
@@ -40,14 +37,6 @@ export async function GET(req: NextRequest, res: Response) {
 
   let decision: ArcjetDecision;
   if (session && session.user && session.user!.email) {
-    // A very simple hash to avoid sending PII to Arcjet. You may wish to add a
-  // unique salt prefix to protect against reverse lookups.
-  const email = session.user!.email;
-  const emailHash = require("crypto")
-    .createHash("sha256")
-    .update(email)
-    .digest("hex");
-
     // Allow higher limits for signed in users.
     const rl = aj.withRule(
       // Create a token bucket rate limit. Other algorithms are supported.
@@ -59,10 +48,8 @@ export async function GET(req: NextRequest, res: Response) {
       })
     );
 
-    const fingerprint = emailHash; // Use the email hash as the fingerprint
-
     // Deduct 5 tokens from the token bucket
-    decision = await rl.protect(req, { fingerprint, requested: 5 });
+    decision = await rl.protect(req, { requested: 5 });
     console.log("Arcjet logged in decision", decision)
   } else {
     const fingerprint = ip(req);
@@ -79,7 +66,7 @@ export async function GET(req: NextRequest, res: Response) {
     );
 
     // Deduct 5 tokens from the token bucket
-    decision = await rl.protect(req, { fingerprint, requested: 5 });
+    decision = await rl.protect(req, { requested: 5 });
     console.log("Arcjet logged out decision", decision)
   }
 
