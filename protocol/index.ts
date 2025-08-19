@@ -414,11 +414,28 @@ export class ArcjetReason {
   }
 }
 
+/**
+ * Filter reason.
+ */
 export class ArcjetFilterReason extends ArcjetReason {
-  type = "FILTER" as const;
-
+  /**
+   * Filter that matched.
+   */
   filter?: Filter | undefined;
 
+  /**
+   * Kind.
+   */
+  type = "FILTER" as const;
+
+  /**
+   * Create a filter reason.
+   *
+   * @param filter
+   *   Filter that matched.
+   * @returns
+   *   Filter reason.
+   */
   constructor(filter?: Filter | undefined) {
     super();
 
@@ -1780,11 +1797,24 @@ export interface ArcjetEmailRule<Props extends { email: string }>
   allowDomainLiteral: boolean;
 }
 
+/**
+ * Filter rule.
+ */
 export interface ArcjetFilterRule extends ArcjetRule<{}> {
-  type: "FILTER";
-
+  /**
+   * Filter that allow a request when one matches and deny otherwise.
+   */
   allow: ReadonlyArray<Filter>;
+
+  /**
+   * Filter that deny a request when one matches and allow otherwise.
+   */
   deny: ReadonlyArray<Filter>;
+
+  /**
+   * Kind.
+   */
+  type: "FILTER";
 }
 
 /**

@@ -1084,6 +1084,9 @@ export type FilterOptionsDeny = {
   mode?: ArcjetMode;
 };
 
+/**
+ * Filter options.
+ */
 export type FilterOptions = FilterOptionsAllow | FilterOptionsDeny;
 
 const Priority = {
