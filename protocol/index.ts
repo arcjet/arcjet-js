@@ -307,6 +307,21 @@ export const ArcjetSensitiveInfoType = Object.freeze({
 });
 
 /**
+ * Filter.
+ */
+export interface Filter {
+  /**
+   * Human readable name of the filter;
+   * used for debugging and logging.
+   */
+  displayName?: string | null | undefined;
+  /**
+   * Expression to match against the request.
+   */
+  expression: string;
+}
+
+/**
  * Reason returned by a rule.
  */
 export class ArcjetReason {
@@ -320,6 +335,7 @@ export class ArcjetReason {
     | "SHIELD"
     | "EMAIL"
     | "ERROR"
+    | "FILTER"
     | "SENSITIVE_INFO"
     | undefined;
 
@@ -391,6 +407,22 @@ export class ArcjetReason {
    */
   isError(): this is ArcjetErrorReason {
     return this.type === "ERROR";
+  }
+
+  isFilter(): this is ArcjetFilterReason {
+    return this.type === "FILTER";
+  }
+}
+
+export class ArcjetFilterReason extends ArcjetReason {
+  type = "FILTER" as const;
+
+  filter?: Filter | undefined;
+
+  constructor(filter?: Filter | undefined) {
+    super();
+
+    this.filter = filter;
   }
 }
 
@@ -1561,7 +1593,7 @@ export type ArcjetRule<Props extends {} = {}> = {
   // TODO(@wooorm-arcjet):
   // if it is intentional that people can extend rules,
   // then we need to allow that in the types.
-  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | "SENSITIVE_INFO" | string;
+  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | "SENSITIVE_INFO" | "FILTER" | string;
 
   /**
    * Mode.
@@ -1739,6 +1771,13 @@ export interface ArcjetEmailRule<Props extends { email: string }>
    * It is not allowed when `false`.
    */
   allowDomainLiteral: boolean;
+}
+
+export interface ArcjetFilterRule extends ArcjetRule<{}> {
+  type: "FILTER";
+
+  allow: ReadonlyArray<Filter>;
+  deny: ReadonlyArray<Filter>;
 }
 
 /**

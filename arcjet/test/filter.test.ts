@@ -201,7 +201,9 @@ test("filter", async function (t) {
 
 test("filter: `validate`", async function (t) {
   await t.test("should fail when calling `validate` w/o `ip`", function () {
-    const [rule] = filter({ allow: 'http.request.headers["user-agent"] ~ "Chrome"' });
+    const [rule] = filter({
+      allow: 'http.request.headers["user-agent"] ~ "Chrome"',
+    });
     assert.throws(function () {
       const _ = rule.validate(createContext(), {
         ...createRequest(),
@@ -211,7 +213,9 @@ test("filter: `validate`", async function (t) {
   });
 
   await t.test("should pass when calling `validate` w/ `ip`", function () {
-    const [rule] = filter({ allow: 'http.request.headers["user-agent"] ~ "Chrome"' });
+    const [rule] = filter({
+      allow: 'http.request.headers["user-agent"] ~ "Chrome"',
+    });
     const _ = rule.validate(createContext(), {
       ...createRequest(),
       ip: "127.0.0.1",

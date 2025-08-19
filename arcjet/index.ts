@@ -2,6 +2,7 @@ import type {
   ArcjetContext,
   ArcjetEmailRule,
   ArcjetBotRule,
+  ArcjetFilterRule,
   ArcjetRule,
   ArcjetMode,
   ArcjetRequestDetails,
@@ -17,6 +18,7 @@ import type {
   ArcjetEmailType,
   ArcjetSensitiveInfoType,
   ArcjetRateLimitRule,
+  Filter,
 } from "@arcjet/protocol";
 import {
   ArcjetAllowDecision,
@@ -30,6 +32,7 @@ import {
   ArcjetDenyDecision,
   ArcjetErrorDecision,
   ArcjetShieldReason,
+  ArcjetFilterReason,
   ArcjetRateLimitReason,
   ArcjetConclusion,
 } from "@arcjet/protocol";
@@ -636,21 +639,6 @@ export type SensitiveInfoOptionsDeny<Detect> = {
 export type SensitiveInfoOptions<Detect> =
   | SensitiveInfoOptionsAllow<Detect>
   | SensitiveInfoOptionsDeny<Detect>;
-
-/**
- * Filter.
- */
-export interface Filter {
-  /**
-   * Human readable name of the filter;
-   * used for debugging and logging.
-   */
-  displayName?: string | null | undefined;
-  /**
-   * Expression to match against the request.
-   */
-  expression: string;
-}
 
 /**
  * Configuration to allow if a filter matches and deny otherwise.
@@ -2206,16 +2194,20 @@ export function filter(options: FilterOptions): Primitive<{}> {
   validateFilterOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const allow: ReadonlyArray<Filter | string> = Array.isArray(options.allow)
-    ? options.allow
-    : options.allow
-      ? [options.allow]
-      : [];
-  const deny: ReadonlyArray<Filter | string> = Array.isArray(options.deny)
-    ? options.deny
-    : options.deny
-      ? [options.deny]
-      : [];
+  const allow: ReadonlyArray<Filter> = (
+    Array.isArray(options.allow)
+      ? options.allow
+      : options.allow
+        ? [options.allow]
+        : []
+  ).map((d) => (typeof d === "string" ? { expression: d } : d));
+  const deny: ReadonlyArray<Filter> = (
+    Array.isArray(options.deny)
+      ? options.deny
+      : options.deny
+        ? [options.deny]
+        : []
+  ).map((d) => (typeof d === "string" ? { expression: d } : d));
 
   if (allow.length > 0 && deny.length > 0) {
     throw new Error(
@@ -2232,42 +2224,25 @@ export function filter(options: FilterOptions): Primitive<{}> {
   const type = "FILTER";
   const version = 0;
 
-  const allowExpressions = allow.map((d) =>
-    typeof d === "string" ? d : d.expression,
-  );
-  const denyExpressions = deny.map((d) =>
-    typeof d === "string" ? d : d.expression,
-  );
-
   const ruleIdPromise = hasher.hash(
     hasher.string("type", type),
     hasher.uint32("version", version),
     hasher.string("mode", mode),
-    hasher.stringSliceOrdered("allow", allowExpressions),
-    hasher.stringSliceOrdered("deny", denyExpressions),
+    hasher.stringSliceOrdered(
+      "allow",
+      allow.map((d) => d.expression),
+    ),
+    hasher.stringSliceOrdered(
+      "deny",
+      deny.map((d) => d.expression),
+    ),
   );
 
-  const rule: ArcjetRule<{}> = {
-    version,
-    priority: Priority.Filter,
-
-    type,
+  const rule: ArcjetFilterRule = {
+    allow,
+    deny,
     mode,
-    // TODO(@wooorm-arcjet): maybe expose?
-    // allow,
-    // deny,
-
-    /**
-     * Validate a request for filters.
-     */
-    validate(
-      _: ArcjetContext,
-      details: Partial<ArcjetRequestDetails>,
-    ): undefined {
-      if (!details.ip) {
-        throw new Error("Request filtering requires `ip` to be set");
-      }
-    },
+    priority: Priority.Filter,
 
     /**
      * Protect a request with filters.
@@ -2297,6 +2272,22 @@ export function filter(options: FilterOptions): Primitive<{}> {
       context.cache.set(ruleId, context.fingerprint, result, result.ttl);
       return result;
     },
+
+    type,
+
+    /**
+     * Validate a request for filters.
+     */
+    validate(
+      _: ArcjetContext,
+      details: Partial<ArcjetRequestDetails>,
+    ): undefined {
+      if (!details.ip) {
+        throw new Error("Request filtering requires `ip` to be set");
+      }
+    },
+
+    version,
   };
 
   return [rule];
@@ -2313,17 +2304,22 @@ export function filter(options: FilterOptions): Primitive<{}> {
         const match = await analyze.matchFilters(
           context,
           request_,
-          allowExpressions,
+          allow.map((d) => d.expression),
         );
 
-        if (typeof match === 'number') {
+        if (typeof match === "number") {
           const filter = allow[match];
-          const name = typeof filter === "string" ? filter : filter.displayName || filter.expression;
           return new ArcjetRuleResult({
             conclusion: "ALLOW",
             fingerprint: context.fingerprint,
-            // TODO(@Wooorm-arcjet): expose `name`.
-            reason: new ArcjetReason(),
+            reason: new ArcjetFilterReason({
+              displayName:
+                typeof filter === "string"
+                  ? undefined
+                  : filter.displayName || undefined,
+              expression:
+                typeof filter === "string" ? filter : filter.expression,
+            }),
             ruleId,
             state,
             ttl: 60,
@@ -2333,7 +2329,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
         return new ArcjetRuleResult({
           conclusion: "DENY",
           fingerprint: context.fingerprint,
-          reason: new ArcjetReason(),
+          reason: new ArcjetFilterReason(),
           ruleId,
           state,
           ttl: 60,
@@ -2343,17 +2339,21 @@ export function filter(options: FilterOptions): Primitive<{}> {
       const match = await analyze.matchFilters(
         context,
         request_,
-        denyExpressions,
+        deny.map((d) => d.expression),
       );
 
-      if (typeof match === 'number') {
+      if (typeof match === "number") {
         const filter = deny[match];
-        const name = typeof filter === "string" ? filter : filter.displayName || filter.expression;
         return new ArcjetRuleResult({
           conclusion: "DENY",
           fingerprint: context.fingerprint,
-          // TODO(@Wooorm-arcjet): expose `name`.
-          reason: new ArcjetReason(),
+          reason: new ArcjetFilterReason({
+            displayName:
+              typeof filter === "string"
+                ? undefined
+                : filter.displayName || undefined,
+            expression: typeof filter === "string" ? filter : filter.expression,
+          }),
           ruleId,
           state,
           ttl: 60,
@@ -2363,7 +2363,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
       return new ArcjetRuleResult({
         conclusion: "ALLOW",
         fingerprint: context.fingerprint,
-        reason: new ArcjetReason(),
+        reason: new ArcjetFilterReason(),
         ruleId,
         state,
         ttl: 60,

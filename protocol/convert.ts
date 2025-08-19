@@ -6,6 +6,7 @@ import type {
   ArcjetConclusion,
   ArcjetEmailRule,
   ArcjetEmailType,
+  ArcjetFilterRule,
   ArcjetMode,
   ArcjetRuleState,
   ArcjetStack,
@@ -575,6 +576,10 @@ function isEmailRule<Props extends { email: string }>(
   return rule.type === "EMAIL";
 }
 
+function isFilterRule(rule: RuleWithType): rule is ArcjetFilterRule {
+  return rule.type === "FILTER";
+}
+
 function isShieldRule<Props extends {}>(
   rule: RuleWithType,
 ): rule is ArcjetShieldRule<Props> {
@@ -694,6 +699,22 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
     return new Rule({
       rule: {
         case: "sensitiveInfo",
+        value: {
+          version: rule.version,
+          mode: ArcjetModeToProtocol(rule.mode),
+          allow: rule.allow,
+          deny: rule.deny,
+        },
+      },
+    });
+  }
+
+  if (isFilterRule(rule)) {
+    return new Rule({
+      rule: {
+        // @ts-expect-error: update decide service.
+        case: "filter",
+        // @ts-expect-error: update decide service.
         value: {
           version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
