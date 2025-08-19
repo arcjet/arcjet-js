@@ -41,8 +41,6 @@ export type Env = {
   VERCEL?: string | undefined;
 };
 
-type Platform = "fly-io" | "render" | "vercel";
-
 /**
  * Detect the platform.
  *
@@ -51,19 +49,19 @@ type Platform = "fly-io" | "render" | "vercel";
  * @returns
  *   Name of platform if found.
  */
-export function platform(environment: Env): Platform | undefined {
+export function platform(environment: Env) {
   if (
     typeof environment["FLY_APP_NAME"] === "string" &&
     environment["FLY_APP_NAME"] !== ""
   ) {
-    return "fly-io";
+    return "fly-io" as const;
   }
 
   if (
     typeof environment["VERCEL"] === "string" &&
     environment["VERCEL"] === "1"
   ) {
-    return "vercel";
+    return "vercel" as const;
   }
 
   // https://render.com/docs/environment-variables
@@ -71,7 +69,7 @@ export function platform(environment: Env): Platform | undefined {
     typeof environment["RENDER"] === "string" &&
     environment["RENDER"] === "true"
   ) {
-    return "render";
+    return "render" as const;
   }
 }
 
@@ -83,15 +81,13 @@ export function platform(environment: Env): Platform | undefined {
  * @returns
  *   Whether the environment is development.
  */
-export function isDevelopment(environment: Env): boolean {
+export function isDevelopment(environment: Env) {
   return (
     environment.NODE_ENV === "development" ||
     environment.MODE === "development" ||
     environment.ARCJET_ENV === "development"
   );
 }
-
-type Level = "debug" | "error" | "info" | "warn";
 
 /**
  * Get the log level.
@@ -101,7 +97,7 @@ type Level = "debug" | "error" | "info" | "warn";
  * @returns
  *   Log level.
  */
-export function logLevel(environment: Env): Level {
+export function logLevel(environment: Env) {
   const level = environment["ARCJET_LOG_LEVEL"];
   switch (level) {
     case "debug":
@@ -158,7 +154,7 @@ export function baseUrl(environment: Env) {
  * @returns
  *   Key for Arcjet API if found.
  */
-export function apiKey(environment: Env): string | undefined {
+export function apiKey(environment: Env) {
   const key = environment["ARCJET_KEY"];
   if (typeof key === "string" && key.startsWith("ajkey_")) {
     return key;
