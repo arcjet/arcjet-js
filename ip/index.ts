@@ -759,18 +759,18 @@ interface PartialRequestContext {
 /**
  * Interface with `headers`.
  */
-export interface HeaderLike {
+export type HeaderLike = {
   /**
    * Headers.
    */
   headers: Headers | Record<string, string[] | string | undefined>;
-}
+};
 
 /**
  * Interface that looks like a request,
  * of which `headers` is required and several other fields may exist.
  */
-export interface RequestLike extends HeaderLike {
+export type RequestLike = {
   /**
    * Some platforms pass `info`.
    */
@@ -788,7 +788,7 @@ export interface RequestLike extends HeaderLike {
    * Some platforms pass a `socket`.
    */
   socket?: PartialSocket | null | undefined;
-}
+} & HeaderLike;
 
 /**
  * Platform name.

@@ -1,7 +1,7 @@
 /**
  * Environment.
  */
-export interface Env {
+export type Env = {
   [key: string]: unknown;
   /**
    * Base URL of Arcjet API.
@@ -39,7 +39,7 @@ export interface Env {
    * Vercel environment variable.
    */
   VERCEL?: string | undefined;
-}
+};
 
 type Platform = "fly-io" | "render" | "vercel";
 

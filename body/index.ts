@@ -1,7 +1,7 @@
 /**
  * Configuration.
  */
-export interface ReadBodyOpts {
+export type ReadBodyOpts = {
   /**
    * Length of the stream in bytes (optional);
    * an error is returned if the contents of the stream do not add up to this length;
@@ -14,7 +14,7 @@ export interface ReadBodyOpts {
    * used to prevent reading too much data from malicious clients.
    */
   limit: number;
-}
+};
 
 type EventHandlerLike = (
   event: string,
