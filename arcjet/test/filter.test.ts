@@ -201,7 +201,7 @@ test("filter", async function (t) {
 
 test("filter: `validate`", async function (t) {
   await t.test("should fail when calling `validate` w/o `ip`", function () {
-    const [rule] = filter({ allow: "not ip.vpn" });
+    const [rule] = filter({ allow: 'http.request.headers["user-agent"] ~ "Chrome"' });
     assert.throws(function () {
       const _ = rule.validate(createContext(), {
         ...createRequest(),
@@ -211,7 +211,7 @@ test("filter: `validate`", async function (t) {
   });
 
   await t.test("should pass when calling `validate` w/ `ip`", function () {
-    const [rule] = filter({ allow: "not ip.vpn" });
+    const [rule] = filter({ allow: 'http.request.headers["user-agent"] ~ "Chrome"' });
     const _ = rule.validate(createContext(), {
       ...createRequest(),
       ip: "127.0.0.1",
@@ -488,99 +488,6 @@ test("expressions", async function (t) {
         "Error: Filter parsing error (1:14):\nhttp.host == 1\n             ^ expected 2 characters, but found 1\n",
       );
     });
-  });
-});
-
-test("remote fields", async function (t) {
-  await t.test("local only", async function () {
-    const [rule] = filter({ allow: 'http.host == "localhost:3000"' });
-    const result = await rule.protect(createContext(), createRequest());
-    assert.equal(result.conclusion, "ALLOW");
-  });
-
-  await t.test(
-    "should conclude undetermined for local rules w/ remote values",
-    async function () {
-      const [rule] = filter({ allow: "not ip.vpn" });
-      const result = await rule.protect(createContext(), createRequest());
-      assert.equal(result.conclusion, "UNDETERMINED");
-    },
-  );
-
-  await t.test("remote fields w/ `client`", async function () {
-    const client = {
-      async decide() {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-          ip: new ArcjetIpDetails(createIpDetails()),
-        });
-      },
-      report() {},
-    };
-
-    const notVpn = arcjet({
-      client,
-      key: "test-key",
-      log: { ...console, debug() {} },
-      rules: [filter({ allow: "not ip.vpn", mode: "LIVE" })],
-    });
-
-    const resultNotVpn = await notVpn.protect(createContext(), {
-      ...createRequest(),
-    });
-
-    assert.equal(resultNotVpn.conclusion, "DENY");
-
-    const vpn = arcjet({
-      client,
-      key: "test-key",
-      log: { ...console, debug() {} },
-      rules: [filter({ allow: "ip.vpn", mode: "LIVE" })],
-    });
-
-    const resultVpn = await vpn.protect(createContext(), {
-      ...createRequest(),
-    });
-
-    assert.equal(resultVpn.conclusion, "ALLOW");
-  });
-});
-
-test("integration", async function (t) {
-  await t.test("remote fields w/ `client`", async function () {
-    const client = {
-      async decide() {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-          ip: new ArcjetIpDetails(createIpDetails()),
-        });
-      },
-      report() {},
-    };
-
-    const aj = arcjet({
-      client,
-      key: "test-key",
-      log: { ...console, debug() {} },
-      rules: [
-        filter({
-          allow: [
-            'ip.country in {"CA", "GB", "IT", "NL", "US"} and not ip.vpn and not ip.tor',
-          ],
-          mode: "LIVE",
-        }),
-      ],
-    });
-
-    const result = await aj.protect(createContext(), {
-      ...createRequest(),
-    });
-
-    assert.equal(result.conclusion, "ALLOW");
   });
 });
 

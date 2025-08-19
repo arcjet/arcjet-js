@@ -6,7 +6,6 @@ import {
   generateFingerprint,
   isValidEmail,
   matchFilter,
-  remoteIdentifiersInFilter,
 } from "../index.js";
 
 const exampleContext = { characteristics: [], log: console };
@@ -24,7 +23,6 @@ test("@arcjet/analyze", async function (t) {
       "generateFingerprint",
       "isValidEmail",
       "matchFilter",
-      "remoteIdentifiersInFilter",
     ]);
   });
 });
@@ -305,50 +303,6 @@ test("matchFilter", async function (t) {
         "src.ip == 127.0.0.2",
       ),
       false,
-    );
-  });
-
-  await t.test("should work w/ extra data (match)", async function () {
-    assert.equal(
-      await matchFilter(
-        exampleContext,
-        { ip: "127.0.0.1" },
-        'ip.country == "US" and ip.vpn',
-        { ip: { vpn: true, country: "US" } },
-      ),
-      true,
-    );
-  });
-
-  await t.test("should work w/ extra data (mismatch)", async function () {
-    assert.equal(
-      await matchFilter(
-        exampleContext,
-        { ip: "127.0.0.1" },
-        'ip.country == "US" and not ip.vpn',
-        { ip: { vpn: true, country: "US" } },
-      ),
-      false,
-    );
-  });
-});
-
-test("remoteIdentifiersInFilter", async function (t) {
-  await t.test("should work (found)", async function () {
-    assert.deepEqual(
-      await remoteIdentifiersInFilter(
-        'src.ip == 127.0.0.1 and not lower(http.request.headers["user-agent"]) matches "(facebook|googlebot)" and not ip.vpn',
-      ),
-      ["ip.vpn"],
-    );
-  });
-
-  await t.test("should work (not found)", async function () {
-    assert.deepEqual(
-      await remoteIdentifiersInFilter(
-        'src.ip == 127.0.0.1 and not lower(http.request.headers["user-agent"]) matches "(facebook|googlebot)"',
-      ),
-      [],
     );
   });
 });

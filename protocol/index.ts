@@ -1615,11 +1615,6 @@ export type ArcjetRule<Props extends {} = {}> = {
     context: ArcjetContext,
     details: ArcjetRequestDetails & Props,
   ): Promise<ArcjetRuleResult>;
-  protectPost?(
-    context: ArcjetContext,
-    details: ArcjetRequestDetails & Props,
-    decision: ArcjetDecision,
-  ): Promise<ArcjetRuleResult | undefined>;
 };
 
 /**
