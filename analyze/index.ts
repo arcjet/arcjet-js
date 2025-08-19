@@ -254,7 +254,7 @@ export async function detectSensitiveInfo(
 export async function matchFilters(
   context: AnalyzeContext,
   request: AnalyzeRequest,
-  expressions: Array<string>
+  expressions: Array<string>,
 ): Promise<number | undefined> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
