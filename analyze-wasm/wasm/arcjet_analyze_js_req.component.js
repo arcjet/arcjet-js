@@ -328,7 +328,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       },
     }));
     postReturn0 = exports1['cabi_post_detect-bot'];
-    postReturn1 = exports1['cabi_post_match-filter'];
+    postReturn1 = exports1['cabi_post_match-filters'];
     postReturn2 = exports1['cabi_post_generate-fingerprint'];
     postReturn3 = exports1['cabi_post_is-valid-email'];
     postReturn4 = exports1['cabi_post_detect-sensitive-info'];
@@ -443,29 +443,50 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal.val;
     }
     
-    function matchFilter(arg0, arg1) {
+    function matchFilters(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
-      var ptr1 = utf8Encode(arg1, realloc0, memory0);
-      var len1 = utf8EncodedLen;
-      const ret = exports1['match-filter'](ptr0, len0, ptr1, len1);
-      let variant4;
+      var vec2 = arg1;
+      var len2 = vec2.length;
+      var result2 = realloc0(0, 0, 4, len2 * 8);
+      for (let i = 0; i < vec2.length; i++) {
+        const e = vec2[i];
+        const base = result2 + i * 8;var ptr1 = utf8Encode(e, realloc0, memory0);
+        var len1 = utf8EncodedLen;
+        dataView(memory0).setInt32(base + 4, len1, true);
+        dataView(memory0).setInt32(base + 0, ptr1, true);
+      }
+      const ret = exports1['match-filters'](ptr0, len0, result2, len2);
+      let variant5;
       switch (dataView(memory0).getUint8(ret + 0, true)) {
         case 0: {
-          var bool2 = dataView(memory0).getUint8(ret + 4, true);
-          variant4= {
+          let variant3;
+          switch (dataView(memory0).getUint8(ret + 4, true)) {
+            case 0: {
+              variant3 = undefined;
+              break;
+            }
+            case 1: {
+              variant3 = dataView(memory0).getInt32(ret + 8, true) >>> 0;
+              break;
+            }
+            default: {
+              throw new TypeError('invalid variant discriminant for option');
+            }
+          }
+          variant5= {
             tag: 'ok',
-            val: bool2 == 0 ? false : (bool2 == 1 ? true : throwInvalidBool())
+            val: variant3
           };
           break;
         }
         case 1: {
-          var ptr3 = dataView(memory0).getInt32(ret + 4, true);
-          var len3 = dataView(memory0).getInt32(ret + 8, true);
-          var result3 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr3, len3));
-          variant4= {
+          var ptr4 = dataView(memory0).getInt32(ret + 4, true);
+          var len4 = dataView(memory0).getInt32(ret + 8, true);
+          var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
+          variant5= {
             tag: 'err',
-            val: result3
+            val: result4
           };
           break;
         }
@@ -473,7 +494,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           throw new TypeError('invalid variant discriminant for expected');
         }
       }
-      const retVal = variant4;
+      const retVal = variant5;
       postReturn1(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
@@ -910,7 +931,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal;
     }
     
-    return { detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail, matchFilter, validateCharacteristics,  };
+    return { detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail, matchFilters, validateCharacteristics,  };
   })();
   let promise, resolve, reject;
   function runNext (value) {
