@@ -182,8 +182,6 @@ export function setRateLimitHeaders(
     const policies = new Map<number, number>();
     for (const reason of rateLimitReasons) {
       if (policies.has(reason.max)) {
-        // TODO(@wooorm-arcjet): should we throw errors?
-        // Other Arcjet things use a custom logger, this doesn’t?
         console.error(
           "Invalid rate limit policy—two policies should not share the same limit",
         );
@@ -196,7 +194,6 @@ export function setRateLimitHeaders(
         typeof reason.remaining !== "number" ||
         typeof reason.reset !== "number"
       ) {
-        // TODO(@wooorm-arcjet): throw errors?
         console.error(format("Invalid rate limit encountered: %o", reason));
         return;
       }
@@ -221,7 +218,6 @@ export function setRateLimitHeaders(
         typeof decision.reason.remaining !== "number" ||
         typeof decision.reason.reset !== "number"
       ) {
-        // TODO(@wooorm-arcjet): throw errors?
         console.error(
           format("Invalid rate limit encountered: %o", decision.reason),
         );
@@ -237,7 +233,6 @@ export function setRateLimitHeaders(
 
   if (isHeaderLike(value)) {
     if (value.has("RateLimit")) {
-      // TODO(@wooorm-arcjet): should we use a custom logger like the rest of Arcjet?
       console.warn(
         format(
           "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
@@ -247,7 +242,6 @@ export function setRateLimitHeaders(
       );
     }
     if (value.has("RateLimit-Policy")) {
-      // TODO(@wooorm-arcjet): should we use a custom logger like the rest of Arcjet?
       console.warn(
         format(
           "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
@@ -266,7 +260,6 @@ export function setRateLimitHeaders(
 
   if (isResponseLike(value)) {
     if (value.headers.has("RateLimit")) {
-      // TODO(@wooorm-arcjet): should we use a custom logger like the rest of Arcjet?
       console.warn(
         format(
           "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
@@ -276,7 +269,6 @@ export function setRateLimitHeaders(
       );
     }
     if (value.headers.has("RateLimit-Policy")) {
-      // TODO(@wooorm-arcjet): should we use a custom logger like the rest of Arcjet?
       console.warn(
         format(
           "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
@@ -295,7 +287,6 @@ export function setRateLimitHeaders(
 
   if (isOutgoingMessageLike(value)) {
     if (value.headersSent) {
-      // TODO(@wooorm-arcjet): throw errors?
       console.error(
         "Headers have already been sent—cannot set RateLimit header",
       );
@@ -303,7 +294,6 @@ export function setRateLimitHeaders(
     }
 
     if (value.hasHeader("RateLimit")) {
-      // TODO(@wooorm-arcjet): should we use a custom logger like the rest of Arcjet?
       console.warn(
         format(
           "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
@@ -314,7 +304,6 @@ export function setRateLimitHeaders(
     }
 
     if (value.hasHeader("RateLimit-Policy")) {
-      // TODO(@wooorm-arcjet): should we use a custom logger like the rest of Arcjet?
       console.warn(
         format(
           "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
@@ -331,7 +320,6 @@ export function setRateLimitHeaders(
     return;
   }
 
-  // TODO(@wooorm-arcjet): should we use a custom logger like the rest of Arcjet?
   console.debug(
     "Cannot determine if response is Response or OutgoingMessage type",
   );

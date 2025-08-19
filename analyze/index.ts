@@ -1,14 +1,10 @@
 import { initializeWasm } from "@arcjet/analyze-wasm";
 import type {
-  // TODO(@wooorm-arcjet): rename to `DetectBotOptions`.
   BotConfig,
-  // TODO(@wooorm-arcjet): expose, rename to `DetectBotResult`.
   BotResult,
   DetectedSensitiveInfoEntity,
   DetectSensitiveInfoFunction,
-  // TODO(@wooorm-arcjet): rename to `ValidateEmailOptions`.
   EmailValidationConfig,
-  // TODO(@wooorm-arcjet): expose, rename to `ValidateEmailResult`.
   EmailValidationResult,
   SensitiveInfoEntities,
   SensitiveInfoEntity,
@@ -17,13 +13,11 @@ import type {
 } from "@arcjet/analyze-wasm";
 import type { ArcjetLogger } from "@arcjet/protocol";
 
-/// TODO(@wooorm-arcjet): expose, as `Context`.
 interface AnalyzeContext {
   log: ArcjetLogger;
   characteristics: string[];
 }
 
-/// TODO(@wooorm-arcjet): expose, as `Request`.
 type AnalyzeRequest = {
   ip?: string;
   method?: string;
@@ -37,13 +31,9 @@ type AnalyzeRequest = {
 };
 
 export {
-  // TODO(@wooorm-arcjet): add JSDocs to values from WebAssembly.
   type EmailValidationConfig,
-  // TODO(@wooorm-arcjet): add JSDocs to values from WebAssembly.
   type BotConfig,
-  // TODO(@wooorm-arcjet): add JSDocs to values from WebAssembly.
   type SensitiveInfoEntity,
-  // TODO(@wooorm-arcjet): add JSDocs to values from WebAssembly.
   type DetectedSensitiveInfoEntity,
 };
 
@@ -181,7 +171,6 @@ export async function isValidEmail(
  * @returns
  *   Promise for a result.
  */
-/// TODO(@wooorm-arcjet): expose `BotEntity`, `BotResult`.
 export async function detectBot(
   context: AnalyzeContext,
   request: AnalyzeRequest,
@@ -219,14 +208,11 @@ export async function detectBot(
  * @returns
  *   Promise for a result.
  */
-// TODO(@wooorm-arcjet): expose `DetectSensitiveInfoFunction`, `SensitiveInfoEntities`, `SensitiveInfoResult`.
-// TODO(@wooorm-arcjet): less parameters, `5` is a lot.
 export async function detectSensitiveInfo(
   context: AnalyzeContext,
   value: string,
   entities: SensitiveInfoEntities,
   contextWindowSize: number,
-  // TODO(@wooorm-arcjet): allow `null`, `undefined`.
   detect?: DetectSensitiveInfoFunction,
 ): Promise<SensitiveInfoResult> {
   const { log } = context;

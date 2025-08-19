@@ -1,9 +1,7 @@
-// TODO(@wooorm-arcjet): rename to `Options`.
 /**
  * Configuration.
  */
 export interface ReadBodyOpts {
-  // TODO(@wooorm-arcjet): must this be required?
   /**
    * Length of the stream in bytes (optional);
    * an error is returned if the contents of the stream do not add up to this length;

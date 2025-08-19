@@ -759,7 +759,6 @@ interface PartialRequestContext {
 /**
  * Interface with `headers`.
  */
-// TODO(@wooorm-arcjet): do not expose.
 export interface HeaderLike {
   /**
    * Headers.
@@ -771,7 +770,6 @@ export interface HeaderLike {
  * Interface that looks like a request,
  * of which `headers` is required and several other fields may exist.
  */
-// TODO(@wooorm-arcjet): rename to `Request`.
 export interface RequestLike extends HeaderLike {
   /**
    * Some platforms pass `info`.

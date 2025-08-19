@@ -1,7 +1,6 @@
 /**
  * Environment.
  */
-// TODO(@wooorm-arcjet): rename to `Environment`.
 export interface Env {
   [key: string]: unknown;
   /**
@@ -42,7 +41,6 @@ export interface Env {
   VERCEL?: string | undefined;
 }
 
-// TODO(@wooorm-arcjet): expose.
 type Platform = "fly-io" | "render" | "vercel";
 
 /**
@@ -93,7 +91,6 @@ export function isDevelopment(environment: Env): boolean {
   );
 }
 
-// TODO(@wooorm-arcjet): expose.
 type Level = "debug" | "error" | "info" | "warn";
 
 /**
