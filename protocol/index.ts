@@ -1593,7 +1593,14 @@ export type ArcjetRule<Props extends {} = {}> = {
   // TODO(@wooorm-arcjet):
   // if it is intentional that people can extend rules,
   // then we need to allow that in the types.
-  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | "SENSITIVE_INFO" | "FILTER" | string;
+  type:
+    | "RATE_LIMIT"
+    | "BOT"
+    | "EMAIL"
+    | "SHIELD"
+    | "SENSITIVE_INFO"
+    | "FILTER"
+    | string;
 
   /**
    * Mode.
