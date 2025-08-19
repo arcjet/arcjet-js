@@ -100,6 +100,9 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
  * This considers different things on the `request` based on the passed
  * `context.characteristics`.
  *
+ * See [*Fingerprints* on
+ * `docs.arcjet.com`](https://docs.arcjet.com/fingerprints/) for more info.
+ *
  * @param context
  *   Context.
  * @param request
