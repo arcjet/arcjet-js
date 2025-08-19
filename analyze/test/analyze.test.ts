@@ -5,7 +5,7 @@ import {
   detectSensitiveInfo,
   generateFingerprint,
   isValidEmail,
-  matchFilter,
+  matchFilters,
 } from "../index.js";
 
 const exampleContext = { characteristics: [], log: console };
@@ -22,7 +22,7 @@ test("@arcjet/analyze", async function (t) {
       "detectSensitiveInfo",
       "generateFingerprint",
       "isValidEmail",
-      "matchFilter",
+      "matchFilters",
     ]);
   });
 });
@@ -283,26 +283,26 @@ test("isValidEmail", async function (t) {
   // TODO: test `allow` option.
 });
 
-test("matchFilter", async function (t) {
+test("matchFilters", async function (t) {
   await t.test("should work (match)", async function () {
     assert.equal(
-      await matchFilter(
+      await matchFilters(
         exampleContext,
         { ip: "127.0.0.1" },
-        "src.ip == 127.0.0.1",
+        ["src.ip == 127.0.0.1"],
       ),
-      true,
+      0,
     );
   });
 
   await t.test("should work (mismatch)", async function () {
     assert.equal(
-      await matchFilter(
+      await matchFilters(
         exampleContext,
         { ip: "127.0.0.1" },
-        "src.ip == 127.0.0.2",
+        ["src.ip == 127.0.0.2"],
       ),
-      false,
+      undefined,
     );
   });
 });

@@ -246,21 +246,21 @@ export async function detectSensitiveInfo(
  *   Arcjet context.
  * @param request
  *   Request.
- * @param expression
- *   Filter expression.
+ * @param expressions
+ *   Filter expressions.
  * @returns
  *   Promise to whether the filter matches the request.
  */
-export async function matchFilter(
+export async function matchFilters(
   context: AnalyzeContext,
   request: AnalyzeRequest,
-  expression: string
-): Promise<boolean | undefined> {
+  expressions: Array<string>
+): Promise<number | undefined> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
-    return analyze.matchFilter(JSON.stringify(request), expression);
+    return analyze.matchFilters(JSON.stringify(request), expressions);
     // Ignore the `else` branch as we test in places that have WebAssembly.
     /* node:coverage ignore next 4 */
   }

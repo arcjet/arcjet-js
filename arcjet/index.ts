@@ -2710,26 +2710,24 @@ export function filter(options: FilterOptions): Primitive<{}> {
 
     try {
       if (allow.length > 0) {
-        for (const filter of allow) {
-          const expression =
-            typeof filter === "string" ? filter : filter.expression;
-          const matches = await analyze.matchFilter(
-            context,
-            request_,
-            expression,
-          );
+        const match = await analyze.matchFilters(
+          context,
+          request_,
+          allowExpressions,
+        );
 
-          if (matches) {
-            return new ArcjetRuleResult({
-              conclusion: "ALLOW",
-              fingerprint: context.fingerprint,
-              // TODO(@wooorm-arcjet): expose `displayName`.
-              reason: new ArcjetReason(),
-              ruleId,
-              state,
-              ttl: 60,
-            });
-          }
+        if (typeof match === 'number') {
+          const filter = allow[match];
+          const name = typeof filter === "string" ? filter : filter.displayName || filter.expression;
+          return new ArcjetRuleResult({
+            conclusion: "ALLOW",
+            fingerprint: context.fingerprint,
+            // TODO(@Wooorm-arcjet): expose `name`.
+            reason: new ArcjetReason(),
+            ruleId,
+            state,
+            ttl: 60,
+          });
         }
 
         return new ArcjetRuleResult({
@@ -2742,26 +2740,24 @@ export function filter(options: FilterOptions): Primitive<{}> {
         });
       }
 
-      for (const filter of deny) {
-        const expression =
-          typeof filter === "string" ? filter : filter.expression;
-        const matches = await analyze.matchFilter(
-          context,
-          request_,
-          expression,
-        );
+      const match = await analyze.matchFilters(
+        context,
+        request_,
+        denyExpressions,
+      );
 
-        if (matches) {
-          return new ArcjetRuleResult({
-            conclusion: "DENY",
-            fingerprint: context.fingerprint,
-            // TODO(@Wooorm-arcjet): expose `displayName`.
-            reason: new ArcjetReason(),
-            ruleId,
-            state,
-            ttl: 60,
-          });
-        }
+      if (typeof match === 'number') {
+        const filter = deny[match];
+        const name = typeof filter === "string" ? filter : filter.displayName || filter.expression;
+        return new ArcjetRuleResult({
+          conclusion: "DENY",
+          fingerprint: context.fingerprint,
+          // TODO(@Wooorm-arcjet): expose `name`.
+          reason: new ArcjetReason(),
+          ruleId,
+          state,
+          ttl: 60,
+        });
       }
 
       return new ArcjetRuleResult({
