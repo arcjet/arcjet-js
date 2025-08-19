@@ -2638,18 +2638,6 @@ export function filter(options: FilterOptions): Primitive<{}> {
   const denyExpressions = deny.map((d) =>
     typeof d === "string" ? d : d.expression,
   );
-  const expressions = [...allowExpressions, ...denyExpressions];
-
-  const remoteIdentifiersPromise = Promise.allSettled(
-    expressions.map(function (expression) {
-      return analyze.remoteIdentifiersInFilter(expression);
-    }),
-  ).then(function (results) {
-    // Swallow parse errors.
-    // Invalid expressions will throw later when matching and whether they
-    // need remote or local data then doesn’t affect them.
-    return new Set(results.map((d) => ("value" in d ? d.value : [])).flat());
-  });
 
   const ruleIdPromise = hasher.hash(
     hasher.string("type", type),
@@ -2705,107 +2693,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
         });
       }
 
-      const remoteIdentifiers = await remoteIdentifiersPromise;
-
-      // We cannot decide locally if there are remote identifiers.
-      if (remoteIdentifiers.size > 0) {
-        return new ArcjetRuleResult({
-          // @ts-expect-error: TODO(@wooorm-arcjet): choose if this is a great or terrible idea.
-          conclusion: "UNDETERMINED",
-          fingerprint: context.fingerprint,
-          // TODO(@wooorm-arcjet): some other reason?
-          reason: new ArcjetErrorReason(
-            "Cannot decide filters with remote identifiers locally",
-          ),
-          ruleId,
-          state,
-        });
-      }
-
       const result = await match(context, request);
-      context.cache.set(ruleId, context.fingerprint, result, result.ttl);
-      return result;
-    },
-
-    /**
-     * Protect a request with filters, after `decide`.
-     */
-    async protectPost(
-      context: ArcjetContext<CachedResult>,
-      request: ArcjetRequestDetails,
-      decision: ArcjetDecision,
-    ): Promise<ArcjetRuleResult | undefined> {
-      const ruleId = await ruleIdPromise;
-
-      // TODO(@wooorm-arcjet): not sure if checking the cache again makes sense.
-      const [cached, ttl] = await context.cache.get(
-        ruleId,
-        context.fingerprint,
-      );
-
-      if (cached) {
-        return new ArcjetRuleResult({
-          conclusion: cached.conclusion,
-          fingerprint: context.fingerprint,
-          reason: cached.reason,
-          ruleId,
-          state: "CACHED",
-          ttl,
-        });
-      }
-
-      const remoteIdentifiers = await remoteIdentifiersPromise;
-
-      // No remote identifiers so checking again won’t change the result.
-      if (remoteIdentifiers.size === 0) {
-        return;
-      }
-
-      const found =
-        decision.ip.continent !== undefined ||
-        decision.ip.latitude !== undefined ||
-        decision.ip.timezone !== undefined;
-
-      // TODO(@wooorm-arcjet): silently ignore?
-      if (!found) {
-        throw new Error("Unexpected remote decision without `ip`");
-      }
-
-      // TODO(@wooorm-arcjet): confirm names.
-      const extra = {
-        ip: {
-          accuracy_radius: decision.ip.accuracyRadius
-            ? String(decision.ip.accuracyRadius)
-            : undefined,
-          asn_name: decision.ip.asnName,
-          asn_domain: decision.ip.asnDomain,
-          asn: decision.ip.asn,
-          city: decision.ip.city,
-          continent_name: decision.ip.continentName,
-          continent: decision.ip.continent,
-          country_name: decision.ip.countryName,
-          country: decision.ip.country,
-          hosting: decision.ip.isHosting(),
-          latitude: decision.ip.latitude
-            ? String(decision.ip.latitude)
-            : undefined,
-          longitude: decision.ip.longitude
-            ? String(decision.ip.longitude)
-            : undefined,
-          postal_code: decision.ip.postalCode,
-          proxy: decision.ip.isProxy(),
-          region: decision.ip.region,
-          relay: decision.ip.isRelay(),
-          service: decision.ip.service,
-          timezone: decision.ip.timezone,
-          tor: decision.ip.isTor(),
-          vpn: decision.ip.isVpn(),
-        },
-      };
-
-      // TODO(@wooorm-arcjet): remove.
-      console.log("xxx:debug:remote-data:extra:", extra);
-      const result = await match(context, request, extra);
       context.cache.set(ruleId, context.fingerprint, result, result.ttl);
       return result;
     },
@@ -2816,7 +2704,6 @@ export function filter(options: FilterOptions): Primitive<{}> {
   async function match(
     context: ArcjetContext<CachedResult>,
     request: ArcjetRequestDetails,
-    extra?: Record<string, unknown> | undefined,
   ): Promise<ArcjetRuleResult> {
     const ruleId = await ruleIdPromise;
     const request_ = toAnalyzeRequest(request);
@@ -2830,7 +2717,6 @@ export function filter(options: FilterOptions): Primitive<{}> {
             context,
             request_,
             expression,
-            extra,
           );
 
           if (matches) {
@@ -2863,7 +2749,6 @@ export function filter(options: FilterOptions): Primitive<{}> {
           context,
           request_,
           expression,
-          extra,
         );
 
         if (matches) {
@@ -3283,46 +3168,11 @@ export default function arcjet<
     const logRemotePerf = perf.measure("remote");
     try {
       const logDediceApiPerf = perf.measure("decideApi");
-      let decision = await client
+      const decision = await client
         .decide(context, details, rules)
         .finally(() => {
           logDediceApiPerf();
         });
-
-      for (const [_, rule] of rules.entries()) {
-        // We may still have some local rules that want to do things with the server
-        // decision.
-        // We run those if the server is fine with things.
-        // TODO(@wooorm-arcjet): maybe a different condition?
-        if (decision.isAllowed() && rule.protectPost) {
-          const ruleResult = await rule.protectPost(
-            context,
-            // @ts-expect-error: TODO(@wooorm-arcjet): fix types to remove the assertion for `validate`.
-            details,
-            decision,
-          );
-
-          if (ruleResult && ruleResult.state !== "DRY_RUN") {
-            // Errors and unknown conclusion are ignored.
-            const Constructor =
-              ruleResult.conclusion === "ALLOW"
-                ? ArcjetAllowDecision
-                : ruleResult.conclusion === "DENY"
-                  ? ArcjetDenyDecision
-                  : ruleResult.conclusion === "CHALLENGE"
-                    ? ArcjetChallengeDecision
-                    : undefined;
-
-            if (Constructor) {
-              decision = new Constructor({
-                reason: ruleResult.reason,
-                results: [...decision.results, ruleResult],
-                ttl: ruleResult.ttl,
-              });
-            }
-          }
-        }
-      }
 
       // If the decision is to block and we have a non-zero TTL, we cache the
       // block locally
