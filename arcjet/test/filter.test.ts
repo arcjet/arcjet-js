@@ -1,11 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import arcjet, {
+import {
   type ArcjetContext,
   type ArcjetRequestDetails,
-  ArcjetAllowDecision,
   ArcjetErrorReason,
-  ArcjetReason,
   filter,
 } from "../index.js";
 import { MemoryCache } from "@arcjet/cache";
@@ -30,38 +28,14 @@ test("filter", async function (t) {
           // @ts-expect-error: test runtime behavior of invalid `allow` value.
           allow: 1,
         });
-      }, /`filter` options error: invalid type for `allow` - expected an array or filter/);
-    },
-  );
-
-  await t.test(
-    "should fail if `allow.displayName` is invalid",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
-          allow: { displayName: 1, expression: "a" },
-        });
-      }, /invalid type for `allow\.displayName` - expected string/);
-    },
-  );
-
-  await t.test(
-    "should fail if `allow.expression` is invalid",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
-          allow: { expression: 1 },
-        });
-      }, /invalid type for `allow\.expression` - expected string/);
+      }, /`filter` options error: invalid type for `allow` - expected string/);
     },
   );
 
   await t.test("should fail w/ empty `allow`", async function () {
     assert.throws(function () {
       filter({ allow: [] });
-    }, /`filter` options error: one or more filters must be passed in `allow` or `deny`/);
+    }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
   });
 
   await t.test("should fail if `allow[]` is invalid", async function () {
@@ -70,32 +44,8 @@ test("filter", async function (t) {
         // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
         allow: [1],
       });
-    }, /invalid type for `allow\[0]` - expected string or object/);
+    }, /invalid type for `allow\[0]` - expected string/);
   });
-
-  await t.test(
-    "should fail if `allow[].displayName` is invalid",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
-          allow: [{ displayName: 1, expression: "a" }],
-        });
-      }, /invalid type for `allow\[0]\.displayName` - expected string/);
-    },
-  );
-
-  await t.test(
-    "should fail if `allow[].expression` is invalid",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
-          allow: [{ expression: 1 }],
-        });
-      }, /invalid type for `allow\[0]\.expression` - expected string/);
-    },
-  );
 
   await t.test(
     "should fail if `deny` is an unsupported value",
@@ -105,31 +55,7 @@ test("filter", async function (t) {
           // @ts-expect-error: test runtime behavior of invalid `deny` value.
           deny: 1,
         });
-      }, /`filter` options error: invalid type for `deny` - expected an array or filter/);
-    },
-  );
-
-  await t.test(
-    "should fail if `deny.displayName` is invalid",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
-          deny: { displayName: 1, expression: "a" },
-        });
-      }, /invalid type for `deny\.displayName` - expected string/);
-    },
-  );
-
-  await t.test(
-    "should fail if `deny.expression` is invalid",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
-          deny: { expression: 1 },
-        });
-      }, /invalid type for `deny\.expression` - expected string/);
+      }, /`filter` options error: invalid type for `deny` - expected string/);
     },
   );
 
@@ -138,7 +64,7 @@ test("filter", async function (t) {
       filter({
         deny: [],
       });
-    }, /`filter` options error: one or more filters must be passed in `allow` or `deny`/);
+    }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
   });
 
   await t.test("should fail if `deny[]` is invalid", async function () {
@@ -147,32 +73,8 @@ test("filter", async function (t) {
         // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
         deny: [1],
       });
-    }, /invalid type for `deny\[0]` - expected string or object/);
+    }, /invalid type for `deny\[0]` - expected string/);
   });
-
-  await t.test(
-    "should fail if `deny[].displayName` is invalid",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
-          deny: [{ displayName: 1, expression: "a" }],
-        });
-      }, /invalid type for `deny\[0]\.displayName` - expected string/);
-    },
-  );
-
-  await t.test(
-    "should fail if `deny[].expression` is invalid",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
-          deny: [{ expression: 1 }],
-        });
-      }, /invalid type for `deny\[0]\.expression` - expected string/);
-    },
-  );
 
   await t.test(
     "should fail if `allow` and `deny` are both given",
@@ -182,7 +84,7 @@ test("filter", async function (t) {
           // @ts-expect-error: test runtime behavior of invalid combination of both fields.
           { allow: [], deny: [] },
         );
-      }, /`filter` options error: one or more filters must be passed in `allow` or `deny`/);
+      }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
     },
   );
 
@@ -194,7 +96,7 @@ test("filter", async function (t) {
           // @ts-expect-error: test runtime behavior of neither `allow` nor `deny`.
           {},
         );
-      }, /`filter` options error: one or more filters must be passed in `allow` or `deny`/);
+      }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
     },
   );
 });
@@ -280,17 +182,6 @@ test("filter: `protect`", async function (t) {
     const second = await rule.protect(context, createRequest());
     assert.equal(second.conclusion, "DENY");
     assert.equal(second.state, "CACHED");
-  });
-
-  await t.test("should support an object filter", async function () {
-    const [rule] = filter({
-      allow: {
-        displayName: "Chrome user",
-        expression: 'http.request.headers["user-agent"] ~ "Chrome"',
-      },
-    });
-    const result = await rule.protect(createContext(), createRequest());
-    assert.equal(result.conclusion, "ALLOW");
   });
 });
 

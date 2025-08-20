@@ -307,21 +307,6 @@ export const ArcjetSensitiveInfoType = Object.freeze({
 });
 
 /**
- * Filter.
- */
-export interface Filter {
-  /**
-   * Human readable name of the filter;
-   * used for debugging and logging.
-   */
-  displayName?: string | null | undefined;
-  /**
-   * Expression to match against the request.
-   */
-  expression: string;
-}
-
-/**
  * Reason returned by a rule.
  */
 export class ArcjetReason {
@@ -419,9 +404,9 @@ export class ArcjetReason {
  */
 export class ArcjetFilterReason extends ArcjetReason {
   /**
-   * Filter that matched.
+   * Expression that matched.
    */
-  filter?: Filter | undefined;
+  expression?: string | undefined;
 
   /**
    * Kind.
@@ -431,15 +416,15 @@ export class ArcjetFilterReason extends ArcjetReason {
   /**
    * Create a filter reason.
    *
-   * @param filter
-   *   Filter that matched.
+   * @param expression
+   *   Expression that matched.
    * @returns
    *   Filter reason.
    */
-  constructor(filter?: Filter | undefined) {
+  constructor(expression?: string | undefined) {
     super();
 
-    this.filter = filter;
+    this.expression = expression;
   }
 }
 
@@ -1802,14 +1787,14 @@ export interface ArcjetEmailRule<Props extends { email: string }>
  */
 export interface ArcjetFilterRule extends ArcjetRule<{}> {
   /**
-   * Filter that allow a request when one matches and deny otherwise.
+   * List of expressions that allow a request when one matches and deny otherwise.
    */
-  allow: ReadonlyArray<Filter>;
+  allow: ReadonlyArray<string>;
 
   /**
-   * Filter that deny a request when one matches and allow otherwise.
+   * List of expressions that deny a request when one matches and allow otherwise.
    */
-  deny: ReadonlyArray<Filter>;
+  deny: ReadonlyArray<string>;
 
   /**
    * Kind.

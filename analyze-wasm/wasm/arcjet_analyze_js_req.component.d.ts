@@ -91,7 +91,7 @@ export interface ImportObject {
 }
 export interface Root {
   detectBot(request: string, options: BotConfig): BotResult,
-  matchFilters(request: string, expressions: Array<string>): number | undefined,
+  matchFilters(request: string, expressions: Array<string>, allowIfMatch: boolean): [boolean, string | undefined],
   generateFingerprint(request: string, characteristics: Array<string>): string,
   validateCharacteristics(request: string, characteristics: Array<string>): void,
   isValidEmail(candidate: string, options: EmailValidationConfig): EmailValidationResult,

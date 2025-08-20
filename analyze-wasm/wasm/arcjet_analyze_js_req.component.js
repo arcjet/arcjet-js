@@ -294,6 +294,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     let postReturn2;
     let postReturn3;
     let postReturn4;
+    let postReturn5;
     Promise.all([module0, module1, module2]).catch(() => {});
     ({ exports: exports0 } = yield instantiateCore(yield module1));
     ({ exports: exports1 } = yield instantiateCore(yield module0, {
@@ -330,8 +331,9 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     postReturn0 = exports1['cabi_post_detect-bot'];
     postReturn1 = exports1['cabi_post_match-filters'];
     postReturn2 = exports1['cabi_post_generate-fingerprint'];
-    postReturn3 = exports1['cabi_post_is-valid-email'];
-    postReturn4 = exports1['cabi_post_detect-sensitive-info'];
+    postReturn3 = exports1['cabi_post_validate-characteristics'];
+    postReturn4 = exports1['cabi_post_is-valid-email'];
+    postReturn5 = exports1['cabi_post_detect-sensitive-info'];
     
     function detectBot(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
@@ -443,7 +445,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal.val;
     }
     
-    function matchFilters(arg0, arg1) {
+    function matchFilters(arg0, arg1, arg2) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
       var vec2 = arg1;
@@ -456,37 +458,41 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         dataView(memory0).setInt32(base + 4, len1, true);
         dataView(memory0).setInt32(base + 0, ptr1, true);
       }
-      const ret = exports1['match-filters'](ptr0, len0, result2, len2);
-      let variant5;
+      const ret = exports1['match-filters'](ptr0, len0, result2, len2, arg2 ? 1 : 0);
+      let variant7;
       switch (dataView(memory0).getUint8(ret + 0, true)) {
         case 0: {
-          let variant3;
-          switch (dataView(memory0).getUint8(ret + 4, true)) {
+          var bool3 = dataView(memory0).getUint8(ret + 4, true);
+          let variant5;
+          switch (dataView(memory0).getUint8(ret + 8, true)) {
             case 0: {
-              variant3 = undefined;
+              variant5 = undefined;
               break;
             }
             case 1: {
-              variant3 = dataView(memory0).getInt32(ret + 8, true) >>> 0;
+              var ptr4 = dataView(memory0).getInt32(ret + 12, true);
+              var len4 = dataView(memory0).getInt32(ret + 16, true);
+              var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
+              variant5 = result4;
               break;
             }
             default: {
               throw new TypeError('invalid variant discriminant for option');
             }
           }
-          variant5= {
+          variant7= {
             tag: 'ok',
-            val: variant3
+            val: [bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool()), variant5]
           };
           break;
         }
         case 1: {
-          var ptr4 = dataView(memory0).getInt32(ret + 4, true);
-          var len4 = dataView(memory0).getInt32(ret + 8, true);
-          var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
-          variant5= {
+          var ptr6 = dataView(memory0).getInt32(ret + 4, true);
+          var len6 = dataView(memory0).getInt32(ret + 8, true);
+          var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
+          variant7= {
             tag: 'err',
-            val: result4
+            val: result6
           };
           break;
         }
@@ -494,7 +500,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           throw new TypeError('invalid variant discriminant for expected');
         }
       }
-      const retVal = variant5;
+      const retVal = variant7;
       postReturn1(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
@@ -588,7 +594,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant4;
-      postReturn1(ret);
+      postReturn3(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -701,7 +707,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant12;
-      postReturn3(ret);
+      postReturn4(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -927,7 +933,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         allowed: result12,
         denied: result15,
       };
-      postReturn4(ret);
+      postReturn5(ret);
       return retVal;
     }
     
