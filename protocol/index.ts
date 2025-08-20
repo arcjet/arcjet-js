@@ -394,6 +394,12 @@ export class ArcjetReason {
     return this.type === "ERROR";
   }
 
+  /**
+   * Check if this is a filter reason.
+   *
+   * @returns
+   *   Whether this is a filter reason.
+   */
   isFilter(): this is ArcjetFilterReason {
     return this.type === "FILTER";
   }
@@ -404,7 +410,7 @@ export class ArcjetReason {
  */
 export class ArcjetFilterReason extends ArcjetReason {
   /**
-   * Expression that matched.
+   * Expression that matched or `undefined` if no expression matched.
    */
   expression?: string | undefined;
 
@@ -1599,9 +1605,9 @@ export type ArcjetRule<Props extends {} = {}> = {
     | "RATE_LIMIT"
     | "BOT"
     | "EMAIL"
+    | "FILTER"
     | "SHIELD"
     | "SENSITIVE_INFO"
-    | "FILTER"
     | string;
 
   /**

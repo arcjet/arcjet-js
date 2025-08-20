@@ -51,7 +51,6 @@ import { MemoryCache } from "@arcjet/cache";
 
 export * from "@arcjet/protocol";
 
-// TODO(@wooorm-arcjet): use `function assert(condition: unknown, msg: string): asserts condition {`
 function assert(condition: boolean, msg: string) {
   if (!condition) {
     throw new Error(msg);
@@ -1023,33 +1022,41 @@ export type SensitiveInfoOptions<Detect> =
  */
 export type FilterOptionsAllow = {
   /**
-   * One or more filters.
+   * One or more expressions.
    */
   allow: ReadonlyArray<string> | string;
+  /**
+   * One or more expressions,
+   * must not be set if `allow` is set.
+   */
   deny?: never;
   /**
    * Mode.
    */
-  mode?: ArcjetMode;
+  mode?: ArcjetMode | undefined;
 };
 
 /**
  * Configuration to deny if a filter matches and allow otherwise.
  */
 export type FilterOptionsDeny = {
+  /**
+   * One or more expressions,
+   * must not be set if `deny` is set.
+   */
   allow?: never;
   /**
-   * One or more filters.
+   * One or more expressions.
    */
   deny: ReadonlyArray<string> | string;
   /**
    * Mode.
    */
-  mode?: ArcjetMode;
+  mode?: ArcjetMode | undefined;
 };
 
 /**
- * Filter options.
+ * Configuration for `filter` rule.
  */
 export type FilterOptions = FilterOptionsAllow | FilterOptionsDeny;
 
@@ -2608,10 +2615,6 @@ export function filter(options: FilterOptions): Primitive<{}> {
     deny,
     mode,
     priority: Priority.Filter,
-
-    /**
-     * Protect a request with filters.
-     */
     async protect(
       context: ArcjetContext<CachedResult>,
       request: ArcjetRequestDetails,
@@ -2633,16 +2636,49 @@ export function filter(options: FilterOptions): Primitive<{}> {
         });
       }
 
-      const result = await match(context, request);
-      context.cache.set(ruleId, context.fingerprint, result, result.ttl);
-      return result;
+      const request_ = toAnalyzeRequest(request);
+      let ruleResult: ArcjetRuleResult;
+
+      try {
+        const result = await analyze.matchFilters(
+          context,
+          request_,
+          allow.length > 0 ? allow : deny,
+          allow.length > 0,
+        );
+
+        if (!result) {
+          throw new Error("WebAssembly is not supported in this runtime");
+        }
+
+        ruleResult = new ArcjetRuleResult({
+          conclusion: result[0] ? "ALLOW" : "DENY",
+          fingerprint: context.fingerprint,
+          reason: new ArcjetFilterReason(result[1]),
+          ruleId,
+          state,
+          ttl: 60,
+        });
+      } catch (error) {
+        ruleResult = new ArcjetRuleResult({
+          conclusion: "ERROR",
+          fingerprint: context.fingerprint,
+          reason: new ArcjetErrorReason(String(error)),
+          ruleId,
+          state,
+          ttl: 60,
+        });
+      }
+
+      context.cache.set(
+        ruleId,
+        context.fingerprint,
+        ruleResult,
+        ruleResult.ttl,
+      );
+      return ruleResult;
     },
-
     type,
-
-    /**
-     * Validate a request for filters.
-     */
     validate(
       _: ArcjetContext,
       details: Partial<ArcjetRequestDetails>,
@@ -2656,45 +2692,6 @@ export function filter(options: FilterOptions): Primitive<{}> {
   };
 
   return [rule];
-
-  async function match(
-    context: ArcjetContext<CachedResult>,
-    request: ArcjetRequestDetails,
-  ): Promise<ArcjetRuleResult> {
-    const ruleId = await ruleIdPromise;
-    const request_ = toAnalyzeRequest(request);
-
-    try {
-      const result = await analyze.matchFilters(
-        context,
-        request_,
-        allow.length > 0 ? allow : deny,
-        allow.length > 0,
-      );
-
-      if (result) {
-        return new ArcjetRuleResult({
-          conclusion: result[0] ? "ALLOW" : "DENY",
-          fingerprint: context.fingerprint,
-          reason: new ArcjetFilterReason(result[1]),
-          ruleId,
-          state,
-          ttl: 60,
-        });
-      }
-
-      throw new Error("WebAssembly is not supported in this runtime");
-    } catch (error) {
-      return new ArcjetRuleResult({
-        conclusion: "ERROR",
-        fingerprint: context.fingerprint,
-        reason: new ArcjetErrorReason(String(error)),
-        ruleId,
-        state,
-        ttl: 60,
-      });
-    }
-  }
 }
 
 /**

@@ -61,9 +61,7 @@ test("filter", async function (t) {
 
   await t.test("should fail w/ empty `deny`", async function () {
     assert.throws(function () {
-      filter({
-        deny: [],
-      });
+      filter({ deny: [] });
     }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
   });
 
