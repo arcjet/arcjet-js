@@ -254,17 +254,23 @@ export async function detectSensitiveInfo(
 export async function matchFilters(
   context: AnalyzeContext,
   request: AnalyzeRequest,
-  expressions: Array<string>,
-): Promise<number | undefined> {
+  expressions: ReadonlyArray<string>,
+  allowIfMatch: boolean,
+): Promise<[boolean, string | undefined] | undefined> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
-    return analyze.matchFilters(JSON.stringify(request), expressions);
+    return analyze.matchFilters(
+      JSON.stringify(request),
+      // @ts-expect-error: WebAssembly does not support readonly values.
+      expressions,
+      allowIfMatch,
+    );
     // Ignore the `else` branch as we test in places that have WebAssembly.
     /* node:coverage ignore next 4 */
   }
 
   context.log.debug("WebAssembly is not supported in this runtime");
-  return undefined;
+  return;
 }

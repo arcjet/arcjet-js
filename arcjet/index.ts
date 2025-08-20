@@ -18,7 +18,6 @@ import type {
   ArcjetEmailType,
   ArcjetSensitiveInfoType,
   ArcjetRateLimitRule,
-  Filter,
 } from "@arcjet/protocol";
 import {
   ArcjetAllowDecision,
@@ -357,33 +356,6 @@ function createValidator({
 }
 
 /**
- * Validate a filter.
- *
- * @param path
- *   Path to `value`.
- * @param value
- *   Value to validate.
- * @returns
- *   Nothing.
- */
-function validateFilter(path: string, value: unknown): undefined {
-  if (typeof value === "string") {
-    // Perfect.
-  } else if (typeof value === "object" && value !== null) {
-    if ("displayName" in value) {
-      validateString(path + ".displayName", value.displayName);
-    }
-
-    validateString(
-      path + ".expression",
-      "expression" in value ? value.expression : undefined,
-    );
-  } else {
-    throw new Error(`invalid type for \`${path}\` - expected string or object`);
-  }
-}
-
-/**
  * Validate one or more filters.
  *
  * @param path
@@ -396,17 +368,10 @@ function validateFilter(path: string, value: unknown): undefined {
 function validateFilters(path: string, value: unknown): undefined {
   if (Array.isArray(value)) {
     for (const [idx, item] of value.entries()) {
-      validateFilter(`${path}[${idx}]`, item);
+      validateString(`${path}[${idx}]`, item);
     }
-  } else if (
-    typeof value === "string" ||
-    (typeof value === "object" && value !== null)
-  ) {
-    validateFilter(path, value);
   } else {
-    throw new Error(
-      `invalid type for \`${path}\` - expected an array or filter`,
-    );
+    validateString(path, value);
   }
 }
 
@@ -1061,7 +1026,7 @@ export type FilterOptionsAllow = {
   /**
    * One or more filters.
    */
-  allow: ReadonlyArray<Filter | string> | Filter | string;
+  allow: ReadonlyArray<string> | string;
   deny?: never;
   /**
    * Mode.
@@ -1077,7 +1042,7 @@ export type FilterOptionsDeny = {
   /**
    * One or more filters.
    */
-  deny: ReadonlyArray<Filter | string> | Filter | string;
+  deny: ReadonlyArray<string> | string;
   /**
    * Mode.
    */
@@ -2597,29 +2562,25 @@ export function filter(options: FilterOptions): Primitive<{}> {
   validateFilterOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const allow: ReadonlyArray<Filter> = (
-    Array.isArray(options.allow)
-      ? options.allow
-      : options.allow
-        ? [options.allow]
-        : []
-  ).map((d) => (typeof d === "string" ? { expression: d } : d));
-  const deny: ReadonlyArray<Filter> = (
-    Array.isArray(options.deny)
-      ? options.deny
-      : options.deny
-        ? [options.deny]
-        : []
-  ).map((d) => (typeof d === "string" ? { expression: d } : d));
+  const allow: ReadonlyArray<string> = Array.isArray(options.allow)
+    ? options.allow
+    : options.allow
+      ? [options.allow]
+      : [];
+  const deny: ReadonlyArray<string> = Array.isArray(options.deny)
+    ? options.deny
+    : options.deny
+      ? [options.deny]
+      : [];
 
   if (allow.length > 0 && deny.length > 0) {
     throw new Error(
-      "`filter` options error: filters must be passed in either `allow` or `deny` instead of both",
+      "`filter` options error: expressions must be passed in either `allow` or `deny` instead of both",
     );
   }
   if (allow.length === 0 && deny.length === 0) {
     throw new Error(
-      "`filter` options error: one or more filters must be passed in `allow` or `deny`",
+      "`filter` options error: one or more expressions must be passed in `allow` or `deny`",
     );
   }
 
@@ -2633,11 +2594,13 @@ export function filter(options: FilterOptions): Primitive<{}> {
     hasher.string("mode", mode),
     hasher.stringSliceOrdered(
       "allow",
-      allow.map((d) => d.expression),
+      // @ts-expect-error: `hasher` must support readonly values.
+      allow,
     ),
     hasher.stringSliceOrdered(
       "deny",
-      deny.map((d) => d.expression),
+      // @ts-expect-error: `hasher` must support readonly values.
+      deny,
     ),
   );
 
@@ -2703,74 +2666,25 @@ export function filter(options: FilterOptions): Primitive<{}> {
     const request_ = toAnalyzeRequest(request);
 
     try {
-      if (allow.length > 0) {
-        const match = await analyze.matchFilters(
-          context,
-          request_,
-          allow.map((d) => d.expression),
-        );
-
-        if (typeof match === "number") {
-          const filter = allow[match];
-          return new ArcjetRuleResult({
-            conclusion: "ALLOW",
-            fingerprint: context.fingerprint,
-            reason: new ArcjetFilterReason({
-              displayName:
-                typeof filter === "string"
-                  ? undefined
-                  : filter.displayName || undefined,
-              expression:
-                typeof filter === "string" ? filter : filter.expression,
-            }),
-            ruleId,
-            state,
-            ttl: 60,
-          });
-        }
-
-        return new ArcjetRuleResult({
-          conclusion: "DENY",
-          fingerprint: context.fingerprint,
-          reason: new ArcjetFilterReason(),
-          ruleId,
-          state,
-          ttl: 60,
-        });
-      }
-
-      const match = await analyze.matchFilters(
+      const result = await analyze.matchFilters(
         context,
         request_,
-        deny.map((d) => d.expression),
+        allow.length > 0 ? allow : deny,
+        allow.length > 0,
       );
 
-      if (typeof match === "number") {
-        const filter = deny[match];
+      if (result) {
         return new ArcjetRuleResult({
-          conclusion: "DENY",
+          conclusion: result[0] ? "ALLOW" : "DENY",
           fingerprint: context.fingerprint,
-          reason: new ArcjetFilterReason({
-            displayName:
-              typeof filter === "string"
-                ? undefined
-                : filter.displayName || undefined,
-            expression: typeof filter === "string" ? filter : filter.expression,
-          }),
+          reason: new ArcjetFilterReason(result[1]),
           ruleId,
           state,
           ttl: 60,
         });
       }
 
-      return new ArcjetRuleResult({
-        conclusion: "ALLOW",
-        fingerprint: context.fingerprint,
-        reason: new ArcjetFilterReason(),
-        ruleId,
-        state,
-        ttl: 60,
-      });
+      throw new Error("WebAssembly is not supported in this runtime");
     } catch (error) {
       return new ArcjetRuleResult({
         conclusion: "ERROR",
