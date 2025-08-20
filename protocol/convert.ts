@@ -724,10 +724,10 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         case: "filter",
         // @ts-expect-error: TODO(@wooorm-arcjet): update decide service.
         value: {
-          version: rule.version,
-          mode: ArcjetModeToProtocol(rule.mode),
           allow: rule.allow,
           deny: rule.deny,
+          mode: ArcjetModeToProtocol(rule.mode),
+          version: rule.version,
         },
       },
     });
