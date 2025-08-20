@@ -60,7 +60,7 @@
     "@types/node": "24.1.0",
     "@rollup/wasm-node": "4.46.2",
     "bun-types": "1.2.19",
-    "eslint": "9.32.0",
+    "eslint": "9.33.0",
     "typescript": "5.9.2"
   },
   "publishConfig": {
