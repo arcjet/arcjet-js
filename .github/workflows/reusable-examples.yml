@@ -19,7 +19,7 @@ jobs:
             release-assets.githubusercontent:443
           disable-sudo-and-containers: true
           egress-policy: block
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
       - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
         with:
           bun-version: 1.2.19
@@ -48,8 +48,8 @@ jobs:
             release-assets.githubusercontent:443
           disable-sudo-and-containers: true
           egress-policy: block
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 20
       - uses: denoland/setup-deno@2f7698fd116bfedbd1c3cd4119337b5a787ef53a # v2.0.3
@@ -80,8 +80,8 @@ jobs:
             release-assets.githubusercontent:443
           disable-sudo-and-containers: true
           egress-policy: block
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 20
       - run: npm ci
