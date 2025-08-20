@@ -48,7 +48,6 @@ import { ArcjetHeaders } from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
 import { MemoryCache } from "@arcjet/cache";
-import { ArcjetChallengeDecision } from "@arcjet/protocol";
 
 export * from "@arcjet/protocol";
 
