@@ -68,69 +68,73 @@ function leadingInt(s: string): [number, string] {
 }
 
 /**
- * Parses a duration into a number representing seconds while ensuring the value
+ * Parse a duration into a number representing seconds while ensuring the value
  * fits within an unsigned 32-bit integer.
  *
- * If a JavaScript number is provided to the function, it is validated and
- * returned verbatim.
+ * If a number is passed it is validated and returned.
  *
- * If a string is provided to the function, it must be in the form of digits
- * followed by a unit. Supported units are `s` (seconds), `m` (minutes), `h`
- * (hours), and `d` (days).
- *
- * @param s The value to parse into seconds.
- * @returns A number representing seconds parsed from the provided duration.
+ * If a string is passed it must be in the form of digits followed by a unit.
+ * Supported units are `s` (seconds),
+ * `m` (minutes),
+ * `h` (hours),
+ * and `d` (days).
  *
  * @example
- * parse("1s") === 1
- * parse("1m") === 60
- * parse("1h") === 3600
- * parse("1d") === 86400
+ *   ```ts
+ *   console.log(parse("1s")) // => 1
+ *   console.log(parse("1m")) // => 60
+ *   console.log(parse("1h")) // => 3600
+ *   console.log(parse("1d")) // => 86400
+ *   ```
+ * @param value
+ *   Value to parse.
+ * @returns
+ *   Parsed seconds.
  */
-export function parse(s: string | number): number {
-  const original = s;
+export function parse(value: number | string): number {
+  const original = value;
 
-  if (typeof s === "number") {
-    if (s > maxUint32) {
+  if (typeof value === "number") {
+    if (value > maxUint32) {
       throw new Error(`invalid duration: ${original}`);
     }
 
-    if (s < 0) {
+    if (value < 0) {
       throw new Error(`invalid duration: ${original}`);
     }
 
-    if (!Number.isInteger(s)) {
+    if (!Number.isInteger(value)) {
       throw new Error(`invalid duration: ${original}`);
     }
 
-    return s;
+    return value;
   }
 
-  if (typeof s !== "string") {
+  if (typeof value !== "string") {
     throw new Error("can only parse a duration string");
   }
 
   let d = 0;
 
   // Special case: if all that is left is "0", this is zero.
-  if (s === "0") {
+  if (value === "0") {
     return 0;
   }
-  if (s === "") {
+  if (value === "") {
     throw new Error(`invalid duration: ${original}`);
   }
 
-  while (s !== "") {
+  while (value !== "") {
     let v = 0;
 
     // The next character must be [0-9]
-    if (!integers.includes(s[0])) {
+    if (!integers.includes(value[0])) {
       throw new Error(`invalid duration: ${original}`);
     }
     // Consume [0-9]*
-    [v, s] = leadingInt(s);
+    [v, value] = leadingInt(value);
     // Error on decimal (\.[0-9]*)?
-    if (s !== "" && s[0] == ".") {
+    if (value !== "" && value[0] == ".") {
       // TODO: We could support decimals that turn into non-decimal seconds—e.g.
       // 1.5hours becomes 5400 seconds
       throw new Error(`unsupported decimal duration: ${original}`);
@@ -138,8 +142,8 @@ export function parse(s: string | number): number {
 
     // Consume unit.
     let i = 0;
-    for (; i < s.length; i++) {
-      const c = s[i];
+    for (; i < value.length; i++) {
+      const c = value[i];
       if (integers.includes(c)) {
         break;
       }
@@ -147,8 +151,8 @@ export function parse(s: string | number): number {
     if (i == 0) {
       throw new Error(`missing unit in duration: ${original}`);
     }
-    const u = s.slice(0, i);
-    s = s.slice(i);
+    const u = value.slice(0, i);
+    value = value.slice(i);
     const unit = units.get(u);
     if (typeof unit === "undefined") {
       throw new Error(`unknown unit "${u}" in duration ${original}`);

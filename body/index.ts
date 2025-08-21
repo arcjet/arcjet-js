@@ -1,6 +1,19 @@
+/**
+ * Configuration.
+ */
 export type ReadBodyOpts = {
-  limit: number;
+  /**
+   * Length of the stream in bytes (optional);
+   * an error is returned if the contents of the stream do not add up to this length;
+   * useful when the exact size is known.
+   */
   expectedLength?: number | null | undefined;
+  /**
+   * Limit of the body in bytes (required);
+   * an error is returned if the body ends up being larger than this limit;
+   * used to prevent reading too much data from malicious clients.
+   */
+  limit: number;
 };
 
 type EventHandlerLike = (
@@ -8,11 +21,13 @@ type EventHandlerLike = (
   listener: (...args: any[]) => void,
 ) => void;
 
-// The fields from stream.Readable that we use
+/**
+ * Stream.
+ */
 export interface ReadableStreamLike {
   on?: EventHandlerLike | null | undefined;
-  removeListener?: EventHandlerLike | null | undefined;
   readable?: boolean | null | undefined;
+  removeListener?: EventHandlerLike | null | undefined;
 }
 
 // This `readBody` function is a derivitive of the `getRawBody` function in the `raw-body`
@@ -46,19 +61,30 @@ export interface ReadableStreamLike {
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+/**
+ * Read the body of a stream.
+ *
+ * @param stream
+ *   Stream.
+ * @param options
+ *   Configuration (required).
+ * @returns
+ *   Promise to a concatenated body.
+ */
 export async function readBody(
   stream: ReadableStreamLike,
-  opts: ReadBodyOpts,
+  // TODO(@wooorm-arcjet): make optional.
+  options: ReadBodyOpts,
 ): Promise<string> {
   const decoder = new TextDecoder("utf-8");
   let buffer = "";
   let complete = false;
   let received = 0;
-  const limit = opts.limit;
+  const limit = options.limit;
   if (typeof limit !== "number") {
     return Promise.reject(new Error("must set a limit"));
   }
-  const length = opts.expectedLength || null;
+  const length = options.expectedLength || null;
 
   if (typeof stream.readable !== "undefined" && !stream.readable) {
     return Promise.reject(new Error("stream is not readable"));

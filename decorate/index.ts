@@ -8,8 +8,8 @@ import {
 
 // If these are defined, we can expect to be working with `Headers` directly.
 interface HeaderLike {
-  has(name: string): boolean;
   get(name: string): string | null;
+  has(name: string): boolean;
   set(name: string, value: string): void;
 }
 
@@ -22,12 +22,12 @@ interface ResponseLike {
 // Otherwise, we'll be working with an `http.OutgoingMessage` and we'll need
 // to use these values.
 interface OutgoingMessageLike {
+  getHeader: (name: string) => string[] | number | string | undefined;
   headersSent: boolean;
   hasHeader: (name: string) => boolean;
-  getHeader: (name: string) => number | string | string[] | undefined;
   setHeader: (
     name: string,
-    value: number | string | ReadonlyArray<string>,
+    value: ReadonlyArray<string> | number | string,
   ) => unknown;
 }
 
@@ -154,14 +154,19 @@ function nearestLimit(
 }
 
 /**
- * Decorates an object with `RateLimit` and `RateLimit-Policy` headers based
- * on an {@link ArcjetDecision} and conforming to the [Rate Limit fields for
+ * Decorate something based on an Arcjet decision with rate limit headers.
+ *
+ * Sets `RateLimit-Policy` and `RateLimit` and conform to the
+ * [Rate Limit fields for
  * HTTP](https://ietf-wg-httpapi.github.io/ratelimit-headers/draft-ietf-httpapi-ratelimit-headers.html)
  * draft specification.
  *
- * @param value The object to decorate—must be similar to {@link Headers}, {@link Response} or
- * {@link OutgoingMessage}.
- * @param decision The {@link ArcjetDecision} that was made by calling `protect()` on the SDK.
+ * @param value
+ *   Decorable value.
+ * @param decision
+ *   Decision from `protect()`.
+ * @returns
+ *   Nothing.
  */
 export function setRateLimitHeaders(
   value: ArcjetCanDecorate,

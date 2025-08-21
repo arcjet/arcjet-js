@@ -192,13 +192,19 @@ function isCidr(address: string): address is `${string}/${string}` {
   return address.includes("/");
 }
 
-// Converts a string that looks like a Cidr address into the corresponding class
-// while ignoring non-Cidr IP addresses.
-export function parseProxy(proxy: string): string | Cidr {
-  if (isCidr(proxy)) {
-    return parseCidr(proxy);
+/**
+ * Parse CIDR addresses and keep non-CIDR IP addresses.
+ *
+ * @param value
+ *   Value to parse.
+ * @returns
+ *   Parsed CIDR or given `value`.
+ */
+export function parseProxy(value: string): string | Cidr {
+  if (isCidr(value)) {
+    return parseCidr(value);
   } else {
-    return proxy;
+    return value;
   }
 }
 
@@ -725,10 +731,16 @@ function isGlobalIp(
   return false;
 }
 
+/**
+ * Socket-like interface.
+ */
 interface PartialSocket {
   remoteAddress?: string | null | undefined;
 }
 
+/**
+ * Interface that looks like info.
+ */
 interface PartialInfo {
   remoteAddress?: string | null | undefined;
 }
@@ -737,32 +749,64 @@ interface PartialIdentiy {
   sourceIp?: string | null | undefined;
 }
 
+/**
+ * Interface that looks like a request context.
+ */
 interface PartialRequestContext {
   identity?: PartialIdentiy | null | undefined;
 }
 
-export type HeaderLike =
-  | {
-      headers: Headers;
-    }
-  | {
-      headers: Record<string, string | string[] | undefined>;
-    };
+/**
+ * Interface with `headers`.
+ */
+export type HeaderLike = {
+  /**
+   * Headers.
+   */
+  headers: Headers | Record<string, string[] | string | undefined>;
+};
 
+/**
+ * Interface that looks like a request,
+ * of which `headers` is required and several other fields may exist.
+ */
 export type RequestLike = {
-  ip?: unknown;
-
-  socket?: PartialSocket | null | undefined;
-
+  /**
+   * Some platforms pass `info`.
+   */
   info?: PartialInfo | null | undefined;
-
+  /**
+   * Some platforms such as Cloudflare and Vercel provide `ip` directly on
+   * `request`.
+   */
+  ip?: unknown;
+  /**
+   * Some platforms pass info in `requestContext`.
+   */
   requestContext?: PartialRequestContext | null | undefined;
+  /**
+   * Some platforms pass a `socket`.
+   */
+  socket?: PartialSocket | null | undefined;
 } & HeaderLike;
 
-export type Platform = "cloudflare" | "fly-io" | "vercel" | "render";
+/**
+ * Platform name.
+ */
+export type Platform = "cloudflare" | "fly-io" | "render" | "vercel";
 
+/**
+ * Configuration.
+ */
 export interface Options {
+  /**
+   * Platform the code is running on;
+   * used to allow only known more trustworthy headers.
+   */
   platform?: Platform | null | undefined;
+  /**
+   * Trusted proxies.
+   */
   proxies?: ReadonlyArray<string | Cidr> | null | undefined;
 }
 
