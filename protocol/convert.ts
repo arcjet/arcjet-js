@@ -32,6 +32,7 @@ import {
   ArcjetReason,
   ArcjetIpDetails,
   ArcjetSensitiveInfoReason,
+  ArcjetFilterReason,
 } from "./index.js";
 import type { IpDetails } from "./proto/decide/v1alpha1/decide_pb.js";
 import {
@@ -260,6 +261,10 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         emailTypes: reason.emailTypes.map(ArcjetEmailTypeFromProtocol),
       });
     }
+    case "filter": {
+      const reason = proto.reason.value;
+      return new ArcjetFilterReason(reason.matchedExpression || undefined);
+    }
     case "sensitiveInfo": {
       const reason = proto.reason.value;
       return new ArcjetSensitiveInfoReason({
@@ -361,6 +366,17 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         value: new ErrorReason({
           message: reason.message,
         }),
+      },
+    });
+  }
+
+  if (reason.isFilter()) {
+    return new Reason({
+      reason: {
+        case: "filter",
+        value: reason.expression
+          ? { matchedExpression: reason.expression }
+          : {},
       },
     });
   }
@@ -703,6 +719,20 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
     });
   }
 
+  if (isFilterRule(rule)) {
+    return new Rule({
+      rule: {
+        case: "filter",
+        value: {
+          allow: [...rule.allow],
+          deny: [...rule.deny],
+          mode: ArcjetModeToProtocol(rule.mode),
+          version: rule.version,
+        },
+      },
+    });
+  }
+
   if (isSensitiveInfoRule(rule)) {
     return new Rule({
       rule: {
@@ -712,22 +742,6 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
           mode: ArcjetModeToProtocol(rule.mode),
           allow: rule.allow,
           deny: rule.deny,
-        },
-      },
-    });
-  }
-
-  if (isFilterRule(rule)) {
-    return new Rule({
-      rule: {
-        // @ts-expect-error: TODO(@wooorm-arcjet): update decide service.
-        case: "filter",
-        // @ts-expect-error: TODO(@wooorm-arcjet): update decide service.
-        value: {
-          allow: rule.allow,
-          deny: rule.deny,
-          mode: ArcjetModeToProtocol(rule.mode),
-          version: rule.version,
         },
       },
     });
