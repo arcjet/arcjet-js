@@ -240,6 +240,20 @@ export async function detectSensitiveInfo(
 }
 
 /**
+ * Result of a filter call.
+ */
+export interface FilterResult {
+  /**
+   * Whether the request is allowed.
+   */
+  allowed: boolean;
+  /**
+   * List of expressions that matched.
+   */
+  matchedExpressions: Array<string>;
+}
+
+/**
  * Check if a filter matches a request.
  *
  * @param context
@@ -256,7 +270,7 @@ export async function matchFilters(
   request: AnalyzeRequest,
   expressions: ReadonlyArray<string>,
   allowIfMatch: boolean,
-): Promise<[boolean, string | undefined] | undefined> {
+): Promise<FilterResult | undefined> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 

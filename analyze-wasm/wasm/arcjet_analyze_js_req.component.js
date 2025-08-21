@@ -294,7 +294,6 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     let postReturn2;
     let postReturn3;
     let postReturn4;
-    let postReturn5;
     Promise.all([module0, module1, module2]).catch(() => {});
     ({ exports: exports0 } = yield instantiateCore(yield module1));
     ({ exports: exports1 } = yield instantiateCore(yield module0, {
@@ -329,11 +328,10 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       },
     }));
     postReturn0 = exports1['cabi_post_detect-bot'];
-    postReturn1 = exports1['cabi_post_match-filters'];
+    postReturn1 = exports1['cabi_post_is-valid-email'];
     postReturn2 = exports1['cabi_post_generate-fingerprint'];
     postReturn3 = exports1['cabi_post_validate-characteristics'];
-    postReturn4 = exports1['cabi_post_is-valid-email'];
-    postReturn5 = exports1['cabi_post_detect-sensitive-info'];
+    postReturn4 = exports1['cabi_post_detect-sensitive-info'];
     
     function detectBot(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
@@ -463,26 +461,22 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       switch (dataView(memory0).getUint8(ret + 0, true)) {
         case 0: {
           var bool3 = dataView(memory0).getUint8(ret + 4, true);
-          let variant5;
-          switch (dataView(memory0).getUint8(ret + 8, true)) {
-            case 0: {
-              variant5 = undefined;
-              break;
-            }
-            case 1: {
-              var ptr4 = dataView(memory0).getInt32(ret + 12, true);
-              var len4 = dataView(memory0).getInt32(ret + 16, true);
-              var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
-              variant5 = result4;
-              break;
-            }
-            default: {
-              throw new TypeError('invalid variant discriminant for option');
-            }
+          var len5 = dataView(memory0).getInt32(ret + 12, true);
+          var base5 = dataView(memory0).getInt32(ret + 8, true);
+          var result5 = [];
+          for (let i = 0; i < len5; i++) {
+            const base = base5 + i * 8;
+            var ptr4 = dataView(memory0).getInt32(base + 0, true);
+            var len4 = dataView(memory0).getInt32(base + 4, true);
+            var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
+            result5.push(result4);
           }
           variant7= {
             tag: 'ok',
-            val: [bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool()), variant5]
+            val: {
+              allowed: bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool()),
+              matchedExpressions: result5,
+            }
           };
           break;
         }
@@ -707,7 +701,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant12;
-      postReturn4(ret);
+      postReturn1(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -933,7 +927,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         allowed: result12,
         denied: result15,
       };
-      postReturn5(ret);
+      postReturn4(ret);
       return retVal;
     }
     

@@ -289,10 +289,10 @@ test("matchFilters", async function (t) {
       await matchFilters(
         exampleContext,
         { ip: "127.0.0.1" },
-        ["src.ip == 127.0.0.1"],
+        ["ip.src == 127.0.0.1"],
         true,
       ),
-      [true, "src.ip == 127.0.0.1"],
+      { allowed: true, matchedExpressions: ["ip.src == 127.0.0.1"] },
     );
   });
 
@@ -301,10 +301,10 @@ test("matchFilters", async function (t) {
       await matchFilters(
         exampleContext,
         { ip: "127.0.0.1" },
-        ["src.ip == 127.0.0.2"],
+        ["ip.src == 127.0.0.2"],
         true,
       ),
-      [false, undefined],
+      { allowed: false, matchedExpressions: [] },
     );
   });
 });

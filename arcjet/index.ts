@@ -2652,9 +2652,9 @@ export function filter(options: FilterOptions): Primitive<{}> {
         }
 
         ruleResult = new ArcjetRuleResult({
-          conclusion: result[0] ? "ALLOW" : "DENY",
+          conclusion: result.allowed ? "ALLOW" : "DENY",
           fingerprint: context.fingerprint,
-          reason: new ArcjetFilterReason(result[1]),
+          reason: new ArcjetFilterReason(result.matchedExpressions[0]),
           ruleId,
           state,
           ttl: 60,
