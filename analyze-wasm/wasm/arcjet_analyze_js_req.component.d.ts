@@ -79,6 +79,10 @@ export interface BotResult {
   verified: boolean,
   spoofed: boolean,
 }
+export interface FilterResult {
+  allowed: boolean,
+  matchedExpressions: Array<string>,
+}
 import { ArcjetJsReqBotIdentifier } from './interfaces/arcjet-js-req-bot-identifier.js';
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
 import { ArcjetJsReqSensitiveInformationIdentifier } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
@@ -91,7 +95,7 @@ export interface ImportObject {
 }
 export interface Root {
   detectBot(request: string, options: BotConfig): BotResult,
-  matchFilters(request: string, expressions: Array<string>, allowIfMatch: boolean): [boolean, string | undefined],
+  matchFilters(request: string, expressions: Array<string>, allowIfMatch: boolean): FilterResult,
   generateFingerprint(request: string, characteristics: Array<string>): string,
   validateCharacteristics(request: string, characteristics: Array<string>): void,
   isValidEmail(candidate: string, options: EmailValidationConfig): EmailValidationResult,

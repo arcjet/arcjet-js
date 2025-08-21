@@ -285,15 +285,15 @@ test("expressions", async function (t) {
       });
     });
 
-    await t.test("`src.ip`", async function (t) {
+    await t.test("`ip.src`", async function (t) {
       await t.test("match", async function () {
-        const [rule] = filter({ allow: "src.ip == 127.0.0.1" });
+        const [rule] = filter({ allow: "ip.src == 127.0.0.1" });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "ALLOW");
       });
 
       await t.test("mismatch", async function () {
-        const [rule] = filter({ allow: "src.ip == 192.168.1.1" });
+        const [rule] = filter({ allow: "ip.src == 192.168.1.1" });
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
       });
