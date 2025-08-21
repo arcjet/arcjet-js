@@ -14,24 +14,29 @@ export type ArcjetSensitiveInfoType = Exclude<
 >;
 
 /**
- * Types of sensitive information that can be detected which also allows
- * custom tags (arbitrary strings) while still retaining autocompletion and other IDE features
- * associated with the known standard types.
- */
-// See: <https://stackoverflow.com/questions/69793164/typescript-weird-type-intersection-of-string>.
-type SensitiveInfoTags = ArcjetSensitiveInfoType | (string & {});
-
-/**
  * Options for the `redact` function.
  *
- * @template Entities
- *   Tags to find and redact.
+ * @template DetectedEntities
+ *   Custom entity names that are returned from `detect` and optionally listed in `entities`.
+ * @template ListedEntities
+ *   Entity names that can be listed in the `entities` option.
  */
-export type RedactOptions<Entities extends SensitiveInfoTags> = {
+export type RedactOptions<
+  DetectedEntities extends string | undefined = undefined,
+  ListedEntities extends
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined> =
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined>,
+> = {
   /**
    * Entities to redact.
    */
-  entities?: ReadonlyArray<Entities>;
+  entities?: ReadonlyArray<
+    // Note that `DetectedEntities` is included here, even though it is also in `ListedEntities`,
+    // so that strings *flow* into that.
+    ListedEntities | Exclude<DetectedEntities, undefined>
+  >;
   /**
    * Size of tokens to consider.
    */
@@ -39,19 +44,23 @@ export type RedactOptions<Entities extends SensitiveInfoTags> = {
   /**
    * Custom detection function to identify sensitive information.
    *
-   * @template Entities
-   *   Tags to redact.
+   * @template DetectedEntities
+   *   Custom entity names that are returned from `detect` and optionally listed in `entities`.
+   * @template ListedEntities
+   *   Entity names that can be listed in the `entities` option.
    * @param tokens
    *   Tokens.
    * @returns
    *   List of entities (or undefined).
    */
-  detect?: (tokens: string[]) => Array<Entities | undefined>;
+  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
   /**
    * Custom replace function to redact sensitive information.
    *
-   * @template Entities
-   *   Tags to redact.
+   * @template DetectedEntities
+   *   Custom entity names that are returned from `detect` and optionally listed in `entities`.
+   * @template ListedEntities
+   *   Entity names that can be listed in the `entities` option.
    * @param entity
    *   Entity to redact.
    * @param plaintext
@@ -59,7 +68,7 @@ export type RedactOptions<Entities extends SensitiveInfoTags> = {
    * @returns
    *   Redacted string or nothing.
    */
-  replace?: (entity: Entities, plaintext: string) => string | undefined;
+  replace?: (entity: ListedEntities, plaintext: string) => string | undefined;
 };
 
 function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
@@ -137,8 +146,15 @@ interface RedactedSensitiveInfoEntity
   identifiedType: string;
 }
 
-function getWasmOptions<const Entities extends SensitiveInfoTags>(
-  options?: RedactOptions<Entities> | undefined,
+function getWasmOptions<
+  DetectedEntities extends string | undefined = undefined,
+  ListedEntities extends
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined> =
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined>,
+>(
+  options?: RedactOptions<DetectedEntities, ListedEntities> | undefined,
 ): RedactSensitiveInfoConfig {
   if (typeof options === "object" && options !== null) {
     const entities = options.entities;
@@ -175,9 +191,16 @@ function getWasmOptions<const Entities extends SensitiveInfoTags>(
   }
 }
 
-async function callRedactWasm<const Entities extends SensitiveInfoTags>(
+async function callRedactWasm<
+  DetectedEntities extends string | undefined = undefined,
+  ListedEntities extends
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined> =
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined>,
+>(
   candidate: string,
-  options?: RedactOptions<Entities> | undefined,
+  options?: RedactOptions<DetectedEntities, ListedEntities> | undefined,
 ): Promise<RedactedSensitiveInfoEntity[]> {
   let convertedDetect = noOpDetect;
   if (typeof options?.detect === "function") {
@@ -227,8 +250,10 @@ type Unredact = (input: string) => string;
 /**
  * Redact sensitive info.
  *
- * @template Entities
- *   Tags to find and redact.
+ * @template DetectedEntities
+ *   Custom entity names that are returned from `detect` and optionally listed in `entities`.
+ * @template ListedEntities
+ *   Entity names that can be listed in the `entities` option.
  * @param candidate
  *   Value to redact.
  * @param options
@@ -236,9 +261,16 @@ type Unredact = (input: string) => string;
  * @returns
  *   Promise to a tuple with the redacted string and a function to unredact it.
  */
-export async function redact<const Entities extends SensitiveInfoTags>(
+export async function redact<
+  const DetectedEntities extends string | undefined = undefined,
+  const ListedEntities extends
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined> =
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined>,
+>(
   candidate: string,
-  options?: RedactOptions<Entities>,
+  options?: RedactOptions<DetectedEntities, ListedEntities>,
 ): Promise<[string, Unredact]> {
   const redactions = await callRedactWasm(candidate, options);
 

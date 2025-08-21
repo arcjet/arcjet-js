@@ -82,6 +82,23 @@ describe("ArcjetRedact", () => {
     test("it will use a custom replacement where configured", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       const expected =
+        "email redacted-email phone <Redacted phone number #1> ip <Redacted IP address #2>";
+      const [redacted] = await redact(text, {
+        replace: (entityType, plaintext) => {
+          if (entityType === "email") {
+            assert.equal(plaintext, "test@example.com");
+            return "redacted-email";
+          } else if (entityType === "ip-address") {
+            assert.equal(plaintext, "10.12.234.2");
+          }
+        },
+      });
+      assert.equal(redacted, expected);
+    });
+
+    test("it will use a custom replacement where configured w/ `entities`", async () => {
+      const text = "email test@example.com phone 011234567 ip 10.12.234.2";
+      const expected =
         "email redacted-email phone 011234567 ip <Redacted IP address #1>";
       const [redacted] = await redact(text, {
         entities: ["email", "ip-address"],
@@ -115,6 +132,23 @@ describe("ArcjetRedact", () => {
     });
 
     test("it can detect entities using a custom detect function", async () => {
+      const text = "email test@example.com phone 011234567 ip 10.12.234.2";
+      const expected =
+        "email <Redacted email #0> <Redacted my-custom-entity #1> <Redacted phone number #2> ip <Redacted IP address #3>";
+      const [redacted] = await redact(text, {
+        contextWindowSize: 1,
+        detect: (tokens: string[]) => {
+          if (tokens[0] === "phone") {
+            return ["my-custom-entity"];
+          } else {
+            return [];
+          }
+        },
+      });
+      assert.equal(redacted, expected);
+    });
+
+    test("it can detect entities using a custom detect function w/ `entities`", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       const expected =
         "email test@example.com <Redacted my-custom-entity #0> 011234567 ip 10.12.234.2";
