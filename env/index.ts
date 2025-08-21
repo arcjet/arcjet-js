@@ -128,13 +128,17 @@ const baseUrlAllowed = [
  *   Base URL of Arcjet API.
  */
 export function baseUrl(environment: Env) {
-  // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
-  // use the hardcoded default.
-  if (
-    typeof environment["ARCJET_BASE_URL"] === "string" &&
-    baseUrlAllowed.includes(environment["ARCJET_BASE_URL"])
-  ) {
-    return environment["ARCJET_BASE_URL"];
+  let baseUrl = environment["ARCJET_BASE_URL"];
+
+  if (typeof baseUrl === "string") {
+    // Allow trailing slash (none of the allow-listed ones have that).
+    if (baseUrl.endsWith("/")) baseUrl = baseUrl.slice(0, -1);
+
+    // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
+    // use the hardcoded default.
+    if (baseUrlAllowed.includes(baseUrl)) {
+      return baseUrl;
+    }
   }
 
   // If we're running on fly.io, use the Arcjet Decide Service hosted on fly

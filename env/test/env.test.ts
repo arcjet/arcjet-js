@@ -102,6 +102,14 @@ describe("env", () => {
       env.baseUrl({ FLY_APP_NAME: "foobar" }),
       "https://fly.decide.arcjet.com",
     );
+
+    // Trailing slash.
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://decide.arcjet.orb.local:4082/",
+      }),
+      "https://decide.arcjet.orb.local:4082",
+    );
   });
 
   test("apiKey", () => {
