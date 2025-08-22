@@ -17,7 +17,6 @@ import { NextRequest } from "next/server";
 // The arcjet instance is created outside of the handler
 const aj = arcjet({
   key: process.env.ARCJET_KEY, // Get your site key from https://app.arcjet.com
-  characteristics: ["userId"],
   rules: [
     // Protect against common attacks with Arcjet Shield. Other rules are
     // added dynamically using `withRule`.
@@ -60,16 +59,6 @@ async function protect(req: NextRequest): Promise<ArcjetDecision> {
     headers: req.headers,
   });
 
-  // If the user is logged in we'll use their ID as the identifier. This
-  // allows limits to be applied across all devices and sessions (you could
-  // also use the session ID). Otherwise, fall back to the IP address.
-  let userId: string;
-  if (session?.user.id) {
-    userId = session.user.id;
-  } else {
-    userId = ip(req) || "127.0.0.1"; // Fall back to local IP if none
-  }
-
   // If this is a signup then use the special protectSignup rule
   // See https://docs.arcjet.com/signup-protection/quick-start
   if (req.nextUrl.pathname.startsWith("/api/auth/sign-up")) {
@@ -82,17 +71,17 @@ async function protect(req: NextRequest): Promise<ArcjetDecision> {
     if (typeof body.email === "string") {
       return aj
         .withRule(protectSignup(signupOptions))
-        .protect(req, { email: body.email, userId });
+        .protect(req, { email: body.email });
     } else {
       // Otherwise use rate limit and detect bot
       return aj
         .withRule(detectBot(botOptions))
         .withRule(slidingWindow(rateLimitOptions))
-        .protect(req, { userId });
+        .protect(req);
     }
   } else {
     // For all other auth requests
-    return aj.withRule(detectBot(botOptions)).protect(req, { userId });
+    return aj.withRule(detectBot(botOptions)).protect(req);
   }
 }
 

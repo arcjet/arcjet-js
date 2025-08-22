@@ -4,7 +4,6 @@ import { Hono } from "hono";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
-  characteristics: ["userId"], // track requests by a custom user ID
   rules: [
     // Protect against common attacks with Arcjet Shield
     shield({
@@ -12,6 +11,7 @@ const aj = arcjet({
     }),
     // Create a token bucket rate limit. Other algorithms are supported.
     tokenBucket({
+      characteristics: ["userId"], // track requests by a custom user ID
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only      
       refillRate: 5, // refill 5 tokens per interval
       interval: 10, // refill every 10 seconds
