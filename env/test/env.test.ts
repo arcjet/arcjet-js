@@ -94,9 +94,9 @@ describe("env", () => {
     );
     assert.equal(
       env.baseUrl({
-        ARCJET_BASE_URL: "https://decide.arcjet.orb.local:4082",
+        ARCJET_BASE_URL: "https://decide.arcjet.orb.local",
       }),
-      "https://decide.arcjet.orb.local:4082",
+      "https://decide.arcjet.orb.local",
     );
     assert.equal(
       env.baseUrl({ FLY_APP_NAME: "foobar" }),
