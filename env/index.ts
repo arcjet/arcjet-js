@@ -116,7 +116,7 @@ const baseUrlAllowed = [
   "https://decide.arcjettest.com",
   "https://fly.decide.arcjet.com",
   "https://fly.decide.arcjettest.com",
-  "https://decide.arcjet.orb.local:4082",
+  "https://decide.arcjet.orb.local",
 ];
 
 /**
