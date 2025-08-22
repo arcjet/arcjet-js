@@ -13,7 +13,7 @@ To develop Arcjet, use the following commands before starting the example:
 
 ```bash
 export ARCJET_LOG_LEVEL=DEBUG
-export ARCJET_BASE_URL=https://decide.arcjet.orb.local:4082
+export ARCJET_BASE_URL=https://decide.arcjet.orb.local
 export NODE_TLS_REJECT_UNAUTHORIZED=0 # Allows local self-signed certs
 ```
 
