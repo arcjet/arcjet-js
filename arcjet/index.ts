@@ -2679,15 +2679,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
       return ruleResult;
     },
     type,
-    validate(
-      _: ArcjetContext,
-      details: Partial<ArcjetRequestDetails>,
-    ): undefined {
-      if (!details.ip) {
-        throw new Error("Request filtering requires `ip` to be set");
-      }
-    },
-
+    validate(): undefined {},
     version,
   };
 
