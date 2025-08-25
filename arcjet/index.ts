@@ -1062,11 +1062,11 @@ export type FilterOptions = FilterOptionsAllow | FilterOptionsDeny;
 
 const Priority = {
   SensitiveInfo: 1,
-  Shield: 2,
-  RateLimit: 3,
-  BotDetection: 4,
-  EmailValidation: 5,
-  Filter: 6,
+  Filter: 2,
+  Shield: 3,
+  RateLimit: 4,
+  BotDetection: 5,
+  EmailValidation: 6,
 };
 
 type PlainObject = { [key: string]: unknown };
