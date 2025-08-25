@@ -334,6 +334,7 @@ function toArcjetRequest<Properties extends PlainObject>(
       );
     }
   }
+
   const method = request.method ?? "";
   const host = headers.get("host") ?? "";
   let path = "";
