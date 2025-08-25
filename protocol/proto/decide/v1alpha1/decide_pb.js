@@ -178,6 +178,16 @@ export const ShieldRuleVersion = /*@__PURE__*/ proto3.makeEnum(
 );
 
 /**
+ * @generated from enum proto.decide.v1alpha1.FilterRuleVersion
+ */
+export const FilterRuleVersion = /*@__PURE__*/ proto3.makeEnum(
+  "proto.decide.v1alpha1.FilterRuleVersion",
+  [
+    {no: 0, name: "FILTER_RULE_VERSION_UNSPECIFIED", localName: "UNSPECIFIED"},
+  ],
+);
+
+/**
  * Additional information from Arcjet about the IP address associated with a
  * request.
  *
@@ -229,6 +239,7 @@ export const Reason = /*@__PURE__*/ proto3.makeMessageType(
     { no: 6, name: "error", kind: "message", T: ErrorReason, oneof: "reason" },
     { no: 7, name: "sensitive_info", kind: "message", T: SensitiveInfoReason, oneof: "reason" },
     { no: 8, name: "bot_v2", kind: "message", T: BotV2Reason, oneof: "reason" },
+    { no: 9, name: "filter", kind: "message", T: FilterReason, oneof: "reason" },
   ],
 );
 
@@ -303,6 +314,18 @@ export const ShieldReason = /*@__PURE__*/ proto3.makeMessageType(
   () => [
     { no: 1, name: "shield_triggered", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 2, name: "suspicious", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ],
+);
+
+/**
+ * Details of an Arcjet Filter decision.
+ *
+ * @generated from message proto.decide.v1alpha1.FilterReason
+ */
+export const FilterReason = /*@__PURE__*/ proto3.makeMessageType(
+  "proto.decide.v1alpha1.FilterReason",
+  () => [
+    { no: 1, name: "matched_expression", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ],
 );
 
@@ -468,6 +491,21 @@ export const ShieldRule = /*@__PURE__*/ proto3.makeMessageType(
 );
 
 /**
+ * The configuration for a filter rule.
+ *
+ * @generated from message proto.decide.v1alpha1.FilterRule
+ */
+export const FilterRule = /*@__PURE__*/ proto3.makeMessageType(
+  "proto.decide.v1alpha1.FilterRule",
+  () => [
+    { no: 1, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
+    { no: 2, name: "allow", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "deny", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 4, name: "version", kind: "enum", T: proto3.getEnumType(FilterRuleVersion) },
+  ],
+);
+
+/**
  * The configuration for Arcjet.
  *
  * @generated from message proto.decide.v1alpha1.Rule
@@ -481,6 +519,7 @@ export const Rule = /*@__PURE__*/ proto3.makeMessageType(
     { no: 4, name: "shield", kind: "message", T: ShieldRule, oneof: "rule" },
     { no: 5, name: "sensitive_info", kind: "message", T: SensitiveInfoRule, oneof: "rule" },
     { no: 6, name: "bot_v2", kind: "message", T: BotV2Rule, oneof: "rule" },
+    { no: 7, name: "filter", kind: "message", T: FilterRule, oneof: "rule" },
   ],
 );
 

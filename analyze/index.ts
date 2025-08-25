@@ -238,3 +238,53 @@ export async function detectSensitiveInfo(
     "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
   );
 }
+
+/**
+ * Result of a filter call.
+ */
+export interface FilterResult {
+  /**
+   * Whether the request is allowed.
+   */
+  allowed: boolean;
+  /**
+   * List of expressions that matched.
+   */
+  matchedExpressions: Array<string>;
+}
+
+/**
+ * Check if a filter matches a request.
+ *
+ * @param context
+ *   Arcjet context.
+ * @param request
+ *   Request.
+ * @param expressions
+ *   Filter expressions.
+ * @returns
+ *   Promise to whether the filter matches the request.
+ */
+export async function matchFilters(
+  context: AnalyzeContext,
+  request: AnalyzeRequest,
+  expressions: ReadonlyArray<string>,
+  allowIfMatch: boolean,
+): Promise<FilterResult | undefined> {
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(coreImports);
+
+  if (typeof analyze !== "undefined") {
+    return analyze.matchFilters(
+      JSON.stringify(request),
+      // @ts-expect-error: WebAssembly does not support readonly values.
+      expressions,
+      allowIfMatch,
+    );
+    // Ignore the `else` branch as we test in places that have WebAssembly.
+    /* node:coverage ignore next 4 */
+  }
+
+  context.log.debug("WebAssembly is not supported in this runtime");
+  return;
+}

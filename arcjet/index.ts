@@ -2,6 +2,7 @@ import type {
   ArcjetContext,
   ArcjetEmailRule,
   ArcjetBotRule,
+  ArcjetFilterRule,
   ArcjetRule,
   ArcjetMode,
   ArcjetRequestDetails,
@@ -19,6 +20,7 @@ import type {
   ArcjetRateLimitRule,
 } from "@arcjet/protocol";
 import {
+  ArcjetAllowDecision,
   ArcjetBotReason,
   ArcjetEmailReason,
   ArcjetErrorReason,
@@ -29,6 +31,7 @@ import {
   ArcjetDenyDecision,
   ArcjetErrorDecision,
   ArcjetShieldReason,
+  ArcjetFilterReason,
   ArcjetRateLimitReason,
   ArcjetConclusion,
 } from "@arcjet/protocol";
@@ -350,6 +353,26 @@ function createValidator({
   };
 }
 
+/**
+ * Validate one or more filters.
+ *
+ * @param path
+ *   Path to `value`.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ */
+function validateFilters(path: string, value: unknown): undefined {
+  if (Array.isArray(value)) {
+    for (const [idx, item] of value.entries()) {
+      validateString(`${path}[${idx}]`, item);
+    }
+  } else {
+    validateString(path, value);
+  }
+}
+
 const validateString = createTypeValidator("string");
 const validateNumber = createTypeValidator("number");
 const validateBoolean = createTypeValidator("boolean");
@@ -453,6 +476,18 @@ const validateBotOptions = createValidator({
 const validateShieldOptions = createValidator({
   rule: "shield",
   validations: [{ key: "mode", required: false, validate: validateMode }],
+});
+
+/**
+ * Validate filter options.
+ */
+const validateFilterOptions = createValidator({
+  rule: "filter",
+  validations: [
+    { key: "mode", required: false, validate: validateMode },
+    { key: "allow", required: false, validate: validateFilters },
+    { key: "deny", required: false, validate: validateFilters },
+  ],
 });
 
 export type TokenBucketRateLimitOptions<
@@ -568,12 +603,56 @@ export type SensitiveInfoOptions<Detect> =
   | SensitiveInfoOptionsAllow<Detect>
   | SensitiveInfoOptionsDeny<Detect>;
 
+/**
+ * Configuration to allow if a filter matches and deny otherwise.
+ */
+export type FilterOptionsAllow = {
+  /**
+   * One or more expressions.
+   */
+  allow: ReadonlyArray<string> | string;
+  /**
+   * One or more expressions,
+   * must not be set if `allow` is set.
+   */
+  deny?: never;
+  /**
+   * Mode.
+   */
+  mode?: ArcjetMode | undefined;
+};
+
+/**
+ * Configuration to deny if a filter matches and allow otherwise.
+ */
+export type FilterOptionsDeny = {
+  /**
+   * One or more expressions,
+   * must not be set if `deny` is set.
+   */
+  allow?: never;
+  /**
+   * One or more expressions.
+   */
+  deny: ReadonlyArray<string> | string;
+  /**
+   * Mode.
+   */
+  mode?: ArcjetMode | undefined;
+};
+
+/**
+ * Configuration for `filter` rule.
+ */
+export type FilterOptions = FilterOptionsAllow | FilterOptionsDeny;
+
 const Priority = {
   SensitiveInfo: 1,
-  Shield: 2,
-  RateLimit: 3,
-  BotDetection: 4,
-  EmailValidation: 5,
+  Filter: 2,
+  Shield: 3,
+  RateLimit: 4,
+  BotDetection: 5,
+  EmailValidation: 6,
 };
 
 type PlainObject = { [key: string]: unknown };
@@ -2075,6 +2154,136 @@ export function protectSignup<const Characteristics extends string[] = []>(
     ...detectBot(options.bots),
     ...validateEmail(options.email),
   ];
+}
+
+/**
+ * Arcjet filter rule.
+ *
+ * @param options
+ *   Configuration (required).
+ * @returns
+ *   Filter rule.
+ */
+export function filter(options: FilterOptions): Primitive<{}> {
+  validateFilterOptions(options);
+
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const allow: ReadonlyArray<string> = Array.isArray(options.allow)
+    ? options.allow
+    : options.allow
+      ? [options.allow]
+      : [];
+  const deny: ReadonlyArray<string> = Array.isArray(options.deny)
+    ? options.deny
+    : options.deny
+      ? [options.deny]
+      : [];
+
+  if (allow.length > 0 && deny.length > 0) {
+    throw new Error(
+      "`filter` options error: expressions must be passed in either `allow` or `deny` instead of both",
+    );
+  }
+  if (allow.length === 0 && deny.length === 0) {
+    throw new Error(
+      "`filter` options error: one or more expressions must be passed in `allow` or `deny`",
+    );
+  }
+
+  const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+  const type = "FILTER";
+  const version = 0;
+
+  const ruleIdPromise = hasher.hash(
+    hasher.string("type", type),
+    hasher.uint32("version", version),
+    hasher.string("mode", mode),
+    hasher.stringSliceOrdered(
+      "allow",
+      // @ts-expect-error: `hasher` must support readonly values.
+      allow,
+    ),
+    hasher.stringSliceOrdered(
+      "deny",
+      // @ts-expect-error: `hasher` must support readonly values.
+      deny,
+    ),
+  );
+
+  const rule: ArcjetFilterRule = {
+    allow,
+    deny,
+    mode,
+    priority: Priority.Filter,
+    async protect(
+      context: ArcjetContext<CachedResult>,
+      request: ArcjetRequestDetails,
+    ): Promise<ArcjetRuleResult> {
+      const ruleId = await ruleIdPromise;
+      const [cached, ttl] = await context.cache.get(
+        ruleId,
+        context.fingerprint,
+      );
+
+      if (cached) {
+        return new ArcjetRuleResult({
+          conclusion: cached.conclusion,
+          fingerprint: context.fingerprint,
+          reason: cached.reason,
+          ruleId,
+          state: "CACHED",
+          ttl,
+        });
+      }
+
+      const request_ = toAnalyzeRequest(request);
+      let ruleResult: ArcjetRuleResult;
+
+      try {
+        const result = await analyze.matchFilters(
+          context,
+          request_,
+          allow.length > 0 ? allow : deny,
+          allow.length > 0,
+        );
+
+        if (!result) {
+          throw new Error("WebAssembly is not supported in this runtime");
+        }
+
+        ruleResult = new ArcjetRuleResult({
+          conclusion: result.allowed ? "ALLOW" : "DENY",
+          fingerprint: context.fingerprint,
+          reason: new ArcjetFilterReason(result.matchedExpressions[0]),
+          ruleId,
+          state,
+          ttl: 60,
+        });
+      } catch (error) {
+        ruleResult = new ArcjetRuleResult({
+          conclusion: "ERROR",
+          fingerprint: context.fingerprint,
+          reason: new ArcjetErrorReason(String(error)),
+          ruleId,
+          state,
+          ttl: 60,
+        });
+      }
+
+      context.cache.set(
+        ruleId,
+        context.fingerprint,
+        ruleResult,
+        ruleResult.ttl,
+      );
+      return ruleResult;
+    },
+    type,
+    validate(): undefined {},
+    version,
+  };
+
+  return [rule];
 }
 
 export interface ArcjetOptions<

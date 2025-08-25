@@ -320,6 +320,7 @@ export class ArcjetReason {
     | "SHIELD"
     | "EMAIL"
     | "ERROR"
+    | "FILTER"
     | "SENSITIVE_INFO"
     | undefined;
 
@@ -391,6 +392,45 @@ export class ArcjetReason {
    */
   isError(): this is ArcjetErrorReason {
     return this.type === "ERROR";
+  }
+
+  /**
+   * Check if this is a filter reason.
+   *
+   * @returns
+   *   Whether this is a filter reason.
+   */
+  isFilter(): this is ArcjetFilterReason {
+    return this.type === "FILTER";
+  }
+}
+
+/**
+ * Filter reason.
+ */
+export class ArcjetFilterReason extends ArcjetReason {
+  /**
+   * Expression that matched or `undefined` if no expression matched.
+   */
+  expression?: string | undefined;
+
+  /**
+   * Kind.
+   */
+  type = "FILTER" as const;
+
+  /**
+   * Create a filter reason.
+   *
+   * @param expression
+   *   Expression that matched.
+   * @returns
+   *   Filter reason.
+   */
+  constructor(expression?: string | undefined) {
+    super();
+
+    this.expression = expression;
   }
 }
 
@@ -1561,7 +1601,14 @@ export type ArcjetRule<Props extends {} = {}> = {
   // TODO(@wooorm-arcjet):
   // if it is intentional that people can extend rules,
   // then we need to allow that in the types.
-  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "SHIELD" | "SENSITIVE_INFO" | string;
+  type:
+    | "RATE_LIMIT"
+    | "BOT"
+    | "EMAIL"
+    | "FILTER"
+    | "SHIELD"
+    | "SENSITIVE_INFO"
+    | string;
 
   /**
    * Mode.
@@ -1739,6 +1786,26 @@ export interface ArcjetEmailRule<Props extends { email: string }>
    * It is not allowed when `false`.
    */
   allowDomainLiteral: boolean;
+}
+
+/**
+ * Filter rule.
+ */
+export interface ArcjetFilterRule extends ArcjetRule<{}> {
+  /**
+   * List of expressions that allow a request when one matches and deny otherwise.
+   */
+  allow: ReadonlyArray<string>;
+
+  /**
+   * List of expressions that deny a request when one matches and allow otherwise.
+   */
+  deny: ReadonlyArray<string>;
+
+  /**
+   * Kind.
+   */
+  type: "FILTER";
 }
 
 /**
