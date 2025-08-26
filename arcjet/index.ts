@@ -353,26 +353,6 @@ function createValidator({
   };
 }
 
-/**
- * Validate one or more filters.
- *
- * @param path
- *   Path to `value`.
- * @param value
- *   Value to validate.
- * @returns
- *   Nothing.
- */
-function validateFilters(path: string, value: unknown): undefined {
-  if (Array.isArray(value)) {
-    for (const [idx, item] of value.entries()) {
-      validateString(`${path}[${idx}]`, item);
-    }
-  } else {
-    validateString(path, value);
-  }
-}
-
 const validateString = createTypeValidator("string");
 const validateNumber = createTypeValidator("number");
 const validateBoolean = createTypeValidator("boolean");
@@ -485,8 +465,8 @@ const validateFilterOptions = createValidator({
   rule: "filter",
   validations: [
     { key: "mode", required: false, validate: validateMode },
-    { key: "allow", required: false, validate: validateFilters },
-    { key: "deny", required: false, validate: validateFilters },
+    { key: "allow", required: false, validate: validateStringArray },
+    { key: "deny", required: false, validate: validateStringArray },
   ],
 });
 
@@ -1022,11 +1002,11 @@ export type SensitiveInfoOptions<Detect> =
  */
 export type FilterOptionsAllow = {
   /**
-   * One or more expressions.
+   * Expressions.
    */
-  allow: ReadonlyArray<string> | string;
+  allow: ReadonlyArray<string>;
   /**
-   * One or more expressions,
+   * Expressions,
    * must not be set if `allow` is set.
    */
   deny?: never;
@@ -1041,14 +1021,14 @@ export type FilterOptionsAllow = {
  */
 export type FilterOptionsDeny = {
   /**
-   * One or more expressions,
+   * Expressions,
    * must not be set if `deny` is set.
    */
   allow?: never;
   /**
-   * One or more expressions.
+   * Expressions.
    */
-  deny: ReadonlyArray<string> | string;
+  deny: ReadonlyArray<string>;
   /**
    * Mode.
    */
@@ -2568,16 +2548,8 @@ export function filter(options: FilterOptions): Primitive<{}> {
   validateFilterOptions(options);
 
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const allow: ReadonlyArray<string> = Array.isArray(options.allow)
-    ? options.allow
-    : options.allow
-      ? [options.allow]
-      : [];
-  const deny: ReadonlyArray<string> = Array.isArray(options.deny)
-    ? options.deny
-    : options.deny
-      ? [options.deny]
-      : [];
+  const allow = options.allow ?? [];
+  const deny = options.deny ?? [];
 
   if (allow.length > 0 && deny.length > 0) {
     throw new Error(
