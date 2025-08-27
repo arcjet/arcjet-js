@@ -572,7 +572,7 @@ describe("Primitive > detectBot", () => {
     });
     assert.equal(rule.type, "BOT");
     const result = await rule.protect(context, details);
-    assert.equal(result.conclusion, "DENY");
+    assert.equal(result.conclusion, "ALLOW");
     assert.ok(result.reason instanceof ArcjetBotReason);
     assert.deepEqual(result.reason.allowed, []);
     assert.deepEqual(result.reason.denied, ["CURL"]);
@@ -1628,7 +1628,7 @@ describe("Primitive > validateEmail", () => {
     const [rule] = validateEmail({ mode: "DRY_RUN", allow: [] });
     assert.equal(rule.type, "EMAIL");
     const result = await rule.protect(context, details);
-    assert.equal(result.conclusion, "DENY");
+    assert.equal(result.conclusion, "ALLOW");
     assert.ok(result.reason instanceof ArcjetEmailReason);
     assert.deepEqual(result.reason.emailTypes, ["INVALID"]);
     assert.equal(result.state, "DRY_RUN");
@@ -2210,7 +2210,7 @@ describe("Primitive > sensitiveInfo", () => {
     });
     assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
-    assert.equal(result.conclusion, "DENY");
+    assert.equal(result.conclusion, "ALLOW");
     assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
     assert.deepEqual(result.reason.allowed, []);
     assert.deepEqual(result.reason.denied, [

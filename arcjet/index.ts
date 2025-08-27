@@ -1403,7 +1403,7 @@ export function sensitiveInfo<
           fingerprint,
           ttl: 0,
           state,
-          conclusion: "DENY",
+          conclusion: state === "DRY_RUN" ? "ALLOW" : "DENY",
           reason,
         });
       }
@@ -1614,7 +1614,7 @@ export function validateEmail(
           fingerprint,
           ttl: 0,
           state,
-          conclusion: "DENY",
+          conclusion: state === "DRY_RUN" ? "ALLOW" : "DENY",
           reason: new ArcjetEmailReason({
             emailTypes: typedEmailTypes,
           }),
@@ -1823,7 +1823,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
           fingerprint,
           ttl: 60,
           state,
-          conclusion: "DENY",
+          conclusion: state === "DRY_RUN" ? "ALLOW" : "DENY",
           reason: new ArcjetBotReason({
             allowed: result.allowed,
             denied: result.denied,
