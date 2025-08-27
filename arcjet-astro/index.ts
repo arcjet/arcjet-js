@@ -168,10 +168,34 @@ type IntegrationRule<Characteristics extends readonly string[]> =
 
 // TODO: This only supports serializable options, so no custom loggers are
 // supported but maybe they could be supported via a module import
+/**
+ * Configuration for the Astro integration of Arcjet.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ */
 type ArcjetIntegrationOptions<Characteristics extends readonly string[]> = {
+  /**
+   * Integration rules to apply when protecting a request (required).
+   *
+   * These rules are *different* from those exposed from `arcjet` core.
+   * You have to import them from this integration (`@arcjet/astro`) instead.
+   */
   rules: IntegrationRule<Characteristics>[];
+  /**
+   * Characteristics to track a user by (default: `["src.ip"]`).
+   *
+   * Can also be passed to rules.
+   */
   characteristics?: Characteristics;
+  /**
+   * Configuration for the default client (optional).
+   */
   client?: RemoteClientOptions;
+  /**
+   * IP addresses and CIDR ranges of trusted load balancers and proxies
+   * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+   */
   proxies?: string[];
 };
 
@@ -276,63 +300,261 @@ function integrationRuleToClientRule<Characteristics extends readonly string[]>(
 }
 
 // Mirror the rule functions in the SDK but produce serializable rules
+
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet Shield WAF rule.
+ *
+ * Applying this rule protects your application against common attacks,
+ * including the OWASP Top 10.
+ *
+ * The Arcjet Shield WAF analyzes every request to your application to detect
+ * suspicious activity.
+ * Once a certain suspicion threshold is reached,
+ * subsequent requests from that client are blocked for a period of time.
+ *
+ * @param options
+ *   Configuration for the Shield rule.
+ * @returns
+ *   Astro integration Shield rule to provide to the SDK in the `rules` field.
+ */
 export function shield(options?: ShieldOptions) {
   return { type: "shield", options } as const;
 }
 
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet bot detection rule.
+ *
+ * Applying this rule allows you to manage traffic by automated clients and
+ * bots.
+ *
+ * Bots can be good (such as search engine crawlers or monitoring agents) or bad
+ * (such as scrapers or automated scripts).
+ * Arcjet allows you to configure which bots you want to allow or deny by
+ * specific bot names such as curl, as well as by category such as search
+ * engine bots.
+ *
+ * Bots are detected based on various signals such as the user agent, IP
+ * address, DNS records, and more.
+ *
+ * @param options
+ *   Configuration for the bot rule (required).
+ * @returns
+ *   Astro integration Bot rule to provide to the SDK in the `rules` field.
+ */
 export function detectBot(options?: BotOptions) {
   return { type: "bot", options } as const;
 }
 
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet email validation rule.
+ *
+ * Applying this rule allows you to validate and verify an email address.
+ *
+ * The first step of the analysis is to validate the email address syntax.
+ * This runs locally within the SDK and validates the email address is in the
+ * correct format.
+ * If the email syntax is valid, the SDK will pass the email address to the
+ * Arcjet cloud API to verify the email address.
+ * This performs several checks, depending on the rule configuration.
+ *
+ * @param options
+ *   Configuration for the email validation rule (required).
+ * @returns
+ *   Astro integration Email rule to provide to the SDK in the `rules` field.
+ */
 export function validateEmail(options?: EmailOptions) {
   return { type: "email", options } as const;
 }
 
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet sensitive information detection rule.
+ *
+ * Applying this rule protects against clients sending you sensitive information
+ * such as personally identifiable information (PII) that you do not wish to
+ * handle.
+ * The rule runs entirely locally so no data ever leaves your environment.
+ *
+ * This rule includes built-in detections for email addresses, credit/debit card
+ * numbers, IP addresses, and phone numbers.
+ * You can also provide a custom detection function to identify additional
+ * sensitive information.
+ *
+ * @param options
+ *   Configuration for the sensitive information detection rule (required).
+ * @returns
+ *   Astro integration Sensitive information rule to provide to the SDK in the `rules` field.
+ */
 export function sensitiveInfo(options?: SensitiveInfoOptions<never>) {
   return { type: "sensitiveInfo", options } as const;
 }
 
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet fixed window rate limiting rule.
+ *
+ * Applying this rule sets a fixed window rate limit which tracks the number of
+ * requests made by a client over a fixed time window.
+ *
+ * This is the simplest algorithm.
+ * It tracks the number of requests made by a client over a fixed time window
+ * such as 60 seconds.
+ * If the client exceeds the limit, they are blocked until the window expires.
+ *
+ * This algorithm is useful when you want to apply a simple fixed limit in a
+ * fixed time window.
+ * For example, a simple limit on the total number of requests a client can make.
+ * However, it can be susceptible to the stampede problem where a client makes
+ * a burst of requests at the start of a window and then is blocked for the rest
+ * of the window.
+ * The sliding window algorithm can be used to avoid this.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration for the fixed window rate limiting rule (required).
+ * @returns
+ *   Astro integration Fixed window rule to provide to the SDK in the `rules` field.
+ */
 export function fixedWindow<Characteristics extends readonly string[]>(
   options?: FixedWindowRateLimitOptions<Characteristics>,
 ) {
   return { type: "fixedWindow", options } as const;
 }
 
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet sliding window rate limiting rule.
+ *
+ * Applying this rule sets a sliding window rate limit which tracks the number
+ * of requests made by a client over a sliding window so that the window moves
+ * with time.
+ *
+ * This algorithm is useful to avoid the stampede problem of the fixed window.
+ * It provides smoother rate limiting over time and can prevent a client from
+ * making a burst of requests at the start of a window and then being blocked
+ * for the rest of the window.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration for the sliding window rate limiting rule (required).
+ * @returns
+ *   Astro integration Sliding window rule to provide to the SDK in the `rules` field.
+ */
 export function slidingWindow<Characteristics extends readonly string[]>(
   options?: SlidingWindowRateLimitOptions<Characteristics>,
 ) {
   return { type: "slidingWindow", options } as const;
 }
 
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet token bucket rate limiting rule.
+ *
+ * Applying this rule sets a token bucket rate limit.
+ *
+ * This algorithm is based on a bucket filled with a specific number of tokens.
+ * Each request withdraws some amount of tokens from the bucket and the bucket
+ * is refilled at a fixed rate.
+ * Once the bucket is empty, the client is blocked until the bucket refills.
+ *
+ * This algorithm is useful when you want to allow clients to make a burst of
+ * requests and then still be able to make requests at a slower rate.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration for the token bucket rate limiting rule (required).
+ * @returns
+ *   Astro integration Token bucket rule to provide to the SDK in the `rules` field.
+ */
 export function tokenBucket<Characteristics extends readonly string[]>(
   options?: TokenBucketRateLimitOptions<Characteristics>,
 ) {
   return { type: "tokenBucket", options } as const;
 }
 
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet signup form protection rule.
+ *
+ * Applying this rule combines rate limiting, bot protection, and email
+ * validation to protect your signup forms from abuse.
+ * Using this rule will configure the following:
+ *
+ * - Rate limiting - signup forms are a common target for bots. Arcjet’s rate
+ *   limiting helps to prevent bots and other automated or malicious clients
+ *   from submitting your signup form too many times in a short period of time.
+ * - Bot protection - signup forms are usually exclusively used by humans, which
+ *   means that any automated submissions to the form are likely to be
+ *   fraudulent.
+ * - Email validation - email addresses should be validated to ensure the signup
+ *   is coming from a legitimate user with a real email address that can
+ *   actually receive messages.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration for the signup form protection rule.
+ * @returns
+ *   Astro integration Signup form protection rule to provide to the SDK in the `rules` field.
+ */
 export function protectSignup<Characteristics extends readonly string[]>(
   options?: ProtectSignupOptions<Characteristics>,
 ) {
   return { type: "protectSignup", options } as const;
 }
 
+/**
+ * Configuration for {@linkcode createRemoteClient}.
+ */
 export type RemoteClientOptions = {
+  /**
+   * Base URI for HTTP requests to Decide API (optional).
+   *
+   * Defaults to the environment variable `ARCJET_BASE_URL` (if that value
+   * is known and allowed) and the standard production API otherwise.
+   */
   baseUrl?: string;
+
+  /**
+   * Timeout in milliseconds for the Decide API (optional).
+   *
+   * Defaults to `500` in production and `1000` in development.
+   */
   timeout?: number;
 };
 
+/**
+ * Create a remote client.
+ *
+ * @param options
+ *   Configuration (optional).
+ * @returns
+ *   Client.
+ */
 export function createRemoteClient({ baseUrl, timeout }: RemoteClientOptions) {
   return { baseUrl, timeout } as const;
 }
 
+/**
+ * Create a new Astro integration of Arcjet.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration.
+ * @returns
+ *   Astro integration of Arcjet.
+ */
 export default function arcjet<Characteristics extends readonly string[]>(
-  {
-    rules,
-    characteristics,
-    client,
-    proxies,
-  }: ArcjetIntegrationOptions<Characteristics> = { rules: [] },
+  options: ArcjetIntegrationOptions<Characteristics> = { rules: [] },
 ): AstroIntegration {
+  const { rules, characteristics, client, proxies } = options;
   const arcjetImports = new Set();
   const arcjetRules: string[] = [];
   for (const rule of rules) {
@@ -476,6 +698,21 @@ export default function arcjet<Characteristics extends readonly string[]>(
               ${Array.from(arcjetImports).join(",\n")}
             } from "arcjet"
 
+            /**
+             * Instance of the Astro integration of Arcjet.
+             *
+             * Primarily has a \`protect()\` method to make a decision about how a request
+             * should be handled.
+             *
+             * > 👉 **Note**: this is generated by \`@arcjet/astro\` based on how you configure
+             * > Arcjet in your \`astro.config.mjs\` file.
+             * > In that configuration file, you can pass the (serializable) options that apply
+             * > to all requests.
+             * > You can call \`aj.withRule\` *on* this default client to extend its behavior.
+             *
+             * @template Props
+             *   Configuration.
+             */
             const client = createArcjetClient({
               rules: [
                 ${arcjetRules.join(",\n")}
