@@ -1969,7 +1969,7 @@ describe("Primitive > shield", () => {
   });
 
   test("sets mode as `DRY_RUN` if not specified", async () => {
-    const [rule] = shield({});
+    const [rule] = shield();
     assert.equal(rule.type, "SHIELD");
     assert.equal(rule.mode, "DRY_RUN");
   });

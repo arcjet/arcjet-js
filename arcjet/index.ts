@@ -1864,8 +1864,8 @@ export type ShieldOptions = {
  * suspicious activity. Once a certain suspicion threshold is reached,
  * subsequent requests from that client are blocked for a period of time.
  *
- * @param {ShieldOptions} options - The options for the Shield rule.
- * @param {ArcjetMode} options.mode - The block mode of the rule, either
+ * @param {ShieldOptions} [options] - The options for the Shield rule.
+ * @param {ArcjetMode} [options.mode] - The block mode of the rule, either
  * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block suspicious requests, and
  * `"DRY_RUN"` will allow all requests while still providing access to the rule
  * results. Defaults to `"DRY_RUN"` if not specified.
@@ -1886,12 +1886,16 @@ export type ShieldOptions = {
  * @link https://docs.arcjet.com/shield/concepts
  * @link https://docs.arcjet.com/shield/reference
  */
-export function shield(options: ShieldOptions): Primitive<{}> {
-  validateShieldOptions(options);
+export function shield(
+  options?: ShieldOptions | null | undefined,
+): Primitive<{}> {
+  const settings = options || {};
+
+  validateShieldOptions(settings);
 
   const type = "SHIELD";
   const version = 0;
-  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const mode = settings.mode === "LIVE" ? "LIVE" : "DRY_RUN";
 
   const rule: ArcjetShieldRule<{}> = {
     type,
