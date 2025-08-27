@@ -1,7 +1,4 @@
 {
-  "compilerOptions": {
-    "exactOptionalPropertyTypes": true
-  },
-  "extends": "@arcjet/tsconfig/base",
+  "extends": "../tsconfig.base.json",
   "include": ["index.ts"]
 }

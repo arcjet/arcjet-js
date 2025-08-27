@@ -1,4 +1,8 @@
 {
-  "extends": "@arcjet/tsconfig/base",
+  "compilerOptions": {
+    // TODO: Enable exact optional property types.
+    "exactOptionalPropertyTypes": false
+  },
+  "extends": "../tsconfig.base.json",
   "include": ["index.ts", "test/*.ts"]
 }
