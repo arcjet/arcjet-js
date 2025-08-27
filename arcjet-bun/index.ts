@@ -78,18 +78,36 @@ type PlainObject = {
   [key: string]: unknown;
 };
 
+/**
+ * Configuration for {@linkcode createRemoteClient}.
+ */
 export type RemoteClientOptions = {
+  /**
+   * Base URI for HTTP requests to Decide API (optional).
+   *
+   * Defaults to the environment variable `ARCJET_BASE_URL` (if that value
+   * is known and allowed) and the standard production API otherwise.
+   */
   baseUrl?: string;
+
+  /**
+   * Timeout in milliseconds for the Decide API (optional).
+   *
+   * Defaults to `500` in production and `1000` in development.
+   */
   timeout?: number;
 };
 
+/**
+ * Create a remote client.
+ *
+ * @param options
+ *   Configuration (optional).
+ * @returns
+ *   Client.
+ */
 export function createRemoteClient(options?: RemoteClientOptions) {
-  // The base URL for the Arcjet API. Will default to the standard production
-  // API unless environment variable `ARCJET_BASE_URL` is set.
   const url = options?.baseUrl ?? baseUrl(env);
-
-  // The timeout for the Arcjet API in milliseconds. This is set to a low value
-  // in production so calls fail open.
   const timeout = options?.timeout ?? (isDevelopment(env) ? 1000 : 500);
 
   // Transport is the HTTP client that the client uses to make requests.
@@ -108,7 +126,12 @@ export function createRemoteClient(options?: RemoteClientOptions) {
 }
 
 /**
- * The options used to configure an {@link ArcjetBun} client.
+ * Configuration for the Bun integration of Arcjet.
+ *
+ * @template Rules
+ *   List of rules.
+ * @template Characteristics
+ *   Characteristics to track a user by.
  */
 export type ArcjetOptions<
   Rules extends [...Array<Primitive | Product>],
@@ -116,26 +139,39 @@ export type ArcjetOptions<
 > = Simplify<
   CoreOptions<Rules, Characteristics> & {
     /**
-     * One or more IP Address of trusted proxies in front of the application.
-     * These addresses will be excluded when Arcjet detects a public IP address.
+     * IP addresses and CIDR ranges of trusted load balancers and proxies
+     * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
      */
     proxies?: Array<string>;
   }
 >;
 
 /**
- * The ArcjetBun client provides a public `protect()` method to
- * make a decision about how a Bun.sh request should be handled.
+ * Instance of the Bun integration of Arcjet.
+ *
+ * Primarily has a `protect()` method to make a decision about how a Bun request
+ * should be handled.
+ *
+ * @template Props
+ *   Configuration.
  */
 export interface ArcjetBun<Props extends PlainObject> {
   /**
-   * Runs a request through the configured protections. The request is
-   * analyzed and then a decision made on whether to allow, deny, or challenge
-   * the request.
+   * Make a decision about how to handle a request.
    *
-   * @param request - A `Request` provided to the fetch handler.
-   * @param props - Additonal properties required for running rules against a request.
-   * @returns An {@link ArcjetDecision} indicating Arcjet's decision about the request.
+   * This will analyze the request locally where possible and otherwise call
+   * the Arcjet decision API.
+   *
+   * @param ctx
+   *   Additional context for this function call.
+   * @param request
+   *   Details about the {@linkcode Request} that Arcjet needs to make a
+   *   decision.
+   * @param props
+   *   Additional properties required for running rules against a request.
+   * @returns
+   *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
+   *   Arcjet’s decision about the request.
    */
   protect(
     request: Request,
@@ -145,21 +181,30 @@ export interface ArcjetBun<Props extends PlainObject> {
   ): Promise<ArcjetDecision>;
 
   /**
-   * Augments the client with another rule. Useful for varying rules based on
-   * criteria in your handler—e.g. different rate limit for logged in users.
+   * Augment the client with another rule.
    *
-   * @param rule The rule to add to this execution.
-   * @returns An augmented {@link ArcjetBun} client.
+   * Useful for varying rules based on criteria in your handler such as
+   * different rate limit for logged in users.
+   *
+   * @template Rule
+   *   Type of rule.
+   * @param rule
+   *   Rule to add to Arcjet.
+   * @returns
+   *   Arcjet instance augmented with the given rule.
    */
   withRule<Rule extends Primitive | Product>(
     rule: Rule,
   ): ArcjetBun<Simplify<Props & ExtraProps<Rule>>>;
 
   /**
-   * Wraps the Bun.sh `fetch` handler to provide additional Request details
-   * when calling the SDK's `protect()` function.
+   * Wrap the Bun `fetch` handler to provide additional details when calling
+   * the `protect()` method.
    *
-   * @param fetch: The user provided `fetch` handler
+   * @param fetch
+   *   Original `fetch` from Bun.
+   * @returns
+   *   Wrapped `fetch` handler.
    */
   handler(
     fetch: (
@@ -175,12 +220,16 @@ export interface ArcjetBun<Props extends PlainObject> {
 }
 
 /**
- * Create a new {@link ArcjetBun} client. Always build your initial client
- * outside of a request handler so it persists across requests. If you need to
- * augment a client inside a handler, call the `withRule()` function on the base
- * client.
+ * Create a new Bun integration of Arcjet.
  *
- * @param options - Arcjet configuration options to apply to all requests.
+ * @template Rules
+ *   List of rules.
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration.
+ * @returns
+ *   Bun integration of Arcjet.
  */
 export default function arcjet<
   const Rules extends (Primitive | Product)[],
