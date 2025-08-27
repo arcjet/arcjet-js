@@ -146,8 +146,17 @@ type EventHandlerLike = (
 
 // Interface of fields that the Arcjet Node.js SDK expects on `IncomingMessage`
 // objects.
+//
+// Also supports overriding IP addressess for Arcjet’s IP geolocation and VPN
+// and proxy detection.
+//
+// See: <https://docs.arcjet.com/troubleshooting#override-development-ip>.
 export interface ArcjetNodeRequest {
   headers?: Record<string, string | string[] | undefined>;
+  /**
+   * The IP address of the client making the request.
+   */
+  ip?: string | null | undefined;
   socket?: Partial<{ remoteAddress: string; encrypted: boolean }>;
   method?: string;
   httpVersion?: string;
@@ -267,6 +276,7 @@ export default function arcjet<
 
     let ip = findIp(
       {
+        ip: request.ip,
         socket: request.socket,
         headers,
       },

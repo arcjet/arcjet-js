@@ -300,7 +300,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   const headers = new ArcjetHeaders(requestHeaders);
 
   let ip = findIp(
-    { headers, socket: request.socket },
+    { headers, ip: request.ip, socket: request.socket },
     { platform: platform(process.env), proxies },
   );
 

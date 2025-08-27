@@ -125,6 +125,19 @@ export type ArcjetOptions<
 >;
 
 /**
+ * Request object that also supports overriding IP addressess for Arcjet’s IP
+ * geolocation and VPN and proxy detection.
+ *
+ * @link https://docs.arcjet.com/troubleshooting#override-development-ip
+ */
+export interface RequestWithIp extends Request {
+  /**
+   * The IP address of the client making the request.
+   */
+  ip?: string | null | undefined;
+}
+
+/**
  * The ArcjetDeno client provides a public `protect()` method to
  * make a decision about how a Deno request should be handled.
  */
@@ -139,7 +152,7 @@ export interface ArcjetDeno<Props extends PlainObject> {
    * @returns An {@link ArcjetDecision} indicating Arcjet's decision about the request.
    */
   protect(
-    request: Request,
+    request: RequestWithIp,
     // We use this neat trick from https://stackoverflow.com/a/52318137 to make a single spread parameter
     // that is required if the ExtraProps aren't strictly an empty object
     ...props: Props extends WithoutCustomProps ? [] : [Props]
@@ -197,7 +210,7 @@ export default function arcjet<
   // Assuming the `handler()` function was used around Deno's fetch handler this
   // WeakMap should be populated with IP addresses inspected via
   // `ServeHandlerInfo`
-  const ipCache = new WeakMap<Request, string>();
+  const ipCache = new WeakMap<RequestWithIp, string>();
 
   const log = options.log
     ? options.log
@@ -216,7 +229,7 @@ export default function arcjet<
   }
 
   function toArcjetRequest<Props extends PlainObject>(
-    request: Request,
+    request: RequestWithIp,
     props: Props,
   ): ArcjetRequest<Props> {
     const cookies = request.headers.get("cookie") ?? undefined;
@@ -230,7 +243,7 @@ export default function arcjet<
         // This attempts to lookup the IP in the `ipCache`. This is primarily a
         // workaround to the API design in Deno that requires access to the
         // `ServeHandlerInfo` to lookup an IP.
-        ip: ipCache.get(request),
+        ip: request.ip || ipCache.get(request),
         headers,
       },
       { platform: platform(env), proxies },
@@ -269,7 +282,7 @@ export default function arcjet<
         return withClient(client);
       },
       async protect(
-        request: Request,
+        request: RequestWithIp,
         ...[props]: ExtraProps<Rules> extends WithoutCustomProps
           ? []
           : [ExtraProps<Rules>]
