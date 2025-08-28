@@ -28,7 +28,6 @@
   },
   "overrides": {
     "cookie": "^0.7.1",
-    "multer": "^2.0.0",
-    "path-to-regexp": "0.1.12"
+    "tmp": "0.2.5"
   }
 }
