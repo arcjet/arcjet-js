@@ -45,6 +45,8 @@
     "edge-light.js",
     "index.d.ts",
     "index.js",
+    "types.d.ts",
+    "types.js",
     "workerd.d.ts",
     "workerd.js"
   ],

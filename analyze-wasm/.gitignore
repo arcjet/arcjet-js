@@ -134,6 +134,8 @@ edge-light.js
 edge-light.d.ts
 index.js
 index.d.ts
+types.js
+types.d.ts
 workerd.js
 workerd.d.ts
 test/*.js

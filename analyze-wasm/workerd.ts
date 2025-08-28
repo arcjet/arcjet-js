@@ -1,23 +1,9 @@
 import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
-import type {
-  ImportObject,
-  BotConfig,
-  DetectedSensitiveInfoEntity,
-  SensitiveInfoEntity,
-  EmailValidationResult,
-  BotResult,
-  SensitiveInfoResult,
-  EmailValidationConfig,
-  SensitiveInfoEntities,
-} from "./wasm/arcjet_analyze_js_req.component.js";
-import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
+import type { ImportObject } from "./wasm/arcjet_analyze_js_req.component.js";
 
 import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm";
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm";
-
-type DetectSensitiveInfoFunction =
-  typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
 
 async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   if (path === "arcjet_analyze_js_req.component.core.wasm") {
@@ -33,6 +19,14 @@ async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
+/**
+ * Initialize the generated WebAssembly component.
+ *
+ * @param coreImports
+ *   Things, typically functions, to pass into the component.
+ * @returns
+ *   Promise that resolves to the initialized component.
+ */
 export async function initializeWasm(coreImports: ImportObject) {
   try {
     // Await the instantiation to catch the failure
@@ -42,15 +36,15 @@ export async function initializeWasm(coreImports: ImportObject) {
   }
 }
 
-export {
-  type BotConfig,
-  type DetectedSensitiveInfoEntity,
-  type SensitiveInfoEntity,
-  type EmailValidationConfig,
-  type EmailValidationResult,
-  type BotResult,
-  type SensitiveInfoResult,
-  type SensitiveInfoEntities,
-  type DetectSensitiveInfoFunction,
-  type ImportObject,
-};
+export type {
+  BotConfig,
+  BotResult,
+  DetectSensitiveInfoFunction,
+  DetectedSensitiveInfoEntity,
+  EmailValidationConfig,
+  EmailValidationResult,
+  ImportObject,
+  SensitiveInfoEntities,
+  SensitiveInfoEntity,
+  SensitiveInfoResult,
+} from "./types.js";
