@@ -6,6 +6,7 @@ import type {
   DetectSensitiveInfoFunction,
   EmailValidationConfig,
   EmailValidationResult,
+  FilterResult,
   SensitiveInfoEntities,
   SensitiveInfoEntity,
   SensitiveInfoResult,
@@ -33,6 +34,7 @@ type AnalyzeRequest = {
 export {
   type EmailValidationConfig,
   type BotConfig,
+  type FilterResult,
   type SensitiveInfoEntity,
   type DetectedSensitiveInfoEntity,
 };
@@ -237,20 +239,6 @@ export async function detectSensitiveInfo(
   throw new Error(
     "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
   );
-}
-
-/**
- * Result of a filter call.
- */
-export interface FilterResult {
-  /**
-   * Whether the request is allowed.
-   */
-  allowed: boolean;
-  /**
-   * List of expressions that matched.
-   */
-  matchedExpressions: Array<string>;
 }
 
 /**
