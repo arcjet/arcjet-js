@@ -464,9 +464,9 @@ const validateShieldOptions = createValidator({
 const validateFilterOptions = createValidator({
   rule: "filter",
   validations: [
-    { key: "mode", required: false, validate: validateMode },
     { key: "allow", required: false, validate: validateStringArray },
     { key: "deny", required: false, validate: validateStringArray },
+    { key: "mode", required: false, validate: validateMode },
   ],
 });
 

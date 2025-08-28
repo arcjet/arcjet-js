@@ -1,12 +1,12 @@
 import { Timestamp } from "@bufbuild/protobuf";
 import type {
+  ArcjetFilterRule,
   ArcjetRule,
   ArcjetRateLimitRule,
   ArcjetBotRule,
   ArcjetConclusion,
   ArcjetEmailRule,
   ArcjetEmailType,
-  ArcjetFilterRule,
   ArcjetMode,
   ArcjetRuleState,
   ArcjetStack,
@@ -25,6 +25,7 @@ import {
   ArcjetEmailReason,
   ArcjetErrorDecision,
   ArcjetErrorReason,
+  ArcjetFilterReason,
   ArcjetRateLimitReason,
   ArcjetRuleResult,
   ArcjetShieldReason,
@@ -32,7 +33,6 @@ import {
   ArcjetReason,
   ArcjetIpDetails,
   ArcjetSensitiveInfoReason,
-  ArcjetFilterReason,
 } from "./index.js";
 import type { IpDetails } from "./proto/decide/v1alpha1/decide_pb.js";
 import {
