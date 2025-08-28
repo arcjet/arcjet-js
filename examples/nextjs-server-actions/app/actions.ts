@@ -4,8 +4,6 @@ import arcjet, { request, validateEmail } from "@arcjet/next";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
-  // Use the `uid` cookie that is set by the middleware to fingerprint requests
-  characteristics: ['http.request.cookie["uid"]'],
   rules: [
     validateEmail({
       mode: "LIVE",
