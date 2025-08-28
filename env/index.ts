@@ -117,6 +117,12 @@ const baseUrlAllowed = [
   "https://fly.decide.arcjet.com",
   "https://fly.decide.arcjettest.com",
   "https://decide.arcjet.orb.local",
+  // Allow trailing slashes
+  "https://decide.arcjet.com/",
+  "https://decide.arcjettest.com/",
+  "https://fly.decide.arcjet.com/",
+  "https://fly.decide.arcjettest.com/",
+  "https://decide.arcjet.orb.local/",
 ];
 
 /**
