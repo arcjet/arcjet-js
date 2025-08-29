@@ -79,7 +79,7 @@ test("filter", async function (t) {
   });
 
   await t.test(
-    "should fail if `allow` and `deny` are both given",
+    "should fail if `allow` and `deny` are both empty",
     async function () {
       assert.throws(function () {
         filter(
@@ -87,6 +87,21 @@ test("filter", async function (t) {
           { allow: [], deny: [] },
         );
       }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
+    },
+  );
+
+  await t.test(
+    "should fail if `allow` and `deny` are both non-empty",
+    async function () {
+      assert.throws(function () {
+        filter(
+          // @ts-expect-error: test runtime behavior of invalid combination of both fields.
+          {
+            allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+            deny: ['http.request.headers["user-agent"] ~ "Firefox"'],
+          },
+        );
+      }, /`filter` options error: expressions must be passed in either `allow` or `deny` instead of both/);
     },
   );
 
