@@ -2625,7 +2625,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
           reason: new ArcjetFilterReason(result.matchedExpressions[0]),
           ruleId,
           state,
-          ttl: 60,
+          ttl: result.allowed ? 0 : 60,
         });
       } catch (error) {
         ruleResult = new ArcjetRuleResult({
@@ -2634,7 +2634,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
           reason: new ArcjetErrorReason(String(error)),
           ruleId,
           state,
-          ttl: 60,
+          ttl: 0,
         });
       }
 
