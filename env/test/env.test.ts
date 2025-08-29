@@ -102,6 +102,38 @@ describe("env", () => {
       env.baseUrl({ FLY_APP_NAME: "foobar" }),
       "https://fly.decide.arcjet.com",
     );
+
+    // Trailing slash.
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://decide.arcjet.com/",
+      }),
+      "https://decide.arcjet.com/",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://decide.arcjettest.com/",
+      }),
+      "https://decide.arcjettest.com/",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://fly.decide.arcjet.com/",
+      }),
+      "https://fly.decide.arcjet.com/",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://fly.decide.arcjettest.com/",
+      }),
+      "https://fly.decide.arcjettest.com/",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://decide.arcjet.orb.local/",
+      }),
+      "https://decide.arcjet.orb.local/",
+    );
   });
 
   test("apiKey", () => {
