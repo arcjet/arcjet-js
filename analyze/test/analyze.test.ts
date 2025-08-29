@@ -5,6 +5,7 @@ import {
   detectSensitiveInfo,
   generateFingerprint,
   isValidEmail,
+  matchFilters,
 } from "../index.js";
 
 const exampleContext = { characteristics: [], log: console };
@@ -21,6 +22,7 @@ test("@arcjet/analyze", async function (t) {
       "detectSensitiveInfo",
       "generateFingerprint",
       "isValidEmail",
+      "matchFilters",
     ]);
   });
 });
@@ -279,4 +281,56 @@ test("isValidEmail", async function (t) {
   );
 
   // TODO: test `allow` option.
+});
+
+test("matchFilters", async function (t) {
+  await t.test("should allow w/ `allowIfMatch` and a match", async function () {
+    assert.deepEqual(
+      await matchFilters(
+        exampleContext,
+        { ip: "127.0.0.1" },
+        ["ip.src == 127.0.0.1"],
+        true,
+      ),
+      { allowed: true, matchedExpressions: ["ip.src == 127.0.0.1"] },
+    );
+  });
+
+  await t.test("should deny w/ `allowIfMatch` and no match", async function () {
+    assert.deepEqual(
+      await matchFilters(
+        exampleContext,
+        { ip: "127.0.0.1" },
+        ["ip.src == 127.0.0.2"],
+        true,
+      ),
+      { allowed: false, matchedExpressions: [] },
+    );
+  });
+  await t.test("should deny w/o `allowIfMatch` and a match", async function () {
+    assert.deepEqual(
+      await matchFilters(
+        exampleContext,
+        { ip: "127.0.0.1" },
+        ["ip.src == 127.0.0.1"],
+        false,
+      ),
+      { allowed: false, matchedExpressions: ["ip.src == 127.0.0.1"] },
+    );
+  });
+
+  await t.test(
+    "should allow w/o `allowIfMatch` and no match",
+    async function () {
+      assert.deepEqual(
+        await matchFilters(
+          exampleContext,
+          { ip: "127.0.0.1" },
+          ["ip.src == 127.0.0.2"],
+          false,
+        ),
+        { allowed: true, matchedExpressions: [] },
+      );
+    },
+  );
 });

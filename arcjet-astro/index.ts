@@ -1,6 +1,7 @@
 import type {
   BotOptions,
   EmailOptions,
+  FilterOptions,
   FixedWindowRateLimitOptions,
   ProtectSignupOptions,
   SensitiveInfoOptions,
@@ -65,6 +66,23 @@ const validateEmailOptions = z
         deny: z.array(z.string()),
         requireTopLevelDomain: z.boolean(),
         allowDomainLiteral: z.boolean(),
+      })
+      .strict(),
+  ])
+  .optional();
+
+const validateFilterOptions = z
+  .union([
+    z
+      .object({
+        mode: validateMode,
+        allow: z.array(z.string()),
+      })
+      .strict(),
+    z
+      .object({
+        mode: validateMode,
+        deny: z.array(z.string()),
       })
       .strict(),
   ])
@@ -141,6 +159,10 @@ type IntegrationRule<Characteristics extends readonly string[]> =
   | {
       type: "email";
       options?: EmailOptions;
+    }
+  | {
+      type: "filter";
+      options: FilterOptions;
     }
   | {
       type: "sensitiveInfo";
@@ -240,6 +262,16 @@ function integrationRuleToClientRule<Characteristics extends readonly string[]>(
       return {
         importName: `validateEmail`,
         code: `validateEmail(${serializedOpts})`,
+      } as const;
+    }
+    case "filter": {
+      const serializedOpts = validateAndSerialize(
+        validateFilterOptions,
+        rule.options,
+      );
+      return {
+        importName: `filter`,
+        code: `filter(${serializedOpts})`,
       } as const;
     }
     case "sensitiveInfo": {
@@ -367,6 +399,21 @@ export function detectBot(options?: BotOptions) {
  */
 export function validateEmail(options?: EmailOptions) {
   return { type: "email", options } as const;
+}
+
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet filter rule.
+ *
+ * Applying this rule lets you write expressions to match against requests.
+ *
+ * @param options
+ *   Configuration for the filter rule (required).
+ * @returns
+ *   Astro integration Filter rule to provide to the SDK in the `rules` field.
+ */
+export function filter(options: FilterOptions) {
+  return { type: "filter", options } as const;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.

@@ -49,6 +49,7 @@ export type {
   EmailValidationConfig,
   EmailValidationResult,
   ImportObject,
+  FilterResult,
   SensitiveInfoEntities,
   SensitiveInfoEntity,
   SensitiveInfoResult,

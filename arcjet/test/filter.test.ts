@@ -1,0 +1,517 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import arcjet, {
+  type ArcjetContext,
+  type ArcjetRequestDetails,
+  ArcjetErrorReason,
+  filter,
+} from "../index.js";
+import { MemoryCache } from "@arcjet/cache";
+import {
+  ArcjetDenyDecision,
+  ArcjetIpDetails,
+  ArcjetReason,
+} from "@arcjet/protocol";
+
+test("filter", async function (t) {
+  await t.test("should fail if `mode` is invalid", async function () {
+    assert.throws(function () {
+      filter({
+        // @ts-expect-error: test runtime behavior of unknown `mode`.
+        mode: "INVALID",
+        allow: [],
+      });
+    }, /`filter` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
+  });
+
+  await t.test(
+    "should fail if `allow` is an unsupported value",
+    async function () {
+      assert.throws(function () {
+        filter({
+          // @ts-expect-error: test runtime behavior of invalid `allow` value.
+          allow: 1,
+        });
+      }, /`filter` options error: invalid type for `allow` - expected an array/);
+    },
+  );
+
+  await t.test("should fail w/ empty `allow`", async function () {
+    assert.throws(function () {
+      filter({ allow: [] });
+    }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
+  });
+
+  await t.test("should fail if `allow[]` is invalid", async function () {
+    assert.throws(function () {
+      filter({
+        // @ts-expect-error: test runtime behavior of invalid `allow[]` value.
+        allow: [1],
+      });
+    }, /invalid type for `allow\[0]` - expected string/);
+  });
+
+  await t.test(
+    "should fail if `deny` is an unsupported value",
+    async function () {
+      assert.throws(function () {
+        filter({
+          // @ts-expect-error: test runtime behavior of invalid `deny` value.
+          deny: 1,
+        });
+      }, /`filter` options error: invalid type for `deny` - expected an array/);
+    },
+  );
+
+  await t.test("should fail w/ empty `deny`", async function () {
+    assert.throws(function () {
+      filter({ deny: [] });
+    }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
+  });
+
+  await t.test("should fail if `deny[]` is invalid", async function () {
+    assert.throws(function () {
+      filter({
+        // @ts-expect-error: test runtime behavior of invalid `deny[]` value.
+        deny: [1],
+      });
+    }, /invalid type for `deny\[0]` - expected string/);
+  });
+
+  await t.test(
+    "should fail if `allow` and `deny` are both empty",
+    async function () {
+      assert.throws(function () {
+        filter(
+          // @ts-expect-error: test runtime behavior of invalid combination of both fields.
+          { allow: [], deny: [] },
+        );
+      }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
+    },
+  );
+
+  await t.test(
+    "should fail if `allow` and `deny` are both non-empty",
+    async function () {
+      assert.throws(function () {
+        filter(
+          // @ts-expect-error: test runtime behavior of invalid combination of both fields.
+          {
+            allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+            deny: ['http.request.headers["user-agent"] ~ "Firefox"'],
+          },
+        );
+      }, /`filter` options error: expressions must be passed in either `allow` or `deny` instead of both/);
+    },
+  );
+
+  await t.test(
+    "should fail if neither `allow` nor `deny` are given",
+    async function () {
+      assert.throws(function () {
+        filter(
+          // @ts-expect-error: test runtime behavior of neither `allow` nor `deny`.
+          {},
+        );
+      }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
+    },
+  );
+});
+
+test("filter: `validate`", async function (t) {
+  await t.test("should not fail when calling `validate` w/o `ip`", function () {
+    const [rule] = filter({
+      allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+    });
+
+    const _ = rule.validate(createContext(), {
+      ...createRequest(),
+      ip: undefined,
+    });
+  });
+
+  await t.test("should pass when calling `validate` w/ `ip`", function () {
+    const [rule] = filter({
+      allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+    });
+    const _ = rule.validate(createContext(), {
+      ...createRequest(),
+      ip: "127.0.0.1",
+    });
+  });
+});
+
+test("filter: `protect`", async function (t) {
+  await t.test("should allow if an `allow` matches", async function () {
+    const [rule] = filter({
+      allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+  });
+
+  await t.test("should deny if no `allow` matches", async function () {
+    const [rule] = filter({
+      allow: ['http.request.headers["user-agent"] ~ "Firefox"'],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "DENY");
+  });
+
+  await t.test("should deny if a `deny` matches", async function () {
+    const [rule] = filter({
+      deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "DENY");
+  });
+
+  await t.test("should allow if no `deny` matches", async function () {
+    const [rule] = filter({
+      deny: ['http.request.headers["user-agent"] ~ "Firefox"'],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+  });
+
+  await t.test("should error", async function () {
+    const [rule] = filter({ deny: ['http.blob ~ "Chrome"'] });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ERROR");
+    assert(result.reason instanceof ArcjetErrorReason);
+    assert.equal(
+      result.reason.message,
+      'Filter parsing error (1:1):\nhttp.blob ~ "Chrome"\n^^^^^^^^^ unknown identifier\n',
+    );
+  });
+
+  await t.test("should not cache (as a rule)", async function () {
+    const context = createContext();
+    const [rule] = filter({
+      deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+      mode: "LIVE",
+    });
+    const first = await rule.protect(context, createRequest());
+    assert.equal(first.conclusion, "DENY");
+    assert.equal(first.state, "RUN");
+
+    const second = await rule.protect(context, createRequest());
+    assert.equal(second.conclusion, "DENY");
+    assert.equal(second.state, "RUN");
+  });
+
+  await t.test(
+    "should cache (when passed in `rules` to `arcjet`)",
+    async function () {
+      const context = createContext();
+      const aj = arcjet({
+        client: {
+          async decide() {
+            return new ArcjetDenyDecision({
+              reason: new ArcjetReason(),
+              results: [],
+              ttl: 0,
+            });
+          },
+          report() {},
+        },
+        key: "",
+        log: { ...context.log, debug() {} },
+        rules: [
+          filter({
+            deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+            mode: "LIVE",
+          }),
+        ],
+      });
+
+      const first = await aj.protect(context, { ...createRequest() });
+      const firstResult = first.results[0];
+      assert.equal(firstResult.conclusion, "DENY");
+      assert.equal(firstResult.state, "RUN");
+
+      const second = await aj.protect(context, { ...createRequest() });
+      const secondResult = second.results[0];
+      assert.equal(secondResult.conclusion, "DENY");
+      assert.equal(secondResult.state, "CACHED");
+    },
+  );
+});
+
+test("expressions", async function (t) {
+  await t.test("fields", async function (t) {
+    await t.test("`http.host`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({ allow: ['http.host == "localhost:3000"'] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({ allow: ['http.host == "localhost:8000"'] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+
+    await t.test("`http.request.cookie`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({
+          allow: ['http.request.cookie["NEXT_LOCALE"] ~ "en-"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({
+          allow: ['http.request.cookie["NEXT_LOCALE"] ~ "de-"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+
+    await t.test("`http.request.headers`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({
+          allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({
+          allow: ['http.request.headers["user-agent"] ~ "Firefox"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+
+    await t.test("`http.request.method`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({ allow: ['http.request.method == "GET"'] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({ allow: ['http.request.method == "POST"'] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+
+    await t.test("`http.request.uri.args`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({
+          allow: ['http.request.uri.args["q"] == "alpha"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({
+          allow: ['http.request.uri.args["q"] == "bravo"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+
+    await t.test("`http.request.uri.path`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({
+          allow: ['http.request.uri.path ~ "/quick-start"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({
+          allow: ['http.request.uri.path ~ "/concepts"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+
+    await t.test("`ip.src`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({ allow: ["ip.src == 127.0.0.1"] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({ allow: ["ip.src == 192.168.1.1"] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+  });
+
+  await t.test("functions", async function (t) {
+    await t.test("`len`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({ allow: ["len(http.request.method) == 3"] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({ allow: ["len(http.request.method) == 4"] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+
+    await t.test("`lower`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({
+          allow: ['lower(http.request.method) == "get"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({
+          allow: ['lower(http.request.method) == "post"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+
+    await t.test("`upper`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({
+          allow: ['upper(http.host) == "LOCALHOST:3000"'],
+        });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({ allow: ['upper(http.host) == "EXAMPLE.COM"'] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "DENY");
+      });
+    });
+  });
+
+  await t.test("errors", async function (t) {
+    await t.test("unknown fields", async function () {
+      const [rule] = filter({ allow: ["http.request.blob == 1"] });
+      const result = await rule.protect(createContext(), createRequest());
+      assert.equal(result.conclusion, "ERROR");
+      assert(result.reason instanceof ArcjetErrorReason);
+      assert.equal(
+        result.reason.message,
+        "Filter parsing error (1:1):\nhttp.request.blob == 1\n^^^^^^^^^^^^^^^^^ unknown identifier\n",
+      );
+    });
+
+    await t.test("unknown functions", async function () {
+      const [rule] = filter({ allow: ["blob(http.request) == 1"] });
+      const result = await rule.protect(createContext(), createRequest());
+      assert.equal(result.conclusion, "ERROR");
+      assert(result.reason instanceof ArcjetErrorReason);
+      assert.equal(
+        result.reason.message,
+        "Filter parsing error (1:1):\nblob(http.request) == 1\n^^^^ unknown identifier\n",
+      );
+    });
+
+    await t.test("incorrect comparison", async function () {
+      const [rule] = filter({ allow: ["http.host == 1"] });
+      const result = await rule.protect(createContext(), createRequest());
+      assert.equal(result.conclusion, "ERROR");
+      assert(result.reason instanceof ArcjetErrorReason);
+      assert.equal(
+        result.reason.message,
+        "Filter parsing error (1:14):\nhttp.host == 1\n             ^ expected 2 characters, but found 1\n",
+      );
+    });
+  });
+});
+
+/**
+ * Create empty values for context.
+ *
+ * @returns
+ *   Context.
+ */
+function createContext(): ArcjetContext {
+  return {
+    cache: new MemoryCache(),
+    characteristics: [],
+    fingerprint: "a",
+    getBody() {
+      return Promise.resolve(undefined);
+    },
+    key: "b",
+    log: console,
+    runtime: "c",
+  };
+}
+
+/**
+ * Create empty values for IP details.
+ *
+ * @returns
+ *   Details.
+ */
+function createIpDetails(): ConstructorParameters<typeof ArcjetIpDetails>[0] {
+  return {
+    accuracyRadius: 2,
+    asnName: "Fastly, Inc.",
+    asnDomain: "fastly.com",
+    asn: "54113",
+    city: "Uniontown",
+    continentName: "North America",
+    continent: "NA",
+    countryName: "United States",
+    country: "US",
+    isHosting: false,
+    isProxy: false,
+    isRelay: false,
+    isTor: false,
+    // For testing purposes.
+    isVpn: true,
+    latitude: 39.90008,
+    longitude: -79.71643,
+    postalCode: "15472",
+    region: "Pennsylvania",
+    service: undefined,
+    timezone: "America/New_York",
+  };
+}
+
+/**
+ * Create empty values for details.
+ *
+ * @returns
+ *   Details.
+ */
+function createRequest(): ArcjetRequestDetails {
+  return {
+    cookies: "NEXT_LOCALE=en-US",
+    extra: {},
+    headers: new Headers({
+      "user-agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    }),
+    host: "localhost:3000",
+    ip: "127.0.0.1",
+    method: "GET",
+    path: "/bot-protection/quick-start",
+    protocol: "http:",
+    query: "?q=alpha",
+  };
+}

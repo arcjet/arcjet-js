@@ -5,6 +5,7 @@ import type {
   EmailValidationConfig as GeneratedEmailValidationConfig,
   EmailValidationResult as GeneratedEmailValidationResult,
   ImportObject as GeneratedImportObject,
+  FilterResult as GeneratedFilterResult,
   SensitiveInfoEntities as GeneratedSensitiveInfoEntities,
   SensitiveInfoEntity as GeneratedSensitiveInfoEntity,
   SensitiveInfoResult as GeneratedSensitiveInfoResult,
@@ -59,6 +60,12 @@ export type EmailValidationConfig = GeneratedEmailValidationConfig;
  * Generated from the WebAssembly component.
  */
 export type EmailValidationResult = GeneratedEmailValidationResult;
+
+/**
+ * Result of a filter call.
+ * Generated from the WebAssembly component.
+ */
+export type FilterResult = GeneratedFilterResult;
 
 /**
  * Object representing the import structure.
