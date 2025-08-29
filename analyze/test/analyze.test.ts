@@ -284,7 +284,7 @@ test("isValidEmail", async function (t) {
 });
 
 test("matchFilters", async function (t) {
-  await t.test("should work (match)", async function () {
+  await t.test("should allow w/ `allowIfMatch` and a match", async function () {
     assert.deepEqual(
       await matchFilters(
         exampleContext,
@@ -296,7 +296,7 @@ test("matchFilters", async function (t) {
     );
   });
 
-  await t.test("should work (mismatch)", async function () {
+  await t.test("should deny w/ `allowIfMatch` and no match", async function () {
     assert.deepEqual(
       await matchFilters(
         exampleContext,
@@ -307,4 +307,30 @@ test("matchFilters", async function (t) {
       { allowed: false, matchedExpressions: [] },
     );
   });
+  await t.test("should deny w/o `allowIfMatch` and a match", async function () {
+    assert.deepEqual(
+      await matchFilters(
+        exampleContext,
+        { ip: "127.0.0.1" },
+        ["ip.src == 127.0.0.1"],
+        false,
+      ),
+      { allowed: false, matchedExpressions: ["ip.src == 127.0.0.1"] },
+    );
+  });
+
+  await t.test(
+    "should allow w/o `allowIfMatch` and no match",
+    async function () {
+      assert.deepEqual(
+        await matchFilters(
+          exampleContext,
+          { ip: "127.0.0.1" },
+          ["ip.src == 127.0.0.2"],
+          false,
+        ),
+        { allowed: true, matchedExpressions: [] },
+      );
+    },
+  );
 });
