@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/stable-hash-v1.0.0-beta.11) (2025-08-29)
+
+
+### 📝 Documentation
+
+* **sprintf:** add JSDocs ([#4848](https://github.com/arcjet/arcjet-js/issues/4848)) ([d9b0adb](https://github.com/arcjet/arcjet-js/commit/d9b0adb94c243cf5894f64005ad722ad4264145d))
+* **stable-hash:** add derivative work to readme ([#4858](https://github.com/arcjet/arcjet-js/issues/4858)) ([b693f2b](https://github.com/arcjet/arcjet-js/commit/b693f2b7125076edc19a15b58e5e8f0a8d226175))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/tsconfig bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/stable-hash-v1.0.0-beta.10) (2025-08-04)
 
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/rollup-config-v1.0.0-beta.11) (2025-08-29)
+
+
+### 📝 Documentation
+
+* **rollup-config:** add JSDocs ([#4845](https://github.com/arcjet/arcjet-js/issues/4845)) ([3b5b477](https://github.com/arcjet/arcjet-js/commit/3b5b477f6087e3374c778a0749e5cb5c798e5908))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/tsconfig bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/rollup-config-v1.0.0-beta.10) (2025-08-04)
 
 
