@@ -2638,12 +2638,6 @@ export function filter(options: FilterOptions): Primitive<{}> {
         });
       }
 
-      context.cache.set(
-        ruleId,
-        context.fingerprint,
-        ruleResult,
-        ruleResult.ttl,
-      );
       return ruleResult;
     },
     type,

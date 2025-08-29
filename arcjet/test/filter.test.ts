@@ -166,7 +166,8 @@ test("filter: `protect`", async function (t) {
     );
   });
 
-  await t.test("should cache", async function () {
+  await t.test("should not cache", async function () {
+    // Caching is not done on `rule.protect` but on `aj.protect`.
     const context = createContext();
     const [rule] = filter({
       deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
@@ -178,7 +179,7 @@ test("filter: `protect`", async function (t) {
 
     const second = await rule.protect(context, createRequest());
     assert.equal(second.conclusion, "DENY");
-    assert.equal(second.state, "CACHED");
+    assert.equal(second.state, "RUN");
   });
 });
 
