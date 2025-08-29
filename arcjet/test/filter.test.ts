@@ -1,13 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
+import arcjet, {
   type ArcjetContext,
   type ArcjetRequestDetails,
   ArcjetErrorReason,
   filter,
 } from "../index.js";
 import { MemoryCache } from "@arcjet/cache";
-import { ArcjetIpDetails } from "@arcjet/protocol";
+import {
+  ArcjetDenyDecision,
+  ArcjetIpDetails,
+  ArcjetReason,
+} from "@arcjet/protocol";
 
 test("filter", async function (t) {
   await t.test("should fail if `mode` is invalid", async function () {
@@ -166,8 +170,7 @@ test("filter: `protect`", async function (t) {
     );
   });
 
-  await t.test("should not cache", async function () {
-    // Caching is not done on `rule.protect` but on `aj.protect`.
+  await t.test("should not cache (as a rule)", async function () {
     const context = createContext();
     const [rule] = filter({
       deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
@@ -181,6 +184,43 @@ test("filter: `protect`", async function (t) {
     assert.equal(second.conclusion, "DENY");
     assert.equal(second.state, "RUN");
   });
+
+  await t.test(
+    "should cache (when passed in `rules` to `arcjet`)",
+    async function () {
+      const context = createContext();
+      const aj = arcjet({
+        client: {
+          async decide() {
+            return new ArcjetDenyDecision({
+              reason: new ArcjetReason(),
+              results: [],
+              ttl: 0,
+            });
+          },
+          report() {},
+        },
+        key: "",
+        log: { ...context.log, debug() {} },
+        rules: [
+          filter({
+            deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+            mode: "LIVE",
+          }),
+        ],
+      });
+
+      const first = await aj.protect(context, { ...createRequest() });
+      const firstResult = first.results[0];
+      assert.equal(firstResult.conclusion, "DENY");
+      assert.equal(firstResult.state, "RUN");
+
+      const second = await aj.protect(context, { ...createRequest() });
+      const secondResult = second.results[0];
+      assert.equal(secondResult.conclusion, "DENY");
+      assert.equal(secondResult.state, "CACHED");
+    },
+  );
 });
 
 test("expressions", async function (t) {
