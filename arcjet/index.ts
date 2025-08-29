@@ -455,81 +455,397 @@ const validateShieldOptions = createValidator({
   validations: [{ key: "mode", required: false, validate: validateMode }],
 });
 
+/**
+ * Configuration for the token bucket rate limit rule.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ */
 export type TokenBucketRateLimitOptions<
   Characteristics extends readonly string[],
 > = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
+  /**
+   * Characteristics to track a user by (default: global characteristics or `["src.ip"]`).
+   */
   characteristics?: Characteristics;
+  /**
+   * Tokens to add to the bucket at each interval (required).
+   *
+   * For example, if you set `interval` to `60` and the `refillRate` to `10`,
+   * the bucket will refill `10` tokens every `60` seconds.
+   */
   refillRate: number;
+  /**
+   * Time interval for the refill rate (required).
+   *
+   * This can be a string like `"1m"` for one minute,
+   * `"1h45m"` for 1 hour and 45 minutes,
+   * or a number like `120` for 120 seconds.
+   *
+   * Valid string time units are `s` (seconds),
+   * `m` (minutes),
+   * `h` (hours), and
+   * `d` (days).
+   */
   interval: string | number;
+  /**
+   * Max tokens the bucket can hold (required).
+   *
+   * The bucket starts at this full capacity, and after being used, will refill
+   * until it reaches full capacity.
+   */
   capacity: number;
 };
 
+/**
+ * Configuration for the fixed window rate limit rule.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ */
 export type FixedWindowRateLimitOptions<
   Characteristics extends readonly string[],
 > = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
+  /**
+   * Characteristics to track a user by (default: global characteristics or `["src.ip"]`).
+   */
   characteristics?: Characteristics;
+  /**
+   * Fixed time window (required).
+   *
+   * This can be a string like `"1m"` for one minute,
+   * `"1h45m"` for 1 hour and 45 minutes,
+   * or a number like `120` for 120 seconds.
+   *
+   * Valid string time units are `s` (seconds),
+   * `m` (minutes),
+   * `h` (hours), and
+   * `d` (days).
+   */
   window: string | number;
+  /**
+   * Max requests allowed in the fixed time window (required).
+   */
   max: number;
 };
 
+/**
+ * Configuration for the sliding window rate limit rule.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ */
 export type SlidingWindowRateLimitOptions<
   Characteristics extends readonly string[],
 > = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
+  /**
+   * Characteristics to track a user by (default: global characteristics or `["src.ip"]`).
+   */
   characteristics?: Characteristics;
+  /**
+   * Time interval for the rate limit (required).
+   *
+   * This can be a string like `"1m"` for one minute,
+   * `"1h45m"` for 1 hour and 45 minutes,
+   * or a number like `120` for 120 seconds.
+   *
+   * Valid string time units are `s` (seconds),
+   * `m` (minutes),
+   * `h` (hours), and
+   * `d` (days).
+   */
   interval: string | number;
+  /**
+   * Max requests allowed in the sliding time window (required).
+   */
   max: number;
 };
 
+/**
+ * Configuration for the bot detection rule to allow certain bots and deny
+ * others.
+ */
 export type BotOptionsAllow = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
+  /**
+   * List of bots to allow (required).
+   *
+   * Only the bots in this list will be allowed and any other detected bot will
+   * be denied.
+   * All bots will be denied if empty.
+   * You must provide either `allow` or `deny`, not both.
+   *
+   * You can use an individual bot name such as `"CURL"` to allow the default
+   * user-agent of the `curl` tool.
+   * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to allow
+   * all search engine bots.
+   * See [*Identifying bots* on
+   * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
+   * for a list of bots and categories.
+   */
   allow: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  /**
+   * List of bots to deny,
+   * cannot be combined with `allow`.
+   */
   deny?: never;
 };
 
+/**
+ * Configuration for the bot detection rule to deny certain bots and allow
+ * others.
+ */
 export type BotOptionsDeny = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
+  /**
+   * List of bots to allow,
+   * cannot be combined with `allow`.
+   */
   allow?: never;
+  /**
+   * List of bots to deny (required).
+   *
+   * Only the bots in this list will be denied and any other detected bot will
+   * be allowed.
+   * All bots will be allowed if empty, which is equivalent to not using
+   * `detectBot()`.
+   * You must provide either `allow` or `deny`, not both.
+   *
+   * You can use an individual bot name such as `"CURL"` to deny the default
+   * user-agent of the `curl` tool.
+   * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to deny
+   * all search engine bots.
+   * See [*Identifying bots* on
+   * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
+   * for a list of bots and categories.
+   */
   deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
 };
 
+/**
+ * Configuration for the bot detection rule.
+ */
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 
+/**
+ * Configuration for the email validation rule to allow certain email addresses
+ * and deny others.
+ */
 export type EmailOptionsAllow = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
+  /**
+   * List of email address types to allow (required).
+   *
+   * Only email addresses of the email types in this list will be allowed and
+   * any other address will be denied.
+   * All addresses will be denied if empty.
+   * You must provide either `allow` or `deny`, not both.
+   *
+   * You can use the following email types:
+   *
+   * - `"DISPOSABLE"` (disposable email addresses)
+   * - `"FREE"` (free email addresses)
+   * - `"NO_GRAVATAR"` (email addresses with no Gravatar)
+   * - `"NO_MX_RECORDS"` (email addresses with no MX records)
+   * - `"INVALID"` (invalid email addresses)
+   */
   allow: ArcjetEmailType[];
+  /**
+   * List of email address types to block,
+   * cannot be combined with `allow`.
+   *
+   * @deprecated
+   *   Use `deny` instead.
+   */
   block?: never;
+  /**
+   * List of email address types to deny,
+   * cannot be combined with `allow`.
+   */
   deny?: never;
+  /**
+   * Whether to see email addresses that contain a single domain segment as
+   * invalid (default: `true`).
+   *
+   * For example, `foo@bar` is seen as valid when `false` and invalid when
+   * `true`.
+   */
   requireTopLevelDomain?: boolean;
+  /**
+   * Whether to see email addresses that contain a domain literal as valid
+   * (default: `false`).
+   *
+   * For example, `foo@[192.168.1.1]` is valid when `true` and invalid when
+   * `false`.
+   */
   allowDomainLiteral?: boolean;
 };
 
+/**
+ * Configuration for the email validation rule to deny certain email addresses
+ * and allow others.
+ */
 export type EmailOptionsDeny = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
+  /**
+   * List of email address types to allow,
+   * cannot be combined with `deny`.
+   */
   allow?: never;
+  /**
+   * List of email address types to block,
+   * cannot be combined with `deny`.
+   *
+   * @deprecated
+   *   Use `deny` instead.
+   */
   block?: never;
+  /**
+   * List of email address types to deny (required).
+   *
+   * Email addresses of the email types in this list will be denied and
+   * any other address will be allowed.
+   * All addresses will be allowed if empty.
+   * You must provide either `allow` or `deny`, not both.
+   *
+   * You can use the following email types:
+   *
+   * - `"DISPOSABLE"` (disposable email addresses)
+   * - `"FREE"` (free email addresses)
+   * - `"NO_GRAVATAR"` (email addresses with no Gravatar)
+   * - `"NO_MX_RECORDS"` (email addresses with no MX records)
+   * - `"INVALID"` (invalid email addresses)
+   */
   deny: ArcjetEmailType[];
+  /**
+   * Whether to see email addresses that contain a single domain segment as
+   * invalid (default: `true`).
+   *
+   * For example, `foo@bar` is seen as valid when `false` and invalid when
+   * `true`.
+   */
   requireTopLevelDomain?: boolean;
+  /**
+   * Whether to see email addresses that contain a domain literal as valid
+   * (default: `false`).
+   *
+   * For example, `foo@[192.168.1.1]` is valid when `true` and invalid when
+   * `false`.
+   */
   allowDomainLiteral?: boolean;
 };
 
+/**
+ * Configuration for the email validation rule to deny certain email addresses
+ * and allow others.
+ *
+ * @deprecated
+ *   Use `deny` instead.
+ */
 type EmailOptionsBlock = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   */
   mode?: ArcjetMode;
+  /**
+   * List of email address types to allow,
+   * cannot be combined with `block`.
+   */
   allow?: never;
-  /** @deprecated use `deny` instead */
+  /**
+   * List of email address types to deny (required).
+   *
+   * @deprecated
+   *   Use `deny` instead.
+   */
   block: ArcjetEmailType[];
   deny?: never;
+  /**
+   * Whether to see email addresses that contain a single domain segment as
+   * invalid (default: `true`).
+   */
   requireTopLevelDomain?: boolean;
+  /**
+   * Whether to see email addresses that contain a domain literal as valid
+   * (default: `false`).
+   */
   allowDomainLiteral?: boolean;
 };
 
+/**
+ * Configuration for the email validation rule.
+ */
 export type EmailOptions =
   | EmailOptionsAllow
   | EmailOptionsDeny
   | EmailOptionsBlock;
 
+/**
+ * Custom detection function to identify sensitive information.
+ *
+ * This signature corresponds to similar functions from `@arcjet/redact-wasm`
+ * and `@arcjet/redact`.
+ *
+ * @template T
+ *   Custom entity names that are returned from `detect` and optionally listed in `entities`.
+ * @param tokens
+ *   Tokens to detect in.
+ * @returns
+ *   Array of `undefined` for tokens that are not sensitive or a `string` used as
+ *   a label for sensitive info.
+ */
 type DetectSensitiveInfoEntities<T> = (
   tokens: string[],
 ) => Array<ArcjetSensitiveInfoType | T | undefined>;
@@ -548,22 +864,120 @@ type ValidEntities<Detect> = Array<
       : never
 >;
 
+/**
+ * Configuration for the sensitive info detection rule to allow certain
+ * sensitive info types and deny others.
+ *
+ * @template Detect
+ *   Custom detection function to identify sensitive information.
+ */
 export type SensitiveInfoOptionsAllow<Detect> = {
+  /**
+   * List of sensitive info types to allow (required).
+   *
+   * Only the types in this list will be allowed and any other detected types
+   * will be denied.
+   * All sensitive info (including that detected by `detect`) will be denied if
+   * empty.
+   * You must provide either `allow` or `deny`, not both.
+   *
+   * You can use the following sensitive info types that can be detected
+   * natively:
+   *
+   * - `"CREDIT_CARD_NUMBER"`
+   * - `"EMAIL"`
+   * - `"IP_ADDRESS"`
+   * - `"PHONE_NUMBER"`
+   *
+   * You can also use labels of custom info detected by `detect`.
+   */
   allow: ValidEntities<Detect>;
+  /**
+   * List of sensitive info types to deny,
+   * cannot be combined with `allow`.
+   */
   deny?: never;
+  /**
+   * Tokens to consider (default: `1`).
+   *
+   * A list of tokens of this size will be passed to the custom detect
+   * function.
+   */
   contextWindowSize?: number;
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
+  /**
+   * Custom detection function to identify sensitive information.
+   */
   detect?: Detect;
 };
 
+/**
+ * Configuration for the sensitive info detection rule to deny certain
+ * sensitive info types and allow others.
+ *
+ * @template Detect
+ *   Custom detection function to identify sensitive information.
+ */
 export type SensitiveInfoOptionsDeny<Detect> = {
+  /**
+   * List of sensitive info types to allow,
+   * cannot be combined with `deny`.
+   */
   allow?: never;
+  /**
+   * List of sensitive info types to deny (required).
+   *
+   * Only the types in this list will be denied and any other detected types
+   * will be allowed.
+   * All sensitive info (including that detected by `detect`) will be allowed if
+   * empty.
+   * You must provide either `allow` or `deny`, not both.
+   *
+   * You can use the following sensitive info types that can be detected
+   * natively:
+   *
+   * - `"CREDIT_CARD_NUMBER"`
+   * - `"EMAIL"`
+   * - `"IP_ADDRESS"`
+   * - `"PHONE_NUMBER"`
+   *
+   * You can also use labels of custom info detected by `detect`.
+   */
   deny: ValidEntities<Detect>;
+  /**
+   * Tokens to consider (default: `1`).
+   *
+   * A list of tokens of this size will be passed to the custom detect
+   * function.
+   */
   contextWindowSize?: number;
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
+  /**
+   * Custom detection function to identify sensitive information.
+   */
   detect?: Detect;
 };
 
+/**
+ * Configuration for the sensitive info detection rule.
+ *
+ * @template Detect
+ *   Custom detection function to identify sensitive information.
+ */
 export type SensitiveInfoOptions<Detect> =
   | SensitiveInfoOptionsAllow<Detect>
   | SensitiveInfoOptionsDeny<Detect>;
@@ -578,10 +992,26 @@ const Priority = {
 
 type PlainObject = { [key: string]: unknown };
 
-// Primitives and Products external names for Rules even though they are defined
-// the same.
+// Primitives and Products are external names for Rules.
 // See ExtraProps below for further explanation on why we define them like this.
+
+/**
+ * Arcjet provides a set of key primitives which can be used to build security
+ * functionality.
+ * Each primitive can be used independently or combined as part of a
+ * pre-configured product.
+ *
+ * @template Props
+ *   Configuration.
+ */
 export type Primitive<Props extends PlainObject = {}> = [ArcjetRule<Props>];
+
+/**
+ * Pre-configured product consisting of combined primitives.
+ *
+ * @template Props
+ *   Configuration.
+ */
 export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 
 // User-defined characteristics alter the required props of an ArcjetRequest
@@ -603,10 +1033,30 @@ type PropsForCharacteristic<T> =
         ? Record<T, string | number | boolean>
         : never
     : {};
+
+/**
+ * Props for characteristics.
+ *
+ * Utility type to generate a record of props for each characteristic.
+ * It excludes the known characteristics which Arcjet provides.
+ *
+ * @template Characteristics
+ *   List of characteristics.
+ */
 export type CharacteristicProps<Characteristics extends readonly string[]> =
   UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>;
+
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
+
+/**
+ * Props for rules.
+ *
+ * Utility type to generate a record of props for all rules.
+ *
+ * @template Rules
+ *   Matrix or list of rules.
+ */
 // We theoretically support an arbitrary amount of rule flattening,
 // but one level seems to be easiest; however, this puts a constraint of
 // the definition of `Product` such that they need to spread each `Primitive`
@@ -620,39 +1070,80 @@ export type ExtraProps<Rules> = Rules extends []
       : never;
 
 /**
- * Additional context that can be provided by adapters.
- *
- * Among other things, this could include the Arcjet API Key if it were only
- * available in a runtime handler or IP details provided by a platform.
+ * Additional context provided by adapters.
  */
 export type ArcjetAdapterContext = {
+  /**
+   * Allow arbitrary indexing.
+   *
+   * Adapters could include the Arcjet API Key if it were only available in a
+   * runtime handler or IP details provided by a platform.
+   */
   [key: string]: unknown;
+  /**
+   * Read the request body (required).
+   */
   getBody(): Promise<string | undefined>;
+  /**
+   * Wait for a promise to resolve before continuing (optional).
+   *
+   * @param promise
+   *   The promise to wait for.
+   * @returns
+   *   Nothing.
+   */
   waitUntil?: (promise: Promise<unknown>) => void;
 };
 
 /**
- * @property {string} ip - The IP address of the client.
- * @property {string} method - The HTTP method of the request.
- * @property {string} protocol - The protocol of the request.
- * @property {string} host - The host of the request.
- * @property {string} path - The path of the request.
- * @property {Headers} headers - The headers of the request.
- * @property {string} cookies - The string representing semicolon-separated Cookies for a request.
- * @property {string} query - The `?`-prefixed string representing the Query for a request. Commonly referred to as a "querystring".
- * @property {string} email - An email address related to the request.
- * @property ...extra - Extra data that might be useful for Arcjet. For example, requested tokens are specified as the `requested` property.
+ * Arcjet request.
+ *
+ * @template Props
+ *   Extra data that might be useful for Arcjet.
+ *   For example, requested tokens are specified as the `requested` property.
  */
 export type ArcjetRequest<Props extends PlainObject> = Simplify<
   {
+    /**
+     * Additional properties.
+     *
+     * For example, an email address related to the request is commonly passed
+     * as `email` (`string`).
+     */
     [key: string]: unknown;
+    /**
+     * IP address of the client.
+     */
     ip?: string;
+    /**
+     * HTTP method of the request.
+     */
     method?: string;
+    /**
+     * Protocol of the request.
+     */
     protocol?: string;
+    /**
+     * Host of the request.
+     */
     host?: string;
+    /**
+     * Path of the request.
+     */
     path?: string;
+    /**
+     * Headers of the request.
+     */
     headers?: Headers | Record<string, string | string[] | undefined>;
+    /**
+     * Semicolon-separated cookies for a request.
+     */
     cookies?: string;
+    /**
+     * Query string for a request.
+     * Commonly referred to as a "querystring".
+     * Starts with `?` when not empty.
+     */
     query?: string;
   } & Props
 >;
@@ -669,58 +1160,49 @@ function isRateLimitRule<Props extends PlainObject>(
 }
 
 /**
- * Arcjet token bucket rate limiting rule. Applying this rule sets a token
- * bucket rate limit.
+ * Arcjet token bucket rate limiting rule.
+ *
+ * Applying this rule sets a token bucket rate limit.
  *
  * This algorithm is based on a bucket filled with a specific number of tokens.
  * Each request withdraws some amount of tokens from the bucket and the bucket
- * is refilled at a fixed rate. Once the bucket is empty, the client is blocked
- * until the bucket refills.
+ * is refilled at a fixed rate.
+ * Once the bucket is empty, the client is blocked until the bucket refills.
  *
  * This algorithm is useful when you want to allow clients to make a burst of
  * requests and then still be able to make requests at a slower rate.
  *
- * @param {TokenBucketRateLimitOptions} options - The options for the token
- * bucket rate limiting rule.
- * @param {ArcjetMode} options.mode - The block mode of the rule, either
- * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when the rate limit is
- * exceeded, and `"DRY_RUN"` will allow all requests while still providing
- * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
- * @param {number} options.refillRate - The number of tokens to add to the
- * bucket at each interval. For example, if you set the interval to 60 and the
- * refill rate to 10, the bucket will refill 10 tokens every 60 seconds.
- * @param {string | number} options.interval - The time interval for the refill
- * rate. This can be a string like `"60s"` for 60 seconds, `"1h45m"` for 1 hour
- * and 45 minutes, or a number like `60` for 60 seconds. Valid string time units
- * are:
- * - `s` for seconds.
- * - `m` for minutes.
- * - `h` for hours.
- * - `d` for days.
- * @param {number} options.capacity - The maximum number of tokens the bucket
- * can hold. The bucket starts at full capacity and will refill until it hits
- * the capacity.
- * @returns {Primitive} The token bucket rule to provide to the SDK in the
- * `rules` option.
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration for the token bucket rate limiting rule (required).
+ * @returns
+ *   Token bucket rule to provide to the SDK in the `rules` field.
  *
  * @example
- * ```ts
- * tokenBucket({ mode: "LIVE", refillRate: 10, interval: "60s", capacity: 100 });
- * ```
+ *   ```ts
+ *   tokenBucket({
+ *     mode: "LIVE",
+ *     refillRate: 10,
+ *     interval: "60s",
+ *     capacity: 100,
+ *   });
+ *   ```
  * @example
- * ```ts
- * const aj = arcjet({
- *   key: process.env.ARCJET_KEY,
- *   rules: [
- *     tokenBucket({
- *       mode: "LIVE",
- *       refillRate: 10,
- *       interval: "60s",
- *       capacity: 100,
- *     })
- *   ],
- * });
- * ```
+ *   ```ts
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [
+ *       tokenBucket({
+ *         mode: "LIVE",
+ *         refillRate: 10,
+ *         interval: "60s",
+ *         capacity: 100,
+ *       }),
+ *     ],
+ *   });
+ *   ```
+ *
  * @link https://docs.arcjet.com/rate-limiting/concepts
  * @link https://docs.arcjet.com/rate-limiting/algorithms#token-bucket
  * @link https://docs.arcjet.com/rate-limiting/reference
@@ -831,56 +1313,49 @@ export function tokenBucket<
 }
 
 /**
- * Arcjet fixed window rate limiting rule. Applying this rule sets a fixed
- * window rate limit which tracks the number of requests made by a client over a
- * fixed time window.
+ * Arcjet fixed window rate limiting rule.
  *
- * This is the simplest algorithm. It tracks the number of requests made by a
- * client over a fixed time window e.g. 60 seconds. If the client exceeds the
- * limit, they are blocked until the window expires.
+ * Applying this rule sets a fixed window rate limit which tracks the number of
+ * requests made by a client over a fixed time window.
+ *
+ * This is the simplest algorithm.
+ * It tracks the number of requests made by a client over a fixed time window
+ * such as 60 seconds.
+ * If the client exceeds the limit, they are blocked until the window expires.
  *
  * This algorithm is useful when you want to apply a simple fixed limit in a
- * fixed time window. For example, a simple limit on the total number of
- * requests a client can make. However, it can be susceptible to the stampede
- * problem where a client makes a burst of requests at the start of a window and
- * then is blocked for the rest of the window. The sliding window algorithm can
- * be used to avoid this.
- *
- * @param {FixedWindowRateLimitOptions} options - The options for the fixed
- * window rate limiting rule.
- * @param {ArcjetMode} options.mode - The block mode of the rule, either
- * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when the rate limit is
- * exceeded, and `"DRY_RUN"` will allow all requests while still providing
- * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
- * @param {string | number} options.window - The fixed time window. This can be
- * a string like `"60s"` for 60 seconds, `"1h45m"` for 1 hour and 45 minutes, or
- * a number like `60` for 60 seconds. Valid string time units are:
- * - `s` for seconds.
- * - `m` for minutes.
- * - `h` for hours.
- * - `d` for days.
- * @param {number} options.max - The maximum number of requests allowed in the
  * fixed time window.
- * @returns {Primitive} The fixed window rule to provide to the SDK in the
- * `rules` option.
+ * For example, a simple limit on the total number of requests a client can make.
+ * However, it can be susceptible to the stampede problem where a client makes
+ * a burst of requests at the start of a window and then is blocked for the rest
+ * of the window.
+ * The sliding window algorithm can be used to avoid this.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration for the fixed window rate limiting rule (required).
+ * @returns
+ *   Fixed window rule to provide to the SDK in the `rules` field.
  *
  * @example
- * ```ts
- * fixedWindow({ mode: "LIVE", window: "60s", max: 100 });
- * ```
+ *   ```ts
+ *   fixedWindow({ mode: "LIVE", window: "60s", max: 100 });
+ *   ```
  * @example
- * ```ts
- * const aj = arcjet({
- *    key: process.env.ARCJET_KEY,
- *   rules: [
- *     fixedWindow({
- *       mode: "LIVE",
- *       window: "60s",
- *       max: 100,
- *     })
- *   ],
- * });
- * ```
+ *   ```ts
+ *   const aj = arcjet({
+ *      key: process.env.ARCJET_KEY,
+ *     rules: [
+ *       fixedWindow({
+ *         mode: "LIVE",
+ *         window: "60s",
+ *         max: 100,
+ *       })
+ *     ],
+ *   });
+ *   ```
+ *
  * @link https://docs.arcjet.com/rate-limiting/concepts
  * @link https://docs.arcjet.com/rate-limiting/algorithms#fixed-window
  * @link https://docs.arcjet.com/rate-limiting/reference
@@ -977,51 +1452,42 @@ export function fixedWindow<
 }
 
 /**
- * Arcjet sliding window rate limiting rule. Applying this rule sets a sliding
- * window rate limit which tracks the number of requests made by a client over a
- * sliding window so that the window moves with time.
+ * Arcjet sliding window rate limiting rule.
+ *
+ * Applying this rule sets a sliding window rate limit which tracks the number
+ * of requests made by a client over a sliding window so that the window moves
+ * with time.
  *
  * This algorithm is useful to avoid the stampede problem of the fixed window.
  * It provides smoother rate limiting over time and can prevent a client from
  * making a burst of requests at the start of a window and then being blocked
  * for the rest of the window.
  *
- * @param {SlidingWindowRateLimitOptions} options - The options for the sliding
- * window rate limiting rule.
- * @param {ArcjetMode} options.mode - The block mode of the rule, either
- * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when the rate limit is
- * exceeded, and `"DRY_RUN"` will allow all requests while still providing
- * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
- * @param {string | number} options.interval - The time interval for the rate
- * limit. This can be a string like `"60s"` for 60 seconds, `"1h45m"` for 1 hour
- * and 45 minutes, or a number like `60` for 60 seconds. Valid string time units
- * are:
- * - `s` for seconds.
- * - `m` for minutes.
- * - `h` for hours.
- * - `d` for days.
- * @param {number} options.max - The maximum number of requests allowed in the
- * sliding time window.
- * @returns {Primitive} The sliding window rule to provide to the SDK in the
- * `rules` option.
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration for the sliding window rate limiting rule (required).
+ * @returns
+ *   Token bucket rule to provide to the SDK in the `rules` field.
  *
  * @example
- * ```ts
- * slidingWindow({ mode: "LIVE", interval: "60s", max: 100 });
- * ```
+ *   ```ts
+ *   slidingWindow({ mode: "LIVE", interval: "60s", max: 100 });
+ *   ```
  * @example
- * ```ts
- * const aj = arcjet({
- *   key: process.env.ARCJET_KEY,
- *   rules: [
- *     slidingWindow({
- *       mode: "LIVE",
- *       interval: "60s",
- *       max: 100,
- *     })
- *   ],
- * });
- * ```
+ *   ```ts
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [
+ *       slidingWindow({
+ *         mode: "LIVE",
+ *         interval: "60s",
+ *         max: 100,
+ *       })
+ *     ],
+ *   });
+ *   ```
+ *
  * @link https://docs.arcjet.com/rate-limiting/concepts
  * @link https://docs.arcjet.com/rate-limiting/algorithms#sliding-window
  * @link https://docs.arcjet.com/rate-limiting/reference
@@ -1182,86 +1648,68 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
 }
 
 /**
- * Arcjet sensitive information detection rule. Applying this rule protects
- * against clients sending you sensitive information such as personally
- * identifiable information (PII) that you do not wish to handle. The rule runs
- * entirely locally so no data ever leaves your environment.
+ * Arcjet sensitive information detection rule.
+ *
+ * Applying this rule protects against clients sending you sensitive information
+ * such as personally identifiable information (PII) that you do not wish to
+ * handle.
+ * The rule runs entirely locally so no data ever leaves your environment.
  *
  * This rule includes built-in detections for email addresses, credit/debit card
- * numbers, IP addresses, and phone numbers. You can also provide a custom
- * detection function to identify additional sensitive information.
+ * numbers, IP addresses, and phone numbers.
+ * You can also provide a custom detection function to identify additional
+ * sensitive information.
  *
- * @param {SensitiveInfoOptions} options - The options for the sensitive
- * information detection rule.
- * @param {ArcjetMode} options.mode - The block mode of the rule, either
- * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when any of the
- * configured sensitive information types are detected, and `"DRY_RUN"` will
- * allow all requests while still providing access to the rule results. Defaults
- * to `"DRY_RUN"` if not specified.
- * @param {Array<ArcjetSensitiveInfoType>} options.deny - The list of sensitive
- * information types to deny. If provided, the sensitive information types in
- * this list will be denied. You may only provide either `allow` or `deny`, not
- * both. Specify one or more of the following:
- *
- * - `"EMAIL"`
- * - `"PHONE_NUMBER"`
- * - `"IP_ADDRESS"`
- * - `"CREDIT_CARD_NUMBER"`
- * @param {Array<ArcjetSensitiveInfoType>} options.allow - The list of sensitive
- * information types to allow. If provided, types in this list will be allowed
- * and all others will be denied. You may only provide either `allow` or `deny`,
- * not both. The same options apply as for `deny`.
- * @param {DetectSensitiveInfoEntities} options.detect - A custom detection
- * function. The function will take a list of tokens and must return a list of
- * either `undefined`, if the corresponding token in the input list is not
- * sensitive, or the name of the entity if it does match. The number of tokens
- * that are provided to the function is controlled by the `contextWindowSize`
- * option, which defaults to `1`. If you need additional context to perform
- * detections then you can increase this value.
- * @param {number} options.contextWindowSize - The number of tokens to provide
- * to the custom detection function. This defaults to 1 if not specified.
- * @returns {Primitive} The sensitive information rule to provide to the SDK in
- * the `rules` option.
+ * @template Detect
+ *   Custom detection function to identify sensitive information.
+ * @template CustomEntities
+ *   Custom entities.
+ * @param options
+ *   Configuration for the sensitive information detection rule (required).
+ * @returns
+ *   Sensitive information rule to provide to the SDK in the `rules` field.
  *
  * @example
- * ```ts
- * sensitiveInfo({ mode: "LIVE", deny: ["EMAIL"] });
- * ```
+ *   ```ts
+ *   sensitiveInfo({ mode: "LIVE", deny: ["EMAIL"] });
+ *   ```
  * @example
- * ```ts
- * const aj = arcjet({
- *   key: process.env.ARCJET_KEY,
- *   rules: [
- *     sensitiveInfo({
- *       mode: "LIVE",
- *       deny: ["EMAIL"],
- *     })
- *   ],
- * });
- * ```
- * @example
- * Custom detection function:
- * ```ts
- * function detectDash(tokens: string[]): Array<"CONTAINS_DASH" | undefined> {
- *   return tokens.map((token) => {
- *     if (token.includes("-")) {
- *       return "CONTAINS_DASH";
- *     }
+ *   ```ts
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [
+ *       sensitiveInfo({
+ *         mode: "LIVE",
+ *         deny: ["EMAIL"],
+ *       })
+ *     ],
  *   });
- * }
+ *   ```
+ * @example
+ *   Custom detection function:
  *
- * const aj = arcjet({
- *   key: process.env.ARCJET_KEY,
- *   rules: [
- *     sensitiveInfo({
- *       mode: "LIVE",
- *       deny: ["EMAIL", "CONTAINS_DASH"],
- *       detect: detectDash,
- *       contextWindowSize: 2,
- *     })
- *   ],
- * });
- * ```
+ *   ```ts
+ *   function detectDash(tokens: string[]): Array<"CONTAINS_DASH" | undefined> {
+ *     return tokens.map((token) => {
+ *       if (token.includes("-")) {
+ *         return "CONTAINS_DASH";
+ *       }
+ *     });
+ *   }
+ *
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [
+ *       sensitiveInfo({
+ *         mode: "LIVE",
+ *         deny: ["EMAIL", "CONTAINS_DASH"],
+ *         detect: detectDash,
+ *         contextWindowSize: 2,
+ *       })
+ *     ],
+ *   });
+ *   ```
+ *
  * @link https://docs.arcjet.com/sensitive-info/concepts
  * @link https://docs.arcjet.com/sensitive-info/reference
  */
@@ -1414,54 +1862,39 @@ export function sensitiveInfo<
 }
 
 /**
- * Arcjet email validation rule. Applying this rule allows you to validate &
- * verify an email address.
+ * Arcjet email validation rule.
  *
- * The first step of the analysis is to validate the email address syntax. This
- * runs locally within the SDK and validates the email address is in the correct
- * format. If the email syntax is valid, the SDK will pass the email address to
- * the Arcjet cloud API to verify the email address. This performs several
- * checks, depending on the rule configuration.
+ * Applying this rule allows you to validate and verify an email address.
  *
- * @param {EmailOptions} options - The options for the email validation rule.
- * @param {ArcjetMode} options.mode - The block mode of the rule, either
- * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block email addresses based on the
- * configuration, and `"DRY_RUN"` will allow all requests while still providing
- * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
- * @param {Array<ArcjetEmailType>} options.deny - The list of email types to
- * deny. If provided, the email types in this list will be denied. You may only
- * provide either `allow` or `deny`, not both. Specify one or more of the
- * following:
+ * The first step of the analysis is to validate the email address syntax.
+ * This runs locally within the SDK and validates the email address is in the
+ * correct format.
+ * If the email syntax is valid, the SDK will pass the email address to the
+ * Arcjet cloud API to verify the email address.
+ * This performs several checks, depending on the rule configuration.
  *
- * - `"DISPOSABLE"` - Disposable email addresses.
- * - `"FREE"` - Free email addresses.
- * - `"NO_MX_RECORDS"` - Email addresses with no MX records.
- * - `"NO_GRAVATAR"` - Email addresses with no Gravatar.
- * - `"INVALID"` - Invalid email addresses.
- *
- * @param {Array<ArcjetEmailType>} options.allow - The list of email types to
- * allow. If provided, email addresses in this list will be allowed and all
- * others will be denied. You may only provide either `allow` or `deny`, not
- * both. The same options apply as for `deny`.
- * @returns {Primitive} The email rule to provide to the SDK in the `rules`
- * option.
+ * @param options
+ *   Configuration for the email validation rule (required).
+ * @returns
+ *   Email rule to provide to the SDK in the `rules` field.
  *
  * @example
- * ```ts
- * validateEmail({ mode: "LIVE", deny: ["DISPOSABLE", "INVALID"] });
- * ```
+ *   ```ts
+ *   validateEmail({ mode: "LIVE", deny: ["DISPOSABLE", "INVALID"] });
+ *   ```
  * @example
- * ```ts
- * const aj = arcjet({
- *   key: process.env.ARCJET_KEY,
- *   rules: [
- *     validateEmail({
- *       mode: "LIVE",
- *       deny: ["DISPOSABLE", "INVALID"]
- *     })
- *   ],
- * });
- * ```
+ *   ```ts
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [
+ *       validateEmail({
+ *         mode: "LIVE",
+ *         deny: ["DISPOSABLE", "INVALID"]
+ *       })
+ *     ],
+ *   });
+ *   ```
+ *
  * @link https://docs.arcjet.com/email-validation/concepts
  * @link https://docs.arcjet.com/email-validation/reference
  */
@@ -1627,77 +2060,66 @@ export function validateEmail(
 }
 
 /**
- * Arcjet bot detection rule. Applying this rule allows you to manage traffic by
- * automated clients and bots.
+ * Arcjet bot detection rule.
+ *
+ * Applying this rule allows you to manage traffic by automated clients and
+ * bots.
  *
  * Bots can be good (such as search engine crawlers or monitoring agents) or bad
- * (such as scrapers or automated scripts). Arcjet allows you to configure which
- * bots you want to allow or deny by specific bot names e.g. curl, as well as by
- * category e.g. search engine bots.
+ * (such as scrapers or automated scripts).
+ * Arcjet allows you to configure which bots you want to allow or deny by
+ * specific bot names such as curl, as well as by category such as search
+ * engine bots.
  *
  * Bots are detected based on various signals such as the user agent, IP
  * address, DNS records, and more.
  *
- * @param {BotOptions} options - The options for the bot rule.
- * @param {ArcjetMode} options.mode - The block mode of the rule, either
- * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block detected bots, and `"DRY_RUN"`
- * will allow all requests while still providing access to the rule results.
- * Defaults to `"DRY_RUN"` if not specified.
- * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.allow - The
- * list of bots to allow. If provided, only the bots in this list will be
- * allowed and any other detected bot will be denied. If empty, all bots will be
- * denied. You may only provide either `allow` or `deny`, not both. You can use
- * specific bots e.g. `"CURL"` will allow the default user-agent of the `curl`
- * tool. You can also use categories e.g. `"CATEGORY:SEARCH_ENGINE"` will allow
- * all search engine bots. See
- * https://docs.arcjet.com/bot-protection/identifying-bots for the full list of
- * bots and categories.
- * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.deny - The
- * list of bots to deny. If provided, the bots in this list will be denied and
- * all other detected bots will be allowed. You may only provide either `allow`
- * or `deny`, not both. The same options apply as for `allow`.
- * @returns {Primitive} The bot rule to provide to the SDK in the `rules`
- * option.
+ * @param options
+ *   Configuration for the bot rule (required).
+ * @returns
+ *   Bot rule to provide to the SDK in the `rules` field.
  *
  * @example
- * Allows search engine bots and curl, denies all other bots
+ *   Allow search engine bots and curl, deny all other bots:
  *
- * ```ts
- * detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE", "CURL"] });
- * ```
+ *   ```ts
+ *   detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE", "CURL"] });
+ *   ```
  * @example
- * Allows search engine bots and curl, denies all other bots
+ *   Allow search engine bots and curl, deny all other bots:
  *
- * ```ts
- * const aj = arcjet({
- *   key: process.env.ARCJET_KEY,
- *   rules: [
- *     detectBot({
- *       mode: "LIVE",
- *       allow: ["CATEGORY:SEARCH_ENGINE", "CURL"]
- *     })
- *   ],
- * });
- * ```
+ *   ```ts
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [
+ *       detectBot({
+ *         mode: "LIVE",
+ *         allow: ["CATEGORY:SEARCH_ENGINE", "CURL"]
+ *       })
+ *     ],
+ *   });
+ *   ```
  * @example
- * Denies AI crawlers, allows all other bots
+ *   Deny AI crawlers, allow all other bots:
  *
- * ```ts
- * detectBot({ mode: "LIVE", deny: ["CATEGORY:AI"] });
- * ```
+ *   ```ts
+ *   detectBot({ mode: "LIVE", deny: ["CATEGORY:AI"] });
+ *   ```
  * @example
- * Denies AI crawlers, allows all other bots
- * ```ts
- * const aj = arcjet({
- *   key: process.env.ARCJET_KEY,
- *   rules: [
- *     detectBot({
- *       mode: "LIVE",
- *       deny: ["CATEGORY:AI"]
- *     })
- *   ],
- * });
- * ```
+ *   Deny AI crawlers, allows all other bots:
+ *
+ *   ```ts
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [
+ *       detectBot({
+ *         mode: "LIVE",
+ *         deny: ["CATEGORY:AI"]
+ *       })
+ *     ],
+ *   });
+ *   ```
+ *
  * @link https://docs.arcjet.com/bot-protection/concepts
  * @link https://docs.arcjet.com/bot-protection/identifying-bots
  * @link https://docs.arcjet.com/bot-protection/reference
@@ -1852,37 +2274,48 @@ export function detectBot(options: BotOptions): Primitive<{}> {
   return [rule];
 }
 
+/**
+ * Configuration for the Shield WAF rule.
+ */
 export type ShieldOptions = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
   mode?: ArcjetMode;
 };
 
 /**
- * Arcjet Shield WAF rule. Applying this rule protects your application against
- * common attacks, including the OWASP Top 10.
+ * Arcjet Shield WAF rule.
+ *
+ * Applying this rule protects your application against common attacks,
+ * including the OWASP Top 10.
  *
  * The Arcjet Shield WAF analyzes every request to your application to detect
- * suspicious activity. Once a certain suspicion threshold is reached,
+ * suspicious activity.
+ * Once a certain suspicion threshold is reached,
  * subsequent requests from that client are blocked for a period of time.
  *
- * @param {ShieldOptions} options - The options for the Shield rule.
- * @param {ArcjetMode} options.mode - The block mode of the rule, either
- * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block suspicious requests, and
- * `"DRY_RUN"` will allow all requests while still providing access to the rule
- * results. Defaults to `"DRY_RUN"` if not specified.
- * @returns {Primitive} The Shield rule to provide to the SDK in the `rules`
- * option.
+ * @param options
+ *   Configuration for the Shield rule.
+ * @returns
+ *   Shield rule to provide to the SDK in the `rules` field.
  *
  * @example
- * ```ts
- * shield({ mode: "LIVE" });
- * ```
+ *   ```ts
+ *   shield({ mode: "LIVE" });
+ *   ```
  * @example
- * ```ts
- * const aj = arcjet({
- *   key: process.env.ARCJET_KEY,
- *   rules: [shield({ mode: "LIVE" })],
- * });
- * ```
+ *   ```ts
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [shield({ mode: "LIVE" })],
+ *   });
+ *   ```
+ *
  * @link https://docs.arcjet.com/shield/concepts
  * @link https://docs.arcjet.com/shield/reference
  */
@@ -1948,16 +2381,33 @@ export function shield(options: ShieldOptions): Primitive<{}> {
   return [rule];
 }
 
+/**
+ * Configuration for signup form protection rule.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ */
 export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
+  /**
+   * Configuration for rate limit rule (required).
+   */
   rateLimit: SlidingWindowRateLimitOptions<Characteristics>;
+  /**
+   * Configuration for bot protection rule (required).
+   */
   bots: BotOptions;
+  /**
+   * Configuration for email validation rule (required).
+   */
   email: EmailOptions;
 };
 
 /**
- * Arcjet signup form protection rule. Applying this rule combines rate
- * limiting, bot protection, and email validation to protect your signup forms
- * from abuse. Using this rule will configure the following:
+ * Arcjet signup form protection rule.
+ *
+ * Applying this rule combines rate limiting, bot protection, and email
+ * validation to protect your signup forms from abuse.
+ * Using this rule will configure the following:
  *
  * - Rate limiting - signup forms are a common target for bots. Arcjet’s rate
  *   limiting helps to prevent bots and other automated or malicious clients
@@ -1969,95 +2419,45 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
  *   is coming from a legitimate user with a real email address that can
  *   actually receive messages.
  *
- * @param {ProtectSignupOptions} options - The options for the signup form
- * protection rule.
- * @param {ArcjetMode} options.email.mode - The block mode of the rule, either
- * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block email addresses based on the
- * configuration, and `"DRY_RUN"` will allow all requests while still providing
- * access to the rule results. Defaults to `"DRY_RUN"` if not specified.
- * @param {Array<ArcjetEmailType>} options.email.deny - The list of email types
- * to deny. If provided, the email types in this list will be denied. You may
- * only provide either `allow` or `deny`, not both. Specify one or more of the
- * following:
- *
- * - `"DISPOSABLE"` - Disposable email addresses.
- * - `"FREE"` - Free email addresses.
- * - `"NO_MX_RECORDS"` - Email addresses with no MX records.
- * - `"NO_GRAVATAR"` - Email addresses with no Gravatar.
- * - `"INVALID"` - Invalid email addresses.
- *
- * @param {Array<ArcjetEmailType>} options.email.allow - The list of email types
- * to allow. If provided, email addresses in this list will be allowed and all
- * others will be denied. You may only provide either `allow` or `deny`, not
- * both. The same options apply as for `deny`.
- * @param {ArcjetMode} options.bots.mode - The block mode of the rule, either
- * `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block detected bots, and `"DRY_RUN"`
- * will allow all requests while still providing access to the rule results.
- * Defaults to `"DRY_RUN"` if not specified.
- * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.bots.allow -
- * The list of bots to allow. If provided, only the bots in this list will be
- * allowed and any other detected bot will be denied. If empty, all bots will be
- * denied. You may only provide either `allow` or `deny`, not both. You can use
- * specific bots e.g. `"CURL"` will allow the default user-agent of the `curl`
- * tool. You can also use categories e.g. `"CATEGORY:SEARCH_ENGINE"` will allow
- * all search engine bots. See
- * https://docs.arcjet.com/bot-protection/identifying-bots for the full list of
- * bots and categories.
- * @param {Array<ArcjetWellKnownBot | ArcjetBotCategory>} options.bots.deny -
- * The list of bots to deny. If provided, the bots in this list will be denied
- * and all other detected bots will be allowed. You may only provide either
- * `allow` or `deny`, not both. The same options apply as for `allow`.
- * @param {SlidingWindowRateLimitOptions} options.rateLimit - The options for
- * the sliding window rate limiting rule.
- * @param {ArcjetMode} options.rateLimit.mode - The block mode of the rule,
- * either `"LIVE"` or `"DRY_RUN"`. `"LIVE"` will block requests when the rate
- * limit is exceeded, and `"DRY_RUN"` will allow all requests while still
- * providing access to the rule results. Defaults to `"DRY_RUN"` if not
- * specified.
- * @param {string | number} options.rateLimit.interval - The time interval for
- * the rate limit. This can be a string like `"60s"` for 60 seconds, `"1h45m"`
- * for 1 hour and 45 minutes, or a number like `60` for 60 seconds. Valid string
- * time units are:
- * - `s` for seconds.
- * - `m` for minutes.
- * - `h` for hours.
- * - `d` for days.
- * @param {number} options.rateLimit.max - The maximum number of requests
- * allowed in the sliding time window.
- * @returns {Primitive} The signup form protection rule to provide to the SDK in
- * the `rules` option.
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration for the signup form protection rule.
+ * @returns
+ *   Signup form protection rule to provide to the SDK in the `rules` field.
  *
  * @example
- * Our recommended configuration for most signup forms is:
+ *   Our recommended configuration for most signup forms is:
  *
- * - Block emails with invalid syntax, that are from disposable email providers,
- *   or do not have valid MX records configured.
- * - Block all bots.
- * - Apply a rate limit of 5 submissions per 10 minutes from a single IP
- *   address.
+ *   - Block email addresses with invalid syntax, that are from disposable email providers,
+ *     or do not have valid MX records configured.
+ *   - Block all bots.
+ *   - Apply a rate limit of 5 submissions per 10 minutes from a single IP
+ *     address.
  *
- * ```ts
- * const aj = arcjet({
- *   key: process.env.ARCJET_KEY,
- *   rules: [
- *    protectSignup({
- *      email: {
- *        mode: "LIVE",
- *        block: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
- *      },
- *      bots: {
- *        mode: "LIVE",
- *        allow: [], // block all detected bots
- *      },
- *      rateLimit: {
- *        mode: "LIVE",
- *        interval: "10m",
- *        max: 5,
- *      },
- *    }),
- *  ],
- * });
- * ```
+ *   ```ts
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [
+ *      protectSignup({
+ *        email: {
+ *          mode: "LIVE",
+ *          block: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+ *        },
+ *        bots: {
+ *          mode: "LIVE",
+ *          allow: [], // block all detected bots
+ *        },
+ *        rateLimit: {
+ *          mode: "LIVE",
+ *          interval: "10m",
+ *          max: 5,
+ *        },
+ *      }),
+ *    ],
+ *   });
+ *   ```
+ *
  * @link https://docs.arcjet.com/signup-protection/concepts
  * @link https://docs.arcjet.com/signup-protection/reference
  */
@@ -2077,45 +2477,65 @@ export function protectSignup<const Characteristics extends string[] = []>(
   ];
 }
 
+/**
+ * Configuration for Arcjet.
+ *
+ * @template Rules
+ *   List of rules.
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ */
 export interface ArcjetOptions<
   Rules extends [...(Primitive | Product)[]],
   Characteristics extends readonly string[],
 > {
   /**
-   * The API key to identify the site in Arcjet.
+   * API key to identify the site in Arcjet (required).
    */
   key: string;
   /**
-   * Rules to apply when protecting a request.
+   * Rules to apply when protecting a request (required).
    */
   rules: readonly [...Rules];
   /**
-   * Characteristics to be used to uniquely identify clients.
+   * Characteristics to track a user by (default: `["src.ip"]`).
+   * Can also be passed to rules.
    */
   characteristics?: Characteristics;
   /**
-   * The client used to make requests to the Arcjet API. This must be set
-   * when creating the SDK, such as inside @arcjet/next or mocked in tests.
+   * Client used to make requests to the Arcjet API (optional).
+   *
+   * This should not be passed by end users but is configured by integrations
+   * (such as `@arcjet/next`) or for testing purposes.
    */
   client?: Client;
   /**
-   * The logger used to emit useful information from the SDK.
+   * Log interface to emit useful information from the SDK (optional).
    */
   log?: ArcjetLogger;
 }
 
 /**
- * The Arcjet client provides a public `protect()` method to
- * make a decision about how a request should be handled.
+ * Arcjet instance.
+ *
+ * Primarily has a `protect()` method to make a decision about how a request
+ * should be handled.
  */
 export interface Arcjet<Props extends PlainObject> {
   /**
-   * Make a decision about how to handle a request. This will analyze the
-   * request locally where possible and call the Arcjet decision API.
+   * Make a decision about how to handle a request.
    *
-   * @param {ArcjetAdapterContext} ctx - Additional context for this function call.
-   * @param {ArcjetRequest} request - Details about the {@link ArcjetRequest} that Arcjet needs to make a decision.
-   * @returns An {@link ArcjetDecision} indicating Arcjet's decision about the request.
+   * This will analyze the request locally where possible and otherwise call
+   * the Arcjet decision API.
+   *
+   * @param ctx
+   *   Additional context for this function call.
+   * @param request
+   *   Details about the {@linkcode ArcjetRequest} that Arcjet needs to make a
+   *   decision.
+   * @returns
+   *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
+   *   Arcjet’s decision about the request.
    */
   protect(
     ctx: ArcjetAdapterContext,
@@ -2123,11 +2543,15 @@ export interface Arcjet<Props extends PlainObject> {
   ): Promise<ArcjetDecision>;
 
   /**
-   * Augments the client with another rule. Useful for varying rules based on
-   * criteria in your handler—e.g. different rate limit for logged in users.
+   * Augment the client with another rule.
    *
-   * @param rule The rule to add to this execution.
-   * @returns An augmented {@link Arcjet} client.
+   * Useful for varying rules based on criteria in your handler such as
+   * different rate limit for logged in users.
+   *
+   * @param rule
+   *   Rule to add to Arcjet.
+   * @returns
+   *   Arcjet instance augmented with the given rule.
    */
   withRule<Rule extends Primitive | Product>(
     rule: Rule,
@@ -2135,9 +2559,16 @@ export interface Arcjet<Props extends PlainObject> {
 }
 
 /**
- * Create a new Arcjet client with the specified {@link ArcjetOptions}.
+ * Create a new Arcjet instance.
  *
- * @param options {ArcjetOptions} Arcjet configuration options.
+ * @template Rules
+ *   List of rules.
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration.
+ * @returns
+ *   Arcjet instance.
  */
 export default function arcjet<
   const Rules extends [...(Primitive | Product)[]] = [],
@@ -2499,9 +2930,35 @@ export default function arcjet<
   }
 
   return Object.freeze({
+    /**
+     * Augment the client with another rule.
+     *
+     * Useful for varying rules based on criteria in your handler such as
+     * different rate limit for logged in users.
+     *
+     * @param rule
+     *   Rule to add to Arcjet.
+     * @returns
+     *   Arcjet instance augmented with the given rule.
+     */
     withRule(rule: Primitive | Product) {
       return withRule(rootRules, rule);
     },
+    /**
+     * Make a decision about how to handle a request.
+     *
+     * This will analyze the request locally where possible and otherwise call
+     * the Arcjet decision API.
+     *
+     * @param ctx
+     *   Additional context for this function call.
+     * @param request
+     *   Details about the {@linkcode ArcjetRequest} that Arcjet needs to make a
+     *   decision.
+     * @returns
+     *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
+     *   Arcjet’s decision about the request.
+     */
     async protect(
       ctx: ArcjetAdapterContext,
       request: ArcjetRequest<ExtraProps<typeof rootRules>>,
