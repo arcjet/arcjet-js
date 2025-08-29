@@ -258,7 +258,7 @@ export async function matchFilters(
   request: AnalyzeRequest,
   expressions: ReadonlyArray<string>,
   allowIfMatch: boolean,
-): Promise<FilterResult | undefined> {
+): Promise<FilterResult> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
@@ -274,5 +274,7 @@ export async function matchFilters(
   }
 
   context.log.debug("WebAssembly is not supported in this runtime");
-  return;
+  throw new Error(
+    "FILTER rule failed to run because Wasm is not supported in this environment.",
+  );
 }

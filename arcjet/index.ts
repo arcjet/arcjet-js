@@ -2619,10 +2619,6 @@ export function filter(options: FilterOptions): Primitive<{}> {
           allow.length > 0,
         );
 
-        if (!result) {
-          throw new Error("WebAssembly is not supported in this runtime");
-        }
-
         ruleResult = new ArcjetRuleResult({
           conclusion: result.allowed ? "ALLOW" : "DENY",
           fingerprint: context.fingerprint,
