@@ -2631,7 +2631,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
         ruleResult = new ArcjetRuleResult({
           conclusion: "ERROR",
           fingerprint: context.fingerprint,
-          reason: new ArcjetErrorReason(String(error)),
+          reason: new ArcjetErrorReason(error),
           ruleId,
           state,
           ttl: 0,
