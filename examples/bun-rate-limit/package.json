@@ -20,8 +20,7 @@
     "../../runtime",
     "../../sprintf",
     "../../stable-hash",
-    "../../transport",
-    "../../tsconfig"
+    "../../transport"
   ],
   "dependencies": {
     "@arcjet/bun": "workspace:*"

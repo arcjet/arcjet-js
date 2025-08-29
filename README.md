@@ -261,7 +261,6 @@ See [the docs][nosecone-docs] for details.
   redaction detection engine.
 - [`@arcjet/rollup-config`](./rollup-config/README.md): Custom rollup config for
   our projects.
-- [`@arcjet/tsconfig`](./tsconfig/README.md): Custom tsconfig for our projects.
 
 ## Support
 
