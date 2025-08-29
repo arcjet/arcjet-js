@@ -4,6 +4,10 @@ import arcjet, { request, validateEmail } from "@arcjet/next";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
+  // The default characteristic used to generate a fingerprint is `ip.src`,
+  // but the IP is not available in server actions,
+  // so we instead use the `uid` cookie that is set by the middleware.
+  characteristics: ['http.request.cookie["uid"]'],
   rules: [
     validateEmail({
       mode: "LIVE",
