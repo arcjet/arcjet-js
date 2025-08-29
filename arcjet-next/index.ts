@@ -1,4 +1,4 @@
-import type { NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse } from "next/server.js";
 import { headers, cookies } from "next/headers.js";
 import type {
@@ -11,6 +11,7 @@ import core from "arcjet";
 import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
+  ArcjetRuleResult,
   Primitive,
   Product,
   ArcjetRequest,
@@ -28,6 +29,15 @@ import { createTransport } from "@arcjet/transport";
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
 
+/**
+ * Get minimal request details (cookies, headers).
+ *
+ * This function can be used in server components, server actions,
+ * route handlers, and middleware.
+ *
+ * @returns
+ *   Promise that resolves to the request details.
+ */
 export async function request(): Promise<ArcjetNextRequest> {
   const hdrs = await headers();
   const cook = await cookies();
@@ -98,18 +108,36 @@ type PlainObject = {
   [key: string]: unknown;
 };
 
+/**
+ * Configuration for {@linkcode createRemoteClient}.
+ */
 export type RemoteClientOptions = {
+  /**
+   * Base URI for HTTP requests to Decide API (optional).
+   *
+   * Defaults to the environment variable `ARCJET_BASE_URL` (if that value
+   * is known and allowed) and the standard production API otherwise.
+   */
   baseUrl?: string;
+
+  /**
+   * Timeout in milliseconds for the Decide API (optional).
+   *
+   * Defaults to `500` in production and `1000` in development.
+   */
   timeout?: number;
 };
 
+/**
+ * Create a remote client.
+ *
+ * @param options
+ *   Configuration (optional).
+ * @returns
+ *   Client.
+ */
 export function createRemoteClient(options?: RemoteClientOptions) {
-  // The base URL for the Arcjet API. Will default to the standard production
-  // API unless environment variable `ARCJET_BASE_URL` is set.
   const url = options?.baseUrl ?? baseUrl(process.env);
-
-  // The timeout for the Arcjet API in milliseconds. This is set to a low value
-  // in production so calls fail open.
   const timeout = options?.timeout ?? (isDevelopment(process.env) ? 1000 : 500);
 
   // Transport is the HTTP client that the client uses to make requests.
@@ -127,28 +155,70 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   });
 }
 
-// Interface of fields that the Arcjet Next.js SDK expects on `Request` objects.
-// This is the minimum interface that can be supplied via `NextRequest` and `NextApiRequest`
-// in order for only 1 API to exist no matter which runtime the end-user targets
+/**
+ * Request for the Next.js integration of Arcjet.
+ *
+ * This is the minimum interface that can be supplied via
+ * {@linkcode NextRequest} and {@linkcode NextApiRequest},
+ * but also from our {@linkcode request} helper in server components,
+ * server actions, route handlers, and middleware.
+ */
 export interface ArcjetNextRequest {
+  /**
+   * Headers of the request.
+   */
   headers?: Record<string, string | string[] | undefined> | Headers;
 
+  /**
+   * `net.Socket` object associated with the connection.
+   *
+   * This field is available on Express requests,
+   * as those inherit from Node `http.IncomingMessage`.
+   *
+   * See <https://nodejs.org/api/http.html#messagesocket>.
+   */
   socket?: Partial<{ remoteAddress: string; encrypted: boolean }>;
 
+  /**
+   * Some platforms pass `info`.
+   */
   info?: Partial<{ remoteAddress: string }>;
 
+  /**
+   * Some platforms pass info in `requestContext`.
+   */
   requestContext?: Partial<{ identity: Partial<{ sourceIp: string }> }>;
 
+  /**
+   * HTTP method of the request.
+   */
   method?: string;
 
+  /**
+   * In case of server request, the HTTP version sent by the client.
+   *
+   * See <https://nodejs.org/api/http.html#messagehttpversion>.
+   */
   httpVersion?: string;
 
+  /**
+   * URL.
+   */
   url?: string;
 
+  /**
+   * IP address of the client.
+   */
   ip?: string;
 
+  /**
+   * Next.js URL, with lots of info, but this is what we use.
+   */
   nextUrl?: Partial<{ pathname: string; search: string; protocol: string }>;
 
+  /**
+   * Object of `cookies` from header.
+   */
   cookies?:
     | {
         [Symbol.iterator](): IterableIterator<
@@ -157,7 +227,17 @@ export interface ArcjetNextRequest {
       }
     | Partial<{ [key: string]: string }>;
 
+  /**
+   * Clones the request.
+   *
+   * @returns
+   *   Cloned request.
+   */
   clone?: () => Request;
+
+  /**
+   * Body of the request.
+   */
   body?: unknown;
 }
 
@@ -191,7 +271,12 @@ function cookiesToString(cookies?: ArcjetNextRequest["cookies"]): string {
 }
 
 /**
- * The options used to configure an {@link ArcjetNest} client.
+ * Configuration for the Next.js integration of Arcjet.
+ *
+ * @template Rules
+ *   List of rules.
+ * @template Characteristics
+ *   Characteristics to track a user by.
  */
 export type ArcjetOptions<
   Rules extends [...Array<Primitive | Product>],
@@ -199,20 +284,28 @@ export type ArcjetOptions<
 > = Simplify<
   CoreOptions<Rules, Characteristics> & {
     /**
-     * One or more IP Address of trusted proxies in front of the application.
-     * These addresses will be excluded when Arcjet detects a public IP address.
+     * IP addresses and CIDR ranges of trusted load balancers and proxies
+     * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
      */
     proxies?: Array<string>;
   }
 >;
 
 /**
- * The ArcjetNext client provides a public `protect()` method to
- * make a decision about how a Next.js request should be handled.
+ * Instance of the Next integration of Arcjet.
+ *
+ * Primarily has a `protect()` method to make a decision about how a Next request
+ * should be handled.
+ *
+ * @template Props
+ *   Configuration.
  */
 export interface ArcjetNext<Props extends PlainObject> {
   /**
-   * Makes a decision about the provided request using your configured rules.
+   * Make a decision about how to handle a request.
+   *
+   * This will analyze the request locally where possible and otherwise call
+   * the Arcjet decision API.
    *
    * Arcjet can protect Next.js routes and pages that are server components (the
    * default). Client components cannot be protected because they run on the
@@ -229,94 +322,104 @@ export interface ArcjetNext<Props extends PlainObject> {
    * will label an `"ERROR"` result for that rule and you can check the message
    * property on the rule’s error result for more information.
    *
-   * @param {ArcjetNextRequest} request - A `NextApiRequest` or `NextRequest`
-   * provided to the request handler.
-   * @param props - Any additional properties required for running rules against
-   * a request. Whether this is required depends on the rules you've configured.
-   * @returns {Promise<ArcjetDecision>} A decision indicating a high-level
-   * conclusion and detailed explanations of the decision made by Arcjet. This
-   * contains the following properties:
+   * @param request
+   *   Details about the {@linkcode ArcjetNextRequest} that Arcjet needs to make a
+   *   decision.
+   * @param props
+   *   Additional properties required for running rules against a request.
+   *   Whether this is required depends on the rules you've configured.
+   * @returns
+   *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
+   *   Arcjet’s decision about the request.
    *
-   * - `id` (string) - The unique ID for the request. This can be used to look
-   *   up the request in the Arcjet dashboard. It is prefixed with `req_` for
-   *   decisions involving the Arcjet cloud API. For decisions taken locally,
-   *   the prefix is `lreq_`.
-   * - `conclusion` (`"ALLOW" | "DENY" | "CHALLENGE" | "ERROR"`) - The final
-   *   conclusion based on evaluating each of the configured rules. If you wish
-   *   to accept Arcjet’s recommended action based on the configured rules then
-   *   you can use this property.
-   * - `reason` (`ArcjetReason`) - An object containing more detailed
-   *   information about the conclusion.
-   * - `results` (`ArcjetRuleResult[]`) - An array of {@link ArcjetRuleResult} objects
-   *   containing the results of each rule that was executed.
-   * - `ttl` (number) - The time-to-live for the decision in seconds. This is
-   *   the time that the decision is valid for. After this time, the decision
-   *   will be re-evaluated. The SDK automatically caches DENY decisions for the
-   *   length of the TTL.
-   * - `ip` (`ArcjetIpDetails`) - An object containing Arcjet’s analysis of the
-   *   client IP address. See
-   *   https://docs.arcjet.com/reference/nextjs#ip-analysis for more
-   *   information.
+   *   This contains the following properties:
+   *
+   *   - `id` (`string`)
+   *     — unique ID for the request.
+   *     This can be used to look up the request in the Arcjet dashboard.
+   *     It is prefixed with `req_` for decisions involving the Arcjet cloud
+   *     API.
+   *     For decisions taken locally, the prefix is `lreq_`.
+   *   - `conclusion` (`"ALLOW" | "DENY" | "CHALLENGE" | "ERROR"`)
+   *     — The final conclusion based on evaluating each of the configured
+   *     rules.
+   *     If you wish to accept Arcjet’s recommended action based on the
+   *     configured rules then you can use this property.
+   *   - `reason` (`ArcjetReason`)
+   *     — An object containing more detailed information about the conclusion.
+   *   - `results` (`ArcjetRuleResult[]`)
+   *     — An array of {@linkcode ArcjetRuleResult} objects containing the
+   *     results of each rule that was executed.
+   *   - `ttl` (`number`)
+   *     — The time-to-live for the decision in seconds.
+   *     This is the time that the decision is valid for.
+   *     After this time, the decision will be re-evaluated.
+   *     The SDK automatically caches DENY decisions for the length of the TTL.
+   *   - `ip` (`ArcjetIpDetails`)
+   *     — An object containing Arcjet’s analysis of the client IP address.
+   *     See <https://docs.arcjet.com/reference/nextjs#ip-analysis> for more
+   *     information.
    *
    * @example
-   * Inside server components and API route handlers:
+   *   Inside server components and API route handlers:
    *
-   * ```ts
-   * // /app/api/hello/route.ts
-   * import arcjet, { shield } from "@arcjet/next";
-   * import { NextResponse } from "next/server";
+   *   ```ts
+   *   // /app/api/hello/route.ts
+   *   import arcjet, { shield } from "@arcjet/next";
+   *   import { NextResponse } from "next/server";
    *
-   * const aj = arcjet({
-   *   key: process.env.ARCJET_KEY!,
-   *   rules: [
-   *     // Protect against common attacks with Arcjet Shield
-   *     shield({
-   *      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-   *    }),
-   *   ],
-   * });
-   *
-   * export async function POST(req: Request) {
-   *   const decision = await aj.protect(req);
-   *
-   *   if (decision.isDenied()) {
-   *     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-   *   }
-   *
-   *   return NextResponse.json({
-   *     message: "Hello world",
+   *   const aj = arcjet({
+   *     key: process.env.ARCJET_KEY!,
+   *     rules: [
+   *       // Protect against common attacks with Arcjet Shield
+   *       shield({
+   *        mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+   *      }),
+   *     ],
    *   });
-   * }
-   * ```
+   *
+   *   export async function POST(req: Request) {
+   *     const decision = await aj.protect(req);
+   *
+   *     if (decision.isDenied()) {
+   *       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+   *     }
+   *
+   *     return NextResponse.json({
+   *       message: "Hello world",
+   *     });
+   *   }
+   *   ```
    *
    * @example
-   * Server action which can be passed as a prop to a client component. See https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations#client-components
+   *   Server action which can be passed as a prop to a client component. See https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations#client-components
    *
-   * ```ts
-   * // /app/actions.ts
-   * "use server";
+   *   ```ts
+   *   // /app/actions.ts
+   *   "use server";
    *
-   * import arcjet, { detectBot, request } from "@arcjet/next";
+   *   import arcjet, { detectBot, request } from "@arcjet/next";
    *
-   * const aj = arcjet({
-   * key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
-   * rules: [
-   *    detectBot({
-   *      mode: "LIVE",
-   *      allow: [],
-   *    }),
-   *  ],
-   *});
+   *   const aj = arcjet({
+   *   key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+   *   rules: [
+   *      detectBot({
+   *        mode: "LIVE",
+   *        allow: [],
+   *      }),
+   *     ],
+   *   });
    *
-   * export async function create() {
-   *    const req = await request();
-   *    const decision = await aj.protect(req);
-   *    if (decision.isDenied()) {
-   *      throw new Error("Forbidden");
-   *    }
-   *    // mutate data
-   *}
-   * ```
+   *   export async function create() {
+   *      const req = await request();
+   *      const decision = await aj.protect(req);
+   *      if (decision.isDenied()) {
+   *        throw new Error("Forbidden");
+   *      }
+   *      // mutate data
+   *   }
+   *   ```
+   *
    * @link https://docs.arcjet.com/reference/nextjs#protect
    * @link https://docs.arcjet.com/reference/nextjs#error-handling
    * @link https://docs.arcjet.com/reference/nextjs#decision
@@ -331,62 +434,69 @@ export interface ArcjetNext<Props extends PlainObject> {
   ): Promise<ArcjetDecision>;
 
   /**
-   * Augments the client with another rule. Useful for varying rules based on
-   * criteria in your handler—e.g. different rate limit for logged in users.
+   * Augment the client with another rule.
    *
-   * @param rule The rule to add to this execution.
-   * @returns An augmented {@link ArcjetNext} client.
+   * Useful for varying rules based on criteria in your handler such as
+   * different rate limit for logged in users.
+   *
+   * @template Rule
+   *   Type of rule.
+   * @param rule
+   *   Rule to add to Arcjet.
+   * @returns
+   *   Arcjet instance augmented with the given rule.
    *
    * @example
-   * Create a base client in a separate file which sets a Shield base rule
-   * and then use `withRule` to add a bot detection rule in a specific route
-   * handler.
+   *   Create a base client in a separate file which sets a Shield base rule
+   *   and then use `withRule` to add a bot detection rule in a specific route
+   *   handler.
    *
-   * ```ts
-   * // /lib/arcjet.ts
-   * import arcjet, { shield } from "@arcjet/next";
+   *   ```ts
+   *   // /lib/arcjet.ts
+   *   import arcjet, { shield } from "@arcjet/next";
    *
-   * // Create a base Arcjet instance for use by each handler
-   * export default arcjet({
-   *   key: process.env.ARCJET_KEY,
-   *   rules: [
-   *     shield({
-   *       mode: "LIVE",
-   *     }),
-   *   ],
-   * });
-   * ```
+   *   // Create a base Arcjet instance for use by each handler
+   *   export default arcjet({
+   *     key: process.env.ARCJET_KEY,
+   *     rules: [
+   *       shield({
+   *         mode: "LIVE",
+   *       }),
+   *     ],
+   *   });
+   *   ```
    *
-   * ```ts
-   * // /app/api/hello/route.ts
-   * import arcjet from "@lib/arcjet";
-   * import { detectBot, fixedWindow } from "@arcjet/next";
+   *   ```ts
+   *   // /app/api/hello/route.ts
+   *   import arcjet from "@lib/arcjet";
+   *   import { detectBot, fixedWindow } from "@arcjet/next";
    *
-   * // Add rules to the base Arcjet instance outside of the handler function
-   * const aj = arcjet
-   *   .withRule(
-   *     detectBot({
-   *       mode: "LIVE",
-   *       allow: [], // blocks all automated clients
-   *     }),
-   *   )
-   *   // You can chain multiple rules, so we'll include a rate limit
-   *   .withRule(
-   *     fixedWindow({
-   *       mode: "LIVE",
-   *       max: 100,
-   *       window: "60s",
-   *     }),
-   *   );
+   *   // Add rules to the base Arcjet instance outside of the handler function
+   *   const aj = arcjet
+   *     .withRule(
+   *       detectBot({
+   *         mode: "LIVE",
+   *         allow: [], // blocks all automated clients
+   *       }),
+   *     )
+   *     // You can chain multiple rules, so we'll include a rate limit
+   *     .withRule(
+   *       fixedWindow({
+   *         mode: "LIVE",
+   *         max: 100,
+   *         window: "60s",
+   *       }),
+   *     );
    *
-   * export async function GET(req: NextRequest) {
-   *   const decision = await aj.protect(req);
-   *   if (decision.isDenied()) {
-   *     throw new Error("Forbidden");
+   *   export async function GET(req: NextRequest) {
+   *     const decision = await aj.protect(req);
+   *     if (decision.isDenied()) {
+   *       throw new Error("Forbidden");
+   *     }
+   *     // continue with request processing
    *   }
-   *   // continue with request processing
-   * }
-   * ```
+   *   ```
+   *
    * @link https://docs.arcjet.com/reference/nextjs#ad-hoc-rules
    * @link https://github.com/arcjet/example-nextjs
    */
@@ -396,12 +506,22 @@ export interface ArcjetNext<Props extends PlainObject> {
 }
 
 /**
- * Create a new {@link ArcjetNext} client. Always build your initial client
- * outside of a request handler so it persists across requests. If you need to
- * augment a client inside a handler, call the `withRule()` function on the base
- * client.
+ * Create a new Next.js integration of Arcjet.
  *
- * @param options - Arcjet configuration options to apply to all requests.
+ * > 👉 **Tip**:
+ * > build your initial base client with as many rules as possible outside of a
+ * > request handler;
+ * > if you need more rules inside handlers later then you can call `withRule()`
+ * > on that base client.
+ *
+ * @template Rules
+ *   List of rules.
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ * @param options
+ *   Configuration.
+ * @returns
+ *   Next.js integration of Arcjet.
  */
 export default function arcjet<
   const Rules extends (Primitive | Product)[],
@@ -593,14 +713,18 @@ export default function arcjet<
 }
 
 /**
- * Protects your Next.js application using Arcjet middleware.
+ * Protect your Next.js application using Arcjet as middleware.
  *
- * @param arcjet An instantiated Arcjet SDK
- * @param middleware Any existing middleware you'd like to be called after
- * Arcjet decides a request is allowed.
- * @returns If the request is allowed, the next middleware or handler will be
- * called. If the request is denied, a `Response` will be returned immediately
- * and the no further middleware or handlers will be called.
+ * @param arcjet
+ *   Next.js integration of Arcjet.
+ * @param existingMiddleware
+ *   Existing middleware to be called after Arcjet decides that a request is
+ *   allowed.
+ * @returns
+ *   Next.js middleware that will run Arcjet and when it allows the request
+ *   call further middleware,
+ *   but when it denies the request will immediately return a JSON
+ *   `NextResponse` with `403` or `429`.
  */
 export function createMiddleware(
   arcjet: ArcjetNext<WithoutCustomProps>,
@@ -660,14 +784,19 @@ function isNextApiResponse(val: unknown): val is NextApiResponse {
 }
 
 /**
- * Wraps a Next.js page route, edge middleware, or an API route running on the
+ * Wrap a Next.js page route, edge middleware, or an API route running on the
  * Edge Runtime.
  *
- * @param arcjet An instantiated Arcjet SDK
- * @param handler The request handler to wrap
- * @returns If the request is allowed, the wrapped `handler` will be called. If
- * the request is denied, a `Response` will be returned based immediately and
- * the wrapped `handler` will never be called.
+ * @param arcjet
+ *   Next.js integration of Arcjet.
+ * @param handler
+ *   Request handler to be called after Arcjet decides that a request is
+ *   allowed.
+ * @returns
+ *   Function that will run Arcjet on a request and when it is allowed call
+ *   `handler`,
+ *   but when it is denied will immediately return a JSON `NextResponse` or
+ *   `NextApiResponse` with `403` or `429`.
  */
 export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
   arcjet: ArcjetNext<WithoutCustomProps>,
