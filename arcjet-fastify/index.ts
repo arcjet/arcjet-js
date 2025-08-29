@@ -94,11 +94,22 @@ type PlainObject = {
 /**
  * Configuration for {@linkcode createRemoteClient}.
  */
-// TODO(@wooorm-arcjet): document this undocumented feature.
-export interface RemoteClientOptions {
-  baseUrl?: string | null | undefined;
-  timeout?: number | null | undefined;
-}
+export type RemoteClientOptions = {
+  /**
+   * Base URI for HTTP requests to Decide API (optional).
+   *
+   * Defaults to the environment variable `ARCJET_BASE_URL` (if that value
+   * is known and allowed) and the standard production API otherwise.
+   */
+  baseUrl?: string;
+
+  /**
+   * Timeout in milliseconds for the Decide API (optional).
+   *
+   * Defaults to `500` in production and `1000` in development.
+   */
+  timeout?: number;
+};
 
 /**
  * Create a remote client.
@@ -108,7 +119,6 @@ export interface RemoteClientOptions {
  * @returns
  *   Client.
  */
-// TODO(@wooorm-arcjet): document this undocumented feature.
 export function createRemoteClient(
   options?: RemoteClientOptions | null | undefined,
 ) {
@@ -125,23 +135,29 @@ export function createRemoteClient(
 }
 
 /**
- * Type that represents an instance of our `ArcjetFastify` client.
+ * Instance of the Fastify integration of Arcjet.
  *
- * @typeParam Props
- *   Accumulated properties that are needed when calling `protect`;
- *   these come from (repeatedly) calling `withRule` with different rules
- *   and from the rules passed to the initial `arcjetFastify` call.
+ * Primarily has a `protect()` method to make a decision about how a Fastify request
+ * should be handled.
+ *
+ * @template Props
+ *   Configuration.
  */
 export interface ArcjetFastify<Props> {
   /**
-   * Decide what to do with the given Fastify request using the configured rules.
+   * Make a decision about how to handle a request.
+   *
+   * This will analyze the request locally where possible and otherwise call
+   * the Arcjet decision API.
    *
    * @param request
-   *   Request from Fastify.
+   *   Details about the {@linkcode FastifyRequest} that Arcjet needs to make a
+   *   decision.
    * @param properties
-   *   Properties that are needed for the configured rules.
+   *   Additional properties required for running rules against a request.
    * @returns
-   *   Promise for a decision about the request.
+   *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
+   *   Arcjet’s decision about the request.
    */
   protect(
     request: FastifyRequest,
@@ -149,12 +165,17 @@ export interface ArcjetFastify<Props> {
   ): Promise<ArcjetDecision>;
 
   /**
-   * Add more rules.
+   * Augment the client with another rule.
    *
+   * Useful for varying rules based on criteria in your handler such as
+   * different rate limit for logged in users.
+   *
+   * @template Rule
+   *   Type of rule.
    * @param rule
-   *   Rule.
+   *   Rule to add to Arcjet.
    * @returns
-   *   New client with more rules configured.
+   *   Arcjet instance augmented with the given rule.
    */
   withRule<Rule extends Primitive | Product>(
     rules: Rule,
@@ -162,16 +183,13 @@ export interface ArcjetFastify<Props> {
 }
 
 /**
- * Configuration for {@linkcode ArcjetFastify}.
+ * Configuration for the Fastify integration of Arcjet.
  *
- * @typeParam Rules
- *   Inferred type of rules.
- * @typeParam Characteristics
- *   Inferred type of characteristics (except for the well-known ones).
+ * @template Rules
+ *   List of rules.
+ * @template Characteristics
+ *   Characteristics to track a user by.
  */
-// TODO(@wooorm-arcjet): remove type parameters,
-// use a regular interface that extends.
-// TODO(@wooorm-arcjet): add `null` in `CoreOptions`.
 export type ArcjetOptions<
   Rules extends [...Array<Primitive | Product>],
   Characteristics extends ReadonlyArray<string>,
@@ -184,7 +202,7 @@ export type ArcjetOptions<
 };
 
 /**
- * Create an Arcjet client to integrate with Fastify.
+ * Create a new Fastify integration of Arcjet.
  *
  * > 👉 **Tip**:
  * > build your initial base client with as many rules as possible outside of a
@@ -192,12 +210,15 @@ export type ArcjetOptions<
  * > if you need more rules inside handlers later then you can call `withRule()`
  * > on that base client.
  *
+ * @template Rules
+ *   List of rules.
+ * @template Characteristics
+ *   Characteristics to track a user by.
  * @param options
- *   Configuration (**required**).
+ *   Configuration.
  * @returns
- *   Arcjet client for Fastify.
+ *   Fastify integration of Arcjet.
  */
-// TODO(@wooorm-arcjet): remove type parameters.
 export default function arcjet<
   const Rules extends (Primitive | Product)[],
   const Characteristics extends readonly string[],
