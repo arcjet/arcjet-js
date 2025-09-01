@@ -5,7 +5,7 @@ function isIterable(val: any): val is Iterable<any> {
 type HeadersInit =
   | Headers
   | Array<[string, string]>
-  | Record<string, Array<string> | string | undefined>
+  | Record<string, Array<string> | string | undefined>;
 
 /**
  * Arcjet headers.
