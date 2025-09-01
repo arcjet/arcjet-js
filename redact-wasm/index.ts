@@ -10,7 +10,7 @@ const componentCoreWasmPromise = componentCoreWasm();
 const componentCore2WasmPromise = componentCore2Wasm();
 const componentCore3WasmPromise = componentCore3Wasm();
 
-async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
+async function moduleFromPath(path: string): Promise<WebAssemblyLike.Module> {
   if (path === "arcjet_analyze_bindings_redact.component.core.wasm") {
     return componentCoreWasmPromise;
   }

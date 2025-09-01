@@ -5,7 +5,7 @@ import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm"
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm";
 
-async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
+async function moduleFromPath(path: string): Promise<WebAssemblyLike.Module> {
   if (path === "arcjet_analyze_js_req.component.core.wasm") {
     return componentCoreWasm;
   }

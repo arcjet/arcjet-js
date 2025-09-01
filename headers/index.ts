@@ -2,6 +2,11 @@ function isIterable(val: any): val is Iterable<any> {
   return typeof val?.[Symbol.iterator] === "function";
 }
 
+type HeadersInit =
+  | Headers
+  | Array<[string, string]>
+  | Record<string, Array<string> | string | undefined>
+
 /**
  * Arcjet headers.
  *
@@ -12,9 +17,7 @@ function isIterable(val: any): val is Iterable<any> {
  *   [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers).
  */
 export class ArcjetHeaders extends Headers {
-  constructor(
-    init?: HeadersInit | Record<string, string[] | string | undefined>,
-  ) {
+  constructor(init?: HeadersInit | undefined) {
     super();
     if (
       typeof init !== "undefined" &&
@@ -26,9 +29,7 @@ export class ArcjetHeaders extends Headers {
           this.append(key, value);
         }
       } else {
-        for (const [key, value] of Object.entries(
-          init as Record<string, string[] | string | undefined>,
-        )) {
+        for (const [key, value] of Object.entries(init)) {
           if (typeof value === "undefined") {
             continue;
           }
@@ -58,15 +59,15 @@ export class ArcjetHeaders extends Headers {
    * @returns
    *   Nothing.
    */
-  append(key: string, value: string): void {
+  append: (key: string, value: string) => void = (key, value) => {
     if (typeof key !== "string" || typeof value !== "string") {
       return;
     }
 
     if (key.toLowerCase() !== "cookie") {
-      super.append(key, value);
+      Headers.prototype.append.call(this, key, value);
     }
-  }
+  };
   /**
    * Set a header while ignoring `cookie`.
    *
@@ -80,15 +81,15 @@ export class ArcjetHeaders extends Headers {
    * @returns
    *   Nothing.
    */
-  set(key: string, value: string): void {
+  set: (key: string, value: string) => void = (key, value) => {
     if (typeof key !== "string" || typeof value !== "string") {
       return;
     }
 
     if (key.toLowerCase() !== "cookie") {
-      super.set(key, value);
+      Headers.prototype.set.call(this, key, value);
     }
-  }
+  };
 }
 
 /**

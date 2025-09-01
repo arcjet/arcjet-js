@@ -6,7 +6,11 @@
 
 export type Runtime = "workerd" | "deno" | "node" | "bun" | "edge-light" | "";
 
-declare const navigator: Navigator | undefined;
+interface NavigatorLike {
+  userAgent?: string | null | undefined;
+}
+
+declare const navigator: NavigatorLike | undefined;
 declare const Deno: any | undefined;
 declare const Bun: any | undefined;
 declare const EdgeRuntime: any | undefined;

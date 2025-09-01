@@ -13,14 +13,14 @@ export interface StringWriter {
 
 interface SubtleCryptoLike {
   digest(
-    algorithm: AlgorithmIdentifier,
-    data: BufferSource,
+    algorithm: { name: string } | string,
+    data: ArrayBufferView<ArrayBufferLike> | ArrayBufferLike,
   ): Promise<ArrayBuffer>;
 }
 
 class Sha256 implements StringWriter {
-  encoder: TextEncoder;
-  subtle: SubtleCryptoLike;
+  encoder;
+  subtle;
 
   buf: string;
 

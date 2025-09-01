@@ -56,8 +56,11 @@ describe("ArcjetRedact", () => {
     });
 
     test("it will throw WebAssembly is not available", async () => {
+      // @ts-expect-error: not typed in `@types/node` yet.
+      const Assembly: any = WebAssembly;
+
       // Fake a WebAssembly failure
-      mock.method(WebAssembly, "instantiate", () => {
+      mock.method(Assembly, "instantiate", () => {
         return Promise.reject("mock failure in wasm");
       });
 
