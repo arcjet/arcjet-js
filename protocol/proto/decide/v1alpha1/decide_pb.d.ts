@@ -422,6 +422,19 @@ export declare enum ShieldRuleVersion {
 }
 
 /**
+ * @generated from enum proto.decide.v1alpha1.FilterRuleVersion
+ */
+export declare enum FilterRuleVersion {
+  /**
+   * This is equivalent to V0 since rules without a version specified will
+   * default to this value.
+   *
+   * @generated from enum value: FILTER_RULE_VERSION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+}
+
+/**
  * Additional information from Arcjet about the IP address associated with a
  * request.
  *
@@ -680,6 +693,15 @@ export declare class Reason extends Message<Reason> {
      */
     value: BotV2Reason;
     case: "botV2";
+  } | {
+    /**
+     * Contains details about the filter rules which were triggered when the
+     * decision was made based on a filter rule.
+     *
+     * @generated from field: proto.decide.v1alpha1.FilterReason filter = 9;
+     */
+    value: FilterReason;
+    case: "filter";
   } | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<Reason>);
@@ -942,6 +964,32 @@ export declare class ShieldReason extends Message<ShieldReason> {
   static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ShieldReason;
 
   static equals(a: ShieldReason | PlainMessage<ShieldReason> | undefined, b: ShieldReason | PlainMessage<ShieldReason> | undefined): boolean;
+}
+
+/**
+ * Details of an Arcjet Filter decision.
+ *
+ * @generated from message proto.decide.v1alpha1.FilterReason
+ */
+export declare class FilterReason extends Message<FilterReason> {
+  /**
+   * @generated from field: string matched_expression = 1;
+   */
+  matchedExpression: string;
+
+  constructor(data?: PartialMessage<FilterReason>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.FilterReason";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): FilterReason;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): FilterReason;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): FilterReason;
+
+  static equals(a: FilterReason | PlainMessage<FilterReason> | undefined, b: FilterReason | PlainMessage<FilterReason> | undefined): boolean;
 }
 
 /**
@@ -1487,6 +1535,50 @@ export declare class ShieldRule extends Message<ShieldRule> {
 }
 
 /**
+ * The configuration for a filter rule.
+ *
+ * @generated from message proto.decide.v1alpha1.FilterRule
+ */
+export declare class FilterRule extends Message<FilterRule> {
+  /**
+   * @generated from field: proto.decide.v1alpha1.Mode mode = 1;
+   */
+  mode: Mode;
+
+  /**
+   * @generated from field: repeated string allow = 2;
+   */
+  allow: string[];
+
+  /**
+   * @generated from field: repeated string deny = 3;
+   */
+  deny: string[];
+
+  /**
+   * The version of the rule being executed. This is incremented by SDKs when
+   * a breaking change is made to the configuration or behavior of the rule.
+   *
+   * @generated from field: proto.decide.v1alpha1.FilterRuleVersion version = 4;
+   */
+  version: FilterRuleVersion;
+
+  constructor(data?: PartialMessage<FilterRule>);
+
+  static readonly runtime: typeof proto3;
+  static readonly typeName = "proto.decide.v1alpha1.FilterRule";
+  static readonly fields: FieldList;
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): FilterRule;
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): FilterRule;
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): FilterRule;
+
+  static equals(a: FilterRule | PlainMessage<FilterRule> | undefined, b: FilterRule | PlainMessage<FilterRule> | undefined): boolean;
+}
+
+/**
  * The configuration for Arcjet.
  *
  * @generated from message proto.decide.v1alpha1.Rule
@@ -1531,6 +1623,12 @@ export declare class Rule extends Message<Rule> {
      */
     value: BotV2Rule;
     case: "botV2";
+  } | {
+    /**
+     * @generated from field: proto.decide.v1alpha1.FilterRule filter = 7;
+     */
+    value: FilterRule;
+    case: "filter";
   } | { case: undefined; value?: undefined };
 
   constructor(data?: PartialMessage<Rule>);

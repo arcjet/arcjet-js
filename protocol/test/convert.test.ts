@@ -38,6 +38,7 @@ import type {
   ArcjetSlidingWindowRateLimitRule,
   ArcjetShieldRule,
   ArcjetSensitiveInfoRule,
+  ArcjetFilterRule,
 } from "../index.js";
 import {
   ArcjetAllowDecision,
@@ -48,6 +49,7 @@ import {
   ArcjetEmailReason,
   ArcjetErrorDecision,
   ArcjetErrorReason,
+  ArcjetFilterReason,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
@@ -511,6 +513,21 @@ test("convert", async (t) => {
       assert.equal(reason.window, 1000);
     });
 
+    await t.test("should create a filter reason", () => {
+      const reason = ArcjetReasonFromProtocol(
+        new Reason({
+          reason: {
+            case: "filter",
+            value: { matchedExpression: "ip.src == 1.2.3.4" },
+          },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetFilterReason);
+      assert.equal(reason.type, "FILTER");
+      assert.deepEqual(reason.expression, "ip.src == 1.2.3.4");
+    });
+
     await t.test("should create a sensitive info reason", () => {
       const reason = ArcjetReasonFromProtocol(
         new Reason({
@@ -697,6 +714,21 @@ test("convert", async (t) => {
                 spoofed: false,
                 verified: true,
               },
+            },
+          }),
+        );
+      },
+    );
+
+    await t.test(
+      "should create a protocol reason from an arcjet filter reason",
+      () => {
+        assert.deepEqual(
+          ArcjetReasonToProtocol(new ArcjetFilterReason("ip.src == 1.2.3.4")),
+          new Reason({
+            reason: {
+              case: "filter",
+              value: { matchedExpression: "ip.src == 1.2.3.4" },
             },
           }),
         );
@@ -1242,6 +1274,34 @@ test("convert", async (t) => {
         }),
       );
       assert.equal(rule.rule.case, "shield");
+    });
+
+    await t.test("should create a filter protocol rule", () => {
+      const rule = ArcjetRuleToProtocol({
+        allow: [],
+        deny: [],
+        mode: "DRY_RUN",
+        priority: 1,
+        protect() {
+          assert.fail("should not call `protect`");
+        },
+        type: "FILTER",
+        validate() {
+          assert.fail("should not call `validate`");
+        },
+        version: 0,
+      } as ArcjetFilterRule);
+
+      assert.deepEqual(
+        rule,
+        new Rule({
+          rule: {
+            case: "filter",
+            value: { mode: Mode.DRY_RUN },
+          },
+        }),
+      );
+      assert.equal(rule.rule.case, "filter");
     });
 
     await t.test("should create a sensitive info protocol rule", () => {

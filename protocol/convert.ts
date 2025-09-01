@@ -1,5 +1,6 @@
 import { Timestamp } from "@bufbuild/protobuf";
 import type {
+  ArcjetFilterRule,
   ArcjetRule,
   ArcjetRateLimitRule,
   ArcjetBotRule,
@@ -24,6 +25,7 @@ import {
   ArcjetEmailReason,
   ArcjetErrorDecision,
   ArcjetErrorReason,
+  ArcjetFilterReason,
   ArcjetRateLimitReason,
   ArcjetRuleResult,
   ArcjetShieldReason,
@@ -259,6 +261,10 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         emailTypes: reason.emailTypes.map(ArcjetEmailTypeFromProtocol),
       });
     }
+    case "filter": {
+      const reason = proto.reason.value;
+      return new ArcjetFilterReason(reason.matchedExpression || undefined);
+    }
     case "sensitiveInfo": {
       const reason = proto.reason.value;
       return new ArcjetSensitiveInfoReason({
@@ -360,6 +366,17 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         value: new ErrorReason({
           message: reason.message,
         }),
+      },
+    });
+  }
+
+  if (reason.isFilter()) {
+    return new Reason({
+      reason: {
+        case: "filter",
+        value: reason.expression
+          ? { matchedExpression: reason.expression }
+          : {},
       },
     });
   }
@@ -575,6 +592,18 @@ function isEmailRule<Props extends { email: string }>(
   return rule.type === "EMAIL";
 }
 
+/**
+ * Check if a rule is a filter rule.
+ *
+ * @param rule
+ *   Rule.
+ * @returns
+ *   Whether `rule` is a filter rule.
+ */
+function isFilterRule(rule: RuleWithType): rule is ArcjetFilterRule {
+  return rule.type === "FILTER";
+}
+
 function isShieldRule<Props extends {}>(
   rule: RuleWithType,
 ): rule is ArcjetShieldRule<Props> {
@@ -685,6 +714,20 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
           version: rule.version,
           mode: ArcjetModeToProtocol(rule.mode),
           autoAdded: false,
+        },
+      },
+    });
+  }
+
+  if (isFilterRule(rule)) {
+    return new Rule({
+      rule: {
+        case: "filter",
+        value: {
+          allow: [...rule.allow],
+          deny: [...rule.deny],
+          mode: ArcjetModeToProtocol(rule.mode),
+          version: rule.version,
         },
       },
     });

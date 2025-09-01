@@ -328,9 +328,9 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       },
     }));
     postReturn0 = exports1['cabi_post_detect-bot'];
-    postReturn1 = exports1['cabi_post_generate-fingerprint'];
-    postReturn2 = exports1['cabi_post_validate-characteristics'];
-    postReturn3 = exports1['cabi_post_is-valid-email'];
+    postReturn1 = exports1['cabi_post_is-valid-email'];
+    postReturn2 = exports1['cabi_post_generate-fingerprint'];
+    postReturn3 = exports1['cabi_post_validate-characteristics'];
     postReturn4 = exports1['cabi_post_detect-sensitive-info'];
     
     function detectBot(arg0, arg1) {
@@ -443,6 +443,65 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal.val;
     }
     
+    function matchFilters(arg0, arg1, arg2) {
+      var ptr0 = utf8Encode(arg0, realloc0, memory0);
+      var len0 = utf8EncodedLen;
+      var vec2 = arg1;
+      var len2 = vec2.length;
+      var result2 = realloc0(0, 0, 4, len2 * 8);
+      for (let i = 0; i < vec2.length; i++) {
+        const e = vec2[i];
+        const base = result2 + i * 8;var ptr1 = utf8Encode(e, realloc0, memory0);
+        var len1 = utf8EncodedLen;
+        dataView(memory0).setInt32(base + 4, len1, true);
+        dataView(memory0).setInt32(base + 0, ptr1, true);
+      }
+      const ret = exports1['match-filters'](ptr0, len0, result2, len2, arg2 ? 1 : 0);
+      let variant7;
+      switch (dataView(memory0).getUint8(ret + 0, true)) {
+        case 0: {
+          var bool3 = dataView(memory0).getUint8(ret + 4, true);
+          var len5 = dataView(memory0).getInt32(ret + 12, true);
+          var base5 = dataView(memory0).getInt32(ret + 8, true);
+          var result5 = [];
+          for (let i = 0; i < len5; i++) {
+            const base = base5 + i * 8;
+            var ptr4 = dataView(memory0).getInt32(base + 0, true);
+            var len4 = dataView(memory0).getInt32(base + 4, true);
+            var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
+            result5.push(result4);
+          }
+          variant7= {
+            tag: 'ok',
+            val: {
+              allowed: bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool()),
+              matchedExpressions: result5,
+            }
+          };
+          break;
+        }
+        case 1: {
+          var ptr6 = dataView(memory0).getInt32(ret + 4, true);
+          var len6 = dataView(memory0).getInt32(ret + 8, true);
+          var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
+          variant7= {
+            tag: 'err',
+            val: result6
+          };
+          break;
+        }
+        default: {
+          throw new TypeError('invalid variant discriminant for expected');
+        }
+      }
+      const retVal = variant7;
+      postReturn1(ret);
+      if (typeof retVal === 'object' && retVal.tag === 'err') {
+        throw new ComponentError(retVal.val);
+      }
+      return retVal.val;
+    }
+    
     function generateFingerprint(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
@@ -484,7 +543,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant5;
-      postReturn1(ret);
+      postReturn2(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -529,7 +588,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant4;
-      postReturn2(ret);
+      postReturn3(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -642,7 +701,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant12;
-      postReturn3(ret);
+      postReturn1(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -872,7 +931,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal;
     }
     
-    return { detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail, validateCharacteristics,  };
+    return { detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail, matchFilters, validateCharacteristics,  };
   })();
   let promise, resolve, reject;
   function runNext (value) {
