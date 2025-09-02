@@ -18,55 +18,12 @@ type RequiredProps<T, K extends keyof T> = {
 export type ArcjetMode = "LIVE" | "DRY_RUN";
 
 /**
- * Kinds of modes as constants.
- *
- * @deprecated
- *   Use strings instead.
- */
-export const ArcjetMode = Object.freeze({
-  /**
-   * @deprecated
-   *   Use the string `"LIVE"` instead.
-   */
-  LIVE: "LIVE",
-  /**
-   * @deprecated
-   *   Use the string `"DRY_RUN"` instead.
-   */
-  DRY_RUN: "DRY_RUN",
-});
-
-/**
  * Names of different rate limit algorithms.
  */
 export type ArcjetRateLimitAlgorithm =
   | "TOKEN_BUCKET"
   | "FIXED_WINDOW"
   | "SLIDING_WINDOW";
-
-/**
- * Names of rate limit algorithms as constants.
- *
- * @deprecated
- *   Use strings instead.
- */
-export const ArcjetRateLimitAlgorithm = Object.freeze({
-  /**
-   * @deprecated
-   *   Use the string `"TOKEN_BUCKET"` instead.
-   */
-  TOKEN_BUCKET: "TOKEN_BUCKET",
-  /**
-   * @deprecated
-   *   Use the string `"FIXED_WINDOW"` instead.
-   */
-  FIXED_WINDOW: "FIXED_WINDOW",
-  /**
-   * @deprecated
-   *   Use the string `"SLIDING_WINDOW"` instead.
-   */
-  SLIDING_WINDOW: "SLIDING_WINDOW",
-});
 
 /**
  * Kinds of email addresses.
@@ -77,40 +34,6 @@ export type ArcjetEmailType =
   | "NO_MX_RECORDS"
   | "NO_GRAVATAR"
   | "INVALID";
-
-/**
- * Kinds of email addresses as constants.
- *
- * @deprecated
- *   Use strings instead.
- */
-export const ArcjetEmailType = Object.freeze({
-  /**
-   * @deprecated
-   *   Use the string `"DISPOSABLE"` instead.
-   */
-  DISPOSABLE: "DISPOSABLE",
-  /**
-   * @deprecated
-   *   Use the string `"FREE"` instead.
-   */
-  FREE: "FREE",
-  /**
-   * @deprecated
-   *   Use the string `"NO_MX_RECORDS"` instead.
-   */
-  NO_MX_RECORDS: "NO_MX_RECORDS",
-  /**
-   * @deprecated
-   *   Use the string `"NO_GRAVATAR"` instead.
-   */
-  NO_GRAVATAR: "NO_GRAVATAR",
-  /**
-   * @deprecated
-   *   Use the string `"INVALID"` instead.
-   */
-  INVALID: "INVALID",
-});
 
 /**
  * Sensitive info identified by Arcjet.
@@ -147,126 +70,14 @@ export type ArcjetStack =
   | "FASTIFY";
 
 /**
- * Names of integrations as constants.
- *
- * @deprecated
- *   Use strings instead.
- */
-export const ArcjetStack = Object.freeze({
-  /**
-   * @deprecated
-   *   Use the string `"NODEJS"` instead.
-   */
-  NODEJS: "NODEJS",
-  /**
-   * @deprecated
-   *   Use the string `"NEXTJS"` instead.
-   */
-  NEXTJS: "NEXTJS",
-  /**
-   * @deprecated
-   *   Use the string `"BUN"` instead.
-   */
-  BUN: "BUN",
-  /**
-   * @deprecated
-   *   Use the string `"SVELTEKIT"` instead.
-   */
-  SVELTEKIT: "SVELTEKIT",
-  /**
-   * @deprecated
-   *   Use the string `"DENO"` instead.
-   */
-  DENO: "DENO",
-  /**
-   * @deprecated
-   *   Use the string `"NESTJS"` instead.
-   */
-  NESTJS: "NESTJS",
-  /**
-   * @deprecated
-   *   Use the string `"REMIX"` instead.
-   */
-  REMIX: "REMIX",
-  /**
-   * @deprecated
-   *   Use the string `"ASTRO"` instead.
-   */
-  ASTRO: "ASTRO",
-  /**
-   * @deprecated
-   *   Use the string `"FASTIFY"` instead.
-   */
-  FASTIFY: "FASTIFY",
-});
-
-/**
  * State of a rule after calling it.
  */
 export type ArcjetRuleState = "RUN" | "NOT_RUN" | "CACHED" | "DRY_RUN";
 
 /**
- * States of rules as constants.
- *
- * @deprecated
- *   Use strings instead.
- */
-export const ArcjetRuleState = Object.freeze({
-  /**
-   * @deprecated
-   *   Use the string `"RUN"` instead.
-   */
-  RUN: "RUN",
-  /**
-   * @deprecated
-   *   Use the string `"NOT_RUN"` instead.
-   */
-  NOT_RUN: "NOT_RUN",
-  /**
-   * @deprecated
-   *   Use the string `"CACHED"` instead.
-   */
-  CACHED: "CACHED",
-  /**
-   * @deprecated
-   *   Use the string `"DRY_RUN"` instead.
-   */
-  DRY_RUN: "DRY_RUN",
-});
-
-/**
  * Conclusion of a rule after calling it.
  */
 export type ArcjetConclusion = "ALLOW" | "DENY" | "CHALLENGE" | "ERROR";
-
-/**
- * Conclusions of rules as constants.
- *
- * @deprecated
- *   Use strings instead.
- */
-export const ArcjetConclusion = Object.freeze({
-  /**
-   * @deprecated
-   *   Use the string `"ALLOW"` instead.
-   */
-  ALLOW: "ALLOW",
-  /**
-   * @deprecated
-   *   Use the string `"DENY"` instead.
-   */
-  DENY: "DENY",
-  /**
-   * @deprecated
-   *   Use the string `"CHALLENGE"` instead.
-   */
-  CHALLENGE: "CHALLENGE",
-  /**
-   * @deprecated
-   *   Use the string `"ERROR"` instead.
-   */
-  ERROR: "ERROR",
-});
 
 /**
  * Kinds of sensitive info.
@@ -276,35 +87,6 @@ export type ArcjetSensitiveInfoType =
   | "PHONE_NUMBER"
   | "IP_ADDRESS"
   | "CREDIT_CARD_NUMBER";
-
-/**
- * Kinds of sensitive info as constants.
- *
- * @deprecated
- *   Use strings instead.
- */
-export const ArcjetSensitiveInfoType = Object.freeze({
-  /**
-   * @deprecated
-   *   Use the string `"EMAIL"` instead.
-   */
-  EMAIL: "EMAIL",
-  /**
-   * @deprecated
-   *   Use the string `"PHONE_NUMBER"` instead.
-   */
-  PHONE_NUMBER: "PHONE_NUMBER",
-  /**
-   * @deprecated
-   *   Use the string `"IP_ADDRESS"` instead.
-   */
-  IP_ADDRESS: "IP_ADDRESS",
-  /**
-   * @deprecated
-   *   Use the string `"CREDIT_CARD_NUMBER"` instead.
-   */
-  CREDIT_CARD_NUMBER: "CREDIT_CARD_NUMBER",
-});
 
 /**
  * Reason returned by a rule.

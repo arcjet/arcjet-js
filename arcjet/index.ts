@@ -1,4 +1,5 @@
 import type {
+  ArcjetConclusion,
   ArcjetContext,
   ArcjetEmailRule,
   ArcjetBotRule,
@@ -33,7 +34,6 @@ import {
   ArcjetShieldReason,
   ArcjetFilterReason,
   ArcjetRateLimitReason,
-  ArcjetConclusion,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
