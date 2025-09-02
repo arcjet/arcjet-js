@@ -184,11 +184,11 @@ export interface ArcjetAstro<Props extends PlainObject> {
    * This will analyze the request locally where possible and otherwise call
    * the Arcjet decision API.
    *
-   * @param ctx
-   *   Additional context for this function call.
    * @param request
    *   Details about the {@linkcode ArcjetRequest} that Arcjet needs to make a
    *   decision.
+   * @param rest
+   *   Additional properties required for running rules against a request.
    * @returns
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
    *   Arcjet’s decision about the request.
@@ -197,7 +197,7 @@ export interface ArcjetAstro<Props extends PlainObject> {
     request: Request,
     // We use this neat trick from https://stackoverflow.com/a/52318137 to make a single spread parameter
     // that is required if the ExtraProps aren't strictly an empty object
-    ...props: Props extends WithoutCustomProps ? [] : [Props]
+    ...rest: Props extends WithoutCustomProps ? [] : [Props]
   ): Promise<ArcjetDecision>;
 
   /**
@@ -303,26 +303,18 @@ export function createArcjetClient<
     };
   }
 
-  function withClient<const Rules extends (Primitive | Product)[]>(
-    aj: Arcjet<ExtraProps<Rules>>,
-  ): ArcjetAstro<ExtraProps<Rules>> {
-    return Object.freeze({
-      withRule(rule: Primitive | Product) {
+  function withClient<Props extends PlainObject>(
+    aj: Arcjet<Props>,
+  ): ArcjetAstro<Props> {
+    const client: ArcjetAstro<Props> = {
+      withRule(rule) {
         const client = aj.withRule(rule);
         return withClient(client);
       },
-      async protect(
-        request: Request,
-        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
-          ? []
-          : [ExtraProps<Rules>]
-      ): Promise<ArcjetDecision> {
-        // TODO(#220): The generic manipulations get really mad here, so we cast
-        // Further investigation makes it seem like it has something to do with
-        // the definition of `props` in the signature but it's hard to track down
-        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-          ExtraProps<Rules>
-        >;
+      async protect(request, props?) {
+        // Cast of `{}` because here we switch from `undefined` (or
+        // `WithoutCustomProps`) to `Props`.
+        const req = toArcjetRequest(request, props ?? ({} as Props));
 
         const getBody = async () => {
           try {
@@ -338,7 +330,9 @@ export function createArcjetClient<
 
         return aj.protect({ getBody }, req);
       },
-    });
+    };
+
+    return Object.freeze(client);
   }
 
   const aj = core({ ...options, client, log });
