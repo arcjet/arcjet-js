@@ -59,7 +59,8 @@
     "@rollup/wasm-node": "4.50.0",
     "bun-types": "1.2.21",
     "eslint": "9.34.0",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "undici-types": "7.15.0"
   },
   "publishConfig": {
     "access": "public",
