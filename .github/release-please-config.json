@@ -148,10 +148,6 @@
       "component": "@arcjet/transport",
       "skip-github-release": true
     },
-    "tsconfig": {
-      "component": "@arcjet/tsconfig",
-      "skip-github-release": true
-    },
     "nosecone-next": {
       "component": "@nosecone/next",
       "skip-github-release": true
@@ -204,7 +200,6 @@
         "@arcjet/stable-hash",
         "@arcjet/sveltekit",
         "@arcjet/transport",
-        "@arcjet/tsconfig",
         "@nosecone/next",
         "@nosecone/sveltekit",
         "arcjet",

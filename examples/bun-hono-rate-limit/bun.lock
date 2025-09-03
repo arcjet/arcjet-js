@@ -242,13 +242,6 @@
         "typescript": "5.8.3",
       },
     },
-    "../../tsconfig": {
-      "name": "@arcjet/tsconfig",
-      "version": "1.0.0-beta.9",
-      "peerDependencies": {
-        "typescript": "^5",
-      },
-    },
   },
   "packages": {
     "@arcjet/analyze": ["@arcjet/analyze@workspace:../../analyze"],
@@ -282,8 +275,6 @@
     "@arcjet/stable-hash": ["@arcjet/stable-hash@1.0.0-beta.9", "", {}, "sha512-i/cJW0/w7Y9Fjn2QF9dllLrCmoCYWAnzpGR42yGzwp+qQEPmsxkLlE81599IZmOY6oxWfPiJ9QtD/+sUncSuVw=="],
 
     "@arcjet/transport": ["@arcjet/transport@workspace:../../transport"],
-
-    "@arcjet/tsconfig": ["@arcjet/tsconfig@workspace:../../tsconfig"],
 
     "@bufbuild/protobuf": ["@bufbuild/protobuf@1.10.1", "", {}, "sha512-wJ8ReQbHxsAfXhrf9ixl0aYbZorRuOWpBNzm8pL8ftmSxQx/wnJD5Eg861NwJU/czy2VXFIebCeZnZrI9rktIQ=="],
 
