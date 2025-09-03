@@ -11,7 +11,7 @@ import componentCoreWasm from "./wasm/arcjet_analyze_bindings_redact.component.c
 import componentCore2Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core2.wasm";
 import componentCore3Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core3.wasm";
 
-async function moduleFromPath(path: string): Promise<WebAssembly.Module> {
+async function moduleFromPath(path: string): Promise<WebAssemblyLike.Module> {
   if (path === "arcjet_analyze_bindings_redact.component.core.wasm") {
     return componentCoreWasm;
   }

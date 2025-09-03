@@ -61,7 +61,7 @@ function nextStyleSrc() {
  *   Next.js middleware that sets secure headers.
  */
 export function createMiddleware(options: Options = defaults) {
-  return async () => {
+  return async (): Promise<Response> => {
     const headers = nosecone(options);
     // Setting this specific header is the way that Next.js implements
     // middleware. See:

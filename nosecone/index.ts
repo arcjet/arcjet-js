@@ -943,7 +943,7 @@ export function createXssProtection() {
  * @returns
  *   `Headers` with the configured security headers.
  */
-export function nosecone(options?: Options | undefined) {
+export function nosecone(options?: Options | undefined): Headers {
   let contentSecurityPolicy =
     options?.contentSecurityPolicy ?? defaults.contentSecurityPolicy;
   let crossOriginEmbedderPolicy =

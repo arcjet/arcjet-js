@@ -5,7 +5,7 @@
     "esModuleInterop": true,
     "exactOptionalPropertyTypes": true,
     "incremental": false,
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["esnext"],
     "moduleResolution": "node",
     "module": "esnext",
     "preserveWatchOutput": true,
