@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@nosecone/sveltekit-v1.0.0-beta.11) (2025-09-03)
+
+
+### 📝 Documentation
+
+* **nosecone-sveltekit:** add JSDocs ([#4842](https://github.com/arcjet/arcjet-js/issues/4842)) ([de708af](https://github.com/arcjet/arcjet-js/commit/de708af03090b2c6f299067719d3e038d4e44063))
+
+
+### 🧹 Miscellaneous Chores
+
+* **nosecone-sveltekit:** expose named export, deprecate default ([#4880](https://github.com/arcjet/arcjet-js/issues/4880)) ([d0e9aaf](https://github.com/arcjet/arcjet-js/commit/d0e9aaf83c7b3fc2609ade169af4641308d8c513))
+* **nosecone:** expose `Options`, deprecate `NoseconeOptions` ([#4855](https://github.com/arcjet/arcjet-js/issues/4855)) ([c504315](https://github.com/arcjet/arcjet-js/commit/c5043154836c04d3106be333c418682212b9602f))
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@nosecone/sveltekit-v1.0.0-beta.10) (2025-08-04)
 
 

@@ -1,5 +1,53 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/protocol-v1.0.0-beta.11) (2025-09-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **protocol:** remove enum-like objects ([#5053](https://github.com/arcjet/arcjet-js/issues/5053))
+
+### 🚀 New Features
+
+* add filter rule ([#4802](https://github.com/arcjet/arcjet-js/issues/4802)) ([40953e1](https://github.com/arcjet/arcjet-js/commit/40953e1c704eea2765a6cb8231a781df547af90c))
+
+
+### 🪲 Bug Fixes
+
+* **protocol:** Remove change that disjoined IP details and assertions ([#4859](https://github.com/arcjet/arcjet-js/issues/4859)) ([#4913](https://github.com/arcjet/arcjet-js/issues/4913)) ([3304e9c](https://github.com/arcjet/arcjet-js/commit/3304e9c4280cf616f6a7f6466b8088e796425e53))
+
+
+### 📝 Documentation
+
+* **protocol:** add JSDocs ([#4851](https://github.com/arcjet/arcjet-js/issues/4851)) ([c1021e9](https://github.com/arcjet/arcjet-js/commit/c1021e9b6319297d718f2926fcccab2a28a91a93))
+
+
+### 🧹 Miscellaneous Chores
+
+* **protocol:** add `hasAsn`, deprecate `hasASN` ([#4889](https://github.com/arcjet/arcjet-js/issues/4889)) ([4990e80](https://github.com/arcjet/arcjet-js/commit/4990e8084ae193c20955e76abe7a1619eac82a80))
+* **protocol:** remove enum-like objects ([#5053](https://github.com/arcjet/arcjet-js/issues/5053)) ([cc76e1c](https://github.com/arcjet/arcjet-js/commit/cc76e1cf778e8d6d69a3023d61164908d39299ce))
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### ⌨️ Code Refactoring
+
+* **protocol:** remove unneeded type utility ([#4859](https://github.com/arcjet/arcjet-js/issues/4859)) ([0a638ae](https://github.com/arcjet/arcjet-js/commit/0a638ae8e2d680fbe3c33556f3011f4ad733f5ad))
+
+
+### 📚 Tests
+
+* **protocol:** add type guard tests for `ArcjetIpDetails` ([#4888](https://github.com/arcjet/arcjet-js/issues/4888)) ([98072bc](https://github.com/arcjet/arcjet-js/commit/98072bcb146f99f6983f9fe4dbe225b3c7e3fe82))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/protocol-v1.0.0-beta.10) (2025-08-04)
 
 

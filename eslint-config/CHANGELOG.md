@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/eslint-config-v1.0.0-beta.11) (2025-09-03)
+
+
+### 📝 Documentation
+
+* add JSDocs to exposed API in 10 utilities ([#4741](https://github.com/arcjet/arcjet-js/issues/4741)) ([f836ea2](https://github.com/arcjet/arcjet-js/commit/f836ea2533cf4726a7cacd3462ea1770801e9889))
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/eslint-config-v1.0.0-beta.10) (2025-08-04)
 
 

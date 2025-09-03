@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/fastify-v1.0.0-beta.11) (2025-09-03)
+
+
+### 📝 Documentation
+
+* **fastify:** refactor JSDocs ([#5032](https://github.com/arcjet/arcjet-js/issues/5032)) ([9c7405f](https://github.com/arcjet/arcjet-js/commit/9c7405f4db86353758e4b4e17fc360aff7e512f5))
+
+
+### 🧹 Miscellaneous Chores
+
+* **headers:** expose named export, deprecate default ([#4860](https://github.com/arcjet/arcjet-js/issues/4860)) ([8d716b9](https://github.com/arcjet/arcjet-js/commit/8d716b99430470a842f2648092736098abdaab66))
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/headers bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/ip bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/logger bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/protocol bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/transport bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * arcjet bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/fastify-v1.0.0-beta.10) (2025-08-04)
 
 

@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/deno-v1.0.0-beta.11) (2025-09-03)
+
+
+### 📝 Documentation
+
+* **deno:** add JSDocs ([#5031](https://github.com/arcjet/arcjet-js/issues/5031)) ([18a2700](https://github.com/arcjet/arcjet-js/commit/18a27006f2934d9716edf8fd892bf988ed5e74c7))
+
+
+### 🧹 Miscellaneous Chores
+
+* **headers:** expose named export, deprecate default ([#4860](https://github.com/arcjet/arcjet-js/issues/4860)) ([8d716b9](https://github.com/arcjet/arcjet-js/commit/8d716b99430470a842f2648092736098abdaab66))
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### ⌨️ Code Refactoring
+
+* **ip:** rename identifiers to match other casing ([#4723](https://github.com/arcjet/arcjet-js/issues/4723)) ([4cbd844](https://github.com/arcjet/arcjet-js/commit/4cbd84471216eee6183a686774897bc7ce95f348))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/headers bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/ip bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/logger bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/protocol bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/transport bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * arcjet bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/deno-v1.0.0-beta.10) (2025-08-04)
 
 
