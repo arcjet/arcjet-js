@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/sprintf",
-  "version": "1.0.0-beta.10",
+  "version": "1.0.0-beta.11",
   "description": "Arcjet platform-independent replacement for util.format",
   "keywords": [
     "arcjet",
@@ -45,8 +45,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.10",
-    "@arcjet/rollup-config": "1.0.0-beta.10",
+    "@arcjet/eslint-config": "1.0.0-beta.11",
+    "@arcjet/rollup-config": "1.0.0-beta.11",
     "@rollup/wasm-node": "4.50.0",
     "@types/node": "24.3.0",
     "eslint": "9.34.0",

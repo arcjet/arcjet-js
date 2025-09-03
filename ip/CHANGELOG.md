@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/ip-v1.0.0-beta.11) (2025-09-03)
+
+
+### 🚀 New Features
+
+* **ip:** expose `Cidr` type ([#4877](https://github.com/arcjet/arcjet-js/issues/4877)) ([96674f4](https://github.com/arcjet/arcjet-js/commit/96674f447e4f79d0592453f548bdb706ac30b49a))
+
+
+### 📝 Documentation
+
+* add info on derivative works to license sections ([#4654](https://github.com/arcjet/arcjet-js/issues/4654)) ([d427c39](https://github.com/arcjet/arcjet-js/commit/d427c394098b4dfde8756a7d8ab25eb291b278a0))
+* add JSDocs to exposed API in 10 utilities ([#4741](https://github.com/arcjet/arcjet-js/issues/4741)) ([f836ea2](https://github.com/arcjet/arcjet-js/commit/f836ea2533cf4726a7cacd3462ea1770801e9889))
+
+
+### 🧹 Miscellaneous Chores
+
+* **ip:** expose named export, deprecate default ([#4876](https://github.com/arcjet/arcjet-js/issues/4876)) ([fcb83a3](https://github.com/arcjet/arcjet-js/commit/fcb83a304e1b9ba16b788e7a1209a61af2193f94))
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### ⌨️ Code Refactoring
+
+* **ip:** rename identifiers to match other casing ([#4723](https://github.com/arcjet/arcjet-js/issues/4723)) ([4cbd844](https://github.com/arcjet/arcjet-js/commit/4cbd84471216eee6183a686774897bc7ce95f348))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/ip-v1.0.0-beta.10) (2025-08-04)
 
 

@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...arcjet-v1.0.0-beta.11) (2025-09-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **protocol:** remove enum-like objects ([#5053](https://github.com/arcjet/arcjet-js/issues/5053))
+
+### 🚀 New Features
+
+* add filter rule ([#4802](https://github.com/arcjet/arcjet-js/issues/4802)) ([40953e1](https://github.com/arcjet/arcjet-js/commit/40953e1c704eea2765a6cb8231a781df547af90c))
+
+
+### 📝 Documentation
+
+* **arcjet:** add JSDocs ([#4997](https://github.com/arcjet/arcjet-js/issues/4997)) ([de57d5e](https://github.com/arcjet/arcjet-js/commit/de57d5e68864b620c2b9e76c97866565e602afb6))
+
+
+### 🧹 Miscellaneous Chores
+
+* **headers:** expose named export, deprecate default ([#4860](https://github.com/arcjet/arcjet-js/issues/4860)) ([8d716b9](https://github.com/arcjet/arcjet-js/commit/8d716b99430470a842f2648092736098abdaab66))
+* **protocol:** remove enum-like objects ([#5053](https://github.com/arcjet/arcjet-js/issues/5053)) ([cc76e1c](https://github.com/arcjet/arcjet-js/commit/cc76e1cf778e8d6d69a3023d61164908d39299ce))
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/cache bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/duration bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/headers bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/protocol bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/runtime bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/stable-hash bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...arcjet-v1.0.0-beta.10) (2025-08-04)
 
 

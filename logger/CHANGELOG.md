@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/logger-v1.0.0-beta.11) (2025-09-03)
+
+
+### 📝 Documentation
+
+* **logger:** add JSDocs ([#4839](https://github.com/arcjet/arcjet-js/issues/4839)) ([107c145](https://github.com/arcjet/arcjet-js/commit/107c1455cc2ae36bbc75909097a50c67a4e67129))
+
+
+### 🧹 Miscellaneous Chores
+
+* **logger:** rename `LoggerOptions` to `Options` ([#4874](https://github.com/arcjet/arcjet-js/issues/4874)) ([78962de](https://github.com/arcjet/arcjet-js/commit/78962de6ef97485f1aa8c24fabbfb70cab414fee))
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### ⌨️ Code Refactoring
+
+* **logger:** replace abbreviations with words ([#4853](https://github.com/arcjet/arcjet-js/issues/4853)) ([de963dc](https://github.com/arcjet/arcjet-js/commit/de963dc45df4ecbd4fe15127ca945f1934466ba0))
+* **logger:** use more specific type than `unknown` ([#4873](https://github.com/arcjet/arcjet-js/issues/4873)) ([5025378](https://github.com/arcjet/arcjet-js/commit/5025378577b40a2c6dad9a41929bca94aedf6a4b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/sprintf bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/logger-v1.0.0-beta.10) (2025-08-04)
 
 

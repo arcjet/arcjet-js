@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/redact-v1.0.0-beta.11) (2025-09-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **redact:** improve types around custom entities ([#4883](https://github.com/arcjet/arcjet-js/issues/4883))
+
+### 🪲 Bug Fixes
+
+* **types:** remove need for `dom.iterable`, `dom`, lib ([#5047](https://github.com/arcjet/arcjet-js/issues/5047)) ([fba8564](https://github.com/arcjet/arcjet-js/commit/fba85640bd24f1ab2906b1e43159d9e8dc89fd37))
+
+
+### 📝 Documentation
+
+* **redact:** add JSDocs ([#4843](https://github.com/arcjet/arcjet-js/issues/4843)) ([b6b14bb](https://github.com/arcjet/arcjet-js/commit/b6b14bb5e5b161d334a1fcd6eb6ed7f565c49f24))
+
+
+### 🧹 Miscellaneous Chores
+
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### ⌨️ Code Refactoring
+
+* **redact:** improve types around custom entities ([#4883](https://github.com/arcjet/arcjet-js/issues/4883)) ([0b09945](https://github.com/arcjet/arcjet-js/commit/0b0994591a2e344c5102089cf83cf0613d506cfe))
+* **redact:** remove repetition in code ([#4881](https://github.com/arcjet/arcjet-js/issues/4881)) ([191ccb7](https://github.com/arcjet/arcjet-js/commit/191ccb7105e6cc6f8e949ff56163dba0758c5d79))
+* **redact:** reuse exposed types ([#4856](https://github.com/arcjet/arcjet-js/issues/4856)) ([2380307](https://github.com/arcjet/arcjet-js/commit/2380307a7b82ed1a9dc4c3bb3167475a9cfe12eb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/redact-wasm bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/redact-v1.0.0-beta.10) (2025-08-04)
 
 

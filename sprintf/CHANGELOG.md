@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/sprintf-v1.0.0-beta.11) (2025-09-03)
+
+
+### 📝 Documentation
+
+* add info on derivative works to license sections ([#4654](https://github.com/arcjet/arcjet-js/issues/4654)) ([d427c39](https://github.com/arcjet/arcjet-js/commit/d427c394098b4dfde8756a7d8ab25eb291b278a0))
+* **sprintf:** add JSDocs ([#4847](https://github.com/arcjet/arcjet-js/issues/4847)) ([a5b5084](https://github.com/arcjet/arcjet-js/commit/a5b50840f13ee03371166fa2655a54180d30aacc))
+* **sprintf:** add JSDocs ([#4848](https://github.com/arcjet/arcjet-js/issues/4848)) ([d9b0adb](https://github.com/arcjet/arcjet-js/commit/d9b0adb94c243cf5894f64005ad722ad4264145d))
+
+
+### 🧹 Miscellaneous Chores
+
+* **sprintf:** expose named export, deprecate default ([#4875](https://github.com/arcjet/arcjet-js/issues/4875)) ([a2624b4](https://github.com/arcjet/arcjet-js/commit/a2624b4998e2e9d05e83b417411eb3cddfcab18b))
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### ⌨️ Code Refactoring
+
+* **sprintf:** replace abbreviations with words ([#4857](https://github.com/arcjet/arcjet-js/issues/4857)) ([13bac85](https://github.com/arcjet/arcjet-js/commit/13bac85d164ca6b86e78bd8cded03403abb087bc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/sprintf-v1.0.0-beta.10) (2025-08-04)
 
 

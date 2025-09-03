@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/runtime-v1.0.0-beta.11) (2025-09-03)
+
+
+### 🪲 Bug Fixes
+
+* **types:** remove need for `dom.iterable`, `dom`, lib ([#5047](https://github.com/arcjet/arcjet-js/issues/5047)) ([fba8564](https://github.com/arcjet/arcjet-js/commit/fba85640bd24f1ab2906b1e43159d9e8dc89fd37))
+
+
+### 📝 Documentation
+
+* add info on derivative works to license sections ([#4654](https://github.com/arcjet/arcjet-js/issues/4654)) ([d427c39](https://github.com/arcjet/arcjet-js/commit/d427c394098b4dfde8756a7d8ab25eb291b278a0))
+* **runtime:** add JSDocs ([#4846](https://github.com/arcjet/arcjet-js/issues/4846)) ([a740694](https://github.com/arcjet/arcjet-js/commit/a7406942dbeed93304e0724228e745040ee93822))
+
+
+### 🧹 Miscellaneous Chores
+
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/runtime-v1.0.0-beta.10) (2025-08-04)
 
 

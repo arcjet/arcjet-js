@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@nosecone/next-v1.0.0-beta.11) (2025-09-03)
+
+
+### 🪲 Bug Fixes
+
+* **types:** remove need for `dom.iterable`, `dom`, lib ([#5047](https://github.com/arcjet/arcjet-js/issues/5047)) ([fba8564](https://github.com/arcjet/arcjet-js/commit/fba85640bd24f1ab2906b1e43159d9e8dc89fd37))
+
+
+### 📝 Documentation
+
+* **nosecone-next:** add JSDocs ([#4841](https://github.com/arcjet/arcjet-js/issues/4841)) ([689ea3c](https://github.com/arcjet/arcjet-js/commit/689ea3c94ef75d574466190c5938a016932801bc))
+
+
+### 🧹 Miscellaneous Chores
+
+* **nosecone-next:** expose named export, deprecate default ([#4879](https://github.com/arcjet/arcjet-js/issues/4879)) ([605e647](https://github.com/arcjet/arcjet-js/commit/605e647fbc721e841bf037fe59f47a6089ec7f37))
+* **nosecone:** expose `Options`, deprecate `NoseconeOptions` ([#4855](https://github.com/arcjet/arcjet-js/issues/4855)) ([c504315](https://github.com/arcjet/arcjet-js/commit/c5043154836c04d3106be333c418682212b9602f))
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@nosecone/next-v1.0.0-beta.10) (2025-08-04)
 
 

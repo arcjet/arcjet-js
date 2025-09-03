@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/env-v1.0.0-beta.11) (2025-09-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **env:** remove support for explicit port on orb ([#4988](https://github.com/arcjet/arcjet-js/issues/4988))
+
+### 🚀 New Features
+
+* **env:** Support trailing slashes on ARCJET_BASE_URL ([#5035](https://github.com/arcjet/arcjet-js/issues/5035)) ([db1a4ac](https://github.com/arcjet/arcjet-js/commit/db1a4ac2fd713db1f9b03825eb81ea1199fdaa4a))
+
+
+### 🪲 Bug Fixes
+
+* **env:** remove support for explicit port on orb ([#4988](https://github.com/arcjet/arcjet-js/issues/4988)) ([3e601d7](https://github.com/arcjet/arcjet-js/commit/3e601d7929c5e3a13160a9c61925465887a80a7b))
+
+
+### 📝 Documentation
+
+* add JSDocs to exposed API in 10 utilities ([#4741](https://github.com/arcjet/arcjet-js/issues/4741)) ([f836ea2](https://github.com/arcjet/arcjet-js/commit/f836ea2533cf4726a7cacd3462ea1770801e9889))
+
+
+### 🧹 Miscellaneous Chores
+
+* **tsconfig:** remove `@arcjet/tsconfig` ([#5022](https://github.com/arcjet/arcjet-js/issues/5022)) ([fdca6a9](https://github.com/arcjet/arcjet-js/commit/fdca6a9b052fa6711cc56f81b46b19bd6aa7acbb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+    * @arcjet/rollup-config bumped from 1.0.0-beta.10 to 1.0.0-beta.11
+
 ## [1.0.0-beta.10](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.9...@arcjet/env-v1.0.0-beta.10) (2025-08-04)
 
 
