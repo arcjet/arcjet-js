@@ -31,12 +31,13 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
-    "edge-light": "./edge-light.js",
+    "edge-light": "./dom.js",
+    "workerd": "./dom.js",
     "default": "./index.js"
   },
   "files": [
-    "edge-light.d.ts",
-    "edge-light.js",
+    "dom.d.ts",
+    "dom.js",
     "hasher.d.ts",
     "hasher.js",
     "index.d.ts",

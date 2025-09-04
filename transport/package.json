@@ -32,14 +32,15 @@
   "types": "./index.d.ts",
   "exports": {
     "bun": "./bun.js",
-    "edge-light": "./edge-light.js",
+    "edge-light": "./edge.js",
+    "workerd": "./edge.js",
     "default": "./index.js"
   },
   "files": [
     "bun.d.ts",
     "bun.js",
-    "edge-light.d.ts",
-    "edge-light.js",
+    "edge.d.ts",
+    "edge.js",
     "index.d.ts",
     "index.js"
   ],

@@ -1,4 +1,6 @@
-// Bun doesn't properly support connect-node so we need to use connect-web
+// This file is used when running in Bun.
+// It uses DOM based APIs (`@connectrpc/connect-web`) to connect to the API.
+// Bun slightly differs in how it implements Node APIs and that causes problems.
 import { createConnectTransport } from "@connectrpc/connect-web";
 
 export function createTransport(baseUrl: string) {
