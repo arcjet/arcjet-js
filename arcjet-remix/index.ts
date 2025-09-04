@@ -296,26 +296,18 @@ export default function arcjet<
     };
   }
 
-  function withClient<const Rules extends (Primitive | Product)[]>(
-    aj: Arcjet<ExtraProps<Rules>>,
-  ): ArcjetRemix<ExtraProps<Rules>> {
-    return Object.freeze({
-      withRule(rule: Primitive | Product) {
+  function withClient<Props extends PlainObject>(
+    aj: Arcjet<Props>,
+  ): ArcjetRemix<Props> {
+    const client: ArcjetRemix<Props> = {
+      withRule(rule) {
         const client = aj.withRule(rule);
         return withClient(client);
       },
-      async protect(
-        details: ArcjetRemixRequest,
-        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
-          ? []
-          : [ExtraProps<Rules>]
-      ): Promise<ArcjetDecision> {
-        // TODO(#220): The generic manipulations get really mad here, so we cast
-        // Further investigation makes it seem like it has something to do with
-        // the definition of `props` in the signature but it's hard to track down
-        const req = toArcjetRequest(details, props ?? {}) as ArcjetRequest<
-          ExtraProps<Rules>
-        >;
+      async protect(details, props?) {
+        // Cast of `{}` because here we switch from `undefined` (or
+        // `WithoutCustomProps`) to `Props`.
+        const req = toArcjetRequest(details, props ?? ({} as Props));
 
         const getBody = async () => {
           try {
@@ -331,7 +323,9 @@ export default function arcjet<
 
         return aj.protect({ getBody }, req);
       },
-    });
+    };
+
+    return Object.freeze(client);
   }
 
   const aj = core({ ...options, client, log });
