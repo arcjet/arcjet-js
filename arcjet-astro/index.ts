@@ -20,8 +20,8 @@ const validateProxies = z.array(z.string());
 const validateCharacteristics = z.array(z.string());
 const validateClientOptions = z
   .object({
-    baseUrl: z.string(),
-    timeout: z.number(),
+    baseUrl: z.string().optional(),
+    timeout: z.number().optional(),
   })
   .strict()
   .optional();
@@ -575,14 +575,14 @@ export type RemoteClientOptions = {
    * Defaults to the environment variable `ARCJET_BASE_URL` (if that value
    * is known and allowed) and the standard production API otherwise.
    */
-  baseUrl?: string;
+  baseUrl?: string | undefined;
 
   /**
    * Timeout in milliseconds for the Decide API (optional).
    *
    * Defaults to `500` in production and `1000` in development.
    */
-  timeout?: number;
+  timeout?: number | undefined;
 };
 
 /**
@@ -593,8 +593,9 @@ export type RemoteClientOptions = {
  * @returns
  *   Client.
  */
-export function createRemoteClient({ baseUrl, timeout }: RemoteClientOptions) {
-  return { baseUrl, timeout } as const;
+export function createRemoteClient(options?: RemoteClientOptions | undefined) {
+  const settings = options ?? {};
+  return { baseUrl: settings.baseUrl, timeout: settings.timeout } as const;
 }
 
 /**
