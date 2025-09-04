@@ -2826,7 +2826,7 @@ export default function arcjet<
       log.debug("fingerprint (%s): %s", rt, fingerprint);
     } catch (error) {
       log.error(
-        { error },
+        { error: errorMessage(error) },
         "Failed to build fingerprint. Please verify your Characteristics.",
       );
 
