@@ -26,6 +26,8 @@ const validateClientOptions = z
   .strict()
   .optional();
 
+// TODO: once `arcjet` core has `exactOptionalProperties` we can use
+// `satisfies z.ZodType<ShieldOptions>` and such here.
 const validateShieldOptions = z
   .object({
     mode: validateMode.optional(),
