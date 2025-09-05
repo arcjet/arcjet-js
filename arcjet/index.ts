@@ -332,13 +332,20 @@ function createValidator({
   rule: string;
   validations: ValidationSchema[];
 }) {
-  return (options: Record<string, unknown>) => {
+  return (options: unknown) => {
+    if (options === null || typeof options !== "object") {
+      throw new Error(`\`${rule}\` options error: expected an object`);
+    }
+
+    // Cast to allow arbitrary indexing.
+    const record = options as Record<string, unknown>;
+
     for (const { key, validate, required } of validations) {
-      if (required && !Object.hasOwn(options, key)) {
+      if (required && !Object.hasOwn(record, key)) {
         throw new Error(`\`${rule}\` options error: \`${key}\` is required`);
       }
 
-      const value = options[key];
+      const value = record[key];
 
       // The `required` flag is checked above, so these should only be validated
       // if the value is not undefined.
@@ -471,14 +478,12 @@ const validateFilterOptions = createValidator({
 });
 
 /**
- * Configuration for the token bucket rate limit rule.
+ * Shared configuration for all rate limit rules.
  *
  * @template Characteristics
  *   Characteristics to track a user by.
  */
-export type TokenBucketRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+interface RateLimitOptionsShared<Characteristics extends readonly string[]> {
   /**
    * Block mode of the rule (default: `"DRY_RUN"`).
    *
@@ -491,6 +496,17 @@ export type TokenBucketRateLimitOptions<
    * Characteristics to track a user by (default: global characteristics or `["src.ip"]`).
    */
   characteristics?: Characteristics;
+}
+
+/**
+ * Configuration for the token bucket rate limit rule.
+ *
+ * @template Characteristics
+ *   Characteristics to track a user by.
+ */
+export interface TokenBucketRateLimitOptions<
+  Characteristics extends readonly string[],
+> extends RateLimitOptionsShared<Characteristics> {
   /**
    * Tokens to add to the bucket at each interval (required).
    *
@@ -518,7 +534,7 @@ export type TokenBucketRateLimitOptions<
    * until it reaches full capacity.
    */
   capacity: number;
-};
+}
 
 /**
  * Configuration for the fixed window rate limit rule.
@@ -526,21 +542,9 @@ export type TokenBucketRateLimitOptions<
  * @template Characteristics
  *   Characteristics to track a user by.
  */
-export type FixedWindowRateLimitOptions<
+export interface FixedWindowRateLimitOptions<
   Characteristics extends readonly string[],
-> = {
-  /**
-   * Block mode of the rule (default: `"DRY_RUN"`).
-   *
-   * `"DRY_RUN"` will allow all requests while still providing access to the
-   * rule results.
-   * `"LIVE"` will block requests when the rate limit is exceeded.
-   */
-  mode?: ArcjetMode;
-  /**
-   * Characteristics to track a user by (default: global characteristics or `["src.ip"]`).
-   */
-  characteristics?: Characteristics;
+> extends RateLimitOptionsShared<Characteristics> {
   /**
    * Fixed time window (required).
    *
@@ -558,7 +562,7 @@ export type FixedWindowRateLimitOptions<
    * Max requests allowed in the fixed time window (required).
    */
   max: number;
-};
+}
 
 /**
  * Configuration for the sliding window rate limit rule.
@@ -566,21 +570,9 @@ export type FixedWindowRateLimitOptions<
  * @template Characteristics
  *   Characteristics to track a user by.
  */
-export type SlidingWindowRateLimitOptions<
+export interface SlidingWindowRateLimitOptions<
   Characteristics extends readonly string[],
-> = {
-  /**
-   * Block mode of the rule (default: `"DRY_RUN"`).
-   *
-   * `"DRY_RUN"` will allow all requests while still providing access to the
-   * rule results.
-   * `"LIVE"` will block requests when the rate limit is exceeded.
-   */
-  mode?: ArcjetMode;
-  /**
-   * Characteristics to track a user by (default: global characteristics or `["src.ip"]`).
-   */
-  characteristics?: Characteristics;
+> extends RateLimitOptionsShared<Characteristics> {
   /**
    * Time interval for the rate limit (required).
    *
@@ -598,13 +590,12 @@ export type SlidingWindowRateLimitOptions<
    * Max requests allowed in the sliding time window (required).
    */
   max: number;
-};
+}
 
 /**
- * Configuration for the bot detection rule to allow certain bots and deny
- * others.
+ * Shared configuration for bot detection rule.
  */
-export type BotOptionsAllow = {
+interface BotOptionsShared {
   /**
    * Block mode of the rule (default: `"DRY_RUN"`).
    *
@@ -613,6 +604,13 @@ export type BotOptionsAllow = {
    * `"LIVE"` will block requests when the rate limit is exceeded.
    */
   mode?: ArcjetMode;
+}
+
+/**
+ * Configuration for the bot detection rule to allow certain bots and deny
+ * others.
+ */
+export interface BotOptionsAllow extends BotOptionsShared {
   /**
    * List of bots to allow (required).
    *
@@ -635,21 +633,13 @@ export type BotOptionsAllow = {
    * cannot be combined with `allow`.
    */
   deny?: never;
-};
+}
 
 /**
  * Configuration for the bot detection rule to deny certain bots and allow
  * others.
  */
-export type BotOptionsDeny = {
-  /**
-   * Block mode of the rule (default: `"DRY_RUN"`).
-   *
-   * `"DRY_RUN"` will allow all requests while still providing access to the
-   * rule results.
-   * `"LIVE"` will block requests when the rate limit is exceeded.
-   */
-  mode?: ArcjetMode;
+export interface BotOptionsDeny extends BotOptionsShared {
   /**
    * List of bots to allow,
    * cannot be combined with `allow`.
@@ -673,7 +663,7 @@ export type BotOptionsDeny = {
    * for a list of bots and categories.
    */
   deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
-};
+}
 
 /**
  * Configuration for the bot detection rule.
@@ -681,10 +671,9 @@ export type BotOptionsDeny = {
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 
 /**
- * Configuration for the email validation rule to allow certain email addresses
- * and deny others.
+ * Shared configuration for email validation rule.
  */
-export type EmailOptionsAllow = {
+interface EmailOptionsShared {
   /**
    * Block mode of the rule (default: `"DRY_RUN"`).
    *
@@ -693,6 +682,29 @@ export type EmailOptionsAllow = {
    * `"LIVE"` will block requests when the rate limit is exceeded.
    */
   mode?: ArcjetMode;
+  /**
+   * Whether to see email addresses that contain a single domain segment as
+   * invalid (default: `true`).
+   *
+   * For example, `foo@bar` is seen as valid when `false` and invalid when
+   * `true`.
+   */
+  requireTopLevelDomain?: boolean;
+  /**
+   * Whether to see email addresses that contain a domain literal as valid
+   * (default: `false`).
+   *
+   * For example, `foo@[192.168.1.1]` is valid when `true` and invalid when
+   * `false`.
+   */
+  allowDomainLiteral?: boolean;
+}
+
+/**
+ * Configuration for the email validation rule to allow certain email addresses
+ * and deny others.
+ */
+export interface EmailOptionsAllow extends EmailOptionsShared {
   /**
    * List of email address types to allow (required).
    *
@@ -723,37 +735,13 @@ export type EmailOptionsAllow = {
    * cannot be combined with `allow`.
    */
   deny?: never;
-  /**
-   * Whether to see email addresses that contain a single domain segment as
-   * invalid (default: `true`).
-   *
-   * For example, `foo@bar` is seen as valid when `false` and invalid when
-   * `true`.
-   */
-  requireTopLevelDomain?: boolean;
-  /**
-   * Whether to see email addresses that contain a domain literal as valid
-   * (default: `false`).
-   *
-   * For example, `foo@[192.168.1.1]` is valid when `true` and invalid when
-   * `false`.
-   */
-  allowDomainLiteral?: boolean;
-};
+}
 
 /**
  * Configuration for the email validation rule to deny certain email addresses
  * and allow others.
  */
-export type EmailOptionsDeny = {
-  /**
-   * Block mode of the rule (default: `"DRY_RUN"`).
-   *
-   * `"DRY_RUN"` will allow all requests while still providing access to the
-   * rule results.
-   * `"LIVE"` will block requests when the rate limit is exceeded.
-   */
-  mode?: ArcjetMode;
+export interface EmailOptionsDeny extends EmailOptionsShared {
   /**
    * List of email address types to allow,
    * cannot be combined with `deny`.
@@ -784,23 +772,7 @@ export type EmailOptionsDeny = {
    * - `"INVALID"` (invalid email addresses)
    */
   deny: ArcjetEmailType[];
-  /**
-   * Whether to see email addresses that contain a single domain segment as
-   * invalid (default: `true`).
-   *
-   * For example, `foo@bar` is seen as valid when `false` and invalid when
-   * `true`.
-   */
-  requireTopLevelDomain?: boolean;
-  /**
-   * Whether to see email addresses that contain a domain literal as valid
-   * (default: `false`).
-   *
-   * For example, `foo@[192.168.1.1]` is valid when `true` and invalid when
-   * `false`.
-   */
-  allowDomainLiteral?: boolean;
-};
+}
 
 /**
  * Configuration for the email validation rule to deny certain email addresses
@@ -809,11 +781,7 @@ export type EmailOptionsDeny = {
  * @deprecated
  *   Use `deny` instead.
  */
-type EmailOptionsBlock = {
-  /**
-   * Block mode of the rule (default: `"DRY_RUN"`).
-   */
-  mode?: ArcjetMode;
+export interface EmailOptionsBlock extends EmailOptionsShared {
   /**
    * List of email address types to allow,
    * cannot be combined with `block`.
@@ -826,18 +794,12 @@ type EmailOptionsBlock = {
    *   Use `deny` instead.
    */
   block: ArcjetEmailType[];
+  /**
+   * List of email address types to deny,
+   * cannot be combined with `allow`.
+   */
   deny?: never;
-  /**
-   * Whether to see email addresses that contain a single domain segment as
-   * invalid (default: `true`).
-   */
-  requireTopLevelDomain?: boolean;
-  /**
-   * Whether to see email addresses that contain a domain literal as valid
-   * (default: `false`).
-   */
-  allowDomainLiteral?: boolean;
-};
+}
 
 /**
  * Configuration for the email validation rule.
@@ -880,13 +842,42 @@ type ValidEntities<Detect> = Array<
 >;
 
 /**
+ * Shared configuration options for sensitive info detection rule.
+ *
+ * @template Detect
+ *   Custom detection function to identify sensitive information.
+ */
+interface SensitiveInfoOptionsShared<Detect> {
+  /**
+   * Tokens to consider (default: `1`).
+   *
+   * A list of tokens of this size will be passed to the custom detect
+   * function.
+   */
+  contextWindowSize?: number;
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when the rate limit is exceeded.
+   */
+  mode?: ArcjetMode;
+  /**
+   * Custom detection function to identify sensitive information.
+   */
+  detect?: Detect;
+}
+
+/**
  * Configuration for the sensitive info detection rule to allow certain
  * sensitive info types and deny others.
  *
  * @template Detect
  *   Custom detection function to identify sensitive information.
  */
-export type SensitiveInfoOptionsAllow<Detect> = {
+export interface SensitiveInfoOptionsAllow<Detect>
+  extends SensitiveInfoOptionsShared<Detect> {
   /**
    * List of sensitive info types to allow (required).
    *
@@ -912,26 +903,7 @@ export type SensitiveInfoOptionsAllow<Detect> = {
    * cannot be combined with `allow`.
    */
   deny?: never;
-  /**
-   * Tokens to consider (default: `1`).
-   *
-   * A list of tokens of this size will be passed to the custom detect
-   * function.
-   */
-  contextWindowSize?: number;
-  /**
-   * Block mode of the rule (default: `"DRY_RUN"`).
-   *
-   * `"DRY_RUN"` will allow all requests while still providing access to the
-   * rule results.
-   * `"LIVE"` will block requests when the rate limit is exceeded.
-   */
-  mode?: ArcjetMode;
-  /**
-   * Custom detection function to identify sensitive information.
-   */
-  detect?: Detect;
-};
+}
 
 /**
  * Configuration for the sensitive info detection rule to deny certain
@@ -940,7 +912,8 @@ export type SensitiveInfoOptionsAllow<Detect> = {
  * @template Detect
  *   Custom detection function to identify sensitive information.
  */
-export type SensitiveInfoOptionsDeny<Detect> = {
+export interface SensitiveInfoOptionsDeny<Detect>
+  extends SensitiveInfoOptionsShared<Detect> {
   /**
    * List of sensitive info types to allow,
    * cannot be combined with `deny`.
@@ -966,26 +939,7 @@ export type SensitiveInfoOptionsDeny<Detect> = {
    * You can also use labels of custom info detected by `detect`.
    */
   deny: ValidEntities<Detect>;
-  /**
-   * Tokens to consider (default: `1`).
-   *
-   * A list of tokens of this size will be passed to the custom detect
-   * function.
-   */
-  contextWindowSize?: number;
-  /**
-   * Block mode of the rule (default: `"DRY_RUN"`).
-   *
-   * `"DRY_RUN"` will allow all requests while still providing access to the
-   * rule results.
-   * `"LIVE"` will block requests when the rate limit is exceeded.
-   */
-  mode?: ArcjetMode;
-  /**
-   * Custom detection function to identify sensitive information.
-   */
-  detect?: Detect;
-};
+}
 
 /**
  * Configuration for the sensitive info detection rule.
@@ -998,9 +952,19 @@ export type SensitiveInfoOptions<Detect> =
   | SensitiveInfoOptionsDeny<Detect>;
 
 /**
+ * Shared configuration for filter rule.
+ */
+export interface FilterOptionsShared {
+  /**
+   * Mode.
+   */
+  mode?: ArcjetMode | undefined;
+}
+
+/**
  * Configuration to allow if a filter matches and deny otherwise.
  */
-export type FilterOptionsAllow = {
+export interface FilterOptionsAllow extends FilterOptionsShared {
   /**
    * Expressions.
    */
@@ -1010,16 +974,12 @@ export type FilterOptionsAllow = {
    * must not be set if `allow` is set.
    */
   deny?: never;
-  /**
-   * Mode.
-   */
-  mode?: ArcjetMode | undefined;
-};
+}
 
 /**
  * Configuration to deny if a filter matches and allow otherwise.
  */
-export type FilterOptionsDeny = {
+export interface FilterOptionsDeny extends FilterOptionsShared {
   /**
    * Expressions,
    * must not be set if `deny` is set.
@@ -1029,11 +989,7 @@ export type FilterOptionsDeny = {
    * Expressions.
    */
   deny: ReadonlyArray<string>;
-  /**
-   * Mode.
-   */
-  mode?: ArcjetMode | undefined;
-};
+}
 
 /**
  * Configuration for `filter` rule.
@@ -1131,7 +1087,7 @@ export type ExtraProps<Rules> = Rules extends []
 /**
  * Additional context provided by adapters.
  */
-export type ArcjetAdapterContext = {
+export interface ArcjetAdapterContext {
   /**
    * Allow arbitrary indexing.
    *
@@ -1152,7 +1108,7 @@ export type ArcjetAdapterContext = {
    *   Nothing.
    */
   waitUntil?: (promise: Promise<unknown>) => void;
-};
+}
 
 /**
  * Arcjet request.
@@ -2336,7 +2292,7 @@ export function detectBot(options: BotOptions): Primitive<{}> {
 /**
  * Configuration for the Shield WAF rule.
  */
-export type ShieldOptions = {
+export interface ShieldOptions {
   /**
    * Block mode of the rule (default: `"DRY_RUN"`).
    *
@@ -2345,7 +2301,7 @@ export type ShieldOptions = {
    * `"LIVE"` will block requests when the rate limit is exceeded.
    */
   mode?: ArcjetMode;
-};
+}
 
 /**
  * Arcjet Shield WAF rule.
@@ -2446,7 +2402,9 @@ export function shield(options: ShieldOptions): Primitive<{}> {
  * @template Characteristics
  *   Characteristics to track a user by.
  */
-export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
+export interface ProtectSignupOptions<
+  Characteristics extends readonly string[],
+> {
   /**
    * Configuration for rate limit rule (required).
    */
@@ -2459,7 +2417,7 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
    * Configuration for email validation rule (required).
    */
   email: EmailOptions;
-};
+}
 
 /**
  * Arcjet signup form protection rule.
