@@ -601,15 +601,7 @@ const I32_MAX = 2_147_483_647;
 const I32_MIN = -2_147_483_648;
 const _typeCheckValidI32 = (n) => typeof n === 'number' && n >= I32_MIN && n <= I32_MAX;
 
-const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
-let _fs;
-async function fetchCompile (url) {
-  if (isNode) {
-    _fs = _fs || await import('node:fs/promises');
-    return WebAssembly.compile(await _fs.readFile(url));
-  }
-  return fetch(url).then(WebAssembly.compileStreaming);
-}
+const fetchCompile = url => fetch(url).then(WebAssembly.compileStreaming);
 
 class RepTable {
   #data = [0, null];
