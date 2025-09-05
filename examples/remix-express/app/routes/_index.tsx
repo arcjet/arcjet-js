@@ -42,9 +42,18 @@ export default function Index() {
           </h1>
         </header>
         <Form method="post">
-          <input type="text" name="email" defaultValue="192.168.1.1" />
+          <textarea
+            cols={90}
+            className="block p-2.5 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+            defaultValue="Some text 192.168.1.1 and an email@example.com."
+            name="text"
+            rows={3}
+          />
           <div>
-            <button type="submit">Check Sensitive Info</button>
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-2 rounded"
+              type="submit"
+            >Check Sensitive Info</button>
           </div>
         </Form>
       </div>
