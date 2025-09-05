@@ -334,13 +334,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Tailwind v4 is not supported by shadcn/ui. See:
-      # https://github.com/shadcn-ui/ui/discussions/2996
-      - dependency-name: tailwindcss
-        versions: [">=4"]
-      - dependency-name: tailwind-merge
-        versions: [">=3"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-authjs-nosecone
