@@ -11,6 +11,7 @@ const result: {
 } = await transpile(fileURLToPath(new URL(name + ".wasm", folder)), {
   instantiation: "async",
   name,
+  nodejsCompat: false,
   outDir: fileURLToPath(new URL(folder)),
 });
 
