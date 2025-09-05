@@ -1,6 +1,5 @@
-export namespace ArcjetJsReqVerifyBot {
-  export function verify(botId: string, ip: string): ValidatorResponse;
-}
+/** @module Interface arcjet:js-req/verify-bot **/
+export function verify(botId: string, ip: string): ValidatorResponse;
 /**
  * # Variants
  * 

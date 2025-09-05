@@ -1,21 +1,44 @@
 /**
- * @import {RollupTypescriptOptions} from "@rollup/plugin-typescript";
+ * @import {Dirent} from "node:fs";
+ * @import {Plugin, RollupOptions} from "rollup";
  */
 
 /**
  * @typedef Options
  *   Configuration.
- * @property {ReadonlyArray<RollupTypescriptOptions> | undefined} [plugins]
+ * @property {ReadonlyArray<Plugin> | undefined} [plugins]
  *   Additional plugins to use in the Rollup configuration.
  */
 
+/**
+ * @typedef TranspileComponentOptions
+ *   Main parameter of `transpile`, which is not typed/exposed correctly.
+ *   This does end up in `.d.ts` so we it is typed here manually.
+ * @property {ReadonlyArray<string> | null | undefined} [asyncImports]
+ * @property {ReadonlyArray<string> | null | undefined} [asyncExports]
+ * @property {string | null | undefined} [asyncMode]
+ * @property {ReadonlyArray<string> | 'all' | null | undefined} [features]
+ * @property {boolean | null | undefined} [guest]
+ * @property {'async' | 'sync' | null | undefined} [instantiation]
+ * @property {string | null | undefined} [name]
+ * @property {string | null | undefined} [outDir]
+ * @property {boolean | null | undefined} [tlaCompat]
+ * @property {string | null | undefined} [worldName]
+ */
+
+import { mkdir, writeFile } from "node:fs/promises";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { isBuiltin } from "node:module";
+import { transpile } from "@bytecodealliance/jco-transpile";
 import replace from "@rollup/plugin-replace";
 import typescript from "@rollup/plugin-typescript";
 
+/**
+ * @param {Buffer} wasm
+ * @returns {string}
+ */
 function generateJs(wasm) {
   const disclaimer = `
 /**
@@ -62,6 +85,9 @@ export async function wasm() {
 `;
 }
 
+/**
+ * @returns {Plugin}}
+ */
 function wasmToModule() {
   const idToWasmPath = new Map();
 
@@ -95,10 +121,20 @@ function wasmToModule() {
   };
 }
 
+/**
+ * @param {string} filename
+ *   File name.
+ * @returns {string}
+ *   File name without extension.
+ */
 function removeExtension(filename) {
   return path.basename(filename, path.extname(filename));
 }
 
+/**
+ * @param {Dirent} file
+ * @returns {boolean}
+ */
 function isTypeScript(file) {
   return (
     file.isFile() && file.name.endsWith(".ts") && !file.name.endsWith(".d.ts")
@@ -112,34 +148,54 @@ function isTypeScript(file) {
  *   Folder.
  * @param {Options | undefined} [options]
  *   Configuration.
- * @returns
+ * @returns {RollupOptions}
  *   Rollup configuration object.
  */
 export function createConfig(root, options) {
   const settings = options || {};
   const plugins = settings.plugins || [];
   const packageJson = fileURLToPath(new URL("./package.json", root));
-  const pkg = JSON.parse(fs.readFileSync(packageJson));
+  const pkg = JSON.parse(fs.readFileSync(packageJson, "utf8"));
   const dependencies = Object.keys(pkg.dependencies ?? {});
   const devDependencies = Object.keys(pkg.devDependencies ?? {});
   const peerDependencies = Object.keys(pkg.peerDependencies ?? {});
 
+  /**
+   * @param {string} id
+   * @returns {boolean}
+   */
   function isDependency(id) {
     return dependencies.some((dep) => id.startsWith(dep));
   }
 
+  /**
+   * @param {string} id
+   * @returns {boolean}
+   */
   function isDevDependency(id) {
     return devDependencies.some((dep) => id.startsWith(dep));
   }
 
+  /**
+   * @param {string} id
+   * @returns {boolean}
+   */
   function isPeerDependency(id) {
     return peerDependencies.some((dep) => id.startsWith(dep));
   }
 
+  /**
+   * @param {string} id
+   * @returns {boolean}
+   */
   function isBunBuiltin(id) {
     return id === "bun";
   }
 
+  /**
+   * @param {string} id
+   * @returns {boolean}
+   */
   function isSvelteKitBuiltin(id) {
     return id === "$env/dynamic/private";
   }
@@ -149,8 +205,14 @@ export function createConfig(root, options) {
 
   const typescriptDirs = [rootDir, testDir];
 
-  // Creates a Rollup input entry that can be used with `Object.fromEntries()`
+  /**
+   * Create a Rollup input entry that can be used with `Object.fromEntries()`.
+   *
+   * @param {Dirent} file
+   * @returns {[entryName: string, filePath: string]}
+   */
   function toEntry(file) {
+    // @ts-expect-error:
     // Node lower than 18 used `path` which is now removed in favor of
     // `parentPath`.
     // See: <https://nodejs.org/api/deprecations.html#dep0178-direntpath>.
@@ -251,5 +313,45 @@ export function createConfig(root, options) {
       wasmToModule(),
       ...plugins,
     ],
+  };
+}
+
+/**
+ * Create a Rollup plugin that turns a WebAssembly component into JavaScript
+ * and `.d.ts` files.
+ *
+ * @param {URL | string} url
+ *   File URL to input WebAssembly file (**required**).
+ * @param {TranspileComponentOptions} options
+ *   Configuration (**required**).
+ * @returns {Plugin}
+ *   Plugin.
+ */
+export function transpileComponent(url, options) {
+  return {
+    buildStart: {
+      async handler() {
+        // Cast because `jco-transpile` types incorrectly do not allow explicit
+        // `undefined` or `null`.
+        const settings = /** @type {Parameters<typeof transpile>[1]} */ (
+          options
+        );
+        const result = await transpile(fileURLToPath(url), settings);
+
+        for (const [path, value] of Object.entries(result.files)) {
+          const url = pathToFileURL(path);
+          await mkdir(new URL(".", url), { recursive: true });
+          await writeFile(path, value);
+          // eslint-disable-next-line no-undef -- console exists.
+          console.log(` + ${path} (${value.length / 1000} kB)`);
+        }
+      },
+      // Has to use `pre` otherwise TypeScript hangs indefinitely.
+      order: "pre",
+      // Has to be sequential otherwise TypeScript hangs indefinitely.
+      sequential: true,
+    },
+    name: "jco",
+    version: "0.0.0",
   };
 }

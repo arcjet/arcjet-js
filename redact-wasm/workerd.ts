@@ -5,7 +5,10 @@ import type {
   RedactSensitiveInfoConfig,
   SensitiveInfoEntity,
 } from "./wasm/arcjet_analyze_bindings_redact.component.js";
-import type { ArcjetRedactCustomRedact } from "./wasm/interfaces/arcjet-redact-custom-redact.js";
+import type {
+  detectSensitiveInfo,
+  redactSensitiveInfo,
+} from "./wasm/interfaces/arcjet-redact-custom-redact.js";
 
 import componentCoreWasm from "./wasm/arcjet_analyze_bindings_redact.component.core.wasm";
 import componentCore2Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core2.wasm";
@@ -44,8 +47,8 @@ export async function initializeWasm(
   }
 }
 
-type CustomDetect = typeof ArcjetRedactCustomRedact.detectSensitiveInfo;
-type CustomRedact = typeof ArcjetRedactCustomRedact.redactSensitiveInfo;
+type CustomDetect = typeof detectSensitiveInfo;
+type CustomRedact = typeof redactSensitiveInfo;
 
 export {
   type CustomDetect,

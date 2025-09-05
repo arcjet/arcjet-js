@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "declarationMap": true,
+    "declaration": true,
+    "emitDeclarationOnly": true
+  },
+  "extends": "../tsconfig.base.json",
+  "include": ["index.js"]
+}

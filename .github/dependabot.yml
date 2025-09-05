@@ -28,8 +28,3 @@ updates:
     commit-message:
       prefix: deps
       prefix-development: deps(dev)
-    ignore:
-      # Ignore updates for jco above 1.5.0 due to unnecessary deps
-      # Ref: https://github.com/bytecodealliance/jco/issues/500
-      - dependency-name: "@bytecodealliance/jco"
-        versions: [">1.5.0"]
