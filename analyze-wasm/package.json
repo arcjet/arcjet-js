@@ -51,9 +51,9 @@
     "workerd.js"
   ],
   "scripts": {
-    "build:jco": "jco transpile --instantiation async --no-wasi-shim --out-dir wasm/ -- wasm/arcjet_analyze_js_req.component.wasm",
+    "build:jco": "node build.js",
     "build:rollup": "rollup --config rollup.config.js",
-    "build": "npm run build:jco && npm run build:rollup",
+    "build": "npm run build:rollup && npm run build:jco",
     "lint": "eslint .",
     "prepublishOnly": "npm run build",
     "test-api": "node --test",
@@ -64,7 +64,7 @@
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-beta.12",
     "@arcjet/rollup-config": "1.0.0-beta.12",
-    "@bytecodealliance/jco": "1.5.0",
+    "@bytecodealliance/jco-transpile": "0.0.4",
     "@rollup/wasm-node": "4.50.0",
     "@types/node": "24.3.0",
     "eslint": "9.34.0",
