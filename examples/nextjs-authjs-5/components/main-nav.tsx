@@ -37,7 +37,7 @@ export function MainNav() {
               Server Side
             </NavigationMenuTrigger>
             <NavigationMenuContent>
-              <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+              <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]" style={{ backgroundColor: "white" }}>
                 <ListItem href="/server-example" title="RSC Example">
                   Protecting React Server Component.
                 </ListItem>
