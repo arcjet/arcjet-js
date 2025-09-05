@@ -559,11 +559,13 @@ updates:
     ignore:
       # Remix 2 doesn't support Express 5 so the dependencies below are
       # restricted.
+      # The peer dependency comes from `@remix-run/express`.
+      # See also: <https://github.com/remix-run/remix/discussions/10438>
       - dependency-name: express
         versions: [">=5"]
       - dependency-name: "@types/express"
         versions: [">=5"]
-      # Remix 2 doesn't support React 19 so the dependencies below are
+      # Remix 2 will not support React 19 so the dependencies below are
       # restricted.
       - dependency-name: react
         versions: [">=19"]
