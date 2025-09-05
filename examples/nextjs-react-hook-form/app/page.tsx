@@ -36,7 +36,7 @@ export default function IndexPage() {
           href="https://docs.arcjet.com"
           target="_blank"
           rel="noreferrer"
-          className={buttonVariants({ variant: "outline" })}
+          className={buttonVariants({ variant: "outline-solid" })}
         >
           Arcjet Documentation
         </Link>
@@ -44,7 +44,7 @@ export default function IndexPage() {
           href="https://app.arcjet.com"
           target="_blank"
           rel="noreferrer"
-          className={buttonVariants({ variant: "outline" })}
+          className={buttonVariants({ variant: "outline-solid" })}
         >
           Arcjet Dashboard
         </Link>

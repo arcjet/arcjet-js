@@ -484,13 +484,6 @@ updates:
       dependencies:
         patterns:
           - "*"
-    ignore:
-      # Tailwind v4 is not supported by eslint-plugin-tailwindcss. See:
-      # https://github.com/francoismassart/eslint-plugin-tailwindcss/pull/381
-      - dependency-name: tailwindcss
-        versions: [">=4"]
-      - dependency-name: tailwind-merge
-        versions: [">=3"]
 
   - package-ecosystem: npm
     directory: /examples/nextjs-sensitive-info
