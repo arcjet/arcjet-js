@@ -1,4 +1,10 @@
 {
   "extends": "../tsconfig.base.json",
-  "include": ["index.ts", "edge-light.ts", "workerd.ts", "wasm.d.ts"]
+  "include": [
+    "build.ts",
+    "edge-light.ts",
+    "index.ts",
+    "wasm.d.ts",
+    "workerd.ts"
+  ]
 }
