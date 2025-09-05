@@ -33,7 +33,7 @@ export const server = {
     }),
     handler: async ({ email }, { request }) => {
       const decision = await aj
-        .withRule(validateEmail({ mode: "LIVE", allow: [] }))
+        .withRule(validateEmail({ mode: "LIVE", allow: [ "FREE", "NO_GRAVATAR"] }))
         .protect(request, { email });
       if (decision.isDenied()) {
         if (decision.reason.isEmail()) {

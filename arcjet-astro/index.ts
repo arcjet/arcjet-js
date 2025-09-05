@@ -20,123 +20,113 @@ const validateProxies = z.array(z.string());
 const validateCharacteristics = z.array(z.string());
 const validateClientOptions = z
   .object({
-    baseUrl: z.string(),
-    timeout: z.number(),
+    baseUrl: z.string().optional(),
+    timeout: z.number().optional(),
   })
   .strict()
   .optional();
 
+// TODO: once `arcjet` core has `exactOptionalProperties` we can use
+// `satisfies z.ZodType<ShieldOptions>` and such here.
 const validateShieldOptions = z
   .object({
-    mode: validateMode,
+    mode: validateMode.optional(),
   })
-  .strict()
-  .optional();
+  .strict();
 
-const validateBotOptions = z
-  .union([
-    z
-      .object({
-        mode: validateMode,
-        allow: z.array(z.string()),
-      })
-      .strict(),
-    z
-      .object({
-        mode: validateMode,
-        deny: z.array(z.string()),
-      })
-      .strict(),
-  ])
-  .optional();
+const validateBotOptions = z.union([
+  z
+    .object({
+      mode: validateMode.optional(),
+      allow: z.array(z.string()),
+    })
+    .strict(),
+  z
+    .object({
+      mode: validateMode.optional(),
+      deny: z.array(z.string()),
+    })
+    .strict(),
+]);
 
-const validateEmailOptions = z
-  .union([
-    z
-      .object({
-        mode: validateMode,
-        allow: z.array(z.string()),
-        requireTopLevelDomain: z.boolean(),
-        allowDomainLiteral: z.boolean(),
-      })
-      .strict(),
-    z
-      .object({
-        mode: validateMode,
-        deny: z.array(z.string()),
-        requireTopLevelDomain: z.boolean(),
-        allowDomainLiteral: z.boolean(),
-      })
-      .strict(),
-  ])
-  .optional();
+const validateEmailOptions = z.union([
+  z
+    .object({
+      mode: validateMode.optional(),
+      allow: z.array(z.string()),
+      requireTopLevelDomain: z.boolean().optional(),
+      allowDomainLiteral: z.boolean().optional(),
+    })
+    .strict(),
+  z
+    .object({
+      mode: validateMode.optional(),
+      deny: z.array(z.string()),
+      requireTopLevelDomain: z.boolean().optional(),
+      allowDomainLiteral: z.boolean().optional(),
+    })
+    .strict(),
+]);
 
-const validateFilterOptions = z
-  .union([
-    z
-      .object({
-        mode: validateMode,
-        allow: z.array(z.string()),
-      })
-      .strict(),
-    z
-      .object({
-        mode: validateMode,
-        deny: z.array(z.string()),
-      })
-      .strict(),
-  ])
-  .optional();
+const validateFilterOptions = z.union([
+  z
+    .object({
+      mode: validateMode.optional(),
+      allow: z.array(z.string()),
+    })
+    .strict(),
+  z
+    .object({
+      mode: validateMode.optional(),
+      deny: z.array(z.string()),
+    })
+    .strict(),
+]);
 
-const validateSensitiveInfoOptions = z
-  .union([
-    z
-      .object({
-        mode: validateMode,
-        allow: z.array(z.string()),
-        contextWindowSize: z.number(),
-      })
-      .strict(),
-    z
-      .object({
-        mode: validateMode,
-        deny: z.array(z.string()),
-        contextWindowSize: z.number(),
-      })
-      .strict(),
-  ])
-  .optional();
+const validateSensitiveInfoOptions = z.union([
+  z
+    .object({
+      mode: validateMode.optional(),
+      allow: z.array(z.string()),
+      contextWindowSize: z.number().optional(),
+    })
+    .strict(),
+  z
+    .object({
+      mode: validateMode.optional(),
+      deny: z.array(z.string()),
+      contextWindowSize: z.number().optional(),
+    })
+    .strict(),
+]);
 
 const validateFixedWindowOptions = z
   .object({
-    mode: validateMode,
-    characteristics: validateCharacteristics,
+    mode: validateMode.optional(),
+    characteristics: validateCharacteristics.optional(),
     window: z.union([z.string(), z.number()]),
     max: z.number(),
   })
-  .strict()
-  .optional();
+  .strict();
 
 const validateSlidingWindowOptions = z
   .object({
-    mode: validateMode,
-    characteristics: validateCharacteristics,
+    mode: validateMode.optional(),
+    characteristics: validateCharacteristics.optional(),
     interval: z.union([z.string(), z.number()]),
     max: z.number(),
   })
-  .strict()
-  .optional();
+  .strict();
 
 const validateTokenBucketOptions = z
   .object({
-    mode: validateMode,
-    characteristics: validateCharacteristics,
+    mode: validateMode.optional(),
+    characteristics: validateCharacteristics.optional(),
     refillRate: z.number(),
     interval: z.union([z.string(), z.number()]),
     capacity: z.number(),
   })
-  .strict()
-  .optional();
+  .strict();
 
 const validateProtectSignupOptions = z
   .object({
@@ -144,21 +134,20 @@ const validateProtectSignupOptions = z
     bots: validateBotOptions,
     email: validateEmailOptions,
   })
-  .strict()
-  .optional();
+  .strict();
 
 type IntegrationRule<Characteristics extends readonly string[]> =
   | {
       type: "shield";
-      options?: ShieldOptions;
+      options: ShieldOptions;
     }
   | {
       type: "bot";
-      options?: BotOptions;
+      options: BotOptions;
     }
   | {
       type: "email";
-      options?: EmailOptions;
+      options: EmailOptions;
     }
   | {
       type: "filter";
@@ -169,23 +158,23 @@ type IntegrationRule<Characteristics extends readonly string[]> =
       // TODO: This only supports serializable options, so no custom detect
       // functions are supported but maybe they could be supported via a module
       // import
-      options?: SensitiveInfoOptions<never>;
+      options: SensitiveInfoOptions<never>;
     }
   | {
       type: "fixedWindow";
-      options?: FixedWindowRateLimitOptions<Characteristics>;
+      options: FixedWindowRateLimitOptions<Characteristics>;
     }
   | {
       type: "slidingWindow";
-      options?: SlidingWindowRateLimitOptions<Characteristics>;
+      options: SlidingWindowRateLimitOptions<Characteristics>;
     }
   | {
       type: "tokenBucket";
-      options?: TokenBucketRateLimitOptions<Characteristics>;
+      options: TokenBucketRateLimitOptions<Characteristics>;
     }
   | {
       type: "protectSignup";
-      options?: ProtectSignupOptions<Characteristics>;
+      options: ProtectSignupOptions<Characteristics>;
     };
 
 // TODO: This only supports serializable options, so no custom loggers are
@@ -350,8 +339,10 @@ function integrationRuleToClientRule<Characteristics extends readonly string[]>(
  * @returns
  *   Astro integration Shield rule to provide to the SDK in the `rules` field.
  */
-export function shield(options?: ShieldOptions) {
-  return { type: "shield", options } as const;
+export function shield(options: ShieldOptions) {
+  return { type: "shield", options } as const satisfies IntegrationRule<
+    Array<string>
+  >;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -375,8 +366,10 @@ export function shield(options?: ShieldOptions) {
  * @returns
  *   Astro integration Bot rule to provide to the SDK in the `rules` field.
  */
-export function detectBot(options?: BotOptions) {
-  return { type: "bot", options } as const;
+export function detectBot(options: BotOptions) {
+  return { type: "bot", options } as const satisfies IntegrationRule<
+    Array<string>
+  >;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -397,8 +390,10 @@ export function detectBot(options?: BotOptions) {
  * @returns
  *   Astro integration Email rule to provide to the SDK in the `rules` field.
  */
-export function validateEmail(options?: EmailOptions) {
-  return { type: "email", options } as const;
+export function validateEmail(options: EmailOptions) {
+  return { type: "email", options } as const satisfies IntegrationRule<
+    Array<string>
+  >;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -413,7 +408,9 @@ export function validateEmail(options?: EmailOptions) {
  *   Astro integration Filter rule to provide to the SDK in the `rules` field.
  */
 export function filter(options: FilterOptions) {
-  return { type: "filter", options } as const;
+  return { type: "filter", options } as const satisfies IntegrationRule<
+    Array<string>
+  >;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -435,8 +432,10 @@ export function filter(options: FilterOptions) {
  * @returns
  *   Astro integration Sensitive information rule to provide to the SDK in the `rules` field.
  */
-export function sensitiveInfo(options?: SensitiveInfoOptions<never>) {
-  return { type: "sensitiveInfo", options } as const;
+export function sensitiveInfo(options: SensitiveInfoOptions<never>) {
+  return { type: "sensitiveInfo", options } as const satisfies IntegrationRule<
+    Array<string>
+  >;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -467,9 +466,12 @@ export function sensitiveInfo(options?: SensitiveInfoOptions<never>) {
  *   Astro integration Fixed window rule to provide to the SDK in the `rules` field.
  */
 export function fixedWindow<Characteristics extends readonly string[]>(
-  options?: FixedWindowRateLimitOptions<Characteristics>,
+  options: FixedWindowRateLimitOptions<Characteristics>,
 ) {
-  return { type: "fixedWindow", options } as const;
+  return {
+    type: "fixedWindow",
+    options,
+  } as const satisfies IntegrationRule<Characteristics>;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -493,9 +495,12 @@ export function fixedWindow<Characteristics extends readonly string[]>(
  *   Astro integration Sliding window rule to provide to the SDK in the `rules` field.
  */
 export function slidingWindow<Characteristics extends readonly string[]>(
-  options?: SlidingWindowRateLimitOptions<Characteristics>,
+  options: SlidingWindowRateLimitOptions<Characteristics>,
 ) {
-  return { type: "slidingWindow", options } as const;
+  return {
+    type: "slidingWindow",
+    options,
+  } as const satisfies IntegrationRule<Characteristics>;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -520,9 +525,12 @@ export function slidingWindow<Characteristics extends readonly string[]>(
  *   Astro integration Token bucket rule to provide to the SDK in the `rules` field.
  */
 export function tokenBucket<Characteristics extends readonly string[]>(
-  options?: TokenBucketRateLimitOptions<Characteristics>,
+  options: TokenBucketRateLimitOptions<Characteristics>,
 ) {
-  return { type: "tokenBucket", options } as const;
+  return {
+    type: "tokenBucket",
+    options,
+  } as const satisfies IntegrationRule<Characteristics>;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -551,9 +559,12 @@ export function tokenBucket<Characteristics extends readonly string[]>(
  *   Astro integration Signup form protection rule to provide to the SDK in the `rules` field.
  */
 export function protectSignup<Characteristics extends readonly string[]>(
-  options?: ProtectSignupOptions<Characteristics>,
+  options: ProtectSignupOptions<Characteristics>,
 ) {
-  return { type: "protectSignup", options } as const;
+  return {
+    type: "protectSignup",
+    options,
+  } as const satisfies IntegrationRule<Characteristics>;
 }
 
 /**
@@ -566,14 +577,14 @@ export type RemoteClientOptions = {
    * Defaults to the environment variable `ARCJET_BASE_URL` (if that value
    * is known and allowed) and the standard production API otherwise.
    */
-  baseUrl?: string;
+  baseUrl?: string | undefined;
 
   /**
    * Timeout in milliseconds for the Decide API (optional).
    *
    * Defaults to `500` in production and `1000` in development.
    */
-  timeout?: number;
+  timeout?: number | undefined;
 };
 
 /**
@@ -584,8 +595,9 @@ export type RemoteClientOptions = {
  * @returns
  *   Client.
  */
-export function createRemoteClient({ baseUrl, timeout }: RemoteClientOptions) {
-  return { baseUrl, timeout } as const;
+export function createRemoteClient(options?: RemoteClientOptions | undefined) {
+  const settings = options ?? {};
+  return { baseUrl: settings.baseUrl, timeout: settings.timeout } as const;
 }
 
 /**
