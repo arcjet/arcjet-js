@@ -1,6 +1,5 @@
-export namespace ArcjetJsReqSensitiveInformationIdentifier {
-  export function detect(tokens: Array<string>): Array<SensitiveInfoEntity | undefined>;
-}
+/** @module Interface arcjet:js-req/sensitive-information-identifier **/
+export function detect(tokens: Array<string>): Array<SensitiveInfoEntity | undefined>;
 export type SensitiveInfoEntity = SensitiveInfoEntityEmail | SensitiveInfoEntityPhoneNumber | SensitiveInfoEntityIpAddress | SensitiveInfoEntityCreditCardNumber | SensitiveInfoEntityCustom;
 export interface SensitiveInfoEntityEmail {
   tag: 'email',
