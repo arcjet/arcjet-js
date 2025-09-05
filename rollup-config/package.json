@@ -29,14 +29,18 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "files": [
+    "index.d.ts.map",
     "index.d.ts",
     "index.js"
   ],
   "scripts": {
+    "build": "tsc --build --clean && tsc --build",
     "lint": "eslint .",
-    "test": "npm run lint"
+    "prepack": "npm run build",
+    "test": "npm run build && npm run lint"
   },
   "dependencies": {
+    "@bytecodealliance/jco-transpile": "0.1.1",
     "@rollup/plugin-replace": "6.0.3",
     "@rollup/plugin-typescript": "12.3.0"
   },
