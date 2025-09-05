@@ -132,8 +132,8 @@ dist
 # Generated files
 bun.js
 bun.d.ts
-edge-light.js
-edge-light.d.ts
+edge.js
+edge.d.ts
 index.js
 index.d.ts
 test/*.js
