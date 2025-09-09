@@ -5,9 +5,17 @@ body {
   color-scheme: light;
 }
 
+body {
+  background: #ffffff;
+}
+
 @media (prefers-color-scheme: dark) {
   html,
   body {
     color-scheme: dark;
+  }
+
+  body {
+    background: #030405;
   }
 }
