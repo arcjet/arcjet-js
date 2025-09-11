@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...v1.0.0-beta.12) (2025-09-11)
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** show error about incorrect `characteristics` in logs ([#5078](https://github.com/arcjet/arcjet-js/issues/5078)) ([9839c9c](https://github.com/arcjet/arcjet-js/commit/9839c9c5dd3225e14891b6f863d47e27021b85a4))
+* **astro:** fix types, zod validation ([#5052](https://github.com/arcjet/arcjet-js/issues/5052)) ([ea82f8f](https://github.com/arcjet/arcjet-js/commit/ea82f8fbf35bed63aadbcd020d9dbe71f73c204f))
+* **examples:** add styles to `remix-express` ([#5115](https://github.com/arcjet/arcjet-js/issues/5115)) ([783db87](https://github.com/arcjet/arcjet-js/commit/783db87ac4cb5f76d33531fac96f5cab8aaab8c7))
+
+
+### 🧹 Miscellaneous Chores
+
+* **examples:** remove `experimental.nodeMiddleware` from example ([#5124](https://github.com/arcjet/arcjet-js/issues/5124)) ([408a26e](https://github.com/arcjet/arcjet-js/commit/408a26e917bd4b03dd93de52ecfe3070efac4ddd))
+
+
+### 📚 Tests
+
+* **astro:** add tests ([#5069](https://github.com/arcjet/arcjet-js/issues/5069)) ([e6d9980](https://github.com/arcjet/arcjet-js/commit/e6d9980977af2df067df9ce774e9bee04aa87d69))
+
 ## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2025-09-03)
 
 
