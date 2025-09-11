@@ -33,17 +33,11 @@ test("@arcjet/astro (api)", async function (t) {
 
 test("createRemoteClient", async function (t) {
   await t.test("should work w/o options", async function () {
-    let client: any;
+    const client = createRemoteClient();
 
-    // This should not throw
-    assert.throws(function () {
-      // @ts-expect-error: this should be fine.
-      client = createRemoteClient();
-    }, /Cannot destructure property 'baseUrl' of 'undefined' as it is undefined/);
+    assert.deepEqual(client, { baseUrl: undefined, timeout: undefined });
 
-    // assert.deepEqual(client, undefined);
-
-    // arcjet({ client, rules: [] });
+    arcjet({ client, rules: [] });
   });
 
   await t.test("should work w/ `baseUrl`, w/o `timeout`", async function () {
@@ -54,11 +48,7 @@ test("createRemoteClient", async function (t) {
       timeout: undefined,
     });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ client, rules: [] });
-    }, /timeout/);
+    arcjet({ client, rules: [] });
   });
 
   await t.test("should work w/o `baseUrl`, w/ `timeout`", async function () {
@@ -66,11 +56,7 @@ test("createRemoteClient", async function (t) {
 
     assert.deepEqual(client, { baseUrl: undefined, timeout: 2000 });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ client, rules: [] });
-    }, /baseUrl/);
+    arcjet({ client, rules: [] });
   });
 
   await t.test("should work w/ `baseUrl`, `timeout`", async function () {
@@ -86,140 +72,121 @@ test("createRemoteClient", async function (t) {
 
   await t.test("should fail w/ invalid `baseUrl`", async function () {
     const client = createRemoteClient({
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       baseUrl: 2000,
     });
 
-    // TODO(#5052): this should throw, but not about `timeout`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ client, rules: [] });
-    }, /timeout/);
+    }, /baseUrl/);
   });
 
   await t.test("should fail w/ invalid `timeout`", async function () {
     const client = createRemoteClient({
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       timeout: "INVALID",
     });
 
-    // TODO(#5052): this should throw, but not about `timeout`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ client, rules: [] });
-    }, /baseUrl/);
+    }, /timeout/);
   });
 });
 
 test("detectBot", async function (t) {
   await t.test("should fail w/o options", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = detectBot();
 
-    // TODO(#5052): this should throw
-    // assert.throws(function () {
-    // @ts-expect-error: should be fine.
-    arcjet({ rules: [rule] });
-    // });
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /invalid_union/);
   });
 
   await t.test("should fail w/o `allow` or `deny`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = detectBot({});
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /invalid_union/);
   });
 
   await t.test("should fail w/ `allow` and `deny`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = detectBot({ allow: ["CURL"], deny: ["CATEGORY:AI"] });
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Unrecognized key\(s\) in object: 'deny'/);
   });
 
   await t.test("should work w/ `allow`", async function () {
     const rule = detectBot({ allow: ["CURL"] });
+
     assert.equal(rule.type, "bot");
     assert.deepEqual(rule.options, { allow: ["CURL"] });
 
-    // TODO(#5052): this should not throw about `mode`
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should work w/ `deny`", async function () {
     const rule = detectBot({ deny: ["CURL"] });
+
     assert.equal(rule.type, "bot");
     assert.deepEqual(rule.options, { deny: ["CURL"] });
 
-    // TODO(#5052): this should not throw about `mode`
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `mode`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = detectBot({ allow: ["CURL"], mode: "INVALID" });
 
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
     }, /Invalid enum value. Expected 'LIVE' \| 'DRY_RUN', received 'INVALID'/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
     const rule = detectBot({ allow: ["CURL"], mode: "LIVE" });
+
     assert.equal(rule.type, "bot");
     assert.deepEqual(rule.options, { allow: ["CURL"], mode: "LIVE" });
 
-    // @ts-expect-error: should be fine.
     arcjet({ rules: [rule] });
   });
 });
 
 test("filter", async function (t) {
   await t.test("should fail w/o options", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = filter();
 
-    // TODO(#5052): this should throw.
-    // assert.throws(function () {
-    arcjet({ rules: [rule] });
-    // });
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /invalid_union/);
   });
 
   await t.test("should fail w/o `allow` or `deny`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = filter({});
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /invalid_union/);
   });
 
   await t.test("should fail w/ `allow` and `deny`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = filter({
       allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
       deny: ['http.request.headers["user-agent"] ~ "Firefox"'],
     });
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Unrecognized key\(s\) in object: 'deny'/);
   });
 
   await t.test("should work w/ `allow`", async function () {
@@ -232,10 +199,7 @@ test("filter", async function (t) {
       allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
     });
 
-    // TODO(#5052): this should not throw.
-    assert.throws(function () {
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should work w/ `deny`", async function () {
@@ -248,16 +212,13 @@ test("filter", async function (t) {
       deny: ['http.request.headers["user-agent"] ~ "Firefox"'],
     });
 
-    // TODO(#5052): this should not throw.
-    assert.throws(function () {
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `mode`", async function () {
     const rule = filter({
       allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       mode: "INVALID",
     });
 
@@ -284,46 +245,39 @@ test("filter", async function (t) {
 
 test("fixedWindow", async function (t) {
   await t.test("should fail w/o options", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = fixedWindow();
 
-    // TODO(#5052): this should throw
-    // assert.throws(function () {
-    // @ts-expect-error: should be fine.
-    arcjet({ rules: [rule] });
-    // });
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /invalid_type/);
   });
 
   await t.test("should fail w/o `max`, `window`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = fixedWindow({});
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /invalid_union/);
   });
 
   await t.test("should fail w/ `max`, w/o `window`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = fixedWindow({ max: 60 });
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /invalid_union/);
   });
 
   await t.test("should fail w/o `max`, w/ `window`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = fixedWindow({ window: "30m" });
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Required/);
   });
 
   await t.test("should work w/ `max`, `window`", async function () {
@@ -332,23 +286,18 @@ test("fixedWindow", async function (t) {
     assert.equal(rule.type, "fixedWindow");
     assert.deepEqual(rule.options, { max: 60, window: "30m" });
 
-    // TODO(#5052): this should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `mode`", async function () {
     const rule = fixedWindow({
       max: 60,
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       mode: "INVALID",
       window: "30m",
     });
 
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
     }, /'LIVE' \| 'DRY_RUN'/);
   });
@@ -367,26 +316,20 @@ test("fixedWindow", async function (t) {
       window: "30m",
     });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /characteristics/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `characteristics`", async function () {
     const rule = fixedWindow({
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       characteristics: "INVALID",
       max: 60,
       window: "30m",
     });
 
-    // This should not throw about `mode`, only about `characteristics`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Expected array, received string/);
   });
 
   await t.test("should work w/ valid `characteristics`", async function () {
@@ -403,36 +346,29 @@ test("fixedWindow", async function (t) {
       window: "30m",
     });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 });
 
 test("protectSignup", async function (t) {
   await t.test("should fail w/o options", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = protectSignup();
 
-    // TODO(#5052): this should throw
-    // assert.throws(function () {
-    // @ts-expect-error: should be fine.
-    arcjet({ rules: [rule] });
-    // });
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /Required/);
   });
 
   await t.test(
     "should fail w/o `bots`, `email`, `rateLimit`",
     async function () {
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       const rule = protectSignup({});
 
-      // TODO(#5052): this should throw
-      // assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-      // });
+      assert.throws(function () {
+        arcjet({ rules: [rule] });
+      });
     },
   );
 
@@ -452,35 +388,28 @@ test("protectSignup", async function (t) {
         rateLimit: { interval: "30m", max: 60 },
       });
 
-      // This should not throw.
-      assert.throws(function () {
-        // @ts-expect-error: should be fine.
-        arcjet({ rules: [rule] });
-      }, /'LIVE' \| 'DRY_RUN'/);
+      arcjet({ rules: [rule] });
     },
   );
 });
 
 test("sensitiveInfo", async function (t) {
   await t.test("should fail w/o options", async function () {
-    // TODO(#5052): this should throw
-    // assert.throws(function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = sensitiveInfo();
-    // });
 
-    // @ts-expect-error: should be fine.
-    arcjet({ rules: [rule] });
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /invalid_union/);
   });
 
   await t.test("should fail w/o `allow` or `deny`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = sensitiveInfo({});
 
-    // This should not throw about `mode`.
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /invalid_union/);
   });
 
   await t.test("should fail w/ `allow` and `deny`", async function () {
@@ -495,11 +424,9 @@ test("sensitiveInfo", async function (t) {
       ],
     });
 
-    // This should not throw about `mode`.
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Unrecognized key\(s\) in object: 'deny'/);
   });
 
   await t.test("should work w/ `allow`", async function () {
@@ -513,11 +440,7 @@ test("sensitiveInfo", async function (t) {
     assert.equal(rule.type, "sensitiveInfo");
     assert.deepEqual(rule.options, { allow: ["EMAIL"] });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should work w/ `deny`", async function () {
@@ -527,14 +450,11 @@ test("sensitiveInfo", async function (t) {
         "PHONE_NUMBER",
       ],
     });
+
     assert.equal(rule.type, "sensitiveInfo");
     assert.deepEqual(rule.options, { deny: ["PHONE_NUMBER"] });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `mode`", async function () {
@@ -543,12 +463,11 @@ test("sensitiveInfo", async function (t) {
         // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
         "EMAIL",
       ],
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       mode: "INVALID",
     });
 
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
     }, /'LIVE' \| 'DRY_RUN'/);
   });
@@ -565,11 +484,7 @@ test("sensitiveInfo", async function (t) {
     assert.equal(rule.type, "sensitiveInfo");
     assert.deepEqual(rule.options, { allow: ["EMAIL"], mode: "LIVE" });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /contextWindowSize/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `contextWindowSize`", async function () {
@@ -578,15 +493,13 @@ test("sensitiveInfo", async function (t) {
         // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
         "EMAIL",
       ],
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       contextWindowSize: "INVALID",
     });
 
-    // This should not throw about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Expected number, received string/);
   });
 
   await t.test("should work w/ valid `contextWindowSize`", async function () {
@@ -601,102 +514,82 @@ test("sensitiveInfo", async function (t) {
     assert.equal(rule.type, "sensitiveInfo");
     assert.deepEqual(rule.options, { allow: ["EMAIL"], contextWindowSize: 3 });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 });
 
 test("shield", async function (t) {
   await t.test("should fail w/o options", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = shield();
 
-    // TODO(#5052): this should probably throw.
-    // assert.throws(function () {
-    // @ts-expect-error: should be fine.
-    arcjet({ rules: [rule] });
-    // });
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /Required/);
   });
 
-  await t.test("should fail w/o `allow` or `deny`", async function () {
+  await t.test("should work w/ empty options", async function () {
     const rule = shield({});
 
-    // This should not throw about `mode`.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `mode`", async function () {
     const rule = shield({
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       mode: "INVALID",
     });
 
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
     }, /'LIVE' \| 'DRY_RUN'/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
-    const rule = shield({
-      mode: "LIVE",
-    });
+    const rule = shield({ mode: "LIVE" });
 
     assert.equal(rule.type, "shield");
     assert.deepEqual(rule.options, { mode: "LIVE" });
 
-    // @ts-expect-error: should be fine.
     arcjet({ rules: [rule] });
   });
 });
 
 test("slidingWindow", async function (t) {
   await t.test("should fail w/o options", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = slidingWindow();
 
-    // TODO(#5052): this should throw
-    // assert.throws(function () {
-    // @ts-expect-error: should be fine.
-    arcjet({ rules: [rule] });
-    // });
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /Required/);
   });
 
   await t.test("should fail w/o `interval`, `max`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = slidingWindow({});
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /invalid_union/);
   });
 
-  await t.test("should fail w/ `max`, w/o `interval`", async function () {
-    // @ts-expect-error: test runtime behavior
+  await t.test("should fail w/o `interval`, w/ `max`", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = slidingWindow({ max: 60 });
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /invalid_union/);
   });
 
-  await t.test("should fail w/o `max`, w/ `interval`", async function () {
-    // @ts-expect-error: test runtime behavior
+  await t.test("should fail w/ `interval`, w/o `max`", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = slidingWindow({ interval: "30m" });
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Required/);
   });
 
   await t.test("should work w/ `interval`, `max`", async function () {
@@ -705,23 +598,18 @@ test("slidingWindow", async function (t) {
     assert.equal(rule.type, "slidingWindow");
     assert.deepEqual(rule.options, { interval: "30m", max: 60 });
 
-    // TODO(#5052): this should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `mode`", async function () {
     const rule = slidingWindow({
       interval: "30m",
       max: 60,
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       mode: "INVALID",
     });
 
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
     }, /'LIVE' \| 'DRY_RUN'/);
   });
@@ -740,26 +628,20 @@ test("slidingWindow", async function (t) {
       mode: "LIVE",
     });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /characteristics/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `characteristics`", async function () {
     const rule = slidingWindow({
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       characteristics: "INVALID",
       interval: "30m",
       max: 60,
     });
 
-    // This should not throw about `mode`, only about `characteristics`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Expected array, received string/);
   });
 
   await t.test("should work w/ valid `characteristics`", async function () {
@@ -776,36 +658,29 @@ test("slidingWindow", async function (t) {
       max: 60,
     });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 });
 
 test("tokenBucket", async function (t) {
   await t.test("should fail w/o options", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = tokenBucket();
 
-    // TODO(#5052): this should throw
-    // assert.throws(function () {
-    // @ts-expect-error: should be fine.
-    arcjet({ rules: [rule] });
-    // });
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /Required/);
   });
 
   await t.test(
     "should fail w/o `capacity`, `interval`, `refillRate`",
     async function () {
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       const rule = tokenBucket({});
 
-      // TODO(#5052): this should throw, but not about `mode`
       assert.throws(function () {
-        // @ts-expect-error: should be fine.
         arcjet({ rules: [rule] });
-      }, /'LIVE' \| 'DRY_RUN'/);
+      });
     },
   );
 
@@ -825,11 +700,7 @@ test("tokenBucket", async function (t) {
         refillRate: 10,
       });
 
-      // TODO(#5052): this should not throw.
-      assert.throws(function () {
-        // @ts-expect-error: should be fine.
-        arcjet({ rules: [rule] });
-      }, /'LIVE' \| 'DRY_RUN'/);
+      arcjet({ rules: [rule] });
     },
   );
 
@@ -837,13 +708,12 @@ test("tokenBucket", async function (t) {
     const rule = tokenBucket({
       capacity: 50,
       interval: "1m",
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       mode: "INVALID",
       refillRate: 10,
     });
 
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
     }, /'LIVE' \| 'DRY_RUN'/);
   });
@@ -864,27 +734,21 @@ test("tokenBucket", async function (t) {
       refillRate: 10,
     });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /characteristics/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `characteristics`", async function () {
     const rule = tokenBucket({
       capacity: 50,
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       characteristics: "INVALID",
       interval: "1m",
       refillRate: 10,
     });
 
-    // This should not throw about `mode`, only about `characteristics`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Expected array, received string/);
   });
 
   await t.test("should work w/ valid `characteristics`", async function () {
@@ -903,93 +767,67 @@ test("tokenBucket", async function (t) {
       refillRate: 10,
     });
 
-    // This should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 });
 
 test("validateEmail", async function (t) {
   await t.test("should fail w/o options", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = validateEmail();
 
-    // TODO(#5052): this should throw.
-    // assert.throws(function () {
-    // @ts-expect-error: should be fine.
-    arcjet({ rules: [rule] });
-    // });
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /Invalid input/);
   });
 
   await t.test("should fail w/o `allow` or `deny`", async function () {
-    // @ts-expect-error: test runtime behavior
+    // @ts-expect-error: test runtime behavior.
     const rule = validateEmail({});
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Invalid input/);
   });
 
   await t.test("should fail w/ `allow` and `deny`", async function () {
+    // @ts-expect-error: test runtime behavior.
     const rule = validateEmail({
       allow: ["FREE", "NO_GRAVATAR"],
-      // @ts-expect-error: test runtime behavior
       deny: ["INVALID"],
     });
 
-    // TODO(#5052): this should throw, but not about `mode`
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /Unrecognized key\(s\) in object: 'deny'/);
   });
 
   await t.test("should work w/ `allow`", async function () {
-    const rule = validateEmail({
-      allow: ["FREE", "NO_GRAVATAR"],
-    });
+    const rule = validateEmail({ allow: ["FREE", "NO_GRAVATAR"] });
 
     assert.equal(rule.type, "email");
-    assert.deepEqual(rule.options, {
-      allow: ["FREE", "NO_GRAVATAR"],
-    });
+    assert.deepEqual(rule.options, { allow: ["FREE", "NO_GRAVATAR"] });
 
-    // TODO(#5052): this should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should work w/ `deny`", async function () {
-    const rule = validateEmail({
-      deny: ["INVALID"],
-    });
+    const rule = validateEmail({ deny: ["INVALID"] });
 
     assert.equal(rule.type, "email");
-    assert.deepEqual(rule.options, {
-      deny: ["INVALID"],
-    });
+    assert.deepEqual(rule.options, { deny: ["INVALID"] });
 
-    // TODO(#5052): this should not throw.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test("should fail w/ invalid `mode`", async function () {
     const rule = validateEmail({
       allow: ["FREE", "NO_GRAVATAR"],
-      // @ts-expect-error: test runtime behavior
+      // @ts-expect-error: test runtime behavior.
       mode: "INVALID",
     });
 
     assert.throws(function () {
-      // @ts-expect-error: should be fine.
       arcjet({ rules: [rule] });
     }, /'LIVE' \| 'DRY_RUN'/);
   });
@@ -1006,27 +844,21 @@ test("validateEmail", async function (t) {
       mode: "LIVE",
     });
 
-    // This should not throw about `allowDomainLiteral`, `requireTopLevelDomain`
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /allowDomainLiteral/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test(
     "should fail w/ invalid `allowDomainLiteral`",
     async function () {
       const rule = validateEmail({
-        // @ts-expect-error: test runtime behavior
+        // @ts-expect-error: test runtime behavior.
         allowDomainLiteral: "INVALID",
         allow: ["FREE", "NO_GRAVATAR"],
       });
 
-      // This should not throw about `mode`.
       assert.throws(function () {
-        // @ts-expect-error: should be fine.
         arcjet({ rules: [rule] });
-      }, /'LIVE' \| 'DRY_RUN'/);
+      }, /Expected boolean, received string/);
     },
   );
 
@@ -1042,11 +874,7 @@ test("validateEmail", async function (t) {
       allow: ["FREE", "NO_GRAVATAR"],
     });
 
-    // This should not throw about `mode`.
-    assert.throws(function () {
-      // @ts-expect-error: should be fine.
-      arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    arcjet({ rules: [rule] });
   });
 
   await t.test(
@@ -1054,15 +882,13 @@ test("validateEmail", async function (t) {
     async function () {
       const rule = validateEmail({
         allow: ["FREE", "NO_GRAVATAR"],
-        // @ts-expect-error: test runtime behavior
+        // @ts-expect-error: test runtime behavior.
         requireTopLevelDomain: "INVALID",
       });
 
-      // This should not throw about `mode`.
       assert.throws(function () {
-        // @ts-expect-error: should be fine.
         arcjet({ rules: [rule] });
-      }, /'LIVE' \| 'DRY_RUN'/);
+      }, /Expected boolean, received string/);
     },
   );
 
@@ -1080,11 +906,7 @@ test("validateEmail", async function (t) {
         requireTopLevelDomain: true,
       });
 
-      // This should not throw about `mode`.
-      assert.throws(function () {
-        // @ts-expect-error: should be fine.
-        arcjet({ rules: [rule] });
-      }, /'LIVE' \| 'DRY_RUN'/);
+      arcjet({ rules: [rule] });
     },
   );
 });
