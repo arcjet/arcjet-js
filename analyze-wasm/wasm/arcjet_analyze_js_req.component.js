@@ -44,6 +44,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
   
   const { detect } = imports['arcjet:js-req/bot-identifier'];
   const { hasGravatar, hasMxRecords, isDisposableEmail, isFreeEmail } = imports['arcjet:js-req/email-validator-overrides'];
+  const { ipLookup } = imports['arcjet:js-req/filter-overrides'];
   const { detect: detect$1 } = imports['arcjet:js-req/sensitive-information-identifier'];
   const { verify } = imports['arcjet:js-req/verify-bot'];
   let gen = (function* init () {
@@ -71,7 +72,25 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       dataView(memory0).setInt32(arg2 + 0, result2, true);
     }
     
-    function trampoline1(arg0, arg1, arg2, arg3) {
+    function trampoline1(arg0, arg1, arg2) {
+      var ptr0 = arg0;
+      var len0 = arg1;
+      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+      const ret = ipLookup(result0);
+      var variant2 = ret;
+      if (variant2 === null || variant2=== undefined) {
+        dataView(memory0).setInt8(arg2 + 0, 0, true);
+      } else {
+        const e = variant2;
+        dataView(memory0).setInt8(arg2 + 0, 1, true);
+        var ptr1 = utf8Encode(e, realloc0, memory0);
+        var len1 = utf8EncodedLen;
+        dataView(memory0).setInt32(arg2 + 8, len1, true);
+        dataView(memory0).setInt32(arg2 + 4, ptr1, true);
+      }
+    }
+    
+    function trampoline2(arg0, arg1, arg2, arg3) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -105,7 +124,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum2;
     }
     
-    function trampoline2(arg0, arg1) {
+    function trampoline3(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -136,7 +155,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline3(arg0, arg1) {
+    function trampoline4(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -167,7 +186,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline4(arg0, arg1) {
+    function trampoline5(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -198,7 +217,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline5(arg0, arg1) {
+    function trampoline6(arg0, arg1) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -229,7 +248,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum1;
     }
     
-    function trampoline6(arg0, arg1, arg2) {
+    function trampoline7(arg0, arg1, arg2) {
       var len1 = arg1;
       var base1 = arg0;
       var result1 = [];
@@ -294,6 +313,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     let postReturn2;
     let postReturn3;
     let postReturn4;
+    let postReturn5;
     Promise.all([module0, module1, module2]).catch(() => {});
     ({ exports: exports0 } = yield instantiateCore(yield module1));
     ({ exports: exports1 } = yield instantiateCore(yield module0, {
@@ -301,16 +321,19 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         detect: exports0['0'],
       },
       'arcjet:js-req/email-validator-overrides': {
-        'has-gravatar': exports0['5'],
-        'has-mx-records': exports0['4'],
-        'is-disposable-email': exports0['3'],
-        'is-free-email': exports0['2'],
+        'has-gravatar': exports0['6'],
+        'has-mx-records': exports0['5'],
+        'is-disposable-email': exports0['4'],
+        'is-free-email': exports0['3'],
+      },
+      'arcjet:js-req/filter-overrides': {
+        'ip-lookup': exports0['1'],
       },
       'arcjet:js-req/sensitive-information-identifier': {
-        detect: exports0['6'],
+        detect: exports0['7'],
       },
       'arcjet:js-req/verify-bot': {
-        verify: exports0['1'],
+        verify: exports0['2'],
       },
     }));
     memory0 = exports1.memory;
@@ -325,13 +348,15 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         '4': trampoline4,
         '5': trampoline5,
         '6': trampoline6,
+        '7': trampoline7,
       },
     }));
     postReturn0 = exports1['cabi_post_detect-bot'];
-    postReturn1 = exports1['cabi_post_is-valid-email'];
+    postReturn1 = exports1['cabi_post_match-filters'];
     postReturn2 = exports1['cabi_post_generate-fingerprint'];
     postReturn3 = exports1['cabi_post_validate-characteristics'];
-    postReturn4 = exports1['cabi_post_detect-sensitive-info'];
+    postReturn4 = exports1['cabi_post_is-valid-email'];
+    postReturn5 = exports1['cabi_post_detect-sensitive-info'];
     
     function detectBot(arg0, arg1) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
@@ -457,7 +482,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         dataView(memory0).setInt32(base + 0, ptr1, true);
       }
       const ret = exports1['match-filters'](ptr0, len0, result2, len2, arg2 ? 1 : 0);
-      let variant7;
+      let variant9;
       switch (dataView(memory0).getUint8(ret + 0, true)) {
         case 0: {
           var bool3 = dataView(memory0).getUint8(ret + 4, true);
@@ -471,22 +496,33 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
             var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
             result5.push(result4);
           }
-          variant7= {
+          var len7 = dataView(memory0).getInt32(ret + 20, true);
+          var base7 = dataView(memory0).getInt32(ret + 16, true);
+          var result7 = [];
+          for (let i = 0; i < len7; i++) {
+            const base = base7 + i * 8;
+            var ptr6 = dataView(memory0).getInt32(base + 0, true);
+            var len6 = dataView(memory0).getInt32(base + 4, true);
+            var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
+            result7.push(result6);
+          }
+          variant9= {
             tag: 'ok',
             val: {
               allowed: bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool()),
               matchedExpressions: result5,
+              undeterminedExpressions: result7,
             }
           };
           break;
         }
         case 1: {
-          var ptr6 = dataView(memory0).getInt32(ret + 4, true);
-          var len6 = dataView(memory0).getInt32(ret + 8, true);
-          var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
-          variant7= {
+          var ptr8 = dataView(memory0).getInt32(ret + 4, true);
+          var len8 = dataView(memory0).getInt32(ret + 8, true);
+          var result8 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr8, len8));
+          variant9= {
             tag: 'err',
-            val: result6
+            val: result8
           };
           break;
         }
@@ -494,7 +530,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           throw new TypeError('invalid variant discriminant for expected');
         }
       }
-      const retVal = variant7;
+      const retVal = variant9;
       postReturn1(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
@@ -701,7 +737,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant12;
-      postReturn1(ret);
+      postReturn4(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -927,7 +963,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         allowed: result12,
         denied: result15,
       };
-      postReturn4(ret);
+      postReturn5(ret);
       return retVal;
     }
     

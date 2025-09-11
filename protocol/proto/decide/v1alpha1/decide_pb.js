@@ -326,6 +326,8 @@ export const FilterReason = /*@__PURE__*/ proto3.makeMessageType(
   "proto.decide.v1alpha1.FilterReason",
   () => [
     { no: 1, name: "matched_expression", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "matched_expressions", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "undetermined_expressions", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ],
 );
 
