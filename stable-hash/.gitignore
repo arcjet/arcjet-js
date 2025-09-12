@@ -136,4 +136,6 @@ hasher.js
 hasher.d.ts
 index.js
 index.d.ts
+workerd.js
+workerd.d.ts
 test/*.js

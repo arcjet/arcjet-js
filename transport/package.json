@@ -33,6 +33,7 @@
   "exports": {
     "bun": "./bun.js",
     "edge-light": "./edge-light.js",
+    "workerd": "./workerd.js",
     "default": "./index.js"
   },
   "files": [
@@ -41,7 +42,9 @@
     "edge-light.d.ts",
     "edge-light.js",
     "index.d.ts",
-    "index.js"
+    "index.js",
+    "workerd.d.ts",
+    "workerd.js"
   ],
   "scripts": {
     "build": "rollup --config rollup.config.js",
