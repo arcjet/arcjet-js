@@ -82,14 +82,17 @@ export interface BotResult {
 export interface FilterResult {
   allowed: boolean,
   matchedExpressions: Array<string>,
+  undeterminedExpressions: Array<string>,
 }
 import { ArcjetJsReqBotIdentifier } from './interfaces/arcjet-js-req-bot-identifier.js';
 import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
+import { ArcjetJsReqFilterOverrides } from './interfaces/arcjet-js-req-filter-overrides.js';
 import { ArcjetJsReqSensitiveInformationIdentifier } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
 import { ArcjetJsReqVerifyBot } from './interfaces/arcjet-js-req-verify-bot.js';
 export interface ImportObject {
   'arcjet:js-req/bot-identifier': typeof ArcjetJsReqBotIdentifier,
   'arcjet:js-req/email-validator-overrides': typeof ArcjetJsReqEmailValidatorOverrides,
+  'arcjet:js-req/filter-overrides': typeof ArcjetJsReqFilterOverrides,
   'arcjet:js-req/sensitive-information-identifier': typeof ArcjetJsReqSensitiveInformationIdentifier,
   'arcjet:js-req/verify-bot': typeof ArcjetJsReqVerifyBot,
 }

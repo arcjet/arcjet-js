@@ -81,6 +81,11 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
         return "unknown";
       },
     },
+    "arcjet:js-req/filter-overrides": {
+      ipLookup() {
+        return undefined;
+      },
+    },
     // TODO(@wooorm-arcjet): figure out a test case for this with the default `detect`.
     "arcjet:js-req/sensitive-information-identifier": {
       detect,

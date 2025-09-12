@@ -188,13 +188,28 @@ export class ArcjetReason {
 }
 
 /**
+ * Configuration for `ArcjetFilterReason`.
+ */
+interface ArcjetFilterReasonInit {
+  /**
+   * Expression that matched.
+   */
+  matchedExpressions: Array<string>;
+
+  /**
+   * Expression that could not be matched.
+   */
+  undeterminedExpressions: Array<string>;
+}
+
+/**
  * Filter reason.
  */
 export class ArcjetFilterReason extends ArcjetReason {
   /**
-   * Expression that matched or `undefined` if no expression matched.
+   * Expressions that matched.
    */
-  expression?: string | undefined;
+  matchedExpressions;
 
   /**
    * Kind.
@@ -202,17 +217,23 @@ export class ArcjetFilterReason extends ArcjetReason {
   type = "FILTER" as const;
 
   /**
+   * Expression that could not be matched.
+   */
+  undeterminedExpressions;
+
+  /**
    * Create a filter reason.
    *
-   * @param expression
+   * @param init
    *   Expression that matched.
    * @returns
    *   Filter reason.
    */
-  constructor(expression?: string | undefined) {
+  constructor(init: ArcjetFilterReasonInit) {
     super();
 
-    this.expression = expression;
+    this.matchedExpressions = init.matchedExpressions;
+    this.undeterminedExpressions = init.undeterminedExpressions;
   }
 }
 

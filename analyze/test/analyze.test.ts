@@ -292,7 +292,11 @@ test("matchFilters", async function (t) {
         ["ip.src == 127.0.0.1"],
         true,
       ),
-      { allowed: true, matchedExpressions: ["ip.src == 127.0.0.1"] },
+      {
+        allowed: true,
+        matchedExpressions: ["ip.src == 127.0.0.1"],
+        undeterminedExpressions: [],
+      },
     );
   });
 
@@ -304,7 +308,7 @@ test("matchFilters", async function (t) {
         ["ip.src == 127.0.0.2"],
         true,
       ),
-      { allowed: false, matchedExpressions: [] },
+      { allowed: false, matchedExpressions: [], undeterminedExpressions: [] },
     );
   });
   await t.test("should deny w/o `allowIfMatch` and a match", async function () {
@@ -315,7 +319,11 @@ test("matchFilters", async function (t) {
         ["ip.src == 127.0.0.1"],
         false,
       ),
-      { allowed: false, matchedExpressions: ["ip.src == 127.0.0.1"] },
+      {
+        allowed: false,
+        matchedExpressions: ["ip.src == 127.0.0.1"],
+        undeterminedExpressions: [],
+      },
     );
   });
 
@@ -329,7 +337,7 @@ test("matchFilters", async function (t) {
           ["ip.src == 127.0.0.2"],
           false,
         ),
-        { allowed: true, matchedExpressions: [] },
+        { allowed: true, matchedExpressions: [], undeterminedExpressions: [] },
       );
     },
   );

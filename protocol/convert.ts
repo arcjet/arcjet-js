@@ -263,7 +263,12 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
     }
     case "filter": {
       const reason = proto.reason.value;
-      return new ArcjetFilterReason(reason.matchedExpression || undefined);
+      return new ArcjetFilterReason({
+        matchedExpressions:
+          reason.matchedExpressions ||
+          (reason.matchedExpression ? [reason.matchedExpression] : []),
+        undeterminedExpressions: reason.undeterminedExpressions,
+      });
     }
     case "sensitiveInfo": {
       const reason = proto.reason.value;
@@ -374,9 +379,10 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
     return new Reason({
       reason: {
         case: "filter",
-        value: reason.expression
-          ? { matchedExpression: reason.expression }
-          : {},
+        value: {
+          matchedExpressions: reason.matchedExpressions,
+          undeterminedExpressions: reason.undeterminedExpressions,
+        },
       },
     });
   }
