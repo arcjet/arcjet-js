@@ -1,4 +1,4 @@
 {
   "extends": "../tsconfig.base.json",
-  "include": ["bun.ts", "edge.ts", "index.ts"]
+  "include": ["bun.ts", "edge-light.ts", "index.ts", "workerd.ts"]
 }

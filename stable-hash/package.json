@@ -31,17 +31,19 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
-    "edge-light": "./dom.js",
-    "workerd": "./dom.js",
+    "edge-light": "./edge-light.js",
+    "workerd": "./workerd.js",
     "default": "./index.js"
   },
   "files": [
-    "dom.d.ts",
-    "dom.js",
+    "edge-light.d.ts",
+    "edge-light.js",
     "hasher.d.ts",
     "hasher.js",
     "index.d.ts",
-    "index.js"
+    "index.js",
+    "workerd.d.ts",
+    "workerd.js"
   ],
   "scripts": {
     "build": "rollup --config rollup.config.js",

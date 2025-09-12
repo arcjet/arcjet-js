@@ -130,10 +130,12 @@ dist
 .pnp.*
 
 # Generated files
-dom.js
-dom.d.ts
+edge-light.js
+edge-light.d.ts
 hasher.js
 hasher.d.ts
 index.js
 index.d.ts
+workerd.js
+workerd.d.ts
 test/*.js
