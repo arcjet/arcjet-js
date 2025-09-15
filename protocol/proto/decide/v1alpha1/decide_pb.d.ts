@@ -973,9 +973,26 @@ export declare class ShieldReason extends Message<ShieldReason> {
  */
 export declare class FilterReason extends Message<FilterReason> {
   /**
-   * @generated from field: string matched_expression = 1;
+   * Deprecated: Use the `matched_expressions` field instead.
+   *
+   * @generated from field: string matched_expression = 1 [deprecated = true];
+   * @deprecated
    */
   matchedExpression: string;
+
+  /**
+   * List of all matched expressions.
+   *
+   * @generated from field: repeated string matched_expressions = 2;
+   */
+  matchedExpressions: string[];
+
+  /**
+   * List of all undetermined expressions.
+   *
+   * @generated from field: repeated string undetermined_expressions = 3;
+   */
+  undeterminedExpressions: string[];
 
   constructor(data?: PartialMessage<FilterReason>);
 

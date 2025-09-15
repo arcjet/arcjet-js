@@ -518,14 +518,18 @@ test("convert", async (t) => {
         new Reason({
           reason: {
             case: "filter",
-            value: { matchedExpression: "ip.src == 1.2.3.4" },
+            value: {
+              matchedExpressions: ["ip.src == 1.2.3.4"],
+              undeterminedExpressions: [],
+            },
           },
         }),
       );
 
       assert.ok(reason instanceof ArcjetFilterReason);
       assert.equal(reason.type, "FILTER");
-      assert.deepEqual(reason.expression, "ip.src == 1.2.3.4");
+      assert.deepEqual(reason.matchedExpressions, ["ip.src == 1.2.3.4"]);
+      assert.deepEqual(reason.undeterminedExpressions, []);
     });
 
     await t.test("should create a sensitive info reason", () => {
@@ -724,11 +728,19 @@ test("convert", async (t) => {
       "should create a protocol reason from an arcjet filter reason",
       () => {
         assert.deepEqual(
-          ArcjetReasonToProtocol(new ArcjetFilterReason("ip.src == 1.2.3.4")),
+          ArcjetReasonToProtocol(
+            new ArcjetFilterReason({
+              matchedExpressions: ["ip.src == 1.2.3.4"],
+              undeterminedExpressions: [],
+            }),
+          ),
           new Reason({
             reason: {
               case: "filter",
-              value: { matchedExpression: "ip.src == 1.2.3.4" },
+              value: {
+                matchedExpressions: ["ip.src == 1.2.3.4"],
+                undeterminedExpressions: [],
+              },
             },
           }),
         );
