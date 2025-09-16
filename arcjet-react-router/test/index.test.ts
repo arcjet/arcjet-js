@@ -9,11 +9,11 @@ import arcjet, {
   createRemoteClient,
   detectBot,
   sensitiveInfo,
-} from "@arcjet/react-router";
+} from "../index.js";
 
 test("@arcjet/react-router", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("@arcjet/react-router")).sort(), [
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
       "ArcjetAllowDecision",
       "ArcjetBotReason",
       "ArcjetChallengeDecision",
