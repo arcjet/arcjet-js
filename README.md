@@ -55,6 +55,10 @@ Arcjet security features for protecting JS apps:
 - [Remix][quick-start-remix]
 - [SvelteKit][quick-start-sveltekit]
 
+<!--
+TODO: list `react-router` when done.
+-->
+
 ### Get help
 
 [Join our Discord server][discord-invite] or [reach out for support][support].
@@ -72,6 +76,10 @@ Arcjet security features for protecting JS apps:
 - [Remix][github-arcjet-example-remix]
 - [Tanstack Start][github-arcjet-example-tanstack-start]
 - …see also [many more examples here in `examples/`][file-examples]
+
+<!--
+TODO: list `react-router` when done.
+-->
 
 ## Blueprints
 
@@ -205,6 +213,7 @@ find a specific one through the categories and descriptions below.
 - [`@arcjet/nest`](./arcjet-nest/README.md): SDK for NestJS.
 - [`@arcjet/next`](./arcjet-next/README.md): SDK for Next.js.
 - [`@arcjet/node`](./arcjet-node/README.md): SDK for Node.js.
+- [`@arcjet/react-router`](./arcjet-react-router/README.md): SDK for React Router.
 - [`@arcjet/remix`](./arcjet-remix/README.md): SDK for Remix.
 - [`@arcjet/sveltekit`](./arcjet-sveltekit/README.md): SDK for SvelteKit.
 

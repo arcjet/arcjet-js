@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
+    "DEV",
     "NODE_ENV",
     "NEXT_RUNTIME",
     "VERCEL",
