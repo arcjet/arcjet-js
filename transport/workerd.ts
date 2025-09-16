@@ -1,6 +1,6 @@
-// This file is used when running on the `edge-light` condition.
-// Specifically Edge by Vercel.
-// It is the same as `workerd.ts`, which runs on Cloudflare.
+// This file is used when running on the `workerd`.
+// Specifically workers on Cloudflare.
+// It is the same as `edge-light.ts`, which runs on Vercel.
 // It uses DOM based APIs (`@connectrpc/connect-web`) to connect to the API.
 // Differing from `bun.ts` this solves the `redirect` option set to `error`
 // inside `connect` as that does not work on the edge.
