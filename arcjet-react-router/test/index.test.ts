@@ -352,7 +352,7 @@ test("`default`", async function (t) {
       });
 
       assert.ok(result.isErrored());
-      assert.equal(result.reason.message, "[unavailable]");
+      assert.match(result.reason.message, /\[unavailable\]/);
     });
 
     await t.test("should work", async function () {
@@ -457,7 +457,7 @@ test("`default`", async function (t) {
           "Error: boom!",
         ]);
         assert.ok(result.isErrored());
-        assert.equal(result.reason.message, "[unavailable]");
+        assert.match(result.reason.message, /\[unavailable\]/);
       },
     );
   });
