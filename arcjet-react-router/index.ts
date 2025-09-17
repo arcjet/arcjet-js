@@ -273,7 +273,6 @@ export function createRemoteClient(
 
   return createClient({
     baseUrl,
-    // @ts-expect-error: TODO: add.
     sdkStack: "REACT_ROUTER",
     sdkVersion: "__ARCJET_SDK_VERSION__",
     timeout: settings.timeout ?? (isDevelopment(process.env) ? 1000 : 500),
