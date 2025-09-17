@@ -400,12 +400,33 @@ export function validateEmail(options: EmailOptions) {
 /**
  * Arcjet filter rule.
  *
- * Applying this rule lets you write expressions to match against requests.
+ * Applying this rule lets you block requests using
+ * [Wireshark](https://www.wireshark.org/)-like [display
+ * filter](https://www.wireshark.org/docs/wsug_html_chunked/ChWorkBuildDisplayFilterSection.html)
+ * expressions over HTTP headers, IP addresses, and other request attributes -
+ * so you can quickly enforce rules like allow/deny by country, network, or
+ * user-agent pattern.
+ *
+ * See the [reference guide](https://docs.arcjet.com/filters/reference) for more details about
+ * the expression language fields, functions and values.
  *
  * @param options
- *   Configuration for the filter rule (required).
+ *   Configuration (required).
  * @returns
  *   Astro integration Filter rule to provide to the SDK in the `rules` field.
+ * @example
+ *   In this example, the expression matches non-VPN GET requests from the US. Requests matching
+ *   the expression are allowed, and all others are denied.
+ *
+ *   ```ts
+ *   filter({
+ *     allow: [
+ *       'http.request.method eq "GET" and ip.src.country eq "US" and not ip.src.vpn',
+ *     ],
+ *     mode: "LIVE",
+ *   }),
+ *   ```
+ * @link https://docs.arcjet.com/filters/reference
  */
 export function filter(options: FilterOptions) {
   return { type: "filter", options } as const satisfies IntegrationRule<
