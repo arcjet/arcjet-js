@@ -208,6 +208,13 @@ test("convert", async (t) => {
       assert.equal(ArcjetStackToProtocol("NODEJS"), SDKStack.SDK_STACK_NODEJS);
     });
 
+    await t.test("should turn a `REACT_ROUTER` stack into an SDK stack", () => {
+      assert.equal(
+        ArcjetStackToProtocol("REACT_ROUTER"),
+        SDKStack.SDK_STACK_REACT_ROUTER,
+      );
+    });
+
     await t.test("should turn a `REMIX` stack into an SDK stack", () => {
       assert.equal(ArcjetStackToProtocol("REMIX"), SDKStack.SDK_STACK_REMIX);
     });

@@ -114,24 +114,26 @@ export function ArcjetEmailTypeFromProtocol(
 
 export function ArcjetStackToProtocol(stack: ArcjetStack): SDKStack {
   switch (stack) {
-    case "NODEJS":
-      return SDKStack.SDK_STACK_NODEJS;
-    case "NEXTJS":
-      return SDKStack.SDK_STACK_NEXTJS;
-    case "BUN":
-      return SDKStack.SDK_STACK_BUN;
-    case "SVELTEKIT":
-      return SDKStack.SDK_STACK_SVELTEKIT;
-    case "DENO":
-      return SDKStack.SDK_STACK_DENO;
-    case "NESTJS":
-      return SDKStack.SDK_STACK_NESTJS;
-    case "REMIX":
-      return SDKStack.SDK_STACK_REMIX;
     case "ASTRO":
       return SDKStack.SDK_STACK_ASTRO;
+    case "BUN":
+      return SDKStack.SDK_STACK_BUN;
+    case "DENO":
+      return SDKStack.SDK_STACK_DENO;
     case "FASTIFY":
       return SDKStack.SDK_STACK_FASTIFY;
+    case "NEXTJS":
+      return SDKStack.SDK_STACK_NEXTJS;
+    case "NODEJS":
+      return SDKStack.SDK_STACK_NODEJS;
+    case "REACT_ROUTER":
+      return SDKStack.SDK_STACK_REACT_ROUTER;
+    case "REMIX":
+      return SDKStack.SDK_STACK_REMIX;
+    case "SVELTEKIT":
+      return SDKStack.SDK_STACK_SVELTEKIT;
+    case "NESTJS":
+      return SDKStack.SDK_STACK_NESTJS;
     default: {
       const _exhaustive: never = stack;
       return SDKStack.SDK_STACK_UNSPECIFIED;
