@@ -48,7 +48,7 @@ export default function Home(properties: Route.ComponentProps): ReactNode {
 export async function action(actionArguments: Route.ActionArgs): Promise<{ message: string }> {
   const decision = actionArguments.context.get(arcjetDecisionContext);
 
-  if (decision && decision.isDenied()) {
+  if (decision?.isDenied()) {
     if (decision.reason.isSensitiveInfo()) {
       return { message: "Form contains sensitive info." };
     }
