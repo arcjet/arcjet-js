@@ -59,22 +59,33 @@ npm install @arcjet/react-router
 
 ## Use
 
-In a route such as `routes/home.tsx` do something like:
+In a route such as `app/routes/home.tsx` do something like:
 
 ```tsx
-import arcjet, { fixedWindow, shield } from "@arcjet/react-router";
+import arcjet, { shield } from "@arcjet/react-router";
+import type { ReactNode } from "react";
+import type { Route } from "../routes/+types/home";
 
-// …
+// Get your Arcjet key at <https://app.arcjet.com>.
+// Set it as an environment variable instead of hard coding it.
+const arcjetKey = process.env.ARCJET_KEY;
+
+if (!arcjetKey) {
+  throw new Error("Cannot find `ARCJET_KEY` environment variable");
+}
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!,
+  key: arcjetKey,
   rules: [
-    fixedWindow({ max: 5, mode: "LIVE", window: "10s" }),
+    // Shield protects your app from common attacks.
+    // Use `DRY_RUN` instead of `LIVE` to only log.
     shield({ mode: "LIVE" }),
   ],
 });
 
-// …
+export default function Home(): ReactNode {
+  return <h1>Hello!</h1>;
+}
 
 export async function loader(
   loaderArguments: Route.LoaderArgs,
