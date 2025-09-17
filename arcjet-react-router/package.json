@@ -45,6 +45,9 @@
     "verify"
   ],
   "name": "@arcjet/react-router",
+  "peerDependencies": {
+    "react-router": ">=7"
+  },
   "publishConfig": {
     "access": "public",
     "tag": "latest"
