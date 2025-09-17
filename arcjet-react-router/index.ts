@@ -214,7 +214,7 @@ export default function arcjet<
         const context: ArcjetAdapterContext = {
           getBody: createGetBody(state, details),
         };
-        const request: ArcjetRequest<Properties> = toArcjetRequest(
+        const request = toArcjetRequest(
           state,
           details,
           properties ?? ({} as Properties),
