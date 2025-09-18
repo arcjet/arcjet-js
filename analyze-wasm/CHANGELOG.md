@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...@arcjet/analyze-wasm-v1.0.0-beta.12) (2025-09-18)
+
+
+### 🚀 New Features
+
+* **arcjet:** add IP-related fields to filters ([#5170](https://github.com/arcjet/arcjet-js/issues/5170)) ([d0aeb84](https://github.com/arcjet/arcjet-js/commit/d0aeb84ab1d545fd3e34b7ddc20a83c4121e479b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/rollup-config bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+
 ## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/analyze-wasm-v1.0.0-beta.11) (2025-09-03)
 
 

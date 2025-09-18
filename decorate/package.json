@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/decorate",
-  "version": "1.0.0-beta.11",
+  "version": "1.0.0-beta.12",
   "description": "Arcjet utilities for decorating responses with information",
   "keywords": [
     "arcjet",
@@ -43,12 +43,12 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/protocol": "1.0.0-beta.11",
-    "@arcjet/sprintf": "1.0.0-beta.11"
+    "@arcjet/protocol": "1.0.0-beta.12",
+    "@arcjet/sprintf": "1.0.0-beta.12"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.11",
-    "@arcjet/rollup-config": "1.0.0-beta.11",
+    "@arcjet/eslint-config": "1.0.0-beta.12",
+    "@arcjet/rollup-config": "1.0.0-beta.12",
     "@rollup/wasm-node": "4.50.0",
     "@types/node": "24.3.0",
     "eslint": "9.34.0",
