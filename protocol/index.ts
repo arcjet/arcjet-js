@@ -877,23 +877,29 @@ export class ArcjetIpDetails {
 
   /**
    * Check if the IP address has geo `latitude` info.
-   * This also implies that `accuracyRadius` is available.
+   * This also implies that `accuracyRadius` and `longitude` are available.
    *
    * @returns
    *   Whether the IP address has latitude info.
    */
-  hasLatitude(): this is RequiredProps<this, "latitude" | "accuracyRadius"> {
+  hasLatitude(): this is RequiredProps<
+    this,
+    "accuracyRadius" | "latitude" | "longitude"
+  > {
     return typeof this.latitude !== "undefined";
   }
 
   /**
    * Check if the IP address has geo `longitude` info.
-   * This also implies that `accuracyRadius` is available.
+   * This also implies that `accuracyRadius` and `latitude` are available.
    *
    * @returns
    *   Whether the IP address has longitude info.
    */
-  hasLongitude(): this is RequiredProps<this, "longitude" | "accuracyRadius"> {
+  hasLongitude(): this is RequiredProps<
+    this,
+    "accuracyRadius" | "latitude" | "longitude"
+  > {
     return typeof this.longitude !== "undefined";
   }
 
