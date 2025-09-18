@@ -2539,23 +2539,23 @@ export function protectSignup<const Characteristics extends string[] = []>(
 /**
  * Arcjet filter rule.
  *
- * Applying this rule lets you block requests using
- * [Wireshark](https://www.wireshark.org/)-like [display
- * filter](https://www.wireshark.org/docs/wsug_html_chunked/ChWorkBuildDisplayFilterSection.html)
- * expressions over HTTP headers, IP addresses, and other request attributes -
- * so you can quickly enforce rules like allow/deny by country, network, or
- * user-agent pattern.
+ * Applying this rule lets you block requests using Wireshark-like display
+ * filter expressions over HTTP headers, IP addresses, and other request
+ * fields.
+ * You can quickly enforce rules like allow/deny by country, network, or
+ * `user-agent` pattern.
  *
- * See the [reference guide](https://docs.arcjet.com/filters/reference) for more details about
- * the expression language fields, functions and values.
+ * See the [reference guide](https://docs.arcjet.com/filters/reference) for
+ * more info on the expression language fields, functions, and values.
  *
  * @param options
  *   Configuration (required).
  * @returns
  *   Filter rule.
+ *
  * @example
- *   In this example, the expression matches non-VPN GET requests from the US. Requests matching
- *   the expression are allowed, and all others are denied.
+ *   In this example, the expression matches non-VPN GET requests from the US.
+ *   Requests matching the expression are allowed, all others are denied.
  *
  *   ```ts
  *   filter({
@@ -2563,8 +2563,9 @@ export function protectSignup<const Characteristics extends string[] = []>(
  *       'http.request.method eq "GET" and ip.src.country eq "US" and not ip.src.vpn',
  *     ],
  *     mode: "LIVE",
- *   }),
+ *   })
  *   ```
+ *
  * @link https://docs.arcjet.com/filters/reference
  */
 export function filter(options: FilterOptions): Primitive<{}> {
