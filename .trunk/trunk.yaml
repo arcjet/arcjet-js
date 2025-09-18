@@ -97,5 +97,7 @@ merge:
     - Build examples / nextjs-server-actions
     - Build examples / nodejs-hono-rate-limit
     - Build examples / nodejs-rate-limit
+    - Build examples / react-router-middleware
+    - Build examples / react-router
     - Build examples / remix-express
     - Build examples / sveltekit

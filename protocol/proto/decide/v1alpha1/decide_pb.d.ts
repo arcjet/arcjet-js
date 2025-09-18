@@ -329,6 +329,11 @@ export declare enum SDKStack {
    * @generated from enum value: SDK_STACK_FASTIFY = 13;
    */
   SDK_STACK_FASTIFY = 13,
+
+  /**
+   * @generated from enum value: SDK_STACK_REACT_ROUTER = 14;
+   */
+  SDK_STACK_REACT_ROUTER = 14,
 }
 
 /**

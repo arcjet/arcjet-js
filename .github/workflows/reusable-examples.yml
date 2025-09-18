@@ -131,6 +131,8 @@ jobs:
           - nextjs-server-actions
           - nodejs-hono-rate-limit
           - nodejs-rate-limit
+          - react-router-middleware
+          - react-router
           - remix-express
           - sveltekit
 name: Reusable examples workflow

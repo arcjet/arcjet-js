@@ -59,15 +59,16 @@ export type ArcjetIdentifiedEntity = {
  * Names of integrations supported by Arcjet.
  */
 export type ArcjetStack =
-  | "NODEJS"
-  | "NEXTJS"
-  | "BUN"
-  | "SVELTEKIT"
-  | "DENO"
-  | "NESTJS"
-  | "REMIX"
   | "ASTRO"
-  | "FASTIFY";
+  | "BUN"
+  | "DENO"
+  | "FASTIFY"
+  | "NESTJS"
+  | "NEXTJS"
+  | "NODEJS"
+  | "REACT_ROUTER"
+  | "REMIX"
+  | "SVELTEKIT";
 
 /**
  * State of a rule after calling it.
