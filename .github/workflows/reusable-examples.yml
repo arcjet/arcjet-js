@@ -85,7 +85,7 @@ jobs:
         with:
           node-version: 20
       - run: npm ci && npm run build
-      - run: npm ci && npm run build --if-present
+      - run: npm ci
         working-directory: "examples/${{matrix.folder}}"
       - env:
           # Astro integration checks for an `ARCJET_KEY`.

@@ -22,7 +22,7 @@ This example shows how to use Arcjet with a Node.js
 
    ```bash
    cd examples/nodejs-hono-rate-limit
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.

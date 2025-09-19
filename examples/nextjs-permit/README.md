@@ -21,7 +21,7 @@ This example shows how to use [Arcjet](https://arcjet.com/) with a permissions s
 
    ```bash
    cd examples/nextjs-permit
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.example` to `.env` and add your Arcjet key, Clerk keys, and Permit.io token.

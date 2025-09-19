@@ -29,7 +29,7 @@ It sets up the `/api/arcjet` route.
 
    ```bash
    cd examples/nextjs-clerk-rate-limit
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet and Clerk
