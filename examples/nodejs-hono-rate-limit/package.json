@@ -2,7 +2,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prestart": "npm run build",
     "start": "node --env-file .env.local ./index.js",
     "build": "tsc -p .",
     "typecheck": "tsc --noEmit"
