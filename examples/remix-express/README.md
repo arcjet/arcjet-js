@@ -22,7 +22,7 @@ This example shows how to leverage Arcjet protections in a
 
    ```bash
    cd examples/remix-express
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.example` to `.env` and add your Arcjet key.

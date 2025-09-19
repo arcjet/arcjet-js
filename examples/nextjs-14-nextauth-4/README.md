@@ -29,7 +29,7 @@ It sets up the `/api/arcjet` route.
 
    ```bash
    cd examples/nextjs-14-nextauth-4
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and fill in the required

@@ -22,7 +22,7 @@ actions](https://nextjs.org/docs/app/building-your-application/data-fetching/ser
 
    ```bash
    cd examples/nextjs-server-actions
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.

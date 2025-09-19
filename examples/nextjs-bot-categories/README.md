@@ -22,7 +22,7 @@ individual selection, and filtering bots out of defined categories.
 
    ```bash
    cd examples/nextjs-bot-categories
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.

@@ -22,7 +22,7 @@ functions.
 
    ```bash
    cd examples/gatsby-rate-limit
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.development.example` to `.env.development` and add your Arcjet key.

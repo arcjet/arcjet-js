@@ -21,7 +21,7 @@ This example shows how to use Arcjet to protect [SvelteKit](https://kit.svelte.d
 
    ```bash
    cd examples/sveltekit
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.example` to `.env` and add your Arcjet key.

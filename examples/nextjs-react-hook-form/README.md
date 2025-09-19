@@ -46,7 +46,7 @@ be used separately on different routes.
 
    ```bash
    cd examples/nextjs-react-hook-form
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
