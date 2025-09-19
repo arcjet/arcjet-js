@@ -99,7 +99,7 @@ jobs:
       # Workflow
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci && npm run build
 
       - name: Run tests
         run: npm test
