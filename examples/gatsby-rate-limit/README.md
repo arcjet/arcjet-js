@@ -15,14 +15,14 @@ functions.
 1. From the root of the project, install the SDK dependencies.
 
    ```bash
-   npm ci
+   npm ci && npm run build
    ```
 
 2. Enter this directory and install the example's dependencies.
 
    ```bash
    cd examples/gatsby-rate-limit
-   npm ci
+   npm ci && npm run build
    ```
 
 3. Rename `.env.development.example` to `.env.development` and add your Arcjet key.

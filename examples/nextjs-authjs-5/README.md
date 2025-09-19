@@ -33,14 +33,14 @@ you're using that version.
 1. From the root of the project, install the SDK dependencies.
 
    ```bash
-   npm ci
+   npm ci && npm run build
    ```
 
 2. Enter this directory and install the example's dependencies.
 
    ```bash
    cd examples/nextjs-authjs-5
-   npm ci
+   npm ci && npm run build
    ```
 
 3. Rename `.env.local.example` to `.env.local` and fill in the required
