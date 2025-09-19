@@ -82,4 +82,42 @@ test("`detectSensitiveInfo`", async function (t) {
       },
     );
   });
+
+  await t.test("should detect a card number w/ dashes", async function () {
+    assert.deepEqual(
+      wasm.detectSensitiveInfo("a 4242-4242-4242-4242 b", {
+        entities: { tag: "allow", val: [{ tag: "credit-card-number" }] },
+        skipCustomDetect: false,
+      }),
+      {
+        allowed: [
+          {
+            end: 21,
+            identifiedType: { tag: "credit-card-number" },
+            start: 2,
+          },
+        ],
+        denied: [],
+      },
+    );
+  });
+
+  await t.test("should detect a card number w/ spaces", async function () {
+    assert.deepEqual(
+      wasm.detectSensitiveInfo("a 4242 4242 4242 4242 b", {
+        entities: { tag: "allow", val: [{ tag: "credit-card-number" }] },
+        skipCustomDetect: false,
+      }),
+      {
+        allowed: [
+          {
+            end: 21,
+            identifiedType: { tag: "credit-card-number" },
+            start: 2,
+          },
+        ],
+        denied: [],
+      },
+    );
+  });
 });
