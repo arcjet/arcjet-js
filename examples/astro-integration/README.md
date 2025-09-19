@@ -22,7 +22,7 @@ This example shows how to use the Arcjet Integration with
 
    ```bash
    cd examples/astro-integration
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
