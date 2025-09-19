@@ -343,10 +343,9 @@ test("matchFilters", async function (t) {
     },
   );
 
-  const tenExpressions = Array.from(
-    { length: 10 },
-    (_, i) => `ip.src == 127.0.0.${i + 1}`,
-  );
+  const tenExpressions = Array.from({ length: 10 }, function (_, index) {
+    return "ip.src == 127.0.0." + index;
+  });
 
   await t.test("should work w/ `10` expressions", async function () {
     assert.deepEqual(
@@ -365,7 +364,7 @@ test("matchFilters", async function (t) {
       matchFilters(
         exampleContext,
         { ip: "127.0.0.127" },
-        [...tenExpressions, "ip.src == 127.0.0.11"],
+        [...tenExpressions, "ip.src == 127.0.0.10"],
         false,
       ),
       /Failed to match filters: only `10` expressions may be passed/,
