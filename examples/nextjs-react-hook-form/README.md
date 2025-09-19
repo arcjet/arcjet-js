@@ -36,21 +36,27 @@ be used separately on different routes.
 
 ## How to use
 
-1. Enter this directory and install the example's dependencies.
+1. From the root of the project, install the SDK dependencies.
+
+   ```bash
+   npm ci && npm run build
+   ```
+
+2. Enter this directory and install the example's dependencies.
 
    ```bash
    cd examples/nextjs-react-hook-form
    npm ci
    ```
 
-2. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
+3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
 
-3. Start the dev server.
+4. Start the dev server.
 
    ```bash
    npm run dev
    ```
 
-4. Visit `http://localhost:3000`.
-5. Submit the form with the example non-existent email to show the errors.
+5. Visit `http://localhost:3000`.
+6. Submit the form with the example non-existent email to show the errors.
    Submit it more than 5 times to trigger the rate limit.
