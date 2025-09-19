@@ -23,7 +23,7 @@ Clone the monorepo, then:
 cd arcjet-js
 npm ci && npm run build
 cd examples/react-router-middleware/
-npm ci && npm run build
+npm ci
 ```
 
 Rename `.env.example` to `.env` and add your Arcjet key.

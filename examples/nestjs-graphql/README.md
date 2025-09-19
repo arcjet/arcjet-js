@@ -22,7 +22,7 @@ GraphQL applications using the `@arcjet/nest` adapter.
 
    ```bash
    cd examples/nestjs-graphql
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.

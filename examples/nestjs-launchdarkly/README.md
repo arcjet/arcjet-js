@@ -23,7 +23,7 @@ applications using the `@arcjet/nest` adapter with rule configuration loaded via
 
    ```bash
    cd examples/nestjs-launchdarkly
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your [Arcjet

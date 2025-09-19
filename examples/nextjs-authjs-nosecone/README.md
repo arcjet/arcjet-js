@@ -22,7 +22,7 @@ the middleware to provide security headers.
 
    ```bash
    cd examples/nextjs-authjs-nosecone
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and fill in the required

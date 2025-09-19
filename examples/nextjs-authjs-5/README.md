@@ -40,7 +40,7 @@ you're using that version.
 
    ```bash
    cd examples/nextjs-authjs-5
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and fill in the required

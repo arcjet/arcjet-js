@@ -34,7 +34,7 @@ many tokens.
 
    ```bash
    cd examples/nextjs-openai
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet & OpenAI

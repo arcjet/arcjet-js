@@ -23,7 +23,7 @@ the `POST` handler in `app/api/auth/[...all]/route.ts`.
 
    ```bash
    cd examples/nextjs-better-auth
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key and a

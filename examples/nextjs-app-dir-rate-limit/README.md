@@ -22,7 +22,7 @@ handler](https://nextjs.org/docs/app/building-your-application/routing/route-han
 
    ```bash
    cd examples/nextjs-app-dir-rate-limit
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.

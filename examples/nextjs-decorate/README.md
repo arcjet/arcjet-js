@@ -23,7 +23,7 @@ handlers](https://nextjs.org/docs/app/building-your-application/routing/route-ha
 
    ```bash
    cd examples/nextjs-decorate
-   npm ci && npm run build
+   npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
