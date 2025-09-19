@@ -117,7 +117,8 @@ jobs:
           - nextjs-app-dir-validate-email
           - nextjs-authjs-5
           - nextjs-authjs-nosecone
-          - nextjs-better-auth
+          # Turned off because it pulls in `better-sqlite3`, which runs lifecycle scripts.
+          # - nextjs-better-auth
           - nextjs-bot-categories
           - nextjs-clerk-rate-limit
           - nextjs-clerk-shield
