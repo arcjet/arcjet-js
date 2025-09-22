@@ -311,6 +311,7 @@ test("matchFilters", async function (t) {
       { allowed: false, matchedExpressions: [], undeterminedExpressions: [] },
     );
   });
+
   await t.test("should deny w/o `allowIfMatch` and a match", async function () {
     assert.deepEqual(
       await matchFilters(
@@ -341,4 +342,64 @@ test("matchFilters", async function (t) {
       );
     },
   );
+
+  const tenExpressions = Array.from({ length: 10 }, function (_, index) {
+    return "ip.src == 127.0.0." + index;
+  });
+
+  await t.test("should work w/ `10` expressions", async function () {
+    assert.deepEqual(
+      await matchFilters(
+        exampleContext,
+        { ip: "127.0.0.127" },
+        tenExpressions,
+        false,
+      ),
+      { allowed: true, matchedExpressions: [], undeterminedExpressions: [] },
+    );
+  });
+
+  await t.test("should fail w/ `11` expressions", async function () {
+    await assert.rejects(
+      matchFilters(
+        exampleContext,
+        { ip: "127.0.0.127" },
+        [...tenExpressions, "ip.src == 127.0.0.10"],
+        false,
+      ),
+      /Failed to match filters: only `10` expressions may be passed/,
+    );
+  });
+
+  await t.test("should work w/ `1024` bytes", async function () {
+    const tenThousandTwentyFourBytes =
+      'http.host eq "' + "a".repeat(1009) + '"';
+    assert.equal(new Blob([tenThousandTwentyFourBytes]).size, 1024);
+
+    assert.deepEqual(
+      await matchFilters(
+        exampleContext,
+        { ip: "127.0.0.1" },
+        [tenThousandTwentyFourBytes],
+        false,
+      ),
+      { allowed: true, matchedExpressions: [], undeterminedExpressions: [] },
+    );
+  });
+
+  await t.test("should fail w/ `1025` bytes", async function () {
+    const tenThousandTwentyFiveBytes =
+      'http.host eq "' + "a".repeat(1010) + '"';
+    assert.equal(new Blob([tenThousandTwentyFiveBytes]).size, 1025);
+
+    await assert.rejects(
+      matchFilters(
+        exampleContext,
+        { ip: "127.0.0.127" },
+        [tenThousandTwentyFiveBytes],
+        false,
+      ),
+      /Failed to match filters: only `1024` bytes may be passed in expression/,
+    );
+  });
 });
