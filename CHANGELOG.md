@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...v1.0.0-beta.12) (2025-09-22)
+
+
+### 🚀 New Features
+
+* add React Router integration ([#5199](https://github.com/arcjet/arcjet-js/issues/5199)) ([498292e](https://github.com/arcjet/arcjet-js/commit/498292e9a86efd3e1e45b504023e02bcbf227124))
+* **analye-wasm, redact-wasm:** ignore dashes in card numbers ([#5210](https://github.com/arcjet/arcjet-js/issues/5210)) ([5c414d6](https://github.com/arcjet/arcjet-js/commit/5c414d605b48dd6c6054c18dc0d0b1d9a0bfbe07))
+* **arcjet:** add IP-related fields to filters ([#5170](https://github.com/arcjet/arcjet-js/issues/5170)) ([d0aeb84](https://github.com/arcjet/arcjet-js/commit/d0aeb84ab1d545fd3e34b7ddc20a83c4121e479b))
+* **filters:** add limit to 10 expressions, 1024 bytes ([#5212](https://github.com/arcjet/arcjet-js/issues/5212)) ([502288a](https://github.com/arcjet/arcjet-js/commit/502288aabd9b95a3905cf62d1e50e65f25fbfb61))
+* **stable-hash, transport:** support `workerd` ([#5077](https://github.com/arcjet/arcjet-js/issues/5077)) ([13c90d6](https://github.com/arcjet/arcjet-js/commit/13c90d6340747f7e5f94768c93b75e353aadac9a))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** show error about incorrect `characteristics` in logs ([#5078](https://github.com/arcjet/arcjet-js/issues/5078)) ([9839c9c](https://github.com/arcjet/arcjet-js/commit/9839c9c5dd3225e14891b6f863d47e27021b85a4))
+* **astro:** fix types, zod validation ([#5052](https://github.com/arcjet/arcjet-js/issues/5052)) ([ea82f8f](https://github.com/arcjet/arcjet-js/commit/ea82f8fbf35bed63aadbcd020d9dbe71f73c204f))
+* **examples:** add styles to `remix-express` ([#5115](https://github.com/arcjet/arcjet-js/issues/5115)) ([783db87](https://github.com/arcjet/arcjet-js/commit/783db87ac4cb5f76d33531fac96f5cab8aaab8c7))
+
+
+### 📝 Documentation
+
+* add JSDocs examples to `filter` rule ([#5208](https://github.com/arcjet/arcjet-js/issues/5208)) ([c4e506a](https://github.com/arcjet/arcjet-js/commit/c4e506a756bb1a9ad201d44f3e064d0347c40c51))
+
+
+### 🧹 Miscellaneous Chores
+
+* **ci:** Remove dependabot groups on examples and apply cooldown to direct deps ([#5202](https://github.com/arcjet/arcjet-js/issues/5202)) ([9058a24](https://github.com/arcjet/arcjet-js/commit/9058a24228e27483857f4bfd23b99fa24a0d73e1))
+* **examples:** remove `experimental.nodeMiddleware` from example ([#5124](https://github.com/arcjet/arcjet-js/issues/5124)) ([408a26e](https://github.com/arcjet/arcjet-js/commit/408a26e917bd4b03dd93de52ecfe3070efac4ddd))
+
+
+### 📚 Tests
+
+* **astro:** add tests ([#5069](https://github.com/arcjet/arcjet-js/issues/5069)) ([e6d9980](https://github.com/arcjet/arcjet-js/commit/e6d9980977af2df067df9ce774e9bee04aa87d69))
+
 ## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2025-09-03)
 
 

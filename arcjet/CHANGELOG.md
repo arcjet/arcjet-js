@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...arcjet-v1.0.0-beta.12) (2025-09-22)
+
+
+### 🚀 New Features
+
+* **arcjet:** add IP-related fields to filters ([#5170](https://github.com/arcjet/arcjet-js/issues/5170)) ([d0aeb84](https://github.com/arcjet/arcjet-js/commit/d0aeb84ab1d545fd3e34b7ddc20a83c4121e479b))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** show error about incorrect `characteristics` in logs ([#5078](https://github.com/arcjet/arcjet-js/issues/5078)) ([9839c9c](https://github.com/arcjet/arcjet-js/commit/9839c9c5dd3225e14891b6f863d47e27021b85a4))
+
+
+### 📝 Documentation
+
+* add JSDocs examples to `filter` rule ([#5208](https://github.com/arcjet/arcjet-js/issues/5208)) ([c4e506a](https://github.com/arcjet/arcjet-js/commit/c4e506a756bb1a9ad201d44f3e064d0347c40c51))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/cache bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/duration bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/headers bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/protocol bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/runtime bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/stable-hash bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/rollup-config bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+
 ## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...arcjet-v1.0.0-beta.11) (2025-09-03)
 
 

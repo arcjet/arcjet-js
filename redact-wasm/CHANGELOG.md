@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...@arcjet/redact-wasm-v1.0.0-beta.12) (2025-09-22)
+
+
+### 🚀 New Features
+
+* **analye-wasm, redact-wasm:** ignore dashes in card numbers ([#5210](https://github.com/arcjet/arcjet-js/issues/5210)) ([5c414d6](https://github.com/arcjet/arcjet-js/commit/5c414d605b48dd6c6054c18dc0d0b1d9a0bfbe07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/rollup-config bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+
 ## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/redact-wasm-v1.0.0-beta.11) (2025-09-03)
 
 

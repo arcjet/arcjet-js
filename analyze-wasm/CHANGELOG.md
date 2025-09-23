@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...@arcjet/analyze-wasm-v1.0.0-beta.12) (2025-09-22)
+
+
+### 🚀 New Features
+
+* **analye-wasm, redact-wasm:** ignore dashes in card numbers ([#5210](https://github.com/arcjet/arcjet-js/issues/5210)) ([5c414d6](https://github.com/arcjet/arcjet-js/commit/5c414d605b48dd6c6054c18dc0d0b1d9a0bfbe07))
+* **arcjet:** add IP-related fields to filters ([#5170](https://github.com/arcjet/arcjet-js/issues/5170)) ([d0aeb84](https://github.com/arcjet/arcjet-js/commit/d0aeb84ab1d545fd3e34b7ddc20a83c4121e479b))
+* **filters:** add limit to 10 expressions, 1024 bytes ([#5212](https://github.com/arcjet/arcjet-js/issues/5212)) ([502288a](https://github.com/arcjet/arcjet-js/commit/502288aabd9b95a3905cf62d1e50e65f25fbfb61))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+    * @arcjet/rollup-config bumped from 1.0.0-beta.11 to 1.0.0-beta.12
+
 ## [1.0.0-beta.11](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.10...@arcjet/analyze-wasm-v1.0.0-beta.11) (2025-09-03)
 
 
