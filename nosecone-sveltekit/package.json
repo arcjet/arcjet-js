@@ -64,7 +64,7 @@
     "@arcjet/eslint-config": "1.0.0-beta.12",
     "@arcjet/rollup-config": "1.0.0-beta.12",
     "@rollup/wasm-node": "4.50.0",
-    "@sveltejs/kit": "2.37.0",
+    "@sveltejs/kit": "2.42.1",
     "@sveltejs/vite-plugin-svelte": "6.1.4",
     "@types/node": "24.3.0",
     "eslint": "9.34.0",
