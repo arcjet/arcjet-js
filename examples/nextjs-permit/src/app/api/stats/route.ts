@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { detectBot, slidingWindow } from "@arcjet/next";
+import { type ArcjetNext, detectBot, slidingWindow } from "@arcjet/next";
 import { currentUser } from "@clerk/nextjs/server";
 import { arcjet } from "@/lib/arcjet";
 import { permit } from "@/lib/permit";
@@ -9,14 +9,14 @@ import ip from "@arcjet/ip";
 
 // Returns ad-hoc rules depending on whether the user is logged in, and if they
 // are, whether they have permission to update stats.
-async function getClient() {
+async function getClient(): Promise<ArcjetNext<{ fingerprint?: unknown }>> {
   // If the user is not logged in then give them a low rate limit
   const user = await currentUser();
   if (!user) {
     return (
       arcjet
         // Add a sliding window to limit requests to 5 per minute
-        .withRule(slidingWindow({ mode: "LIVE", max: 5, interval: 60 }))
+        .withRule(slidingWindow({ characteristics: [ "fingerprint" ], mode: "LIVE", max: 5, interval: 60 }))
         // Add detection to block all detected bots
         .withRule(detectBot({ mode: "LIVE", allow: [] }))
     );
@@ -29,7 +29,7 @@ async function getClient() {
     return (
       arcjet
         // Add a sliding window to limit requests to 10 per minute
-        .withRule(slidingWindow({ mode: "LIVE", max: 10, interval: 60 }))
+        .withRule(slidingWindow({ characteristics: [ "fingerprint" ], mode: "LIVE", max: 10, interval: 60 }))
     );
   }
 
