@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...@arcjet/react-router-v1.0.0-beta.13) (2025-09-26)
+
+
+### 📚 Tests
+
+* **react-router:** fix tests on Node `24.9.0` ([#5227](https://github.com/arcjet/arcjet-js/issues/5227)) ([420413b](https://github.com/arcjet/arcjet-js/commit/420413bf2bb48bec76e9343e31ba006fa2339a9a))
+
 ## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...@arcjet/react-router-v1.0.0-beta.12) (2025-09-22)
 
 
