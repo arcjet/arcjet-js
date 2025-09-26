@@ -443,7 +443,11 @@ test("`default`", async function (t) {
         const request = new Request("https://example.com/", {
           body: {
             [Symbol.asyncIterator]() {
-              throw new Error("boom!");
+              return {
+                next() {
+                  return Promise.reject(new Error("boom!"));
+                },
+              };
             },
           },
           duplex: "half",
