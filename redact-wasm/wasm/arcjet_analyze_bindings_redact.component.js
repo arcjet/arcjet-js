@@ -1,4 +1,4 @@
-export function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.instantiate) {
+function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.instantiate) {
   
   let dv = new DataView(new ArrayBuffer());
   const dataView = mem => dv.buffer === mem.buffer ? dv : dv = new DataView(mem.buffer);
@@ -27,9 +27,6 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
   let NEXT_TASK_ID = 0n;
   function startCurrentTask(componentIdx, isAsync, entryFnName) {
     _debugLog('[startCurrentTask()] args', { componentIdx, isAsync });
-    if (componentIdx === undefined || componentIdx === null) {
-      throw new Error('missing/invalid component instance index while starting task');
-    }
     const tasks = ASYNC_TASKS_BY_COMPONENT_IDX.get(componentIdx);
     
     const nextId = ++NEXT_TASK_ID;
@@ -126,7 +123,7 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
       
       this.#onResolve = (results) => {
         this.#returnedResults = results;
-      }
+      };
     }
     
     taskState() { return this.#state.slice(); }
@@ -172,25 +169,6 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
       if (mayNotEnter || componentHasPendingTasks) {
         
         throw new Error('in enter()'); // TODO: remove
-        cstate.pendingTasks.set(this.#id, new Awaitable(new Promise()));
-        
-        const blockResult = await this.onBlock(awaitable);
-        if (blockResult) {
-          // TODO: find this pending task in the component
-          const pendingTask = cstate.pendingTasks.get(this.#id);
-          if (!pendingTask) {
-            throw new Error('pending task [' + this.#id + '] not found for component instance');
-          }
-          cstate.pendingTasks.remove(this.#id);
-          this.#onResolve([]);
-          return false;
-        }
-        
-        mayNotEnter = !this.mayEnter(this);
-        if (!mayNotEnter || !cstate.startPendingTask) {
-          throw new Error('invalid component entrance/pending task resolution');
-        }
-        cstate.startPendingTask = false;
       }
       
       if (!this.isAsync) { cstate.callingSyncExport = true; }
@@ -267,9 +245,7 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
       const { awaitable, isCancellable, forCallback } = opts;
       _debugLog('[AsyncTask#blockOn()] args', { taskID: this.#id, awaitable, isCancellable, forCallback });
       
-      if (awaitable.resolved() && !ASYNC_DETERMINISM && _coinFlip()) {
-        return AsyncTask.BlockResult.NOT_CANCELLED;
-      }
+      if (awaitable.resolved() && false) ;
       
       const cstate = getOrCreateAsyncState(this.#componentIdx);
       if (forCallback) { cstate.exclusiveRelease(); }
@@ -446,19 +422,6 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
     }
     
   }
-  
-  function unpackCallbackResult(result) {
-    _debugLog('[unpackCallbackResult()] args', { result });
-    if (!(_typeCheckValidI32(result))) { throw new Error('invalid callback return value [' + result + '], not a valid i32'); }
-    const eventCode = result & 0xF;
-    if (eventCode < 0 || eventCode > 3) {
-      throw new Error('invalid async return value [' + eventCode + '], outside callback code range');
-    }
-    if (result < 0 || result >= 2**32) { throw new Error('invalid callback result'); }
-    // TODO: table max length check?
-    const waitableSetIdx = result >> 4;
-    return [eventCode, waitableSetIdx];
-  }
   const ASYNC_STATE = new Map();
   
   function getOrCreateAsyncState(componentIdx, init) {
@@ -594,12 +557,7 @@ if (!Promise.withResolvers) {
 const _debugLog = (...args) => {
   if (!globalThis?.process?.env?.JCO_DEBUG) { return; }
   console.debug(...args);
-}
-const ASYNC_DETERMINISM = 'random';
-const _coinFlip = () => { return Math.random() > 0.5; };
-const I32_MAX = 2_147_483_647;
-const I32_MIN = -2_147_483_648;
-const _typeCheckValidI32 = (n) => typeof n === 'number' && n >= I32_MIN && n <= I32_MAX;
+};
 
 const fetchCompile = url => fetch(url).then(WebAssembly.compileStreaming);
 
@@ -676,7 +634,7 @@ let gen = (function* init () {
       result1.push(result0);
     }
     _debugLog('[iface="arcjet:redact/custom-redact", function="detect-sensitive-info"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'detect-sensitive-info');
+    startCurrentTask(0, false, 'detect-sensitive-info');
     const ret = detectSensitiveInfo(result1);
     _debugLog('[iface="arcjet:redact/custom-redact", function="detect-sensitive-info"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -779,7 +737,7 @@ let gen = (function* init () {
     var len2 = arg4;
     var result2 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr2, len2));
     _debugLog('[iface="arcjet:redact/custom-redact", function="redact-sensitive-info"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'redact-sensitive-info');
+    startCurrentTask(0, false, 'redact-sensitive-info');
     const ret = redactSensitiveInfo(variant1, result2);
     _debugLog('[iface="arcjet:redact/custom-redact", function="redact-sensitive-info"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -890,7 +848,7 @@ let gen = (function* init () {
       variant6_1 = toUint32(e);
     }
     _debugLog('[iface="redact", function="redact"] [Instruction::CallWasm] (async? false, @ enter)');
-    const _wasm_call_currentTaskID = startCurrentTask(0, false, 'exports1Redact');
+    startCurrentTask(0, false, 'exports1Redact');
     const ret = exports1Redact(ptr0, len0, variant5_0, variant5_1, variant5_2, variant6_0, variant6_1, v1_2 ? 1 : 0, v1_3 ? 1 : 0);
     endCurrentTask(0);
     var len11 = dataView(memory0).getUint32(ret + 4, true);
@@ -992,3 +950,5 @@ function runNext (value) {
 const maybeSyncReturn = runNext(null);
 return promise || maybeSyncReturn;
 }
+
+export { instantiate };

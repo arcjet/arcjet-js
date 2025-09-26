@@ -1,4 +1,4 @@
-export function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.instantiate) {
+function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.instantiate) {
   
   let dv = new DataView(new ArrayBuffer());
   const dataView = mem => dv.buffer === mem.buffer ? dv : dv = new DataView(mem.buffer);
@@ -27,9 +27,6 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
   let NEXT_TASK_ID = 0n;
   function startCurrentTask(componentIdx, isAsync, entryFnName) {
     _debugLog('[startCurrentTask()] args', { componentIdx, isAsync });
-    if (componentIdx === undefined || componentIdx === null) {
-      throw new Error('missing/invalid component instance index while starting task');
-    }
     const tasks = ASYNC_TASKS_BY_COMPONENT_IDX.get(componentIdx);
     
     const nextId = ++NEXT_TASK_ID;
@@ -126,7 +123,7 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
       
       this.#onResolve = (results) => {
         this.#returnedResults = results;
-      }
+      };
     }
     
     taskState() { return this.#state.slice(); }
@@ -172,25 +169,6 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
       if (mayNotEnter || componentHasPendingTasks) {
         
         throw new Error('in enter()'); // TODO: remove
-        cstate.pendingTasks.set(this.#id, new Awaitable(new Promise()));
-        
-        const blockResult = await this.onBlock(awaitable);
-        if (blockResult) {
-          // TODO: find this pending task in the component
-          const pendingTask = cstate.pendingTasks.get(this.#id);
-          if (!pendingTask) {
-            throw new Error('pending task [' + this.#id + '] not found for component instance');
-          }
-          cstate.pendingTasks.remove(this.#id);
-          this.#onResolve([]);
-          return false;
-        }
-        
-        mayNotEnter = !this.mayEnter(this);
-        if (!mayNotEnter || !cstate.startPendingTask) {
-          throw new Error('invalid component entrance/pending task resolution');
-        }
-        cstate.startPendingTask = false;
       }
       
       if (!this.isAsync) { cstate.callingSyncExport = true; }
@@ -267,9 +245,7 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
       const { awaitable, isCancellable, forCallback } = opts;
       _debugLog('[AsyncTask#blockOn()] args', { taskID: this.#id, awaitable, isCancellable, forCallback });
       
-      if (awaitable.resolved() && !ASYNC_DETERMINISM && _coinFlip()) {
-        return AsyncTask.BlockResult.NOT_CANCELLED;
-      }
+      if (awaitable.resolved() && false) ;
       
       const cstate = getOrCreateAsyncState(this.#componentIdx);
       if (forCallback) { cstate.exclusiveRelease(); }
@@ -446,19 +422,6 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
     }
     
   }
-  
-  function unpackCallbackResult(result) {
-    _debugLog('[unpackCallbackResult()] args', { result });
-    if (!(_typeCheckValidI32(result))) { throw new Error('invalid callback return value [' + result + '], not a valid i32'); }
-    const eventCode = result & 0xF;
-    if (eventCode < 0 || eventCode > 3) {
-      throw new Error('invalid async return value [' + eventCode + '], outside callback code range');
-    }
-    if (result < 0 || result >= 2**32) { throw new Error('invalid callback result'); }
-    // TODO: table max length check?
-    const waitableSetIdx = result >> 4;
-    return [eventCode, waitableSetIdx];
-  }
   const ASYNC_STATE = new Map();
   
   function getOrCreateAsyncState(componentIdx, init) {
@@ -594,12 +557,7 @@ if (!Promise.withResolvers) {
 const _debugLog = (...args) => {
   if (!globalThis?.process?.env?.JCO_DEBUG) { return; }
   console.debug(...args);
-}
-const ASYNC_DETERMINISM = 'random';
-const _coinFlip = () => { return Math.random() > 0.5; };
-const I32_MAX = 2_147_483_647;
-const I32_MIN = -2_147_483_648;
-const _typeCheckValidI32 = (n) => typeof n === 'number' && n >= I32_MIN && n <= I32_MAX;
+};
 
 const fetchCompile = url => fetch(url).then(WebAssembly.compileStreaming);
 
@@ -685,7 +643,7 @@ let gen = (function* init () {
     var len0 = arg1;
     var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
     _debugLog('[iface="arcjet:js-req/bot-identifier", function="detect"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'detect');
+    startCurrentTask(0, false, 'detect');
     const ret = detect(result0);
     _debugLog('[iface="arcjet:js-req/bot-identifier", function="detect"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -714,7 +672,7 @@ let gen = (function* init () {
     var len0 = arg1;
     var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
     _debugLog('[iface="arcjet:js-req/filter-overrides", function="ip-lookup"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'ip-lookup');
+    startCurrentTask(0, false, 'ip-lookup');
     const ret = ipLookup(result0);
     _debugLog('[iface="arcjet:js-req/filter-overrides", function="ip-lookup"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -745,7 +703,7 @@ let gen = (function* init () {
     var len1 = arg3;
     var result1 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr1, len1));
     _debugLog('[iface="arcjet:js-req/verify-bot", function="verify"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'verify');
+    startCurrentTask(0, false, 'verify');
     const ret = verify(result0, result1);
     _debugLog('[iface="arcjet:js-req/verify-bot", function="verify"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -786,7 +744,7 @@ let gen = (function* init () {
     var len0 = arg1;
     var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="is-free-email"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'is-free-email');
+    startCurrentTask(0, false, 'is-free-email');
     const ret = isFreeEmail(result0);
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="is-free-email"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -827,7 +785,7 @@ let gen = (function* init () {
     var len0 = arg1;
     var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="is-disposable-email"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'is-disposable-email');
+    startCurrentTask(0, false, 'is-disposable-email');
     const ret = isDisposableEmail(result0);
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="is-disposable-email"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -868,7 +826,7 @@ let gen = (function* init () {
     var len0 = arg1;
     var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="has-mx-records"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'has-mx-records');
+    startCurrentTask(0, false, 'has-mx-records');
     const ret = hasMxRecords(result0);
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="has-mx-records"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -909,7 +867,7 @@ let gen = (function* init () {
     var len0 = arg1;
     var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="has-gravatar"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'has-gravatar');
+    startCurrentTask(0, false, 'has-gravatar');
     const ret = hasGravatar(result0);
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="has-gravatar"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -957,7 +915,7 @@ let gen = (function* init () {
       result1.push(result0);
     }
     _debugLog('[iface="arcjet:js-req/sensitive-information-identifier", function="detect"] [Instruction::CallInterface] (async? sync, @ enter)');
-    const _interface_call_currentTaskID = startCurrentTask(0, false, 'detect');
+    startCurrentTask(0, false, 'detect');
     const ret = detect$1(result1);
     _debugLog('[iface="arcjet:js-req/sensitive-information-identifier", function="detect"] [Instruction::CallInterface] (sync, @ post-call)');
     endCurrentTask(0);
@@ -1118,7 +1076,7 @@ let gen = (function* init () {
       }
     }
     _debugLog('[iface="detect-bot", function="detect-bot"] [Instruction::CallWasm] (async? false, @ enter)');
-    const _wasm_call_currentTaskID = startCurrentTask(0, false, 'exports1DetectBot');
+    startCurrentTask(0, false, 'exports1DetectBot');
     const ret = exports1DetectBot(ptr0, len0, variant7_0, variant7_1, variant7_2, variant7_3);
     endCurrentTask(0);
     let variant15;
@@ -1207,7 +1165,7 @@ let gen = (function* init () {
       dataView(memory0).setUint32(base + 0, ptr1, true);
     }
     _debugLog('[iface="match-filters", function="match-filters"] [Instruction::CallWasm] (async? false, @ enter)');
-    const _wasm_call_currentTaskID = startCurrentTask(0, false, 'exports1MatchFilters');
+    startCurrentTask(0, false, 'exports1MatchFilters');
     const ret = exports1MatchFilters(ptr0, len0, result2, len2, arg2 ? 1 : 0);
     endCurrentTask(0);
     let variant9;
@@ -1294,7 +1252,7 @@ let gen = (function* init () {
       dataView(memory0).setUint32(base + 0, ptr1, true);
     }
     _debugLog('[iface="generate-fingerprint", function="generate-fingerprint"] [Instruction::CallWasm] (async? false, @ enter)');
-    const _wasm_call_currentTaskID = startCurrentTask(0, false, 'exports1GenerateFingerprint');
+    startCurrentTask(0, false, 'exports1GenerateFingerprint');
     const ret = exports1GenerateFingerprint(ptr0, len0, result2, len2);
     endCurrentTask(0);
     let variant5;
@@ -1359,7 +1317,7 @@ let gen = (function* init () {
       dataView(memory0).setUint32(base + 0, ptr1, true);
     }
     _debugLog('[iface="validate-characteristics", function="validate-characteristics"] [Instruction::CallWasm] (async? false, @ enter)');
-    const _wasm_call_currentTaskID = startCurrentTask(0, false, 'exports1ValidateCharacteristics');
+    startCurrentTask(0, false, 'exports1ValidateCharacteristics');
     const ret = exports1ValidateCharacteristics(ptr0, len0, result2, len2);
     endCurrentTask(0);
     let variant4;
@@ -1462,7 +1420,7 @@ let gen = (function* init () {
       }
     }
     _debugLog('[iface="is-valid-email", function="is-valid-email"] [Instruction::CallWasm] (async? false, @ enter)');
-    const _wasm_call_currentTaskID = startCurrentTask(0, false, 'exports1IsValidEmail');
+    startCurrentTask(0, false, 'exports1IsValidEmail');
     const ret = exports1IsValidEmail(ptr0, len0, variant7_0, variant7_1, variant7_2, variant7_3, variant7_4);
     endCurrentTask(0);
     let variant12;
@@ -1650,7 +1608,7 @@ let gen = (function* init () {
       variant9_1 = toUint32(e);
     }
     _debugLog('[iface="detect-sensitive-info", function="detect-sensitive-info"] [Instruction::CallWasm] (async? false, @ enter)');
-    const _wasm_call_currentTaskID = startCurrentTask(0, false, 'exports1DetectSensitiveInfo');
+    startCurrentTask(0, false, 'exports1DetectSensitiveInfo');
     const ret = exports1DetectSensitiveInfo(ptr0, len0, variant8_0, variant8_1, variant8_2, variant9_0, variant9_1, v1_2 ? 1 : 0);
     endCurrentTask(0);
     var len12 = dataView(memory0).getUint32(ret + 4, true);
@@ -1803,3 +1761,5 @@ function runNext (value) {
 const maybeSyncReturn = runNext(null);
 return promise || maybeSyncReturn;
 }
+
+export { instantiate };
