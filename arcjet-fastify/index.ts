@@ -143,7 +143,7 @@ export function createRemoteClient(
  * @template Props
  *   Configuration.
  */
-export interface ArcjetFastify<Props> {
+export interface ArcjetFastify<Props extends PlainObject> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -153,7 +153,7 @@ export interface ArcjetFastify<Props> {
    * @param request
    *   Details about the {@linkcode FastifyRequest} that Arcjet needs to make a
    *   decision.
-   * @param properties
+   * @param rest
    *   Additional properties required for running rules against a request.
    * @returns
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
@@ -161,7 +161,9 @@ export interface ArcjetFastify<Props> {
    */
   protect(
     request: FastifyRequest,
-    ...properties: Props extends WithoutCustomProps ? [] : [Props]
+    // We use this neat trick from https://stackoverflow.com/a/52318137 to make a single spread parameter
+    // that is required if the ExtraProps aren't strictly an empty object
+    ...rest: Props extends WithoutCustomProps ? [] : [Props]
   ): Promise<ArcjetDecision>;
 
   /**
@@ -237,28 +239,21 @@ export default function arcjet<
     );
   }
 
-  function withClient<const Rules extends (Primitive | Product)[]>(
-    aj: Arcjet<ExtraProps<Rules>>,
-  ): ArcjetFastify<ExtraProps<Rules>> {
-    return Object.freeze({
-      async protect(
-        fastifyRequest: FastifyRequest,
-        ...[properties]: ExtraProps<Rules> extends WithoutCustomProps
-          ? []
-          : [ExtraProps<Rules>]
-      ): Promise<ArcjetDecision> {
+  function withClient<Props extends PlainObject>(
+    aj: Arcjet<Props>,
+  ): ArcjetFastify<Props> {
+    const client: ArcjetFastify<Props> = {
+      async protect(fastifyRequest, properties?): Promise<ArcjetDecision> {
         const arcjetRequest = toArcjetRequest(
           fastifyRequest,
           log,
           proxies,
-          properties || {},
+          // Cast of `{}` because here we switch from `undefined` (or
+          // `WithoutCustomProps`) to `Props`.
+          properties || ({} as Props),
         );
 
-        return aj.protect(
-          { getBody },
-          // @ts-expect-error: TODO(#220): fix types for arcjet requests.
-          arcjetRequest,
-        );
+        return aj.protect({ getBody }, arcjetRequest);
 
         async function getBody() {
           try {
@@ -278,11 +273,13 @@ export default function arcjet<
           }
         }
       },
-      withRule(rule: Primitive | Product) {
+      withRule(rule) {
         const childClient = aj.withRule(rule);
         return withClient(childClient);
       },
-    });
+    };
+
+    return Object.freeze(client);
   }
 
   const childClient = arcjetCore({ ...options, client, log });
