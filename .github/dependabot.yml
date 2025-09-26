@@ -38,4 +38,3 @@ updates:
         versions: [">=2"]
       - dependency-name: "@connectrpc/connect-web"
         versions: [">=2"]
-      
