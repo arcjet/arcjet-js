@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": [
+    "test/*.ts",
+    "astro-env.d.ts",
+    "index.ts",
+    "internal.ts",
+    "middleware.ts"
+  ]
+}
