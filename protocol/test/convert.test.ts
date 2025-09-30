@@ -226,6 +226,10 @@ test("convert", async (t) => {
       );
     });
 
+    await t.test("should turn a `NUXT` stack into an SDK stack", () => {
+      assert.equal(ArcjetStackToProtocol("NUXT"), SDKStack.SDK_STACK_NUXT);
+    });
+
     await t.test("should fail on an unknown stack", () => {
       assert.equal(
         ArcjetStackToProtocol(

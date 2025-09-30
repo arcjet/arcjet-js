@@ -68,7 +68,8 @@ export type ArcjetStack =
   | "NODEJS"
   | "REACT_ROUTER"
   | "REMIX"
-  | "SVELTEKIT";
+  | "SVELTEKIT"
+  | "NUXT";
 
 /**
  * State of a rule after calling it.
