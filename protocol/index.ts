@@ -66,6 +66,7 @@ export type ArcjetStack =
   | "NESTJS"
   | "NEXTJS"
   | "NODEJS"
+  | "NUXT"
   | "REACT_ROUTER"
   | "REMIX"
   | "SVELTEKIT";
