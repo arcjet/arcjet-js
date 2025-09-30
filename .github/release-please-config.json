@@ -64,6 +64,10 @@
       "component": "@arcjet/node",
       "skip-github-release": true
     },
+    "arcjet-nuxt": {
+      "component": "@arcjet/nuxt",
+      "skip-github-release": true
+    },
     "arcjet-react-router": {
       "component": "@arcjet/react-router",
       "skip-github-release": true
