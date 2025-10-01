@@ -1,13 +1,5 @@
 import { arcjet, fixedWindow, sensitiveInfo, shield } from "#arcjet";
 
-const config = useRuntimeConfig()
-
-const key = config.__ARCJET_KEY;
-
-if (!key) {
-  throw new Error("Arcjet key is required");
-}
-
 const aj = arcjet({
   rules: [
     fixedWindow({ max: 5, mode: "LIVE", window: "10s" }),
