@@ -9,7 +9,6 @@ if (!key) {
 }
 
 const aj = arcjet({
-  key: key,
   rules: [
     fixedWindow({ max: 5, mode: "LIVE", window: "10s" }),
     sensitiveInfo({ allow: [], mode: "LIVE" }),

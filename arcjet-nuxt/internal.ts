@@ -179,7 +179,7 @@ export interface ArcjetNuxtInternal<Properties extends object> {
 export interface ArcjetOptions<
   Rules extends Array<Primitive | Product>,
   Characteristics extends ReadonlyArray<string>,
-> extends CoreOptions<Rules, Characteristics> {
+> extends Omit<CoreOptions<Rules, Characteristics>, "key"> {
   /**
    * IP addresses and CIDR ranges of trusted load balancers and proxies
    * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
@@ -247,6 +247,18 @@ export function arcjet<
 ): ArcjetNuxtInternal<
   ExtraProps<Rules> & CharacteristicProps<Characteristics>
 > {
+  const config = process.env.RUNTIME_CONFIG as unknown;
+  let key = "";
+
+  if (
+    config &&
+    typeof config === "object" &&
+    "__ARCJET_KEY" in config &&
+    typeof config.__ARCJET_KEY === "string"
+  ) {
+    key = config.__ARCJET_KEY;
+  }
+
   const state: State = {
     client: options.client ?? createRemoteClient(),
     log: options.log ?? new Logger({ level: logLevel(process.env) }),
@@ -260,7 +272,7 @@ export function arcjet<
   }
 
   return withClient(
-    arcjetCore({ ...options, client: state.client, log: state.log }),
+    arcjetCore({ ...options, client: state.client, key, log: state.log }),
   );
 
   function withClient<Properties extends Record<PropertyKey, unknown>>(

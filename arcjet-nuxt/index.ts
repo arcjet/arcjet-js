@@ -4,17 +4,15 @@ import {
   addTypeTemplate,
   defineNuxtModule,
 } from "@nuxt/kit";
-import type { ArcjetOptions as CoreOptions } from "arcjet";
 
 /**
- * Configuration for the Nuxt Arcjet Module.
+ * Configuration for the Arcjet Nuxt Module.
  */
-export interface ArcjetOptions extends Omit<CoreOptions<[], []>, "rules"> {
+export interface ArcjetOptions {
   /**
-   * IP addresses and CIDR ranges of trusted load balancers and proxies
-   * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+   * API key to identify the site in Arcjet (required).
    */
-  proxies?: string[];
+  key: string;
 }
 
 export default defineNuxtModule({
