@@ -11,7 +11,12 @@ import type {
 } from "arcjet";
 import findIp, { parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { baseUrl as baseUrlFromEnvironment, isDevelopment, logLevel, platform } from "@arcjet/env";
+import {
+  baseUrl as baseUrlFromEnvironment,
+  isDevelopment,
+  logLevel,
+  platform,
+} from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
@@ -95,12 +100,12 @@ export interface ArcjetOptions<
   Rules extends Array<Primitive | Product>,
   Characteristics extends ReadonlyArray<string>,
 > extends CoreOptions<Rules, Characteristics> {
-    /**
-     * IP addresses and CIDR ranges of trusted load balancers and proxies
-     * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
-     */
-    proxies?: Array<string>;
-  };
+  /**
+   * IP addresses and CIDR ranges of trusted load balancers and proxies
+   * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+   */
+  proxies?: Array<string>;
+}
 
 /**
  * Instance of the Nuxt integration of Arcjet.
@@ -254,7 +259,9 @@ export function arcjet<
   const Characteristics extends readonly string[],
 >(
   options: ArcjetOptions<Rules, Characteristics>,
-): ArcjetNuxtInternal<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
+): ArcjetNuxtInternal<
+  ExtraProps<Rules> & CharacteristicProps<Characteristics>
+> {
   const client = options.client ?? createRemoteClient();
 
   const log = options.log
@@ -272,7 +279,6 @@ export function arcjet<
       "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
     );
   }
-
 
   /**
    * Turn a React Router request into an Arcjet request.
@@ -384,7 +390,7 @@ export function arcjet<
 
         return aj.protect({ getBody }, req);
 
-        async function  getBody() {
+        async function getBody() {
           // console.log('body:', event.node.req.body)
           try {
             // If event.node.req.body is present then the body was likely read by a package like express' `body-parser`.
@@ -430,7 +436,7 @@ export function arcjet<
             log.error("failed to get event.node.req body: %s", String(e));
             return;
           }
-        };
+        }
       },
     });
   }
