@@ -1,49 +1,46 @@
-// import arcjet, { fixedWindow, sensitiveInfo, shield } from "#arcjet";
-
-import { defineNuxtPlugin } from "nuxt/app";
-
-// const aj = arcjet({
-//   key: process.env.ARCJET_KEY!,
-//   rules: [
-//     fixedWindow({ max: 5, mode: "LIVE", window: "10s" }),
-//     sensitiveInfo({ allow: [], mode: "LIVE" }),
-//     shield({ mode: "LIVE" }),
-//   ],
-// });
+import { arcjet, fixedWindow, sensitiveInfo, shield } from "#arcjet";
 
 const config = useRuntimeConfig()
-console.log(config);
 
-// defineNuxtPlugin({
-//   setup(app)
-// })
+const key = config.__ARCJET_KEY;
 
+if (!key) {
+  throw new Error("Arcjet key is required");
+}
+
+const aj = arcjet({
+  key: key,
+  rules: [
+    fixedWindow({ max: 5, mode: "LIVE", window: "10s" }),
+    sensitiveInfo({ allow: [], mode: "LIVE" }),
+    shield({ mode: "LIVE" }),
+  ],
+});
 
 export default defineEventHandler(async (event) => {
-  const aj = useArcjet();
-  console.log(aj)
-  // const decision = await aj.withRule().protect(event.node.req);
+  const decision = await aj.protect(event);
+  console.log('example:submit:', event.node.req.url, decision);
 
-  // if (decision.isDenied()) {
-  //   if (decision.reason.isRateLimit()) {
-  //     throw createError({
-  //       statusCode: 429,
-  //       statusMessage: "Too many requests",
-  //     });
-  //   }
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      throw createError({
+        statusCode: 429,
+        statusMessage: "Too many requests",
+      });
+    }
 
-  //   if (decision.reason.isSensitiveInfo()) {
-  //     throw createError({
-  //       statusCode: 400,
-  //       statusMessage: "Form contains sensitive info.",
-  //     });
-  //   }
+    if (decision.reason.isSensitiveInfo()) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Form contains sensitive info.",
+      });
+    }
 
-  //   throw createError({
-  //     statusCode: 403,
-  //     statusMessage: "Forbidden",
-  //   });
-  // }
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Forbidden",
+    });
+  }
 
   return "No sensitive info detected.";
 });
