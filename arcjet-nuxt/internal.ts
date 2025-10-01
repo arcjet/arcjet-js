@@ -373,7 +373,6 @@ export function createRemoteClient(
 
   return createClient({
     baseUrl,
-    // @ts-expect-error: TODO.
     sdkStack: "NUXT",
     sdkVersion: "__ARCJET_SDK_VERSION__",
     timeout: settings.timeout ?? (isDevelopment(process.env) ? 1000 : 500),
