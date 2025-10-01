@@ -17,9 +17,8 @@ const aj = arcjet({
   ],
 });
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async function (event) {
   const decision = await aj.protect(event);
-  console.log('example:submit:', event.node.req.url, decision);
 
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {

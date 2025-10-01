@@ -1,38 +1,13 @@
 import fs from "node:fs/promises";
 import {
-  defineNuxtModule,
   addServerTemplate,
   addTypeTemplate,
+  defineNuxtModule,
 } from "@nuxt/kit";
 import type { ArcjetOptions as CoreOptions } from "arcjet";
 
 /**
- * Configuration for {@linkcode createRemoteClient}.
- */
-export interface RemoteClientOptions {
-  /**
-   * Base URI for HTTP requests to Decide API (optional).
-   *
-   * Defaults to the environment variable `ARCJET_BASE_URL` (if that value
-   * is known and allowed) and the standard production API otherwise.
-   */
-  baseUrl?: string | null | undefined;
-
-  /**
-   * Timeout in milliseconds for the Decide API (optional).
-   *
-   * Defaults to `500` in production and `1000` in development.
-   */
-  timeout?: number | null | undefined;
-}
-
-// TODO: This only supports serializable options, so no custom loggers are
-// supported but maybe they could be supported via a module import
-/**
  * Configuration for the Nuxt Arcjet Module.
- *
- * @template Characteristics
- *   Characteristics to track a user by.
  */
 export interface ArcjetOptions extends Omit<CoreOptions<[], []>, "rules"> {
   /**
@@ -54,6 +29,7 @@ export default defineNuxtModule({
     key: "",
   },
   setup: function (options: ArcjetOptions, nuxt) {
+    // TODO: support all other options.
     const key = options.key;
 
     if (!key) {
@@ -80,10 +56,10 @@ export default defineNuxtModule({
             { encoding: "utf-8" },
           );
 
-          return `declare module '#arcjet' {
-${internalDts}
-}
-`;
+          // TODO: figure out about the error for
+          // `declare const emptyObjectSymbol` in this.
+          // Seems to work, but maybe we can remove that erroring code.
+          return 'declare module "#arcjet" { ' + internalDts + " }\n";
         },
         write: true,
       },

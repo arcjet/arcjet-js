@@ -1,13 +1,4 @@
 {
-  "name": "nuxt",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev --host --no-fork",
-    "preview": "nuxt preview --host",
-    "postinstall": "nuxt prepare"
-  },
   "dependencies": {
     "@arcjet/nuxt": "file:../../arcjet-nuxt",
     "nuxt": "^4.1.2",
@@ -17,5 +8,15 @@
   "devDependencies": {
     "typescript": "^5.9.2",
     "vue-tsc": "^3.1.0"
-  }
+  },
+  "name": "nuxt",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --host --no-fork",
+    "postinstall": "nuxt prepare",
+    "prepare": "nuxt prepare",
+    "preview": "nuxt preview --host"
+  },
+  "type": "module"
 }

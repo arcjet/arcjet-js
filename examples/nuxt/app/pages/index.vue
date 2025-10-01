@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import { FetchError } from "ofetch";
+  import { FetchError } from "ofetch";
 
-let message = ref<string | null>(null);
+  let message = ref<string | undefined>();
 
-async function onSubmit(event: SubmitEvent) {
-  try {
-    message.value = await $fetch("/api/submit", {
-      method: "POST",
-      body: new FormData(event.target as HTMLFormElement),
-    });
-  } catch (cause) {
-    if (!(cause instanceof FetchError)) {
-      throw new Error("Failed to fetch /api/submit", {
-        cause,
+  async function onSubmit(event: SubmitEvent) {
+    try {
+      message.value = await $fetch("/api/submit", {
+        body: new FormData(event.target as HTMLFormElement),
+        method: "POST",
       });
+    } catch (cause) {
+      if (!(cause instanceof FetchError)) {
+        throw new Error("Failed to fetch /api/submit", { cause });
+      }
+      message.value = cause.data.statusMessage;
     }
-    message.value = cause.data.statusMessage;
   }
-}
 </script>
 
 <template>
