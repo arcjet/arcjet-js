@@ -27,7 +27,6 @@ export default defineNuxtModule({
     key: "",
   },
   setup: function (options: ArcjetOptions, nuxt) {
-    // TODO: support all other options.
     const key = options.key;
 
     if (!key) {
@@ -39,9 +38,10 @@ export default defineNuxtModule({
     addServerTemplate({
       filename: "#arcjet",
       async getContents() {
-        return await fs.readFile(new URL("./internal.js", import.meta.url), {
-          encoding: "utf-8",
-        });
+        return await fs.readFile(
+          new URL("./internal.js", import.meta.url),
+          "utf8",
+        );
       },
     });
 
@@ -51,12 +51,9 @@ export default defineNuxtModule({
         async getContents() {
           const internalDts = await fs.readFile(
             new URL("./internal.d.ts", import.meta.url),
-            { encoding: "utf-8" },
+            "utf8",
           );
 
-          // TODO: figure out about the error for
-          // `declare const emptyObjectSymbol` in this.
-          // Seems to work, but maybe we can remove that erroring code.
           return 'declare module "#arcjet" { ' + internalDts + " }\n";
         },
         write: true,
