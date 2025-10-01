@@ -5,12 +5,11 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev --host --no-fork",
-    "generate": "nuxt generate",
     "preview": "nuxt preview --host",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@arcjet/nuxt": "file:../../arcjet-node",
+    "@arcjet/nuxt": "file:../../arcjet-nuxt",
     "nuxt": "^4.1.2",
     "vue": "^3.5.22",
     "vue-router": "^4.5.1"

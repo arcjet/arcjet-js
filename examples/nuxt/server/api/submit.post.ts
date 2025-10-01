@@ -1,7 +1,15 @@
-import arcjet, { fixedWindow, sensitiveInfo, shield } from "@arcjet/nuxt";
+import { arcjet, fixedWindow, sensitiveInfo, shield } from "#arcjet";
+
+const config = useRuntimeConfig()
+
+const key = config.__ARCJET_KEY;
+
+if (!key) {
+  throw new Error("Arcjet key is required");
+}
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!,
+  key: key,
   rules: [
     fixedWindow({ max: 5, mode: "LIVE", window: "10s" }),
     sensitiveInfo({ allow: [], mode: "LIVE" }),
@@ -10,7 +18,8 @@ const aj = arcjet({
 });
 
 export default defineEventHandler(async (event) => {
-  const decision = await aj.protect(event.node.req);
+  const decision = await aj.protect(event);
+  console.log('example:submit:', event.node.req.url, decision);
 
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {
