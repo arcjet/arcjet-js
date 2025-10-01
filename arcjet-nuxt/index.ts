@@ -16,12 +16,16 @@ export interface ArcjetOptions {
 }
 
 export default defineNuxtModule({
+  defaults: {
+    key: "",
+  },
   meta: {
     compatibility: {
       nuxt: ">=4.0.0",
     },
     configKey: "arcjet",
     name: "@arcjet/nuxt",
+    version: "__ARCJET_SDK_VERSION__",
   },
   schema: {
     key: "",
