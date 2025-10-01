@@ -42,10 +42,7 @@ export default defineNuxtModule({
     addServerTemplate({
       filename: "#arcjet",
       getContents() {
-        return fs.readFile(
-          new URL("./internal.js", import.meta.url),
-          "utf8",
-        );
+        return fs.readFile(new URL("./internal.js", import.meta.url), "utf8");
       },
     });
 
