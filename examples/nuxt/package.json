@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "@arcjet/nuxt": "file:../../arcjet-nuxt",
+    "nuxt": "^4.1.2",
+    "vue": "^3.5.22",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vue-tsc": "^3.1.0"
+  },
+  "name": "nuxt",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --host --no-fork",
+    "postinstall": "nuxt prepare",
+    "prepare": "nuxt prepare",
+    "preview": "nuxt preview --host"
+  },
+  "type": "module"
+}

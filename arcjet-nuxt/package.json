@@ -1,0 +1,74 @@
+{
+  "author": {
+    "email": "support@arcjet.com",
+    "name": "Arcjet",
+    "url": "https://arcjet.com"
+  },
+  "bugs": {
+    "email": "support@arcjet.com",
+    "url": "https://github.com/arcjet/arcjet-js/issues"
+  },
+  "dependencies": {
+    "@arcjet/body": "1.0.0-beta.12",
+    "@arcjet/env": "1.0.0-beta.12",
+    "@arcjet/headers": "1.0.0-beta.12",
+    "@arcjet/ip": "1.0.0-beta.12",
+    "@arcjet/logger": "1.0.0-beta.12",
+    "@arcjet/protocol": "1.0.0-beta.12",
+    "@arcjet/transport": "1.0.0-beta.12",
+    "arcjet": "1.0.0-beta.12"
+  },
+  "description": "Arcjet SDK for Nuxt",
+  "devDependencies": {
+    "@arcjet/eslint-config": "1.0.0-beta.12",
+    "@arcjet/rollup-config": "1.0.0-beta.12",
+    "@nuxt/kit": "4.1.2",
+    "@nuxt/schema": "4.1.2",
+    "eslint": "9.34.0",
+    "typescript": "5.9.2"
+  },
+  "exports": "./index.js",
+  "files": [
+    "index.d.ts",
+    "index.js",
+    "internal.d.ts",
+    "internal.js"
+  ],
+  "homepage": "https://arcjet.com",
+  "license": "Apache-2.0",
+  "keywords": [
+    "analyze",
+    "arcjet",
+    "attack",
+    "limit",
+    "nuxt",
+    "protect",
+    "secure",
+    "security",
+    "verify"
+  ],
+  "name": "@arcjet/nuxt",
+  "peerDependencies": {
+    "@nuxt/kit": ">=4",
+    "@nuxt/schema": ">=4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "directory": "arcjet-nuxt",
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git"
+  },
+  "scripts": {
+    "build": "rollup --config rollup.config.js",
+    "lint": "eslint .",
+    "prepack": "npm run build",
+    "test-api": "node --test",
+    "test-coverage": "node --experimental-test-coverage --test",
+    "test": "npm run build && npm run lint && npm run test-coverage"
+  },
+  "type": "module",
+  "version": "1.0.0-beta.12"
+}

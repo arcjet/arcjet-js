@@ -1,0 +1,4 @@
+*.d.ts
+index.js
+internal.js
+test/*.js
