@@ -30,7 +30,9 @@
   "exports": "./index.js",
   "files": [
     "index.d.ts",
-    "index.js"
+    "index.js",
+    "internal.d.ts",
+    "internal.js"
   ],
   "homepage": "https://arcjet.com",
   "license": "Apache-2.0",
