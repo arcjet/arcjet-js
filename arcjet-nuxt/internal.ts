@@ -130,7 +130,7 @@ interface ArcjetH3NodeRequest {
  * @template Properties
  *   Configuration.
  */
-export interface ArcjetNuxtInternal<Properties extends object> {
+export interface ArcjetNuxt<Properties extends object> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -165,11 +165,15 @@ export interface ArcjetNuxtInternal<Properties extends object> {
    */
   withRule<Rule extends Primitive | Product>(
     rule: Rule,
-  ): ArcjetNuxtInternal<Properties & ExtraProps<Rule>>;
+  ): ArcjetNuxt<Properties & ExtraProps<Rule>>;
 }
 
 /**
  * Configuration for the Nuxt integration of Arcjet.
+ *
+ * > 👉 **Note**:
+ * > you cannot pass `key` here but instead have to configure it in
+ * > `nuxt.config.ts`.
  *
  * @template Rules
  *   List of rules.
@@ -244,9 +248,7 @@ export function arcjet<
   Characteristics extends ReadonlyArray<string>,
 >(
   options: ArcjetOptions<Rules, Characteristics>,
-): ArcjetNuxtInternal<
-  ExtraProps<Rules> & CharacteristicProps<Characteristics>
-> {
+): ArcjetNuxt<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
   const config = process.env.RUNTIME_CONFIG as unknown;
   let key = "";
 
@@ -277,8 +279,8 @@ export function arcjet<
 
   function withClient<Properties extends Record<PropertyKey, unknown>>(
     baseClient: Arcjet<Properties>,
-  ): ArcjetNuxtInternal<Properties> {
-    const client: ArcjetNuxtInternal<Properties> = {
+  ): ArcjetNuxt<Properties> {
+    const client: ArcjetNuxt<Properties> = {
       async protect(details, properties?) {
         const context: ArcjetAdapterContext = {
           getBody: createGetBody(state, details),
