@@ -243,7 +243,7 @@ interface State {
  * @returns
  *   Nuxt integration of Arcjet.
  */
-export function arcjet<
+export default function arcjet<
   Rules extends Array<Primitive | Product>,
   Characteristics extends ReadonlyArray<string>,
 >(
