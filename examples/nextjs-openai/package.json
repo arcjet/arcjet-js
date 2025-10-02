@@ -10,9 +10,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1",
+    "@ai-sdk/openai": "^2",
+    "@ai-sdk/react": "^2",
     "@arcjet/next": "file:../../arcjet-next",
-    "ai": "^4",
+    "ai": "^5",
     "next": "^15",
     "openai": "^5",
     "openai-chat-tokens": "^0.2",
