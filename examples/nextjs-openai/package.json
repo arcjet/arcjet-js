@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^2",
+    "@ai-sdk/react": "^2",
     "@arcjet/next": "file:../../arcjet-next",
     "ai": "^5",
     "next": "^15",
