@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@arcjet/react-router": "file:../../arcjet-react-router",
+    "@arcjet/react-router": "file:../../../arcjet-react-router",
     "@react-router/node": "^7.9.1",
     "@react-router/serve": "^7.7.1",
     "isbot": "^5.1.27",
