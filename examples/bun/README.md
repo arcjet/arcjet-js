@@ -5,10 +5,10 @@
   </picture>
 </a>
 
-# Arcjet email verification with Next.js Server Actions
+# Arcjet Rate Limit with Bun.sh
 
-This example shows how to use Arcjet with Next.js [server
-actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations).
+This example shows how to use Arcjet with a
+[Bun.sh](https://bun.sh/guides/http/server) server.
 
 ## How to use
 
@@ -21,18 +21,18 @@ actions](https://nextjs.org/docs/app/building-your-application/data-fetching/ser
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/nextjs-server-actions
-   npm ci
+   cd examples/bun
+   bun install
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
 
-4. Start the dev server.
+4. Start the server.
 
    ```bash
-   npm run dev
+   bun run --hot index.ts
    ```
 
-5. Visit `http://localhost:3000/`
-
-6. Enter some email addresses in the form to validate them.
+5. Visit `http://localhost:3000/`. Note: If you load this in a browser, you will
+   see 2 requests - one for the page and one for a favicon.
+6. Refresh the page to trigger the rate limit.

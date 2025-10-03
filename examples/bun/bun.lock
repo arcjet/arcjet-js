@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "bun-rate-limit",
+      "name": "bun",
       "dependencies": {
         "@arcjet/bun": "workspace:*",
       },

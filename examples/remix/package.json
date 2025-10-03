@@ -1,5 +1,5 @@
 {
-  "name": "remix-express",
+  "name": "remix",
   "private": true,
   "sideEffects": false,
   "type": "module",

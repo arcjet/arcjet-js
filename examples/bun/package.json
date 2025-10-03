@@ -1,5 +1,5 @@
 {
-  "name": "bun-rate-limit",
+  "name": "bun",
   "private": true,
   "module": "index.ts",
   "type": "module",

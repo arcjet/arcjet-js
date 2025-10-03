@@ -21,7 +21,7 @@ applications using the `@arcjet/nest` adapter.
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/nestjs
+   cd examples/nest
    npm ci
    ```
 

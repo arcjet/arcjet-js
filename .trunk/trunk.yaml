@@ -62,10 +62,10 @@ merge:
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 20)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 22)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 24)"
-    - Build examples / astro-integration
+    - Build examples / astro
     - Build examples / bun-hono-rate-limit
-    - Build examples / bun-rate-limit
-    - Build examples / deno-sensitive-info
+    - Build examples / bun
+    - Build examples / deno
     - Build examples / express-bots
     - Build examples / express-launchdarkly
     - Build examples / express-newman
@@ -94,10 +94,10 @@ merge:
     - Build examples / nextjs-permit
     - Build examples / nextjs-react-hook-form
     - Build examples / nextjs-sensitive-info
-    - Build examples / nextjs-server-actions
+    - Build examples / next
     - Build examples / nodejs-hono-rate-limit
-    - Build examples / nodejs-rate-limit
+    - Build examples / node
     - Build examples / react-router-middleware
     - Build examples / react-router
-    - Build examples / remix-express
+    - Build examples / remix
     - Build examples / sveltekit

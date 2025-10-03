@@ -21,7 +21,7 @@ with a [Deno](https://deno.com/) server.
 2. Enter this directory.
 
    ```bash
-   cd examples/deno-sensitive-info
+   cd examples/deno
    ```
 
 3. Rename `.env.example` to `.env` and add your Arcjet key.

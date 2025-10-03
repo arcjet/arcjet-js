@@ -5,10 +5,10 @@
   </picture>
 </a>
 
-# Arcjet protections with Remix
+# Arcjet Integration with Astro
 
-This example shows how to leverage Arcjet protections in a
-[Remix](https://remix.run/) application.
+This example shows how to use the Arcjet Integration with
+[astro](https://astro.build/).
 
 ## How to use
 
@@ -18,24 +18,21 @@ This example shows how to leverage Arcjet protections in a
    npm ci
    ```
 
-2. Enter this directory.
+2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/remix-express
+   cd examples/astro
    npm ci
    ```
 
-3. Rename `.env.example` to `.env` and add your Arcjet key.
+3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
 
 4. Start the server.
 
    ```bash
-   npm start
+   npm run dev
    ```
 
-5. Visit `http://localhost:3000/`.
+5. Visit `http://localhost:4321/`
 
-6. Submit the form with some sensitive information and get denied.
-
-7. Go back to `http://localhost:3000/` and refresh the page a view times to be
-   rate limited.
+6. Interact with the page to trigger various Arcjet rules.

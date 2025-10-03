@@ -5,10 +5,10 @@
   </picture>
 </a>
 
-# Arcjet Integration with Astro
+# Arcjet email verification with Next.js Server Actions
 
-This example shows how to use the Arcjet Integration with
-[astro](https://astro.build/).
+This example shows how to use Arcjet with Next.js [server
+actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations).
 
 ## How to use
 
@@ -21,18 +21,18 @@ This example shows how to use the Arcjet Integration with
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/astro-integration
+   cd examples/next
    npm ci
    ```
 
 3. Rename `.env.local.example` to `.env.local` and add your Arcjet key.
 
-4. Start the server.
+4. Start the dev server.
 
    ```bash
    npm run dev
    ```
 
-5. Visit `http://localhost:4321/`
+5. Visit `http://localhost:3000/`
 
-6. Interact with the page to trigger various Arcjet rules.
+6. Enter some email addresses in the form to validate them.

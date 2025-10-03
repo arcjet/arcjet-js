@@ -32,7 +32,7 @@ jobs:
       matrix:
         folder:
           - bun-hono-rate-limit
-          - bun-rate-limit
+          - bun
   deno-examples:
     name: ${{matrix.folder}}
     permissions:
@@ -63,7 +63,7 @@ jobs:
     strategy:
       matrix:
         folder:
-          - deno-sensitive-info
+          - deno
   node-examples:
     name: ${{matrix.folder}}
     permissions:
@@ -99,7 +99,7 @@ jobs:
     strategy:
       matrix:
         folder:
-          - astro-integration
+          - astro
           - express-bots
           - express-launchdarkly
           - express-newman
@@ -111,7 +111,7 @@ jobs:
           - nestjs-fastify
           - nestjs-launchdarkly
           - nestjs-graphql
-          - nestjs
+          - nest
           - nextjs-14-nextauth-4
           - nextjs-app-dir-rate-limit
           - nextjs-app-dir-validate-email
@@ -128,12 +128,12 @@ jobs:
           - nextjs-permit
           - nextjs-react-hook-form
           - nextjs-sensitive-info
-          - nextjs-server-actions
+          - next
           - nodejs-hono-rate-limit
-          - nodejs-rate-limit
+          - node
           - react-router-middleware
           - react-router
-          - remix-express
+          - remix
           - sveltekit
 name: Reusable examples workflow
 # This workflow only uses the `workflow_call` event and no `concurrency`
