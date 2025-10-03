@@ -9,8 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@arcjet/ip": "file:../../ip",
-    "@arcjet/next": "file:../../arcjet-next",
+    "@arcjet/ip": "file:../../../ip",
+    "@arcjet/next": "file:../../../arcjet-next",
     "next": "^14",
     "next-auth": "^4",
     "react": "^18",

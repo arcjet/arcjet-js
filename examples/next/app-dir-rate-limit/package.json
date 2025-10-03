@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@arcjet/next": "file:../../arcjet-next",
+    "@arcjet/next": "file:../../../arcjet-next",
     "next": "^15.5.2",
     "pino": "^9",
     "react": "^19",

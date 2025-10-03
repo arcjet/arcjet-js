@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@arcjet/node": "file:../../arcjet-node",
+    "@arcjet/node": "file:../../../arcjet-node",
     "express": "^5.1.0"
   },
   "devDependencies": {

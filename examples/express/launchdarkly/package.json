@@ -6,7 +6,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@arcjet/node": "file:../../arcjet-node",
+    "@arcjet/node": "file:../../../arcjet-node",
     "@launchdarkly/node-server-sdk": "^9.10.2",
     "express": "^5.1.0"
   },

@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-better-auth",
+  "name": "better-auth",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@arcjet/next": "file:../../arcjet-next",
+    "@arcjet/next": "file:../../../arcjet-next",
     "better-auth": "^1",
     "better-sqlite3": "^12",
     "next": "^15",

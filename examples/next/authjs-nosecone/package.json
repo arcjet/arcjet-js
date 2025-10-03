@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-authjs-nosecone",
+  "name": "authjs-nosecone",
   "private": true,
   "description": "An example project for Auth.js with Next.js and Nosecone",
   "scripts": {
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nosecone/next": "file:../../nosecone-next",
+    "@nosecone/next": "file:../../../nosecone-next",
     "next": "^15",
     "next-auth": "beta",
     "react": "^19.1.1",

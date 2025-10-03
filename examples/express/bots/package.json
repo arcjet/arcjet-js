@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@arcjet/inspect": "file:../../inspect",
-    "@arcjet/node": "file:../../arcjet-node",
+    "@arcjet/node": "file:../../../arcjet-node",
     "express": "^5.1.0"
   },
   "devDependencies": {
