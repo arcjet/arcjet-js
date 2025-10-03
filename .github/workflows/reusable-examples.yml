@@ -100,12 +100,12 @@ jobs:
       matrix:
         folder:
           - astro
-          - express-bots
-          - express-launchdarkly
-          - express-newman
-          - express-rate-limit
-          - express-sensitive-info
-          - express-validate-email
+          - express/bots
+          - express/launchdarkly
+          - express/newman
+          - express/rate-limit
+          - express/sensitive-info
+          - express/validate-email
           - fastify
           - gatsby-rate-limit
           - nestjs-fastify

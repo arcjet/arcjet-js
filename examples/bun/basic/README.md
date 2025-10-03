@@ -21,7 +21,7 @@ This example shows how to use Arcjet with a
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/bun
+   cd examples/bun/basic
    bun install
    ```
 

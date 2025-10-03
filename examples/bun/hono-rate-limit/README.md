@@ -21,7 +21,7 @@ This example shows how to use Arcjet with a Bun.sh
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/bun-hono-rate-limit
+   cd examples/bun/hono-rate-limit
    bun install
    ```
 
