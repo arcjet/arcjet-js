@@ -20,7 +20,7 @@ This example shows how to use Arcjet with a Node.js server.
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/node
+   cd examples/node/basic
    npm ci
    ```
 
