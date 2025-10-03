@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "jsx": "preserve",
+    "lib": ["dom.iterable", "dom", "esnext"],
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "paths": {
+      "@/*": ["./*"],
+      "auth": ["./auth"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2022",
+  },
+  "include": [".next/types/**/*.ts", "**/*.tsx", "**/*.ts"],
+}

@@ -5,10 +5,10 @@
   </picture>
 </a>
 
-# Arcjet email verification with Next.js Server Actions
+# Using the `ip` property on an ArcjetDecision with Next.js
 
-This example shows how to use Arcjet with Next.js [server
-actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations).
+This example shows how to use `decision.ip` in a Next.js [API
+Route](https://nextjs.org/docs/pages/building-your-application/routing/api-routes).
 
 ## How to use
 
@@ -21,7 +21,7 @@ actions](https://nextjs.org/docs/app/building-your-application/data-fetching/ser
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/next
+   cd examples/next/ip-details
    npm ci
    ```
 
@@ -33,6 +33,4 @@ actions](https://nextjs.org/docs/app/building-your-application/data-fetching/ser
    npm run dev
    ```
 
-5. Visit `http://localhost:3000/`
-
-6. Enter some email addresses in the form to validate them.
+5. Visit `http://localhost:3000/api/arcjet`.
