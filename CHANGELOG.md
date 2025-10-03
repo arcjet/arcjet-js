@@ -16,7 +16,7 @@
 
 * **arcjet:** show error about incorrect `characteristics` in logs ([#5078](https://github.com/arcjet/arcjet-js/issues/5078)) ([9839c9c](https://github.com/arcjet/arcjet-js/commit/9839c9c5dd3225e14891b6f863d47e27021b85a4))
 * **astro:** fix types, zod validation ([#5052](https://github.com/arcjet/arcjet-js/issues/5052)) ([ea82f8f](https://github.com/arcjet/arcjet-js/commit/ea82f8fbf35bed63aadbcd020d9dbe71f73c204f))
-* **examples:** add styles to `remix-express` ([#5115](https://github.com/arcjet/arcjet-js/issues/5115)) ([783db87](https://github.com/arcjet/arcjet-js/commit/783db87ac4cb5f76d33531fac96f5cab8aaab8c7))
+* **examples:** add styles to `remix` ([#5115](https://github.com/arcjet/arcjet-js/issues/5115)) ([783db87](https://github.com/arcjet/arcjet-js/commit/783db87ac4cb5f76d33531fac96f5cab8aaab8c7))
 
 
 ### 📝 Documentation

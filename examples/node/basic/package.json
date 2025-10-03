@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file .env.local ./index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@arcjet/node": "../../../arcjet-node",
+    "nosecone": "../../../nosecone"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5"
+  }
+}
