@@ -6,7 +6,11 @@
     "exactOptionalPropertyTypes": true,
     "incremental": false,
     "lib": ["esnext"],
-    "moduleResolution": "node",
+    // `@rollup/plugin-typescript` does not support several values from `extends`.
+    // So it is needed to pass `moduleResolution` and `module` explicitly.
+    // Reference: <https://github.com/rollup/plugins/issues/1583>.
+    // When changing these, also update `rollup-config/index.js`.
+    "moduleResolution": "bundler",
     "module": "esnext",
     "preserveWatchOutput": true,
     "skipLibCheck": true,
