@@ -68,7 +68,7 @@
     "@sveltejs/vite-plugin-svelte": "6.2.1",
     "@types/node": "24.5.2",
     "eslint": "9.36.0",
-    "svelte": "5.39.5",
+    "svelte": "5.39.6",
     "typescript": "5.9.2",
     "vite": "7.1.7"
   },
