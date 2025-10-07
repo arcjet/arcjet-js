@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@arcjet/ip": "file:../../ip",
     "@arcjet/next": "file:../../arcjet-next",
     "@clerk/nextjs": "^6",
     "next": "^15",
