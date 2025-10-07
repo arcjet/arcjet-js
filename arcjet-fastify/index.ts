@@ -167,7 +167,10 @@ export interface ArcjetFastifyRequest {
   /**
    * Underlying connection of the incoming request.
    */
-  socket: { encrypted?: boolean | undefined; remoteAddress?: string | undefined };
+  socket: {
+    encrypted?: boolean | undefined;
+    remoteAddress?: string | undefined;
+  };
 
   /**
    * URL of the incoming request.
