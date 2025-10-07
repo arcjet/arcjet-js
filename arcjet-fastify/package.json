@@ -63,7 +63,7 @@
     "@rollup/wasm-node": "4.52.3",
     "@types/node": "24.6.0",
     "eslint": "9.36.0",
-    "fastify": "5.6.0",
+    "fastify": "5.6.1",
     "typescript": "5.9.2"
   },
   "publishConfig": {
