@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...@arcjet/env-v1.0.0-beta.13) (2025-10-07)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/env:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * @arcjet/rollup-config bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+
 ## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...@arcjet/env-v1.0.0-beta.12) (2025-09-22)
 
 

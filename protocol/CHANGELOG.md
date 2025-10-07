@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...@arcjet/protocol-v1.0.0-beta.13) (2025-10-07)
+
+
+### 🚀 New Features
+
+* **protocol:** Add `NUXT` to ArcjetStack ([#5242](https://github.com/arcjet/arcjet-js/issues/5242)) ([a386cf0](https://github.com/arcjet/arcjet-js/commit/a386cf0cd4313ed65004a873d0f2279de91e9ad1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * @arcjet/rollup-config bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+
 ## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...@arcjet/protocol-v1.0.0-beta.12) (2025-09-22)
 
 
