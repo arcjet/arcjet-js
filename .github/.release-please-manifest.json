@@ -34,6 +34,5 @@
   "runtime": "1.0.0-beta.13",
   "sprintf": "1.0.0-beta.13",
   "stable-hash": "1.0.0-beta.13",
-  "transport": "1.0.0-beta.13",
-  "tsconfig": "1.0.0-beta.10"
+  "transport": "1.0.0-beta.13"
 }
