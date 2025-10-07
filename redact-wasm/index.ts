@@ -1,3 +1,7 @@
+// Support `?js` and such:
+//
+/// <reference types="./wasm.js" />
+
 import { instantiate } from "./wasm/arcjet_analyze_bindings_redact.component.js";
 import type { ImportObject } from "./wasm/arcjet_analyze_bindings_redact.component.js";
 import type { ArcjetRedactCustomRedact } from "./wasm/interfaces/arcjet-redact-custom-redact.js";

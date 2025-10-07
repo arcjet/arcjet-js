@@ -207,6 +207,11 @@ export function createConfig(root, options) {
         preventAssignment: true,
       }),
       typescript({
+        // `@rollup/plugin-typescript` does not support several values from `extends`.
+        // So it is needed to pass these explicitly.
+        // Reference: <https://github.com/rollup/plugins/issues/1583>.
+        moduleResolution: "bundler",
+        module: "esnext",
         tsconfig: "./tsconfig.json",
         // Override the `excludes` specified in the tsconfig so we don't
         // generate definition files for our tests
@@ -216,6 +221,9 @@ export function createConfig(root, options) {
         noEmitOnError: true,
       }),
       typescript({
+        // Same as above, have to pass these explicitly.
+        moduleResolution: "bundler",
+        module: "esnext",
         tsconfig: "./tsconfig.json",
         // Override the `includes` specified in the tsconfig so we don't
         // generate definition files for our tests
