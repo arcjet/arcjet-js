@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2025-10-07)
+
+
+### 🚀 New Features
+
+* add `@arcjet/nuxt` ([#5243](https://github.com/arcjet/arcjet-js/issues/5243)) ([c40b5f0](https://github.com/arcjet/arcjet-js/commit/c40b5f01c73801dda93d75a6a17d1f37ca010c9e))
+* **protocol:** Add `NUXT` to ArcjetStack ([#5242](https://github.com/arcjet/arcjet-js/issues/5242)) ([a386cf0](https://github.com/arcjet/arcjet-js/commit/a386cf0cd4313ed65004a873d0f2279de91e9ad1))
+
+
+### 🪲 Bug Fixes
+
+* **fastify:** better `protocol` detection, minimal request interface ([#5270](https://github.com/arcjet/arcjet-js/issues/5270)) ([51d3bdb](https://github.com/arcjet/arcjet-js/commit/51d3bdb1c864d98684c73ce0516b5ebe0622b00d))
+* support ESM types in dependencies ([#5269](https://github.com/arcjet/arcjet-js/issues/5269)) ([ef67a15](https://github.com/arcjet/arcjet-js/commit/ef67a157e90c1f82c8f46edadb1f4b48cd6cfa52))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump tar-fs from 2.1.3 to 2.1.4 in /examples/remix-express ([#5245](https://github.com/arcjet/arcjet-js/issues/5245)) ([421ef10](https://github.com/arcjet/arcjet-js/commit/421ef108170865958b35563163684649428108de))
+* **deps:** bump axios from 1.8.2 to 1.12.2 in /examples/nextjs-permit ([#5247](https://github.com/arcjet/arcjet-js/issues/5247)) ([ad5fe70](https://github.com/arcjet/arcjet-js/commit/ad5fe70587e3941977b7d810c5d376ad399ca983))
+* **deps:** bump axios from 1.8.3 to 1.12.2 in /examples/gatsby-rate-limit ([#5255](https://github.com/arcjet/arcjet-js/issues/5255)) ([139509f](https://github.com/arcjet/arcjet-js/commit/139509fc19632c6ff7e2c39eab796fd306ab2327))
+* **deps:** bump tar-fs from 3.1.0 to 3.1.1 in /examples/gatsby-rate-limit ([#5215](https://github.com/arcjet/arcjet-js/issues/5215)) ([dda4825](https://github.com/arcjet/arcjet-js/commit/dda4825cf108155bf354132ff8853dbb4a0c0c5d))
+* **deps:** bump vite from 6.3.4 to 6.3.6 in /examples/astro-integration ([#5256](https://github.com/arcjet/arcjet-js/issues/5256)) ([ca2b8eb](https://github.com/arcjet/arcjet-js/commit/ca2b8ebc68a7021b7789018c9c27fb2d2c260f50))
+
+
+### 📚 Tests
+
+* **react-router:** fix tests on Node `24.9.0` ([#5227](https://github.com/arcjet/arcjet-js/issues/5227)) ([420413b](https://github.com/arcjet/arcjet-js/commit/420413bf2bb48bec76e9343e31ba006fa2339a9a))
+
 ## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...v1.0.0-beta.12) (2025-09-22)
 
 

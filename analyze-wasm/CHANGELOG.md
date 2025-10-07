@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...@arcjet/analyze-wasm-v1.0.0-beta.13) (2025-10-07)
+
+
+### 🪲 Bug Fixes
+
+* support ESM types in dependencies ([#5269](https://github.com/arcjet/arcjet-js/issues/5269)) ([ef67a15](https://github.com/arcjet/arcjet-js/commit/ef67a157e90c1f82c8f46edadb1f4b48cd6cfa52))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * @arcjet/rollup-config bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+
 ## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...@arcjet/analyze-wasm-v1.0.0-beta.12) (2025-09-22)
 
 

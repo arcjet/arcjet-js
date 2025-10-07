@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...@arcjet/fastify-v1.0.0-beta.13) (2025-10-07)
+
+
+### 🪲 Bug Fixes
+
+* **fastify:** better `protocol` detection, minimal request interface ([#5270](https://github.com/arcjet/arcjet-js/issues/5270)) ([51d3bdb](https://github.com/arcjet/arcjet-js/commit/51d3bdb1c864d98684c73ce0516b5ebe0622b00d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * @arcjet/headers bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * @arcjet/ip bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * @arcjet/logger bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * @arcjet/protocol bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * @arcjet/transport bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * arcjet bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+    * @arcjet/rollup-config bumped from 1.0.0-beta.12 to 1.0.0-beta.13
+
 ## [1.0.0-beta.12](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.11...@arcjet/fastify-v1.0.0-beta.12) (2025-09-22)
 
 

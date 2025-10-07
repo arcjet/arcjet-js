@@ -9,19 +9,19 @@
     "url": "https://github.com/arcjet/arcjet-js/issues"
   },
   "dependencies": {
-    "@arcjet/body": "1.0.0-beta.12",
-    "@arcjet/env": "1.0.0-beta.12",
-    "@arcjet/headers": "1.0.0-beta.12",
-    "@arcjet/ip": "1.0.0-beta.12",
-    "@arcjet/logger": "1.0.0-beta.12",
-    "@arcjet/protocol": "1.0.0-beta.12",
-    "@arcjet/transport": "1.0.0-beta.12",
-    "arcjet": "1.0.0-beta.12"
+    "@arcjet/body": "1.0.0-beta.13",
+    "@arcjet/env": "1.0.0-beta.13",
+    "@arcjet/headers": "1.0.0-beta.13",
+    "@arcjet/ip": "1.0.0-beta.13",
+    "@arcjet/logger": "1.0.0-beta.13",
+    "@arcjet/protocol": "1.0.0-beta.13",
+    "@arcjet/transport": "1.0.0-beta.13",
+    "arcjet": "1.0.0-beta.13"
   },
   "description": "Arcjet SDK for Nuxt",
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.12",
-    "@arcjet/rollup-config": "1.0.0-beta.12",
+    "@arcjet/eslint-config": "1.0.0-beta.13",
+    "@arcjet/rollup-config": "1.0.0-beta.13",
     "@nuxt/kit": "4.1.2",
     "@nuxt/schema": "4.1.2",
     "eslint": "9.36.0",
@@ -70,5 +70,5 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "type": "module",
-  "version": "1.0.0-beta.12"
+  "version": "1.0.0-beta.13"
 }

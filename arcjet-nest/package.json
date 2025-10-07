@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/nest",
-  "version": "1.0.0-beta.12",
+  "version": "1.0.0-beta.13",
   "description": "Arcjet SDK for NestJS",
   "keywords": [
     "analyze",
@@ -47,22 +47,22 @@
     "test": "npm run build && npm run lint"
   },
   "dependencies": {
-    "@arcjet/env": "1.0.0-beta.12",
-    "@arcjet/headers": "1.0.0-beta.12",
-    "@arcjet/ip": "1.0.0-beta.12",
-    "@arcjet/logger": "1.0.0-beta.12",
-    "@arcjet/protocol": "1.0.0-beta.12",
-    "@arcjet/transport": "1.0.0-beta.12",
-    "@arcjet/body": "1.0.0-beta.12",
-    "arcjet": "1.0.0-beta.12"
+    "@arcjet/env": "1.0.0-beta.13",
+    "@arcjet/headers": "1.0.0-beta.13",
+    "@arcjet/ip": "1.0.0-beta.13",
+    "@arcjet/logger": "1.0.0-beta.13",
+    "@arcjet/protocol": "1.0.0-beta.13",
+    "@arcjet/transport": "1.0.0-beta.13",
+    "@arcjet/body": "1.0.0-beta.13",
+    "arcjet": "1.0.0-beta.13"
   },
   "peerDependencies": {
     "@nestjs/common": "^10 || ^11",
     "reflect-metadata": "^0.1.12 || ^0.2.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.12",
-    "@arcjet/rollup-config": "1.0.0-beta.12",
+    "@arcjet/eslint-config": "1.0.0-beta.13",
+    "@arcjet/rollup-config": "1.0.0-beta.13",
     "@nestjs/common": "^11.1.6",
     "@rollup/wasm-node": "4.52.3",
     "@types/node": "24.6.0",
