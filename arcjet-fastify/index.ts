@@ -24,7 +24,6 @@ import type {
   ExtraProps,
 } from "arcjet";
 import arcjetCore from "arcjet";
-import type { FastifyRequest } from "fastify";
 
 // TODO(@wooorm-arcjet): using `export all` will leak things in the public API,
 // resulting in unneeded breaking changes,
@@ -135,6 +134,51 @@ export function createRemoteClient(
 }
 
 /**
+ * Request for the Fastify integration of Arcjet.
+ *
+ * This is the minimum interface similar to `FastifyRequest` from `fastify`.
+ */
+export interface ArcjetFastifyRequest {
+  /**
+   * Request body.
+   */
+  body: unknown;
+
+  /**
+   * Headers of the request.
+   */
+  headers: Record<string, Array<string> | string | undefined>;
+
+  /**
+   * HTTP method of the request.
+   */
+  method: string;
+
+  /**
+   * Protocol of the incoming request.
+   */
+  protocol: "https" | "http";
+
+  /**
+   * Fastify server instance.
+   */
+  server: { initialConfig?: { https?: unknown } | undefined };
+
+  /**
+   * Underlying connection of the incoming request.
+   */
+  socket: {
+    encrypted?: boolean | undefined;
+    remoteAddress?: string | undefined;
+  };
+
+  /**
+   * URL of the incoming request.
+   */
+  url: string;
+}
+
+/**
  * Instance of the Fastify integration of Arcjet.
  *
  * Primarily has a `protect()` method to make a decision about how a Fastify request
@@ -160,7 +204,7 @@ export interface ArcjetFastify<Props> {
    *   Arcjet’s decision about the request.
    */
   protect(
-    request: FastifyRequest,
+    request: ArcjetFastifyRequest,
     ...properties: Props extends WithoutCustomProps ? [] : [Props]
   ): Promise<ArcjetDecision>;
 
@@ -242,7 +286,7 @@ export default function arcjet<
   ): ArcjetFastify<ExtraProps<Rules>> {
     return Object.freeze({
       async protect(
-        fastifyRequest: FastifyRequest,
+        fastifyRequest: ArcjetFastifyRequest,
         ...[properties]: ExtraProps<Rules> extends WithoutCustomProps
           ? []
           : [ExtraProps<Rules>]
@@ -304,7 +348,7 @@ export default function arcjet<
  *   Arcjet request.
  */
 function toArcjetRequest<Properties extends PlainObject>(
-  request: FastifyRequest,
+  request: ArcjetFastifyRequest,
   log: ArcjetLogger,
   // TODO(@wooorm-arcjet): use `Cidr` type here.
   proxies: ReadonlyArray<ReturnType<typeof parseProxy>> | undefined,
@@ -338,8 +382,12 @@ function toArcjetRequest<Properties extends PlainObject>(
   const method = request.method ?? "";
   const host = headers.get("host") ?? "";
   let path = "";
-  // Note: there may be a better way to detect `https`, no clue.
-  let protocol = request.server.initialConfig.https ? "https:" : "http:";
+  let protocol =
+    request.protocol === "https" || request.protocol === "http"
+      ? request.protocol + ":"
+      : request.server.initialConfig?.https
+        ? "https:"
+        : "http:";
   let query = "";
 
   // Do some very simple validation, but also try/catch around URL parsing
