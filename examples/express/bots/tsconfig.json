@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "lib": ["dom.iterable", "dom", "esnext"],
+    "module": "node16",
+    "strict": true,
+    "noEmit": true
+  },
+  "include": ["**/*.js"]
+}

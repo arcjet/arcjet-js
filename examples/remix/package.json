@@ -1,0 +1,55 @@
+{
+  "name": "remix",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "remix vite:build",
+    "dev": "node ./server.js",
+    "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
+    "start": "node --env-file=.env ./server.js",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@arcjet/remix": "file:../../arcjet-remix",
+    "@remix-run/express": "^2.17.0",
+    "@remix-run/node": "^2.17.0",
+    "@remix-run/react": "^2.17.0",
+    "compression": "^1.8.1",
+    "cross-env": "^10.0.0",
+    "express": "^4.21.2",
+    "isbot": "^5.1.29",
+    "morgan": "^1.10.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@remix-run/dev": "^2.17.0",
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^4.17.21",
+    "@types/morgan": "^1.9.10",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^8.38.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.1.6",
+    "vite": "^6.3.6"
+  },
+  "overrides": {
+    "@vanilla-extract/integration": ">=8.0.1",
+    "cookie": "0.7.1",
+    "esbuild": ">=0.25.0",
+    "vite-node": ">=3.1.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
