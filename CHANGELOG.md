@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2025-10-10)
+
+
+### 🔨 Build System
+
+* **deps:** bump better-auth and @better-auth/cli in /examples/nextjs-better-auth ([#5287](https://github.com/arcjet/arcjet-js/issues/5287)) ([87b370c](https://github.com/arcjet/arcjet-js/commit/87b370c2e1efc93472ad631008d5e21e9141f8d2))
+* remove `tsconfig` from `.release-please-manifest` ([#5274](https://github.com/arcjet/arcjet-js/issues/5274)) ([6fb42e6](https://github.com/arcjet/arcjet-js/commit/6fb42e68736aa26bfb59084f0bc59a81a4083fd3))
+
 ## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2025-10-07)
 
 
