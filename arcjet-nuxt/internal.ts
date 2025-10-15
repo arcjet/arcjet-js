@@ -348,6 +348,9 @@ function createGetBody(state: State, event: ArcjetH3Event) {
           expectedLength,
           limit: 1048576,
         });
+        // Set it to integrate with most H3 utilities.
+        // See: <https://github.com/h3js/h3/pull/616>.
+        event.node.req.body = body;
         return body;
       }
 
