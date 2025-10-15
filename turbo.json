@@ -9,7 +9,6 @@
     "ARCJET_ENV",
     "ARCJET_KEY",
     "ARCJET_BASE_URL",
-    "ARCJET_RUNTIME",
     "ARCJET_LOG_LEVEL",
     "OPENAI_API_KEY",
     "FLY_APP_NAME",
