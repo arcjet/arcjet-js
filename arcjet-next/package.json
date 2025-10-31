@@ -63,7 +63,7 @@
     "@arcjet/rollup-config": "1.0.0-beta.13",
     "@types/node": "24.6.0",
     "@rollup/wasm-node": "4.52.3",
-    "eslint": "9.36.0",
+    "eslint": "9.38.0",
     "next": "15.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
