@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@rollup/plugin-replace": "6.0.2",
-    "@rollup/plugin-typescript": "12.1.4"
+    "@rollup/plugin-typescript": "12.2.0"
   },
   "peerDependencies": {
     "@rollup/wasm-node": "^4"
