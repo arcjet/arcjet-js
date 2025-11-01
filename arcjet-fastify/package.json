@@ -41,7 +41,6 @@
     "index.js"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build",
     "build": "rollup --config",
     "lint": "eslint ."
   },
