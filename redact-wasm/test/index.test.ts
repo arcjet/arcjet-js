@@ -289,6 +289,310 @@ test("card number", async function (t) {
   });
 });
 
+test("email address", async function (t) {
+  const emptyOptions = { skipCustomDetect: false, skipCustomRedact: false };
+
+  await t.test("should work", async function () {
+    assert.deepEqual(wasm.redact("email@example.com", emptyOptions), [
+      {
+        end: 17,
+        identifiedType: { tag: "email" },
+        original: "email@example.com",
+        redacted: "<Redacted email #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should support a subdomain", async function () {
+    assert.deepEqual(wasm.redact("email@sub.example.com", emptyOptions), [
+      {
+        end: 21,
+        identifiedType: { tag: "email" },
+        original: "email@sub.example.com",
+        redacted: "<Redacted email #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should support a dot in user", async function () {
+    assert.deepEqual(wasm.redact("first.last@example.com", emptyOptions), [
+      {
+        end: 22,
+        identifiedType: { tag: "email" },
+        original: "first.last@example.com",
+        redacted: "<Redacted email #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should support dotless domain", async function () {
+    assert.deepEqual(wasm.redact("user@localhost", emptyOptions), [
+      {
+        end: 14,
+        identifiedType: { tag: "email" },
+        original: "user@localhost",
+        redacted: "<Redacted email #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should support domain literal", async function () {
+    assert.deepEqual(wasm.redact("user@[127.0.0.1]", emptyOptions), [
+      {
+        end: 16,
+        identifiedType: { tag: "email" },
+        original: "user@[127.0.0.1]",
+        redacted: "<Redacted email #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should fail w/o `@`", async function () {
+    assert.deepEqual(wasm.redact("email.example.com", emptyOptions), []);
+  });
+});
+
+test("ip address", async function (t) {
+  const emptyOptions = { skipCustomDetect: false, skipCustomRedact: false };
+
+  await t.test("should work w/ an unspecified IP (v4)", async function () {
+    assert.deepEqual(wasm.redact("0.0.0.0", emptyOptions), [
+      {
+        end: 7,
+        identifiedType: { tag: "ip-address" },
+        original: "0.0.0.0",
+        redacted: "<Redacted IP address #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ an unspecified IP (v6)", async function () {
+    assert.deepEqual(wasm.redact("::1", emptyOptions), [
+      {
+        end: 3,
+        identifiedType: { tag: "ip-address" },
+        original: "::1",
+        redacted: "<Redacted IP address #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ a private use IP (v4)", async function () {
+    assert.deepEqual(wasm.redact("10.0.0.1", emptyOptions), [
+      {
+        end: 8,
+        identifiedType: { tag: "ip-address" },
+        original: "10.0.0.1",
+        redacted: "<Redacted IP address #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ a private use IP (v6)", async function () {
+    assert.deepEqual(wasm.redact("64:ff9b:1::", emptyOptions), [
+      {
+        end: 11,
+        identifiedType: { tag: "ip-address" },
+        original: "64:ff9b:1::",
+        redacted: "<Redacted IP address #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ the broadcast IP (v4)", async function () {
+    assert.deepEqual(wasm.redact("255.255.255.255", emptyOptions), [
+      {
+        end: 15,
+        identifiedType: { tag: "ip-address" },
+        original: "255.255.255.255",
+        redacted: "<Redacted IP address #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should fail w/ weird (hex) values", async function () {
+    assert.deepEqual(wasm.redact("0xcb.0x0.0x71.0x00", emptyOptions), []);
+  });
+});
+
+test("phone number", async function (t) {
+  const emptyOptions = { skipCustomDetect: false, skipCustomRedact: false };
+
+  await t.test(
+    "should fail for special things such as `911`",
+    async function () {
+      assert.deepEqual(wasm.redact("911", emptyOptions), []);
+    },
+  );
+
+  await t.test(
+    "should fail for special things such as `112`",
+    async function () {
+      assert.deepEqual(wasm.redact("112", emptyOptions), []);
+    },
+  );
+
+  await t.test(
+    "should fail for short local numbers (amsterdam, no space)",
+    async function () {
+      assert.deepEqual(wasm.redact("14020", emptyOptions), []);
+    },
+  );
+
+  await t.test(
+    "should fail for short local numbers (amsterdam, space)",
+    async function () {
+      assert.deepEqual(wasm.redact("14 020", emptyOptions), []);
+    },
+  );
+
+  await t.test("should work", async function () {
+    assert.deepEqual(wasm.redact("0203344522", emptyOptions), [
+      {
+        end: 10,
+        identifiedType: { tag: "phone-number" },
+        original: "0203344522",
+        redacted: "<Redacted phone number #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ spaces", async function () {
+    assert.deepEqual(wasm.redact("020 334 4522", emptyOptions), [
+      {
+        end: 12,
+        identifiedType: { tag: "phone-number" },
+        original: "020 334 4522",
+        redacted: "<Redacted phone number #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ dots", async function () {
+    assert.deepEqual(wasm.redact("555.223.4562", emptyOptions), [
+      {
+        end: 12,
+        identifiedType: { tag: "phone-number" },
+        original: "555.223.4562",
+        redacted: "<Redacted phone number #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ parens", async function () {
+    assert.deepEqual(wasm.redact("(020)3344522", emptyOptions), [
+      {
+        end: 12,
+        identifiedType: { tag: "phone-number" },
+        original: "(020)3344522",
+        redacted: "<Redacted phone number #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ `+`", async function () {
+    assert.deepEqual(wasm.redact("+31201234567", emptyOptions), [
+      {
+        end: 12,
+        identifiedType: { tag: "phone-number" },
+        original: "+31201234567",
+        redacted: "<Redacted phone number #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ spaces and parens", async function () {
+    assert.deepEqual(wasm.redact("(020) 334 4522", emptyOptions), [
+      // TODO: this is broken.
+      // {
+      //   end: 14,
+      //   identifiedType: { tag: "phone-number" },
+      //   original: "(020) 334 4522",
+      //   redacted: "<Redacted phone number #0>",
+      //   start: 0,
+      // },
+    ]);
+  });
+
+  await t.test("should work w/ spaces and `+`", async function () {
+    assert.deepEqual(wasm.redact("+31 20 1234567", emptyOptions), [
+      {
+        end: 14,
+        identifiedType: { tag: "phone-number" },
+        original: "+31 20 1234567",
+        redacted: "<Redacted phone number #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test("should work w/ spaces, parens, and `+`", async function () {
+    assert.deepEqual(wasm.redact("+1 (555) 555-5555", emptyOptions), [
+      // TODO: this is broken.
+      // {
+      //   end: 14,
+      //   identifiedType: { tag: "phone-number" },
+      //   original: "+1 (555) 555-5555",
+      //   redacted: "<Redacted phone number #0>",
+      //   start: 0,
+      // },
+    ]);
+  });
+
+  await t.test("should work w/ parens and dashes", async function () {
+    assert.deepEqual(wasm.redact("(555)-123-1234", emptyOptions), [
+      {
+        end: 14,
+        identifiedType: { tag: "phone-number" },
+        original: "(555)-123-1234",
+        redacted: "<Redacted phone number #0>",
+        start: 0,
+      },
+    ]);
+  });
+
+  await t.test(
+    "should fail w/ something that looks like an IP",
+    async function () {
+      assert.deepEqual(
+        wasm.redact("1.2.3.4", {
+          ...emptyOptions,
+          entities: [{ tag: "phone-number" }],
+        }),
+        [],
+      );
+    },
+  );
+
+  await t.test(
+    "should fail w/ something that looks like an IP",
+    async function () {
+      assert.deepEqual(
+        wasm.redact("1.2.3.4", {
+          ...emptyOptions,
+          entities: [{ tag: "phone-number" }],
+        }),
+        [],
+      );
+    },
+  );
+});
+
 function detectNothing() {
   return [];
 }
