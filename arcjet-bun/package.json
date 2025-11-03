@@ -58,7 +58,7 @@
     "@arcjet/rollup-config": "1.0.0-beta.13",
     "@rollup/wasm-node": "4.52.3",
     "bun-types": "1.2.23",
-    "eslint": "9.36.0",
+    "eslint": "9.38.0",
     "typescript": "5.9.3",
     "undici-types": "7.15.0"
   },
