@@ -286,7 +286,7 @@ versions of Node.js and the current minor release of TypeScript.
 
 The current release line,
 `@arcjet/*` on `1.0.0-beta.*`,
-is compatible with Node.js 18.
+is compatible with Node.js 20.
 
 ## License
 
