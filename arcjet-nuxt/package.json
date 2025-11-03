@@ -23,7 +23,7 @@
     "@arcjet/eslint-config": "1.0.0-beta.13",
     "@arcjet/rollup-config": "1.0.0-beta.13",
     "@nuxt/kit": "4.2.0",
-    "@nuxt/schema": "4.1.2",
+    "@nuxt/schema": "4.2.0",
     "eslint": "9.38.0",
     "typescript": "5.9.3"
   },
