@@ -177,7 +177,7 @@ test("filter: `protect`", async function (t) {
     assert(result.reason instanceof ArcjetErrorReason);
     assert.equal(
       result.reason.message,
-      'Filter parsing error (1:1):\nhttp.blob ~ "Chrome"\n^^^^^^^^^ unknown identifier\n',
+      'warn: Filter parsing error (1:1):\nhttp.blob ~ "Chrome"\n^^^^^^^^^ unknown identifier\n',
     );
   });
 
@@ -730,7 +730,7 @@ test("expressions", async function (t) {
       assert(result.reason instanceof ArcjetErrorReason);
       assert.equal(
         result.reason.message,
-        "Filter parsing error (1:1):\nhttp.request.blob == 1\n^^^^^^^^^^^^^^^^^ unknown identifier\n",
+        "warn: Filter parsing error (1:1):\nhttp.request.blob == 1\n^^^^^^^^^^^^^^^^^ unknown identifier\n",
       );
     });
 
@@ -741,7 +741,7 @@ test("expressions", async function (t) {
       assert(result.reason instanceof ArcjetErrorReason);
       assert.equal(
         result.reason.message,
-        "Filter parsing error (1:1):\nblob(http.request) == 1\n^^^^ unknown identifier\n",
+        "warn: Filter parsing error (1:1):\nblob(http.request) == 1\n^^^^ unknown identifier\n",
       );
     });
 
@@ -752,7 +752,7 @@ test("expressions", async function (t) {
       assert(result.reason instanceof ArcjetErrorReason);
       assert.equal(
         result.reason.message,
-        "Filter parsing error (1:14):\nhttp.host == 1\n             ^ expected 2 characters, but found 1\n",
+        "warn: Filter parsing error (1:14):\nhttp.host == 1\n             ^ expected 2 characters, but found 1\n",
       );
     });
   });
