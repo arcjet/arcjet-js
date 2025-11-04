@@ -208,14 +208,14 @@ export interface ArcjetBun<Props extends PlainObject> {
    */
   handler(
     fetch: (
-      this: Server,
+      this: Server<any>,
       request: Request,
-      server: Server,
+      server: Server<any>,
     ) => Response | Promise<Response>,
   ): (
-    this: Server,
+    this: Server<any>,
     request: Request,
-    server: Server,
+    server: Server<any>,
   ) => Response | Promise<Response>;
 }
 
@@ -344,14 +344,14 @@ export default function arcjet<
       },
       handler(
         fetch: (
-          this: Server,
+          this: Server<any>,
           request: Request,
-          server: Server,
+          server: Server<any>,
         ) => Response | Promise<Response>,
       ) {
         return async function (
           request: Request,
-          server: Server,
+          server: Server<any>,
         ): Promise<Response> {
           const socketAddress = server.requestIP(request);
           if (socketAddress) {
