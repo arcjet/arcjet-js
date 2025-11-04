@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...@arcjet/redact-wasm-v1.0.0-beta.14) (2025-11-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop Node.js 18 ([#5364](https://github.com/arcjet/arcjet-js/issues/5364))
+
+### 🧹 Miscellaneous Chores
+
+* drop Node.js 18 ([#5364](https://github.com/arcjet/arcjet-js/issues/5364)) ([9e4db59](https://github.com/arcjet/arcjet-js/commit/9e4db591b22a4bbe223339fa820644259e65d409))
+
+
+### 📚 Tests
+
+* **redact-wasm:** add some end to end tests ([#5309](https://github.com/arcjet/arcjet-js/issues/5309)) ([ee1b386](https://github.com/arcjet/arcjet-js/commit/ee1b38686a1265a489123a21781a1b4a4f935906)), closes [#5352](https://github.com/arcjet/arcjet-js/issues/5352)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+    * @arcjet/rollup-config bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+
 ## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...@arcjet/redact-wasm-v1.0.0-beta.13) (2025-10-07)
 
 
