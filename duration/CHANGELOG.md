@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...@arcjet/duration-v1.0.0-beta.14) (2025-11-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop Node.js 18 ([#5364](https://github.com/arcjet/arcjet-js/issues/5364))
+
+### 🧹 Miscellaneous Chores
+
+* drop Node.js 18 ([#5364](https://github.com/arcjet/arcjet-js/issues/5364)) ([9e4db59](https://github.com/arcjet/arcjet-js/commit/9e4db591b22a4bbe223339fa820644259e65d409))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+    * @arcjet/rollup-config bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+
 ## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...@arcjet/duration-v1.0.0-beta.13) (2025-10-07)
 
 

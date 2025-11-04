@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/logger",
-  "version": "1.0.0-beta.13",
+  "version": "1.0.0-beta.14",
   "description": "Arcjet lightweight logger which mirrors the Pino structured logger interface",
   "keywords": [
     "arcjet",
@@ -44,11 +44,11 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/sprintf": "1.0.0-beta.13"
+    "@arcjet/sprintf": "1.0.0-beta.14"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.13",
-    "@arcjet/rollup-config": "1.0.0-beta.13",
+    "@arcjet/eslint-config": "1.0.0-beta.14",
+    "@arcjet/rollup-config": "1.0.0-beta.14",
     "@rollup/wasm-node": "4.52.5",
     "@types/node": "24.9.1",
     "eslint": "9.38.0",

@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...@arcjet/remix-v1.0.0-beta.14) (2025-11-04)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/remix:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+    * @arcjet/headers bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+    * @arcjet/ip bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+    * @arcjet/logger bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+    * @arcjet/protocol bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+    * @arcjet/transport bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+    * arcjet bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+    * @arcjet/rollup-config bumped from 1.0.0-beta.13 to 1.0.0-beta.14
+
 ## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...@arcjet/remix-v1.0.0-beta.13) (2025-10-07)
 
 

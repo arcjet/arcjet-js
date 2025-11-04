@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2025-11-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop Node.js 18 ([#5364](https://github.com/arcjet/arcjet-js/issues/5364))
+
+### 🧹 Miscellaneous Chores
+
+* drop Node.js 18 ([#5364](https://github.com/arcjet/arcjet-js/issues/5364)) ([9e4db59](https://github.com/arcjet/arcjet-js/commit/9e4db591b22a4bbe223339fa820644259e65d409))
+
+
+### 📚 Tests
+
+* **redact-wasm:** add some end to end tests ([#5309](https://github.com/arcjet/arcjet-js/issues/5309)) ([ee1b386](https://github.com/arcjet/arcjet-js/commit/ee1b38686a1265a489123a21781a1b4a4f935906)), closes [#5352](https://github.com/arcjet/arcjet-js/issues/5352)
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump vite from 6.3.6 to 6.4.1 in /examples/remix-express ([#5353](https://github.com/arcjet/arcjet-js/issues/5353)) ([c2ce6a5](https://github.com/arcjet/arcjet-js/commit/c2ce6a5216be210669aef56950efd702a36451b9))
+* **deps-dev:** bump vite from 7.1.5 to 7.1.11 in /examples/react-router-middleware ([#5313](https://github.com/arcjet/arcjet-js/issues/5313)) ([5ad6983](https://github.com/arcjet/arcjet-js/commit/5ad6983e2e0b210aad47637de73d27d51bf43e82))
+* **deps:** bump better-auth and @better-auth/cli in /examples/nextjs-better-auth ([#5287](https://github.com/arcjet/arcjet-js/issues/5287)) ([87b370c](https://github.com/arcjet/arcjet-js/commit/87b370c2e1efc93472ad631008d5e21e9141f8d2))
+* **deps:** bump next-auth from 4.24.11 to 4.24.12 in /examples/nextjs-14-nextauth-4 ([#5344](https://github.com/arcjet/arcjet-js/issues/5344)) ([d8415f4](https://github.com/arcjet/arcjet-js/commit/d8415f4974565ebab414d997caf340b22a892d17))
+* **deps:** bump next-auth from 5.0.0-beta.29 to 5.0.0-beta.30 in /examples/nextjs-authjs-nosecone ([#5343](https://github.com/arcjet/arcjet-js/issues/5343)) ([2c4c90b](https://github.com/arcjet/arcjet-js/commit/2c4c90bbb192f455b2dc12cee3f945c7fecdcad2))
+* **deps:** bump tar from 7.5.1 to 7.5.2 in /examples/nuxt ([#5349](https://github.com/arcjet/arcjet-js/issues/5349)) ([66a7b80](https://github.com/arcjet/arcjet-js/commit/66a7b8069bdf0fe6335fca372a9b45180f8a22e2))
+* **deps:** bump vite from 7.1.7 to 7.1.12 in /examples/nuxt ([#5361](https://github.com/arcjet/arcjet-js/issues/5361)) ([d10b635](https://github.com/arcjet/arcjet-js/commit/d10b63578e9a34503393f8cec9af9dd5213ce9af))
+* remove `tsconfig` from `.release-please-manifest` ([#5274](https://github.com/arcjet/arcjet-js/issues/5274)) ([6fb42e6](https://github.com/arcjet/arcjet-js/commit/6fb42e68736aa26bfb59084f0bc59a81a4083fd3))
+* remove unused env variable ([#5304](https://github.com/arcjet/arcjet-js/issues/5304)) ([bfde88a](https://github.com/arcjet/arcjet-js/commit/bfde88a05c395805331d423988e396a9dcf3ebb1))
+
 ## [1.0.0-beta.13](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2025-10-07)
 
 
