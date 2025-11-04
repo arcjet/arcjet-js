@@ -13,7 +13,7 @@ plugins:
 runtimes:
   enabled:
     - go@1.21.0
-    - node@18.20.5
+    - node@20.19.5
     - python@3.10.8
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
@@ -58,7 +58,6 @@ actions:
 merge:
   required_statuses:
     - Trunk Check
-    - "Run tests / Run tests (OS: ubuntu-latest, Node: 18)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 20)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 22)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 24)"

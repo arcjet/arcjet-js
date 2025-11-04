@@ -25,7 +25,7 @@
     "url": "https://arcjet.com"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "main": "./index.js",

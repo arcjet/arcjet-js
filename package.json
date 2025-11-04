@@ -3,9 +3,9 @@
   "version": "1.0.0-beta.13",
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
-  "packageManager": "npm@10.8.1",
+  "packageManager": "npm@11.6.2",
   "workspaces": [
     "*"
   ],
