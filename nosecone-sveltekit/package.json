@@ -66,7 +66,7 @@
     "@rollup/wasm-node": "4.52.5",
     "@sveltejs/kit": "2.48.1",
     "@sveltejs/vite-plugin-svelte": "6.2.1",
-    "@types/node": "24.9.1",
+    "@types/node": "24.9.2",
     "eslint": "9.38.0",
     "svelte": "5.42.3",
     "typescript": "5.9.3",

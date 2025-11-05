@@ -65,7 +65,7 @@
     "@arcjet/rollup-config": "1.0.0-beta.14",
     "@nestjs/common": "^11.1.8",
     "@rollup/wasm-node": "4.52.5",
-    "@types/node": "24.9.1",
+    "@types/node": "24.9.2",
     "eslint": "9.38.0",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
