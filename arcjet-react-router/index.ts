@@ -59,6 +59,18 @@ interface ContextProvider {
 }
 
 /**
+ * Request object that also supports overriding IP addressess.
+ *
+ * See “[Concepts: Client IP](https://docs.arcjet.com/concepts/client-ip)” for more info.
+ */
+export interface RequestWithIp extends Request {
+  /**
+   * IP address of the client making the request.
+   */
+  ip?: string | null | undefined;
+}
+
+/**
  * Request for the React Router integration of Arcjet.
  */
 export interface ArcjetReactRouterRequest {
@@ -76,7 +88,7 @@ export interface ArcjetReactRouterRequest {
   /**
    * DOM request.
    */
-  request: Request;
+  request: RequestWithIp;
 }
 
 /**

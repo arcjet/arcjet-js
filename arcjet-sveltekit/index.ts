@@ -145,6 +145,18 @@ interface Cookies {
 }
 
 /**
+ * Request object that also supports overriding IP addressess.
+ *
+ * See “[Concepts: Client IP](https://docs.arcjet.com/concepts/client-ip)” for more info.
+ */
+export interface RequestWithIp extends Request {
+  /**
+   * IP address of the client making the request.
+   */
+  ip?: string | null | undefined;
+}
+
+/**
  * Request for the SvelteKit integration of Arcjet.
  *
  * This is the minimum interface similar to `RequestEvent`.
@@ -163,7 +175,7 @@ export interface ArcjetSvelteKitRequestEvent {
   /**
    * Original request object.
    */
-  request: Request;
+  request: RequestWithIp;
   /**
    * Requested URL.
    */
@@ -304,7 +316,7 @@ export default function arcjet<
 
     let ip = findIp(
       {
-        ip: event.getClientAddress(),
+        ip: event.request.ip || event.getClientAddress(),
         headers,
       },
       { platform: platform(env), proxies },

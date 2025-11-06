@@ -150,6 +150,13 @@ export interface ArcjetFastifyRequest {
   headers: Record<string, Array<string> | string | undefined>;
 
   /**
+   * IP address of the client making the request.
+   *
+   * See “[Concepts: Client IP](https://docs.arcjet.com/concepts/client-ip)” for more info.
+   */
+  ip?: string | null | undefined;
+
+  /**
    * HTTP method of the request.
    */
   method: string;
@@ -365,7 +372,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   const headers = new ArcjetHeaders(requestHeaders);
 
   let ip = findIp(
-    { headers, socket: request.socket },
+    { ip: request.ip, headers, socket: request.socket },
     { platform: platform(process.env), proxies },
   );
 

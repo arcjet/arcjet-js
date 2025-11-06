@@ -208,6 +208,8 @@ export interface ArcjetNextRequest {
 
   /**
    * IP address of the client.
+   *
+   * See “[Concepts: Client IP](https://docs.arcjet.com/concepts/client-ip)” for more info.
    */
   ip?: string;
 

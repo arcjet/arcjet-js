@@ -169,6 +169,18 @@ export type ArcjetOptions<
 >;
 
 /**
+ * Request object that also supports overriding IP addressess.
+ *
+ * See “[Concepts: Client IP](https://docs.arcjet.com/concepts/client-ip)” for more info.
+ */
+export interface RequestWithIp extends Request {
+  /**
+   * IP address of the client making the request.
+   */
+  ip?: string | null | undefined;
+}
+
+/**
  * Instance of the Astro integration of Arcjet.
  *
  * Primarily has a `protect()` method to make a decision about how a request
@@ -194,7 +206,7 @@ export interface ArcjetAstro<Props extends PlainObject> {
    *   Arcjet’s decision about the request.
    */
   protect(
-    request: Request,
+    request: RequestWithIp,
     // We use this neat trick from https://stackoverflow.com/a/52318137 to make a single spread parameter
     // that is required if the ExtraProps aren't strictly an empty object
     ...props: Props extends WithoutCustomProps ? [] : [Props]
@@ -257,7 +269,7 @@ export function createArcjetClient<
   }
 
   function toArcjetRequest<Props extends PlainObject>(
-    request: Request,
+    request: RequestWithIp,
     props: Props,
   ): ArcjetRequest<Props> {
     const clientAddress = Reflect.get(request, ipSymbol);
@@ -273,7 +285,7 @@ export function createArcjetClient<
     const url = new URL(request.url);
     let ip = findIp(
       {
-        ip: clientAddress,
+        ip: request.ip || clientAddress,
         headers,
       },
       { platform: platform(env), proxies },
@@ -312,7 +324,7 @@ export function createArcjetClient<
         return withClient(client);
       },
       async protect(
-        request: Request,
+        request: RequestWithIp,
         ...[props]: ExtraProps<Rules> extends WithoutCustomProps
           ? []
           : [ExtraProps<Rules>]

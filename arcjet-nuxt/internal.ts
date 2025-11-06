@@ -74,6 +74,13 @@ interface ArcjetH3NodeRequest {
   httpVersion?: string | null | undefined;
 
   /**
+   * IP address of the client making the request.
+   *
+   * See “[Concepts: Client IP](https://docs.arcjet.com/concepts/client-ip)” for more info.
+   */
+  ip?: string | null | undefined;
+
+  /**
    * HTTP method of the request.
    */
   method?: string | null | undefined;

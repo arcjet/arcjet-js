@@ -174,6 +174,13 @@ export interface ArcjetNodeRequest {
   headers?: Record<string, string | string[] | undefined>;
 
   /**
+   * IP address of the client making the request.
+   *
+   * See “[Concepts: Client IP](https://docs.arcjet.com/concepts/client-ip)” for more info.
+   */
+  ip?: string | null | undefined;
+
+  /**
    * `net.Socket` object associated with the connection.
    *
    * See <https://nodejs.org/api/http.html#messagesocket>.
@@ -370,6 +377,7 @@ export default function arcjet<
 
     let ip = findIp(
       {
+        ip: request.ip,
         socket: request.socket,
         headers,
       },

@@ -123,6 +123,18 @@ export function createRemoteClient(options?: RemoteClientOptions) {
 }
 
 /**
+ * Request object that also supports overriding IP addressess.
+ *
+ * See “[Concepts: Client IP](https://docs.arcjet.com/concepts/client-ip)” for more info.
+ */
+export interface RequestWithIp extends Request {
+  /**
+   * IP address of the client making the request.
+   */
+  ip?: string | null | undefined;
+}
+
+/**
  * Request for the Remix integration of Arcjet.
  *
  * This is a minimal version of `LoaderFunctionArgs` from Remix.
@@ -131,7 +143,7 @@ export type ArcjetRemixRequest = {
   /**
    * Original Remix request.
    */
-  request: Request;
+  request: RequestWithIp;
   /**
    * Context for the Remix request.
    */
@@ -266,7 +278,7 @@ export default function arcjet<
     let ip = findIp(
       {
         // The `getLoadContext` API will attach the `ip` to the context
-        ip: context?.ip,
+        ip: request.ip || context?.ip,
         headers,
       },
       { platform: platform(process.env), proxies },
