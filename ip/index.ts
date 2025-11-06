@@ -803,7 +803,7 @@ export interface Options {
    * Platform the code is running on;
    * used to allow only known more trustworthy headers.
    */
-  platform?: Platform | null | undefined;
+  platform?: ReadonlyArray<Platform> | Platform | null | undefined;
   /**
    * Trusted proxies.
    */
@@ -853,6 +853,11 @@ export function findIp(
   options?: Options | null | undefined,
 ): string {
   const { platform, proxies } = options || {};
+  const platforms: ReadonlyArray<Platform> = Array.isArray(platform)
+    ? platform
+    : platform
+      ? [platform]
+      : [];
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.
@@ -887,7 +892,7 @@ export function findIp(
   // header should only be accepted when running on Cloudflare; otherwise, it
   // can be spoofed.
 
-  if (platform === "cloudflare") {
+  if (platforms.includes("cloudflare")) {
     // CF-Connecting-IPv6: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ipv6
     const cfConnectingIpv6 = getHeader(request.headers, "cf-connecting-ipv6");
     if (isGlobalIpv6(cfConnectingIpv6, proxies)) {
@@ -899,28 +904,18 @@ export function findIp(
     if (isGlobalIp(cfConnectingIp, proxies)) {
       return cfConnectingIp;
     }
-
-    // If we are using a platform check and don't have a Global IP, we exit
-    // early with an empty IP since the more generic headers shouldn't be
-    // trusted over the platform-specific headers.
-    return "";
   }
 
   // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
-  if (platform === "fly-io") {
+  if (platforms.includes("fly-io")) {
     // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
     const flyClientIp = getHeader(request.headers, "fly-client-ip");
     if (isGlobalIp(flyClientIp, proxies)) {
       return flyClientIp;
     }
-
-    // If we are using a platform check and don't have a Global IP, we exit
-    // early with an empty IP since the more generic headers shouldn't be
-    // trusted over the platform-specific headers.
-    return "";
   }
 
-  if (platform === "vercel") {
+  if (platforms.includes("vercel")) {
     // https://vercel.com/docs/edge-network/headers/request-headers#x-real-ip
     // Also used by `@vercel/functions`, see:
     // https://github.com/vercel/vercel/blob/d7536d52c87712b1b3f83e4b0fd535a1fb7e384c/packages/functions/src/headers.ts#L12
@@ -965,20 +960,17 @@ export function findIp(
         return item;
       }
     }
-
-    // If we are using a platform check and don't have a Global IP, we exit
-    // early with an empty IP since the more generic headers shouldn't be
-    // trusted over the platform-specific headers.
-    return "";
   }
 
-  if (platform === "render") {
+  if (platforms.includes("render")) {
     // True-Client-IP: https://community.render.com/t/what-number-of-proxies-sit-in-front-of-an-express-app-deployed-on-render/35981/2
     const trueClientIp = getHeader(request.headers, "true-client-ip");
     if (isGlobalIp(trueClientIp, proxies)) {
       return trueClientIp;
     }
+  }
 
+  if (platforms.length > 0) {
     // If we are using a platform check and don't have a Global IP, we exit
     // early with an empty IP since the more generic headers shouldn't be
     // trusted over the platform-specific headers.

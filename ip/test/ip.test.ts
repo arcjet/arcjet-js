@@ -716,4 +716,78 @@ test("`findIp`", async (t) => {
       );
     });
   });
+
+  await t.test("platform: array", async (t) => {
+    await t.test(
+      "should support a header matching a platform (1)",
+      async () => {
+        assert.equal(
+          findIp(
+            { headers: { "x-vercel-forwarded-for": "1.1.1.1" } },
+            { platform: ["cloudflare", "vercel"] },
+          ),
+          "1.1.1.1",
+        );
+      },
+    );
+
+    await t.test(
+      "should support a header matching a platform (2)",
+      async () => {
+        assert.equal(
+          findIp(
+            { headers: { "cf-connecting-ip": "1.1.1.1" } },
+            { platform: ["cloudflare", "vercel"] },
+          ),
+          "1.1.1.1",
+        );
+      },
+    );
+
+    await t.test(
+      "should support headers matching platforms while ignoring `proxies` (1)",
+      async () => {
+        assert.equal(
+          findIp(
+            {
+              headers: {
+                "cf-connecting-ip": "2.2.2.2",
+                "x-vercel-forwarded-for": "1.1.1.1",
+              },
+            },
+            { platform: ["cloudflare", "vercel"], proxies: ["2.2.2.2"] },
+          ),
+          "1.1.1.1",
+        );
+      },
+    );
+
+    await t.test(
+      "should support headers matching platforms while ignoring `proxies` (2)",
+      async () => {
+        assert.equal(
+          findIp(
+            {
+              headers: {
+                "cf-connecting-ip": "1.1.1.1",
+                "x-vercel-forwarded-for": "2.2.2.2",
+              },
+            },
+            { platform: ["cloudflare", "vercel"], proxies: ["1.1.1.1"] },
+          ),
+          "2.2.2.2",
+        );
+      },
+    );
+
+    await t.test("should ignore other headers", async () => {
+      assert.equal(
+        findIp(
+          { headers: { "x-client-ip": "1.1.1.1" } },
+          { platform: ["cloudflare", "vercel"] },
+        ),
+        "",
+      );
+    });
+  });
 });
