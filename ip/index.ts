@@ -853,6 +853,17 @@ export function findIp(
   options?: Options | null | undefined,
 ): string {
   const { platform, proxies } = options || {};
+
+  for (const proxy of proxies || []) {
+    if (typeof proxy === "string" && proxy.includes("/")) {
+      throw new Error(
+        "Unexpected CIDR notation for trusted proxy, expected parsed CIDR object, pass `" +
+          proxy +
+          "` through `parseProxy`",
+      );
+    }
+  }
+
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.

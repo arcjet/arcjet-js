@@ -249,6 +249,15 @@ test("`findIp`", async (t) => {
     },
   );
 
+  await t.test(
+    "throws if a CIDR range is passed in `proxies` as a string",
+    () => {
+      assert.throws(function () {
+        findIp({ ip: "1.1.1.1", headers: {} }, { proxies: ["1.1.1.0/24"] });
+      }, /Unexpected CIDR notation for trusted proxy, expected parsed CIDR object, pass `1\.1\.1\.0\/24` through `parseProxy`/);
+    },
+  );
+
   await t.test("request: `ip`", async (t) => {
     for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
