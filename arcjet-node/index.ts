@@ -9,7 +9,13 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import findIp, { parseProxy } from "@arcjet/ip";
+import {
+  type Cidr,
+  type Platform,
+  findIp,
+  matches,
+  parseProxy,
+} from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
@@ -244,6 +250,21 @@ function cookiesToString(cookies: string | string[] | undefined): string {
 }
 
 /**
+ * Service.
+ */
+interface Service {
+  /**
+   * IP addresses and CIDR ranges of the service (required).
+   */
+  ips: ReadonlyArray<Cidr | string>;
+
+  /**
+   * Platform of the service (required).
+   */
+  platform: Platform;
+}
+
+/**
  * Configuration for the Node.js integration of Arcjet.
  *
  * @template Rules
@@ -261,6 +282,11 @@ export type ArcjetOptions<
      * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
      */
     proxies?: Array<string>;
+
+    /**
+     * Alternative services to identify requests from (optional).
+     */
+    services?: ReadonlyArray<Service> | null | undefined;
   }
 >;
 
@@ -351,6 +377,7 @@ export default function arcjet<
   const proxies = Array.isArray(options.proxies)
     ? options.proxies.map(parseProxy)
     : undefined;
+  const services = options.services ?? [];
 
   if (isDevelopment(env)) {
     log.warn(
@@ -380,6 +407,15 @@ export default function arcjet<
         },
         { platform: platform(env), proxies },
       );
+
+    for (const service of services) {
+      if (matches(ip, service.ips)) {
+        ip = findIp({ headers }, { platform: service.platform });
+      } else {
+        break;
+      }
+    }
+
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

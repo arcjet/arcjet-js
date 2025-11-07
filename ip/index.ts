@@ -76,6 +76,86 @@ function isTrustedProxy(
   return false;
 }
 
+/**
+ * Check whether `left` matches any of the given `right`.
+ *
+ * @param left
+ *   IPv4 or IPv6 address (required).
+ * @param right
+ *   IPs and CIDR ranges (required).
+ * @returns
+ *   Whether `left` matches `right`.
+ */
+export function matches(
+  left: string,
+  right: ReadonlyArray<Cidr | string> | Cidr | string,
+) {
+  if (!Array.isArray(right)) {
+    // Cast to array for `ReadonlyArray`.
+    right = [right as Cidr | string];
+  }
+
+  const parser = new Parser(left);
+  let leftSegments: Array<number> | undefined;
+  const value = parser.readIpv4Address();
+
+  if (isIpv4Tuple(value)) {
+    leftSegments = value;
+  } else {
+    const value = parser.readIpv6Address();
+    if (isIpv6Tuple(value)) {
+      leftSegments = value;
+    }
+  }
+
+  if (leftSegments) {
+    for (const value of right) {
+      if (
+        matchesOne(
+          left,
+          leftSegments,
+          typeof value === "string" ? parseProxy(value) : value,
+        )
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check whether `left` matches any of the given `right`.
+ *
+ * @param left
+ *   IPv4 or IPv6 address.
+ * @param leftSegments
+ *   IPv4 or IPv6 address.
+ * @param right
+ *   IPs and CIDR ranges.
+ * @returns
+ *   Whether `left` matches `right`.
+ */
+function matchesOne(
+  left: string,
+  leftSegments: Array<number>,
+  right: Cidr | string,
+) {
+  if (typeof right === "string") {
+    return left === right;
+  }
+
+  if (
+    (isIpv4Tuple(leftSegments) && isIpv4Cidr(right)) ||
+    (isIpv6Tuple(leftSegments) && isIpv6Cidr(right))
+  ) {
+    return cidrContains(right, leftSegments);
+  }
+
+  return false;
+}
+
 // Based on CIDR matching implementation in `ipaddr.js`
 // Source code:
 // https://github.com/whitequark/ipaddr.js/blob/08c2cd41e2cb3400683cbd503f60421bfdf66921/lib/ipaddr.js#L107-L130

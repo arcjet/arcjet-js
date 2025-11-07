@@ -187,6 +187,7 @@ test("@arcjet/ip", async function (t) {
     assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
       "default",
       "findIp",
+      "matches",
       "parseProxy",
     ]);
   });
