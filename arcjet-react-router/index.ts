@@ -5,7 +5,13 @@ import {
   platform,
 } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { type Cidr, findIp, parseProxy } from "@arcjet/ip";
+import {
+  type Cidr,
+  type Platform,
+  findIp,
+  matches,
+  parseProxy,
+} from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
@@ -31,6 +37,21 @@ interface Empty {
 }
 
 /**
+ * Service.
+ */
+interface Service {
+  /**
+   * IP addresses and CIDR ranges of the service (required).
+   */
+  ips: ReadonlyArray<Cidr | string>;
+
+  /**
+   * Platform of the service (required).
+   */
+  platform: Platform;
+}
+
+/**
  * Configuration for the React Router integration of Arcjet.
  *
  * @template Rules
@@ -47,6 +68,11 @@ export interface ArcjetOptions<
    * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
   proxies?: ReadonlyArray<string> | null | undefined;
+
+  /**
+   * Alternative services to identify requests from (optional).
+   */
+  services?: ReadonlyArray<Service> | null | undefined;
 }
 
 // TODO: remove this unused type.
@@ -165,6 +191,11 @@ interface State {
    * Configured proxies.
    */
   proxies: ReadonlyArray<Cidr | string>;
+
+  /**
+   * Configured services.
+   */
+  services: ReadonlyArray<Service>;
 }
 
 /**
@@ -195,6 +226,7 @@ export default function arcjet<
     client: options.client ?? createRemoteClient(),
     log: options.log ?? new Logger({ level: logLevel(process.env) }),
     proxies: options.proxies?.map(parseProxy) ?? [],
+    services: options.services ?? [],
   };
 
   if (isDevelopment(process.env)) {
@@ -326,6 +358,17 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
       platform: platform(process.env),
       proxies: state.proxies,
     });
+  }
+
+  for (const service of state.services) {
+    if (matches(ip, service.ips)) {
+      ip = findIp(
+        { headers: details.request.headers },
+        { platform: service.platform },
+      );
+    } else {
+      break;
+    }
   }
 
   if (!ip) {

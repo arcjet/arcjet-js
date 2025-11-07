@@ -508,6 +508,94 @@ test("`default`", async function (t) {
       assert.ok(otherResult.isErrored());
     });
 
+    await t.test("should support a service", async function () {
+      let ip: unknown;
+      const vercel = process.env.VERCEL;
+      process.env.VERCEL = "1";
+
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 0,
+        async protect(_, request) {
+          ip = request.ip;
+          return {
+            conclusion: "ALLOW",
+            fingerprint: "",
+            isDenied() {
+              return false;
+            },
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          };
+        },
+        validate() {},
+        version: 0,
+        type: "",
+      };
+
+      const integration = arcjet({
+        client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
+        key: "",
+        log: { ...createArcjetLogger(), debug() {}, info() {} },
+        rules: [[rule]],
+        services: [
+          {
+            ips: [
+              "103.21.244.0/22",
+              "103.22.200.0/22",
+              "103.31.4.0/22",
+              "104.16.0.0/13",
+              "104.24.0.0/14",
+              "108.162.192.0/18",
+              "131.0.72.0/22",
+              "141.101.64.0/18",
+              "162.158.0.0/15",
+              "172.64.0.0/13",
+              "173.245.48.0/20",
+              "188.114.96.0/20",
+              "190.93.240.0/20",
+              "197.234.240.0/22",
+              "198.41.128.0/17",
+              "2400:cb00::/32",
+              "2405:8100::/32",
+              "2405:b500::/32",
+              "2606:4700::/32",
+              "2803:f800::/32",
+              "2a06:98c0::/29",
+              "2c0f:f248::/32",
+            ],
+            platform: "cloudflare",
+          },
+        ],
+      });
+
+      // Normally, on Vercel, the first IP `@arcjet/ip` looks at is `x-real-ip`.
+      await integration.protect({
+        request: new Request("https://example.com/", {
+          headers: { "cf-connecting-ip": "1.1.1.1", "x-real-ip": "2.2.2.2" },
+        }),
+      });
+
+      assert.equal(ip, "2.2.2.2");
+
+      // When the inferred IP matches a particular service, their headers are used.
+      await integration.protect({
+        request: new Request("https://example.com/", {
+          headers: {
+            "cf-connecting-ip": "1.1.1.1",
+            "x-real-ip": "162.158.158.6",
+          },
+        }),
+      });
+
+      // If those are matched by `proxies` then earlier ones are used.
+      assert.equal(ip, "1.1.1.1");
+
+      process.env.VERCEL = vercel;
+    });
+
     await t.test("should read from body", async function () {
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
