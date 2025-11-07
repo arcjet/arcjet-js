@@ -42,6 +42,11 @@ export type Env = {
 };
 
 /**
+ * Platform name.
+ */
+export type Platform = "firebase" | "fly-io" | "render" | "vercel";
+
+/**
  * Detect the platform.
  *
  * @param environment
@@ -49,19 +54,26 @@ export type Env = {
  * @returns
  *   Name of platform if found.
  */
-export function platform(environment: Env) {
+export function platform(environment: Env): Platform | undefined {
+  if (
+    typeof environment["FIREBASE_CONFIG"] === "string" &&
+    environment["FIREBASE_CONFIG"] !== ""
+  ) {
+    return "firebase";
+  }
+
   if (
     typeof environment["FLY_APP_NAME"] === "string" &&
     environment["FLY_APP_NAME"] !== ""
   ) {
-    return "fly-io" as const;
+    return "fly-io";
   }
 
   if (
     typeof environment["VERCEL"] === "string" &&
     environment["VERCEL"] === "1"
   ) {
-    return "vercel" as const;
+    return "vercel";
   }
 
   // https://render.com/docs/environment-variables
@@ -69,7 +81,7 @@ export function platform(environment: Env) {
     typeof environment["RENDER"] === "string" &&
     environment["RENDER"] === "true"
   ) {
-    return "render" as const;
+    return "render";
   }
 }
 

@@ -17,6 +17,14 @@ test("@arcjet/env", async function (t) {
 describe("env", () => {
   test("platform", () => {
     assert.equal(env.platform({}), undefined);
+
+    // https://firebase.google.com/docs/functions/config-env
+    assert.equal(env.platform({ FIREBASE_CONFIG: "" }), undefined);
+    assert.equal(
+      env.platform({ FIREBASE_CONFIG: "{databaseURL…}" }),
+      "firebase",
+    );
+
     assert.equal(env.platform({ FLY_APP_NAME: "" }), undefined);
     assert.equal(env.platform({ FLY_APP_NAME: "foobar" }), "fly-io");
     assert.equal(env.platform({ VERCEL: "" }), undefined);
