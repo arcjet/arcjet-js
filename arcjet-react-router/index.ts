@@ -60,7 +60,7 @@ export interface ArcjetOptions<
    * It can contain IPv4 or IPv6 addresses.
    * Proxies are filtered out.
    */
-  trustedHeader?: string | null | undefined;
+  trustedIpHeader?: string | null | undefined;
 }
 
 // TODO: remove this unused type.
@@ -183,7 +183,7 @@ interface State {
   /**
    * Trusted header.
    */
-  trustedHeader: string | undefined;
+  trustedIpHeader: string | undefined;
 }
 
 /**
@@ -214,7 +214,7 @@ export default function arcjet<
     client: options.client ?? createRemoteClient(),
     log: options.log ?? new Logger({ level: logLevel(process.env) }),
     proxies: options.proxies?.map(parseProxy) ?? [],
-    trustedHeader: options.trustedHeader ?? undefined,
+    trustedIpHeader: options.trustedIpHeader ?? undefined,
   };
 
   if (isDevelopment(process.env)) {
@@ -345,7 +345,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
     ip = findIp(details.request, {
       platform: platform(process.env),
       proxies: state.proxies,
-      trustedHeader: state.trustedHeader,
+      trustedIpHeader: state.trustedIpHeader,
     });
   }
 

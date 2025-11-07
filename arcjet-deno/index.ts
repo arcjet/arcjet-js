@@ -156,7 +156,7 @@ export type ArcjetOptions<
      * It can contain IPv4 or IPv6 addresses.
      * Proxies are filtered out.
      */
-    trustedHeader?: string | null | undefined;
+    trustedIpHeader?: string | null | undefined;
   }
 >;
 
@@ -268,7 +268,7 @@ export default function arcjet<
   const proxies = Array.isArray(options.proxies)
     ? options.proxies.map(parseProxy)
     : undefined;
-  const trustedHeader = options.trustedHeader;
+  const trustedIpHeader = options.trustedIpHeader;
 
   if (isDevelopment(process.env)) {
     log.warn(
@@ -299,7 +299,7 @@ export default function arcjet<
           ip: ipCache.get(request),
           headers,
         },
-        { platform: platform(env), proxies, trustedHeader },
+        { platform: platform(env), proxies, trustedIpHeader },
       );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP

@@ -826,7 +826,7 @@ export interface Options {
    * It can contain IPv4 or IPv6 addresses.
    * Proxies are filtered out.
    */
-  trustedHeader?: string | null | undefined;
+  trustedIpHeader?: string | null | undefined;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
@@ -871,7 +871,7 @@ export function findIp(
   request: RequestLike,
   options?: Options | null | undefined,
 ): string {
-  const { platform, proxies: rawProxies, trustedHeader } = options || {};
+  const { platform, proxies: rawProxies, trustedIpHeader } = options || {};
   const proxies: Array<Cidr | string> = [];
 
   if (Array.isArray(rawProxies)) {
@@ -887,11 +887,11 @@ export function findIp(
   }
 
   // Trusted header.
-  const trustedHeaderValue = trustedHeader
-    ? getHeader(request.headers, trustedHeader.toLowerCase())
+  const trustedIpHeaderValue = trustedIpHeader
+    ? getHeader(request.headers, trustedIpHeader.toLowerCase())
     : undefined;
-  const trustedHeaderValues = parseXForwardedFor(trustedHeaderValue);
-  for (const item of trustedHeaderValues.reverse()) {
+  const trustedIpHeaderValues = parseXForwardedFor(trustedIpHeaderValue);
+  for (const item of trustedIpHeaderValues.reverse()) {
     if (isGlobalIp(item, proxies)) {
       return item;
     }

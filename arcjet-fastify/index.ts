@@ -256,7 +256,7 @@ export type ArcjetOptions<
    * It can contain IPv4 or IPv6 addresses.
    * Proxies are filtered out.
    */
-  trustedHeader?: string | null | undefined;
+  trustedIpHeader?: string | null | undefined;
 };
 
 /**
@@ -288,7 +288,7 @@ export default function arcjet<
     ? options.log
     : new Logger({ level: logLevel(process.env) });
   const proxies = options.proxies ? options.proxies.map(parseProxy) : undefined;
-  const trustedHeader = options.trustedHeader ?? undefined;
+  const trustedIpHeader = options.trustedIpHeader ?? undefined;
 
   if (isDevelopment(process.env)) {
     log.warn(
@@ -310,7 +310,7 @@ export default function arcjet<
           fastifyRequest,
           log,
           proxies,
-          trustedHeader,
+          trustedIpHeader,
           properties || {},
         );
 
@@ -358,7 +358,7 @@ export default function arcjet<
  *   Logger.
  * @param proxies
  *   Proxies.
- * @param trustedHeader
+ * @param trustedIpHeader
  *   Trusted header.
  * @param properties
  *   Properties.
@@ -370,7 +370,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   log: ArcjetLogger,
   // TODO(@wooorm-arcjet): use `Cidr` type here.
   proxies: ReadonlyArray<ReturnType<typeof parseProxy>> | undefined,
-  trustedHeader: string | undefined,
+  trustedIpHeader: string | undefined,
   properties: Properties,
 ): ArcjetRequest<Properties> {
   const requestHeaders = request.headers || {};
@@ -390,7 +390,7 @@ function toArcjetRequest<Properties extends PlainObject>(
     xArcjetIp ||
     findIp(
       { headers, socket: request.socket },
-      { platform: platform(process.env), proxies, trustedHeader },
+      { platform: platform(process.env), proxies, trustedIpHeader },
     );
 
   if (ip === "") {
