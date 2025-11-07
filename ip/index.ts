@@ -855,13 +855,11 @@ export function findIp(
   const { platform, proxies: rawProxies } = options || {};
   const proxies: Array<Cidr | string> = [];
 
-  if (rawProxies) {
+  if (Array.isArray(rawProxies)) {
     for (const cidrOrIp of rawProxies) {
-      proxies.push(
-        typeof cidrOrIp === "string" && isCidr(cidrOrIp)
-          ? parseCidr(cidrOrIp)
-          : cidrOrIp,
-      );
+      if (typeof cidrOrIp === "string") {
+        proxies.push(isCidr(cidrOrIp) ? parseCidr(cidrOrIp) : cidrOrIp);
+      }
     }
   }
 
