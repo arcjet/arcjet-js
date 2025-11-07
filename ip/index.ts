@@ -852,7 +852,19 @@ export function findIp(
   request: RequestLike,
   options?: Options | null | undefined,
 ): string {
-  const { platform, proxies } = options || {};
+  const { platform, proxies: rawProxies } = options || {};
+  const proxies: Array<Cidr | string> = [];
+
+  if (rawProxies) {
+    for (const cidrOrIp of rawProxies) {
+      proxies.push(
+        typeof cidrOrIp === "string" && isCidr(cidrOrIp)
+          ? parseCidr(cidrOrIp)
+          : cidrOrIp,
+      );
+    }
+  }
+
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.

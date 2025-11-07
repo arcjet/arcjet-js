@@ -249,6 +249,36 @@ test("`findIp`", async (t) => {
     },
   );
 
+  await t.test("should support an IP string in a proxy", function () {
+    assert.equal(
+      findIp(
+        { headers: { "x-forwarded-for": "1.1.1.1, 2.2.2.2, 3.3.3.3" } },
+        { proxies: ["3.3.3.3"] },
+      ),
+      "2.2.2.2",
+    );
+  });
+
+  await t.test("should support an CIDR string in a proxy", function () {
+    assert.equal(
+      findIp(
+        { headers: { "x-forwarded-for": "1.1.1.1, 2.2.2.2, 3.3.3.3" } },
+        { proxies: ["3.3.3.3/32"] },
+      ),
+      "2.2.2.2",
+    );
+  });
+
+  await t.test("should support an CIDR object in a proxy", function () {
+    assert.equal(
+      findIp(
+        { headers: { "x-forwarded-for": "1.1.1.1, 2.2.2.2, 3.3.3.3" } },
+        { proxies: [parseProxy("3.3.3.3/32")] },
+      ),
+      "2.2.2.2",
+    );
+  });
+
   await t.test("request: `ip`", async (t) => {
     for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
