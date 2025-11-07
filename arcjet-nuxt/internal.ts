@@ -189,6 +189,21 @@ export interface ArcjetOptions<
    * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
   proxies?: ReadonlyArray<string> | null | undefined;
+
+  /**
+   * Name of (lowercase) HTTP request header that you trust (such as
+   * `x-fah-client-ip`).
+   *
+   * This value is *preferred* over IP addresses provided by the
+   * framework and IP addresses found in other headers based on the platform,
+   * in both development and production.
+   *
+   * It can point to a regular IP (such as `x-client-ip`) or a list of IPs
+   * (such as `x-forwarded-for`).
+   * It can contain IPv4 or IPv6 addresses.
+   * Proxies are filtered out.
+   */
+  trustedHeader?: string | null | undefined;
 }
 
 /**
@@ -229,6 +244,11 @@ interface State {
    * Configured proxies.
    */
   proxies: ReadonlyArray<Cidr | string>;
+
+  /**
+   * Trusted header.
+   */
+  trustedHeader?: string | undefined;
 }
 
 /**
@@ -265,6 +285,7 @@ export default function arcjet<
     client: options.client ?? createRemoteClient(),
     log: options.log ?? new Logger({ level: logLevel(process.env) }),
     proxies: options.proxies?.map(parseProxy) ?? [],
+    trustedHeader: options.trustedHeader ?? undefined,
   };
 
   if (isDevelopment(process.env)) {
@@ -408,6 +429,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
     findIp(event.node.req, {
       platform: platform(process.env),
       proxies: state.proxies,
+      trustedHeader: state.trustedHeader,
     });
 
   if (!ip) {

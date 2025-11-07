@@ -294,6 +294,65 @@ test("`findIp`", async (t) => {
     );
   });
 
+  await t.test("should prefer `trustedHeader` over other values", function () {
+    assert.equal(
+      findIp(
+        {
+          ip: "1.1.1.1",
+          headers: {
+            custom: "2.2.2.2",
+            "x-forwarded-for": "3.3.3.3",
+            "x-client-ip": "4.4.4.4",
+          },
+        },
+        { trustedHeader: "custom" },
+      ),
+      "2.2.2.2",
+    );
+  });
+
+  await t.test(
+    "should use other values if `trustedHeader` is not present",
+    function () {
+      assert.equal(
+        findIp(
+          {
+            ip: "1.1.1.1",
+            headers: { "x-forwarded-for": "2.2.2.2", "x-client-ip": "3.3.3.3" },
+          },
+          { trustedHeader: "custom" },
+        ),
+        "1.1.1.1",
+      );
+    },
+  );
+
+  await t.test("should support lists of IPs in `trustedHeader`", function () {
+    assert.equal(
+      findIp(
+        {
+          ip: "1.1.1.1",
+          headers: { custom: "2.2.2.2, 3.3.3.3", "x-client-ip": "4.4.4.4" },
+        },
+        { trustedHeader: "custom" },
+      ),
+      "3.3.3.3",
+    );
+  });
+
+  await t.test("should support `proxies` w/ `trustedHeader`", function () {
+    assert.equal(
+      findIp(
+        {
+          ip: "1.1.1.1",
+          headers: { custom: "2.2.2.2, 3.3.3.3", "x-client-ip": "4.4.4.4" },
+        },
+        { proxies: ["3.3.3.3"], trustedHeader: "custom" },
+      ),
+      "2.2.2.2",
+    );
+  });
+
   await t.test("request: `ip`", async (t) => {
     for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {

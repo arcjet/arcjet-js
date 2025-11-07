@@ -17,6 +17,7 @@ const resolvedVirtualClientId = "\0ARCJET_VIRTUAL_CLIENT";
 
 const validateMode = z.enum(["LIVE", "DRY_RUN"]);
 const validateProxies = z.array(z.string());
+const validateTrustedHeader = z.string().optional();
 const validateCharacteristics = z.array(z.string());
 const validateClientOptions = z
   .object({
@@ -208,6 +209,20 @@ type ArcjetIntegrationOptions<Characteristics extends readonly string[]> = {
    * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
   proxies?: string[];
+  /**
+   * Name of (lowercase) HTTP request header that you trust (such as
+   * `x-fah-client-ip`).
+   *
+   * This value is *preferred* over IP addresses provided by the
+   * framework and IP addresses found in other headers based on the platform,
+   * in both development and production.
+   *
+   * It can point to a regular IP (such as `x-client-ip`) or a list of IPs
+   * (such as `x-forwarded-for`).
+   * It can contain IPv4 or IPv6 addresses.
+   * Proxies are filtered out.
+   */
+  trustedHeader?: string | null | undefined;
 };
 
 function validateAndSerialize<
@@ -635,7 +650,7 @@ export function createRemoteClient(options?: RemoteClientOptions | undefined) {
 export default function arcjet<Characteristics extends readonly string[]>(
   options: ArcjetIntegrationOptions<Characteristics> = { rules: [] },
 ): AstroIntegration {
-  const { rules, characteristics, client, proxies } = options;
+  const { rules, characteristics, client, proxies, trustedHeader } = options;
   const arcjetImports = new Set();
   const arcjetRules: string[] = [];
   for (const rule of rules) {
@@ -650,6 +665,10 @@ export default function arcjet<Characteristics extends readonly string[]>(
 
   const proxiesInjection = proxies
     ? `proxies: ${validateAndSerialize(validateProxies, proxies)},`
+    : "";
+
+  const trustedHeaderInjection = trustedHeader
+    ? `trustedHeader: ${validateAndSerialize(validateTrustedHeader, trustedHeader)},`
     : "";
 
   const clientInjection = client
@@ -738,6 +757,7 @@ export default function arcjet<Characteristics extends readonly string[]>(
                           ],
                           ${characteristicsInjection}
                           ${proxiesInjection}
+                          ${trustedHeaderInjection}
                           ${clientInjection}
                         })
 
@@ -800,6 +820,7 @@ export default function arcjet<Characteristics extends readonly string[]>(
               ],
               ${characteristicsInjection}
               ${proxiesInjection}
+              ${trustedHeaderInjection}
               ${clientInjection}
             })
             export default client

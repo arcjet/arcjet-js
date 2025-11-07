@@ -243,6 +243,21 @@ export type ArcjetOptions<
    * These addresses will be excluded when Arcjet detects a public IP address.
    */
   proxies?: ReadonlyArray<string> | null | undefined;
+
+  /**
+   * Name of (lowercase) HTTP request header that you trust (such as
+   * `x-fah-client-ip`).
+   *
+   * This value is *preferred* over IP addresses provided by the
+   * framework and IP addresses found in other headers based on the platform,
+   * in both development and production.
+   *
+   * It can point to a regular IP (such as `x-client-ip`) or a list of IPs
+   * (such as `x-forwarded-for`).
+   * It can contain IPv4 or IPv6 addresses.
+   * Proxies are filtered out.
+   */
+  trustedHeader?: string | null | undefined;
 };
 
 /**
@@ -274,6 +289,7 @@ export default function arcjet<
     ? options.log
     : new Logger({ level: logLevel(process.env) });
   const proxies = options.proxies ? options.proxies.map(parseProxy) : undefined;
+  const trustedHeader = options.trustedHeader ?? undefined;
 
   if (isDevelopment(process.env)) {
     log.warn(
@@ -295,6 +311,7 @@ export default function arcjet<
           fastifyRequest,
           log,
           proxies,
+          trustedHeader,
           properties || {},
         );
 
@@ -342,6 +359,8 @@ export default function arcjet<
  *   Logger.
  * @param proxies
  *   Proxies.
+ * @param trustedHeader
+ *   Trusted header.
  * @param properties
  *   Properties.
  * @returns
@@ -352,6 +371,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   log: ArcjetLogger,
   // TODO(@wooorm-arcjet): use `Cidr` type here.
   proxies: ReadonlyArray<ReturnType<typeof parseProxy>> | undefined,
+  trustedHeader: string | undefined,
   properties: Properties,
 ): ArcjetRequest<Properties> {
   const requestHeaders = request.headers || {};
@@ -371,7 +391,7 @@ function toArcjetRequest<Properties extends PlainObject>(
     xArcjetIp ||
     findIp(
       { headers, socket: request.socket },
-      { platform: platform(process.env), proxies },
+      { platform: platform(process.env), proxies, trustedHeader },
     );
 
   if (ip === "") {

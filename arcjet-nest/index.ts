@@ -255,6 +255,21 @@ export type ArcjetOptions<
      * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
      */
     proxies?: Array<string>;
+
+    /**
+     * Name of (lowercase) HTTP request header that you trust (such as
+     * `x-fah-client-ip`).
+     *
+     * This value is *preferred* over IP addresses provided by the
+     * framework and IP addresses found in other headers based on the platform,
+     * in both development and production.
+     *
+     * It can point to a regular IP (such as `x-client-ip`) or a list of IPs
+     * (such as `x-forwarded-for`).
+     * It can contain IPv4 or IPv6 addresses.
+     * Proxies are filtered out.
+     */
+    trustedHeader?: string | null | undefined;
   }
 >;
 
@@ -327,6 +342,7 @@ function arcjet<
   const proxies = Array.isArray(options.proxies)
     ? options.proxies.map(parseProxy)
     : undefined;
+  const trustedHeader = options.trustedHeader;
 
   if (isDevelopment(process.env)) {
     log.warn(
@@ -355,7 +371,11 @@ function arcjet<
           socket: request.socket,
           headers,
         },
-        { platform: platform(process.env), proxies },
+        {
+          platform: platform(process.env),
+          proxies,
+          trustedHeader,
+        },
       );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
