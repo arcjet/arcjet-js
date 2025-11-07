@@ -271,16 +271,21 @@ export default function arcjet<
     const headers = new ArcjetHeaders(request.headers);
 
     const url = new URL(request.url);
-    let ip = findIp(
-      {
-        // This attempts to lookup the IP in the `ipCache`. This is primarily a
-        // workaround to the API design in Deno that requires access to the
-        // `ServeHandlerInfo` to lookup an IP.
-        ip: ipCache.get(request),
-        headers,
-      },
-      { platform: platform(env), proxies },
-    );
+    const xArcjetIp = isDevelopment(env)
+      ? headers.get("x-arcjet-ip")
+      : undefined;
+    let ip =
+      xArcjetIp ||
+      findIp(
+        {
+          // This attempts to lookup the IP in the `ipCache`. This is primarily a
+          // workaround to the API design in Deno that requires access to the
+          // `ServeHandlerInfo` to lookup an IP.
+          ip: ipCache.get(request),
+          headers,
+        },
+        { platform: platform(env), proxies },
+      );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

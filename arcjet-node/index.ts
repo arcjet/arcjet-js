@@ -368,13 +368,18 @@ export default function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    let ip = findIp(
-      {
-        socket: request.socket,
-        headers,
-      },
-      { platform: platform(env), proxies },
-    );
+    const xArcjetIp = isDevelopment(env)
+      ? headers.get("x-arcjet-ip")
+      : undefined;
+    let ip =
+      xArcjetIp ||
+      findIp(
+        {
+          socket: request.socket,
+          headers,
+        },
+        { platform: platform(env), proxies },
+      );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

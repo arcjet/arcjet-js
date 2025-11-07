@@ -271,13 +271,15 @@ export function createArcjetClient<
     const headers = new ArcjetHeaders(request.headers);
 
     const url = new URL(request.url);
-    let ip = findIp(
-      {
-        ip: clientAddress,
-        headers,
-      },
-      { platform: platform(env), proxies },
-    );
+    const xArcjetIp = isDevelopment(env)
+      ? headers.get("x-arcjet-ip")
+      : undefined;
+    let ip =
+      xArcjetIp ||
+      findIp(
+        { ip: clientAddress, headers },
+        { platform: platform(env), proxies },
+      );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

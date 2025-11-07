@@ -364,10 +364,15 @@ function toArcjetRequest<Properties extends PlainObject>(
     typeof requestHeaders.cookie === "string" ? requestHeaders.cookie : "";
   const headers = new ArcjetHeaders(requestHeaders);
 
-  let ip = findIp(
-    { headers, socket: request.socket },
-    { platform: platform(process.env), proxies },
-  );
+  const xArcjetIp = isDevelopment(process.env)
+    ? headers.get("x-arcjet-ip")
+    : undefined;
+  let ip =
+    xArcjetIp ||
+    findIp(
+      { headers, socket: request.socket },
+      { platform: platform(process.env), proxies },
+    );
 
   if (ip === "") {
     if (isDevelopment(process.env)) {

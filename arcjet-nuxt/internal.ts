@@ -399,10 +399,16 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   event: ArcjetH3Event,
   properties: Properties,
 ): ArcjetRequest<Properties> {
-  let ip = findIp(event.node.req, {
-    platform: platform(process.env),
-    proxies: state.proxies,
-  });
+  const headers = new ArcjetHeaders(event.node.req.headers);
+  const xArcjetIp = isDevelopment(process.env)
+    ? headers.get("x-arcjet-ip")
+    : undefined;
+  let ip =
+    xArcjetIp ||
+    findIp(event.node.req, {
+      platform: platform(process.env),
+      proxies: state.proxies,
+    });
 
   if (!ip) {
     if (isDevelopment(process.env)) {
@@ -417,7 +423,6 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
     }
   }
 
-  const headers = new ArcjetHeaders(event.node.req.headers);
   const host = headers.get("host") ?? "";
   let path = "";
   let query = "";
