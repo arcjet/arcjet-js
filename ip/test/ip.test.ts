@@ -639,10 +639,7 @@ test("`findIp`", async (t) => {
 
     await t.test("should ignore other headers", () => {
       assert.equal(
-        findIp(
-          { headers: { forwarded: "1.1.1.1" } },
-          { platform: "firebase" },
-        ),
+        findIp({ headers: { forwarded: "1.1.1.1" } }, { platform: "firebase" }),
         "",
       );
     });
