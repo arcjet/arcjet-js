@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...@nosecone/next-v1.0.0-beta.15) (2025-11-07)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@nosecone/next:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/rollup-config bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+
 ## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...@nosecone/next-v1.0.0-beta.14) (2025-11-04)
 
 

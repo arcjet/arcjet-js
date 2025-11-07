@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...arcjet-v1.0.0-beta.15) (2025-11-07)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/cache bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/duration bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/headers bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/protocol bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/runtime bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/stable-hash bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/rollup-config bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+
 ## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...arcjet-v1.0.0-beta.14) (2025-11-04)
 
 

@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...v1.0.0-beta.15) (2025-11-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* handle phone numbers with paren groups while restricting groups ([#5362](https://github.com/arcjet/arcjet-js/issues/5362))
+
+### 🚀 New Features
+
+* add `x-arcjet-ip` header in development ([#5397](https://github.com/arcjet/arcjet-js/issues/5397)) ([b40da4f](https://github.com/arcjet/arcjet-js/commit/b40da4fd4725db3356abca818712dd7c65b4964f))
+* **ip:** support cidr strings in proxies ([#5394](https://github.com/arcjet/arcjet-js/issues/5394)) ([adf20ea](https://github.com/arcjet/arcjet-js/commit/adf20ea3c10a64d4bbb7f52b71210eeb93772aef))
+* support `firebase` platform ([#5392](https://github.com/arcjet/arcjet-js/issues/5392)) ([ca46d50](https://github.com/arcjet/arcjet-js/commit/ca46d50c8503ecf75ec8ab8fd1663c7d1d4d687f))
+
+
+### 🪲 Bug Fixes
+
+* handle phone numbers with paren groups while restricting groups ([#5362](https://github.com/arcjet/arcjet-js/issues/5362)) ([49658da](https://github.com/arcjet/arcjet-js/commit/49658da6f9c95e57ca5516f5a1669ffa353f9c03))
+
 ## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2025-11-04)
 
 

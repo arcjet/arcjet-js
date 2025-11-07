@@ -1,6 +1,6 @@
 {
   "name": "arcjet",
-  "version": "1.0.0-beta.14",
+  "version": "1.0.0-beta.15",
   "description": "Arcjet TypeScript and JavaScript SDK core",
   "keywords": [
     "analyze",
@@ -47,17 +47,17 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.0.0-beta.14",
-    "@arcjet/cache": "1.0.0-beta.14",
-    "@arcjet/duration": "1.0.0-beta.14",
-    "@arcjet/headers": "1.0.0-beta.14",
-    "@arcjet/protocol": "1.0.0-beta.14",
-    "@arcjet/runtime": "1.0.0-beta.14",
-    "@arcjet/stable-hash": "1.0.0-beta.14"
+    "@arcjet/analyze": "1.0.0-beta.15",
+    "@arcjet/cache": "1.0.0-beta.15",
+    "@arcjet/duration": "1.0.0-beta.15",
+    "@arcjet/headers": "1.0.0-beta.15",
+    "@arcjet/protocol": "1.0.0-beta.15",
+    "@arcjet/runtime": "1.0.0-beta.15",
+    "@arcjet/stable-hash": "1.0.0-beta.15"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.14",
-    "@arcjet/rollup-config": "1.0.0-beta.14",
+    "@arcjet/eslint-config": "1.0.0-beta.15",
+    "@arcjet/rollup-config": "1.0.0-beta.15",
     "@rollup/wasm-node": "4.52.5",
     "@types/node": "24.9.1",
     "eslint": "9.38.0",
