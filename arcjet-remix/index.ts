@@ -263,14 +263,19 @@ export default function arcjet<
     const headers = new ArcjetHeaders(request.headers);
 
     const url = new URL(request.url);
-    let ip = findIp(
-      {
-        // The `getLoadContext` API will attach the `ip` to the context
-        ip: context?.ip,
-        headers,
-      },
-      { platform: platform(process.env), proxies },
-    );
+    const xArcjetIp = isDevelopment(process.env)
+      ? headers.get("x-arcjet-ip")
+      : undefined;
+    let ip =
+      xArcjetIp ||
+      findIp(
+        {
+          // The `getLoadContext` API will attach the `ip` to the context
+          ip: context?.ip,
+          headers,
+        },
+        { platform: platform(process.env), proxies },
+      );
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

@@ -279,6 +279,119 @@ test("`default`", async function (t) {
     });
 
     await t.test(
+      "should prefer `x-arcjet-ip` in development",
+      async function () {
+        let ip: unknown;
+        const arcjetEnv = process.env.ARCJET_ENV;
+        const mode = process.env.MODE;
+        const nodeEnv = process.env.NODE_ENV;
+        process.env.ARCJET_ENV = "development";
+        process.env.MODE = "";
+        process.env.NODE_ENV = "";
+
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 0,
+          async protect(_, request) {
+            ip = request.ip;
+            return {
+              conclusion: "ALLOW",
+              fingerprint: "",
+              isDenied() {
+                return false;
+              },
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            };
+          },
+          validate() {},
+          version: 0,
+          type: "",
+        };
+
+        const integration = arcjet({
+          client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
+          key: "",
+          log: { ...createArcjetLogger(), debug() {}, info() {} },
+          rules: [[rule]],
+        });
+
+        await integration.protect({
+          request: new Request("https://example.com/", {
+            headers: {
+              "x-arcjet-ip": "185.199.108.153",
+              "x-client-ip": "101.100.100.0",
+            },
+          }),
+        });
+
+        process.env.ARCJET_ENV = arcjetEnv;
+        process.env.MODE = mode;
+        process.env.NODE_ENV = nodeEnv;
+        assert.equal(ip, "185.199.108.153");
+      },
+    );
+
+    await t.test(
+      "should ignore `x-arcjet-ip` in production",
+      async function () {
+        let ip: unknown;
+        const arcjetEnv = process.env.ARCJET_ENV;
+        const mode = process.env.MODE;
+        const nodeEnv = process.env.NODE_ENV;
+        process.env.ARCJET_ENV = "production";
+        process.env.MODE = "";
+        process.env.NODE_ENV = "";
+
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 0,
+          async protect(_, request) {
+            ip = request.ip;
+            return {
+              conclusion: "ALLOW",
+              fingerprint: "",
+              isDenied() {
+                return false;
+              },
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            };
+          },
+          validate() {},
+          version: 0,
+          type: "",
+        };
+
+        const integration = arcjet({
+          client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
+          key: "",
+          log: { ...createArcjetLogger(), debug() {}, info() {} },
+          rules: [[rule]],
+        });
+
+        await integration.protect({
+          request: new Request("https://example.com/", {
+            headers: {
+              "x-arcjet-ip": "185.199.108.153",
+              "x-client-ip": "101.100.100.0",
+            },
+          }),
+        });
+
+        process.env.ARCJET_ENV = arcjetEnv;
+        process.env.MODE = mode;
+        process.env.NODE_ENV = nodeEnv;
+
+        assert.equal(ip, "101.100.100.0");
+      },
+    );
+
+    await t.test(
       "should prefer an IP from `details.context`",
       async function () {
         let ip: unknown;

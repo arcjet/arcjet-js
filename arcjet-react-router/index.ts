@@ -298,6 +298,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   details: ArcjetReactRouterRequest,
   properties: Properties,
 ): ArcjetRequest<Properties> {
+  const headers = new ArcjetHeaders(details.request.headers);
   let ip: string | undefined;
 
   // Get the IP from non-middleware context (no `future.v8_middleware` flag).
@@ -310,6 +311,14 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
     typeof details.context.ip === "string"
   ) {
     ip = details.context.ip;
+  }
+
+  const xArcjetIp = isDevelopment(process.env)
+    ? headers.get("x-arcjet-ip")
+    : undefined;
+
+  if (xArcjetIp) {
+    ip = xArcjetIp;
   }
 
   if (!ip) {
@@ -337,7 +346,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   return {
     ...properties,
     cookies: details.request.headers.get("cookie") ?? undefined,
-    headers: new ArcjetHeaders(details.request.headers),
+    headers,
     host: url.host,
     ip,
     method: details.request.method,
