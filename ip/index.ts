@@ -793,7 +793,12 @@ export type RequestLike = {
 /**
  * Platform name.
  */
-export type Platform = "cloudflare" | "fly-io" | "render" | "vercel";
+export type Platform =
+  | "cloudflare"
+  | "firebase"
+  | "fly-io"
+  | "render"
+  | "vercel";
 
 /**
  * Configuration.
@@ -898,6 +903,31 @@ export function findIp(
     const cfConnectingIp = getHeader(request.headers, "cf-connecting-ip");
     if (isGlobalIp(cfConnectingIp, proxies)) {
       return cfConnectingIp;
+    }
+
+    // If we are using a platform check and don't have a Global IP, we exit
+    // early with an empty IP since the more generic headers shouldn't be
+    // trusted over the platform-specific headers.
+    return "";
+  }
+
+  // Firebase https://github.com/arcjet/arcjet-js/issues/5383
+  if (platform === "firebase") {
+    const fahClientIp = getHeader(request.headers, "x-fah-client-ip");
+    if (isGlobalIp(fahClientIp, proxies)) {
+      return fahClientIp;
+    }
+
+    // https://cloud.google.com/functions/docs/reference/headers#x-forwarded-for
+    // (and https://github.com/arcjet/arcjet-js/issues/5383).
+    // The last are probably going to be proxies which have to be filtered with
+    // `proxies`.
+    const xForwardedFor = getHeader(request.headers, "x-forwarded-for");
+    const xForwardedForItems = parseXForwardedFor(xForwardedFor);
+    for (const item of xForwardedForItems.reverse()) {
+      if (isGlobalIp(item, proxies)) {
+        return item;
+      }
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
