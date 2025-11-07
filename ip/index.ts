@@ -815,8 +815,7 @@ export interface Options {
   proxies?: ReadonlyArray<string | Cidr> | null | undefined;
 
   /**
-   * Name of (lowercase) HTTP request header that you trust (such as
-   * `x-fah-client-ip`).
+   * Name of HTTP request header that you trust (such as `x-fah-client-ip`).
    *
    * This value is *preferred* over IP addresses provided by the
    * framework and IP addresses found in other headers based on the platform,
@@ -889,7 +888,7 @@ export function findIp(
 
   // Trusted header.
   const trustedHeaderValue = trustedHeader
-    ? getHeader(request.headers, trustedHeader)
+    ? getHeader(request.headers, trustedHeader.toLowerCase())
     : undefined;
   const trustedHeaderValues = parseXForwardedFor(trustedHeaderValue);
   for (const item of trustedHeaderValues.reverse()) {

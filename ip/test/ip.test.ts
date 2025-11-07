@@ -353,6 +353,19 @@ test("`findIp`", async (t) => {
     );
   });
 
+  await t.test("should support case-insensitive `trustedHeader`", function () {
+    assert.equal(
+      findIp(
+        {
+          ip: "1.1.1.1",
+          headers: { custom: "2.2.2.2", "x-client-ip": "3.3.3.3" },
+        },
+        { trustedHeader: "CuStOm" },
+      ),
+      "2.2.2.2",
+    );
+  });
+
   await t.test("request: `ip`", async (t) => {
     for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
