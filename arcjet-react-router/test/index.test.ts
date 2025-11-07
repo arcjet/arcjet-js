@@ -320,7 +320,10 @@ test("`default`", async function (t) {
 
         await integration.protect({
           request: new Request("https://example.com/", {
-            headers: { "x-arcjet-ip": "185.199.108.153", "x-client-ip": "101.100.100.0" },
+            headers: {
+              "x-arcjet-ip": "185.199.108.153",
+              "x-client-ip": "101.100.100.0",
+            },
           }),
         });
 
@@ -330,7 +333,6 @@ test("`default`", async function (t) {
         assert.equal(ip, "185.199.108.153");
       },
     );
-
 
     await t.test(
       "should ignore `x-arcjet-ip` in production",
@@ -374,7 +376,10 @@ test("`default`", async function (t) {
 
         await integration.protect({
           request: new Request("https://example.com/", {
-            headers: { "x-arcjet-ip": "185.199.108.153", "x-client-ip": "101.100.100.0" },
+            headers: {
+              "x-arcjet-ip": "185.199.108.153",
+              "x-client-ip": "101.100.100.0",
+            },
           }),
         });
 
