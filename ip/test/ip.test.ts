@@ -608,6 +608,43 @@ test("`findIp`", async (t) => {
     });
   });
 
+  await t.test("platform: `firebase`", async (t) => {
+    await t.test("should support an `x-fah-client-ip` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: { "x-fah-client-ip": input } },
+              { platform: "firebase", proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should support an `x-forwarded-for` header", async (t) => {
+      for (const [message, input, expected, proxies] of cases) {
+        await t.test(message, () => {
+          assert.equal(
+            findIp(
+              { headers: { "x-forwarded-for": input } },
+              { platform: "firebase", proxies },
+            ),
+            expected,
+          );
+        });
+      }
+    });
+
+    await t.test("should ignore other headers", () => {
+      assert.equal(
+        findIp({ headers: { forwarded: "1.1.1.1" } }, { platform: "firebase" }),
+        "",
+      );
+    });
+  });
+
   await t.test("platform: `fly-io`", async (t) => {
     await t.test("should support a `Fly-Client-IP` header", async (t) => {
       for (const [message, input, expected, proxies] of cases) {
