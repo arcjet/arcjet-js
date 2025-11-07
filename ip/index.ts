@@ -858,7 +858,11 @@ export function findIp(
   if (Array.isArray(rawProxies)) {
     for (const cidrOrIp of rawProxies) {
       if (typeof cidrOrIp === "string") {
-        proxies.push(isCidr(cidrOrIp) ? parseCidr(cidrOrIp) : cidrOrIp);
+        proxies.push(parseProxy(cidrOrIp));
+      }
+
+      if (isIpv4Cidr(cidrOrIp) || isIpv6Cidr(cidrOrIp)) {
+        proxies.push(cidrOrIp);
       }
     }
   }

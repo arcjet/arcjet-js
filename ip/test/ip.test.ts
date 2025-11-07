@@ -279,6 +279,21 @@ test("`findIp`", async (t) => {
     );
   });
 
+  await t.test("should filter an invalid value in a proxy", function () {
+    assert.equal(
+      findIp(
+        { headers: { "x-forwarded-for": "1.1.1.1, 2.2.2.2, 3.3.3.3" } },
+        {
+          proxies: [
+            // @ts-expect-error: Testing type annotation violations
+            123456789,
+          ],
+        },
+      ),
+      "3.3.3.3",
+    );
+  });
+
   await t.test("request: `ip`", async (t) => {
     for (const [message, input, expected, proxies] of cases) {
       await t.test(message, () => {
