@@ -1,22 +1,3 @@
-function parseXForwardedFor(value?: string | null): string[] {
-  if (typeof value !== "string") {
-    return [];
-  }
-
-  const forwardedIps = [];
-
-  // As per MDN X-Forwarded-For Headers documentation at
-  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
-  // The `x-forwarded-for` header may return one or more IP addresses as
-  // "client IP, proxy 1 IP, proxy 2 IP", so we want to split by the comma and
-  // trim each item.
-  for (const item of value.split(",")) {
-    forwardedIps.push(item.trim());
-  }
-
-  return forwardedIps;
-}
-
 type Ipv4Tuple = [number, number, number, number];
 type Ipv6Tuple = [
   number,
@@ -896,213 +877,158 @@ export function findIp(
     return requestContextIdentitySourceIp;
   }
 
-  // Validate we have some object for `request.headers`
-  if (typeof request.headers !== "object" || request.headers === null) {
-    return "";
-  }
+  return findIpInHeaders(request.headers, proxies, platform);
+}
 
-  // Platform-specific headers should only be accepted when we can determine
-  // that we are running on that platform. For example, the `CF-Connecting-IP`
-  // header should only be accepted when running on Cloudflare; otherwise, it
-  // can be spoofed.
+/**
+ * Header name and corresponding format.
+ */
+interface Candidate {
+  /**
+   * Format.
+   */
+  format: Format;
 
-  if (platform === "cloudflare") {
+  /**
+   * Name.
+   */
+  header: string;
+}
+
+/**
+ * Format of header value.
+ *
+ * * `ipv6` — single IPv6 address (example: `cf-connecting-ipv6`)
+ * * `ips` — list of comma-separated IP addresses (example: `x-forwarded-for`)
+ *   padded by whitespace
+ * * `ip` — single IP address
+ */
+type Format = "ipv6" | "ips" | "ip";
+
+/**
+ * Candidates by platform.
+ */
+const candidatesByPlatform: Record<Platform, ReadonlyArray<Candidate>> = {
+  // https://developers.cloudflare.com/fundamentals/reference/http-headers/
+  cloudflare: [
     // CF-Connecting-IPv6: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ipv6
-    const cfConnectingIpv6 = getHeader(request.headers, "cf-connecting-ipv6");
-    if (isGlobalIpv6(cfConnectingIpv6, proxies)) {
-      return cfConnectingIpv6;
-    }
-
+    { format: "ipv6", header: "cf-connecting-ipv6" },
     // CF-Connecting-IP: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ip
-    const cfConnectingIp = getHeader(request.headers, "cf-connecting-ip");
-    if (isGlobalIp(cfConnectingIp, proxies)) {
-      return cfConnectingIp;
-    }
-
-    // If we are using a platform check and don't have a Global IP, we exit
-    // early with an empty IP since the more generic headers shouldn't be
-    // trusted over the platform-specific headers.
-    return "";
-  }
-
+    { format: "ip", header: "cf-connecting-ip" },
+  ],
   // Firebase https://github.com/arcjet/arcjet-js/issues/5383
-  if (platform === "firebase") {
-    const fahClientIp = getHeader(request.headers, "x-fah-client-ip");
-    if (isGlobalIp(fahClientIp, proxies)) {
-      return fahClientIp;
-    }
-
+  firebase: [
+    { format: "ip", header: "x-fah-client-ip" },
     // https://cloud.google.com/functions/docs/reference/headers#x-forwarded-for
     // (and https://github.com/arcjet/arcjet-js/issues/5383).
     // The last are probably going to be proxies which have to be filtered with
     // `proxies`.
-    const xForwardedFor = getHeader(request.headers, "x-forwarded-for");
-    const xForwardedForItems = parseXForwardedFor(xForwardedFor);
-    for (const item of xForwardedForItems.reverse()) {
-      if (isGlobalIp(item, proxies)) {
-        return item;
-      }
-    }
-
-    // If we are using a platform check and don't have a Global IP, we exit
-    // early with an empty IP since the more generic headers shouldn't be
-    // trusted over the platform-specific headers.
-    return "";
-  }
-
+    { format: "ips", header: "x-forwarded-for" },
+  ],
   // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
-  if (platform === "fly-io") {
+  "fly-io": [
     // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
-    const flyClientIp = getHeader(request.headers, "fly-client-ip");
-    if (isGlobalIp(flyClientIp, proxies)) {
-      return flyClientIp;
-    }
-
-    // If we are using a platform check and don't have a Global IP, we exit
-    // early with an empty IP since the more generic headers shouldn't be
-    // trusted over the platform-specific headers.
-    return "";
-  }
-
-  if (platform === "vercel") {
+    { format: "ip", header: "fly-client-ip" },
+  ],
+  vercel: [
     // https://vercel.com/docs/edge-network/headers/request-headers#x-real-ip
     // Also used by `@vercel/functions`, see:
     // https://github.com/vercel/vercel/blob/d7536d52c87712b1b3f83e4b0fd535a1fb7e384c/packages/functions/src/headers.ts#L12
-    const xRealIp = getHeader(request.headers, "x-real-ip");
-    if (isGlobalIp(xRealIp, proxies)) {
-      return xRealIp;
-    }
-
+    { format: "ip", header: "x-real-ip" },
     // https://vercel.com/docs/edge-network/headers/request-headers#x-vercel-forwarded-for
     // By default, it seems this will be 1 address, but they discuss trusted
     // proxy forwarding so we try to parse it like normal. See
     // https://vercel.com/docs/edge-network/headers/request-headers#custom-x-forwarded-for-ip
-    const xVercelForwardedFor = getHeader(
-      request.headers,
-      "x-vercel-forwarded-for",
-    );
-    const xVercelForwardedForItems = parseXForwardedFor(xVercelForwardedFor);
-    // As per MDN X-Forwarded-For Headers documentation at
-    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
-    // We may find more than one IP in the `x-forwarded-for` header. Since the
-    // first IP will be closest to the user (and the most likely to be spoofed),
-    // we want to iterate tail-to-head so we reverse the list.
-    for (const item of xVercelForwardedForItems.reverse()) {
-      if (isGlobalIp(item, proxies)) {
-        return item;
-      }
-    }
-
+    { format: "ips", header: "x-vercel-forwarded-for" },
     // https://vercel.com/docs/edge-network/headers/request-headers#x-forwarded-for
     // By default, it seems this will be 1 address, but they discuss trusted
     // proxy forwarding so we try to parse it like normal. See
     // https://vercel.com/docs/edge-network/headers/request-headers#custom-x-forwarded-for-ip
-    const xForwardedFor = getHeader(request.headers, "x-forwarded-for");
-    const xForwardedForItems = parseXForwardedFor(xForwardedFor);
-    // As per MDN X-Forwarded-For Headers documentation at
-    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
-    // We may find more than one IP in the `x-forwarded-for` header. Since the
-    // first IP will be closest to the user (and the most likely to be spoofed),
-    // we want to iterate tail-to-head so we reverse the list.
-    for (const item of xForwardedForItems.reverse()) {
-      if (isGlobalIp(item, proxies)) {
-        return item;
+    { format: "ips", header: "x-forwarded-for" },
+  ],
+  render: [
+    // True-Client-IP: https://community.render.com/t/what-number-of-proxies-sit-in-front-of-an-express-app-deployed-on-render/35981/2
+    { format: "ip", header: "true-client-ip" },
+  ],
+};
+
+/**
+ * Generic candidates.
+ */
+const genericCanidates: ReadonlyArray<Candidate> = [
+  // Standard headers used by Amazon EC2, Heroku, and others.
+  { format: "ip", header: "x-client-ip" },
+  // Load-balancers (AWS ELB) or proxies.
+  { format: "ips", header: "x-forwarded-for" },
+  // DigitalOcean: https://www.digitalocean.com/community/questions/app-platform-client-ip
+  { format: "ip", header: "do-connecting-ip" },
+  // Fastly and Firebase hosting header (When forwared to cloud function)
+  { format: "ip", header: "fastly-client-ip" },
+  // Akamai
+  { format: "ip", header: "true-client-ip" },
+  // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies
+  { format: "ip", header: "x-real-ip" },
+  // Rackspace LB and Riverbed's Stingray?
+  { format: "ip", header: "x-cluster-client-ip" },
+  // Does this exist? If so, should it use a `forwarded` format?
+  { format: "ip", header: "x-forwarded" },
+  // Does this exist?
+  { format: "ip", header: "forwarded-for" },
+  // TODO: this should be parsed with a new format: `forwarded`.
+  { format: "ip", header: "forwarded" },
+  // X-Appengine-User-IP: https://cloud.google.com/appengine/docs/standard/reference/request-headers?tab=node.js
+  { format: "ip", header: "x-appengine-user-ip" },
+];
+
+/**
+ * Find an IP address in request headers based on a platform.
+ *
+ * @param headers
+ *   Headers.
+ * @param proxies
+ *   Proxies (optional).
+ * @param platform
+ *   Platform (optional).
+ * @returns
+ *   IP address if found; empty string otherwise.
+ */
+function findIpInHeaders(
+  headers: HeaderLike["headers"],
+  proxies: ReadonlyArray<Cidr | string> | null | undefined,
+  platform: Platform | null | undefined,
+) {
+  const candidates =
+    platform && platform in candidatesByPlatform
+      ? candidatesByPlatform[platform]
+      : genericCanidates;
+
+  if (headers && typeof headers === "object") {
+    for (const { format, header } of candidates) {
+      const value = getHeader(headers, header);
+
+      if (value) {
+        if (format === "ips") {
+          // As per MDN X-Forwarded-For Headers documentation at
+          // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
+          // The `x-forwarded-for` header may return one or more IP addresses as
+          // "client IP, proxy 1 IP, proxy 2 IP", so we want to split by the comma and
+          // trim each item.
+          for (const item of value.split(",").reverse()) {
+            const trimmed = item.trim();
+
+            if (isGlobalIp(trimmed, proxies)) {
+              return trimmed;
+            }
+          }
+        } else {
+          const isIp = format === "ipv6" ? isGlobalIpv6 : isGlobalIp;
+
+          if (isIp(value, proxies)) {
+            return value;
+          }
+        }
       }
     }
-
-    // If we are using a platform check and don't have a Global IP, we exit
-    // early with an empty IP since the more generic headers shouldn't be
-    // trusted over the platform-specific headers.
-    return "";
-  }
-
-  if (platform === "render") {
-    // True-Client-IP: https://community.render.com/t/what-number-of-proxies-sit-in-front-of-an-express-app-deployed-on-render/35981/2
-    const trueClientIp = getHeader(request.headers, "true-client-ip");
-    if (isGlobalIp(trueClientIp, proxies)) {
-      return trueClientIp;
-    }
-
-    // If we are using a platform check and don't have a Global IP, we exit
-    // early with an empty IP since the more generic headers shouldn't be
-    // trusted over the platform-specific headers.
-    return "";
-  }
-
-  // Standard headers used by Amazon EC2, Heroku, and others.
-  const xClientIp = getHeader(request.headers, "x-client-ip");
-  if (isGlobalIp(xClientIp, proxies)) {
-    return xClientIp;
-  }
-
-  // Load-balancers (AWS ELB) or proxies.
-  const xForwardedFor = getHeader(request.headers, "x-forwarded-for");
-  const xForwardedForItems = parseXForwardedFor(xForwardedFor);
-  // As per MDN X-Forwarded-For Headers documentation at
-  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
-  // We may find more than one IP in the `x-forwarded-for` header. Since the
-  // first IP will be closest to the user (and the most likely to be spoofed),
-  // we want to iterate tail-to-head so we reverse the list.
-  for (const item of xForwardedForItems.reverse()) {
-    if (isGlobalIp(item, proxies)) {
-      return item;
-    }
-  }
-
-  // DigitalOcean.
-  // DO-Connecting-IP: https://www.digitalocean.com/community/questions/app-platform-client-ip
-  const doConnectingIp = getHeader(request.headers, "do-connecting-ip");
-  if (isGlobalIp(doConnectingIp, proxies)) {
-    return doConnectingIp;
-  }
-
-  // Fastly and Firebase hosting header (When forwared to cloud function)
-  // Fastly-Client-IP
-  const fastlyClientIp = getHeader(request.headers, "fastly-client-ip");
-  if (isGlobalIp(fastlyClientIp, proxies)) {
-    return fastlyClientIp;
-  }
-
-  // Akamai
-  // True-Client-IP
-  const trueClientIp = getHeader(request.headers, "true-client-ip");
-  if (isGlobalIp(trueClientIp, proxies)) {
-    return trueClientIp;
-  }
-
-  // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies
-  // X-Real-IP
-  const xRealIp = getHeader(request.headers, "x-real-ip");
-  if (isGlobalIp(xRealIp, proxies)) {
-    return xRealIp;
-  }
-
-  // Rackspace LB and Riverbed's Stingray?
-  const xClusterClientIp = getHeader(request.headers, "x-cluster-client-ip");
-  if (isGlobalIp(xClusterClientIp, proxies)) {
-    return xClusterClientIp;
-  }
-
-  const xForwarded = getHeader(request.headers, "x-forwarded");
-  if (isGlobalIp(xForwarded, proxies)) {
-    return xForwarded;
-  }
-
-  const forwardedFor = getHeader(request.headers, "forwarded-for");
-  if (isGlobalIp(forwardedFor, proxies)) {
-    return forwardedFor;
-  }
-
-  const forwarded = getHeader(request.headers, "forwarded");
-  if (isGlobalIp(forwarded, proxies)) {
-    return forwarded;
-  }
-
-  // Google Cloud App Engine
-  // X-Appengine-User-IP: https://cloud.google.com/appengine/docs/standard/reference/request-headers?tab=node.js
-  const xAppEngineUserIp = getHeader(request.headers, "x-appengine-user-ip");
-  if (isGlobalIp(xAppEngineUserIp, proxies)) {
-    return xAppEngineUserIp;
   }
 
   return "";
