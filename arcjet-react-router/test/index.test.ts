@@ -540,7 +540,7 @@ test("`default`", async function (t) {
         key: "",
         log: { ...createArcjetLogger(), debug() {}, info() {} },
         rules: [[rule]],
-        services: [
+        proxies: [
           {
             ips: [
               "103.21.244.0/22",

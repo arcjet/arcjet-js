@@ -182,6 +182,31 @@ const cases: Array<Case> = [
   ],
 ];
 
+const cloudflareIps = [
+  "103.21.244.0/22",
+  "103.22.200.0/22",
+  "103.31.4.0/22",
+  "104.16.0.0/13",
+  "104.24.0.0/14",
+  "108.162.192.0/18",
+  "131.0.72.0/22",
+  "141.101.64.0/18",
+  "162.158.0.0/15",
+  "172.64.0.0/13",
+  "173.245.48.0/20",
+  "188.114.96.0/20",
+  "190.93.240.0/20",
+  "197.234.240.0/22",
+  "198.41.128.0/17",
+  "2400:cb00::/32",
+  "2405:8100::/32",
+  "2405:b500::/32",
+  "2606:4700::/32",
+  "2803:f800::/32",
+  "2a06:98c0::/29",
+  "2c0f:f248::/32",
+];
+
 test("@arcjet/ip", async function (t) {
   await t.test("should expose the public api", async function () {
     assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
@@ -275,6 +300,29 @@ test("`findIp`", async (t) => {
       findIp(
         { headers: { "x-forwarded-for": "1.1.1.1, 2.2.2.2, 3.3.3.3" } },
         { proxies: [parseProxy("3.3.3.3/32")] },
+      ),
+      "2.2.2.2",
+    );
+  });
+
+  await t.test(
+    "should support a service in `proxies` not matching",
+    function () {
+      assert.equal(
+        findIp(
+          { ip: "1.1.1.1", headers: { "cf-connecting-ip": "2.2.2.2" } },
+          { proxies: [{ ips: cloudflareIps, platform: "cloudflare" }] },
+        ),
+        "1.1.1.1",
+      );
+    },
+  );
+
+  await t.test("should support a service in `proxies` matching", function () {
+    assert.equal(
+      findIp(
+        { ip: "162.158.158.6", headers: { "cf-connecting-ip": "2.2.2.2" } },
+        { proxies: [{ ips: cloudflareIps, platform: "cloudflare" }] },
       ),
       "2.2.2.2",
     );
