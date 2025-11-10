@@ -7,7 +7,7 @@ import {
 import { ArcjetHeaders } from "@arcjet/headers";
 import {
   type Cidr,
-  type Platform,
+  type Service,
   findIp,
   matches,
   parseProxy,
@@ -37,21 +37,6 @@ interface Empty {
 }
 
 /**
- * Service.
- */
-interface Service {
-  /**
-   * IP addresses and CIDR ranges of the service (required).
-   */
-  ips: ReadonlyArray<Cidr | string>;
-
-  /**
-   * Platform of the service (required).
-   */
-  platform: Platform;
-}
-
-/**
  * Configuration for the React Router integration of Arcjet.
  *
  * @template Rules
@@ -64,10 +49,10 @@ export interface ArcjetOptions<
   Characteristics extends ReadonlyArray<string>,
 > extends CoreOptions<Rules, Characteristics> {
   /**
-   * IP addresses and CIDR ranges of trusted load balancers and proxies
-   * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+   * IP addresses, CIDR ranges, and services of trusted load balancers and
+   * proxies (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
-  proxies?: ReadonlyArray<string> | null | undefined;
+  proxies?: ReadonlyArray<Service | string> | null | undefined;
 
   /**
    * Alternative services to identify requests from (optional).
@@ -190,12 +175,7 @@ interface State {
   /**
    * Configured proxies.
    */
-  proxies: ReadonlyArray<Cidr | string>;
-
-  /**
-   * Configured services.
-   */
-  services: ReadonlyArray<Service>;
+  proxies: ReadonlyArray<Service | Cidr | string>;
 }
 
 /**
@@ -225,8 +205,10 @@ export default function arcjet<
   const state: State = {
     client: options.client ?? createRemoteClient(),
     log: options.log ?? new Logger({ level: logLevel(process.env) }),
-    proxies: options.proxies?.map(parseProxy) ?? [],
-    services: options.services ?? [],
+    proxies:
+      options.proxies?.map(function (d) {
+        return typeof d === "string" ? parseProxy(d) : d;
+      }) ?? [],
   };
 
   if (isDevelopment(process.env)) {
@@ -358,17 +340,6 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
       platform: platform(process.env),
       proxies: state.proxies,
     });
-  }
-
-  for (const service of state.services) {
-    if (matches(ip, service.ips)) {
-      ip = findIp(
-        { headers: details.request.headers },
-        { platform: service.platform },
-      );
-    } else {
-      break;
-    }
   }
 
   if (!ip) {

@@ -11,7 +11,7 @@ import type {
 } from "arcjet";
 import {
   type Cidr,
-  type Platform,
+  type Service,
   findIp,
   matches,
   parseProxy,
@@ -250,21 +250,6 @@ function cookiesToString(cookies: string | string[] | undefined): string {
 }
 
 /**
- * Service.
- */
-interface Service {
-  /**
-   * IP addresses and CIDR ranges of the service (required).
-   */
-  ips: ReadonlyArray<Cidr | string>;
-
-  /**
-   * Platform of the service (required).
-   */
-  platform: Platform;
-}
-
-/**
  * Configuration for the Node.js integration of Arcjet.
  *
  * @template Rules
@@ -278,10 +263,10 @@ export type ArcjetOptions<
 > = Simplify<
   CoreOptions<Rules, Characteristics> & {
     /**
-     * IP addresses and CIDR ranges of trusted load balancers and proxies
-     * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+     * IP addresses, CIDR ranges, and services of trusted load balancers and
+     * proxies (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
      */
-    proxies?: Array<string>;
+    proxies?: ReadonlyArray<Service | string> | null | undefined;
 
     /**
      * Alternative services to identify requests from (optional).
@@ -374,9 +359,10 @@ export default function arcjet<
         level: logLevel(env),
       });
 
-  const proxies = Array.isArray(options.proxies)
-    ? options.proxies.map(parseProxy)
-    : undefined;
+  const proxies =
+    options.proxies?.map(function (d) {
+      return typeof d === "string" ? parseProxy(d) : d;
+    }) ?? [];
   const services = options.services ?? [];
 
   if (isDevelopment(env)) {
