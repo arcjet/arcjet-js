@@ -9,13 +9,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import {
-  type Cidr,
-  type Service,
-  findIp,
-  matches,
-  parseProxy,
-} from "@arcjet/ip";
+import { type Service, findIp, parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
@@ -393,14 +387,6 @@ export default function arcjet<
         },
         { platform: platform(env), proxies },
       );
-
-    for (const service of services) {
-      if (matches(ip, service.ips)) {
-        ip = findIp({ headers }, { platform: service.platform });
-      } else {
-        break;
-      }
-    }
 
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP

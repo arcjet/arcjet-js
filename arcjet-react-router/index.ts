@@ -5,13 +5,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import {
-  type Cidr,
-  type Service,
-  findIp,
-  matches,
-  parseProxy,
-} from "@arcjet/ip";
+import { type Cidr, type Service, findIp, parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
