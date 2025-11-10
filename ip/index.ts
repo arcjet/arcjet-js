@@ -126,14 +126,14 @@ export function matches(
 }
 
 /**
- * Check whether `left` matches any of the given `right`.
+ * Check whether `left` matches `right`.
  *
  * @param left
  *   IPv4 or IPv6 address.
  * @param leftSegments
- *   IPv4 or IPv6 address.
+ *   Parsed segments of `left`.
  * @param right
- *   IPs and CIDR ranges.
+ *   IP or parsed CIDR range.
  * @returns
  *   Whether `left` matches `right`.
  */
