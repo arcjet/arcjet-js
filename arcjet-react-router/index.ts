@@ -47,11 +47,6 @@ export interface ArcjetOptions<
    * proxies (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
   proxies?: ReadonlyArray<Service | string> | null | undefined;
-
-  /**
-   * Alternative services to identify requests from (optional).
-   */
-  services?: ReadonlyArray<Service> | null | undefined;
 }
 
 // TODO: remove this unused type.
