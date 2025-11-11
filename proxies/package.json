@@ -1,0 +1,57 @@
+{
+  "author": {
+    "email": "support@arcjet.com",
+    "name": "Arcjet",
+    "url": "https://arcjet.com"
+  },
+  "bugs": {
+    "email": "support@arcjet.com",
+    "url": "https://github.com/arcjet/arcjet-js/issues"
+  },
+  "dependencies": {},
+  "description": "Arcjet utility for lists of IP ranges",
+  "devDependencies": {
+    "@arcjet/eslint-config": "1.0.0-beta.15",
+    "@arcjet/rollup-config": "1.0.0-beta.15",
+    "@rollup/wasm-node": "4.52.5",
+    "@types/node": "24.9.1",
+    "eslint": "9.38.0",
+    "typescript": "5.9.3"
+  },
+  "exports": "./index.js",
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "homepage": "https://arcjet.com",
+  "keywords": [
+    "arcjet",
+    "cloudflare",
+    "ip",
+    "proxy",
+    "utility",
+    "util"
+  ],
+  "license": "Apache-2.0",
+  "name": "@arcjet/proxies",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "proxies"
+  },
+  "scripts": {
+    "build": "rollup --config rollup.config.js",
+    "generate": "node build.js",
+    "lint": "eslint .",
+    "prepublishOnly": "npm run build",
+    "test-api": "node --test",
+    "test-coverage": "node --experimental-test-coverage --test",
+    "test": "npm run build && npm run lint && npm run test-coverage"
+  },
+  "type": "module",
+  "version": "1.0.0-beta.15"
+}

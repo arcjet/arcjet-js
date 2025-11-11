@@ -1,0 +1,4 @@
+*.js
+*.d.ts
+!eslint.config.js
+!rollup.config.js

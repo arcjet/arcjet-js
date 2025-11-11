@@ -28,6 +28,7 @@
   "nosecone-next": "1.0.0-beta.15",
   "nosecone-sveltekit": "1.0.0-beta.15",
   "protocol": "1.0.0-beta.15",
+  "proxies": "1.0.0-beta.15",
   "redact": "1.0.0-beta.15",
   "redact-wasm": "1.0.0-beta.15",
   "rollup-config": "1.0.0-beta.15",
