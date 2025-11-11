@@ -12,7 +12,6 @@
   "scripts": {
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "prepare": "turbo run build",
     "test-api": "turbo run test-api",
     "test-coverage": "turbo run test-coverage",
     "test": "turbo test"
