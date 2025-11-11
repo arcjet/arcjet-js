@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...@arcjet/ip-v1.0.0-beta.15) (2025-11-07)
+
+
+### 🚀 New Features
+
+* **ip:** support cidr strings in proxies ([#5394](https://github.com/arcjet/arcjet-js/issues/5394)) ([adf20ea](https://github.com/arcjet/arcjet-js/commit/adf20ea3c10a64d4bbb7f52b71210eeb93772aef))
+* support `firebase` platform ([#5392](https://github.com/arcjet/arcjet-js/issues/5392)) ([ca46d50](https://github.com/arcjet/arcjet-js/commit/ca46d50c8503ecf75ec8ab8fd1663c7d1d4d687f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/rollup-config bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+
 ## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...@arcjet/ip-v1.0.0-beta.14) (2025-11-04)
 
 

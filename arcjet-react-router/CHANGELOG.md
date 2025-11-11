@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...@arcjet/react-router-v1.0.0-beta.15) (2025-11-07)
+
+
+### 🚀 New Features
+
+* add `x-arcjet-ip` header in development ([#5397](https://github.com/arcjet/arcjet-js/issues/5397)) ([b40da4f](https://github.com/arcjet/arcjet-js/commit/b40da4fd4725db3356abca818712dd7c65b4964f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/headers bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/ip bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/logger bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/protocol bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/transport bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * arcjet bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+  * devDependencies
+    * @arcjet/cache bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/eslint-config bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+    * @arcjet/rollup-config bumped from 1.0.0-beta.14 to 1.0.0-beta.15
+
 ## [1.0.0-beta.14](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.13...@arcjet/react-router-v1.0.0-beta.14) (2025-11-04)
 
 
