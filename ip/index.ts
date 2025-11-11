@@ -1,3 +1,235 @@
+/**
+ * Known forwarded header parameter names.
+ */
+type ForwardedParameter = "by" | "for" | "host" | "proto";
+
+/**
+ * Element.
+ */
+type ForwardedElement = {
+  [key in ForwardedParameter]?: string;
+};
+
+/**
+ * Parse the `Forwarded` header field value into an array of objects.
+ *
+ * Based on [`forwarded-parse`](https://github.com/lpinca/forwarded-parse/blob/master/index.js),
+ * without parse errors, with TypeScript and protection against prototype pollution.
+ *
+ * @see https://datatracker.ietf.org/doc/html/rfc7239#section-6.2
+ *
+ * @param header
+ *   Header field value.
+ * @returns
+ *   List of parsed  `Forwarded` elements; `undefined` on parse error.
+ */
+function parseForwarded(header: string): Array<ForwardedElement> | undefined {
+  let mustUnescape = false;
+  let isEscaping = false;
+  let inQuotes = false;
+  let element: ForwardedElement = {};
+  const output: Array<ForwardedElement> = [];
+  let start = -1;
+  let end = -1;
+  let parameter: string | undefined;
+  let code: number | undefined;
+  let index = 0;
+
+  for (; index < header.length; index++) {
+    code = header.charCodeAt(index);
+
+    if (parameter === undefined) {
+      if (
+        index !== 0 &&
+        start === -1 &&
+        (code === 9 /* `\t` */ || code === 32) /* ` ` */
+      ) {
+        continue;
+      }
+
+      if (tokenCharacter(code)) {
+        if (start === -1) start = index;
+      } else if (code === 61 /* `=` */ && start !== -1) {
+        parameter = header.slice(start, index).toLowerCase();
+        start = -1;
+      } else {
+        // Parse error: unexpected character at `index`.
+        return;
+      }
+    } else {
+      if (
+        isEscaping &&
+        (code === 9 /* `\t` */ ||
+          //
+          (code >= 32 /* ` ` */ && code <= 126) /* `~` */ ||
+          // Extended ASCII.
+          (code > 127 /* DEL */ && code < 256))
+      ) {
+        isEscaping = false;
+      } else if (tokenCharacter(code)) {
+        if (end !== -1) {
+          // Parse error: unexpected character at `index`.
+          return;
+        }
+
+        if (start === -1) start = index;
+      } else if (
+        // Delimiter (per section 3.2.6 of RFC 7230).
+        code === 34 /* `"` */ ||
+        code === 40 /* `(` */ ||
+        code === 41 /* `)` */ ||
+        code === 44 /* `,` */ ||
+        code === 47 /* `/` */ ||
+        (code >= 58 && code <= 64) /* `:`, `;`, `<`, `=`, `>`, `?` `@` */ ||
+        (code >= 91 && code <= 93) /* `[`, `\`, `]` */ ||
+        code === 123 /* `{` */ ||
+        code === 125 /* `}` */ ||
+        // Extended ASCII.
+        (code > 127 /* DEL */ && code < 256)
+      ) {
+        if (inQuotes) {
+          if (code === 34 /* `"` */) {
+            inQuotes = false;
+            end = index;
+          } else if (code === 92 /* `\` */) {
+            if (start === -1) start = index;
+            isEscaping = mustUnescape = true;
+          } else if (start === -1) {
+            start = index;
+          }
+        } else if (
+          code === 34 /* `"` */ &&
+          header.charCodeAt(index - 1) === 61 /* `=` */
+        ) {
+          inQuotes = true;
+        } else if (
+          (code === 44 /* `,` */ || code === 59) /* `;` */ &&
+          (start !== -1 || end !== -1)
+        ) {
+          let value = "";
+
+          if (start !== -1) {
+            if (end === -1) end = index;
+            value = header.slice(start, end);
+            if (mustUnescape) value = decode(value);
+          }
+
+          if (
+            parameter === "by" ||
+            parameter === "for" ||
+            parameter === "host" ||
+            parameter === "proto"
+          ) {
+            element[parameter] = value;
+          }
+
+          if (code === 44 /* `,` */) {
+            output.push(element);
+            element = {};
+          }
+
+          parameter = undefined;
+          start = end = -1;
+        } else {
+          // Parse error: unexpected character at `index`.
+          return;
+        }
+      } else if (code === 9 /* `\t` */ || code === 32 /* ` ` */) {
+        if (end !== -1) continue;
+
+        if (inQuotes) {
+          if (start === -1) start = index;
+        } else if (start !== -1) {
+          end = index;
+        } else {
+          // Parse error: unexpected character at `index`.
+          return;
+        }
+      } else {
+        // Parse error: unexpected character at `index`.
+        return;
+      }
+    }
+  }
+
+  if (
+    parameter === undefined ||
+    inQuotes ||
+    (start === -1 && end === -1) ||
+    code === 9 /* `\t` */ ||
+    code === 32 /* ` ` */
+  ) {
+    // Parse error: unexpected eof.
+    return;
+  }
+
+  let value = "";
+
+  if (start !== -1) {
+    if (end === -1) end = index;
+    value = header.slice(start, end);
+    if (mustUnescape) value = decode(value);
+  }
+
+  if (
+    parameter === "by" ||
+    parameter === "for" ||
+    parameter === "host" ||
+    parameter === "proto"
+  ) {
+    element[parameter] = value;
+  }
+
+  output.push(element);
+  return output;
+}
+
+/**
+ * Check if a character is allowed in a token as defined in section 3.2.6
+ * of RFC 7230.
+ *
+ * @param code
+ *   Character code.
+ * @returns
+ *   Whether the character is a token character.
+ */
+function tokenCharacter(code: number): boolean {
+  return (
+    code === 33 /* `!` */ ||
+    code === 35 /* `#` */ ||
+    code === 36 /* `$` */ ||
+    code === 37 /* `%` */ ||
+    code === 38 /* `&` */ ||
+    code === 39 /* `'` */ ||
+    code === 42 /* `*` */ ||
+    code === 43 /* `+` */ ||
+    code === 45 /* `-` */ ||
+    code === 46 /* `.` */ ||
+    (code >= 48 /* `0` */ && code <= 57) /* `9` */ ||
+    (code >= 65 /* `A` */ && code <= 90) /* `Z` */ ||
+    code === 94 /* `^` */ ||
+    code === 95 /* `_` */ ||
+    code === 96 /* `` ` `` */ ||
+    (code >= 97 /* `a` */ && code <= 122) /* `z` */ ||
+    code === 124 /* `|` */ ||
+    code === 126 /* `~` */
+  );
+}
+
+/**
+ * Unescape a string.
+ *
+ * Assumes the entire string is valid and contains correctly escaped characters.
+ *
+ * @param value
+ *   Value.
+ * @returns
+ *   Result.
+ */
+function decode(value: string): string {
+  return value.replace(/\\(.)/g, "$1");
+}
+
 function parseXForwardedFor(value?: string | null): string[] {
   if (typeof value !== "string") {
     return [];
@@ -1094,8 +1326,32 @@ export function findIp(
   }
 
   const forwarded = getHeader(request.headers, "forwarded");
-  if (isGlobalIp(forwarded, proxies)) {
-    return forwarded;
+  const forwardedElements = forwarded ? parseForwarded(forwarded) : undefined;
+
+  if (forwardedElements) {
+    for (const element of forwardedElements.reverse()) {
+      const value = element.for;
+      let candidate: string | undefined;
+
+      // Format such as `[2001:db8:cafe::17]:4711` with a port outside of the
+      // square brackets.
+      if (value && value.charCodeAt(0) === 91 /* '[' */) {
+        // IPv6 addresses must be in square brackets and the optional port
+        // outside, so that’s the probable path.
+        // For malformed input, get it until the end, in which case `isGlobalIp`
+        // below will ignore it.
+        const end = value.indexOf("]");
+        candidate = value.slice(1, end === -1 ? undefined : end);
+      } else if (value) {
+        // For IPv4 addresses, drop the port if that’s there, or take the whole.
+        const end = value.indexOf(":");
+        candidate = value.slice(0, end === -1 ? undefined : end);
+      }
+
+      if (isGlobalIp(candidate, proxies)) {
+        return candidate;
+      }
+    }
   }
 
   // Google Cloud App Engine

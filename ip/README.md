@@ -87,6 +87,11 @@ Derivative work based on [`getClientIp` from `request-ip`][request-ip-client-ip]
 licensed under [MIT][request-ip-license] © Petar Bojinov.
 Our work cherry picks only what we need.
 
+Derivative work based on [`forwarded-parse`][forwarded-parse]
+licensed under [MIT][forwarded-parse-license] © Luigi Pinca.
+Our work removes parse errors, protects against prototype pollution, and adds
+TypeScript.
+
 [arcjet]: https://arcjet.com
 [request-ip-client-ip]: https://github.com/pbojinov/request-ip/blob/e1d0f4b/src/index.js#L55
 [request-ip-license]: https://github.com/pbojinov/request-ip/blob/e1d0f4b/LICENSE.md
@@ -97,3 +102,5 @@ Our work cherry picks only what we need.
 [rust-license-mit]: https://github.com/rust-lang/rust/blob/07921b5/LICENSE-MIT
 [rust-parser]: https://github.com/rust-lang/rust/blob/07921b5/library/core/src/net/parser.rs#L34
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[forwarded-parse]: https://github.com/lpinca/forwarded-parse/tree/2d397f0
+[forwarded-parse-license]: https://github.com/lpinca/forwarded-parse/blob/2d397f0/LICENSE
