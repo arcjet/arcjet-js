@@ -381,7 +381,6 @@ export default function arcjet<
         },
         { platform: platform(env), proxies },
       );
-
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

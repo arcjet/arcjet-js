@@ -6,8 +6,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-// TODO(@wooorm-arcjet): Expose `Cidr` from `@arcjet/ip`.
-import findIp, { parseProxy } from "@arcjet/ip";
+import { type Cidr, type Service, findIp, parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
 import { createClient } from "@arcjet/protocol/client.js";
@@ -239,10 +238,10 @@ export type ArcjetOptions<
   Characteristics extends ReadonlyArray<string>,
 > = CoreOptions<Rules, Characteristics> & {
   /**
-   * One or more IP Address of trusted proxies in front of the application.
-   * These addresses will be excluded when Arcjet detects a public IP address.
+   * IP addresses, CIDR ranges, and services of trusted load balancers and
+   * proxies (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
-  proxies?: ReadonlyArray<string> | null | undefined;
+  proxies?: ReadonlyArray<Service | string> | null | undefined;
 };
 
 /**
@@ -273,7 +272,10 @@ export default function arcjet<
   const log = options.log
     ? options.log
     : new Logger({ level: logLevel(process.env) });
-  const proxies = options.proxies ? options.proxies.map(parseProxy) : undefined;
+  const proxies =
+    options.proxies?.map(function (d) {
+      return typeof d === "string" ? parseProxy(d) : d;
+    }) ?? [];
 
   if (isDevelopment(process.env)) {
     log.warn(
@@ -350,8 +352,7 @@ export default function arcjet<
 function toArcjetRequest<Properties extends PlainObject>(
   request: ArcjetFastifyRequest,
   log: ArcjetLogger,
-  // TODO(@wooorm-arcjet): use `Cidr` type here.
-  proxies: ReadonlyArray<ReturnType<typeof parseProxy>> | undefined,
+  proxies: ReadonlyArray<Cidr | Service | string> | undefined,
   properties: Properties,
 ): ArcjetRequest<Properties> {
   const requestHeaders = request.headers || {};
