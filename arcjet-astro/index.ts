@@ -16,7 +16,20 @@ import fs from "node:fs/promises";
 const resolvedVirtualClientId = "\0ARCJET_VIRTUAL_CLIENT";
 
 const validateMode = z.enum(["LIVE", "DRY_RUN"]);
-const validateProxies = z.array(z.string());
+const validatePlatform = z.enum([
+  "cloudflare",
+  "firebase",
+  "fly-io",
+  "render",
+  "vercel",
+]);
+const validateService = z
+  .object({
+    ips: z.array(z.string()),
+    platform: validatePlatform,
+  })
+  .strict();
+const validateProxies = z.array(z.union([validateService, z.string()]));
 const validateCharacteristics = z.array(z.string());
 const validateClientOptions = z
   .object({

@@ -6,7 +6,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { type Cidr, findIp, parseProxy } from "@arcjet/ip";
+import { type Cidr, type Service, findIp, parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
@@ -185,10 +185,10 @@ export interface ArcjetOptions<
   Characteristics extends ReadonlyArray<string>,
 > extends Omit<CoreOptions<Rules, Characteristics>, "key"> {
   /**
-   * IP addresses and CIDR ranges of trusted load balancers and proxies
-   * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+   * IP addresses, CIDR ranges, and services of trusted load balancers and
+   * proxies (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
-  proxies?: ReadonlyArray<string> | null | undefined;
+  proxies?: ReadonlyArray<Service | string> | null | undefined;
 }
 
 /**
@@ -228,7 +228,7 @@ interface State {
   /**
    * Configured proxies.
    */
-  proxies: ReadonlyArray<Cidr | string>;
+  proxies: ReadonlyArray<Service | Cidr | string>;
 }
 
 /**
@@ -264,7 +264,10 @@ export default function arcjet<
   const state: State = {
     client: options.client ?? createRemoteClient(),
     log: options.log ?? new Logger({ level: logLevel(process.env) }),
-    proxies: options.proxies?.map(parseProxy) ?? [],
+    proxies:
+      options.proxies?.map(function (d) {
+        return typeof d === "string" ? parseProxy(d) : d;
+      }) ?? [],
   };
 
   if (isDevelopment(process.env)) {
