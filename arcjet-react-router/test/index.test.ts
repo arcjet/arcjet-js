@@ -571,10 +571,17 @@ test("`default`", async function (t) {
         ],
       });
 
-      // Normally, on Vercel, the first IP `@arcjet/ip` looks at is `x-real-ip`.
+      // Normally on Vercel, `@arcjet/ip` looks at known trusted Vercel headers.
       await integration.protect({
         request: new Request("https://example.com/", {
-          headers: { "cf-connecting-ip": "1.1.1.1", "x-real-ip": "2.2.2.2" },
+          headers: {
+            // Let’s say this is set by a malicious user:
+            "cf-connecting-ip": "1.1.1.1",
+            // These are the ones that Vercel sets, pointing to the actual client IP.
+            "x-forwarded-for": "2.2.2.2",
+            "x-real-ip": "2.2.2.2",
+            "x-vercel-forwarded-for": "2.2.2.2",
+          },
         }),
       });
 
@@ -584,8 +591,13 @@ test("`default`", async function (t) {
       await integration.protect({
         request: new Request("https://example.com/", {
           headers: {
+            // This cannot be spoofed as CF sets it.
             "cf-connecting-ip": "1.1.1.1",
+            // If what connects to Vercel is a known Cloudflare IP,
+            // then Cloudflare headers are trusted.
+            "x-forwarded-for": "162.158.158.6",
             "x-real-ip": "162.158.158.6",
+            "x-vercel-forwarded-for": "162.158.158.6",
           },
         }),
       });
