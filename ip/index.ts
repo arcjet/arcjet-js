@@ -955,7 +955,7 @@ const candidatesByPlatform: Record<Platform, ReadonlyArray<Candidate>> = {
 /**
  * Generic candidates.
  */
-const genericCanidates: ReadonlyArray<Candidate> = [
+const genericCandidates: ReadonlyArray<Candidate> = [
   // Standard headers used by Amazon EC2, Heroku, and others.
   { format: "ip", header: "x-client-ip" },
   // Load-balancers (AWS ELB) or proxies.
@@ -1000,7 +1000,7 @@ function findIpInHeaders(
   const candidates =
     platform && platform in candidatesByPlatform
       ? candidatesByPlatform[platform]
-      : genericCanidates;
+      : genericCandidates;
 
   if (headers && typeof headers === "object") {
     for (const { format, header } of candidates) {
