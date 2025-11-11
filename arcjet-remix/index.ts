@@ -9,7 +9,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import findIp, { parseProxy } from "@arcjet/ip";
+import { type Service, findIp, parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
@@ -152,10 +152,10 @@ export type ArcjetOptions<
 > = Simplify<
   CoreOptions<Rules, Characteristics> & {
     /**
-     * IP addresses and CIDR ranges of trusted load balancers and proxies
-     * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+     * IP addresses, CIDR ranges, and services of trusted load balancers and
+     * proxies (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
      */
-    proxies?: Array<string>;
+    proxies?: ReadonlyArray<Service | string> | null | undefined;
   }
 >;
 
@@ -243,9 +243,10 @@ export default function arcjet<
         level: logLevel(process.env),
       });
 
-  const proxies = Array.isArray(options.proxies)
-    ? options.proxies.map(parseProxy)
-    : undefined;
+  const proxies =
+    options.proxies?.map(function (d) {
+      return typeof d === "string" ? parseProxy(d) : d;
+    }) ?? [];
 
   if (isDevelopment(process.env)) {
     log.warn(
