@@ -6,7 +6,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { type Cidr, type Service, findIp, parseProxy } from "@arcjet/ip";
+import { type Cidr, findIp, parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
@@ -188,7 +188,10 @@ export interface ArcjetOptions<
    * IP addresses, CIDR ranges, and services of trusted load balancers and
    * proxies (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
-  proxies?: ReadonlyArray<Service | string> | null | undefined;
+  proxies?:
+    | ReadonlyArray<Map<string, string> | Record<string, string> | string>
+    | null
+    | undefined;
 }
 
 /**
@@ -228,7 +231,7 @@ interface State {
   /**
    * Configured proxies.
    */
-  proxies: ReadonlyArray<Service | Cidr | string>;
+  proxies: ReadonlyArray<Map<Cidr | string, string> | Cidr | string>;
 }
 
 /**
@@ -261,13 +264,28 @@ export default function arcjet<
     key = config.__ARCJET_KEY;
   }
 
+  const regularProxies: Array<Cidr | string> = [];
+  const service = new Map<Cidr | string, string>();
+  if (options.proxies) {
+    for (const proxy of options.proxies) {
+      if (typeof proxy === "string") {
+        regularProxies.push(parseProxy(proxy));
+      } else {
+        const entries: Iterable<[string, string]> =
+          typeof proxy.entries === "function"
+            ? proxy.entries()
+            : Object.entries(proxy);
+        for (const [key, value] of entries) {
+          service.set(parseProxy(key), value);
+        }
+      }
+    }
+  }
+
   const state: State = {
     client: options.client ?? createRemoteClient(),
     log: options.log ?? new Logger({ level: logLevel(process.env) }),
-    proxies:
-      options.proxies?.map(function (d) {
-        return typeof d === "string" ? parseProxy(d) : d;
-      }) ?? [],
+    proxies: [...regularProxies, service],
   };
 
   if (isDevelopment(process.env)) {

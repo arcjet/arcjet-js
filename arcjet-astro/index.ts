@@ -16,20 +16,8 @@ import fs from "node:fs/promises";
 const resolvedVirtualClientId = "\0ARCJET_VIRTUAL_CLIENT";
 
 const validateMode = z.enum(["LIVE", "DRY_RUN"]);
-const validatePlatform = z.enum([
-  "cloudflare",
-  "firebase",
-  "fly-io",
-  "render",
-  "vercel",
-]);
-const validateService = z
-  .object({
-    ips: z.array(z.string()),
-    platform: validatePlatform,
-  })
-  .strict();
-const validateProxies = z.array(z.union([validateService, z.string()]));
+const validateServiceRecord = z.record(z.string(), z.string());
+const validateProxies = z.array(z.union([validateServiceRecord, z.string()]));
 const validateCharacteristics = z.array(z.string());
 const validateClientOptions = z
   .object({
@@ -220,7 +208,7 @@ type ArcjetIntegrationOptions<Characteristics extends readonly string[]> = {
    * IP addresses and CIDR ranges of trusted load balancers and proxies
    * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
-  proxies?: string[];
+  proxies?: ReadonlyArray<Record<string, string> | string>;
 };
 
 function validateAndSerialize<

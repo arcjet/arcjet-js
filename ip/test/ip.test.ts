@@ -306,27 +306,56 @@ test("`findIp`", async (t) => {
   });
 
   await t.test(
-    "should support a service in `proxies` not matching",
+    "should support a service in record form in `proxies` not matching",
     function () {
       assert.equal(
         findIp(
           { ip: "1.1.1.1", headers: { "cf-connecting-ip": "2.2.2.2" } },
-          { proxies: [{ ips: cloudflareIps, platform: "cloudflare" }] },
+          { proxies: [{ "162.158.158.6": "cf-connecting-ip" }] },
         ),
         "1.1.1.1",
       );
     },
   );
 
-  await t.test("should support a service in `proxies` matching", function () {
-    assert.equal(
-      findIp(
-        { ip: "162.158.158.6", headers: { "cf-connecting-ip": "2.2.2.2" } },
-        { proxies: [{ ips: cloudflareIps, platform: "cloudflare" }] },
-      ),
-      "2.2.2.2",
-    );
-  });
+  await t.test(
+    "should support a service in record form in `proxies` matching",
+    function () {
+      assert.equal(
+        findIp(
+          { ip: "162.158.158.6", headers: { "cf-connecting-ip": "2.2.2.2" } },
+          { proxies: [{ "162.158.158.6": "cf-connecting-ip" }] },
+        ),
+        "2.2.2.2",
+      );
+    },
+  );
+
+  await t.test(
+    "should support a service in map form in `proxies` not matching",
+    function () {
+      assert.equal(
+        findIp(
+          { ip: "1.1.1.1", headers: { "cf-connecting-ip": "2.2.2.2" } },
+          { proxies: [new Map([["162.158.158.6", "cf-connecting-ip"]])] },
+        ),
+        "1.1.1.1",
+      );
+    },
+  );
+
+  await t.test(
+    "should support a service in map form in `proxies` matching",
+    function () {
+      assert.equal(
+        findIp(
+          { ip: "162.158.158.6", headers: { "cf-connecting-ip": "2.2.2.2" } },
+          { proxies: [new Map([["162.158.158.6", "cf-connecting-ip"]])] },
+        ),
+        "2.2.2.2",
+      );
+    },
+  );
 
   await t.test("should filter an invalid value in a proxy", function () {
     assert.equal(

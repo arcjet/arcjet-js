@@ -881,21 +881,6 @@ export type Platform =
   | "vercel";
 
 /**
- * Service.
- */
-export interface Service {
-  /**
-   * IP addresses and CIDR ranges of the service (required).
-   */
-  ips: ReadonlyArray<Cidr | string>;
-
-  /**
-   * Platform of the service (required).
-   */
-  platform: Platform;
-}
-
-/**
  * Configuration.
  */
 export interface Options {
@@ -907,7 +892,12 @@ export interface Options {
   /**
    * Trusted proxies.
    */
-  proxies?: ReadonlyArray<Cidr | Service | string> | null | undefined;
+  proxies?:
+    | ReadonlyArray<
+        Map<Cidr | string, string> | Record<string, string> | Cidr | string
+      >
+    | null
+    | undefined;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
@@ -953,19 +943,21 @@ export function findIp(
   options?: Options | null | undefined,
 ): string {
   const { platform, proxies: rawProxies } = options || {};
-  const proxies: Array<Cidr | string> = [];
-  const services: Array<Service> = [];
-
-  if (Array.isArray(rawProxies)) {
-    for (const cidrOrIp of rawProxies) {
-      if (typeof cidrOrIp === "string") {
-        proxies.push(parseProxy(cidrOrIp));
-      } else if (cidrOrIp && typeof cidrOrIp === "object") {
-        if (isIpv4Cidr(cidrOrIp) || isIpv6Cidr(cidrOrIp)) {
-          proxies.push(cidrOrIp);
-        }
-        if ("ips" in cidrOrIp && "platform" in cidrOrIp) {
-          services.push(cidrOrIp);
+  const regularProxies: Array<Cidr | string> = [];
+  const service = new Map<Cidr | string, string>();
+  if (rawProxies) {
+    for (const proxy of rawProxies) {
+      if (typeof proxy === "string") {
+        regularProxies.push(parseProxy(proxy));
+      } else if (isIpv4Cidr(proxy) || isIpv6Cidr(proxy)) {
+        regularProxies.push(proxy);
+      } else {
+        const entries: Iterable<[Cidr | string, string]> =
+          typeof proxy.entries === "function"
+            ? proxy.entries()
+            : Object.entries(proxy);
+        for (const [key, value] of entries) {
+          service.set(typeof key === "string" ? parseProxy(key) : key, value);
         }
       }
     }
@@ -974,22 +966,18 @@ export function findIp(
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.
-  let ip =
-    findIpInRequest(request, proxies) ||
-    findIpInHeaders(request.headers, proxies, platform);
+  const ip =
+    findIpInRequest(request, regularProxies) ||
+    findIpInHeaders(request.headers, regularProxies, platform);
 
-  // To do: are service a list of things in a particular order?
-  // Or does a match mean the list has to be restarted?
-  // If in order, can there be gaps?
-  for (const service of services) {
-    if (ip && matches(ip, service.ips)) {
-      // To do: should the original proxies also apply to these IPs? If so, how?
-      // Or, as this is now one top-level `proxies` list (including services),
-      // perhaps those should be grouped: for `[x, y, service, a, b]`,
-      // that `x, y` are initial proxies, then `a, b` apply to `service`?
-      ip = findIpInHeaders(request.headers, [], service.platform);
-    } else {
-      break;
+  if (ip) {
+    for (const [proxy, header] of service.entries()) {
+      if (matches(ip, proxy)) {
+        const value = getHeader(request.headers, header);
+        if (isGlobalIp(value, undefined)) {
+          return value;
+        }
+      }
     }
   }
 

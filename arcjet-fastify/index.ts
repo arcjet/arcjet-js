@@ -6,7 +6,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { type Cidr, type Service, findIp, parseProxy } from "@arcjet/ip";
+import { type Cidr, findIp, parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
 import { createClient } from "@arcjet/protocol/client.js";
@@ -241,7 +241,10 @@ export type ArcjetOptions<
    * IP addresses, CIDR ranges, and services of trusted load balancers and
    * proxies (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
-  proxies?: ReadonlyArray<Service | string> | null | undefined;
+  proxies?:
+    | ReadonlyArray<Map<string, string> | Record<string, string> | string>
+    | null
+    | undefined;
 };
 
 /**
@@ -272,10 +275,24 @@ export default function arcjet<
   const log = options.log
     ? options.log
     : new Logger({ level: logLevel(process.env) });
-  const proxies =
-    options.proxies?.map(function (d) {
-      return typeof d === "string" ? parseProxy(d) : d;
-    }) ?? [];
+  const regularProxies: Array<Cidr | string> = [];
+  const service = new Map<Cidr | string, string>();
+  if (options.proxies) {
+    for (const proxy of options.proxies) {
+      if (typeof proxy === "string") {
+        regularProxies.push(parseProxy(proxy));
+      } else {
+        const entries: Iterable<[string, string]> =
+          typeof proxy.entries === "function"
+            ? proxy.entries()
+            : Object.entries(proxy);
+        for (const [key, value] of entries) {
+          service.set(parseProxy(key), value);
+        }
+      }
+    }
+  }
+  const proxies = [...regularProxies, service];
 
   if (isDevelopment(process.env)) {
     log.warn(
@@ -352,7 +369,9 @@ export default function arcjet<
 function toArcjetRequest<Properties extends PlainObject>(
   request: ArcjetFastifyRequest,
   log: ArcjetLogger,
-  proxies: ReadonlyArray<Cidr | Service | string> | undefined,
+  proxies:
+    | ReadonlyArray<Map<Cidr | string, string> | Cidr | string>
+    | undefined,
   properties: Properties,
 ): ArcjetRequest<Properties> {
   const requestHeaders = request.headers || {};
