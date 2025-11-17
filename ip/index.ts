@@ -1,187 +1,297 @@
 /**
- * Known forwarded header parameter names.
+ * States of the `Forwarded` header parser.
  */
-type ForwardedParameter = "by" | "for" | "host" | "proto";
+type State =
+  | "ELEMENT_BEFORE"
+  | "FIELD_AFTER"
+  | "NAME_BEFORE_WHITESPACE_INSIDE"
+  | "NAME_BEFORE"
+  | "NAME_INSIDE"
+  | "QUOTED_VALUE_BEFORE"
+  | "QUOTED_VALUE_END"
+  | "QUOTED_VALUE_ESCAPE_BEFORE"
+  | "QUOTED_VALUE_INSIDE"
+  | "UNQUOTED_VALUE_INSIDE";
 
 /**
- * Element.
- */
-type ForwardedElement = {
-  [key in ForwardedParameter]?: string;
-};
-
-/**
- * Parse the `Forwarded` header field value into an array of objects.
+ * Parse a `Forwarded` header, from right-to-left, into an iterator of elements.
  *
- * Based on [`forwarded-parse`](https://github.com/lpinca/forwarded-parse/blob/master/index.js),
- * without parse errors, with TypeScript and protection against prototype pollution.
+ * There is a problem with traditional parsers.
+ * First of all, most don’t work.
+ * But even if they do, they stop at a parse error (which is good).
+ * However, a malicious user can cause this parse error by sending a malformed
+ * value.
+ * Proxies should drop these values, but don’t.
+ * This helps to prevent such attacks by parsing right-to-left.
  *
- * @see https://datatracker.ietf.org/doc/html/rfc7239#section-6.2
+ * @see https://datatracker.ietf.org/doc/html/rfc7239
  *
- * @param header
- *   Header field value.
+ * @param value
+ *   Value.
  * @returns
- *   List of parsed  `Forwarded` elements; `undefined` on parse error.
+ *   Parsed  `Forwarded` elements; `undefined` on parse error.
  */
-function parseForwarded(header: string): Array<ForwardedElement> | undefined {
-  let mustUnescape = false;
-  let isEscaping = false;
-  let inQuotes = false;
-  let element: ForwardedElement = {};
-  const output: Array<ForwardedElement> = [];
-  let start = -1;
-  let end = -1;
-  let parameter: string | undefined;
-  let code: number | undefined;
-  let index = 0;
+export function* parseForwarded(
+  value: string,
+): Generator<Map<string, string>, undefined, undefined> {
+  const pairs: Array<[name: string, value: string]> = [];
+  const codes: Array<number> = [];
+  let state: State = "FIELD_AFTER";
+  let index = value.length - 1;
+  let tokenIndex: number | undefined;
 
-  for (; index < header.length; index++) {
-    code = header.charCodeAt(index);
+  while (index > -2) {
+    // Use `-1` as end-of-file code.
+    const code = index === -1 ? -1 : value.charCodeAt(index);
 
-    if (parameter === undefined) {
-      if (
-        index !== 0 &&
-        start === -1 &&
-        (code === 9 /* `\t` */ || code === 32) /* ` ` */
-      ) {
-        continue;
-      }
-
-      if (tokenCharacter(code)) {
-        if (start === -1) start = index;
-      } else if (code === 61 /* `=` */ && start !== -1) {
-        parameter = header.slice(start, index).toLowerCase();
-        start = -1;
+    // Before an element (before `,`).
+    //
+    // ```
+    // for=1.1.1.1, for="[2001:db8:cafe::17]:4711"
+    //           ^
+    // ```
+    if (state === "ELEMENT_BEFORE") {
+      if (code === 9 /* `\t` */ || code === 32 /* ` ` */) {
+        index--;
       } else {
-        // Parse error: unexpected character at `index`.
-        return;
+        state = "FIELD_AFTER";
+        // Reconsume.
       }
-    } else {
-      if (
-        isEscaping &&
-        (code === 9 /* `\t` */ ||
-          //
-          (code >= 32 /* ` ` */ && code <= 126) /* `~` */ ||
-          // Extended ASCII.
-          (code > 127 /* DEL */ && code < 256))
-      ) {
-        isEscaping = false;
+    }
+    // End of the value.
+    //
+    // ```
+    // for=1.1.1.1, for="[2001:db8:cafe::17]:4711"
+    //                                           ^
+    // ```
+    else if (state === "FIELD_AFTER") {
+      if (code === 34 /* `"` */) {
+        state = "QUOTED_VALUE_END";
+        index--;
       } else if (tokenCharacter(code)) {
-        if (end !== -1) {
-          // Parse error: unexpected character at `index`.
-          return;
-        }
-
-        if (start === -1) start = index;
-      } else if (
-        // Delimiter (per section 3.2.6 of RFC 7230).
-        code === 34 /* `"` */ ||
-        code === 40 /* `(` */ ||
-        code === 41 /* `)` */ ||
-        code === 44 /* `,` */ ||
-        code === 47 /* `/` */ ||
-        (code >= 58 && code <= 64) /* `:`, `;`, `<`, `=`, `>`, `?` `@` */ ||
-        (code >= 91 && code <= 93) /* `[`, `\`, `]` */ ||
-        code === 123 /* `{` */ ||
-        code === 125 /* `}` */ ||
-        // Extended ASCII.
-        (code > 127 /* DEL */ && code < 256)
-      ) {
-        if (inQuotes) {
-          if (code === 34 /* `"` */) {
-            inQuotes = false;
-            end = index;
-          } else if (code === 92 /* `\` */) {
-            if (start === -1) start = index;
-            isEscaping = mustUnescape = true;
-          } else if (start === -1) {
-            start = index;
-          }
-        } else if (
-          code === 34 /* `"` */ &&
-          header.charCodeAt(index - 1) === 61 /* `=` */
-        ) {
-          inQuotes = true;
-        } else if (
-          (code === 44 /* `,` */ || code === 59) /* `;` */ &&
-          (start !== -1 || end !== -1)
-        ) {
-          let value = "";
-
-          if (start !== -1) {
-            if (end === -1) end = index;
-            value = header.slice(start, end);
-            if (mustUnescape) value = decode(value);
-          }
-
-          if (
-            parameter === "by" ||
-            parameter === "for" ||
-            parameter === "host" ||
-            parameter === "proto"
-          ) {
-            element[parameter] = value;
-          }
-
-          if (code === 44 /* `,` */) {
-            output.push(element);
-            element = {};
-          }
-
-          parameter = undefined;
-          start = end = -1;
-        } else {
-          // Parse error: unexpected character at `index`.
-          return;
-        }
-      } else if (code === 9 /* `\t` */ || code === 32 /* ` ` */) {
-        if (end !== -1) continue;
-
-        if (inQuotes) {
-          if (start === -1) start = index;
-        } else if (start !== -1) {
-          end = index;
-        } else {
-          // Parse error: unexpected character at `index`.
-          return;
-        }
+        state = "UNQUOTED_VALUE_INSIDE";
+        codes.push(code);
+        index--;
       } else {
-        // Parse error: unexpected character at `index`.
-        return;
+        throw new Error(
+          'Unexpected character after field, expected `"` (for quoted value) or token character (for unquoted value)',
+        );
+      }
+    }
+    // Before name, inside whitespace.
+    //
+    // ```
+    // for=1.1.1.1; ext=a, for="[2001:db8:cafe::17]:4711"
+    //             ^      ^
+    // ```
+    else if (state === "NAME_BEFORE_WHITESPACE_INSIDE") {
+      if (code === -1) {
+        throw new Error(
+          "Unexpected initial whitespace before field name, expected nothing",
+        );
+      }
+
+      if (code === 9 /* `\t` */ || code === 32 /* ` ` */) {
+        index--;
+      } else {
+        state = "NAME_BEFORE";
+        // Reconsume.
+      }
+    }
+    // Before name.
+    //
+    // ```
+    //  for=1.1.1.1;ext=a, for="[2001:db8:cafe::17]:4711"
+    // ^           ^      ^
+    // ```
+    else if (state === "NAME_BEFORE") {
+      // Done with element.
+      if (code === -1 || code === 44 /* `,` */) {
+        const element = new Map<string, string>();
+        for (const [name, value] of pairs.reverse()) {
+          element.set(name, value);
+        }
+        yield element;
+        pairs.length = 0;
+        state = "ELEMENT_BEFORE";
+        index--;
+      } else if (code === 59 /* `;` */) {
+        state = "FIELD_AFTER";
+        index--;
+      } else {
+        throw new Error(
+          "Unexpected character before field name, expected `,` or `;`",
+        );
+      }
+    }
+    // In name.
+    //
+    // ```
+    // for=1.1.1.1;ext=a, for="[2001:db8:cafe::17]:4711"
+    // ^^^         ^^^    ^^^
+    // ```
+    else if (state === "NAME_INSIDE") {
+      if (
+        code === -1 ||
+        code === 9 /* `\t` */ ||
+        code === 32 /* ` ` */ ||
+        code === 44 /* `,` */ ||
+        code === 59 /* `;` */
+      ) {
+        assert(tokenIndex !== undefined, "unreachable");
+        pairs.push([
+          value.slice(index + 1, tokenIndex + 1).toLowerCase(),
+          String.fromCharCode(...codes.reverse()),
+        ]);
+        codes.length = 0;
+        tokenIndex = undefined;
+        state =
+          code === 9 /* `\t` */ || code === 32 /* ` ` */
+            ? "NAME_BEFORE_WHITESPACE_INSIDE"
+            : "NAME_BEFORE";
+        // Reconsume.
+      } else if (tokenCharacter(code)) {
+        index--;
+      } else {
+        throw new Error(
+          "Unexpected character in field name, expected token character, `,`, `;`, or whitespace",
+        );
+      }
+    }
+    // In quote value at quote.
+    //
+    // ```
+    // for=1.1.1.1, for="[2001:db8:cafe::17]:4711"
+    //                  ^
+    // ```
+    //
+    // ```
+    // for=1.1.1.1, ext="a\"b"
+    //                     ^
+    // ```
+    else if (state === "QUOTED_VALUE_BEFORE") {
+      if (code === 61 /* `=` */) {
+        state = "NAME_INSIDE";
+        index--;
+        tokenIndex = index;
+      } else if (code === 92 /* `\` */) {
+        codes.push(34 /* `"` */);
+        state = "QUOTED_VALUE_END";
+        index--;
+      } else {
+        throw new Error(
+          "Unexpected character before quoted field value, expected `=` or escape",
+        );
+      }
+    }
+    // At end quote of quoted value.
+    // This state allows escaped escapes before this character.
+    // But does not allow this character itself to be escaped.
+    //
+    // ```
+    // for=1.1.1.1, for="[2001:db8:cafe::17]:4711"
+    //                                          ^
+    //
+    // for=1.1.1.1, for="a\\"b"
+    //                   ^
+    // ```
+    else if (state === "QUOTED_VALUE_END") {
+      if (code === 92 /* `\` */) {
+        let size = 1;
+
+        while (index - size > -1 && value.charCodeAt(index - size) === code) {
+          size++;
+          if (size % 2 === 0) codes.push(code);
+        }
+
+        if (size % 2 === 1) {
+          throw new Error("Unexpected unterminated string, expected escape");
+        }
+
+        state = "QUOTED_VALUE_INSIDE";
+        index -= size;
+      } else {
+        state = "QUOTED_VALUE_INSIDE";
+        // Reconsume.
+      }
+    }
+    // In quoted value before an escape.
+    //
+    // ```
+    // for=1.1.1.1, for="[2001\:db8:cafe::17]:4711"
+    //                       ^
+    // ```
+    else if (state === "QUOTED_VALUE_ESCAPE_BEFORE") {
+      if (code === 92 /* `\` */) {
+        codes.push(code);
+        state = "QUOTED_VALUE_INSIDE";
+        index--;
+      } else {
+        // Reconsume.
+        state = "QUOTED_VALUE_INSIDE";
+      }
+    }
+    // In quoted value.
+    //
+    // ```
+    // for=1.1.1.1, for="[2001:db8:cafe::17]:4711"
+    //                   ^^^^^^^^^^^^^^^^^^^^^^^^
+    // ```
+    else if (state === "QUOTED_VALUE_INSIDE") {
+      if (code === 34 /* `"` */) {
+        state = "QUOTED_VALUE_BEFORE";
+        index--;
+      } else if (code === 92 /* `\` */) {
+        // Ignore.
+        state = "QUOTED_VALUE_ESCAPE_BEFORE";
+        index--;
+      }
+      // Allowed character.
+      else if (
+        code === 9 /* `\t` */ ||
+        // space and VCHAR except `"`, `\`, but those are matched above.
+        (code >= 32 /* ` ` */ && code <= 126) /* `~` */ ||
+        // Extended ASCII.
+        (code >= 128 && code <= 255)
+      ) {
+        codes.push(code);
+        index--;
+      }
+      // Parse error.
+      else {
+        throw new Error(
+          "Unexpected character in quoted field value, expected tab, space, or visible ASCII character",
+        );
+      }
+    }
+    // In unquoted value.
+    //
+    // ```
+    // for=1.1.1.1, for=2.2.2.2
+    //                  ^^^^^^^
+    // ```
+    else if (state === "UNQUOTED_VALUE_INSIDE") {
+      // End of value.
+      if (code === 61 /* `=` */) {
+        state = "NAME_INSIDE";
+        index--;
+        tokenIndex = index;
+      } else if (tokenCharacter(code)) {
+        codes.push(code);
+        index--;
+      } else {
+        throw new Error(
+          "Unexpected character in unquoted field value, expected token character or `=` (note: use quotes around a value with colons such as ports and IPv6 addresses)",
+        );
       }
     }
   }
+}
 
-  if (
-    parameter === undefined ||
-    inQuotes ||
-    (start === -1 && end === -1) ||
-    code === 9 /* `\t` */ ||
-    code === 32 /* ` ` */
-  ) {
-    // Parse error: unexpected eof.
-    return;
+function assert(condition: unknown, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(message);
   }
-
-  let value = "";
-
-  if (start !== -1) {
-    if (end === -1) end = index;
-    value = header.slice(start, end);
-    if (mustUnescape) value = decode(value);
-  }
-
-  if (
-    parameter === "by" ||
-    parameter === "for" ||
-    parameter === "host" ||
-    parameter === "proto"
-  ) {
-    element[parameter] = value;
-  }
-
-  output.push(element);
-  return output;
 }
 
 /**
@@ -214,20 +324,6 @@ function tokenCharacter(code: number): boolean {
     code === 124 /* `|` */ ||
     code === 126 /* `~` */
   );
-}
-
-/**
- * Unescape a string.
- *
- * Assumes the entire string is valid and contains correctly escaped characters.
- *
- * @param value
- *   Value.
- * @returns
- *   Result.
- */
-function decode(value: string): string {
-  return value.replace(/\\(.)/g, "$1");
 }
 
 function parseXForwardedFor(value?: string | null): string[] {
@@ -1329,28 +1425,32 @@ export function findIp(
   const forwardedElements = forwarded ? parseForwarded(forwarded) : undefined;
 
   if (forwardedElements) {
-    for (const element of forwardedElements.reverse()) {
-      const value = element.for;
-      let candidate: string | undefined;
+    try {
+      for (const element of forwardedElements) {
+        const value = element.get("for");
+        let candidate: string | undefined;
 
-      // Format such as `[2001:db8:cafe::17]:4711` with a port outside of the
-      // square brackets.
-      if (value && value.charCodeAt(0) === 91 /* '[' */) {
-        // IPv6 addresses must be in square brackets and the optional port
-        // outside, so that’s the probable path.
-        // For malformed input, get it until the end, in which case `isGlobalIp`
-        // below will ignore it.
-        const end = value.indexOf("]");
-        candidate = value.slice(1, end === -1 ? undefined : end);
-      } else if (value) {
-        // For IPv4 addresses, drop the port if that’s there, or take the whole.
-        const end = value.indexOf(":");
-        candidate = value.slice(0, end === -1 ? undefined : end);
-      }
+        // Format such as `[2001:db8:cafe::17]:4711` with a port outside of the
+        // square brackets.
+        if (value && value.charCodeAt(0) === 91 /* '[' */) {
+          // IPv6 addresses must be in square brackets and the optional port
+          // outside, so that’s the probable path.
+          // For malformed input, get it until the end, in which case `isGlobalIp`
+          // below will ignore it.
+          const end = value.indexOf("]");
+          candidate = value.slice(1, end === -1 ? undefined : end);
+        } else if (value) {
+          // For IPv4 addresses, drop the port if that’s there, or take the whole.
+          const end = value.indexOf(":");
+          candidate = value.slice(0, end === -1 ? undefined : end);
+        }
 
-      if (isGlobalIp(candidate, proxies)) {
-        return candidate;
+        if (isGlobalIp(candidate, proxies)) {
+          return candidate;
+        }
       }
+    } catch {
+      // Empty.
     }
   }
 
