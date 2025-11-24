@@ -92,7 +92,7 @@ export interface CspDirectives {
   navigateTo?: StaticOrDynamic<Source | ActionSource> | undefined;
   reportUri?: string[] | undefined;
   reportTo?: string[] | undefined;
-  requireTrustedTypesFor?: ReadonlyArray<"script"> | undefined;
+  requireTrustedTypesFor?: ReadonlyArray<"'script'"> | undefined;
   trustedTypes?:
     | ReadonlyArray<"none" | "allow-duplicates" | "*" | string>
     | undefined;
