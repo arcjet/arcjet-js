@@ -663,44 +663,65 @@ export default function arcjet<Characteristics extends readonly string[]>(
         updateConfig({
           env: {
             schema: {
-              ARCJET_KEY: {
-                type: "string",
+              ARCJET_BASE_URL: {
+                access: "public",
                 context: "server",
-                access: "secret",
-                startsWith: "ajkey_",
+                optional: true,
+                startsWith: "https://",
+                type: "string",
               },
               ARCJET_ENV: {
+                access: "public",
+                context: "server",
+                optional: true,
                 type: "enum",
-                context: "server",
-                access: "public",
                 values: ["production", "development"],
-                optional: true,
               },
-              ARCJET_BASE_URL: {
-                type: "string",
+              ARCJET_KEY: {
+                access: "secret",
                 context: "server",
-                access: "public",
-                startsWith: "https://",
-                optional: true,
+                startsWith: "ajkey_",
+                type: "string",
               },
               ARCJET_LOG_LEVEL: {
-                type: "enum",
-                context: "server",
                 access: "public",
-                values: ["debug", "info", "warn", "error"],
+                context: "server",
                 optional: true,
+                type: "enum",
+                values: ["debug", "error", "info", "warn"],
+              },
+              FIREBASE_CONFIG: {
+                access: "public",
+                context: "server",
+                optional: true,
+                type: "string",
               },
               FLY_APP_NAME: {
-                type: "string",
-                context: "server",
                 access: "public",
+                context: "server",
                 optional: true,
+                type: "string",
+              },
+              // No `MODE`, that is a vite value on `import.meta.env.MODE`,
+              // it is inferred in `internal.ts` directly.
+              // No `NODE_ENV`.
+              RENDER: {
+                access: "public",
+                context: "server",
+                optional: true,
+                type: "string",
+              },
+              VERCEL_GIT_COMMIT_SHA: {
+                access: "public",
+                context: "server",
+                optional: true,
+                type: "string",
               },
               VERCEL: {
-                type: "string",
-                context: "server",
                 access: "public",
+                context: "server",
                 optional: true,
+                type: "string",
               },
             },
           },

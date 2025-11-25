@@ -25,23 +25,8 @@ export * from "arcjet";
 // This allows bundlers to replace the dot-notation access with string literals
 // while still allowing dynamic access in runtime environments.
 const env: Env = {
-  get FLY_APP_NAME() {
-    return process.env.FLY_APP_NAME;
-  },
-  get VERCEL() {
-    return process.env.VERCEL;
-  },
-  get RENDER() {
-    return process.env.RENDER;
-  },
-  get MODE() {
-    return process.env.MODE;
-  },
-  get NODE_ENV() {
-    return process.env.NODE_ENV;
-  },
-  get ARCJET_KEY() {
-    return process.env.ARCJET_KEY;
+  get ARCJET_BASE_URL() {
+    return process.env.ARCJET_BASE_URL;
   },
   get ARCJET_ENV() {
     return process.env.ARCJET_ENV;
@@ -49,8 +34,26 @@ const env: Env = {
   get ARCJET_LOG_LEVEL() {
     return process.env.ARCJET_LOG_LEVEL;
   },
-  get ARCJET_BASE_URL() {
-    return process.env.ARCJET_BASE_URL;
+  get FIREBASE_CONFIG() {
+    return process.env.FIREBASE_CONFIG;
+  },
+  get FLY_APP_NAME() {
+    return process.env.FLY_APP_NAME;
+  },
+  get MODE() {
+    return process.env.MODE;
+  },
+  get NODE_ENV() {
+    return process.env.NODE_ENV;
+  },
+  get RENDER() {
+    return process.env.RENDER;
+  },
+  get VERCEL_GIT_COMMIT_SHA() {
+    return process.env.VERCEL_GIT_COMMIT_SHA;
+  },
+  get VERCEL() {
+    return process.env.VERCEL;
   },
 } satisfies { [K in keyof Env]-?: unknown };
 

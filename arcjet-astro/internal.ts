@@ -21,7 +21,10 @@ import {
   ARCJET_ENV,
   ARCJET_KEY,
   ARCJET_LOG_LEVEL,
+  FIREBASE_CONFIG,
   FLY_APP_NAME,
+  RENDER,
+  VERCEL_GIT_COMMIT_SHA,
   VERCEL,
 } from "astro:env/server";
 
@@ -35,10 +38,13 @@ const env = {
   ARCJET_ENV,
   ARCJET_KEY,
   ARCJET_LOG_LEVEL,
+  FIREBASE_CONFIG,
   FLY_APP_NAME,
-  VERCEL,
   // `MODE` is only set on `import.meta.env`.
   MODE: import.meta.env.MODE,
+  RENDER,
+  VERCEL_GIT_COMMIT_SHA,
+  VERCEL,
 };
 
 // Re-export all named exports from the generic SDK
