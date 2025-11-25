@@ -5,7 +5,6 @@ import * as env from "../index.ts";
 test("@arcjet/env", async function (t) {
   await t.test("should expose the public api", async function () {
     assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
-      "apiKey",
       "baseUrl",
       "isDevelopment",
       "logLevel",
@@ -142,11 +141,5 @@ describe("env", () => {
       }),
       "https://decide.arcjet.orb.local/",
     );
-  });
-
-  test("apiKey", () => {
-    assert.equal(env.apiKey({}), undefined);
-    assert.equal(env.apiKey({ ARCJET_KEY: "invalid" }), undefined);
-    assert.equal(env.apiKey({ ARCJET_KEY: "ajkey_abc123" }), "ajkey_abc123");
   });
 });
