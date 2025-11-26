@@ -256,7 +256,7 @@ export default function arcjet<
     ? options.proxies.map(parseProxy)
     : undefined;
 
-  if (isDevelopment(process.env)) {
+  if (isDevelopment(env)) {
     log.warn(
       "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
     );
