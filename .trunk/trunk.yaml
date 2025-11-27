@@ -57,7 +57,6 @@ actions:
     - trunk-upgrade-available
 merge:
   required_statuses:
-    - Trunk Check
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 20)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 22)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 24)"
