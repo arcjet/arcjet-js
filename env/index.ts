@@ -12,10 +12,6 @@ export type Env = {
    */
   ARCJET_ENV?: string | undefined;
   /**
-   * Key for Arcjet API.
-   */
-  ARCJET_KEY?: string | undefined;
-  /**
    * Log level of Arcjet SDK.
    */
   ARCJET_LOG_LEVEL?: string | undefined;
@@ -162,19 +158,4 @@ export function baseUrl(environment: Env) {
   }
 
   return "https://decide.arcjet.com";
-}
-
-/**
- * Get the key for an Arcjet API.
- *
- * @param environment
- *   Environment.
- * @returns
- *   Key for Arcjet API if found.
- */
-export function apiKey(environment: Env) {
-  const key = environment["ARCJET_KEY"];
-  if (typeof key === "string" && key.startsWith("ajkey_")) {
-    return key;
-  }
 }

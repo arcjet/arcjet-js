@@ -58,13 +58,7 @@ npm install @arcjet/env
 
 ```ts
 import process from "node:process";
-import {
-  apiKey,
-  baseUrl,
-  isDevelopment,
-  logLevel,
-  platform,
-} from "@arcjet/env";
+import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 
 console.log(platform({ FLY_APP_NAME: "foobar" })); // => "fly-io"
 console.log(platform({})); // => undefined
@@ -78,8 +72,6 @@ console.log(logLevel({ ARCJET_LOG_LEVEL: "warn" })); // => "warn"
 console.log(logLevel({ ARCJET_LOG_LEVEL: "error" })); // => "error"
 console.log(logLevel({ ARCJET_LOG_LEVEL: "" })); // => "warn"
 console.log(baseUrl(process.env)); // => "https://decide.arcjet.com"
-console.log(apiKey({ ARCJET_KEY: "ajkey_abc123" })); // => "ajkey_abc123"
-console.log(apiKey({ ARCJET_KEY: "invalid" })); // => undefined
 ```
 
 ## License
