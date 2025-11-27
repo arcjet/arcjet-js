@@ -52,7 +52,7 @@ jobs:
       - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: 20
-      - uses: denoland/setup-deno@2f7698fd116bfedbd1c3cd4119337b5a787ef53a # v2.0.3
+      - uses: denoland/setup-deno@bdaa2e4f849cbc8d7b46337cf37db0dc9b321074 # v2.0.3
         with:
           deno-version: v2.4.2
       - run: npm ci
