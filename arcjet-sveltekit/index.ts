@@ -330,9 +330,19 @@ export default function arcjet<
     const path = event.url.pathname;
     const query = event.url.search;
     const protocol = event.url.protocol;
+    const extra: Record<PropertyKey, string> = {};
+
+    // Add extra info from `env` on Vercel.
+    if (platform(env) === "vercel") {
+      // Vercel git commit SHA.
+      // <https://vercel.com/docs/environment-variables/system-environment-variables#VERCEL_GIT_COMMIT_SHA>
+      // @ts-expect-error: types in GH-5456.
+      extra["vercel-git-commit-sha"] = env.VERCEL_GIT_COMMIT_SHA ?? "";
+    }
 
     return {
       ...props,
+      ...extra,
       ip,
       method,
       protocol,

@@ -626,23 +626,15 @@ export default function arcjet<
     }
     const cookies = cookiesToString(request.cookies);
 
-    const extra: { [key: string]: string } = {};
+    const extra: Record<PropertyKey, string> = {};
 
-    // If we're running on Vercel, we can add some extra information
-    if (process.env["VERCEL"]) {
-      // Vercel ID https://vercel.com/docs/concepts/edge-network/headers
-      extra["vercel-id"] = headers.get("x-vercel-id") ?? "";
-      // Vercel deployment URL
-      // https://vercel.com/docs/concepts/edge-network/headers
-      extra["vercel-deployment-url"] =
-        headers.get("x-vercel-deployment-url") ?? "";
-      // Vercel git commit SHA
-      // https://vercel.com/docs/concepts/projects/environment-variables/system-environment-variables
-      extra["vercel-git-commit-sha"] =
-        process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
-      extra["vercel-git-commit-sha"] =
-        process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
+    // Add extra info from `env` on Vercel.
+    if (platform(process.env) === "vercel") {
+      // Vercel git commit SHA.
+      // <https://vercel.com/docs/environment-variables/system-environment-variables#VERCEL_GIT_COMMIT_SHA>
+      extra["vercel-git-commit-sha"] = process.env.VERCEL_GIT_COMMIT_SHA ?? "";
     }
+
     return {
       ...props,
       ...extra,

@@ -421,8 +421,18 @@ function arcjet<
       path = request.url ?? "";
     }
 
+    const extra: Record<PropertyKey, string> = {};
+
+    // Add extra info from `env` on Vercel.
+    if (platform(process.env) === "vercel") {
+      // Vercel git commit SHA.
+      // <https://vercel.com/docs/environment-variables/system-environment-variables#VERCEL_GIT_COMMIT_SHA>
+      extra["vercel-git-commit-sha"] = process.env.VERCEL_GIT_COMMIT_SHA ?? "";
+    }
+
     return {
       ...props,
+      ...extra,
       ip,
       method,
       protocol,
