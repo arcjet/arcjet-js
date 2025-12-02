@@ -663,11 +663,10 @@ export default function arcjet<Characteristics extends readonly string[]>(
         updateConfig({
           env: {
             schema: {
-              ARCJET_BASE_URL: {
-                access: "public",
+              ARCJET_KEY: {
+                access: "secret",
                 context: "server",
-                optional: true,
-                startsWith: "https://",
+                startsWith: "ajkey_",
                 type: "string",
               },
               ARCJET_ENV: {
@@ -677,10 +676,11 @@ export default function arcjet<Characteristics extends readonly string[]>(
                 type: "enum",
                 values: ["production", "development"],
               },
-              ARCJET_KEY: {
-                access: "secret",
+              ARCJET_BASE_URL: {
+                access: "public",
                 context: "server",
-                startsWith: "ajkey_",
+                optional: true,
+                startsWith: "https://",
                 type: "string",
               },
               ARCJET_LOG_LEVEL: {
@@ -690,13 +690,19 @@ export default function arcjet<Characteristics extends readonly string[]>(
                 type: "enum",
                 values: ["debug", "error", "info", "warn"],
               },
-              FIREBASE_CONFIG: {
+              FLY_APP_NAME: {
                 access: "public",
                 context: "server",
                 optional: true,
                 type: "string",
               },
-              FLY_APP_NAME: {
+              VERCEL: {
+                access: "public",
+                context: "server",
+                optional: true,
+                type: "string",
+              },
+              FIREBASE_CONFIG: {
                 access: "public",
                 context: "server",
                 optional: true,
@@ -712,12 +718,6 @@ export default function arcjet<Characteristics extends readonly string[]>(
                 type: "string",
               },
               VERCEL_GIT_COMMIT_SHA: {
-                access: "public",
-                context: "server",
-                optional: true,
-                type: "string",
-              },
-              VERCEL: {
                 access: "public",
                 context: "server",
                 optional: true,
