@@ -26,7 +26,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     # Release Please is very fast, so we set a tiny timeout
-    timeout-minutes: 1
+    timeout-minutes: 2
     # Release Please creates a Pull Request with changes to files
     permissions:
       contents: write
