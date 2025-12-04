@@ -717,12 +717,6 @@ export default function arcjet<Characteristics extends readonly string[]>(
                 optional: true,
                 type: "string",
               },
-              VERCEL_GIT_COMMIT_SHA: {
-                access: "public",
-                context: "server",
-                optional: true,
-                type: "string",
-              },
             },
           },
           vite: {

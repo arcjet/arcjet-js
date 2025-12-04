@@ -52,9 +52,6 @@ const env: Env = {
   get FIREBASE_CONFIG() {
     return process.env.FIREBASE_CONFIG;
   },
-  get VERCEL_GIT_COMMIT_SHA() {
-    return process.env.VERCEL_GIT_COMMIT_SHA;
-  },
 } satisfies { [K in keyof Env]-?: unknown };
 
 // TODO: Deduplicate with other packages

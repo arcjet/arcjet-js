@@ -36,10 +36,6 @@ export type Env = {
    */
   RENDER?: string | undefined;
   /**
-   * Vercel Git commit SHA.
-   */
-  VERCEL_GIT_COMMIT_SHA?: string | undefined;
-  /**
    * Vercel environment variable.
    */
   VERCEL?: string | undefined;

@@ -24,7 +24,6 @@ import {
   FIREBASE_CONFIG,
   FLY_APP_NAME,
   RENDER,
-  VERCEL_GIT_COMMIT_SHA,
   VERCEL,
 } from "astro:env/server";
 
@@ -43,7 +42,6 @@ const env = {
   // `MODE` is only set on `import.meta.env`.
   MODE: import.meta.env.MODE,
   RENDER,
-  VERCEL_GIT_COMMIT_SHA,
   VERCEL,
 };
 

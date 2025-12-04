@@ -30,7 +30,6 @@ type Env = {
   MODE?: string;
   NODE_ENV?: string;
   RENDER?: string;
-  VERCEL_GIT_COMMIT_SHA?: string;
   VERCEL?: string;
 };
 ```

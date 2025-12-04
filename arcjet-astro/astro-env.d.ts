@@ -6,7 +6,6 @@ declare module "astro:env/server" {
   const FIREBASE_CONFIG: string | undefined;
   const FLY_APP_NAME: string | undefined;
   const RENDER: string | undefined;
-  const VERCEL_GIT_COMMIT_SHA: string | undefined;
   const VERCEL: string | undefined;
 }
 
