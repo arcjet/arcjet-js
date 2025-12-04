@@ -22,12 +22,15 @@ Currently operates on an environment object with the type:
 
 ```ts
 type Env = {
-  FLY_APP_NAME?: string;
-  NODE_ENV?: string;
-  ARCJET_KEY?: string;
+  ARCJET_BASE_URL?: string;
   ARCJET_ENV?: string;
   ARCJET_LOG_LEVEL?: string;
-  ARCJET_BASE_URL?: string;
+  FIREBASE_CONFIG?: string;
+  FLY_APP_NAME?: string;
+  MODE?: string;
+  NODE_ENV?: string;
+  RENDER?: string;
+  VERCEL?: string;
 };
 ```
 

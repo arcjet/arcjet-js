@@ -702,6 +702,21 @@ export default function arcjet<Characteristics extends readonly string[]>(
                 access: "public",
                 optional: true,
               },
+              FIREBASE_CONFIG: {
+                access: "public",
+                context: "server",
+                optional: true,
+                type: "string",
+              },
+              // No `MODE`, that is a vite value on `import.meta.env.MODE`,
+              // it is inferred in `internal.ts` directly.
+              // No `NODE_ENV`.
+              RENDER: {
+                access: "public",
+                context: "server",
+                optional: true,
+                type: "string",
+              },
             },
           },
           vite: {

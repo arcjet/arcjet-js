@@ -40,9 +40,6 @@ const env: Env = {
   get NODE_ENV() {
     return process.env.NODE_ENV;
   },
-  get ARCJET_KEY() {
-    return process.env.ARCJET_KEY;
-  },
   get ARCJET_ENV() {
     return process.env.ARCJET_ENV;
   },
@@ -51,6 +48,9 @@ const env: Env = {
   },
   get ARCJET_BASE_URL() {
     return process.env.ARCJET_BASE_URL;
+  },
+  get FIREBASE_CONFIG() {
+    return process.env.FIREBASE_CONFIG;
   },
 } satisfies { [K in keyof Env]-?: unknown };
 

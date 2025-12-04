@@ -16,6 +16,10 @@ export type Env = {
    */
   ARCJET_LOG_LEVEL?: string | undefined;
   /**
+   * Firebase configuration variable.
+   */
+  FIREBASE_CONFIG?: string | undefined;
+  /**
    * Name of Fly.io app.
    */
   FLY_APP_NAME?: string | undefined;

@@ -637,9 +637,7 @@ export default function arcjet<
       extra["vercel-deployment-url"] =
         headers.get("x-vercel-deployment-url") ?? "";
       // Vercel git commit SHA
-      // https://vercel.com/docs/concepts/projects/environment-variables/system-environment-variables
-      extra["vercel-git-commit-sha"] =
-        process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
+      // https://vercel.com/docs/environment-variables/system-environment-variables#VERCEL_GIT_COMMIT_SHA
       extra["vercel-git-commit-sha"] =
         process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
     }
