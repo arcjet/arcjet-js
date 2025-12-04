@@ -236,6 +236,47 @@ test("filter: `protect`", async function (t) {
 
 test("expressions", async function (t) {
   await t.test("fields", async function (t) {
+    await t.test("`body`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({ allow: ['body ~ "hi"'] });
+        const result = await rule.protect(
+          {
+            ...createContext(),
+            async getBody() {
+              return "hi world";
+            },
+          },
+          createRequest(),
+        );
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({ allow: ['body ~ "hi"'] });
+        const result = await rule.protect(
+          {
+            ...createContext(),
+            async getBody() {
+              return "hello world";
+            },
+          },
+          createRequest(),
+        );
+        assert.equal(result.conclusion, "DENY");
+      });
+
+      await t.test("undetermined", async function () {
+        const [rule] = filter({ allow: ['body ~ "hi"'] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+        assert(result.reason.isFilter());
+        assert.deepEqual(result.reason.matchedExpressions, []);
+        assert.deepEqual(result.reason.undeterminedExpressions, [
+          'body ~ "hi"',
+        ]);
+      });
+    });
+
     await t.test("`http.host`", async function (t) {
       await t.test("match", async function () {
         const [rule] = filter({ allow: ['http.host == "localhost:3000"'] });

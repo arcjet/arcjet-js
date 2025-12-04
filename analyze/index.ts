@@ -15,6 +15,7 @@ import type {
 import type { ArcjetLogger } from "@arcjet/protocol";
 
 interface AnalyzeContext {
+  getBody(): Promise<string | undefined>;
   log: ArcjetLogger;
   characteristics: string[];
 }
@@ -266,6 +267,7 @@ export async function matchFilters(
 ): Promise<FilterResult> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
+  const body = await context.getBody();
 
   if (typeof analyze !== "undefined") {
     return analyze.matchFilters(
@@ -273,6 +275,7 @@ export async function matchFilters(
       // @ts-expect-error: WebAssembly does not support readonly values.
       expressions,
       allowIfMatch,
+      body,
     );
     // Ignore the `else` branch as we test in places that have WebAssembly.
     /* node:coverage ignore next 4 */

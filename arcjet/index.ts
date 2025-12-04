@@ -1323,6 +1323,7 @@ export function tokenBucket<
 
       const analyzeContext = {
         characteristics: localCharacteristics,
+        getBody: context.getBody,
         log: context.log,
       };
 
@@ -1463,6 +1464,7 @@ export function fixedWindow<
 
       const analyzeContext = {
         characteristics: localCharacteristics,
+        getBody: context.getBody,
         log: context.log,
       };
 
@@ -1595,6 +1597,7 @@ export function slidingWindow<
 
       const analyzeContext = {
         characteristics: localCharacteristics,
+        getBody: context.getBody,
         log: context.log,
       };
 
@@ -2404,6 +2407,7 @@ export function shield(options: ShieldOptions): Primitive<{}> {
 
       const analyzeContext = {
         characteristics: localCharacteristics,
+        getBody: context.getBody,
         log: context.log,
       };
 

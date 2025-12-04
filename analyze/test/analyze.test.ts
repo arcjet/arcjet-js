@@ -8,7 +8,13 @@ import {
   matchFilters,
 } from "../index.js";
 
-const exampleContext = { characteristics: [], log: console };
+const exampleContext = {
+  characteristics: [],
+  async getBody() {
+    return undefined;
+  },
+  log: console,
+};
 const exampleEmailOptions = {
   allowDomainLiteral: false,
   allow: [],
@@ -400,6 +406,65 @@ test("matchFilters", async function (t) {
         false,
       ),
       /Failed to match filters: only `1024` bytes may be passed in expression/,
+    );
+  });
+
+  await t.test("should match against `body`", async function () {
+    assert.deepEqual(
+      await matchFilters(
+        {
+          ...exampleContext,
+          async getBody() {
+            return "mars and venus";
+          },
+        },
+        { ip: "127.0.0.1" },
+        ['body ~ "venus"'],
+        true,
+      ),
+      {
+        allowed: true,
+        matchedExpressions: ['body ~ "venus"'],
+        undeterminedExpressions: [],
+      },
+    );
+  });
+
+  await t.test("should match against unfound `body`", async function () {
+    assert.deepEqual(
+      await matchFilters(
+        {
+          ...exampleContext,
+          async getBody() {
+            return undefined;
+          },
+        },
+        { ip: "127.0.0.1" },
+        ['body ~ "venus"'],
+        true,
+      ),
+      {
+        allowed: true,
+        matchedExpressions: [],
+        undeterminedExpressions: ['body ~ "venus"'],
+      },
+    );
+  });
+
+  await t.test("should match against `body` throwing", async function () {
+    assert.rejects(
+      matchFilters(
+        {
+          ...exampleContext,
+          async getBody() {
+            throw new Error("boom");
+          },
+        },
+        { ip: "127.0.0.1" },
+        ['body ~ "venus"'],
+        true,
+      ),
+      /boom/,
     );
   });
 });
