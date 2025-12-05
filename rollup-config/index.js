@@ -1,7 +1,6 @@
 /**
  * @import {Dirent} from "node:fs";
  * @import {Plugin, RollupOptions} from "rollup";
- * @import {type runTranspileComponent as RunTranspileComponent} from "@bytecodealliance/jco-transpile/src/transpile.js";
  */
 
 /**
@@ -332,13 +331,12 @@ export function transpileComponent(url, options) {
   return {
     buildStart: {
       async handler() {
-        /**
-         * Return type of `transpile`, which is not typed or exposed correctly.
-         * It works in this file as it doesn’t end up in `.d.ts`.
-         *
-         * @type {ReturnType<RunTranspileComponent> extends Promise<infer T> ? T : never}
-         */
-        const result = await transpile(fileURLToPath(url), options);
+        // Cast because `jco-transpile` types incorrectly do not allow explicit
+        // `undefined` or `null`.
+        const settings = /** @type {Parameters<typeof transpile>[1]} */ (
+          options
+        );
+        const result = await transpile(fileURLToPath(url), settings);
 
         for (const [path, value] of Object.entries(result.files)) {
           const url = pathToFileURL(path);

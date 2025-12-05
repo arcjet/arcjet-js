@@ -96,8 +96,9 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     #state;
     #isAsync;
     #onResolve = null;
-    #returnedResults = null;
     #entryFnName = null;
+    #subtasks = [];
+    #completionPromise = null;
     
     cancelled = false;
     requested = false;
@@ -110,6 +111,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     awaitableResume = null;
     awaitableCancel = null;
     
+    
     constructor(opts) {
       if (opts?.id === undefined) { throw new TypeError('missing task ID during task creation'); }
       this.#id = opts.id;
@@ -121,8 +123,16 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       this.#isAsync = opts?.isAsync ?? false;
       this.#entryFnName = opts.entryFnName;
       
+      const {
+        promise: completionPromise,
+        resolve: resolveCompletionPromise,
+        reject: rejectCompletionPromise,
+      } = Promise.withResolvers();
+      this.#completionPromise = completionPromise;
+      
       this.#onResolve = (results) => {
-        this.#returnedResults = results;
+        // TODO: handle external facing cancellation (should likely be a rejection)
+        resolveCompletionPromise(results);
       };
     }
     
@@ -130,13 +140,8 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     id() { return this.#id; }
     componentIdx() { return this.#componentIdx; }
     isAsync() { return this.#isAsync; }
-    getEntryFnName() { return this.#entryFnName; }
-    
-    takeResults() {
-      const results = this.#returnedResults;
-      this.#returnedResults = null;
-      return results;
-    }
+    entryFnName() { return this.#entryFnName; }
+    completionPromise() { return this.#completionPromise; }
     
     mayEnter(task) {
       const cstate = getOrCreateAsyncState(this.#componentIdx);
@@ -167,7 +172,6 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       let mayNotEnter = !this.mayEnter(this);
       const componentHasPendingTasks = cstate.pendingTasks > 0;
       if (mayNotEnter || componentHasPendingTasks) {
-        
         throw new Error('in enter()'); // TODO: remove
       }
       
@@ -188,8 +192,6 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         this.#state = AsyncTask.State.CANCEL_DELIVERED;
         return {
           code: ASYNC_EVENT_CODE.TASK_CANCELLED,
-          something: 0,
-          something: 0,
         };
       }
       
@@ -210,8 +212,6 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           this.#state = AsyncTask.State.CANCELLED;
           return {
             code: ASYNC_EVENT_CODE.TASK_CANCELLED,
-            something: 0,
-            something: 0,
           };
         }
         
@@ -315,7 +315,6 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       }
     }
     
-    // NOTE: this should likely be moved to a SubTask class
     async asyncOnBlock(awaitable) {
       _debugLog('[AsyncTask#asyncOnBlock()] args', { taskID: this.#id, awaitable });
       if (!(awaitable instanceof Awaitable)) {
@@ -385,20 +384,23 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       }
       if (this.borrowedHandles.length > 0) { throw new Error('task still has borrow handles'); }
       
-      this.#onResolve([]);
+      this.#onResolve(new Error('cancelled'));
       this.#state = AsyncTask.State.RESOLVED;
     }
     
-    resolve(result) {
+    resolve(results) {
+      _debugLog('[AsyncTask#resolve()] args', { results });
       if (this.#state === AsyncTask.State.RESOLVED) {
         throw new Error('task is already resolved');
       }
       if (this.borrowedHandles.length > 0) { throw new Error('task still has borrow handles'); }
-      this.#onResolve(result);
+      this.#onResolve(results.length === 1 ? results[0] : results);
       this.#state = AsyncTask.State.RESOLVED;
     }
     
     exit() {
+      _debugLog('[AsyncTask#exit()] args', { });
+      
       // TODO: ensure there is only one task at a time (scheduler.lock() functionality)
       if (this.#state !== AsyncTask.State.RESOLVED) {
         throw new Error('task exited without resolution');
@@ -417,10 +419,35 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       this.startPendingTask();
     }
     
-    startPendingTask(opts) {
-      // TODO: implement
+    startPendingTask(args) {
+      _debugLog('[AsyncTask#startPendingTask()] args', args);
+      throw new Error('AsyncTask#startPendingTask() not implemented');
     }
     
+    createSubtask(args) {
+      _debugLog('[AsyncTask#createSubtask()] args', args);
+      const newSubtask = new AsyncSubtask({
+        componentIdx: this.componentIdx(),
+        taskID: this.id(),
+        memoryIdx: args?.memoryIdx,
+      });
+      this.#subtasks.push(newSubtask);
+      return newSubtask;
+    }
+    
+    currentSubtask() {
+      _debugLog('[AsyncTask#currentSubtask()]');
+      if (this.#subtasks.length === 0) { throw new Error('no current subtask'); }
+      return this.#subtasks.at(-1);
+    }
+    
+    endCurrentSubtask() {
+      _debugLog('[AsyncTask#endCurrentSubtask()]');
+      if (this.#subtasks.length === 0) { throw new Error('cannot end current subtask: no current subtask'); }
+      const subtask = this.#subtasks.pop();
+      subtask.drop();
+      return subtask;
+    }
   }
   const ASYNC_STATE = new Map();
   
@@ -436,7 +463,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     #syncImportWait = Promise.withResolvers();
     #lock = null;
     
-    mayLeave = false;
+    mayLeave = true;
     waitableSets = new RepTable();
     waitables = new RepTable();
     
@@ -580,39 +607,42 @@ class RepTable {
       this.#data.push(null);
       return (this.#data.length >> 1) - 1;
     }
-    this.#data[0] = this.#data[freeIdx];
-    const newFreeIdx = freeIdx << 1;
-    this.#data[newFreeIdx] = val;
-    this.#data[newFreeIdx + 1] = null;
-    return free;
+    this.#data[0] = this.#data[freeIdx << 1];
+    const placementIdx = freeIdx << 1;
+    this.#data[placementIdx] = val;
+    this.#data[placementIdx + 1] = null;
+    return freeIdx;
   }
   
   get(rep) {
-    _debugLog('[RepTable#insert()] args', { rep });
-    const baseIdx = idx << 1;
+    _debugLog('[RepTable#get()] args', { rep });
+    const baseIdx = rep << 1;
     const val = this.#data[baseIdx];
     return val;
   }
   
   contains(rep) {
-    _debugLog('[RepTable#insert()] args', { rep });
-    const baseIdx = idx << 1;
+    _debugLog('[RepTable#contains()] args', { rep });
+    const baseIdx = rep << 1;
     return !!this.#data[baseIdx];
   }
   
   remove(rep) {
-    _debugLog('[RepTable#insert()] args', { idx });
+    _debugLog('[RepTable#remove()] args', { rep });
     if (this.#data.length === 2) { throw new Error('invalid'); }
     
-    const baseIdx = idx << 1;
+    const baseIdx = rep << 1;
     const val = this.#data[baseIdx];
     if (val === 0) { throw new Error('invalid resource rep (cannot be 0)'); }
+    
     this.#data[baseIdx] = this.#data[0];
-    this.#data[0] = idx;
+    this.#data[0] = rep;
+    
     return val;
   }
   
   clear() {
+    _debugLog('[RepTable#clear()] args', { rep });
     this.#data = [0, null];
   }
 }
@@ -632,7 +662,7 @@ const { hasGravatar, hasMxRecords, isDisposableEmail, isFreeEmail } = imports['a
 const { ipLookup } = imports['arcjet:js-req/filter-overrides'];
 const { detect: detect$1 } = imports['arcjet:js-req/sensitive-information-identifier'];
 const { verify } = imports['arcjet:js-req/verify-bot'];
-let gen = (function* init () {
+let gen = (function* _initGenerator () {
   let exports0;
   let exports1;
   let memory0;
@@ -662,6 +692,7 @@ let gen = (function* init () {
     _debugLog('[iface="arcjet:js-req/bot-identifier", function="detect"][Instruction::Return]', {
       funcName: 'detect',
       paramCount: 0,
+      async: false,
       postReturn: false
     });
   }
@@ -690,6 +721,7 @@ let gen = (function* init () {
     _debugLog('[iface="arcjet:js-req/filter-overrides", function="ip-lookup"][Instruction::Return]', {
       funcName: 'ip-lookup',
       paramCount: 0,
+      async: false,
       postReturn: false
     });
   }
@@ -733,6 +765,7 @@ let gen = (function* init () {
     _debugLog('[iface="arcjet:js-req/verify-bot", function="verify"][Instruction::Return]', {
       funcName: 'verify',
       paramCount: 1,
+      async: false,
       postReturn: false
     });
     return enum2;
@@ -774,6 +807,7 @@ let gen = (function* init () {
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="is-free-email"][Instruction::Return]', {
       funcName: 'is-free-email',
       paramCount: 1,
+      async: false,
       postReturn: false
     });
     return enum1;
@@ -815,6 +849,7 @@ let gen = (function* init () {
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="is-disposable-email"][Instruction::Return]', {
       funcName: 'is-disposable-email',
       paramCount: 1,
+      async: false,
       postReturn: false
     });
     return enum1;
@@ -856,6 +891,7 @@ let gen = (function* init () {
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="has-mx-records"][Instruction::Return]', {
       funcName: 'has-mx-records',
       paramCount: 1,
+      async: false,
       postReturn: false
     });
     return enum1;
@@ -897,6 +933,7 @@ let gen = (function* init () {
     _debugLog('[iface="arcjet:js-req/email-validator-overrides", function="has-gravatar"][Instruction::Return]', {
       funcName: 'has-gravatar',
       paramCount: 1,
+      async: false,
       postReturn: false
     });
     return enum1;
@@ -968,6 +1005,7 @@ let gen = (function* init () {
     _debugLog('[iface="arcjet:js-req/sensitive-information-identifier", function="detect"][Instruction::Return]', {
       funcName: 'detect',
       paramCount: 0,
+      async: false,
       postReturn: false
     });
   }
@@ -1075,7 +1113,12 @@ let gen = (function* init () {
         throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant7.tag)}\` (received \`${variant7}\`) specified for \`BotConfig\``);
       }
     }
-    _debugLog('[iface="detect-bot", function="detect-bot"] [Instruction::CallWasm] (async? false, @ enter)');
+    _debugLog('[iface="detect-bot", function="detect-bot"][Instruction::CallWasm] enter', {
+      funcName: 'detect-bot',
+      paramCount: 6,
+      async: false,
+      postReturn: true,
+    });
     startCurrentTask(0, false, 'exports1DetectBot');
     const ret = exports1DetectBot(ptr0, len0, variant7_0, variant7_1, variant7_2, variant7_3);
     endCurrentTask(0);
@@ -1132,6 +1175,7 @@ let gen = (function* init () {
     _debugLog('[iface="detect-bot", function="detect-bot"][Instruction::Return]', {
       funcName: 'detect-bot',
       paramCount: 1,
+      async: false,
       postReturn: true
     });
     const retCopy = variant15;
@@ -1164,7 +1208,12 @@ let gen = (function* init () {
       dataView(memory0).setUint32(base + 4, len1, true);
       dataView(memory0).setUint32(base + 0, ptr1, true);
     }
-    _debugLog('[iface="match-filters", function="match-filters"] [Instruction::CallWasm] (async? false, @ enter)');
+    _debugLog('[iface="match-filters", function="match-filters"][Instruction::CallWasm] enter', {
+      funcName: 'match-filters',
+      paramCount: 5,
+      async: false,
+      postReturn: true,
+    });
     startCurrentTask(0, false, 'exports1MatchFilters');
     const ret = exports1MatchFilters(ptr0, len0, result2, len2, arg2 ? 1 : 0);
     endCurrentTask(0);
@@ -1219,6 +1268,7 @@ let gen = (function* init () {
     _debugLog('[iface="match-filters", function="match-filters"][Instruction::Return]', {
       funcName: 'match-filters',
       paramCount: 1,
+      async: false,
       postReturn: true
     });
     const retCopy = variant9;
@@ -1251,7 +1301,12 @@ let gen = (function* init () {
       dataView(memory0).setUint32(base + 4, len1, true);
       dataView(memory0).setUint32(base + 0, ptr1, true);
     }
-    _debugLog('[iface="generate-fingerprint", function="generate-fingerprint"] [Instruction::CallWasm] (async? false, @ enter)');
+    _debugLog('[iface="generate-fingerprint", function="generate-fingerprint"][Instruction::CallWasm] enter', {
+      funcName: 'generate-fingerprint',
+      paramCount: 4,
+      async: false,
+      postReturn: true,
+    });
     startCurrentTask(0, false, 'exports1GenerateFingerprint');
     const ret = exports1GenerateFingerprint(ptr0, len0, result2, len2);
     endCurrentTask(0);
@@ -1284,6 +1339,7 @@ let gen = (function* init () {
     _debugLog('[iface="generate-fingerprint", function="generate-fingerprint"][Instruction::Return]', {
       funcName: 'generate-fingerprint',
       paramCount: 1,
+      async: false,
       postReturn: true
     });
     const retCopy = variant5;
@@ -1316,7 +1372,12 @@ let gen = (function* init () {
       dataView(memory0).setUint32(base + 4, len1, true);
       dataView(memory0).setUint32(base + 0, ptr1, true);
     }
-    _debugLog('[iface="validate-characteristics", function="validate-characteristics"] [Instruction::CallWasm] (async? false, @ enter)');
+    _debugLog('[iface="validate-characteristics", function="validate-characteristics"][Instruction::CallWasm] enter', {
+      funcName: 'validate-characteristics',
+      paramCount: 4,
+      async: false,
+      postReturn: true,
+    });
     startCurrentTask(0, false, 'exports1ValidateCharacteristics');
     const ret = exports1ValidateCharacteristics(ptr0, len0, result2, len2);
     endCurrentTask(0);
@@ -1346,6 +1407,7 @@ let gen = (function* init () {
     _debugLog('[iface="validate-characteristics", function="validate-characteristics"][Instruction::Return]', {
       funcName: 'validate-characteristics',
       paramCount: 1,
+      async: false,
       postReturn: true
     });
     const retCopy = variant4;
@@ -1419,7 +1481,12 @@ let gen = (function* init () {
         throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant7.tag)}\` (received \`${variant7}\`) specified for \`EmailValidationConfig\``);
       }
     }
-    _debugLog('[iface="is-valid-email", function="is-valid-email"] [Instruction::CallWasm] (async? false, @ enter)');
+    _debugLog('[iface="is-valid-email", function="is-valid-email"][Instruction::CallWasm] enter', {
+      funcName: 'is-valid-email',
+      paramCount: 7,
+      async: false,
+      postReturn: true,
+    });
     startCurrentTask(0, false, 'exports1IsValidEmail');
     const ret = exports1IsValidEmail(ptr0, len0, variant7_0, variant7_1, variant7_2, variant7_3, variant7_4);
     endCurrentTask(0);
@@ -1476,6 +1543,7 @@ let gen = (function* init () {
     _debugLog('[iface="is-valid-email", function="is-valid-email"][Instruction::Return]', {
       funcName: 'is-valid-email',
       paramCount: 1,
+      async: false,
       postReturn: true
     });
     const retCopy = variant12;
@@ -1607,7 +1675,12 @@ let gen = (function* init () {
       variant9_0 = 1;
       variant9_1 = toUint32(e);
     }
-    _debugLog('[iface="detect-sensitive-info", function="detect-sensitive-info"] [Instruction::CallWasm] (async? false, @ enter)');
+    _debugLog('[iface="detect-sensitive-info", function="detect-sensitive-info"][Instruction::CallWasm] enter', {
+      funcName: 'detect-sensitive-info',
+      paramCount: 8,
+      async: false,
+      postReturn: true,
+    });
     startCurrentTask(0, false, 'exports1DetectSensitiveInfo');
     const ret = exports1DetectSensitiveInfo(ptr0, len0, variant8_0, variant8_1, variant8_2, variant9_0, variant9_1, v1_2 ? 1 : 0);
     endCurrentTask(0);
@@ -1716,6 +1789,7 @@ let gen = (function* init () {
     _debugLog('[iface="detect-sensitive-info", function="detect-sensitive-info"][Instruction::Return]', {
       funcName: 'detect-sensitive-info',
       paramCount: 1,
+      async: false,
       postReturn: true
     });
     const retCopy = {
