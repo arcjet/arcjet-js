@@ -130,8 +130,6 @@ dist
 .pnp.*
 
 # Generated files
-build.d.ts
-build.js
 edge-light.js
 edge-light.d.ts
 index.js
