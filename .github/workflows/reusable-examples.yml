@@ -31,7 +31,6 @@ jobs:
     strategy:
       matrix:
         folder:
-          - bun-hono-rate-limit
           - bun-rate-limit
   deno-examples:
     name: ${{matrix.folder}}
@@ -101,35 +100,20 @@ jobs:
         folder:
           - astro-integration
           - express-bots
-          - express-launchdarkly
           - express-newman
           - express-rate-limit
           - express-sensitive-info
           - express-validate-email
           - fastify
-          - gatsby-rate-limit
-          - nestjs-fastify
-          - nestjs-launchdarkly
-          - nestjs-graphql
           - nestjs
-          - nextjs-14-nextauth-4
           - nextjs-app-dir-rate-limit
           - nextjs-app-dir-validate-email
-          - nextjs-authjs-5
-          - nextjs-authjs-nosecone
-          - nextjs-better-auth
           - nextjs-bot-categories
-          - nextjs-clerk-rate-limit
-          - nextjs-clerk-shield
           - nextjs-decorate
           - nextjs-ip-details
-          - nextjs-openai
           - nextjs-pages-wrap
-          - nextjs-permit
-          - nextjs-react-hook-form
           - nextjs-sensitive-info
           - nextjs-server-actions
-          - nodejs-hono-rate-limit
           - nodejs-rate-limit
           - react-router-middleware
           - react-router
