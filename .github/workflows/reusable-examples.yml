@@ -23,7 +23,7 @@ jobs:
       - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
         with:
           bun-version: 1.2.19
-      - run: bun install
+      - run: bun install && bun run build
       - run: bun install
         working-directory: "examples/${{matrix.folder}}"
       - run: bun tsc --noEmit
@@ -55,7 +55,7 @@ jobs:
       - uses: denoland/setup-deno@bdaa2e4f849cbc8d7b46337cf37db0dc9b321074 # v2.0.3
         with:
           deno-version: v2.4.2
-      - run: npm ci
+      - run: npm ci && npm run build
       - run: deno install
         working-directory: "examples/${{matrix.folder}}"
       - run: deno check
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: 20
-      - run: npm ci
+      - run: npm ci && npm run build
       - run: npm ci
         working-directory: "examples/${{matrix.folder}}"
       - env:
@@ -117,7 +117,8 @@ jobs:
           - nextjs-app-dir-validate-email
           - nextjs-authjs-5
           - nextjs-authjs-nosecone
-          - nextjs-better-auth
+          # Turned off because it pulls in `better-sqlite3`, which runs lifecycle scripts.
+          # - nextjs-better-auth
           - nextjs-bot-categories
           - nextjs-clerk-rate-limit
           - nextjs-clerk-shield

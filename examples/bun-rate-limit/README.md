@@ -15,7 +15,7 @@ This example shows how to use Arcjet with a
 1. From the root of the project, install the SDK dependencies.
 
    ```bash
-   npm ci
+   bun install && bun run build
    ```
 
 2. Enter this directory and install the example's dependencies.
