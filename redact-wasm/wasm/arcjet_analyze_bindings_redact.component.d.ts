@@ -1,5 +1,5 @@
-import type { SensitiveInfoEntity } from './interfaces/arcjet-redact-custom-redact.js';
-export { SensitiveInfoEntity };
+// world root:component/root
+export type SensitiveInfoEntity = import('./interfaces/arcjet-redact-custom-redact.js').SensitiveInfoEntity;
 export interface RedactSensitiveInfoConfig {
   entities?: Array<SensitiveInfoEntity>,
   contextWindowSize?: number,
@@ -13,7 +13,7 @@ export interface RedactedSensitiveInfoEntity {
   end: number,
   identifiedType: SensitiveInfoEntity,
 }
-import { ArcjetRedactCustomRedact } from './interfaces/arcjet-redact-custom-redact.js';
+import type * as ArcjetRedactCustomRedact from './interfaces/arcjet-redact-custom-redact.js'; // arcjet:redact/custom-redact
 export interface ImportObject {
   'arcjet:redact/custom-redact': typeof ArcjetRedactCustomRedact,
 }
