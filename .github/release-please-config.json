@@ -128,6 +128,10 @@
       "component": "@arcjet/protocol",
       "skip-github-release": true
     },
+    "proxies": {
+      "component": "@arcjet/proxies",
+      "skip-github-release": true
+    },
     "redact-wasm": {
       "component": "@arcjet/redact-wasm",
       "skip-github-release": true
