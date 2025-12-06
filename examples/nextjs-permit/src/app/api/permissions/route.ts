@@ -6,7 +6,7 @@ import { permit } from "@/lib/permit";
 
 const aj = arcjet
     // Add a sliding window to limit requests to 2 per second
-    .withRule(slidingWindow({ mode: "LIVE", max: 2, interval: 1 }))
+    .withRule(slidingWindow({ characteristics: [ "fingerprint" ], mode: "LIVE", max: 2, interval: 1 }))
     // Add detection to block all detected bots
     .withRule(detectBot({ mode: "LIVE", allow: [] }));
 
