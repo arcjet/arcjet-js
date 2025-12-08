@@ -8,13 +8,7 @@ import {
   matchFilters,
 } from "../index.js";
 
-const exampleContext = {
-  characteristics: [],
-  async getBody() {
-    return undefined;
-  },
-  log: console,
-};
+const exampleContext = { characteristics: [], log: console };
 const exampleEmailOptions = {
   allowDomainLiteral: false,
   allow: [],
@@ -27,6 +21,7 @@ test("@arcjet/analyze", async function (t) {
       "detectBot",
       "detectSensitiveInfo",
       "generateFingerprint",
+      "hasBodyField",
       "isValidEmail",
       "matchFilters",
     ]);
@@ -297,6 +292,7 @@ test("matchFilters", async function (t) {
         { ip: "127.0.0.1" },
         ["ip.src == 127.0.0.1"],
         true,
+        undefined,
       ),
       {
         allowed: true,
@@ -313,6 +309,7 @@ test("matchFilters", async function (t) {
         { ip: "127.0.0.1" },
         ["ip.src == 127.0.0.2"],
         true,
+        undefined,
       ),
       { allowed: false, matchedExpressions: [], undeterminedExpressions: [] },
     );
@@ -325,6 +322,7 @@ test("matchFilters", async function (t) {
         { ip: "127.0.0.1" },
         ["ip.src == 127.0.0.1"],
         false,
+        undefined,
       ),
       {
         allowed: false,
@@ -343,6 +341,7 @@ test("matchFilters", async function (t) {
           { ip: "127.0.0.1" },
           ["ip.src == 127.0.0.2"],
           false,
+          undefined,
         ),
         { allowed: true, matchedExpressions: [], undeterminedExpressions: [] },
       );
@@ -360,6 +359,7 @@ test("matchFilters", async function (t) {
         { ip: "127.0.0.127" },
         tenExpressions,
         false,
+        undefined,
       ),
       { allowed: true, matchedExpressions: [], undeterminedExpressions: [] },
     );
@@ -372,6 +372,7 @@ test("matchFilters", async function (t) {
         { ip: "127.0.0.127" },
         [...tenExpressions, "ip.src == 127.0.0.10"],
         false,
+        undefined,
       ),
       /Failed to match filters: only `10` expressions may be passed/,
     );
@@ -388,6 +389,7 @@ test("matchFilters", async function (t) {
         { ip: "127.0.0.1" },
         [tenThousandTwentyFourBytes],
         false,
+        undefined,
       ),
       { allowed: true, matchedExpressions: [], undeterminedExpressions: [] },
     );
@@ -404,6 +406,7 @@ test("matchFilters", async function (t) {
         { ip: "127.0.0.127" },
         [tenThousandTwentyFiveBytes],
         false,
+        undefined,
       ),
       /Failed to match filters: only `1024` bytes may be passed in expression/,
     );
@@ -412,15 +415,11 @@ test("matchFilters", async function (t) {
   await t.test("should match against `body`", async function () {
     assert.deepEqual(
       await matchFilters(
-        {
-          ...exampleContext,
-          async getBody() {
-            return "mars and venus";
-          },
-        },
+        exampleContext,
         { ip: "127.0.0.1" },
         ['body ~ "venus"'],
         true,
+        "mars and venus",
       ),
       {
         allowed: true,
@@ -433,38 +432,17 @@ test("matchFilters", async function (t) {
   await t.test("should match against unfound `body`", async function () {
     assert.deepEqual(
       await matchFilters(
-        {
-          ...exampleContext,
-          async getBody() {
-            return undefined;
-          },
-        },
+        exampleContext,
         { ip: "127.0.0.1" },
         ['body ~ "venus"'],
         true,
+        undefined,
       ),
       {
         allowed: true,
         matchedExpressions: [],
         undeterminedExpressions: ['body ~ "venus"'],
       },
-    );
-  });
-
-  await t.test("should match against `body` throwing", async function () {
-    assert.rejects(
-      matchFilters(
-        {
-          ...exampleContext,
-          async getBody() {
-            throw new Error("boom");
-          },
-        },
-        { ip: "127.0.0.1" },
-        ['body ~ "venus"'],
-        true,
-      ),
-      /boom/,
     );
   });
 });

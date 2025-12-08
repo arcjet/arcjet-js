@@ -15,7 +15,6 @@ import type {
 import type { ArcjetLogger } from "@arcjet/protocol";
 
 interface AnalyzeContext {
-  getBody(): Promise<string | undefined>;
   log: ArcjetLogger;
   characteristics: string[];
 }
@@ -264,10 +263,10 @@ export async function matchFilters(
   request: AnalyzeRequest,
   expressions: ReadonlyArray<string>,
   allowIfMatch: boolean,
+  body: string | undefined,
 ): Promise<FilterResult> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
-  const body = await context.getBody();
 
   if (typeof analyze !== "undefined") {
     return analyze.matchFilters(
@@ -285,4 +284,28 @@ export async function matchFilters(
   throw new Error(
     "FILTER rule failed to run because Wasm is not supported in this environment.",
   );
+}
+
+/**
+ * Check if a `body` field is used.
+ *
+ * @param expressions
+ *   Filter expressions.
+ * @returns
+ *   Promise to whether a `body` field is used.
+ */
+export async function hasBodyField(
+  expressions: ReadonlyArray<string>,
+): Promise<boolean | undefined> {
+  const coreImports = createCoreImports();
+  const analyze = await initializeWasm(coreImports);
+
+  if (typeof analyze !== "undefined") {
+    return analyze.hasBodyField(
+      // @ts-expect-error: WebAssembly does not support readonly values.
+      expressions,
+    );
+    // Ignore the `else` branch as we test in places that have WebAssembly.
+    /* node:coverage ignore next 4 */
+  }
 }
