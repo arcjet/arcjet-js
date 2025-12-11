@@ -1,301 +1,318 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { type FastifyRequest, default as Fastify } from "fastify";
+import { default as Fastify, type FastifyRequest } from "fastify";
 import arcjetFastify, { sensitiveInfo } from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
 const oneMegabyte = 1024 * 1024;
 let port = 3000;
 
-test("should expose the public api", async function () {
-  assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
-    "ArcjetAllowDecision",
-    "ArcjetBotReason",
-    "ArcjetChallengeDecision",
-    "ArcjetDecision",
-    "ArcjetDenyDecision",
-    "ArcjetEdgeRuleReason",
-    "ArcjetEmailReason",
-    "ArcjetErrorDecision",
-    "ArcjetErrorReason",
-    "ArcjetFilterReason",
-    "ArcjetIpDetails",
-    "ArcjetRateLimitReason",
-    "ArcjetReason",
-    "ArcjetRuleResult",
-    "ArcjetSensitiveInfoReason",
-    "ArcjetShieldReason",
-    "botCategories",
-    "createRemoteClient",
-    "default",
-    "detectBot",
-    "filter",
-    "fixedWindow",
-    "protectSignup",
-    "sensitiveInfo",
-    "shield",
-    "slidingWindow",
-    "tokenBucket",
-    "validateEmail",
-  ]);
-});
-
-test("should support `sensitiveInfo`", async function () {
-  const restore = capture();
-
-  const arcjet = arcjetFastify({
-    key: exampleKey,
-    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+test("`@arcjet/fastify`", async function (t) {
+  await t.test("should expose the public api", async function () {
+    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "ArcjetAllowDecision",
+      "ArcjetBotReason",
+      "ArcjetChallengeDecision",
+      "ArcjetDecision",
+      "ArcjetDenyDecision",
+      "ArcjetEdgeRuleReason",
+      "ArcjetEmailReason",
+      "ArcjetErrorDecision",
+      "ArcjetErrorReason",
+      "ArcjetFilterReason",
+      "ArcjetIpDetails",
+      "ArcjetRateLimitReason",
+      "ArcjetReason",
+      "ArcjetRuleResult",
+      "ArcjetSensitiveInfoReason",
+      "ArcjetShieldReason",
+      "botCategories",
+      "createRemoteClient",
+      "default",
+      "detectBot",
+      "filter",
+      "fixedWindow",
+      "protectSignup",
+      "sensitiveInfo",
+      "shield",
+      "slidingWindow",
+      "tokenBucket",
+      "validateEmail",
+    ]);
   });
 
-  const server = await createSimpleServer({ arcjet, port });
+  await t.test("should support `sensitiveInfo`", async function () {
+    const restore = capture();
 
-  const response = await fetch("http://localhost:" + port, {
-    body: "This is fine.",
-    headers: { "Content-Type": "text/plain" },
-    method: "POST",
+    const arcjet = arcjetFastify({
+      key: exampleKey,
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
+
+    const server = await createSimpleServer({ arcjet, port });
+
+    const response = await fetch("http://localhost:" + port, {
+      body: "This is fine.",
+      headers: { "Content-Type": "text/plain" },
+      method: "POST",
+    });
+
+    await server.close();
+    restore();
+    port++;
+
+    assert.equal(response.status, 200);
   });
 
-  await server.close();
-  restore();
-  port++;
+  await t.test(
+    "should support reading body before `sensitiveInfo`",
+    async function () {
+      const restore = capture();
+      let body: unknown;
 
-  assert.equal(response.status, 200);
-});
+      const arcjet = arcjetFastify({
+        key: exampleKey,
+        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+      });
 
-test("should support reading body before `sensitiveInfo`", async function () {
-  const restore = capture();
-  let body: unknown;
+      const server = await createSimpleServer({
+        arcjet,
+        async before(request) {
+          body = request.body;
+        },
+        port,
+      });
 
-  const arcjet = arcjetFastify({
-    key: exampleKey,
-    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-  });
+      const response = await fetch("http://localhost:" + port, {
+        body: "My email is alice@arcjet.com",
+        headers: { "Content-Type": "text/plain" },
+        method: "POST",
+      });
 
-  const server = await createSimpleServer({
-    arcjet,
-    async before(request) {
-      body = request.body;
+      await server.close();
+      restore();
+      port++;
+
+      assert.equal(body, "My email is alice@arcjet.com");
+      assert.equal(response.status, 403);
     },
-    port,
-  });
+  );
 
-  const response = await fetch("http://localhost:" + port, {
-    body: "My email is alice@arcjet.com",
-    headers: { "Content-Type": "text/plain" },
-    method: "POST",
-  });
+  await t.test(
+    "should support reading body after `sensitiveInfo`",
+    async function () {
+      const restore = capture();
+      let body: unknown;
 
-  await server.close();
-  restore();
-  port++;
+      const arcjet = arcjetFastify({
+        key: exampleKey,
+        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+      });
 
-  assert.equal(body, "My email is alice@arcjet.com");
-  assert.equal(response.status, 403);
-});
+      const server = await createSimpleServer({
+        async after(request) {
+          body = request.body;
+        },
+        arcjet,
+        port,
+      });
 
-test("should support reading body after `sensitiveInfo`", async function () {
-  const restore = capture();
-  let body: unknown;
+      const response = await fetch("http://localhost:" + port, {
+        body: "My email is alice@arcjet.com",
+        headers: { "Content-Type": "text/plain" },
+        method: "POST",
+      });
 
-  const arcjet = arcjetFastify({
-    key: exampleKey,
-    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-  });
+      await server.close();
+      restore();
+      port++;
 
-  const server = await createSimpleServer({
-    async after(request) {
-      body = request.body;
+      assert.equal(response.status, 403);
+      assert.equal(body, "My email is alice@arcjet.com");
     },
-    arcjet,
-    port,
+  );
+
+  await t.test("should support `sensitiveInfo` on JSON", async function () {
+    const restore = capture();
+
+    const arcjet = arcjetFastify({
+      key: exampleKey,
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
+
+    const server = await createSimpleServer({ arcjet, port });
+
+    const response = await fetch("http://localhost:" + port, {
+      body: JSON.stringify({ message: "My email is alice@arcjet.com" }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+
+    await server.close();
+    restore();
+    port++;
+
+    assert.equal(response.status, 403);
   });
 
-  const response = await fetch("http://localhost:" + port, {
-    body: "My email is alice@arcjet.com",
-    headers: { "Content-Type": "text/plain" },
-    method: "POST",
-  });
+  // TODO: support form data with `https://github.com/fastify/fastify-formbody`.
+  // Document that it is needed.
+  // await t.test("should support `sensitiveInfo` on form data", async function () {
+  //   const restore = capture();
 
-  await server.close();
-  restore();
-  port++;
+  //   const arcjet = arcjetFastify({
+  //     key: exampleKey,
+  //     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+  //   });
 
-  assert.equal(response.status, 403);
-  assert.equal(body, "My email is alice@arcjet.com");
-});
+  //   const server = await createSimpleServer({ arcjet, port });
 
-test("should support `sensitiveInfo` on JSON", async function () {
-  const restore = capture();
+  //   const formData = new FormData();
+  //   formData.append("message", "My email is My email is alice@arcjet.com");
 
-  const arcjet = arcjetFastify({
-    key: exampleKey,
-    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-  });
+  //   const response = await fetch("http://localhost:" + port, {
+  //     body: formData,
+  //     headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //     method: "POST",
+  //   });
 
-  const server = await createSimpleServer({ arcjet, port });
+  //   await server.close();
+  //   restore();
+  //   port++
 
-  const response = await fetch("http://localhost:" + port, {
-    body: JSON.stringify({ message: "My email is alice@arcjet.com" }),
-    headers: { "Content-Type": "application/json" },
-    method: "POST",
-  });
+  //   assert.equal(response.status, 403);
+  // });
 
-  await server.close();
-  restore();
-  port++;
+  await t.test(
+    "should support `sensitiveInfo` on plain text",
+    async function () {
+      const restore = capture();
 
-  assert.equal(response.status, 403);
-});
+      const arcjet = arcjetFastify({
+        key: exampleKey,
+        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+      });
 
-// TODO: support form data with `https://github.com/fastify/fastify-formbody`.
-// Document that it is needed.
-// test("should support `sensitiveInfo` on form data", async function () {
-//   const restore = capture();
+      const server = await createSimpleServer({ arcjet, port });
 
-//   const arcjet = arcjetFastify({
-//     key: exampleKey,
-//     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-//   });
+      const response = await fetch("http://localhost:" + port, {
+        body: "My email is alice@arcjet.com",
+        headers: { "Content-Type": "text/plain" },
+        method: "POST",
+      });
 
-//   const server = await createSimpleServer({ arcjet, port });
+      await server.close();
+      restore();
+      port++;
 
-//   const formData = new FormData();
-//   formData.append("message", "My email is My email is alice@arcjet.com");
+      assert.equal(response.status, 403);
+    },
+  );
 
-//   const response = await fetch("http://localhost:" + port, {
-//     body: formData,
-//     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//     method: "POST",
-//   });
+  await t.test(
+    "should support `sensitiveInfo` on streamed plain text",
+    async function () {
+      const restore = capture();
 
-//   await server.close();
-//   restore();
-//   port++
+      const arcjet = arcjetFastify({
+        key: exampleKey,
+        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+      });
 
-//   assert.equal(response.status, 403);
-// });
+      const server = await createSimpleServer({ arcjet, port });
 
-test("should support `sensitiveInfo` on plain text", async function () {
-  const restore = capture();
+      const response = await fetch("http://localhost:" + port, {
+        body: new ReadableStream({
+          start(controller) {
+            const parts = "My email is alice@arcjet.com".split(" ");
+            let first = true;
+            const time = 10;
 
-  const arcjet = arcjetFastify({
-    key: exampleKey,
-    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-  });
-
-  const server = await createSimpleServer({ arcjet, port });
-
-  const response = await fetch("http://localhost:" + port, {
-    body: "My email is alice@arcjet.com",
-    headers: { "Content-Type": "text/plain" },
-    method: "POST",
-  });
-
-  await server.close();
-  restore();
-  port++;
-
-  assert.equal(response.status, 403);
-});
-
-test("should support `sensitiveInfo` on streamed plain text", async function () {
-  const restore = capture();
-
-  const arcjet = arcjetFastify({
-    key: exampleKey,
-    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-  });
-
-  const server = await createSimpleServer({ arcjet, port });
-
-  const response = await fetch("http://localhost:" + port, {
-    body: new ReadableStream({
-      start(controller) {
-        const parts = "My email is alice@arcjet.com".split(" ");
-        let first = true;
-        const time = 10;
-
-        setTimeout(tick, time);
-
-        function tick() {
-          const part = parts.shift();
-          if (part) {
-            controller.enqueue(
-              new TextEncoder().encode((first ? "" : " ") + part),
-            );
-            first = false;
             setTimeout(tick, time);
-          } else {
-            controller.enqueue(new TextEncoder().encode("\n"));
-            controller.close();
-          }
-        }
-      },
-    }),
-    duplex: "half",
-    headers: { "Content-Type": "text/plain" },
-    method: "POST",
-  });
 
-  await server.close();
-  restore();
-  port++;
+            function tick() {
+              const part = parts.shift();
+              if (part) {
+                controller.enqueue(
+                  new TextEncoder().encode((first ? "" : " ") + part),
+                );
+                first = false;
+                setTimeout(tick, time);
+              } else {
+                controller.enqueue(new TextEncoder().encode("\n"));
+                controller.close();
+              }
+            }
+          },
+        }),
+        duplex: "half",
+        headers: { "Content-Type": "text/plain" },
+        method: "POST",
+      });
 
-  assert.equal(response.status, 403);
+      await server.close();
+      restore();
+      port++;
+
+      assert.equal(response.status, 403);
+    },
+  );
+
+  await t.test(
+    "should support `sensitiveInfo` a megabyte of data",
+    async function () {
+      const restore = capture();
+
+      const arcjet = arcjetFastify({
+        key: exampleKey,
+        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+      });
+
+      const server = await createSimpleServer({ arcjet, port });
+      const message = "My email is alice@arcjet.com";
+      const body = "a".repeat(oneMegabyte - message.length - 1) + " " + message;
+
+      const response = await fetch("http://localhost:" + port, {
+        body,
+        headers: { "Content-Type": "text/plain" },
+        method: "POST",
+      });
+
+      await server.close();
+      restore();
+      port++;
+
+      assert.equal(response.status, 403);
+    },
+  );
+
+  // TODO: configure fastify.
+  // Document that it is needed.
+  // await t.test("should support `sensitiveInfo` 5 megabytes of data", async function () {
+  //   const restore = capture();
+
+  //   const arcjet = arcjetFastify({
+  //     key: exampleKey,
+  //     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+  //   });
+
+  //   const server = await createSimpleServer({ arcjet, port });
+  //   const message = "My email is alice@arcjet.com";
+  //   const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
+
+  //   const response = await fetch("http://localhost:" + port, {
+  //     body,
+  //     headers: { "Content-Type": "text/plain" },
+  //     method: "POST",
+  //   });
+
+  //   await server.close();
+  //   restore();
+  //   port++;
+
+  //   assert.equal(response.status, 403);
+  // });
 });
-
-test("should support `sensitiveInfo` a megabyte of data", async function () {
-  const restore = capture();
-
-  const arcjet = arcjetFastify({
-    key: exampleKey,
-    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-  });
-
-  const server = await createSimpleServer({ arcjet, port });
-  const message = "My email is alice@arcjet.com";
-  const body = "a".repeat(oneMegabyte - message.length - 1) + " " + message;
-
-  const response = await fetch("http://localhost:" + port, {
-    body,
-    headers: { "Content-Type": "text/plain" },
-    method: "POST",
-  });
-
-  await server.close();
-  restore();
-  port++;
-
-  assert.equal(response.status, 403);
-});
-
-// TODO: configure fastify.
-// Document that it is needed.
-// test("should support `sensitiveInfo` 5 megabytes of data", async function () {
-//   const restore = capture();
-
-//   const arcjet = arcjetFastify({
-//     key: exampleKey,
-//     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-//   });
-
-//   const server = await createSimpleServer({ arcjet, port });
-//   const message = "My email is alice@arcjet.com";
-//   const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
-
-//   const response = await fetch("http://localhost:" + port, {
-//     body,
-//     headers: { "Content-Type": "text/plain" },
-//     method: "POST",
-//   });
-
-//   await server.close();
-//   restore();
-//   port++;
-
-//   assert.equal(response.status, 403);
-// });
 
 // TODO: add test case for removal of body parser.
 // Document that it will fail.
