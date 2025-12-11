@@ -44,9 +44,9 @@
     "build": "rollup --config",
     "lint": "eslint .",
     "prepublishOnly": "npm run build",
-    "test-api": "node --test -- test/**/*.test.js",
+    "test-api": "node --test -- test/*.test.js",
     "test-coverage#": "TODO: after node 20, use: ` --test-coverage-branches=100 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=100`",
-    "test-coverage": "node --experimental-test-coverage --test -- test/**/*.test.js",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
