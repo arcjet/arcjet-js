@@ -5,8 +5,6 @@
 // deno test test/index.test.ts --allow-env --allow-net --no-check
 // ```
 
-/// <reference types="@types/deno" />
-
 import assert from "node:assert/strict";
 import test from "node:test";
 import arcjetDeno, { sensitiveInfo } from "../index.js";
