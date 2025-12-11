@@ -1,6 +1,9 @@
-// Note: this monorepo is tested with Node.js, but this package targets Bun.
-// These tests don’t work with Node.js, only with the Bun test runner.
-// Use `bun test` to run them.
+// This monorepo is tested with Node.js but this package targets Bun.
+// Run the tests from this package folder with:
+//
+// ```sh
+// bun test
+// ```
 
 import assert from "node:assert/strict";
 import test from "node:test";

@@ -1,6 +1,9 @@
-// Note: this monorepo is tested with Node.js, but this package targets Deno.
-// These tests don’t work with Node.js, only with the Deno test runner.
-// Use `deno test test/index.test.ts --allow-env --allow-net --no-check` to run them.
+// This monorepo is tested with Node.js but this package targets Deno.
+// Run the tests from this package folder with:
+//
+// ```sh
+// deno test test/index.test.ts --allow-env --allow-net --no-check
+// ```
 
 /// <reference types="@types/deno" />
 

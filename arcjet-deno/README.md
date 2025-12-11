@@ -94,6 +94,15 @@ see the [Arcjet Deno SDK reference][arcjet-reference-deno] on our website.
 
 -->
 
+## Test
+
+This monorepo is tested with Node.js but this package targets Deno.
+Run the tests from this package folder with:
+
+```sh
+deno test test/index.test.ts --allow-env --allow-net --no-check
+```
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
