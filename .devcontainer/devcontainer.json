@@ -6,7 +6,13 @@
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
+    "ghcr.io/devcontainers-community/features/deno:1.2.1": {
+      "version": "2.4.2"
+    },
     "ghcr.io/devcontainers/features/common-utils:2.3.2": {},
+    "ghcr.io/prulloac/devcontainer-features/bun:1.2.0": {
+      "version": "1.2.19"
+    },
     "ghcr.io/trunk-io/devcontainer-feature/trunk:1.1.0": {}
   },
 
