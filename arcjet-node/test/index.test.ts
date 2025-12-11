@@ -5,7 +5,6 @@ import arcjetNode, { sensitiveInfo } from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
 const oneMegabyte = 1024 * 1024;
-let port = 3000;
 
 test("`@arcjet/node`", async function (t) {
   await t.test("should expose the public api", async function () {
@@ -49,9 +48,9 @@ test("`@arcjet/node`", async function (t) {
       rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
     });
 
-    const server = await createSimpleServer({ arcjet, port });
+    const { server, url } = await createSimpleServer({ arcjet });
 
-    const response = await fetch("http://localhost:3000", {
+    const response = await fetch(url, {
       body: "This is fine.",
       headers: { "Content-Type": "text/plain" },
       method: "POST",
@@ -83,7 +82,7 @@ test("`@arcjet/node`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({
+      const { server, url } = await createSimpleServer({
         arcjet,
         async before(request) {
           return new Promise(function (resolve) {
@@ -95,10 +94,9 @@ test("`@arcjet/node`", async function (t) {
             });
           });
         },
-        port,
       });
 
-      const response = await fetch("http://localhost:3000", {
+      const response = await fetch(url, {
         body: "My email is alice@arcjet.com",
         headers: { "Content-Type": "text/plain" },
         method: "POST",
@@ -106,7 +104,6 @@ test("`@arcjet/node`", async function (t) {
 
       server.close();
       restore();
-      port++;
 
       assert.equal(body, "My email is alice@arcjet.com");
       assert.equal(response.status, 200);
@@ -128,7 +125,7 @@ test("`@arcjet/node`", async function (t) {
   //     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   //   });
 
-  //   const server = await createSimpleServer({
+  //   const { server, url } = await createSimpleServer({
   //     async after(request) {
   //       return new Promise(function (resolve) {
   //         request.on("data", function (chunk) {
@@ -140,10 +137,9 @@ test("`@arcjet/node`", async function (t) {
   //       });
   //     },
   //     arcjet,
-  //     port,
   //   });
 
-  //   const response = await fetch("http://localhost:3000", {
+  //   const response = await fetch(url, {
   //     body: "My email is alice@arcjet.com",
   //     headers: { "Content-Type": "text/plain" },
   //     method: "POST",
@@ -151,7 +147,6 @@ test("`@arcjet/node`", async function (t) {
 
   //   server.close();
   //   restore();
-  //   port++;
 
   //   assert.equal(response.status, 403);
   //   assert.equal(body, "My email is alice@arcjet.com");
@@ -165,9 +160,9 @@ test("`@arcjet/node`", async function (t) {
       rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
     });
 
-    const server = await createSimpleServer({ arcjet, port });
+    const { server, url } = await createSimpleServer({ arcjet });
 
-    const response = await fetch("http://localhost:3000", {
+    const response = await fetch(url, {
       body: JSON.stringify({ message: "My email is alice@arcjet.com" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -175,7 +170,6 @@ test("`@arcjet/node`", async function (t) {
 
     server.close();
     restore();
-    port++;
 
     assert.equal(response.status, 403);
   });
@@ -190,12 +184,12 @@ test("`@arcjet/node`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({ arcjet, port });
+      const { server, url } = await createSimpleServer({ arcjet });
 
       const formData = new FormData();
       formData.append("message", "My email is My email is alice@arcjet.com");
 
-      const response = await fetch("http://localhost:3000", {
+      const response = await fetch(url, {
         body: formData,
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         method: "POST",
@@ -203,7 +197,6 @@ test("`@arcjet/node`", async function (t) {
 
       server.close();
       restore();
-      port++;
 
       assert.equal(response.status, 403);
     },
@@ -219,9 +212,9 @@ test("`@arcjet/node`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({ arcjet, port });
+      const { server, url } = await createSimpleServer({ arcjet });
 
-      const response = await fetch("http://localhost:3000", {
+      const response = await fetch(url, {
         body: "My email is alice@arcjet.com",
         headers: { "Content-Type": "text/plain" },
         method: "POST",
@@ -229,7 +222,6 @@ test("`@arcjet/node`", async function (t) {
 
       server.close();
       restore();
-      port++;
 
       assert.equal(response.status, 403);
     },
@@ -245,9 +237,9 @@ test("`@arcjet/node`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({ arcjet, port });
+      const { server, url } = await createSimpleServer({ arcjet });
 
-      const response = await fetch("http://localhost:3000", {
+      const response = await fetch(url, {
         body: new ReadableStream({
           start(controller) {
             const parts = "My email is alice@arcjet.com".split(" ");
@@ -278,7 +270,6 @@ test("`@arcjet/node`", async function (t) {
 
       server.close();
       restore();
-      port++;
 
       assert.equal(response.status, 403);
     },
@@ -294,11 +285,11 @@ test("`@arcjet/node`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({ arcjet, port });
+      const { server, url } = await createSimpleServer({ arcjet });
       const message = "My email is alice@arcjet.com";
       const body = "a".repeat(oneMegabyte - message.length - 1) + " " + message;
 
-      const response = await fetch("http://localhost:3000", {
+      const response = await fetch(url, {
         body,
         headers: { "Content-Type": "text/plain" },
         method: "POST",
@@ -306,7 +297,6 @@ test("`@arcjet/node`", async function (t) {
 
       server.close();
       restore();
-      port++;
 
       assert.equal(response.status, 403);
     },
@@ -322,11 +312,11 @@ test("`@arcjet/node`", async function (t) {
   //     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   //   });
 
-  //   const server = await createSimpleServer({ arcjet, port });
+  //   const { server, url } = await createSimpleServer({ arcjet, port });
   //   const message = "My email is alice@arcjet.com";
   //   const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
 
-  //   const response = await fetch("http://localhost:3000", {
+  //   const response = await fetch(url, {
   //     body,
   //     headers: { "Content-Type": "text/plain" },
   //     method: "POST",
@@ -359,11 +349,13 @@ interface SimpleServerOptions {
   after?(request: http.IncomingMessage): Promise<undefined> | undefined;
   arcjet: ReturnType<typeof arcjetNode>;
   before?(request: http.IncomingMessage): Promise<undefined> | undefined;
-  port: number;
 }
 
+let uniquePort = 3300;
 async function createSimpleServer(options: SimpleServerOptions) {
-  const { after, arcjet, before, port } = options;
+  const { after, arcjet, before } = options;
+  const port = uniquePort++;
+
   const server = http.createServer(async function (request, response) {
     await before?.(request);
     // @ts-expect-error: TODO: fix types to allow `undefined`.
@@ -384,5 +376,5 @@ async function createSimpleServer(options: SimpleServerOptions) {
     });
   });
 
-  return server;
+  return { server, url: "http://localhost:" + port };
 }

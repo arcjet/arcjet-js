@@ -52,9 +52,9 @@ test("should support `sensitiveInfo`", async function () {
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const server = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({ arcjet });
 
-  const response = await fetch("http://localhost:3000", {
+  const response = await fetch(url, {
     body: "This is fine.",
     headers: { "Content-Type": "text/plain" },
     method: "POST",
@@ -84,14 +84,14 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const server = createSimpleServer({
+  const { server, url } = createSimpleServer({
     arcjet,
     async before(request) {
       body = await request.text();
     },
   });
 
-  const response = await fetch("http://localhost:3000", {
+  const response = await fetch(url, {
     body: "My email is alice@arcjet.com",
     headers: { "Content-Type": "text/plain" },
     method: "POST",
@@ -117,14 +117,14 @@ test("should support reading body after `sensitiveInfo`", async function () {
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const server = createSimpleServer({
+  const { server, url } = createSimpleServer({
     async after(request) {
       body = await request.text();
     },
     arcjet,
   });
 
-  const response = await fetch("http://localhost:3000", {
+  const response = await fetch(url, {
     body: "This is fine.",
     headers: { "Content-Type": "text/plain" },
     method: "POST",
@@ -145,9 +145,9 @@ test("should support `sensitiveInfo` on JSON", async function () {
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const server = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({ arcjet });
 
-  const response = await fetch("http://localhost:3000", {
+  const response = await fetch(url, {
     body: JSON.stringify({ message: "My email is alice@arcjet.com" }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -167,12 +167,12 @@ test("should support `sensitiveInfo` on form data", async function () {
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const server = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({ arcjet });
 
   const formData = new FormData();
   formData.append("message", "My email is My email is alice@arcjet.com");
 
-  const response = await fetch("http://localhost:3000", {
+  const response = await fetch(url, {
     body: formData,
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     method: "POST",
@@ -192,9 +192,9 @@ test("should support `sensitiveInfo` on plain text", async function () {
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const server = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({ arcjet });
 
-  const response = await fetch("http://localhost:3000", {
+  const response = await fetch(url, {
     body: "My email is alice@arcjet.com",
     headers: { "Content-Type": "text/plain" },
     method: "POST",
@@ -214,9 +214,9 @@ test("should support `sensitiveInfo` on streamed plain text", async function () 
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const server = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({ arcjet });
 
-  const response = await fetch("http://localhost:3000", {
+  const response = await fetch(url, {
     body: new ReadableStream({
       start(controller) {
         const parts = "My email is alice@arcjet.com".split(" ");
@@ -259,11 +259,11 @@ test("should support `sensitiveInfo` a megabyte of data", async function () {
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const server = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({ arcjet });
   const message = "My email is alice@arcjet.com";
   const body = "a".repeat(oneMegabyte - message.length - 1) + " " + message;
 
-  const response = await fetch("http://localhost:3000", {
+  const response = await fetch(url, {
     body,
     headers: { "Content-Type": "text/plain" },
     method: "POST",
@@ -284,11 +284,11 @@ test("should support `sensitiveInfo` 5 megabytes of data", async function () {
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const server = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({ arcjet });
   const message = "My email is alice@arcjet.com";
   const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
 
-  const response = await fetch("http://localhost:3000", {
+  const response = await fetch(url, {
     body,
     headers: { "Content-Type": "text/plain" },
     method: "POST",
@@ -321,10 +321,11 @@ interface SimpleServerOptions {
   before?(request: Request): Promise<undefined> | undefined;
 }
 
+let uniquePort = 3100;
 function createSimpleServer(options: SimpleServerOptions) {
   const { after, arcjet, before } = options;
-  return Deno.serve(
-    { port: 3000, onListen() {} },
+  const server = Deno.serve(
+    { port: uniquePort++, onListen() {} },
     arcjet.handler(async function (request) {
       await before?.(request);
       const decision = await arcjet.protect(request);
@@ -334,4 +335,5 @@ function createSimpleServer(options: SimpleServerOptions) {
         : new Response("Hello world");
     }),
   );
+  return { server, url: "http://localhost:" + server.addr.port };
 }

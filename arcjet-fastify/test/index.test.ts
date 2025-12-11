@@ -5,7 +5,6 @@ import arcjetFastify, { sensitiveInfo } from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
 const oneMegabyte = 1024 * 1024;
-let port = 3000;
 
 test("`@arcjet/fastify`", async function (t) {
   await t.test("should expose the public api", async function () {
@@ -49,9 +48,9 @@ test("`@arcjet/fastify`", async function (t) {
       rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
     });
 
-    const server = await createSimpleServer({ arcjet, port });
+    const { server, url } = await createSimpleServer({ arcjet });
 
-    const response = await fetch("http://localhost:" + port, {
+    const response = await fetch(url, {
       body: "This is fine.",
       headers: { "Content-Type": "text/plain" },
       method: "POST",
@@ -59,7 +58,6 @@ test("`@arcjet/fastify`", async function (t) {
 
     await server.close();
     restore();
-    port++;
 
     assert.equal(response.status, 200);
   });
@@ -75,15 +73,14 @@ test("`@arcjet/fastify`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({
+      const { server, url } = await createSimpleServer({
         arcjet,
         async before(request) {
           body = request.body;
         },
-        port,
       });
 
-      const response = await fetch("http://localhost:" + port, {
+      const response = await fetch(url, {
         body: "My email is alice@arcjet.com",
         headers: { "Content-Type": "text/plain" },
         method: "POST",
@@ -91,7 +88,6 @@ test("`@arcjet/fastify`", async function (t) {
 
       await server.close();
       restore();
-      port++;
 
       assert.equal(body, "My email is alice@arcjet.com");
       assert.equal(response.status, 403);
@@ -109,15 +105,14 @@ test("`@arcjet/fastify`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({
+      const { server, url } = await createSimpleServer({
         async after(request) {
           body = request.body;
         },
         arcjet,
-        port,
       });
 
-      const response = await fetch("http://localhost:" + port, {
+      const response = await fetch(url, {
         body: "My email is alice@arcjet.com",
         headers: { "Content-Type": "text/plain" },
         method: "POST",
@@ -125,7 +120,6 @@ test("`@arcjet/fastify`", async function (t) {
 
       await server.close();
       restore();
-      port++;
 
       assert.equal(response.status, 403);
       assert.equal(body, "My email is alice@arcjet.com");
@@ -140,9 +134,9 @@ test("`@arcjet/fastify`", async function (t) {
       rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
     });
 
-    const server = await createSimpleServer({ arcjet, port });
+    const { server, url } = await createSimpleServer({ arcjet });
 
-    const response = await fetch("http://localhost:" + port, {
+    const response = await fetch(url, {
       body: JSON.stringify({ message: "My email is alice@arcjet.com" }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -150,7 +144,6 @@ test("`@arcjet/fastify`", async function (t) {
 
     await server.close();
     restore();
-    port++;
 
     assert.equal(response.status, 403);
   });
@@ -165,12 +158,12 @@ test("`@arcjet/fastify`", async function (t) {
   //     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   //   });
 
-  //   const server = await createSimpleServer({ arcjet, port });
+  //   const { server, url } = await createSimpleServer({ arcjet });
 
   //   const formData = new FormData();
   //   formData.append("message", "My email is My email is alice@arcjet.com");
 
-  //   const response = await fetch("http://localhost:" + port, {
+  //   const response = await fetch(url, {
   //     body: formData,
   //     headers: { "Content-Type": "application/x-www-form-urlencoded" },
   //     method: "POST",
@@ -178,7 +171,6 @@ test("`@arcjet/fastify`", async function (t) {
 
   //   await server.close();
   //   restore();
-  //   port++
 
   //   assert.equal(response.status, 403);
   // });
@@ -193,9 +185,9 @@ test("`@arcjet/fastify`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({ arcjet, port });
+      const { server, url } = await createSimpleServer({ arcjet });
 
-      const response = await fetch("http://localhost:" + port, {
+      const response = await fetch(url, {
         body: "My email is alice@arcjet.com",
         headers: { "Content-Type": "text/plain" },
         method: "POST",
@@ -203,7 +195,6 @@ test("`@arcjet/fastify`", async function (t) {
 
       await server.close();
       restore();
-      port++;
 
       assert.equal(response.status, 403);
     },
@@ -219,9 +210,9 @@ test("`@arcjet/fastify`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({ arcjet, port });
+      const { server, url } = await createSimpleServer({ arcjet });
 
-      const response = await fetch("http://localhost:" + port, {
+      const response = await fetch(url, {
         body: new ReadableStream({
           start(controller) {
             const parts = "My email is alice@arcjet.com".split(" ");
@@ -252,7 +243,6 @@ test("`@arcjet/fastify`", async function (t) {
 
       await server.close();
       restore();
-      port++;
 
       assert.equal(response.status, 403);
     },
@@ -268,11 +258,11 @@ test("`@arcjet/fastify`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
-      const server = await createSimpleServer({ arcjet, port });
+      const { server, url } = await createSimpleServer({ arcjet });
       const message = "My email is alice@arcjet.com";
       const body = "a".repeat(oneMegabyte - message.length - 1) + " " + message;
 
-      const response = await fetch("http://localhost:" + port, {
+      const response = await fetch(url, {
         body,
         headers: { "Content-Type": "text/plain" },
         method: "POST",
@@ -280,7 +270,6 @@ test("`@arcjet/fastify`", async function (t) {
 
       await server.close();
       restore();
-      port++;
 
       assert.equal(response.status, 403);
     },
@@ -296,11 +285,11 @@ test("`@arcjet/fastify`", async function (t) {
   //     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   //   });
 
-  //   const server = await createSimpleServer({ arcjet, port });
+  //   const { server, url } = await createSimpleServer({ arcjet });
   //   const message = "My email is alice@arcjet.com";
   //   const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
 
-  //   const response = await fetch("http://localhost:" + port, {
+  //   const response = await fetch(url, {
   //     body,
   //     headers: { "Content-Type": "text/plain" },
   //     method: "POST",
@@ -308,7 +297,6 @@ test("`@arcjet/fastify`", async function (t) {
 
   //   await server.close();
   //   restore();
-  //   port++;
 
   //   assert.equal(response.status, 403);
   // });
@@ -336,12 +324,13 @@ interface SimpleServerOptions {
   after?(request: FastifyRequest): Promise<undefined> | undefined;
   arcjet: ReturnType<typeof arcjetFastify>;
   before?(request: FastifyRequest): Promise<undefined> | undefined;
-  port: number;
 }
 
+let uniquePort = 3200;
 async function createSimpleServer(options: SimpleServerOptions) {
-  const { after, arcjet, before, port } = options;
+  const { after, arcjet, before } = options;
   const fastify = Fastify();
+  const port = uniquePort++;
 
   fastify.post("/", async function (request, reply) {
     await before?.(request);
@@ -354,5 +343,5 @@ async function createSimpleServer(options: SimpleServerOptions) {
 
   await fastify.listen({ port });
 
-  return fastify;
+  return { server: fastify, url: "http://localhost:" + port };
 }
