@@ -1,4 +1,3 @@
-/// <reference types="@types/deno" />
 import core from "arcjet";
 import type {
   ArcjetDecision,
