@@ -326,7 +326,6 @@ interface SimpleServerOptions {
 }
 
 let uniquePort = 3000;
-
 function createSimpleServer(options: SimpleServerOptions) {
   const { after, arcjet, before } = options;
 
