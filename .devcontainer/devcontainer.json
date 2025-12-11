@@ -6,21 +6,11 @@
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
-    "ghcr.io/devcontainers-extra/features/deno-asdf:2": {
+    // Note: verious others either don’t work or add for example `deno-lint`, `deno-ts` into IDE
+    // which interferes with other Node based packages.
+    "ghcr.io/devcontainers-extra/features/deno-asdf:2.0.16": {
       "version": "2.4.2"
     },
-    // May work but stuff `deno-ts` and `deno-lint` into IDE?
-    // "ghcr.io/devcontainers-community/features/deno:1.2.1": {
-    //   "version": "2.4.2"
-    // },
-    // This one seems to fail building
-    // "ghcr.io/devcontainers-extra/features/deno:1": {
-    //   "version": "2.4.2"
-    // },
-    // This one seems to fail building
-    // "ghcr.io/prulloac/devcontainer-features/deno:1": {
-    //   "version": "2.4.2"
-    // },
     "ghcr.io/devcontainers/features/common-utils:2.3.2": {},
     "ghcr.io/prulloac/devcontainer-features/bun:1.2.0": {
       "version": "1.2.19"
