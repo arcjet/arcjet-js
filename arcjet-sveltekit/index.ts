@@ -305,15 +305,18 @@ export default function arcjet<
     const xArcjetIp = isDevelopment(env)
       ? headers.get("x-arcjet-ip")
       : undefined;
+
+    let maybeIp: string | undefined;
+
+    try {
+      maybeIp = event.getClientAddress();
+    } catch {
+      // Swallow error.
+    }
+
     let ip =
       xArcjetIp ||
-      findIp(
-        {
-          ip: event.getClientAddress(),
-          headers,
-        },
-        { platform: platform(env), proxies },
-      );
+      findIp({ ip: maybeIp, headers }, { platform: platform(env), proxies });
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
