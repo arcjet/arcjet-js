@@ -95,6 +95,15 @@ export default {
 For more on how to configure Arcjet with Bun and how to protect Bun,
 see the [Arcjet Bun SDK reference][arcjet-reference-bun] on our website.
 
+## Test
+
+This monorepo is tested with Node.js but this package targets Bun.
+Run the tests from this package folder with:
+
+```sh
+bun test
+```
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
