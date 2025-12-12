@@ -25,7 +25,8 @@ const aj = arcjet({
   // and set it as an environment variable rather than hard coding.
   // See: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
   key: process.env.ARCJET_KEY,
-  characteristics: ["ip.src"], // track requests by IP address
+  // Limiting by `ip.src` is the default if not specified
+  // characteristics: ["ip.src"],
   rules: [
     shield({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
