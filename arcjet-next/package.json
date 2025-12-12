@@ -65,7 +65,7 @@
     "@rollup/wasm-node": "4.53.3",
     "eslint": "9.39.1",
     "next": "16.0.9",
-    "react": "19.2.0",
+    "react": "19.2.1",
     "react-dom": "19.2.0",
     "typescript": "5.9.3"
   },
