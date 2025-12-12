@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/redact-wasm-v1.0.0-beta.16) (2025-12-12)
+
+
+### 🧹 Miscellaneous Chores
+
+* regenerate WebAssembly ([#5526](https://github.com/arcjet/arcjet-js/issues/5526)) ([c97076b](https://github.com/arcjet/arcjet-js/commit/c97076b4ef630e11640e51dfc7c74b10222496fe))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/rollup-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+
 ## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...@arcjet/redact-wasm-v1.0.0-beta.15) (2025-11-07)
 
 

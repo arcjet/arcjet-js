@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/bun-v1.0.0-beta.16) (2025-12-12)
+
+
+### 🪲 Bug Fixes
+
+* **bun, deno:** do not read from `process.env` ([#5458](https://github.com/arcjet/arcjet-js/issues/5458)) ([e90d277](https://github.com/arcjet/arcjet-js/commit/e90d2773f9aedf70c45982e2e53b4e0c7726b3ac))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/headers bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/ip bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/logger bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/protocol bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/transport bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * arcjet bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/rollup-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+
 ## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...@arcjet/bun-v1.0.0-beta.15) (2025-11-07)
 
 
