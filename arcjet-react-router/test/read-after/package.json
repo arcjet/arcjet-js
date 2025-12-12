@@ -1,0 +1,8 @@
+{
+  "dependencies#": "react-router wants these defined in this subpackage, but they are actually from the parent package’s dev dependencies",
+  "dependencies": {
+    "@react-router/node": "^7.10.1",
+    "isbot": "^5.1.32"
+  },
+  "type": "module"
+}

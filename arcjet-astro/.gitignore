@@ -137,3 +137,4 @@ internal.d.ts
 middleware.js
 middleware.d.ts
 test/*.js
+test/*/.astro/

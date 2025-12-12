@@ -132,4 +132,5 @@ dist
 # Generated files
 index.js
 index.d.ts
-test/*.js
+test/*.test.js
+test/*/.svelte-kit/

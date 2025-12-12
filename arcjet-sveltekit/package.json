@@ -44,7 +44,8 @@
     "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
     "prepublishOnly": "npm run build",
-    "test": "npm run build && npm run lint"
+    "test-api": "node --test -- test/index.test.js",
+    "test": "npm run build && npm run lint && npm run test-api"
   },
   "dependencies": {
     "@arcjet/env": "1.0.0-beta.15",
@@ -61,10 +62,12 @@
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-beta.15",
     "@arcjet/rollup-config": "1.0.0-beta.15",
-    "@types/node": "24.10.1",
     "@rollup/wasm-node": "4.53.3",
+    "@sveltejs/adapter-node": "^5.4.0",
+    "@types/node": "24.10.1",
     "eslint": "9.39.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vite": "^7.2.6"
   },
   "publishConfig": {
     "access": "public",

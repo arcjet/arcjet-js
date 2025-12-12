@@ -7,7 +7,16 @@ const ipSymbol = Symbol.for("arcjet.ip");
 
 export const onRequest = defineMiddleware((ctx, next) => {
   if (!ctx.isPrerendered) {
-    Reflect.set(ctx.request, ipSymbol, ctx.clientAddress);
+    let ip: string | undefined;
+
+    // Getter can throw.
+    try {
+      ip = ctx.clientAddress;
+    } catch {
+      // Empty.
+    }
+
+    Reflect.set(ctx.request, ipSymbol, ip);
   }
 
   return next();
