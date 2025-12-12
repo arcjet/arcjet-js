@@ -353,8 +353,8 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
     }));
     postReturn0 = exports1['cabi_post_detect-bot'];
     postReturn1 = exports1['cabi_post_match-filters'];
-    postReturn2 = exports1['cabi_post_generate-fingerprint'];
-    postReturn3 = exports1['cabi_post_validate-characteristics'];
+    postReturn2 = exports1['cabi_post_has-body-field'];
+    postReturn3 = exports1['cabi_post_generate-fingerprint'];
     postReturn4 = exports1['cabi_post_is-valid-email'];
     postReturn5 = exports1['cabi_post_detect-sensitive-info'];
     
@@ -468,7 +468,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal.val;
     }
     
-    function matchFilters(arg0, arg1, arg2) {
+    function matchFilters(arg0, arg1, arg2, arg3) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
       var vec2 = arg1;
@@ -481,23 +481,29 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         dataView(memory0).setInt32(base + 4, len1, true);
         dataView(memory0).setInt32(base + 0, ptr1, true);
       }
-      const ret = exports1['match-filters'](ptr0, len0, result2, len2, arg2 ? 1 : 0);
-      let variant9;
+      var variant4 = arg3;
+      let variant4_0;
+      let variant4_1;
+      let variant4_2;
+      if (variant4 === null || variant4=== undefined) {
+        variant4_0 = 0;
+        variant4_1 = 0;
+        variant4_2 = 0;
+      } else {
+        const e = variant4;
+        var ptr3 = utf8Encode(e, realloc0, memory0);
+        var len3 = utf8EncodedLen;
+        variant4_0 = 1;
+        variant4_1 = ptr3;
+        variant4_2 = len3;
+      }
+      const ret = exports1['match-filters'](ptr0, len0, result2, len2, arg2 ? 1 : 0, variant4_0, variant4_1, variant4_2);
+      let variant11;
       switch (dataView(memory0).getUint8(ret + 0, true)) {
         case 0: {
-          var bool3 = dataView(memory0).getUint8(ret + 4, true);
-          var len5 = dataView(memory0).getInt32(ret + 12, true);
-          var base5 = dataView(memory0).getInt32(ret + 8, true);
-          var result5 = [];
-          for (let i = 0; i < len5; i++) {
-            const base = base5 + i * 8;
-            var ptr4 = dataView(memory0).getInt32(base + 0, true);
-            var len4 = dataView(memory0).getInt32(base + 4, true);
-            var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
-            result5.push(result4);
-          }
-          var len7 = dataView(memory0).getInt32(ret + 20, true);
-          var base7 = dataView(memory0).getInt32(ret + 16, true);
+          var bool5 = dataView(memory0).getUint8(ret + 4, true);
+          var len7 = dataView(memory0).getInt32(ret + 12, true);
+          var base7 = dataView(memory0).getInt32(ret + 8, true);
           var result7 = [];
           for (let i = 0; i < len7; i++) {
             const base = base7 + i * 8;
@@ -506,23 +512,33 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
             var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
             result7.push(result6);
           }
-          variant9= {
+          var len9 = dataView(memory0).getInt32(ret + 20, true);
+          var base9 = dataView(memory0).getInt32(ret + 16, true);
+          var result9 = [];
+          for (let i = 0; i < len9; i++) {
+            const base = base9 + i * 8;
+            var ptr8 = dataView(memory0).getInt32(base + 0, true);
+            var len8 = dataView(memory0).getInt32(base + 4, true);
+            var result8 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr8, len8));
+            result9.push(result8);
+          }
+          variant11= {
             tag: 'ok',
             val: {
-              allowed: bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool()),
-              matchedExpressions: result5,
-              undeterminedExpressions: result7,
+              allowed: bool5 == 0 ? false : (bool5 == 1 ? true : throwInvalidBool()),
+              matchedExpressions: result7,
+              undeterminedExpressions: result9,
             }
           };
           break;
         }
         case 1: {
-          var ptr8 = dataView(memory0).getInt32(ret + 4, true);
-          var len8 = dataView(memory0).getInt32(ret + 8, true);
-          var result8 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr8, len8));
-          variant9= {
+          var ptr10 = dataView(memory0).getInt32(ret + 4, true);
+          var len10 = dataView(memory0).getInt32(ret + 8, true);
+          var result10 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr10, len10));
+          variant11= {
             tag: 'err',
-            val: result8
+            val: result10
           };
           break;
         }
@@ -530,8 +546,52 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           throw new TypeError('invalid variant discriminant for expected');
         }
       }
-      const retVal = variant9;
+      const retVal = variant11;
       postReturn1(ret);
+      if (typeof retVal === 'object' && retVal.tag === 'err') {
+        throw new ComponentError(retVal.val);
+      }
+      return retVal.val;
+    }
+    
+    function hasBodyField(arg0) {
+      var vec1 = arg0;
+      var len1 = vec1.length;
+      var result1 = realloc0(0, 0, 4, len1 * 8);
+      for (let i = 0; i < vec1.length; i++) {
+        const e = vec1[i];
+        const base = result1 + i * 8;var ptr0 = utf8Encode(e, realloc0, memory0);
+        var len0 = utf8EncodedLen;
+        dataView(memory0).setInt32(base + 4, len0, true);
+        dataView(memory0).setInt32(base + 0, ptr0, true);
+      }
+      const ret = exports1['has-body-field'](result1, len1);
+      let variant4;
+      switch (dataView(memory0).getUint8(ret + 0, true)) {
+        case 0: {
+          var bool2 = dataView(memory0).getUint8(ret + 4, true);
+          variant4= {
+            tag: 'ok',
+            val: bool2 == 0 ? false : (bool2 == 1 ? true : throwInvalidBool())
+          };
+          break;
+        }
+        case 1: {
+          var ptr3 = dataView(memory0).getInt32(ret + 4, true);
+          var len3 = dataView(memory0).getInt32(ret + 8, true);
+          var result3 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr3, len3));
+          variant4= {
+            tag: 'err',
+            val: result3
+          };
+          break;
+        }
+        default: {
+          throw new TypeError('invalid variant discriminant for expected');
+        }
+      }
+      const retVal = variant4;
+      postReturn2(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -579,7 +639,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant5;
-      postReturn2(ret);
+      postReturn3(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -624,7 +684,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         }
       }
       const retVal = variant4;
-      postReturn3(ret);
+      postReturn2(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);
       }
@@ -967,7 +1027,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal;
     }
     
-    return { detectBot, detectSensitiveInfo, generateFingerprint, isValidEmail, matchFilters, validateCharacteristics,  };
+    return { detectBot, detectSensitiveInfo, generateFingerprint, hasBodyField, isValidEmail, matchFilters, validateCharacteristics,  };
   })();
   let promise, resolve, reject;
   function runNext (value) {
