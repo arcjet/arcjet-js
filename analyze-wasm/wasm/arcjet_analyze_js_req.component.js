@@ -72,25 +72,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       dataView(memory0).setInt32(arg2 + 0, result2, true);
     }
     
-    function trampoline1(arg0, arg1, arg2) {
-      var ptr0 = arg0;
-      var len0 = arg1;
-      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
-      const ret = ipLookup(result0);
-      var variant2 = ret;
-      if (variant2 === null || variant2=== undefined) {
-        dataView(memory0).setInt8(arg2 + 0, 0, true);
-      } else {
-        const e = variant2;
-        dataView(memory0).setInt8(arg2 + 0, 1, true);
-        var ptr1 = utf8Encode(e, realloc0, memory0);
-        var len1 = utf8EncodedLen;
-        dataView(memory0).setInt32(arg2 + 8, len1, true);
-        dataView(memory0).setInt32(arg2 + 4, ptr1, true);
-      }
-    }
-    
-    function trampoline2(arg0, arg1, arg2, arg3) {
+    function trampoline1(arg0, arg1, arg2, arg3) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
@@ -124,131 +106,25 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return enum2;
     }
     
-    function trampoline3(arg0, arg1) {
+    function trampoline2(arg0, arg1, arg2) {
       var ptr0 = arg0;
       var len0 = arg1;
       var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
-      const ret = isFreeEmail(result0);
-      var val1 = ret;
-      let enum1;
-      switch (val1) {
-        case 'yes': {
-          enum1 = 0;
-          break;
-        }
-        case 'no': {
-          enum1 = 1;
-          break;
-        }
-        case 'unknown': {
-          enum1 = 2;
-          break;
-        }
-        default: {
-          if ((ret) instanceof Error) {
-            console.error(ret);
-          }
-          
-          throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
-        }
+      const ret = ipLookup(result0);
+      var variant2 = ret;
+      if (variant2 === null || variant2=== undefined) {
+        dataView(memory0).setInt8(arg2 + 0, 0, true);
+      } else {
+        const e = variant2;
+        dataView(memory0).setInt8(arg2 + 0, 1, true);
+        var ptr1 = utf8Encode(e, realloc0, memory0);
+        var len1 = utf8EncodedLen;
+        dataView(memory0).setInt32(arg2 + 8, len1, true);
+        dataView(memory0).setInt32(arg2 + 4, ptr1, true);
       }
-      return enum1;
     }
     
-    function trampoline4(arg0, arg1) {
-      var ptr0 = arg0;
-      var len0 = arg1;
-      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
-      const ret = isDisposableEmail(result0);
-      var val1 = ret;
-      let enum1;
-      switch (val1) {
-        case 'yes': {
-          enum1 = 0;
-          break;
-        }
-        case 'no': {
-          enum1 = 1;
-          break;
-        }
-        case 'unknown': {
-          enum1 = 2;
-          break;
-        }
-        default: {
-          if ((ret) instanceof Error) {
-            console.error(ret);
-          }
-          
-          throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
-        }
-      }
-      return enum1;
-    }
-    
-    function trampoline5(arg0, arg1) {
-      var ptr0 = arg0;
-      var len0 = arg1;
-      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
-      const ret = hasMxRecords(result0);
-      var val1 = ret;
-      let enum1;
-      switch (val1) {
-        case 'yes': {
-          enum1 = 0;
-          break;
-        }
-        case 'no': {
-          enum1 = 1;
-          break;
-        }
-        case 'unknown': {
-          enum1 = 2;
-          break;
-        }
-        default: {
-          if ((ret) instanceof Error) {
-            console.error(ret);
-          }
-          
-          throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
-        }
-      }
-      return enum1;
-    }
-    
-    function trampoline6(arg0, arg1) {
-      var ptr0 = arg0;
-      var len0 = arg1;
-      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
-      const ret = hasGravatar(result0);
-      var val1 = ret;
-      let enum1;
-      switch (val1) {
-        case 'yes': {
-          enum1 = 0;
-          break;
-        }
-        case 'no': {
-          enum1 = 1;
-          break;
-        }
-        case 'unknown': {
-          enum1 = 2;
-          break;
-        }
-        default: {
-          if ((ret) instanceof Error) {
-            console.error(ret);
-          }
-          
-          throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
-        }
-      }
-      return enum1;
-    }
-    
-    function trampoline7(arg0, arg1, arg2) {
+    function trampoline3(arg0, arg1, arg2) {
       var len1 = arg1;
       var base1 = arg0;
       var result1 = [];
@@ -307,6 +183,130 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       dataView(memory0).setInt32(arg2 + 4, len5, true);
       dataView(memory0).setInt32(arg2 + 0, result5, true);
     }
+    
+    function trampoline4(arg0, arg1) {
+      var ptr0 = arg0;
+      var len0 = arg1;
+      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+      const ret = isFreeEmail(result0);
+      var val1 = ret;
+      let enum1;
+      switch (val1) {
+        case 'yes': {
+          enum1 = 0;
+          break;
+        }
+        case 'no': {
+          enum1 = 1;
+          break;
+        }
+        case 'unknown': {
+          enum1 = 2;
+          break;
+        }
+        default: {
+          if ((ret) instanceof Error) {
+            console.error(ret);
+          }
+          
+          throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
+        }
+      }
+      return enum1;
+    }
+    
+    function trampoline5(arg0, arg1) {
+      var ptr0 = arg0;
+      var len0 = arg1;
+      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+      const ret = isDisposableEmail(result0);
+      var val1 = ret;
+      let enum1;
+      switch (val1) {
+        case 'yes': {
+          enum1 = 0;
+          break;
+        }
+        case 'no': {
+          enum1 = 1;
+          break;
+        }
+        case 'unknown': {
+          enum1 = 2;
+          break;
+        }
+        default: {
+          if ((ret) instanceof Error) {
+            console.error(ret);
+          }
+          
+          throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
+        }
+      }
+      return enum1;
+    }
+    
+    function trampoline6(arg0, arg1) {
+      var ptr0 = arg0;
+      var len0 = arg1;
+      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+      const ret = hasMxRecords(result0);
+      var val1 = ret;
+      let enum1;
+      switch (val1) {
+        case 'yes': {
+          enum1 = 0;
+          break;
+        }
+        case 'no': {
+          enum1 = 1;
+          break;
+        }
+        case 'unknown': {
+          enum1 = 2;
+          break;
+        }
+        default: {
+          if ((ret) instanceof Error) {
+            console.error(ret);
+          }
+          
+          throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
+        }
+      }
+      return enum1;
+    }
+    
+    function trampoline7(arg0, arg1) {
+      var ptr0 = arg0;
+      var len0 = arg1;
+      var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+      const ret = hasGravatar(result0);
+      var val1 = ret;
+      let enum1;
+      switch (val1) {
+        case 'yes': {
+          enum1 = 0;
+          break;
+        }
+        case 'no': {
+          enum1 = 1;
+          break;
+        }
+        case 'unknown': {
+          enum1 = 2;
+          break;
+        }
+        default: {
+          if ((ret) instanceof Error) {
+            console.error(ret);
+          }
+          
+          throw new TypeError(`"${val1}" is not one of the cases of validator-response`);
+        }
+      }
+      return enum1;
+    }
     let exports2;
     let postReturn0;
     let postReturn1;
@@ -321,19 +321,19 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
         detect: exports0['0'],
       },
       'arcjet:js-req/email-validator-overrides': {
-        'has-gravatar': exports0['6'],
-        'has-mx-records': exports0['5'],
-        'is-disposable-email': exports0['4'],
-        'is-free-email': exports0['3'],
+        'has-gravatar': exports0['7'],
+        'has-mx-records': exports0['6'],
+        'is-disposable-email': exports0['5'],
+        'is-free-email': exports0['4'],
       },
       'arcjet:js-req/filter-overrides': {
-        'ip-lookup': exports0['1'],
+        'ip-lookup': exports0['2'],
       },
       'arcjet:js-req/sensitive-information-identifier': {
-        detect: exports0['7'],
+        detect: exports0['3'],
       },
       'arcjet:js-req/verify-bot': {
-        verify: exports0['2'],
+        verify: exports0['1'],
       },
     }));
     memory0 = exports1.memory;
