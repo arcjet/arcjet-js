@@ -47,8 +47,8 @@
     "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
     "prepublishOnly": "npm run build",
-    "test-api": "node --test",
-    "test-coverage": "node --experimental-test-coverage --test",
+    "test-api": "node --test -- test/*.js",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.js",
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
@@ -66,6 +66,7 @@
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0-beta.15",
     "@arcjet/rollup-config": "1.0.0-beta.15",
+    "@astrojs/node": "^9.5.1",
     "@rollup/wasm-node": "4.53.3",
     "astro": "5.16.4",
     "eslint": "9.39.1",

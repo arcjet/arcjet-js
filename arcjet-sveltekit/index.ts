@@ -305,11 +305,19 @@ export default function arcjet<
     const xArcjetIp = isDevelopment(env)
       ? headers.get("x-arcjet-ip")
       : undefined;
+    let maybeClientIp: string | undefined;
+
+    try {
+      maybeClientIp = event.getClientAddress();
+    } catch {
+      // Swallow.
+    }
+
     let ip =
       xArcjetIp ||
       findIp(
         {
-          ip: event.getClientAddress(),
+          ip: maybeClientIp,
           headers,
         },
         { platform: platform(env), proxies },

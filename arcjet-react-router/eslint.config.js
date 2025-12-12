@@ -9,4 +9,7 @@ import base from "@arcjet/eslint-config";
  *
  * @type {Array<Linter.Config>}
  */
-export default [...base, { ignores: ["test/*.js", "index.js"] }];
+export default [
+  ...base,
+  { ignores: ["test/*/.react-router/", "test/**/*.js", "index.js"] },
+];
