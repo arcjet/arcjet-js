@@ -6,8 +6,16 @@ import { defineMiddleware } from "astro/middleware";
 const ipSymbol = Symbol.for("arcjet.ip");
 
 export const onRequest = defineMiddleware((ctx, next) => {
+  let ip: string | undefined;
+
+  try {
+    ip = ctx.clientAddress;
+  } catch {
+    // Swallow error.
+  }
+
   if (!ctx.isPrerendered) {
-    Reflect.set(ctx.request, ipSymbol, ctx.clientAddress);
+    Reflect.set(ctx.request, ipSymbol, ip);
   }
 
   return next();
