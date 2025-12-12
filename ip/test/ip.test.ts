@@ -187,6 +187,7 @@ test("@arcjet/ip", async function (t) {
     assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
       "default",
       "findIp",
+      "parseForwarded",
       "parseProxy",
     ]);
   });
@@ -579,17 +580,385 @@ test("`findIp`", async (t) => {
     });
 
     await t.test("should support a `Forwarded` header", async (t) => {
-      for (const [message, input, expected, proxies] of cases) {
-        await t.test(message, () => {
+      // Examples from <https://datatracker.ietf.org/doc/html/rfc7239#section-4>
+      // But using IPs that are not in the documentation range.
+      await t.test("should support an obfuscated identifier", function () {
+        assert.equal(findIp({ headers: { forwarded: 'for="_gazonk"' } }), "");
+      });
+
+      await t.test("should support a cased `For` w/ IPv6 w/ port", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'For="[2001:1::1]:4711"' } }),
+          "2001:1::1",
+        );
+      });
+
+      await t.test("should support parameters", function () {
+        assert.equal(
+          findIp({
+            headers: { forwarded: "for=1.1.1.1;proto=http;by=2.2.2.2" },
+          }),
+          "1.1.1.1",
+        );
+      });
+
+      await t.test("should support elements", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: "for=3.3.3.3, for=4.4.4.4" } }),
+          "4.4.4.4",
+        );
+      });
+
+      await t.test("should support obfuscated identifiers", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: "for=_hidden, for=_SEVKISEK" } }),
+          "",
+        );
+      });
+
+      await t.test("should support no whitespace", function () {
+        assert.equal(
+          findIp({
+            headers: { forwarded: 'for=5.5.5.5,for="[2001:1::1]",for=unknown' },
+          }),
+          "2001:1::1",
+        );
+      });
+
+      await t.test("should support whitespace", function () {
+        assert.equal(
+          findIp({
+            headers: {
+              forwarded: 'for=7.7.7.7  ,  for="[2001:1::2]"  ,  for=unknown',
+            },
+          }),
+          "2001:1::2",
+        );
+      });
+
+      await t.test("should support proxies", function () {
+        assert.equal(
+          findIp(
+            {
+              headers: {
+                forwarded: 'for=8.8.8.8, for="[2001:1::3]", for=unknown',
+              },
+            },
+            { proxies: ["2001:1::3"] },
+          ),
+          "8.8.8.8",
+        );
+      });
+
+      await t.test("should ignore prototype pollution", function () {
+        assert.equal(
+          findIp({
+            headers: {
+              forwarded: "for=9.9.9.9,toString=1,constructor=2,__proto__=3",
+            },
+          }),
+          "9.9.9.9",
+        );
+      });
+
+      await t.test(
+        "should work right-to-left and not be affected by earlier parse errors (parameter name, first)",
+        function () {
           assert.equal(
-            findIp(
-              { headers: new Headers([["Forwarded", input]]) },
-              { proxies },
-            ),
-            expected,
+            findIp({ headers: { forwarded: "👍=a,for=1.1.1.1" } }),
+            "1.1.1.1",
           );
-        });
-      }
+        },
+      );
+
+      await t.test("should ignore parse errors (parameter name)", function () {
+        assert.equal(findIp({ headers: { forwarded: "👍=b" } }), "");
+      });
+
+      await t.test(
+        "should ignore parse errors (parameter name, first)",
+        function () {
+          assert.equal(findIp({ headers: { forwarded: "👍a=b" } }), "");
+        },
+      );
+
+      await t.test("should ignore parse errors (unquoted value)", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: "for=1.1.1.2,a=👍" } }),
+          "",
+        );
+      });
+
+      await t.test("should ignore parse errors (quoted value)", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'for=1.1.1.3,a="👍"' } }),
+          "",
+        );
+      });
+
+      await t.test(
+        "should ignore parse errors (after quoted value, 1)",
+        function () {
+          assert.equal(
+            findIp({ headers: { forwarded: 'for="1.1.1.4"a' } }),
+            "",
+          );
+        },
+      );
+
+      await t.test(
+        "should ignore parse errors (after quoted value, 2)",
+        function () {
+          assert.equal(
+            findIp({ headers: { forwarded: 'for="1.1.1.4"a,' } }),
+            "",
+          );
+        },
+      );
+
+      await t.test(
+        "should ignore parse errors (before quoted value)",
+        function () {
+          assert.equal(
+            findIp({ headers: { forwarded: 'for=a"1.1.1.4"' } }),
+            "",
+          );
+        },
+      );
+
+      await t.test(
+        "should ignore parse errors (quote in unquoted value)",
+        function () {
+          assert.equal(
+            findIp({ headers: { forwarded: 'for=1.1.1.5,a=b"c' } }),
+            "",
+          );
+        },
+      );
+
+      await t.test("should ignore parse errors (no equals)", function () {
+        assert.equal(findIp({ headers: { forwarded: "for=1.1.1.6,a" } }), "");
+      });
+
+      await t.test("should ignore parse errors (no value)", function () {
+        assert.equal(findIp({ headers: { forwarded: "for=1.1.1.7,a=" } }), "");
+      });
+
+      await t.test("should ignore parse errors (no ending quote)", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'for=1.1.1.8,a="b' } }),
+          "",
+        );
+      });
+
+      await t.test("should ignore parse errors (initial space)", function () {
+        assert.equal(findIp({ headers: { forwarded: " for=1.1.1.9" } }), "");
+      });
+
+      await t.test(
+        "should ignore parse errors (space after parameter name)",
+        function () {
+          assert.equal(findIp({ headers: { forwarded: "for =1.1.1.10" } }), "");
+        },
+      );
+
+      await t.test(
+        "should ignore parse errors (space after equals)",
+        function () {
+          assert.equal(findIp({ headers: { forwarded: "for= 1.1.1.11" } }), "");
+        },
+      );
+
+      await t.test("should ignore parse errors (trailing space)", function () {
+        assert.equal(findIp({ headers: { forwarded: "for=1.1.1.12 " } }), "");
+      });
+
+      await t.test("should support extended ascii", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'for=1.1.1.13,b="§"' } }),
+          "1.1.1.13",
+        );
+      });
+
+      await t.test("should support an escape (regular ascii)", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'for="1.1.1\\.14"' } }),
+          "1.1.1.14",
+        );
+      });
+
+      await t.test("should support an escape (extended ascii)", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'for=1.1.1.15,x="\\§"' } }),
+          "1.1.1.15",
+        );
+      });
+
+      await t.test("should support an escape (1, ok)", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'for="1.2.1.1",for="1.1.2.\\1"' } }),
+          "1.1.2.1",
+        );
+      });
+
+      await t.test("should support an escape (2, nok)", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'for="1.3.1.1",for="1.1.3.\\\\1"' } }),
+          "1.3.1.1",
+        );
+      });
+
+      await t.test("should support an escape (3, nok)", function () {
+        assert.equal(
+          findIp({
+            headers: { forwarded: 'for="1.4.1.1",for="1.1.4.\\\\\\1"' },
+          }),
+          "1.4.1.1",
+        );
+      });
+
+      await t.test("should support an escaped quote (1, ok)", function () {
+        assert.equal(
+          findIp({
+            headers: { forwarded: 'for="1.2.1.1",for="1.1.2.1";a="b\\"c1"' },
+          }),
+          "1.1.2.1",
+        );
+      });
+
+      await t.test(
+        "should support an escaped quote (2, nok: the escape is escaped, not the quote)",
+        function () {
+          assert.equal(
+            findIp({
+              headers: {
+                forwarded: 'for="1.3.1.1",for="1.1.3.1";a="b\\\\"c2"',
+              },
+            }),
+            "",
+          );
+        },
+      );
+
+      await t.test(
+        "should support an escaped quote (3, ok: the escape is escaped, the quote too)",
+        function () {
+          assert.equal(
+            findIp({
+              headers: {
+                forwarded: 'for="1.4.1.1",for="1.1.4.1";a="b\\\\\\"c3"',
+              },
+            }),
+            "1.1.4.1",
+          );
+        },
+      );
+
+      await t.test(
+        "should support an escaped quote (4, nok: the escapes are escaped, not the quote)",
+        function () {
+          assert.equal(
+            findIp({
+              headers: {
+                forwarded: 'for="1.5.1.1",for="1.1.5.1";a="b\\\\\\\\"c4"',
+              },
+            }),
+            "",
+          );
+        },
+      );
+
+      await t.test(
+        "should support an escaped quote (5, ok: the escapes are escaped, the quote too)",
+        function () {
+          assert.equal(
+            findIp({
+              headers: {
+                forwarded: 'for="1.6.1.1",for="1.1.6.1";a="b\\\\\\\\\\"c5"',
+              },
+            }),
+            "1.1.6.1",
+          );
+        },
+      );
+
+      await t.test(
+        "should support an escaped final quote (1, nok)",
+        function () {
+          assert.equal(
+            findIp({
+              headers: { forwarded: 'for="1.2.1.1",for="1.1.2.1";a="b\\"' },
+            }),
+            "",
+          );
+        },
+      );
+
+      await t.test(
+        "should support an escaped final quote (2, ok)",
+        function () {
+          assert.equal(
+            findIp({
+              headers: { forwarded: 'for="1.3.1.1",for="1.1.3.1";a="b\\\\"' },
+            }),
+            "1.1.3.1",
+          );
+        },
+      );
+
+      await t.test(
+        "should support an escaped final quote (3, nok)",
+        function () {
+          assert.equal(
+            findIp({
+              headers: { forwarded: 'for="1.4.1.1",for="1.1.4.1";a="b\\\\\\"' },
+            }),
+            "",
+          );
+        },
+      );
+
+      await t.test(
+        "should support an escaped final quote (4, ok)",
+        function () {
+          assert.equal(
+            findIp({
+              headers: {
+                forwarded: 'for="1.5.1.1",for="1.1.5.1";a="b\\\\\\\\"',
+              },
+            }),
+            "1.1.5.1",
+          );
+        },
+      );
+
+      await t.test("should support empty quoted values", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'for=1.1.1.16,a=""' } }),
+          "1.1.1.16",
+        );
+      });
+
+      await t.test("should support whitespace only quoted values", function () {
+        assert.equal(
+          findIp({ headers: { forwarded: 'for=1.1.1.17,a=" "' } }),
+          "1.1.1.17",
+        );
+      });
+
+      await t.test(
+        "should work right-to-left and thus not care about initial parse errors",
+        function () {
+          assert.equal(
+            findIp({
+              headers: {
+                forwarded: 'for=, for="1.1.1.1, for=2001:1::1, for=2.2.2.2',
+              },
+            }),
+            "2.2.2.2",
+          );
+        },
+      );
     });
 
     await t.test(
