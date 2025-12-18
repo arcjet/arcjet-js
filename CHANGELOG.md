@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...v1.0.0-beta.16) (2025-12-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **env:** remove unused `apiKey` utility function ([#5454](https://github.com/arcjet/arcjet-js/issues/5454))
+
+### 🚀 New Features
+
+* sync lists of env variables ([#5456](https://github.com/arcjet/arcjet-js/issues/5456)) ([dfa9fd2](https://github.com/arcjet/arcjet-js/commit/dfa9fd2e9d1145c4fc90f2c0ad5ab6836a5040e0))
+
+
+### 🪲 Bug Fixes
+
+* **bun, deno:** do not read from `process.env` ([#5458](https://github.com/arcjet/arcjet-js/issues/5458)) ([e90d277](https://github.com/arcjet/arcjet-js/commit/e90d2773f9aedf70c45982e2e53b4e0c7726b3ac))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps:** bump better-auth and @better-auth/cli in /examples/nextjs-better-auth ([#5545](https://github.com/arcjet/arcjet-js/issues/5545)) ([85ecfd3](https://github.com/arcjet/arcjet-js/commit/85ecfd34dd588fbb6742bceaed8cfaefb995d43f))
+* **env:** remove unused `apiKey` utility function ([#5454](https://github.com/arcjet/arcjet-js/issues/5454)) ([059c226](https://github.com/arcjet/arcjet-js/commit/059c22647e8f707cc6dc89eaf14a25c120c5b647))
+* regenerate WebAssembly ([#5526](https://github.com/arcjet/arcjet-js/issues/5526)) ([c97076b](https://github.com/arcjet/arcjet-js/commit/c97076b4ef630e11640e51dfc7c74b10222496fe))
+
+
+### ✅ Continuous Integration
+
+* Allow release-please to run for 2 minutes ([#5498](https://github.com/arcjet/arcjet-js/issues/5498)) ([d1cbac6](https://github.com/arcjet/arcjet-js/commit/d1cbac67d3ad59c90d82e0ad645e2cbe5584544e))
+* fix trunk hanging ([#5467](https://github.com/arcjet/arcjet-js/issues/5467)) ([9338402](https://github.com/arcjet/arcjet-js/commit/9338402fd35eeed0433fc17f6adac11eff4378b8))
+
 ## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...v1.0.0-beta.15) (2025-11-07)
 
 
