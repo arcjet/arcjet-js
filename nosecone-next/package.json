@@ -64,7 +64,7 @@
     "@arcjet/eslint-config": "1.0.0-beta.15",
     "@arcjet/rollup-config": "1.0.0-beta.15",
     "@rollup/wasm-node": "4.53.3",
-    "@types/node": "24.10.1",
+    "@types/node": "25.0.1",
     "eslint": "9.39.1",
     "next": "16.0.10",
     "typescript": "5.9.3"
