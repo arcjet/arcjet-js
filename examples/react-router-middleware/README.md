@@ -21,7 +21,7 @@ Clone the monorepo, then:
 
 ```sh
 cd arcjet-js
-npm ci
+npm ci && npm run build
 cd examples/react-router-middleware/
 npm ci
 ```
