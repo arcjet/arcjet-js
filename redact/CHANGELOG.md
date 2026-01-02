@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/redact-v1.0.0-beta.16) (2026-01-02)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/redact:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/redact-wasm bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/rollup-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+
 ## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...@arcjet/redact-v1.0.0-beta.15) (2025-11-07)
 
 
