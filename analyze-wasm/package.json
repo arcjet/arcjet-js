@@ -67,7 +67,7 @@
     "@bytecodealliance/jco": "1.5.0",
     "@rollup/wasm-node": "4.54.0",
     "@types/node": "25.0.3",
-    "eslint": "9.39.1",
+    "eslint": "9.39.2",
     "typescript": "5.9.3"
   },
   "publishConfig": {

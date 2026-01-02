@@ -68,7 +68,7 @@
     "@arcjet/rollup-config": "1.0.0-beta.15",
     "@rollup/wasm-node": "4.54.0",
     "astro": "5.16.6",
-    "eslint": "9.39.1",
+    "eslint": "9.39.2",
     "typescript": "5.9.3"
   },
   "publishConfig": {

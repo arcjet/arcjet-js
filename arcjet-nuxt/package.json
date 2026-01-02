@@ -24,7 +24,7 @@
     "@arcjet/rollup-config": "1.0.0-beta.15",
     "@nuxt/kit": "4.2.2",
     "@nuxt/schema": "4.2.2",
-    "eslint": "9.39.1",
+    "eslint": "9.39.2",
     "typescript": "5.9.3"
   },
   "exports": "./index.js",
