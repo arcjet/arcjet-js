@@ -508,6 +508,103 @@ test("`default`", async function (t) {
       assert.ok(otherResult.isErrored());
     });
 
+    await t.test("should support a service", async function () {
+      let ip: unknown;
+      const vercel = process.env.VERCEL;
+      process.env.VERCEL = "1";
+
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 0,
+        async protect(_, request) {
+          ip = request.ip;
+          return {
+            conclusion: "ALLOW",
+            fingerprint: "",
+            isDenied() {
+              return false;
+            },
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          };
+        },
+        validate() {},
+        version: 0,
+        type: "",
+      };
+
+      const integration = arcjet({
+        client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
+        key: "",
+        log: { ...createArcjetLogger(), debug() {}, info() {} },
+        rules: [[rule]],
+        proxies: [
+          {
+            "103.21.244.0/22": "cf-connecting-ip",
+            "103.22.200.0/22": "cf-connecting-ip",
+            "103.31.4.0/22": "cf-connecting-ip",
+            "104.16.0.0/13": "cf-connecting-ip",
+            "104.24.0.0/14": "cf-connecting-ip",
+            "108.162.192.0/18": "cf-connecting-ip",
+            "131.0.72.0/22": "cf-connecting-ip",
+            "141.101.64.0/18": "cf-connecting-ip",
+            "162.158.0.0/15": "cf-connecting-ip",
+            "172.64.0.0/13": "cf-connecting-ip",
+            "173.245.48.0/20": "cf-connecting-ip",
+            "188.114.96.0/20": "cf-connecting-ip",
+            "190.93.240.0/20": "cf-connecting-ip",
+            "197.234.240.0/22": "cf-connecting-ip",
+            "198.41.128.0/17": "cf-connecting-ip",
+            "2400:cb00::/32": "cf-connecting-ip",
+            "2405:8100::/32": "cf-connecting-ip",
+            "2405:b500::/32": "cf-connecting-ip",
+            "2606:4700::/32": "cf-connecting-ip",
+            "2803:f800::/32": "cf-connecting-ip",
+            "2a06:98c0::/29": "cf-connecting-ip",
+            "2c0f:f248::/32": "cf-connecting-ip",
+          },
+        ],
+      });
+
+      // Normally on Vercel, `@arcjet/ip` looks at known trusted Vercel headers.
+      await integration.protect({
+        request: new Request("https://example.com/", {
+          headers: {
+            // Let’s say this is set by a malicious user:
+            "cf-connecting-ip": "1.1.1.1",
+            // These are the ones that Vercel sets, pointing to the actual client IP.
+            "x-forwarded-for": "2.2.2.2",
+            "x-real-ip": "2.2.2.2",
+            "x-vercel-forwarded-for": "2.2.2.2",
+          },
+        }),
+      });
+
+      assert.equal(ip, "2.2.2.2");
+
+      // When the inferred IP matches a particular service, their headers are used.
+      await integration.protect({
+        request: new Request("https://example.com/", {
+          headers: {
+            // This cannot be spoofed as CF sets it.
+            "cf-connecting-ip": "1.1.1.1",
+            // If what connects to Vercel is a known Cloudflare IP,
+            // then Cloudflare headers are trusted.
+            "x-forwarded-for": "162.158.158.6",
+            "x-real-ip": "162.158.158.6",
+            "x-vercel-forwarded-for": "162.158.158.6",
+          },
+        }),
+      });
+
+      // If those are matched by `proxies` then earlier ones are used.
+      assert.equal(ip, "1.1.1.1");
+
+      process.env.VERCEL = vercel;
+    });
+
     await t.test("should read from body", async function () {
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
