@@ -45,7 +45,7 @@
     "eslint": "^9"
   },
   "devDependencies": {
-    "eslint": "9.39.1"
+    "eslint": "9.39.2"
   },
   "publishConfig": {
     "access": "public",
