@@ -14,7 +14,7 @@ This example shows how to use Arcjet with a [Fastify][] servers.
 Install the JavaScript SDK dependencies from the root of the repo:
 
 ```sh
-npm ci
+npm ci && npm run build
 ```
 
 Install this example’s dependencies from its folder:
