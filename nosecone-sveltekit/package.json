@@ -1,6 +1,6 @@
 {
   "name": "@nosecone/sveltekit",
-  "version": "1.0.0-beta.15",
+  "version": "1.0.0-beta.16",
   "description": "Protect your SvelteKit application with secure headers",
   "keywords": [
     "arcjet",
@@ -55,14 +55,14 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
-    "nosecone": "1.0.0-beta.15"
+    "nosecone": "1.0.0-beta.16"
   },
   "peerDependencies": {
     "@sveltejs/kit": ">=2"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.15",
-    "@arcjet/rollup-config": "1.0.0-beta.15",
+    "@arcjet/eslint-config": "1.0.0-beta.16",
+    "@arcjet/rollup-config": "1.0.0-beta.16",
     "@rollup/wasm-node": "4.54.0",
     "@sveltejs/kit": "2.49.2",
     "@sveltejs/vite-plugin-svelte": "6.2.1",
