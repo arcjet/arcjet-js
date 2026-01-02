@@ -29,7 +29,7 @@ jobs:
       - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
         with:
           bun-version: 1.2.19
-      - run: bun installl && bun run build
+      - run: bun install && bun run build
       - run: bun test
         working-directory: arcjet-bun
   deno-test:
