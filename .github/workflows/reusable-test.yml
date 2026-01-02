@@ -10,7 +10,54 @@ env:
   TURBO_TELEMETRY_DISABLED: "1"
 
 jobs:
-  test:
+  bun-test:
+    name: Bun
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@df199fb7be9f65074067a9eb93f12bb4c5547cf2 # v2.13.3
+        with:
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent:443
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+        with:
+          bun-version: 1.2.19
+      - run: bun install
+      - run: bun test
+        working-directory: arcjet-bun
+  deno-test:
+    name: Deno
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@df199fb7be9f65074067a9eb93f12bb4c5547cf2 # v2.13.3
+        with:
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent:443
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 20
+      - uses: denoland/setup-deno@bdaa2e4f849cbc8d7b46337cf37db0dc9b321074 # v2.0.3
+        with:
+          deno-version: v2.4.2
+      - run: npm ci
+      - run: deno test test/**/*.test.ts --allow-env --allow-net --no-check
+        working-directory: arcjet-deno
+  node-test:
     name: "Run tests (OS: ${{matrix.os}}, Node: ${{ matrix.node }})"
     runs-on: ${{ matrix.os }}
     strategy:

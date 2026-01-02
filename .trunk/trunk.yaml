@@ -57,6 +57,8 @@ actions:
     - trunk-upgrade-available
 merge:
   required_statuses:
+    - Run tests / Bun
+    - Run tests / Deno
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 20)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 22)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 24)"
