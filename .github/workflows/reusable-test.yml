@@ -11,7 +11,7 @@ env:
 
 jobs:
   bun-test:
-    name: "Run tests: Bun"
+    name: Bun
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -33,7 +33,7 @@ jobs:
       - run: bun test
         working-directory: arcjet-bun
   deno-test:
-    name: "Run tests: Deno"
+    name: Deno
     permissions:
       contents: read
     runs-on: ubuntu-latest
