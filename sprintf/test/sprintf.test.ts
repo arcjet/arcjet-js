@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import sprintf from "../index.js";
 
-function makeDigitSuite(sequence) {
+function makeDigitSuite(sequence: string) {
   test(`replaces ${sequence} with an integer`, () => {
     assert.equal(sprintf(`${sequence}`, 1), "1");
     assert.equal(sprintf(`int: ${sequence}`, 2), "int: 2");
@@ -25,7 +25,7 @@ function makeDigitSuite(sequence) {
   });
 }
 
-function makeObjectSuite(sequence) {
+function makeObjectSuite(sequence: string) {
   test(`replaces ${sequence} with the result of JSON.stringify`, () => {
     assert.equal(sprintf(`${sequence}`, { abc: 123 }), `{"abc":123}`);
   });
