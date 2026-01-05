@@ -67,55 +67,46 @@ test("should support `sensitiveInfo`", async function () {
   assert.equal(response.status, 200);
 });
 
-// TODO(GH-5515): this currently silently reads the body as `""`.
-// Should emit an error log instead.
-// Along the lines of:
-// ```js
-// if (request.bodyUsed) {
-//   log.error("Body already read. See <https://docs.arcjet.com/troubleshooting#error-body-already-read-or-body-is-unusable>");
-//   return;
-// }
-// ```
-// test("should emit an error log when the body is read before `sensitiveInfo`", async function () {
-//   const restore = capture();
-//   let body: string | undefined;
-//   let parameters: Array<unknown> | undefined;
+test("should emit an error log when the body is read before `sensitiveInfo`", async function () {
+  const restore = capture();
+  let body: string | undefined;
+  let parameters: Array<unknown> | undefined;
 
-//   const arcjet = arcjetBun({
-//     key: exampleKey,
-//     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-//     log: {
-//       debug() {},
-//       error(...values) {
-//         parameters = values;
-//       },
-//       info() {},
-//       warn() {},
-//     },
-//   });
+  const arcjet = arcjetBun({
+    key: exampleKey,
+    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    log: {
+      debug() {},
+      error(...values) {
+        parameters = values;
+      },
+      info() {},
+      warn() {},
+    },
+  });
 
-//   const { server, url } = createSimpleServer({
-//     arcjet,
-//     async before(request) {
-//       body = await request.text();
-//     },
-//   });
+  const { server, url } = createSimpleServer({
+    arcjet,
+    async before(request) {
+      body = await request.text();
+    },
+  });
 
-//   const response = await fetch(url, {
-//     body: "My email is alice@arcjet.com",
-//     headers: { "Content-Type": "text/plain" },
-//     method: "POST",
-//   });
+  const response = await fetch(url, {
+    body: "My email is alice@arcjet.com",
+    headers: { "Content-Type": "text/plain" },
+    method: "POST",
+  });
 
-//   await server.stop();
-//   restore();
+  await server.stop();
+  restore();
 
-//   assert.equal(body, "My email is alice@arcjet.com");
-//   assert.equal(response.status, 200);
-//   assert.deepEqual(parameters, [
-//     "Body already read. See <https://docs.arcjet.com/troubleshooting#error-body-already-read-or-body-is-unusable>",
-//   ]);
-// });
+  assert.equal(body, "My email is alice@arcjet.com");
+  assert.equal(response.status, 200);
+  assert.deepEqual(parameters, [
+    "Body already read. See <https://docs.arcjet.com/troubleshooting#error-body-already-read-or-body-is-unusable>",
+  ]);
+});
 
 test("should support reading body after `sensitiveInfo`", async function () {
   const restore = capture();
