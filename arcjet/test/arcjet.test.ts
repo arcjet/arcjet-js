@@ -2560,19 +2560,17 @@ describe("Primitive > sensitiveInfo", () => {
       extra: {},
     };
 
-    const customDetect = (tokens: string[]) => {
-      return tokens.map((token) => {
-        if (token === "bad") {
-          return "CUSTOM";
-        }
-      });
-    };
-
     const [rule] = sensitiveInfo({
       mode: "LIVE",
       deny: ["CUSTOM"],
       contextWindowSize: 1,
-      detect: customDetect,
+      detect(tokens: string[]) {
+        return tokens.map((token) => {
+          if (token === "bad") {
+            return "CUSTOM";
+          }
+        });
+      },
     });
     assert.equal(rule.type, "SENSITIVE_INFO");
     const result = await rule.protect(context, details);
@@ -2611,20 +2609,18 @@ describe("Primitive > sensitiveInfo", () => {
       extra: {},
     };
 
-    const customDetect = (tokens: string[]) => {
-      return tokens.map((token) => {
-        if (token === "bad") {
-          return 12345;
-        }
-      });
-    };
-
     const [rule] = sensitiveInfo({
       mode: "LIVE",
       allow: [],
       contextWindowSize: 1,
       // @ts-expect-error
-      detect: customDetect,
+      detect(tokens: string[]) {
+        return tokens.map((token) => {
+          if (token === "bad") {
+            return 12345;
+          }
+        });
+      },
     });
     assert.equal(rule.type, "SENSITIVE_INFO");
     await assert.rejects(async () => {
@@ -2654,18 +2650,16 @@ describe("Primitive > sensitiveInfo", () => {
       extra: {},
     };
 
-    const customDetect = (tokens: string[]) => {
-      return tokens.map((token) => {
-        if (token === "test@example.com") {
-          return "custom";
-        }
-      });
-    };
-
     const [rule] = sensitiveInfo({
       mode: "LIVE",
       allow: ["custom"],
-      detect: customDetect,
+      detect(tokens: string[]) {
+        return tokens.map((token) => {
+          if (token === "test@example.com") {
+            return "custom";
+          }
+        });
+      },
       contextWindowSize: 1,
     });
     assert.equal(rule.type, "SENSITIVE_INFO");
@@ -2705,15 +2699,13 @@ describe("Primitive > sensitiveInfo", () => {
       extra: {},
     };
 
-    const customDetect = (tokens: string[]) => {
-      assert.equal(tokens.length, 3);
-      return tokens.map(() => undefined);
-    };
-
     const [rule] = sensitiveInfo({
       mode: "LIVE",
       allow: [],
-      detect: customDetect,
+      detect(tokens: string[]) {
+        assert.equal(tokens.length, 3);
+        return tokens.map(() => undefined);
+      },
       contextWindowSize: 3,
     });
     assert.equal(rule.type, "SENSITIVE_INFO");

@@ -848,45 +848,23 @@ export type EmailOptions =
   | EmailOptionsBlock;
 
 /**
- * Custom detection function to identify sensitive information.
- *
- * This signature corresponds to similar functions from `@arcjet/redact-wasm`
- * and `@arcjet/redact`.
- *
- * @template T
- *   Custom entity names that are returned from `detect` and optionally listed in `entities`.
- * @param tokens
- *   Tokens to detect in.
- * @returns
- *   Array of `undefined` for tokens that are not sensitive or a `string` used as
- *   a label for sensitive info.
- */
-type DetectSensitiveInfoEntities<T> = (
-  tokens: string[],
-) => Array<ArcjetSensitiveInfoType | T | undefined>;
-
-type ValidEntities<Detect> = Array<
-  // Via https://www.reddit.com/r/typescript/comments/17up72w/comment/k958cb0/
-  // Conditional types distribute over unions. If you have ((string | undefined)
-  // extends undefined ? 1 : 0) it is evaluated separately for each member of
-  // the union, then union-ed together again. The result is (string extends
-  // undefined ? 1 : 0) | (undefined extends undefined ? 1 : 0) which simplifies
-  // to 0 | 1
-  undefined extends Detect
-    ? ArcjetSensitiveInfoType
-    : Detect extends DetectSensitiveInfoEntities<infer CustomEntities>
-      ? ArcjetSensitiveInfoType | CustomEntities
-      : never
->;
-
-/**
  * Configuration for the sensitive info detection rule to allow certain
  * sensitive info types and deny others.
  *
- * @template Detect
- *   Custom detection function to identify sensitive information.
+ * @template DetectedEntities
+ *   Custom entity names that are returned from `detect` and optionally listed in `allow`.
+ *   in `allow` or `deny`.
+ * @template ListedEntities
+ *   Entity names that can be listed in the `allow` field.
  */
-export type SensitiveInfoOptionsAllow<Detect> = {
+export type SensitiveInfoOptionsAllow<
+  DetectedEntities extends string | undefined = undefined,
+  ListedEntities extends
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined> =
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined>,
+> = {
   /**
    * List of sensitive info types to allow (required).
    *
@@ -906,7 +884,11 @@ export type SensitiveInfoOptionsAllow<Detect> = {
    *
    * You can also use labels of custom info detected by `detect`.
    */
-  allow: ValidEntities<Detect>;
+  allow: Array<
+    // Note that `DetectedEntities` is included here, even though it is also in `ListedEntities`,
+    // so that strings *flow* into that.
+    ListedEntities | Exclude<DetectedEntities, undefined>
+  >;
   /**
    * List of sensitive info types to deny,
    * cannot be combined with `allow`.
@@ -929,18 +911,33 @@ export type SensitiveInfoOptionsAllow<Detect> = {
   mode?: ArcjetMode;
   /**
    * Custom detection function to identify sensitive information.
+   *
+   * @param tokens
+   *   Tokens.
+   * @returns
+   *   List of entities (or undefined).
    */
-  detect?: Detect;
+  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
 };
 
 /**
  * Configuration for the sensitive info detection rule to deny certain
  * sensitive info types and allow others.
  *
- * @template Detect
- *   Custom detection function to identify sensitive information.
+ * @template DetectedEntities
+ *   Custom entity names that are returned from `detect` and optionally listed
+ *   in `deny`.
+ * @template ListedEntities
+ *   Entity names that can be listed in the `deny` field.
  */
-export type SensitiveInfoOptionsDeny<Detect> = {
+export type SensitiveInfoOptionsDeny<
+  DetectedEntities extends string | undefined = undefined,
+  ListedEntities extends
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined> =
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined>,
+> = {
   /**
    * List of sensitive info types to allow,
    * cannot be combined with `deny`.
@@ -965,7 +962,11 @@ export type SensitiveInfoOptionsDeny<Detect> = {
    *
    * You can also use labels of custom info detected by `detect`.
    */
-  deny: ValidEntities<Detect>;
+  deny: Array<
+    // Note that `DetectedEntities` is included here, even though it is also in `ListedEntities`,
+    // so that strings *flow* into that.
+    ListedEntities | Exclude<DetectedEntities, undefined>
+  >;
   /**
    * Tokens to consider (default: `1`).
    *
@@ -983,19 +984,34 @@ export type SensitiveInfoOptionsDeny<Detect> = {
   mode?: ArcjetMode;
   /**
    * Custom detection function to identify sensitive information.
+   *
+   * @param tokens
+   *   Tokens.
+   * @returns
+   *   List of entities (or undefined).
    */
-  detect?: Detect;
+  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
 };
 
 /**
  * Configuration for the sensitive info detection rule.
  *
- * @template Detect
- *   Custom detection function to identify sensitive information.
+ * @template DetectedEntities
+ *   Custom entity names that are returned from `detect` and optionally listed
+ *   in `allow` or `deny`.
+ * @template ListedEntities
+ *   Entity names that can be listed in the `allow` or `deny` field.
  */
-export type SensitiveInfoOptions<Detect> =
-  | SensitiveInfoOptionsAllow<Detect>
-  | SensitiveInfoOptionsDeny<Detect>;
+export type SensitiveInfoOptions<
+  DetectedEntities extends string | undefined = undefined,
+  ListedEntities extends
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined> =
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined>,
+> =
+  | SensitiveInfoOptionsAllow<DetectedEntities, ListedEntities>
+  | SensitiveInfoOptionsDeny<DetectedEntities, ListedEntities>;
 
 /**
  * Configuration to allow if a filter matches and deny otherwise.
@@ -1719,10 +1735,11 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * You can also provide a custom detection function to identify additional
  * sensitive information.
  *
- * @template Detect
- *   Custom detection function to identify sensitive information.
- * @template CustomEntities
- *   Custom entities.
+ * @template DetectedEntities
+ *   Custom entity names that are returned from `detect` and optionally listed
+ *   in `allow` or `deny`.
+ * @template ListedEntities
+ *   Entity names that can be listed in the `allow` or `deny` field.
  * @param options
  *   Configuration for the sensitive information detection rule (required).
  * @returns
@@ -1773,9 +1790,15 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * @link https://docs.arcjet.com/sensitive-info/reference
  */
 export function sensitiveInfo<
-  const Detect extends DetectSensitiveInfoEntities<CustomEntities> | undefined,
-  const CustomEntities extends string,
->(options: SensitiveInfoOptions<Detect>): Primitive<{}> {
+  DetectedEntities extends string | undefined = undefined,
+  ListedEntities extends
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined> =
+    | ArcjetSensitiveInfoType
+    | Exclude<DetectedEntities, undefined>,
+>(
+  options: SensitiveInfoOptions<DetectedEntities, ListedEntities>,
+): Primitive<{}> {
   validateSensitiveInfoOptions(options);
 
   if (
