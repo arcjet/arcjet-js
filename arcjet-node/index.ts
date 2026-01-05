@@ -461,7 +461,7 @@ export default function arcjet<
         const getBody = async () => {
           try {
             // If request.body is present then the body was likely read by a package like express' `body-parser`.
-            // If it's not present then we attempt to read the bytes from the IncomingMessage ourselves.
+            // If it's not present then we read the bytes from the IncomingMessage ourselves.
             if (typeof request.body === "string") {
               return request.body;
             } else if (
@@ -494,6 +494,7 @@ export default function arcjet<
                 limit: 1048576,
                 expectedLength,
               });
+              request.body = body;
               return body;
             }
 

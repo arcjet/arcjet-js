@@ -114,43 +114,38 @@ test("`@arcjet/node`", async function (t) {
     },
   );
 
-  // TODO(GH-5516): this hangs indefinitely.
-  // Fix bug, probably by calling `request.clone()`?
-  // await t.test("should support reading body after `sensitiveInfo`", async function () {
-  //   const restore = capture();
-  //   let body = "";
+  await t.test(
+    "should support accessing body after `sensitiveInfo`",
+    async function () {
+      const restore = capture();
+      let body = "";
 
-  //   const arcjet = arcjetNode({
-  //     key: exampleKey,
-  //     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-  //   });
+      const arcjet = arcjetNode({
+        key: exampleKey,
+        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+      });
 
-  //   const { server, url } = await createSimpleServer({
-  //     async after(request) {
-  //       return new Promise(function (resolve) {
-  //         request.on("data", function (chunk) {
-  //           body += chunk;
-  //         });
-  //         request.on("end", function () {
-  //           resolve(undefined);
-  //         });
-  //       });
-  //     },
-  //     arcjet,
-  //   });
+      const { server, url } = await createSimpleServer({
+        async after(request) {
+          // @ts-expect-error: non-standard but common field.
+          body = request.body;
+        },
+        arcjet,
+      });
 
-  //   const response = await fetch(url, {
-  //     body: "My email is alice@arcjet.com",
-  //     headers: { "Content-Type": "text/plain" },
-  //     method: "POST",
-  //   });
+      const response = await fetch(url, {
+        body: "My email is alice@arcjet.com",
+        headers: { "Content-Type": "text/plain" },
+        method: "POST",
+      });
 
-  //   server.close();
-  //   restore();
+      server.close();
+      restore();
 
-  //   assert.equal(response.status, 403);
-  //   assert.equal(body, "My email is alice@arcjet.com");
-  // });
+      assert.equal(response.status, 403);
+      assert.equal(body, "My email is alice@arcjet.com");
+    },
+  );
 
   await t.test("should support `sensitiveInfo` on JSON", async function () {
     const restore = capture();
