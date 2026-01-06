@@ -3,7 +3,7 @@ import assert from "node:assert";
 import sprintf from "../index.js";
 
 // This translates the 2nd argument to a spread
-function format(str, args) {
+function format(str: string, args: unknown[]) {
   return sprintf(str, ...args);
 }
 

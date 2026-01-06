@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import * as env from "../index.ts";
+import * as env from "../index.js";
 
 test("@arcjet/env", async function (t) {
   await t.test("should expose the public api", async function () {
