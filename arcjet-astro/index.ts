@@ -185,7 +185,7 @@ type IntegrationRule<Characteristics extends readonly string[]> =
  * @template Characteristics
  *   Characteristics to track a user by.
  */
-type ArcjetIntegrationOptions<Characteristics extends readonly string[]> = {
+export type ArcjetOptions<Characteristics extends readonly string[]> = {
   /**
    * Integration rules to apply when protecting a request (required).
    *
@@ -633,7 +633,7 @@ export function createRemoteClient(options?: RemoteClientOptions | undefined) {
  *   Astro integration of Arcjet.
  */
 export default function arcjet<Characteristics extends readonly string[]>(
-  options: ArcjetIntegrationOptions<Characteristics> = { rules: [] },
+  options: ArcjetOptions<Characteristics> = { rules: [] },
 ): AstroIntegration {
   const { rules, characteristics, client, proxies } = options;
   const arcjetImports = new Set();
