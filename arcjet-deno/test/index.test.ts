@@ -64,7 +64,11 @@ test("should support `sensitiveInfo`", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(response.status, 200);
+  assert.equal(
+    response.status,
+    200,
+    `Unexpected status: ${await response.text()}`,
+  );
 });
 
 test("should emit an error log when the body is read before `sensitiveInfo`", async function () {
@@ -102,7 +106,11 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
   restore();
 
   assert.equal(body, "My email is alice@arcjet.com");
-  assert.equal(response.status, 200);
+  assert.equal(
+    response.status,
+    200,
+    `Unexpected status: ${await response.text()}`,
+  );
   assert.deepEqual(parameters, [
     "failed to get request body: %s",
     "Body is unusable",
@@ -134,7 +142,11 @@ test("should support reading body after `sensitiveInfo`", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(response.status, 200);
+  assert.equal(
+    response.status,
+    200,
+    `Unexpected status: ${await response.text()}`,
+  );
   assert.equal(body, "This is fine.");
 });
 
@@ -157,7 +169,11 @@ test("should support `sensitiveInfo` on JSON", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(response.status, 403);
+  assert.equal(
+    response.status,
+    403,
+    `Unexpected status: ${await response.text()}`,
+  );
 });
 
 test("should support `sensitiveInfo` on form data", async function () {
@@ -182,7 +198,11 @@ test("should support `sensitiveInfo` on form data", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(response.status, 403);
+  assert.equal(
+    response.status,
+    403,
+    `Unexpected status: ${await response.text()}`,
+  );
 });
 
 test("should support `sensitiveInfo` on plain text", async function () {
@@ -204,7 +224,11 @@ test("should support `sensitiveInfo` on plain text", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(response.status, 403);
+  assert.equal(
+    response.status,
+    403,
+    `Unexpected status: ${await response.text()}`,
+  );
 });
 
 test("should support `sensitiveInfo` on streamed plain text", async function () {
@@ -249,7 +273,11 @@ test("should support `sensitiveInfo` on streamed plain text", async function () 
   await server.shutdown();
   restore();
 
-  assert.equal(response.status, 403);
+  assert.equal(
+    response.status,
+    403,
+    `Unexpected status: ${await response.text()}`,
+  );
 });
 
 test("should support `sensitiveInfo` a megabyte of data", async function () {
@@ -273,7 +301,11 @@ test("should support `sensitiveInfo` a megabyte of data", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(response.status, 403);
+  assert.equal(
+    response.status,
+    403,
+    `Unexpected status: ${await response.text()}`,
+  );
 });
 
 // TODO(GH-5517): make this configurable.
@@ -344,9 +376,21 @@ function createSimpleServer(options: SimpleServerOptions) {
       await before?.(request);
       const decision = await arcjet.protect(request);
       await after?.(request);
-      return decision.isDenied()
-        ? new Response("Forbidden", { status: 403 })
-        : new Response("Hello world");
+
+      switch (true) {
+        case decision.isErrored():
+          return new Response(
+            `Internal Server Error: "${decision.reason.message}"`,
+            { status: 500 },
+          );
+        case decision.isAllowed():
+          return new Response("Ok", { status: 200 });
+        case decision.isDenied():
+          return new Response("Forbidden", { status: 403 });
+        default:
+          // Differentiate unexpected cases.
+          return new Response("Not Implemented", { status: 501 });
+      }
     }),
   );
   return { server, url: "http://localhost:" + server.addr.port };

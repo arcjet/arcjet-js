@@ -59,7 +59,11 @@ test("`@arcjet/node`", async function (t) {
     server.close();
     restore();
 
-    assert.equal(response.status, 200);
+    assert.equal(
+      response.status,
+      200,
+      `Unexpected status: ${await response.text()}`,
+    );
   });
 
   await t.test(
@@ -106,7 +110,11 @@ test("`@arcjet/node`", async function (t) {
       restore();
 
       assert.equal(body, "My email is alice@arcjet.com");
-      assert.equal(response.status, 200);
+      assert.equal(
+        response.status,
+        200,
+        `Unexpected status: ${await response.text()}`,
+      );
       assert.deepEqual(parameters, [
         "failed to get request body: %s",
         "Cannot read unreadable stream",
@@ -148,7 +156,7 @@ test("`@arcjet/node`", async function (t) {
   //   server.close();
   //   restore();
 
-  //   assert.equal(response.status, 403);
+  //   assert.equal(response.status, 403, `Unexpected status: ${await response.text()}`);
   //   assert.equal(body, "My email is alice@arcjet.com");
   // });
 
@@ -171,7 +179,11 @@ test("`@arcjet/node`", async function (t) {
     server.close();
     restore();
 
-    assert.equal(response.status, 403);
+    assert.equal(
+      response.status,
+      403,
+      `Unexpected status: ${await response.text()}`,
+    );
   });
 
   await t.test(
@@ -198,7 +210,11 @@ test("`@arcjet/node`", async function (t) {
       server.close();
       restore();
 
-      assert.equal(response.status, 403);
+      assert.equal(
+        response.status,
+        403,
+        `Unexpected status: ${await response.text()}`,
+      );
     },
   );
 
@@ -223,7 +239,11 @@ test("`@arcjet/node`", async function (t) {
       server.close();
       restore();
 
-      assert.equal(response.status, 403);
+      assert.equal(
+        response.status,
+        403,
+        `Unexpected status: ${await response.text()}`,
+      );
     },
   );
 
@@ -271,7 +291,11 @@ test("`@arcjet/node`", async function (t) {
       server.close();
       restore();
 
-      assert.equal(response.status, 403);
+      assert.equal(
+        response.status,
+        403,
+        `Unexpected status: ${await response.text()}`,
+      );
     },
   );
 
@@ -298,7 +322,11 @@ test("`@arcjet/node`", async function (t) {
       server.close();
       restore();
 
-      assert.equal(response.status, 403);
+      assert.equal(
+        response.status,
+        403,
+        `Unexpected status: ${await response.text()}`,
+      );
     },
   );
 
@@ -326,7 +354,7 @@ test("`@arcjet/node`", async function (t) {
   //   restore();
   //   port++;
 
-  //   assert.equal(response.status, 403);
+  //   assert.equal(response.status, 403, `Unexpected status: ${await response.text()}`);
   // });
 });
 
@@ -361,6 +389,27 @@ async function createSimpleServer(options: SimpleServerOptions) {
     // @ts-expect-error: TODO: fix types to allow `undefined`.
     const decision = await arcjet.protect(request);
     await after?.(request);
+
+    switch (true) {
+      case decision.isErrored():
+        response.statusCode = 500;
+        response.end(`Internal Server Error: "${decision.reason.message}"`);
+        return;
+      case decision.isAllowed():
+        response.statusCode = 200;
+        response.end("Ok");
+        return;
+      case decision.isDenied():
+        response.statusCode = 403;
+        response.end("Forbidden");
+        return;
+      default:
+        // Differentiate unexpected cases.
+        response.statusCode = 501;
+        response.end("Not Implemented");
+        return;
+    }
+
     if (decision.isDenied()) {
       response.statusCode = 403;
       response.end("Forbidden");

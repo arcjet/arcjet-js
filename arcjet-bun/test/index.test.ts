@@ -64,7 +64,11 @@ test("should support `sensitiveInfo`", async function () {
   await server.stop();
   restore();
 
-  assert.equal(response.status, 200);
+  assert.equal(
+    response.status,
+    200,
+    `Unexpected status: ${await response.text()}`,
+  );
 });
 
 test("should emit an error log when the body is read before `sensitiveInfo`", async function () {
@@ -342,9 +346,21 @@ function createSimpleServer(options: SimpleServerOptions) {
       await before?.(request);
       const decision = await arcjet.protect(request);
       await after?.(request);
-      return decision.isDenied()
-        ? new Response("Forbidden", { status: 403 })
-        : new Response("Hello world");
+
+      switch (true) {
+        case decision.isErrored():
+          return new Response(
+            `Internal Server Error: "${decision.reason.message}"`,
+            { status: 500 },
+          );
+        case decision.isAllowed():
+          return new Response("Ok", { status: 200 });
+        case decision.isDenied():
+          return new Response("Forbidden", { status: 403 });
+        default:
+          // Differentiate unexpected cases.
+          return new Response("Not Implemented", { status: 501 });
+      }
     }),
     port: uniquePort++,
   });

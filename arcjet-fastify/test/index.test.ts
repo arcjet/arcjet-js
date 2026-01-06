@@ -59,7 +59,11 @@ test("`@arcjet/fastify`", async function (t) {
     await server.close();
     restore();
 
-    assert.equal(response.status, 200);
+    assert.equal(
+      response.status,
+      200,
+      `Unexpected status: ${await response.text()}`,
+    );
   });
 
   await t.test(
@@ -90,7 +94,11 @@ test("`@arcjet/fastify`", async function (t) {
       restore();
 
       assert.equal(body, "My email is alice@arcjet.com");
-      assert.equal(response.status, 403);
+      assert.equal(
+        response.status,
+        403,
+        `Unexpected status: ${await response.text()}`,
+      );
     },
   );
 
@@ -121,7 +129,11 @@ test("`@arcjet/fastify`", async function (t) {
       await server.close();
       restore();
 
-      assert.equal(response.status, 403);
+      assert.equal(
+        response.status,
+        403,
+        `Unexpected status: ${await response.text()}`,
+      );
       assert.equal(body, "My email is alice@arcjet.com");
     },
   );
@@ -145,7 +157,11 @@ test("`@arcjet/fastify`", async function (t) {
     await server.close();
     restore();
 
-    assert.equal(response.status, 403);
+    assert.equal(
+      response.status,
+      403,
+      `Unexpected status: ${await response.text()}`,
+    );
   });
 
   // TODO: support form data with `https://github.com/fastify/fastify-formbody`.
@@ -172,7 +188,7 @@ test("`@arcjet/fastify`", async function (t) {
   //   await server.close();
   //   restore();
 
-  //   assert.equal(response.status, 403);
+  //   assert.equal(response.status, 403, `Unexpected status: ${await response.text()}`);
   // });
 
   await t.test(
@@ -196,7 +212,11 @@ test("`@arcjet/fastify`", async function (t) {
       await server.close();
       restore();
 
-      assert.equal(response.status, 403);
+      assert.equal(
+        response.status,
+        403,
+        `Unexpected status: ${await response.text()}`,
+      );
     },
   );
 
@@ -244,7 +264,11 @@ test("`@arcjet/fastify`", async function (t) {
       await server.close();
       restore();
 
-      assert.equal(response.status, 403);
+      assert.equal(
+        response.status,
+        403,
+        `Unexpected status: ${await response.text()}`,
+      );
     },
   );
 
@@ -271,7 +295,11 @@ test("`@arcjet/fastify`", async function (t) {
       await server.close();
       restore();
 
-      assert.equal(response.status, 403);
+      assert.equal(
+        response.status,
+        403,
+        `Unexpected status: ${await response.text()}`,
+      );
     },
   );
 
@@ -298,7 +326,7 @@ test("`@arcjet/fastify`", async function (t) {
   //   await server.close();
   //   restore();
 
-  //   assert.equal(response.status, 403);
+  //   assert.equal(response.status, 403, `Unexpected status: ${await response.text()}`);
   // });
 });
 
@@ -336,9 +364,20 @@ async function createSimpleServer(options: SimpleServerOptions) {
     await before?.(request);
     const decision = await arcjet.protect(request);
     await after?.(request);
-    return decision.isDenied()
-      ? reply.status(403).send("Forbidden")
-      : reply.send("Hello world");
+
+    switch (true) {
+      case decision.isErrored():
+        return reply
+          .status(500)
+          .send(`Internal Server Error: "${decision.reason.message}"`);
+      case decision.isAllowed():
+        return reply.status(200).send("Ok");
+      case decision.isDenied():
+        return reply.status(403).send("Forbidden");
+      default:
+        // Differentiate unexpected cases.
+        return reply.status(501).send("Not Implemented");
+    }
   });
 
   await fastify.listen({ port });
