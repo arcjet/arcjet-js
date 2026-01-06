@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/fastify-v1.0.0-beta.16) (2026-01-06)
+
+
+### 📚 Tests
+
+* add some tests for reading the request body ([#5519](https://github.com/arcjet/arcjet-js/issues/5519)) ([b370ceb](https://github.com/arcjet/arcjet-js/commit/b370ceb8d53430ea1e2823d9c4e18e1182ecee58))
+
+
+### 🔨 Build System
+
+* type check all TypeScript files ([#5582](https://github.com/arcjet/arcjet-js/issues/5582)) ([17769ee](https://github.com/arcjet/arcjet-js/commit/17769eeea65a2319c07d0a2dfdf9011283d2218f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/headers bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/ip bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/logger bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/protocol bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/transport bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * arcjet bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/rollup-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+
 ## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...@arcjet/fastify-v1.0.0-beta.15) (2025-11-07)
 
 

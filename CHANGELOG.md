@@ -1,5 +1,46 @@
 # Changelog
 
+## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...v1.0.0-beta.16) (2026-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* **env:** remove unused `apiKey` utility function ([#5454](https://github.com/arcjet/arcjet-js/issues/5454))
+
+### 🚀 New Features
+
+* **astro:** export `ArcjetOptions` type ([#5583](https://github.com/arcjet/arcjet-js/issues/5583)) ([5bdc766](https://github.com/arcjet/arcjet-js/commit/5bdc7668cec39cd62198410aa2c47021084a19a9))
+* sync lists of env variables ([#5456](https://github.com/arcjet/arcjet-js/issues/5456)) ([dfa9fd2](https://github.com/arcjet/arcjet-js/commit/dfa9fd2e9d1145c4fc90f2c0ad5ab6836a5040e0))
+
+
+### 🪲 Bug Fixes
+
+* **bun, deno:** do not read from `process.env` ([#5458](https://github.com/arcjet/arcjet-js/issues/5458)) ([e90d277](https://github.com/arcjet/arcjet-js/commit/e90d2773f9aedf70c45982e2e53b4e0c7726b3ac))
+
+
+### 🧹 Miscellaneous Chores
+
+* **env:** remove unused `apiKey` utility function ([#5454](https://github.com/arcjet/arcjet-js/issues/5454)) ([059c226](https://github.com/arcjet/arcjet-js/commit/059c22647e8f707cc6dc89eaf14a25c120c5b647))
+* regenerate WebAssembly ([#5526](https://github.com/arcjet/arcjet-js/issues/5526)) ([c97076b](https://github.com/arcjet/arcjet-js/commit/c97076b4ef630e11640e51dfc7c74b10222496fe))
+* Update WebAssembly for dependency upgrades ([c7b4d7e](https://github.com/arcjet/arcjet-js/commit/c7b4d7ef2224c8e82d3a7c8b8293e15bc214ba49))
+
+
+### 📚 Tests
+
+* add some tests for reading the request body ([#5519](https://github.com/arcjet/arcjet-js/issues/5519)) ([b370ceb](https://github.com/arcjet/arcjet-js/commit/b370ceb8d53430ea1e2823d9c4e18e1182ecee58))
+
+
+### 🔨 Build System
+
+* type check all TypeScript files ([#5582](https://github.com/arcjet/arcjet-js/issues/5582)) ([17769ee](https://github.com/arcjet/arcjet-js/commit/17769eeea65a2319c07d0a2dfdf9011283d2218f))
+* update `allowed-endpoints` for step security ([#5588](https://github.com/arcjet/arcjet-js/issues/5588)) ([960bdc4](https://github.com/arcjet/arcjet-js/commit/960bdc48ab2d019aeefe26f6f907e61ef4bf979b))
+
+
+### ✅ Continuous Integration
+
+* Allow release-please to run for 2 minutes ([#5498](https://github.com/arcjet/arcjet-js/issues/5498)) ([d1cbac6](https://github.com/arcjet/arcjet-js/commit/d1cbac67d3ad59c90d82e0ad645e2cbe5584544e))
+* fix trunk hanging ([#5467](https://github.com/arcjet/arcjet-js/issues/5467)) ([9338402](https://github.com/arcjet/arcjet-js/commit/9338402fd35eeed0433fc17f6adac11eff4378b8))
+
 ## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...v1.0.0-beta.15) (2025-11-07)
 
 

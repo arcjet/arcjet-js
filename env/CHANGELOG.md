@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/env-v1.0.0-beta.16) (2026-01-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* **env:** remove unused `apiKey` utility function ([#5454](https://github.com/arcjet/arcjet-js/issues/5454))
+
+### 🚀 New Features
+
+* sync lists of env variables ([#5456](https://github.com/arcjet/arcjet-js/issues/5456)) ([dfa9fd2](https://github.com/arcjet/arcjet-js/commit/dfa9fd2e9d1145c4fc90f2c0ad5ab6836a5040e0))
+
+
+### 🧹 Miscellaneous Chores
+
+* **env:** remove unused `apiKey` utility function ([#5454](https://github.com/arcjet/arcjet-js/issues/5454)) ([059c226](https://github.com/arcjet/arcjet-js/commit/059c22647e8f707cc6dc89eaf14a25c120c5b647))
+
+
+### 🔨 Build System
+
+* type check all TypeScript files ([#5582](https://github.com/arcjet/arcjet-js/issues/5582)) ([17769ee](https://github.com/arcjet/arcjet-js/commit/17769eeea65a2319c07d0a2dfdf9011283d2218f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+    * @arcjet/rollup-config bumped from 1.0.0-beta.15 to 1.0.0-beta.16
+
 ## [1.0.0-beta.15](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.14...@arcjet/env-v1.0.0-beta.15) (2025-11-07)
 
 
