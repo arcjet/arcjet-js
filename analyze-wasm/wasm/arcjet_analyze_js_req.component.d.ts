@@ -1,7 +1,6 @@
-import type { SensitiveInfoEntity } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
-export { SensitiveInfoEntity };
-import type { BotEntity } from './interfaces/arcjet-js-req-bot-identifier.js';
-export { BotEntity };
+// world root:component/root
+export type SensitiveInfoEntity = import('./interfaces/arcjet-js-req-sensitive-information-identifier.js').SensitiveInfoEntity;
+export type BotEntity = import('./interfaces/arcjet-js-req-bot-identifier.js').BotEntity;
 /**
 * # Variants
 * 
@@ -84,11 +83,11 @@ export interface FilterResult {
   matchedExpressions: Array<string>,
   undeterminedExpressions: Array<string>,
 }
-import { ArcjetJsReqBotIdentifier } from './interfaces/arcjet-js-req-bot-identifier.js';
-import { ArcjetJsReqEmailValidatorOverrides } from './interfaces/arcjet-js-req-email-validator-overrides.js';
-import { ArcjetJsReqFilterOverrides } from './interfaces/arcjet-js-req-filter-overrides.js';
-import { ArcjetJsReqSensitiveInformationIdentifier } from './interfaces/arcjet-js-req-sensitive-information-identifier.js';
-import { ArcjetJsReqVerifyBot } from './interfaces/arcjet-js-req-verify-bot.js';
+import type * as ArcjetJsReqBotIdentifier from './interfaces/arcjet-js-req-bot-identifier.js'; // arcjet:js-req/bot-identifier
+import type * as ArcjetJsReqEmailValidatorOverrides from './interfaces/arcjet-js-req-email-validator-overrides.js'; // arcjet:js-req/email-validator-overrides
+import type * as ArcjetJsReqFilterOverrides from './interfaces/arcjet-js-req-filter-overrides.js'; // arcjet:js-req/filter-overrides
+import type * as ArcjetJsReqSensitiveInformationIdentifier from './interfaces/arcjet-js-req-sensitive-information-identifier.js'; // arcjet:js-req/sensitive-information-identifier
+import type * as ArcjetJsReqVerifyBot from './interfaces/arcjet-js-req-verify-bot.js'; // arcjet:js-req/verify-bot
 export interface ImportObject {
   'arcjet:js-req/bot-identifier': typeof ArcjetJsReqBotIdentifier,
   'arcjet:js-req/email-validator-overrides': typeof ArcjetJsReqEmailValidatorOverrides,
