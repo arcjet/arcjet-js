@@ -9,6 +9,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
+import { readBodyWeb } from "@arcjet/body";
 import findIp, { parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
@@ -367,7 +368,19 @@ export default function arcjet<
 
         const getBody = async () => {
           const clonedRequest = request.request.clone();
-          return clonedRequest.text();
+          let expectedLength: number | undefined;
+          const expectedLengthString =
+            request.request.headers.get("content-length");
+          if (typeof expectedLengthString === "string") {
+            expectedLength = parseInt(expectedLengthString, 10);
+          }
+
+          // HEAD and GET requests do not have a body.
+          if (!clonedRequest.body) {
+            throw new Error("Cannot read body: body is missing");
+          }
+
+          return readBodyWeb(clonedRequest.body, { expectedLength });
         };
 
         return aj.protect({ getBody }, req);

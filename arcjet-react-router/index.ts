@@ -1,3 +1,4 @@
+import { readBodyWeb } from "@arcjet/body";
 import {
   baseUrl as baseUrlFromEnvironment,
   isDevelopment,
@@ -21,6 +22,7 @@ import arcjetCore, {
   type Primitive,
   type Product,
 } from "arcjet";
+import type { ReadableStream } from "node:stream/web";
 
 export * from "arcjet";
 
@@ -251,7 +253,18 @@ function createGetBody(details: ArcjetReactRouterRequest) {
    */
   return async function getBody(): Promise<string> {
     const clonedRequest = details.request.clone();
-    return clonedRequest.text();
+    let expectedLength: number | undefined;
+    const expectedLengthString = details.request.headers.get("content-length");
+    if (typeof expectedLengthString === "string") {
+      expectedLength = parseInt(expectedLengthString, 10);
+    }
+
+    // HEAD and GET requests do not have a body.
+    if (!clonedRequest.body) {
+      throw new Error("Cannot read body: body is missing");
+    }
+
+    return readBodyWeb(clonedRequest.body, { expectedLength });
   };
 }
 

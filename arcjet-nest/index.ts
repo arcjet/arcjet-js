@@ -466,6 +466,7 @@ function arcjet<
             if (typeof expectedLengthStr === "string") {
               expectedLength = parseInt(expectedLengthStr, 10);
             }
+
             return readBody(request, { expectedLength });
           }
 

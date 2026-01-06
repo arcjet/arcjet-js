@@ -4,7 +4,7 @@
 export type ReadBodyOpts = {
   /**
    * Length of the stream in bytes (optional);
-   * an error is returned if the contents of the stream do not add up to this length;
+   * rejects an error if the contents of the stream do not add up to this length;
    * useful when the exact size is known.
    */
   expectedLength?: number | null | undefined;
@@ -22,12 +22,109 @@ type EventHandlerLike = (
 ) => void;
 
 /**
- * Stream.
+ * Minimal Node.js stream interface.
  */
 export interface ReadableStreamLike {
   on?: EventHandlerLike | null | undefined;
   readable?: boolean | null | undefined;
   removeListener?: EventHandlerLike | null | undefined;
+}
+
+/**
+ * Read the body of a
+ * [web stream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+ *
+ * @param stream
+ *   Stream.
+ * @param options
+ *   Configuration (required).
+ * @returns
+ *   Promise that resolves to a concatenated body.
+ */
+export async function readBodyWeb(
+  stream: ReadableStream,
+  options?: ReadBodyOpts | null | undefined,
+): Promise<string> {
+  const limit = options?.limit ?? 1048576; // 1mb.
+  const length = options?.expectedLength ?? undefined;
+
+  if (typeof limit !== "number" || limit < 0 || Number.isNaN(limit)) {
+    return Promise.reject(
+      new Error(
+        "Unexpected value `" +
+          limit +
+          "` for `options.limit`, expected positive number",
+      ),
+    );
+  }
+
+  if (
+    length !== undefined &&
+    (typeof length !== "number" || length < 0 || Number.isNaN(length))
+  ) {
+    return Promise.reject(
+      new Error(
+        "Unexpected value `" +
+          length +
+          "` for `options.expectedLength`, expected positive number",
+      ),
+    );
+  }
+
+  // If we already know the length and it exceeds the limit, abort early.
+  if (length !== undefined && length > limit) {
+    return Promise.reject(
+      new Error("Cannot read stream whose expected length exceeds limit"),
+    );
+  }
+
+  const controller = new AbortController();
+
+  // Ensure that we do not wait forever if the stream is incorrectly configured.
+  const timeout = setTimeout(function () {
+    controller.abort(
+      new Error("Cannot read stream, did not receive data in time limit"),
+    );
+  }, 100);
+
+  const decoder = new TextDecoder("utf-8");
+  let buffer = "";
+  let received = 0;
+  let written = false;
+
+  await stream.pipeTo(
+    new WritableStream({
+      write(chunk: Uint8Array) {
+        if (!written) {
+          clearTimeout(timeout);
+          written = true;
+        }
+
+        received += chunk.byteLength;
+
+        if (received > limit) {
+          throw new Error("Cannot read stream that exceeds limit");
+        }
+
+        buffer += decoder.decode(chunk, { stream: true });
+      },
+    }),
+    { signal: controller.signal },
+  );
+
+  if (!written) {
+    throw new Error("Cannot read stream, did not receive data");
+  }
+
+  if (length !== undefined && received !== length) {
+    throw new Error(
+      "Cannot read stream whose length does not match expected length",
+    );
+  }
+
+  // Need to call it one final time to flush any remaining chars.
+  buffer += decoder.decode();
+  return buffer;
 }
 
 // This `readBody` function is a derivitive of the `getRawBody` function in the `raw-body`
@@ -62,14 +159,14 @@ export interface ReadableStreamLike {
 // SOFTWARE.
 
 /**
- * Read the body of a stream.
+ * Read the body of a Node.js stream.
  *
  * @param stream
  *   Stream.
  * @param options
  *   Configuration (optional).
  * @returns
- *   Promise to a concatenated body.
+ *   Promise that resolves to a concatenated body.
  */
 export async function readBody(
   stream: ReadableStreamLike,
@@ -121,14 +218,6 @@ export async function readBody(
         "Unexpected value `" +
           stream.removeListener +
           "` for `stream.removeListener`, expected function",
-      ),
-    );
-  }
-
-  if (typeof limit !== "number" || Number.isNaN(limit)) {
-    return Promise.reject(
-      new Error(
-        "Unexpected value `" + limit + "` for `options.limit`, expected number",
       ),
     );
   }

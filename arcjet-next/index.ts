@@ -19,6 +19,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
+import { readBodyWeb } from "@arcjet/body";
 import findIp, { parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
@@ -677,14 +678,23 @@ export default function arcjet<
         >;
 
         const getBody = async () => {
-          // If there is a `clone` method then this is a `NextRequest` which
-          // extends a web `Request`.
-          // Otherwise it is a `NextApiRequest` which extends a Node
-          // `IncomingMessage`,
-          // or a minimal result from the `request` function below.
           if (typeof request.clone === "function") {
             const clonedRequest = request.clone();
-            return clonedRequest.text();
+            let expectedLength: number | undefined;
+            // TODO: This shouldn't need to build headers again but the type
+            // for `req` above is overly relaxed
+            const headers = new ArcjetHeaders(request.headers);
+            const expectedLengthString = headers.get("content-length");
+            if (typeof expectedLengthString === "string") {
+              expectedLength = parseInt(expectedLengthString, 10);
+            }
+
+            // HEAD and GET requests do not have a body.
+            if (!clonedRequest.body) {
+              throw new Error("Cannot read body: body is missing");
+            }
+
+            return readBodyWeb(clonedRequest.body, { expectedLength });
           }
 
           // The body is `null` if there was no body with the request.

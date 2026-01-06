@@ -14,6 +14,7 @@ import findIp, { parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import type { Server } from "bun";
 import { env } from "bun";
+import { readBodyWeb } from "@arcjet/body";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
@@ -339,7 +340,18 @@ export default function arcjet<
           }
 
           const clonedRequest = request.clone();
-          return clonedRequest.text();
+          let expectedLength: number | undefined;
+          const expectedLengthString = request.headers.get("content-length");
+          if (typeof expectedLengthString === "string") {
+            expectedLength = parseInt(expectedLengthString, 10);
+          }
+
+          // HEAD and GET requests do not have a body.
+          if (!clonedRequest.body) {
+            throw new Error("Cannot read body: body is missing");
+          }
+
+          return readBodyWeb(clonedRequest.body, { expectedLength });
         };
 
         return aj.protect({ getBody }, req);
