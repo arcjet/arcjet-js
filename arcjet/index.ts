@@ -2589,6 +2589,12 @@ export function filter(options: FilterOptions): Primitive<{}> {
   const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
   const type = "FILTER";
   const version = 0;
+  // Swallow error.
+  const hasBodyPromise = analyze
+    .hasBodyField([...allow, ...deny])
+    .catch(function () {
+      return undefined;
+    });
 
   const ruleIdPromise = hasher.hash(
     hasher.string("type", type),
@@ -2634,6 +2640,8 @@ export function filter(options: FilterOptions): Primitive<{}> {
 
       const request_ = toAnalyzeRequest(request);
       let ruleResult: ArcjetRuleResult;
+      const hasBody = await hasBodyPromise;
+      const body = hasBody ? await context.getBody() : undefined;
 
       try {
         const result = await analyze.matchFilters(
@@ -2641,6 +2649,7 @@ export function filter(options: FilterOptions): Primitive<{}> {
           request_,
           allow.length > 0 ? allow : deny,
           allow.length > 0,
+          body,
         );
 
         ruleResult = new ArcjetRuleResult({
