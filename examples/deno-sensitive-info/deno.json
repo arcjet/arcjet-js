@@ -16,6 +16,7 @@
     "@arcjet/protocol": "../../protocol/index.js",
     "@arcjet/protocol/client.js": "../../protocol/client.js",
     "@arcjet/protocol/convert.js": "../../protocol/convert.js",
+    "@arcjet/proxies": "../../proxies/index.js",
     "@arcjet/runtime": "../../runtime/index.js",
     "@arcjet/sprintf": "../../sprintf/index.js",
     "@arcjet/stable-hash": "../../stable-hash/index.js",

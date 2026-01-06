@@ -16,6 +16,7 @@
     "../../ip",
     "../../logger",
     "../../protocol",
+    "../../proxies",
     "../../rollup-config",
     "../../runtime",
     "../../stable-hash",
