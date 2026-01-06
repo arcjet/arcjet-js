@@ -102,7 +102,7 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
   restore();
 
   assert.equal(body, "My email is alice@arcjet.com");
-  assert.equal(response.status, 200);
+  assert.equal(response.status, 500);
   assert.deepEqual(parameters, [
     "Body already read. See <https://docs.arcjet.com/troubleshooting#error-body-already-read-or-body-is-unusable>",
   ]);
@@ -328,9 +328,16 @@ function createSimpleServer(options: SimpleServerOptions) {
       await before?.(request);
       const decision = await arcjet.protect(request);
       await after?.(request);
-      return decision.isDenied()
-        ? new Response("Forbidden", { status: 403 })
-        : new Response("Hello world");
+
+      if (decision.isErrored()) {
+        return new Response("Internal Server Error", { status: 500 });
+      }
+
+      if (decision.isDenied()) {
+        return new Response("Forbidden", { status: 403 });
+      }
+
+      return new Response("Hello world");
     }),
     port: uniquePort++,
   });
