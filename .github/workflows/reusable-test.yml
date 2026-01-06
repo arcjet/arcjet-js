@@ -20,9 +20,10 @@ jobs:
         with:
           allowed-endpoints: >
             api.github.com:443
+            decide.arcjet.com:443
             github.com:443
             objects.githubusercontent.com:443
-            release-assets.githubusercontent:443
+            registry.npmjs.org:443
           disable-sudo-and-containers: true
           egress-policy: block
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -42,9 +43,12 @@ jobs:
         with:
           allowed-endpoints: >
             api.github.com:443
+            decide.arcjet.com:443
+            deno.com:443
             github.com:443
             objects.githubusercontent.com:443
-            release-assets.githubusercontent:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
           disable-sudo-and-containers: true
           egress-policy: block
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -79,11 +83,12 @@ jobs:
           egress-policy: block
           allowed-endpoints: >
             api.github.com:443
+            decide.arcjet.com:443
             github.com:443
             nodejs.org:443
             objects.githubusercontent.com:443
             registry.npmjs.org:443
-            release-assets.githubusercontent:443
+            release-assets.githubusercontent.com:443
 
       # Checkout
       # Most toolchains require checkout first
