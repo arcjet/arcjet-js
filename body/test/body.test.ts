@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { Readable } from "node:stream";
 import { describe, test } from "node:test";
 import * as http from "http";
 import { readBody } from "../index.js";
@@ -13,6 +14,22 @@ test("@arcjet/body", async function (t) {
 });
 
 describe("reads the body from the readable stream", () => {
+  test("should fail if `limit` is not a number", async function (t) {
+    const stream = new Readable({ read() {} });
+    await assert.rejects(
+      readBody(stream, {
+        // @ts-expect-error: test runtime behavior.
+        limit: "1kb",
+      }),
+      /must set a limit/,
+    );
+  });
+
+  test("should fail if `limit` is literally not a number", async function (t) {
+    const stream = new Readable({ read() {} });
+    await assert.rejects(readBody(stream, { limit: NaN }), /must set a limit/);
+  });
+
   test("should read normal body streams", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
