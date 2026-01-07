@@ -48,9 +48,7 @@ They are wrapped up into [`@arcjet/analyze`][github-arcjet-analyze] for use in
 JavaScript,
 in turn exposed in our core package
 ([`arcjet`][github-arcjet-arcjet])
-and our adapters (such as `@arcjet/next`).
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+and our [SDKs][github-arcjet-sdks] (such as `@arcjet/next`).
 
 ## When should I use this?
 
@@ -82,4 +80,5 @@ Use [`@arcjet/analyze`][file-analyze] instead.
 [wasm-base64-blog]: https://blobfolio.com/2019/better-binary-batter-mixing-base64-and-uint8array/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [github-arcjet-analyze]: https://github.com/arcjet/arcjet-js/tree/main/analyze
+[github-arcjet-sdks]: https://github.com/arcjet/arcjet-js#sdks
 [tc39-proposal-import-bytes]: https://github.com/tc39/proposal-import-bytes
