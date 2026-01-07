@@ -10,7 +10,7 @@
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Farcjet%2Farcjet-js%2Ftree%2Fmain%2Fexamples%2Fnextjs-react-hook-form&project-name=aj-react-hook-form&repository-name=aj-react-hook-form&developer-id=oac_1GEcKBuKBilVnjToj1QUwdb8&demo-title=Arcjet%20Form%20Protection&demo-description=Next.js%20rate%20limiting%2C%20bot%20protection%2C%20email%20verification%20%26%20form%20protection.&demo-url=https%3A%2F%2Fgithub.com%2Farcjet%2Farcjet-js%2Ftree%2Fmain%2Fexamples%2Fnextjs-react-hook-form&demo-image=https%3A%2F%2Fapp.arcjet.com%2Fimg%2Fexample-apps%2Fvercel%2Fdemo-image.jpg&integration-ids=oac_1GEcKBuKBilVnjToj1QUwdb8&external-id=aj-react-hook-form)
 
 This example shows how to protect a Next.js React Hook Form with [Arcjet signup
-form protection](https://docs.arcjet.com/signup-protection/concepts). It uses
+form protection](https://docs.arcjet.com/signup-protection). It uses
 [shadcn/ui](https://ui.shadcn.com/) form components to build the [React Hook
 Form](https://react-hook-form.com/) with both client and server side validation.
 
@@ -19,7 +19,7 @@ This includes:
 - Form handling with [React Hook Form](https://react-hook-form.com/).
 - Client-side validation with [Zod](https://zod.dev/).
 - Server-side validation with Zod and [Arcjet email
-  validation](https://docs.arcjet.com/email-validation/concepts).
+  validation](https://docs.arcjet.com/email-validation).
 - Server-side email verification with Arcjet to check if the email is from a
   disposable provider and that the domain has a valid MX record.
 - [Rate limiting with
@@ -31,7 +31,7 @@ This includes:
   automated clients from submitting the form.
 
 These are all combined using the Arcjet `protectSignup` rule
-([docs](https://docs.arcjet.com/signup-protection/concepts)), but they can also
+([docs](https://docs.arcjet.com/signup-protection)), but they can also
 be used separately on different routes.
 
 ## How to use
