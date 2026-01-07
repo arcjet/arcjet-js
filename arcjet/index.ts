@@ -1277,7 +1277,7 @@ function isRateLimitRule<Props extends PlainObject>(
  *   });
  *   ```
  *
- * @link https://docs.arcjet.com/rate-limiting/concepts
+ * @link https://docs.arcjet.com/rate-limiting
  * @link https://docs.arcjet.com/rate-limiting/algorithms#token-bucket
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
@@ -1430,7 +1430,7 @@ export function tokenBucket<
  *   });
  *   ```
  *
- * @link https://docs.arcjet.com/rate-limiting/concepts
+ * @link https://docs.arcjet.com/rate-limiting
  * @link https://docs.arcjet.com/rate-limiting/algorithms#fixed-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
@@ -1562,7 +1562,7 @@ export function fixedWindow<
  *   });
  *   ```
  *
- * @link https://docs.arcjet.com/rate-limiting/concepts
+ * @link https://docs.arcjet.com/rate-limiting
  * @link https://docs.arcjet.com/rate-limiting/algorithms#sliding-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
@@ -1785,7 +1785,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  *   });
  *   ```
  *
- * @link https://docs.arcjet.com/sensitive-info/concepts
+ * @link https://docs.arcjet.com/sensitive-info
  * @link https://docs.arcjet.com/sensitive-info/reference
  */
 export function sensitiveInfo<
@@ -1976,7 +1976,7 @@ export function sensitiveInfo<
  *   });
  *   ```
  *
- * @link https://docs.arcjet.com/email-validation/concepts
+ * @link https://docs.arcjet.com/email-validation
  * @link https://docs.arcjet.com/email-validation/reference
  */
 export function validateEmail(
@@ -2201,7 +2201,7 @@ export function validateEmail(
  *   });
  *   ```
  *
- * @link https://docs.arcjet.com/bot-protection/concepts
+ * @link https://docs.arcjet.com/bot-protection
  * @link https://docs.arcjet.com/bot-protection/identifying-bots
  * @link https://docs.arcjet.com/bot-protection/reference
  */
@@ -2397,7 +2397,7 @@ export type ShieldOptions = {
  *   });
  *   ```
  *
- * @link https://docs.arcjet.com/shield/concepts
+ * @link https://docs.arcjet.com/shield
  * @link https://docs.arcjet.com/shield/reference
  */
 export function shield(options: ShieldOptions): Primitive<{}> {
@@ -2539,7 +2539,7 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
  *   });
  *   ```
  *
- * @link https://docs.arcjet.com/signup-protection/concepts
+ * @link https://docs.arcjet.com/signup-protection
  * @link https://docs.arcjet.com/signup-protection/reference
  */
 export function protectSignup<const Characteristics extends string[] = []>(
@@ -2588,6 +2588,7 @@ export function protectSignup<const Characteristics extends string[] = []>(
  *   })
  *   ```
  *
+ * @link https://docs.arcjet.com/filters
  * @link https://docs.arcjet.com/filters/reference
  */
 export function filter(options: FilterOptions): Primitive<{}> {
