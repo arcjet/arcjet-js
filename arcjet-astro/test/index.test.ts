@@ -413,16 +413,8 @@ test("sensitiveInfo", async function (t) {
   });
 
   await t.test("should fail w/ `allow` and `deny`", async function () {
-    const rule = sensitiveInfo({
-      allow: [
-        // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
-        "EMAIL",
-      ],
-      deny: [
-        // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
-        "PHONE_NUMBER",
-      ],
-    });
+    // @ts-expect-error: test runtime behavior.
+    const rule = sensitiveInfo({ allow: ["EMAIL"], deny: ["PHONE_NUMBER"] });
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
@@ -430,12 +422,7 @@ test("sensitiveInfo", async function (t) {
   });
 
   await t.test("should work w/ `allow`", async function () {
-    const rule = sensitiveInfo({
-      allow: [
-        // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
-        "EMAIL",
-      ],
-    });
+    const rule = sensitiveInfo({ allow: ["EMAIL"] });
 
     assert.equal(rule.type, "sensitiveInfo");
     assert.deepEqual(rule.options, { allow: ["EMAIL"] });
@@ -444,12 +431,7 @@ test("sensitiveInfo", async function (t) {
   });
 
   await t.test("should work w/ `deny`", async function () {
-    const rule = sensitiveInfo({
-      deny: [
-        // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
-        "PHONE_NUMBER",
-      ],
-    });
+    const rule = sensitiveInfo({ deny: ["PHONE_NUMBER"] });
 
     assert.equal(rule.type, "sensitiveInfo");
     assert.deepEqual(rule.options, { deny: ["PHONE_NUMBER"] });
@@ -459,10 +441,7 @@ test("sensitiveInfo", async function (t) {
 
   await t.test("should fail w/ invalid `mode`", async function () {
     const rule = sensitiveInfo({
-      allow: [
-        // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
-        "EMAIL",
-      ],
+      allow: ["EMAIL"],
       // @ts-expect-error: test runtime behavior.
       mode: "INVALID",
     });
@@ -473,13 +452,7 @@ test("sensitiveInfo", async function (t) {
   });
 
   await t.test("should work w/ valid `mode`", async function () {
-    const rule = sensitiveInfo({
-      allow: [
-        // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
-        "EMAIL",
-      ],
-      mode: "LIVE",
-    });
+    const rule = sensitiveInfo({ allow: ["EMAIL"], mode: "LIVE" });
 
     assert.equal(rule.type, "sensitiveInfo");
     assert.deepEqual(rule.options, { allow: ["EMAIL"], mode: "LIVE" });
@@ -489,10 +462,7 @@ test("sensitiveInfo", async function (t) {
 
   await t.test("should fail w/ invalid `contextWindowSize`", async function () {
     const rule = sensitiveInfo({
-      allow: [
-        // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
-        "EMAIL",
-      ],
+      allow: ["EMAIL"],
       // @ts-expect-error: test runtime behavior.
       contextWindowSize: "INVALID",
     });
@@ -503,18 +473,50 @@ test("sensitiveInfo", async function (t) {
   });
 
   await t.test("should work w/ valid `contextWindowSize`", async function () {
-    const rule = sensitiveInfo({
-      allow: [
-        // @ts-expect-error: this is a valid use case but broken due to the `never`, related to GH-5058.
-        "EMAIL",
-      ],
-      contextWindowSize: 3,
-    });
+    const rule = sensitiveInfo({ allow: ["EMAIL"], contextWindowSize: 3 });
 
     assert.equal(rule.type, "sensitiveInfo");
     assert.deepEqual(rule.options, { allow: ["EMAIL"], contextWindowSize: 3 });
 
     arcjet({ rules: [rule] });
+  });
+
+  await t.test(
+    "should type error w/ custom entity in `allow`",
+    async function () {
+      const rule = sensitiveInfo({
+        // @ts-expect-error: test type behavior.
+        allow: ["custom-entity"],
+      });
+
+      arcjet({ rules: [rule] });
+    },
+  );
+
+  await t.test(
+    "should type error w/ custom entity in `deny`",
+    async function () {
+      const rule = sensitiveInfo({
+        // @ts-expect-error: test type behavior.
+        deny: ["custom-entity"],
+      });
+
+      arcjet({ rules: [rule] });
+    },
+  );
+
+  await t.test("should type error w/ `detect`", async function () {
+    const rule = sensitiveInfo({
+      allow: [],
+      // @ts-expect-error: test type behavior.
+      detect() {
+        return ["custom"];
+      },
+    });
+
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /Unrecognized key\(s\) in object: 'detect'/);
   });
 });
 
