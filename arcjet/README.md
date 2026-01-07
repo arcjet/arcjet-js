@@ -34,10 +34,8 @@ Visit [docs.arcjet.com](https://docs.arcjet.com) to get started.
 This is our core package.
 It exposes the functionality for the many types of protection that Arcjet
 provides which can be configured and combined by users.
-The functionality here is exposed from our adapters (such as `@arcjet/next`)
-that each integrate with a particular framework.
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+The functionality here is exposed from our [SDKs][github-arcjet-sdks]
+(such as `@arcjet/next`) that each integrate with a particular framework.
 
 ## When should I use this?
 
@@ -134,3 +132,5 @@ Reference documentation is available at [docs.arcjet.com][ts-sdk-docs].
 [arcjet]: https://arcjet.com
 [ts-sdk-docs]: https://docs.arcjet.com/reference/ts-js
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[arcjet-get-started]: https://docs.arcjet.com/get-started
+[github-arcjet-sdks]: https://github.com/arcjet/arcjet-js#sdks

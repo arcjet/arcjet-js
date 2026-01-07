@@ -31,9 +31,7 @@ This package provides functionality to analyze requests.
 The work is done in WebAssembly but is called here from JavaScript.
 The functionality is wrapped up into rules in our core package
 ([`arcjet`][github-arcjet-arcjet]),
-in turn exposed from our adapters (such as `@arcjet/next`).
-
-<!-- TODO(@wooorm-arcjet): link `adapters` above when the main repo is up to date. -->
+in turn exposed from our [SDKs][github-arcjet-sdks] (such as `@arcjet/next`).
 
 The WebAssembly files are in
 [`@arcjet/analyze-wasm`][github-arcjet-analyze-wasm].
@@ -90,3 +88,4 @@ console.log(result);
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [github-arcjet-analyze-wasm]: https://github.com/arcjet/arcjet-js/tree/main/analyze-wasm
 [github-arcjet-arcjet]: https://github.com/arcjet/arcjet-js/tree/main/arcjet
+[github-arcjet-sdks]: https://github.com/arcjet/arcjet-js#sdks
