@@ -853,7 +853,6 @@ export type EmailOptions =
  *
  * @template DetectedEntities
  *   Custom entity names that are returned from `detect` and optionally listed in `allow`.
- *   in `allow` or `deny`.
  * @template ListedEntities
  *   Entity names that can be listed in the `allow` field.
  */
