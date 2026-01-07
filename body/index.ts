@@ -81,7 +81,7 @@ export async function readBody(
   let complete = false;
   let received = 0;
   const limit = options.limit;
-  if (typeof limit !== "number") {
+  if (typeof limit !== "number" || Number.isNaN(limit)) {
     return Promise.reject(new Error("must set a limit"));
   }
   const length = options.expectedLength || null;
@@ -143,7 +143,7 @@ export async function readBody(
     function onEnd(err?: Error) {
       if (err) return done(err);
 
-      if (length !== null && received !== length) {
+      if (length !== null && !Number.isNaN(length) && received !== length) {
         done(new Error("request size did not match content length"));
       } else {
         done(undefined, buffer);
