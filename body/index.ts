@@ -143,7 +143,7 @@ export async function readBody(
     function onEnd(err?: Error) {
       if (err) return done(err);
 
-      if (length !== null && !Number.isNaN(length) && received !== length) {
+      if (length !== null && received !== length) {
         done(new Error("request size did not match content length"));
       } else {
         done(undefined, buffer);
