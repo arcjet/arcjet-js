@@ -25,20 +25,31 @@ for JS.
 
 Arcjet security features for protecting JS apps:
 
-- 🤖 [Bot protection][bot-protection-quick-start] - manage traffic by automated
-  clients and bots.
-- 🛑 [Rate limiting][rate-limiting-quick-start] - limit the number of requests a
-  client can make.
-- 🛡️ [Shield WAF][shield-quick-start] - protect your application against common
-  attacks.
-- 📧 [Email validation][email-validation-quick-start] - prevent users from
-  signing up with fake email addresses.
-- 📝 [Signup form protection][signup-protection-quick-start] - combines rate
-  limiting, bot protection, and email validation to protect your signup forms.
-- 🕵️‍♂️ [Sensitive information detection][sensitive-info-quick-start] - block
-  personally identifiable information (PII).
-- 🚅 [Nosecone][nosecone-quick-start] - set security headers such as
-  `Content-Security-Policy` (CSP).
+- 🤖 [Bot protection][feature-bot-protection]
+  — detect bots, block bad bots, verify legitimate bots, and reduce unwanted
+  automated requests before they reach your application.
+- 🛑 [Rate limiting][feature-rate-limiting]
+  — control how many requests a client can make to your application or API over
+  a given period of time.
+- 🛡️ [Shield WAF][feature-shield]
+  — protects your application against common web attacks, including the OWASP
+  Top 10, by analyzing requests over time and blocking clients that show
+  suspicious behavior.
+- 📧 [Email validation][feature-email-validation]
+  — validate and verify email addresses in your application to reduce spam and
+  fraudulent signups.
+- 📝 [Signup form protection][feature-signup-protection]
+  — combines bot protection, email validation, and rate limiting to protect
+  your signup and lead capture forms from spam, fake accounts, and signup
+  fraud.
+- 🕵️‍♂️ [Sensitive information][feature-sensitive-info]
+  — detect and block sensitive data in request bodies before it enters your
+  application. Use it to prevent clients from sending personally identifiable
+  information (PII) and other data you do not want to handle.
+- 🎯 [Filters][feature-filters]
+  — define custom security and traffic rules inside your application code. Use
+  filters to block unwanted traffic based on request fields, IP reputation,
+  geography, VPN or proxy usage, and other signals.
 
 ## Quick start
 
@@ -52,12 +63,10 @@ Arcjet security features for protecting JS apps:
 - [Node.js + Express][quick-start-node-js-express]
 - [Node.js + Hono][quick-start-node-js-hono]
 - [Node.js][quick-start-node-js]
+- [Nuxt][quick-start-nuxt]
+- [React Router][quick-start-react-router]
 - [Remix][quick-start-remix]
 - [SvelteKit][quick-start-sveltekit]
-
-<!--
-TODO: list `react-router` when done.
--->
 
 ### Get help
 
@@ -66,36 +75,37 @@ TODO: list `react-router` when done.
 ## Example apps
 
 - [Astro][github-arcjet-example-astro]
+- [Deno][github-arcjet-example-deno]
 - [Express][github-arcjet-example-express]
+- [FastAPI][github-arcjet-example-fastapi]
 - [Fastify][github-arcjet-example-fastify]
 - [NestJS][github-arcjet-example-nestjs]
-- [Next.js: Bot protection][github-arcjet-example-nextjs-bot-protection]
-- [Next.js: Server action][github-arcjet-example-nextjs-server-action]
-- [Next.js: Form][github-arcjet-example-nextjs-form]
 - [Next.js][github-arcjet-example-nextjs] ([try live][arcjet-example])
+- [Nuxt][github-arcjet-example-nuxt]
+- [React Router][github-arcjet-example-react-router]
 - [Remix][github-arcjet-example-remix]
+- [SvelteKit][github-arcjet-example-sveltekit]
 - [Tanstack Start][github-arcjet-example-tanstack-start]
-- …see also [many more examples here in `examples/`][file-examples]
-
-<!--
-TODO: list `react-router` when done.
--->
 
 ## Blueprints
 
 - [AI quota control][blueprint-ai-quota-control]
-- [IP geolocation][blueprint-ip-geolocation]
 - [Cookie banner][blueprint-cookie-banner]
-- [Payment form protection][blueprint-payment-form-protection]
-- [VPN & proxy detection][blueprint-vpn-proxy-detection]
+- [Custom rule][blueprint-custom-rule]
+- [IP geolocation][blueprint-ip-geolocation]
+- [Feedback form][blueprint-feedback-form]
+- [Malicious traffic][blueprint-malicious-traffic]
+- [Payment form][blueprint-payment-form]
+- [Sampling traffic][blueprint-sampling-traffic]
+- [VPN & proxy][blueprint-vpn-proxy]
 
 ## Usage
 
-Read the docs at [docs.arcjet.com][arcjet-docs].
+Read the docs at [`docs.arcjet.com`][arcjet-docs].
 
 ### Next.js bot detection
 
-This example will enable [Arcjet bot protection][bot-protection-concepts-docs]
+This example will enable [Arcjet bot protection][feature-bot-protection]
 across your entire Next.js application. Next.js middleware runs before every
 request, allowing Arcjet to protect your entire application before your code
 runs.
@@ -154,7 +164,7 @@ export default async function middleware(request: NextRequest) {
 ### Node.js bot protection example
 
 This simple Node.js server is protected with [Arcjet bot
-protection][bot-protection-concepts-docs]. It will return a 403 Forbidden
+protection][feature-bot-protection]. It will return a 403 Forbidden
 response for all requests from bots not in the allow list.
 
 ```ts
@@ -207,67 +217,59 @@ find a specific one through the categories and descriptions below.
 
 ### SDKs
 
-- [`@arcjet/bun`](./arcjet-bun/README.md): SDK for Bun.sh.
+- [`@arcjet/astro`](./arcjet-astro/README.md): SDK for Astro.
+- [`@arcjet/bun`](./arcjet-bun/README.md): SDK for Bun.
 - [`@arcjet/deno`](./arcjet-deno/README.md): SDK for Deno.
 - [`@arcjet/fastify`](./arcjet-fastify/README.md): SDK for Fastify.
 - [`@arcjet/nest`](./arcjet-nest/README.md): SDK for NestJS.
 - [`@arcjet/next`](./arcjet-next/README.md): SDK for Next.js.
 - [`@arcjet/node`](./arcjet-node/README.md): SDK for Node.js.
+- [`@arcjet/nuxt`](./arcjet-nuxt/README.md): SDK for Nuxt.
 - [`@arcjet/react-router`](./arcjet-react-router/README.md): SDK for React Router.
 - [`@arcjet/remix`](./arcjet-remix/README.md): SDK for Remix.
 - [`@arcjet/sveltekit`](./arcjet-sveltekit/README.md): SDK for SvelteKit.
-
-### Analysis
-
-- [`@arcjet/analyze`](./analyze/README.md): Local analysis engine.
-- [`@arcjet/headers`](./headers/README.md): Arcjet extension of the Headers
-  class.
-- [`@arcjet/ip`](./ip/README.md): Utilities for finding the originating IP of a
-  request.
-- [`@arcjet/redact`](./redact/README.md): Redact & unredact sensitive
-  information from strings.
 
 ### Nosecone
 
 See [the docs][nosecone-docs] for details.
 
-- [`nosecone`](./nosecone/README.md): Protect your `Response` with secure
-  headers.
 - [`@nosecone/next`](./nosecone-next/README.md): Protect your Next.js
   application with secure headers.
 - [`@nosecone/sveltekit`](./nosecone-sveltekit/README.md): Protect your
   SvelteKit application with secure headers.
+- [`nosecone`](./nosecone/README.md): Protect your `Response` with secure
+  headers.
 
 ### Utilities
 
-- [`arcjet`](./arcjet/README.md): JS SDK core.
-- [`@arcjet/body`](./body/README.md): utilities for extracting the body from a
-  Node.js IncomingMessage.
-- [`@arcjet/cache`](./cache/README.md): Interface and implementations for value
-  caches.
-- [`@arcjet/decorate`](./decorate/README.md): Utilities for decorating responses
-  with information.
-- [`@arcjet/duration`](./duration/README.md): Utilities for parsing duration
-  strings into seconds integers.
-- [`@arcjet/env`](./env/README.md): Environment detection for Arcjet variables.
-- [`@arcjet/inspect`](./inspect/README.md): Utilities for inspecting decisions
-  made by an SDK.
+- [`@arcjet/analyze`](./analyze/README.md): Local analysis engine.
+- [`@arcjet/body`](./body/README.md): Extract the body from a stream.
+- [`@arcjet/cache`](./cache/README.md): Basic cache interface and
+  implementations.
+- [`@arcjet/decorate`](./decorate/README.md): Decorate responses with
+  info.
+- [`@arcjet/duration`](./duration/README.md): Parse duration strings.
+- [`@arcjet/env`](./env/README.md): Environment detection.
+- [`@arcjet/headers`](./headers/README.md): Extension of the Headers class.
+- [`@arcjet/inspect`](./inspect/README.md): Inspect decisions made by an SDK.
+- [`@arcjet/ip`](./ip/README.md): Find the originating IP of a request.
 - [`@arcjet/logger`](./logger/README.md): Lightweight logger which mirrors the
   Pino structured logger interface.
-- [`@arcjet/protocol`](./protocol/README.md): JS interface into the Arcjet
-  protocol.
+- [`@arcjet/protocol`](./protocol/README.md): JS interface into the protocol.
+- [`@arcjet/redact`](./redact/README.md): Redact & unredact sensitive info from
+  strings.
 - [`@arcjet/runtime`](./runtime/README.md): Runtime detection.
-- [`@arcjet/sprintf`](./sprintf/README.md): Platform-independent replacement for
-  `util.format`.
+- [`@arcjet/sprintf`](./sprintf/README.md): Platform-independent replacement
+  for `util.format`.
+- [`@arcjet/stable-hash`](./stable-hash/README.md): Stable hashing.
 - [`@arcjet/transport`](./transport/README.md): Transport mechanisms for the
   Arcjet protocol.
+- [`arcjet`](./arcjet/README.md): JS SDK core.
 
 ### Internal development
 
 - [`@arcjet/eslint-config`](./eslint-config/README.md): Custom eslint config for
   our projects.
-- [`@arcjet/redact-wasm`](./redact-wasm/README.md): Sensitive information
-  redaction detection engine.
 - [`@arcjet/rollup-config`](./rollup-config/README.md): Custom rollup config for
   our projects.
 
@@ -294,37 +296,41 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet-example]: https://example.arcjet.com
 [arcjet]: https://arcjet.com
-[file-examples]: ./examples/
 [github-arcjet-example-astro]: https://github.com/arcjet/example-astro
+[github-arcjet-example-deno]: https://github.com/arcjet/example-deno
 [github-arcjet-example-express]: https://github.com/arcjet/example-expressjs
+[github-arcjet-example-fastapi]: https://github.com/arcjet/example-fastapi
 [github-arcjet-example-fastify]: https://github.com/arcjet/example-fastify
 [github-arcjet-example-nestjs]: https://github.com/arcjet/example-nestjs
-[github-arcjet-example-nextjs-bot-protection]: https://github.com/arcjet/example-nextjs-bot-protection
-[github-arcjet-example-nextjs-server-action]: https://github.com/arcjet/example-nextjs-server-action
-[github-arcjet-example-nextjs-form]: https://github.com/arcjet/example-nextjs-form
 [github-arcjet-example-nextjs]: https://github.com/arcjet/example-nextjs
+[github-arcjet-example-nuxt]: https://github.com/arcjet/example-nuxt
+[github-arcjet-example-react-router]: https://github.com/arcjet/example-react-router
 [github-arcjet-example-remix]: https://github.com/arcjet/example-remix
+[github-arcjet-example-sveltekit]: https://github.com/arcjet/example-sveltekit
 [github-arcjet-example-tanstack-start]: https://github.com/arcjet/example-tanstack-start
 [discord-invite]: https://arcjet.com/discord
 [support]: https://docs.arcjet.com/support
-[bot-protection-concepts-docs]: https://docs.arcjet.com/bot-protection/concepts
 [arcjet-docs]: https://docs.arcjet.com/
 [arcjet-support]: https://docs.arcjet.com/support
 [arcjet-security]: https://docs.arcjet.com/security
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [nosecone-docs]: https://docs.arcjet.com/nosecone/quick-start
 [blueprint-ai-quota-control]: https://docs.arcjet.com/blueprints/ai-quota-control
-[blueprint-ip-geolocation]: https://docs.arcjet.com/blueprints/ip-geolocation
 [blueprint-cookie-banner]: https://docs.arcjet.com/blueprints/cookie-banner
-[blueprint-payment-form-protection]: https://docs.arcjet.com/blueprints/payment-form
-[blueprint-vpn-proxy-detection]: https://docs.arcjet.com/blueprints/vpn-proxy-detection
-[bot-protection-quick-start]: https://docs.arcjet.com/bot-protection/quick-start
-[rate-limiting-quick-start]: https://docs.arcjet.com/rate-limiting/quick-start
-[shield-quick-start]: https://docs.arcjet.com/shield/quick-start
-[email-validation-quick-start]: https://docs.arcjet.com/email-validation/quick-start
-[signup-protection-quick-start]: https://docs.arcjet.com/signup-protection/quick-start
-[sensitive-info-quick-start]: https://docs.arcjet.com/sensitive-info/quick-start
-[nosecone-quick-start]: https://docs.arcjet.com/nosecone/quick-start
+[blueprint-custom-rule]: https://docs.arcjet.com/blueprints/defining-custom-rules
+[blueprint-ip-geolocation]: https://docs.arcjet.com/blueprints/ip-geolocation
+[blueprint-feedback-form]: https://docs.arcjet.com/blueprints/feedback-form
+[blueprint-malicious-traffic]: https://docs.arcjet.com/blueprints/malicious-traffic
+[blueprint-payment-form]: https://docs.arcjet.com/blueprints/payment-form
+[blueprint-sampling-traffic]: https://docs.arcjet.com/blueprints/sampling
+[blueprint-vpn-proxy]: https://docs.arcjet.com/blueprints/vpn-proxy-detection
+[feature-bot-protection]: https://docs.arcjet.com/bot-protection
+[feature-email-validation]: https://docs.arcjet.com/email-validation
+[feature-filters]: https://docs.arcjet.com/filters
+[feature-rate-limiting]: https://docs.arcjet.com/rate-limiting
+[feature-sensitive-info]: https://docs.arcjet.com/sensitive-info
+[feature-shield]: https://docs.arcjet.com/shield
+[feature-signup-protection]: https://docs.arcjet.com/signup-protection
 [quick-start-astro]: https://docs.arcjet.com/get-started?f=astro
 [quick-start-bun-hono]: https://docs.arcjet.com/get-started?f=bun-hono
 [quick-start-bun]: https://docs.arcjet.com/get-started?f=bun
@@ -335,5 +341,7 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [quick-start-node-js-express]: https://docs.arcjet.com/get-started?f=node-js-express
 [quick-start-node-js-hono]: https://docs.arcjet.com/get-started?f=node-js-hono
 [quick-start-node-js]: https://docs.arcjet.com/get-started?f=node-js
+[quick-start-nuxt]: https://docs.arcjet.com/get-started?f=nuxt
+[quick-start-react-router]: https://docs.arcjet.com/get-started?f=react-router
 [quick-start-remix]: https://docs.arcjet.com/get-started?f=remix
 [quick-start-sveltekit]: https://docs.arcjet.com/get-started?f=sveltekit
