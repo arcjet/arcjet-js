@@ -1,3 +1,12 @@
+name: Publish
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  id-token: write
 jobs:
   publish:
     environment: npm-publish
@@ -17,12 +26,3 @@ jobs:
       # UNKNOWN(2): this should work when everything is set up correctly, but `--dry-run` for now.
       - name: Publish packages
         run: npm publish --dry-run --workspaces
-name: Publish
-on:
-  push:
-    tags:
-      - v*
-  workflow_dispatch: {}
-permissions:
-  contents: read
-  id-token: write
