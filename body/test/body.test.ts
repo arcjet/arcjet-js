@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { Readable } from "node:stream";
 import { describe, test } from "node:test";
 import * as http from "http";
 import { readBody } from "../index.js";
@@ -346,5 +347,22 @@ describe("reads the body from the readable stream", () => {
 
     const body = await readBody(stream, { limit: 100 });
     assert.equal(body, "");
+  });
+
+  test("should not read the body if `expectedLength` exceeds `limit`", async function () {
+    let read = false;
+
+    const stream = new Readable({
+      read() {
+        read = true;
+      },
+    });
+
+    await assert.rejects(
+      readBody(stream, { expectedLength: 1025, limit: 1024 }),
+      /request entity too large/,
+    );
+
+    assert.equal(read, false);
   });
 });
