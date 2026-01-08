@@ -479,11 +479,7 @@ function arcjet<
               const headers = new ArcjetHeaders(request.headers);
               const expectedLengthStr = headers.get("content-length");
               if (typeof expectedLengthStr === "string") {
-                try {
-                  expectedLength = parseInt(expectedLengthStr, 10);
-                } catch {
-                  // If the expected length couldn't be parsed we'll just not set one.
-                }
+                expectedLength = parseInt(expectedLengthStr, 10);
               }
               // Awaited to throw if it rejects and we'll just return undefined
               const body = await readBody(request, {
