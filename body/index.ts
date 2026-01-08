@@ -9,11 +9,11 @@ export type ReadBodyOpts = {
    */
   expectedLength?: number | null | undefined;
   /**
-   * Limit of the body in bytes (required);
+   * Limit of the body in bytes (default: `Infinity`);
    * an error is returned if the body ends up being larger than this limit;
    * used to prevent reading too much data from malicious clients.
    */
-  limit: number;
+  limit?: number | null | undefined;
 };
 
 type EventHandlerLike = (
@@ -67,24 +67,43 @@ export interface ReadableStreamLike {
  * @param stream
  *   Stream.
  * @param options
- *   Configuration (required).
+ *   Configuration (optional).
  * @returns
  *   Promise to a concatenated body.
  */
 export async function readBody(
   stream: ReadableStreamLike,
-  // TODO(@wooorm-arcjet): make optional.
-  options: ReadBodyOpts,
+  options?: ReadBodyOpts | null | undefined,
 ): Promise<string> {
+  const limit = options?.limit ?? Infinity;
+  const length = options?.expectedLength ?? undefined;
   const decoder = new TextDecoder("utf-8");
   let buffer = "";
   let complete = false;
   let received = 0;
-  const limit = options.limit;
-  if (typeof limit !== "number" || Number.isNaN(limit)) {
-    return Promise.reject(new Error("must set a limit"));
+
+  if (typeof limit !== "number" || limit < 0 || Number.isNaN(limit)) {
+    return Promise.reject(
+      new Error(
+        "Unexpected value `" +
+          limit +
+          "` for `options.limit`, expected positive number",
+      ),
+    );
   }
-  const length = options.expectedLength || null;
+
+  if (
+    length !== undefined &&
+    (typeof length !== "number" || length < 0 || Number.isNaN(length))
+  ) {
+    return Promise.reject(
+      new Error(
+        "Unexpected value `" +
+          length +
+          "` for `options.expectedLength`, expected positive number",
+      ),
+    );
+  }
 
   if (typeof stream.readable !== "undefined" && !stream.readable) {
     return Promise.reject(new Error("stream is not readable"));
@@ -96,7 +115,7 @@ export async function readBody(
     return Promise.reject(new Error("missing `removeListener` function"));
   }
   // If we already know the length and it exceeds the limit, abort early.
-  if (length !== null && length > limit) {
+  if (length !== undefined && length > limit) {
     return Promise.reject(new Error("request entity too large"));
   }
 
@@ -147,7 +166,7 @@ export async function readBody(
     function onEnd(err?: Error) {
       if (err) return done(err);
 
-      if (length !== null && received !== length) {
+      if (length !== undefined && received !== length) {
         done(new Error("request size did not match content length"));
       } else {
         done(undefined, buffer);
