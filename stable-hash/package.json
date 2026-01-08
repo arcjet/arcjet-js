@@ -49,8 +49,8 @@
     "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
     "prepublishOnly": "npm run build",
-    "test-api": "node --test",
-    "test-coverage": "node --experimental-test-coverage --test",
+    "test-api": "node --test -- test/*.test.js",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {},
