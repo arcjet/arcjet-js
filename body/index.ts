@@ -95,6 +95,10 @@ export async function readBody(
   if (typeof stream.removeListener !== "function") {
     return Promise.reject(new Error("missing `removeListener` function"));
   }
+  // If we already know the length and it exceeds the limit, abort early.
+  if (length !== null && length > limit) {
+    return Promise.reject(new Error("request entity too large"));
+  }
 
   return new Promise((resolve, reject) => {
     // This was already checked at the top of the function but TypeScript lost
