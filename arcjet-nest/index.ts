@@ -456,42 +456,25 @@ function arcjet<
         >;
 
         const getBody = async () => {
-          try {
-            // If request.body is present then the body was likely read by a package like express' `body-parser`.
-            // If it's not present then we attempt to read the bytes from the IncomingMessage ourselves.
-            if (typeof request.body === "string") {
-              return request.body;
-            } else if (
-              typeof request.body !== "undefined" &&
-              // BigInt cannot be serialized with JSON.stringify
-              typeof request.body !== "bigint"
-            ) {
-              return JSON.stringify(request.body);
+          // Read the stream if the body is not present.
+          if (request.body === null || request.body === undefined) {
+            let expectedLength: number | undefined;
+            // TODO: This shouldn't need to build headers again but the type
+            // for `req` above is overly relaxed
+            const headers = new ArcjetHeaders(request.headers);
+            const expectedLengthStr = headers.get("content-length");
+            if (typeof expectedLengthStr === "string") {
+              expectedLength = parseInt(expectedLengthStr, 10);
             }
-
-            if (
-              typeof request.on === "function" &&
-              typeof request.removeListener === "function"
-            ) {
-              let expectedLength: number | undefined;
-              // TODO: This shouldn't need to build headers again but the type
-              // for `req` above is overly relaxed
-              const headers = new ArcjetHeaders(request.headers);
-              const expectedLengthStr = headers.get("content-length");
-              if (typeof expectedLengthStr === "string") {
-                expectedLength = parseInt(expectedLengthStr, 10);
-              }
-              // Awaited to throw if it rejects and we'll just return undefined
-              const body = await readBody(request, { expectedLength });
-              return body;
-            }
-
-            log.warn("no body available");
-            return;
-          } catch (e) {
-            log.error("failed to get request body: %s", errorMessage(e));
-            return;
+            return readBody(request, { expectedLength });
           }
+
+          // A package like `body-parser` was used to read the stream.
+          if (typeof request.body === "string") {
+            return request.body;
+          }
+
+          return JSON.stringify(request.body);
         };
 
         return aj.protect({ getBody }, req);

@@ -79,7 +79,7 @@ const exampleContext: ArcjetContext = {
   cache: new TestCache(),
   fingerprint: "b",
   getBody() {
-    return Promise.resolve(undefined);
+    throw new Error("Not implemented");
   },
   key: "a",
   log: exampleLogger,

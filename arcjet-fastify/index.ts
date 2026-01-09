@@ -305,21 +305,18 @@ export default function arcjet<
         );
 
         async function getBody() {
-          try {
-            if (typeof fastifyRequest.body === "string") {
-              return fastifyRequest.body;
-            } else if (
-              fastifyRequest.body === null ||
-              fastifyRequest.body === undefined
-            ) {
-              return undefined;
-            } else {
-              return JSON.stringify(fastifyRequest.body);
-            }
-          } catch (e) {
-            log.error("failed to get request body: %s", errorMessage(e));
-            return;
+          if (
+            fastifyRequest.body === null ||
+            fastifyRequest.body === undefined
+          ) {
+            throw new Error("Cannot read body: body is missing");
           }
+
+          if (typeof fastifyRequest.body === "string") {
+            return fastifyRequest.body;
+          }
+
+          return JSON.stringify(fastifyRequest.body);
         }
       },
       withRule(rule: Primitive | Product) {

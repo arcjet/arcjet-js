@@ -213,7 +213,7 @@ export default function arcjet<
     const client: ArcjetReactRouter<Properties> = {
       async protect(details, properties?) {
         const context: ArcjetAdapterContext = {
-          getBody: createGetBody(state, details),
+          getBody: createGetBody(details),
         };
         const request = toArcjetRequest(
           state,
@@ -242,19 +242,16 @@ export default function arcjet<
  * @returns
  *   Function to get the body of the request.
  */
-function createGetBody(state: State, details: ArcjetReactRouterRequest) {
+function createGetBody(details: ArcjetReactRouterRequest) {
   /**
    * Read the request body.
    *
    * @returns
    *   Body of the request (`string`) if available or nothing.
    */
-  return async function getBody(): Promise<string | undefined> {
-    try {
-      return await details.request.clone().text();
-    } catch (error) {
-      state.log.error("failed to get request body: %s", String(error));
-    }
+  return async function getBody(): Promise<string> {
+    const clonedRequest = details.request.clone();
+    return clonedRequest.text();
   };
 }
 

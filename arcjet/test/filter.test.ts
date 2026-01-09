@@ -984,7 +984,7 @@ function createContext(): ArcjetContext {
     characteristics: [],
     fingerprint: "a",
     getBody() {
-      return Promise.resolve(undefined);
+      throw new Error("Not implemented");
     },
     key: "b",
     log: console,
