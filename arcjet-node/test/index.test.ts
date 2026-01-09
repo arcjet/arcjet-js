@@ -109,7 +109,7 @@ test("`@arcjet/node`", async function (t) {
       assert.equal(response.status, 200);
       assert.deepEqual(parameters, [
         "failed to get request body: %s",
-        "stream is not readable",
+        "Cannot read unreadable stream",
       ]);
     },
   );

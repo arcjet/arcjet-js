@@ -105,18 +105,41 @@ export async function readBody(
     );
   }
 
-  if (typeof stream.readable !== "undefined" && !stream.readable) {
-    return Promise.reject(new Error("stream is not readable"));
-  }
   if (typeof stream.on !== "function") {
-    return Promise.reject(new Error("missing `on` function"));
+    return Promise.reject(
+      new Error(
+        "Unexpected value `" +
+          stream.on +
+          "` for `stream.on`, expected function",
+      ),
+    );
   }
+
   if (typeof stream.removeListener !== "function") {
-    return Promise.reject(new Error("missing `removeListener` function"));
+    return Promise.reject(
+      new Error(
+        "Unexpected value `" +
+          stream.removeListener +
+          "` for `stream.removeListener`, expected function",
+      ),
+    );
   }
+
+  if (typeof limit !== "number" || Number.isNaN(limit)) {
+    return Promise.reject(
+      new Error(
+        "Unexpected value `" + limit + "` for `options.limit`, expected number",
+      ),
+    );
+  }
+
+  if (typeof stream.readable !== "undefined" && !stream.readable) {
+    return Promise.reject(new Error("Cannot read unreadable stream"));
+  }
+
   // If we already know the length and it exceeds the limit, abort early.
   if (length !== undefined && length > limit) {
-    return Promise.reject(new Error("request entity too large"));
+    return Promise.reject(new Error("Cannot read stream whose expected length exceeds limit"));
   }
 
   return new Promise((resolve, reject) => {
@@ -150,14 +173,14 @@ export async function readBody(
     }
 
     function onAborted() {
-      done(new Error("stream was aborted"));
+      done(new Error("Cannot read aborted stream"));
     }
 
     function onData(chunk: Buffer) {
       received += chunk.length;
 
       if (received > limit) {
-        done(new Error("request entity too large"));
+        done(new Error("Cannot read stream that exceeds limit"));
       } else {
         buffer += decoder.decode(chunk, { stream: true });
       }
@@ -167,7 +190,7 @@ export async function readBody(
       if (err) return done(err);
 
       if (length !== undefined && received !== length) {
-        done(new Error("request size did not match content length"));
+        done(new Error("Cannot read stream whose length does not match expected length"));
       } else {
         done(undefined, buffer);
       }
@@ -190,7 +213,9 @@ export async function readBody(
     // Ensure that we don't poll forever if the stream is incorrectly configured
     setTimeout(() => {
       if (received === 0) {
-        done(new Error("received no body chunks after 100ms"));
+        done(
+          new Error("Cannot read stream, did not receive data in time limit"),
+        );
       }
     }, 100);
   });
