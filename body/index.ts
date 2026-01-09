@@ -9,7 +9,7 @@ export type ReadBodyOpts = {
    */
   expectedLength?: number | null | undefined;
   /**
-   * Limit of the body in bytes (default: `Infinity`);
+   * Limit of the body in bytes (default: `1048576`);
    * an error is returned if the body ends up being larger than this limit;
    * used to prevent reading too much data from malicious clients.
    */
@@ -75,7 +75,7 @@ export async function readBody(
   stream: ReadableStreamLike,
   options?: ReadBodyOpts | null | undefined,
 ): Promise<string> {
-  const limit = options?.limit ?? Infinity;
+  const limit = options?.limit ?? 1048576; // 1mb.
   const length = options?.expectedLength ?? undefined;
   const decoder = new TextDecoder("utf-8");
   let buffer = "";

@@ -340,10 +340,7 @@ function createGetBody(state: State, event: ArcjetH3Event) {
         if (typeof expectedLengthStr === "string") {
           expectedLength = parseInt(expectedLengthStr, 10);
         }
-        const body = await readBody(event.node.req, {
-          expectedLength,
-          limit: 1048576,
-        });
+        const body = await readBody(event.node.req, { expectedLength });
         return body;
       }
 

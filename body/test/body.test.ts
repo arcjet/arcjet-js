@@ -68,6 +68,34 @@ describe("reads the body from the readable stream", () => {
     );
   });
 
+  test("should limit to 1mb by default", async function (t) {
+    const fine = "a".repeat(1048576);
+
+    assert.equal(
+      await readBody(
+        new Readable({
+          read() {
+            this.push(fine);
+            this.push(null);
+          },
+        }),
+      ),
+      fine,
+    );
+
+    await assert.rejects(
+      readBody(
+        new Readable({
+          read() {
+            this.push(fine + "a");
+            this.push(null);
+          },
+        }),
+      ),
+      /request entity too large/,
+    );
+  });
+
   test("should read normal body streams", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
