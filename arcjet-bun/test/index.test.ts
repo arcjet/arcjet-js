@@ -104,7 +104,9 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
   assert.equal(body, "My email is alice@arcjet.com");
   assert.equal(response.status, 200);
   assert.deepEqual(parameters, [
-    "Body already read. See <https://docs.arcjet.com/troubleshooting#error-body-already-read-or-body-is-unusable>",
+    "Failure running rule: %s due to %s",
+    "SENSITIVE_INFO",
+    "Cannot read body: already read",
   ]);
 });
 
