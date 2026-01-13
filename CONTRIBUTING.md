@@ -59,16 +59,17 @@ the workflow file.
 ## Publish
 
 Publishing to npm is mostly automated but involves two bots and requires two
-persons.
-It looks as follows:
+people.
+
+It looks like this:
 
 1. Release Please keeps a PR up to date with changelogs;
    some landed PRs, notably dependency updates, do not trigger it to run,
-   so make sure to land something real after those
+   so make sure to land something real after those.
 2. Person approves that PR and requests Trunk to merge it
-   When it lands, Release Please creates a tag and GitHub release notes
+   When it lands, Release Please creates a tag and GitHub release notes.
 3. Person goes to Actions -> Publish -> Run workflow -> Tags, then selects
-   the tag to publish
-4. Other persons are asked by GitHub to approvate that run,
-   one person does, optionally with a comment
-5. GitHub publishes to npm, which takes about 5 minutes
+   the tag to publish.
+4. Other team members are asked by GitHub to approve that run,
+   one person does, optionally with a comment.
+5. GitHub publishes to npm, which takes about 5 minutes.
