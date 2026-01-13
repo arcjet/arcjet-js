@@ -310,7 +310,7 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   assert.equal(response.status, 200);
   assert.deepEqual(parameters, [
     "failed to get request body: %s",
-    "request entity too large",
+    "Cannot read stream whose expected length exceeds limit",
   ]);
 });
 
