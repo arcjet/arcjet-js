@@ -1,18 +1,28 @@
 name: Publish
-
 on:
-  workflow_dispatch: {}
   push:
     tags:
       - v*
-
+  workflow_dispatch: {}
 permissions:
   contents: read
   id-token: write
-
 jobs:
   publish:
-    runs-on: ubuntu-latest
     environment: npm-publish
+    runs-on: ubuntu-latest
     steps:
-      - run: echo "hello deployment"
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+      # UNKNOWN(2): this should work when everything is set up correctly, but `--dry-run` for now.
+      - name: Publish packages
+        run: npm publish --dry-run --workspaces
