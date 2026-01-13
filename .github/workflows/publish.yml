@@ -23,6 +23,5 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
-      # UNKNOWN(2): this should work when everything is set up correctly, but `--dry-run` for now.
       - name: Publish packages
-        run: npm publish --dry-run --workspaces
+        run: npm publish --workspaces
