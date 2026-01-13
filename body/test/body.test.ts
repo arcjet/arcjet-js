@@ -92,7 +92,7 @@ describe("reads the body from the readable stream", () => {
           },
         }),
       ),
-      /request entity too large/,
+      /Cannot read stream that exceeds limit/,
     );
   });
 
@@ -137,7 +137,7 @@ describe("reads the body from the readable stream", () => {
         await readBody(req, { limit: 4 });
         assert.fail("this should not return successfully");
       } catch (err) {
-        assert.equal(String(err), "Error: request entity too large");
+        assert.match(String(err), /Cannot read stream that exceeds limit/);
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -157,7 +157,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          assert.equal(body, "request entity too large");
+          assert.match(String(body), /Cannot read stream that exceeds limit/);
         } finally {
           server.close(done);
         }
@@ -171,9 +171,9 @@ describe("reads the body from the readable stream", () => {
         await readBody(req, { limit: 1024, expectedLength: 4 });
         assert.fail("this should not return successfully");
       } catch (err) {
-        assert.equal(
+        assert.match(
           String(err),
-          "Error: request size did not match content length",
+          /Cannot read stream whose length does not match expected length/,
         );
         req.resume();
         res.statusCode = 500;
@@ -194,7 +194,10 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          assert.equal(body, "request size did not match content length");
+          assert.match(
+            body,
+            /Cannot read stream whose length does not match expected length/,
+          );
         } finally {
           server.close(done);
         }
@@ -212,7 +215,10 @@ describe("reads the body from the readable stream", () => {
         await readBody(reqNoOn, { limit: 1024 });
         assert.fail("this should not return successfully");
       } catch (err) {
-        assert.equal(String(err), "Error: missing `on` function");
+        assert.match(
+          String(err),
+          /Unexpected value `undefined` for `stream\.on`, expected function/,
+        );
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -232,7 +238,10 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          assert.equal(body, "missing `on` function");
+          assert.match(
+            body,
+            /Unexpected value `undefined` for `stream.on`, expected function/,
+          );
         } finally {
           server.close(done);
         }
@@ -250,7 +259,10 @@ describe("reads the body from the readable stream", () => {
         await readBody(reqNoOn, { limit: 1024 });
         assert.fail("this should not return successfully");
       } catch (err) {
-        assert.equal(String(err), "Error: missing `removeListener` function");
+        assert.match(
+          String(err),
+          /Unexpected value `undefined` for `stream\.removeListener`, expected function/,
+        );
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -270,7 +282,10 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          assert.equal(body, "missing `removeListener` function");
+          assert.match(
+            body,
+            /Unexpected value `undefined` for `stream\.removeListener`, expected function/,
+          );
         } finally {
           server.close(done);
         }
@@ -289,7 +304,7 @@ describe("reads the body from the readable stream", () => {
         await readBody(reqNoOn, { limit: 1024 });
         assert.fail("this should not return successfully");
       } catch (err) {
-        assert.equal(String(err), "Error: stream is not readable");
+        assert.match(String(err), /Cannot read unreadable stream/);
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -309,7 +324,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          assert.equal(body, "stream is not readable");
+          assert.match(body, /Cannot read unreadable stream/);
         } finally {
           server.close(done);
         }
@@ -364,7 +379,10 @@ describe("reads the body from the readable stream", () => {
         await readBody(stream, { limit: 100 });
         assert.fail("this should not return successfully");
       } catch (err) {
-        assert.equal(String(err), "Error: received no body chunks after 100ms");
+        assert.match(
+          String(err),
+          /Cannot read stream, did not receive data in time limit/,
+        );
       }
     },
   );
@@ -385,7 +403,7 @@ describe("reads the body from the readable stream", () => {
       await readBody(stream, { limit: 100 });
       assert.fail("this should not return successfully");
     } catch (err) {
-      assert.equal(String(err), "Error: stream was aborted");
+      assert.match(String(err), /Cannot read aborted stream/);
     }
   });
 
@@ -435,7 +453,7 @@ describe("reads the body from the readable stream", () => {
 
     await assert.rejects(
       readBody(stream, { expectedLength: 1025, limit: 1024 }),
-      /request entity too large/,
+      /Cannot read stream whose expected length exceeds limit/,
     );
 
     assert.equal(read, false);
