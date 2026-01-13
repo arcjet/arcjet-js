@@ -1,5 +1,62 @@
 # Changelog
 
+## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...v1.0.0-beta.17) (2026-01-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* add support for limits to web streams ([#5589](https://github.com/arcjet/arcjet-js/issues/5589))
+* **arcjet:** remove `validateEmail` `block` parameter ([#5618](https://github.com/arcjet/arcjet-js/issues/5618))
+* **arcjet:** improve types around custom entities ([#5584](https://github.com/arcjet/arcjet-js/issues/5584))
+
+### 🚀 New Features
+
+* add support for limits to web streams ([#5589](https://github.com/arcjet/arcjet-js/issues/5589)) ([effef3b](https://github.com/arcjet/arcjet-js/commit/effef3b1f9d243348eadf3d571e308ebaa41f5dd))
+* **body:** make `limit` optional ([#5601](https://github.com/arcjet/arcjet-js/issues/5601)) ([b870932](https://github.com/arcjet/arcjet-js/commit/b8709322219b781615ffa3dc13599ac3b7e2e000))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** make `getBody` result required, use errors for problems ([#5608](https://github.com/arcjet/arcjet-js/issues/5608)) ([7ed47a9](https://github.com/arcjet/arcjet-js/commit/7ed47a94d34701432447771ac70af137ece221f2))
+* **body:** handle `NaN` in options ([#5599](https://github.com/arcjet/arcjet-js/issues/5599)) ([37e0497](https://github.com/arcjet/arcjet-js/commit/37e04979498310356231ba240959543e8e06e7a3))
+* **body:** improve error messages ([#5607](https://github.com/arcjet/arcjet-js/issues/5607)) ([a41c37f](https://github.com/arcjet/arcjet-js/commit/a41c37f3e733e9492d60f594679572ad502f4245))
+* **bun:** fail explicitly when body already read ([#5579](https://github.com/arcjet/arcjet-js/issues/5579)) ([67b6400](https://github.com/arcjet/arcjet-js/commit/67b64000ac3ddf885cbe8da44955fb160b504d6d))
+
+
+### 🏎️ Performance Improvements
+
+* **body:** exit early if expected size exceeds limit ([#5600](https://github.com/arcjet/arcjet-js/issues/5600)) ([3900caf](https://github.com/arcjet/arcjet-js/commit/3900caf8282910cb70d435b2e1d56bb31d3f3f09))
+
+
+### 📝 Documentation
+
+* link to intro pages ([#5597](https://github.com/arcjet/arcjet-js/issues/5597)) ([15b0510](https://github.com/arcjet/arcjet-js/commit/15b0510eb5a61b3632b2d6beaad3fe6b6e12ffd0))
+* link to list of sdks ([#5598](https://github.com/arcjet/arcjet-js/issues/5598)) ([a5041d1](https://github.com/arcjet/arcjet-js/commit/a5041d1e285f3c5a0ed49015e13e57efd996fa15))
+* update links and lists in monorepo readme ([#5596](https://github.com/arcjet/arcjet-js/issues/5596)) ([43de924](https://github.com/arcjet/arcjet-js/commit/43de924662be45c85530908880f5b829037881f9))
+
+
+### 🧹 Miscellaneous Chores
+
+* add publish workflow ([#5578](https://github.com/arcjet/arcjet-js/issues/5578)) ([8261c10](https://github.com/arcjet/arcjet-js/commit/8261c10e3a634ff9bf45ad1d2a2eb04fb005a49e))
+* **arcjet:** remove `validateEmail` `block` parameter ([#5618](https://github.com/arcjet/arcjet-js/issues/5618)) ([29788d0](https://github.com/arcjet/arcjet-js/commit/29788d0e619ac154444466d750c789c090781427))
+
+
+### ⌨️ Code Refactoring
+
+* **arcjet:** improve types around custom entities ([#5584](https://github.com/arcjet/arcjet-js/issues/5584)) ([f6951b7](https://github.com/arcjet/arcjet-js/commit/f6951b7a861daf62fa96a208bb6fff0be1b12169))
+
+
+### 🔨 Build System
+
+* **examples:** add `@arcjet/body` as a bun workspace entry ([#5621](https://github.com/arcjet/arcjet-js/issues/5621)) ([2ba0305](https://github.com/arcjet/arcjet-js/commit/2ba030575cfe08caac54933ef8bd1204a9b6d1f1))
+* only test built JavaScript files ([#5581](https://github.com/arcjet/arcjet-js/issues/5581)) ([9770281](https://github.com/arcjet/arcjet-js/commit/97702811de2f5d61c906813f269e59749ec468c9))
+* remove `--dry-run` in `publish.yml` ([#5620](https://github.com/arcjet/arcjet-js/issues/5620)) ([9576a0b](https://github.com/arcjet/arcjet-js/commit/9576a0bdb1432431e89d2eed3f0f1a56b2a0226b))
+
+
+### ✅ Continuous Integration
+
+* Add stub workflow to validate deployment environment ([#5593](https://github.com/arcjet/arcjet-js/issues/5593)) ([32b8568](https://github.com/arcjet/arcjet-js/commit/32b85684282f6a212a4c055b883fcd9a8ce65716))
+
 ## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...v1.0.0-beta.16) (2026-01-06)
 
 

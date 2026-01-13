@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/bun-v1.0.0-beta.17) (2026-01-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* add support for limits to web streams ([#5589](https://github.com/arcjet/arcjet-js/issues/5589))
+
+### 🚀 New Features
+
+* add support for limits to web streams ([#5589](https://github.com/arcjet/arcjet-js/issues/5589)) ([effef3b](https://github.com/arcjet/arcjet-js/commit/effef3b1f9d243348eadf3d571e308ebaa41f5dd))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** make `getBody` result required, use errors for problems ([#5608](https://github.com/arcjet/arcjet-js/issues/5608)) ([7ed47a9](https://github.com/arcjet/arcjet-js/commit/7ed47a94d34701432447771ac70af137ece221f2))
+* **bun:** fail explicitly when body already read ([#5579](https://github.com/arcjet/arcjet-js/issues/5579)) ([67b6400](https://github.com/arcjet/arcjet-js/commit/67b64000ac3ddf885cbe8da44955fb160b504d6d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/env bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/headers bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/ip bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/logger bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/protocol bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/transport bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * arcjet bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/rollup-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+
 ## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/bun-v1.0.0-beta.16) (2026-01-06)
 
 

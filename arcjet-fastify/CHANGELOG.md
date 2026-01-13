@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/fastify-v1.0.0-beta.17) (2026-01-13)
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** make `getBody` result required, use errors for problems ([#5608](https://github.com/arcjet/arcjet-js/issues/5608)) ([7ed47a9](https://github.com/arcjet/arcjet-js/commit/7ed47a94d34701432447771ac70af137ece221f2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/headers bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/ip bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/logger bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/protocol bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/transport bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * arcjet bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/rollup-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+
 ## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/fastify-v1.0.0-beta.16) (2026-01-06)
 
 

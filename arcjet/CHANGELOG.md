@@ -1,5 +1,54 @@
 # Changelog
 
+## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...arcjet-v1.0.0-beta.17) (2026-01-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **arcjet:** remove `validateEmail` `block` parameter ([#5618](https://github.com/arcjet/arcjet-js/issues/5618))
+* **arcjet:** improve types around custom entities ([#5584](https://github.com/arcjet/arcjet-js/issues/5584))
+
+### 🪲 Bug Fixes
+
+* **arcjet:** make `getBody` result required, use errors for problems ([#5608](https://github.com/arcjet/arcjet-js/issues/5608)) ([7ed47a9](https://github.com/arcjet/arcjet-js/commit/7ed47a94d34701432447771ac70af137ece221f2))
+
+
+### 📝 Documentation
+
+* link to intro pages ([#5597](https://github.com/arcjet/arcjet-js/issues/5597)) ([15b0510](https://github.com/arcjet/arcjet-js/commit/15b0510eb5a61b3632b2d6beaad3fe6b6e12ffd0))
+* link to list of sdks ([#5598](https://github.com/arcjet/arcjet-js/issues/5598)) ([a5041d1](https://github.com/arcjet/arcjet-js/commit/a5041d1e285f3c5a0ed49015e13e57efd996fa15))
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** remove `validateEmail` `block` parameter ([#5618](https://github.com/arcjet/arcjet-js/issues/5618)) ([29788d0](https://github.com/arcjet/arcjet-js/commit/29788d0e619ac154444466d750c789c090781427))
+
+
+### ⌨️ Code Refactoring
+
+* **arcjet:** improve types around custom entities ([#5584](https://github.com/arcjet/arcjet-js/issues/5584)) ([f6951b7](https://github.com/arcjet/arcjet-js/commit/f6951b7a861daf62fa96a208bb6fff0be1b12169))
+
+
+### 🔨 Build System
+
+* only test built JavaScript files ([#5581](https://github.com/arcjet/arcjet-js/issues/5581)) ([9770281](https://github.com/arcjet/arcjet-js/commit/97702811de2f5d61c906813f269e59749ec468c9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/cache bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/duration bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/headers bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/protocol bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/runtime bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/stable-hash bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/rollup-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+
 ## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...arcjet-v1.0.0-beta.16) (2026-01-06)
 
 
