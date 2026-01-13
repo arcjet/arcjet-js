@@ -9,7 +9,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import findIp, { parseProxy } from "@arcjet/ip";
+import { type Cidr, findIp, parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
@@ -257,10 +257,13 @@ export type ArcjetOptions<
 > = Simplify<
   CoreOptions<Rules, Characteristics> & {
     /**
-     * IP addresses and CIDR ranges of trusted load balancers and proxies
-     * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+     * IP addresses, CIDR ranges, and services of trusted load balancers and
+     * proxies (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
      */
-    proxies?: Array<string>;
+    proxies?:
+      | ReadonlyArray<Map<string, string> | Record<string, string> | string>
+      | null
+      | undefined;
   }
 >;
 
@@ -348,9 +351,24 @@ export default function arcjet<
         level: logLevel(env),
       });
 
-  const proxies = Array.isArray(options.proxies)
-    ? options.proxies.map(parseProxy)
-    : undefined;
+  const regularProxies: Array<Cidr | string> = [];
+  const service = new Map<Cidr | string, string>();
+  if (options.proxies) {
+    for (const proxy of options.proxies) {
+      if (typeof proxy === "string") {
+        regularProxies.push(parseProxy(proxy));
+      } else {
+        const entries: Iterable<[string, string]> =
+          typeof proxy.entries === "function"
+            ? proxy.entries()
+            : Object.entries(proxy);
+        for (const [key, value] of entries) {
+          service.set(parseProxy(key), value);
+        }
+      }
+    }
+  }
+  const proxies = [...regularProxies, service];
 
   if (isDevelopment(env)) {
     log.warn(
