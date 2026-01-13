@@ -283,7 +283,7 @@ export default function arcjet<
     const client: ArcjetNuxt<Properties> = {
       async protect(details, properties?) {
         const context: ArcjetAdapterContext = {
-          getBody: createGetBody(state, details),
+          getBody: createGetBody(details),
         };
         const request = toArcjetRequest(
           state,
@@ -305,50 +305,34 @@ export default function arcjet<
 /**
  * Create a function to get the body of the request.
  *
- * @param state
- *   Info passed around.
  * @param event
  *   H3 event.
  * @returns
  *   Function to get the body of the request.
  */
-function createGetBody(state: State, event: ArcjetH3Event) {
+function createGetBody(event: ArcjetH3Event) {
   /**
    * Read the request body.
    *
    * @returns
    *   Body of the request (`string`) if available or nothing.
    */
-  return async function getBody(): Promise<string | undefined> {
-    try {
-      if (typeof event.node.req.body === "string") {
-        return event.node.req.body;
-      } else if (
-        typeof event.node.req.body !== "undefined" &&
-        typeof event.node.req.body !== "bigint"
-      ) {
-        return JSON.stringify(event.node.req.body);
+  return async function getBody(): Promise<string> {
+    if (event.node.req.body === null || event.node.req.body === undefined) {
+      let expectedLength: number | undefined;
+      const headers = new ArcjetHeaders(event.node.req.headers);
+      const expectedLengthStr = headers.get("content-length");
+      if (typeof expectedLengthStr === "string") {
+        expectedLength = parseInt(expectedLengthStr, 10);
       }
-
-      if (
-        typeof event.node.req.on === "function" &&
-        typeof event.node.req.removeListener === "function"
-      ) {
-        let expectedLength: number | undefined;
-        const headers = new ArcjetHeaders(event.node.req.headers);
-        const expectedLengthStr = headers.get("content-length");
-        if (typeof expectedLengthStr === "string") {
-          expectedLength = parseInt(expectedLengthStr, 10);
-        }
-        const body = await readBody(event.node.req, { expectedLength });
-        return body;
-      }
-
-      state.log.warn("no body available");
-      return;
-    } catch (error) {
-      state.log.error("failed to get request body: %s", String(error));
+      return readBody(event.node.req, { expectedLength });
     }
+
+    if (typeof event.node.req.body === "string") {
+      return event.node.req.body;
+    }
+
+    return JSON.stringify(event.node.req.body);
   };
 }
 

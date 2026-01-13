@@ -571,7 +571,7 @@ test("`default`", async function (t) {
 
         assert.deepEqual(parameters, [
           "failed to get request body: %s",
-          "Error: boom!",
+          "boom!",
         ]);
         assert.ok(result.isErrored());
         assert.match(result.reason.message, /\[unavailable\]/);
@@ -615,7 +615,7 @@ function createArcjetContext(): ArcjetContext {
     characteristics: [],
     fingerprint: "",
     async getBody() {
-      return undefined;
+      throw new Error("Not implemented");
     },
     key: "",
     log: createArcjetLogger(),

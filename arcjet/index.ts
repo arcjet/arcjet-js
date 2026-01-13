@@ -1102,7 +1102,7 @@ export type ArcjetAdapterContext = {
   /**
    * Read the request body (required).
    */
-  getBody(): Promise<string | undefined>;
+  getBody(): Promise<string>;
   /**
    * Wait for a promise to resolve before continuing (optional).
    *
@@ -1798,9 +1798,16 @@ export function sensitiveInfo<
       // No cache is implemented here because the fingerprint can be the same
       // while the request body changes. This is also why the `sensitiveInfo`
       // rule results always have a `ttl` of 0.
+      let body: string;
 
-      const body = await context.getBody();
-      if (typeof body === "undefined") {
+      try {
+        body = await context.getBody();
+      } catch (error) {
+        context.log.error(
+          "failed to get request body: %s",
+          errorMessage(error),
+        );
+
         return new ArcjetRuleResult({
           ruleId,
           fingerprint,
@@ -1808,7 +1815,8 @@ export function sensitiveInfo<
           state: "NOT_RUN",
           conclusion: "ERROR",
           reason: new ArcjetErrorReason(
-            "Couldn't read the body of the request to perform sensitive info identification.",
+            "Cannot read body for sensitive info detection: " +
+              errorMessage(error),
           ),
         });
       }

@@ -677,32 +677,27 @@ export default function arcjet<
         >;
 
         const getBody = async () => {
-          try {
-            if (typeof request.clone === "function") {
-              const cloned = request.clone();
-              // Awaited to throw if it rejects and we'll just return undefined
-              const body = await cloned.text();
-              return body;
-            } else if (typeof request.body === "string") {
-              return request.body;
-            } else if (
-              typeof request.body !== "undefined" &&
-              // BigInt cannot be serialized with JSON.stringify
-              typeof request.body !== "bigint" &&
-              // The body will be null if there was no body with the request.
-              // Reference:
-              // https://nextjs.org/docs/pages/building-your-application/routing/api-routes#request-helpers
-              request.body !== null
-            ) {
-              return JSON.stringify(request.body);
-            } else {
-              log.warn("no body available");
-              return;
-            }
-          } catch (e) {
-            log.error("failed to get request body: %s", errorMessage(e));
-            return;
+          // If there is a `clone` method then this is a `NextRequest` which
+          // extends a web `Request`.
+          // Otherwise it is a `NextApiRequest` which extends a Node
+          // `IncomingMessage`,
+          // or a minimal result from the `request` function below.
+          if (typeof request.clone === "function") {
+            const clonedRequest = request.clone();
+            return clonedRequest.text();
           }
+
+          // The body is `null` if there was no body with the request.
+          // See: <https://nextjs.org/docs/pages/building-your-application/routing/api-routes#request-helpers>
+          if (request.body === null || request.body === undefined) {
+            throw new Error("Cannot read body: body is missing");
+          }
+
+          if (typeof request.body === "string") {
+            return request.body;
+          }
+
+          return JSON.stringify(request.body);
         };
 
         return aj.protect({ getBody }, req);

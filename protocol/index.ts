@@ -1820,7 +1820,7 @@ export type ArcjetContext<T = unknown> = {
   /**
    * Function to use to read a request.
    */
-  getBody: () => Promise<string | undefined>;
+  getBody(): Promise<string>;
 
   /**
    * Function called to wait for something.

@@ -335,21 +335,11 @@ export default function arcjet<
 
         const getBody = async () => {
           if (request.bodyUsed) {
-            log.error(
-              "Body already read. See <https://docs.arcjet.com/troubleshooting#error-body-already-read-or-body-is-unusable>",
-            );
-            return;
+            throw new Error("Cannot read body: already read");
           }
 
-          try {
-            const clonedRequest = request.clone();
-            // Awaited to throw if it rejects and we'll just return undefined
-            const body = await clonedRequest.text();
-            return body;
-          } catch (e) {
-            log.error("failed to get request body: %s", errorMessage(e));
-            return;
-          }
+          const clonedRequest = request.clone();
+          return clonedRequest.text();
         };
 
         return aj.protect({ getBody }, req);

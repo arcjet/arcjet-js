@@ -378,7 +378,9 @@ describe("Primitive > detectBot", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       headers: undefined,
@@ -399,7 +401,9 @@ describe("Primitive > detectBot", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       headers: {},
@@ -424,7 +428,9 @@ describe("Primitive > detectBot", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -466,7 +472,9 @@ describe("Primitive > detectBot", () => {
       log: mockLogger(),
       characteristics: [],
       cache,
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -511,7 +519,9 @@ describe("Primitive > detectBot", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -550,7 +560,9 @@ describe("Primitive > detectBot", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -589,7 +601,9 @@ describe("Primitive > detectBot", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const curlDetails = {
       ip: "172.100.1.1",
@@ -649,7 +663,9 @@ describe("Primitive > detectBot", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -928,7 +944,9 @@ describe("Primitive > tokenBucket", () => {
       log: mockLogger(),
       characteristics: [],
       cache,
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1147,7 +1165,9 @@ describe("Primitive > fixedWindow", () => {
       log: mockLogger(),
       characteristics: [],
       cache,
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1364,7 +1384,9 @@ describe("Primitive > slidingWindow", () => {
       log: mockLogger(),
       characteristics: [],
       cache,
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1515,7 +1537,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       email: "abc@example.com",
@@ -1536,7 +1560,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       email: undefined,
@@ -1557,7 +1583,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1589,7 +1617,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1621,7 +1651,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1653,7 +1685,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1685,7 +1719,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1720,7 +1756,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1752,7 +1790,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1784,7 +1824,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1819,7 +1861,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1866,7 +1910,9 @@ describe("Primitive > validateEmail", () => {
       log: mockLogger(),
       characteristics: [],
       cache,
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1939,7 +1985,9 @@ describe("Primitive > shield", () => {
       log: mockLogger(),
       characteristics: [],
       cache,
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -1981,7 +2029,9 @@ describe("Primitive > shield", () => {
       log: mockLogger(),
       characteristics: [],
       cache,
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -2106,7 +2156,9 @@ describe("Primitive > sensitiveInfo", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       email: undefined,
@@ -2667,7 +2719,9 @@ describe("Primitive > sensitiveInfo", () => {
       log: mockLogger(),
       characteristics: [],
       cache: new TestCache(),
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const details = {
       ip: "172.100.1.1",
@@ -3038,7 +3092,9 @@ describe("SDK", () => {
     >;
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj2.protect(context, request);
@@ -3108,7 +3164,9 @@ describe("SDK", () => {
     >;
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj3.protect(context, request);
@@ -3175,7 +3233,9 @@ describe("SDK", () => {
     type WithRuleTestTwo = Assert<SDKProps<typeof aj3, { abc: number }>>;
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj3.protect(context, request);
@@ -3317,7 +3377,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const decision = await aj.protect(context, request);
@@ -3365,7 +3427,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const decision = await aj.protect(context, request);
@@ -3413,7 +3477,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const decision = await aj.protect(context, request);
@@ -3466,7 +3532,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const decision = await aj.protect(context, request);
@@ -3504,7 +3572,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const decision = await aj.protect(context, request);
@@ -3565,7 +3635,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const decision = await aj.protect(context, request);
@@ -3604,7 +3676,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const decision = await aj.protect(context, request);
@@ -3633,7 +3707,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -3688,7 +3764,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -3744,7 +3822,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -3819,7 +3899,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -3845,7 +3927,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -3902,7 +3986,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -3974,7 +4060,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -4038,7 +4126,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4062,7 +4152,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -4143,7 +4235,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const decision = await aj.protect(context, request);
@@ -4217,7 +4311,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4272,7 +4368,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4330,7 +4428,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4373,7 +4473,9 @@ describe("SDK", () => {
     });
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const decision = await aj.protect(context, request);
@@ -4408,7 +4510,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -4469,7 +4573,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -4519,7 +4625,9 @@ describe("SDK", () => {
       key,
       fingerprint:
         "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
     const request = {
       ip: "172.100.1.1",
@@ -4582,7 +4690,9 @@ describe("SDK", () => {
     };
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4637,7 +4747,9 @@ describe("SDK", () => {
     };
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4694,7 +4806,9 @@ describe("SDK", () => {
     };
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4748,7 +4862,9 @@ describe("SDK", () => {
     };
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4806,7 +4922,9 @@ describe("SDK", () => {
     };
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4862,7 +4980,9 @@ describe("SDK", () => {
     };
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
@@ -4922,7 +5042,9 @@ describe("SDK", () => {
     };
 
     const context = {
-      getBody: () => Promise.resolve(undefined),
+      getBody() {
+        throw new Error("Not implemented");
+      },
     };
 
     const _ = await aj.protect(context, request);
