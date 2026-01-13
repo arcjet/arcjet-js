@@ -21,13 +21,79 @@ describe("reads the body from the readable stream", () => {
         // @ts-expect-error: test runtime behavior.
         limit: "1kb",
       }),
-      /must set a limit/,
+      /Unexpected value `1kb` for `options\.limit`, expected positive number/,
     );
   });
 
   test("should fail if `limit` is literally not a number", async function (t) {
     const stream = new Readable({ read() {} });
-    await assert.rejects(readBody(stream, { limit: NaN }), /must set a limit/);
+    await assert.rejects(
+      readBody(stream, { limit: NaN }),
+      /Unexpected value `NaN` for `options\.limit`, expected positive number/,
+    );
+  });
+
+  test("should fail if `limit` is a negative number", async function (t) {
+    const stream = new Readable({ read() {} });
+    await assert.rejects(
+      readBody(stream, { limit: -1 }),
+      /Unexpected value `-1` for `options\.limit`, expected positive number/,
+    );
+  });
+
+  test("should fail if `expectedLength` is not a number", async function (t) {
+    const stream = new Readable({ read() {} });
+    await assert.rejects(
+      readBody(stream, {
+        // @ts-expect-error: test runtime behavior.
+        expectedLength: "1kb",
+      }),
+      /Unexpected value `1kb` for `options\.expectedLength`, expected positive number/,
+    );
+  });
+
+  test("should fail if `expectedLength` is literally not a number", async function (t) {
+    const stream = new Readable({ read() {} });
+    await assert.rejects(
+      readBody(stream, { expectedLength: NaN }),
+      /Unexpected value `NaN` for `options\.expectedLength`, expected positive number/,
+    );
+  });
+
+  test("should fail if `expectedLength` is a negative number", async function (t) {
+    const stream = new Readable({ read() {} });
+    await assert.rejects(
+      readBody(stream, { expectedLength: -1 }),
+      /Unexpected value `-1` for `options\.expectedLength`, expected positive number/,
+    );
+  });
+
+  test("should limit to 1mb by default", async function (t) {
+    const fine = "a".repeat(1048576);
+
+    assert.equal(
+      await readBody(
+        new Readable({
+          read() {
+            this.push(fine);
+            this.push(null);
+          },
+        }),
+      ),
+      fine,
+    );
+
+    await assert.rejects(
+      readBody(
+        new Readable({
+          read() {
+            this.push(fine + "a");
+            this.push(null);
+          },
+        }),
+      ),
+      /request entity too large/,
+    );
   });
 
   test("should read normal body streams", (t, done) => {
@@ -251,25 +317,18 @@ describe("reads the body from the readable stream", () => {
     });
   });
 
-  test("should error if limit is not present", (t, done) => {
+  test("should work if `limit` is missing", (t, done) => {
     const server = http.createServer(async (req, res) => {
       try {
-        const reqNoOn = {
-          on: req.on,
-          removeListener: req.removeListener,
-          readable: req.readable,
-        };
-        await readBody(reqNoOn, { limit: undefined as any });
-        assert.fail("this should not return successfully");
+        const body = await readBody(req);
+        assert.equal(body, "hello, world!");
+        req.resume();
+        res.statusCode = 200;
+        res.end("ok");
       } catch (err) {
-        assert.equal(String(err), "Error: must set a limit");
         req.resume();
         res.statusCode = 500;
-        if (err instanceof Error) {
-          return res.end(err.message);
-        } else {
-          return res.end("unknown error");
-        }
+        res.end("nok");
       }
     });
 
@@ -281,8 +340,8 @@ describe("reads the body from the readable stream", () => {
 
       client.on("response", async (res) => {
         try {
-          const body = await readBody(res, { limit: 1024 });
-          assert.equal(body, "must set a limit");
+          const body = await readBody(res);
+          assert.equal(body, "ok");
         } finally {
           server.close(done);
         }

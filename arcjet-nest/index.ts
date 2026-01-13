@@ -482,11 +482,7 @@ function arcjet<
                 expectedLength = parseInt(expectedLengthStr, 10);
               }
               // Awaited to throw if it rejects and we'll just return undefined
-              const body = await readBody(request, {
-                // We will process 1mb bodies
-                limit: 1048576,
-                expectedLength,
-              });
+              const body = await readBody(request, { expectedLength });
               return body;
             }
 
