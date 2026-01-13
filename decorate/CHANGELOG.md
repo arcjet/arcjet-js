@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/decorate-v1.0.0-beta.17) (2026-01-13)
+
+
+### 🔨 Build System
+
+* only test built JavaScript files ([#5581](https://github.com/arcjet/arcjet-js/issues/5581)) ([9770281](https://github.com/arcjet/arcjet-js/commit/97702811de2f5d61c906813f269e59749ec468c9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/sprintf bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/rollup-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+
 ## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/decorate-v1.0.0-beta.16) (2026-01-06)
 
 

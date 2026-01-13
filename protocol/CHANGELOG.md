@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/protocol-v1.0.0-beta.17) (2026-01-13)
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** make `getBody` result required, use errors for problems ([#5608](https://github.com/arcjet/arcjet-js/issues/5608)) ([7ed47a9](https://github.com/arcjet/arcjet-js/commit/7ed47a94d34701432447771ac70af137ece221f2))
+
+
+### 🔨 Build System
+
+* only test built JavaScript files ([#5581](https://github.com/arcjet/arcjet-js/issues/5581)) ([9770281](https://github.com/arcjet/arcjet-js/commit/97702811de2f5d61c906813f269e59749ec468c9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/rollup-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+
 ## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/protocol-v1.0.0-beta.16) (2026-01-06)
 
 

@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/body-v1.0.0-beta.17) (2026-01-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* add support for limits to web streams ([#5589](https://github.com/arcjet/arcjet-js/issues/5589))
+
+### 🚀 New Features
+
+* add support for limits to web streams ([#5589](https://github.com/arcjet/arcjet-js/issues/5589)) ([effef3b](https://github.com/arcjet/arcjet-js/commit/effef3b1f9d243348eadf3d571e308ebaa41f5dd))
+* **body:** make `limit` optional ([#5601](https://github.com/arcjet/arcjet-js/issues/5601)) ([b870932](https://github.com/arcjet/arcjet-js/commit/b8709322219b781615ffa3dc13599ac3b7e2e000))
+
+
+### 🪲 Bug Fixes
+
+* **body:** handle `NaN` in options ([#5599](https://github.com/arcjet/arcjet-js/issues/5599)) ([37e0497](https://github.com/arcjet/arcjet-js/commit/37e04979498310356231ba240959543e8e06e7a3))
+* **body:** improve error messages ([#5607](https://github.com/arcjet/arcjet-js/issues/5607)) ([a41c37f](https://github.com/arcjet/arcjet-js/commit/a41c37f3e733e9492d60f594679572ad502f4245))
+
+
+### 🏎️ Performance Improvements
+
+* **body:** exit early if expected size exceeds limit ([#5600](https://github.com/arcjet/arcjet-js/issues/5600)) ([3900caf](https://github.com/arcjet/arcjet-js/commit/3900caf8282910cb70d435b2e1d56bb31d3f3f09))
+
+
+### 🔨 Build System
+
+* only test built JavaScript files ([#5581](https://github.com/arcjet/arcjet-js/issues/5581)) ([9770281](https://github.com/arcjet/arcjet-js/commit/97702811de2f5d61c906813f269e59749ec468c9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/rollup-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+
 ## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/body-v1.0.0-beta.16) (2026-01-06)
 
 

@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/analyze-wasm-v1.0.0-beta.17) (2026-01-13)
+
+
+### 📝 Documentation
+
+* link to list of sdks ([#5598](https://github.com/arcjet/arcjet-js/issues/5598)) ([a5041d1](https://github.com/arcjet/arcjet-js/commit/a5041d1e285f3c5a0ed49015e13e57efd996fa15))
+
+
+### 🔨 Build System
+
+* only test built JavaScript files ([#5581](https://github.com/arcjet/arcjet-js/issues/5581)) ([9770281](https://github.com/arcjet/arcjet-js/commit/97702811de2f5d61c906813f269e59749ec468c9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+    * @arcjet/rollup-config bumped from 1.0.0-beta.16 to 1.0.0-beta.17
+
 ## [1.0.0-beta.16](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.15...@arcjet/analyze-wasm-v1.0.0-beta.16) (2026-01-06)
 
 
