@@ -38,7 +38,7 @@
   "dependencies": {
     "@eslint/js": "9.39.2",
     "eslint-config-prettier": "10.1.8",
-    "eslint-config-turbo": "2.7.2",
+    "eslint-config-turbo": "2.7.3",
     "typescript-eslint": "8.51.0"
   },
   "peerDependencies": {
