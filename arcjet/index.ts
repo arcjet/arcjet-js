@@ -432,7 +432,6 @@ const validateEmailOptions = createValidator({
   rule: "validateEmail",
   validations: [
     { key: "mode", required: false, validate: validateMode },
-    { key: "block", required: false, validate: validateEmailTypes },
     { key: "allow", required: false, validate: validateEmailTypes },
     { key: "deny", required: false, validate: validateEmailTypes },
     {
@@ -711,14 +710,6 @@ export type EmailOptionsAllow = {
    */
   allow: ArcjetEmailType[];
   /**
-   * List of email address types to block,
-   * cannot be combined with `allow`.
-   *
-   * @deprecated
-   *   Use `deny` instead.
-   */
-  block?: never;
-  /**
    * List of email address types to deny,
    * cannot be combined with `allow`.
    */
@@ -760,14 +751,6 @@ export type EmailOptionsDeny = {
    */
   allow?: never;
   /**
-   * List of email address types to block,
-   * cannot be combined with `deny`.
-   *
-   * @deprecated
-   *   Use `deny` instead.
-   */
-  block?: never;
-  /**
    * List of email address types to deny (required).
    *
    * Email addresses of the email types in this list will be denied and
@@ -803,49 +786,11 @@ export type EmailOptionsDeny = {
 };
 
 /**
- * Configuration for the email validation rule to deny certain email addresses
- * and allow others.
- *
- * @deprecated
- *   Use `deny` instead.
- */
-type EmailOptionsBlock = {
-  /**
-   * Block mode of the rule (default: `"DRY_RUN"`).
-   */
-  mode?: ArcjetMode;
-  /**
-   * List of email address types to allow,
-   * cannot be combined with `block`.
-   */
-  allow?: never;
-  /**
-   * List of email address types to deny (required).
-   *
-   * @deprecated
-   *   Use `deny` instead.
-   */
-  block: ArcjetEmailType[];
-  deny?: never;
-  /**
-   * Whether to see email addresses that contain a single domain segment as
-   * invalid (default: `true`).
-   */
-  requireTopLevelDomain?: boolean;
-  /**
-   * Whether to see email addresses that contain a domain literal as valid
-   * (default: `false`).
-   */
-  allowDomainLiteral?: boolean;
-};
-
-/**
  * Configuration for the email validation rule.
  */
 export type EmailOptions =
   | EmailOptionsAllow
-  | EmailOptionsDeny
-  | EmailOptionsBlock;
+  | EmailOptionsDeny;
 
 /**
  * Configuration for the sensitive info detection rule to allow certain
@@ -1993,25 +1938,8 @@ export function validateEmail(
     );
   }
   if (
-    typeof options.allow !== "undefined" &&
-    typeof options.block !== "undefined"
-  ) {
-    throw new Error(
-      "`validateEmail` options error: `allow` and `block` cannot be provided together",
-    );
-  }
-  if (
-    typeof options.deny !== "undefined" &&
-    typeof options.block !== "undefined"
-  ) {
-    throw new Error(
-      "`validateEmail` options error: `deny` and `block` cannot be provided together, `block` is now deprecated so `deny` should be preferred.",
-    );
-  }
-  if (
     typeof options.allow === "undefined" &&
-    typeof options.deny === "undefined" &&
-    typeof options.block === "undefined"
+    typeof options.deny === "undefined"
   ) {
     throw new Error(
       "`validateEmail` options error: either `allow` or `deny` must be specified",
@@ -2022,7 +1950,7 @@ export function validateEmail(
   const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const allow = options.allow ?? [];
-  const deny = options.deny ?? options.block ?? [];
+  const deny = options.deny ?? [];
   const requireTopLevelDomain = options.requireTopLevelDomain ?? true;
   const allowDomainLiteral = options.allowDomainLiteral ?? false;
 
@@ -2053,17 +1981,6 @@ export function validateEmail(
         requireTopLevelDomain,
         allowDomainLiteral,
         deny: options.deny,
-      },
-    };
-  }
-
-  if (typeof options.block !== "undefined") {
-    config = {
-      tag: "deny-email-validation-config",
-      val: {
-        requireTopLevelDomain,
-        allowDomainLiteral,
-        deny: options.block,
       },
     };
   }
@@ -2523,7 +2440,7 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
  *      protectSignup({
  *        email: {
  *          mode: "LIVE",
- *          block: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+ *          deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
  *        },
  *        bots: {
  *          mode: "LIVE",
