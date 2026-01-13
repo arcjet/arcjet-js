@@ -7,6 +7,7 @@
     "@arcjet/analyze-wasm": "../../analyze-wasm/index.js",
     "@arcjet/analyze": "../../analyze/index.js",
     "npm:@arcjet/deno": "../../arcjet-deno/index.js",
+    "@arcjet/body": "../../body/index.js",
     "@arcjet/duration": "../../duration/index.js",
     "@arcjet/cache": "../../cache/index.js",
     "@arcjet/env": "../../env/index.js",

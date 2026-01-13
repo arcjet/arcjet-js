@@ -325,6 +325,7 @@ function createGetBody(event: ArcjetH3Event) {
       if (typeof expectedLengthStr === "string") {
         expectedLength = parseInt(expectedLengthStr, 10);
       }
+
       return readBody(event.node.req, { expectedLength });
     }
 

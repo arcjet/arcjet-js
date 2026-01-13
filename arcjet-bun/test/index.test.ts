@@ -275,11 +275,20 @@ test("should support `sensitiveInfo` a megabyte of data", async function () {
 });
 
 // TODO(GH-5517): make this configurable.
-test("should support `sensitiveInfo` 5 megabytes of data", async function () {
+test("should not support `sensitiveInfo` 5 megabytes of data", async function () {
   const restore = capture();
+  let parameters: Array<unknown> | undefined;
 
   const arcjet = arcjetBun({
     key: exampleKey,
+    log: {
+      debug() {},
+      error(...values) {
+        parameters = values;
+      },
+      info() {},
+      warn() {},
+    },
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
@@ -296,7 +305,11 @@ test("should support `sensitiveInfo` 5 megabytes of data", async function () {
   await server.stop();
   restore();
 
-  assert.equal(response.status, 403);
+  assert.equal(response.status, 200);
+  assert.deepEqual(parameters, [
+    "failed to get request body: %s",
+    "Cannot read stream whose expected length exceeds limit",
+  ]);
 });
 
 function capture() {
