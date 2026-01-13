@@ -139,7 +139,9 @@ export async function readBody(
 
   // If we already know the length and it exceeds the limit, abort early.
   if (length !== undefined && length > limit) {
-    return Promise.reject(new Error("Cannot read stream whose expected length exceeds limit"));
+    return Promise.reject(
+      new Error("Cannot read stream whose expected length exceeds limit"),
+    );
   }
 
   return new Promise((resolve, reject) => {
@@ -190,7 +192,11 @@ export async function readBody(
       if (err) return done(err);
 
       if (length !== undefined && received !== length) {
-        done(new Error("Cannot read stream whose length does not match expected length"));
+        done(
+          new Error(
+            "Cannot read stream whose length does not match expected length",
+          ),
+        );
       } else {
         done(undefined, buffer);
       }
