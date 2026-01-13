@@ -44,6 +44,27 @@
         "typescript": "5.9.3",
       },
     },
+    "../../arcjet": {
+      "name": "arcjet",
+      "version": "1.0.0-beta.16",
+      "dependencies": {
+        "@arcjet/analyze": "1.0.0-beta.16",
+        "@arcjet/cache": "1.0.0-beta.16",
+        "@arcjet/duration": "1.0.0-beta.16",
+        "@arcjet/headers": "1.0.0-beta.16",
+        "@arcjet/protocol": "1.0.0-beta.16",
+        "@arcjet/runtime": "1.0.0-beta.16",
+        "@arcjet/stable-hash": "1.0.0-beta.16",
+      },
+      "devDependencies": {
+        "@arcjet/eslint-config": "1.0.0-beta.16",
+        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@rollup/wasm-node": "4.55.1",
+        "@types/node": "25.0.3",
+        "eslint": "9.39.2",
+        "typescript": "5.9.3",
+      },
+    },
     "../../arcjet-bun": {
       "name": "@arcjet/bun",
       "version": "1.0.0-beta.16",
@@ -407,7 +428,7 @@
 
     "ansi-styles": ["ansi-styles@4.3.0", "", { "dependencies": { "color-convert": "^2.0.1" } }, "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg=="],
 
-    "arcjet": ["arcjet@1.0.0-beta.16", "", { "dependencies": { "@arcjet/analyze": "1.0.0-beta.16", "@arcjet/cache": "1.0.0-beta.16", "@arcjet/duration": "1.0.0-beta.16", "@arcjet/headers": "1.0.0-beta.16", "@arcjet/protocol": "1.0.0-beta.16", "@arcjet/runtime": "1.0.0-beta.16", "@arcjet/stable-hash": "1.0.0-beta.16" } }, "sha512-/zyXokfl67lIifS5U9akW/1pruw3qXrwvHs5bvxaxP2XH9Tl4xiPDgivTJm0z69R7MqZ26EeD/kbfiH59haRgw=="],
+    "arcjet": ["arcjet@workspace:../../arcjet"],
 
     "argparse": ["argparse@2.0.1", "", {}, "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="],
 
@@ -708,6 +729,8 @@
     "@typescript-eslint/typescript-estree/minimatch": ["minimatch@9.0.5", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
 
     "@typescript-eslint/utils/@eslint-community/eslint-utils": ["@eslint-community/eslint-utils@4.9.1", "", { "dependencies": { "eslint-visitor-keys": "^3.4.3" }, "peerDependencies": { "eslint": "^6.0.0 || ^7.0.0 || >=8.0.0" } }, "sha512-phrYmNiYppR7znFEdqgfWHXR6NCkZEK7hwWDHZUjit/2/U0r6XvkDl0SYnoM51Hq7FhCGdLDT6zxCCOY1hexsQ=="],
+
+    "arcjet/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "chalk-template/chalk": ["chalk@5.6.0", "", {}, "sha512-46QrSQFyVSEyYAgQ22hQ+zDa60YHA4fBstHmtSApj1Y5vKtG27fWowW03jCk5KcbXEWPZUIR894aARCA/G1kfQ=="],
 

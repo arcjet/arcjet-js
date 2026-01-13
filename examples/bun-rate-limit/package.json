@@ -6,6 +6,7 @@
   "workspaces": [
     "../../analyze",
     "../../analyze-wasm",
+    "../../arcjet",
     "../../arcjet-bun",
     "../../body",
     "../../cache",
