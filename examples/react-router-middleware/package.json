@@ -1,15 +1,15 @@
 {
   "dependencies": {
     "@arcjet/react-router": "file:../../arcjet-react-router",
-    "@react-router/node": "^7.9.1",
-    "@react-router/serve": "^7.7.1",
+    "@react-router/node": "^7.12.0",
+    "@react-router/serve": "^7.12.0",
     "isbot": "^5.1.27",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router": "^7.12.0"
   },
   "devDependencies": {
-    "@react-router/dev": "^7.7.1",
+    "@react-router/dev": "^7.12.0",
     "@types/node": "^24",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
