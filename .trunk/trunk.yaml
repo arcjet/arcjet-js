@@ -78,7 +78,6 @@ merge:
     - Build examples / nextjs-bot-categories
     - Build examples / nextjs-decorate
     - Build examples / nextjs-ip-details
-    - Build examples / nextjs-openai
     - Build examples / nextjs-pages-wrap
     - Build examples / nextjs-permit
     - Build examples / nextjs-react-hook-form

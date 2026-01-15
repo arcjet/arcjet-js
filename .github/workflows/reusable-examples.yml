@@ -122,7 +122,6 @@ jobs:
           - nextjs-bot-categories
           - nextjs-decorate
           - nextjs-ip-details
-          - nextjs-openai
           - nextjs-pages-wrap
           - nextjs-permit
           - nextjs-react-hook-form
