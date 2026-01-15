@@ -120,7 +120,6 @@ jobs:
           - nextjs-app-dir-rate-limit
           - nextjs-app-dir-validate-email
           - nextjs-bot-categories
-          - nextjs-clerk-rate-limit
           - nextjs-clerk-shield
           - nextjs-decorate
           - nextjs-ip-details
