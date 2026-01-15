@@ -72,7 +72,6 @@ merge:
     - Build examples / express-sensitive-info
     - Build examples / express-validate-email
     - Build examples / fastify
-    - Build examples / nestjs-launchdarkly
     - Build examples / nestjs-graphql
     - Build examples / nestjs
     - Build examples / nextjs-14-nextauth-4
