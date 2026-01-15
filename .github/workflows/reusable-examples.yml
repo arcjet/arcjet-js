@@ -119,7 +119,6 @@ jobs:
           - nextjs-14-nextauth-4
           - nextjs-app-dir-rate-limit
           - nextjs-app-dir-validate-email
-          - nextjs-authjs-nosecone
           - nextjs-better-auth
           - nextjs-bot-categories
           - nextjs-clerk-rate-limit
