@@ -79,7 +79,6 @@ merge:
     - Build examples / nextjs-decorate
     - Build examples / nextjs-ip-details
     - Build examples / nextjs-pages-wrap
-    - Build examples / nextjs-permit
     - Build examples / nextjs-react-hook-form
     - Build examples / nextjs-sensitive-info
     - Build examples / nextjs-server-actions
