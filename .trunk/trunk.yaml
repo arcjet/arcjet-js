@@ -63,7 +63,6 @@ merge:
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 22)"
     - "Run tests / Run tests (OS: ubuntu-latest, Node: 24)"
     - Build examples / astro
-    - Build examples / bun-hono-rate-limit
     - Build examples / bun-rate-limit
     - Build examples / deno-sensitive-info
     - Build examples / express-bots
