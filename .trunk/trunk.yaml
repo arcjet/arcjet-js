@@ -75,7 +75,6 @@ merge:
     - Build examples / nextjs-14-nextauth-4
     - Build examples / nextjs-app-dir-rate-limit
     - Build examples / nextjs-app-dir-validate-email
-    - Build examples / nextjs-authjs-5
     - Build examples / nextjs-authjs-nosecone
     - Build examples / nextjs-better-auth
     - Build examples / nextjs-bot-categories
