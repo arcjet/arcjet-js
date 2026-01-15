@@ -116,7 +116,6 @@ jobs:
           - express-sensitive-info
           - express-validate-email
           - fastify
-          - nestjs-fastify
           - nestjs-launchdarkly
           - nestjs-graphql
           - nestjs
