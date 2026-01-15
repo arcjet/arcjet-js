@@ -72,7 +72,6 @@ merge:
     - Build examples / express-sensitive-info
     - Build examples / express-validate-email
     - Build examples / fastify
-    - Build examples / gatsby-rate-limit
     - Build examples / nestjs-fastify
     - Build examples / nestjs-launchdarkly
     - Build examples / nestjs-graphql
