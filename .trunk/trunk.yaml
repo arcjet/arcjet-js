@@ -82,7 +82,6 @@ merge:
     - Build examples / nextjs-react-hook-form
     - Build examples / nextjs-sensitive-info
     - Build examples / nextjs-server-actions
-    - Build examples / nodejs-hono-rate-limit
     - Build examples / nodejs-rate-limit
     - Build examples / react-router-middleware
     - Build examples / react-router

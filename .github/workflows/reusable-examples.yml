@@ -126,7 +126,6 @@ jobs:
           - nextjs-react-hook-form
           - nextjs-sensitive-info
           - nextjs-server-actions
-          - nodejs-hono-rate-limit
           - nodejs-rate-limit
           - react-router-middleware
           - react-router
