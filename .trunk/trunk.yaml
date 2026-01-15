@@ -76,7 +76,6 @@ merge:
     - Build examples / nextjs-app-dir-rate-limit
     - Build examples / nextjs-app-dir-validate-email
     - Build examples / nextjs-bot-categories
-    - Build examples / nextjs-clerk-shield
     - Build examples / nextjs-decorate
     - Build examples / nextjs-ip-details
     - Build examples / nextjs-openai
