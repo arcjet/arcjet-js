@@ -66,7 +66,6 @@ merge:
     - Build examples / bun-rate-limit
     - Build examples / deno-sensitive-info
     - Build examples / express-bots
-    - Build examples / express-launchdarkly
     - Build examples / express-newman
     - Build examples / express-rate-limit
     - Build examples / express-sensitive-info

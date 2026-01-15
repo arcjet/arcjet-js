@@ -110,7 +110,6 @@ jobs:
         folder:
           - astro
           - express-bots
-          - express-launchdarkly
           - express-newman
           - express-rate-limit
           - express-sensitive-info
