@@ -27,7 +27,7 @@ test("@arcjet/logger", async function (t) {
     const consoleDebug = console.debug;
     let calls = 0;
 
-    console.debug = function (...parameters: unknown[]) {
+    console.debug = function (...parameters: ReadonlyArray<unknown>) {
       assert.deepEqual(parameters, ["✦Aj DEBUG hi"]);
       calls++;
     };
@@ -57,7 +57,7 @@ test("@arcjet/logger", async function (t) {
     const consoleInfo = console.info;
     let calls = 0;
 
-    console.info = function (...parameters: unknown[]) {
+    console.info = function (...parameters: ReadonlyArray<unknown>) {
       assert.deepEqual(parameters, ["✦Aj INFO hi"]);
       calls++;
     };
@@ -87,7 +87,7 @@ test("@arcjet/logger", async function (t) {
     const consoleWarn = console.warn;
     let calls = 0;
 
-    console.warn = function (...parameters: unknown[]) {
+    console.warn = function (...parameters: ReadonlyArray<unknown>) {
       assert.deepEqual(parameters, ["✦Aj WARN hi"]);
       calls++;
     };
@@ -117,7 +117,7 @@ test("@arcjet/logger", async function (t) {
     const consoleError = console.error;
     let calls = 0;
 
-    console.error = function (...parameters: unknown[]) {
+    console.error = function (...parameters: ReadonlyArray<unknown>) {
       assert.deepEqual(parameters, ["✦Aj ERROR hi"]);
       calls++;
     };
@@ -166,7 +166,7 @@ test("@arcjet/logger", async function (t) {
       const consoleDebug = console.debug;
       let calls = 0;
 
-      console.debug = function (...parameters: unknown[]) {
+      console.debug = function (...parameters: ReadonlyArray<unknown>) {
         assert.deepEqual(parameters, [
           '✦Aj DEBUG hi\n      key: "value"\n      msg: "hi"',
         ]);
@@ -189,7 +189,7 @@ test("@arcjet/logger", async function (t) {
       const consoleDebug = console.debug;
       let calls = 0;
 
-      console.debug = function (...parameters: unknown[]) {
+      console.debug = function (...parameters: ReadonlyArray<unknown>) {
         assert.deepEqual(parameters, ['✦Aj DEBUG hi\n      key: "value"']);
         calls++;
       };
@@ -210,7 +210,7 @@ test("@arcjet/logger", async function (t) {
       const consoleDebug = console.debug;
       let calls = 0;
 
-      console.debug = function (...parameters: unknown[]) {
+      console.debug = function (...parameters: ReadonlyArray<unknown>) {
         assert.deepEqual(parameters, [
           '✦Aj DEBUG hi\n      a: "value"\n      b: 1\n      c: true\n      d: null\n      e: undefined\n      f: undefined\n      g: "[BigInt]"',
         ]);
@@ -244,7 +244,7 @@ test("@arcjet/logger", async function (t) {
       const consoleDebug = console.debug;
       let calls = 0;
 
-      console.debug = function (...parameters: unknown[]) {
+      console.debug = function (...parameters: ReadonlyArray<unknown>) {
         assert.deepEqual(parameters, [
           '✦Aj DEBUG hi\n      a: ["value",1]\n      b: {"c":true}\n      d: [Circular]',
         ]);
@@ -270,7 +270,7 @@ test("@arcjet/logger", async function (t) {
       const consoleDebug = console.debug;
       let calls = 0;
 
-      console.debug = function (...parameters: unknown[]) {
+      console.debug = function (...parameters: ReadonlyArray<unknown>) {
         assert.deepEqual(parameters, ['✦Aj DEBUG hi: value, 1, {"key":true}']);
         calls++;
       };
@@ -291,7 +291,7 @@ test("@arcjet/logger", async function (t) {
       const consoleDebug = console.debug;
       let calls = 0;
 
-      console.debug = function (...parameters: unknown[]) {
+      console.debug = function (...parameters: ReadonlyArray<unknown>) {
         assert.deepEqual(parameters, ["✦Aj DEBUG hi: %s, %d"]);
         calls++;
       };
