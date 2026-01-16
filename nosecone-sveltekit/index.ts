@@ -21,6 +21,7 @@ export const defaults = {
   directives: {
     ...baseDefaults.contentSecurityPolicy.directives,
     scriptSrc: ["'strict-dynamic'"],
+    styleSrc: ["'self'", "'unsafe-inline'"]
   },
 } as const;
 
