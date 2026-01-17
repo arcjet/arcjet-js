@@ -214,17 +214,6 @@ test("should support `sensitiveInfo` on form data", async function () {
   const restore = capture();
 
   const arcjet = arcjetDeno({
-    // client: {
-    //     async decide() {
-    //       // sensitiveInfo rule only runs locally.
-    //       return new ArcjetAllowDecision({
-    //         reason: new ArcjetReason(),
-    //         results: [],
-    //         ttl: 0,
-    //       });
-    //     },
-    //     report() {},
-    //   },
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
