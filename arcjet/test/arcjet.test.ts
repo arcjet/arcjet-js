@@ -2272,6 +2272,92 @@ describe("Primitive > sensitiveInfo", () => {
     assert.equal(result.state, "RUN");
   });
 
+  test("it detects email entities in a sensitive value", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache: new TestCache(),
+      async getBody() {
+        throw new Error("Invariant");
+      },
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: [],
+    });
+    assert.equal(rule.type, "SENSITIVE_INFO");
+    const result = await rule.protect(context, {
+      ...details,
+      value: "alice@arcjet.com",
+    });
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, [
+      {
+        end: 16,
+        identifiedType: "EMAIL",
+        start: 0,
+      },
+    ]);
+    assert.equal(result.state, "RUN");
+  });
+
+  test("it doesnt detect any entities in a non sensitive value", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: mockLogger(),
+      characteristics: [],
+      cache: new TestCache(),
+      async getBody() {
+        throw new Error("Invariant");
+      },
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      allow: [],
+    });
+    assert.equal(rule.type, "SENSITIVE_INFO");
+    const result = await rule.protect(context, {
+      ...details,
+      value: "not an email address",
+    });
+    assert.equal(result.conclusion, "ALLOW");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    assert.deepEqual(result.reason.allowed, []);
+    assert.deepEqual(result.reason.denied, []);
+    assert.equal(result.state, "RUN");
+  });
+
   test("it identifies built-in entities", async () => {
     const context = {
       key: "test-key",

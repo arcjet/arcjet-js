@@ -788,9 +788,7 @@ export type EmailOptionsDeny = {
 /**
  * Configuration for the email validation rule.
  */
-export type EmailOptions =
-  | EmailOptionsAllow
-  | EmailOptionsDeny;
+export type EmailOptions = EmailOptionsAllow | EmailOptionsDeny;
 
 /**
  * Configuration for the sensitive info detection rule to allow certain
@@ -1742,7 +1740,7 @@ export function sensitiveInfo<
     | Exclude<DetectedEntities, undefined>,
 >(
   options: SensitiveInfoOptions<DetectedEntities, ListedEntities>,
-): Primitive<{}> {
+): Primitive<{ value?: string | undefined | null }> {
   validateSensitiveInfoOptions(options);
 
   if (
@@ -1798,27 +1796,33 @@ export function sensitiveInfo<
       // No cache is implemented here because the fingerprint can be the same
       // while the request body changes. This is also why the `sensitiveInfo`
       // rule results always have a `ttl` of 0.
-      let body: string;
 
-      try {
-        body = await context.getBody();
-      } catch (error) {
-        context.log.error(
-          "failed to get request body: %s",
-          errorMessage(error),
-        );
+      let value: string | undefined | null;
 
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state: "NOT_RUN",
-          conclusion: "ERROR",
-          reason: new ArcjetErrorReason(
-            "Cannot read body for sensitive info detection: " +
-              errorMessage(error),
-          ),
-        });
+      if ("value" in details.extra) {
+        // TODO: decision that undefined/null doesn't contain sensitive info & is thus fine.
+        value = details.extra.value ?? "";
+      } else {
+        try {
+          value = await context.getBody();
+        } catch (error) {
+          context.log.error(
+            "failed to get request body: %s",
+            errorMessage(error),
+          );
+
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state: "NOT_RUN",
+            conclusion: "ERROR",
+            reason: new ArcjetErrorReason(
+              "Cannot read body for sensitive info detection: " +
+                errorMessage(error),
+            ),
+          });
+        }
       }
 
       let convertedDetect = undefined;
@@ -1857,7 +1861,7 @@ export function sensitiveInfo<
 
       const result = await analyze.detectSensitiveInfo(
         context,
-        body,
+        value,
         entities,
         options.contextWindowSize || 1,
         convertedDetect,

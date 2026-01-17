@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import http from "node:http";
 import test from "node:test";
-import arcjetNode, { sensitiveInfo } from "../index.js";
+import arcjetNode, { type ArcjetNode, sensitiveInfo } from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
 const oneMegabyte = 1024 * 1024;
@@ -328,6 +328,33 @@ test("`@arcjet/node`", async function (t) {
 
   //   assert.equal(response.status, 403);
   // });
+
+  await t.test(
+    "should support `sensitiveInfo` on `value` field in properties",
+    async function () {
+      const restore = capture();
+
+      const arcjet = arcjetNode({
+        key: exampleKey,
+        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+      });
+
+      const { server, url } = await createSimpleServer({
+        arcjet,
+        properties: { value: "alice@arcjet.com" },
+      });
+
+      const response = await fetch(url, {
+        headers: { "Content-Type": "text/plain" },
+        method: "GET",
+      });
+
+      server.close();
+      restore();
+
+      assert.equal(response.status, 403);
+    },
+  );
 });
 
 function capture() {
@@ -347,19 +374,19 @@ function capture() {
 
 interface SimpleServerOptions {
   after?(request: http.IncomingMessage): Promise<undefined> | undefined;
-  arcjet: ReturnType<typeof arcjetNode>;
+  arcjet: ArcjetNode<any>;
   before?(request: http.IncomingMessage): Promise<undefined> | undefined;
+  properties?: Record<PropertyKey, unknown>;
 }
 
 let uniquePort = 3300;
 async function createSimpleServer(options: SimpleServerOptions) {
-  const { after, arcjet, before } = options;
+  const { after, arcjet, before, properties } = options;
   const port = uniquePort++;
 
   const server = http.createServer(async function (request, response) {
     await before?.(request);
-    // @ts-expect-error: TODO: fix types to allow `undefined`.
-    const decision = await arcjet.protect(request);
+    const decision = await arcjet.protect(request, properties);
     await after?.(request);
     if (decision.isDenied()) {
       response.statusCode = 403;

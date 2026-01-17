@@ -22,7 +22,6 @@ import arcjetCore, {
   type Primitive,
   type Product,
 } from "arcjet";
-import type { ReadableStream } from "node:stream/web";
 
 export * from "arcjet";
 
@@ -82,6 +81,17 @@ export interface ArcjetReactRouterRequest {
 }
 
 /**
+ * TODO: document helper type
+ */
+type argumentsFromProperties<T extends Record<string, unknown>> = {
+  [P in keyof T]?: T[P] | undefined;
+} extends T
+  ? T extends Empty
+    ? []
+    : [properties?: T]
+  : [properties: T];
+
+/**
  * Instance of the React Router integration of Arcjet.
  *
  * Primarily has a `protect()` method to make a decision about how a request
@@ -90,7 +100,7 @@ export interface ArcjetReactRouterRequest {
  * @template Properties
  *   Configuration.
  */
-export interface ArcjetReactRouter<Properties extends object> {
+export interface ArcjetReactRouter<Properties extends Record<string, unknown>> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -108,7 +118,7 @@ export interface ArcjetReactRouter<Properties extends object> {
    */
   protect(
     details: ArcjetReactRouterRequest,
-    ...rest: Properties extends Empty ? [] : [properties: Properties]
+    ...rest: argumentsFromProperties<Properties>
   ): Promise<ArcjetDecision>;
 
   /**

@@ -1391,6 +1391,11 @@ export interface ArcjetRequestDetails {
    */
   // TODO: Consider moving email to `extra` map
   email?: string;
+
+  /**
+   * TODO: docs
+   */
+  value?: string | null | undefined;
 }
 
 /**
