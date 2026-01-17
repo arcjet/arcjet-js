@@ -7,6 +7,7 @@
 
 import assert from "node:assert/strict";
 import test from "node:test";
+import { ArcjetAllowDecision, ArcjetReason } from "@arcjet/protocol";
 import arcjetDeno, { sensitiveInfo } from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
@@ -45,11 +46,21 @@ test("should expose the public api", async function () {
   ]);
 });
 
-// TODO(#): Avoid "invalid key" error in tests.
-test.skip("should support `sensitiveInfo`", async function () {
+test("should support `sensitiveInfo`", async function () {
   const restore = capture();
 
   const arcjet = arcjetDeno({
+    client: {
+      async decide() {
+        // sensitiveInfo rule only runs locally.
+        return new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        });
+      },
+      report() {},
+    },
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
@@ -72,13 +83,23 @@ test.skip("should support `sensitiveInfo`", async function () {
   );
 });
 
-// TODO(#): Avoid "invalid key" error in tests.
-test.skip("should emit an error log when the body is read before `sensitiveInfo`", async function () {
+test("should emit an error log when the body is read before `sensitiveInfo`", async function () {
   const restore = capture();
   let body: string | undefined;
   let parameters: Array<unknown> | undefined;
 
   const arcjet = arcjetDeno({
+    client: {
+      async decide() {
+        // sensitiveInfo rule only runs locally.
+        return new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        });
+      },
+      report() {},
+    },
     key: exampleKey,
     log: {
       debug() {},
@@ -119,12 +140,22 @@ test.skip("should emit an error log when the body is read before `sensitiveInfo`
   ]);
 });
 
-// TODO(#): Avoid "invalid key" error in tests.
-test.skip("should support reading body after `sensitiveInfo`", async function () {
+test("should support reading body after `sensitiveInfo`", async function () {
   const restore = capture();
   let body: string | undefined;
 
   const arcjet = arcjetDeno({
+    client: {
+      async decide() {
+        // sensitiveInfo rule only runs locally.
+        return new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        });
+      },
+      report() {},
+    },
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
@@ -183,6 +214,17 @@ test("should support `sensitiveInfo` on form data", async function () {
   const restore = capture();
 
   const arcjet = arcjetDeno({
+    // client: {
+    //     async decide() {
+    //       // sensitiveInfo rule only runs locally.
+    //       return new ArcjetAllowDecision({
+    //         reason: new ArcjetReason(),
+    //         results: [],
+    //         ttl: 0,
+    //       });
+    //     },
+    //     report() {},
+    //   },
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
@@ -317,6 +359,17 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   let parameters: Array<unknown> | undefined;
 
   const arcjet = arcjetDeno({
+    client: {
+      async decide() {
+        // sensitiveInfo rule only runs locally.
+        return new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        });
+      },
+      report() {},
+    },
     key: exampleKey,
     log: {
       debug() {},
@@ -342,7 +395,11 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   await server.shutdown();
   restore();
 
-  assert.equal(response.status, 200);
+  assert.equal(
+    response.status,
+    200,
+    `Unexpected status: ${await response.text()}`,
+  );
   assert.deepEqual(parameters, [
     "failed to get request body: %s",
     "Cannot read stream whose expected length exceeds limit",
@@ -380,20 +437,23 @@ function createSimpleServer(options: SimpleServerOptions) {
       const decision = await arcjet.protect(request);
       await after?.(request);
 
-      switch (true) {
-        case decision.isErrored():
-          return new Response(
-            `Internal Server Error: "${decision.reason.message}"`,
-            { status: 500 },
-          );
-        case decision.isAllowed():
-          return new Response("Ok", { status: 200 });
-        case decision.isDenied():
-          return new Response("Forbidden", { status: 403 });
-        default:
-          // Differentiate unexpected cases.
-          return new Response("Not Implemented", { status: 501 });
+      if (decision.isErrored()) {
+        return new Response(
+          `Internal Server Error: "${decision.reason.message}"`,
+          { status: 500 },
+        );
       }
+
+      if (decision.isAllowed()) {
+        return new Response("Ok", { status: 200 });
+      }
+
+      if (decision.isDenied()) {
+        return new Response("Forbidden", { status: 403 });
+      }
+
+      // Differentiate unexpected cases.
+      return new Response("Not Implemented", { status: 501 });
     }),
   );
   return { server, url: "http://localhost:" + server.addr.port };
