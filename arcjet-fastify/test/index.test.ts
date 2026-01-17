@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { default as Fastify, type FastifyRequest } from "fastify";
+import { ArcjetAllowDecision, ArcjetReason } from "@arcjet/protocol";
 import arcjetFastify, { sensitiveInfo } from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
@@ -40,36 +41,42 @@ test("`@arcjet/fastify`", async function (t) {
     ]);
   });
 
-  // TODO(#): Avoid "invalid key" error in tests.
-  await t.test(
-    "should support `sensitiveInfo`",
-    { skip: true },
-    async function () {
-      const restore = capture();
+  await t.test("should support `sensitiveInfo`", async function () {
+    const restore = capture();
 
-      const arcjet = arcjetFastify({
-        key: exampleKey,
-        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-      });
+    const arcjet = arcjetFastify({
+      client: {
+        async decide() {
+          // sensitiveInfo rule only runs locally.
+          return new ArcjetAllowDecision({
+            reason: new ArcjetReason(),
+            results: [],
+            ttl: 0,
+          });
+        },
+        report() {},
+      },
+      key: exampleKey,
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
 
-      const { server, url } = await createSimpleServer({ arcjet });
+    const { server, url } = await createSimpleServer({ arcjet });
 
-      const response = await fetch(url, {
-        body: "This is fine.",
-        headers: { "Content-Type": "text/plain" },
-        method: "POST",
-      });
+    const response = await fetch(url, {
+      body: "This is fine.",
+      headers: { "Content-Type": "text/plain" },
+      method: "POST",
+    });
 
-      await server.close();
-      restore();
+    await server.close();
+    restore();
 
-      assert.equal(
-        response.status,
-        200,
-        `Unexpected status: ${await response.text()}`,
-      );
-    },
-  );
+    assert.equal(
+      response.status,
+      200,
+      `Unexpected status: ${await response.text()}`,
+    );
+  });
 
   await t.test(
     "should support reading body before `sensitiveInfo`",
@@ -370,19 +377,22 @@ async function createSimpleServer(options: SimpleServerOptions) {
     const decision = await arcjet.protect(request);
     await after?.(request);
 
-    switch (true) {
-      case decision.isErrored():
-        return reply
-          .status(500)
-          .send(`Internal Server Error: "${decision.reason.message}"`);
-      case decision.isAllowed():
-        return reply.status(200).send("Ok");
-      case decision.isDenied():
-        return reply.status(403).send("Forbidden");
-      default:
-        // Differentiate unexpected cases.
-        return reply.status(501).send("Not Implemented");
+    if (decision.isErrored()) {
+      return reply
+        .status(500)
+        .send(`Internal Server Error: "${decision.reason.message}"`);
     }
+
+    if (decision.isAllowed()) {
+      return reply.status(200).send("Ok");
+    }
+
+    if (decision.isDenied()) {
+      return reply.status(403).send("Forbidden");
+    }
+
+    // Differentiate unexpected cases.
+    return reply.status(501).send("Not Implemented");
   });
 
   await fastify.listen({ port });
