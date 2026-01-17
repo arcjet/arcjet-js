@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import http from "node:http";
 import test from "node:test";
+import { ArcjetAllowDecision, ArcjetReason } from "@arcjet/protocol";
 import arcjetNode, { sensitiveInfo } from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
@@ -40,47 +41,62 @@ test("`@arcjet/node`", async function (t) {
     ]);
   });
 
-  // TODO(#): Avoid "invalid key" error in tests.
-  await t.test(
-    "should support `sensitiveInfo`",
-    { skip: true },
-    async function () {
-      const restore = capture();
+  await t.test("should support `sensitiveInfo`", async function () {
+    const restore = capture();
 
-      const arcjet = arcjetNode({
-        key: exampleKey,
-        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-      });
+    const arcjet = arcjetNode({
+      client: {
+        async decide() {
+          // sensitiveInfo rule only runs locally.
+          return new ArcjetAllowDecision({
+            reason: new ArcjetReason(),
+            results: [],
+            ttl: 0,
+          });
+        },
+        report() {},
+      },
+      key: exampleKey,
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
 
-      const { server, url } = await createSimpleServer({ arcjet });
+    const { server, url } = await createSimpleServer({ arcjet });
 
-      const response = await fetch(url, {
-        body: "This is fine.",
-        headers: { "Content-Type": "text/plain" },
-        method: "POST",
-      });
+    const response = await fetch(url, {
+      body: "This is fine.",
+      headers: { "Content-Type": "text/plain" },
+      method: "POST",
+    });
 
-      server.close();
-      restore();
+    server.close();
+    restore();
 
-      assert.equal(
-        response.status,
-        200,
-        `Unexpected status: ${await response.text()}`,
-      );
-    },
-  );
+    assert.equal(
+      response.status,
+      200,
+      `Unexpected status: ${await response.text()}`,
+    );
+  });
 
-  // TODO(#): Avoid "invalid key" error in tests.
   await t.test(
     "should emit an error log when the body is read before `sensitiveInfo`",
-    { skip: true },
     async function () {
       const restore = capture();
       let body = "";
       let parameters: Array<unknown> | undefined;
 
       const arcjet = arcjetNode({
+        client: {
+          async decide() {
+            // sensitiveInfo rule only runs locally, remote would error.
+            return new ArcjetAllowDecision({
+              reason: new ArcjetReason(),
+              results: [],
+              ttl: 0,
+            });
+          },
+          report() {},
+        },
         key: exampleKey,
         log: {
           debug() {},
@@ -397,33 +413,27 @@ async function createSimpleServer(options: SimpleServerOptions) {
     const decision = await arcjet.protect(request);
     await after?.(request);
 
-    switch (true) {
-      case decision.isErrored():
-        response.statusCode = 500;
-        response.end(`Internal Server Error: "${decision.reason.message}"`);
-        return;
-      case decision.isAllowed():
-        response.statusCode = 200;
-        response.end("Ok");
-        return;
-      case decision.isDenied():
-        response.statusCode = 403;
-        response.end("Forbidden");
-        return;
-      default:
-        // Differentiate unexpected cases.
-        response.statusCode = 501;
-        response.end("Not Implemented");
-        return;
+    if (decision.isErrored()) {
+      response.statusCode = 500;
+      response.end(`Internal Server Error: "${decision.reason.message}"`);
+      return;
+    }
+
+    if (decision.isAllowed()) {
+      response.statusCode = 200;
+      response.end("Ok");
+      return;
     }
 
     if (decision.isDenied()) {
       response.statusCode = 403;
       response.end("Forbidden");
-    } else {
-      response.statusCode = 200;
-      response.end("Hello world");
+      return;
     }
+
+    // Differentiate unexpected cases.
+    response.statusCode = 501;
+    response.end("Not Implemented");
   });
 
   await new Promise(function (resolve) {
