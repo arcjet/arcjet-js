@@ -3,6 +3,7 @@
     "lib": ["dom.iterable", "dom", "esnext"],
     "moduleResolution": "bundler",
     "module": "esnext",
+    "skipLibCheck": true,
     "strict": true,
     "target": "es2022"
   }
