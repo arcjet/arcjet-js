@@ -355,7 +355,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
 
   return {
     ...properties,
-    cookies: details.request.headers.get("cookie") ?? undefined,
+    cookies: details.request.headers.get("cookie") ?? "",
     headers,
     host: url.host,
     ip,

@@ -235,7 +235,7 @@ function lookupWaitUntil(): WaitUntil | undefined {
   }
 }
 
-function toAnalyzeRequest(request: Partial<ArcjetRequestDetails>) {
+function toAnalyzeRequest(request: ArcjetRequestDetails) {
   const headers: Record<string, string> = {};
   if (typeof request.headers !== "undefined") {
     for (const [key, value] of request.headers.entries()) {
@@ -1499,37 +1499,37 @@ export type ArcjetRequest<Props extends PlainObject> = Simplify<
     /**
      * IP address of the client.
      */
-    ip?: string;
+    ip: string;
     /**
      * HTTP method of the request.
      */
-    method?: string;
+    method: string;
     /**
      * Protocol of the request.
      */
-    protocol?: string;
+    protocol: string;
     /**
      * Host of the request.
      */
-    host?: string;
+    host: string;
     /**
      * Path of the request.
      */
-    path?: string;
+    path: string;
     /**
      * Headers of the request.
      */
-    headers?: Headers | Record<string, string | string[] | undefined>;
+    headers: Headers | Record<string, string | string[] | undefined>;
     /**
      * Semicolon-separated cookies for a request.
      */
-    cookies?: string;
+    cookies: string;
     /**
      * Query string for a request.
      * Commonly referred to as a "querystring".
      * Starts with `?` when not empty.
      */
-    query?: string;
+    query: string;
   } & Props
 >;
 
@@ -3133,7 +3133,7 @@ export default function arcjet<
       request = {} as typeof request;
     }
 
-    const details: Partial<ArcjetRequestDetails> = Object.freeze({
+    const details: ArcjetRequestDetails = Object.freeze({
       ip: request.ip,
       method: request.method,
       protocol: request.protocol,
