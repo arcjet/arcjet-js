@@ -13,7 +13,6 @@
     "moduleResolution": "bundler",
     "module": "esnext",
     "preserveWatchOutput": true,
-    "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
     "verbatimModuleSyntax": true

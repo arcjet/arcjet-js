@@ -1477,7 +1477,7 @@ export type ArcjetAdapterContext = {
    * @returns
    *   Nothing.
    */
-  waitUntil?: (promise: Promise<unknown>) => void;
+  waitUntil?: ((promise: Promise<unknown>) => void) | undefined;
 };
 
 /**

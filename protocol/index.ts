@@ -1390,7 +1390,7 @@ export interface ArcjetRequestDetails {
    * Email address of the user making the request.
    */
   // TODO: Consider moving email to `extra` map
-  email?: string;
+  email?: string | undefined;
 }
 
 /**
@@ -1487,7 +1487,7 @@ export interface ArcjetRateLimitRule<Props extends {}>
   /**
    * Characteristics of the rule.
    */
-  characteristics?: string[];
+  characteristics?: string[] | undefined;
 }
 
 /**
@@ -1830,5 +1830,5 @@ export type ArcjetContext<T = unknown> = {
    * @returns
    *   Nothing.
    */
-  waitUntil?: (promise: Promise<unknown>) => void;
+  waitUntil?: ((promise: Promise<unknown>) => void) | undefined;
 };

@@ -4,7 +4,6 @@
     "experimentalDecorators": true,
     "module": "node16",
     "outDir": "./dist/",
-    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es2022",
