@@ -406,18 +406,22 @@ describe("Primitive > detectBot", () => {
       },
     };
     const details = {
+      cookies: "",
+      extra: {},
       headers: {},
+      host: "localhost:3000",
+      ip: "127.0.0.1",
+      method: "GET",
+      path: "/",
+      protocol: "http:",
+      query: "",
     };
 
     const [rule] = detectBot({ mode: "LIVE", allow: [] });
     assert.equal(rule.type, "BOT");
     assert.throws(() => {
-      const _ = rule.validate(
-        context,
-        //@ts-expect-error
-        details,
-      );
-    });
+      const _ = rule.validate(context, details);
+    }, /invalid value for `headers` - expected headers object with method/);
   });
 
   test("throws via `validate()` if user-agent header is missing", async () => {
@@ -1542,7 +1546,16 @@ describe("Primitive > validateEmail", () => {
       },
     };
     const details = {
+      cookies: "",
       email: "abc@example.com",
+      extra: {},
+      headers: new Headers(),
+      host: "localhost:3000",
+      ip: "127.0.0.1",
+      method: "GET",
+      path: "/",
+      protocol: "http:",
+      query: "",
     };
 
     const [rule] = validateEmail({ mode: "LIVE", deny: [] });
@@ -2161,7 +2174,16 @@ describe("Primitive > sensitiveInfo", () => {
       },
     };
     const details = {
+      cookies: "",
       email: undefined,
+      extra: {},
+      headers: new Headers(),
+      host: "localhost:3000",
+      ip: "127.0.0.1",
+      method: "GET",
+      path: "/",
+      protocol: "http:",
+      query: "",
     };
 
     const [rule] = sensitiveInfo({ mode: "LIVE", allow: [] });

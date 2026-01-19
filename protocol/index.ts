@@ -1447,7 +1447,7 @@ export type ArcjetRule<Props extends {} = {}> = {
    */
   validate(
     context: ArcjetContext,
-    details: Partial<ArcjetRequestDetails & Props>,
+    details: unknown,
   ): asserts details is ArcjetRequestDetails & Props;
 
   /**

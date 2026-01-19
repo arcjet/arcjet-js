@@ -332,7 +332,9 @@ function validateInterface(
 
   for (const { key, validate, required } of validations) {
     if (required && !Object.hasOwn(valueRecord, key)) {
-      throw new Error(`\`${name}\` options error: \`${String(key)}\` is required`);
+      throw new Error(
+        `\`${name}\` options error: \`${String(key)}\` is required`,
+      );
     }
 
     const value = valueRecord[key];
@@ -392,6 +394,71 @@ function validateBoolean(
 }
 
 /**
+ * Validate request details.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not request details.
+ */
+function validateDetails(
+  value: unknown,
+): asserts value is ArcjetRequestDetails {
+  validateInterface(value, {
+    name: "details",
+    validations: [
+      ...knownFields.map(function (key) {
+        return {
+          key,
+          required: key !== "body" && key !== "email",
+          validate: key === "headers" ? validateHeaders : validateString,
+        };
+      }),
+      {
+        key: "extra",
+        required: true,
+        validate: validateStringRecord,
+      },
+    ],
+  });
+}
+
+/**
+ * Validate a headers interface.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not a headers interface.
+ */
+function validateHeaders(
+  path: string,
+  value: unknown,
+): asserts value is Headers {
+  if (value === null || typeof value !== "object") {
+    throw new Error(`invalid value for \`${path}\` - expected headers object`);
+  }
+
+  // Some of the methods to check for.
+  const methods: ReadonlyArray<string> = ["has", "get", "set"];
+  const valueRecord = value as Record<PropertyKey, unknown>;
+
+  for (const method of methods) {
+    if (!(method in valueRecord) || typeof valueRecord[method] !== "function") {
+      throw new Error(
+        `invalid value for \`${path}\` - expected headers object with method \`${method}\``,
+      );
+    }
+  }
+}
+
+/**
  * Validate a number or string.
  *
  * @param path
@@ -408,7 +475,9 @@ function validateNumberOrString(
   value: unknown,
 ): asserts value is number | string {
   if (typeof value !== "number" && typeof value !== "string") {
-    throw new Error(`invalid type for \`${path}\` - expected one of string, number`);
+    throw new Error(
+      `invalid type for \`${path}\` - expected one of string, number`,
+    );
   }
 }
 
@@ -450,6 +519,31 @@ function validateStringArray(
 
   for (const [index, subvalue] of value.entries()) {
     validateString(path + "[" + index + "]", subvalue);
+  }
+}
+
+/**
+ * Validate a string.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not a string.
+ */
+function validateStringRecord(
+  path: string,
+  value: unknown,
+): asserts value is Record<PropertyKey, string> {
+  if (value === null || typeof value !== "object") {
+    throw new Error(`invalid value for \`${path}\` - expected object`);
+  }
+
+  for (const [field, subvalue] of Object.entries(value)) {
+    validateString(path + "." + field, subvalue);
   }
 }
 
@@ -1536,7 +1630,15 @@ export function tokenBucket<
     refillRate,
     interval,
     capacity,
-    validate() {},
+    validate(_context, details) {
+      validateDetails(details);
+      // The `requested` number is turned into `string` by SDKs and moved onto `extra`.
+      // `extra` is already validated to be a `Record<string, string>`.
+      assert(
+        typeof details.extra.requested === "string",
+        "TokenBucket requires `requested` to be set.",
+      );
+    },
     async protect(context: ArcjetContext<CachedResult>, details) {
       const localCharacteristics = characteristics ?? context.characteristics;
 
@@ -1677,7 +1779,9 @@ export function fixedWindow<
     algorithm: "FIXED_WINDOW",
     max,
     window,
-    validate() {},
+    validate(_context, details) {
+      validateDetails(details);
+    },
     async protect(context: ArcjetContext<CachedResult>, details) {
       const localCharacteristics = characteristics ?? context.characteristics;
 
@@ -1809,7 +1913,9 @@ export function slidingWindow<
     algorithm: "SLIDING_WINDOW",
     max,
     interval,
-    validate() {},
+    validate(_context, details) {
+      validateDetails(details);
+    },
     async protect(context: ArcjetContext<CachedResult>, details) {
       const localCharacteristics = characteristics ?? context.characteristics;
 
@@ -2048,10 +2154,9 @@ export function sensitiveInfo<
     allow,
     deny,
 
-    validate(
-      context: ArcjetContext,
-      details: ArcjetRequestDetails,
-    ): asserts details is ArcjetRequestDetails {},
+    validate(_context, details) {
+      validateDetails(details);
+    },
 
     async protect(
       context: ArcjetContext<CachedResult>,
@@ -2276,12 +2381,11 @@ export function validateEmail(
     requireTopLevelDomain,
     allowDomainLiteral,
 
-    validate(
-      context: ArcjetContext,
-      details: Partial<ArcjetRequestDetails & { email: string }>,
-    ): asserts details is ArcjetRequestDetails & { email: string } {
+    validate(_context, details) {
+      validateDetails(details);
+      // `email` is already validated to be a `string | undefined`.
       assert(
-        typeof details.email !== "undefined",
+        typeof details.email === "string",
         "ValidateEmail requires `email` to be set.",
       );
     },
@@ -2464,18 +2568,11 @@ export function detectBot(options: BotOptions): Primitive<{}> {
     allow,
     deny,
 
-    validate(
-      context: ArcjetContext,
-      details: Partial<ArcjetRequestDetails>,
-    ): asserts details is ArcjetRequestDetails {
-      if (typeof details.headers === "undefined") {
-        throw new Error("bot detection requires `headers` to be set");
-      }
-      if (typeof details.headers.has !== "function") {
-        throw new Error("bot detection requires `headers` to extend `Headers`");
-      }
-      if (!details.headers.has("user-agent")) {
-        throw new Error("bot detection requires user-agent header");
+    validate(_context, details) {
+      validateDetails(details);
+      // `headers` is already validated to be a `Headers` interface.
+      if (details.headers.get("user-agent") === null) {
+        throw new Error("DetectBot requires `user-agent` header to be set.");
       }
     },
 
@@ -2609,7 +2706,9 @@ export function shield(options: ShieldOptions): Primitive<{}> {
     version,
     priority: Priority.Shield,
     mode,
-    validate() {},
+    validate(_context, details) {
+      validateDetails(details);
+    },
     async protect(context: ArcjetContext<CachedResult>, details) {
       // TODO(#1989): Prefer characteristics defined on rule once available
       const localCharacteristics = context.characteristics;
@@ -2885,7 +2984,9 @@ export function filter(options: FilterOptions): Primitive<{}> {
       return ruleResult;
     },
     type,
-    validate(): undefined {},
+    validate(_context, details) {
+      validateDetails(details);
+    },
     version,
   };
 
