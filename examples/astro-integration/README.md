@@ -21,7 +21,7 @@ This example shows how to use the Arcjet Integration with
 2. Enter this directory and install the example's dependencies.
 
    ```bash
-   cd examples/astro
+   cd examples/astro-integration
    npm ci
    ```
 
