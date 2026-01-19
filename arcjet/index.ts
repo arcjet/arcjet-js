@@ -51,7 +51,7 @@ import { MemoryCache } from "@arcjet/cache";
 
 export * from "@arcjet/protocol";
 
-function assert(condition: boolean, msg: string) {
+function assert(condition: boolean, msg: string): asserts condition {
   if (!condition) {
     throw new Error(msg);
   }
@@ -162,7 +162,7 @@ function isUnknownRequestProperty(key: string) {
   return !knownFields.includes(key);
 }
 
-function isEmailType(type: string): type is ArcjetEmailType {
+function isEmailType(type: unknown): type is ArcjetEmailType {
   return (
     type === "FREE" ||
     type === "DISPOSABLE" ||
@@ -261,213 +261,487 @@ function extraProps<Props extends PlainObject>(
   return Object.fromEntries(extra.entries());
 }
 
-type Validator = (key: string, value: unknown) => void;
+/**
+ * Validate something.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not the expected type.
+ */
+type Validator = (path: string, value: unknown) => void;
 
+/**
+ * Validate a particular key in an interface.
+ */
 type ValidationSchema = {
-  key: string;
+  /**
+   * Field.
+   */
+  key: PropertyKey;
+  /**
+   * Whether the field is required.
+   */
   required: boolean;
+  /**
+   * Validator for the field.
+   */
   validate: Validator;
 };
 
-function createTypeValidator(
-  ...types: Array<
-    // These are the types we can compare via `typeof`
-    | "string"
-    | "number"
-    | "bigint"
-    | "boolean"
-    | "symbol"
-    | "undefined"
-    | "object"
-    | "function"
-  >
-): Validator {
-  return (key, value) => {
-    const typeOfValue = typeof value;
-    if (!types.includes(typeOfValue)) {
-      if (types.length === 1) {
-        throw new Error(`invalid type for \`${key}\` - expected ${types[0]}`);
-      } else {
-        throw new Error(
-          `invalid type for \`${key}\` - expected one of ${types.join(", ")}`,
-        );
-      }
-    } else {
-      return false;
-    }
-  };
+interface ValidateInterfaceConfiguration {
+  /**
+   * Name of the interface being validated.
+   */
+  name: string;
+
+  /**
+   * Validations to perform.
+   */
+  validations: ReadonlyArray<ValidationSchema>;
 }
 
-function createValueValidator(
-  // This uses types to ensure we have at least 2 values
-  ...values: [string, string, ...string[]]
-): Validator {
-  return (key, value) => {
-    // We cast the values to unknown because the optionValue isn't known but
-    // we only want to use `values` on string enumerations
-    if (!(values as unknown[]).includes(value)) {
+/**
+ * Validate an interface: an object of a particular shape.
+ *
+ * @template Type
+ *   Type of the value object after validation.
+ * @param value
+ *   Thing to validate.
+ * @param configuration
+ *   Configuration.
+ * @returns
+ *   Nothing.
+ */
+function validateInterface(
+  value: unknown,
+  configuration: ValidateInterfaceConfiguration,
+): undefined {
+  const { name, validations } = configuration;
+
+  if (value === null || typeof value !== "object") {
+    throw new Error(`\`${name}\` options error: expected object`);
+  }
+
+  // Objects are indexable.
+  const valueRecord = value as Record<PropertyKey, unknown>;
+
+  for (const { key, validate, required } of validations) {
+    if (required && !Object.hasOwn(valueRecord, key)) {
+      throw new Error(`\`${name}\` options error: \`${String(key)}\` is required`);
+    }
+
+    const value = valueRecord[key];
+
+    // The `required` flag is checked above, so these should only be validated
+    // if the value is not undefined.
+    if (typeof value !== "undefined") {
+      try {
+        validate(String(key), value);
+      } catch (err) {
+        throw new Error(`\`${name}\` options error: ${errorMessage(err)}`);
+      }
+    }
+  }
+}
+
+/**
+ * Validate an array.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not an array.
+ */
+function validateArray(
+  path: string,
+  value: unknown,
+): asserts value is Array<unknown> {
+  if (!Array.isArray(value)) {
+    throw new Error(`invalid type for \`${path}\` - expected an array`);
+  }
+}
+
+/**
+ * Validate a boolean.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not a boolean.
+ */
+function validateBoolean(
+  path: string,
+  value: unknown,
+): asserts value is boolean {
+  if (typeof value !== "boolean") {
+    throw new Error(`invalid type for \`${path}\` - expected boolean`);
+  }
+}
+
+/**
+ * Validate a number or string.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When neither number nor string.
+ */
+function validateNumberOrString(
+  path: string,
+  value: unknown,
+): asserts value is number | string {
+  if (typeof value !== "number" && typeof value !== "string") {
+    throw new Error(`invalid type for \`${path}\` - expected one of string, number`);
+  }
+}
+
+/**
+ * Validate a number.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not a number.
+ */
+function validateNumber(path: string, value: unknown): asserts value is number {
+  if (typeof value !== "number") {
+    throw new Error(`invalid type for \`${path}\` - expected number`);
+  }
+}
+
+/**
+ * Validate an array of string.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not an array of strings.
+ */
+function validateStringArray(
+  path: string,
+  value: unknown,
+): asserts value is Array<string> {
+  validateArray(path, value);
+
+  for (const [index, subvalue] of value.entries()) {
+    validateString(path + "[" + index + "]", subvalue);
+  }
+}
+
+/**
+ * Validate a string.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not a string.
+ */
+function validateString(path: string, value: unknown): asserts value is string {
+  if (typeof value !== "string") {
+    throw new Error(`invalid type for \`${path}\` - expected string`);
+  }
+}
+
+/**
+ * Validate a function.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not a function.
+ */
+function validateFunction(
+  path: string,
+  value: unknown,
+  /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
+): asserts value is Function {
+  if (typeof value !== "function") {
+    throw new Error(`invalid type for \`${path}\` - expected function`);
+  }
+}
+
+/**
+ * Validate an Arcjet mode.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not an Arcjet mode.
+ */
+function validateMode(
+  path: string,
+  value: unknown,
+): asserts value is ArcjetMode {
+  if (value !== "DRY_RUN" && value !== "LIVE") {
+    throw new Error(
+      `invalid value for \`${path}\` - expected one of 'LIVE', 'DRY_RUN'`,
+    );
+  }
+}
+
+/**
+ * Validate an array of email types.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not an array of email types.
+ */
+function validateEmailTypes(
+  path: string,
+  value: unknown,
+): asserts value is Array<ArcjetEmailType> {
+  validateArray(path, value);
+
+  for (const [index, subvalue] of value.entries()) {
+    if (!isEmailType(subvalue)) {
       throw new Error(
-        `invalid value for \`${key}\` - expected one of ${values.map((value) => `'${value}'`).join(", ")}`,
+        `invalid value for \`${path}[${index}]\` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'`,
       );
     }
-  };
+  }
 }
 
-function createArrayValidator(validate: Validator): Validator {
-  return (key, value) => {
-    if (Array.isArray(value)) {
-      for (const [idx, item] of value.entries()) {
-        validate(`${key}[${idx}]`, item);
-      }
-    } else {
-      throw new Error(`invalid type for \`${key}\` - expected an array`);
-    }
-  };
+/**
+ * Validate token bucket options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not token bucket options.
+ */
+function validateTokenBucketOptions(
+  value: unknown,
+): asserts value is TokenBucketRateLimitOptions<ReadonlyArray<string>> {
+  validateInterface(value, {
+    name: "tokenBucket",
+    validations: [
+      {
+        key: "mode",
+        required: false,
+        validate: validateMode,
+      },
+      {
+        key: "characteristics",
+        validate: validateStringArray,
+        required: false,
+      },
+      { key: "refillRate", required: true, validate: validateNumber },
+      { key: "interval", required: true, validate: validateNumberOrString },
+      { key: "capacity", required: true, validate: validateNumber },
+    ],
+  });
 }
 
-function createValidator({
-  rule,
-  validations,
-}: {
-  rule: string;
-  validations: ValidationSchema[];
-}) {
-  return (options: Record<string, unknown>) => {
-    for (const { key, validate, required } of validations) {
-      if (required && !Object.hasOwn(options, key)) {
-        throw new Error(`\`${rule}\` options error: \`${key}\` is required`);
-      }
-
-      const value = options[key];
-
-      // The `required` flag is checked above, so these should only be validated
-      // if the value is not undefined.
-      if (typeof value !== "undefined") {
-        try {
-          validate(key, value);
-        } catch (err) {
-          throw new Error(`\`${rule}\` options error: ${errorMessage(err)}`);
-        }
-      }
-    }
-  };
+/**
+ * Validate fixed window options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not fixed window options.
+ */
+function validateFixedWindowOptions(
+  value: unknown,
+): asserts value is FixedWindowRateLimitOptions<Array<string>> {
+  validateInterface(value, {
+    name: "fixedWindow",
+    validations: [
+      { key: "mode", required: false, validate: validateMode },
+      {
+        key: "characteristics",
+        validate: validateStringArray,
+        required: false,
+      },
+      { key: "max", required: true, validate: validateNumber },
+      { key: "window", required: true, validate: validateNumberOrString },
+    ],
+  });
 }
 
-const validateString = createTypeValidator("string");
-const validateNumber = createTypeValidator("number");
-const validateBoolean = createTypeValidator("boolean");
-const validateFunction = createTypeValidator("function");
-const validateStringOrNumber = createTypeValidator("string", "number");
-const validateStringArray = createArrayValidator(validateString);
-const validateMode = createValueValidator("LIVE", "DRY_RUN");
-const validateEmailTypes = createArrayValidator(
-  createValueValidator(
-    "DISPOSABLE",
-    "FREE",
-    "NO_MX_RECORDS",
-    "NO_GRAVATAR",
-    "INVALID",
-  ),
-);
+/**
+ * Validate sliding window options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not sliding window options.
+ */
+function validateSlidingWindowOptions(
+  value: unknown,
+): asserts value is SlidingWindowRateLimitOptions<Array<string>> {
+  validateInterface(value, {
+    name: "slidingWindow",
+    validations: [
+      { key: "mode", required: false, validate: validateMode },
+      {
+        key: "characteristics",
+        validate: validateStringArray,
+        required: false,
+      },
+      { key: "max", required: true, validate: validateNumber },
+      { key: "interval", required: true, validate: validateNumberOrString },
+    ],
+  });
+}
 
-const validateTokenBucketOptions = createValidator({
-  rule: "tokenBucket",
-  validations: [
-    {
-      key: "mode",
-      required: false,
-      validate: validateMode,
-    },
-    {
-      key: "characteristics",
-      validate: validateStringArray,
-      required: false,
-    },
-    { key: "refillRate", required: true, validate: validateNumber },
-    { key: "interval", required: true, validate: validateStringOrNumber },
-    { key: "capacity", required: true, validate: validateNumber },
-  ],
-});
+/**
+ * Validate sensitive info options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not sensitive info options.
+ */
+function validateSensitiveInfoOptions(
+  value: unknown,
+): asserts value is SensitiveInfoOptions {
+  validateInterface(value, {
+    name: "sensitiveInfo",
+    validations: [
+      { key: "mode", required: false, validate: validateMode },
+      { key: "allow", required: false, validate: validateStringArray },
+      { key: "deny", required: false, validate: validateStringArray },
+      { key: "contextWindowSize", required: false, validate: validateNumber },
+      { key: "detect", required: false, validate: validateFunction },
+    ],
+  });
+}
 
-const validateFixedWindowOptions = createValidator({
-  rule: "fixedWindow",
-  validations: [
-    { key: "mode", required: false, validate: validateMode },
-    {
-      key: "characteristics",
-      validate: validateStringArray,
-      required: false,
-    },
-    { key: "max", required: true, validate: validateNumber },
-    { key: "window", required: true, validate: validateStringOrNumber },
-  ],
-});
+/**
+ * Validate email options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not email options.
+ */
+function validateEmailOptions(value: unknown): asserts value is EmailOptions {
+  validateInterface(value, {
+    name: "validateEmail",
+    validations: [
+      { key: "mode", required: false, validate: validateMode },
+      { key: "allow", required: false, validate: validateEmailTypes },
+      { key: "deny", required: false, validate: validateEmailTypes },
+      {
+        key: "requireTopLevelDomain",
+        required: false,
+        validate: validateBoolean,
+      },
+      { key: "allowDomainLiteral", required: false, validate: validateBoolean },
+    ],
+  });
+}
 
-const validateSlidingWindowOptions = createValidator({
-  rule: "slidingWindow",
-  validations: [
-    { key: "mode", required: false, validate: validateMode },
-    {
-      key: "characteristics",
-      validate: validateStringArray,
-      required: false,
-    },
-    { key: "max", required: true, validate: validateNumber },
-    { key: "interval", required: true, validate: validateStringOrNumber },
-  ],
-});
+/**
+ * Validate bot options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not bot options.
+ */
+function validateBotOptions(value: unknown): asserts value is BotOptions {
+  validateInterface(value, {
+    name: "detectBot",
+    validations: [
+      { key: "mode", required: false, validate: validateMode },
+      { key: "allow", required: false, validate: validateStringArray },
+      { key: "deny", required: false, validate: validateStringArray },
+    ],
+  });
+}
 
-const validateSensitiveInfoOptions = createValidator({
-  rule: "sensitiveInfo",
-  validations: [
-    { key: "mode", required: false, validate: validateMode },
-    { key: "allow", required: false, validate: validateStringArray },
-    { key: "deny", required: false, validate: validateStringArray },
-    { key: "contextWindowSize", required: false, validate: validateNumber },
-    { key: "detect", required: false, validate: validateFunction },
-  ],
-});
-
-const validateEmailOptions = createValidator({
-  rule: "validateEmail",
-  validations: [
-    { key: "mode", required: false, validate: validateMode },
-    { key: "allow", required: false, validate: validateEmailTypes },
-    { key: "deny", required: false, validate: validateEmailTypes },
-    {
-      key: "requireTopLevelDomain",
-      required: false,
-      validate: validateBoolean,
-    },
-    { key: "allowDomainLiteral", required: false, validate: validateBoolean },
-  ],
-});
-
-const validateBotOptions = createValidator({
-  rule: "detectBot",
-  validations: [
-    { key: "mode", required: false, validate: validateMode },
-    { key: "allow", required: false, validate: validateStringArray },
-    { key: "deny", required: false, validate: validateStringArray },
-  ],
-});
-
-const validateShieldOptions = createValidator({
-  rule: "shield",
-  validations: [{ key: "mode", required: false, validate: validateMode }],
-});
+/**
+ * Validate shield options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not shield options.
+ */
+function validateShieldOptions(value: unknown): asserts value is ShieldOptions {
+  validateInterface(value, {
+    name: "shield",
+    validations: [{ key: "mode", required: false, validate: validateMode }],
+  });
+}
 
 /**
  * Validate filter options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not filter options.
  */
-const validateFilterOptions = createValidator({
-  rule: "filter",
-  validations: [
-    { key: "allow", required: false, validate: validateStringArray },
-    { key: "deny", required: false, validate: validateStringArray },
-    { key: "mode", required: false, validate: validateMode },
-  ],
-});
+function validateFilterOptions(value: unknown): asserts value is FilterOptions {
+  validateInterface(value, {
+    name: "filter",
+    validations: [
+      { key: "allow", required: false, validate: validateStringArray },
+      { key: "deny", required: false, validate: validateStringArray },
+      { key: "mode", required: false, validate: validateMode },
+    ],
+  });
+}
 
 /**
  * Configuration for the token bucket rate limit rule.
@@ -788,9 +1062,7 @@ export type EmailOptionsDeny = {
 /**
  * Configuration for the email validation rule.
  */
-export type EmailOptions =
-  | EmailOptionsAllow
-  | EmailOptionsDeny;
+export type EmailOptions = EmailOptionsAllow | EmailOptionsDeny;
 
 /**
  * Configuration for the sensitive info detection rule to allow certain
