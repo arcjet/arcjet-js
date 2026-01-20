@@ -2,17 +2,17 @@
 const placeholder = "?? ?? ?? ?? ??"
 ---
 
-<div id="randomizer">
-  <span>Lottery numbers:</span>
-  <span id="randomizer-output" data-placeholder={placeholder}>{placeholder}</span>
-  <button id="randomizer-roll">Roll</button>
+<div id="rate-limiting">
+  <span>Lottery numbers (rate limited):</span>
+  <span id="rate-limiting-output" data-placeholder={placeholder}>{placeholder}</span>
+  <button id="rate-limiting-roll">Roll</button>
 </div>
-<div id="randomizer-error"></div>
+<div id="rate-limiting-error"></div>
 
 <script>
-  const $roll = document.getElementById("randomizer-roll")!
-  const $error = document.getElementById("randomizer-error")!
-  const $output = document.getElementById("randomizer-output")!
+  const $roll = document.getElementById("rate-limiting-roll")!
+  const $error = document.getElementById("rate-limiting-error")!
+  const $output = document.getElementById("rate-limiting-output")!
 
   $roll.addEventListener("click", async () => {
     $error.innerText = "";
@@ -38,12 +38,16 @@ const placeholder = "?? ?? ?? ?? ??"
 </script>
 
 <style>
-  #randomizer,
-  #randomizer-error {
+  #rate-limiting,
+  #rate-limiting-error {
     margin: 5px auto;
   }
 
-  #randomizer-error {
+  #rate-limiting-error {
     color: red;
+  }
+
+  #rate-limiting-error:empty {
+    display: none;
   }
 </style>

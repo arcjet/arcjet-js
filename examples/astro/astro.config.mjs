@@ -2,7 +2,7 @@
 import { defineConfig } from "astro/config";
 
 import node from "@astrojs/node";
-import arcjet, { detectBot, shield } from "@arcjet/astro";
+import arcjet, { shield } from "@arcjet/astro";
 
 // https://astro.build/config
 export default defineConfig({
@@ -15,7 +15,11 @@ export default defineConfig({
   },
   integrations: [
     arcjet({
-      rules: [shield({ mode: "LIVE" }), detectBot({ mode: "LIVE", allow: [] })],
+      rules: [
+        // Only Arcjet Shield is enabled everywhere.
+        // All other rules are enabled conditionally in code.
+        shield({ mode: "LIVE" }),
+      ],
     }),
   ],
 });

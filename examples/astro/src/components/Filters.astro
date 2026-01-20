@@ -1,0 +1,26 @@
+---
+import { actions } from 'astro:actions';
+
+// Pages that use Astro Actions can be prerendered because the form submission
+// via POST is never prerendered.
+export const prerender = true;
+
+const result = Astro.getActionResult(actions.filter);
+---
+
+<div id="filters">
+  {result ? (
+    <div>{result.error ? result.error.message || result.error.code : result.data}</div>
+  ) : (
+    <form  method="POST" action={actions.filter}>
+      Do you match a filter rule for Chrome?
+      <button>Check</button>
+    </form>
+  )}
+</div>
+
+<style>
+  #filters {
+    margin: 5px auto;
+  }
+</style>

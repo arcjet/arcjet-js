@@ -1,11 +1,12 @@
 ---
 import background from '../assets/background.svg';
-
-import Layout from '../layouts/Layout.astro';
+import DetectBot from '../components/DetectBot.astro';
+import EmailValidation from '../components/EmailValidation.astro';
+import Filters from '../components/Filters.astro';
+import RateLimiting from '../components/RateLimiting.astro';
+import SensitiveInfo from '../components/SensitiveInfo.astro';
 import Welcome from '../components/Welcome.astro';
-import ValidateEmail from '../components/ValidateEmail.astro';
-import CheckSensitiveInfo from '../components/CheckSensitiveInfo.astro';
-import Randomizer from '../components/Randomizer.astro';
+import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout>
@@ -15,9 +16,11 @@ import Randomizer from '../components/Randomizer.astro';
       <Welcome server:defer>
         <div class="fallback" slot="fallback">Loading greeting...</div>
       </Welcome>
-      <ValidateEmail />
-      <CheckSensitiveInfo />
-      <Randomizer />
+      <DetectBot />
+      <RateLimiting />
+      <EmailValidation />
+      <SensitiveInfo />
+      <Filters />
     </main>
   </div>
 </Layout>
