@@ -1,5 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
-import aj from "arcjet:client";
+import arcjetClient from "arcjet:client";
 import { getActionContext } from "astro:actions";
 
 export const onRequest = defineMiddleware(async (ctx, next) => {
@@ -22,7 +22,7 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   // request when the page is NOT prerendered.
   if (!ctx.isPrerendered) {
     // console.log(request);
-    const decision = await aj.protect(ctx.request);
+    const decision = await arcjetClient.protect(ctx.request);
 
     // Deny decisions can respond immediately to avoid any additional server
     // processing.

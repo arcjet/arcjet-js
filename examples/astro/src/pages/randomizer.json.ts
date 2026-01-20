@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
-import aj, { fixedWindow } from "arcjet:client";
+import arcjetClient, { fixedWindow } from "arcjet:client";
 
-const ajWithRateLimit = aj.withRule(
+const arcjetClientWithRateLimit = arcjetClient.withRule(
   fixedWindow({
     mode: "LIVE",
     max: 1,
@@ -15,7 +15,7 @@ function random() {
 }
 
 export const GET: APIRoute = async ({ request }) => {
-  const decision = await ajWithRateLimit.protect(request);
+  const decision = await arcjetClientWithRateLimit.protect(request);
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {
       return new Response(null, {

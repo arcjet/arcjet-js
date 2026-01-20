@@ -1,6 +1,6 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import aj, { sensitiveInfo, validateEmail } from "arcjet:client";
+import arcjetClient, { sensitiveInfo, validateEmail } from "arcjet:client";
 
 export const server = {
   sensitiveInfo: defineAction({
@@ -9,7 +9,7 @@ export const server = {
       content: z.string(),
     }),
     handler: async (_input, { request }) => {
-      const decision = await aj
+      const decision = await arcjetClient
         .withRule(sensitiveInfo({ mode: "LIVE", allow: [] }))
         .protect(request);
       if (decision.isDenied()) {
@@ -32,7 +32,7 @@ export const server = {
       email: z.string(),
     }),
     handler: async ({ email }, { request }) => {
-      const decision = await aj
+      const decision = await arcjetClient
         .withRule(validateEmail({ mode: "LIVE", allow: [ "FREE", "NO_GRAVATAR"] }))
         .protect(request, { email });
       if (decision.isDenied()) {
