@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { default as Fastify, type FastifyRequest } from "fastify";
+import { ArcjetAllowDecision, ArcjetReason } from "@arcjet/protocol";
 import arcjetFastify, { sensitiveInfo } from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
@@ -44,6 +45,17 @@ test("`@arcjet/fastify`", async function (t) {
     const restore = capture();
 
     const arcjet = arcjetFastify({
+      client: {
+        async decide() {
+          // sensitiveInfo rule only runs locally.
+          return new ArcjetAllowDecision({
+            reason: new ArcjetReason(),
+            results: [],
+            ttl: 0,
+          });
+        },
+        report() {},
+      },
       key: exampleKey,
       rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
     });
@@ -336,9 +348,23 @@ async function createSimpleServer(options: SimpleServerOptions) {
     await before?.(request);
     const decision = await arcjet.protect(request);
     await after?.(request);
-    return decision.isDenied()
-      ? reply.status(403).send("Forbidden")
-      : reply.send("Hello world");
+
+    if (decision.isErrored()) {
+      return reply
+        .status(500)
+        .send(`Internal Server Error: "${decision.reason.message}"`);
+    }
+
+    if (decision.isAllowed()) {
+      return reply.status(200).send("OK");
+    }
+
+    if (decision.isDenied()) {
+      return reply.status(403).send("Forbidden");
+    }
+
+    // Differentiate unexpected cases.
+    return reply.status(501).send("Not Implemented");
   });
 
   await fastify.listen({ port });

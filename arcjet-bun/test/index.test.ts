@@ -8,6 +8,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import arcjetBun, { sensitiveInfo } from "../index.js";
+import { ArcjetAllowDecision, ArcjetReason } from "@arcjet/protocol";
 
 const exampleKey = "ajkey_yourkey";
 const oneMegabyte = 1024 * 1024;
@@ -49,6 +50,17 @@ test("should support `sensitiveInfo`", async function () {
   const restore = capture();
 
   const arcjet = arcjetBun({
+    client: {
+      async decide() {
+        // sensitiveInfo rule only runs locally.
+        return new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        });
+      },
+      report() {},
+    },
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
@@ -73,6 +85,17 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
   let parameters: Array<unknown> | undefined;
 
   const arcjet = arcjetBun({
+    client: {
+      async decide() {
+        // sensitiveInfo rule only runs locally.
+        return new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        });
+      },
+      report() {},
+    },
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
     log: {
@@ -280,6 +303,17 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   let parameters: Array<unknown> | undefined;
 
   const arcjet = arcjetBun({
+    client: {
+      async decide() {
+        // sensitiveInfo rule only runs locally.
+        return new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        });
+      },
+      report() {},
+    },
     key: exampleKey,
     log: {
       debug() {},
@@ -342,9 +376,24 @@ function createSimpleServer(options: SimpleServerOptions) {
       await before?.(request);
       const decision = await arcjet.protect(request);
       await after?.(request);
-      return decision.isDenied()
-        ? new Response("Forbidden", { status: 403 })
-        : new Response("Hello world");
+
+      if (decision.isErrored()) {
+        return new Response(
+          `Internal Server Error: "${decision.reason.message}"`,
+          { status: 500 },
+        );
+      }
+
+      if (decision.isAllowed()) {
+        return new Response("OK", { status: 200 });
+      }
+
+      if (decision.isDenied()) {
+        return new Response("Forbidden", { status: 403 });
+      }
+
+      // Differentiate unexpected cases.
+      return new Response("Not Implemented", { status: 501 });
     }),
     port: uniquePort++,
   });
