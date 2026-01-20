@@ -421,7 +421,7 @@ async function createSimpleServer(options: SimpleServerOptions) {
 
     if (decision.isAllowed()) {
       response.statusCode = 200;
-      response.end("Ok");
+      response.end("OK");
       return;
     }
 

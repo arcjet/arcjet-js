@@ -389,7 +389,7 @@ function createSimpleServer(options: SimpleServerOptions) {
       }
 
       if (decision.isAllowed()) {
-        return new Response("Ok", { status: 200 });
+        return new Response("OK", { status: 200 });
       }
 
       if (decision.isDenied()) {

@@ -384,7 +384,7 @@ async function createSimpleServer(options: SimpleServerOptions) {
     }
 
     if (decision.isAllowed()) {
-      return reply.status(200).send("Ok");
+      return reply.status(200).send("OK");
     }
 
     if (decision.isDenied()) {
