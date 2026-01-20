@@ -10,7 +10,7 @@ const result = Astro.getActionResult(actions.email);
 
 <div id="email">
   {result ? (
-    <div>{result.error ? result.error.message : result.data}</div>
+    <div>{result.error ? result.error.message || result.error.code : result.data}</div>
   ) : (
     <form  method="POST" action={actions.email}>
       <label for="email">Validate email:</label>

@@ -108,7 +108,7 @@ jobs:
     strategy:
       matrix:
         folder:
-          - astro-integration
+          - astro
           - express-bots
           - express-newman
           - express-rate-limit
