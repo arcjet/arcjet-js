@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "bun-rate-limit",
@@ -8,7 +7,7 @@
         "@arcjet/bun": "workspace:*",
       },
       "devDependencies": {
-        "@types/bun": "1.1.3",
+        "@types/bun": "1.3.6",
       },
       "peerDependencies": {
         "typescript": "5.4.5",
@@ -16,96 +15,96 @@
     },
     "../../analyze": {
       "name": "@arcjet/analyze",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "dependencies": {
-        "@arcjet/analyze-wasm": "1.0.0-beta.16",
-        "@arcjet/protocol": "1.0.0-beta.16",
+        "@arcjet/analyze-wasm": "1.0.0-beta.17",
+        "@arcjet/protocol": "1.0.0-beta.17",
       },
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@bytecodealliance/jco": "1.5.0",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../analyze-wasm": {
       "name": "@arcjet/analyze-wasm",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@bytecodealliance/jco": "1.5.0",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../arcjet": {
       "name": "arcjet",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "dependencies": {
-        "@arcjet/analyze": "1.0.0-beta.16",
-        "@arcjet/cache": "1.0.0-beta.16",
-        "@arcjet/duration": "1.0.0-beta.16",
-        "@arcjet/headers": "1.0.0-beta.16",
-        "@arcjet/protocol": "1.0.0-beta.16",
-        "@arcjet/runtime": "1.0.0-beta.16",
-        "@arcjet/stable-hash": "1.0.0-beta.16",
+        "@arcjet/analyze": "1.0.0-beta.17",
+        "@arcjet/cache": "1.0.0-beta.17",
+        "@arcjet/duration": "1.0.0-beta.17",
+        "@arcjet/headers": "1.0.0-beta.17",
+        "@arcjet/protocol": "1.0.0-beta.17",
+        "@arcjet/runtime": "1.0.0-beta.17",
+        "@arcjet/stable-hash": "1.0.0-beta.17",
       },
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../arcjet-bun": {
       "name": "@arcjet/bun",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "dependencies": {
-        "@arcjet/body": "1.0.0-beta.16",
-        "@arcjet/env": "1.0.0-beta.16",
-        "@arcjet/headers": "1.0.0-beta.16",
-        "@arcjet/ip": "1.0.0-beta.16",
-        "@arcjet/logger": "1.0.0-beta.16",
-        "@arcjet/protocol": "1.0.0-beta.16",
-        "@arcjet/transport": "1.0.0-beta.16",
-        "arcjet": "1.0.0-beta.16",
+        "@arcjet/body": "1.0.0-beta.17",
+        "@arcjet/env": "1.0.0-beta.17",
+        "@arcjet/headers": "1.0.0-beta.17",
+        "@arcjet/ip": "1.0.0-beta.17",
+        "@arcjet/logger": "1.0.0-beta.17",
+        "@arcjet/protocol": "1.0.0-beta.17",
+        "@arcjet/transport": "1.0.0-beta.17",
+        "arcjet": "1.0.0-beta.17",
       },
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
         "bun-types": "1.3.5",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
-        "undici-types": "7.18.0",
+        "undici-types": "7.18.2",
       },
     },
     "../../body": {
       "name": "@arcjet/body",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../cache": {
       "name": "@arcjet/cache",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
@@ -113,22 +112,22 @@
     },
     "../../duration": {
       "name": "@arcjet/duration",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../env": {
       "name": "@arcjet/env",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
@@ -136,11 +135,11 @@
     },
     "../../eslint-config": {
       "name": "@arcjet/eslint-config",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "dependencies": {
         "@eslint/js": "9.39.2",
         "eslint-config-prettier": "10.1.8",
-        "eslint-config-turbo": "2.7.3",
+        "eslint-config-turbo": "2.7.4",
         "typescript-eslint": "8.52.0",
       },
       "devDependencies": {
@@ -152,72 +151,72 @@
     },
     "../../headers": {
       "name": "@arcjet/headers",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../ip": {
       "name": "@arcjet/ip",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../logger": {
       "name": "@arcjet/logger",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "dependencies": {
-        "@arcjet/sprintf": "1.0.0-beta.16",
+        "@arcjet/sprintf": "1.0.0-beta.17",
       },
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../protocol": {
       "name": "@arcjet/protocol",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "dependencies": {
-        "@arcjet/cache": "1.0.0-beta.16",
+        "@arcjet/cache": "1.0.0-beta.17",
         "@bufbuild/protobuf": "1.10.1",
         "@connectrpc/connect": "1.6.1",
         "typeid-js": "1.2.0",
       },
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../rollup-config": {
       "name": "@arcjet/rollup-config",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "dependencies": {
         "@rollup/plugin-replace": "6.0.3",
         "@rollup/plugin-typescript": "12.3.0",
       },
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
@@ -227,10 +226,10 @@
     },
     "../../runtime": {
       "name": "@arcjet/runtime",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
@@ -238,31 +237,31 @@
     },
     "../../sprintf": {
       "name": "@arcjet/sprintf",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../stable-hash": {
       "name": "@arcjet/stable-hash",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
     },
     "../../transport": {
       "name": "@arcjet/transport",
-      "version": "1.0.0-beta.16",
+      "version": "1.0.0-beta.17",
       "dependencies": {
         "@bufbuild/protobuf": "1.10.1",
         "@connectrpc/connect": "1.6.1",
@@ -270,10 +269,10 @@
         "@connectrpc/connect-web": "1.6.1",
       },
       "devDependencies": {
-        "@arcjet/eslint-config": "1.0.0-beta.16",
-        "@arcjet/rollup-config": "1.0.0-beta.16",
+        "@arcjet/eslint-config": "1.0.0-beta.17",
+        "@arcjet/rollup-config": "1.0.0-beta.17",
         "@rollup/wasm-node": "4.55.1",
-        "@types/node": "25.0.3",
+        "@types/node": "25.0.6",
         "eslint": "9.39.2",
         "typescript": "5.9.3",
       },
@@ -388,15 +387,13 @@
 
     "@rollup/wasm-node": ["@rollup/wasm-node@4.55.1", "", { "dependencies": { "@types/estree": "1.0.8" }, "optionalDependencies": { "fsevents": "~2.3.2" }, "bin": { "rollup": "dist/bin/rollup" } }, "sha512-GD+BSGH7+hVtNreVwv2JVxKImAdaDDrT9Ev0Bbr9CTATPjXjp7pQlRAqyZqNW3RGY37qL/RkF0HyO9ptJDU2pQ=="],
 
-    "@types/bun": ["@types/bun@1.1.3", "", { "dependencies": { "bun-types": "1.1.9" } }, "sha512-i+mVz8C/lx+RprDR6Mr402iE1kmajgJPnmSfJ/NvU85sGGXSylYZ/6yc+XhVLr2E/t8o6HmjwV0evtnUOR0CFA=="],
+    "@types/bun": ["@types/bun@1.3.6", "", { "dependencies": { "bun-types": "1.3.6" } }, "sha512-uWCv6FO/8LcpREhenN1d1b6fcspAB+cefwD7uti8C8VffIv0Um08TKMn98FynpTiU38+y2dUO55T11NgDt8VAA=="],
 
     "@types/estree": ["@types/estree@1.0.8", "", {}, "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="],
 
     "@types/json-schema": ["@types/json-schema@7.0.15", "", {}, "sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA=="],
 
-    "@types/node": ["@types/node@25.0.3", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA=="],
-
-    "@types/ws": ["@types/ws@8.5.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-bd/YFLW+URhBzMXurx7lWByOu+xzU9+kb3RboOteXYDfW+tr+JZa99OyNmPINEGB/ahzKrEuc8rcv4gnpJmxTw=="],
+    "@types/node": ["@types/node@25.0.6", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-NNu0sjyNxpoiW3YuVFfNz7mxSQ+S4X2G28uqg2s+CzoqoQjLPsWSbsFFyztIAqt2vb8kfEAsJNepMGPTxFDx3Q=="],
 
     "@typescript-eslint/eslint-plugin": ["@typescript-eslint/eslint-plugin@8.52.0", "", { "dependencies": { "@eslint-community/regexpp": "^4.12.2", "@typescript-eslint/scope-manager": "8.52.0", "@typescript-eslint/type-utils": "8.52.0", "@typescript-eslint/utils": "8.52.0", "@typescript-eslint/visitor-keys": "8.52.0", "ignore": "^7.0.5", "natural-compare": "^1.4.0", "ts-api-utils": "^2.4.0" }, "peerDependencies": { "@typescript-eslint/parser": "^8.52.0", "eslint": "^8.57.0 || ^9.0.0", "typescript": ">=4.8.4 <6.0.0" } }, "sha512-okqtOgqu2qmZJ5iN4TWlgfF171dZmx2FzdOv2K/ixL2LZWDStL8+JgQerI2sa8eAEfoydG9+0V96m7V+P8yE1Q=="],
 
@@ -478,9 +475,9 @@
 
     "eslint-config-prettier": ["eslint-config-prettier@10.1.8", "", { "peerDependencies": { "eslint": ">=7.0.0" }, "bin": { "eslint-config-prettier": "bin/cli.js" } }, "sha512-82GZUjRS0p/jganf6q1rEO25VSoHH0hKPCTrgillPjdI/3bgBhAE1QzHrHTizjpRvy6pGAvKjDJtk2pF9NDq8w=="],
 
-    "eslint-config-turbo": ["eslint-config-turbo@2.7.3", "", { "dependencies": { "eslint-plugin-turbo": "2.7.3" }, "peerDependencies": { "eslint": ">6.6.0", "turbo": ">2.0.0" } }, "sha512-1ik3XQLJoE9d9ljhw60wTQf7rlwnz8tc6vnhSL7/Ciep2+qPMJpNg+mapcmGhirfDSceVNI8r9pv+HyvrBXhpQ=="],
+    "eslint-config-turbo": ["eslint-config-turbo@2.7.4", "", { "dependencies": { "eslint-plugin-turbo": "2.7.4" }, "peerDependencies": { "eslint": ">6.6.0", "turbo": ">2.0.0" } }, "sha512-HhIqaGxIxZ8IxOqH30zvOr8kMmLGiOiDaOrFJwER9R++9L1OztVVsbs695Vti60XkYG6aa5F1TIBsYA5TP3hEw=="],
 
-    "eslint-plugin-turbo": ["eslint-plugin-turbo@2.7.3", "", { "dependencies": { "dotenv": "16.0.3" }, "peerDependencies": { "eslint": ">6.6.0", "turbo": ">2.0.0" } }, "sha512-q7kYzJCyvceSLVwHgmn3ZBhqpUihQHxC7LEddq5a1eLe5P+/Ob4TnJrdocP38qO1n9MCuO+cJSUTGUtZb1X3bQ=="],
+    "eslint-plugin-turbo": ["eslint-plugin-turbo@2.7.4", "", { "dependencies": { "dotenv": "16.0.3" }, "peerDependencies": { "eslint": ">6.6.0", "turbo": ">2.0.0" } }, "sha512-kye4pyGpZMJLgykeRDYTK2kpzHFw7kWlaio66Y4dL/9IMa7cIXirvvHVryV8D7ni3eOsHZYYQ9k0nADKNnecjQ=="],
 
     "eslint-scope": ["eslint-scope@8.4.0", "", { "dependencies": { "esrecurse": "^4.3.0", "estraverse": "^5.2.0" } }, "sha512-sNXOfKCn74rt8RICKMvJS7XKV/Xk9kA7DyJr8mJik3S7Cwgy3qlkkmyS2uQB3jiJg6VNdZd/pDBJu0nvG2NlTg=="],
 
@@ -660,7 +657,7 @@
 
     "undici": ["undici@5.29.0", "", { "dependencies": { "@fastify/busboy": "^2.0.0" } }, "sha512-raqeBD6NQK4SkWhQzeYKd1KmIG6dllBOTt55Rmkt4HtI9mwdWtJljnrXjAFUBLTSN67HWrOIZ3EPF4kjUw80Bg=="],
 
-    "undici-types": ["undici-types@7.18.0", "", {}, "sha512-aLO7B+pYKuqcpapWdzhvzrjfm+qeiQNK3OILZAmlXJxgMfCsltOINMvNonA7nMMKiEjY1vAMA02O7u+eWym43w=="],
+    "undici-types": ["undici-types@7.18.2", "", {}, "sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w=="],
 
     "uri-js": ["uri-js@4.4.1", "", { "dependencies": { "punycode": "^2.1.0" } }, "sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg=="],
 
@@ -708,11 +705,9 @@
 
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
 
-    "@types/bun/bun-types": ["bun-types@1.1.9", "", { "dependencies": { "@types/node": "~20.12.8", "@types/ws": "~8.5.10" } }, "sha512-3YuLiH4Ne/ghk7K6mHiaqCqKOMrtB0Z5p1WAskHSVgi0iMZgsARV4yGkbfi565YsStvUq6GXTWB3ga7M8cznkA=="],
+    "@types/bun/bun-types": ["bun-types@1.3.6", "", { "dependencies": { "@types/node": "*" } }, "sha512-OlFwHcnNV99r//9v5IIOgQ9Uk37gZqrNMCcqEaExdkVq3Avwqok1bJFmvGMCkCE0FqzdY8VMOZpfpR3lwI+CsQ=="],
 
     "@types/node/undici-types": ["undici-types@7.16.0", "", {}, "sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw=="],
-
-    "@types/ws/@types/node": ["@types/node@24.3.0", "", { "dependencies": { "undici-types": "~7.10.0" } }, "sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow=="],
 
     "@typescript-eslint/eslint-plugin/@eslint-community/regexpp": ["@eslint-community/regexpp@4.12.2", "", {}, "sha512-EriSTlt5OC9/7SXkRSCAhfSxxoSUgBm33OH+IkwbdpgoqsSsUg7y3uh+IICI/Qg4BBWr3U2i39RpmycbxMq4ew=="],
 
@@ -732,6 +727,8 @@
 
     "arcjet/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
+    "bun-types/@types/node": ["@types/node@25.0.3", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA=="],
+
     "chalk-template/chalk": ["chalk@5.6.0", "", {}, "sha512-46QrSQFyVSEyYAgQ22hQ+zDa60YHA4fBstHmtSApj1Y5vKtG27fWowW03jCk5KcbXEWPZUIR894aARCA/G1kfQ=="],
 
     "log-symbols/chalk": ["chalk@5.6.0", "", {}, "sha512-46QrSQFyVSEyYAgQ22hQ+zDa60YHA4fBstHmtSApj1Y5vKtG27fWowW03jCk5KcbXEWPZUIR894aARCA/G1kfQ=="],
@@ -742,14 +739,10 @@
 
     "terser/commander": ["commander@2.20.3", "", {}, "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ=="],
 
-    "@types/bun/bun-types/@types/node": ["@types/node@20.12.14", "", { "dependencies": { "undici-types": "~5.26.4" } }, "sha512-scnD59RpYD91xngrQQLGkE+6UrHUPzeKZWhhjBSa3HSkwjbQc38+q3RoIVEwxQGRw3M+j5hpNAM+lgV3cVormg=="],
-
-    "@types/ws/@types/node/undici-types": ["undici-types@7.10.0", "", {}, "sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag=="],
-
     "@typescript-eslint/typescript-estree/minimatch/brace-expansion": ["brace-expansion@2.0.2", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ=="],
 
     "@typescript-eslint/utils/@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
 
-    "@types/bun/bun-types/@types/node/undici-types": ["undici-types@5.26.5", "", {}, "sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA=="],
+    "bun-types/@types/node/undici-types": ["undici-types@7.16.0", "", {}, "sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw=="],
   }
 }
