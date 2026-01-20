@@ -788,7 +788,9 @@ export type EmailOptionsDeny = {
 /**
  * Configuration for the email validation rule.
  */
-export type EmailOptions = EmailOptionsAllow | EmailOptionsDeny;
+export type EmailOptions =
+  | EmailOptionsAllow
+  | EmailOptionsDeny;
 
 /**
  * Configuration for the sensitive info detection rule to allow certain
