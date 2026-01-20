@@ -76,11 +76,7 @@ test("should support `sensitiveInfo`", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(
-    response.status,
-    200,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 200);
 });
 
 test("should emit an error log when the body is read before `sensitiveInfo`", async function () {
@@ -129,11 +125,7 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
   restore();
 
   assert.equal(body, "My email is alice@arcjet.com");
-  assert.equal(
-    response.status,
-    200,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 200);
   assert.deepEqual(parameters, [
     "failed to get request body: %s",
     "Body is unusable",
@@ -176,11 +168,7 @@ test("should support reading body after `sensitiveInfo`", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(
-    response.status,
-    200,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 200);
   assert.equal(body, "This is fine.");
 });
 
@@ -203,11 +191,7 @@ test("should support `sensitiveInfo` on JSON", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(
-    response.status,
-    403,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 403);
 });
 
 test("should support `sensitiveInfo` on form data", async function () {
@@ -232,11 +216,7 @@ test("should support `sensitiveInfo` on form data", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(
-    response.status,
-    403,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 403);
 });
 
 test("should support `sensitiveInfo` on plain text", async function () {
@@ -258,11 +238,7 @@ test("should support `sensitiveInfo` on plain text", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(
-    response.status,
-    403,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 403);
 });
 
 test("should support `sensitiveInfo` on streamed plain text", async function () {
@@ -307,11 +283,7 @@ test("should support `sensitiveInfo` on streamed plain text", async function () 
   await server.shutdown();
   restore();
 
-  assert.equal(
-    response.status,
-    403,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 403);
 });
 
 test("should support `sensitiveInfo` a megabyte of data", async function () {
@@ -335,11 +307,7 @@ test("should support `sensitiveInfo` a megabyte of data", async function () {
   await server.shutdown();
   restore();
 
-  assert.equal(
-    response.status,
-    403,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 403);
 });
 
 // TODO(GH-5517): make this configurable.
@@ -384,11 +352,7 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   await server.shutdown();
   restore();
 
-  assert.equal(
-    response.status,
-    200,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 200);
   assert.deepEqual(parameters, [
     "failed to get request body: %s",
     "Cannot read stream whose expected length exceeds limit",

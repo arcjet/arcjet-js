@@ -76,11 +76,7 @@ test("should support `sensitiveInfo`", async function () {
   await server.stop();
   restore();
 
-  assert.equal(
-    response.status,
-    200,
-    `Unexpected status: ${await response.text()}`,
-  );
+  assert.equal(response.status, 200);
 });
 
 test("should emit an error log when the body is read before `sensitiveInfo`", async function () {

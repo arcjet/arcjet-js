@@ -71,11 +71,7 @@ test("`@arcjet/node`", async function (t) {
     server.close();
     restore();
 
-    assert.equal(
-      response.status,
-      200,
-      `Unexpected status: ${await response.text()}`,
-    );
+    assert.equal(response.status, 200);
   });
 
   await t.test(
@@ -133,11 +129,7 @@ test("`@arcjet/node`", async function (t) {
       restore();
 
       assert.equal(body, "My email is alice@arcjet.com");
-      assert.equal(
-        response.status,
-        200,
-        `Unexpected status: ${await response.text()}`,
-      );
+      assert.equal(response.status, 200);
       assert.deepEqual(parameters, [
         "failed to get request body: %s",
         "Cannot read unreadable stream",
@@ -179,7 +171,7 @@ test("`@arcjet/node`", async function (t) {
   //   server.close();
   //   restore();
 
-  //   assert.equal(response.status, 403, `Unexpected status: ${await response.text()}`);
+  //   assert.equal(response.status, 403);
   //   assert.equal(body, "My email is alice@arcjet.com");
   // });
 
@@ -202,11 +194,7 @@ test("`@arcjet/node`", async function (t) {
     server.close();
     restore();
 
-    assert.equal(
-      response.status,
-      403,
-      `Unexpected status: ${await response.text()}`,
-    );
+    assert.equal(response.status, 403);
   });
 
   await t.test(
@@ -233,11 +221,7 @@ test("`@arcjet/node`", async function (t) {
       server.close();
       restore();
 
-      assert.equal(
-        response.status,
-        403,
-        `Unexpected status: ${await response.text()}`,
-      );
+      assert.equal(response.status, 403);
     },
   );
 
@@ -262,11 +246,7 @@ test("`@arcjet/node`", async function (t) {
       server.close();
       restore();
 
-      assert.equal(
-        response.status,
-        403,
-        `Unexpected status: ${await response.text()}`,
-      );
+      assert.equal(response.status, 403);
     },
   );
 
@@ -314,11 +294,7 @@ test("`@arcjet/node`", async function (t) {
       server.close();
       restore();
 
-      assert.equal(
-        response.status,
-        403,
-        `Unexpected status: ${await response.text()}`,
-      );
+      assert.equal(response.status, 403);
     },
   );
 
@@ -345,11 +321,7 @@ test("`@arcjet/node`", async function (t) {
       server.close();
       restore();
 
-      assert.equal(
-        response.status,
-        403,
-        `Unexpected status: ${await response.text()}`,
-      );
+      assert.equal(response.status, 403);
     },
   );
 
@@ -377,7 +349,7 @@ test("`@arcjet/node`", async function (t) {
   //   restore();
   //   port++;
 
-  //   assert.equal(response.status, 403, `Unexpected status: ${await response.text()}`);
+  //   assert.equal(response.status, 403);
   // });
 });
 
