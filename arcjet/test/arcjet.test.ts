@@ -3088,6 +3088,8 @@ describe("SDK", () => {
       "extra-test": "extra-test-value",
       userId: "abc123",
       requested: 1,
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -3150,6 +3152,8 @@ describe("SDK", () => {
       userId: "abc123",
       requested: 1,
       abc: 123,
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -3224,6 +3228,8 @@ describe("SDK", () => {
       userId: "abc123",
       requested: 1,
       abc: 123,
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -3387,6 +3393,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const allowed = testRuleLocalAllowed();
     const denied = testRuleLocalDenied();
@@ -3433,6 +3441,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const rule = testRuleLocalIncorrect();
 
@@ -3482,6 +3492,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const rule = testRuleLocalNoValidate();
 
@@ -3537,6 +3549,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const rule = testRuleLocalNoProtect();
 
@@ -3584,7 +3598,18 @@ describe("SDK", () => {
       report: mock.fn(),
     };
 
-    const request = {};
+    const request = {
+      cookies: "",
+      email: undefined,
+      extra: {},
+      headers: new Headers(),
+      host: "localhost:3000",
+      ip: undefined,
+      method: "GET",
+      path: "/",
+      protocol: "http:",
+      query: "",
+    };
 
     const aj = arcjet({
       key: "test-key",
@@ -3599,6 +3624,7 @@ describe("SDK", () => {
       },
     };
 
+    // @ts-expect-error: test runtime behavior for missing request details.
     const decision = await aj.protect(context, request);
     assert.equal(decision.conclusion, "ERROR");
   });
@@ -3640,7 +3666,16 @@ describe("SDK", () => {
     };
 
     const request = {
+      cookies: "",
+      email: undefined,
+      extra: {},
+      headers: new Headers(),
+      host: "localhost:3000",
       ip: "100.100.100.100",
+      method: "GET",
+      path: "/",
+      protocol: "http:",
+      query: "",
     };
 
     const rules: ArcjetRule[][] = [];
@@ -3686,6 +3721,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const allowed = testRuleLocalAllowed();
     const denied = testRuleLocalDenied();
@@ -3741,6 +3778,8 @@ describe("SDK", () => {
       path: "/",
       headers: { "user-agent": "curl/8.1.2" },
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -3754,7 +3793,7 @@ describe("SDK", () => {
     assert.equal(client.decide.mock.callCount(), 1);
     const args = client.decide.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: undefined,
+      cookies: "",
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
@@ -3765,7 +3804,7 @@ describe("SDK", () => {
       method: request.method,
       path: request.path,
       protocol: request.protocol,
-      query: undefined,
+      query: "",
     });
   });
 
@@ -3798,6 +3837,8 @@ describe("SDK", () => {
       path: "/",
       headers: { "User-Agent": ["curl/8.1.2", "something"] },
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -3811,7 +3852,7 @@ describe("SDK", () => {
     assert.equal(client.decide.mock.callCount(), 1);
     const args = client.decide.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: undefined,
+      cookies: "",
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
@@ -3823,7 +3864,7 @@ describe("SDK", () => {
       method: request.method,
       path: request.path,
       protocol: request.protocol,
-      query: undefined,
+      query: "",
     });
   });
 
@@ -3859,6 +3900,8 @@ describe("SDK", () => {
       "extra-false": false,
       "extra-true": true,
       "extra-unsupported": new Date(),
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -3872,7 +3915,7 @@ describe("SDK", () => {
     assert.equal(client.decide.mock.callCount(), 1);
     const args = client.decide.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: undefined,
+      cookies: "",
       email: undefined,
       extra: {
         "extra-number": "123",
@@ -3886,7 +3929,7 @@ describe("SDK", () => {
       method: request.method,
       path: request.path,
       protocol: request.protocol,
-      query: undefined,
+      query: "",
     });
   });
 
@@ -3910,6 +3953,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const allowed = testRuleLocalAllowed();
 
@@ -3961,6 +4006,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const rule = testRuleLocalAllowed();
 
@@ -3975,7 +4022,7 @@ describe("SDK", () => {
     assert.equal(client.decide.mock.callCount(), 1);
     const args: unknown[] = client.decide.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: undefined,
+      cookies: "",
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
@@ -3986,7 +4033,7 @@ describe("SDK", () => {
       method: request.method,
       path: request.path,
       protocol: request.protocol,
-      query: undefined,
+      query: "",
     });
     assert.deepEqual(args.at(2), [rule]);
   });
@@ -4020,6 +4067,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const rule = testRuleLocalDenied();
 
@@ -4034,7 +4083,7 @@ describe("SDK", () => {
     assert.equal(client.report.mock.callCount(), 1);
     const args: unknown[] = client.report.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: undefined,
+      cookies: "",
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
@@ -4045,7 +4094,7 @@ describe("SDK", () => {
       method: request.method,
       path: request.path,
       protocol: request.protocol,
-      query: undefined,
+      query: "",
     });
     const two = args.at(2);
     assert.ok(two);
@@ -4094,6 +4143,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const rule = testRuleLocalDenied();
 
@@ -4137,6 +4188,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
     const denied = testRuleLocalDenied();
 
@@ -4186,6 +4239,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -4202,7 +4257,7 @@ describe("SDK", () => {
 
     const args: unknown[] = client.decide.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: undefined,
+      cookies: "",
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
@@ -4213,7 +4268,7 @@ describe("SDK", () => {
       method: request.method,
       path: request.path,
       protocol: request.protocol,
-      query: undefined,
+      query: "",
     });
   });
 
@@ -4247,6 +4302,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -4323,6 +4380,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -4365,6 +4424,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     function testRuleLocalThrowString(): ArcjetRule {
@@ -4425,6 +4486,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     function testRuleLocalThrowNull(): ArcjetRule {
@@ -4485,6 +4548,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -4544,6 +4609,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     const rule = testRuleRemote();
@@ -4562,7 +4629,7 @@ describe("SDK", () => {
     assert.equal(client.decide.mock.callCount(), 1);
     const args: unknown[] = client.decide.mock.calls[0].arguments;
     assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: undefined,
+      cookies: "",
       email: undefined,
       extra: {
         "extra-test": "extra-test-value",
@@ -4573,7 +4640,7 @@ describe("SDK", () => {
       method: request.method,
       path: request.path,
       protocol: request.protocol,
-      query: undefined,
+      query: "",
     });
     assert.deepEqual(args.at(2), [rule]);
   });
@@ -4607,6 +4674,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     const rule = testRuleRemote();
@@ -4659,6 +4728,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
       "extra-test": "extra-test-value",
+      cookies: "",
+      query: "",
     };
 
     const aj = arcjet({
@@ -4709,6 +4780,8 @@ describe("SDK", () => {
       host: "example.com",
       path: "/",
       headers: new Headers([["abcxyz", "test1234"]]),
+      cookies: "",
+      query: "",
     };
 
     const context = {
@@ -4766,6 +4839,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers(),
       someGlobalCharacteristic: "test",
+      cookies: "",
+      query: "",
     };
 
     const context = {
@@ -4825,6 +4900,8 @@ describe("SDK", () => {
       headers: new Headers(),
       someGlobalCharacteristic: "test",
       someLocalCharacteristic: "test",
+      cookies: "",
+      query: "",
     };
 
     const context = {
@@ -4881,6 +4958,8 @@ describe("SDK", () => {
       path: "/",
       headers: new Headers(),
       someGlobalCharacteristic: "test",
+      cookies: "",
+      query: "",
     };
 
     const context = {
@@ -4941,6 +5020,8 @@ describe("SDK", () => {
       headers: new Headers(),
       someGlobalCharacteristic: "test",
       someLocalCharacteristic: "test",
+      cookies: "",
+      query: "",
     };
 
     const context = {
@@ -4999,6 +5080,8 @@ describe("SDK", () => {
       headers: new Headers(),
       requested: 1,
       someGlobalCharacteristic: "test",
+      cookies: "",
+      query: "",
     };
 
     const context = {
@@ -5061,6 +5144,8 @@ describe("SDK", () => {
       requested: 1,
       someGlobalCharacteristic: "test",
       someLocalCharacteristic: "test",
+      cookies: "",
+      query: "",
     };
 
     const context = {

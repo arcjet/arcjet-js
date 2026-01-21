@@ -266,7 +266,7 @@ export default function arcjet<
     request: Request,
     props: Props,
   ): ArcjetRequest<Props> {
-    const cookies = request.headers.get("cookie") ?? undefined;
+    const cookies = request.headers.get("cookie") ?? "";
 
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);

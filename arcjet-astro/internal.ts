@@ -270,7 +270,7 @@ export function createArcjetClient<
       throw new Error("`protect()` cannot be used in prerendered pages");
     }
 
-    const cookies = request.headers.get("cookie") ?? undefined;
+    const cookies = request.headers.get("cookie") ?? "";
 
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
