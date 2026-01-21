@@ -171,31 +171,33 @@ export interface ArcjetNodeRequest {
   /**
    * Headers of the request.
    */
-  headers?: Record<string, string | string[] | undefined>;
+  headers?: Record<string, string | string[] | undefined> | undefined;
 
   /**
    * `net.Socket` object associated with the connection.
    *
    * See <https://nodejs.org/api/http.html#messagesocket>.
    */
-  socket?: Partial<{ remoteAddress: string; encrypted: boolean }>;
+  socket?:
+    | Partial<{ remoteAddress?: string | undefined; encrypted: boolean }>
+    | undefined;
 
   /**
    * HTTP method of the request.
    */
-  method?: string;
+  method?: string | undefined;
 
   /**
    * HTTP version sent by the client.
    *
    * See <https://nodejs.org/api/http.html#messagehttpversion>.
    */
-  httpVersion?: string;
+  httpVersion?: string | undefined;
 
   /**
    * URL.
    */
-  url?: string;
+  url?: string | undefined;
 
   /**
    * Request body.
@@ -209,7 +211,7 @@ export interface ArcjetNodeRequest {
    *
    * See <https://nodejs.org/api/events.html#emitteroneventname-listener>.
    */
-  on?: EventHandlerLike;
+  on?: EventHandlerLike | undefined;
 
   /**
    * Remove event handlers.
@@ -218,7 +220,7 @@ export interface ArcjetNodeRequest {
    *
    * See <https://nodejs.org/api/events.html#emitterremovelistenereventname-listener>.
    */
-  removeListener?: EventHandlerLike;
+  removeListener?: EventHandlerLike | undefined;
 
   /**
    * Whether the readable stream is readable.
@@ -227,7 +229,7 @@ export interface ArcjetNodeRequest {
    *
    * See <https://nodejs.org/api/stream.html#readablereadable>.
    */
-  readable?: boolean;
+  readable?: boolean | undefined;
 }
 
 function cookiesToString(cookies: string | string[] | undefined): string {

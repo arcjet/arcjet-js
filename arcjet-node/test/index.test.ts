@@ -61,7 +61,6 @@ test("`@arcjet/node`", async function (t) {
 
     const { server, url } = await createSimpleServer({
       async decide(request) {
-        // @ts-expect-error: TODO: fix types to allow `undefined`.
         return arcjet.protect(request);
       },
     });
@@ -111,7 +110,6 @@ test("`@arcjet/node`", async function (t) {
           });
         },
         async decide(request) {
-          // @ts-expect-error: TODO: fix types to allow `undefined`.
           return arcjet.protect(request);
         },
       });
@@ -184,7 +182,6 @@ test("`@arcjet/node`", async function (t) {
 
     const { server, url } = await createSimpleServer({
       async decide(request) {
-        // @ts-expect-error: TODO: fix types to allow `undefined`.
         return arcjet.protect(request);
       },
     });
@@ -214,7 +211,6 @@ test("`@arcjet/node`", async function (t) {
 
       const { server, url } = await createSimpleServer({
         async decide(request) {
-          // @ts-expect-error: TODO: fix types to allow `undefined`.
           return arcjet.protect(request);
         },
       });
@@ -248,7 +244,6 @@ test("`@arcjet/node`", async function (t) {
 
       const { server, url } = await createSimpleServer({
         async decide(request) {
-          // @ts-expect-error: TODO: fix types to allow `undefined`.
           return arcjet.protect(request);
         },
       });
@@ -279,7 +274,6 @@ test("`@arcjet/node`", async function (t) {
 
       const { server, url } = await createSimpleServer({
         async decide(request) {
-          // @ts-expect-error: TODO: fix types to allow `undefined`.
           return arcjet.protect(request);
         },
       });
@@ -333,7 +327,6 @@ test("`@arcjet/node`", async function (t) {
 
       const { server, url } = await createSimpleServer({
         async decide(request) {
-          // @ts-expect-error: TODO: fix types to allow `undefined`.
           return arcjet.protect(request);
         },
       });
@@ -424,7 +417,6 @@ test("`@arcjet/node`", async function (t) {
 
     const { server, url } = await createSimpleServer({
       async decide(request) {
-        // @ts-expect-error: TODO: fix types to allow `undefined`.
         return arcjet.protect(request);
       },
     });
@@ -484,7 +476,6 @@ test("`@arcjet/node`", async function (t) {
 
       let { server, url } = await createSimpleServer({
         async decide(request) {
-          // @ts-expect-error: TODO: fix types to allow `undefined`.
           return arcjet.protect(request, { field: "alpha" });
         },
       });
@@ -493,7 +484,6 @@ test("`@arcjet/node`", async function (t) {
 
       ({ server, url } = await createSimpleServer({
         async decide(request) {
-          // @ts-expect-error: TODO: fix types to allow `undefined`.
           return arcjet.protect(request, { field: "bravo" });
         },
       }));
@@ -563,7 +553,6 @@ test("`@arcjet/node`", async function (t) {
 
       let { server, url } = await createSimpleServer({
         async decide(request) {
-          // @ts-expect-error: TODO: fix types to allow `undefined`.
           return arcjet.protect(request, { field: "alpha" });
         },
       });
@@ -572,7 +561,6 @@ test("`@arcjet/node`", async function (t) {
 
       ({ server, url } = await createSimpleServer({
         async decide(request) {
-          // @ts-expect-error: TODO: fix types to allow `undefined`.
           return arcjet.protect(request, { field: "bravo" });
         },
       }));
