@@ -279,7 +279,7 @@ export type ArcjetOptions<
  * @template Props
  *   Configuration.
  */
-export interface ArcjetNest<Props extends PlainObject> {
+export interface ArcjetNest<Props extends PlainObject = PlainObject> {
   /**
    * Make a decision about how to handle a request.
    *
