@@ -3069,9 +3069,9 @@ export interface Arcjet<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Primitive | Product>(
-    rule: Rule,
-  ): Arcjet<Simplify<Props & ExtraProps<Rule>>>;
+  withRule<ChildProperties extends PlainObject>(
+    rule: Primitive<ChildProperties> | Product<ChildProperties>,
+  ): Arcjet<Simplify<Props & ChildProperties>>;
 }
 
 /**
@@ -3091,7 +3091,7 @@ export default function arcjet<
   const Characteristics extends readonly string[] = [],
 >(
   options: ArcjetOptions<Rules, Characteristics>,
-): Arcjet<Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>> {
+): Arcjet<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
   // We destructure here to make the function signature neat when viewed by consumers
   const { key, rules } = options;
 

@@ -69,13 +69,25 @@ function errorMessage(err: unknown): string {
 // SOFTWARE.
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 declare const emptyObjectSymbol: unique symbol;
-type WithoutCustomProps = {
-  [emptyObjectSymbol]?: never;
-};
 
 type PlainObject = {
   [key: string]: unknown;
 };
+
+/**
+ * Dynamically generate whether zero or one `properties` object must or can be passed.
+ */
+type MaybeProperties<T> =
+  // If all properties of `T` are optional:
+  { [P in keyof T]?: T[P] } extends T
+    ? // If `T` has no properties at all:
+      T extends { [emptyObjectSymbol]?: never }
+      ? // Then it is assumed that nothing can be passed.
+        []
+      : // Then it is assumed that the object can be omitted.
+        [properties?: T]
+    : // Then it is assumed the object must be passed.
+      [properties: T];
 
 /**
  * Configuration for {@linkcode createRemoteClient}.
@@ -227,9 +239,7 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
    */
   protect(
     event: ArcjetSvelteKitRequestEvent,
-    // We use this neat trick from https://stackoverflow.com/a/52318137 to make a single spread parameter
-    // that is required if the ExtraProps aren't strictly an empty object
-    ...props: Props extends WithoutCustomProps ? [] : [Props]
+    ...props: MaybeProperties<Props>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -245,9 +255,9 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Primitive | Product>(
-    rule: Rule,
-  ): ArcjetSvelteKit<Simplify<Props & ExtraProps<Rule>>>;
+  withRule<ChildProperties extends PlainObject>(
+    rule: Primitive<ChildProperties> | Product<ChildProperties>,
+  ): ArcjetSvelteKit<Props & ChildProperties>;
 }
 
 /**
@@ -273,9 +283,7 @@ export default function arcjet<
   const Characteristics extends readonly string[],
 >(
   options: ArcjetOptions<Rules, Characteristics>,
-): ArcjetSvelteKit<
-  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>
-> {
+): ArcjetSvelteKit<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
   const client = options.client ?? createRemoteClient();
 
   const log = options.log
@@ -345,26 +353,17 @@ export default function arcjet<
     };
   }
 
-  function withClient<const Rules extends (Primitive | Product)[]>(
-    aj: Arcjet<ExtraProps<Rules>>,
-  ): ArcjetSvelteKit<ExtraProps<Rules>> {
-    return Object.freeze({
-      withRule(rule: Primitive | Product) {
+  function withClient<Properties extends PlainObject>(
+    aj: Arcjet<Properties>,
+  ): ArcjetSvelteKit<Properties> {
+    const client: ArcjetSvelteKit<Properties> = {
+      withRule(rule) {
         const client = aj.withRule(rule);
         return withClient(client);
       },
-      async protect(
-        request: ArcjetSvelteKitRequestEvent,
-        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
-          ? []
-          : [ExtraProps<Rules>]
-      ): Promise<ArcjetDecision> {
-        // TODO(#220): The generic manipulations get really mad here, so we cast
-        // Further investigation makes it seem like it has something to do with
-        // the definition of `props` in the signature but it's hard to track down
-        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-          ExtraProps<Rules>
-        >;
+      async protect(request, props?) {
+        // Cast of `{}` because here we switch from `undefined` to `Properties`.
+        const req = toArcjetRequest(request, props || ({} as Properties));
 
         const getBody = async () => {
           const clonedRequest = request.request.clone();
@@ -385,7 +384,9 @@ export default function arcjet<
 
         return aj.protect({ getBody }, req);
       },
-    });
+    };
+
+    return Object.freeze(client);
   }
 
   const aj = core({ ...options, client, log });

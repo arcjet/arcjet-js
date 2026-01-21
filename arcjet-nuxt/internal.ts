@@ -28,9 +28,20 @@ export * from "arcjet";
 
 declare const emptyObjectSymbol: unique symbol;
 
-interface Empty {
-  [emptyObjectSymbol]?: never;
-}
+/**
+ * Dynamically generate whether zero or one `properties` object must or can be passed.
+ */
+type MaybeProperties<T> =
+  // If all properties of `T` are optional:
+  { [P in keyof T]?: T[P] } extends T
+    ? // If `T` has no properties at all:
+      T extends { [emptyObjectSymbol]?: never }
+      ? // Then it is assumed that nothing can be passed.
+        []
+      : // Then it is assumed that the object can be omitted.
+        [properties?: T]
+    : // Then it is assumed the object must be passed.
+      [properties: T];
 
 /**
  * H3 event.
@@ -130,7 +141,7 @@ interface ArcjetH3NodeRequest {
  * @template Properties
  *   Configuration.
  */
-export interface ArcjetNuxt<Properties extends object> {
+export interface ArcjetNuxt<Properties extends Record<PropertyKey, unknown>> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -147,7 +158,7 @@ export interface ArcjetNuxt<Properties extends object> {
    */
   protect(
     event: ArcjetH3Event,
-    ...rest: Properties extends Empty ? [] : [Properties]
+    ...props: MaybeProperties<Properties>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -163,9 +174,9 @@ export interface ArcjetNuxt<Properties extends object> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Primitive | Product>(
-    rule: Rule,
-  ): ArcjetNuxt<Properties & ExtraProps<Rule>>;
+  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
+    rule: Primitive<ChildProperties> | Product<ChildProperties>,
+  ): ArcjetNuxt<Properties & ChildProperties>;
 }
 
 /**
@@ -288,6 +299,7 @@ export default function arcjet<
         const request = toArcjetRequest(
           state,
           details,
+          // Cast of `{}` because here we switch from `undefined` to `Properties`.
           properties ?? ({} as Properties),
         );
 

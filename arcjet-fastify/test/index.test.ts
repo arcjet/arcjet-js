@@ -462,7 +462,6 @@ test("`@arcjet/fastify`", async function (t) {
 
       ({ server, url } = await createSimpleServer({
         async decide(request) {
-          // @ts-expect-error: TODO: fix types: the field is optional.
           return arcjet.protect(request);
         },
       }));

@@ -493,7 +493,6 @@ test("should support a custom rule w/ optional extra fields", async function () 
 
   ({ server, url } = createSimpleServer({
     async decide(request) {
-      // @ts-expect-error: TODO: fix types: the field is optional.
       return arcjet.protect(request);
     },
     handler: arcjet.handler,

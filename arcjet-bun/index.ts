@@ -71,13 +71,25 @@ function errorMessage(err: unknown): string {
 // SOFTWARE.
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 declare const emptyObjectSymbol: unique symbol;
-type WithoutCustomProps = {
-  [emptyObjectSymbol]?: never;
-};
 
 type PlainObject = {
   [key: string]: unknown;
 };
+
+/**
+ * Dynamically generate whether zero or one `properties` object must or can be passed.
+ */
+type MaybeProperties<T> =
+  // If all properties of `T` are optional:
+  { [P in keyof T]?: T[P] } extends T
+    ? // If `T` has no properties at all:
+      T extends { [emptyObjectSymbol]?: never }
+      ? // Then it is assumed that nothing can be passed.
+        []
+      : // Then it is assumed that the object can be omitted.
+        [properties?: T]
+    : // Then it is assumed the object must be passed.
+      [properties: T];
 
 /**
  * Configuration for {@linkcode createRemoteClient}.
@@ -176,9 +188,7 @@ export interface ArcjetBun<Props extends PlainObject> {
    */
   protect(
     request: Request,
-    // We use this neat trick from https://stackoverflow.com/a/52318137 to make a single spread parameter
-    // that is required if the ExtraProps aren't strictly an empty object
-    ...props: Props extends WithoutCustomProps ? [] : [Props]
+    ...properties: MaybeProperties<Props>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -194,9 +204,9 @@ export interface ArcjetBun<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Primitive | Product>(
-    rule: Rule,
-  ): ArcjetBun<Simplify<Props & ExtraProps<Rule>>>;
+  withRule<ChildProperties extends PlainObject>(
+    rule: Primitive<ChildProperties> | Product<ChildProperties>,
+  ): ArcjetBun<Props & ChildProperties>;
 
   /**
    * Wrap the Bun `fetch` handler to provide additional details when calling
@@ -237,9 +247,7 @@ export default function arcjet<
   const Characteristics extends readonly string[],
 >(
   options: ArcjetOptions<Rules, Characteristics>,
-): ArcjetBun<
-  Simplify<ExtraProps<Rules> & CharacteristicProps<Characteristics>>
-> {
+): ArcjetBun<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
   const client = options.client ?? createRemoteClient();
 
   // Assuming the `handler()` function was used around Bun's fetch handler this
@@ -313,26 +321,17 @@ export default function arcjet<
     };
   }
 
-  function withClient<const Rules extends (Primitive | Product)[]>(
-    aj: Arcjet<ExtraProps<Rules>>,
-  ): ArcjetBun<ExtraProps<Rules>> {
-    return Object.freeze({
-      withRule(rule: Primitive | Product) {
+  function withClient<Properties extends PlainObject>(
+    aj: Arcjet<Properties>,
+  ): ArcjetBun<Properties> {
+    const client: ArcjetBun<Properties> = {
+      withRule(rule) {
         const client = aj.withRule(rule);
         return withClient(client);
       },
-      async protect(
-        request: Request,
-        ...[props]: ExtraProps<Rules> extends WithoutCustomProps
-          ? []
-          : [ExtraProps<Rules>]
-      ): Promise<ArcjetDecision> {
-        // TODO(#220): The generic manipulations get really mad here, so we cast
-        // Further investigation makes it seem like it has something to do with
-        // the definition of `props` in the signature but it's hard to track down
-        const req = toArcjetRequest(request, props ?? {}) as ArcjetRequest<
-          ExtraProps<Rules>
-        >;
+      async protect(request, props?) {
+        // Cast of `{}` because here we switch from `undefined` to `Properties`.
+        const req = toArcjetRequest(request, props || ({} as Properties));
 
         const getBody = async () => {
           if (request.bodyUsed) {
@@ -356,17 +355,8 @@ export default function arcjet<
 
         return aj.protect({ getBody }, req);
       },
-      handler(
-        fetch: (
-          this: Server<any>,
-          request: Request,
-          server: Server<any>,
-        ) => Response | Promise<Response>,
-      ) {
-        return async function (
-          request: Request,
-          server: Server<any>,
-        ): Promise<Response> {
+      handler(fetch) {
+        return async function (request, server) {
           const socketAddress = server.requestIP(request);
           if (socketAddress) {
             ipCache.set(request, socketAddress.address);
@@ -375,7 +365,9 @@ export default function arcjet<
           return fetch.call(server, request, server);
         };
       },
-    });
+    };
+
+    return Object.freeze(client);
   }
 
   const aj = core({ ...options, client, log });
