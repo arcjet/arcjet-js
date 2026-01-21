@@ -7,11 +7,21 @@
 
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ArcjetAllowDecision, ArcjetReason } from "@arcjet/protocol";
-import arcjetDeno, { sensitiveInfo } from "../index.js";
+import type { Client } from "@arcjet/protocol/client.js";
+import arcjetDeno, {
+  type ArcjetDeno,
+  type ArcjetRule,
+  ArcjetAllowDecision,
+  ArcjetDecision,
+  ArcjetReason,
+  ArcjetRuleResult,
+  sensitiveInfo,
+} from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
 const oneMegabyte = 1024 * 1024;
+
+let uniquePort = 3100;
 
 test("should expose the public api", async function () {
   assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
@@ -50,22 +60,17 @@ test("should support `sensitiveInfo`", async function () {
   const restore = capture();
 
   const arcjet = arcjetDeno({
-    client: {
-      async decide() {
-        // sensitiveInfo rule only runs locally.
-        return new ArcjetAllowDecision({
-          reason: new ArcjetReason(),
-          results: [],
-          ttl: 0,
-        });
-      },
-      report() {},
-    },
+    client: createLocalClient(),
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const { server, url } = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  });
 
   const response = await fetch(url, {
     body: "This is fine.",
@@ -85,17 +90,7 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
   let parameters: Array<unknown> | undefined;
 
   const arcjet = arcjetDeno({
-    client: {
-      async decide() {
-        // sensitiveInfo rule only runs locally.
-        return new ArcjetAllowDecision({
-          reason: new ArcjetReason(),
-          results: [],
-          ttl: 0,
-        });
-      },
-      report() {},
-    },
+    client: createLocalClient(),
     key: exampleKey,
     log: {
       debug() {},
@@ -109,10 +104,13 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
   });
 
   const { server, url } = createSimpleServer({
-    arcjet,
     async before(request) {
       body = await request.text();
     },
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
   });
 
   const response = await fetch(url, {
@@ -137,17 +135,7 @@ test("should support reading body after `sensitiveInfo`", async function () {
   let body: string | undefined;
 
   const arcjet = arcjetDeno({
-    client: {
-      async decide() {
-        // sensitiveInfo rule only runs locally.
-        return new ArcjetAllowDecision({
-          reason: new ArcjetReason(),
-          results: [],
-          ttl: 0,
-        });
-      },
-      report() {},
-    },
+    client: createLocalClient(),
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
@@ -156,7 +144,10 @@ test("should support reading body after `sensitiveInfo`", async function () {
     async after(request) {
       body = await request.text();
     },
-    arcjet,
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
   });
 
   const response = await fetch(url, {
@@ -176,11 +167,17 @@ test("should support `sensitiveInfo` on JSON", async function () {
   const restore = capture();
 
   const arcjet = arcjetDeno({
+    client: createLocalClient(),
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const { server, url } = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  });
 
   const response = await fetch(url, {
     body: JSON.stringify({ message: "My email is alice@arcjet.com" }),
@@ -198,11 +195,17 @@ test("should support `sensitiveInfo` on form data", async function () {
   const restore = capture();
 
   const arcjet = arcjetDeno({
+    client: createLocalClient(),
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const { server, url } = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  });
 
   const formData = new FormData();
   formData.append("message", "My email is My email is alice@arcjet.com");
@@ -223,11 +226,17 @@ test("should support `sensitiveInfo` on plain text", async function () {
   const restore = capture();
 
   const arcjet = arcjetDeno({
+    client: createLocalClient(),
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const { server, url } = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  });
 
   const response = await fetch(url, {
     body: "My email is alice@arcjet.com",
@@ -245,11 +254,17 @@ test("should support `sensitiveInfo` on streamed plain text", async function () 
   const restore = capture();
 
   const arcjet = arcjetDeno({
+    client: createLocalClient(),
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const { server, url } = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  });
 
   const response = await fetch(url, {
     body: new ReadableStream({
@@ -290,11 +305,17 @@ test("should support `sensitiveInfo` a megabyte of data", async function () {
   const restore = capture();
 
   const arcjet = arcjetDeno({
+    client: createLocalClient(),
     key: exampleKey,
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const { server, url } = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  });
   const message = "My email is alice@arcjet.com";
   const body = "a".repeat(oneMegabyte - message.length - 1) + " " + message;
 
@@ -316,17 +337,7 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   let parameters: Array<unknown> | undefined;
 
   const arcjet = arcjetDeno({
-    client: {
-      async decide() {
-        // sensitiveInfo rule only runs locally.
-        return new ArcjetAllowDecision({
-          reason: new ArcjetReason(),
-          results: [],
-          ttl: 0,
-        });
-      },
-      report() {},
-    },
+    client: createLocalClient(),
     key: exampleKey,
     log: {
       debug() {},
@@ -339,7 +350,12 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
-  const { server, url } = createSimpleServer({ arcjet });
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  });
   const message = "My email is alice@arcjet.com";
   const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
 
@@ -359,6 +375,244 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   ]);
 });
 
+test("should support a custom rule", async function () {
+  const restore = capture();
+  // Custom rule that denies requests when a `q` search parameter is `"alpha"`.
+  const denySearchAlpha: ArcjetRule<{}> = {
+    mode: "LIVE",
+    priority: 1,
+    async protect(_context, details) {
+      const parameters = new URLSearchParams(details.query);
+      const q = parameters.get("q");
+
+      if (q === "alpha") {
+        return new ArcjetRuleResult({
+          conclusion: "DENY",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      }
+
+      return new ArcjetRuleResult({
+        conclusion: "ALLOW",
+        fingerprint: "",
+        reason: new ArcjetReason(),
+        ruleId: "",
+        state: "RUN",
+        ttl: 0,
+      });
+    },
+    type: "",
+    validate() {},
+    version: 0,
+  };
+
+  const arcjet = arcjetDeno({
+    client: createLocalClient(),
+    key: exampleKey,
+    rules: [[denySearchAlpha]],
+  });
+
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  });
+
+  const responseAlpha = await fetch(url + "?q=alpha");
+  const responseBravo = await fetch(url + "?q=bravo");
+
+  await server.shutdown();
+  restore();
+
+  assert.equal(responseAlpha.status, 403);
+  assert.equal(responseBravo.status, 200);
+});
+
+test("should support a custom rule w/ optional extra fields", async function () {
+  const restore = capture();
+  // Custom rule that denies requests when an optional extra field is `"alpha"`.
+  const denyExtraAlpha: ArcjetRule<{ field?: string | null | undefined }> = {
+    mode: "LIVE",
+    priority: 1,
+    async protect(_context, details) {
+      const field = details.extra.field;
+
+      if (field === "alpha") {
+        return new ArcjetRuleResult({
+          conclusion: "DENY",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      }
+
+      return new ArcjetRuleResult({
+        conclusion: "ALLOW",
+        fingerprint: "",
+        reason: new ArcjetReason(),
+        ruleId: "",
+        state: "RUN",
+        ttl: 0,
+      });
+    },
+    type: "",
+    validate() {},
+    version: 0,
+  };
+
+  const arcjet = arcjetDeno({
+    client: createLocalClient(),
+    key: exampleKey,
+    rules: [[denyExtraAlpha]],
+  });
+
+  let { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request, { field: "alpha" });
+    },
+    handler: arcjet.handler,
+  });
+  const responseAlpha = await fetch(url);
+  await server.shutdown();
+
+  ({ server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request, { field: "bravo" });
+    },
+    handler: arcjet.handler,
+  }));
+  const responseBravo = await fetch(url);
+  await server.shutdown();
+
+  ({ server, url } = createSimpleServer({
+    async decide(request) {
+      // @ts-expect-error: TODO: fix types: the field is optional.
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  }));
+  const responseMissing = await fetch(url);
+  await server.shutdown();
+
+  restore();
+
+  assert.equal(responseAlpha.status, 403);
+  assert.equal(responseBravo.status, 200);
+  assert.equal(responseMissing.status, 200);
+});
+
+test("should support a custom rule w/ required extra fields", async function () {
+  const restore = capture();
+  // Custom rule that denies requests when a required extra field is `"alpha"`.
+  const denyExtraAlphaRequired: ArcjetRule<{ field: string }> = {
+    mode: "LIVE",
+    priority: 1,
+    async protect(_context, details) {
+      const field = details.extra.field;
+
+      // A local error result would be overwritten by the server but a
+      // local deny persists.
+      if (!field || field === "alpha") {
+        return new ArcjetRuleResult({
+          conclusion: "DENY",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      }
+
+      return new ArcjetRuleResult({
+        conclusion: "ALLOW",
+        fingerprint: "",
+        reason: new ArcjetReason(),
+        ruleId: "",
+        state: "RUN",
+        ttl: 0,
+      });
+    },
+    type: "",
+    validate() {},
+    version: 0,
+  };
+
+  const arcjet = arcjetDeno({
+    client: createLocalClient(),
+    key: exampleKey,
+    rules: [[denyExtraAlphaRequired]],
+  });
+
+  let { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request, { field: "alpha" });
+    },
+    handler: arcjet.handler,
+  });
+  const responseAlpha = await fetch(url);
+  await server.shutdown();
+
+  ({ server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request, { field: "bravo" });
+    },
+    handler: arcjet.handler,
+  }));
+  const responseBravo = await fetch(url);
+  await server.shutdown();
+
+  ({ server, url } = createSimpleServer({
+    async decide(request) {
+      // @ts-expect-error: type error is expected as this use is wrong.
+      return arcjet.protect(request);
+    },
+    handler: arcjet.handler,
+  }));
+  const responseMissing = await fetch(url);
+  await server.shutdown();
+
+  restore();
+
+  assert.equal(responseAlpha.status, 403);
+  assert.equal(responseBravo.status, 200);
+  assert.equal(responseMissing.status, 403);
+});
+
+/**
+ * Configuration for {@linkcode createSimpleServer}.
+ */
+export interface SimpleServerOptions {
+  /**
+   * Hook after the decision is made.
+   */
+  after?(request: Request): Promise<undefined> | undefined;
+  /**
+   * Hook before the decision is made.
+   */
+  before?(request: Request): Promise<undefined> | undefined;
+  /**
+   * Make a decision.
+   */
+  decide(request: Request): Promise<ArcjetDecision>;
+  /**
+   * Arcjet Deno handler.
+   */
+  handler: ArcjetDeno<any>["handler"];
+}
+
+/**
+ * Capture and restore environment variables.
+ *
+ * @returns
+ *   Restore function.
+ */
 function capture() {
   const currentArcjetEnv = Deno.env.get("ARCJET_ENV") ?? "";
   const currentArcjetLogLevel = Deno.env.get("ARCJET_LOG_LEVEL") ?? "";
@@ -368,26 +622,50 @@ function capture() {
 
   return restore;
 
+  /**
+   * Restore environment variables.
+   */
   function restore() {
     Deno.env.set("ARCJET_ENV", currentArcjetEnv);
     Deno.env.set("ARCJET_LOG_LEVEL", currentArcjetLogLevel);
   }
 }
 
-interface SimpleServerOptions {
-  after?(request: Request): Promise<undefined> | undefined;
-  arcjet: ReturnType<typeof arcjetDeno>;
-  before?(request: Request): Promise<undefined> | undefined;
+/**
+ * Create an empty client to not hit the internet but always decide as allow
+ * and never report.
+ *
+ * @returns
+ *   Client.
+ */
+export function createLocalClient(): Client {
+  return {
+    async decide() {
+      return new ArcjetAllowDecision({
+        reason: new ArcjetReason(),
+        results: [],
+        ttl: 0,
+      });
+    },
+    report() {},
+  };
 }
 
-let uniquePort = 3100;
+/**
+ * Create a simple server.
+ *
+ * @param options
+ *   Configuration (required).
+ * @returns
+ *   Simple server and its URL.
+ */
 function createSimpleServer(options: SimpleServerOptions) {
-  const { after, arcjet, before } = options;
+  const { after, before, decide, handler } = options;
   const server = Deno.serve(
     { port: uniquePort++, onListen() {} },
-    arcjet.handler(async function (request) {
+    handler(async function (request) {
       await before?.(request);
-      const decision = await arcjet.protect(request);
+      const decision = await decide(request);
       await after?.(request);
 
       if (decision.isErrored()) {
