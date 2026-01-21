@@ -77,18 +77,27 @@ function errorMessage(err: unknown): string {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-// TODO(@wooorm-arcjet): remove.
 declare const emptyObjectSymbol: unique symbol;
-
-// TODO(@wooorm-arcjet): remove.
-type WithoutCustomProps = {
-  [emptyObjectSymbol]?: never;
-};
 
 // TODO(@wooorm-arcjet): remove.
 type PlainObject = {
   [key: string]: unknown;
 };
+
+/**
+ * Dynamically generate whether zero or one `properties` object must or can be passed.
+ */
+type MaybeProperties<T> =
+  // If all properties of `T` are optional:
+  { [P in keyof T]?: T[P] } extends T
+    ? // If `T` has no properties at all:
+      T extends { [emptyObjectSymbol]?: never }
+      ? // Then it is assumed that nothing can be passed.
+        []
+      : // Then it is assumed that the object can be omitted.
+        [properties?: T]
+    : // Then it is assumed the object must be passed.
+      [properties: T];
 
 /**
  * Configuration for {@linkcode createRemoteClient}.
@@ -205,7 +214,7 @@ export interface ArcjetFastify<Props> {
    */
   protect(
     request: ArcjetFastifyRequest,
-    ...properties: Props extends WithoutCustomProps ? [] : [Props]
+    ...properties: MaybeProperties<Props>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -221,9 +230,9 @@ export interface ArcjetFastify<Props> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Primitive | Product>(
-    rules: Rule,
-  ): ArcjetFastify<Props & ExtraProps<Rule>>;
+  withRule<ChildProperties extends PlainObject>(
+    rule: Primitive<ChildProperties> | Product<ChildProperties>,
+  ): ArcjetFastify<Props & ChildProperties>;
 }
 
 /**
@@ -281,28 +290,20 @@ export default function arcjet<
     );
   }
 
-  function withClient<const Rules extends (Primitive | Product)[]>(
-    aj: Arcjet<ExtraProps<Rules>>,
-  ): ArcjetFastify<ExtraProps<Rules>> {
-    return Object.freeze({
-      async protect(
-        fastifyRequest: ArcjetFastifyRequest,
-        ...[properties]: ExtraProps<Rules> extends WithoutCustomProps
-          ? []
-          : [ExtraProps<Rules>]
-      ): Promise<ArcjetDecision> {
+  function withClient<Properties extends PlainObject>(
+    arcjetCore: Arcjet<Properties>,
+  ): ArcjetFastify<Properties> {
+    const client: ArcjetFastify<Properties> = {
+      async protect(fastifyRequest, properties?) {
         const arcjetRequest = toArcjetRequest(
           fastifyRequest,
           log,
           proxies,
-          properties || {},
+          // Cast of `{}` because here we switch from `undefined` to `Properties`.
+          properties || ({} as Properties),
         );
 
-        return aj.protect(
-          { getBody },
-          // @ts-expect-error: TODO(#220): fix types for arcjet requests.
-          arcjetRequest,
-        );
+        return arcjetCore.protect({ getBody }, arcjetRequest);
 
         async function getBody() {
           if (
@@ -319,11 +320,13 @@ export default function arcjet<
           return JSON.stringify(fastifyRequest.body);
         }
       },
-      withRule(rule: Primitive | Product) {
-        const childClient = aj.withRule(rule);
+      withRule(rule) {
+        const childClient = arcjetCore.withRule(rule);
         return withClient(childClient);
       },
-    });
+    };
+
+    return Object.freeze(client);
   }
 
   const childClient = arcjetCore({ ...options, client, log });
