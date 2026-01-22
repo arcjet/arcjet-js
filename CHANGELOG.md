@@ -1,5 +1,55 @@
 # Changelog
 
+## [1.0.0-beta.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.17...v1.0.0-beta.18) (2026-01-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **arcjet:** validate request details ([#5655](https://github.com/arcjet/arcjet-js/issues/5655))
+
+### 🚀 New Features
+
+* **sensitiveInfo:** add `sensitiveInfoValue` field ([#5678](https://github.com/arcjet/arcjet-js/issues/5678)) ([2263df7](https://github.com/arcjet/arcjet-js/commit/2263df74790168b0c5be73e8a6a4012f045c5901))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** validate request details ([#5655](https://github.com/arcjet/arcjet-js/issues/5655)) ([d43a4dc](https://github.com/arcjet/arcjet-js/commit/d43a4dc41ef136b4e5e803a57e2f40bb326872bd))
+
+
+### 📝 Documentation
+
+* **contributing:** describe publish flow ([#5622](https://github.com/arcjet/arcjet-js/issues/5622)) ([6921e4c](https://github.com/arcjet/arcjet-js/commit/6921e4c5066ff492a4e7761a6b4bcc7c481b6459))
+
+
+### 🧹 Miscellaneous Chores
+
+* deprecate automatic body reading ([#5679](https://github.com/arcjet/arcjet-js/issues/5679)) ([5f45291](https://github.com/arcjet/arcjet-js/commit/5f452910ca52906011dfb67d48b79bcc63f8ae15))
+* **examples:** remove 3rd party examples ([#5633](https://github.com/arcjet/arcjet-js/issues/5633)) ([1423f4f](https://github.com/arcjet/arcjet-js/commit/1423f4fb77376228d4c71b430276e349b0995009))
+* **tests:** make simple server responses more granular ([#5594](https://github.com/arcjet/arcjet-js/issues/5594)) ([5325949](https://github.com/arcjet/arcjet-js/commit/5325949788e7ef00a524ba68e658810e31595568))
+
+
+### 📚 Tests
+
+* add tests for custom rules with no, optional, required extra fields ([#5669](https://github.com/arcjet/arcjet-js/issues/5669)) ([3444528](https://github.com/arcjet/arcjet-js/commit/3444528c70ef0fa5fba058d97666ec3c2d64d6d7))
+* **logger:** add tests ([#5644](https://github.com/arcjet/arcjet-js/issues/5644)) ([6664747](https://github.com/arcjet/arcjet-js/commit/6664747c7a8e783f9f6b7f33e64364727234c02d))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump tar from 7.4.3 to 7.5.3 in /examples/nextjs-bot-categories ([#5652](https://github.com/arcjet/arcjet-js/issues/5652)) ([a83b417](https://github.com/arcjet/arcjet-js/commit/a83b417ab9584e29cf3450174826e1889e78f39f))
+* **deps-dev:** bump tar from 7.4.3 to 7.5.3 in /examples/nextjs-pages-wrap ([#5645](https://github.com/arcjet/arcjet-js/issues/5645)) ([dab263e](https://github.com/arcjet/arcjet-js/commit/dab263eee8753d0226ea2ac061bbdd6cffe7b04d))
+* **deps-dev:** bump tar from 7.4.3 to 7.5.4 in /examples/nextjs-decorate ([#5663](https://github.com/arcjet/arcjet-js/issues/5663)) ([b84e811](https://github.com/arcjet/arcjet-js/commit/b84e811e7fa660164f3e8ae2f13579a1fe5321e2))
+* **deps-dev:** bump tar from 7.4.3 to 7.5.6 in /examples/nextjs-sensitive-info ([#5668](https://github.com/arcjet/arcjet-js/issues/5668)) ([56e6356](https://github.com/arcjet/arcjet-js/commit/56e6356aa0fe2171e32fd981337316c62ab0d8a3))
+* **deps-dev:** bump tar from 7.5.3 to 7.5.6 in /examples/nextjs-pages-wrap ([#5667](https://github.com/arcjet/arcjet-js/issues/5667)) ([6cf1bd6](https://github.com/arcjet/arcjet-js/commit/6cf1bd6ba3cd49b78c536f36d359f49c66da54a9))
+* **deps:** bump devalue from 5.3.2 to 5.6.2 in /examples/nuxt ([#5641](https://github.com/arcjet/arcjet-js/issues/5641)) ([3a3ffba](https://github.com/arcjet/arcjet-js/commit/3a3ffba5a841ac99edfb7d0f8dd2be7d6f2df6cf))
+* **deps:** bump devalue from 5.5.0 to 5.6.2 in /examples/astro-integration ([#5637](https://github.com/arcjet/arcjet-js/issues/5637)) ([7da77c2](https://github.com/arcjet/arcjet-js/commit/7da77c2fe5cd7a3f76d9cd59f77c679a11796c77))
+* **deps:** bump diff and astro in /examples/astro ([#5664](https://github.com/arcjet/arcjet-js/issues/5664)) ([f17bb62](https://github.com/arcjet/arcjet-js/commit/f17bb62d977d6cafb7e85f9f213ea75ce4d4a237))
+* **deps:** bump h3 from 1.15.4 to 1.15.5 in /examples/astro-integration ([#5653](https://github.com/arcjet/arcjet-js/issues/5653)) ([c2d1048](https://github.com/arcjet/arcjet-js/commit/c2d1048bb21b71d33caf1333b67f16ee9feae28a))
+* **deps:** bump h3 from 1.15.4 to 1.15.5 in /examples/nuxt ([#5640](https://github.com/arcjet/arcjet-js/issues/5640)) ([740fdf1](https://github.com/arcjet/arcjet-js/commit/740fdf10ad43199b1b7b08ba0edcc4421b7134c4))
+* **deps:** bump tar from 7.5.2 to 7.5.3 in /examples/nuxt ([#5646](https://github.com/arcjet/arcjet-js/issues/5646)) ([b980e07](https://github.com/arcjet/arcjet-js/commit/b980e07ee5118d99b75b9d9b94afa46aa4f55235))
+* **publish:** remove tag event ([#5623](https://github.com/arcjet/arcjet-js/issues/5623)) ([83df410](https://github.com/arcjet/arcjet-js/commit/83df410f1bab5856a882ad318258945cc9174c20))
+
 ## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...v1.0.0-beta.17) (2026-01-13)
 
 

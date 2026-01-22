@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0-beta.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.17...@arcjet/protocol-v1.0.0-beta.18) (2026-01-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **arcjet:** validate request details ([#5655](https://github.com/arcjet/arcjet-js/issues/5655))
+
+### 🪲 Bug Fixes
+
+* **arcjet:** validate request details ([#5655](https://github.com/arcjet/arcjet-js/issues/5655)) ([d43a4dc](https://github.com/arcjet/arcjet-js/commit/d43a4dc41ef136b4e5e803a57e2f40bb326872bd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/rollup-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+
 ## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/protocol-v1.0.0-beta.17) (2026-01-13)
 
 
