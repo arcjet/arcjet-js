@@ -55,25 +55,6 @@ export async function request(): Promise<ArcjetNextRequest> {
   };
 }
 
-// TODO: Deduplicate with other packages
-function errorMessage(err: unknown): string {
-  if (err) {
-    if (typeof err === "string") {
-      return err;
-    }
-
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
-      return err.message;
-    }
-  }
-
-  return "Unknown problem";
-}
-
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
 //
