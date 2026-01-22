@@ -698,7 +698,7 @@ export default function arcjet<
             if (!warnedForAutomaticBodyRead) {
               warnedForAutomaticBodyRead = true;
               log.warn(
-                "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field.",
+                "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
               );
             }
             return readBodyWeb(clonedRequest.body, { expectedLength });

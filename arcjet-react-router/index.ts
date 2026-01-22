@@ -283,7 +283,7 @@ function createGetBody(state: State, details: ArcjetReactRouterRequest) {
     if (!warnedForAutomaticBodyRead) {
       warnedForAutomaticBodyRead = true;
       state.log.warn(
-        "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field.",
+        "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
       );
     }
 
