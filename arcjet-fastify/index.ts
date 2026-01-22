@@ -30,25 +30,6 @@ import arcjetCore from "arcjet";
 // we must be explicit about what is exported.
 export * from "arcjet";
 
-// TODO(@wooorm-arcjet): deduplicate.
-function errorMessage(err: unknown): string {
-  if (err) {
-    if (typeof err === "string") {
-      return err;
-    }
-
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
-      return err.message;
-    }
-  }
-
-  return "Unknown problem";
-}
-
 // TODO(@wooorm-arcjet): remove.
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
