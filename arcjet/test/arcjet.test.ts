@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
-
 import type { ArcjetRule, Primitive, Arcjet } from "../index.js";
 import arcjet, {
   detectBot,
@@ -2817,6 +2816,147 @@ describe("Primitive > sensitiveInfo", () => {
     assert.deepEqual(result.reason.allowed, []);
     assert.deepEqual(result.reason.denied, []);
     assert.equal(result.state, "RUN");
+  });
+
+  test("should support `sensitiveInfoValue`", async function () {
+    let getBodyCalled = false;
+    const context = {
+      cache: new TestCache(),
+      characteristics: [],
+      fingerprint: "",
+      async getBody() {
+        getBodyCalled = true;
+        return "";
+      },
+      key: "",
+      log: console,
+      runtime: "",
+    };
+    const details = {
+      cookies: "",
+      extra: {},
+      headers: new Headers(),
+      host: "example.com",
+      ip: "1.1.1.1",
+      method: "GET",
+      path: "/",
+      protocol: "http",
+      query: "",
+    };
+
+    const [rule] = sensitiveInfo({ allow: [], mode: "LIVE" });
+    const resultOk = await rule.protect(context, {
+      ...details,
+      extra: { sensitiveInfoValue: "Nothing to detect" },
+    });
+    assert.equal(getBodyCalled, false);
+    assert.equal(resultOk.conclusion, "ALLOW");
+    const resultNok = await rule.protect(context, {
+      ...details,
+      extra: { sensitiveInfoValue: "Hi alice@arcjet.com." },
+    });
+    assert.equal(getBodyCalled, false);
+    assert.equal(resultNok.conclusion, "DENY");
+  });
+
+  test("should not pass `sensitiveInfoValue` to `decide`", async function () {
+    const key = "";
+    const log = { ...console, debug() {} };
+    let extra: unknown;
+
+    const arcjetClient = arcjet({
+      key,
+      rules: [sensitiveInfo({ allow: [], mode: "LIVE" })],
+      client: {
+        async decide(_context, details) {
+          extra = details.extra;
+          return new ArcjetAllowDecision({
+            reason: new ArcjetTestReason(),
+            results: [],
+            ttl: 0,
+          });
+        },
+        report() {
+          throw new Error("Should not be reached");
+        },
+      },
+      log,
+    });
+
+    await arcjetClient.protect(
+      {
+        cache: new TestCache(),
+        characteristics: [],
+        fingerprint: "",
+        async getBody() {
+          return "";
+        },
+        key,
+        log,
+        runtime: "",
+      },
+      {
+        cookies: "",
+        headers: new Headers(),
+        host: "example.com",
+        ip: "1.1.1.1",
+        method: "GET",
+        path: "/",
+        protocol: "http",
+        query: "",
+        sensitiveInfoValue: "Is this sent to the server?",
+      },
+    );
+
+    assert.deepEqual(extra, { sensitiveInfoValue: "<redacted>" });
+  });
+
+
+  test("should not pass `sensitiveInfoValue` to `report``", async function () {
+    const key = "";
+    const log = { ...console, debug() {} };
+    let extra: unknown;
+
+    const arcjetClient = arcjet({
+      key,
+      rules: [sensitiveInfo({ allow: [], mode: "LIVE" })],
+      client: {
+        async decide() {
+          throw new Error("Should not be reached");
+        },
+        report(_context, details) {
+          extra = details.extra;
+        },
+      },
+      log,
+    });
+
+    await arcjetClient.protect(
+      {
+        cache: new TestCache(),
+        characteristics: [],
+        fingerprint: "",
+        async getBody() {
+          return "";
+        },
+        key,
+        log,
+        runtime: "",
+      },
+      {
+        cookies: "",
+        headers: new Headers(),
+        host: "example.com",
+        ip: "1.1.1.1",
+        method: "GET",
+        path: "/",
+        protocol: "http",
+        query: "",
+        sensitiveInfoValue: "Is alice@arcjet.com sent to the server?",
+      },
+    );
+
+    assert.deepEqual(extra, { sensitiveInfoValue: "<redacted>" });
   });
 });
 

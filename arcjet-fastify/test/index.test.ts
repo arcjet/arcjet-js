@@ -344,6 +344,37 @@ test("`@arcjet/fastify`", async function (t) {
   //   assert.equal(response.status, 403);
   // });
 
+  await t.test(
+    "should support `sensitiveInfo` w/ `sensitiveInfoValue`",
+    async function () {
+      const restore = capture();
+
+      const arcjet = arcjetFastify({
+        client: createLocalClient(),
+        key: exampleKey,
+        rules: [sensitiveInfo({ allow: [], mode: "LIVE" })],
+      });
+
+      const { server, url } = await createSimpleServer({
+        async decide(request) {
+          return arcjet.protect(request, {
+            sensitiveInfoValue: "My email is alice@arcjet.com",
+          });
+        },
+      });
+
+      const response = await fetch(url, {
+        headers: { "Content-Type": "text/plain" },
+        method: "POST",
+      });
+
+      await server.close();
+      restore();
+
+      assert.equal(response.status, 403);
+    },
+  );
+
   await t.test("should support a custom rule", async function () {
     const restore = capture();
     // Custom rule that denies requests when a `q` search parameter is `"alpha"`.

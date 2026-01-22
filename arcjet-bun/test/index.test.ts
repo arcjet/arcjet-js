@@ -373,6 +373,35 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   ]);
 });
 
+test("should support `sensitiveInfo` w/ `sensitiveInfoValue`", async function () {
+  const restore = capture();
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    key: exampleKey,
+    rules: [sensitiveInfo({ allow: [], mode: "LIVE" })],
+  });
+
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request, {
+        sensitiveInfoValue: "My email is alice@arcjet.com",
+      });
+    },
+    handler: arcjet.handler,
+  });
+
+  const response = await fetch(url, {
+    headers: { "Content-Type": "text/plain" },
+    method: "POST",
+  });
+
+  await server.stop();
+  restore();
+
+  assert.equal(response.status, 403);
+});
+
 test("should support a custom rule", async function () {
   const restore = capture();
   // Custom rule that denies requests when a `q` search parameter is `"alpha"`.
