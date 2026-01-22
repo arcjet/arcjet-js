@@ -6,7 +6,6 @@
     "paths": {
       "npm:@arcjet/deno": ["../../arcjet-deno/index.ts"]
     },
-    "skipLibCheck": true,
     "strict": true,
     "target": "es2022"
   }
