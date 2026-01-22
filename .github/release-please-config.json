@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "versioning": "prerelease",
+  "versioning": "default",
   "release-type": "node",
   "changelog-path": "CHANGELOG.md",
   "changelog-sections": [
