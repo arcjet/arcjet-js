@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/protocol",
-  "version": "1.0.0-beta.18",
+  "version": "1.0.0",
   "description": "The TypeScript & JavaScript interface into the Arcjet protocol",
   "keywords": [
     "arcjet",
@@ -50,14 +50,14 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/cache": "1.0.0-beta.18",
+    "@arcjet/cache": "1.0.0",
     "@bufbuild/protobuf": "1.10.1",
     "@connectrpc/connect": "1.6.1",
     "typeid-js": "1.2.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.0.0-beta.18",
-    "@arcjet/rollup-config": "1.0.0-beta.18",
+    "@arcjet/eslint-config": "1.0.0",
+    "@arcjet/rollup-config": "1.0.0",
     "@rollup/wasm-node": "4.55.1",
     "@types/node": "25.0.8",
     "eslint": "9.39.2",
