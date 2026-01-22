@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remi
 import { json } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 
-import { aj } from "../arcjet";
+import { arcjet, arcjetWithSensitiveInfo } from "../arcjet";
 
 export const meta: MetaFunction = () => {
   return [
@@ -12,7 +12,7 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader(args: LoaderFunctionArgs) {
-  const decision = await aj.protect(args);
+  const decision = await arcjet.protect(args);
 
   if (decision.isDenied()) {
     throw new Response(null, { status: 429, statusText: "Too Many Requests" })
@@ -22,7 +22,9 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export async function action(args: ActionFunctionArgs) {
-  const decision = await aj.protect(args);
+  const data = await args.request.formData();
+  const text = data.get("text")?.toString();
+  const decision = await arcjetWithSensitiveInfo.protect(args, { sensitiveInfoValue: text });
 
   if (decision.isDenied()) {
     throw new Response(null, { status: 400, statusText: "Form contains sensitive info" })

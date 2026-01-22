@@ -30,6 +30,8 @@ import { createTransport } from "@arcjet/transport";
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
 
+let warnedForAutomaticBodyRead = false;
+
 /**
  * Get minimal request details (cookies, headers).
  *
@@ -693,6 +695,12 @@ export default function arcjet<
               throw new Error("Cannot read body: body is missing");
             }
 
+            if (!warnedForAutomaticBodyRead) {
+              warnedForAutomaticBodyRead = true;
+              log.warn(
+                "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field.",
+              );
+            }
             return readBodyWeb(clonedRequest.body, { expectedLength });
           }
 

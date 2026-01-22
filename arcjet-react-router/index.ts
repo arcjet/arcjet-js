@@ -26,6 +26,8 @@ import type { ReadableStream } from "node:stream/web";
 
 export * from "arcjet";
 
+let warnedForAutomaticBodyRead = false;
+
 declare const emptyObjectSymbol: unique symbol;
 
 /**
@@ -228,7 +230,7 @@ export default function arcjet<
     const client: ArcjetReactRouter<Properties> = {
       async protect(details, properties?) {
         const context: ArcjetAdapterContext = {
-          getBody: createGetBody(details),
+          getBody: createGetBody(state, details),
         };
         const request = toArcjetRequest(
           state,
@@ -258,7 +260,7 @@ export default function arcjet<
  * @returns
  *   Function to get the body of the request.
  */
-function createGetBody(details: ArcjetReactRouterRequest) {
+function createGetBody(state: State, details: ArcjetReactRouterRequest) {
   /**
    * Read the request body.
    *
@@ -276,6 +278,13 @@ function createGetBody(details: ArcjetReactRouterRequest) {
     // HEAD and GET requests do not have a body.
     if (!clonedRequest.body) {
       throw new Error("Cannot read body: body is missing");
+    }
+
+    if (!warnedForAutomaticBodyRead) {
+      warnedForAutomaticBodyRead = true;
+      state.log.warn(
+        "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field.",
+      );
     }
 
     return readBodyWeb(clonedRequest.body, { expectedLength });

@@ -2911,7 +2911,6 @@ describe("Primitive > sensitiveInfo", () => {
     assert.deepEqual(extra, { sensitiveInfoValue: "<redacted>" });
   });
 
-
   test("should not pass `sensitiveInfoValue` to `report``", async function () {
     const key = "";
     const log = { ...console, debug() {} };

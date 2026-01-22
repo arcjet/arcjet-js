@@ -1,4 +1,4 @@
-import { arcjet, fixedWindow, sensitiveInfo, shield } from "#arcjet";
+import arcjet, { fixedWindow, sensitiveInfo, shield } from "#arcjet";
 
 const aj = arcjet({
   rules: [
@@ -9,7 +9,8 @@ const aj = arcjet({
 });
 
 export default defineEventHandler(async function (event) {
-  const decision = await aj.protect(event);
+  const value = await readBody(event);
+  const decision = await aj.protect(event, { sensitiveInfoValue: value });
 
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {

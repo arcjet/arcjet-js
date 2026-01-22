@@ -22,23 +22,9 @@ export default function Home(properties: Route.ComponentProps): ReactNode {
         Sensitive info
       </h2>
       <p>
-        Post with and without sensitive info (IP addresses, emails, and more)
-        in the text area below.
-        The request body is analyzed entirely on your server:
-        no sensitive info is sent to Arcjet.
+        This example does not use <code>sensitiveInfo</code> because middleware should not read the body.
+        See <code>examples/react-router</code> for a non-middleware example that uses <code>sensitiveInfo</code>.
       </p>
-      <textarea
-        cols={80}
-        defaultValue="Some IP address 192.168.1.1 and an email user@example.com."
-        name="text"
-        rows={3}
-      />
-      <div className="footer">
-        <button type="submit">
-          Check sensitive info
-        </button>
-        {message ? (<span>{message}</span>) : undefined}
-      </div>
     </Form>
   );
 }
@@ -49,10 +35,6 @@ export async function action(actionArguments: Route.ActionArgs): Promise<{ messa
   const decision = actionArguments.context.get(arcjetDecisionContext);
 
   if (decision?.isDenied()) {
-    if (decision.reason.isSensitiveInfo()) {
-      return { message: "Form contains sensitive info." };
-    }
-
     throw new Response(undefined, { statusText: "Forbidden", status: 403 });
   }
 

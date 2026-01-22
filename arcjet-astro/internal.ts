@@ -28,6 +28,8 @@ import {
   VERCEL,
 } from "astro:env/server";
 
+let warnedForAutomaticBodyRead = false;
+
 // We use a middleware to store the IP address on a `Request` with this symbol.
 // This is due to Astro inconsistently using `Symbol.for("astro.clientAddress")`
 // to store the client address and not exporting it from their module.
@@ -341,6 +343,13 @@ export function createArcjetClient<
           // HEAD and GET requests do not have a body.
           if (!clonedRequest.body) {
             throw new Error("Cannot read body: body is missing");
+          }
+
+          if (!warnedForAutomaticBodyRead) {
+            warnedForAutomaticBodyRead = true;
+            log.warn(
+              "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field.",
+            );
           }
 
           return readBodyWeb(clonedRequest.body, { expectedLength });

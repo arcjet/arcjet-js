@@ -58,10 +58,19 @@ test("should expose the public api", async function () {
 
 test("should support `sensitiveInfo`", async function () {
   const restore = capture();
+  const warnings: Array<Array<unknown>> = [];
 
   const arcjet = arcjetBun({
     client: createLocalClient(),
     key: exampleKey,
+    log: {
+      debug() {},
+      error() {},
+      info() {},
+      warn(...parameters) {
+        warnings.push([...parameters]);
+      },
+    },
     rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
   });
 
@@ -82,6 +91,14 @@ test("should support `sensitiveInfo`", async function () {
   restore();
 
   assert.equal(response.status, 200);
+  assert.deepEqual(warnings, [
+    [
+      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
+    ],
+    [
+      "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field.",
+    ],
+  ]);
 });
 
 test("should emit an error log when the body is read before `sensitiveInfo`", async function () {
