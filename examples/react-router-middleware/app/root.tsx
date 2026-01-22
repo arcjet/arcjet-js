@@ -1,4 +1,4 @@
-import arcjet, { fixedWindow, sensitiveInfo, shield } from "@arcjet/react-router";
+import arcjetReactRouter, { fixedWindow, shield } from "@arcjet/react-router";
 import {
   Links,
   Meta,
@@ -12,11 +12,12 @@ import type { Route } from "./+types/root";
 import { arcjetDecisionContext } from "./context";
 import "./app.css";
 
-const aj = arcjet({
+const arcjet = arcjetReactRouter({
   key: process.env.ARCJET_KEY!,
   rules: [
     fixedWindow({ max: 5, mode: "LIVE", window: "10s" }),
-    sensitiveInfo({ allow: [], mode: "LIVE" }),
+    // This example does not use `sensitiveInfo` because middleware should not read the body.
+    // See `examples/react-router` for a non-middleware example that uses `sensitiveInfo`.
     shield({ mode: "LIVE" }),
   ]
 })
@@ -79,7 +80,7 @@ export function Layout(properties: LayoutProperties): ReactNode {
 
 export const middleware: Array<Route.MiddlewareFunction> = [
   async function arcjetDecisionMiddleware(details, next) {
-    details.context.set(arcjetDecisionContext, await aj.protect(details));
+    details.context.set(arcjetDecisionContext, await arcjet.protect(details));
 
     return next();
   }

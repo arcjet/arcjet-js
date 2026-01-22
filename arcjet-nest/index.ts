@@ -36,6 +36,8 @@ import type {
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
 
+let warnedForAutomaticBodyRead = false;
+
 // TODO: Deduplicate with other packages
 function errorMessage(err: unknown): string {
   if (err) {
@@ -464,6 +466,13 @@ function arcjet<
             const expectedLengthStr = headers.get("content-length");
             if (typeof expectedLengthStr === "string") {
               expectedLength = parseInt(expectedLengthStr, 10);
+            }
+
+            if (!warnedForAutomaticBodyRead) {
+              warnedForAutomaticBodyRead = true;
+              log.warn(
+                "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
+              );
             }
 
             return readBody(request, { expectedLength });

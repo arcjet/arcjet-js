@@ -54,6 +54,8 @@ const env: Env = {
   },
 } satisfies { [K in keyof Env]-?: unknown };
 
+let warnedForAutomaticBodyRead = false;
+
 // TODO: Deduplicate with other packages
 function errorMessage(err: unknown): string {
   if (err) {
@@ -471,6 +473,12 @@ export default function arcjet<
               expectedLength = parseInt(expectedLengthStr, 10);
             }
 
+            if (!warnedForAutomaticBodyRead) {
+              warnedForAutomaticBodyRead = true;
+              log.warn(
+                "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
+              );
+            }
             return readBody(request, { expectedLength });
           }
 

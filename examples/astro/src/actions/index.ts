@@ -82,9 +82,10 @@ export const server = {
     input: z.object({
       content: z.string(),
     }),
-    handler: async (_input, { request }) => {
+    handler: async (input, { request }) => {
       const decision = await arcjetSensitiveInfoClient
-        .protect(request);
+        .protect(request, {sensitiveInfoValue: input.content});
+
       if (decision.isDenied()) {
         if (decision.reason.isSensitiveInfo()) {
           throw new ActionError({

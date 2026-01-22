@@ -1,6 +1,6 @@
-import arcjet, { fixedWindow, sensitiveInfo, shield } from "@arcjet/remix";
+import arcjetRemix, { fixedWindow, sensitiveInfo, shield } from "@arcjet/remix";
 
-export const aj = arcjet({
+export const arcjet = arcjetRemix({
     key: process.env.ARCJET_KEY!,
     rules: [
         shield({ mode: "LIVE" }),
@@ -9,9 +9,12 @@ export const aj = arcjet({
             window: "10s",
             max: 5
         }),
-        sensitiveInfo({
-            mode: "LIVE",
-            allow: []
-        }),
     ]
 })
+
+export const arcjetWithSensitiveInfo = arcjet.withRule(
+    sensitiveInfo({
+        mode: "LIVE",
+        allow: []
+    })
+)

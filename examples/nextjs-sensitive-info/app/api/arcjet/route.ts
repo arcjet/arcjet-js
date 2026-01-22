@@ -31,7 +31,8 @@ const aj = arcjet({
 });
 
 export async function POST(req: Request) {
-  const decision = await aj.protect(req);
+  const value = await req.text();
+  const decision = await aj.protect(req, { sensitiveInfoValue: value });
 
   if (decision.isDenied()) {
     return NextResponse.json(

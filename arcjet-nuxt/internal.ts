@@ -26,6 +26,8 @@ import arcjetCore, {
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
 
+let warnedForAutomaticBodyRead = false;
+
 declare const emptyObjectSymbol: unique symbol;
 
 /**
@@ -294,7 +296,7 @@ export default function arcjet<
     const client: ArcjetNuxt<Properties> = {
       async protect(details, properties?) {
         const context: ArcjetAdapterContext = {
-          getBody: createGetBody(details),
+          getBody: createGetBody(state, details),
         };
         const request = toArcjetRequest(
           state,
@@ -317,12 +319,14 @@ export default function arcjet<
 /**
  * Create a function to get the body of the request.
  *
+ * @param state
+ *   Info passed around.
  * @param event
  *   H3 event.
  * @returns
  *   Function to get the body of the request.
  */
-function createGetBody(event: ArcjetH3Event) {
+function createGetBody(state: State, event: ArcjetH3Event) {
   /**
    * Read the request body.
    *
@@ -336,6 +340,13 @@ function createGetBody(event: ArcjetH3Event) {
       const expectedLengthStr = headers.get("content-length");
       if (typeof expectedLengthStr === "string") {
         expectedLength = parseInt(expectedLengthStr, 10);
+      }
+
+      if (!warnedForAutomaticBodyRead) {
+        warnedForAutomaticBodyRead = true;
+        state.log.warn(
+          "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
+        );
       }
 
       return readBody(event.node.req, { expectedLength });

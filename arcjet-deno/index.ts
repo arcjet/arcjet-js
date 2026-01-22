@@ -21,6 +21,8 @@ import { createTransport } from "@arcjet/transport";
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
 
+let warnedForAutomaticBodyRead = false;
+
 // TODO: Deduplicate with other packages
 function errorMessage(err: unknown): string {
   if (err) {
@@ -343,6 +345,13 @@ export default function arcjet<
           // HEAD and GET requests do not have a body.
           if (!clonedRequest.body) {
             throw new Error("Cannot read body: body is missing");
+          }
+
+          if (!warnedForAutomaticBodyRead) {
+            warnedForAutomaticBodyRead = true;
+            log.warn(
+              "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
+            );
           }
 
           return readBodyWeb(clonedRequest.body, { expectedLength });
