@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/react-router-v1.0.0) (2026-01-22)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/react-router:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.0.0-beta.18 to 1.0.0
+    * @arcjet/env bumped from 1.0.0-beta.18 to 1.0.0
+    * @arcjet/headers bumped from 1.0.0-beta.18 to 1.0.0
+    * @arcjet/ip bumped from 1.0.0-beta.18 to 1.0.0
+    * @arcjet/logger bumped from 1.0.0-beta.18 to 1.0.0
+    * @arcjet/protocol bumped from 1.0.0-beta.18 to 1.0.0
+    * @arcjet/transport bumped from 1.0.0-beta.18 to 1.0.0
+    * arcjet bumped from 1.0.0-beta.18 to 1.0.0
+  * devDependencies
+    * @arcjet/cache bumped from 1.0.0-beta.18 to 1.0.0
+    * @arcjet/eslint-config bumped from 1.0.0-beta.18 to 1.0.0
+    * @arcjet/rollup-config bumped from 1.0.0-beta.18 to 1.0.0
+
 ## [1.0.0-beta.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.17...@arcjet/react-router-v1.0.0-beta.18) (2026-01-22)
 
 

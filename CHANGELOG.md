@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...v1.0.0) (2026-01-22)
+
+
+### 🧹 Miscellaneous Chores
+
+* remove some unused code ([a79cd5f](https://github.com/arcjet/arcjet-js/commit/a79cd5fe4ed9f201a534254ded0b58e311a3d571))
+* use stable versioning in release please ([91a6f67](https://github.com/arcjet/arcjet-js/commit/91a6f670e99f303ccff146092b4538590eee7d36))
+
+
+### ✅ Continuous Integration
+
+* Add missing linked packages ([3702080](https://github.com/arcjet/arcjet-js/commit/370208012ef3949b0c545b7979479b6e50de9e95))
+
 ## [1.0.0-beta.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.17...v1.0.0-beta.18) (2026-01-22)
 
 
