@@ -2871,9 +2871,9 @@ describe("Primitive > sensitiveInfo", () => {
         async decide(_context, details) {
           extra = details.extra;
           return new ArcjetAllowDecision({
-            ttl: 0,
             reason: new ArcjetTestReason(),
             results: [],
+            ttl: 0,
           });
         },
         report() {
@@ -2926,11 +2926,6 @@ describe("Primitive > sensitiveInfo", () => {
         },
         report(_context, details) {
           extra = details.extra;
-          return new ArcjetAllowDecision({
-            ttl: 0,
-            reason: new ArcjetTestReason(),
-            results: [],
-          });
         },
       },
       log,
