@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0-beta.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.17...@arcjet/nuxt-v1.0.0-beta.18) (2026-01-22)
+
+
+### 🧹 Miscellaneous Chores
+
+* deprecate automatic body reading ([#5679](https://github.com/arcjet/arcjet-js/issues/5679)) ([5f45291](https://github.com/arcjet/arcjet-js/commit/5f452910ca52906011dfb67d48b79bcc63f8ae15))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/env bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/headers bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/ip bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/logger bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/protocol bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/transport bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * arcjet bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/rollup-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+
 ## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/nuxt-v1.0.0-beta.17) (2026-01-13)
 
 

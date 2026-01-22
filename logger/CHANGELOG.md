@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-beta.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.17...@arcjet/logger-v1.0.0-beta.18) (2026-01-22)
+
+
+### 📚 Tests
+
+* **logger:** add tests ([#5644](https://github.com/arcjet/arcjet-js/issues/5644)) ([6664747](https://github.com/arcjet/arcjet-js/commit/6664747c7a8e783f9f6b7f33e64364727234c02d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/sprintf bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/rollup-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+
 ## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/logger-v1.0.0-beta.17) (2026-01-13)
 
 

@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.0.0-beta.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.17...@arcjet/bun-v1.0.0-beta.18) (2026-01-22)
+
+
+### 🚀 New Features
+
+* **sensitiveInfo:** add `sensitiveInfoValue` field ([#5678](https://github.com/arcjet/arcjet-js/issues/5678)) ([2263df7](https://github.com/arcjet/arcjet-js/commit/2263df74790168b0c5be73e8a6a4012f045c5901))
+
+
+### 🧹 Miscellaneous Chores
+
+* deprecate automatic body reading ([#5679](https://github.com/arcjet/arcjet-js/issues/5679)) ([5f45291](https://github.com/arcjet/arcjet-js/commit/5f452910ca52906011dfb67d48b79bcc63f8ae15))
+* **tests:** make simple server responses more granular ([#5594](https://github.com/arcjet/arcjet-js/issues/5594)) ([5325949](https://github.com/arcjet/arcjet-js/commit/5325949788e7ef00a524ba68e658810e31595568))
+
+
+### 📚 Tests
+
+* add tests for custom rules with no, optional, required extra fields ([#5669](https://github.com/arcjet/arcjet-js/issues/5669)) ([3444528](https://github.com/arcjet/arcjet-js/commit/3444528c70ef0fa5fba058d97666ec3c2d64d6d7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/env bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/headers bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/ip bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/logger bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/protocol bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/transport bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * arcjet bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/rollup-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+
 ## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...@arcjet/bun-v1.0.0-beta.17) (2026-01-13)
 
 

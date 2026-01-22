@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.0.0-beta.18](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.17...arcjet-v1.0.0-beta.18) (2026-01-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **arcjet:** validate request details ([#5655](https://github.com/arcjet/arcjet-js/issues/5655))
+
+### 🚀 New Features
+
+* **sensitiveInfo:** add `sensitiveInfoValue` field ([#5678](https://github.com/arcjet/arcjet-js/issues/5678)) ([2263df7](https://github.com/arcjet/arcjet-js/commit/2263df74790168b0c5be73e8a6a4012f045c5901))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** validate request details ([#5655](https://github.com/arcjet/arcjet-js/issues/5655)) ([d43a4dc](https://github.com/arcjet/arcjet-js/commit/d43a4dc41ef136b4e5e803a57e2f40bb326872bd))
+
+
+### 🧹 Miscellaneous Chores
+
+* deprecate automatic body reading ([#5679](https://github.com/arcjet/arcjet-js/issues/5679)) ([5f45291](https://github.com/arcjet/arcjet-js/commit/5f452910ca52906011dfb67d48b79bcc63f8ae15))
+
+
+### 📚 Tests
+
+* add tests for custom rules with no, optional, required extra fields ([#5669](https://github.com/arcjet/arcjet-js/issues/5669)) ([3444528](https://github.com/arcjet/arcjet-js/commit/3444528c70ef0fa5fba058d97666ec3c2d64d6d7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/cache bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/duration bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/headers bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/protocol bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/runtime bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/stable-hash bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+    * @arcjet/rollup-config bumped from 1.0.0-beta.17 to 1.0.0-beta.18
+
 ## [1.0.0-beta.17](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.16...arcjet-v1.0.0-beta.17) (2026-01-13)
 
 
