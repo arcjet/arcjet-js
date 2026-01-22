@@ -2057,6 +2057,15 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  * You can also provide a custom detection function to identify additional
  * sensitive information.
  *
+ * You should pass the value to check to `protect`:
+ *
+ * ```js
+ * const decision = await arcjet.protect(request, { sensitiveInfoValue: "..." });
+ * ```
+ *
+ * The entire request body is checked if no value is provided.
+ * This behavior is deprecated: prefer passing the value explicitly.
+ *
  * @template DetectedEntities
  *   Custom entity names that are returned from `detect` and optionally listed
  *   in `allow` or `deny`.
@@ -2120,7 +2129,7 @@ export function sensitiveInfo<
     | Exclude<DetectedEntities, undefined>,
 >(
   options: SensitiveInfoOptions<DetectedEntities, ListedEntities>,
-): Primitive<{}> {
+): Primitive<{ sensitiveInfoValue?: string | null | undefined }> {
   validateSensitiveInfoOptions(options);
 
   if (
@@ -2146,7 +2155,9 @@ export function sensitiveInfo<
   const allow = options.allow || [];
   const deny = options.deny || [];
 
-  const rule: ArcjetSensitiveInfoRule<{}> = {
+  const rule: ArcjetSensitiveInfoRule<{
+    sensitiveInfoValue?: string | null | undefined;
+  }> = {
     version,
     priority: Priority.SensitiveInfo,
     type,
@@ -2156,6 +2167,9 @@ export function sensitiveInfo<
 
     validate(_context, details) {
       validateDetails(details);
+      // Extra fields are turned into `string` by SDKs and moved onto `extra`.
+      // `extra` is already validated to be a `Record<string, string>`.
+      // The field is optional so no additional validation is needed.
     },
 
     async protect(
@@ -2175,27 +2189,31 @@ export function sensitiveInfo<
       // No cache is implemented here because the fingerprint can be the same
       // while the request body changes. This is also why the `sensitiveInfo`
       // rule results always have a `ttl` of 0.
-      let body: string;
+      let value: string;
 
-      try {
-        body = await context.getBody();
-      } catch (error) {
-        context.log.error(
-          "failed to get request body: %s",
-          errorMessage(error),
-        );
+      if ("sensitiveInfoValue" in details.extra) {
+        value = details.extra.sensitiveInfoValue;
+      } else {
+        try {
+          value = await context.getBody();
+        } catch (error) {
+          context.log.error(
+            "failed to get request body: %s",
+            errorMessage(error),
+          );
 
-        return new ArcjetRuleResult({
-          ruleId,
-          fingerprint,
-          ttl: 0,
-          state: "NOT_RUN",
-          conclusion: "ERROR",
-          reason: new ArcjetErrorReason(
-            "Cannot read body for sensitive info detection: " +
-              errorMessage(error),
-          ),
-        });
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state: "NOT_RUN",
+            conclusion: "ERROR",
+            reason: new ArcjetErrorReason(
+              "Cannot read body for sensitive info detection: " +
+                errorMessage(error),
+            ),
+          });
+        }
       }
 
       let convertedDetect = undefined;
@@ -2234,7 +2252,7 @@ export function sensitiveInfo<
 
       const result = await analyze.detectSensitiveInfo(
         context,
-        body,
+        value,
         entities,
         options.contextWindowSize || 1,
         convertedDetect,
@@ -3146,6 +3164,15 @@ export default function arcjet<
       email: typeof request.email === "string" ? request.email : undefined,
     });
 
+    // Copy of the request details for remote use, which redacts sensitive info.
+    let remoteDetails = { ...details, extra: { ...details.extra } };
+
+    if (remoteDetails.extra.sensitiveInfoValue !== undefined) {
+      remoteDetails.extra.sensitiveInfoValue = "<redacted>";
+    }
+
+    remoteDetails = Object.freeze(remoteDetails);
+
     const characteristics = options.characteristics
       ? [...options.characteristics]
       : [];
@@ -3217,7 +3244,7 @@ export default function arcjet<
 
       client.report(
         context,
-        details,
+        remoteDetails,
         decision,
         // No rules because we've determined they were too long and we don't
         // want to try to send them to the server
@@ -3334,7 +3361,7 @@ export default function arcjet<
             // Only a DENY decision is reported to avoid creating 2 entries for
             // a request. Upon ALLOW, the `decide` call will create an entry for
             // the request.
-            client.report(context, details, decision, rules);
+            client.report(context, remoteDetails, decision, rules);
 
             if (result.ttl > 0) {
               log.debug(
@@ -3377,7 +3404,7 @@ export default function arcjet<
     try {
       const logDediceApiPerf = perf.measure("decideApi");
       const decision = await client
-        .decide(context, details, rules)
+        .decide(context, remoteDetails, rules)
         .finally(() => {
           logDediceApiPerf();
         });
@@ -3415,7 +3442,7 @@ export default function arcjet<
         results,
       });
 
-      client.report(context, details, decision, rules);
+      client.report(context, remoteDetails, decision, rules);
 
       return decision;
     } finally {
