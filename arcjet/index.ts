@@ -157,7 +157,7 @@ function isUnknownRequestProperty(key: string) {
 /**
  * List of JSON fields on {@linkcode ArcjetRequest}.
  */
-const jsonFields: ReadonlyArray<string> = [];
+const jsonFields: ReadonlyArray<string> = ["filterLocal"];
 
 /**
  * Check if a field is a known JSON field.
@@ -654,8 +654,8 @@ function validateStringRecord(
   path: string,
   value: unknown,
 ): asserts value is Record<PropertyKey, string> {
-  if (value === null || typeof value !== "object") {
-    throw new Error(`invalid value for \`${path}\` - expected object`);
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`invalid value for \`${path}\` - expected plain object`);
   }
 
   for (const [field, subvalue] of Object.entries(value)) {
@@ -1776,7 +1776,7 @@ export function tokenBucket<
       capacity,
       validate(_context, details) {
         validateDetails(details);
-        // The `requested` number is turned into `string` by SDKs and moved onto `extra`.
+        // The `requested` number is turned into `string` by `arcjet.protect` and moved onto `extra`.
         // `extra` is already validated to be a `Record<string, string>`.
         assert(
           typeof details.extra.requested === "string",
@@ -2343,7 +2343,7 @@ export function sensitiveInfo<
 
       validate(_context, details) {
         validateDetails(details);
-        // Extra fields are turned into `string` by SDKs and moved onto `extra`.
+        // Extra fields are turned into `string` by `arcjet.protect` and moved onto `extra`.
         // `extra` is already validated to be a `Record<string, string>`.
         // The field is optional so no additional validation is needed.
       },
@@ -3129,12 +3129,16 @@ export function filter(options: FilterOptions): [ArcjetFilterRule] {
         }
 
         const request_ = toAnalyzeRequest(request);
+        // `extra` fields are turned into `string`.
+        // `validate` already checked `filterLocal` to be a `Record<string, string>`.
+        const fields = request.extra.filterLocal || "{}";
         let ruleResult: ArcjetRuleResult;
 
         try {
           const result = await analyze.matchFilters(
             context,
             request_,
+            fields,
             allow.length > 0 ? allow : deny,
             allow.length > 0,
           );
@@ -3163,6 +3167,13 @@ export function filter(options: FilterOptions): [ArcjetFilterRule] {
       type,
       validate(_context, details) {
         validateDetails(details);
+        // The `filterLocal` is turned into `string` by `arcjet.protect` and moved onto `extra`.
+        // `extra` is already validated to be a `Record<string, string>`.
+        if (details.extra.filterLocal) {
+          // Let it throw if non-JSON.
+          const fields = JSON.parse(details.extra.filterLocal);
+          validateStringRecord("filterLocal", fields);
+        }
       },
       version,
     },
@@ -3322,11 +3333,14 @@ export default function arcjet<
       email: typeof request.email === "string" ? request.email : undefined,
     });
 
-    // Copy of the request details for remote use, which redacts sensitive info.
+    // Copy of the request details for remote use, which redacts sensitive fields.
     let remoteDetails = { ...details, extra: { ...details.extra } };
+    const sensitiveFields = ["filterLocal", "sensitiveInfoValue"];
 
-    if (remoteDetails.extra.sensitiveInfoValue !== undefined) {
-      remoteDetails.extra.sensitiveInfoValue = "<redacted>";
+    for (const field of sensitiveFields) {
+      if (remoteDetails.extra[field] !== undefined) {
+        remoteDetails.extra[field] = "<redacted>";
+      }
     }
 
     remoteDetails = Object.freeze(remoteDetails);

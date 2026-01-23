@@ -572,6 +572,82 @@ test("`arcjetNode`", async function (t) {
     assert.equal(responseFirefox.status, 200);
   });
 
+  await t.test("should support `filter`", async function () {
+    const restore = capture();
+
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      characteristics: ['http.request.headers["user-agent"]'],
+      key: exampleKey,
+      rules: [
+        filter({
+          deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+          mode: "LIVE",
+        }),
+      ],
+    });
+
+    const { server, url } = await createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request);
+      },
+    });
+
+    const responseChrome = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+      },
+    });
+
+    const responseFirefox = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
+      },
+    });
+
+    await server.close();
+    restore();
+
+    assert.equal(responseChrome.status, 403);
+    assert.equal(responseFirefox.status, 200);
+  });
+
+  await t.test("should support `filter` w/ `filterLocal`", async function () {
+    const restore = capture();
+
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      // It is not possible to use a characteristic on `localFields` because of limitations to the types.
+      // Characeristics must be `boolean | number | string` (in the types, not in real life).
+      // characteristics: ["filterLocal"],
+      characteristics: ['http.request.uri.args["cache-bust"]', "ip.src"],
+      key: exampleKey,
+      rules: [filter({ deny: ['local["username"] eq "alice"'], mode: "LIVE" })],
+    });
+
+    let username = "alice";
+
+    const { server, url } = await createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request, { filterLocal: { username } });
+      },
+    });
+
+    const responseAlice = await fetch(url + "?cache-bust=1");
+
+    username = "bob";
+
+    const responseBob = await fetch(url + "?cache-bust=2");
+
+    await server.close();
+    restore();
+
+    assert.equal(responseAlice.status, 403);
+    assert.equal(responseBob.status, 200);
+  });
+
   await t.test("should support `sensitiveInfo`", async function () {
     const restore = capture();
     const warnings: Array<Array<unknown>> = [];

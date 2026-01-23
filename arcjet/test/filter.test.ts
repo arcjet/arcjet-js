@@ -6,6 +6,7 @@ import arcjet, {
   type ArcjetCacheEntry,
   type ArcjetContext,
   type ArcjetRequestDetails,
+  ArcjetAllowDecision,
   ArcjetErrorReason,
   filter,
 } from "../index.js";
@@ -143,6 +144,44 @@ test("filter: `validate`", async function (t) {
       ip: "127.0.0.1",
     });
   });
+
+  await t.test("should work w/ local filter fields", function () {
+    const [rule] = filter({ allow: ['local["username"] eq "alice"'] });
+    const _1 = rule.validate(createContext(), {
+      ...createRequest(),
+      extra: { filterLocal: JSON.stringify({ username: "alice" }) },
+    });
+
+    // This won’t match but is still valid.
+    const _2 = rule.validate(createContext(), {
+      ...createRequest(),
+      extra: { filterLocal: JSON.stringify({ username: "bob" }) },
+    });
+
+    // Not an object in JSON.
+    assert.throws(function () {
+      const _ = rule.validate(createContext(), {
+        ...createRequest(),
+        extra: { filterLocal: '"a"' },
+      });
+    }, /invalid value for `filterLocal` - expected plain object/);
+
+    // Not a plain object in JSON.
+    assert.throws(function () {
+      const _ = rule.validate(createContext(), {
+        ...createRequest(),
+        extra: { filterLocal: "[]" },
+      });
+    }, /invalid value for `filterLocal` - expected plain object/);
+
+    // Non-string values.
+    assert.throws(function () {
+      const _ = rule.validate(createContext(), {
+        ...createRequest(),
+        extra: { filterLocal: '{"username":1}' },
+      });
+    }, /invalid type for `filterLocal.username` - expected string/);
+  });
 });
 
 test("filter: `protect`", async function (t) {
@@ -244,6 +283,37 @@ test("filter: `protect`", async function (t) {
 
 test("expressions", async function (t) {
   await t.test("fields", async function (t) {
+    await t.test("`local`", async function (t) {
+      await t.test("match", async function () {
+        const [rule] = filter({ allow: ['local["username"] eq "alice"'] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          extra: { filterLocal: JSON.stringify({ username: "alice" }) },
+        });
+        assert.equal(result.conclusion, "ALLOW");
+      });
+
+      await t.test("mismatch", async function () {
+        const [rule] = filter({ allow: ['local["username"] eq "alice"'] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          extra: { filterLocal: JSON.stringify({ username: "bob" }) },
+        });
+        assert.equal(result.conclusion, "DENY");
+      });
+
+      await t.test("undetermined", async function () {
+        const [rule] = filter({ allow: ['local["username"] eq "alice"'] });
+        const result = await rule.protect(createContext(), createRequest());
+        assert.equal(result.conclusion, "ALLOW");
+        assert(result.reason.isFilter());
+        assert.deepEqual(result.reason.matchedExpressions, []);
+        assert.deepEqual(result.reason.undeterminedExpressions, [
+          'local["username"] eq "alice"',
+        ]);
+      });
+    });
+
     await t.test("`http.host`", async function (t) {
       await t.test("match", async function () {
         const [rule] = filter({ allow: ['http.host == "localhost:3000"'] });
@@ -978,6 +1048,88 @@ test("matrix", async function (t) {
       assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
     },
   );
+
+  await t.test("should support `filterLocal`", async function () {
+    const [rule] = filter({
+      allow: ['local["username"] eq "alice"'],
+      mode: "LIVE",
+    });
+    const resultOk = await rule.protect(createContext(), {
+      ...createRequest(),
+      extra: { filterLocal: JSON.stringify({ username: "alice" }) },
+    });
+    assert.equal(resultOk.conclusion, "ALLOW");
+    const resultNok = await rule.protect(createContext(), {
+      ...createRequest(),
+      extra: { filterLocal: JSON.stringify({ username: "bob" }) },
+    });
+    assert.equal(resultNok.conclusion, "DENY");
+  });
+
+  await t.test("should not pass `filterLocal` to `decide`", async function () {
+    const key = "";
+    const log = { ...console, debug() {} };
+    let extra: unknown;
+
+    const arcjetClient = arcjet({
+      key,
+      rules: [
+        filter({ allow: ['local["username"] eq "alice"'], mode: "LIVE" }),
+      ],
+      client: {
+        async decide(_context, details) {
+          extra = details.extra;
+          return new ArcjetAllowDecision({
+            reason: new ArcjetReason(),
+            results: [],
+            ttl: 0,
+          });
+        },
+        report() {
+          throw new Error("Should not be reached");
+        },
+      },
+      log,
+    });
+
+    const { extra: _extra, ...protectRequest } = createRequest();
+
+    await arcjetClient.protect(createContext(), {
+      ...protectRequest,
+      filterLocal: { username: "alice" },
+    });
+
+    assert.deepEqual(extra, { filterLocal: "<redacted>" });
+  });
+
+  await t.test("should not pass `filterLocal` to `report`", async function () {
+    const key = "";
+    const log = { ...console, debug() {} };
+    let extra: unknown;
+
+    const arcjetClient = arcjet({
+      key,
+      rules: [filter({ deny: ['local["username"] eq "alice"'], mode: "LIVE" })],
+      client: {
+        async decide() {
+          throw new Error("Should not be reached");
+        },
+        report(_context, details) {
+          extra = details.extra;
+        },
+      },
+      log,
+    });
+
+    const { extra: _extra, ...protectRequest } = createRequest();
+
+    await arcjetClient.protect(createContext(), {
+      ...protectRequest,
+      filterLocal: { username: "alice" },
+    });
+
+    assert.deepEqual(extra, { filterLocal: "<redacted>" });
+  });
 });
 
 /**
