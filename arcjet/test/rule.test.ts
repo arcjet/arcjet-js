@@ -7,9 +7,9 @@ import arcjet, {
   type ArcjetLogger,
   type ArcjetRequest,
   type ArcjetRule,
-  ArcjetRuleResult,
   ArcjetAllowDecision,
   ArcjetReason,
+  ArcjetRuleResult,
 } from "../index.js";
 
 const key = "ajkey_placeholder";
