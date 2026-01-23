@@ -330,7 +330,7 @@ describe("SDK", () => {
     type WithRuleTest = Assert<
       IsEqual<
         Props<typeof aj2>,
-        { requested: number; userId: string | number | boolean }
+        { requested: number; userId: boolean | number | object | string }
       >
     >;
 
@@ -394,7 +394,7 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       IsEqual<
         Props<typeof aj2>,
-        { requested: number; userId: string | number | boolean }
+        { requested: number; userId: boolean | number | object | string }
       >
     >;
 
@@ -404,7 +404,11 @@ describe("SDK", () => {
     type WithRuleTestTwo = Assert<
       IsEqual<
         Props<typeof aj3>,
-        { requested: number; userId: string | number | boolean; abc: number }
+        {
+          requested: number;
+          userId: boolean | number | object | string;
+          abc: number;
+        }
       >
     >;
 
@@ -470,7 +474,7 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       IsEqual<
         Props<typeof aj2>,
-        { requested: number; userId: string | number | boolean }
+        { requested: number; userId: boolean | number | object | string }
       >
     >;
 
@@ -1118,7 +1122,8 @@ describe("SDK", () => {
       "extra-number": 123,
       "extra-false": false,
       "extra-true": true,
-      "extra-unsupported": new Date(),
+      "extra-json": new Date("2026-01-23T00:00:00Z"),
+      "extra-unsupported": 0n,
       cookies: "",
       query: "",
     };
@@ -1140,6 +1145,7 @@ describe("SDK", () => {
         "extra-number": "123",
         "extra-false": "false",
         "extra-true": "true",
+        "extra-json": '"2026-01-23T00:00:00.000Z"',
         "extra-unsupported": "<unsupported value>",
       },
       headers: request.headers,

@@ -532,6 +532,38 @@ test("`arcjetBun`: should support `filter`", async function () {
   assert.equal(responseFirefox.status, 200);
 });
 
+test("`arcjetBun`: should support `filter` w/ `filterLocal`", async function () {
+  const restore = capture();
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    characteristics: ["filterLocal"],
+    key: exampleKey,
+    rules: [filter({ deny: ['local["username"] eq "alice"'], mode: "LIVE" })],
+  });
+
+  let username = "alice";
+
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request, { filterLocal: { username } });
+    },
+    handler: arcjet.handler,
+  });
+
+  const responseAlice = await fetch(url);
+
+  username = "bob";
+
+  const responseBob = await fetch(url);
+
+  await server.stop();
+  restore();
+
+  assert.equal(responseAlice.status, 403);
+  assert.equal(responseBob.status, 200);
+});
+
 test("`arcjetBun`: should support `sensitiveInfo`", async function () {
   const restore = capture();
   const warnings: Array<Array<unknown>> = [];
