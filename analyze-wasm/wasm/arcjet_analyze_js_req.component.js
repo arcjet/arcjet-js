@@ -468,61 +468,63 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
       return retVal.val;
     }
     
-    function matchFilters(arg0, arg1, arg2) {
+    function matchFilters(arg0, arg1, arg2, arg3) {
       var ptr0 = utf8Encode(arg0, realloc0, memory0);
       var len0 = utf8EncodedLen;
-      var vec2 = arg1;
-      var len2 = vec2.length;
-      var result2 = realloc0(0, 0, 4, len2 * 8);
-      for (let i = 0; i < vec2.length; i++) {
-        const e = vec2[i];
-        const base = result2 + i * 8;var ptr1 = utf8Encode(e, realloc0, memory0);
-        var len1 = utf8EncodedLen;
-        dataView(memory0).setInt32(base + 4, len1, true);
-        dataView(memory0).setInt32(base + 0, ptr1, true);
+      var ptr1 = utf8Encode(arg1, realloc0, memory0);
+      var len1 = utf8EncodedLen;
+      var vec3 = arg2;
+      var len3 = vec3.length;
+      var result3 = realloc0(0, 0, 4, len3 * 8);
+      for (let i = 0; i < vec3.length; i++) {
+        const e = vec3[i];
+        const base = result3 + i * 8;var ptr2 = utf8Encode(e, realloc0, memory0);
+        var len2 = utf8EncodedLen;
+        dataView(memory0).setInt32(base + 4, len2, true);
+        dataView(memory0).setInt32(base + 0, ptr2, true);
       }
-      const ret = exports1['match-filters'](ptr0, len0, result2, len2, arg2 ? 1 : 0);
-      let variant9;
+      const ret = exports1['match-filters'](ptr0, len0, ptr1, len1, result3, len3, arg3 ? 1 : 0);
+      let variant10;
       switch (dataView(memory0).getUint8(ret + 0, true)) {
         case 0: {
-          var bool3 = dataView(memory0).getUint8(ret + 4, true);
-          var len5 = dataView(memory0).getInt32(ret + 12, true);
-          var base5 = dataView(memory0).getInt32(ret + 8, true);
-          var result5 = [];
-          for (let i = 0; i < len5; i++) {
-            const base = base5 + i * 8;
-            var ptr4 = dataView(memory0).getInt32(base + 0, true);
-            var len4 = dataView(memory0).getInt32(base + 4, true);
-            var result4 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr4, len4));
-            result5.push(result4);
+          var bool4 = dataView(memory0).getUint8(ret + 4, true);
+          var len6 = dataView(memory0).getInt32(ret + 12, true);
+          var base6 = dataView(memory0).getInt32(ret + 8, true);
+          var result6 = [];
+          for (let i = 0; i < len6; i++) {
+            const base = base6 + i * 8;
+            var ptr5 = dataView(memory0).getInt32(base + 0, true);
+            var len5 = dataView(memory0).getInt32(base + 4, true);
+            var result5 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr5, len5));
+            result6.push(result5);
           }
-          var len7 = dataView(memory0).getInt32(ret + 20, true);
-          var base7 = dataView(memory0).getInt32(ret + 16, true);
-          var result7 = [];
-          for (let i = 0; i < len7; i++) {
-            const base = base7 + i * 8;
-            var ptr6 = dataView(memory0).getInt32(base + 0, true);
-            var len6 = dataView(memory0).getInt32(base + 4, true);
-            var result6 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr6, len6));
-            result7.push(result6);
+          var len8 = dataView(memory0).getInt32(ret + 20, true);
+          var base8 = dataView(memory0).getInt32(ret + 16, true);
+          var result8 = [];
+          for (let i = 0; i < len8; i++) {
+            const base = base8 + i * 8;
+            var ptr7 = dataView(memory0).getInt32(base + 0, true);
+            var len7 = dataView(memory0).getInt32(base + 4, true);
+            var result7 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr7, len7));
+            result8.push(result7);
           }
-          variant9= {
+          variant10= {
             tag: 'ok',
             val: {
-              allowed: bool3 == 0 ? false : (bool3 == 1 ? true : throwInvalidBool()),
-              matchedExpressions: result5,
-              undeterminedExpressions: result7,
+              allowed: bool4 == 0 ? false : (bool4 == 1 ? true : throwInvalidBool()),
+              matchedExpressions: result6,
+              undeterminedExpressions: result8,
             }
           };
           break;
         }
         case 1: {
-          var ptr8 = dataView(memory0).getInt32(ret + 4, true);
-          var len8 = dataView(memory0).getInt32(ret + 8, true);
-          var result8 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr8, len8));
-          variant9= {
+          var ptr9 = dataView(memory0).getInt32(ret + 4, true);
+          var len9 = dataView(memory0).getInt32(ret + 8, true);
+          var result9 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr9, len9));
+          variant10= {
             tag: 'err',
-            val: result8
+            val: result9
           };
           break;
         }
@@ -530,7 +532,7 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
           throw new TypeError('invalid variant discriminant for expected');
         }
       }
-      const retVal = variant9;
+      const retVal = variant10;
       postReturn1(ret);
       if (typeof retVal === 'object' && retVal.tag === 'err') {
         throw new ComponentError(retVal.val);

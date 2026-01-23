@@ -294,6 +294,8 @@ export async function detectSensitiveInfo(
  *   Arcjet context.
  * @param request
  *   Request.
+ * @param localFields
+ *   Fields to use as `local` in the expressions, as serialized JSON.
  * @param expressions
  *   Filter expressions.
  * @returns
@@ -302,6 +304,7 @@ export async function detectSensitiveInfo(
 export async function matchFilters(
   context: AnalyzeContext,
   request: AnalyzeRequest,
+  localFields: string,
   expressions: ReadonlyArray<string>,
   allowIfMatch: boolean,
 ): Promise<FilterResult> {
@@ -311,6 +314,7 @@ export async function matchFilters(
   if (typeof analyze !== "undefined") {
     return analyze.matchFilters(
       JSON.stringify(request),
+      localFields,
       // @ts-expect-error: WebAssembly does not support readonly values.
       expressions,
       allowIfMatch,
