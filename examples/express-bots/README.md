@@ -15,7 +15,7 @@ This example shows how to use Arcjet to perform bot detection with a Node.js
 1. From the root of the project, install the SDK dependencies.
 
    ```bash
-   npm ci
+   npm ci && npm run build
    ```
 
 2. Enter this directory and install the example's dependencies.

@@ -15,7 +15,7 @@ with a [Deno](https://deno.com/) server.
 1. From the root of the project, install the SDK dependencies.
 
    ```bash
-   npm ci
+   npm ci && npm run build
    ```
 
 2. Enter this directory.

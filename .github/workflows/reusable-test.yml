@@ -30,7 +30,7 @@ jobs:
       - uses: oven-sh/setup-bun@b7a1c7ccf290d58743029c4f6903da283811b979 # v2.1.0
         with:
           bun-version: 1.2.19
-      - run: bun install
+      - run: bun install && bun run build
       - run: bun test
         working-directory: arcjet-bun
   deno-test:
@@ -58,7 +58,7 @@ jobs:
       - uses: denoland/setup-deno@bdaa2e4f849cbc8d7b46337cf37db0dc9b321074 # v2.0.3
         with:
           deno-version: v2.4.2
-      - run: npm ci
+      - run: npm ci && npm run build
       - run: deno test test/**/*.test.ts --allow-env --allow-net --no-check
         working-directory: arcjet-deno
   node-test:
@@ -104,7 +104,7 @@ jobs:
       # Workflow
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci && npm run build
 
       - name: Run tests
         run: npm test

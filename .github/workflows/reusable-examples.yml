@@ -23,7 +23,7 @@ jobs:
       - uses: oven-sh/setup-bun@b7a1c7ccf290d58743029c4f6903da283811b979 # v2.1.0
         with:
           bun-version: 1.2.19
-      - run: bun install
+      - run: bun install && bun run build
       - run: bun install
         working-directory: "examples/${{matrix.folder}}"
       - run: bun tsc --noEmit
@@ -57,7 +57,7 @@ jobs:
       - uses: denoland/setup-deno@bdaa2e4f849cbc8d7b46337cf37db0dc9b321074 # v2.0.3
         with:
           deno-version: v2.4.2
-      - run: npm ci
+      - run: npm ci && npm run build
       - run: deno install
         working-directory: "examples/${{matrix.folder}}"
       - run: deno check
@@ -93,7 +93,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 20
-      - run: npm ci
+      - run: npm ci && npm run build
       - run: npm ci
         working-directory: "examples/${{matrix.folder}}"
       - env:
