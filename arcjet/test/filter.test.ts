@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { MemoryCache } from "@arcjet/cache";
+import { ArcjetDenyDecision, ArcjetReason } from "@arcjet/protocol";
 import arcjet, {
   type ArcjetContext,
   type ArcjetRequestDetails,
   ArcjetErrorReason,
   filter,
 } from "../index.js";
-import { MemoryCache } from "@arcjet/cache";
-import { ArcjetDenyDecision, ArcjetReason } from "@arcjet/protocol";
 
 test("filter", async function (t) {
   await t.test("should fail if `mode` is invalid", async function () {
