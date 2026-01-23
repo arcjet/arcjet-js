@@ -531,6 +531,41 @@ test("`arcjetBun`: should support `filter`", async function () {
   assert.equal(responseFirefox.status, 200);
 });
 
+test("`arcjetBun`: should support `filter` w/ `filterLocal`", async function () {
+  const restore = capture();
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    // It is not possible to use a characteristic on `localFields` because of limitations to the types.
+    // Characeristics must be `boolean | number | string` (in the types, not in real life).
+    // characteristics: ["filterLocal"],
+    characteristics: ['http.request.uri.args["cache-bust"]', "ip.src"],
+    key: exampleKey,
+    rules: [filter({ deny: ['local["username"] eq "alice"'], mode: "LIVE" })],
+  });
+
+  let username = "alice";
+
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request, { filterLocal: { username } });
+    },
+    handler: arcjet.handler,
+  });
+
+  const responseAlice = await fetch(url + "?cache-bust=1");
+
+  username = "bob";
+
+  const responseBob = await fetch(url + "?cache-bust=2");
+
+  await server.stop();
+  restore();
+
+  assert.equal(responseAlice.status, 403);
+  assert.equal(responseBob.status, 200);
+});
+
 test("`arcjetBun`: should support `sensitiveInfo`", async function () {
   const restore = capture();
   const warnings: Array<Array<unknown>> = [];

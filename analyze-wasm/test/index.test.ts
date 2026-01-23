@@ -262,6 +262,7 @@ test("`wasm.matchFilters`", async function (t) {
     assert.deepEqual(
       wasm.matchFilters(
         JSON.stringify({ ip: "1.1.1.1" }),
+        "{}",
         ["ip.src == 1.1.1.1"],
         false,
       ),
@@ -277,6 +278,7 @@ test("`wasm.matchFilters`", async function (t) {
     assert.deepEqual(
       wasm.matchFilters(
         JSON.stringify({ ip: "1.1.1.1" }),
+        "{}",
         ["ip.src.vpn"],
         false,
       ),
@@ -292,7 +294,12 @@ test("`wasm.matchFilters`", async function (t) {
     "should throw on syntax errors in expressions",
     async function () {
       assert.throws(function () {
-        wasm.matchFilters(JSON.stringify({ ip: "1.1.1.1" }), ["👍"], false);
+        wasm.matchFilters(
+          JSON.stringify({ ip: "1.1.1.1" }),
+          "{}",
+          ["👍"],
+          false,
+        );
       }, /Filter parsing error/);
     },
   );

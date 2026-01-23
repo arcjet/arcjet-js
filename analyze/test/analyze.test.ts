@@ -419,6 +419,7 @@ test("matchFilters", async function (t) {
       await matchFilters(
         exampleContext,
         { ip: "127.0.0.1" },
+        "{}",
         ["ip.src == 127.0.0.1"],
         true,
       ),
@@ -435,6 +436,7 @@ test("matchFilters", async function (t) {
       await matchFilters(
         exampleContext,
         { ip: "127.0.0.1" },
+        "{}",
         ["ip.src == 127.0.0.2"],
         true,
       ),
@@ -447,6 +449,7 @@ test("matchFilters", async function (t) {
       await matchFilters(
         exampleContext,
         { ip: "127.0.0.1" },
+        "{}",
         ["ip.src == 127.0.0.1"],
         false,
       ),
@@ -465,6 +468,7 @@ test("matchFilters", async function (t) {
         await matchFilters(
           exampleContext,
           { ip: "127.0.0.1" },
+          "{}",
           ["ip.src == 127.0.0.2"],
           false,
         ),
@@ -482,6 +486,7 @@ test("matchFilters", async function (t) {
       await matchFilters(
         exampleContext,
         { ip: "127.0.0.127" },
+        "{}",
         tenExpressions,
         false,
       ),
@@ -494,6 +499,7 @@ test("matchFilters", async function (t) {
       matchFilters(
         exampleContext,
         { ip: "127.0.0.127" },
+        "{}",
         [...tenExpressions, "ip.src == 127.0.0.10"],
         false,
       ),
@@ -510,6 +516,7 @@ test("matchFilters", async function (t) {
       await matchFilters(
         exampleContext,
         { ip: "127.0.0.1" },
+        "{}",
         [tenThousandTwentyFourBytes],
         false,
       ),
@@ -526,6 +533,7 @@ test("matchFilters", async function (t) {
       matchFilters(
         exampleContext,
         { ip: "127.0.0.127" },
+        "{}",
         [tenThousandTwentyFiveBytes],
         false,
       ),
