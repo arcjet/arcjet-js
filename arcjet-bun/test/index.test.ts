@@ -28,6 +28,7 @@ import arcjetBun, {
   detectBot,
   filter,
   sensitiveInfo,
+  validateEmail,
 } from "../index.js";
 
 const exampleKey = "ajkey_yourkey";
@@ -913,6 +914,36 @@ test("`arcjetBun`: should support `sensitiveInfo` w/ `sensitiveInfoValue`", asyn
   assert.equal(response.status, 403);
 });
 
+test("`arcjetBun`: should support `validateEmail`", async function () {
+  const restore = capture();
+  let email = "alice@arcjet";
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    key: exampleKey,
+    rules: [validateEmail({ allow: [], mode: "LIVE" })],
+  });
+
+  const { server, url } = createSimpleServer({
+    async decide(request) {
+      return arcjet.protect(request, { email });
+    },
+    handler: arcjet.handler,
+  });
+
+  const responseInvalid = await fetch(url);
+
+  email = "alice@arcjet.com";
+
+  const responseValid = await fetch(url);
+
+  await server.stop();
+  restore();
+
+  assert.equal(responseInvalid.status, 403);
+  assert.equal(responseValid.status, 200);
+});
+
 test("`arcjetBun`: should support a custom rule", async function () {
   const restore = capture();
   // Custom rule that denies requests when a `q` search parameter is `"alpha"`.
@@ -1162,26 +1193,6 @@ export function capture() {
     process.env.ARCJET_ENV = currentArcjetEnv;
     process.env.ARCJET_LOG_LEVEL = currentArcjetLogLevel;
   }
-}
-
-/**
- * Create an empty context.
- *
- * @returns
- *   Context.
- */
-function createArcjetContext(): ArcjetContext {
-  return {
-    cache: new MemoryCache(),
-    characteristics: [],
-    fingerprint: "",
-    async getBody() {
-      throw new Error("Not implemented");
-    },
-    key: "",
-    log: console,
-    runtime: "",
-  };
 }
 
 /**
