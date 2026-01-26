@@ -3136,10 +3136,6 @@ export default function arcjet<
   // TODO(#132): Support configurable caching
   const cache = new MemoryCache<CachedResult>();
 
-  const rootRules: ArcjetRule[] = rules
-    .flat(1)
-    .sort((a, b) => a.priority - b.priority);
-
   async function protect<Props extends PlainObject>(
     rules: ArcjetRule[],
     ctx: ArcjetAdapterContext,
@@ -3451,62 +3447,37 @@ export default function arcjet<
   }
 
   // This is a separate function so it can be called recursively
-  function withRule<Rule extends Primitive | Product>(
-    baseRules: ArcjetRule[],
-    rule: Rule,
-  ) {
-    const rules = [...baseRules, ...rule].sort(
-      (a, b) => a.priority - b.priority,
-    );
+  function createClient<Properties extends PlainObject>(
+    rules: Array<ArcjetRule<Properties>>,
+  ): Arcjet<Properties> {
+    const sortedRules = [...rules].sort(sortRule);
 
-    return Object.freeze({
-      withRule(rule: Primitive | Product) {
-        return withRule(rules, rule);
+    const client: Arcjet<Properties> = {
+      withRule(rule) {
+        const newRules: Array<ArcjetRule> = [...rules, ...rule];
+        return createClient(newRules);
       },
-      async protect(
-        ctx: ArcjetAdapterContext,
-        request: ArcjetRequest<ExtraProps<typeof rules>>,
-      ): Promise<ArcjetDecision> {
-        return protect(rules, ctx, request);
+      protect(ctx, request) {
+        return protect(sortedRules, ctx, request);
       },
-    });
+    };
+
+    return Object.freeze(client);
   }
 
-  return Object.freeze({
-    /**
-     * Augment the client with another rule.
-     *
-     * Useful for varying rules based on criteria in your handler such as
-     * different rate limit for logged in users.
-     *
-     * @param rule
-     *   Rule to add to Arcjet.
-     * @returns
-     *   Arcjet instance augmented with the given rule.
-     */
-    withRule(rule: Primitive | Product) {
-      return withRule(rootRules, rule);
-    },
-    /**
-     * Make a decision about how to handle a request.
-     *
-     * This will analyze the request locally where possible and otherwise call
-     * the Arcjet decision API.
-     *
-     * @param ctx
-     *   Additional context for this function call.
-     * @param request
-     *   Details about the {@linkcode ArcjetRequest} that Arcjet needs to make a
-     *   decision.
-     * @returns
-     *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
-     *   Arcjet’s decision about the request.
-     */
-    async protect(
-      ctx: ArcjetAdapterContext,
-      request: ArcjetRequest<ExtraProps<typeof rootRules>>,
-    ): Promise<ArcjetDecision> {
-      return protect(rootRules, ctx, request);
-    },
-  });
+  return createClient(rules.flat(1));
+}
+
+/**
+ * Sort rules by priority.
+ *
+ * @param a
+ *   Rule.
+ * @param b
+ *   Other rule.
+ * @returns
+ *   Comparison result.
+ */
+function sortRule(a: ArcjetRule, b: ArcjetRule): number {
+  return a.priority - b.priority;
 }
