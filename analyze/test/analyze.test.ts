@@ -1,3 +1,6 @@
+// Note: more tests available in the `analyze-wasm` package.
+// See `analyze-wasm/test/index.test.ts`.
+// The tests here are more expansive.
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -151,6 +154,133 @@ test("detectSensitiveInfo", async function (t) {
         { end: 5, identifiedType: { tag: "custom", val: "c" }, start: 4 },
       ],
     });
+  });
+
+  await t.test("should detect a card number", async function () {
+    assert.deepEqual(
+      await detectSensitiveInfo(
+        exampleContext,
+        "a 4242424242424242 b",
+        { tag: "allow", val: [] },
+        1,
+      ),
+      {
+        allowed: [],
+        denied: [
+          { end: 18, identifiedType: { tag: "credit-card-number" }, start: 2 },
+        ],
+      },
+    );
+  });
+
+  await t.test("should detect a card number if in `allow`", async function () {
+    assert.deepEqual(
+      await detectSensitiveInfo(
+        exampleContext,
+        "a 4242424242424242 b",
+        { tag: "allow", val: [{ tag: "credit-card-number" }] },
+        1,
+      ),
+      {
+        allowed: [
+          {
+            end: 18,
+            identifiedType: { tag: "credit-card-number" },
+            start: 2,
+          },
+        ],
+        denied: [],
+      },
+    );
+  });
+
+  await t.test("should detect a card number w/ dashes", async function () {
+    assert.deepEqual(
+      await detectSensitiveInfo(
+        exampleContext,
+        "a 4242-4242-4242-4242 b",
+        { tag: "allow", val: [{ tag: "credit-card-number" }] },
+        1,
+      ),
+      {
+        allowed: [
+          {
+            end: 21,
+            identifiedType: { tag: "credit-card-number" },
+            start: 2,
+          },
+        ],
+        denied: [],
+      },
+    );
+  });
+
+  await t.test("should detect a card number w/ spaces", async function () {
+    assert.deepEqual(
+      await detectSensitiveInfo(
+        exampleContext,
+        "a 4242 4242 4242 4242 b",
+        { tag: "allow", val: [{ tag: "credit-card-number" }] },
+        1,
+      ),
+      {
+        allowed: [
+          {
+            end: 21,
+            identifiedType: { tag: "credit-card-number" },
+            start: 2,
+          },
+        ],
+        denied: [],
+      },
+    );
+  });
+
+  await t.test("should detect an email", async function () {
+    assert.deepEqual(
+      await detectSensitiveInfo(
+        exampleContext,
+        "a alice@arcjet.com b",
+        { tag: "allow", val: [] },
+        1,
+      ),
+      {
+        allowed: [],
+        denied: [{ end: 18, identifiedType: { tag: "email" }, start: 2 }],
+      },
+    );
+  });
+
+  await t.test("should detect an ip address", async function () {
+    assert.deepEqual(
+      await detectSensitiveInfo(
+        exampleContext,
+        "a 127.0.0.1 b",
+        { tag: "allow", val: [] },
+        1,
+      ),
+      {
+        allowed: [],
+        denied: [{ end: 11, identifiedType: { tag: "ip-address" }, start: 2 }],
+      },
+    );
+  });
+
+  await t.test("should detect a phone number", async function () {
+    assert.deepEqual(
+      await detectSensitiveInfo(
+        exampleContext,
+        "a 555-555-5555 b",
+        { tag: "allow", val: [] },
+        1,
+      ),
+      {
+        allowed: [],
+        denied: [
+          { end: 14, identifiedType: { tag: "phone-number" }, start: 2 },
+        ],
+      },
+    );
   });
 });
 
