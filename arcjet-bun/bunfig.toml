@@ -1,0 +1,4 @@
+[test]
+coveragePathIgnorePatterns = [
+  "../{analyze-wasm,analyze,arcjet,body,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.js"
+]

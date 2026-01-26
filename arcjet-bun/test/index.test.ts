@@ -4,17 +4,29 @@
 // ```sh
 // bun test
 // ```
+//
+// For coverage, do:
+//
+// ```sh
+// bun test --coverage
+// ```
 
 import assert from "node:assert/strict";
 import test from "node:test";
+import { MemoryCache } from "@arcjet/cache";
 import type { Client } from "@arcjet/protocol/client.js";
 import arcjetBun, {
   type ArcjetBun,
+  type ArcjetContext,
+  type ArcjetRequestDetails,
   type ArcjetRule,
   ArcjetAllowDecision,
   ArcjetDecision,
   ArcjetReason,
   ArcjetRuleResult,
+  createRemoteClient,
+  detectBot,
+  filter,
   sensitiveInfo,
 } from "../index.js";
 
@@ -23,7 +35,7 @@ const oneMegabyte = 1024 * 1024;
 
 let uniquePort = 3000;
 
-test("should expose the public api", async function () {
+test("`@arcjet/bun`: should expose the public api", async function () {
   assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
     "ArcjetAllowDecision",
     "ArcjetBotReason",
@@ -56,7 +68,470 @@ test("should expose the public api", async function () {
   ]);
 });
 
-test("should support `sensitiveInfo`", async function () {
+test("`createRemoteClient`: should create a client", async function () {
+  const remoteClient = createRemoteClient({ timeout: 4 });
+
+  assert.equal(typeof remoteClient.decide, "function");
+  assert.equal(typeof remoteClient.report, "function");
+  // Note: no timeout test, that is flaky in Bun.
+});
+
+test("`arcjetBun`: should warn about IP addresses missing in development", async function () {
+  let parameters: unknown;
+  const restore = capture();
+
+  arcjetBun({
+    key: "",
+    log: {
+      ...console,
+      warn(...rest) {
+        parameters = rest;
+      },
+    },
+    rules: [],
+  });
+
+  restore();
+
+  assert.deepEqual(parameters, [
+    "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
+  ]);
+});
+
+test("`arcjetBun`: should not warn about IP addresses missing when not in development", async function () {
+  let called = false;
+  const restore = capture();
+  process.env.ARCJET_ENV = "";
+
+  arcjetBun({
+    key: "",
+    log: {
+      ...console,
+      warn() {
+        called = true;
+      },
+    },
+    rules: [],
+  });
+
+  restore();
+
+  assert.equal(called, false);
+});
+
+test("`arcjetBun().protect()`: should warn about IPs missing in non-development", async function () {
+  let parameters: unknown;
+  const restore = capture();
+  process.env.ARCJET_ENV = "";
+
+  const arcjet = arcjetBun({
+    characteristics: [],
+    client: createLocalClient(),
+    key: exampleKey,
+    log: {
+      ...console,
+      debug() {},
+      error() {},
+      warn(...rest) {
+        parameters = rest;
+      },
+    },
+    rules: [detectBot({ deny: ["CURL"], mode: "LIVE" })],
+  });
+
+  // Not called when constructing.
+  assert.deepEqual(parameters, undefined);
+
+  await arcjet.protect(
+    new Request("https://example.com/", { headers: { "user-agent": "Test" } }),
+  );
+
+  restore();
+
+  // Called when calling `protect()`.
+  assert.deepEqual(parameters, [
+    'Client IP address is missing. If this is a dev environment set the ARCJET_ENV env var to "development"',
+  ]);
+});
+
+test("`arcjetBun().protect()`: should not warn about IPs missing in development", async function () {
+  let parameters: unknown;
+  const restore = capture();
+
+  const arcjet = arcjetBun({
+    characteristics: [],
+    client: createLocalClient(),
+    key: exampleKey,
+    log: {
+      ...console,
+      debug() {},
+      warn(...rest) {
+        parameters = rest;
+      },
+    },
+    rules: [detectBot({ deny: ["CURL"], mode: "LIVE" })],
+  });
+
+  // Called when constructing, so set to `undefined` again.
+  parameters = undefined;
+
+  await arcjet.protect(
+    new Request("https://example.com/", { headers: { "user-agent": "Test" } }),
+  );
+
+  restore();
+
+  // Not called when calling `protect()`.
+  assert.deepEqual(parameters, undefined);
+});
+
+test("`arcjetBun().protect()`: should protect a request", async function () {
+  const restore = capture();
+
+  let request: ArcjetRequestDetails | undefined;
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    key: exampleKey,
+    rules: [
+      [
+        {
+          mode: "LIVE",
+          priority: 1,
+          async protect(_context, details) {
+            request = details;
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          validate() {},
+          version: 0,
+          type: "",
+        },
+      ],
+    ],
+  });
+
+  const { server, url } = createSimpleServer({
+    decide: arcjet.protect,
+    handler: arcjet.handler,
+  });
+
+  const response = await fetch(new URL("/a?b#c", url), {
+    headers: { cookie: "session=a", "user-agent": "Test" },
+  });
+
+  await server.stop();
+  restore();
+
+  assert.equal(response.status, 200);
+  assert.ok(request);
+
+  assert.equal(request.cookies, "session=a");
+  assert.equal(request.email, undefined);
+  assert.deepEqual(request.extra, {});
+  assert.deepEqual(request.headers.toJSON(), {
+    "accept-encoding": "gzip, deflate, br, zstd",
+    accept: "*/*",
+    connection: "keep-alive",
+    host: "localhost:3000",
+    "user-agent": "Test",
+  });
+  assert.equal(request.host, "localhost:3000");
+  assert.equal(request.ip, "127.0.0.1");
+  assert.equal(request.method, "GET");
+  assert.equal(request.protocol, "http:");
+  assert.equal(request.query, "?b");
+});
+
+test("`arcjetBun().withRule()`: should work", async function () {
+  const restore = capture();
+
+  const arcjetBase = arcjetBun({
+    client: createLocalClient(),
+    characteristics: ['http.request.headers["user-agent"]'],
+    key: exampleKey,
+    rules: [
+      filter({
+        deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+        mode: "LIVE",
+      }),
+    ],
+  });
+
+  const arcjet = arcjetBase.withRule(
+    detectBot({ deny: ["CURL"], mode: "LIVE" }),
+  );
+
+  const { server, url } = createSimpleServer({
+    decide: arcjet.protect,
+    handler: arcjet.handler,
+  });
+
+  const responseChrome = await fetch(url, {
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+    },
+  });
+
+  const responseCurl = await fetch(url, {
+    headers: { "user-agent": "curl/7.64.1" },
+  });
+
+  const responseFirefox = await fetch(url, {
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
+    },
+  });
+
+  await server.stop();
+  restore();
+
+  assert.equal(responseChrome.status, 403);
+  assert.equal(responseCurl.status, 403);
+  assert.equal(responseFirefox.status, 200);
+});
+
+test("`arcjetBun`: should support `options.proxies`", async function () {
+  const restore = capture();
+
+  const ips: Array<unknown> = [];
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    key: exampleKey,
+    proxies: ["100.100.100.0/24"],
+    rules: [
+      [
+        {
+          mode: "LIVE",
+          priority: 1,
+          async protect(_context, details) {
+            ips.push(details.ip);
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          validate() {},
+          version: 0,
+          type: "",
+        },
+      ],
+    ],
+  });
+
+  const { server, url } = createSimpleServer({
+    decide: arcjet.protect,
+    handler: arcjet.handler,
+  });
+
+  await fetch(url, {
+    headers: { "x-forwarded-for": "185.199.108.1, 101.100.100.0" },
+  });
+
+  await fetch(url, {
+    headers: { "x-forwarded-for": "185.199.108.2, 100.100.100.0" },
+  });
+
+  await server.stop();
+  restore();
+
+  assert.deepEqual(ips, [
+    // The last in a list is used normally.
+    "101.100.100.0",
+    // If those are matched by `proxies` then earlier ones are used.
+    "185.199.108.2",
+  ]);
+});
+
+test("`arcjetBun`: should prefer `x-arcjet-ip` in development", async function () {
+  const restore = capture();
+
+  const ips: Array<unknown> = [];
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    key: exampleKey,
+    rules: [
+      [
+        {
+          mode: "LIVE",
+          priority: 1,
+          async protect(_context, details) {
+            ips.push(details.ip);
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          validate() {},
+          version: 0,
+          type: "",
+        },
+      ],
+    ],
+  });
+
+  const { server, url } = createSimpleServer({
+    decide: arcjet.protect,
+    handler: arcjet.handler,
+  });
+
+  await fetch(url, {
+    headers: {
+      "x-arcjet-ip": "185.199.108.153",
+      "x-client-ip": "101.100.100.0",
+    },
+  });
+
+  await server.stop();
+  restore();
+
+  assert.deepEqual(ips, ["185.199.108.153"]);
+});
+
+test("`arcjetBun`: should ignore `x-arcjet-ip` in production", async function () {
+  const restore = capture();
+  process.env.ARCJET_ENV = "";
+
+  const ips: Array<unknown> = [];
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    key: exampleKey,
+    rules: [
+      [
+        {
+          mode: "LIVE",
+          priority: 1,
+          async protect(_context, details) {
+            ips.push(details.ip);
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          validate() {},
+          version: 0,
+          type: "",
+        },
+      ],
+    ],
+  });
+
+  const { server, url } = createSimpleServer({
+    decide: arcjet.protect,
+    handler: arcjet.handler,
+  });
+
+  await fetch(url, {
+    headers: {
+      "x-arcjet-ip": "185.199.108.153",
+      "x-client-ip": "101.100.100.0",
+    },
+  });
+
+  await server.stop();
+  restore();
+
+  assert.deepEqual(ips, ["101.100.100.0"]);
+});
+
+test("`arcjetBun`: should support `detectBot`", async function () {
+  const restore = capture();
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    characteristics: ['http.request.headers["user-agent"]'],
+    key: exampleKey,
+    rules: [detectBot({ deny: ["CURL"], mode: "LIVE" })],
+  });
+
+  const { server, url } = createSimpleServer({
+    decide: arcjet.protect,
+    handler: arcjet.handler,
+  });
+
+  const responseChrome = await fetch(url, {
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+    },
+  });
+
+  const responseCurl = await fetch(url, {
+    headers: { "user-agent": "curl/7.64.1" },
+  });
+
+  await server.stop();
+  restore();
+
+  assert.equal(responseChrome.status, 200);
+  assert.equal(responseCurl.status, 403);
+});
+
+test("`arcjetBun`: should support `filter`", async function () {
+  const restore = capture();
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    characteristics: ['http.request.headers["user-agent"]'],
+    key: exampleKey,
+    rules: [
+      filter({
+        deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+        mode: "LIVE",
+      }),
+    ],
+  });
+
+  const { server, url } = createSimpleServer({
+    decide: arcjet.protect,
+    handler: arcjet.handler,
+  });
+
+  const responseChrome = await fetch(url, {
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+    },
+  });
+
+  const responseFirefox = await fetch(url, {
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
+    },
+  });
+
+  await server.stop();
+  restore();
+
+  assert.equal(responseChrome.status, 403);
+  assert.equal(responseFirefox.status, 200);
+});
+
+test("`arcjetBun`: should support `sensitiveInfo`", async function () {
   const restore = capture();
   const warnings: Array<Array<unknown>> = [];
 
@@ -75,9 +550,7 @@ test("should support `sensitiveInfo`", async function () {
   });
 
   const { server, url } = createSimpleServer({
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
 
@@ -101,7 +574,44 @@ test("should support `sensitiveInfo`", async function () {
   ]);
 });
 
-test("should emit an error log when the body is read before `sensitiveInfo`", async function () {
+test("`arcjetBun`: should emit an error log when there is no body", async function () {
+  const restore = capture();
+  let parameters: Array<unknown> | undefined;
+
+  const arcjet = arcjetBun({
+    client: createLocalClient(),
+    key: exampleKey,
+    log: {
+      debug() {},
+      error(...values) {
+        parameters = values;
+      },
+      info() {},
+      warn() {},
+    },
+    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+  });
+
+  const { server, url } = createSimpleServer({
+    decide: arcjet.protect,
+    handler: arcjet.handler,
+  });
+
+  const response = await fetch(url, {
+    headers: { "Content-Type": "text/plain" },
+  });
+
+  await server.stop();
+  restore();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(parameters, [
+    "failed to get request body: %s",
+    "Cannot read body: body is missing",
+  ]);
+});
+
+test("`arcjetBun`: should emit an error log when the body is read before `sensitiveInfo`", async function () {
   const restore = capture();
   let body: string | undefined;
   let parameters: Array<unknown> | undefined;
@@ -124,9 +634,7 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
     async before(request) {
       body = await request.text();
     },
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
 
@@ -147,7 +655,7 @@ test("should emit an error log when the body is read before `sensitiveInfo`", as
   ]);
 });
 
-test("should support reading body after `sensitiveInfo`", async function () {
+test("`arcjetBun`: should support reading body after `sensitiveInfo`", async function () {
   const restore = capture();
   let body: string | undefined;
 
@@ -161,9 +669,7 @@ test("should support reading body after `sensitiveInfo`", async function () {
     async after(request) {
       body = await request.text();
     },
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
 
@@ -180,7 +686,7 @@ test("should support reading body after `sensitiveInfo`", async function () {
   assert.equal(body, "My email is alice@arcjet.com");
 });
 
-test("should support `sensitiveInfo` on JSON", async function () {
+test("`arcjetBun`: should support `sensitiveInfo` on JSON", async function () {
   const restore = capture();
 
   const arcjet = arcjetBun({
@@ -190,9 +696,7 @@ test("should support `sensitiveInfo` on JSON", async function () {
   });
 
   const { server, url } = createSimpleServer({
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
 
@@ -208,7 +712,7 @@ test("should support `sensitiveInfo` on JSON", async function () {
   assert.equal(response.status, 403);
 });
 
-test("should support `sensitiveInfo` on form data", async function () {
+test("`arcjetBun`: should support `sensitiveInfo` on form data", async function () {
   const restore = capture();
 
   const arcjet = arcjetBun({
@@ -218,9 +722,7 @@ test("should support `sensitiveInfo` on form data", async function () {
   });
 
   const { server, url } = createSimpleServer({
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
 
@@ -239,7 +741,7 @@ test("should support `sensitiveInfo` on form data", async function () {
   assert.equal(response.status, 403);
 });
 
-test("should support `sensitiveInfo` on plain text", async function () {
+test("`arcjetBun`: should support `sensitiveInfo` on plain text", async function () {
   const restore = capture();
 
   const arcjet = arcjetBun({
@@ -249,9 +751,7 @@ test("should support `sensitiveInfo` on plain text", async function () {
   });
 
   const { server, url } = createSimpleServer({
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
 
@@ -267,7 +767,7 @@ test("should support `sensitiveInfo` on plain text", async function () {
   assert.equal(response.status, 403);
 });
 
-test("should support `sensitiveInfo` on streamed plain text", async function () {
+test("`arcjetBun`: should support `sensitiveInfo` on streamed plain text", async function () {
   const restore = capture();
 
   const arcjet = arcjetBun({
@@ -277,9 +777,7 @@ test("should support `sensitiveInfo` on streamed plain text", async function () 
   });
 
   const { server, url } = createSimpleServer({
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
 
@@ -316,7 +814,7 @@ test("should support `sensitiveInfo` on streamed plain text", async function () 
   assert.equal(response.status, 403);
 });
 
-test("should support `sensitiveInfo` a megabyte of data", async function () {
+test("`arcjetBun`: should support `sensitiveInfo` on a megabyte of data", async function () {
   const restore = capture();
 
   const arcjet = arcjetBun({
@@ -326,9 +824,7 @@ test("should support `sensitiveInfo` a megabyte of data", async function () {
   });
 
   const { server, url } = createSimpleServer({
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
   const message = "My email is alice@arcjet.com";
@@ -347,7 +843,7 @@ test("should support `sensitiveInfo` a megabyte of data", async function () {
 });
 
 // TODO(GH-5517): make this configurable.
-test("should not support `sensitiveInfo` 5 megabytes of data", async function () {
+test("`arcjetBun`: should not support `sensitiveInfo` on 5 megabytes of data", async function () {
   const restore = capture();
   let parameters: Array<unknown> | undefined;
 
@@ -366,9 +862,7 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   });
 
   const { server, url } = createSimpleServer({
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
   const message = "My email is alice@arcjet.com";
@@ -390,7 +884,7 @@ test("should not support `sensitiveInfo` 5 megabytes of data", async function ()
   ]);
 });
 
-test("should support `sensitiveInfo` w/ `sensitiveInfoValue`", async function () {
+test("`arcjetBun`: should support `sensitiveInfo` w/ `sensitiveInfoValue`", async function () {
   const restore = capture();
 
   const arcjet = arcjetBun({
@@ -419,7 +913,7 @@ test("should support `sensitiveInfo` w/ `sensitiveInfoValue`", async function ()
   assert.equal(response.status, 403);
 });
 
-test("should support a custom rule", async function () {
+test("`arcjetBun`: should support a custom rule", async function () {
   const restore = capture();
   // Custom rule that denies requests when a `q` search parameter is `"alpha"`.
   const denySearchAlpha: ArcjetRule<{}> = {
@@ -461,9 +955,7 @@ test("should support a custom rule", async function () {
   });
 
   const { server, url } = createSimpleServer({
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   });
 
@@ -477,7 +969,7 @@ test("should support a custom rule", async function () {
   assert.equal(responseBravo.status, 200);
 });
 
-test("should support a custom rule w/ optional extra fields", async function () {
+test("`arcjetBun`: should support a custom rule w/ optional extra fields", async function () {
   const restore = capture();
   // Custom rule that denies requests when an optional extra field is `"alpha"`.
   const denyExtraAlpha: ArcjetRule<{ field?: string | null | undefined }> = {
@@ -536,9 +1028,7 @@ test("should support a custom rule w/ optional extra fields", async function () 
   await server.stop();
 
   ({ server, url } = createSimpleServer({
-    async decide(request) {
-      return arcjet.protect(request);
-    },
+    decide: arcjet.protect,
     handler: arcjet.handler,
   }));
   const responseMissing = await fetch(url);
@@ -551,7 +1041,7 @@ test("should support a custom rule w/ optional extra fields", async function () 
   assert.equal(responseMissing.status, 200);
 });
 
-test("should support a custom rule w/ required extra fields", async function () {
+test("`arcjetBun`: should support a custom rule w/ required extra fields", async function () {
   const restore = capture();
   // Custom rule that denies requests when a required extra field is `"alpha"`.
   const denyExtraAlphaRequired: ArcjetRule<{ field: string }> = {
@@ -672,6 +1162,26 @@ export function capture() {
     process.env.ARCJET_ENV = currentArcjetEnv;
     process.env.ARCJET_LOG_LEVEL = currentArcjetLogLevel;
   }
+}
+
+/**
+ * Create an empty context.
+ *
+ * @returns
+ *   Context.
+ */
+function createArcjetContext(): ArcjetContext {
+  return {
+    cache: new MemoryCache(),
+    characteristics: [],
+    fingerprint: "",
+    async getBody() {
+      throw new Error("Not implemented");
+    },
+    key: "",
+    log: console,
+    runtime: "",
+  };
 }
 
 /**
