@@ -1431,9 +1431,6 @@ type PropsForCharacteristic<T> =
 export type CharacteristicProps<Characteristics extends readonly string[]> =
   UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>;
 
-// Rules can specify they require specific props on an ArcjetRequest
-type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
-
 /**
  * Props for rules.
  *
@@ -1446,12 +1443,11 @@ type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 // but one level seems to be easiest; however, this puts a constraint of
 // the definition of `Product` such that they need to spread each `Primitive`
 // they are re-exporting.
-export type ExtraProps<Rules> = Rules extends []
-  ? {}
-  : Rules extends ArcjetRule[][]
-    ? UnionToIntersection<PropsForRule<Rules[number][number]>>
-    : Rules extends ArcjetRule[]
-      ? UnionToIntersection<PropsForRule<Rules[number]>>
+export type ExtraProps<Rules> =
+  Rules extends Array<Array<ArcjetRule<infer Properties>>>
+    ? Properties
+    : Rules extends Array<ArcjetRule<infer Properties>>
+      ? Properties
       : never;
 
 /**
