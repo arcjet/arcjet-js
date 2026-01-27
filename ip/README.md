@@ -89,8 +89,8 @@ Our work cherry picks only what we need.
 
 Derivative work based on [`forwarded-parse`][forwarded-parse]
 licensed under [MIT][forwarded-parse-license] © Luigi Pinca.
-Our work removes parse errors, protects against prototype pollution, and adds
-TypeScript.
+Our work is a different parser, which works right-to-left, but the tests were
+very helpful.
 
 [arcjet]: https://arcjet.com
 [request-ip-client-ip]: https://github.com/pbojinov/request-ip/blob/e1d0f4b/src/index.js#L55
