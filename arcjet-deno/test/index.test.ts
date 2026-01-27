@@ -797,7 +797,6 @@ test("`arcjetDeno`", async function (t) {
 
       const response = await fetch(url, {
         body: formData,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         method: "POST",
       });
 
