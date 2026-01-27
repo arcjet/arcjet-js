@@ -1349,7 +1349,7 @@ export interface ArcjetRequestDetails {
   method: string;
 
   /**
-   * Protocol (such as `"http"`).
+   * Protocol (such as `"http:"`).
    */
   protocol: string;
 
