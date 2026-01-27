@@ -15,7 +15,6 @@ import type {
   ArcjetConclusion,
   ArcjetContext,
   ArcjetLogger,
-  ArcjetRequestDetails,
 } from "../index.js";
 import {
   ArcjetAllowDecision,
@@ -89,14 +88,16 @@ const exampleContext: ArcjetContext = {
 /**
  * Empty values for details.
  */
-const exampleDetails: Partial<ArcjetRequestDetails> = {
+const exampleDetails = {
   extra: {},
+  cookies: "",
   headers: new Headers([["User-Agent", "curl/8.1.2"]]),
   host: "example.com",
   ip: "172.100.1.1",
   method: "GET",
   path: "/",
   protocol: "http:",
+  query: "",
 };
 
 test("createClient", async (t) => {
