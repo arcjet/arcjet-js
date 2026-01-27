@@ -1596,7 +1596,10 @@ export interface ArcjetEmailRule<Props extends { email: string }>
 /**
  * Filter rule.
  */
-export interface ArcjetFilterRule extends ArcjetRule<{}> {
+export interface ArcjetFilterRule
+  extends ArcjetRule<{
+    filterLocal?: Record<string, string> | null | undefined;
+  }> {
   /**
    * List of expressions that allow a request when one matches and deny otherwise.
    */
