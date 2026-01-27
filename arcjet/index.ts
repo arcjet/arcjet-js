@@ -219,11 +219,23 @@ class Performance {
   }
 }
 
+// `is-plain-obj` from <https://github.com/sindresorhus/is-plain-obj>.
+//
+// MIT License
+//
+// Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /**
  * Turn a value of an unknown field (one directly on an
  * {@linkcode ArcjetRequest}) into a string.
  *
- * This supports `boolean`, `number`, and `string` values.
+ * This supports `Record<string, string>`, `boolean`, `number`, and `string`
+ * values.
  * Other values are serialized as `<unsupported value>`.
  *
  * These extra fields can be used for user-provided characteristics or as
@@ -247,6 +259,34 @@ function toString(value: unknown): string {
 
   if (typeof value === "boolean") {
     return value ? "true" : "false";
+  }
+
+  if (typeof value === "object" && value !== null) {
+    const prototype = Object.getPrototypeOf(value);
+
+    if (
+      (prototype === null ||
+        prototype === Object.prototype ||
+        Object.getPrototypeOf(prototype) === null) &&
+      !(Symbol.toStringTag in value) &&
+      !(Symbol.iterator in value)
+    ) {
+      const entries: Array<[string, string]> = [];
+      let fine = true;
+
+      for (const [key, subvalue] of Object.entries(value)) {
+        if (typeof key !== "string" || typeof subvalue !== "string") {
+          fine = false;
+          break;
+        }
+
+        entries.push([key, subvalue]);
+      }
+
+      if (fine) {
+        return JSON.stringify(Object.fromEntries(entries));
+      }
+    }
   }
 
   return "<unsupported value>";
@@ -1475,7 +1515,7 @@ type PropsForCharacteristic<T> =
         | `http.request.uri.args["${string}"]`
       ? {}
       : T extends string
-        ? Record<T, string | number | boolean>
+        ? Record<T, Record<string, string> | boolean | number | string>
         : never
     : {};
 

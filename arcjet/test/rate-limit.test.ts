@@ -210,7 +210,10 @@ describe("Primitive > tokenBucket", () => {
     type Test = Assert<
       IsEqual<
         Props<typeof rules>,
-        { requested: number; userId: string | number | boolean }
+        {
+          requested: number;
+          userId: Record<string, string> | boolean | number | string;
+        }
       >
     >;
   });
@@ -437,7 +440,10 @@ describe("Primitive > fixedWindow", () => {
       max: 1,
     });
     type Test = Assert<
-      IsEqual<Props<typeof rules>, { userId: string | number | boolean }>
+      IsEqual<
+        Props<typeof rules>,
+        { userId: Record<string, string> | boolean | number | string }
+      >
     >;
   });
 
@@ -656,7 +662,10 @@ describe("Primitive > slidingWindow", () => {
       max: 1,
     });
     type Test = Assert<
-      IsEqual<Props<typeof rules>, { userId: string | number | boolean }>
+      IsEqual<
+        Props<typeof rules>,
+        { userId: Record<string, string> | boolean | number | string }
+      >
     >;
   });
 
