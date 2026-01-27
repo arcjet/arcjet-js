@@ -42,14 +42,14 @@ function errorMessage(err: unknown): string {
 export interface Client {
   decide(
     context: ArcjetContext,
-    details: Partial<ArcjetRequestDetails>,
+    details: ArcjetRequestDetails,
     rules: ArcjetRule[],
   ): Promise<ArcjetDecision>;
   // Call the Arcjet Log Decision API with details of the request and decision
   // made so we can log it.
   report(
     context: ArcjetContext,
-    request: Partial<ArcjetRequestDetails>,
+    request: ArcjetRequestDetails,
     decision: ArcjetDecision,
     rules: ArcjetRule[],
   ): void;
