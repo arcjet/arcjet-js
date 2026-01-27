@@ -732,7 +732,6 @@ test("`arcjetBun`: should support `sensitiveInfo` on form data", async function 
 
   const response = await fetch(url, {
     body: formData,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     method: "POST",
   });
 
