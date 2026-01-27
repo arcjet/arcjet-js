@@ -71,6 +71,16 @@ export type RedactOptions<
   replace?: (entity: ListedEntities, plaintext: string) => string | undefined;
 };
 
+/**
+ * Turn an entity name into a `SensitiveInfoEntity`.
+ *
+ * See also `protocolSensitiveInfoEntitiesToAnalyze` in `arcjet/index.ts`.
+ *
+ * @param entity
+ *   Entity name.
+ * @returns
+ *   Entity object.
+ */
 function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
   if (typeof entity !== "string") {
     throw new Error("redaction entities must be strings");
@@ -85,12 +95,19 @@ function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
     return { tag: entity };
   }
 
-  return {
-    tag: "custom",
-    val: entity,
-  };
+  return { tag: "custom", val: entity };
 }
 
+/**
+ * Turn a `SensitiveInfoEntity` object into its name.
+ *
+ * See also `analyzeSensitiveInfoEntitiesToString` in `arcjet/index.ts`.
+ *
+ * @param entity
+ *   Entity object.
+ * @returns
+ *   Entity name.
+ */
 function wasmEntitiesToString(entity: SensitiveInfoEntity): string {
   if (
     entity.tag === "credit-card-number" ||
