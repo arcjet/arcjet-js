@@ -21,7 +21,6 @@ import type {
   ArcjetRateLimitRule,
 } from "@arcjet/protocol";
 import {
-  ArcjetAllowDecision,
   ArcjetBotReason,
   ArcjetEmailReason,
   ArcjetErrorReason,
@@ -38,6 +37,7 @@ import {
 import type { Client } from "@arcjet/protocol/client.js";
 import * as analyze from "@arcjet/analyze";
 import type {
+  AnalyzeRequest,
   DetectedSensitiveInfoEntity,
   SensitiveInfoEntity,
   BotConfig,
@@ -145,6 +145,17 @@ type LiteralCheck<
     : false;
 type IsStringLiteral<T> = LiteralCheck<T, string>;
 
+/**
+ * List of known fields on {@linkcode ArcjetRequest}.
+ *
+ * For unknown reasons this includes the `body` field.
+ * It also includes the semi-known `email` field.
+ *
+ * @param key
+ *   Field name.
+ * @returns
+ *   Whether the field is unknown.
+ */
 const knownFields = [
   "ip",
   "method",
@@ -158,10 +169,28 @@ const knownFields = [
   "query",
 ];
 
+/**
+ * Check if a field is an unknown field.
+ *
+ * This affects whether it is moved into `extra` on the {@linkcode ArcjetRequest}.
+ *
+ * @param key
+ *   Field name.
+ * @returns
+ *   Whether the field is unknown.
+ */
 function isUnknownRequestProperty(key: string) {
   return !knownFields.includes(key);
 }
 
+/**
+ * Check if a value is a known Arcjet email validation type.
+ *
+ * @param type
+ *   Value to check..
+ * @returns
+ *   Whether the value is a known Arcjet email validation type.
+ */
 function isEmailType(type: unknown): type is ArcjetEmailType {
   return (
     type === "FREE" ||
@@ -190,7 +219,24 @@ class Performance {
   }
 }
 
-function toString(value: unknown) {
+/**
+ * Turn a value of an unknown field (one directly on an
+ * {@linkcode ArcjetRequest}) into a string.
+ *
+ * This supports `boolean`, `number`, and `string` values.
+ * Other values are serialized as `<unsupported value>`.
+ *
+ * These extra fields can be used for user-provided characteristics or as
+ * fields requested by custom rules.
+ * They are moved onto the `extra` and sent into WebAssembly or to the Arcjet
+ * Cloud API.
+ *
+ * @param value
+ *   Value.
+ * @returns
+ *   Serialized value.
+ */
+function toString(value: unknown): string {
   if (typeof value === "string") {
     return value;
   }
@@ -235,7 +281,21 @@ function lookupWaitUntil(): WaitUntil | undefined {
   }
 }
 
-function toAnalyzeRequest(request: ArcjetRequestDetails) {
+/**
+ * Turn an SDK request into a request for `@arcjet/analyze`.
+ *
+ * In JavaScript more complex types are used.
+ * For WebAssembly JSON compatibility is needed.
+ *
+ * Practically, this turns a request where `headers` is a `Headers` instance,
+ * into the same request where `headers` is a plain object.
+ *
+ * @param request
+ *   Request.
+ * @returns
+ *   Transformed request.
+ */
+function toAnalyzeRequest(request: ArcjetRequestDetails): AnalyzeRequest {
   const headers: Record<string, string> = {};
   if (typeof request.headers !== "undefined") {
     for (const [key, value] of request.headers.entries()) {
@@ -1980,35 +2040,58 @@ export function slidingWindow<
   return [rule];
 }
 
-function protocolSensitiveInfoEntitiesToAnalyze<Custom extends string>(
-  entity: ArcjetSensitiveInfoType | Custom,
-) {
+/**
+ * Turn a protocol entity name into a `SensitiveInfoEntity`.
+ *
+ * See also `userEntitiesToWasm` in `redact/index.ts`.
+ *
+ * Note that the protocol uses `SCREAM_CASE` whereas `redact`
+ * uses `kebab-case`.
+ *
+ * @param entity
+ *   Entity name.
+ * @returns
+ *   Entity object.
+ */
+function protocolSensitiveInfoEntitiesToAnalyze(
+  entity: unknown,
+): SensitiveInfoEntity {
   if (typeof entity !== "string") {
     throw new Error("invalid entity type");
   }
 
   if (entity === "EMAIL") {
-    return { tag: "email" as const };
+    return { tag: "email" };
   }
 
   if (entity === "PHONE_NUMBER") {
-    return { tag: "phone-number" as const };
+    return { tag: "phone-number" };
   }
 
   if (entity === "IP_ADDRESS") {
-    return { tag: "ip-address" as const };
+    return { tag: "ip-address" };
   }
 
   if (entity === "CREDIT_CARD_NUMBER") {
-    return { tag: "credit-card-number" as const };
+    return { tag: "credit-card-number" };
   }
 
-  return {
-    tag: "custom" as const,
-    val: entity,
-  };
+  return { tag: "custom", val: entity };
 }
 
+/**
+ * Turn a `SensitiveInfoEntity` object into a protocol name.
+ *
+ * See also `wasmEntitiesToString` in `redact/index.ts`.
+ *
+ * Note that the protocol uses `SCREAM_CASE` whereas `redact`
+ * uses `kebab-case`.
+ *
+ * @param entity
+ *   Entity object.
+ * @returns
+ *   Entity name.
+ */
 function analyzeSensitiveInfoEntitiesToString(
   entity: SensitiveInfoEntity,
 ): string {
@@ -2031,15 +2114,22 @@ function analyzeSensitiveInfoEntitiesToString(
   return entity.val;
 }
 
+/**
+ * Convert spans of detected entities from `@arcjet/analyze` to protocol format.
+ *
+ * @param detectedEntities
+ *   Detected entities.
+ * @returns
+ *   Transformed entities.
+ */
 function convertAnalyzeDetectedSensitiveInfoEntity(
-  detectedEntities: DetectedSensitiveInfoEntity[],
-): ArcjetIdentifiedEntity[] {
-  return detectedEntities.map((detectedEntity) => {
+  detectedEntities: ReadonlyArray<DetectedSensitiveInfoEntity>,
+): Array<ArcjetIdentifiedEntity> {
+  return detectedEntities.map(({ start, end, identifiedType }) => {
     return {
-      ...detectedEntity,
-      identifiedType: analyzeSensitiveInfoEntitiesToString(
-        detectedEntity.identifiedType,
-      ),
+      start,
+      end,
+      identifiedType: analyzeSensitiveInfoEntitiesToString(identifiedType),
     };
   });
 }

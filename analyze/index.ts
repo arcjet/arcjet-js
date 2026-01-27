@@ -19,17 +19,58 @@ interface AnalyzeContext {
   characteristics: string[];
 }
 
-type AnalyzeRequest = {
-  ip?: string;
-  method?: string;
-  protocol?: string;
-  host?: string;
-  path?: string;
-  headers?: Record<string, string>;
-  cookies?: string;
-  query?: string;
-  extra?: Record<string, string>;
-};
+/**
+ * Request passed as a JSON string into WebAssembly.
+ *
+ * This is like `ArcjetRequestDetails` from `@arcjet/protocol`,
+ * but fields are often optional across the boundary.
+ */
+export interface AnalyzeRequest {
+  /**
+   * IP address (IPv4 or IPv6).
+   */
+  ip?: string | undefined;
+
+  /**
+   * HTTP method (such as `GET`).
+   */
+  method?: string | undefined;
+
+  /**
+   * Protocol (such as `"http:"`).
+   */
+  protocol?: string | undefined;
+
+  /**
+   * Hostname (such as `"example.com"`).
+   */
+  host?: string | undefined;
+
+  /**
+   * Path (such as `"/path/to/resource"`).
+   */
+  path?: string | undefined;
+
+  /**
+   * Headers of the request.
+   */
+  headers?: Record<string, string> | undefined;
+
+  /**
+   * Cookies of the request (such as `"cookie1=value1; cookie2=value2"`).
+   */
+  cookies?: string | undefined;
+
+  /**
+   * Query string of the request (such as `"?q=alpha"`).
+   */
+  query?: string | undefined;
+
+  /**
+   * Extra info.
+   */
+  extra?: Record<string, string> | undefined;
+}
 
 export {
   type EmailValidationConfig,
