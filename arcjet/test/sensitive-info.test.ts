@@ -156,7 +156,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -212,7 +212,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -250,7 +250,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -309,7 +309,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -366,7 +366,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -413,7 +413,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -465,7 +465,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -512,7 +512,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -561,7 +561,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -602,7 +602,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -651,7 +651,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -688,7 +688,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -734,7 +734,7 @@ describe("Primitive > sensitiveInfo", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -781,7 +781,7 @@ describe("Primitive > sensitiveInfo", () => {
       ip: "1.1.1.1",
       method: "GET",
       path: "/",
-      protocol: "http",
+      protocol: "http:",
       query: "",
     };
 
@@ -843,7 +843,7 @@ describe("Primitive > sensitiveInfo", () => {
         ip: "1.1.1.1",
         method: "GET",
         path: "/",
-        protocol: "http",
+        protocol: "http:",
         query: "",
         sensitiveInfoValue: "Is this sent to the server?",
       },
@@ -890,7 +890,7 @@ describe("Primitive > sensitiveInfo", () => {
         ip: "1.1.1.1",
         method: "GET",
         path: "/",
-        protocol: "http",
+        protocol: "http:",
         query: "",
         sensitiveInfoValue: "Is alice@arcjet.com sent to the server?",
       },

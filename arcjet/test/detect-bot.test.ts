@@ -140,7 +140,7 @@ describe("Primitive > detectBot", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -192,7 +192,7 @@ describe("Primitive > detectBot", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -239,7 +239,7 @@ describe("Primitive > detectBot", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -280,7 +280,7 @@ describe("Primitive > detectBot", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -321,7 +321,7 @@ describe("Primitive > detectBot", () => {
     const curlDetails = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -334,7 +334,7 @@ describe("Primitive > detectBot", () => {
     const googlebotDetails = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Googlebot/2.0"]]),
@@ -383,7 +383,7 @@ describe("Primitive > detectBot", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),

@@ -56,7 +56,7 @@ describe("Primitive > shield", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -100,7 +100,7 @@ describe("Primitive > shield", () => {
     const details = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),

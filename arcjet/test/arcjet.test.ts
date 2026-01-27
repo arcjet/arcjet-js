@@ -300,7 +300,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: { "User-Agent": "curl/8.1.2" },
@@ -363,7 +363,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: { "User-Agent": "curl/8.1.2" },
@@ -439,7 +439,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: { "User-Agent": "curl/8.1.2" },
@@ -607,7 +607,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -655,7 +655,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -706,7 +706,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -763,7 +763,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -935,7 +935,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -992,7 +992,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: { "user-agent": "curl/8.1.2" },
@@ -1051,7 +1051,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: { "User-Agent": ["curl/8.1.2", "something"] },
@@ -1111,7 +1111,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: { "user-agent": "curl/8.1.2" },
@@ -1167,7 +1167,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -1220,7 +1220,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -1281,7 +1281,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -1357,7 +1357,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -1402,7 +1402,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "curl/8.1.2"]]),
@@ -1453,7 +1453,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
@@ -1516,7 +1516,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
@@ -1594,7 +1594,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
@@ -1638,7 +1638,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
@@ -1700,7 +1700,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
@@ -1762,7 +1762,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
@@ -1823,7 +1823,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
@@ -1888,7 +1888,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
@@ -1942,7 +1942,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
@@ -1995,7 +1995,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers([["abcxyz", "test1234"]]),
@@ -2053,7 +2053,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -2113,7 +2113,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -2172,7 +2172,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -2233,7 +2233,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -2293,7 +2293,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),
@@ -2356,7 +2356,7 @@ describe("SDK", () => {
     const request = {
       ip: "172.100.1.1",
       method: "GET",
-      protocol: "http",
+      protocol: "http:",
       host: "example.com",
       path: "/",
       headers: new Headers(),

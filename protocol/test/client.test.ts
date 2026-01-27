@@ -96,7 +96,7 @@ const exampleDetails: Partial<ArcjetRequestDetails> = {
   ip: "172.100.1.1",
   method: "GET",
   path: "/",
-  protocol: "http",
+  protocol: "http:",
 };
 
 test("createClient", async (t) => {
