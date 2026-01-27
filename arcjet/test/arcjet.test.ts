@@ -330,7 +330,10 @@ describe("SDK", () => {
     type WithRuleTest = Assert<
       IsEqual<
         Props<typeof aj2>,
-        { requested: number; userId: string | number | boolean }
+        {
+          requested: number;
+          userId: boolean | number | object | string | undefined;
+        }
       >
     >;
 
@@ -394,7 +397,10 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       IsEqual<
         Props<typeof aj2>,
-        { requested: number; userId: string | number | boolean }
+        {
+          requested: number;
+          userId: boolean | number | object | string | undefined;
+        }
       >
     >;
 
@@ -404,7 +410,11 @@ describe("SDK", () => {
     type WithRuleTestTwo = Assert<
       IsEqual<
         Props<typeof aj3>,
-        { requested: number; userId: string | number | boolean; abc: number }
+        {
+          requested: number;
+          userId: boolean | number | object | string | undefined;
+          abc: number;
+        }
       >
     >;
 
@@ -470,7 +480,10 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       IsEqual<
         Props<typeof aj2>,
-        { requested: number; userId: string | number | boolean }
+        {
+          requested: number;
+          userId: boolean | number | object | string | undefined;
+        }
       >
     >;
 
@@ -1108,6 +1121,7 @@ describe("SDK", () => {
         throw new Error("Not implemented");
       },
     };
+    const date = new Date("2024-01-01T00:00:00Z");
     const request = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1118,7 +1132,8 @@ describe("SDK", () => {
       "extra-number": 123,
       "extra-false": false,
       "extra-true": true,
-      "extra-unsupported": new Date(),
+      "extra-date": date,
+      "extra-unsupported": 1n,
       cookies: "",
       query: "",
     };
@@ -1140,6 +1155,7 @@ describe("SDK", () => {
         "extra-number": "123",
         "extra-false": "false",
         "extra-true": "true",
+        "extra-date": '"2024-01-01T00:00:00.000Z"',
         "extra-unsupported": "<unsupported value>",
       },
       headers: request.headers,

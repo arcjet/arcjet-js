@@ -223,8 +223,8 @@ class Performance {
  * Turn a value of an unknown field (one directly on an
  * {@linkcode ArcjetRequest}) into a string.
  *
- * This supports `boolean`, `number`, and `string` values.
- * Other values are serialized as `<unsupported value>`.
+ * This passes strings through untouched and turns other values into JSON.
+ * Non-serializable values are turned into `<unsupported value>`.
  *
  * These extra fields can be used for user-provided characteristics or as
  * fields requested by custom rules.
@@ -241,12 +241,11 @@ function toString(value: unknown): string {
     return value;
   }
 
-  if (typeof value === "number") {
-    return `${value}`;
-  }
-
-  if (typeof value === "boolean") {
-    return value ? "true" : "false";
+  // Other values are JSON-stringified.
+  try {
+    return JSON.stringify(value);
+  } catch {
+    // Ignore.
   }
 
   return "<unsupported value>";
@@ -1475,7 +1474,7 @@ type PropsForCharacteristic<T> =
         | `http.request.uri.args["${string}"]`
       ? {}
       : T extends string
-        ? Record<T, string | number | boolean>
+        ? Record<T, boolean | number | object | string | undefined>
         : never
     : {};
 
