@@ -150,11 +150,6 @@ type IsStringLiteral<T> = LiteralCheck<T, string>;
  *
  * For unknown reasons this includes the `body` field.
  * It also includes the semi-known `email` field.
- *
- * @param key
- *   Field name.
- * @returns
- *   Whether the field is unknown.
  */
 const knownFields = [
   "ip",
@@ -185,11 +180,6 @@ function isUnknownRequestProperty(key: string) {
 
 /**
  * List of JSON fields on {@linkcode ArcjetRequest}.
- *
- * @param key
- *   Field name.
- * @returns
- *   Whether the field is unknown.
  */
 const jsonFields: ReadonlyArray<string> = [];
 
