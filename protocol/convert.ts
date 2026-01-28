@@ -1,59 +1,62 @@
-import { Timestamp } from "@bufbuild/protobuf";
-import type {
-  ArcjetFilterRule,
-  ArcjetRule,
-  ArcjetRateLimitRule,
-  ArcjetBotRule,
-  ArcjetConclusion,
-  ArcjetEmailRule,
-  ArcjetEmailType,
-  ArcjetMode,
-  ArcjetRuleState,
-  ArcjetStack,
-  ArcjetTokenBucketRateLimitRule,
-  ArcjetFixedWindowRateLimitRule,
-  ArcjetSlidingWindowRateLimitRule,
-  ArcjetShieldRule,
-  ArcjetSensitiveInfoRule,
-} from "./index.js";
+import { timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
+import { create } from "@bufbuild/protobuf";
 import {
+  type Decision,
+  type IpDetails,
+  type Reason,
+  type Rule,
+  type RuleResult,
+  BotV2ReasonSchema,
+  Conclusion,
+  DecisionSchema,
+  EdgeRuleReasonSchema,
+  EmailReasonSchema,
+  EmailType,
+  ErrorReasonSchema,
+  Mode,
+  RateLimitAlgorithm,
+  ReasonSchema,
+  RuleSchema,
+  RuleState,
+  RuleResultSchema,
+  SDKStack,
+  SensitiveInfoReasonSchema,
+  ShieldReasonSchema,
+  RateLimitReasonSchema,
+} from "./proto/decide/v1alpha1/decide_pb.js";
+import {
+  type ArcjetBotRule,
+  type ArcjetConclusion,
+  type ArcjetEmailRule,
+  type ArcjetEmailType,
+  type ArcjetFilterRule,
+  type ArcjetFixedWindowRateLimitRule,
+  type ArcjetMode,
+  type ArcjetRateLimitRule,
+  type ArcjetRuleState,
+  type ArcjetRule,
+  type ArcjetSensitiveInfoRule,
+  type ArcjetShieldRule,
+  type ArcjetSlidingWindowRateLimitRule,
+  type ArcjetStack,
+  type ArcjetTokenBucketRateLimitRule,
   ArcjetAllowDecision,
   ArcjetBotReason,
   ArcjetChallengeDecision,
+  ArcjetDecision,
   ArcjetDenyDecision,
   ArcjetEdgeRuleReason,
   ArcjetEmailReason,
   ArcjetErrorDecision,
   ArcjetErrorReason,
   ArcjetFilterReason,
-  ArcjetRateLimitReason,
-  ArcjetRuleResult,
-  ArcjetShieldReason,
-  ArcjetDecision,
-  ArcjetReason,
   ArcjetIpDetails,
+  ArcjetRateLimitReason,
+  ArcjetReason,
+  ArcjetRuleResult,
   ArcjetSensitiveInfoReason,
+  ArcjetShieldReason,
 } from "./index.js";
-import type { IpDetails } from "./proto/decide/v1alpha1/decide_pb.js";
-import {
-  BotV2Reason,
-  Conclusion,
-  Decision,
-  EdgeRuleReason,
-  EmailReason,
-  EmailType,
-  ErrorReason,
-  Mode,
-  RateLimitAlgorithm,
-  RateLimitReason,
-  Reason,
-  Rule,
-  RuleResult,
-  RuleState,
-  SDKStack,
-  SensitiveInfoReason,
-  ShieldReason,
-} from "./proto/decide/v1alpha1/decide_pb.js";
 
 export function ArcjetModeToProtocol(mode: ArcjetMode) {
   switch (mode) {
@@ -238,7 +241,9 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         remaining: reason.remaining,
         reset: reason.resetInSeconds,
         window: reason.windowInSeconds,
-        resetTime: reason.resetTime?.toDate(),
+        resetTime: reason.resetTime
+          ? timestampDate(reason.resetTime)
+          : undefined,
       });
     }
     case "botV2": {
@@ -307,15 +312,16 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
       windowInSeconds: reason.window,
     };
 
-    return new Reason({
+    return create(ReasonSchema, {
       reason: {
         case: "rateLimit",
         // `resetTime` is an optional field but not allowed to be `undefined`.
-        value: new RateLimitReason(
+        value: create(
+          RateLimitReasonSchema,
           reason.resetTime
             ? {
                 ...cleanOptions,
-                resetTime: Timestamp.fromDate(reason.resetTime),
+                resetTime: timestampFromDate(reason.resetTime),
               }
             : cleanOptions,
         ),
@@ -324,10 +330,10 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
   }
 
   if (reason.isBot()) {
-    return new Reason({
+    return create(ReasonSchema, {
       reason: {
         case: "botV2",
-        value: new BotV2Reason({
+        value: create(BotV2ReasonSchema, {
           allowed: reason.allowed,
           denied: reason.denied,
           verified: reason.verified,
@@ -338,19 +344,19 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
   }
 
   if (reason.isEdgeRule()) {
-    return new Reason({
+    return create(ReasonSchema, {
       reason: {
         case: "edgeRule",
-        value: new EdgeRuleReason({}),
+        value: create(EdgeRuleReasonSchema),
       },
     });
   }
 
   if (reason.isShield()) {
-    return new Reason({
+    return create(ReasonSchema, {
       reason: {
         case: "shield",
-        value: new ShieldReason({
+        value: create(ShieldReasonSchema, {
           shieldTriggered: reason.shieldTriggered,
         }),
       },
@@ -358,10 +364,10 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
   }
 
   if (reason.isEmail()) {
-    return new Reason({
+    return create(ReasonSchema, {
       reason: {
         case: "email",
-        value: new EmailReason({
+        value: create(EmailReasonSchema, {
           emailTypes: reason.emailTypes.map(ArcjetEmailTypeToProtocol),
         }),
       },
@@ -369,10 +375,10 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
   }
 
   if (reason.isError()) {
-    return new Reason({
+    return create(ReasonSchema, {
       reason: {
         case: "error",
-        value: new ErrorReason({
+        value: create(ErrorReasonSchema, {
           message: reason.message,
         }),
       },
@@ -380,7 +386,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
   }
 
   if (reason.isFilter()) {
-    return new Reason({
+    return create(ReasonSchema, {
       reason: {
         case: "filter",
         value: {
@@ -392,10 +398,10 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
   }
 
   if (reason.isSensitiveInfo()) {
-    return new Reason({
+    return create(ReasonSchema, {
       reason: {
         case: "sensitiveInfo",
-        value: new SensitiveInfoReason({
+        value: create(SensitiveInfoReasonSchema, {
           allowed: reason.allowed,
           denied: reason.denied,
         }),
@@ -403,13 +409,13 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
     });
   }
 
-  return new Reason();
+  return create(ReasonSchema);
 }
 
 export function ArcjetRuleResultToProtocol(
   ruleResult: ArcjetRuleResult,
 ): RuleResult {
-  return new RuleResult({
+  return create(RuleResultSchema, {
     ruleId: ruleResult.ruleId,
     fingerprint: ruleResult.fingerprint,
     ttl: ruleResult.ttl,
@@ -433,7 +439,7 @@ export function ArcjetRuleResultFromProtocol(
 }
 
 export function ArcjetDecisionToProtocol(decision: ArcjetDecision): Decision {
-  return new Decision({
+  return create(DecisionSchema, {
     id: decision.id,
     ttl: decision.ttl,
     conclusion: ArcjetConclusionToProtocol(decision.conclusion),
@@ -630,7 +636,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   rule: ArcjetRule<Props>,
 ): Rule {
   if (isTokenBucketRule(rule)) {
-    return new Rule({
+    return create(RuleSchema, {
       rule: {
         case: "rateLimit",
         value: {
@@ -647,7 +653,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isFixedWindowRule(rule)) {
-    return new Rule({
+    return create(RuleSchema, {
       rule: {
         case: "rateLimit",
         value: {
@@ -663,7 +669,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isSlidingWindowRule(rule)) {
-    return new Rule({
+    return create(RuleSchema, {
       rule: {
         case: "rateLimit",
         value: {
@@ -685,7 +691,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
     const deny = Array.isArray(rule.deny)
       ? rule.deny.map(ArcjetEmailTypeToProtocol)
       : [];
-    return new Rule({
+    return create(RuleSchema, {
       rule: {
         case: "email",
         value: {
@@ -703,7 +709,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   if (isBotRule(rule)) {
     const allow = Array.isArray(rule.allow) ? rule.allow : [];
     const deny = Array.isArray(rule.deny) ? rule.deny : [];
-    return new Rule({
+    return create(RuleSchema, {
       rule: {
         case: "botV2",
         value: {
@@ -717,7 +723,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isShieldRule(rule)) {
-    return new Rule({
+    return create(RuleSchema, {
       rule: {
         case: "shield",
         value: {
@@ -730,7 +736,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isFilterRule(rule)) {
-    return new Rule({
+    return create(RuleSchema, {
       rule: {
         case: "filter",
         value: {
@@ -744,7 +750,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isSensitiveInfoRule(rule)) {
-    return new Rule({
+    return create(RuleSchema, {
       rule: {
         case: "sensitiveInfo",
         value: {
@@ -757,5 +763,5 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
     });
   }
 
-  return new Rule();
+  return create(RuleSchema);
 }

@@ -1,22 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Cache } from "@arcjet/cache";
+import { create } from "@bufbuild/protobuf";
 import { createRouterTransport } from "@connectrpc/connect";
-import { DecideService } from "../proto/decide/v1alpha1/decide_connect.js";
 import {
   Conclusion,
-  DecideResponse,
-  ReportResponse,
-  Rule,
+  DecideResponseSchema,
+  DecideService,
+  ReportResponseSchema,
+  RuleSchema,
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
 import { type ClientOptions, createClient } from "../client.js";
-import type {
-  ArcjetConclusion,
-  ArcjetContext,
-  ArcjetLogger,
-} from "../index.js";
 import {
+  type ArcjetConclusion,
+  type ArcjetContext,
+  type ArcjetLogger,
   ArcjetAllowDecision,
   ArcjetChallengeDecision,
   ArcjetDecision,
@@ -126,7 +125,7 @@ test("createClient", async (t) => {
             assert.ok(typeof ms === "number");
             assert.ok(ms > 9000);
             assert.ok(ms < 10000);
-            return new DecideResponse();
+            return create(DecideResponseSchema);
           },
         });
       }),
@@ -157,7 +156,7 @@ test("createClient", async (t) => {
               assert.ok(typeof ms === "number");
               assert.ok(ms > 18000);
               assert.ok(ms < 20000);
-              return new DecideResponse();
+              return create(DecideResponseSchema);
             },
           });
         }),
@@ -193,7 +192,7 @@ test("createClient", async (t) => {
 
             assert.equal(decideRequest.sdkStack, SDKStack.SDK_STACK_NEXTJS);
 
-            return new DecideResponse({
+            return create(DecideResponseSchema, {
               decision: { conclusion: Conclusion.ALLOW },
             });
           },
@@ -225,7 +224,7 @@ test("createClient", async (t) => {
                 SDKStack.SDK_STACK_UNSPECIFIED,
               );
 
-              return new DecideResponse({
+              return create(DecideResponseSchema, {
                 decision: { conclusion: Conclusion.ALLOW },
               });
             },
@@ -252,9 +251,9 @@ test("createClient", async (t) => {
             assert.equal(calls, 0);
             calls++;
 
-            assert.deepEqual(decideRequest.rules, [new Rule()]);
+            assert.deepEqual(decideRequest.rules, [create(RuleSchema)]);
 
-            return new DecideResponse({
+            return create(DecideResponseSchema, {
               decision: { conclusion: Conclusion.ALLOW },
             });
           },
@@ -286,7 +285,7 @@ test("createClient", async (t) => {
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {
           decide() {
-            return new DecideResponse({
+            return create(DecideResponseSchema, {
               decision: { conclusion: Conclusion.ALLOW },
             });
           },
@@ -305,7 +304,7 @@ test("createClient", async (t) => {
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {
           decide() {
-            return new DecideResponse({
+            return create(DecideResponseSchema, {
               decision: { conclusion: Conclusion.DENY },
             });
           },
@@ -324,7 +323,7 @@ test("createClient", async (t) => {
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {
           decide() {
-            return new DecideResponse({
+            return create(DecideResponseSchema, {
               decision: { conclusion: Conclusion.CHALLENGE },
             });
           },
@@ -343,7 +342,7 @@ test("createClient", async (t) => {
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {
           decide() {
-            return new DecideResponse({
+            return create(DecideResponseSchema, {
               decision: { conclusion: Conclusion.ERROR },
             });
           },
@@ -364,7 +363,7 @@ test("createClient", async (t) => {
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {
           decide() {
-            return new DecideResponse({
+            return create(DecideResponseSchema, {
               decision: {
                 conclusion: Conclusion.ERROR,
                 reason: {
@@ -390,7 +389,7 @@ test("createClient", async (t) => {
       transport: createRouterTransport(({ service }) => {
         service(DecideService, {
           decide() {
-            return new DecideResponse({
+            return create(DecideResponseSchema, {
               decision: { conclusion: Conclusion.UNSPECIFIED },
             });
           },
@@ -413,7 +412,7 @@ test("createClient", async (t) => {
         transport: createRouterTransport(({ service }) => {
           service(DecideService, {
             report() {
-              return new ReportResponse();
+              return create(ReportResponseSchema);
             },
           });
         }),
@@ -470,7 +469,7 @@ test("createClient", async (t) => {
                 reject(error);
               }
 
-              return new ReportResponse();
+              return create(ReportResponseSchema);
             },
           });
         }),
@@ -515,7 +514,7 @@ test("createClient", async (t) => {
                 reject(error);
               }
 
-              return new ReportResponse();
+              return create(ReportResponseSchema);
             },
           });
         }),
@@ -560,7 +559,7 @@ test("createClient", async (t) => {
                 reject(error);
               }
 
-              return new ReportResponse();
+              return create(ReportResponseSchema);
             },
           });
         }),
@@ -605,7 +604,7 @@ test("createClient", async (t) => {
                 reject(error);
               }
 
-              return new ReportResponse();
+              return create(ReportResponseSchema);
             },
           });
         }),
@@ -652,7 +651,7 @@ test("createClient", async (t) => {
                   reject(error);
                 }
 
-                return new ReportResponse();
+                return create(ReportResponseSchema);
               },
             });
           }),
@@ -683,7 +682,7 @@ test("createClient", async (t) => {
                 assert.equal(calls, 0);
                 calls++;
 
-                assert.deepEqual(reportRequest.rules, [new Rule()]);
+                assert.deepEqual(reportRequest.rules, [create(RuleSchema)]);
                 assert.ok(typeof reportRequest.decision === "object");
                 assert.equal(
                   reportRequest.decision.conclusion,
@@ -695,7 +694,7 @@ test("createClient", async (t) => {
                 reject(error);
               }
 
-              return new ReportResponse();
+              return create(ReportResponseSchema);
             },
           });
         }),
@@ -783,7 +782,7 @@ test("createClient", async (t) => {
 
             assert.deepEqual(decideRequest.characteristics, ["src.ip"]);
 
-            return new DecideResponse({
+            return create(DecideResponseSchema, {
               decision: { conclusion: Conclusion.ALLOW },
             });
           },
@@ -821,7 +820,7 @@ test("createClient", async (t) => {
                 reject(error);
               }
 
-              return new ReportResponse();
+              return create(ReportResponseSchema);
             },
           });
         }),

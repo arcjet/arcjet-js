@@ -1,6 +1,25 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  timestampDate,
+  timestampFromDate,
+  timestampNow,
+} from "@bufbuild/protobuf/wkt";
+import { create } from "@bufbuild/protobuf";
+import {
+  Conclusion,
+  DecisionSchema,
+  EmailType,
+  IpDetailsSchema,
+  Mode,
+  RateLimitAlgorithm,
+  ReasonSchema,
+  RuleResultSchema,
+  RuleSchema,
+  RuleState,
+  SDKStack,
+} from "../proto/decide/v1alpha1/decide_pb.js";
+import {
   ArcjetModeToProtocol,
   ArcjetEmailTypeToProtocol,
   ArcjetEmailTypeFromProtocol,
@@ -18,29 +37,14 @@ import {
   ArcjetRuleToProtocol,
 } from "../convert.js";
 import {
-  Conclusion,
-  Decision,
-  EmailType,
-  IpDetails,
-  Mode,
-  RateLimitAlgorithm,
-  Reason,
-  Rule,
-  RuleResult,
-  RuleState,
-  SDKStack,
-} from "../proto/decide/v1alpha1/decide_pb.js";
-import type {
-  ArcjetBotRule,
-  ArcjetEmailRule,
-  ArcjetTokenBucketRateLimitRule,
-  ArcjetFixedWindowRateLimitRule,
-  ArcjetSlidingWindowRateLimitRule,
-  ArcjetShieldRule,
-  ArcjetSensitiveInfoRule,
-  ArcjetFilterRule,
-} from "../index.js";
-import {
+  type ArcjetBotRule,
+  type ArcjetEmailRule,
+  type ArcjetFilterRule,
+  type ArcjetFixedWindowRateLimitRule,
+  type ArcjetSensitiveInfoRule,
+  type ArcjetSlidingWindowRateLimitRule,
+  type ArcjetShieldRule,
+  type ArcjetTokenBucketRateLimitRule,
   ArcjetAllowDecision,
   ArcjetBotReason,
   ArcjetChallengeDecision,
@@ -50,14 +54,13 @@ import {
   ArcjetErrorDecision,
   ArcjetErrorReason,
   ArcjetFilterReason,
+  ArcjetIpDetails,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
-  ArcjetShieldReason,
-  ArcjetIpDetails,
   ArcjetSensitiveInfoReason,
+  ArcjetShieldReason,
 } from "../index.js";
-import { Timestamp } from "@bufbuild/protobuf";
 
 test("convert", async (t) => {
   await t.test("ArcjetModeToProtocol", async (t) => {
@@ -378,7 +381,7 @@ test("convert", async (t) => {
     });
 
     await t.test("should create an anonymous reason w/ an empty proto", () => {
-      const reason = ArcjetReasonFromProtocol(new Reason());
+      const reason = ArcjetReasonFromProtocol(create(ReasonSchema));
 
       assert.ok(reason instanceof ArcjetReason);
       assert.equal(reason.type, undefined);
@@ -386,7 +389,7 @@ test("convert", async (t) => {
 
     await t.test("should create a bot reason", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: { case: "botV2", value: { allowed: [], denied: [] } },
         }),
       );
@@ -403,7 +406,7 @@ test("convert", async (t) => {
 
     await t.test("should create a bot reason (spoofed, verified)", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: {
             case: "botV2",
             value: { allowed: [], denied: [], spoofed: true, verified: true },
@@ -423,7 +426,7 @@ test("convert", async (t) => {
 
     await t.test("should create an edge rule reason", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({ reason: { case: "edgeRule", value: {} } }),
+        create(ReasonSchema, { reason: { case: "edgeRule", value: {} } }),
       );
 
       assert.ok(reason instanceof ArcjetEdgeRuleReason);
@@ -432,7 +435,7 @@ test("convert", async (t) => {
 
     await t.test("should create an email reason (empty)", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: { case: "email", value: {} },
         }),
       );
@@ -444,7 +447,7 @@ test("convert", async (t) => {
 
     await t.test("should create an email reason (type)", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: {
             case: "email",
             value: { emailTypes: [EmailType.DISPOSABLE] },
@@ -459,7 +462,7 @@ test("convert", async (t) => {
 
     await t.test("should create an error reason", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: {
             case: "error",
             value: { message: "Test error" },
@@ -474,7 +477,7 @@ test("convert", async (t) => {
 
     await t.test("should create a rate limit reason", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: {
             case: "rateLimit",
             value: {
@@ -498,9 +501,9 @@ test("convert", async (t) => {
     });
 
     await t.test("should create a rate limit reason w/ `resetTime`", () => {
-      const now = Timestamp.now();
+      const now = timestampNow();
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: {
             case: "rateLimit",
             value: {
@@ -519,14 +522,14 @@ test("convert", async (t) => {
       assert.equal(reason.type, "RATE_LIMIT");
       assert.equal(reason.max, 1);
       assert.equal(reason.remaining, -1);
-      assert.deepEqual(reason.resetTime, now.toDate());
+      assert.deepEqual(reason.resetTime, timestampDate(now));
       assert.equal(reason.reset, 1000);
       assert.equal(reason.window, 1000);
     });
 
     await t.test("should create a filter reason", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: {
             case: "filter",
             value: {
@@ -545,7 +548,7 @@ test("convert", async (t) => {
 
     await t.test("should create a sensitive info reason", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: {
             case: "sensitiveInfo",
             value: {
@@ -563,6 +566,7 @@ test("convert", async (t) => {
       // Pass through `JSON` to drop info on the internal class `IdentifiedEntity`.
       assert.deepEqual(JSON.parse(JSON.stringify(reason.denied)), [
         {
+          $typeName: "proto.decide.v1alpha1.IdentifiedEntity",
           end: 16,
           identifiedType: "credit-card-number",
           start: 0,
@@ -572,7 +576,7 @@ test("convert", async (t) => {
 
     await t.test("should create an error reason on a bot reason", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: { case: "bot", value: {} },
         }),
       );
@@ -584,7 +588,7 @@ test("convert", async (t) => {
 
     await t.test("should create a shield reason (triggered)", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: { case: "shield", value: { shieldTriggered: true } },
         }),
       );
@@ -596,7 +600,7 @@ test("convert", async (t) => {
 
     await t.test("should create a shield reason (not triggered)", () => {
       const reason = ArcjetReasonFromProtocol(
-        new Reason({
+        create(ReasonSchema, {
           reason: { case: "shield", value: {} },
         }),
       );
@@ -610,7 +614,7 @@ test("convert", async (t) => {
       "should create an anonymous reason w/ an unknown `case` proto",
       () => {
         const reason = ArcjetReasonFromProtocol(
-          new Reason({
+          create(ReasonSchema, {
             reason: {
               // @ts-expect-error: test runtime behavior.
               case: "NOT_VALID",
@@ -646,7 +650,7 @@ test("convert", async (t) => {
     await t.test("should create an anonymous reason w/ an empty proto", () => {
       const reason = ArcjetReasonToProtocol(new ArcjetReason());
 
-      assert.ok(reason instanceof Reason);
+      assert.equal(reason.$typeName, "proto.decide.v1alpha1.Reason");
       assert.equal(reason.reason.case, undefined);
     });
 
@@ -662,7 +666,7 @@ test("convert", async (t) => {
               window: 100,
             }),
           ),
-          new Reason({
+          create(ReasonSchema, {
             reason: {
               case: "rateLimit",
               value: {
@@ -692,14 +696,14 @@ test("convert", async (t) => {
               window: 100,
             }),
           ),
-          new Reason({
+          create(ReasonSchema, {
             reason: {
               case: "rateLimit",
               value: {
                 max: 1,
                 remaining: -1,
                 resetInSeconds: 100,
-                resetTime: Timestamp.fromDate(resetTime),
+                resetTime: timestampFromDate(resetTime),
                 windowInSeconds: 100,
               },
             },
@@ -720,7 +724,7 @@ test("convert", async (t) => {
               verified: true,
             }),
           ),
-          new Reason({
+          create(ReasonSchema, {
             reason: {
               case: "botV2",
               value: {
@@ -745,7 +749,7 @@ test("convert", async (t) => {
               undeterminedExpressions: [],
             }),
           ),
-          new Reason({
+          create(ReasonSchema, {
             reason: {
               case: "filter",
               value: {
@@ -770,7 +774,7 @@ test("convert", async (t) => {
               ],
             }),
           ),
-          new Reason({
+          create(ReasonSchema, {
             reason: {
               case: "sensitiveInfo",
               value: {
@@ -789,7 +793,7 @@ test("convert", async (t) => {
       () => {
         assert.deepEqual(
           ArcjetReasonToProtocol(new ArcjetEdgeRuleReason()),
-          new Reason({ reason: { case: "edgeRule", value: {} } }),
+          create(ReasonSchema, { reason: { case: "edgeRule", value: {} } }),
         );
       },
     );
@@ -801,7 +805,7 @@ test("convert", async (t) => {
           ArcjetReasonToProtocol(
             new ArcjetShieldReason({ shieldTriggered: true }),
           ),
-          new Reason({
+          create(ReasonSchema, {
             reason: { case: "shield", value: { shieldTriggered: true } },
           }),
         );
@@ -813,7 +817,7 @@ test("convert", async (t) => {
       () => {
         assert.deepEqual(
           ArcjetReasonToProtocol(new ArcjetEmailReason({})),
-          new Reason({
+          create(ReasonSchema, {
             reason: { case: "email", value: { emailTypes: [] } },
           }),
         );
@@ -825,7 +829,7 @@ test("convert", async (t) => {
       () => {
         assert.deepEqual(
           ArcjetReasonToProtocol(new ArcjetErrorReason("Test error")),
-          new Reason({
+          create(ReasonSchema, {
             reason: { case: "error", value: { message: "Test error" } },
           }),
         );
@@ -837,7 +841,7 @@ test("convert", async (t) => {
       () => {
         assert.deepEqual(
           ArcjetReasonToProtocol(new ArcjetErrorReason(new Error("hi"))),
-          new Reason({
+          create(ReasonSchema, {
             reason: { case: "error", value: { message: "hi" } },
           }),
         );
@@ -860,10 +864,10 @@ test("convert", async (t) => {
               ttl: 0,
             }),
           ),
-          new RuleResult({
+          create(RuleResultSchema, {
             conclusion: Conclusion.ALLOW,
             fingerprint: "fingerprint",
-            reason: new Reason(),
+            reason: create(ReasonSchema),
             ruleId: "rule-id",
             state: RuleState.RUN,
           }),
@@ -878,10 +882,10 @@ test("convert", async (t) => {
       () => {
         assert.deepEqual(
           ArcjetRuleResultFromProtocol(
-            new RuleResult({
+            create(RuleResultSchema, {
               conclusion: Conclusion.ALLOW,
               fingerprint: "fingerprint",
-              reason: new Reason(),
+              reason: create(ReasonSchema),
               ruleId: "rule-id",
               state: RuleState.RUN,
             }),
@@ -913,10 +917,10 @@ test("convert", async (t) => {
               ttl: 0,
             }),
           ),
-          new Decision({
+          create(DecisionSchema, {
             conclusion: Conclusion.ALLOW,
             id: "abc123",
-            reason: new Reason(),
+            reason: create(ReasonSchema),
             ruleResults: [],
           }),
         );
@@ -935,7 +939,7 @@ test("convert", async (t) => {
     await t.test(
       "should create an arcjet error decision w/ empty proto",
       () => {
-        const decision = ArcjetDecisionFromProtocol(new Decision());
+        const decision = ArcjetDecisionFromProtocol(create(DecisionSchema));
 
         assert.ok(decision instanceof ArcjetErrorDecision);
         assert.equal(decision.conclusion, "ERROR");
@@ -946,7 +950,7 @@ test("convert", async (t) => {
       "should create an arcjet allow decision w/ an allow conclusion proto",
       () => {
         const decision = ArcjetDecisionFromProtocol(
-          new Decision({ conclusion: Conclusion.ALLOW }),
+          create(DecisionSchema, { conclusion: Conclusion.ALLOW }),
         );
 
         assert.ok(decision instanceof ArcjetAllowDecision);
@@ -958,7 +962,7 @@ test("convert", async (t) => {
       "should create an arcjet deny decision w/ a deny conclusion proto",
       () => {
         const decision = ArcjetDecisionFromProtocol(
-          new Decision({ conclusion: Conclusion.DENY }),
+          create(DecisionSchema, { conclusion: Conclusion.DENY }),
         );
 
         assert.ok(decision instanceof ArcjetDenyDecision);
@@ -970,7 +974,7 @@ test("convert", async (t) => {
       "should create an arcjet challenge decision w/ a challenge conclusion proto",
       () => {
         const decision = ArcjetDecisionFromProtocol(
-          new Decision({ conclusion: Conclusion.CHALLENGE }),
+          create(DecisionSchema, { conclusion: Conclusion.CHALLENGE }),
         );
 
         assert.ok(decision instanceof ArcjetChallengeDecision);
@@ -982,7 +986,7 @@ test("convert", async (t) => {
       "should create an arcjet error decision w/ an error conclusion proto",
       () => {
         const decision = ArcjetDecisionFromProtocol(
-          new Decision({ conclusion: Conclusion.ERROR }),
+          create(DecisionSchema, { conclusion: Conclusion.ERROR }),
         );
 
         assert.ok(decision instanceof ArcjetErrorDecision);
@@ -1022,8 +1026,8 @@ test("convert", async (t) => {
         const latitude = 40.7127;
         const longitude = 74.0059;
         const decision = ArcjetDecisionFromProtocol(
-          new Decision({
-            ipDetails: new IpDetails({
+          create(DecisionSchema, {
+            ipDetails: create(IpDetailsSchema, {
               asnCountry: "a",
               asnDomain: "b",
               asnName: "c",
@@ -1070,7 +1074,7 @@ test("convert", async (t) => {
       "should create an arcjet decision w/ an IP detail proto (empty)",
       () => {
         const decision = ArcjetDecisionFromProtocol(
-          new Decision({ ipDetails: new IpDetails() }),
+          create(DecisionSchema, { ipDetails: create(IpDetailsSchema) }),
         );
 
         assert.deepEqual(JSON.parse(JSON.stringify(decision.ip)), {});
@@ -1093,7 +1097,7 @@ test("convert", async (t) => {
         version: 0,
       });
 
-      assert.deepEqual(rule, new Rule({}));
+      assert.deepEqual(rule, create(RuleSchema));
       assert.equal(rule.rule.case, undefined);
     });
 
@@ -1120,7 +1124,7 @@ test("convert", async (t) => {
 
         assert.deepEqual(
           rule,
-          new Rule({
+          create(RuleSchema, {
             rule: {
               case: "rateLimit",
               value: {
@@ -1159,7 +1163,7 @@ test("convert", async (t) => {
 
         assert.deepEqual(
           rule,
-          new Rule({
+          create(RuleSchema, {
             rule: {
               case: "rateLimit",
               value: {
@@ -1197,7 +1201,7 @@ test("convert", async (t) => {
 
         assert.deepEqual(
           rule,
-          new Rule({
+          create(RuleSchema, {
             rule: {
               case: "rateLimit",
               value: {
@@ -1233,7 +1237,7 @@ test("convert", async (t) => {
 
       assert.deepEqual(
         rule,
-        new Rule({
+        create(RuleSchema, {
           rule: {
             case: "email",
             value: { allow: [], deny: [EmailType.INVALID], mode: Mode.DRY_RUN },
@@ -1262,7 +1266,7 @@ test("convert", async (t) => {
 
       assert.deepEqual(
         rule,
-        new Rule({
+        create(RuleSchema, {
           rule: {
             case: "botV2",
             value: { allow: [], mode: Mode.DRY_RUN, deny: [] },
@@ -1289,7 +1293,7 @@ test("convert", async (t) => {
 
       assert.deepEqual(
         rule,
-        new Rule({
+        create(RuleSchema, {
           rule: {
             case: "shield",
             value: { autoAdded: false, mode: Mode.DRY_RUN },
@@ -1317,7 +1321,7 @@ test("convert", async (t) => {
 
       assert.deepEqual(
         rule,
-        new Rule({
+        create(RuleSchema, {
           rule: {
             case: "filter",
             value: { mode: Mode.DRY_RUN },
@@ -1346,7 +1350,7 @@ test("convert", async (t) => {
 
       assert.deepEqual(
         rule,
-        new Rule({
+        create(RuleSchema, {
           rule: {
             case: "sensitiveInfo",
             value: { allow: [], deny: [], mode: Mode.DRY_RUN },

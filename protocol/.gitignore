@@ -130,6 +130,8 @@ dist
 .pnp.*
 
 # Generated files
+# Ignore the API descriptions.
+proto/api/
 index.js
 index.d.ts
 client.js

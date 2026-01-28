@@ -16,12 +16,14 @@ import { createConnectTransport } from "@connectrpc/connect-web";
 export function createTransport(baseUrl: string) {
   return createConnectTransport({
     baseUrl,
-    interceptors: [
-      (next) => (req) => {
-        req.init.redirect = "follow";
-        return next(req);
-      },
-    ],
-    fetch,
+    fetch: fetchProxy,
   });
+}
+
+// See: <https://github.com/connectrpc/connect-es/issues/577#issuecomment-2210103503>.
+function fetchProxy(
+  input: Request | URL | string,
+  init?: RequestInit | undefined,
+): Promise<Response> {
+  return fetch(input, { ...init, redirect: "manual" });
 }
