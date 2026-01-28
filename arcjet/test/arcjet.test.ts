@@ -330,7 +330,7 @@ describe("SDK", () => {
     type WithRuleTest = Assert<
       IsEqual<
         Props<typeof aj2>,
-        { requested: number; userId: boolean | number | string }
+        { requested: number; userId: string | number | boolean }
       >
     >;
 
@@ -394,7 +394,7 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       IsEqual<
         Props<typeof aj2>,
-        { requested: number; userId: boolean | number | string }
+        { requested: number; userId: string | number | boolean }
       >
     >;
 
@@ -404,7 +404,7 @@ describe("SDK", () => {
     type WithRuleTestTwo = Assert<
       IsEqual<
         Props<typeof aj3>,
-        { requested: number; userId: boolean | number | string; abc: number }
+        { requested: number; userId: string | number | boolean; abc: number }
       >
     >;
 
@@ -470,7 +470,7 @@ describe("SDK", () => {
     type WithRuleTestOne = Assert<
       IsEqual<
         Props<typeof aj2>,
-        { requested: number; userId: boolean | number | string }
+        { requested: number; userId: string | number | boolean }
       >
     >;
 
