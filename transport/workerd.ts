@@ -25,5 +25,5 @@ function fetchProxy(
   input: Request | URL | string,
   init?: RequestInit | undefined,
 ): Promise<Response> {
-  return fetch(input, { ...init, redirect: "manual" });
+  return fetch(input, { ...init, redirect: "follow" });
 }
