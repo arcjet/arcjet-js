@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@arcjet/cache": "1.0.0",
-    "@bufbuild/protobuf": "2.2.0",
+    "@bufbuild/protobuf": "2.11.0",
     "@connectrpc/connect": "2.0.0",
     "typeid-js": "1.2.0"
   },
