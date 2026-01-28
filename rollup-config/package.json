@@ -46,7 +46,7 @@
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0",
     "@types/node": "25.0.9",
-    "@rollup/wasm-node": "4.55.2",
+    "@rollup/wasm-node": "4.55.3",
     "eslint": "9.39.2",
     "typescript": "5.9.3"
   },
