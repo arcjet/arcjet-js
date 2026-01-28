@@ -237,8 +237,8 @@ class Performance {
  * Turn an arbitrary value of an unknown field (one directly on an
  * {@linkcode ArcjetRequest}) into a string.
  *
- * This passes strings through untouched and uses string represenation for
- * booleans and numbers.
+ * This supports `boolean`, `number`, and `string` values.
+ * Other values are serialized as `<unsupported value>`.
  *
  * These extra fields can be used for user-provided characteristics or as
  * fields requested by custom rules.
