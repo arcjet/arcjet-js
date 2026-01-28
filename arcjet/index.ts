@@ -1474,7 +1474,8 @@ type PropsForCharacteristic<T> =
         | `http.request.uri.args["${string}"]`
       ? {}
       : T extends string
-        ? Record<T, boolean | number | object | string | undefined>
+        // Actual support is any JSON stringifiable value.
+        ? Record<T, boolean | number | string>
         : never
     : {};
 
