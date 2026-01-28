@@ -1,5 +1,5 @@
-import type { Transport } from "@connectrpc/connect";
-import { createClient as createConnectRpcClient } from "@connectrpc/connect";
+import type { Transport } from "@arcjet-vendor/connectrpc-connect";
+import { createClient as createConnectRpcClient } from "@arcjet-vendor/connectrpc-connect";
 import {
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,

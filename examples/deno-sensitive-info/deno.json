@@ -22,8 +22,8 @@
     "@arcjet/stable-hash": "../../stable-hash/index.js",
     "@arcjet/transport": "../../transport/index.js",
     "@bufbuild/protobuf": "npm:@bufbuild/protobuf@1.10.1",
-    "@connectrpc/connect": "npm:@connectrpc/connect@1.6.1",
-    "@connectrpc/connect-node": "npm:@connectrpc/connect-node@1.6.1",
+    "@arcjet-vendor/connectrpc-connect": "npm:@arcjet-vendor/connectrpc-connect@1.7.1",
+    "@arcjet-vendor/connectrpc-connect-node": "npm:@arcjet-vendor/connectrpc-connect-node@1.7.1",
     "arcjet": "../../arcjet/index.js",
     "typeid-js": "npm:typeid-js@1.2.0"
   }

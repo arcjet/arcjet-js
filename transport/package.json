@@ -55,9 +55,9 @@
   },
   "dependencies": {
     "@bufbuild/protobuf": "1.10.1",
-    "@connectrpc/connect": "1.6.1",
-    "@connectrpc/connect-node": "1.6.1",
-    "@connectrpc/connect-web": "1.6.1"
+    "@arcjet-vendor/connectrpc-connect": "1.7.1",
+    "@arcjet-vendor/connectrpc-connect-node": "1.7.1",
+    "@arcjet-vendor/connectrpc-connect-web": "1.7.1"
   },
   "devDependencies": {
     "@arcjet/eslint-config": "1.0.0",
