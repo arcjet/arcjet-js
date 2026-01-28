@@ -65,7 +65,7 @@
     "@rollup/wasm-node": "4.55.2",
     "@types/node": "25.0.9",
     "eslint": "9.39.2",
-    "next": "16.1.4",
+    "next": "16.1.5",
     "typescript": "5.9.3"
   },
   "publishConfig": {
