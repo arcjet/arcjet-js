@@ -29,15 +29,6 @@ updates:
       prefix: deps
       prefix-development: deps(dev)
     ignore:
-      # Ignore updates for Buf and ConnectRPC v2 and above
-      - dependency-name: "@bufbuild/protobuf"
-        versions: [">=2"]
-      - dependency-name: "@connectrpc/connect"
-        versions: [">=2"]
-      - dependency-name: "@connectrpc/connect-node"
-        versions: [">=2"]
-      - dependency-name: "@connectrpc/connect-web"
-        versions: [">=2"]
       # Ignore updates for jco above 1.5.0 due to unnecessary deps
       # Ref: https://github.com/bytecodealliance/jco/issues/500
       - dependency-name: "@bytecodealliance/jco"
