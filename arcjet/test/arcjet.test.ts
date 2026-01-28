@@ -1108,7 +1108,6 @@ describe("SDK", () => {
         throw new Error("Not implemented");
       },
     };
-    const date = new Date("2024-01-01T00:00:00Z");
     const request = {
       ip: "172.100.1.1",
       method: "GET",
@@ -1119,8 +1118,7 @@ describe("SDK", () => {
       "extra-number": 123,
       "extra-false": false,
       "extra-true": true,
-      "extra-date": date,
-      "extra-unsupported": 1n,
+      "extra-unsupported": new Date(),
       cookies: "",
       query: "",
     };
@@ -1142,7 +1140,6 @@ describe("SDK", () => {
         "extra-number": "123",
         "extra-false": "false",
         "extra-true": "true",
-        "extra-date": '"2024-01-01T00:00:00.000Z"',
         "extra-unsupported": "<unsupported value>",
       },
       headers: request.headers,

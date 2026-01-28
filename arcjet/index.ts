@@ -184,6 +184,30 @@ function isUnknownRequestProperty(key: string) {
 }
 
 /**
+ * List of JSON fields on {@linkcode ArcjetRequest}.
+ *
+ * @param key
+ *   Field name.
+ * @returns
+ *   Whether the field is unknown.
+ */
+const jsonFields: ReadonlyArray<string> = [];
+
+/**
+ * Check if a field is a known JSON field.
+ *
+ * This affects whether it is serialized as JSON.
+ *
+ * @param key
+ *   Field name.
+ * @returns
+ *   Whether the field is a known JSON field.
+ */
+function isJsonRequestProperty(key: string) {
+  return jsonFields.includes(key);
+}
+
+/**
  * Check if a value is a known Arcjet email validation type.
  *
  * @param type
@@ -220,11 +244,11 @@ class Performance {
 }
 
 /**
- * Turn a value of an unknown field (one directly on an
+ * Turn an arbitrary value of an unknown field (one directly on an
  * {@linkcode ArcjetRequest}) into a string.
  *
- * This passes strings through untouched and turns other values into JSON.
- * Non-serializable values are turned into `<unsupported value>`.
+ * This passes strings through untouched and uses string represenation for
+ * booleans and numbers.
  *
  * These extra fields can be used for user-provided characteristics or as
  * fields requested by custom rules.
@@ -236,7 +260,33 @@ class Performance {
  * @returns
  *   Serialized value.
  */
-function toString(value: unknown): string {
+function toStringArbitrary(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return `${value}`;
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+
+  return "<unsupported value>";
+}
+
+/**
+ * Turn a value of an unknown field (one directly on an
+ * {@linkcode ArcjetRequest}) into a string,
+ * with JSON capabilities.
+ *
+ * @param value
+ *   Value.
+ * @returns
+ *   Serialized value.
+ */
+function toStringJson(value: unknown): string {
   if (typeof value === "string") {
     return value;
   }
@@ -314,6 +364,9 @@ function extraProps<Props extends PlainObject>(
   const extra: Map<string, string> = new Map();
   for (const [key, value] of Object.entries(details)) {
     if (isUnknownRequestProperty(key)) {
+      const toString = isJsonRequestProperty(key)
+        ? toStringJson
+        : toStringArbitrary;
       extra.set(key, toString(value));
     }
   }
@@ -1474,8 +1527,8 @@ type PropsForCharacteristic<T> =
         | `http.request.uri.args["${string}"]`
       ? {}
       : T extends string
-        // Actual support is any JSON stringifiable value.
-        ? Record<T, boolean | number | string>
+        ? // Actual support is any JSON stringifiable value.
+          Record<T, boolean | number | string>
         : never
     : {};
 
