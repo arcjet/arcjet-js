@@ -64,15 +64,6 @@ export interface ArcjetOptions<
   proxies?: ReadonlyArray<string> | null | undefined;
 }
 
-// TODO: remove this unused type.
-/**
- * Minimal interface that we use that models
- * the `RouterContextProvider` from `react-router`.
- */
-interface ContextProvider {
-  get(context: unknown): unknown;
-}
-
 /**
  * Request for the React Router integration of Arcjet.
  */
