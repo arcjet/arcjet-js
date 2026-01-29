@@ -83,16 +83,8 @@ Deno.serve(
 );
 ```
 
-<!--
-
-TODO(@wooorm-arcjet): This is missing?
-
 For more on how to configure Arcjet with Deno and how to protect Deno,
 see the [Arcjet Deno SDK reference][arcjet-reference-deno] on our website.
-
-[arcjet-reference-deno]: https://docs.arcjet.com/reference/deno
-
--->
 
 ## Test
 
@@ -108,6 +100,7 @@ deno test test/index.test.ts --allow-env --allow-net --no-check
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet-get-started]: https://docs.arcjet.com/get-started
+[arcjet-reference-deno]: https://docs.arcjet.com/reference/deno
 [arcjet]: https://arcjet.com
 [deno]: https://deno.com/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
