@@ -26,10 +26,11 @@ our other [SDKs on GitHub][sdks-github]**.
 - [npm package (`@arcjet/next`)](https://www.npmjs.com/package/@arcjet/next)
 - [GitHub source code (`arcjet-next/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-next)
 
-## Example app
+## Example
 
-Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
-([source code][example-source]).
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
 
 ## Features
 
@@ -123,10 +124,10 @@ see the [Arcjet Next.js SDK reference][arcjet-reference-next] on our website.
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-next]: https://docs.arcjet.com/reference/nextjs
 [arcjet]: https://arcjet.com
+[example-next-url]: https://example.arcjet.com
+[example-next-source]: https://github.com/arcjet/example-nextjs
 [next-js]: https://nextjs.org/
 [quick-start]: https://docs.arcjet.com/get-started?f=next-js
-[example-url]: https://example.arcjet.com
-[example-source]: https://github.com/arcjet/arcjet-js-example
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [bot-protection-quick-start]: https://docs.arcjet.com/bot-protection/quick-start?f=next-js
 [rate-limiting-quick-start]: https://docs.arcjet.com/rate-limiting/quick-start?f=next-js

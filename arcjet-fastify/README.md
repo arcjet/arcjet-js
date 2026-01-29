@@ -49,19 +49,12 @@ Install with npm in Node.js:
 npm install @arcjet/fastify
 ```
 
-<!--
+## Example
 
-## Example: app
-
-TODO(@wooorm-arcjet): there is no fastify example there yet.
-
-Try an Arcjet protected app live at [https://example.arcjet.com][arcjet-examples]
-([source code][github-arcjet-examples]).
-
-[arcjet-examples]: https://example.arcjet.com
-[github-arcjet-examples]: https://github.com/arcjet/arcjet-js-example
-
--->
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+See [`arcjet/example-fastify`][example-fastify-source] for a Fastify example.
 
 ## Use
 
@@ -126,4 +119,7 @@ see the [Arcjet Fastify SDK reference][arcjet-reference-fastify] on our website.
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-quick-start-fastify]: https://docs.arcjet.com/get-started/fastify
 [arcjet]: https://arcjet.com
+[example-fastify-source]: https://github.com/arcjet/example-fastify
+[example-next-url]: https://example.arcjet.com
+[example-next-source]: https://github.com/arcjet/example-nextjs
 [fastify]: https://fastify.dev/

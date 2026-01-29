@@ -29,10 +29,21 @@ This is the [Arcjet][arcjet] SDK for [Bun.sh][bun-sh].
 
 Visit the [quick start guide][quick-start] to get started.
 
-## Example app
+## Example
 
-Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
-([source code][example-source]).
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+
+<!--
+
+TODO: Bun example.
+
+See [`arcjet/example-bun`][example-astro-source] for a Bun example.
+
+[example-bun-source]: https://github.com/arcjet/example-bun
+
+-->
 
 ## What is this?
 
@@ -112,7 +123,7 @@ bun test
 [arcjet-reference-bun]: https://docs.arcjet.com/reference/bun
 [arcjet]: https://arcjet.com
 [bun-sh]: https://bun.sh/
-[example-url]: https://example.arcjet.com
+[example-next-source]: https://github.com/arcjet/example-nextjs
+[example-next-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/bun
-[example-source]: https://github.com/arcjet/arcjet-js-example
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

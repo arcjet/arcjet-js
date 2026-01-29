@@ -29,10 +29,12 @@ This is the [Arcjet][arcjet] SDK integration for [Astro][astro].
 
 Visit the [quick start guide][quick-start] to get started.
 
-## Example app
+## Example
 
-Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
-([source code][example-source]).
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+See [`arcjet/example-astro`][example-astro-source] for an Astro example.
 
 ## What is this?
 
@@ -108,7 +110,8 @@ see the [Arcjet Astro SDK reference][arcjet-reference-astro] on our website.
 [arcjet-reference-astro]: https://docs.arcjet.com/reference/astro
 [arcjet]: https://arcjet.com
 [astro]: https://astro.build/
-[example-url]: https://example.arcjet.com
+[example-astro-source]: https://github.com/arcjet/example-astro
+[example-next-source]: https://github.com/arcjet/example-nextjs
+[example-next-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/astro
-[example-source]: https://github.com/arcjet/arcjet-js-example
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

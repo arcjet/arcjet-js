@@ -25,10 +25,12 @@ This is the [Arcjet][arcjet] SDK for [Remix][remix].
 - [npm package (`@arcjet/remix`)](https://www.npmjs.com/package/@arcjet/remix)
 - [GitHub source code (`arcjet-remix/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-remix)
 
-## Example app
+## Example
 
-Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
-([source code][example-source]).
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+See [`arcjet/example-remix`][example-remix-source] for a Remix example.
 
 ## What is this?
 
@@ -102,7 +104,8 @@ see the [Arcjet Remix SDK reference][arcjet-reference-remix] on our website.
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-remix]: https://docs.arcjet.com/reference/remix
 [arcjet]: https://arcjet.com
+[example-next-source]: https://github.com/arcjet/example-nextjs
+[example-next-url]: https://example.arcjet.com
+[example-remix-source]: https://github.com/arcjet/example-remix
 [remix]: https://remix.run/
-[example-url]: https://example.arcjet.com
-[example-source]: https://github.com/arcjet/arcjet-js-example
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

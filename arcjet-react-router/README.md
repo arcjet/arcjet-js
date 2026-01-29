@@ -30,12 +30,11 @@ This is the [Arcjet][arcjet] SDK for [React Router][react-router].
 
 ## Example
 
-This monorepo contains two examples using `@arcjet/react-router`:
-
-- [`examples/react-router-middleware/`](../examples/react-router-middleware/)
-  — Arcjet + React Router (using middleware)
-- [`examples/react-router/`](../examples/react-router/)
-  — Arcjet + React Router
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+See [`arcjet/example-react-router`][example-react-router-source] for a
+React Router example.
 
 ## What is this?
 
@@ -285,5 +284,8 @@ Client (`Client`).
 [api-remote-client-options]: #remoteclientoptions
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet]: https://arcjet.com
+[example-next-source]: https://github.com/arcjet/example-nextjs
+[example-next-url]: https://example.arcjet.com
+[example-react-router-source]: https://github.com/arcjet/example-react-router
 [react-router]: https://reactrouter.com/
 [typescript]: https://www.typescriptlang.org/

@@ -32,10 +32,21 @@ This is the [Arcjet][arcjet] SDK for [Node.js][node-js].
 
 Visit the [quick start guide][quick-start] to get started.
 
-## Example app
+## Example
 
-Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
-([source code][example-source]).
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+
+<!--
+
+TODO: Node.js example.
+
+See [`arcjet/example-node`][example-astro-source] for a Node.js example.
+
+[example-node-source]: https://github.com/arcjet/example-node
+
+-->
 
 ## What is this?
 
@@ -111,9 +122,9 @@ see the [Arcjet Node.js SDK reference][arcjet-reference-node] on our website.
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-node]: https://docs.arcjet.com/reference/nodejs
 [arcjet]: https://arcjet.com
+[example-next-source]: https://github.com/arcjet/example-nextjs
+[example-next-url]: https://example.arcjet.com
 [node-js]: https://nodejs.org/
 [alt-sdk]: https://www.npmjs.com/package/@arcjet/next
-[example-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/nodejs
-[example-source]: https://github.com/arcjet/arcjet-js-example
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
