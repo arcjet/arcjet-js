@@ -127,7 +127,7 @@ export type ArcjetRemixRequest = {
   /**
    * Context for the Remix request.
    */
-  context: Record<PropertyKey, unknown>;
+  context: Record<string, unknown>;
 };
 
 /**
