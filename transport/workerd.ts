@@ -11,6 +11,7 @@
 // * <https://github.com/connectrpc/connect-es/issues/749#issuecomment-1693507516>
 // * <https://github.com/connectrpc/connect-es/pull/1082>
 // * <https://github.com/e2b-dev/E2B/pull/669/files>
+// * <https://github.com/connectrpc/connect-es/issues/577#issuecomment-2210103503>
 import { createConnectTransport } from "@connectrpc/connect-web";
 
 export function createTransport(baseUrl: string) {
@@ -20,7 +21,6 @@ export function createTransport(baseUrl: string) {
   });
 }
 
-// See: <https://github.com/connectrpc/connect-es/issues/577#issuecomment-2210103503>.
 function fetchProxy(
   input: Request | URL | string,
   init?: RequestInit | undefined,
