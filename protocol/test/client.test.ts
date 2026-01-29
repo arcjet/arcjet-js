@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Cache } from "@arcjet/cache";
-import { createRouterTransport } from "@connectrpc/connect";
+import { createRouterTransport } from "@arcjet-vendor/connectrpc-connect";
 import { DecideService } from "../proto/decide/v1alpha1/decide_connect.js";
 import {
   Conclusion,

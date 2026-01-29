@@ -1,7 +1,7 @@
 import {
   createConnectTransport,
   Http2SessionManager,
-} from "@connectrpc/connect-node";
+} from "@arcjet-vendor/connectrpc-connect-node";
 
 /**
  * Create a transport that talks over HTTP/2 using Connect RPC.
