@@ -68,10 +68,6 @@ let warnedForAutomaticBodyRead = false;
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 declare const emptyObjectSymbol: unique symbol;
 
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 /**
  * Dynamically generate whether zero or one `properties` object must or can be passed.
  */
@@ -262,7 +258,9 @@ export type ArcjetOptions<
  * @template Props
  *   Configuration.
  */
-export interface ArcjetNest<Props extends PlainObject = PlainObject> {
+export interface ArcjetNest<
+  Props extends Record<PropertyKey, unknown> = Record<PropertyKey, unknown>,
+> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -296,7 +294,7 @@ export interface ArcjetNest<Props extends PlainObject = PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
+  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
     rule: Primitive<ChildProperties> | Product<ChildProperties>,
   ): ArcjetNest<Props & ChildProperties>;
 }
@@ -325,7 +323,7 @@ function arcjet<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest<Props extends Record<PropertyKey, unknown>>(
     request: ArcjetNestRequest,
     props: Props,
   ): ArcjetRequest<Props> {
@@ -425,7 +423,7 @@ function arcjet<
     };
   }
 
-  function withClient<Properties extends PlainObject>(
+  function withClient<Properties extends Record<PropertyKey, unknown>>(
     aj: Arcjet<Properties>,
   ): ArcjetNest<Properties> {
     const client: ArcjetNest<Properties> = {
@@ -532,7 +530,7 @@ function requestFromContext(context: ExecutionContext) {
  * See: <https://docs.nestjs.com/guards>.
  */
 let ArcjetGuard = class ArcjetGuard implements CanActivate {
-  aj: ArcjetNest<PlainObject>;
+  aj: ArcjetNest;
 
   /**
    * Create a Nest guard for the Arcjet.
@@ -542,7 +540,7 @@ let ArcjetGuard = class ArcjetGuard implements CanActivate {
    * @returns
    *   Arcjet Nest guard.
    */
-  constructor(aj: ArcjetNest<PlainObject>) {
+  constructor(aj: ArcjetNest) {
     this.aj = aj;
   }
 

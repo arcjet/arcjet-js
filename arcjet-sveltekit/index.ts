@@ -53,10 +53,6 @@ let warnedForAutomaticBodyRead = false;
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 declare const emptyObjectSymbol: unique symbol;
 
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 /**
  * Dynamically generate whether zero or one `properties` object must or can be passed.
  */
@@ -204,7 +200,7 @@ export type ArcjetOptions<
  * @template Props
  *   Configuration.
  */
-export interface ArcjetSvelteKit<Props extends PlainObject> {
+export interface ArcjetSvelteKit<Props extends Record<PropertyKey, unknown>> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -238,7 +234,7 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
+  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
     rule: Primitive<ChildProperties> | Product<ChildProperties>,
   ): ArcjetSvelteKit<Props & ChildProperties>;
 }
@@ -285,7 +281,7 @@ export default function arcjet<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest<Props extends Record<PropertyKey, unknown>>(
     event: ArcjetSvelteKitRequestEvent,
     props: Props,
   ): ArcjetRequest<Props> {
@@ -336,7 +332,7 @@ export default function arcjet<
     };
   }
 
-  function withClient<Properties extends PlainObject>(
+  function withClient<Properties extends Record<PropertyKey, unknown>>(
     aj: Arcjet<Properties>,
   ): ArcjetSvelteKit<Properties> {
     const client: ArcjetSvelteKit<Properties> = {

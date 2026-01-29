@@ -81,10 +81,6 @@ export * from "arcjet";
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 declare const emptyObjectSymbol: unique symbol;
 
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 /**
  * Dynamically generate whether zero or one `properties` object must or can be passed.
  */
@@ -177,7 +173,7 @@ export type ArcjetOptions<
  * @template Props
  *   Configuration.
  */
-export interface ArcjetAstro<Props extends PlainObject> {
+export interface ArcjetAstro<Props extends Record<PropertyKey, unknown>> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -211,7 +207,7 @@ export interface ArcjetAstro<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
+  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
     rule: Primitive<ChildProperties> | Product<ChildProperties>,
   ): ArcjetAstro<Props & ChildProperties>;
 }
@@ -252,7 +248,7 @@ export function createArcjetClient<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest<Props extends Record<PropertyKey, unknown>>(
     request: Request,
     props: Props,
   ): ArcjetRequest<Props> {
@@ -301,7 +297,7 @@ export function createArcjetClient<
     };
   }
 
-  function withClient<Properties extends PlainObject>(
+  function withClient<Properties extends Record<PropertyKey, unknown>>(
     aj: Arcjet<Properties>,
   ): ArcjetAstro<Properties> {
     const client: ArcjetAstro<Properties> = {

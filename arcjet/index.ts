@@ -309,7 +309,7 @@ function toAnalyzeRequest(request: ArcjetRequestDetails): AnalyzeRequest {
   };
 }
 
-function extraProps<Props extends PlainObject>(
+function extraProps<Props extends Record<PropertyKey, unknown>>(
   details: ArcjetRequest<Props>,
 ): Record<string, string> {
   const extra: Map<string, string> = new Map();
@@ -1435,8 +1435,6 @@ const Priority = {
   EmailValidation: 6,
 };
 
-type PlainObject = { [key: string]: unknown };
-
 // Primitives and Products are external names for Rules.
 // See ExtraProps below for further explanation on why we define them like this.
 
@@ -1449,7 +1447,9 @@ type PlainObject = { [key: string]: unknown };
  * @template Props
  *   Configuration.
  */
-export type Primitive<Props extends PlainObject = {}> = [ArcjetRule<Props>];
+export type Primitive<Props extends Record<PropertyKey, unknown> = {}> = [
+  ArcjetRule<Props>,
+];
 
 /**
  * Pre-configured product consisting of combined primitives.
@@ -1457,7 +1457,8 @@ export type Primitive<Props extends PlainObject = {}> = [ArcjetRule<Props>];
  * @template Props
  *   Configuration.
  */
-export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
+export type Product<Props extends Record<PropertyKey, unknown> = {}> =
+  ArcjetRule<Props>[];
 
 // User-defined characteristics alter the required props of an ArcjetRequest
 // Note: If a user doesn't provide the object literal to our primitives
@@ -1524,7 +1525,7 @@ export type ArcjetAdapterContext = {
    * Adapters could include the Arcjet API Key if it were only available in a
    * runtime handler or IP details provided by a platform.
    */
-  [key: string]: unknown;
+  [key: PropertyKey]: unknown;
   /**
    * Read the request body (required).
    */
@@ -1547,58 +1548,59 @@ export type ArcjetAdapterContext = {
  *   Extra data that might be useful for Arcjet.
  *   For example, requested tokens are specified as the `requested` property.
  */
-export type ArcjetRequest<Props extends PlainObject> = Simplify<
-  {
-    /**
-     * Additional properties.
-     *
-     * For example, an email address related to the request is commonly passed
-     * as `email` (`string`).
-     */
-    [key: string]: unknown;
-    /**
-     * IP address of the client.
-     */
-    ip: string;
-    /**
-     * HTTP method of the request.
-     */
-    method: string;
-    /**
-     * Protocol of the request.
-     */
-    protocol: string;
-    /**
-     * Host of the request.
-     */
-    host: string;
-    /**
-     * Path of the request.
-     */
-    path: string;
-    /**
-     * Headers of the request.
-     */
-    headers: Headers | Record<string, string | string[] | undefined>;
-    /**
-     * Semicolon-separated cookies for a request.
-     */
-    cookies: string;
-    /**
-     * Query string for a request.
-     * Commonly referred to as a "querystring".
-     * Starts with `?` when not empty.
-     */
-    query: string;
-  } & Props
->;
+export type ArcjetRequest<Props extends Record<PropertyKey, unknown>> =
+  Simplify<
+    {
+      /**
+       * Additional properties.
+       *
+       * For example, an email address related to the request is commonly passed
+       * as `email` (`string`).
+       */
+      [key: PropertyKey]: unknown;
+      /**
+       * IP address of the client.
+       */
+      ip: string;
+      /**
+       * HTTP method of the request.
+       */
+      method: string;
+      /**
+       * Protocol of the request.
+       */
+      protocol: string;
+      /**
+       * Host of the request.
+       */
+      host: string;
+      /**
+       * Path of the request.
+       */
+      path: string;
+      /**
+       * Headers of the request.
+       */
+      headers: Headers | Record<string, string | string[] | undefined>;
+      /**
+       * Semicolon-separated cookies for a request.
+       */
+      cookies: string;
+      /**
+       * Query string for a request.
+       * Commonly referred to as a "querystring".
+       * Starts with `?` when not empty.
+       */
+      query: string;
+    } & Props
+  >;
 
 type CachedResult = {
   conclusion: ArcjetConclusion;
   reason: ArcjetReason;
 };
 
-function isRateLimitRule<Props extends PlainObject>(
+function isRateLimitRule<Props extends Record<PropertyKey, unknown>>(
   rule: ArcjetRule<Props>,
 ): rule is ArcjetRateLimitRule<Props> {
   return rule.type === "RATE_LIMIT";
@@ -3145,7 +3147,7 @@ export interface ArcjetOptions<
  * Primarily has a `protect()` method to make a decision about how a request
  * should be handled.
  */
-export interface Arcjet<Props extends PlainObject> {
+export interface Arcjet<Props extends Record<PropertyKey, unknown>> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -3177,7 +3179,7 @@ export interface Arcjet<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
+  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
     rule: Primitive<ChildProperties> | Product<ChildProperties>,
   ): Arcjet<Simplify<Props & ChildProperties>>;
 }
@@ -3226,7 +3228,7 @@ export default function arcjet<
   // TODO(#132): Support configurable caching
   const cache = new MemoryCache<CachedResult>();
 
-  async function protect<Props extends PlainObject>(
+  async function protect<Props extends Record<PropertyKey, unknown>>(
     rules: ArcjetRule[],
     ctx: ArcjetAdapterContext,
     request: ArcjetRequest<Props>,
@@ -3537,7 +3539,7 @@ export default function arcjet<
   }
 
   // This is a separate function so it can be called recursively
-  function createClient<Properties extends PlainObject>(
+  function createClient<Properties extends Record<PropertyKey, unknown>>(
     rules: Array<ArcjetRule<Properties>>,
   ): Arcjet<Properties> {
     const sortedRules = [...rules].sort(sortRule);

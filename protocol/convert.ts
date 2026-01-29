@@ -568,29 +568,29 @@ interface RuleWithType {
   type: string;
 }
 
-function isRateLimitRule<Props extends {}>(
+function isRateLimitRule<Props extends Record<PropertyKey, unknown>>(
   rule: RuleWithType,
 ): rule is ArcjetRateLimitRule<Props> {
   return rule.type === "RATE_LIMIT";
 }
 
-function isTokenBucketRule<Props extends {}>(
+function isTokenBucketRule<Props extends Record<PropertyKey, unknown>>(
   rule: RuleWithType,
 ): rule is ArcjetTokenBucketRateLimitRule<Props> {
   return isRateLimitRule(rule) && rule.algorithm === "TOKEN_BUCKET";
 }
-function isFixedWindowRule<Props extends {}>(
+function isFixedWindowRule<Props extends Record<PropertyKey, unknown>>(
   rule: RuleWithType,
 ): rule is ArcjetFixedWindowRateLimitRule<Props> {
   return isRateLimitRule(rule) && rule.algorithm === "FIXED_WINDOW";
 }
-function isSlidingWindowRule<Props extends {}>(
+function isSlidingWindowRule<Props extends Record<PropertyKey, unknown>>(
   rule: RuleWithType,
 ): rule is ArcjetSlidingWindowRateLimitRule<Props> {
   return isRateLimitRule(rule) && rule.algorithm === "SLIDING_WINDOW";
 }
 
-function isBotRule<Props extends {}>(
+function isBotRule<Props extends Record<PropertyKey, unknown>>(
   rule: RuleWithType,
 ): rule is ArcjetBotRule<Props> {
   return rule.type === "BOT";
@@ -614,21 +614,21 @@ function isFilterRule(rule: RuleWithType): rule is ArcjetFilterRule {
   return rule.type === "FILTER";
 }
 
-function isShieldRule<Props extends {}>(
+function isShieldRule<Props extends Record<PropertyKey, unknown>>(
   rule: RuleWithType,
 ): rule is ArcjetShieldRule<Props> {
   return rule.type === "SHIELD";
 }
 
-function isSensitiveInfoRule<Props extends {}>(
+function isSensitiveInfoRule<Props extends Record<PropertyKey, unknown>>(
   rule: RuleWithType,
 ): rule is ArcjetSensitiveInfoRule<Props> {
   return rule.type === "SENSITIVE_INFO";
 }
 
-export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
-  rule: ArcjetRule<Props>,
-): Rule {
+export function ArcjetRuleToProtocol<
+  Props extends Record<PropertyKey, unknown>,
+>(rule: ArcjetRule<Props>): Rule {
   if (isTokenBucketRule(rule)) {
     return new Rule({
       rule: {

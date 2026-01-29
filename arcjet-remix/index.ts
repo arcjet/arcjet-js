@@ -52,10 +52,6 @@ let warnedForAutomaticBodyRead = false;
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 declare const emptyObjectSymbol: unique symbol;
 
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 /**
  * Dynamically generate whether zero or one `properties` object must or can be passed.
  */
@@ -131,7 +127,7 @@ export type ArcjetRemixRequest = {
   /**
    * Context for the Remix request.
    */
-  context: { [key: string]: unknown };
+  context: Record<PropertyKey, unknown>;
 };
 
 /**
@@ -164,7 +160,7 @@ export type ArcjetOptions<
  * @template Props
  *   Configuration.
  */
-export interface ArcjetRemix<Props extends PlainObject> {
+export interface ArcjetRemix<Props extends Record<PropertyKey, unknown>> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -198,7 +194,7 @@ export interface ArcjetRemix<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
+  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
     rule: Primitive<ChildProperties> | Product<ChildProperties>,
   ): ArcjetRemix<Props & ChildProperties>;
 }
@@ -245,7 +241,7 @@ export default function arcjet<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest<Props extends Record<PropertyKey, unknown>>(
     { request, context }: ArcjetRemixRequest,
     props: Props,
   ): ArcjetRequest<Props> {
@@ -293,7 +289,7 @@ export default function arcjet<
     };
   }
 
-  function withClient<Properties extends PlainObject>(
+  function withClient<Properties extends Record<PropertyKey, unknown>>(
     aj: Arcjet<Properties>,
   ): ArcjetRemix<Properties> {
     const client: ArcjetRemix<Properties> = {

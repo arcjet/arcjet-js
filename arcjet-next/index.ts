@@ -85,10 +85,6 @@ export async function request(): Promise<ArcjetNextRequest> {
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 declare const emptyObjectSymbol: unique symbol;
 
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 /**
  * Dynamically generate whether zero or one `properties` object must or can be passed.
  */
@@ -221,7 +217,7 @@ export interface ArcjetNextRequest {
           [string, { name: string; value: string }]
         >;
       }
-    | Partial<{ [key: string]: string }>;
+    | Record<string, string>;
 
   /**
    * Clones the request.
@@ -296,7 +292,7 @@ export type ArcjetOptions<
  * @template Props
  *   Configuration.
  */
-export interface ArcjetNext<Props extends PlainObject> {
+export interface ArcjetNext<Props extends Record<PropertyKey, unknown>> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -494,7 +490,7 @@ export interface ArcjetNext<Props extends PlainObject> {
    * @link https://docs.arcjet.com/reference/nextjs#ad-hoc-rules
    * @link https://github.com/arcjet/example-nextjs
    */
-  withRule<ChildProperties extends PlainObject>(
+  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
     rule: Primitive<ChildProperties> | Product<ChildProperties>,
   ): ArcjetNext<Props & ChildProperties>;
 }
@@ -541,7 +537,7 @@ export default function arcjet<
     );
   }
 
-  function toArcjetRequest<Props extends PlainObject>(
+  function toArcjetRequest<Props extends Record<PropertyKey, unknown>>(
     request: ArcjetNextRequest,
     props: Props,
   ): ArcjetRequest<Props> {
@@ -618,7 +614,7 @@ export default function arcjet<
     }
     const cookies = cookiesToString(request.cookies);
 
-    const extra: { [key: string]: string } = {};
+    const extra: Record<string, string> = {};
 
     // If we're running on Vercel, we can add some extra information
     if (process.env["VERCEL"]) {
@@ -647,7 +643,7 @@ export default function arcjet<
     };
   }
 
-  function withClient<Properties extends PlainObject>(
+  function withClient<Properties extends Record<PropertyKey, unknown>>(
     aj: Arcjet<Properties>,
   ): ArcjetNext<Properties> {
     const client: ArcjetNext<Properties> = {
@@ -725,7 +721,7 @@ export default function arcjet<
  *   `NextResponse` with `403` or `429`.
  */
 export function createMiddleware(
-  arcjet: ArcjetNext<PlainObject>,
+  arcjet: ArcjetNext<Record<PropertyKey, unknown>>,
   existingMiddleware?: NextMiddleware,
 ): NextMiddleware {
   return async function middleware(
@@ -797,7 +793,7 @@ function isNextApiResponse(val: unknown): val is NextApiResponse {
  *   `NextApiResponse` with `403` or `429`.
  */
 export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
-  arcjet: ArcjetNext<PlainObject>,
+  arcjet: ArcjetNext<Record<PropertyKey, unknown>>,
   handler: (...args: Args) => Promise<Res>,
 ) {
   return async (...args: Args) => {
