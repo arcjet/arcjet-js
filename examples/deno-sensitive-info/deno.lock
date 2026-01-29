@@ -2,9 +2,9 @@
   "version": "5",
   "specifiers": {
     "jsr:@std/dotenv@*": "0.225.5",
-    "npm:@bufbuild/protobuf@1.10.1": "1.10.1",
-    "npm:@connectrpc/connect-node@1.6.1": "1.6.1_@bufbuild+protobuf@1.10.1_@connectrpc+connect@1.6.1__@bufbuild+protobuf@1.10.1",
-    "npm:@connectrpc/connect@1.6.1": "1.6.1_@bufbuild+protobuf@1.10.1",
+    "npm:@bufbuild/protobuf@2.11.0": "2.11.0",
+    "npm:@connectrpc/connect-node@2.1.1": "2.1.1_@bufbuild+protobuf@2.11.0_@connectrpc+connect@2.1.1__@bufbuild+protobuf@2.11.0",
+    "npm:@connectrpc/connect@2.1.1": "2.1.1_@bufbuild+protobuf@2.11.0",
     "npm:@types/node@*": "22.15.15",
     "npm:typeid-js@1.2.0": "1.2.0"
   },
@@ -14,25 +14,21 @@
     }
   },
   "npm": {
-    "@bufbuild/protobuf@1.10.1": {
-      "integrity": "sha512-wJ8ReQbHxsAfXhrf9ixl0aYbZorRuOWpBNzm8pL8ftmSxQx/wnJD5Eg861NwJU/czy2VXFIebCeZnZrI9rktIQ=="
+    "@bufbuild/protobuf@2.11.0": {
+      "integrity": "sha512-sBXGT13cpmPR5BMgHE6UEEfEaShh5Ror6rfN3yEK5si7QVrtZg8LEPQb0VVhiLRUslD2yLnXtnRzG035J/mZXQ=="
     },
-    "@connectrpc/connect-node@1.6.1_@bufbuild+protobuf@1.10.1_@connectrpc+connect@1.6.1__@bufbuild+protobuf@1.10.1": {
-      "integrity": "sha512-DxcD1wsF/aX9GegjAtl7VbpiZNjVJozy87VbaFoN6AF0Ln1Q757r5dgV59Gz0wmlk5f17txUsrEr1f2inlnnAg==",
+    "@connectrpc/connect-node@2.1.1_@bufbuild+protobuf@2.11.0_@connectrpc+connect@2.1.1__@bufbuild+protobuf@2.11.0": {
+      "integrity": "sha512-s3TfsI1XF+n+1z6MBS9rTnFsxxR4Rw5wmdEnkQINli81ESGxcsfaEet8duzq8LVuuCupmhUsgpRo0Nv9pZkufg==",
       "dependencies": [
         "@bufbuild/protobuf",
-        "@connectrpc/connect",
-        "undici"
+        "@connectrpc/connect"
       ]
     },
-    "@connectrpc/connect@1.6.1_@bufbuild+protobuf@1.10.1": {
-      "integrity": "sha512-KchMDNtU4CDTdkyf0qG7ugJ6qHTOR/aI7XebYn3OTCNagaDYWiZUVKgRgwH79yeMkpNgvEUaXSK7wKjaBK9b/Q==",
+    "@connectrpc/connect@2.1.1_@bufbuild+protobuf@2.11.0": {
+      "integrity": "sha512-JzhkaTvM73m2K1URT6tv53k2RwngSmCXLZJgK580qNQOXRzZRR/BCMfZw3h+90JpnG6XksP5bYT+cz0rpUzUWQ==",
       "dependencies": [
         "@bufbuild/protobuf"
       ]
-    },
-    "@fastify/busboy@2.1.1": {
-      "integrity": "sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA=="
     },
     "@types/node@22.15.15": {
       "integrity": "sha512-R5muMcZob3/Jjchn5LcO8jdKwSCbzqmPB6ruBxMcf9kbxtniZHP327s6C37iOfuw8mbKK3cAQa7sEl7afLrQ8A==",
@@ -49,12 +45,6 @@
     "undici-types@6.21.0": {
       "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="
     },
-    "undici@5.29.0": {
-      "integrity": "sha512-raqeBD6NQK4SkWhQzeYKd1KmIG6dllBOTt55Rmkt4HtI9mwdWtJljnrXjAFUBLTSN67HWrOIZ3EPF4kjUw80Bg==",
-      "dependencies": [
-        "@fastify/busboy"
-      ]
-    },
     "uuid@10.0.0": {
       "integrity": "sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==",
       "bin": true
@@ -62,9 +52,9 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@bufbuild/protobuf@1.10.1",
-      "npm:@connectrpc/connect-node@1.6.1",
-      "npm:@connectrpc/connect@1.6.1",
+      "npm:@bufbuild/protobuf@2.11.0",
+      "npm:@connectrpc/connect-node@2.1.1",
+      "npm:@connectrpc/connect@2.1.1",
       "npm:typeid-js@1.2.0"
     ]
   }
