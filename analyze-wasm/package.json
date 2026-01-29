@@ -65,7 +65,7 @@
     "@arcjet/rollup-config": "1.0.0",
     "@bytecodealliance/jco": "1.5.0",
     "@rollup/wasm-node": "4.56.0",
-    "@types/node": "25.0.9",
+    "@types/node": "25.0.10",
     "eslint": "9.39.2",
     "typescript": "5.9.3"
   },
