@@ -3,7 +3,9 @@
     "checkJs": true,
     "declarationMap": true,
     "declaration": true,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    // Deno types cause problems.
+    "skipLibCheck": true
   },
   "extends": "../tsconfig.base.json",
   "include": ["index.js"]
