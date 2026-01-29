@@ -3311,11 +3311,8 @@ export default function arcjet<
       runtime: rt,
     });
 
-    if (rules.length < 1) {
-      log.warn(
-        "Calling `protect()` with no rules is deprecated. Did you mean to configure the Shield rule?",
-      );
-    }
+    // Passing 0 rules is allowed.
+    // It isn’t useful locally, but there could be remote rules.
 
     if (rules.length > 10) {
       log.error("Failure running rules. Only 10 rules may be specified.");
