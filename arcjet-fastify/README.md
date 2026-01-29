@@ -107,16 +107,8 @@ fastify.get("/", async function (request, reply) {
 await fastify.listen({ port: 8000 });
 ```
 
-<!--
-
-TODO(@wooorm-arcjet): this does not exist yet.
-
 For more on how to configure Arcjet with Fastify and how to protect Fastify,
 see the [Arcjet Fastify SDK reference][arcjet-reference-fastify] on our website.
-
-[arcjet-reference-fastify]: https://docs.arcjet.com/reference/fastify
-
--->
 
 ## License
 
@@ -125,5 +117,6 @@ see the [Arcjet Fastify SDK reference][arcjet-reference-fastify] on our website.
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-quick-start-fastify]: https://docs.arcjet.com/get-started/fastify
+[arcjet-reference-fastify]: https://docs.arcjet.com/reference/fastify
 [arcjet]: https://arcjet.com
 [fastify]: https://fastify.dev/
