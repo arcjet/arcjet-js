@@ -22,7 +22,6 @@ import arcjetCore, {
   type Primitive,
   type Product,
 } from "arcjet";
-import type { ReadableStream } from "node:stream/web";
 
 export * from "arcjet";
 
