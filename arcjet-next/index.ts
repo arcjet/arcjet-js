@@ -169,7 +169,7 @@ export interface ArcjetNextRequest {
    *
    * See <https://nodejs.org/api/http.html#messagesocket>.
    */
-  socket?: Partial<{ remoteAddress: string; encrypted: boolean }>;
+  socket?: Partial<{ remoteAddress: string | undefined; encrypted: boolean }>;
 
   /**
    * Some platforms pass `info`.
@@ -184,7 +184,7 @@ export interface ArcjetNextRequest {
   /**
    * HTTP method of the request.
    */
-  method?: string;
+  method?: string | undefined;
 
   /**
    * In case of server request, the HTTP version sent by the client.
@@ -196,7 +196,7 @@ export interface ArcjetNextRequest {
   /**
    * URL.
    */
-  url?: string;
+  url?: string | undefined;
 
   /**
    * IP address of the client.
@@ -217,7 +217,8 @@ export interface ArcjetNextRequest {
           [string, { name: string; value: string }]
         >;
       }
-    | Record<string, string>;
+    | Record<string, string | undefined>
+    | undefined;
 
   /**
    * Clones the request.
