@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.0.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0...arcjet-v1.0.1) (2026-01-29)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** add some clarifying notes ([#5709](https://github.com/arcjet/arcjet-js/issues/5709)) ([48f6e33](https://github.com/arcjet/arcjet-js/commit/48f6e3330877d089da8f4e849cf97626cedfe335))
+* fix example, docs, test use of `protocol` field ([#5708](https://github.com/arcjet/arcjet-js/issues/5708)) ([e63ab49](https://github.com/arcjet/arcjet-js/commit/e63ab49e7de9d1282ae7e12fb632e2436e824d96))
+
+
+### ⌨️ Code Refactoring
+
+* **arcjet:** simplify internal code ([#5703](https://github.com/arcjet/arcjet-js/issues/5703)) ([567b11b](https://github.com/arcjet/arcjet-js/commit/567b11b9425a44e37c9d0a2608b9043e0967e693))
+
+
+### 📚 Tests
+
+* split `arcjet.test.ts` ([#5689](https://github.com/arcjet/arcjet-js/issues/5689)) ([b4a7c14](https://github.com/arcjet/arcjet-js/commit/b4a7c140e32b251246769c935296455d6b1742ae))
+
+
+### 🔨 Build System
+
+* enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.0.0 to 1.0.1
+    * @arcjet/cache bumped from 1.0.0 to 1.0.1
+    * @arcjet/duration bumped from 1.0.0 to 1.0.1
+    * @arcjet/headers bumped from 1.0.0 to 1.0.1
+    * @arcjet/protocol bumped from 1.0.0 to 1.0.1
+    * @arcjet/runtime bumped from 1.0.0 to 1.0.1
+    * @arcjet/stable-hash bumped from 1.0.0 to 1.0.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0 to 1.0.1
+    * @arcjet/rollup-config bumped from 1.0.0 to 1.0.1
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...arcjet-v1.0.0) (2026-01-22)
 
 

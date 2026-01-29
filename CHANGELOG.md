@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.0.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0...v1.0.1) (2026-01-29)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** add some clarifying notes ([#5709](https://github.com/arcjet/arcjet-js/issues/5709)) ([48f6e33](https://github.com/arcjet/arcjet-js/commit/48f6e3330877d089da8f4e849cf97626cedfe335))
+* fix example, docs, test use of `protocol` field ([#5708](https://github.com/arcjet/arcjet-js/issues/5708)) ([e63ab49](https://github.com/arcjet/arcjet-js/commit/e63ab49e7de9d1282ae7e12fb632e2436e824d96))
+* **protocol:** client should get full request details ([#5711](https://github.com/arcjet/arcjet-js/issues/5711)) ([88a1259](https://github.com/arcjet/arcjet-js/commit/88a1259b6cd719cf4c19e6338d634e74fbd56d60))
+
+
+### ⌨️ Code Refactoring
+
+* **arcjet:** simplify internal code ([#5703](https://github.com/arcjet/arcjet-js/issues/5703)) ([567b11b](https://github.com/arcjet/arcjet-js/commit/567b11b9425a44e37c9d0a2608b9043e0967e693))
+
+
+### 📚 Tests
+
+* **analyze-wasm:** add tests ([#5690](https://github.com/arcjet/arcjet-js/issues/5690)) ([3f396f8](https://github.com/arcjet/arcjet-js/commit/3f396f89f450cbbd67684b8c89f2b57ce1e5e3ad))
+* **bun:** add ([#5701](https://github.com/arcjet/arcjet-js/issues/5701)) ([cfcc825](https://github.com/arcjet/arcjet-js/commit/cfcc8251a788b23943a292dc03b86574ca6f205a))
+* **deno:** add ([#5702](https://github.com/arcjet/arcjet-js/issues/5702)) ([3a25858](https://github.com/arcjet/arcjet-js/commit/3a25858f37dc4b97106075d16fc7f0ec188efbc4))
+* **fastify:** add ([#5710](https://github.com/arcjet/arcjet-js/issues/5710)) ([3266158](https://github.com/arcjet/arcjet-js/commit/3266158f72a0374a2c98b06f20370f32a89e36c6))
+* **node:** add ([#5713](https://github.com/arcjet/arcjet-js/issues/5713)) ([b0e4fd4](https://github.com/arcjet/arcjet-js/commit/b0e4fd48fa0a70c2f4a6ded13da4e9d2849504bf))
+* split `arcjet.test.ts` ([#5689](https://github.com/arcjet/arcjet-js/issues/5689)) ([b4a7c14](https://github.com/arcjet/arcjet-js/commit/b4a7c140e32b251246769c935296455d6b1742ae))
+
+
+### 🔨 Build System
+
+* **deps:** bump tar from 7.5.6 to 7.5.7 in /examples/nuxt ([#5727](https://github.com/arcjet/arcjet-js/issues/5727)) ([afee0e0](https://github.com/arcjet/arcjet-js/commit/afee0e063900dcf1acbef13dcd38f3645e8b4fee))
+* enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...v1.0.0) (2026-01-22)
 
 

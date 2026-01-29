@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.0.1](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/node-v1.0.1) (2026-01-29)
+
+
+### 📚 Tests
+
+* **node:** add ([#5713](https://github.com/arcjet/arcjet-js/issues/5713)) ([b0e4fd4](https://github.com/arcjet/arcjet-js/commit/b0e4fd48fa0a70c2f4a6ded13da4e9d2849504bf))
+
+
+### 🔨 Build System
+
+* enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0 to 1.0.1
+    * @arcjet/headers bumped from 1.0.0 to 1.0.1
+    * @arcjet/ip bumped from 1.0.0 to 1.0.1
+    * @arcjet/logger bumped from 1.0.0 to 1.0.1
+    * @arcjet/protocol bumped from 1.0.0 to 1.0.1
+    * @arcjet/transport bumped from 1.0.0 to 1.0.1
+    * @arcjet/body bumped from 1.0.0 to 1.0.1
+    * arcjet bumped from 1.0.0 to 1.0.1
+  * devDependencies
+    * @arcjet/cache bumped from 1.0.0 to 1.0.1
+    * @arcjet/eslint-config bumped from 1.0.0 to 1.0.1
+    * @arcjet/rollup-config bumped from 1.0.0 to 1.0.1
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/node-v1.0.0) (2026-01-22)
 
 
