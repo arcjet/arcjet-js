@@ -29,10 +29,13 @@ This is the [Arcjet][arcjet] SDK for [SvelteKit][sveltekit].
 
 Visit the [quick start guide][quick-start] to get started.
 
-## Example app
+## Example
 
-Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
-([source code][example-source]).
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+See [`arcjet/example-sveltekit`][example-sveltekit-source] for a SvelteKit
+example.
 
 ## What is this?
 
@@ -112,8 +115,9 @@ website.
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-sveltekit]: https://docs.arcjet.com/reference/sveltekit
 [arcjet]: https://arcjet.com
+[example-next-source]: https://github.com/arcjet/example-nextjs
+[example-next-url]: https://example.arcjet.com
+[example-sveltekit-source]: https://github.com/arcjet/example-sveltekit
 [sveltekit]: https://kit.svelte.dev/
-[example-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/sveltekit
-[example-source]: https://github.com/arcjet/arcjet-js-example
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

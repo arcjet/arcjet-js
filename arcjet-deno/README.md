@@ -38,6 +38,13 @@ You can use this if you are using Deno.
 See our [_Get started_ guide][arcjet-get-started] for other supported
 runtimes.
 
+## Example
+
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+See [`arcjet/example-deno`][example-deno-source] for a Deno example.
+
 ## Install
 
 This package is ESM only.
@@ -102,5 +109,8 @@ deno test test/index.test.ts --allow-env --allow-net --no-check
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-deno]: https://docs.arcjet.com/reference/deno
 [arcjet]: https://arcjet.com
+[example-deno-source]: https://github.com/arcjet/example-deno
+[example-next-source]: https://github.com/arcjet/example-nextjs
+[example-next-url]: https://example.arcjet.com
 [deno]: https://deno.com/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

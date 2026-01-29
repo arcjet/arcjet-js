@@ -30,10 +30,10 @@ This is the [Arcjet][] SDK for [Nuxt][].
 
 ## Example
 
-This monorepo contains one example using `@arcjet/nuxt`:
-
-- [`examples/nuxt/`](../examples/nuxt/)
-  — Arcjet + Nuxt
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+See [`arcjet/example-nuxt`][example-nuxt-source] for a Nuxt example.
 
 ## What is this?
 
@@ -287,5 +287,8 @@ Client (`Client`).
 [api-remote-client-options]: #remoteclientoptions
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet]: https://arcjet.com
+[example-next-source]: https://github.com/arcjet/example-nextjs
+[example-next-url]: https://example.arcjet.com
+[example-nuxt-source]: https://github.com/arcjet/example-nuxt
 [nuxt]: https://nuxt.com/
 [typescript]: https://www.typescriptlang.org/

@@ -32,10 +32,12 @@ This is the [Arcjet][arcjet] SDK for [NestJS][nest-js].
 
 Visit the [quick start guide][quick-start] to get started.
 
-## Example app
+## Example
 
-Try an Arcjet protected app live at [https://example.arcjet.com][example-url]
-([source code][example-source]).
+Try an Arcjet protected Next.js app live at
+[`example.arcjet.com`][example-next-url]
+([source code][example-next-source]).
+See [`arcjet/example-nestjs`][example-nestjs-source] for a NestJS example.
 
 ## What is this?
 
@@ -107,9 +109,10 @@ see the [Arcjet NestJS SDK reference][arcjet-reference-nest] on our website.
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-nest]: https://docs.arcjet.com/reference/nestjs
 [arcjet]: https://arcjet.com
+[example-nestjs-source]: https://github.com/arcjet/example-nestjs
+[example-next-source]: https://github.com/arcjet/example-nextjs
+[example-next-url]: https://example.arcjet.com
 [nest-js]: https://nestjs.com/
 [alt-sdk]: https://www.npmjs.com/package/@arcjet/next
-[example-url]: https://example.arcjet.com
 [quick-start]: https://docs.arcjet.com/get-started/nestjs
-[example-source]: https://github.com/arcjet/arcjet-js-example
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
