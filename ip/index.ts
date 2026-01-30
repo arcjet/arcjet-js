@@ -1029,12 +1029,6 @@ export function findIp(
     return "";
   }
 
-  // Standard headers used by Amazon EC2, Heroku, and others.
-  const xClientIp = getHeader(request.headers, "x-client-ip");
-  if (isGlobalIp(xClientIp, proxies)) {
-    return xClientIp;
-  }
-
   // Load-balancers (AWS ELB) or proxies.
   const xForwardedFor = getHeader(request.headers, "x-forwarded-for");
   const xForwardedForItems = parseXForwardedFor(xForwardedFor);
@@ -1047,6 +1041,12 @@ export function findIp(
     if (isGlobalIp(item, proxies)) {
       return item;
     }
+  }
+
+  // Standard headers used by Amazon EC2, Heroku, and others.
+  const xClientIp = getHeader(request.headers, "x-client-ip");
+  if (isGlobalIp(xClientIp, proxies)) {
+    return xClientIp;
   }
 
   // DigitalOcean.
