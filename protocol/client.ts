@@ -1,24 +1,27 @@
-import type { Transport } from "@connectrpc/connect";
-import { createClient as createConnectRpcClient } from "@connectrpc/connect";
+import { create } from "@bufbuild/protobuf";
+import {
+  type Transport,
+  createClient as createConnectRpcClient,
+} from "@connectrpc/connect";
+import {
+  type Rule,
+  DecideService,
+  DecideRequestSchema,
+  ReportRequestSchema,
+} from "./proto/decide/v1alpha1/decide_pb.js";
 import {
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,
   ArcjetRuleToProtocol,
   ArcjetStackToProtocol,
 } from "./convert.js";
-import type {
-  ArcjetContext,
-  ArcjetRequestDetails,
-  ArcjetRule,
-  ArcjetStack,
-} from "./index.js";
-import { ArcjetDecision } from "./index.js";
-import { DecideService } from "./proto/decide/v1alpha1/decide_connect.js";
 import {
-  DecideRequest,
-  ReportRequest,
-  Rule,
-} from "./proto/decide/v1alpha1/decide_pb.js";
+  type ArcjetContext,
+  type ArcjetRequestDetails,
+  type ArcjetRule,
+  type ArcjetStack,
+  ArcjetDecision,
+} from "./index.js";
 
 // TODO: Dedupe with `errorMessage` in core
 function errorMessage(err: unknown): string {
@@ -101,7 +104,7 @@ export function createClient(options: ClientOptions): Client {
       };
 
       // Build the request object from the Protobuf generated class.
-      const decideRequest = new DecideRequest({
+      const decideRequest = create(DecideRequestSchema, {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
@@ -162,7 +165,7 @@ export function createClient(options: ClientOptions): Client {
       };
 
       // Build the request object from the Protobuf generated class.
-      const reportRequest = new ReportRequest({
+      const reportRequest = create(ReportRequestSchema, {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,

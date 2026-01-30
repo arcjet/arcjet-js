@@ -1,6 +1,7 @@
 import type { Cache } from "@arcjet/cache";
+import { isMessage } from "@bufbuild/protobuf";
 import { typeid } from "typeid-js";
-import { Reason } from "./proto/decide/v1alpha1/decide_pb.js";
+import { ReasonSchema } from "./proto/decide/v1alpha1/decide_pb.js";
 
 // Re-export the Well Known Bots from the generated file
 export type * from "./well-known-bots.js";
@@ -579,14 +580,12 @@ export class ArcjetErrorReason extends ArcjetReason {
   constructor(error: unknown) {
     super();
 
-    // TODO: Get rid of instanceof check
-    if (error instanceof Reason) {
-      if (error.reason.case === "error") {
-        this.message = error.reason.value.message;
-        return;
-      } else {
-        this.message = "Missing error reason";
-      }
+    if (isMessage(error, ReasonSchema)) {
+      this.message =
+        error.reason.case === "error"
+          ? error.reason.value.message
+          : "Missing error reason";
+      return;
     }
 
     // TODO: Get rid of instanceof check

@@ -11,17 +11,19 @@
 // * <https://github.com/connectrpc/connect-es/issues/749#issuecomment-1693507516>
 // * <https://github.com/connectrpc/connect-es/pull/1082>
 // * <https://github.com/e2b-dev/E2B/pull/669/files>
+// * <https://github.com/connectrpc/connect-es/issues/577#issuecomment-2210103503>
 import { createConnectTransport } from "@connectrpc/connect-web";
 
 export function createTransport(baseUrl: string) {
   return createConnectTransport({
     baseUrl,
-    interceptors: [
-      (next) => (req) => {
-        req.init.redirect = "follow";
-        return next(req);
-      },
-    ],
-    fetch,
+    fetch: fetchProxy,
   });
+}
+
+function fetchProxy(
+  input: Request | URL | string,
+  init?: RequestInit | undefined,
+): Promise<Response> {
+  return fetch(input, { ...init, redirect: "follow" });
 }
