@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/decorate-v1.1.0) (2026-01-30)
+
+
+### 🔨 Build System
+
+* enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.0.0 to 1.1.0
+    * @arcjet/sprintf bumped from 1.0.0 to 1.1.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0
+    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/decorate-v1.0.0) (2026-01-22)
 
 

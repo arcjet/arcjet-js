@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/nuxt-v1.1.0) (2026-01-30)
+
+
+### 📝 Documentation
+
+* update example links in readmes ([#5735](https://github.com/arcjet/arcjet-js/issues/5735)) ([6f10658](https://github.com/arcjet/arcjet-js/commit/6f106589ddcb2bb99b26eb0e3eb1e18046ab7fa5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.0.0 to 1.1.0
+    * @arcjet/env bumped from 1.0.0 to 1.1.0
+    * @arcjet/headers bumped from 1.0.0 to 1.1.0
+    * @arcjet/ip bumped from 1.0.0 to 1.1.0
+    * @arcjet/logger bumped from 1.0.0 to 1.1.0
+    * @arcjet/protocol bumped from 1.0.0 to 1.1.0
+    * @arcjet/transport bumped from 1.0.0 to 1.1.0
+    * arcjet bumped from 1.0.0 to 1.1.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0
+    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/nuxt-v1.0.0) (2026-01-22)
 
 
