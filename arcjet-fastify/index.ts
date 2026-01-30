@@ -31,11 +31,6 @@ export * from "arcjet";
 
 declare const emptyObjectSymbol: unique symbol;
 
-// TODO(@wooorm-arcjet): remove.
-type PlainObject = {
-  [key: string]: unknown;
-};
-
 /**
  * Dynamically generate whether zero or one `properties` object must or can be passed.
  */
@@ -182,7 +177,7 @@ export interface ArcjetFastify<Props> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
+  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
     rule: Primitive<ChildProperties> | Product<ChildProperties>,
   ): ArcjetFastify<Props & ChildProperties>;
 }
@@ -242,7 +237,7 @@ export default function arcjet<
     );
   }
 
-  function withClient<Properties extends PlainObject>(
+  function withClient<Properties extends Record<PropertyKey, unknown>>(
     arcjetCore: Arcjet<Properties>,
   ): ArcjetFastify<Properties> {
     const client: ArcjetFastify<Properties> = {
@@ -299,7 +294,7 @@ export default function arcjet<
  * @returns
  *   Arcjet request.
  */
-function toArcjetRequest<Properties extends PlainObject>(
+function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   request: ArcjetFastifyRequest,
   log: ArcjetLogger,
   proxies: ReadonlyArray<Cidr | string> | undefined,

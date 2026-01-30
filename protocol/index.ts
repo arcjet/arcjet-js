@@ -1383,7 +1383,7 @@ export interface ArcjetRequestDetails {
   /**
    * Extra info.
    */
-  extra: { [key: string]: string };
+  extra: Record<string, string>;
 
   /**
    * Email address of the user making the request.
@@ -1398,7 +1398,9 @@ export interface ArcjetRequestDetails {
  * @template Props
  *   Extra properties passed to the rule.
  */
-export type ArcjetRule<Props extends {} = {}> = {
+export type ArcjetRule<
+  Props extends Record<PropertyKey, unknown> = Record<PropertyKey, unknown>,
+> = {
   /**
    * Kind.
    */
@@ -1471,7 +1473,7 @@ export type ArcjetRule<Props extends {} = {}> = {
 /**
  * Abstract rate limit rule.
  */
-export interface ArcjetRateLimitRule<Props extends {}>
+export interface ArcjetRateLimitRule<Props extends Record<PropertyKey, unknown>>
   extends ArcjetRule<Props> {
   /**
    * Kind.
@@ -1492,8 +1494,9 @@ export interface ArcjetRateLimitRule<Props extends {}>
 /**
  * Token bucket rate limit rule.
  */
-export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
-  extends ArcjetRateLimitRule<Props> {
+export interface ArcjetTokenBucketRateLimitRule<
+  Props extends Record<PropertyKey, unknown>,
+> extends ArcjetRateLimitRule<Props> {
   /**
    * Algorithm kind.
    */
@@ -1518,8 +1521,9 @@ export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
 /**
  * Fixed window rate limit rule.
  */
-export interface ArcjetFixedWindowRateLimitRule<Props extends {}>
-  extends ArcjetRateLimitRule<Props> {
+export interface ArcjetFixedWindowRateLimitRule<
+  Props extends Record<PropertyKey, unknown>,
+> extends ArcjetRateLimitRule<Props> {
   /**
    * Algorithm kind.
    */
@@ -1539,8 +1543,9 @@ export interface ArcjetFixedWindowRateLimitRule<Props extends {}>
 /**
  * Sliding window rate limit rule.
  */
-export interface ArcjetSlidingWindowRateLimitRule<Props extends {}>
-  extends ArcjetRateLimitRule<Props> {
+export interface ArcjetSlidingWindowRateLimitRule<
+  Props extends Record<PropertyKey, unknown>,
+> extends ArcjetRateLimitRule<Props> {
   /**
    * Algorithm kind.
    */
@@ -1615,8 +1620,9 @@ export interface ArcjetFilterRule extends ArcjetRule<{}> {
 /**
  * Sensitive info rule.
  */
-export interface ArcjetSensitiveInfoRule<Props extends {}>
-  extends ArcjetRule<Props> {
+export interface ArcjetSensitiveInfoRule<
+  Props extends Record<PropertyKey, unknown>,
+> extends ArcjetRule<Props> {
   /**
    * Kind.
    */
@@ -1636,7 +1642,8 @@ export interface ArcjetSensitiveInfoRule<Props extends {}>
 /**
  * Bot rule.
  */
-export interface ArcjetBotRule<Props extends {}> extends ArcjetRule<Props> {
+export interface ArcjetBotRule<Props extends Record<PropertyKey, unknown>>
+  extends ArcjetRule<Props> {
   /**
    * Kind.
    */
@@ -1656,7 +1663,8 @@ export interface ArcjetBotRule<Props extends {}> extends ArcjetRule<Props> {
 /**
  * Shield rule.
  */
-export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {
+export interface ArcjetShieldRule<Props extends Record<PropertyKey, unknown>>
+  extends ArcjetRule<Props> {
   /**
    * Kind.
    */
@@ -1784,7 +1792,7 @@ export type ArcjetContext<T = unknown> = {
   /**
    * Arbitrary indexing into context is currently allowed but not typed.
    */
-  [key: string]: unknown;
+  [key: PropertyKey]: unknown;
 
   /**
    * API key.
