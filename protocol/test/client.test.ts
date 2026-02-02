@@ -780,7 +780,7 @@ test("createClient", async (t) => {
             assert.equal(calls, 0);
             calls++;
 
-            assert.deepEqual(decideRequest.characteristics, ["src.ip"]);
+            assert.deepEqual(decideRequest.characteristics, ["ip.src"]);
 
             return create(DecideResponseSchema, {
               decision: { conclusion: Conclusion.ALLOW },
@@ -791,7 +791,7 @@ test("createClient", async (t) => {
     });
 
     await client.decide(
-      { ...exampleContext, characteristics: ["src.ip"] },
+      { ...exampleContext, characteristics: ["ip.src"] },
       exampleDetails,
       [],
     );
@@ -813,7 +813,7 @@ test("createClient", async (t) => {
                 calls++;
 
                 assert.ok(reportRequest.characteristics);
-                assert.deepEqual(reportRequest.characteristics, ["src.ip"]);
+                assert.deepEqual(reportRequest.characteristics, ["ip.src"]);
 
                 setTimeout(resolve);
               } catch (error) {
@@ -827,7 +827,7 @@ test("createClient", async (t) => {
       });
 
       client.report(
-        { ...exampleContext, characteristics: ["src.ip"] },
+        { ...exampleContext, characteristics: ["ip.src"] },
         exampleDetails,
         new ArcjetDenyDecision({
           reason: new ArcjetReason(),

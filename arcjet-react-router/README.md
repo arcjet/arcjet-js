@@ -135,7 +135,7 @@ Configuration for the React Router integration of Arcjet (TypeScript type).
 ###### Fields
 
 - `characteristics`
-  (`Array<string>`, default: `["src.ip"]`)
+  (`Array<string>`, default: `["ip.src"]`)
   — characteristics to track a user by;
   can also be passed to rules
 - `client`

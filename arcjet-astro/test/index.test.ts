@@ -334,14 +334,14 @@ test("fixedWindow", async function (t) {
 
   await t.test("should work w/ valid `characteristics`", async function () {
     const rule = fixedWindow({
-      characteristics: ["src.ip"],
+      characteristics: ["ip.src"],
       max: 60,
       window: "30m",
     });
 
     assert.equal(rule.type, "fixedWindow");
     assert.deepEqual(rule.options, {
-      characteristics: ["src.ip"],
+      characteristics: ["ip.src"],
       max: 60,
       window: "30m",
     });
@@ -648,14 +648,14 @@ test("slidingWindow", async function (t) {
 
   await t.test("should work w/ valid `characteristics`", async function () {
     const rule = slidingWindow({
-      characteristics: ["src.ip"],
+      characteristics: ["ip.src"],
       interval: "30m",
       max: 60,
     });
 
     assert.equal(rule.type, "slidingWindow");
     assert.deepEqual(rule.options, {
-      characteristics: ["src.ip"],
+      characteristics: ["ip.src"],
       interval: "30m",
       max: 60,
     });
@@ -756,7 +756,7 @@ test("tokenBucket", async function (t) {
   await t.test("should work w/ valid `characteristics`", async function () {
     const rule = tokenBucket({
       capacity: 50,
-      characteristics: ["src.ip"],
+      characteristics: ["ip.src"],
       interval: "1m",
       refillRate: 10,
     });
@@ -764,7 +764,7 @@ test("tokenBucket", async function (t) {
     assert.equal(rule.type, "tokenBucket");
     assert.deepEqual(rule.options, {
       capacity: 50,
-      characteristics: ["src.ip"],
+      characteristics: ["ip.src"],
       interval: "1m",
       refillRate: 10,
     });
