@@ -10,7 +10,7 @@ import type {
   SensitiveInfoEntity as GeneratedSensitiveInfoEntity,
   SensitiveInfoResult as GeneratedSensitiveInfoResult,
 } from "./wasm/arcjet_analyze_js_req.component.js";
-import type { ArcjetJsReqSensitiveInformationIdentifier } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
+import type { detect } from "./wasm/interfaces/arcjet-js-req-sensitive-information-identifier.js";
 
 /**
  * Configuration for bot detection.
@@ -38,8 +38,7 @@ export type BotResult = GeneratedBotResult;
  *   Array of `undefined` for tokens that are not sensitive or a `string` used as
  *   a label for sensitive info.
  */
-export type DetectSensitiveInfoFunction =
-  typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
+export type DetectSensitiveInfoFunction = typeof detect;
 
 /**
  * Span of sensitive info,

@@ -1,9 +1,8 @@
-export namespace ArcjetJsReqEmailValidatorOverrides {
-  export function isFreeEmail(domain: string): ValidatorResponse;
-  export function isDisposableEmail(domain: string): ValidatorResponse;
-  export function hasMxRecords(domain: string): ValidatorResponse;
-  export function hasGravatar(email: string): ValidatorResponse;
-}
+/** @module Interface arcjet:js-req/email-validator-overrides **/
+export function isFreeEmail(domain: string): ValidatorResponse;
+export function isDisposableEmail(domain: string): ValidatorResponse;
+export function hasMxRecords(domain: string): ValidatorResponse;
+export function hasGravatar(email: string): ValidatorResponse;
 /**
  * # Variants
  * 
