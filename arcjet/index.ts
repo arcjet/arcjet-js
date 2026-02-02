@@ -957,7 +957,7 @@ export type TokenBucketRateLimitOptions<
    */
   mode?: ArcjetMode;
   /**
-   * Characteristics to track a user by (default: global characteristics or `["src.ip"]`).
+   * Characteristics to track a user by (default: global characteristics or `["ip.src"]`).
    */
   characteristics?: Characteristics;
   /**
@@ -1007,7 +1007,7 @@ export type FixedWindowRateLimitOptions<
    */
   mode?: ArcjetMode;
   /**
-   * Characteristics to track a user by (default: global characteristics or `["src.ip"]`).
+   * Characteristics to track a user by (default: global characteristics or `["ip.src"]`).
    */
   characteristics?: Characteristics;
   /**
@@ -1047,7 +1047,7 @@ export type SlidingWindowRateLimitOptions<
    */
   mode?: ArcjetMode;
   /**
-   * Characteristics to track a user by (default: global characteristics or `["src.ip"]`).
+   * Characteristics to track a user by (default: global characteristics or `["ip.src"]`).
    */
   characteristics?: Characteristics;
   /**
@@ -3165,7 +3165,7 @@ export interface ArcjetOptions<
    */
   rules: readonly [...Rules];
   /**
-   * Characteristics to track a user by (default: `["src.ip"]`).
+   * Characteristics to track a user by (default: `["ip.src"]`).
    * Can also be passed to rules.
    */
   characteristics?: Characteristics;

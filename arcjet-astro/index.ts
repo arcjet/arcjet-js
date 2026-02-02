@@ -194,7 +194,7 @@ export type ArcjetOptions<Characteristics extends readonly string[]> = {
    */
   rules: IntegrationRule<Characteristics>[];
   /**
-   * Characteristics to track a user by (default: `["src.ip"]`).
+   * Characteristics to track a user by (default: `["ip.src"]`).
    *
    * Can also be passed to rules.
    */
