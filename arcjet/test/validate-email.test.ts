@@ -111,7 +111,6 @@ test("`validateEmail`", async function (t) {
     });
 
     assert.equal(rule.type, "EMAIL");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rule.allow, [
       "DISPOSABLE",
       "FREE",
@@ -127,7 +126,6 @@ test("`validateEmail`", async function (t) {
     });
 
     assert.equal(rule.type, "EMAIL");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rule.deny, [
       "DISPOSABLE",
       "FREE",
