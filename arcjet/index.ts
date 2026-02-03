@@ -3064,16 +3064,8 @@ export function filter(options: FilterOptions): Primitive<{}> {
     hasher.string("type", type),
     hasher.uint32("version", version),
     hasher.string("mode", mode),
-    hasher.stringSliceOrdered(
-      "allow",
-      // @ts-expect-error: `hasher` must support readonly values.
-      allow,
-    ),
-    hasher.stringSliceOrdered(
-      "deny",
-      // @ts-expect-error: `hasher` must support readonly values.
-      deny,
-    ),
+    hasher.stringSliceOrdered("allow", allow),
+    hasher.stringSliceOrdered("deny", deny),
   );
 
   const rule: ArcjetFilterRule = {

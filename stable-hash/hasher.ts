@@ -125,7 +125,10 @@ export function string(key: string, value: string): FieldHasher {
  * @returns
  *   Hasher.
  */
-export function stringSliceOrdered(key: string, values: string[]): FieldHasher {
+export function stringSliceOrdered(
+  key: string,
+  values: ReadonlyArray<string>,
+): FieldHasher {
   return (data: StringWriter) => {
     data.writeString(key);
     data.writeString(fieldSeparator);
@@ -157,7 +160,7 @@ export function makeHasher(subtle: SubtleCryptoLike) {
    * @returns
    *   Promise to a hash.
    */
-  return async function hash(...hashers: FieldHasher[]): Promise<string> {
+  return async function hash(...hashers: ReadonlyArray<FieldHasher>): Promise<string> {
     const h = new Sha256(subtle);
     for (const hasher of hashers) {
       hasher(h);
