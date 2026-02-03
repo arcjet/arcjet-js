@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/bun-v1.1.0-rc) (2026-02-03)
+
+
+### 📝 Documentation
+
+* update example links in readmes ([#5735](https://github.com/arcjet/arcjet-js/issues/5735)) ([6f10658](https://github.com/arcjet/arcjet-js/commit/6f106589ddcb2bb99b26eb0e3eb1e18046ab7fa5))
+
+
+### 📚 Tests
+
+* **bun:** add ([#5701](https://github.com/arcjet/arcjet-js/issues/5701)) ([cfcc825](https://github.com/arcjet/arcjet-js/commit/cfcc8251a788b23943a292dc03b86574ca6f205a))
+* **fastify:** add ([#5710](https://github.com/arcjet/arcjet-js/issues/5710)) ([3266158](https://github.com/arcjet/arcjet-js/commit/3266158f72a0374a2c98b06f20370f32a89e36c6))
+
+
+### 🔨 Build System
+
+* enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/env bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/headers bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/ip bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/logger bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/protocol bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/transport bumped from 1.0.0 to 1.1.0-rc
+    * arcjet bumped from 1.0.0 to 1.1.0-rc
+  * devDependencies
+    * @arcjet/cache bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/bun-v1.0.0) (2026-01-22)
 
 

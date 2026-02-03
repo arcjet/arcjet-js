@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/deno-v1.1.0-rc) (2026-02-03)
+
+
+### 📝 Documentation
+
+* **deno:** link to sdk docs on website ([#5731](https://github.com/arcjet/arcjet-js/issues/5731)) ([43ce456](https://github.com/arcjet/arcjet-js/commit/43ce45637f93ba31cadb25029fa92e7ff770053c))
+* update example links in readmes ([#5735](https://github.com/arcjet/arcjet-js/issues/5735)) ([6f10658](https://github.com/arcjet/arcjet-js/commit/6f106589ddcb2bb99b26eb0e3eb1e18046ab7fa5))
+
+
+### 🧹 Miscellaneous Chores
+
+* **protocol:** client should get full request details ([#5711](https://github.com/arcjet/arcjet-js/issues/5711)) ([88a1259](https://github.com/arcjet/arcjet-js/commit/88a1259b6cd719cf4c19e6338d634e74fbd56d60))
+
+
+### 📚 Tests
+
+* **deno:** add ([#5702](https://github.com/arcjet/arcjet-js/issues/5702)) ([3a25858](https://github.com/arcjet/arcjet-js/commit/3a25858f37dc4b97106075d16fc7f0ec188efbc4))
+* **fastify:** add ([#5710](https://github.com/arcjet/arcjet-js/issues/5710)) ([3266158](https://github.com/arcjet/arcjet-js/commit/3266158f72a0374a2c98b06f20370f32a89e36c6))
+
+
+### 🔨 Build System
+
+* enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/env bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/headers bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/ip bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/logger bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/protocol bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/transport bumped from 1.0.0 to 1.1.0-rc
+    * arcjet bumped from 1.0.0 to 1.1.0-rc
+  * devDependencies
+    * @arcjet/cache bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/deno-v1.0.0) (2026-01-22)
 
 

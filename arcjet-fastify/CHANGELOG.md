@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/fastify-v1.1.0-rc) (2026-02-03)
+
+
+### 📝 Documentation
+
+* **fastify:** link to sdk docs on website ([#5734](https://github.com/arcjet/arcjet-js/issues/5734)) ([0507085](https://github.com/arcjet/arcjet-js/commit/05070859fb5262cd5b0a3a7492f6119b8f218cf6))
+* update example links in readmes ([#5735](https://github.com/arcjet/arcjet-js/issues/5735)) ([6f10658](https://github.com/arcjet/arcjet-js/commit/6f106589ddcb2bb99b26eb0e3eb1e18046ab7fa5))
+
+
+### 🧹 Miscellaneous Chores
+
+* **fastify:** use `Cidr` type, remove unneeded comment ([#5732](https://github.com/arcjet/arcjet-js/issues/5732)) ([9cf122e](https://github.com/arcjet/arcjet-js/commit/9cf122e61db12409401c20ae8c1f8f48debd7607))
+
+
+### 📚 Tests
+
+* **fastify:** add ([#5710](https://github.com/arcjet/arcjet-js/issues/5710)) ([3266158](https://github.com/arcjet/arcjet-js/commit/3266158f72a0374a2c98b06f20370f32a89e36c6))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump fastify from 5.7.1 to 5.7.3 in /arcjet-fastify ([#5755](https://github.com/arcjet/arcjet-js/issues/5755)) ([c996a0b](https://github.com/arcjet/arcjet-js/commit/c996a0b368af12c4a611600e7b5ea69aa9cbe84e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/headers bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/ip bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/logger bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/protocol bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/transport bumped from 1.0.0 to 1.1.0-rc
+    * arcjet bumped from 1.0.0 to 1.1.0-rc
+  * devDependencies
+    * @arcjet/cache bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/fastify-v1.0.0) (2026-01-22)
 
 

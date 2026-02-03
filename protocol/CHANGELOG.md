@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/protocol-v1.1.0-rc) (2026-02-03)
+
+
+### 🧹 Miscellaneous Chores
+
+* fix example, docs, test use of `protocol` field ([#5708](https://github.com/arcjet/arcjet-js/issues/5708)) ([e63ab49](https://github.com/arcjet/arcjet-js/commit/e63ab49e7de9d1282ae7e12fb632e2436e824d96))
+* fix typo, it’s `ip.src` ([#5754](https://github.com/arcjet/arcjet-js/issues/5754)) ([750c217](https://github.com/arcjet/arcjet-js/commit/750c217b0f23fbc34afba494c0c09e97004822fb))
+* **protocol:** client should get full request details ([#5711](https://github.com/arcjet/arcjet-js/issues/5711)) ([88a1259](https://github.com/arcjet/arcjet-js/commit/88a1259b6cd719cf4c19e6338d634e74fbd56d60))
+
+
+### 🔨 Build System
+
+* enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.0.0 to 1.1.0-rc
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/protocol-v1.0.0) (2026-01-22)
 
 
