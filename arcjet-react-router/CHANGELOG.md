@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/react-router-v1.1.0-rc) (2026-02-03)
+
+
+### 📝 Documentation
+
+* update example links in readmes ([#5735](https://github.com/arcjet/arcjet-js/issues/5735)) ([6f10658](https://github.com/arcjet/arcjet-js/commit/6f106589ddcb2bb99b26eb0e3eb1e18046ab7fa5))
+
+
+### 🧹 Miscellaneous Chores
+
+* fix typo, it’s `ip.src` ([#5754](https://github.com/arcjet/arcjet-js/issues/5754)) ([750c217](https://github.com/arcjet/arcjet-js/commit/750c217b0f23fbc34afba494c0c09e97004822fb))
+* **protocol:** client should get full request details ([#5711](https://github.com/arcjet/arcjet-js/issues/5711)) ([88a1259](https://github.com/arcjet/arcjet-js/commit/88a1259b6cd719cf4c19e6338d634e74fbd56d60))
+* **react-router:** remove unneeded import ([#5733](https://github.com/arcjet/arcjet-js/issues/5733)) ([5f9d1b6](https://github.com/arcjet/arcjet-js/commit/5f9d1b602fe4b3a2e9f08802b7ba3f0c7c44d001))
+* **react-router:** remove unused type ([#5736](https://github.com/arcjet/arcjet-js/issues/5736)) ([4dc9715](https://github.com/arcjet/arcjet-js/commit/4dc97158759192a7710789d2455f857516c8d02c))
+
+
+### 🔨 Build System
+
+* enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/env bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/headers bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/ip bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/logger bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/protocol bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/transport bumped from 1.0.0 to 1.1.0-rc
+    * arcjet bumped from 1.0.0 to 1.1.0-rc
+  * devDependencies
+    * @arcjet/cache bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
+    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/react-router-v1.0.0) (2026-01-22)
 
 

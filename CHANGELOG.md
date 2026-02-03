@@ -1,5 +1,64 @@
 # Changelog
 
+## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...v1.1.0-rc) (2026-02-03)
+
+
+### 🚀 New Features
+
+* **arcjet:** add support for serializable characeristics, fields ([#5715](https://github.com/arcjet/arcjet-js/issues/5715)) ([9cff098](https://github.com/arcjet/arcjet-js/commit/9cff098456684adc2eb809c28787f9d88a7d590e))
+
+
+### 🪲 Bug Fixes
+
+* **ip:** prefer `x-forwarded-for` on unknown platforms ([#5744](https://github.com/arcjet/arcjet-js/issues/5744)) ([9c02f9b](https://github.com/arcjet/arcjet-js/commit/9c02f9b173307a321e479b5d41b0515453ae53a2))
+
+
+### 📝 Documentation
+
+* **deno:** link to sdk docs on website ([#5731](https://github.com/arcjet/arcjet-js/issues/5731)) ([43ce456](https://github.com/arcjet/arcjet-js/commit/43ce45637f93ba31cadb25029fa92e7ff770053c))
+* **fastify:** link to sdk docs on website ([#5734](https://github.com/arcjet/arcjet-js/issues/5734)) ([0507085](https://github.com/arcjet/arcjet-js/commit/05070859fb5262cd5b0a3a7492f6119b8f218cf6))
+* update example links in readmes ([#5735](https://github.com/arcjet/arcjet-js/issues/5735)) ([6f10658](https://github.com/arcjet/arcjet-js/commit/6f106589ddcb2bb99b26eb0e3eb1e18046ab7fa5))
+
+
+### 🧹 Miscellaneous Chores
+
+* add `prerelease-type` ([#5751](https://github.com/arcjet/arcjet-js/issues/5751)) ([df66720](https://github.com/arcjet/arcjet-js/commit/df66720b43456cc7004e7af86e38a5538b5714bc))
+* **arcjet:** add some clarifying notes ([#5709](https://github.com/arcjet/arcjet-js/issues/5709)) ([48f6e33](https://github.com/arcjet/arcjet-js/commit/48f6e3330877d089da8f4e849cf97626cedfe335))
+* **arcjet:** remove warning on zero local rules ([#5726](https://github.com/arcjet/arcjet-js/issues/5726)) ([f3ae009](https://github.com/arcjet/arcjet-js/commit/f3ae009874239e7e5f3cc993e35ccd9de789b8c9))
+* **fastify:** use `Cidr` type, remove unneeded comment ([#5732](https://github.com/arcjet/arcjet-js/issues/5732)) ([9cf122e](https://github.com/arcjet/arcjet-js/commit/9cf122e61db12409401c20ae8c1f8f48debd7607))
+* fix example, docs, test use of `protocol` field ([#5708](https://github.com/arcjet/arcjet-js/issues/5708)) ([e63ab49](https://github.com/arcjet/arcjet-js/commit/e63ab49e7de9d1282ae7e12fb632e2436e824d96))
+* fix typo, it’s `ip.src` ([#5754](https://github.com/arcjet/arcjet-js/issues/5754)) ([750c217](https://github.com/arcjet/arcjet-js/commit/750c217b0f23fbc34afba494c0c09e97004822fb))
+* **protocol:** client should get full request details ([#5711](https://github.com/arcjet/arcjet-js/issues/5711)) ([88a1259](https://github.com/arcjet/arcjet-js/commit/88a1259b6cd719cf4c19e6338d634e74fbd56d60))
+* **react-router:** remove unneeded import ([#5733](https://github.com/arcjet/arcjet-js/issues/5733)) ([5f9d1b6](https://github.com/arcjet/arcjet-js/commit/5f9d1b602fe4b3a2e9f08802b7ba3f0c7c44d001))
+* **react-router:** remove unused type ([#5736](https://github.com/arcjet/arcjet-js/issues/5736)) ([4dc9715](https://github.com/arcjet/arcjet-js/commit/4dc97158759192a7710789d2455f857516c8d02c))
+* use prerelease versioning ([#5743](https://github.com/arcjet/arcjet-js/issues/5743)) ([c56afa8](https://github.com/arcjet/arcjet-js/commit/c56afa885f8f98c2cb80adc9f316399e298f7792))
+
+
+### ⌨️ Code Refactoring
+
+* **arcjet:** simplify internal code ([#5703](https://github.com/arcjet/arcjet-js/issues/5703)) ([567b11b](https://github.com/arcjet/arcjet-js/commit/567b11b9425a44e37c9d0a2608b9043e0967e693))
+* **examples:** move `characteristics` to rules where possible ([#4753](https://github.com/arcjet/arcjet-js/issues/4753)) ([ec55834](https://github.com/arcjet/arcjet-js/commit/ec558347a2369ee793e65030617a557137658028))
+
+
+### 📚 Tests
+
+* **analyze-wasm:** add tests ([#5690](https://github.com/arcjet/arcjet-js/issues/5690)) ([3f396f8](https://github.com/arcjet/arcjet-js/commit/3f396f89f450cbbd67684b8c89f2b57ce1e5e3ad))
+* **arcjet:** add tests for allowing and denying invalid emails ([#5769](https://github.com/arcjet/arcjet-js/issues/5769)) ([ed652f5](https://github.com/arcjet/arcjet-js/commit/ed652f5cef5b94b772dbca8be7648e798df4a881))
+* **arcjet:** rework validate email tests ([#5742](https://github.com/arcjet/arcjet-js/issues/5742)) ([5823bde](https://github.com/arcjet/arcjet-js/commit/5823bde8d4852b1d6b59b22f399c411a1173a1fb))
+* **bun:** add ([#5701](https://github.com/arcjet/arcjet-js/issues/5701)) ([cfcc825](https://github.com/arcjet/arcjet-js/commit/cfcc8251a788b23943a292dc03b86574ca6f205a))
+* **deno:** add ([#5702](https://github.com/arcjet/arcjet-js/issues/5702)) ([3a25858](https://github.com/arcjet/arcjet-js/commit/3a25858f37dc4b97106075d16fc7f0ec188efbc4))
+* **fastify:** add ([#5710](https://github.com/arcjet/arcjet-js/issues/5710)) ([3266158](https://github.com/arcjet/arcjet-js/commit/3266158f72a0374a2c98b06f20370f32a89e36c6))
+* **node:** add ([#5713](https://github.com/arcjet/arcjet-js/issues/5713)) ([b0e4fd4](https://github.com/arcjet/arcjet-js/commit/b0e4fd48fa0a70c2f4a6ded13da4e9d2849504bf))
+* split `arcjet.test.ts` ([#5689](https://github.com/arcjet/arcjet-js/issues/5689)) ([b4a7c14](https://github.com/arcjet/arcjet-js/commit/b4a7c140e32b251246769c935296455d6b1742ae))
+
+
+### 🔨 Build System
+
+* add npm tag input for publish workflow ([#5771](https://github.com/arcjet/arcjet-js/issues/5771)) ([1ffba81](https://github.com/arcjet/arcjet-js/commit/1ffba812066f03b70d1e639f32a21bc8e4efabce))
+* **deps-dev:** bump fastify from 5.7.1 to 5.7.3 in /arcjet-fastify ([#5755](https://github.com/arcjet/arcjet-js/issues/5755)) ([c996a0b](https://github.com/arcjet/arcjet-js/commit/c996a0b368af12c4a611600e7b5ea69aa9cbe84e))
+* **deps:** bump tar from 7.5.6 to 7.5.7 in /examples/nuxt ([#5727](https://github.com/arcjet/arcjet-js/issues/5727)) ([afee0e0](https://github.com/arcjet/arcjet-js/commit/afee0e063900dcf1acbef13dcd38f3645e8b4fee))
+* enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
+
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...v1.0.0) (2026-01-22)
 
 
