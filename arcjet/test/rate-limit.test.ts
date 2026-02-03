@@ -174,11 +174,8 @@ describe("Primitive > tokenBucket", () => {
     assert.equal(rules.length, 1);
     const rule = rules[0];
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.refillRate, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.interval, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.capacity, 120);
   });
 
@@ -192,11 +189,8 @@ describe("Primitive > tokenBucket", () => {
     const rules = tokenBucket(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].refillRate, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].capacity, 120);
   });
 
@@ -245,15 +239,10 @@ describe("Primitive > tokenBucket", () => {
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
     assert.equal(rules[0].mode, "DRY_RUN");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rules[0].characteristics, ["ip.src"]);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].algorithm, "TOKEN_BUCKET");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].refillRate, 1);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 1);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].capacity, 1);
   });
 
@@ -266,7 +255,6 @@ describe("Primitive > tokenBucket", () => {
 
     const [rule] = tokenBucket(options);
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.characteristics, undefined);
   });
 
@@ -409,9 +397,7 @@ describe("Primitive > fixedWindow", () => {
     const rules = fixedWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].window, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -424,9 +410,7 @@ describe("Primitive > fixedWindow", () => {
     const rules = fixedWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].window, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -469,13 +453,9 @@ describe("Primitive > fixedWindow", () => {
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
     assert.equal(rules[0].mode, "DRY_RUN");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rules[0].characteristics, ["ip.src"]);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].algorithm, "FIXED_WINDOW");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].window, 3600);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -487,7 +467,6 @@ describe("Primitive > fixedWindow", () => {
 
     const [rule] = fixedWindow(options);
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.characteristics, undefined);
   });
 
@@ -628,9 +607,7 @@ describe("Primitive > slidingWindow", () => {
     const rules = slidingWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -643,9 +620,7 @@ describe("Primitive > slidingWindow", () => {
     const rules = slidingWindow(options);
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 60);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -688,13 +663,9 @@ describe("Primitive > slidingWindow", () => {
     assert.equal(rules.length, 1);
     assert.equal(rules[0].type, "RATE_LIMIT");
     assert.equal(rules[0].mode, "DRY_RUN");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.deepEqual(rules[0].characteristics, ["ip.src"]);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].algorithm, "SLIDING_WINDOW");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].interval, 3600);
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rules[0].max, 1);
   });
 
@@ -706,7 +677,6 @@ describe("Primitive > slidingWindow", () => {
 
     const [rule] = slidingWindow(options);
     assert.equal(rule.type, "RATE_LIMIT");
-    // @ts-expect-error: TODO(#4452): fix types to allow access of properties.
     assert.equal(rule.characteristics, undefined);
   });
 
