@@ -1,0 +1,32 @@
+---
+import { actions } from "astro:actions";
+
+// Pages that use Astro Actions can be prerendered because the form submission
+// via POST is never prerendered.
+export const prerender = true;
+
+const result = Astro.getActionResult(actions.protectSignup);
+---
+
+<div class="signup">
+  {
+    result ? (
+      <div>
+        {result.error ? result.error.message || result.error.code : result.data}
+      </div>
+    ) : (
+      <form method="POST" action={actions.protectSignup}>
+        <label for="signup">Protected signup:</label>
+        <input id="signup" required type="text" name="email" />
+        <button>Submit</button>
+      </form>
+    )
+  }
+</div>
+
+<style>
+  #signup,
+  .signup {
+    margin: 5px auto;
+  }
+</style>
