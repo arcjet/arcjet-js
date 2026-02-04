@@ -15,8 +15,10 @@ import arcjetNode, {
   createRemoteClient,
   detectBot,
   filter,
+  fixedWindow,
   protectSignup,
   sensitiveInfo,
+  shield,
   validateEmail,
 } from "../index.js";
 
@@ -342,6 +344,107 @@ test("`arcjetNode`", async function (t) {
       assert.equal(responseCurl.status, 403);
       assert.equal(responseFirefox.status, 200);
     });
+
+    await t.test(
+      "returned ArcjetNode#protect should accept the correct properties",
+      async function () {
+        const restore = capture();
+
+        const arcjetBase = arcjetNode({
+          client: createLocalClient(),
+          characteristics: ['http.request.headers["user-agent"]'],
+          key: exampleKey,
+          rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+        });
+
+        const arcjetBasePlusShield = arcjetBase.withRule(
+          shield({ mode: "LIVE" }),
+        );
+
+        const arcjetBasePlusShieldPlusCharacteristic =
+          arcjetBasePlusShield.withRule(
+            fixedWindow({
+              window: 60,
+              max: 100,
+              mode: "LIVE",
+              characteristics: ["customcharacteristic"],
+            }),
+          );
+
+        const arcjetBasePlusProtectSignup = arcjetBase.withRule(
+          protectSignup({
+            bots: { allow: [], mode: "LIVE" },
+            email: { allow: [], mode: "LIVE" },
+            rateLimit: {
+              interval: 60,
+              max: 5,
+              mode: "LIVE",
+              characteristics: ["anothercustomcharacteristic"],
+            },
+          }),
+        );
+
+        const arcjetKitchenSink =
+          arcjetBasePlusShieldPlusCharacteristic.withRule(
+            protectSignup({
+              bots: { allow: [], mode: "LIVE" },
+              email: { allow: [], mode: "LIVE" },
+              rateLimit: { interval: 60, max: 5, mode: "LIVE" },
+            }),
+          );
+
+        const { server, url } = await createSimpleServer({
+          async decide(request) {
+            /* Validate properties are accepted as expected */
+            await arcjetBase.protect(request);
+            await arcjetBase.protect(request, {
+              sensitiveInfoValue: "555-555-5555",
+            });
+            await arcjetBasePlusShield.protect(request);
+            await arcjetBasePlusShield.protect(request, {
+              sensitiveInfoValue: "555-555-5555",
+            });
+            await arcjetBasePlusShieldPlusCharacteristic.protect(request, {
+              customcharacteristic: "customvalue",
+            });
+            await arcjetBasePlusShieldPlusCharacteristic.protect(request, {
+              customcharacteristic: "customvalue",
+              sensitiveInfoValue: "555-555-5555",
+            });
+            await arcjetBasePlusProtectSignup.protect(request, {
+              anothercustomcharacteristic: "anothercustomvalue",
+              email: "alice@arcjet.com",
+            });
+            await arcjetBasePlusProtectSignup.protect(request, {
+              anothercustomcharacteristic: "anothercustomvalue",
+              email: "alice@arcjet.com",
+              sensitiveInfoValue: "555-555-5555",
+            });
+            await arcjetKitchenSink.protect(request, {
+              customcharacteristic: "customvalue",
+              email: "alice@arcjet.com",
+            });
+            return arcjetKitchenSink.protect(request, {
+              customcharacteristic: "customvalue",
+              email: "alice@arcjet.com",
+              sensitiveInfoValue: "Not a phone number.",
+            });
+          },
+        });
+
+        const responseChrome = await fetch(url, {
+          headers: {
+            "user-agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+          },
+        });
+
+        await server.close();
+        restore();
+
+        assert.equal(responseChrome.status, 200);
+      },
+    );
   });
 
   await t.test("should support `options.proxies`", async function () {
