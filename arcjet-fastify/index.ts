@@ -6,7 +6,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import findIp, { type Cidr, parseProxy } from "@arcjet/ip";
+import { type Cidr, findIp, parseProxy } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
 import { createClient } from "@arcjet/protocol/client.js";

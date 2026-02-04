@@ -49,10 +49,10 @@ npm install @arcjet/sprintf
 ## Use
 
 ```ts
-import format from "@arcjet/sprintf";
+import { sprintf } from "@arcjet/sprintf";
 
-console.log(format("Hello %s", "world")); // => "Hello world"
-console.log(format("1 %i %d", 2, 3.0)); // => "1 2 3"
+console.log(sprintf("Hello %s", "world")); // => "Hello world"
+console.log(sprintf("1 %i %d", 2, 3.0)); // => "1 2 3"
 ```
 
 ## Substitutions

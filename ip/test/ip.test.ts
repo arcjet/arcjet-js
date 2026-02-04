@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import findIp, { parseProxy } from "../index.js";
+import { findIp, parseProxy } from "../index.js";
 
 type Proxy = ReturnType<typeof parseProxy>;
 

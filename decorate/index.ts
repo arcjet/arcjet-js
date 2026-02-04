@@ -1,4 +1,4 @@
-import format from "@arcjet/sprintf";
+import { sprintf } from "@arcjet/sprintf";
 import type { ArcjetDecision } from "@arcjet/protocol";
 import {
   ArcjetRateLimitReason,
@@ -194,7 +194,7 @@ export function setRateLimitHeaders(
         typeof reason.remaining !== "number" ||
         typeof reason.reset !== "number"
       ) {
-        console.error(format("Invalid rate limit encountered: %o", reason));
+        console.error(sprintf("Invalid rate limit encountered: %o", reason));
         return;
       }
 
@@ -219,7 +219,7 @@ export function setRateLimitHeaders(
         typeof decision.reason.reset !== "number"
       ) {
         console.error(
-          format("Invalid rate limit encountered: %o", decision.reason),
+          sprintf("Invalid rate limit encountered: %o", decision.reason),
         );
         return;
       }
@@ -234,7 +234,7 @@ export function setRateLimitHeaders(
   if (isHeaderLike(value)) {
     if (value.has("RateLimit")) {
       console.warn(
-        format(
+        sprintf(
           "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
           value.get("RateLimit"),
           limit,
@@ -243,7 +243,7 @@ export function setRateLimitHeaders(
     }
     if (value.has("RateLimit-Policy")) {
       console.warn(
-        format(
+        sprintf(
           "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
           value.get("RateLimit-Policy"),
           limit,
@@ -261,7 +261,7 @@ export function setRateLimitHeaders(
   if (isResponseLike(value)) {
     if (value.headers.has("RateLimit")) {
       console.warn(
-        format(
+        sprintf(
           "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
           value.headers.get("RateLimit"),
           limit,
@@ -270,7 +270,7 @@ export function setRateLimitHeaders(
     }
     if (value.headers.has("RateLimit-Policy")) {
       console.warn(
-        format(
+        sprintf(
           "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
           value.headers.get("RateLimit-Policy"),
           limit,
@@ -295,7 +295,7 @@ export function setRateLimitHeaders(
 
     if (value.hasHeader("RateLimit")) {
       console.warn(
-        format(
+        sprintf(
           "Response already contains `RateLimit` header\n  Original: %s\n  New: %s",
           value.getHeader("RateLimit"),
           limit,
@@ -305,7 +305,7 @@ export function setRateLimitHeaders(
 
     if (value.hasHeader("RateLimit-Policy")) {
       console.warn(
-        format(
+        sprintf(
           "Response already contains `RateLimit-Policy` header\n  Original: %s\n  New: %s",
           value.getHeader("RateLimit-Policy"),
           limit,
