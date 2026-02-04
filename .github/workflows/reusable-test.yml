@@ -1,8 +1,8 @@
-# Our reusable workflow files only use the `workflow_call` event and don't
-# specify a `concurrency` limit so those things can be managed by the caller.
 name: Reusable test workflow
 
-on: [workflow_call]
+on:
+  workflow_call: {}
+  merge_group: {}
 
 env:
   DO_NOT_TRACK: "1"

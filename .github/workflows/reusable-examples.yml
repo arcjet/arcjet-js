@@ -1,3 +1,9 @@
+name: Reusable examples workflow
+
+on:
+  workflow_call: {}
+  merge_group: {}
+
 env:
   ASTRO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: "1"
@@ -132,8 +138,3 @@ jobs:
           - react-router
           - remix-express
           - sveltekit
-name: Reusable examples workflow
-# This workflow only uses the `workflow_call` event and no `concurrency`
-# limit so those things can be managed by the caller.
-on:
-  - workflow_call
