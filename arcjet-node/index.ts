@@ -9,7 +9,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import findIp, { parseProxy } from "@arcjet/ip";
+import { findIp, parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";

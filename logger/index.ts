@@ -1,4 +1,4 @@
-import format from "@arcjet/sprintf";
+import { sprintf } from "@arcjet/sprintf";
 
 function bigintReplacer(key: string, value: unknown) {
   if (typeof value === "bigint") {
@@ -56,7 +56,7 @@ function getMessage(
   // Prefer a string message over `mergingObject.msg`, as per Pino:
   // https://github.com/pinojs/pino/blob/8db130eba0439e61c802448d31eb1998cebfbc98/docs/api.md#message-string
   if (typeof message === "string") {
-    return format(message, ...interpolationValues);
+    return sprintf(message, ...interpolationValues);
   }
 
   if (
@@ -65,7 +65,7 @@ function getMessage(
     "msg" in mergingObject &&
     typeof mergingObject.msg === "string"
   ) {
-    return format(mergingObject.msg, [message, ...interpolationValues]);
+    return sprintf(mergingObject.msg, [message, ...interpolationValues]);
   }
 }
 

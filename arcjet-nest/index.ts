@@ -13,7 +13,7 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import findIp, { parseProxy } from "@arcjet/ip";
+import { findIp, parseProxy } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { Logger } from "@arcjet/logger";

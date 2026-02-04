@@ -55,7 +55,7 @@ npm install @arcjet/ip
 ## Example
 
 ```ts
-import findIp from "@arcjet/ip";
+import { findIp } from "@arcjet/ip";
 
 const ip = findIp({ headers: { "x-real-ip": "1.1.1.1" } });
 console.log(ip); // => "1.1.1.1"
