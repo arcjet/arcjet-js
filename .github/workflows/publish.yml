@@ -3,8 +3,8 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        default: "latest"
-        description: "The npm tag (distribution channel) to publish to."
+        default: latest
+        description: The npm tag (distribution channel) to publish to.
         options:
           - latest
           - rc
