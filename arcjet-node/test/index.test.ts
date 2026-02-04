@@ -678,7 +678,12 @@ test("`arcjetNode`", async function (t) {
     const restore = capture();
     const warnings: Array<Array<unknown>> = [];
 
-    const arcjet = arcjetNode({
+    // TODO: a warning message we assert on (see below) depends on a boolean in
+    //       module scope. Here we force a fresh import to reset that.
+    const { default: arcjetNodeIsolated }: { default: typeof arcjetNode } =
+      await import(`../index.js?t=${Date.now()}`);
+
+    const arcjet = arcjetNodeIsolated({
       client: createLocalClient(),
       key: exampleKey,
       log: {
@@ -709,6 +714,7 @@ test("`arcjetNode`", async function (t) {
       [
         "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
       ],
+      // TODO: this message depends on a boolean in module scope which is not reset between tests.
       [
         "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
       ],
