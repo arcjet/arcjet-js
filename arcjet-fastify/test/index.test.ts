@@ -18,6 +18,7 @@ import arcjetFastify, {
   createRemoteClient,
   detectBot,
   filter,
+  protectSignup,
   sensitiveInfo,
   validateEmail,
 } from "../index.js";
@@ -952,6 +953,59 @@ test("`arcjetFastify`", async function (t) {
 
     assert.equal(responseInvalid.status, 403);
     assert.equal(responseValid.status, 200);
+  });
+
+  await t.test("should support `protectSignup`", async function () {
+    const restore = capture();
+    let email = "alice";
+
+    const arcjet = arcjetFastify({
+      characteristics: ['http.request.headers["user-agent"]', "ip.src"],
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [
+        protectSignup({
+          bots: { allow: [], mode: "LIVE" },
+          email: { allow: [], mode: "LIVE" },
+          rateLimit: { interval: 60, max: 5, mode: "LIVE" },
+        }),
+      ],
+    });
+
+    const { server, url } = await createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request, { email });
+      },
+    });
+
+    const responseEmailInvalid = await fetch(url);
+
+    email = "alice@arcjet.com";
+
+    const responseEmailValid = await fetch(url);
+
+    const responseUserAgentBot = await fetch(url, {
+      headers: {
+        "user-agent": "Googlebot/2.1 (+http://www.google.com/bot.html)",
+      },
+    });
+
+    const responseUserAgentBrowser = await fetch(url, {
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+      },
+    });
+
+    // No tests for rate limiting as that happens remotely.
+
+    await server.close();
+    restore();
+
+    assert.equal(responseEmailInvalid.status, 403);
+    assert.equal(responseEmailValid.status, 200);
+    assert.equal(responseUserAgentBot.status, 403);
+    assert.equal(responseUserAgentBrowser.status, 200);
   });
 
   await t.test("should support a custom rule", async function () {

@@ -54,7 +54,6 @@
     "arcjet": "1.1.0-rc"
   },
   "devDependencies": {
-    "@arcjet/cache": "1.1.0-rc",
     "@arcjet/eslint-config": "1.1.0-rc",
     "@arcjet/rollup-config": "1.1.0-rc",
     "@rollup/wasm-node": "4.57.0",
