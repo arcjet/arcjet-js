@@ -160,7 +160,9 @@ export function makeHasher(subtle: SubtleCryptoLike) {
    * @returns
    *   Promise to a hash.
    */
-  return async function hash(...hashers: ReadonlyArray<FieldHasher>): Promise<string> {
+  return async function hash(
+    ...hashers: ReadonlyArray<FieldHasher>
+  ): Promise<string> {
     const h = new Sha256(subtle);
     for (const hasher of hashers) {
       hasher(h);
