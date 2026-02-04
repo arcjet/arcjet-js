@@ -613,14 +613,19 @@ test("convert", async (t) => {
     await t.test(
       "should create an anonymous reason w/ an unknown `case` proto",
       () => {
-        const reason = ArcjetReasonFromProtocol(
-          create(ReasonSchema, {
-            reason: {
-              // @ts-expect-error: test runtime behavior.
-              case: "NOT_VALID",
-            },
-          }),
-        );
+        // Note: creating a reason using `create` with an unknown `case` will
+        // turn it into `undefined` instead:
+        // ```
+        // create(ReasonSchema, { reason: { case: "NOT_VALID" } })
+        // ```
+        // So this is a regular object.
+        const reason = ArcjetReasonFromProtocol({
+          $typeName: "proto.decide.v1alpha1.Reason",
+          reason: {
+            // @ts-expect-error: test runtime behavior.
+            case: "NOT_VALID",
+          },
+        });
 
         assert.ok(reason instanceof ArcjetReason);
         assert.equal(reason.type, undefined);

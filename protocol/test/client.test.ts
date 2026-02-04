@@ -729,12 +729,21 @@ test("createClient", async (t) => {
   });
 
   await t.test(
-    "should call `info`, not `error`, `warn` on allow reports",
+    "should call `info` on a problem reporting, not `error`, `warn`",
     async () => {
       return new Promise((resolve) => {
         let calls = 0;
 
-        const client = createClient(exampleClientOptions);
+        const client = createClient({
+          ...exampleClientOptions,
+          transport: createRouterTransport(({ service }) => {
+            service(DecideService, {
+              report() {
+                throw new Error("Boom");
+              },
+            });
+          }),
+        });
 
         client.report(
           {
@@ -744,10 +753,13 @@ test("createClient", async (t) => {
               error() {
                 assert.fail();
               },
-              info() {
+              info(...parameters) {
                 assert.equal(calls, 0);
+                assert.deepEqual(parameters, [
+                  "Encountered problem sending report: %s",
+                  "[internal] internal error",
+                ]);
                 calls++;
-
                 resolve(undefined);
               },
               warn() {
