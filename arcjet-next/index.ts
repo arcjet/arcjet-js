@@ -494,9 +494,9 @@ export interface ArcjetNext<Props extends PlainObject> {
    * @link https://docs.arcjet.com/reference/nextjs#ad-hoc-rules
    * @link https://github.com/arcjet/example-nextjs
    */
-  withRule<ChildProperties extends PlainObject>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetNext<Props & ChildProperties>;
+  withRule<const Rule extends Primitive | Product>(
+    rule: Rule,
+  ): ArcjetNext<Simplify<Props & ExtraProps<Rule>>>;
 }
 
 /**

@@ -187,9 +187,9 @@ export interface ArcjetBun<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetBun<Props & ChildProperties>;
+  withRule<const Rule extends Primitive | Product>(
+    rule: Rule,
+  ): ArcjetBun<Simplify<Props & ExtraProps<Rule>>>;
 
   /**
    * Wrap the Bun `fetch` handler to provide additional details when calling

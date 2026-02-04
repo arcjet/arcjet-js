@@ -185,9 +185,9 @@ export interface ArcjetDeno<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetDeno<Props & ChildProperties>;
+  withRule<const Rule extends Primitive | Product>(
+    rule: Rule,
+  ): ArcjetDeno<Simplify<Props & ExtraProps<Rule>>>;
 
   /**
    * Wrap your handler passed to `Deno.serve` with this function to provide
