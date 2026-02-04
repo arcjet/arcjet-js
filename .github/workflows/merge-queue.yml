@@ -1,0 +1,21 @@
+name: Merge queue
+
+on:
+  merge_group: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run tests
+    uses: ./.github/workflows/reusable-test.yml
+    permissions:
+      contents: read
+
+  examples:
+    name: Build examples
+    uses: ./.github/workflows/reusable-examples.yml
+    permissions:
+      contents: read

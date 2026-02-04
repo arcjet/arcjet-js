@@ -2,7 +2,6 @@ name: Reusable examples workflow
 
 on:
   workflow_call: {}
-  merge_group: {}
 
 env:
   ASTRO_TELEMETRY_DISABLED: 1
