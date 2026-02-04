@@ -3,6 +3,7 @@ import test from "node:test";
 import { MemoryCache } from "@arcjet/cache";
 import { ArcjetDenyDecision, ArcjetReason } from "@arcjet/protocol";
 import arcjet, {
+  type ArcjetCacheEntry,
   type ArcjetContext,
   type ArcjetRequestDetails,
   ArcjetErrorReason,
@@ -980,7 +981,7 @@ test("matrix", async function (t) {
  */
 function createContext(): ArcjetContext {
   return {
-    cache: new MemoryCache(),
+    cache: new MemoryCache<ArcjetCacheEntry>(),
     characteristics: [],
     fingerprint: "a",
     getBody() {

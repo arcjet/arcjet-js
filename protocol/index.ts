@@ -1778,9 +1778,27 @@ export interface ArcjetLogger {
 }
 
 /**
+ * Objects that Arcjet core puts in the cache.
+ *
+ * Local results from `rule.protect` calls and remote results from
+ * `client.decide` are stored when they have a non-zero `ttl` and are a `DENY`.
+ */
+export interface ArcjetCacheEntry {
+  /**
+   * Conclusion.
+   */
+  conclusion: ArcjetConclusion;
+
+  /**
+   * Reason.
+   */
+  reason: ArcjetReason;
+}
+
+/**
  * Arcjet context.
  */
-export type ArcjetContext<T = unknown> = {
+export type ArcjetContext = {
   /**
    * Arbitrary indexing into context is currently allowed but not typed.
    */
@@ -1814,7 +1832,7 @@ export type ArcjetContext<T = unknown> = {
   /**
    * Cache to use.
    */
-  cache: Cache<T>;
+  cache: Cache<ArcjetCacheEntry>;
 
   /**
    * Function to use to read a request.

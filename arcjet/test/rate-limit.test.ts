@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 import {
+  type ArcjetCacheEntry,
   type Primitive,
   ArcjetRateLimitReason,
   fixedWindow,
@@ -41,7 +42,9 @@ type IsEqual<A, B> =
 type Props<T> = T extends Primitive<infer P> ? P : never;
 
 class TestCache {
-  get = mock.fn<() => Promise<[unknown, number]>>(async () => [undefined, 0]);
+  get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(
+    async () => [undefined, 0],
+  );
   set = mock.fn();
 }
 

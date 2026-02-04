@@ -22,6 +22,7 @@ import test from "node:test";
 import { MemoryCache } from "@arcjet/cache";
 import type { Client } from "@arcjet/protocol/client.js";
 import arcjetDeno, {
+  type ArcjetCacheEntry,
   type ArcjetDeno,
   type ArcjetContext,
   type ArcjetRequestDetails,
@@ -1306,7 +1307,7 @@ function capture() {
  */
 function createArcjetContext(): ArcjetContext {
   return {
-    cache: new MemoryCache(),
+    cache: new MemoryCache<ArcjetCacheEntry>(),
     characteristics: [],
     fingerprint: "",
     async getBody() {

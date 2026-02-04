@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { MemoryCache } from "@arcjet/cache";
 import {
+  type ArcjetCacheEntry,
   type ArcjetContext,
   type ArcjetRequestDetails,
   validateEmail,
@@ -528,7 +529,7 @@ test("`validateEmail`", async function (t) {
  */
 function createContext(): ArcjetContext {
   return {
-    cache: new MemoryCache(),
+    cache: new MemoryCache<ArcjetCacheEntry>(),
     characteristics: [],
     fingerprint: "a",
     getBody() {

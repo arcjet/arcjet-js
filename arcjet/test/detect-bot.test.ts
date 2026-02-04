@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 import { MemoryCache } from "@arcjet/cache";
-import { ArcjetBotReason, detectBot } from "../index.js";
+import { type ArcjetCacheEntry, ArcjetBotReason, detectBot } from "../index.js";
 
 describe("Primitive > detectBot", () => {
   test("validates `mode` option if it is set", async () => {
@@ -20,7 +20,7 @@ describe("Primitive > detectBot", () => {
         // @ts-expect-error
         allow: "abc",
       });
-    }, /detectBot` options error: invalid type for `allow` - expected an array/);
+    }, /`detectBot` options error: invalid type for `allow` - expected an array/);
   });
 
   test("validates `allow` option only contains strings", async () => {
@@ -78,7 +78,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody() {
         throw new Error("Not implemented");
       },
@@ -101,7 +101,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody() {
         throw new Error("Not implemented");
       },
@@ -132,7 +132,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody() {
         throw new Error("Not implemented");
       },
@@ -158,10 +158,9 @@ describe("Primitive > detectBot", () => {
 
   test("uses cache", async () => {
     class TestCache {
-      get = mock.fn<() => Promise<[unknown, number]>>(async () => [
-        undefined,
-        0,
-      ]);
+      get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(
+        async () => [undefined, 0],
+      );
       set = mock.fn();
     }
 
@@ -231,7 +230,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody() {
         throw new Error("Not implemented");
       },
@@ -272,7 +271,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody() {
         throw new Error("Not implemented");
       },
@@ -313,7 +312,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody() {
         throw new Error("Not implemented");
       },
@@ -375,7 +374,7 @@ describe("Primitive > detectBot", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody() {
         throw new Error("Not implemented");
       },
