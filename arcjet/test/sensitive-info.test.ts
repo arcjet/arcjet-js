@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 import { MemoryCache } from "@arcjet/cache";
 import arcjet, {
+  type ArcjetCacheEntry,
   ArcjetAllowDecision,
   ArcjetReason,
   ArcjetSensitiveInfoReason,
@@ -9,7 +10,9 @@ import arcjet, {
 } from "../index.js";
 
 class TestCache {
-  get = mock.fn<() => Promise<[unknown, number]>>(async () => [undefined, 0]);
+  get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(
+    async () => [undefined, 0],
+  );
   set = mock.fn();
 }
 
@@ -108,7 +111,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody() {
         throw new Error("Not implemented");
       },
@@ -147,7 +150,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () =>
         Promise.resolve(
           "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
@@ -206,7 +209,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () => Promise.resolve("none of this is sensitive"),
     };
     const details = {
@@ -241,7 +244,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () =>
         Promise.resolve(
           "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
@@ -300,7 +303,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () =>
         Promise.resolve(
           "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
@@ -360,7 +363,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
     };
     const details = {
@@ -406,7 +409,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () =>
         Promise.resolve("127.0.0.1 test@example.com +353 87 123 4567"),
     };
@@ -459,7 +462,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () => Promise.resolve("test@example.com +353 87 123 4567"),
     };
     const details = {
@@ -506,7 +509,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () => Promise.resolve("this is bad"),
     };
     const details = {
@@ -555,7 +558,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () => Promise.resolve("this is bad"),
     };
     const details = {
@@ -596,7 +599,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () => Promise.resolve("my email is test@example.com"),
     };
     const details = {
@@ -645,7 +648,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () => Promise.resolve("my email is test@example.com"),
     };
     const details = {
@@ -680,7 +683,7 @@ describe("Primitive > sensitiveInfo", () => {
       runtime: "test",
       log: createMockLogger(),
       characteristics: [],
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody() {
         throw new Error("Not implemented");
       },
@@ -762,7 +765,7 @@ describe("Primitive > sensitiveInfo", () => {
   test("should support `sensitiveInfoValue`", async function () {
     let getBodyCalled = false;
     const context = {
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       characteristics: [],
       fingerprint: "",
       async getBody() {
@@ -826,7 +829,7 @@ describe("Primitive > sensitiveInfo", () => {
 
     await arcjetClient.protect(
       {
-        cache: new MemoryCache(),
+        cache: new MemoryCache<ArcjetCacheEntry>(),
         characteristics: [],
         fingerprint: "",
         async getBody() {
@@ -873,7 +876,7 @@ describe("Primitive > sensitiveInfo", () => {
 
     await arcjetClient.protect(
       {
-        cache: new MemoryCache(),
+        cache: new MemoryCache<ArcjetCacheEntry>(),
         characteristics: [],
         fingerprint: "",
         async getBody() {

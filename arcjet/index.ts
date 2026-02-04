@@ -1,5 +1,5 @@
 import type {
-  ArcjetConclusion,
+  ArcjetCacheEntry,
   ArcjetContext,
   ArcjetEmailRule,
   ArcjetBotRule,
@@ -1636,11 +1636,6 @@ export type ArcjetRequest<Props extends PlainObject> = Simplify<
   } & Props
 >;
 
-type CachedResult = {
-  conclusion: ArcjetConclusion;
-  reason: ArcjetReason;
-};
-
 function isRateLimitRule<Props extends PlainObject>(
   rule: ArcjetRule<Props>,
 ): rule is ArcjetRateLimitRule<Props> {
@@ -1741,7 +1736,7 @@ export function tokenBucket<
           "TokenBucket requires `requested` to be set.",
         );
       },
-      async protect(context: ArcjetContext<CachedResult>, details) {
+      async protect(context, details) {
         const localCharacteristics = characteristics ?? context.characteristics;
 
         const ruleId = await hasher.hash(
@@ -1888,7 +1883,7 @@ export function fixedWindow<
       validate(_context, details) {
         validateDetails(details);
       },
-      async protect(context: ArcjetContext<CachedResult>, details) {
+      async protect(context, details) {
         const localCharacteristics = characteristics ?? context.characteristics;
 
         const ruleId = await hasher.hash(
@@ -2026,7 +2021,7 @@ export function slidingWindow<
       validate(_context, details) {
         validateDetails(details);
       },
-      async protect(context: ArcjetContext<CachedResult>, details) {
+      async protect(context, details) {
         const localCharacteristics = characteristics ?? context.characteristics;
 
         const ruleId = await hasher.hash(
@@ -2314,10 +2309,7 @@ export function sensitiveInfo<
         // The field is optional so no additional validation is needed.
       },
 
-      async protect(
-        context: ArcjetContext<CachedResult>,
-        details: ArcjetRequestDetails,
-      ): Promise<ArcjetRuleResult> {
+      async protect(context, details) {
         const ruleId = await hasher.hash(
           hasher.string("type", type),
           hasher.uint32("version", version),
@@ -2739,10 +2731,7 @@ export function detectBot(options: BotOptions): [ArcjetBotRule<{}>] {
       /**
        * Attempts to call the bot detection on the headers.
        */
-      async protect(
-        context: ArcjetContext<CachedResult>,
-        request: ArcjetRequestDetails,
-      ): Promise<ArcjetRuleResult> {
+      async protect(context, request) {
         const ruleId = await hasher.hash(
           hasher.string("type", type),
           hasher.uint32("version", version),
@@ -2869,7 +2858,7 @@ export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
       validate(_context, details) {
         validateDetails(details);
       },
-      async protect(context: ArcjetContext<CachedResult>, details) {
+      async protect(context, details) {
         // TODO(#1989): Prefer characteristics defined on rule once available
         const localCharacteristics = context.characteristics;
 
@@ -3081,10 +3070,7 @@ export function filter(options: FilterOptions): [ArcjetFilterRule] {
       deny,
       mode,
       priority: Priority.Filter,
-      async protect(
-        context: ArcjetContext<CachedResult>,
-        request: ArcjetRequestDetails,
-      ): Promise<ArcjetRuleResult> {
+      async protect(context, request) {
         const ruleId = await ruleIdPromise;
         const [cached, ttl] = await context.cache.get(
           ruleId,
@@ -3266,7 +3252,7 @@ export default function arcjet<
   // A local cache of block decisions. Might be emphemeral per request,
   // depending on the way the runtime works, but it's worth a try.
   // TODO(#132): Support configurable caching
-  const cache = new MemoryCache<CachedResult>();
+  const cache = new MemoryCache<ArcjetCacheEntry>();
 
   async function protect<Props extends PlainObject>(
     rules: ArcjetRule[],

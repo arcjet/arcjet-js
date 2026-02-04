@@ -13,6 +13,7 @@ import {
 } from "../proto/decide/v1alpha1/decide_pb.js";
 import { type ClientOptions, createClient } from "../client.js";
 import {
+  type ArcjetCacheEntry,
   type ArcjetConclusion,
   type ArcjetContext,
   type ArcjetLogger,
@@ -41,8 +42,8 @@ class ArcjetInvalidDecision extends ArcjetDecision {
   }
 }
 
-class TestCache implements Cache {
-  async get(): Promise<[unknown, number]> {
+class TestCache implements Cache<ArcjetCacheEntry> {
+  async get(): Promise<[ArcjetCacheEntry | undefined, number]> {
     return [undefined, 0];
   }
   set() {}

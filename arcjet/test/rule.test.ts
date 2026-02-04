@@ -3,6 +3,7 @@ import test from "node:test";
 import { MemoryCache } from "@arcjet/cache";
 import type { Client } from "@arcjet/protocol/client.js";
 import arcjet, {
+  type ArcjetCacheEntry,
   type ArcjetContext,
   type ArcjetLogger,
   type ArcjetRequest,
@@ -226,7 +227,7 @@ function createLocalClient(): Client {
  */
 function createContext(): ArcjetContext {
   return {
-    cache: new MemoryCache(),
+    cache: new MemoryCache<ArcjetCacheEntry>(),
     characteristics: [],
     fingerprint: "",
     getBody() {

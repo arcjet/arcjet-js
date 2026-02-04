@@ -7,6 +7,7 @@ import Fastify, {
 import { MemoryCache } from "@arcjet/cache";
 import type { Client } from "@arcjet/protocol/client.js";
 import arcjetFastify, {
+  type ArcjetCacheEntry,
   type ArcjetContext,
   type ArcjetRequestDetails,
   type ArcjetRule,
@@ -1215,7 +1216,7 @@ function capture() {
  */
 function createArcjetContext(): ArcjetContext {
   return {
-    cache: new MemoryCache(),
+    cache: new MemoryCache<ArcjetCacheEntry>(),
     characteristics: [],
     fingerprint: "",
     async getBody() {
