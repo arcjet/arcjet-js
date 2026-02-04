@@ -11,8 +11,9 @@ import arcjet, {
   ArcjetErrorReason,
   ArcjetRuleResult,
   fixedWindow,
-  tokenBucket,
+  protectSignup,
   slidingWindow,
+  tokenBucket,
 } from "../index.js";
 
 type Assert<T extends true> = T;
@@ -421,6 +422,79 @@ describe("SDK", () => {
     assert.deepEqual(call.arguments.slice(2), [
       [...tokenBucketRule, ...testRule],
     ]);
+  });
+
+  test("can augment rules with `Product`s via `withRule` API", async () => {
+    const client = {
+      decide: mock.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetReason(),
+          results: [],
+        });
+      }),
+      report: mock.fn(),
+    };
+
+    const key = "test-key";
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: { "User-Agent": "curl/8.1.2" },
+      "extra-test": "extra-test-value",
+      userId: "abc123",
+      requested: 1,
+      abc: 123,
+      cookies: "",
+      query: "",
+    };
+
+    const aj = arcjet({
+      key,
+      rules: [],
+      client,
+      log: createMockLogger(),
+    });
+    type WithoutRuleTest = Assert<IsEqual<Props<typeof aj>, {}>>;
+
+    const protectSignupRule = protectSignup({
+      bots: { allow: [], mode: "LIVE" },
+      email: { allow: [], mode: "LIVE" },
+      rateLimit: {
+        interval: 60,
+        max: 10,
+        mode: "LIVE",
+        characteristics: ["userId"],
+      },
+    });
+
+    const aj2 = aj.withRule(protectSignupRule);
+    type WithRuleTestOne = Assert<
+      IsEqual<
+        Props<typeof aj2>,
+        { email: string; userId: string | number | boolean }
+      >
+    >;
+
+    const testRule = testRuleProps();
+
+    const aj3 = aj.withRule(testRule);
+    type WithRuleTestTwo = Assert<IsEqual<Props<typeof aj3>, { abc: number }>>;
+
+    const context = {
+      getBody() {
+        throw new Error("Not implemented");
+      },
+    };
+
+    const _ = await aj3.protect(context, request);
+    assert.equal(client.decide.mock.callCount(), 1);
+    const call = client.decide.mock.calls[0];
+    assert.ok(call);
+    assert.deepEqual(call.arguments.slice(2), [testRule]);
   });
 
   test("creates different augmented clients when `withRule` not chained", async () => {
