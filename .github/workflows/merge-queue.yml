@@ -1,12 +1,11 @@
-name: Merge Queue
+name: Merge queue
 
 on:
-  # We use Trunk Merge Queues so we use this `push` event instead of the
-  # `merge_queue` event, as per
-  # https://docs.trunk.io/merge/set-up-trunk-merge#configure-merge-requirements
-  push:
-    branches:
-      - trunk-merge/**
+  merge_group: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
