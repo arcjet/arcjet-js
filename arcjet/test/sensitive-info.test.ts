@@ -17,6 +17,13 @@ class TestCache {
 }
 
 describe("Primitive > sensitiveInfo", () => {
+  test("should throw w/o `options`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      sensitiveInfo();
+    }, /`sensitiveInfo` options error: expected object/);
+  });
+
   test("validates `mode` option if it is set", async () => {
     assert.throws(() => {
       sensitiveInfo({
@@ -134,6 +141,37 @@ describe("Primitive > sensitiveInfo", () => {
     assert.doesNotThrow(() => {
       const _ = rule.validate(context, details);
     });
+  });
+
+  test("throws if `extra` is not an object in `validate()`", function () {
+    const context = {
+      cache: new MemoryCache(),
+      characteristics: [],
+      fingerprint: "",
+      async getBody() {
+        throw new Error("Not implemented");
+      },
+      key: "",
+      log: createMockLogger(),
+      runtime: "",
+    };
+    const details = {
+      cookies: "",
+      email: undefined,
+      extra: 1,
+      headers: new Headers(),
+      host: "localhost:3000",
+      ip: "127.0.0.1",
+      method: "GET",
+      path: "/",
+      protocol: "http:",
+      query: "",
+    };
+    const [rule] = sensitiveInfo({ mode: "LIVE", allow: [] });
+
+    assert.throws(function () {
+      const _ = rule.validate(context, details);
+    }, /`details` options error: invalid value for `extra` - expected object/);
   });
 
   test("allows specifying sensitive info entities to allow", async () => {

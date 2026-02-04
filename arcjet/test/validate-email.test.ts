@@ -9,6 +9,13 @@ import {
 } from "../index.js";
 
 test("`validateEmail`", async function (t) {
+  await t.test("should throw w/o `options`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      validateEmail();
+    }, /`validateEmail` options error: expected object/);
+  });
+
   await t.test("should throw for invalid `mode`", async function () {
     assert.throws(function () {
       validateEmail({
