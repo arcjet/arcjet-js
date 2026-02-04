@@ -223,7 +223,7 @@ async function callRedactWasm<
       plaintext: string,
     ) => {
       return replace(
-        // @ts-ignore because we know this is coming from Wasm
+        // @ts-expect-error because we know this is coming from Wasm
         wasmEntitiesToString(identifiedType),
         plaintext,
       );

@@ -126,7 +126,7 @@ function directivesToSvelteKitConfig(
     if (key === "upgrade-insecure-requests") {
       sveltekitDirectives[key] = true;
     } else {
-      // @ts-ignore because we're mapping to SvelteKit options
+      // @ts-expect-error because we're mapping to SvelteKit options
       sveltekitDirectives[key] = values.map(unquote);
     }
   }
