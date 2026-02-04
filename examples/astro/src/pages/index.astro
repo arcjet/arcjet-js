@@ -1,12 +1,13 @@
 ---
-import background from '../assets/background.svg';
-import DetectBot from '../components/DetectBot.astro';
-import EmailValidation from '../components/EmailValidation.astro';
-import Filters from '../components/Filters.astro';
-import RateLimiting from '../components/RateLimiting.astro';
-import SensitiveInfo from '../components/SensitiveInfo.astro';
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import background from "../assets/background.svg";
+import DetectBot from "../components/DetectBot.astro";
+import EmailValidation from "../components/EmailValidation.astro";
+import Filters from "../components/Filters.astro";
+import Layout from "../layouts/Layout.astro";
+import ProtectSignup from "../components/ProtectSignup.astro";
+import RateLimiting from "../components/RateLimiting.astro";
+import SensitiveInfo from "../components/SensitiveInfo.astro";
+import Welcome from "../components/Welcome.astro";
 ---
 
 <Layout>
@@ -17,14 +18,14 @@ import Layout from '../layouts/Layout.astro';
         <div class="fallback" slot="fallback">Loading greeting...</div>
       </Welcome>
       <DetectBot />
-      <RateLimiting />
       <EmailValidation />
-      <SensitiveInfo />
       <Filters />
+      <ProtectSignup />
+      <RateLimiting />
+      <SensitiveInfo />
     </main>
   </div>
 </Layout>
-
 
 <style>
   .fallback {
@@ -42,7 +43,9 @@ import Layout from '../layouts/Layout.astro';
   }
 
   #container {
-    font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+    font-family:
+      Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial,
+      sans-serif;
     height: 100%;
   }
 
