@@ -3,12 +3,13 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        default: "latest"
-        description: "The npm tag (distribution channel) to publish to."
+        default: latest
+        description: The npm tag (distribution channel) to publish to.
         options:
           - latest
           - rc
         required: true
+        type: choice
 permissions:
   contents: read
   id-token: write
@@ -29,4 +30,6 @@ jobs:
       - name: Run tests
         run: npm test
       - name: Publish packages
-        run: npm publish --tag ${{ github.event.inputs.tag }} --workspaces
+        env:
+          TAG: ${{ github.event.inputs.tag }}
+        run: npm publish --tag "$TAG" --workspaces
