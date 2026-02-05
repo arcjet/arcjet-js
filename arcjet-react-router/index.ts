@@ -28,8 +28,6 @@ export * from "arcjet";
 
 let warnedForAutomaticBodyRead = false;
 
-type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
-
 declare const emptyObjectSymbol: unique symbol;
 
 /**

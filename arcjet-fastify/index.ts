@@ -32,8 +32,6 @@ export * from "arcjet";
 
 declare const emptyObjectSymbol: unique symbol;
 
-type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
-
 // TODO(@wooorm-arcjet): remove.
 type PlainObject = {
   [key: string]: unknown;
