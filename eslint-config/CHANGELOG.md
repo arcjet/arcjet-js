@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.1-rc](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/eslint-config-v1.1.1-rc) (2026-02-05)
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/eslint-config-v1.1.0) (2026-02-05)
 
 
 ### 🧹 Miscellaneous Chores

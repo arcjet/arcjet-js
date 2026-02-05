@@ -1,6 +1,6 @@
 {
   "name": "arcjet",
-  "version": "1.1.1-rc",
+  "version": "1.1.0",
   "description": "Arcjet TypeScript and JavaScript SDK core",
   "keywords": [
     "analyze",
@@ -47,17 +47,17 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.1.1-rc",
-    "@arcjet/cache": "1.1.1-rc",
-    "@arcjet/duration": "1.1.1-rc",
-    "@arcjet/headers": "1.1.1-rc",
-    "@arcjet/protocol": "1.1.1-rc",
-    "@arcjet/runtime": "1.1.1-rc",
-    "@arcjet/stable-hash": "1.1.1-rc"
+    "@arcjet/analyze": "1.1.0",
+    "@arcjet/cache": "1.1.0",
+    "@arcjet/duration": "1.1.0",
+    "@arcjet/headers": "1.1.0",
+    "@arcjet/protocol": "1.1.0",
+    "@arcjet/runtime": "1.1.0",
+    "@arcjet/stable-hash": "1.1.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.1.1-rc",
-    "@arcjet/rollup-config": "1.1.1-rc",
+    "@arcjet/eslint-config": "1.1.0",
+    "@arcjet/rollup-config": "1.1.0",
     "@rollup/wasm-node": "4.57.0",
     "@types/node": "25.1.0",
     "eslint": "9.39.2",
