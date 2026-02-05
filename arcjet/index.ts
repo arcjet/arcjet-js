@@ -3205,9 +3205,9 @@ export interface Arcjet<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): Arcjet<Simplify<Props & ChildProperties>>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): Arcjet<Props & (Rule extends ArcjetRule<infer P> ? P : {})>;
 }
 
 /**

@@ -252,24 +252,25 @@ test("`arcjetBun().protect()`: should protect a request", async function () {
 test("`arcjetBun().withRule()`: should work", async function () {
   const restore = capture();
 
-  const arcjetBase = arcjetBun({
+  const arcjet = arcjetBun({
     client: createLocalClient(),
     characteristics: ['http.request.headers["user-agent"]'],
     key: exampleKey,
-    rules: [
+    rules: [],
+  })
+    .withRule(
       filter({
         deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
         mode: "LIVE",
       }),
-    ],
-  });
-
-  const arcjet = arcjetBase.withRule(
-    detectBot({ deny: ["CURL"], mode: "LIVE" }),
-  );
+    )
+    .withRule(detectBot({ deny: ["CURL"], mode: "LIVE" }))
+    .withRule(validateEmail({ mode: "LIVE", allow: [] }));
 
   const { server, url } = createSimpleServer({
-    decide: arcjet.protect,
+    decide(request) {
+      return arcjet.protect(request, { email: "alice@arcjet.com" });
+    },
     handler: arcjet.handler,
   });
 

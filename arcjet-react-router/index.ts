@@ -16,6 +16,7 @@ import arcjetCore, {
   type ArcjetLogger,
   type ArcjetOptions as CoreOptions,
   type ArcjetRequest,
+  type ArcjetRule,
   type Arcjet,
   type CharacteristicProps,
   type ExtraProps,
@@ -129,9 +130,11 @@ export interface ArcjetReactRouter<
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetReactRouter<Properties & ChildProperties>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetReactRouter<
+    Properties & (Rule extends ArcjetRule<infer P> ? P : {})
+  >;
 }
 
 /**
