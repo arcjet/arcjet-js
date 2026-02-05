@@ -28,6 +28,8 @@ export * from "arcjet";
 
 let warnedForAutomaticBodyRead = false;
 
+type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
+
 declare const emptyObjectSymbol: unique symbol;
 
 /**
@@ -176,9 +178,9 @@ export interface ArcjetNuxt<Properties extends Record<PropertyKey, unknown>> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetNuxt<Properties & ChildProperties>;
+  withRule<Rule extends Primitive | Product>(
+    rule: Rule,
+  ): ArcjetNuxt<Simplify<Properties & ExtraProps<Rule>>>;
 }
 
 /**

@@ -27,6 +27,8 @@ export * from "arcjet";
 
 let warnedForAutomaticBodyRead = false;
 
+type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
+
 declare const emptyObjectSymbol: unique symbol;
 
 /**
@@ -129,9 +131,9 @@ export interface ArcjetReactRouter<
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends Record<PropertyKey, unknown>>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetReactRouter<Properties & ChildProperties>;
+  withRule<Rule extends Primitive | Product>(
+    rule: Rule,
+  ): ArcjetReactRouter<Simplify<Properties & ExtraProps<Rule>>>;
 }
 
 /**

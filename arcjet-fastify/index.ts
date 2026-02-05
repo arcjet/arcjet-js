@@ -31,6 +31,8 @@ export * from "arcjet";
 
 declare const emptyObjectSymbol: unique symbol;
 
+type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
+
 // TODO(@wooorm-arcjet): remove.
 type PlainObject = {
   [key: string]: unknown;
@@ -182,9 +184,9 @@ export interface ArcjetFastify<Props> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetFastify<Props & ChildProperties>;
+  withRule<Rule extends Primitive | Product>(
+    rule: Rule,
+  ): ArcjetFastify<Simplify<Props & ExtraProps<Rule>>>;
 }
 
 /**
