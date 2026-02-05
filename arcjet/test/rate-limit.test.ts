@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
-import {
+import arcjet, {
   type ArcjetCacheEntry,
   type Primitive,
+  ArcjetAllowDecision,
   ArcjetRateLimitReason,
+  ArcjetReason,
   fixedWindow,
   slidingWindow,
   tokenBucket,
@@ -268,6 +270,130 @@ describe("Primitive > tokenBucket", () => {
     assert.equal(rule.characteristics, undefined);
   });
 
+  test("global characteristics are propagated if they aren't separately specified in tokenBucket", async () => {
+    const client = {
+      decide: mock.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetReason(),
+          results: [],
+        });
+      }),
+      report: mock.fn(),
+    };
+
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [
+        tokenBucket({
+          mode: "LIVE",
+          interval: "1h",
+          refillRate: 1,
+          capacity: 10,
+        }),
+      ],
+      client,
+      log: createMockLogger(),
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      requested: 1,
+      someGlobalCharacteristic: "test",
+      cookies: "",
+      query: "",
+    };
+
+    const context = {
+      getBody() {
+        throw new Error("Not implemented");
+      },
+    };
+
+    const _ = await aj.protect(context, request);
+
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, globalCharacteristics);
+  });
+
+  test("local characteristics are prefered on tokenBucket over global characteristics", async () => {
+    const client = {
+      decide: mock.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetReason(),
+          results: [],
+        });
+      }),
+      report: mock.fn(),
+    };
+
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const localCharacteristics = ["someLocalCharacteristic"] as const;
+
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [
+        tokenBucket({
+          mode: "LIVE",
+          interval: "1h",
+          refillRate: 1,
+          capacity: 10,
+          characteristics: localCharacteristics,
+        }),
+      ],
+      client,
+      log: createMockLogger(),
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      requested: 1,
+      someGlobalCharacteristic: "test",
+      someLocalCharacteristic: "test",
+      cookies: "",
+      query: "",
+    };
+
+    const context = {
+      getBody() {
+        throw new Error("Not implemented");
+      },
+    };
+
+    const _ = await aj.protect(context, request);
+
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, localCharacteristics);
+  });
+
   test("uses cache", async () => {
     const cache = new TestCache();
     mock.method(cache, "get", async () => [
@@ -487,6 +613,125 @@ describe("Primitive > fixedWindow", () => {
     assert.equal(rule.characteristics, undefined);
   });
 
+  test("global characteristics are propagated if they aren't separately specified in fixedWindow", async () => {
+    const client = {
+      decide: mock.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetReason(),
+          results: [],
+        });
+      }),
+      report: mock.fn(),
+    };
+
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [
+        fixedWindow({
+          mode: "LIVE",
+          window: "1h",
+          max: 60,
+        }),
+      ],
+      client,
+      log: createMockLogger(),
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      someGlobalCharacteristic: "test",
+      cookies: "",
+      query: "",
+    };
+
+    const context = {
+      getBody() {
+        throw new Error("Not implemented");
+      },
+    };
+
+    const _ = await aj.protect(context, request);
+
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, globalCharacteristics);
+  });
+
+  test("local characteristics are prefered on fixedWindow over global characteristics", async () => {
+    const client = {
+      decide: mock.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetReason(),
+          results: [],
+        });
+      }),
+      report: mock.fn(),
+    };
+
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const localCharacteristics = ["someLocalCharacteristic"] as const;
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [
+        fixedWindow({
+          mode: "LIVE",
+          window: "1h",
+          max: 60,
+          characteristics: localCharacteristics,
+        }),
+      ],
+      client,
+      log: createMockLogger(),
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      someGlobalCharacteristic: "test",
+      someLocalCharacteristic: "test",
+      cookies: "",
+      query: "",
+    };
+
+    const context = {
+      getBody() {
+        throw new Error("Not implemented");
+      },
+    };
+
+    const _ = await aj.protect(context, request);
+
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, localCharacteristics);
+  });
+
   test("uses cache", async () => {
     const cache = new TestCache();
     mock.method(cache, "get", async () => [
@@ -702,6 +947,126 @@ describe("Primitive > slidingWindow", () => {
     const [rule] = slidingWindow(options);
     assert.equal(rule.type, "RATE_LIMIT");
     assert.equal(rule.characteristics, undefined);
+  });
+
+  test("global characteristics are propagated if they aren't separately specified in slidingWindow", async () => {
+    const client = {
+      decide: mock.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetReason(),
+          results: [],
+        });
+      }),
+      report: mock.fn(),
+    };
+
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [
+        slidingWindow({
+          mode: "LIVE",
+          interval: "1h",
+          max: 60,
+        }),
+      ],
+      client,
+      log: createMockLogger(),
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      someGlobalCharacteristic: "test",
+      cookies: "",
+      query: "",
+    };
+
+    const context = {
+      getBody() {
+        throw new Error("Not implemented");
+      },
+    };
+
+    const _ = await aj.protect(context, request);
+
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, globalCharacteristics);
+  });
+
+  test("local characteristics are prefered on slidingWindow over global characteristics", async () => {
+    const client = {
+      decide: mock.fn(async () => {
+        return new ArcjetAllowDecision({
+          ttl: 0,
+          reason: new ArcjetReason(),
+          results: [],
+        });
+      }),
+      report: mock.fn(),
+    };
+
+    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
+    const localCharacteristics = ["someLocalCharacteristic"] as const;
+
+    const aj = arcjet({
+      key: "test-key",
+      characteristics: globalCharacteristics,
+      rules: [
+        slidingWindow({
+          mode: "LIVE",
+          interval: "1h",
+          max: 60,
+          characteristics: localCharacteristics,
+        }),
+      ],
+      client,
+      log: createMockLogger(),
+    });
+
+    const request = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      someGlobalCharacteristic: "test",
+      someLocalCharacteristic: "test",
+      cookies: "",
+      query: "",
+    };
+
+    const context = {
+      getBody() {
+        throw new Error("Not implemented");
+      },
+    };
+
+    const _ = await aj.protect(context, request);
+
+    assert.equal(client.decide.mock.callCount(), 1);
+    const args: unknown[] = client.decide.mock.calls[0].arguments;
+    const list = args.at(2);
+    assert.ok(Array.isArray(list));
+    const item = list.at(0);
+    assert.ok(item);
+    assert.ok(typeof item === "object");
+    assert.ok("characteristics" in item);
+    assert.deepEqual(item.characteristics, localCharacteristics);
   });
 
   test("uses cache", async () => {

@@ -1,51 +1,20 @@
 import assert from "node:assert/strict";
-import { describe, test, mock } from "node:test";
+import test from "node:test";
+import { MemoryCache } from "@arcjet/cache";
+import { ArcjetHeaders } from "@arcjet/headers";
+import type { Client } from "@arcjet/protocol/client.js";
 import arcjet, {
+  type ArcjetConclusion,
+  type ArcjetContext,
+  type ArcjetRequest,
   type ArcjetRule,
-  type Arcjet,
-  type Primitive,
   ArcjetAllowDecision,
   ArcjetDenyDecision,
-  ArcjetErrorDecision,
   ArcjetReason,
-  ArcjetErrorReason,
   ArcjetRuleResult,
-  fixedWindow,
-  tokenBucket,
-  slidingWindow,
 } from "../index.js";
 
-type Assert<T extends true> = T;
-// Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
-// our use.
-//
-// IsEqual:
-// https://github.com/sindresorhus/type-fest/blob/e02f228f6391bb2b26c32a55dfe1e3aa2386d515/source/is-equal.d.ts
-//
-// Licensed: MIT License Copyright (c) Sindre Sorhus <sindresorhus@gmail.com>
-// (https://sindresorhus.com)
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions: The above copyright
-// notice and this permission notice shall be included in all copies or
-// substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-type IsEqual<A, B> =
-  (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2
-    ? true
-    : false;
-type Props<T> = T extends Arcjet<infer P> ? P : never;
+const exampleKey = "ajkey_yourkey";
 
 // In Node 18,
 // instances of `Headers` contain symbols that may be different depending on if
@@ -61,2339 +30,2290 @@ function requestAsJson(value: unknown): object {
   return { ...value, headers: Object.fromEntries(value.headers) };
 }
 
-describe("SDK", () => {
-  function testRuleLocalAllowed() {
-    return {
-      version: 0,
-      mode: "LIVE",
-      type: "TEST_RULE_LOCAL_ALLOWED",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(
-        async () =>
-          new ArcjetRuleResult({
-            ruleId: "test-rule-id",
-            fingerprint: "test-fingerprint",
-            ttl: 0,
-            state: "RUN",
-            conclusion: "ALLOW",
-            reason: new ArcjetReason(),
-          }),
-      ),
-    } as const;
-  }
-  function testRuleLocalDenied() {
-    return {
-      version: 0,
-      mode: "LIVE",
-      type: "TEST_RULE_LOCAL_DENIED",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(
-        async () =>
-          new ArcjetRuleResult({
-            ruleId: "test-rule-id",
-            fingerprint: "test-fingerprint",
-            ttl: 5000,
-            state: "RUN",
-            conclusion: "DENY",
-            reason: new ArcjetReason(),
-          }),
-      ),
-    } as const;
-  }
-  function testRuleLocalCached() {
-    const ruleId = "test-rule-id";
-    const fingerprint =
-      "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e";
-    return {
-      version: 0,
-      mode: "LIVE",
-      type: "TEST_RULE_LOCAL_CACHED",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(async (ctx) => {
-        const [result, ttl] = await ctx.cache.get(ruleId, ctx.fingerprint);
-        if (result) {
-          return new ArcjetRuleResult({
-            ruleId,
-            fingerprint,
-            ttl,
-            state: "CACHED",
-            conclusion: "DENY",
-            reason: new ArcjetReason(),
-          });
-        } else {
-          return new ArcjetRuleResult({
-            ruleId,
-            fingerprint,
-            ttl: 0,
-            state: "RUN",
-            conclusion: "ALLOW",
-            reason: new ArcjetReason(),
-          });
-        }
-      }),
-    } as const;
-  }
-  function testRuleLocalIncorrect() {
-    return {
-      version: 0,
-      mode: "LIVE",
-      type: "TEST_RULE_LOCAL_INCORRECT",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(async () => undefined),
-    } as const;
-  }
-  function testRuleLocalNoValidate() {
-    return {
-      version: 0,
-      mode: "LIVE",
-      type: "TEST_RULE_LOCAL_INCORRECT",
-      priority: 1,
-      protect: mock.fn(),
-    } as const;
-  }
-  function testRuleLocalNoProtect() {
-    return {
-      version: 0,
-      mode: "LIVE",
-      type: "TEST_RULE_LOCAL_INCORRECT",
-      priority: 1,
-      validate: mock.fn(),
-    } as const;
-  }
+// See: <https://github.com/vercel/otel/blob/bce5ea29/packages/otel/src/vercel-request-context/api.ts>
+interface GlobalWithReader {
+  [vercelRequestContext]?: Reader | undefined;
+}
 
-  function testRuleRemote(): ArcjetRule {
-    return {
-      version: 0,
-      mode: "LIVE",
-      type: "TEST_RULE_REMOTE",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(),
-    };
-  }
+interface Reader {
+  get(): RequestContext | undefined;
+}
 
-  function testRuleMultiple(): ArcjetRule[] {
-    return [
-      {
-        version: 0,
-        mode: "LIVE",
-        type: "TEST_RULE_MULTIPLE",
-        priority: 1,
-        validate: mock.fn(),
-        protect: mock.fn(),
-      },
-      {
-        version: 0,
-        mode: "LIVE",
-        type: "TEST_RULE_MULTIPLE",
-        priority: 1,
-        validate: mock.fn(),
-        protect: mock.fn(),
-      },
-      {
-        version: 0,
-        mode: "LIVE",
-        type: "TEST_RULE_MULTIPLE",
-        priority: 1,
-        validate: mock.fn(),
-        protect: mock.fn(),
-      },
-    ];
-  }
+interface RequestContext {
+  waitUntil(until: Promise<unknown> | (() => Promise<unknown>)): void;
+}
 
-  function testRuleInvalidType(): ArcjetRule {
-    return {
-      version: 0,
-      mode: "LIVE",
-      type: "TEST_RULE_INVALID_TYPE",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(),
-    };
-  }
+const vercelRequestContext = Symbol.for("@vercel/request-context");
 
-  function testRuleLocalThrow() {
-    return {
-      version: 0,
-      mode: "LIVE",
-      type: "TEST_RULE_LOCAL_THROW",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(async () => {
-        throw new Error("Local rule protect failed");
-      }),
-    } as const;
-  }
-
-  function testRuleLocalDryRun() {
-    return {
-      version: 0,
-      mode: "DRY_RUN",
-      type: "TEST_RULE_LOCAL_DRY_RUN",
-      priority: 1,
-      validate: mock.fn(),
-      protect: mock.fn(async () => {
-        return new ArcjetRuleResult({
-          ruleId: "test-rule-id",
-          fingerprint: "test-fingerprint",
-          ttl: 0,
-          state: "DRY_RUN",
-          conclusion: "DENY",
-          reason: new ArcjetReason(),
-        });
-      }),
-    } as const;
-  }
-
-  function testRuleProps(): Primitive<{ abc: number }> {
-    return [
-      {
-        version: 0,
-        mode: "LIVE",
-        type: "test",
-        priority: 10000,
-        validate: mock.fn(),
-        protect: mock.fn(),
-      },
-    ];
-  }
-
-  test("creates a new Arcjet SDK with no rules", () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-    assert.ok("protect" in aj);
-    assert.equal(typeof aj.protect, "function");
-  });
-
-  test("can augment rules via `withRule` API", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: { "User-Agent": "curl/8.1.2" },
-      "extra-test": "extra-test-value",
-      userId: "abc123",
-      requested: 1,
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key,
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-    type WithoutRuleTest = Assert<IsEqual<Props<typeof aj>, {}>>;
-
-    const tokenBucketRule = tokenBucket({
-      characteristics: ["userId"],
-      refillRate: 60,
-      interval: 60,
-      capacity: 120,
-    });
-
-    const aj2 = aj.withRule(tokenBucketRule);
-    type WithRuleTest = Assert<
-      IsEqual<
-        Props<typeof aj2>,
-        { requested: number; userId: string | number | boolean }
-      >
-    >;
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj2.protect(context, request);
-    assert.equal(client.decide.mock.callCount(), 1);
-    const call = client.decide.mock.calls[0];
-    assert.ok(call);
-    assert.deepEqual(call.arguments.slice(2), [tokenBucketRule]);
-  });
-
-  test("can chain new rules via multiple `withRule` calls", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: { "User-Agent": "curl/8.1.2" },
-      "extra-test": "extra-test-value",
-      userId: "abc123",
-      requested: 1,
-      abc: 123,
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key,
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-    type WithoutRuleTest = Assert<IsEqual<Props<typeof aj>, {}>>;
-
-    const tokenBucketRule = tokenBucket({
-      characteristics: ["userId"],
-      refillRate: 60,
-      interval: 60,
-      capacity: 120,
-    });
-
-    const aj2 = aj.withRule(tokenBucketRule);
-    type WithRuleTestOne = Assert<
-      IsEqual<
-        Props<typeof aj2>,
-        { requested: number; userId: string | number | boolean }
-      >
-    >;
-
-    const testRule = testRuleProps();
-
-    const aj3 = aj2.withRule(testRule);
-    type WithRuleTestTwo = Assert<
-      IsEqual<
-        Props<typeof aj3>,
-        { requested: number; userId: string | number | boolean; abc: number }
-      >
-    >;
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj3.protect(context, request);
-    assert.equal(client.decide.mock.callCount(), 1);
-    const call = client.decide.mock.calls[0];
-    assert.ok(call);
-    assert.deepEqual(call.arguments.slice(2), [
-      [...tokenBucketRule, ...testRule],
-    ]);
-  });
-
-  test("creates different augmented clients when `withRule` not chained", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: { "User-Agent": "curl/8.1.2" },
-      "extra-test": "extra-test-value",
-      userId: "abc123",
-      requested: 1,
-      abc: 123,
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key,
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-    type WithoutRuleTest = Assert<IsEqual<Props<typeof aj>, {}>>;
-
-    const tokenBucketRule = tokenBucket({
-      characteristics: ["userId"],
-      refillRate: 60,
-      interval: 60,
-      capacity: 120,
-    });
-
-    const aj2 = aj.withRule(tokenBucketRule);
-    type WithRuleTestOne = Assert<
-      IsEqual<
-        Props<typeof aj2>,
-        { requested: number; userId: string | number | boolean }
-      >
-    >;
-
-    const testRule = testRuleProps();
-
-    const aj3 = aj.withRule(testRule);
-    type WithRuleTestTwo = Assert<IsEqual<Props<typeof aj3>, { abc: number }>>;
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj3.protect(context, request);
-    assert.equal(client.decide.mock.callCount(), 1);
-    const call = client.decide.mock.calls[0];
-    assert.ok(call);
-    assert.deepEqual(call.arguments.slice(2), [testRule]);
-  });
-
-  test("creates a new Arcjet SDK with only local rules", () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[testRuleLocalAllowed(), testRuleLocalDenied()]],
-      client,
-      log: createMockLogger(),
-    });
-    assert.ok("protect" in aj);
-    assert.equal(typeof aj.protect, "function");
-  });
-
-  test("creates a new Arcjet SDK with only remote rules", () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[testRuleRemote()]],
-      client,
-      log: createMockLogger(),
-    });
-    assert.ok("protect" in aj);
-    assert.equal(typeof aj.protect, "function");
-  });
-
-  test("creates a new Arcjet SDK with both local and remote rules", () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [
-        [testRuleLocalAllowed(), testRuleLocalDenied(), testRuleRemote()],
-      ],
-      client,
-      log: createMockLogger(),
-    });
-    assert.ok("protect" in aj);
-    assert.equal(typeof aj.protect, "function");
+test("`arcjet`", async function (t) {
+  await t.test("should throw w/o `log`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      arcjet({});
+    }, /Log is required/);
   });
 
   // TODO(#207): Remove this once we default the client in the main SDK
-  test("throws if no client is specified", () => {
-    assert.throws(() => {
-      const aj = arcjet({
-        key: "test-key",
-        rules: [],
-        log: createMockLogger(),
-      });
-    });
+  await t.test("should throw w/o `client`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      arcjet({ log: console });
+    }, /Client is required/);
   });
 
-  test("throws if no log is specified", () => {
-    assert.throws(() => {
-      const client = {
-        decide: mock.fn(async () => {
-          return new ArcjetAllowDecision({
-            ttl: 0,
-            reason: new ArcjetReason(),
-            results: [],
-          });
-        }),
-        report: mock.fn(),
-      };
-
-      const aj = arcjet({
-        key: "test-key",
-        rules: [],
-        client,
-      });
-    });
+  await t.test("should throw w/o `rules`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      arcjet({ client: createLocalClient(), log: console });
+      // TODO: better error?
+    }, /Cannot read properties of undefined/);
   });
 
-  test("calls each local rule until a DENY decision is encountered", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
+  // The `key` passed to `protect` is used.
+  await t.test("should work w/o `key`", async function () {
+    // @ts-expect-error: test runtime behavior.
+    const instance = arcjet({
+      client: createLocalClient(),
+      log: console,
+      rules: [],
+    });
+    assert.equal("protect" in instance, true);
+    assert.equal("withRule" in instance, true);
+  });
+
+  await t.test("should work w/ `key`", async function () {
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: console,
+      rules: [],
+    });
+    assert.equal("protect" in instance, true);
+    assert.equal("withRule" in instance, true);
+  });
+
+  await t.test("`.protect()`", async function (t) {
+    await t.test(
+      "should yield an error decision w/o parameters",
+      async function () {
+        let errorParameters: unknown;
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            error(...parameters) {
+              errorParameters = parameters;
+            },
+          },
+          rules: [],
         });
-      }),
-      report: mock.fn(),
-    };
+        // @ts-expect-error: test runtime behavior.
+        const decision = await instance.protect();
 
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const allowed = testRuleLocalAllowed();
-    const denied = testRuleLocalDenied();
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[allowed, denied]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
+        assert.equal(decision.isErrored(), true);
+        assert.equal(decision.reason.isError(), true);
+        assert.equal(
+          // @ts-expect-error: TODO(#4452): `message` should be accessible.
+          decision.reason.message,
+          "Failed to build fingerprint - unable to generate fingerprint: error generating identifier - requested `ip` characteristic but the `ip` value was empty",
+        );
+        assert.deepEqual(errorParameters, [
+          {
+            error:
+              "unable to generate fingerprint: error generating identifier - requested `ip` characteristic but the `ip` value was empty",
+          },
+          "Failed to build fingerprint. Please verify your Characteristics.",
+        ]);
       },
-    };
-
-    const decision = await aj.protect(context, request);
-    assert.equal(decision.conclusion, "DENY");
-
-    assert.equal(allowed.validate.mock.callCount(), 1);
-    assert.equal(allowed.protect.mock.callCount(), 1);
-    assert.equal(denied.validate.mock.callCount(), 1);
-    assert.equal(denied.protect.mock.callCount(), 1);
-  });
-
-  test("does not crash if a local rule does not return a result", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const rule = testRuleLocalIncorrect();
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [
-        [
-          // @ts-expect-error because the rule is written wrong
-          rule,
-        ],
-      ],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const decision = await aj.protect(context, request);
-    // ALLOW because the remote rule was called and it returned ALLOW
-    assert.equal(decision.conclusion, "ALLOW");
-
-    assert.equal(rule.validate.mock.callCount(), 1);
-    assert.equal(rule.protect.mock.callCount(), 1);
-  });
-
-  test("does not crash if a rule does not define `validate` function", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const rule = testRuleLocalNoValidate();
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [
-        [
-          // @ts-expect-error because the rule is written wrong
-          rule,
-          testRuleLocalDenied(),
-        ],
-      ],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const decision = await aj.protect(context, request);
-    // DENY because one local rule errored and the other denied
-    assert.equal(decision.conclusion, "DENY");
-    const anonymousResult = decision.results.find((d) => d.ruleId === "");
-    assert.ok(anonymousResult);
-    assert.equal(anonymousResult.reason.type, "ERROR");
-    assert.equal(
-      // @ts-expect-error: TODO(#4452): `message` should be accessible.
-      anonymousResult.reason.message,
-      "rule must have a `validate` function",
     );
-  });
 
-  test("does not crash if a rule does not define `protect` function", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
+    await t.test(
+      "should yield an allow decision w/ just an `ip`",
+      async function () {
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [],
         });
-      }),
-      report: mock.fn(),
-    };
+        // @ts-expect-error: test runtime behavior.
+        const decision = await instance.protect({}, { ip: "1.1.1.1" });
 
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const rule = testRuleLocalNoProtect();
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [
-        [
-          // @ts-expect-error because the rule is written wrong
-          rule,
-          testRuleLocalDenied(),
-        ],
-      ],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
+        assert.equal(decision.isAllowed(), true);
       },
-    };
-
-    const decision = await aj.protect(context, request);
-    // DENY because one local rule errored and the other denied
-    assert.equal(decision.conclusion, "DENY");
-    const anonymousResult = decision.results.find((d) => d.ruleId === "");
-    assert.ok(anonymousResult);
-    assert.equal(anonymousResult.reason.type, "ERROR");
-    assert.equal(
-      // @ts-expect-error: TODO(#4452): `message` should be accessible.
-      anonymousResult.reason.message,
-      "rule must have a `protect` function",
     );
-  });
 
-  test("returns an ERROR decision if fingerprint cannot be generated", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const request = {
-      cookies: "",
-      email: undefined,
-      extra: {},
-      headers: new Headers(),
-      host: "localhost:3000",
-      ip: undefined,
-      method: "GET",
-      path: "/",
-      protocol: "http:",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    // @ts-expect-error: test runtime behavior for missing request details.
-    const decision = await aj.protect(context, request);
-    assert.equal(decision.conclusion, "ERROR");
-  });
-
-  test("returns an ERROR decision with no request object", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-
-    // @ts-expect-error
-    const decision = await aj.protect();
-    assert.equal(decision.conclusion, "ERROR");
-  });
-
-  test("returns an ERROR decision when more than 10 rules are generated", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const request = {
-      cookies: "",
-      email: undefined,
-      extra: {},
-      headers: new Headers(),
-      host: "localhost:3000",
-      ip: "100.100.100.100",
-      method: "GET",
-      path: "/",
-      protocol: "http:",
-      query: "",
-    };
-
-    const rules: ArcjetRule[][] = [];
-    // We only iterate 4 times because `testRuleMultiple` generates 3 rules
-    for (let idx = 0; idx < 4; idx++) {
-      rules.push(testRuleMultiple());
-    }
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: rules,
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const decision = await aj.protect(context, request);
-    assert.equal(decision.conclusion, "ERROR");
-  });
-
-  test("won't run a later local rule if a DENY decision is encountered", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const allowed = testRuleLocalAllowed();
-    const denied = testRuleLocalDenied();
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[denied, allowed]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const decision = await aj.protect(context, request);
-    assert.equal(decision.conclusion, "DENY");
-
-    assert.equal(denied.validate.mock.callCount(), 1);
-    assert.equal(denied.protect.mock.callCount(), 1);
-    assert.equal(allowed.validate.mock.callCount(), 0);
-    assert.equal(allowed.protect.mock.callCount(), 0);
-  });
-
-  test("accepts plain object of headers", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: { "user-agent": "curl/8.1.2" },
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-
-    const decision = await aj.protect(context, request);
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args = client.decide.mock.calls[0].arguments;
-    assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: "",
-      email: undefined,
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-      headers: request.headers,
-      host: request.host,
-      ip: request.ip,
-      method: request.method,
-      path: request.path,
-      protocol: request.protocol,
-      query: "",
-    });
-  });
-
-  test("accepts plain object of `raw` headers", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: { "User-Agent": ["curl/8.1.2", "something"] },
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-
-    const decision = await aj.protect(context, request);
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args = client.decide.mock.calls[0].arguments;
-    assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: "",
-      email: undefined,
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-      // Note that the headers are serialized.
-      headers: { "user-agent": "curl/8.1.2, something" },
-      host: request.host,
-      ip: request.ip,
-      method: request.method,
-      path: request.path,
-      protocol: request.protocol,
-      query: "",
-    });
-  });
-
-  test("converts extra keys with non-string values to string values", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: { "user-agent": "curl/8.1.2" },
-      "extra-number": 123,
-      "extra-false": false,
-      "extra-true": true,
-      "extra-unsupported": new Date(),
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-
-    const decision = await aj.protect(context, request);
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args = client.decide.mock.calls[0].arguments;
-    assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: "",
-      email: undefined,
-      extra: {
-        "extra-number": "123",
-        "extra-false": "false",
-        "extra-true": "true",
-        "extra-unsupported": "<unsupported value>",
-      },
-      headers: request.headers,
-      host: request.host,
-      ip: request.ip,
-      method: request.method,
-      path: request.path,
-      protocol: request.protocol,
-      query: "",
-    });
-  });
-
-  test("does not call `client.report()` if the local decision is ALLOW", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetErrorDecision({
-          ttl: 0,
-          reason: new ArcjetErrorReason("This decision not under test"),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const allowed = testRuleLocalAllowed();
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[allowed]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-    assert.equal(client.report.mock.callCount(), 0);
-    assert.equal(client.decide.mock.callCount(), 1);
-    // TODO: Validate correct `ruleResults` are sent with `decide` when available
-  });
-
-  test("calls `client.decide()` if the local decision is ALLOW", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetErrorDecision({
-          ttl: 0,
-          reason: new ArcjetErrorReason("This decision not under test"),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const rule = testRuleLocalAllowed();
-
-    const aj = arcjet({
-      key,
-      rules: [[rule]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const decision = await aj.protect(context, request);
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: "",
-      email: undefined,
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-      headers: { "user-agent": "curl/8.1.2" },
-      host: request.host,
-      ip: request.ip,
-      method: request.method,
-      path: request.path,
-      protocol: request.protocol,
-      query: "",
-    });
-    assert.deepEqual(args.at(2), [rule]);
-  });
-
-  test("calls `client.report()` if the local decision is DENY", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetErrorDecision({
-          ttl: 0,
-          reason: new ArcjetErrorReason("This decision not under test"),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const rule = testRuleLocalDenied();
-
-    const aj = arcjet({
-      key,
-      rules: [[rule]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const _ = await aj.protect(context, request);
-    assert.equal(client.report.mock.callCount(), 1);
-    const args: unknown[] = client.report.mock.calls[0].arguments;
-    assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: "",
-      email: undefined,
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-      headers: { "user-agent": "curl/8.1.2" },
-      host: request.host,
-      ip: request.ip,
-      method: request.method,
-      path: request.path,
-      protocol: request.protocol,
-      query: "",
-    });
-    const two = args.at(2);
-    assert.ok(two);
-    assert.ok(typeof two === "object");
-    assert.ok("conclusion" in two);
-    assert.equal(two.conclusion, "DENY");
-    assert.deepEqual(args.at(3), [rule]);
-  });
-
-  test("provides `waitUntil` in context to  `client.report()` if available", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetErrorDecision({
-          ttl: 0,
-          reason: new ArcjetErrorReason("This decision not under test"),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const waitUntil = mock.fn();
-
-    const SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
-    // @ts-ignore
-    globalThis[SYMBOL_FOR_REQ_CONTEXT] = {
-      get() {
-        return { waitUntil };
-      },
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const rule = testRuleLocalDenied();
-
-    const aj = arcjet({
-      key,
-      rules: [[rule]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const _ = await aj.protect(context, request);
-    assert.equal(client.report.mock.callCount(), 1);
-
-    const args: unknown[] = client.report.mock.calls[0].arguments;
-    const head = args.at(0);
-    assert.ok(head);
-    assert.ok(typeof head === "object");
-    assert.ok("waitUntil" in head);
-    assert.equal(head.waitUntil, waitUntil);
-    // @ts-ignore
-    delete globalThis[SYMBOL_FOR_REQ_CONTEXT];
-  });
-
-  test("does not call `client.decide()` if the local decision is DENY", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetErrorDecision({
-          ttl: 0,
-          reason: new ArcjetErrorReason("This decision not under test"),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "curl/8.1.2"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-    const denied = testRuleLocalDenied();
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[denied]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-    assert.equal(client.decide.mock.callCount(), 0);
-  });
-
-  test("calls `client.decide()` even with no rules", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key,
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(client.report.mock.callCount(), 0);
-    assert.equal(client.decide.mock.callCount(), 1);
-
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: "",
-      email: undefined,
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-      headers: { "user-agent": "Mozilla/5.0" },
-      host: request.host,
-      ip: request.ip,
-      method: request.method,
-      path: request.path,
-      protocol: request.protocol,
-      query: "",
-    });
-  });
-
-  test("caches a DENY decision locally and reports when a cached decision is used", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetDenyDecision({
-          ttl: 10,
-          reason: new ArcjetReason(),
-          results: [
-            new ArcjetRuleResult({
-              ruleId: "test-rule-id",
-              fingerprint:
-                "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-              ttl: 10,
-              state: "RUN",
-              conclusion: "DENY",
+    await t.test(
+      "should call `validate` and `protect` on rules",
+      async function () {
+        const calls: Array<string> = [];
+        // TODO: should be possible to pass directly w/o type annotation.
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            calls.push("protect");
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
               reason: new ArcjetReason(),
-            }),
-          ],
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {
+            calls.push("validate");
+          },
+          version: 0,
+        };
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
         });
-      }),
-      report: mock.fn(),
-    };
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
 
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[testRuleLocalCached()]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
+        assert.deepEqual(calls, ["validate", "protect"]);
+        assert.equal(decision.conclusion, "ALLOW");
       },
-    };
+    );
 
-    const decision = await aj.protect(context, request);
-
-    assert.equal(decision.isErrored(), false);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    assert.equal(client.report.mock.callCount(), 0);
-
-    assert.equal(decision.conclusion, "DENY");
-
-    const decision2 = await aj.protect(context, request);
-
-    assert.equal(decision2.isErrored(), false);
-    assert.equal(client.decide.mock.callCount(), 1);
-    assert.equal(client.report.mock.callCount(), 1);
-
-    assert.equal(decision2.conclusion, "DENY");
-  });
-
-  test("does not throw if unknown rule type is passed", () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
+    await t.test(
+      "should yield a deny decision if a rule denies",
+      async function () {
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            return new ArcjetRuleResult({
+              conclusion: "DENY",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
         });
-      }),
-      report: mock.fn(),
-    };
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
 
-    // Specifically should not throw `Unknown Rule type`.
-    assert.doesNotThrow(() => {
-      const aj = arcjet({
-        key: "test-key",
-        rules: [[testRuleInvalidType()]],
-        client,
-        log: createMockLogger(),
+        assert.equal(decision.conclusion, "DENY");
+      },
+    );
+
+    await t.test("should shortcircuit when a rule denies", async function () {
+      const calls: Array<string> = [];
+      const after: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect() {
+          calls.push("after:protect");
+          return new ArcjetRuleResult({
+            conclusion: "DENY",
+            fingerprint: "",
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          });
+        },
+        type: "",
+        validate() {
+          calls.push("after:validate");
+        },
+        version: 0,
+      };
+      const deny: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect() {
+          calls.push("deny:protect");
+          return new ArcjetRuleResult({
+            conclusion: "DENY",
+            fingerprint: "",
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          });
+        },
+        type: "",
+        validate() {
+          calls.push("deny:validate");
+        },
+        version: 0,
+      };
+
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [[deny, after]],
       });
-    });
-  });
 
-  test("does not call `client.report()` if a local rule throws", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
+      const _ = await instance.protect(createContext(), createRequest());
+
+      // Neither `validate` nor `protect` called on `after` rule.
+      assert.deepEqual(calls, ["deny:validate", "deny:protect"]);
+    });
+
+    await t.test(
+      "should call rules from lower priority numbers to higher",
+      async function () {
+        const calls: Array<number> = [];
+        const rules = [3, 1, 2, 7, 2].map(function (priority): ArcjetRule<{}> {
+          return {
+            mode: "LIVE",
+            priority,
+            async protect() {
+              calls.push(priority);
+              return new ArcjetRuleResult({
+                conclusion: "ALLOW",
+                fingerprint: "",
+                reason: new ArcjetReason(),
+                ruleId: "",
+                state: "RUN",
+                ttl: 0,
+              });
+            },
+            type: "",
+            validate() {},
+            version: 0,
+          };
         });
-      }),
-      report: mock.fn(),
-    };
 
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[testRuleLocalThrow()]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(client.report.mock.callCount(), 0);
-    assert.equal(client.decide.mock.callCount(), 1);
-    // TODO: Validate correct `ruleResults` are sent with `decide` when available
-  });
-
-  test("correctly logs an error message if a local rule throws a string", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [rules],
         });
-      }),
-      report: mock.fn(),
-    };
 
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
+        const _ = await instance.protect(createContext(), createRequest());
 
-    function testRuleLocalThrowString(): ArcjetRule {
-      return {
-        version: 0,
-        mode: "LIVE",
-        type: "TEST_RULE_LOCAL_THROW_STRING",
-        priority: 1,
-        validate: mock.fn(),
-        async protect(context, details) {
-          throw "Local rule protect failed";
-        },
-      };
-    }
-
-    const log = createMockLogger();
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[testRuleLocalThrowString()]],
-      client,
-      log,
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
+        assert.deepEqual(calls, [1, 2, 2, 3, 7]);
       },
-    };
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(log.error.mock.callCount(), 1);
-    assert.deepEqual(log.error.mock.calls[0].arguments, [
-      "Failure running rule: %s due to %s",
-      "TEST_RULE_LOCAL_THROW_STRING",
-      "Local rule protect failed",
-    ]);
-  });
-
-  test("correctly logs an error message if a local rule throws a non-error", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    function testRuleLocalThrowNull(): ArcjetRule {
-      return {
-        version: 0,
-        mode: "LIVE",
-        type: "TEST_RULE_LOCAL_THROW_NULL",
-        priority: 1,
-        validate: mock.fn(),
-        async protect(context, details) {
-          throw null;
-        },
-      };
-    }
-
-    const log = createMockLogger();
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[testRuleLocalThrowNull()]],
-      client,
-      log,
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(log.error.mock.callCount(), 1);
-    assert.deepEqual(log.error.mock.calls[0].arguments, [
-      "Failure running rule: %s due to %s",
-      "TEST_RULE_LOCAL_THROW_NULL",
-      "Unknown problem",
-    ]);
-  });
-
-  test("does not return nor cache a deny decision if DENY decision in a dry run local rule", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key: "test-key",
-      rules: [[testRuleLocalDryRun()]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const decision = await aj.protect(context, request);
-
-    assert.equal(decision.isDenied(), false);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    assert.equal(client.report.mock.callCount(), 0);
-
-    const decision2 = await aj.protect(context, request);
-
-    assert.equal(decision2.isDenied(), false);
-
-    assert.equal(client.decide.mock.callCount(), 2);
-    assert.equal(client.report.mock.callCount(), 0);
-  });
-
-  test("processes a single rule from a REMOTE ArcjetRule", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    const rule = testRuleRemote();
-
-    const aj = arcjet({
-      key,
-      rules: [[rule]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const decision = await aj.protect(context, request);
-
-    assert.equal(decision.isErrored(), false);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    assert.deepEqual(requestAsJson(args.at(1)), {
-      cookies: "",
-      email: undefined,
-      extra: {
-        "extra-test": "extra-test-value",
-      },
-      headers: { "user-agent": "Mozilla/5.0" },
-      host: request.host,
-      ip: request.ip,
-      method: request.method,
-      path: request.path,
-      protocol: request.protocol,
-      query: "",
-    });
-    assert.deepEqual(args.at(2), [rule]);
-  });
-
-  test("overrides `key` with custom context", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    const rule = testRuleRemote();
-
-    const aj = arcjet({
-      key,
-      rules: [[rule]],
-      client,
-      log: createMockLogger(),
-    });
-
-    const decision = await aj.protect(
-      { ...context, key: "overridden-key" },
-      request,
     );
 
-    assert.equal(decision.isErrored(), false);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    const head = args.at(0);
-    assert.ok(head);
-    assert.ok(typeof head === "object");
-    assert.ok("key" in head);
-    assert.equal(head.key, "overridden-key");
-  });
-
-  test("reports and returns an ERROR decision if a `client.decide()` fails", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        throw new Error("Decide function failed");
-      }),
-      report: mock.fn(),
-    };
-
-    const key = "test-key";
-    const context = {
-      key,
-      fingerprint:
-        "fp::2::516289fae7993d35ffb6e76883e09b475bbc7a622a378f3b430f35e8c657687e",
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["User-Agent", "Mozilla/5.0"]]),
-      "extra-test": "extra-test-value",
-      cookies: "",
-      query: "",
-    };
-
-    const aj = arcjet({
-      key,
-      rules: [],
-      client,
-      log: createMockLogger(),
-    });
-
-    const decision = await aj.protect(context, request);
-
-    assert.equal(decision.isErrored(), true);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    assert.equal(client.report.mock.callCount(), 1);
-    const args: unknown[] = client.report.mock.calls[0].arguments;
-    const item = args.at(2);
-    assert.ok(item);
-    assert.ok(typeof item === "object");
-    assert.ok("conclusion" in item);
-    assert.equal(item.conclusion, "ERROR");
-  });
-
-  test("header characteristics are used to generate fingerprints", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
+    await t.test(
+      "should log but otherwise ignore a rule w/o `validate`",
+      async function () {
+        let called = false;
+        let errorParameters: unknown;
+        // @ts-expect-error: test runtime behavior.
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            called = true;
+            return new ArcjetRuleResult({
+              conclusion: "DENY",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          version: 0,
+        };
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            error(...parameters) {
+              errorParameters = parameters;
+            },
+          },
+          rules: [[rule]],
         });
-      }),
-      report: mock.fn(),
-    };
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
 
-    const aj = arcjet({
-      key: "test-key",
-      characteristics: ['http.request.headers["abcxyz"]'],
-      rules: [],
-      client,
-      log: createMockLogger(),
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(called, false);
+        assert.deepEqual(errorParameters, [
+          "Failure running rule: %s due to %s",
+          "",
+          "rule must have a `validate` function",
+        ]);
+      },
+    );
+
+    await t.test(
+      "should log but otherwise ignore a rule w/o `protect`",
+      async function () {
+        let called = false;
+        let errorParameters: unknown;
+        // @ts-expect-error: test runtime behavior.
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          type: "",
+          validate() {
+            called = true;
+          },
+          version: 0,
+        };
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            error(...parameters) {
+              errorParameters = parameters;
+            },
+          },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(called, true);
+        assert.deepEqual(errorParameters, [
+          "Failure running rule: %s due to %s",
+          "",
+          "rule must have a `protect` function",
+        ]);
+      },
+    );
+
+    await t.test(
+      "should ignore a rule whose `protect` does not yield a result",
+      async function () {
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          // @ts-expect-error: test runtime behavior.
+          protect() {},
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+      },
+    );
+
+    await t.test(
+      "should log but otherwise ignore a rule whose `protect` rejects",
+      async function () {
+        let errorParameters: unknown;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            throw new Error("Boom");
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            error(...parameters) {
+              errorParameters = parameters;
+            },
+          },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.deepEqual(errorParameters, [
+          "Failure running rule: %s due to %s",
+          "",
+          "Boom",
+        ]);
+      },
+    );
+
+    await t.test(
+      "should log but otherwise ignore a rule whose `protect` rejects a string",
+      async function () {
+        let errorParameters: unknown;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            throw "Boom";
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            error(...parameters) {
+              errorParameters = parameters;
+            },
+          },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.deepEqual(errorParameters, [
+          "Failure running rule: %s due to %s",
+          "",
+          "Boom",
+        ]);
+      },
+    );
+
+    await t.test(
+      "should log but otherwise ignore a rule whose `protect` rejects a non-error non-string",
+      async function () {
+        let errorParameters: unknown;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            throw 1;
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            error(...parameters) {
+              errorParameters = parameters;
+            },
+          },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.deepEqual(errorParameters, [
+          "Failure running rule: %s due to %s",
+          "",
+          "Unknown problem",
+        ]);
+      },
+    );
+
+    await t.test("should work w/ 10 rules", async function () {
+      let calls = 0;
+      const rules = Array.from({ length: 10 }, function (): ArcjetRule<{}> {
+        return {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            calls++;
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+      });
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [rules],
+      });
+      const decision = await instance.protect(createContext(), createRequest());
+
+      assert.equal(decision.conclusion, "ALLOW");
+      assert.equal(rules.length, 10);
+      assert.equal(calls, 10);
     });
 
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers([["abcxyz", "test1234"]]),
-      cookies: "",
-      query: "",
-    };
+    await t.test(
+      "should log and yield an error decision w/ 11 rules",
+      async function () {
+        let calls = 0;
+        let errorParameters: unknown;
+        const rules = Array.from({ length: 11 }, function (): ArcjetRule<{}> {
+          return {
+            mode: "LIVE",
+            priority: 1,
+            async protect() {
+              calls++;
+              return new ArcjetRuleResult({
+                conclusion: "ALLOW",
+                fingerprint: "",
+                reason: new ArcjetReason(),
+                ruleId: "",
+                state: "RUN",
+                ttl: 0,
+              });
+            },
+            type: "",
+            validate() {},
+            version: 0,
+          };
+        });
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            error(...parameters) {
+              errorParameters = parameters;
+            },
+          },
+          rules: [rules],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
 
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
+        assert.equal(decision.conclusion, "ERROR");
+        assert.deepEqual(errorParameters, [
+          "Failure running rules. Only 10 rules may be specified.",
+        ]);
+        assert.equal(rules.length, 11);
+        assert.equal(calls, 0);
       },
-    };
+    );
 
-    const _ = await aj.protect(context, request);
+    await t.test(
+      "should pass request fields to `validate` and `protect`",
+      async function () {
+        let protectDetails: unknown;
+        let validateDetails: unknown;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(_context, details) {
+            protectDetails = details;
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate(_context, details) {
+            validateDetails = details;
+          },
+          version: 0,
+        };
 
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    const head = args.at(0);
-    assert.ok(head);
-    assert.ok(typeof head === "object");
-    assert.ok("fingerprint" in head);
-    assert.equal(
-      head.fingerprint,
-      "fp::2::6f3a3854134fe3d20fe56387bdcb594f18b182683424757b88da75e8f13b92bd",
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+
+        const _ = await instance.protect(createContext(), {
+          cookies: "",
+          email: "alice@arcjet.com",
+          headers: {
+            "user-agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+          },
+          host: "localhost:3000",
+          ip: "127.0.0.1",
+          method: "GET",
+          // Unknown fields directly on the root.
+          other: "field",
+          path: "/bot-protection/quick-start",
+          protocol: "http:",
+          query: "",
+        });
+
+        assert.deepEqual(requestAsJson(validateDetails), {
+          cookies: "",
+          email: "alice@arcjet.com",
+          // Unknown fields are moved onto `extra`.
+          extra: { other: "field" },
+          headers: {
+            "user-agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+          },
+          host: "localhost:3000",
+          ip: "127.0.0.1",
+          method: "GET",
+          path: "/bot-protection/quick-start",
+          protocol: "http:",
+          query: "",
+        });
+        assert.equal(protectDetails, validateDetails);
+      },
+    );
+
+    await t.test(
+      "should ignore non-string `email` request fields",
+      async function () {
+        let email: unknown;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(_context, details) {
+            email = details.email;
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+
+        const _ = await instance.protect(createContext(), {
+          ...createRequest(),
+          email: 1,
+        });
+
+        assert.equal(email, undefined);
+      },
+    );
+
+    await t.test(
+      "should support `headers` as a plain object",
+      async function () {
+        let headers: unknown;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(_context, details) {
+            assert.ok(details.headers instanceof ArcjetHeaders);
+            headers = Object.fromEntries(details.headers);
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+
+        const _ = await instance.protect(createContext(), {
+          ...createRequest(),
+          headers: { "user-agent": "curl/8.1.2" },
+        });
+
+        assert.deepEqual(headers, { "user-agent": "curl/8.1.2" });
+      },
+    );
+
+    await t.test("should support `headers` w/ array values", async function () {
+      let headers: unknown;
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect(_context, details) {
+          assert.ok(details.headers instanceof ArcjetHeaders);
+          headers = Object.fromEntries(details.headers);
+          return new ArcjetRuleResult({
+            conclusion: "ALLOW",
+            fingerprint: "",
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          });
+        },
+        type: "",
+        validate() {},
+        version: 0,
+      };
+
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [[rule]],
+      });
+
+      const _ = await instance.protect(createContext(), {
+        ...createRequest(),
+        headers: { "user-agent": ["curl/8.1.2", "something"] },
+      });
+
+      assert.deepEqual(headers, { "user-agent": "curl/8.1.2, something" });
+    });
+
+    await t.test(
+      "should support `headers` as a `Headers` instance",
+      async function () {
+        let headers: unknown;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(_context, details) {
+            assert.ok(details.headers instanceof ArcjetHeaders);
+            headers = Object.fromEntries(details.headers);
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+
+        const _ = await instance.protect(createContext(), {
+          ...createRequest(),
+          headers: new Headers({ "user-agent": "curl/8.1.2" }),
+        });
+
+        assert.deepEqual(headers, { "user-agent": "curl/8.1.2" });
+      },
+    );
+
+    await t.test(
+      "should support unknown fields w/ different types",
+      async function () {
+        let extra: unknown;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(_context, details) {
+            extra = details.extra;
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+
+        const _ = await instance.protect(createContext(), {
+          ...createRequest(),
+          array: [],
+          bigint: 1n,
+          booleanFalse: false,
+          booleanTrue: true,
+          date: new Date(),
+          null: null,
+          number: 1,
+          object: {},
+          string: "a",
+          symbol: Symbol(""),
+          undefined: undefined,
+        });
+
+        assert.deepEqual(extra, {
+          array: "<unsupported value>",
+          bigint: "<unsupported value>",
+          booleanFalse: "false",
+          booleanTrue: "true",
+          date: "<unsupported value>",
+          null: "<unsupported value>",
+          number: "1",
+          object: "<unsupported value>",
+          string: "a",
+          symbol: "<unsupported value>",
+          undefined: "<unsupported value>",
+        });
+      },
+    );
+
+    await t.test("should cache a deny result w/ `ttl`", async function () {
+      const fingerprint = "a";
+      const ruleId = "b";
+      let decideCalls = 0;
+      let reportCalls = 0;
+      let cacheHits = 0;
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect(context) {
+          const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+          if (cached) {
+            cacheHits++;
+            // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+            const entry = cached as {
+              conclusion: ArcjetConclusion;
+              reason: ArcjetReason;
+            };
+            return new ArcjetRuleResult({
+              conclusion: entry.conclusion,
+              fingerprint,
+              reason: entry.reason,
+              ruleId,
+              state: "CACHED",
+              ttl,
+            });
+          }
+          return new ArcjetRuleResult({
+            conclusion: "DENY",
+            fingerprint,
+            reason: new ArcjetReason(),
+            ruleId,
+            state: "RUN",
+            ttl: 10,
+          });
+        },
+        type: "",
+        validate() {},
+        version: 0,
+      };
+      const instance = arcjet({
+        client: {
+          async decide() {
+            decideCalls++;
+            return new ArcjetAllowDecision({
+              reason: new ArcjetReason(),
+              results: [],
+              ttl: 0,
+            });
+          },
+          report() {
+            reportCalls++;
+          },
+        },
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [[rule]],
+      });
+      const decision = await instance.protect(createContext(), createRequest());
+
+      assert.equal(decision.conclusion, "DENY");
+      assert.equal(cacheHits, 0);
+      assert.equal(decideCalls, 0);
+      assert.equal(reportCalls, 1);
+
+      const otherDecision = await instance.protect(
+        createContext(),
+        createRequest(),
+      );
+      assert.equal(otherDecision.conclusion, "DENY");
+      assert.equal(cacheHits, 1);
+      assert.equal(decideCalls, 0);
+      assert.equal(reportCalls, 2);
+    });
+
+    await t.test(
+      "should not cache an allow result w/ `ttl`",
+      async function () {
+        const fingerprint = "a";
+        const ruleId = "b";
+        let decideCalls = 0;
+        let reportCalls = 0;
+        let cacheHits = 0;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(context) {
+            const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+            if (cached) {
+              cacheHits++;
+              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+              const entry = cached as {
+                conclusion: ArcjetConclusion;
+                reason: ArcjetReason;
+              };
+              return new ArcjetRuleResult({
+                conclusion: entry.conclusion,
+                fingerprint,
+                reason: entry.reason,
+                ruleId,
+                state: "CACHED",
+                ttl,
+              });
+            }
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint,
+              reason: new ArcjetReason(),
+              ruleId,
+              state: "RUN",
+              ttl: 10,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalls++;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [],
+                ttl: 0,
+              });
+            },
+            report() {
+              reportCalls++;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 1);
+        assert.equal(reportCalls, 0);
+
+        const otherDecision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+        assert.equal(otherDecision.conclusion, "ALLOW");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 2);
+        assert.equal(reportCalls, 0);
+      },
+    );
+
+    await t.test("should not cache a deny result w/o `ttl`", async function () {
+      const fingerprint = "a";
+      const ruleId = "b";
+      let decideCalls = 0;
+      let reportCalls = 0;
+      let cacheHits = 0;
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect(context) {
+          const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+          if (cached) {
+            cacheHits++;
+            // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+            const entry = cached as {
+              conclusion: ArcjetConclusion;
+              reason: ArcjetReason;
+            };
+            return new ArcjetRuleResult({
+              conclusion: entry.conclusion,
+              fingerprint,
+              reason: entry.reason,
+              ruleId,
+              state: "CACHED",
+              ttl,
+            });
+          }
+          return new ArcjetRuleResult({
+            conclusion: "DENY",
+            fingerprint,
+            reason: new ArcjetReason(),
+            ruleId,
+            state: "RUN",
+            ttl: 0,
+          });
+        },
+        type: "",
+        validate() {},
+        version: 0,
+      };
+      const instance = arcjet({
+        client: {
+          async decide() {
+            decideCalls++;
+            return new ArcjetAllowDecision({
+              reason: new ArcjetReason(),
+              results: [],
+              ttl: 0,
+            });
+          },
+          report() {
+            reportCalls++;
+          },
+        },
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [[rule]],
+      });
+      const decision = await instance.protect(createContext(), createRequest());
+
+      assert.equal(decision.conclusion, "DENY");
+      assert.equal(cacheHits, 0);
+      assert.equal(decideCalls, 0);
+      assert.equal(reportCalls, 1);
+
+      const otherDecision = await instance.protect(
+        createContext(),
+        createRequest(),
+      );
+      assert.equal(otherDecision.conclusion, "DENY");
+      assert.equal(cacheHits, 0);
+      assert.equal(decideCalls, 0);
+      assert.equal(reportCalls, 2);
+    });
+
+    await t.test(
+      "should log and not cache a dry run deny result w/ `ttl`",
+      async function () {
+        const fingerprint = "a";
+        const ruleId = "b";
+        let decideCalls = 0;
+        let reportCalls = 0;
+        let cacheHits = 0;
+        let warnParameters: unknown;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(context) {
+            const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+            if (cached) {
+              cacheHits++;
+              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+              const entry = cached as {
+                conclusion: ArcjetConclusion;
+                reason: ArcjetReason;
+              };
+              return new ArcjetRuleResult({
+                conclusion: entry.conclusion,
+                fingerprint,
+                reason: entry.reason,
+                ruleId,
+                state: "CACHED",
+                ttl,
+              });
+            }
+            return new ArcjetRuleResult({
+              conclusion: "DENY",
+              fingerprint,
+              reason: new ArcjetReason(),
+              ruleId,
+              state: "DRY_RUN",
+              ttl: 10,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalls++;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [],
+                ttl: 0,
+              });
+            },
+            report() {
+              reportCalls++;
+            },
+          },
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            warn(...parameters) {
+              warnParameters = parameters;
+            },
+          },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 1);
+        assert.equal(reportCalls, 0);
+        assert.deepEqual(warnParameters, [
+          'Dry run mode is enabled for "%s" rule. Overriding decision. Decision was: DENY',
+          "",
+        ]);
+        warnParameters = undefined;
+
+        const otherDecision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(otherDecision.conclusion, "ALLOW");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 2);
+        assert.equal(reportCalls, 0);
+        assert.deepEqual(warnParameters, [
+          'Dry run mode is enabled for "%s" rule. Overriding decision. Decision was: DENY',
+          "",
+        ]);
+      },
+    );
+
+    await t.test("should call `client.decide` normally", async function () {
+      let decideCalled = false;
+      let reportCalled = false;
+      const instance = arcjet({
+        client: {
+          async decide() {
+            decideCalled = true;
+            return new ArcjetAllowDecision({
+              reason: new ArcjetReason(),
+              results: [],
+              ttl: 0,
+            });
+          },
+          report() {
+            reportCalled = true;
+          },
+        },
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [],
+      });
+      const decision = await instance.protect(createContext(), createRequest());
+
+      assert.equal(decision.conclusion, "ALLOW");
+      assert.equal(decideCalled, true);
+      assert.equal(reportCalled, false);
+    });
+
+    await t.test(
+      "should call `client.decide` if a `protect` rejects",
+      async function () {
+        let decideCalled = false;
+        let errorParameters: unknown;
+        let reportCalled = false;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            throw new Error("Boom");
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalled = true;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [],
+                ttl: 0,
+              });
+            },
+            report() {
+              reportCalled = true;
+            },
+          },
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            error(...parameters) {
+              errorParameters = parameters;
+            },
+          },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(decideCalled, true);
+        assert.equal(reportCalled, false);
+        assert.deepEqual(errorParameters, [
+          "Failure running rule: %s due to %s",
+          "",
+          "Boom",
+        ]);
+      },
+    );
+
+    await t.test("should call `client.decide` w/ rules", async function () {
+      let decideRules: unknown;
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect() {
+          return new ArcjetRuleResult({
+            conclusion: "ALLOW",
+            fingerprint: "",
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          });
+        },
+        type: "",
+        validate() {},
+        version: 0,
+      };
+      const instance = arcjet({
+        client: {
+          async decide(_context, _details, rules) {
+            decideRules = rules;
+            return new ArcjetAllowDecision({
+              reason: new ArcjetReason(),
+              results: [],
+              ttl: 0,
+            });
+          },
+          report() {},
+        },
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [[rule]],
+      });
+      const decision = await instance.protect(createContext(), createRequest());
+
+      assert.equal(decision.conclusion, "ALLOW");
+      assert.deepEqual(decideRules, [rule]);
+    });
+
+    await t.test(
+      "should call `client.decide` w/ `key` passed to `protect`, not `key` passed to `arcjet`",
+      async function () {
+        let decideKey: unknown;
+        const instance = arcjet({
+          client: {
+            async decide(context) {
+              decideKey = context.key;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [],
+                ttl: 0,
+              });
+            },
+            report() {},
+          },
+          key: "a",
+          log: { ...console, debug() {} },
+          rules: [],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(decideKey, "b");
+      },
+    );
+
+    await t.test(
+      "should call `client.decide` w/ `waitUntil` at the `@vercel/request-context` symbol",
+      async function () {
+        const global = globalThis as GlobalWithReader;
+        const currentVercelRequestContext = global[vercelRequestContext];
+        let decideWaitUntil: unknown;
+        let reportCalled = false;
+        const instance = arcjet({
+          client: {
+            async decide(context) {
+              decideWaitUntil = context.waitUntil;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [],
+                ttl: 0,
+              });
+            },
+            report() {
+              reportCalled = true;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [],
+        });
+
+        global[vercelRequestContext] = {
+          get() {
+            return { waitUntil };
+          },
+        };
+
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        global[vercelRequestContext] = currentVercelRequestContext;
+
+        assert.equal(decideWaitUntil, waitUntil);
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(reportCalled, false);
+
+        function waitUntil() {
+          throw new Error("unreachable");
+        }
+      },
+    );
+
+    await t.test(
+      "should call `client.report` if a local rule yields a deny decision",
+      async function () {
+        let decideCalled = false;
+        let reportCalled = false;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            return new ArcjetRuleResult({
+              conclusion: "DENY",
+              fingerprint: "",
+              reason: new ArcjetReason(),
+              ruleId: "",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalled = true;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [],
+                ttl: 0,
+              });
+            },
+            report() {
+              reportCalled = true;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "DENY");
+        assert.equal(decideCalled, false);
+        assert.equal(reportCalled, true);
+      },
+    );
+
+    await t.test(
+      "should call `client.report` w/ rules and results",
+      async function () {
+        let reportDecisionResults: unknown;
+        let reportResults: unknown;
+        const ruleResult = new ArcjetRuleResult({
+          conclusion: "DENY",
+          fingerprint: "a",
+          reason: new ArcjetReason(),
+          ruleId: "b",
+          state: "RUN",
+          ttl: 0,
+        });
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            return ruleResult;
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [],
+                ttl: 0,
+              });
+            },
+            report(_context, _details, decision, rules) {
+              reportDecisionResults = decision.results;
+              reportResults = rules;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "DENY");
+        assert.deepEqual(reportDecisionResults, [ruleResult]);
+        assert.deepEqual(reportResults, [rule]);
+      },
+    );
+
+    await t.test(
+      "should call `client.report` w/ `waitUntil` at the `@vercel/request-context` symbol",
+      async function () {
+        const global = globalThis as GlobalWithReader;
+        const currentVercelRequestContext = global[vercelRequestContext];
+        let reportWaitUntil: unknown;
+        let decideCalled = false;
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect() {
+            return new ArcjetRuleResult({
+              conclusion: "DENY",
+              fingerprint: "a",
+              reason: new ArcjetReason(),
+              ruleId: "b",
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalled = true;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [],
+                ttl: 0,
+              });
+            },
+            report(context) {
+              reportWaitUntil = context.waitUntil;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+
+        global[vercelRequestContext] = {
+          get() {
+            return { waitUntil };
+          },
+        };
+
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        global[vercelRequestContext] = currentVercelRequestContext;
+
+        assert.equal(decideCalled, false);
+        assert.equal(decision.conclusion, "DENY");
+        assert.equal(reportWaitUntil, waitUntil);
+
+        function waitUntil() {
+          throw new Error("unreachable");
+        }
+      },
+    );
+
+    await t.test(
+      "should log and call `client.report` if `client.decide` throws",
+      async function () {
+        let infoParameters: unknown;
+        let reportCalled = false;
+        const instance = arcjet({
+          client: {
+            async decide() {
+              throw new Error("Boom");
+            },
+            report() {
+              reportCalled = true;
+            },
+          },
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            info(...parameters) {
+              infoParameters = parameters;
+            },
+          },
+          rules: [],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ERROR");
+        assert.equal(reportCalled, true);
+        assert.deepEqual(infoParameters, [
+          "Encountered problem getting remote decision: %s",
+          "Boom",
+        ]);
+      },
+    );
+
+    await t.test(
+      "should cache a deny result on a deny decision both w/ `ttl`",
+      async function () {
+        const fingerprint = "a";
+        const ruleId = "b";
+        let decideCalls = 0;
+        let reportCalls = 0;
+        let cacheHits = 0;
+        // There still needs to be a rule to get things from the cache.
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(context) {
+            const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+            if (cached) {
+              cacheHits++;
+              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+              const entry = cached as {
+                conclusion: ArcjetConclusion;
+                reason: ArcjetReason;
+              };
+              return new ArcjetRuleResult({
+                conclusion: entry.conclusion,
+                fingerprint,
+                reason: entry.reason,
+                ruleId,
+                state: "CACHED",
+                ttl,
+              });
+            }
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint,
+              reason: new ArcjetReason(),
+              ruleId,
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalls++;
+              return new ArcjetDenyDecision({
+                reason: new ArcjetReason(),
+                results: [
+                  new ArcjetRuleResult({
+                    conclusion: "DENY",
+                    fingerprint,
+                    reason: new ArcjetReason(),
+                    ruleId,
+                    state: "RUN",
+                    ttl: 10,
+                  }),
+                ],
+                ttl: 10,
+              });
+            },
+            report() {
+              reportCalls++;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "DENY");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 1);
+        assert.equal(reportCalls, 0);
+
+        const otherDecision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+        assert.equal(otherDecision.conclusion, "DENY");
+        assert.equal(cacheHits, 1);
+        assert.equal(decideCalls, 1);
+        assert.equal(reportCalls, 1);
+      },
+    );
+
+    await t.test(
+      "should not cache an allow result on a deny decision both w/ `ttl`",
+      async function () {
+        const fingerprint = "a";
+        const ruleId = "b";
+        let decideCalls = 0;
+        let reportCalls = 0;
+        let cacheHits = 0;
+        // There still needs to be a rule to get things from the cache.
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(context) {
+            const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+            if (cached) {
+              cacheHits++;
+              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+              const entry = cached as {
+                conclusion: ArcjetConclusion;
+                reason: ArcjetReason;
+              };
+              return new ArcjetRuleResult({
+                conclusion: entry.conclusion,
+                fingerprint,
+                reason: entry.reason,
+                ruleId,
+                state: "CACHED",
+                ttl,
+              });
+            }
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint,
+              reason: new ArcjetReason(),
+              ruleId,
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalls++;
+              return new ArcjetDenyDecision({
+                reason: new ArcjetReason(),
+                results: [
+                  new ArcjetRuleResult({
+                    conclusion: "ALLOW",
+                    fingerprint,
+                    reason: new ArcjetReason(),
+                    ruleId,
+                    state: "RUN",
+                    ttl: 10,
+                  }),
+                ],
+                ttl: 10,
+              });
+            },
+            report() {
+              reportCalls++;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "DENY");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 1);
+        assert.equal(reportCalls, 0);
+
+        const otherDecision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+        assert.equal(otherDecision.conclusion, "DENY");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 2);
+        assert.equal(reportCalls, 0);
+      },
+    );
+
+    await t.test(
+      "should not cache a deny result on an allow decision both w/ `ttl`",
+      async function () {
+        const fingerprint = "a";
+        const ruleId = "b";
+        let decideCalls = 0;
+        let reportCalls = 0;
+        let cacheHits = 0;
+        // There still needs to be a rule to get things from the cache.
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(context) {
+            const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+            if (cached) {
+              cacheHits++;
+              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+              const entry = cached as {
+                conclusion: ArcjetConclusion;
+                reason: ArcjetReason;
+              };
+              return new ArcjetRuleResult({
+                conclusion: entry.conclusion,
+                fingerprint,
+                reason: entry.reason,
+                ruleId,
+                state: "CACHED",
+                ttl,
+              });
+            }
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint,
+              reason: new ArcjetReason(),
+              ruleId,
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalls++;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [
+                  new ArcjetRuleResult({
+                    conclusion: "DENY",
+                    fingerprint,
+                    reason: new ArcjetReason(),
+                    ruleId,
+                    state: "RUN",
+                    ttl: 10,
+                  }),
+                ],
+                ttl: 10,
+              });
+            },
+            report() {
+              reportCalls++;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 1);
+        assert.equal(reportCalls, 0);
+
+        const otherDecision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+        assert.equal(otherDecision.conclusion, "ALLOW");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 2);
+        assert.equal(reportCalls, 0);
+      },
+    );
+
+    await t.test(
+      "should not cache a deny result on an allow decision both w/ `ttl`",
+      async function () {
+        const fingerprint = "a";
+        const ruleId = "b";
+        let decideCalls = 0;
+        let reportCalls = 0;
+        let cacheHits = 0;
+        // There still needs to be a rule to get things from the cache.
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(context) {
+            const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+            if (cached) {
+              cacheHits++;
+              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+              const entry = cached as {
+                conclusion: ArcjetConclusion;
+                reason: ArcjetReason;
+              };
+              return new ArcjetRuleResult({
+                conclusion: entry.conclusion,
+                fingerprint,
+                reason: entry.reason,
+                ruleId,
+                state: "CACHED",
+                ttl,
+              });
+            }
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint,
+              reason: new ArcjetReason(),
+              ruleId,
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalls++;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [
+                  new ArcjetRuleResult({
+                    conclusion: "DENY",
+                    fingerprint,
+                    reason: new ArcjetReason(),
+                    ruleId,
+                    state: "RUN",
+                    ttl: 10,
+                  }),
+                ],
+                ttl: 10,
+              });
+            },
+            report() {
+              reportCalls++;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 1);
+        assert.equal(reportCalls, 0);
+
+        const otherDecision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+        assert.equal(otherDecision.conclusion, "ALLOW");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 2);
+        assert.equal(reportCalls, 0);
+      },
+    );
+
+    await t.test(
+      "should not cache a deny result w/o `ttl` on a deny decision w/ `ttl`",
+      async function () {
+        const fingerprint = "a";
+        const ruleId = "b";
+        let decideCalls = 0;
+        let reportCalls = 0;
+        let cacheHits = 0;
+        // There still needs to be a rule to get things from the cache.
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(context) {
+            const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+            if (cached) {
+              cacheHits++;
+              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+              const entry = cached as {
+                conclusion: ArcjetConclusion;
+                reason: ArcjetReason;
+              };
+              return new ArcjetRuleResult({
+                conclusion: entry.conclusion,
+                fingerprint,
+                reason: entry.reason,
+                ruleId,
+                state: "CACHED",
+                ttl,
+              });
+            }
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint,
+              reason: new ArcjetReason(),
+              ruleId,
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalls++;
+              return new ArcjetDenyDecision({
+                reason: new ArcjetReason(),
+                results: [
+                  new ArcjetRuleResult({
+                    conclusion: "DENY",
+                    fingerprint,
+                    reason: new ArcjetReason(),
+                    ruleId,
+                    state: "RUN",
+                    ttl: 0,
+                  }),
+                ],
+                ttl: 10,
+              });
+            },
+            report() {
+              reportCalls++;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "DENY");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 1);
+        assert.equal(reportCalls, 0);
+
+        const otherDecision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+        assert.equal(otherDecision.conclusion, "DENY");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 2);
+        assert.equal(reportCalls, 0);
+      },
+    );
+
+    await t.test(
+      "should not cache a deny result w/ `ttl` on a deny decision w/o `ttl`",
+      async function () {
+        const fingerprint = "a";
+        const ruleId = "b";
+        let decideCalls = 0;
+        let reportCalls = 0;
+        let cacheHits = 0;
+        // There still needs to be a rule to get things from the cache.
+        const rule: ArcjetRule<{}> = {
+          mode: "LIVE",
+          priority: 1,
+          async protect(context) {
+            const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+            if (cached) {
+              cacheHits++;
+              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
+              const entry = cached as {
+                conclusion: ArcjetConclusion;
+                reason: ArcjetReason;
+              };
+              return new ArcjetRuleResult({
+                conclusion: entry.conclusion,
+                fingerprint,
+                reason: entry.reason,
+                ruleId,
+                state: "CACHED",
+                ttl,
+              });
+            }
+            return new ArcjetRuleResult({
+              conclusion: "ALLOW",
+              fingerprint,
+              reason: new ArcjetReason(),
+              ruleId,
+              state: "RUN",
+              ttl: 0,
+            });
+          },
+          type: "",
+          validate() {},
+          version: 0,
+        };
+        const instance = arcjet({
+          client: {
+            async decide() {
+              decideCalls++;
+              return new ArcjetDenyDecision({
+                reason: new ArcjetReason(),
+                results: [
+                  new ArcjetRuleResult({
+                    conclusion: "DENY",
+                    fingerprint,
+                    reason: new ArcjetReason(),
+                    ruleId,
+                    state: "RUN",
+                    ttl: 10,
+                  }),
+                ],
+                ttl: 0,
+              });
+            },
+            report() {
+              reportCalls++;
+            },
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [[rule]],
+        });
+        const decision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+
+        assert.equal(decision.conclusion, "DENY");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 1);
+        assert.equal(reportCalls, 0);
+
+        const otherDecision = await instance.protect(
+          createContext(),
+          createRequest(),
+        );
+        assert.equal(otherDecision.conclusion, "DENY");
+        assert.equal(cacheHits, 0);
+        assert.equal(decideCalls, 2);
+        assert.equal(reportCalls, 0);
+      },
     );
   });
 
-  test("global characteristics are propagated if they aren't separately specified in fixedWindow", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
+  await t.test("`.withRule()`", async function (t) {
+    await t.test("should work", async function () {
+      let calls = 0;
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect() {
+          calls++;
+          return new ArcjetRuleResult({
+            conclusion: "DENY",
+            fingerprint: "",
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          });
+        },
+        type: "",
+        validate() {},
+        version: 0,
+      };
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [],
+      });
+      const decision = await instance.protect(createContext(), createRequest());
+      assert.equal(calls, 0);
 
-    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
-    const aj = arcjet({
-      key: "test-key",
-      characteristics: globalCharacteristics,
-      rules: [
-        fixedWindow({
-          mode: "LIVE",
-          window: "1h",
-          max: 60,
-        }),
-      ],
-      client,
-      log: createMockLogger(),
+      const otherInstance = instance.withRule([rule]);
+      const otherDecision = await otherInstance.protect(
+        createContext(),
+        createRequest(),
+      );
+      assert.equal(calls, 1);
+      assert.equal(decision.conclusion, "ALLOW");
+      assert.equal(otherDecision.conclusion, "DENY");
     });
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers(),
-      someGlobalCharacteristic: "test",
-      cookies: "",
-      query: "",
-    };
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    const list = args.at(2);
-    assert.ok(Array.isArray(list));
-    const item = list.at(0);
-    assert.ok(item);
-    assert.ok(typeof item === "object");
-    assert.ok("characteristics" in item);
-    assert.deepEqual(item.characteristics, globalCharacteristics);
-  });
-
-  test("local characteristics are prefered on fixedWindow over global characteristics", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
-    const localCharacteristics = ["someLocalCharacteristic"] as const;
-    const aj = arcjet({
-      key: "test-key",
-      characteristics: globalCharacteristics,
-      rules: [
-        fixedWindow({
-          mode: "LIVE",
-          window: "1h",
-          max: 60,
-          characteristics: localCharacteristics,
-        }),
-      ],
-      client,
-      log: createMockLogger(),
-    });
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers(),
-      someGlobalCharacteristic: "test",
-      someLocalCharacteristic: "test",
-      cookies: "",
-      query: "",
-    };
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    const list = args.at(2);
-    assert.ok(Array.isArray(list));
-    const item = list.at(0);
-    assert.ok(item);
-    assert.ok(typeof item === "object");
-    assert.ok("characteristics" in item);
-    assert.deepEqual(item.characteristics, localCharacteristics);
-  });
-
-  test("global characteristics are propagated if they aren't separately specified in slidingWindow", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
-    const aj = arcjet({
-      key: "test-key",
-      characteristics: globalCharacteristics,
-      rules: [
-        slidingWindow({
-          mode: "LIVE",
-          interval: "1h",
-          max: 60,
-        }),
-      ],
-      client,
-      log: createMockLogger(),
-    });
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers(),
-      someGlobalCharacteristic: "test",
-      cookies: "",
-      query: "",
-    };
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    const list = args.at(2);
-    assert.ok(Array.isArray(list));
-    const item = list.at(0);
-    assert.ok(item);
-    assert.ok(typeof item === "object");
-    assert.ok("characteristics" in item);
-    assert.deepEqual(item.characteristics, globalCharacteristics);
-  });
-
-  test("local characteristics are prefered on slidingWindow over global characteristics", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
-    const localCharacteristics = ["someLocalCharacteristic"] as const;
-
-    const aj = arcjet({
-      key: "test-key",
-      characteristics: globalCharacteristics,
-      rules: [
-        slidingWindow({
-          mode: "LIVE",
-          interval: "1h",
-          max: 60,
-          characteristics: localCharacteristics,
-        }),
-      ],
-      client,
-      log: createMockLogger(),
-    });
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers(),
-      someGlobalCharacteristic: "test",
-      someLocalCharacteristic: "test",
-      cookies: "",
-      query: "",
-    };
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    const list = args.at(2);
-    assert.ok(Array.isArray(list));
-    const item = list.at(0);
-    assert.ok(item);
-    assert.ok(typeof item === "object");
-    assert.ok("characteristics" in item);
-    assert.deepEqual(item.characteristics, localCharacteristics);
-  });
-
-  test("global characteristics are propagated if they aren't separately specified in tokenBucket", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
-    const aj = arcjet({
-      key: "test-key",
-      characteristics: globalCharacteristics,
-      rules: [
-        tokenBucket({
-          mode: "LIVE",
-          interval: "1h",
-          refillRate: 1,
-          capacity: 10,
-        }),
-      ],
-      client,
-      log: createMockLogger(),
-    });
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers(),
-      requested: 1,
-      someGlobalCharacteristic: "test",
-      cookies: "",
-      query: "",
-    };
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    const list = args.at(2);
-    assert.ok(Array.isArray(list));
-    const item = list.at(0);
-    assert.ok(item);
-    assert.ok(typeof item === "object");
-    assert.ok("characteristics" in item);
-    assert.deepEqual(item.characteristics, globalCharacteristics);
-  });
-
-  test("local characteristics are prefered on tokenBucket over global characteristics", async () => {
-    const client = {
-      decide: mock.fn(async () => {
-        return new ArcjetAllowDecision({
-          ttl: 0,
-          reason: new ArcjetReason(),
-          results: [],
-        });
-      }),
-      report: mock.fn(),
-    };
-
-    const globalCharacteristics = ["someGlobalCharacteristic"] as const;
-    const localCharacteristics = ["someLocalCharacteristic"] as const;
-
-    const aj = arcjet({
-      key: "test-key",
-      characteristics: globalCharacteristics,
-      rules: [
-        tokenBucket({
-          mode: "LIVE",
-          interval: "1h",
-          refillRate: 1,
-          capacity: 10,
-          characteristics: localCharacteristics,
-        }),
-      ],
-      client,
-      log: createMockLogger(),
-    });
-
-    const request = {
-      ip: "172.100.1.1",
-      method: "GET",
-      protocol: "http:",
-      host: "example.com",
-      path: "/",
-      headers: new Headers(),
-      requested: 1,
-      someGlobalCharacteristic: "test",
-      someLocalCharacteristic: "test",
-      cookies: "",
-      query: "",
-    };
-
-    const context = {
-      getBody() {
-        throw new Error("Not implemented");
-      },
-    };
-
-    const _ = await aj.protect(context, request);
-
-    assert.equal(client.decide.mock.callCount(), 1);
-    const args: unknown[] = client.decide.mock.calls[0].arguments;
-    const list = args.at(2);
-    assert.ok(Array.isArray(list));
-    const item = list.at(0);
-    assert.ok(item);
-    assert.ok(typeof item === "object");
-    assert.ok("characteristics" in item);
-    assert.deepEqual(item.characteristics, localCharacteristics);
   });
 });
 
-function createMockLogger() {
+/**
+ * Create empty values for context.
+ *
+ * @returns
+ *   Context.
+ */
+function createContext(): ArcjetContext {
   return {
-    time: mock.fn(),
-    timeEnd: mock.fn(),
-    debug: mock.fn(),
-    info: mock.fn(),
-    warn: mock.fn(),
-    error: mock.fn(),
+    cache: new MemoryCache(),
+    characteristics: [],
+    fingerprint: "a",
+    getBody() {
+      throw new Error("Not implemented");
+    },
+    key: "b",
+    log: console,
+    runtime: "c",
+  };
+}
+
+/**
+ * Create an empty client to not hit the internet but always decide as allow
+ * and never report.
+ *
+ * @returns
+ *   Client.
+ */
+function createLocalClient(): Client {
+  return {
+    async decide() {
+      return new ArcjetAllowDecision({
+        reason: new ArcjetReason(),
+        results: [],
+        ttl: 0,
+      });
+    },
+    report() {},
+  };
+}
+
+/**
+ * Create empty values for details.
+ *
+ * @returns
+ *   Details.
+ */
+function createRequest(): ArcjetRequest<{}> {
+  return {
+    cookies: "NEXT_LOCALE=en-US",
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    },
+    host: "localhost:3000",
+    ip: "127.0.0.1",
+    method: "GET",
+    path: "/bot-protection/quick-start",
+    protocol: "http:",
+    query: "?q=alpha",
   };
 }
