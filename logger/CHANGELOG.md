@@ -1,38 +1,10 @@
 # Changelog
 
-## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/logger-v1.1.0) (2026-02-05)
-
-
-### ⌨️ Code Refactoring
-
-* use named exports ([#5780](https://github.com/arcjet/arcjet-js/issues/5780)) ([bc3868d](https://github.com/arcjet/arcjet-js/commit/bc3868d1e16881a0eef25c9aacdf935aa366c73a))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/sprintf bumped from 1.1.0-rc to 1.1.0
-  * devDependencies
-    * @arcjet/eslint-config bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/rollup-config bumped from 1.1.0-rc to 1.1.0
-
-## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/logger-v1.1.0-rc) (2026-02-03)
-
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/logger-v1.1.0) (2026-02-05)
 
 ### 🔨 Build System
 
 * enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/sprintf bumped from 1.0.0 to 1.1.0-rc
-  * devDependencies
-    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
 
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/logger-v1.0.0) (2026-01-22)
 

@@ -1,30 +1,6 @@
 # Changelog
 
-## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/nuxt-v1.1.0) (2026-02-05)
-
-
-### 🧹 Miscellaneous Chores
-
-* **@arcjet/nuxt:** Synchronize arcjet-js versions
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/body bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/env bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/headers bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/ip bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/logger bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/protocol bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/transport bumped from 1.1.0-rc to 1.1.0
-    * arcjet bumped from 1.1.0-rc to 1.1.0
-  * devDependencies
-    * @arcjet/eslint-config bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/rollup-config bumped from 1.1.0-rc to 1.1.0
-
-## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/nuxt-v1.1.0-rc) (2026-02-03)
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/nuxt-v1.1.0) (2026-02-05)
 
 
 ### 📝 Documentation
@@ -36,22 +12,6 @@
 
 * fix typo, it’s `ip.src` ([#5754](https://github.com/arcjet/arcjet-js/issues/5754)) ([750c217](https://github.com/arcjet/arcjet-js/commit/750c217b0f23fbc34afba494c0c09e97004822fb))
 
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/body bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/env bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/headers bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/ip bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/logger bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/protocol bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/transport bumped from 1.0.0 to 1.1.0-rc
-    * arcjet bumped from 1.0.0 to 1.1.0-rc
-  * devDependencies
-    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
 
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/nuxt-v1.0.0) (2026-01-22)
 

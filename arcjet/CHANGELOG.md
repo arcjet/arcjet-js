@@ -1,31 +1,6 @@
 # Changelog
 
-## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...arcjet-v1.1.0) (2026-02-05)
-
-
-### 📚 Tests
-
-* **arcjet:** add `protectSignup` tests ([#5779](https://github.com/arcjet/arcjet-js/issues/5779)) ([006b368](https://github.com/arcjet/arcjet-js/commit/006b3689227f47622aacc9f6bfff54d22192185d))
-* **arcjet:** cover all lines ([#5782](https://github.com/arcjet/arcjet-js/issues/5782)) ([79b4c18](https://github.com/arcjet/arcjet-js/commit/79b4c18da64a61ad26d6fd3ca99a982e437cc625))
-* **arcjet:** rework core tests ([#5764](https://github.com/arcjet/arcjet-js/issues/5764)) ([64e37c2](https://github.com/arcjet/arcjet-js/commit/64e37c2fb36e7f48dde129f87045ff8f3088f518))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/analyze bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/cache bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/duration bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/headers bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/protocol bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/runtime bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/stable-hash bumped from 1.1.0-rc to 1.1.0
-  * devDependencies
-    * @arcjet/eslint-config bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/rollup-config bumped from 1.1.0-rc to 1.1.0
-
-## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...arcjet-v1.1.0-rc) (2026-02-03)
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...arcjet-v1.1.0) (2026-02-05)
 
 
 ### 🚀 New Features
@@ -56,22 +31,6 @@
 ### 🔨 Build System
 
 * enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/analyze bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/cache bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/duration bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/headers bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/protocol bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/runtime bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/stable-hash bumped from 1.0.0 to 1.1.0-rc
-  * devDependencies
-    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
 
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...arcjet-v1.0.0) (2026-01-22)
 

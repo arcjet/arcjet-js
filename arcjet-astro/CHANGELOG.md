@@ -1,30 +1,6 @@
 # Changelog
 
-## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/astro-v1.1.0) (2026-02-05)
-
-
-### ⌨️ Code Refactoring
-
-* use named exports ([#5780](https://github.com/arcjet/arcjet-js/issues/5780)) ([bc3868d](https://github.com/arcjet/arcjet-js/commit/bc3868d1e16881a0eef25c9aacdf935aa366c73a))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/body bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/env bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/headers bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/ip bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/logger bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/protocol bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/transport bumped from 1.1.0-rc to 1.1.0
-    * arcjet bumped from 1.1.0-rc to 1.1.0
-  * devDependencies
-    * @arcjet/eslint-config bumped from 1.1.0-rc to 1.1.0
-    * @arcjet/rollup-config bumped from 1.1.0-rc to 1.1.0
-
-## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/astro-v1.1.0-rc) (2026-02-03)
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/astro-v1.1.0) (2026-02-05)
 
 
 ### 📝 Documentation
@@ -41,22 +17,6 @@
 
 * enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
 
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/body bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/env bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/headers bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/ip bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/logger bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/protocol bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/transport bumped from 1.0.0 to 1.1.0-rc
-    * arcjet bumped from 1.0.0 to 1.1.0-rc
-  * devDependencies
-    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
 
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/astro-v1.0.0) (2026-01-22)
 

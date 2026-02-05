@@ -1,31 +1,6 @@
 # Changelog
 
-## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...v1.1.0) (2026-02-05)
-
-
-### 🧹 Miscellaneous Chores
-
-* add protect signup to astro example ([#5785](https://github.com/arcjet/arcjet-js/issues/5785)) ([9a7880d](https://github.com/arcjet/arcjet-js/commit/9a7880d1532feb1f7cf85e8664fff7e0f14273e6))
-* enable workflows on GH merge queue ([#5786](https://github.com/arcjet/arcjet-js/issues/5786)) ([71a322c](https://github.com/arcjet/arcjet-js/commit/71a322cbcdc591aa0b98a45fe22fb0c74a23a89c))
-* fix semgrep alert in publish workflow ([#5783](https://github.com/arcjet/arcjet-js/issues/5783)) ([0cc7a85](https://github.com/arcjet/arcjet-js/commit/0cc7a859a8e9dee353df4feb88beebd2c6e29be3))
-* trunk fmt hasher.ts ([#5784](https://github.com/arcjet/arcjet-js/issues/5784)) ([040b5e6](https://github.com/arcjet/arcjet-js/commit/040b5e6ac4b86e2549eca7d1d54f9eb6a46287b6))
-* use a stable release again ([db7d2a6](https://github.com/arcjet/arcjet-js/commit/db7d2a6f776f57b0904f61c3d431116f94473227))
-
-
-### ⌨️ Code Refactoring
-
-* use named exports ([#5780](https://github.com/arcjet/arcjet-js/issues/5780)) ([bc3868d](https://github.com/arcjet/arcjet-js/commit/bc3868d1e16881a0eef25c9aacdf935aa366c73a))
-
-
-### 📚 Tests
-
-* **arcjet:** add `protectSignup` tests ([#5779](https://github.com/arcjet/arcjet-js/issues/5779)) ([006b368](https://github.com/arcjet/arcjet-js/commit/006b3689227f47622aacc9f6bfff54d22192185d))
-* **arcjet:** cover all lines ([#5782](https://github.com/arcjet/arcjet-js/issues/5782)) ([79b4c18](https://github.com/arcjet/arcjet-js/commit/79b4c18da64a61ad26d6fd3ca99a982e437cc625))
-* **arcjet:** rework core tests ([#5764](https://github.com/arcjet/arcjet-js/issues/5764)) ([64e37c2](https://github.com/arcjet/arcjet-js/commit/64e37c2fb36e7f48dde129f87045ff8f3088f518))
-* **protocol:** update tests ([#5770](https://github.com/arcjet/arcjet-js/issues/5770)) ([4401380](https://github.com/arcjet/arcjet-js/commit/4401380f9ce1fc015f30e3ed6d6607e7d8ba96c5))
-* **transport:** add ([#5781](https://github.com/arcjet/arcjet-js/issues/5781)) ([c0531fa](https://github.com/arcjet/arcjet-js/commit/c0531fa5e96b7d0695ff8ba0f53d24bcba385acd))
-
-## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...v1.1.0-rc) (2026-02-03)
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-rc...v1.1.0) (2026-02-05)
 
 
 ### 🚀 New Features
