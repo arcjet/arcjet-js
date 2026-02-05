@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/analyze-wasm",
-  "version": "1.1.0-rc",
+  "version": "1.1.0",
   "description": "WebAssembly bindings to Arcjet's local analysis engine",
   "keywords": [
     "analyze",
@@ -61,8 +61,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.1.0-rc",
-    "@arcjet/rollup-config": "1.1.0-rc",
+    "@arcjet/eslint-config": "1.1.0",
+    "@arcjet/rollup-config": "1.1.0",
     "@bytecodealliance/jco": "1.5.0",
     "@rollup/wasm-node": "4.57.0",
     "@types/node": "25.1.0",

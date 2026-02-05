@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/fastify-v1.1.0-rc) (2026-02-03)
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/fastify-v1.1.0) (2026-02-05)
 
 
 ### 📝 Documentation
@@ -22,23 +22,6 @@
 ### 🔨 Build System
 
 * **deps-dev:** bump fastify from 5.7.1 to 5.7.3 in /arcjet-fastify ([#5755](https://github.com/arcjet/arcjet-js/issues/5755)) ([c996a0b](https://github.com/arcjet/arcjet-js/commit/c996a0b368af12c4a611600e7b5ea69aa9cbe84e))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/env bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/headers bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/ip bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/logger bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/protocol bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/transport bumped from 1.0.0 to 1.1.0-rc
-    * arcjet bumped from 1.0.0 to 1.1.0-rc
-  * devDependencies
-    * @arcjet/cache bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
 
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/fastify-v1.0.0) (2026-01-22)
 

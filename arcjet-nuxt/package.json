@@ -9,19 +9,19 @@
     "url": "https://github.com/arcjet/arcjet-js/issues"
   },
   "dependencies": {
-    "@arcjet/body": "1.1.0-rc",
-    "@arcjet/env": "1.1.0-rc",
-    "@arcjet/headers": "1.1.0-rc",
-    "@arcjet/ip": "1.1.0-rc",
-    "@arcjet/logger": "1.1.0-rc",
-    "@arcjet/protocol": "1.1.0-rc",
-    "@arcjet/transport": "1.1.0-rc",
-    "arcjet": "1.1.0-rc"
+    "@arcjet/body": "1.1.0",
+    "@arcjet/env": "1.1.0",
+    "@arcjet/headers": "1.1.0",
+    "@arcjet/ip": "1.1.0",
+    "@arcjet/logger": "1.1.0",
+    "@arcjet/protocol": "1.1.0",
+    "@arcjet/transport": "1.1.0",
+    "arcjet": "1.1.0"
   },
   "description": "Arcjet SDK for Nuxt",
   "devDependencies": {
-    "@arcjet/eslint-config": "1.1.0-rc",
-    "@arcjet/rollup-config": "1.1.0-rc",
+    "@arcjet/eslint-config": "1.1.0",
+    "@arcjet/rollup-config": "1.1.0",
     "@nuxt/kit": "4.3.0",
     "@nuxt/schema": "4.3.0",
     "eslint": "9.39.2",
@@ -70,5 +70,5 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "type": "module",
-  "version": "1.1.0-rc"
+  "version": "1.1.0"
 }

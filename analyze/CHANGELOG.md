@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/analyze-v1.1.0-rc) (2026-02-03)
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/analyze-v1.1.0) (2026-02-05)
 
 
 ### 🧹 Miscellaneous Chores
@@ -17,16 +17,6 @@
 
 * enable `ignore-scripts` ([#5211](https://github.com/arcjet/arcjet-js/issues/5211)) ([2c14ff3](https://github.com/arcjet/arcjet-js/commit/2c14ff35e62d6db1939d3e1579c7f005af0fae1e))
 
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @arcjet/analyze-wasm bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/protocol bumped from 1.0.0 to 1.1.0-rc
-  * devDependencies
-    * @arcjet/eslint-config bumped from 1.0.0 to 1.1.0-rc
-    * @arcjet/rollup-config bumped from 1.0.0 to 1.1.0-rc
 
 ## [1.0.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-beta.18...@arcjet/analyze-v1.0.0) (2026-01-22)
 
