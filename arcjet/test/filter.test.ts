@@ -11,6 +11,13 @@ import arcjet, {
 } from "../index.js";
 
 test("filter", async function (t) {
+  await t.test("should throw w/o `options`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      filter();
+    }, /`filter` options error: expected object/);
+  });
+
   await t.test("should fail if `mode` is invalid", async function () {
     assert.throws(function () {
       filter({

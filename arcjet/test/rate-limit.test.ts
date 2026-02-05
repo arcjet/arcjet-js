@@ -49,6 +49,13 @@ class TestCache {
 }
 
 describe("Primitive > tokenBucket", () => {
+  test("should throw w/o `options`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      tokenBucket();
+    }, /`tokenBucket` options error: expected object/);
+  });
+
   test("validates `mode` option if it is set", async () => {
     assert.throws(() => {
       tokenBucket({
@@ -327,6 +334,13 @@ describe("Primitive > tokenBucket", () => {
 });
 
 describe("Primitive > fixedWindow", () => {
+  test("should throw w/o `options`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      fixedWindow();
+    }, /`fixedWindow` options error: expected object/);
+  });
+
   test("validates `mode` option if it is set", async () => {
     assert.throws(() => {
       fixedWindow({
@@ -537,6 +551,13 @@ describe("Primitive > fixedWindow", () => {
 });
 
 describe("Primitive > slidingWindow", () => {
+  test("should throw w/o `options`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      slidingWindow();
+    }, /`slidingWindow` options error: expected object/);
+  });
+
   test("validates `mode` option if it is set", async () => {
     assert.throws(() => {
       slidingWindow({

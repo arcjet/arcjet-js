@@ -4,6 +4,13 @@ import { MemoryCache } from "@arcjet/cache";
 import { type ArcjetCacheEntry, ArcjetBotReason, detectBot } from "../index.js";
 
 describe("Primitive > detectBot", () => {
+  test("should throw w/o `options`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      detectBot();
+    }, /`detectBot` options error: expected object/);
+  });
+
   test("validates `mode` option if it is set", async () => {
     assert.throws(() => {
       detectBot({
@@ -84,17 +91,24 @@ describe("Primitive > detectBot", () => {
       },
     };
     const details = {
-      headers: undefined,
+      cookies: "",
+      extra: {},
+      host: "localhost:3000",
+      ip: "127.0.0.1",
+      method: "GET",
+      path: "/",
+      protocol: "http:",
+      query: "",
     };
 
     const [rule] = detectBot({ mode: "LIVE", allow: [] });
     assert.equal(rule.type, "BOT");
     assert.throws(() => {
       const _ = rule.validate(context, details);
-    });
+    }, /`details` options error: `headers` is required/);
   });
 
-  test("throws via `validate()` if headers does not extend Headers", () => {
+  test("throws via `validate()` if headers is not an object", () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
@@ -109,6 +123,36 @@ describe("Primitive > detectBot", () => {
     const details = {
       cookies: "",
       extra: {},
+      headers: null,
+      host: "localhost:3000",
+      ip: "127.0.0.1",
+      method: "GET",
+      path: "/",
+      protocol: "http:",
+      query: "",
+    };
+    const [rule] = detectBot({ mode: "LIVE", allow: [] });
+
+    assert.throws(function () {
+      const _ = rule.validate(context, details);
+    }, /`details` options error: invalid value for `headers` - expected headers object/);
+  });
+
+  test("throws via `validate()` if headers does not extend Headers", function () {
+    const context = {
+      cache: new MemoryCache<ArcjetCacheEntry>(),
+      characteristics: [],
+      fingerprint: "",
+      async getBody() {
+        throw new Error("Not implemented");
+      },
+      key: "",
+      log: createMockLogger(),
+      runtime: "",
+    };
+    const details = {
+      cookies: "",
+      extra: {},
       headers: {},
       host: "localhost:3000",
       ip: "127.0.0.1",
@@ -117,9 +161,8 @@ describe("Primitive > detectBot", () => {
       protocol: "http:",
       query: "",
     };
-
     const [rule] = detectBot({ mode: "LIVE", allow: [] });
-    assert.equal(rule.type, "BOT");
+
     assert.throws(() => {
       const _ = rule.validate(context, details);
     }, /invalid value for `headers` - expected headers object with method/);

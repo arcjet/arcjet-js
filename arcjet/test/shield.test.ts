@@ -10,6 +10,13 @@ class TestCache {
 }
 
 describe("Primitive > shield", () => {
+  test("should throw w/o `options`", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      shield();
+    }, /`shield` options error: expected object/);
+  });
+
   test("validates `mode` option if it is set", async () => {
     assert.throws(() => {
       shield({
@@ -31,6 +38,25 @@ describe("Primitive > shield", () => {
     const [rule] = shield({});
     assert.equal(rule.type, "SHIELD");
     assert.equal(rule.mode, "DRY_RUN");
+  });
+
+  test("throws if `details` is not correct in `validate()`", function () {
+    const context = {
+      cache: new TestCache(),
+      characteristics: [],
+      fingerprint: "",
+      async getBody() {
+        throw new Error("Not implemented");
+      },
+      key: "",
+      log: createMockLogger(),
+      runtime: "",
+    };
+
+    const [rule] = shield({});
+    assert.throws(function () {
+      const _ = rule.validate(context, { ip: "127.0.0.1" });
+    }, /`details` options error: `method` is required/);
   });
 
   test("uses cache", async () => {
