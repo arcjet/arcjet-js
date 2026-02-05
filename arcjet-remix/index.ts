@@ -200,7 +200,7 @@ export interface ArcjetRemix<Props extends PlainObject> {
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): ArcjetRemix<Simplify<Props & ExtraProps<Rule>>>;
+  ): ArcjetRemix<Props & ExtraProps<Rule>>;
 }
 
 /**

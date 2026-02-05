@@ -187,7 +187,7 @@ export interface ArcjetDeno<Props extends PlainObject> {
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): ArcjetDeno<Simplify<Props & ExtraProps<Rule>>>;
+  ): ArcjetDeno<Props & ExtraProps<Rule>>;
 
   /**
    * Wrap your handler passed to `Deno.serve` with this function to provide

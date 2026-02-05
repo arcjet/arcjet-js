@@ -189,7 +189,7 @@ export interface ArcjetBun<Props extends PlainObject> {
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): ArcjetBun<Simplify<Props & ExtraProps<Rule>>>;
+  ): ArcjetBun<Props & ExtraProps<Rule>>;
 
   /**
    * Wrap the Bun `fetch` handler to provide additional details when calling

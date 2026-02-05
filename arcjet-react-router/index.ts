@@ -133,7 +133,7 @@ export interface ArcjetReactRouter<
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): ArcjetReactRouter<Simplify<Properties & ExtraProps<Rule>>>;
+  ): ArcjetReactRouter<Properties & ExtraProps<Rule>>;
 }
 
 /**

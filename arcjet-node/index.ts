@@ -306,7 +306,7 @@ export interface ArcjetNode<Props extends PlainObject> {
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): ArcjetNode<Simplify<Props & ExtraProps<Rule>>>;
+  ): ArcjetNode<Props & ExtraProps<Rule>>;
 }
 
 /**

@@ -3207,7 +3207,7 @@ export interface Arcjet<Props extends PlainObject> {
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): Arcjet<Simplify<Props & ExtraProps<Rule>>>;
+  ): Arcjet<Props & ExtraProps<Rule>>;
 }
 
 /**

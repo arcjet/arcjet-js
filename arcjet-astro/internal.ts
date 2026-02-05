@@ -213,7 +213,7 @@ export interface ArcjetAstro<Props extends PlainObject> {
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): ArcjetAstro<Simplify<Props & ExtraProps<Rule>>>;
+  ): ArcjetAstro<Props & ExtraProps<Rule>>;
 }
 
 /**

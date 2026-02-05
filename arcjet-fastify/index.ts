@@ -186,7 +186,7 @@ export interface ArcjetFastify<Props> {
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): ArcjetFastify<Simplify<Props & ExtraProps<Rule>>>;
+  ): ArcjetFastify<Props & ExtraProps<Rule>>;
 }
 
 /**

@@ -180,7 +180,7 @@ export interface ArcjetNuxt<Properties extends Record<PropertyKey, unknown>> {
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): ArcjetNuxt<Simplify<Properties & ExtraProps<Rule>>>;
+  ): ArcjetNuxt<Properties & ExtraProps<Rule>>;
 }
 
 /**

@@ -240,7 +240,7 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
    */
   withRule<Rule extends Product>(
     rule: Rule,
-  ): ArcjetSvelteKit<Simplify<Props & ExtraProps<Rule>>>;
+  ): ArcjetSvelteKit<Props & ExtraProps<Rule>>;
 }
 
 /**
