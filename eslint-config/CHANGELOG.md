@@ -1,14 +1,6 @@
 # Changelog
 
-## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/eslint-config-v1.1.0) (2026-02-05)
-
-
-### 🧹 Miscellaneous Chores
-
-* **@arcjet/eslint-config:** Synchronize arcjet-js versions
-
-## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/eslint-config-v1.1.0-rc) (2026-02-03)
-
+## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/eslint-config-v1.1.0) (2026-02-05)
 
 ### 🧹 Miscellaneous Chores
 
