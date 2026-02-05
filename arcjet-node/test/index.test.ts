@@ -297,24 +297,25 @@ test("`arcjetNode`", async function (t) {
     await t.test("should work", async function () {
       const restore = capture();
 
-      const arcjetBase = arcjetNode({
+      const arcjet = arcjetNode({
         client: createLocalClient(),
         characteristics: ['http.request.headers["user-agent"]'],
         key: exampleKey,
-        rules: [
+        rules: [],
+      })
+        .withRule(
           filter({
             deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
             mode: "LIVE",
           }),
-        ],
-      });
-
-      const arcjet = arcjetBase.withRule(
-        detectBot({ deny: ["CURL"], mode: "LIVE" }),
-      );
+        )
+        .withRule(detectBot({ deny: ["CURL"], mode: "LIVE" }))
+        .withRule(validateEmail({ mode: "LIVE", allow: [] }));
 
       const { server, url } = await createSimpleServer({
-        decide: arcjet.protect,
+        decide(request) {
+          return arcjet.protect(request, { email: "alice@arcjet.com" });
+        },
       });
 
       const responseChrome = await fetch(url, {

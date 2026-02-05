@@ -510,11 +510,9 @@ test("Properties", async function (t) {
     type Properties = Assert<
       IsEqual<
         Props<typeof instance>,
-        {
-          x: string | number | boolean;
-          a?: number | null | undefined | undefined;
-          b: string;
-        }
+        Record<"x", string | number | boolean> & {
+          a?: number | null | undefined;
+        } & { b: string }
       >
     >;
 

@@ -2,6 +2,7 @@ import core from "arcjet";
 import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
+  ArcjetRule,
   Primitive,
   Product,
   ArcjetRequest,
@@ -211,9 +212,9 @@ export interface ArcjetAstro<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetAstro<Props & ChildProperties>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetAstro<Props & (Rule extends ArcjetRule<infer P> ? P : {})>;
 }
 
 /**

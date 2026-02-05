@@ -3,6 +3,7 @@ import core from "arcjet";
 import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
+  ArcjetRule,
   Primitive,
   Product,
   ArcjetRequest,
@@ -187,9 +188,9 @@ export interface ArcjetBun<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetBun<Props & ChildProperties>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetBun<Props & (Rule extends ArcjetRule<infer P> ? P : {})>;
 
   /**
    * Wrap the Bun `fetch` handler to provide additional details when calling

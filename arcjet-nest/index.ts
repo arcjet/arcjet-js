@@ -6,6 +6,7 @@ import core from "arcjet";
 import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
+  ArcjetRule,
   Primitive,
   Product,
   ArcjetRequest,
@@ -296,9 +297,9 @@ export interface ArcjetNest<Props extends PlainObject = PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<ChildProperties extends PlainObject>(
-    rule: Primitive<ChildProperties> | Product<ChildProperties>,
-  ): ArcjetNest<Props & ChildProperties>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetNest<Props & (Rule extends ArcjetRule<infer P> ? P : {})>;
 }
 
 function arcjet<
