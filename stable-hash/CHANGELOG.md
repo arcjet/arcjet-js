@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.1-rc](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/stable-hash-v1.1.1-rc) (2026-02-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* trunk fmt hasher.ts ([#5784](https://github.com/arcjet/arcjet-js/issues/5784)) ([040b5e6](https://github.com/arcjet/arcjet-js/commit/040b5e6ac4b86e2549eca7d1d54f9eb6a46287b6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/rollup-config bumped from 1.1.0-rc to 1.1.1-rc
+
 ## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/stable-hash-v1.1.0-rc) (2026-02-03)
 
 

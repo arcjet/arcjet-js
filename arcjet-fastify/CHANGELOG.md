@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.1.1-rc](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/fastify-v1.1.1-rc) (2026-02-05)
+
+
+### ⌨️ Code Refactoring
+
+* use named exports ([#5780](https://github.com/arcjet/arcjet-js/issues/5780)) ([bc3868d](https://github.com/arcjet/arcjet-js/commit/bc3868d1e16881a0eef25c9aacdf935aa366c73a))
+
+
+### 📚 Tests
+
+* **arcjet:** add `protectSignup` tests ([#5779](https://github.com/arcjet/arcjet-js/issues/5779)) ([006b368](https://github.com/arcjet/arcjet-js/commit/006b3689227f47622aacc9f6bfff54d22192185d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/headers bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/ip bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/logger bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/protocol bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/transport bumped from 1.1.0-rc to 1.1.1-rc
+    * arcjet bumped from 1.1.0-rc to 1.1.1-rc
+  * devDependencies
+    * @arcjet/cache bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/eslint-config bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/rollup-config bumped from 1.1.0-rc to 1.1.1-rc
+
 ## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/fastify-v1.1.0-rc) (2026-02-03)
 
 

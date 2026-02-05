@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/rollup-config",
-  "version": "1.1.0-rc",
+  "version": "1.1.1-rc",
   "description": "Custom rollup config for Arcjet projects",
   "keywords": [
     "arcjet",
@@ -44,7 +44,7 @@
     "@rollup/wasm-node": "^4"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.1.0-rc",
+    "@arcjet/eslint-config": "1.1.1-rc",
     "@types/node": "25.1.0",
     "@rollup/wasm-node": "4.57.0",
     "eslint": "9.39.2",

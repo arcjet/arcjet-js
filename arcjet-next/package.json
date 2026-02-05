@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/next",
-  "version": "1.1.0-rc",
+  "version": "1.1.1-rc",
   "description": "Arcjet SDK for the Next.js framework",
   "keywords": [
     "analyze",
@@ -46,21 +46,21 @@
     "test": "npm run build && npm run lint"
   },
   "dependencies": {
-    "@arcjet/body": "1.1.0-rc",
-    "@arcjet/env": "1.1.0-rc",
-    "@arcjet/headers": "1.1.0-rc",
-    "@arcjet/ip": "1.1.0-rc",
-    "@arcjet/logger": "1.1.0-rc",
-    "@arcjet/protocol": "1.1.0-rc",
-    "@arcjet/transport": "1.1.0-rc",
-    "arcjet": "1.1.0-rc"
+    "@arcjet/body": "1.1.1-rc",
+    "@arcjet/env": "1.1.1-rc",
+    "@arcjet/headers": "1.1.1-rc",
+    "@arcjet/ip": "1.1.1-rc",
+    "@arcjet/logger": "1.1.1-rc",
+    "@arcjet/protocol": "1.1.1-rc",
+    "@arcjet/transport": "1.1.1-rc",
+    "arcjet": "1.1.1-rc"
   },
   "peerDependencies": {
     "next": ">=13"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.1.0-rc",
-    "@arcjet/rollup-config": "1.1.0-rc",
+    "@arcjet/eslint-config": "1.1.1-rc",
+    "@arcjet/rollup-config": "1.1.1-rc",
     "@types/node": "25.1.0",
     "@rollup/wasm-node": "4.57.0",
     "eslint": "9.39.2",

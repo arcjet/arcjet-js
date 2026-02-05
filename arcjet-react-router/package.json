@@ -9,20 +9,20 @@
     "url": "https://github.com/arcjet/arcjet-js/issues"
   },
   "dependencies": {
-    "@arcjet/body": "1.1.0-rc",
-    "@arcjet/env": "1.1.0-rc",
-    "@arcjet/headers": "1.1.0-rc",
-    "@arcjet/ip": "1.1.0-rc",
-    "@arcjet/logger": "1.1.0-rc",
-    "@arcjet/protocol": "1.1.0-rc",
-    "@arcjet/transport": "1.1.0-rc",
-    "arcjet": "1.1.0-rc"
+    "@arcjet/body": "1.1.1-rc",
+    "@arcjet/env": "1.1.1-rc",
+    "@arcjet/headers": "1.1.1-rc",
+    "@arcjet/ip": "1.1.1-rc",
+    "@arcjet/logger": "1.1.1-rc",
+    "@arcjet/protocol": "1.1.1-rc",
+    "@arcjet/transport": "1.1.1-rc",
+    "arcjet": "1.1.1-rc"
   },
   "description": "Arcjet SDK for React Router",
   "devDependencies": {
-    "@arcjet/cache": "1.1.0-rc",
-    "@arcjet/eslint-config": "1.1.0-rc",
-    "@arcjet/rollup-config": "1.1.0-rc",
+    "@arcjet/cache": "1.1.1-rc",
+    "@arcjet/eslint-config": "1.1.1-rc",
+    "@arcjet/rollup-config": "1.1.1-rc",
     "eslint": "9.39.2",
     "react-router": "7.13.0",
     "typescript": "5.9.3"
@@ -68,5 +68,5 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "type": "module",
-  "version": "1.1.0-rc"
+  "version": "1.1.1-rc"
 }

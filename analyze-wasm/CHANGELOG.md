@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.1-rc](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/analyze-wasm-v1.1.1-rc) (2026-02-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze-wasm:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/rollup-config bumped from 1.1.0-rc to 1.1.1-rc
+
 ## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/analyze-wasm-v1.1.0-rc) (2026-02-03)
 
 

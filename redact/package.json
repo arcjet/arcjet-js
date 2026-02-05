@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/redact",
-  "version": "1.1.0-rc",
+  "version": "1.1.1-rc",
   "description": "Arcjet sensitive information redaction library",
   "keywords": [
     "arcjet",
@@ -42,11 +42,11 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/redact-wasm": "1.1.0-rc"
+    "@arcjet/redact-wasm": "1.1.1-rc"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.1.0-rc",
-    "@arcjet/rollup-config": "1.1.0-rc",
+    "@arcjet/eslint-config": "1.1.1-rc",
+    "@arcjet/rollup-config": "1.1.1-rc",
     "@rollup/wasm-node": "4.57.0",
     "@types/node": "25.1.0",
     "eslint": "9.39.2",

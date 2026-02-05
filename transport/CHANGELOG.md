@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.1-rc](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/transport-v1.1.1-rc) (2026-02-05)
+
+
+### 📚 Tests
+
+* **transport:** add ([#5781](https://github.com/arcjet/arcjet-js/issues/5781)) ([c0531fa](https://github.com/arcjet/arcjet-js/commit/c0531fa5e96b7d0695ff8ba0f53d24bcba385acd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/rollup-config bumped from 1.1.0-rc to 1.1.1-rc
+
 ## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/transport-v1.1.0-rc) (2026-02-03)
 
 

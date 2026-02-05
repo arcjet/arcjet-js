@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.1-rc](https://github.com/arcjet/arcjet-js/compare/v1.1.0-rc...@arcjet/protocol-v1.1.1-rc) (2026-02-05)
+
+
+### 📚 Tests
+
+* **protocol:** update tests ([#5770](https://github.com/arcjet/arcjet-js/issues/5770)) ([4401380](https://github.com/arcjet/arcjet-js/commit/4401380f9ce1fc015f30e3ed6d6607e7d8ba96c5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.1.0-rc to 1.1.1-rc
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0-rc to 1.1.1-rc
+    * @arcjet/rollup-config bumped from 1.1.0-rc to 1.1.1-rc
+
 ## [1.1.0-rc](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/protocol-v1.1.0-rc) (2026-02-03)
 
 
