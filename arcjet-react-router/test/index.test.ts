@@ -9,7 +9,9 @@ import arcjet, {
   ArcjetReason,
   createRemoteClient,
   detectBot,
+  filter,
   sensitiveInfo,
+  validateEmail,
 } from "../index.js";
 
 test("@arcjet/react-router", async function (t) {
@@ -592,7 +594,7 @@ test("`default`", async function (t) {
 
   await t.test("`withRule()`", async function (t) {
     await t.test("should work", async function () {
-      const baseIntegration = arcjet({
+      const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
         key: "",
         log: {
@@ -602,16 +604,23 @@ test("`default`", async function (t) {
           warn() {},
         },
         rules: [],
-      });
-
-      const integration = baseIntegration.withRule(
-        detectBot({ deny: ["CATEGORY:AI", "CURL"], mode: "LIVE" }),
-      );
+      })
+        .withRule(
+          filter({
+            deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+            mode: "LIVE",
+          }),
+        )
+        .withRule(detectBot({ deny: ["CURL"], mode: "LIVE" }))
+        .withRule(validateEmail({ mode: "LIVE", allow: [] }));
 
       const request = new Request("https://example.com/");
       request.headers.set("user-agent", "curl/7.65.3");
       request.headers.set("x-client-ip", "185.199.108.153");
-      const result = await integration.protect({ request });
+      const result = await integration.protect(
+        { request },
+        { email: "alice@arcjet.com" },
+      );
 
       assert.ok(result.isDenied());
       assert.ok(result.reason.isBot());
