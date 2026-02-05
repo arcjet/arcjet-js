@@ -145,7 +145,7 @@ describe("Primitive > sensitiveInfo", () => {
 
   test("throws if `extra` is not an object in `validate()`", function () {
     const context = {
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       characteristics: [],
       fingerprint: "",
       async getBody() {

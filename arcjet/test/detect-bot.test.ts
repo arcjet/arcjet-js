@@ -140,7 +140,7 @@ describe("Primitive > detectBot", () => {
 
   test("throws via `validate()` if headers does not extend Headers", function () {
     const context = {
-      cache: new MemoryCache(),
+      cache: new MemoryCache<ArcjetCacheEntry>(),
       characteristics: [],
       fingerprint: "",
       async getBody() {

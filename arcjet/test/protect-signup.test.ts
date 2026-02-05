@@ -3,6 +3,7 @@ import test from "node:test";
 import { MemoryCache } from "@arcjet/cache";
 import type { Client } from "@arcjet/protocol/client.js";
 import arcjet, {
+  type ArcjetCacheEntry,
   type ArcjetContext,
   type ArcjetRequest,
   ArcjetAllowDecision,
@@ -256,7 +257,7 @@ test("`arcjet` w/ `protectSignup()`", async function (t) {
  */
 function createContext(): ArcjetContext {
   return {
-    cache: new MemoryCache(),
+    cache: new MemoryCache<ArcjetCacheEntry>(),
     characteristics: [],
     fingerprint: "a",
     getBody() {
