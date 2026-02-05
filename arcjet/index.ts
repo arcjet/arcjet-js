@@ -253,10 +253,6 @@ function toStringArbitrary(value: unknown): string {
  *   Serialized value.
  */
 function toStringJson(value: unknown): string {
-  if (typeof value === "string") {
-    return value;
-  }
-
   // Other values are JSON-stringified.
   try {
     return JSON.stringify(value);
