@@ -16,6 +16,7 @@ import type {
   ArcjetLogger,
   ArcjetOptions as CoreOptions,
   ArcjetRequest,
+  ArcjetRule,
   Arcjet,
   CharacteristicProps,
   Primitive,
@@ -184,7 +185,7 @@ export interface ArcjetFastify<Props> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Product>(
+  withRule<Rule extends Array<ArcjetRule>>(
     rule: Rule,
   ): ArcjetFastify<Props & ExtraProps<Rule>>;
 }

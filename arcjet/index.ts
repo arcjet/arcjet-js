@@ -3205,7 +3205,7 @@ export interface Arcjet<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Product>(
+  withRule<Rule extends Array<ArcjetRule>>(
     rule: Rule,
   ): Arcjet<Props & ExtraProps<Rule>>;
 }

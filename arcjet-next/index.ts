@@ -12,6 +12,7 @@ import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
   ArcjetRuleResult,
+  ArcjetRule,
   Primitive,
   Product,
   ArcjetRequest,
@@ -494,7 +495,7 @@ export interface ArcjetNext<Props extends PlainObject> {
    * @link https://docs.arcjet.com/reference/nextjs#ad-hoc-rules
    * @link https://github.com/arcjet/example-nextjs
    */
-  withRule<Rule extends Product>(
+  withRule<Rule extends Array<ArcjetRule>>(
     rule: Rule,
   ): ArcjetNext<Props & ExtraProps<Rule>>;
 }

@@ -3,6 +3,7 @@ import core from "arcjet";
 import type {
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
+  ArcjetRule,
   Primitive,
   Product,
   ArcjetRequest,
@@ -185,7 +186,7 @@ export interface ArcjetDeno<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Product>(
+  withRule<Rule extends Array<ArcjetRule>>(
     rule: Rule,
   ): ArcjetDeno<Props & ExtraProps<Rule>>;
 

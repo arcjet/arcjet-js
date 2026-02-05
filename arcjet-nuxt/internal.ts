@@ -15,6 +15,7 @@ import arcjetCore, {
   type ArcjetDecision,
   type ArcjetLogger,
   type ArcjetOptions as CoreOptions,
+  type ArcjetRule,
   type Primitive,
   type Product,
   type ArcjetRequest,
@@ -178,7 +179,7 @@ export interface ArcjetNuxt<Properties extends Record<PropertyKey, unknown>> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Product>(
+  withRule<Rule extends Array<ArcjetRule>>(
     rule: Rule,
   ): ArcjetNuxt<Properties & ExtraProps<Rule>>;
 }
