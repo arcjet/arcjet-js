@@ -409,6 +409,130 @@ test("Properties", async function (t) {
       assert.equal(decisionOk.conclusion, "ALLOW");
     },
   );
+
+  await t.test("should infer properties w/ `withRule`", async function () {
+    const noPropertiesRule: ArcjetRule<{}> = {
+      mode: "LIVE",
+      priority: 1,
+      async protect() {
+        return new ArcjetRuleResult({
+          conclusion: "ALLOW",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      },
+      type: "",
+      validate() {},
+      version: 0,
+    };
+    const optionalPropertiesRule: ArcjetRule<{
+      a?: number | null | undefined;
+    }> = {
+      mode: "LIVE",
+      priority: 1,
+      async protect() {
+        return new ArcjetRuleResult({
+          conclusion: "ALLOW",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      },
+      type: "",
+      validate(_context, details) {
+        if (!details || typeof details !== "object") {
+          throw new Error("Expected `details` object");
+        }
+        if (
+          !("extra" in details) ||
+          !details.extra ||
+          typeof details.extra !== "object"
+        ) {
+          throw new Error("Expected `details.extra` object");
+        }
+        if (
+          "a" in details.extra &&
+          typeof details.extra.a === "string" &&
+          Number.isNaN(parseInt(details.extra.a))
+        ) {
+          throw new Error("Expected optional `details.extra.a` number");
+        }
+      },
+      version: 0,
+    };
+    const propertiesRule: ArcjetRule<{ b: string }> = {
+      mode: "LIVE",
+      priority: 1,
+      async protect() {
+        return new ArcjetRuleResult({
+          conclusion: "ALLOW",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      },
+      type: "",
+      validate(_context, details) {
+        if (!details || typeof details !== "object") {
+          throw new Error("Expected `details` object");
+        }
+        if (
+          !("extra" in details) ||
+          !details.extra ||
+          typeof details.extra !== "object"
+        ) {
+          throw new Error("Expected `details.extra` object");
+        }
+        if (!("a" in details.extra) || typeof details.extra.a !== "string") {
+          throw new Error("Expected `details.extra.a` string");
+        }
+      },
+      version: 0,
+    };
+    const instance = arcjet({
+      characteristics: ["http.host", "x"],
+      client: createLocalClient(),
+      key: exampleKey,
+      log: { ...console, debug() {} },
+      rules: [],
+    })
+      .withRule([noPropertiesRule])
+      .withRule([optionalPropertiesRule])
+      .withRule([propertiesRule]);
+
+    type Properties = Assert<
+      IsEqual<
+        Props<typeof instance>,
+        {
+          x: string | number | boolean;
+          a?: number | null | undefined | undefined;
+          b: string;
+        }
+      >
+    >;
+
+    const decisionNok = await instance.protect(
+      createContext(),
+      // @ts-expect-error: this type error is expected.
+      createRequest(),
+    );
+    // TODO: should there be an error if `characteristics` are missing?
+    assert.equal(decisionNok.conclusion, "ALLOW");
+
+    const decisionOk = await instance.protect(createContext(), {
+      ...createRequest(),
+      x: 1,
+      b: "",
+    });
+    assert.equal(decisionOk.conclusion, "ALLOW");
+  });
 });
 
 /**
