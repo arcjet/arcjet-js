@@ -101,7 +101,6 @@ export const server = {
       email: z.string(),
     }),
     handler: async ({ email }, { request }) => {
-      // @ts-expect-error - TODO(#5772): Fix type inference for protectSignup
       const decision = await arcjetProtectSignupClient.protect(request, {
         email,
       });
