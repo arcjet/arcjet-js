@@ -131,7 +131,7 @@ export interface ArcjetReactRouter<
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Primitive | Product>(
+  withRule<Rule extends Product>(
     rule: Rule,
   ): ArcjetReactRouter<Simplify<Properties & ExtraProps<Rule>>>;
 }

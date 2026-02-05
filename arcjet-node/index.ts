@@ -304,7 +304,7 @@ export interface ArcjetNode<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Primitive | Product>(
+  withRule<Rule extends Product>(
     rule: Rule,
   ): ArcjetNode<Simplify<Props & ExtraProps<Rule>>>;
 }

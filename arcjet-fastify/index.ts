@@ -184,7 +184,7 @@ export interface ArcjetFastify<Props> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Primitive | Product>(
+  withRule<Rule extends Product>(
     rule: Rule,
   ): ArcjetFastify<Simplify<Props & ExtraProps<Rule>>>;
 }

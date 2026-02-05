@@ -211,7 +211,7 @@ export interface ArcjetAstro<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Primitive | Product>(
+  withRule<Rule extends Product>(
     rule: Rule,
   ): ArcjetAstro<Simplify<Props & ExtraProps<Rule>>>;
 }
