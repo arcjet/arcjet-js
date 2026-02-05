@@ -1,7 +1,5 @@
 import core from "arcjet";
 import type {
-  UnionToIntersection,
-  PropsForRule,
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
   ArcjetRule,
@@ -309,7 +307,7 @@ export interface ArcjetNode<Props extends PlainObject> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetNode<Props & UnionToIntersection<PropsForRule<Rule>>>;
+  ): ArcjetNode<Props & (Rule extends ArcjetRule<infer P> ? P : {})>;
 }
 
 /**

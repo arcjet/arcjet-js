@@ -12,8 +12,6 @@ import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 import type {
-  UnionToIntersection,
-  PropsForRule,
   ArcjetDecision,
   ArcjetLogger,
   ArcjetOptions as CoreOptions,
@@ -189,7 +187,7 @@ export interface ArcjetFastify<Props> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetFastify<Props & UnionToIntersection<PropsForRule<Rule>>>;
+  ): ArcjetFastify<Props & (Rule extends ArcjetRule<infer P> ? P : {})>;
 }
 
 /**

@@ -1,8 +1,6 @@
 /// <reference types="bun-types" />
 import core from "arcjet";
 import type {
-  UnionToIntersection,
-  PropsForRule,
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
   ArcjetRule,
@@ -192,7 +190,7 @@ export interface ArcjetBun<Props extends PlainObject> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetBun<Props & UnionToIntersection<PropsForRule<Rule>>>;
+  ): ArcjetBun<Props & (Rule extends ArcjetRule<infer P> ? P : {})>;
 
   /**
    * Wrap the Bun `fetch` handler to provide additional details when calling

@@ -1,7 +1,5 @@
 import core from "arcjet";
 import type {
-  UnionToIntersection,
-  PropsForRule,
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
   ArcjetRule,
@@ -243,7 +241,7 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetSvelteKit<Props & UnionToIntersection<PropsForRule<Rule>>>;
+  ): ArcjetSvelteKit<Props & (Rule extends ArcjetRule<infer P> ? P : {})>;
 }
 
 /**
