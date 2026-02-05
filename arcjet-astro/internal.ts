@@ -212,9 +212,9 @@ export interface ArcjetAstro<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Array<ArcjetRule>>(
-    rule: Rule,
-  ): ArcjetAstro<Props & ExtraProps<Rule>>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetAstro<Props & ExtraProps<Array<Rule>>>;
 }
 
 /**

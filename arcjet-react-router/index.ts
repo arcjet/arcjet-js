@@ -132,9 +132,9 @@ export interface ArcjetReactRouter<
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Array<ArcjetRule>>(
-    rule: Rule,
-  ): ArcjetReactRouter<Properties & ExtraProps<Rule>>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetReactRouter<Properties & ExtraProps<Array<Rule>>>;
 }
 
 /**

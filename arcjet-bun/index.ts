@@ -188,9 +188,9 @@ export interface ArcjetBun<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Array<ArcjetRule>>(
-    rule: Rule,
-  ): ArcjetBun<Props & ExtraProps<Rule>>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetBun<Props & ExtraProps<Array<Rule>>>;
 
   /**
    * Wrap the Bun `fetch` handler to provide additional details when calling

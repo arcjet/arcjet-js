@@ -185,9 +185,9 @@ export interface ArcjetFastify<Props> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Array<ArcjetRule>>(
-    rule: Rule,
-  ): ArcjetFastify<Props & ExtraProps<Rule>>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetFastify<Props & ExtraProps<Array<Rule>>>;
 }
 
 /**

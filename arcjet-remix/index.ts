@@ -199,9 +199,9 @@ export interface ArcjetRemix<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Array<ArcjetRule>>(
-    rule: Rule,
-  ): ArcjetRemix<Props & ExtraProps<Rule>>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetRemix<Props & ExtraProps<Array<Rule>>>;
 }
 
 /**

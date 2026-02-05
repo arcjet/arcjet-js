@@ -297,9 +297,9 @@ export interface ArcjetNest<Props extends PlainObject = PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Array<ArcjetRule>>(
-    rule: Rule,
-  ): ArcjetNest<Props & ExtraProps<Rule>>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetNest<Props & ExtraProps<Array<Rule>>>;
 }
 
 function arcjet<

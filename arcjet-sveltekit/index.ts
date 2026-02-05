@@ -239,9 +239,9 @@ export interface ArcjetSvelteKit<Props extends PlainObject> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Array<ArcjetRule>>(
-    rule: Rule,
-  ): ArcjetSvelteKit<Props & ExtraProps<Rule>>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetSvelteKit<Props & ExtraProps<Array<Rule>>>;
 }
 
 /**

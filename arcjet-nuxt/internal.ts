@@ -179,9 +179,9 @@ export interface ArcjetNuxt<Properties extends Record<PropertyKey, unknown>> {
    * @returns
    *   Arcjet instance augmented with the given rule.
    */
-  withRule<Rule extends Array<ArcjetRule>>(
-    rule: Rule,
-  ): ArcjetNuxt<Properties & ExtraProps<Rule>>;
+  withRule<Rule extends ArcjetRule>(
+    rule: Array<Rule>,
+  ): ArcjetNuxt<Properties & ExtraProps<Array<Rule>>>;
 }
 
 /**
