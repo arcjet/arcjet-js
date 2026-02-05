@@ -9,6 +9,8 @@ import type {
 import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
 import core from "arcjet";
 import type {
+  UnionToIntersection,
+  PropsForRule,
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
   ArcjetRuleResult,
@@ -497,7 +499,7 @@ export interface ArcjetNext<Props extends PlainObject> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetNext<Props & ExtraProps<Array<Rule>>>;
+  ): ArcjetNext<Props & UnionToIntersection<PropsForRule<Rule>>>;
 }
 
 /**

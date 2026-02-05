@@ -11,6 +11,8 @@ import { Logger } from "@arcjet/logger";
 import { type Client, createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 import arcjetCore, {
+  type UnionToIntersection,
+  type PropsForRule,
   type ArcjetAdapterContext,
   type ArcjetDecision,
   type ArcjetLogger,
@@ -181,7 +183,7 @@ export interface ArcjetNuxt<Properties extends Record<PropertyKey, unknown>> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetNuxt<Properties & ExtraProps<Array<Rule>>>;
+  ): ArcjetNuxt<Properties & UnionToIntersection<PropsForRule<Rule>>>;
 }
 
 /**

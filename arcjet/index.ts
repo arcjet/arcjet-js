@@ -107,7 +107,7 @@ function errorMessage(err: unknown): string {
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
-type UnionToIntersection<Union> =
+export type UnionToIntersection<Union> =
   // `extends unknown` is always going to be the case and is used to convert the
   // `Union` into a [distributive conditional
   // type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-8.html#distributive-conditional-types).
@@ -1535,7 +1535,7 @@ export type CharacteristicProps<Characteristics extends readonly string[]> =
   UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>;
 
 // Rules can specify they require specific props on an ArcjetRequest
-type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
+export type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
 
 /**
  * Props for rules.
@@ -3207,7 +3207,7 @@ export interface Arcjet<Props extends PlainObject> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): Arcjet<Props & ExtraProps<Array<Rule>>>;
+  ): Arcjet<Props & UnionToIntersection<PropsForRule<Rule>>>;
 }
 
 /**

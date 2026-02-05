@@ -4,6 +4,8 @@ import "reflect-metadata";
 
 import core from "arcjet";
 import type {
+  UnionToIntersection,
+  PropsForRule,
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
   ArcjetRule,
@@ -299,7 +301,7 @@ export interface ArcjetNest<Props extends PlainObject = PlainObject> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetNest<Props & ExtraProps<Array<Rule>>>;
+  ): ArcjetNest<Props & UnionToIntersection<PropsForRule<Rule>>>;
 }
 
 function arcjet<

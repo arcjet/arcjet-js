@@ -11,6 +11,8 @@ import { Logger } from "@arcjet/logger";
 import { type Client, createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 import arcjetCore, {
+  type UnionToIntersection,
+  type PropsForRule,
   type ArcjetAdapterContext,
   type ArcjetDecision,
   type ArcjetLogger,
@@ -134,7 +136,7 @@ export interface ArcjetReactRouter<
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetReactRouter<Properties & ExtraProps<Array<Rule>>>;
+  ): ArcjetReactRouter<Properties & UnionToIntersection<PropsForRule<Rule>>>;
 }
 
 /**

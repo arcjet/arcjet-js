@@ -1,6 +1,8 @@
 /// <reference types="@types/deno" />
 import core from "arcjet";
 import type {
+  UnionToIntersection,
+  PropsForRule,
   ArcjetDecision,
   ArcjetOptions as CoreOptions,
   ArcjetRule,
@@ -188,7 +190,7 @@ export interface ArcjetDeno<Props extends PlainObject> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetDeno<Props & ExtraProps<Array<Rule>>>;
+  ): ArcjetDeno<Props & UnionToIntersection<PropsForRule<Rule>>>;
 
   /**
    * Wrap your handler passed to `Deno.serve` with this function to provide
