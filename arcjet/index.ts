@@ -1490,9 +1490,12 @@ type ExcludeBuiltinCharacteristic<T> = T extends
   | `http.request.cookie["${string}"]`
   | `http.request.uri.args["${string}"]`
   ? never
-  : T extends string
-    ? T
-    : never;
+  : // Must be more narrow than a string.
+    [string] extends [T]
+    ? never
+    : T extends string
+      ? T
+      : never;
 
 /**
  * Props for characteristics.
