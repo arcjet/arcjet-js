@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.1](https://github.com/arcjet/arcjet-js/compare/v1.1.0...@arcjet/redact-wasm-v1.1.1) (2026-02-06)
+
+
+### 🧹 Miscellaneous Chores
+
+* add new bots to well-known bots list ([#5801](https://github.com/arcjet/arcjet-js/issues/5801)) ([b4d3c32](https://github.com/arcjet/arcjet-js/commit/b4d3c326d878dbe849f02dd9f09d0c5210b4f291))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0 to 1.1.1
+    * @arcjet/rollup-config bumped from 1.1.0 to 1.1.1
+
 ## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/redact-wasm-v1.1.0) (2026-02-05)
 
 
