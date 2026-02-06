@@ -387,9 +387,7 @@ test("Properties", async function (t) {
       type PropertiesWithCharacteristics = Assert<
         IsEqual<
           Props<typeof instance>,
-          // TODO: would be nice if the type is actually one record?
-          Record<"x", string | number | boolean> &
-            Record<"y.z", string | number | boolean>
+          { x: string | number | boolean; "y.z": string | number | boolean }
         >
       >;
 
