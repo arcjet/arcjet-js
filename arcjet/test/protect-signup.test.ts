@@ -15,11 +15,10 @@ const exampleKey = "ajkey_yourkey";
 
 test("`protectSignup`", async function (t) {
   await t.test("should throw w/o options", async function () {
-    // TODO: better error message, not a type error but about `options`.
     assert.throws(function () {
       // @ts-expect-error: test runtime behavior.
       protectSignup();
-    }, /Cannot read properties of undefined/);
+    }, /`protectSignup` options error: expected object/);
   });
 
   await t.test(
@@ -28,8 +27,7 @@ test("`protectSignup`", async function (t) {
       assert.throws(function () {
         // @ts-expect-error: test runtime behavior.
         protectSignup({ bots: { allow: [] } });
-        // TODO: better error message, not about `slidingWindow` but about the `rateLimit` field.
-      }, /`slidingWindow` options error: expected object/);
+      }, /`protectSignup` options error: `rateLimit` is required/);
     },
   );
 
@@ -39,8 +37,7 @@ test("`protectSignup`", async function (t) {
       assert.throws(function () {
         // @ts-expect-error: test runtime behavior.
         protectSignup({ email: { allow: [] } });
-        // TODO: better error message, not about `slidingWindow` but about the `rateLimit` field.
-      }, /`slidingWindow` options error: expected object/);
+      }, /`protectSignup` options error: `rateLimit` is required/);
     },
   );
 
@@ -48,8 +45,7 @@ test("`protectSignup`", async function (t) {
     assert.throws(function () {
       // @ts-expect-error: test runtime behavior.
       protectSignup({ rateLimit: { interval: 60, max: 5 } });
-      // TODO: better error message, not about `detectBot` but about the `bots` field.
-    }, /`detectBot` options error: expected object/);
+    }, /`protectSignup` options error: `bots` is required/);
   });
 
   await t.test("should throw w/o `bots` options", async function () {
@@ -59,8 +55,7 @@ test("`protectSignup`", async function (t) {
         email: { allow: [] },
         rateLimit: { interval: 60, max: 5 },
       });
-      // TODO: better error message, not about `detectBot` but about the `bots` field.
-    }, /`detectBot` options error: expected object/);
+    }, /`protectSignup` options error: `bots` is required/);
   });
 
   await t.test("should throw w/o `email` options", async function () {
@@ -70,16 +65,14 @@ test("`protectSignup`", async function (t) {
         bots: { allow: [] },
         rateLimit: { interval: 60, max: 5 },
       });
-      // TODO: better error message, not about `validateEmail` but about the `email` field.
-    }, /`validateEmail` options error: expected object/);
+    }, /`protectSignup` options error: `email` is required/);
   });
 
   await t.test("should throw w/o `rateLimit` options", async function () {
     assert.throws(function () {
       // @ts-expect-error: test runtime behavior.
       protectSignup({ bots: { allow: [] }, email: { allow: [] } });
-      // TODO: better error message, not about `slidingWindow` but about the `rateLimit` field.
-    }, /`slidingWindow` options error: expected object/);
+    }, /`protectSignup` options error: `rateLimit` is required/);
   });
 
   await t.test(
