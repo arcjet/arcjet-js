@@ -1832,11 +1832,7 @@ export function fixedWindow<
   const Characteristics extends readonly string[] = [],
 >(
   options: FixedWindowRateLimitOptions<Characteristics>,
-): [
-  ArcjetFixedWindowRateLimitRule<
-    Simplify<CharacteristicProps<Characteristics>>
-  >,
-] {
+): [ArcjetFixedWindowRateLimitRule<CharacteristicProps<Characteristics>>] {
   validateFixedWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -1970,11 +1966,7 @@ export function slidingWindow<
   const Characteristics extends readonly string[] = [],
 >(
   options: SlidingWindowRateLimitOptions<Characteristics>,
-): [
-  ArcjetSlidingWindowRateLimitRule<
-    Simplify<CharacteristicProps<Characteristics>>
-  >,
-] {
+): [ArcjetSlidingWindowRateLimitRule<CharacteristicProps<Characteristics>>] {
   validateSlidingWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -2969,7 +2961,7 @@ export function protectSignup<const Characteristics extends string[] = []>(
   options: ProtectSignupOptions<Characteristics>,
 ): [
   rateLimit: ArcjetSlidingWindowRateLimitRule<
-    Simplify<CharacteristicProps<Characteristics>>
+    CharacteristicProps<Characteristics>
   >,
   bot: ArcjetBotRule<{}>,
   email: ArcjetEmailRule<{ email: string }>,
