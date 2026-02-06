@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.1](https://github.com/arcjet/arcjet-js/compare/v1.1.0...@arcjet/body-v1.1.1) (2026-02-06)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/body:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0 to 1.1.1
+    * @arcjet/rollup-config bumped from 1.1.0 to 1.1.1
+
 ## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/body-v1.1.0) (2026-02-05)
 
 
