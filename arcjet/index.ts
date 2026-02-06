@@ -82,10 +82,6 @@ function errorMessage(err: unknown): string {
 // https://github.com/sindresorhus/type-fest/blob/964466c9d59c711da57a5297ad954c13132a0001/source/simplify.d.ts
 // UnionToIntersection:
 // https://github.com/sindresorhus/type-fest/blob/017bf38ebb52df37c297324d97bcc693ec22e920/source/union-to-intersection.d.ts
-// IsNever:
-// https://github.com/sindresorhus/type-fest/blob/e02f228f6391bb2b26c32a55dfe1e3aa2386d515/source/primitive.d.ts
-// LiteralCheck & IsStringLiteral:
-// https://github.com/sindresorhus/type-fest/blob/e02f228f6391bb2b26c32a55dfe1e3aa2386d515/source/is-literal.d.ts
 //
 // Licensed: MIT License Copyright (c) Sindre Sorhus <sindresorhus@gmail.com>
 // (https://sindresorhus.com)
@@ -124,26 +120,6 @@ type UnionToIntersection<Union> =
     ? // The `& Union` is to allow indexing by the resulting type
       Intersection & Union
     : never;
-type IsNever<T> = [T] extends [never] ? true : false;
-type LiteralCheck<
-  T,
-  LiteralType extends
-    | null
-    | undefined
-    | string
-    | number
-    | boolean
-    | symbol
-    | bigint,
-> =
-  IsNever<T> extends false // Must be wider than `never`
-    ? [T] extends [LiteralType] // Must be narrower than `LiteralType`
-      ? [LiteralType] extends [T] // Cannot be wider than `LiteralType`
-        ? false
-        : true
-      : false
-    : false;
-type IsStringLiteral<T> = LiteralCheck<T, string>;
 
 /**
  * List of known fields on {@linkcode ArcjetRequest}.
@@ -1570,22 +1546,21 @@ export type Product<Props extends PlainObject = {}> = ArcjetRule<Props>[];
 // Note: If a user doesn't provide the object literal to our primitives
 // directly, we fallback to no required props. They can opt-in by adding the
 // `as const` suffix to the characteristics array.
-type PropsForCharacteristic<T> =
-  IsStringLiteral<T> extends true
-    ? T extends
-        | "ip.src"
-        | "http.host"
-        | "http.method"
-        | "http.request.uri.path"
-        | `http.request.headers["${string}"]`
-        | `http.request.cookie["${string}"]`
-        | `http.request.uri.args["${string}"]`
-      ? {}
-      : T extends string
-        ? // Actual support is any JSON stringifiable value.
-          Record<T, boolean | number | string>
-        : never
-    : {};
+type ExcludeBuiltinCharacteristic<T> = T extends
+  | "ip.src"
+  | "http.host"
+  | "http.method"
+  | "http.request.uri.path"
+  | `http.request.headers["${string}"]`
+  | `http.request.cookie["${string}"]`
+  | `http.request.uri.args["${string}"]`
+  ? never
+  : // Must be more narrow than a string.
+    [string] extends [T]
+    ? never
+    : T extends string
+      ? T
+      : never;
 
 /**
  * Props for characteristics.
@@ -1597,7 +1572,14 @@ type PropsForCharacteristic<T> =
  *   List of characteristics.
  */
 export type CharacteristicProps<Characteristics extends readonly string[]> =
-  UnionToIntersection<PropsForCharacteristic<Characteristics[number]>>;
+  Characteristics extends []
+    ? {}
+    : {
+        [K in ExcludeBuiltinCharacteristic<Characteristics[number]>]:
+          | boolean
+          | number
+          | string;
+      };
 
 // Rules can specify they require specific props on an ArcjetRequest
 type PropsForRule<R> = R extends ArcjetRule<infer Props> ? Props : {};
@@ -1918,11 +1900,7 @@ export function fixedWindow<
   const Characteristics extends readonly string[] = [],
 >(
   options: FixedWindowRateLimitOptions<Characteristics>,
-): [
-  ArcjetFixedWindowRateLimitRule<
-    Simplify<CharacteristicProps<Characteristics>>
-  >,
-] {
+): [ArcjetFixedWindowRateLimitRule<CharacteristicProps<Characteristics>>] {
   validateFixedWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -2056,11 +2034,7 @@ export function slidingWindow<
   const Characteristics extends readonly string[] = [],
 >(
   options: SlidingWindowRateLimitOptions<Characteristics>,
-): [
-  ArcjetSlidingWindowRateLimitRule<
-    Simplify<CharacteristicProps<Characteristics>>
-  >,
-] {
+): [ArcjetSlidingWindowRateLimitRule<CharacteristicProps<Characteristics>>] {
   validateSlidingWindowOptions(options);
 
   const type = "RATE_LIMIT";
@@ -3055,7 +3029,7 @@ export function protectSignup<const Characteristics extends string[] = []>(
   options: ProtectSignupOptions<Characteristics>,
 ): [
   rateLimit: ArcjetSlidingWindowRateLimitRule<
-    Simplify<CharacteristicProps<Characteristics>>
+    CharacteristicProps<Characteristics>
   >,
   bot: ArcjetBotRule<{}>,
   email: ArcjetEmailRule<{ email: string }>,
