@@ -940,15 +940,10 @@ test("`arcjet`", async function (t) {
           const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
           if (cached) {
             cacheHits++;
-            // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-            const entry = cached as {
-              conclusion: ArcjetConclusion;
-              reason: ArcjetReason;
-            };
             return new ArcjetRuleResult({
-              conclusion: entry.conclusion,
+              conclusion: cached.conclusion,
               fingerprint,
-              reason: entry.reason,
+              reason: cached.reason,
               ruleId,
               state: "CACHED",
               ttl,
@@ -1017,15 +1012,10 @@ test("`arcjet`", async function (t) {
             const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
             if (cached) {
               cacheHits++;
-              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-              const entry = cached as {
-                conclusion: ArcjetConclusion;
-                reason: ArcjetReason;
-              };
               return new ArcjetRuleResult({
-                conclusion: entry.conclusion,
+                conclusion: cached.conclusion,
                 fingerprint,
-                reason: entry.reason,
+                reason: cached.reason,
                 ruleId,
                 state: "CACHED",
                 ttl,
@@ -1096,15 +1086,10 @@ test("`arcjet`", async function (t) {
           const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
           if (cached) {
             cacheHits++;
-            // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-            const entry = cached as {
-              conclusion: ArcjetConclusion;
-              reason: ArcjetReason;
-            };
             return new ArcjetRuleResult({
-              conclusion: entry.conclusion,
+              conclusion: cached.conclusion,
               fingerprint,
-              reason: entry.reason,
+              reason: cached.reason,
               ruleId,
               state: "CACHED",
               ttl,
@@ -1174,15 +1159,10 @@ test("`arcjet`", async function (t) {
             const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
             if (cached) {
               cacheHits++;
-              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-              const entry = cached as {
-                conclusion: ArcjetConclusion;
-                reason: ArcjetReason;
-              };
               return new ArcjetRuleResult({
-                conclusion: entry.conclusion,
+                conclusion: cached.conclusion,
                 fingerprint,
-                reason: entry.reason,
+                reason: cached.reason,
                 ruleId,
                 state: "CACHED",
                 ttl,
@@ -1683,15 +1663,10 @@ test("`arcjet`", async function (t) {
             const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
             if (cached) {
               cacheHits++;
-              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-              const entry = cached as {
-                conclusion: ArcjetConclusion;
-                reason: ArcjetReason;
-              };
               return new ArcjetRuleResult({
-                conclusion: entry.conclusion,
+                conclusion: cached.conclusion,
                 fingerprint,
-                reason: entry.reason,
+                reason: cached.reason,
                 ruleId,
                 state: "CACHED",
                 ttl,
@@ -1774,15 +1749,10 @@ test("`arcjet`", async function (t) {
             const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
             if (cached) {
               cacheHits++;
-              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-              const entry = cached as {
-                conclusion: ArcjetConclusion;
-                reason: ArcjetReason;
-              };
               return new ArcjetRuleResult({
-                conclusion: entry.conclusion,
+                conclusion: cached.conclusion,
                 fingerprint,
-                reason: entry.reason,
+                reason: cached.reason,
                 ruleId,
                 state: "CACHED",
                 ttl,
@@ -1865,15 +1835,10 @@ test("`arcjet`", async function (t) {
             const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
             if (cached) {
               cacheHits++;
-              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-              const entry = cached as {
-                conclusion: ArcjetConclusion;
-                reason: ArcjetReason;
-              };
               return new ArcjetRuleResult({
-                conclusion: entry.conclusion,
+                conclusion: cached.conclusion,
                 fingerprint,
-                reason: entry.reason,
+                reason: cached.reason,
                 ruleId,
                 state: "CACHED",
                 ttl,
@@ -1956,15 +1921,10 @@ test("`arcjet`", async function (t) {
             const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
             if (cached) {
               cacheHits++;
-              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-              const entry = cached as {
-                conclusion: ArcjetConclusion;
-                reason: ArcjetReason;
-              };
               return new ArcjetRuleResult({
-                conclusion: entry.conclusion,
+                conclusion: cached.conclusion,
                 fingerprint,
-                reason: entry.reason,
+                reason: cached.reason,
                 ruleId,
                 state: "CACHED",
                 ttl,
@@ -2047,15 +2007,10 @@ test("`arcjet`", async function (t) {
             const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
             if (cached) {
               cacheHits++;
-              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-              const entry = cached as {
-                conclusion: ArcjetConclusion;
-                reason: ArcjetReason;
-              };
               return new ArcjetRuleResult({
-                conclusion: entry.conclusion,
+                conclusion: cached.conclusion,
                 fingerprint,
-                reason: entry.reason,
+                reason: cached.reason,
                 ruleId,
                 state: "CACHED",
                 ttl,
@@ -2138,15 +2093,10 @@ test("`arcjet`", async function (t) {
             const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
             if (cached) {
               cacheHits++;
-              // TODO: arcjet always uses this type to set things in the cache, so it should not be `unknown`.
-              const entry = cached as {
-                conclusion: ArcjetConclusion;
-                reason: ArcjetReason;
-              };
               return new ArcjetRuleResult({
-                conclusion: entry.conclusion,
+                conclusion: cached.conclusion,
                 fingerprint,
-                reason: entry.reason,
+                reason: cached.reason,
                 ruleId,
                 state: "CACHED",
                 ttl,
