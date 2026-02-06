@@ -199,6 +199,7 @@ export type ArcjetWellKnownBot =
   | "GNOWIT_CRAWLER"
   | "GO_HTTP"
   | "GOO_CRAWLER"
+  | "GOOGLE_ADS_CONVERSIONS"
   | "GOOGLE_ADSBOT"
   | "GOOGLE_ADSBOT_MOBILE"
   | "GOOGLE_ADSENSE"
@@ -332,6 +333,7 @@ export type ArcjetWellKnownBot =
   | "MELTWATER_CRAWLER"
   | "META_CRAWLER"
   | "META_CRAWLER_USER"
+  | "META_EXTERNALADS"
   | "METADATALABS_CRAWLER"
   | "METAJOB_CRAWLER"
   | "METAURI_CRAWLER"
@@ -594,6 +596,7 @@ export type ArcjetWellKnownBot =
   | "YANDEX_CRAWLER_JAVASCRIPT"
   | "YANGA_CRAWLER"
   | "YELLOWBP_CRAWLER"
+  | "YEXT_BOT"
   | "YISOU_CRAWLER"
   | "YOOZ_CRAWLER"
   | "YOU_CRAWLER"
@@ -650,11 +653,13 @@ export const categories: Record<
   ]),
   "CATEGORY:ADVERTISING": Object.freeze<ArcjetWellKnownBot[]>([
     "BING_ADS",
+    "GOOGLE_ADS_CONVERSIONS",
     "GOOGLE_ADSBOT",
     "GOOGLE_ADSBOT_MOBILE",
     "GOOGLE_ADSENSE",
     "GOOGLE_ADSENSE_GOOGLEBOT",
     "GOOGLE_ADWORDS",
+    "META_EXTERNALADS",
     "MOAT_CRAWLER",
     "MSN_CRAWLER",
   ]),
@@ -754,6 +759,7 @@ export const categories: Record<
     "WORDPRESS_CRAWLER_RSS",
   ]),
   "CATEGORY:GOOGLE": Object.freeze<ArcjetWellKnownBot[]>([
+    "GOOGLE_ADS_CONVERSIONS",
     "GOOGLE_ADSBOT",
     "GOOGLE_ADSBOT_MOBILE",
     "GOOGLE_ADSENSE",
@@ -788,6 +794,7 @@ export const categories: Record<
     "FACEBOOK_SHARE_CRAWLER",
     "META_CRAWLER",
     "META_CRAWLER_USER",
+    "META_EXTERNALADS",
     "WHATSAPP_CRAWLER",
   ]),
   "CATEGORY:MICROSOFT": Object.freeze<ArcjetWellKnownBot[]>([
@@ -1013,6 +1020,7 @@ export const categories: Record<
     "SUMMALY_CRAWLER",
     "WGET",
     "XENU_CRAWLER",
+    "YEXT_BOT",
     "ZGRAB",
   ]),
   "CATEGORY:UNKNOWN": Object.freeze<ArcjetWellKnownBot[]>([
