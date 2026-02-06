@@ -1,3 +1,5 @@
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -55,6 +57,29 @@ console.log(sprintf("Hello %s", "world")); // => "Hello world"
 console.log(sprintf("1 %i %d", 2, 3.0)); // => "1 2 3"
 ```
 
+## API
+
+This package exports the identifier
+[`sprintf`][api-sprintf].
+The default export is also [`sprintf`][api-sprintf].
+
+This package exports no [TypeScript][] types.
+
+### `sprintf(template, …values)`
+
+Format a string with placeholders using the provided arguments.
+
+###### Parameters
+
+- `template` (`string`)
+  — template
+- `values` (`Array<string>`)
+  – values to interpolate
+
+###### Returns
+
+Formatted string (`string`).
+
 ## Substitutions
 
 Substitutions will be made for the following character sequences if the matching
@@ -82,7 +107,9 @@ Our work is more restrictive while maintaining as much compatibility as
 possible.
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-sprintf]: #sprintftemplate-values
 [arcjet]: https://arcjet.com
 [node-util]: https://nodejs.org/docs/latest-v18.x/api/util.html#utilformatformat-args
 [quick-format-unescaped-license]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64/LICENSE
 [quick-format-unescaped]: https://github.com/pinojs/quick-format-unescaped/blob/20ebf64/index.js
+[typescript]: https://www.typescriptlang.org/

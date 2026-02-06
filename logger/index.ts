@@ -19,6 +19,11 @@ function tryStringify(value: unknown) {
 
 /**
  * Supported log levels.
+ *
+ * The order from most verbose to least verbose is
+ * `debug`, `info`, `warn`, to `error`.
+ * When using for example `info`, then `warn` and `error` messages
+ * are also logged.
  */
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -95,7 +100,7 @@ export class Logger {
   #logLevel: number;
 
   /**
-   * Configuration.
+   * Create a new logger.
    *
    * @param options
    *   Configuration.
