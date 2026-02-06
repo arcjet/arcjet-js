@@ -1363,9 +1363,7 @@ export const categories: Record<
     "VERCEL_CRAWLER",
     "VERCEL_MONITOR_PREVIEW",
   ]),
-  "CATEGORY:WEBHOOK": Object.freeze<ArcjetWellKnownBot[]>([
-    "STRIPE_WEBHOOK",
-  ]),
+  "CATEGORY:WEBHOOK": Object.freeze<ArcjetWellKnownBot[]>(["STRIPE_WEBHOOK"]),
   "CATEGORY:YAHOO": Object.freeze<ArcjetWellKnownBot[]>([
     "YAHOO_CRAWLER",
     "YAHOO_CRAWLER_JAPAN",
