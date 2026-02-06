@@ -65,8 +65,7 @@ test("`arcjet`", async function (t) {
     assert.throws(function () {
       // @ts-expect-error: test runtime behavior.
       arcjet({ client: createLocalClient(), log: console });
-      // TODO: better error?
-    }, /Cannot read properties of undefined/);
+    }, /Rules are required/);
   });
 
   // The `key` passed to `protect` is used.

@@ -3294,6 +3294,10 @@ export default function arcjet<
   // TODO(#132): Support configurable caching
   const cache = new MemoryCache<ArcjetCacheEntry>();
 
+  if (!Array.isArray(rules)) {
+    throw new Error("Rules are required");
+  }
+
   async function protect<Props extends PlainObject>(
     rules: ArcjetRule[],
     ctx: ArcjetAdapterContext,
