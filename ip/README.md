@@ -1,3 +1,6 @@
+<!-- trunk-ignore-all(markdownlint/MD024) -->
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -52,7 +55,7 @@ Install with npm in Node.js:
 npm install @arcjet/ip
 ```
 
-## Example
+## Use
 
 ```ts
 import { findIp } from "@arcjet/ip";
@@ -60,6 +63,98 @@ import { findIp } from "@arcjet/ip";
 const ip = findIp({ headers: { "x-real-ip": "1.1.1.1" } });
 console.log(ip); // => "1.1.1.1"
 ```
+
+## API
+
+This package exports the identifiers
+[`findIp`][api-find-ip] and [`parseProxy`][api-parse-proxy].
+The default export is [`findIp`][api-find-ip]
+
+This package exports the [TypeScript][] types
+[`Cidr`][api-cidr],
+[`Options`][api-options],
+[`Platform`][api-platform], and
+[`RequestLike`][api-request-like].
+
+### `Cidr`
+
+One of the CIDR ranges (TypeScript type).
+
+###### Type
+
+```ts
+type Cidr = Ipv4Cidr | Ipv6Cidr;
+// Where each is an instance roughly equivalent to
+// `{bits: number, partSize: 8 | 16, parts: Array<number>, type: "v4" | "v6"}`,
+// with a `contains` function that can be passed an array of octets.
+```
+
+### `Options`
+
+Configuration (TypeScript type).
+
+###### Fields
+
+- `platform` ([`Platform`][api-platform], optional)
+  — platform the code is running on;
+  used to allow only known more trustworthy headers
+- `proxies` (`Array<Cidr | string>`, optional)
+  — trusted proxies
+
+### `Platform`
+
+Platform name (TypeScript type).
+
+###### Type
+
+```ts
+type Platform = "cloudflare" | "firebase" | "fly-io" | "render" | "vercel";
+```
+
+### `RequestLike`
+
+Interface that looks like a request (TypeScript).
+
+###### Fields
+
+- `headers` (`Headers | Record<string, Array<string> | string | undefined>`)
+  — headers
+- `info` (`{remoteAddress?: string}`, optional)
+  — some platforms pass `info`
+- `ip` (`unknown`, optional)
+  — some platforms such as provide `ip` directly on `request`
+- `requestContext` (`{identity?: {sourceIp?: string}}`, optional)
+  — Some platforms pass `requestContext`
+- `socket` (`{remoteAddress?: string}`, optional)
+  — Some platforms pass a socket
+
+### `findIp(request[, options])`
+
+Find a client IP address on a request-like object.
+
+###### Parameters
+
+- `request` ([`RequestLike`][api-request-like])
+  — request-like object.
+- `options` ([`Options`][api-options], optional)
+  — configuration
+
+###### Returns
+
+Found IP address (`string`); empty string if not found.
+
+### `parseProxy(value)`
+
+Parse CIDR addresses and keep non-CIDR IP addresses.
+
+###### Parameters
+
+- `value` (`string`)
+  — value to parse
+
+###### Returns
+
+Parsed [`Cidr`][api-cidr] if range or given `value` if IP.
 
 ## Considerations
 
@@ -87,6 +182,12 @@ Derivative work based on [`getClientIp` from `request-ip`][request-ip-client-ip]
 licensed under [MIT][request-ip-license] © Petar Bojinov.
 Our work cherry picks only what we need.
 
+[api-cidr]: #cidr
+[api-find-ip]: #findiprequest-options
+[api-options]: #options
+[api-parse-proxy]: #parseproxyvalue
+[api-platform]: #platform
+[api-request-like]: #requestlike
 [arcjet]: https://arcjet.com
 [request-ip-client-ip]: https://github.com/pbojinov/request-ip/blob/e1d0f4b/src/index.js#L55
 [request-ip-license]: https://github.com/pbojinov/request-ip/blob/e1d0f4b/LICENSE.md
@@ -96,4 +197,5 @@ Our work cherry picks only what we need.
 [rust-license-apache]: https://github.com/rust-lang/rust/blob/07921b5/LICENSE-APACHE
 [rust-license-mit]: https://github.com/rust-lang/rust/blob/07921b5/LICENSE-MIT
 [rust-parser]: https://github.com/rust-lang/rust/blob/07921b5/library/core/src/net/parser.rs#L34
+[typescript]: https://www.typescriptlang.org/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

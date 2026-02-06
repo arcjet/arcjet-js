@@ -198,7 +198,7 @@ function isCidr(address: string): address is `${string}/${string}` {
  * @param value
  *   Value to parse.
  * @returns
- *   Parsed CIDR or given `value`.
+ *   Parsed {@linkcode Cidr} if range or given `value` if IP.
  */
 export function parseProxy(value: string): string | Cidr {
   if (isCidr(value)) {
@@ -759,6 +759,7 @@ interface PartialRequestContext {
 /**
  * Interface with `headers`.
  */
+// TODO: do not export, merge into `RequestLike`.
 export type HeaderLike = {
   /**
    * Headers.
@@ -853,6 +854,16 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+/**
+ * Find a client IP address on a request-like object.
+ *
+ * @param request
+ *   Request-like object.
+ * @param [options]
+ *   Configuration (optional).
+ * @returns
+ *   Found IP address; empty string if not found.
+ */
 export function findIp(
   request: RequestLike,
   options?: Options | null | undefined,
