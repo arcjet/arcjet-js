@@ -408,6 +408,44 @@ interface ValidateInterfaceConfiguration {
 }
 
 /**
+ * Validations for {@linkcode BotOptions}.
+ */
+const botValidations: ReadonlyArray<ValidationSchema> = [
+  { key: "mode", required: false, validate: validateMode },
+  { key: "allow", required: false, validate: validateStringArray },
+  { key: "deny", required: false, validate: validateStringArray },
+];
+
+/**
+ * Validations for {@linkcode SlidingWindowRateLimitOptions}.
+ */
+const slidingWindowValidations: ReadonlyArray<ValidationSchema> = [
+  { key: "mode", required: false, validate: validateMode },
+  {
+    key: "characteristics",
+    validate: validateStringArray,
+    required: false,
+  },
+  { key: "max", required: true, validate: validateNumber },
+  { key: "interval", required: true, validate: validateNumberOrString },
+];
+
+/**
+ * Validations for {@linkcode EmailOptions}.
+ */
+const emailValidations: ReadonlyArray<ValidationSchema> = [
+  { key: "mode", required: false, validate: validateMode },
+  { key: "allow", required: false, validate: validateEmailTypes },
+  { key: "deny", required: false, validate: validateEmailTypes },
+  {
+    key: "requireTopLevelDomain",
+    required: false,
+    validate: validateBoolean,
+  },
+  { key: "allowDomainLiteral", required: false, validate: validateBoolean },
+];
+
+/**
  * Validate an interface: an object of a particular shape.
  *
  * @template Type
@@ -815,16 +853,7 @@ function validateSlidingWindowOptions(
 ): asserts value is SlidingWindowRateLimitOptions<Array<string>> {
   validateInterface(value, {
     name: "slidingWindow",
-    validations: [
-      { key: "mode", required: false, validate: validateMode },
-      {
-        key: "characteristics",
-        validate: validateStringArray,
-        required: false,
-      },
-      { key: "max", required: true, validate: validateNumber },
-      { key: "interval", required: true, validate: validateNumberOrString },
-    ],
+    validations: slidingWindowValidations,
   });
 }
 
@@ -866,17 +895,7 @@ function validateSensitiveInfoOptions(
 function validateEmailOptions(value: unknown): asserts value is EmailOptions {
   validateInterface(value, {
     name: "validateEmail",
-    validations: [
-      { key: "mode", required: false, validate: validateMode },
-      { key: "allow", required: false, validate: validateEmailTypes },
-      { key: "deny", required: false, validate: validateEmailTypes },
-      {
-        key: "requireTopLevelDomain",
-        required: false,
-        validate: validateBoolean,
-      },
-      { key: "allowDomainLiteral", required: false, validate: validateBoolean },
-    ],
+    validations: emailValidations,
   });
 }
 
@@ -893,11 +912,7 @@ function validateEmailOptions(value: unknown): asserts value is EmailOptions {
 function validateBotOptions(value: unknown): asserts value is BotOptions {
   validateInterface(value, {
     name: "detectBot",
-    validations: [
-      { key: "mode", required: false, validate: validateMode },
-      { key: "allow", required: false, validate: validateStringArray },
-      { key: "deny", required: false, validate: validateStringArray },
-    ],
+    validations: botValidations,
   });
 }
 
@@ -915,6 +930,56 @@ function validateShieldOptions(value: unknown): asserts value is ShieldOptions {
   validateInterface(value, {
     name: "shield",
     validations: [{ key: "mode", required: false, validate: validateMode }],
+  });
+}
+
+/**
+ * Validate protect signup options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not protect signup options.
+ */
+function validateProtectSignupOptions(
+  value: unknown,
+): asserts value is ProtectSignupOptions<Array<string>> {
+  validateInterface(value, {
+    name: "protectSignup",
+    validations: [
+      {
+        key: "rateLimit",
+        required: true,
+        validate(_path, value) {
+          validateInterface(value, {
+            name: "rateLimit",
+            validations: slidingWindowValidations,
+          });
+        },
+      },
+      {
+        key: "bots",
+        required: true,
+        validate(_path, value) {
+          validateInterface(value, {
+            name: "bots",
+            validations: botValidations,
+          });
+        },
+      },
+      {
+        key: "email",
+        required: true,
+        validate(_path, value) {
+          validateInterface(value, {
+            name: "email",
+            validations: emailValidations,
+          });
+        },
+      },
+    ],
   });
 }
 
@@ -2995,6 +3060,7 @@ export function protectSignup<const Characteristics extends string[] = []>(
   bot: ArcjetBotRule<{}>,
   email: ArcjetEmailRule<{ email: string }>,
 ] {
+  validateProtectSignupOptions(options);
   const [rateLimit] = slidingWindow(options.rateLimit);
   const [bot] = detectBot(options.bots);
   const [email] = validateEmail(options.email);
