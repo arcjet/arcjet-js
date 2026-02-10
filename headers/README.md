@@ -51,6 +51,21 @@ const headers = new ArcjetHeaders({ abc: "123" });
 console.log(headers.get("abc")); // => "123"
 ```
 
+## API
+
+This package exports the identifier
+[`ArcjetHeaders`][api-arcjet-headers].
+The default export is [`ArcjetHeaders`][api-arcjet-headers].
+
+This package exports no [TypeScript][] types.
+
+### `new ArcjetHeaders([init])`
+
+Arcjet headers.
+
+This exists to prevent the `cookie` header from being set
+and non-string values from being set.
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]

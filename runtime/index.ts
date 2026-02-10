@@ -42,7 +42,7 @@ declare const process: any | undefined;
  * Detect the current runtime environment at runtime.
  *
  * @returns
- *   Runtime.
+ *   Runtime; empty string if not found.
  */
 export function runtime(): Runtime {
   // The detection order matters in this function because some platforms will

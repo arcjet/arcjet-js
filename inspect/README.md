@@ -1,3 +1,6 @@
+<!-- trunk-ignore-all(markdownlint/MD024) -->
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -41,7 +44,7 @@ Install with npm in Node.js:
 npm install @arcjet/inspect
 ```
 
-## Example
+## Use
 
 ```ts
 import http from "node:http";
@@ -89,9 +92,116 @@ const server = http.createServer(async function (
 server.listen(8000);
 ```
 
+## API
+
+This package exports the identifier
+[`isMissingUserAgent`][api-is-missing-user-agent].
+[`isSpoofedBot`][api-is-spoofed-bot].
+[`isVerifiedBot`][api-is-verified-bot].
+There is no default export.
+
+This package exports no [TypeScript][] types.
+
+### `isMissingUserAgent(result)`
+
+Check for a bot missing a `User-Agent` header.
+
+You may want to block such requests because a missing `User-Agent` header is
+a good indicator of a malicious request since it is recommended by
+[_HTTP Semantics_ from IETF](https://datatracker.ietf.org/doc/html/rfc9110#field.user-agent).
+
+###### Parameters
+
+- `result` (`Result`)
+  — rule result
+
+###### Returns
+
+`true` if the bot rule result was `LIVE` and the request had no `User-Agent` header,
+`false` if the bot rule result was `LIVE` and the request had a `User-Agent` header,
+`undefined` if the rule result was non-bot or `DRY_RUN` (`boolean | undefined`).
+
+###### Availability
+
+Bot protection is available if `detectBot` is used.
+See [_Bot protection_ on
+`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
+for more info.
+
+Missing `User-Agent` detection is part of all plans including the free plans.
+See [_Error handling_ on
+`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#error-handling)
+for more info.
+
+### `isSpoofedBot(result)`
+
+Check for a spoofed bot.
+
+You may want to block such requests because they were likely spoofed.
+
+###### Parameters
+
+- `result` (`Result`)
+  — rule result
+
+###### Returns
+
+`true` if the bot rule result was `LIVE` and detected a spoofed bot,
+`false` if the bot rule result was `LIVE` and did not detect a spoofed bot,
+`undefined` if the rule result was non-bot or `DRY_RUN` (`boolean | undefined`).
+
+###### Availability
+
+Bot protection is available if `detectBot` is used.
+See [_Bot protection_ on
+`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
+for more info.
+
+Spoofed bot detection is part of advanced bot protection features which
+are not available on free plans but are available on the starter and
+business plans.
+See [_Bot verification_ on
+`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
+for more info.
+
+### `isVerifiedBot(result)`
+
+Check for a verified bot.
+
+You may want to ignore other signals for such requests.
+
+###### Parameters
+
+- `result` (`Result`)
+  — rule result
+
+###### Returns
+
+`true` if the bot rule result was `LIVE` and detected a verified bot,
+`false` if the bot rule result was `LIVE` and did not detect a verified bot,
+`undefined` if the rule result was non-bot or `DRY_RUN` (`boolean | undefined`).
+
+###### Availability
+
+Bot protection is available if `detectBot` is used.
+See [_Bot protection_ on
+`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
+for more info.
+
+Verified bot detection is part of advanced bot protection features which
+are not available on free plans but are available on the starter and
+business plans.
+See [_Bot verification_ on
+`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
+for more info.
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
-[arcjet]: https://arcjet.com
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-is-missing-user-agent]: #ismissinguseragentresult
+[api-is-spoofed-bot]: #isspoofedbotresult
+[api-is-verified-bot]: #isverifiedbotresult
+[arcjet]: https://arcjet.com
+[typescript]: https://www.typescriptlang.org/
