@@ -4,10 +4,8 @@
 export type ArcjetWellKnownBot =
   | "A6CORP_CRAWLER"
   | "ABOUNDEX_CRAWLER"
-  | "ACADEMICBOT_RTU"
   | "ACAPBOT"
   | "ACOON_CRAWLER"
-  | "ADAGIO_CRAWLER"
   | "ADBEAT_CRAWLER"
   | "ADDSEARCH_CRAWLER"
   | "ADDTHIS_CRAWLER"
@@ -15,21 +13,16 @@ export type ArcjetWellKnownBot =
   | "ADSCANNER_CRAWLER"
   | "ADSTXTCRAWLER"
   | "ADVBOT_CRAWLER"
-  | "ADYEN_WEBHOOK"
   | "AHREFS_CRAWLER"
-  | "AHREFS_SITE_AUDIT"
   | "AI_SEARCH_BOT"
   | "AI2_CRAWLER"
   | "AI2_CRAWLER_DOLMA"
   | "AIHIT_CRAWLER"
   | "ALEXANDRIA_CRAWLER"
-  | "ALGOLIA_CRAWLER"
   | "ALPHASEOBOT_CRAWLER"
-  | "AMAZON_ADBOT"
   | "AMAZON_ALEXA_CRAWLER"
   | "AMAZON_CLOUDFRONT"
   | "AMAZON_CRAWLER"
-  | "AMAZON_ROUTE53_HEALTH_CHECK"
   | "ANDERSPINK_CRAWLER"
   | "ANTHROPIC_CRAWLER"
   | "ANTIBOT"
@@ -55,7 +48,6 @@ export type ArcjetWellKnownBot =
   | "BAIDU_CRAWLER"
   | "BAZQUX_FEEDFETCHER"
   | "BETABOT"
-  | "BETTERSTACK_MONITOR"
   | "BETTERUPTIME_MONITOR"
   | "BIDSWITCH_CRAWLER"
   | "BIGDATACORP_CRAWLER"
@@ -86,11 +78,8 @@ export type ArcjetWellKnownBot =
   | "BYTEDANCE_CRAWLER"
   | "CAPSULINK_CRAWLER"
   | "CAREERX_CRAWLER"
-  | "CCBOT_CRAWLER"
-  | "CENSYS_INSPECT"
   | "CENTURYBOT"
   | "CHANGEDETECTION_CRAWLER"
-  | "CHECKLY_MONITOR"
   | "CHECKMARKNETWORK_CRAWLER"
   | "CHLOOE_CRAWLER"
   | "CINCRAWDATA_CRAWLER"
@@ -99,11 +88,6 @@ export type ArcjetWellKnownBot =
   | "CLICKAGY_CRAWLER"
   | "CLIQZ_CRAWLER"
   | "CLOUDFLARE_ARCHIVER"
-  | "CLOUDFLARE_HEALTHCHECKS"
-  | "CLOUDFLARE_PREFETCH"
-  | "CLOUDFLARE_SECURITY_CENTER"
-  | "CLOUDFLARE_SSL_DETECTOR"
-  | "CLOUDFLARE_TRAFFIC_MANAGER"
   | "CLOUDSYSTEMNETWORKS_CRAWLER"
   | "COCCOC_CRAWLER"
   | "COCOLYZE_CRAWLER"
@@ -119,7 +103,6 @@ export type ArcjetWellKnownBot =
   | "CONTXBOT"
   | "CONVERA_CRAWLER"
   | "COOKIEBOT_CRAWLER"
-  | "COOKIEHUB_SCAN"
   | "CREATIVECOMMONS_CRAWLER"
   | "CRITEO_CRAWLER"
   | "CRYSTALSEMANTICS_CRAWLER"
@@ -180,7 +163,6 @@ export type ArcjetWellKnownBot =
   | "EXTLINKS_CRAWLER"
   | "EYEOTA_CRAWLER"
   | "EZID_CRAWLER"
-  | "FACEBOOK_CATALOG"
   | "FACEBOOK_CRAWLER"
   | "FACEBOOK_SHARE_CRAWLER"
   | "FAST_CRAWLER"
@@ -217,7 +199,6 @@ export type ArcjetWellKnownBot =
   | "GNOWIT_CRAWLER"
   | "GO_HTTP"
   | "GOO_CRAWLER"
-  | "GOOGLE_ADS_CONVERSIONS"
   | "GOOGLE_ADSBOT"
   | "GOOGLE_ADSBOT_MOBILE"
   | "GOOGLE_ADSENSE"
@@ -246,7 +227,6 @@ export type ArcjetWellKnownBot =
   | "GOOGLE_STRUCTURED_DATA_TESTING_TOOL"
   | "GOOGLE_WEB_SNIPPET"
   | "GOOGLE_XRAWLER"
-  | "GOT"
   | "GOWIKI_CRAWLER"
   | "GRAPESHOT_CRAWLER"
   | "GROB_CRAWLER"
@@ -310,7 +290,6 @@ export type ArcjetWellKnownBot =
   | "JYXO_CRAWLER"
   | "K7COMPUTING_CRAWLER"
   | "KEMVI_CRAWLER"
-  | "KEYBASE_BOT"
   | "KOMODIA_CRAWLER"
   | "KOSMIO_CRAWLER"
   | "KUMA_MONITOR"
@@ -353,7 +332,6 @@ export type ArcjetWellKnownBot =
   | "MELTWATER_CRAWLER"
   | "META_CRAWLER"
   | "META_CRAWLER_USER"
-  | "META_EXTERNALADS"
   | "METADATALABS_CRAWLER"
   | "METAJOB_CRAWLER"
   | "METAURI_CRAWLER"
@@ -386,7 +364,6 @@ export type ArcjetWellKnownBot =
   | "NETICLE_CRAWLER"
   | "NETSYSTEMSRESEARCH_CRAWLER"
   | "NETVIBES_CRAWLER"
-  | "NEWRELIC_MONITOR"
   | "NEWSBLUR_AGGREGATOR"
   | "NEWSHARECOUNTS_CRAWLER"
   | "NEWSPAPER"
@@ -404,7 +381,6 @@ export type ArcjetWellKnownBot =
   | "OCARINABOT"
   | "OKRU_CRAWLER"
   | "OMGILI_CRAWLER"
-  | "ONCRAWL"
   | "OPENAI_CRAWLER"
   | "OPENAI_CRAWLER_SEARCH"
   | "OPENAI_CRAWLER_USER"
@@ -424,7 +400,6 @@ export type ArcjetWellKnownBot =
   | "PERL_LIBWWW"
   | "PERL_PCORE"
   | "PERPLEXITY_CRAWLER"
-  | "PERPLEXITY_USER"
   | "PETALSEARCH_CRAWLER"
   | "PHP_CURLCLASS"
   | "PHP_PHPCRAWL"
@@ -433,7 +408,6 @@ export type ArcjetWellKnownBot =
   | "PHXBOT"
   | "PICSEARCH_CRAWLER"
   | "PINGDOM_CRAWLER"
-  | "PINTEREST_CRAWLER"
   | "PINTREST_CRAWLER"
   | "PIPL_CRAWLER"
   | "POCKET_CRAWLER"
@@ -454,7 +428,6 @@ export type ArcjetWellKnownBot =
   | "PYTHON_REQUESTS"
   | "PYTHON_SCRAPY"
   | "PYTHON_URLLIB"
-  | "QUANTCAST_CRAWLER"
   | "QWANT_CRAWLER"
   | "RANKACTIVE_CRAWLER"
   | "REDDIT_CRAWLER"
@@ -468,7 +441,6 @@ export type ArcjetWellKnownBot =
   | "RUBY_METAINSPECTOR"
   | "RYTE_CRAWLER"
   | "SAFEDNS_CRAWLER"
-  | "SBINTUITIONS_BOT"
   | "SCAN_INTERFAX_CRAWLER"
   | "SCHMORP_CRAWLER"
   | "SCOUTJET_CRAWLER"
@@ -485,7 +457,6 @@ export type ArcjetWellKnownBot =
   | "SEMRUSH_CRAWLER"
   | "SENTIONE_CRAWLER"
   | "SENTRY_CRAWLER"
-  | "SENTRY_UPTIME_MONITOR"
   | "SENUTO_CRAWLER"
   | "SEOBILITY_CRAWLER"
   | "SEOKICKS_CRAWLER"
@@ -502,7 +473,6 @@ export type ArcjetWellKnownBot =
   | "SISTRIX_007AC9_CRAWLER"
   | "SISTRIX_CRAWLER"
   | "SITEBOT_CRAWLER"
-  | "SITEBULB"
   | "SITECHECKER_CRAWLER"
   | "SITEEXPLORER_CRAWLER"
   | "SITEIMPROVE_CRAWLER"
@@ -514,11 +484,9 @@ export type ArcjetWellKnownBot =
   | "SOFTBYTELABS_CRAWLER"
   | "SOGOU_CRAWLER"
   | "STARTME_CRAWLER"
-  | "STATUSCAKE_MONITOR"
   | "STEAM_PREVIEW"
   | "STORYGIZE_CRAWLER"
   | "STRACT_CRAWLER"
-  | "STRIPE_CRAWLER"
   | "STRIPE_WEBHOOK"
   | "STUTTGART_CRAWLER"
   | "SUMMALY_CRAWLER"
@@ -626,7 +594,6 @@ export type ArcjetWellKnownBot =
   | "YANDEX_CRAWLER_JAVASCRIPT"
   | "YANGA_CRAWLER"
   | "YELLOWBP_CRAWLER"
-  | "YEXT_BOT"
   | "YISOU_CRAWLER"
   | "YOOZ_CRAWLER"
   | "YOU_CRAWLER"
@@ -665,7 +632,6 @@ export const categories: Record<
   readonly ArcjetWellKnownBot[]
 > = Object.freeze({
   "CATEGORY:ACADEMIC": Object.freeze<ArcjetWellKnownBot[]>([
-    "ACADEMICBOT_RTU",
     "BLACKBOARD_CRAWLER",
     "CISPA_CRAWLER",
     "COMMONCRAWL_CRAWLER",
@@ -683,20 +649,14 @@ export const categories: Record<
     "YAMANALAB_CRAWLER",
   ]),
   "CATEGORY:ADVERTISING": Object.freeze<ArcjetWellKnownBot[]>([
-    "ADAGIO_CRAWLER",
-    "AHREFS_SITE_AUDIT",
-    "AMAZON_ADBOT",
     "BING_ADS",
-    "GOOGLE_ADS_CONVERSIONS",
     "GOOGLE_ADSBOT",
     "GOOGLE_ADSBOT_MOBILE",
     "GOOGLE_ADSENSE",
     "GOOGLE_ADSENSE_GOOGLEBOT",
     "GOOGLE_ADWORDS",
-    "META_EXTERNALADS",
     "MOAT_CRAWLER",
     "MSN_CRAWLER",
-    "QUANTCAST_CRAWLER",
   ]),
   "CATEGORY:AI": Object.freeze<ArcjetWellKnownBot[]>([
     "AI_SEARCH_BOT",
@@ -730,12 +690,10 @@ export const categories: Record<
     "OPENAI_CRAWLER_SEARCH",
     "OPENAI_CRAWLER_USER",
     "PERPLEXITY_CRAWLER",
-    "PERPLEXITY_USER",
     "PETALSEARCH_CRAWLER",
     "PRIMAL_CRAWLER",
     "PYTHON_SCRAPY",
     "SAFEDNS_CRAWLER",
-    "SBINTUITIONS_BOT",
     "SEARCHATLAS_CRAWLER",
     "SEMANTICSCHOLAR_CRAWLER",
     "SENTIONE_CRAWLER",
@@ -748,11 +706,9 @@ export const categories: Record<
     "YOU_CRAWLER",
   ]),
   "CATEGORY:AMAZON": Object.freeze<ArcjetWellKnownBot[]>([
-    "AMAZON_ADBOT",
     "AMAZON_ALEXA_CRAWLER",
     "AMAZON_CLOUDFRONT",
     "AMAZON_CRAWLER",
-    "AMAZON_ROUTE53_HEALTH_CHECK",
   ]),
   "CATEGORY:APPLE": Object.freeze<ArcjetWellKnownBot[]>([
     "APPLE_CRAWLER",
@@ -760,7 +716,6 @@ export const categories: Record<
   ]),
   "CATEGORY:ARCHIVE": Object.freeze<ArcjetWellKnownBot[]>([
     "ARCHIVEORG_ARCHIVER",
-    "CCBOT_CRAWLER",
     "CLOUDFLARE_ARCHIVER",
     "COMMONCRAWL_CRAWLER",
     "EZID_CRAWLER",
@@ -799,7 +754,6 @@ export const categories: Record<
     "WORDPRESS_CRAWLER_RSS",
   ]),
   "CATEGORY:GOOGLE": Object.freeze<ArcjetWellKnownBot[]>([
-    "GOOGLE_ADS_CONVERSIONS",
     "GOOGLE_ADSBOT",
     "GOOGLE_ADSBOT_MOBILE",
     "GOOGLE_ADSENSE",
@@ -830,12 +784,10 @@ export const categories: Record<
     "GOOGLE_XRAWLER",
   ]),
   "CATEGORY:META": Object.freeze<ArcjetWellKnownBot[]>([
-    "FACEBOOK_CATALOG",
     "FACEBOOK_CRAWLER",
     "FACEBOOK_SHARE_CRAWLER",
     "META_CRAWLER",
     "META_CRAWLER_USER",
-    "META_EXTERNALADS",
     "WHATSAPP_CRAWLER",
   ]),
   "CATEGORY:MICROSOFT": Object.freeze<ArcjetWellKnownBot[]>([
@@ -850,18 +802,10 @@ export const categories: Record<
     "SKYPE_PREVIEW",
   ]),
   "CATEGORY:MONITOR": Object.freeze<ArcjetWellKnownBot[]>([
-    "AMAZON_ROUTE53_HEALTH_CHECK",
     "AZURE_APP_INSIGHTS",
-    "BETTERSTACK_MONITOR",
     "BETTERUPTIME_MONITOR",
     "BRANDVERITY_CRAWLER",
-    "CENSYS_INSPECT",
     "CHANGEDETECTION_CRAWLER",
-    "CHECKLY_MONITOR",
-    "CLOUDFLARE_HEALTHCHECKS",
-    "CLOUDFLARE_SECURITY_CENTER",
-    "CLOUDFLARE_SSL_DETECTOR",
-    "CLOUDFLARE_TRAFFIC_MANAGER",
     "DATADOG_MONITOR_SYNTHETICS",
     "DEADLINKCHECKER",
     "DISQUS_CRAWLER",
@@ -877,15 +821,12 @@ export const categories: Record<
     "HYDROZEN_MONITOR",
     "KUMA_MONITOR",
     "MONITORBACKLINKS_CRAWLER",
-    "NEWRELIC_MONITOR",
     "NIXSTATS_CRAWLER",
     "OUTBRAIN_LINK_CHECKER",
     "PAGEPEEKER_CRAWLER",
     "PINGDOM_CRAWLER",
     "SAFEDNS_CRAWLER",
     "SENTRY_CRAWLER",
-    "SENTRY_UPTIME_MONITOR",
-    "STATUSCAKE_MONITOR",
     "SURLY_CRAWLER",
     "TESTOMATO_CRAWLER",
     "UPTIME_MONITOR",
@@ -905,7 +846,6 @@ export const categories: Record<
     "ZABBIX_MONITOR",
   ]),
   "CATEGORY:OPTIMIZER": Object.freeze<ArcjetWellKnownBot[]>([
-    "CLOUDFLARE_PREFETCH",
     "CONDUCTOR_CRAWLER",
     "DAREBOOST_CRAWLER",
     "DUBBOT_CRAWLER",
@@ -913,10 +853,8 @@ export const categories: Record<
     "GOOGLE_STRUCTURED_DATA_TESTING_TOOL",
     "MONSIDO_CRAWLER",
     "MOZ_SITE_AUDIT",
-    "ONCRAWL",
     "SCREAMINGFROG_CRAWLER",
     "SISTRIX_CRAWLER",
-    "SITEBULB",
     "TESTOMATO_CRAWLER",
     "WEBPAGETEST_CRAWLER",
   ]),
@@ -933,7 +871,6 @@ export const categories: Record<
     "GOOGLE_WEB_SNIPPET",
     "IFRAMELY_PREVIEW",
     "IMESSAGE_PREVIEW",
-    "KEYBASE_BOT",
     "MASTODON_CRAWLER",
     "META_CRAWLER_USER",
     "MICROSOFT_PREVIEW",
@@ -982,13 +919,11 @@ export const categories: Record<
     "PYTHON_SCRAPY",
     "PYTHON_URLLIB",
     "RUBY_METAINSPECTOR",
-    "STRIPE_CRAWLER",
   ]),
   "CATEGORY:SEARCH_ENGINE": Object.freeze<ArcjetWellKnownBot[]>([
     "ADDSEARCH_CRAWLER",
     "AHREFS_CRAWLER",
     "ALEXANDRIA_CRAWLER",
-    "ALGOLIA_CRAWLER",
     "APPLE_CRAWLER",
     "ASK_CRAWLER",
     "AVIRA_CRAWLER",
@@ -1034,7 +969,6 @@ export const categories: Record<
     "DIGG_CRAWLER",
     "DISCORD_CRAWLER",
     "EVERYONESOCIAL_CRAWLER",
-    "FACEBOOK_CATALOG",
     "FACEBOOK_CRAWLER",
     "FACEBOOK_SHARE_CRAWLER",
     "GOOGLE_PREVIEW",
@@ -1043,13 +977,11 @@ export const categories: Record<
     "IFRAMELY_PREVIEW",
     "IMESSAGE_PREVIEW",
     "IRC_ARCHIVEBOT",
-    "KEYBASE_BOT",
     "LEMMY_CRAWLER",
     "LINKARCHIVER",
     "LINKEDIN_CRAWLER",
     "MASTODON_CRAWLER",
     "NETICLE_CRAWLER",
-    "PINTEREST_CRAWLER",
     "PINTREST_CRAWLER",
     "REDDIT_CRAWLER",
     "SNAP_PREVIEW",
@@ -1064,12 +996,10 @@ export const categories: Record<
     "WHATSAPP_CRAWLER",
   ]),
   "CATEGORY:TOOL": Object.freeze<ArcjetWellKnownBot[]>([
-    "COOKIEHUB_SCAN",
     "CURL",
     "DCRAWL",
     "DOMAINSPROJECT_CRAWLER",
     "GIGABLAST_CRAWLER_OSS",
-    "GOT",
     "HEADLESS_CHROME",
     "IMG2DATASET",
     "INTERNETARCHIVE_CRAWLER_OSS",
@@ -1079,13 +1009,10 @@ export const categories: Record<
     "NAGIOS_CHECK_HTTP",
     "NMAP",
     "NUTCH",
-    "ONCRAWL",
     "POSTMAN",
-    "SITEBULB",
     "SUMMALY_CRAWLER",
     "WGET",
     "XENU_CRAWLER",
-    "YEXT_BOT",
     "ZGRAB",
   ]),
   "CATEGORY:UNKNOWN": Object.freeze<ArcjetWellKnownBot[]>([
@@ -1428,10 +1355,7 @@ export const categories: Record<
     "VERCEL_CRAWLER",
     "VERCEL_MONITOR_PREVIEW",
   ]),
-  "CATEGORY:WEBHOOK": Object.freeze<ArcjetWellKnownBot[]>([
-    "ADYEN_WEBHOOK",
-    "STRIPE_WEBHOOK",
-  ]),
+  "CATEGORY:WEBHOOK": Object.freeze<ArcjetWellKnownBot[]>(["STRIPE_WEBHOOK"]),
   "CATEGORY:YAHOO": Object.freeze<ArcjetWellKnownBot[]>([
     "YAHOO_CRAWLER",
     "YAHOO_CRAWLER_JAPAN",
