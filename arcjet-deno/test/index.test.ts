@@ -80,37 +80,34 @@ test("`@arcjet/deno`", async function (t) {
 });
 
 test("`createRemoteClient`", async function (t) {
-  await t.test(
-    "`createRemoteClient`: should create a client",
-    async function () {
-      const remoteClient = createRemoteClient({ timeout: 4 });
+  await t.test("should create a client", async function () {
+    const remoteClient = createRemoteClient({ timeout: 4 });
 
-      assert.equal(typeof remoteClient.decide, "function");
-      assert.equal(typeof remoteClient.report, "function");
+    assert.equal(typeof remoteClient.decide, "function");
+    assert.equal(typeof remoteClient.report, "function");
 
-      await assert.rejects(
-        remoteClient.decide(
-          {
-            ...createArcjetContext(),
-            log: { ...console, debug() {} },
-          },
-          {
-            cookies: "",
-            extra: {},
-            headers: new Headers(),
-            host: "example.com",
-            ip: "1.1.1.1",
-            method: "GET",
-            path: "/",
-            protocol: "http:",
-            query: "",
-          },
-          [],
-        ),
-        /the operation timed out/,
-      );
-    },
-  );
+    await assert.rejects(
+      remoteClient.decide(
+        {
+          ...createArcjetContext(),
+          log: { ...console, debug() {} },
+        },
+        {
+          cookies: "",
+          extra: {},
+          headers: new Headers(),
+          host: "example.com",
+          ip: "1.1.1.1",
+          method: "GET",
+          path: "/",
+          protocol: "http:",
+          query: "",
+        },
+        [],
+      ),
+      /the operation timed out/,
+    );
+  });
 });
 
 test("`arcjetDeno`", async function (t) {
@@ -597,6 +594,41 @@ test("`arcjetDeno`", async function (t) {
 
     assert.equal(responseChrome.status, 403);
     assert.equal(responseFirefox.status, 200);
+  });
+
+  await t.test("should support `filter` w/ `filterLocal`", async function () {
+    const restore = capture();
+
+    const arcjet = arcjetDeno({
+      client: createLocalClient(),
+      // It is not possible to use a characteristic on `localFields` because of limitations to the types.
+      // Characeristics must be `boolean | number | string` (in the types, not in real life).
+      // characteristics: ["filterLocal"],
+      characteristics: ['http.request.uri.args["cache-bust"]', "ip.src"],
+      key: exampleKey,
+      rules: [filter({ deny: ['local["username"] eq "alice"'], mode: "LIVE" })],
+    });
+
+    let username = "alice";
+
+    const { server, url } = createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request, { filterLocal: { username } });
+      },
+      handler: arcjet.handler,
+    });
+
+    const responseAlice = await fetch(url + "?cache-bust=1");
+
+    username = "bob";
+
+    const responseBob = await fetch(url + "?cache-bust=2");
+
+    await server.shutdown();
+    restore();
+
+    assert.equal(responseAlice.status, 403);
+    assert.equal(responseBob.status, 200);
   });
 
   await t.test("should support `sensitiveInfo`", async function () {
