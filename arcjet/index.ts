@@ -253,6 +253,10 @@ function toStringArbitrary(value: unknown): string {
  *   Serialized value.
  */
 function toStringJson(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
   // Other values are JSON-stringified.
   try {
     return JSON.stringify(value);
@@ -1772,7 +1776,7 @@ export function tokenBucket<
       capacity,
       validate(_context, details) {
         validateDetails(details);
-        // The `requested` number is turned into `string` by `arcjet.protect` and moved onto `extra`.
+        // The `requested` number is turned into `string` by SDKs and moved onto `extra`.
         // `extra` is already validated to be a `Record<string, string>`.
         assert(
           typeof details.extra.requested === "string",
@@ -2339,7 +2343,7 @@ export function sensitiveInfo<
 
       validate(_context, details) {
         validateDetails(details);
-        // Extra fields are turned into `string` by `arcjet.protect` and moved onto `extra`.
+        // Extra fields are turned into `string` by SDKs and moved onto `extra`.
         // `extra` is already validated to be a `Record<string, string>`.
         // The field is optional so no additional validation is needed.
       },
