@@ -72,7 +72,6 @@ merge:
     - Build examples / express-validate-email
     - Build examples / fastify
     - Build examples / nestjs
-    - Build examples / nextjs-14-nextauth-4
     - Build examples / nextjs-app-dir-rate-limit
     - Build examples / nextjs-app-dir-validate-email
     - Build examples / nextjs-bot-categories
