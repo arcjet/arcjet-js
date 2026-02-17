@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...v1.2.0) (2026-02-17)
+
+
+### 🚀 New Features
+
+* **filter:** add support for local filter fields ([#5819](https://github.com/arcjet/arcjet-js/issues/5819)) ([42e1a06](https://github.com/arcjet/arcjet-js/commit/42e1a06bd649ed8d9a0d2644b01095f2fcf97835))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** better `protectSignup` error messages ([#5797](https://github.com/arcjet/arcjet-js/issues/5797)) ([06267d9](https://github.com/arcjet/arcjet-js/commit/06267d96ed48b46c9a4596bb296e4e28faa69350))
+* **arcjet:** better error w/o `rules` ([#5799](https://github.com/arcjet/arcjet-js/issues/5799)) ([57be82b](https://github.com/arcjet/arcjet-js/commit/57be82bb19ea9ea10552f08d965f316bccfd2a67))
+
+
+### 🧹 Miscellaneous Chores
+
+* add new bots to well-known bots list ([#5801](https://github.com/arcjet/arcjet-js/issues/5801)) ([b4d3c32](https://github.com/arcjet/arcjet-js/commit/b4d3c326d878dbe849f02dd9f09d0c5210b4f291))
+
+
+### 📚 Tests
+
+* **arcjet:** remove unneeded type casts ([#5798](https://github.com/arcjet/arcjet-js/issues/5798)) ([42616a9](https://github.com/arcjet/arcjet-js/commit/42616a9ff6d08a571637adb83042680f0aaec81e))
+
 ## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0-rc...v1.1.0) (2026-02-05)
 
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...@arcjet/rollup-config-v1.2.0) (2026-02-17)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/rollup-config:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0 to 1.2.0
+
 ## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/rollup-config-v1.1.0) (2026-02-05)
 
 

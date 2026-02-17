@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/remix",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Arcjet SDK for Remix",
   "keywords": [
     "analyze",
@@ -43,18 +43,18 @@
     "test": "npm run build && npm run lint"
   },
   "dependencies": {
-    "@arcjet/body": "1.1.0",
-    "@arcjet/env": "1.1.0",
-    "@arcjet/headers": "1.1.0",
-    "@arcjet/ip": "1.1.0",
-    "@arcjet/logger": "1.1.0",
-    "@arcjet/protocol": "1.1.0",
-    "@arcjet/transport": "1.1.0",
-    "arcjet": "1.1.0"
+    "@arcjet/body": "1.2.0",
+    "@arcjet/env": "1.2.0",
+    "@arcjet/headers": "1.2.0",
+    "@arcjet/ip": "1.2.0",
+    "@arcjet/logger": "1.2.0",
+    "@arcjet/protocol": "1.2.0",
+    "@arcjet/transport": "1.2.0",
+    "arcjet": "1.2.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.1.0",
-    "@arcjet/rollup-config": "1.1.0",
+    "@arcjet/eslint-config": "1.2.0",
+    "@arcjet/rollup-config": "1.2.0",
     "@rollup/wasm-node": "4.57.0",
     "eslint": "9.39.2",
     "typescript": "5.9.3"

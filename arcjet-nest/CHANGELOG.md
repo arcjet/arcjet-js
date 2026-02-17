@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...@arcjet/nest-v1.2.0) (2026-02-17)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/nest:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.1.0 to 1.2.0
+    * @arcjet/headers bumped from 1.1.0 to 1.2.0
+    * @arcjet/ip bumped from 1.1.0 to 1.2.0
+    * @arcjet/logger bumped from 1.1.0 to 1.2.0
+    * @arcjet/protocol bumped from 1.1.0 to 1.2.0
+    * @arcjet/transport bumped from 1.1.0 to 1.2.0
+    * @arcjet/body bumped from 1.1.0 to 1.2.0
+    * arcjet bumped from 1.1.0 to 1.2.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0 to 1.2.0
+    * @arcjet/rollup-config bumped from 1.1.0 to 1.2.0
+
 ## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/nest-v1.1.0) (2026-02-05)
 
 

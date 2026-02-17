@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...@arcjet/analyze-v1.2.0) (2026-02-17)
+
+
+### 🚀 New Features
+
+* **filter:** add support for local filter fields ([#5819](https://github.com/arcjet/arcjet-js/issues/5819)) ([42e1a06](https://github.com/arcjet/arcjet-js/commit/42e1a06bd649ed8d9a0d2644b01095f2fcf97835))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze-wasm bumped from 1.1.0 to 1.2.0
+    * @arcjet/protocol bumped from 1.1.0 to 1.2.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0 to 1.2.0
+    * @arcjet/rollup-config bumped from 1.1.0 to 1.2.0
+
 ## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/analyze-v1.1.0) (2026-02-05)
 
 

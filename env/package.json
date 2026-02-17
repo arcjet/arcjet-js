@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/env",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Arcjet environment detection",
   "keywords": [
     "arcjet",
@@ -43,8 +43,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.1.0",
-    "@arcjet/rollup-config": "1.1.0",
+    "@arcjet/eslint-config": "1.2.0",
+    "@arcjet/rollup-config": "1.2.0",
     "@rollup/wasm-node": "4.57.0",
     "eslint": "9.39.2",
     "typescript": "5.9.3"
