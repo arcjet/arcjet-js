@@ -46,6 +46,28 @@ type MaybeProperties<T> =
       [properties: T];
 
 /**
+ * Additional options that can be passed to protect() method.
+ *
+ * @template DisableAutoIp
+ *   Whether automatic IP detection is disabled.
+ */
+type ProtectOptions<DisableAutoIp extends boolean | undefined> =
+  DisableAutoIp extends true ? { ipSrc: string } : { ipSrc?: string };
+
+/**
+ * Combined properties and options for protect() method.
+ *
+ * @template Props
+ *   Properties required for running rules.
+ * @template DisableAutoIp
+ *   Whether automatic IP detection is disabled.
+ */
+type PropsWithOptions<
+  Props extends Record<PropertyKey, unknown>,
+  DisableAutoIp extends boolean | undefined,
+> = Props & ProtectOptions<DisableAutoIp>;
+
+/**
  * Configuration for the React Router integration of Arcjet.
  *
  * @template Rules
@@ -62,6 +84,19 @@ export interface ArcjetOptions<
    * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
   proxies?: ReadonlyArray<string> | null | undefined;
+  /**
+   * Disable automatic IP detection and require manual IP passing via `ipSrc`
+   * parameter to `protect()` (default: `false`).
+   *
+   * @warning
+   * Disabling automatic IP detection is not recommended unless you have
+   * written your own IP detection logic that considers the correct parsing of IP
+   * headers. Accepting client IPs from untrusted sources can expose your
+   * application to IP spoofing attacks. See the
+   * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Forwarded-For | MDN documentation}
+   * for further guidance.
+   */
+  disableAutomaticIpDetection?: boolean;
 }
 
 /**
@@ -93,9 +128,12 @@ export interface ArcjetReactRouterRequest {
  *
  * @template Properties
  *   Configuration.
+ * @template DisableAutoIp
+ *   Whether automatic IP detection is disabled.
  */
 export interface ArcjetReactRouter<
   Properties extends Record<PropertyKey, unknown>,
+  DisableAutoIp extends boolean | undefined = false,
 > {
   /**
    * Make a decision about how to handle a request.
@@ -108,13 +146,14 @@ export interface ArcjetReactRouter<
    *   decision.
    * @param rest
    *   Additional properties required for running rules against a request.
+   *   When `disableAutomaticIpDetection` is `true`, must include `ipSrc` with the client IP.
    * @returns
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
-   *   Arcjet’s decision about the request.
+   *   Arcjet's decision about the request.
    */
   protect(
     details: ArcjetReactRouterRequest,
-    ...rest: MaybeProperties<Properties>
+    ...rest: MaybeProperties<PropsWithOptions<Properties, DisableAutoIp>>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -133,7 +172,8 @@ export interface ArcjetReactRouter<
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
   ): ArcjetReactRouter<
-    Properties & (Rule extends ArcjetRule<infer P> ? P : {})
+    Properties & (Rule extends ArcjetRule<infer P> ? P : {}),
+    DisableAutoIp
   >;
 }
 
@@ -175,6 +215,11 @@ interface State {
    * Configured proxies.
    */
   proxies: ReadonlyArray<Cidr | string>;
+
+  /**
+   * Whether automatic IP detection is disabled.
+   */
+  disableAutomaticIpDetection: boolean;
 }
 
 /**
@@ -200,11 +245,15 @@ export default function arcjet<
   Characteristics extends ReadonlyArray<string>,
 >(
   options: ArcjetOptions<Rules, Characteristics>,
-): ArcjetReactRouter<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
+): ArcjetReactRouter<
+  ExtraProps<Rules> & CharacteristicProps<Characteristics>,
+  typeof options.disableAutomaticIpDetection
+> {
   const state: State = {
     client: options.client ?? createRemoteClient(),
     log: options.log ?? new Logger({ level: logLevel(process.env) }),
     proxies: options.proxies?.map(parseProxy) ?? [],
+    disableAutomaticIpDetection: options.disableAutomaticIpDetection ?? false,
   };
 
   if (isDevelopment(process.env)) {
@@ -217,11 +266,31 @@ export default function arcjet<
     arcjetCore({ ...options, client: state.client, log: state.log }),
   );
 
-  function withClient<Properties extends Record<PropertyKey, unknown>>(
+  function withClient<
+    Properties extends Record<PropertyKey, unknown>,
+    DisableAutoIp extends boolean | undefined,
+  >(
     baseClient: Arcjet<Properties>,
-  ): ArcjetReactRouter<Properties> {
-    const client: ArcjetReactRouter<Properties> = {
+  ): ArcjetReactRouter<Properties, DisableAutoIp> {
+    const client: ArcjetReactRouter<Properties, DisableAutoIp> = {
       async protect(details, properties?) {
+        // Extract ipSrc from properties if present
+        const propsWithOptions = (properties || {}) as PropsWithOptions<
+          Properties,
+          DisableAutoIp
+        >;
+        const { ipSrc, ...restProps } = propsWithOptions as {
+          ipSrc?: string;
+          [key: string]: unknown;
+        };
+
+        // Validate ipSrc is provided when automatic IP detection is disabled
+        if (state.disableAutomaticIpDetection && !ipSrc) {
+          throw new Error(
+            "ipSrc is required when disableAutomaticIpDetection is enabled",
+          );
+        }
+
         const context: ArcjetAdapterContext = {
           getBody: createGetBody(state, details),
         };
@@ -229,7 +298,8 @@ export default function arcjet<
           state,
           details,
           // Cast of `{}` because here we switch from `undefined` to `Properties`.
-          properties ?? ({} as Properties),
+          restProps as Properties,
+          ipSrc,
         );
 
         return baseClient.protect(context, request);
@@ -316,6 +386,8 @@ export function createRemoteClient(
  *   React Router request details.
  * @param properties
  *   Additional properties.
+ * @param ipSrc
+ *   Optional IP source when automatic detection is disabled.
  * @returns
  *   Arcjet request.
  */
@@ -323,35 +395,48 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   state: State,
   details: ArcjetReactRouterRequest,
   properties: Properties,
+  ipSrc?: string,
 ): ArcjetRequest<Properties> {
   const headers = new ArcjetHeaders(details.request.headers);
   let ip: string | undefined;
 
-  // Get the IP from non-middleware context (no `future.v8_middleware` flag).
-  // Users *themselves* must provide this `ip` field if they use a particular
-  // adapter.
-  if (
-    details.context &&
-    typeof details.context === "object" &&
-    "ip" in details.context &&
-    typeof details.context.ip === "string"
-  ) {
-    ip = details.context.ip;
-  }
+  if (state.disableAutomaticIpDetection) {
+    // When automatic IP detection is disabled, use the provided ipSrc
+    ip = ipSrc || "";
+  } else {
+    // When automatic IP detection is enabled, use findIp()
+    if (ipSrc) {
+      state.log.warn(
+        "ipSrc parameter ignored because disableAutomaticIpDetection is not enabled",
+      );
+    }
 
-  const xArcjetIp = isDevelopment(process.env)
-    ? headers.get("x-arcjet-ip")
-    : undefined;
+    // Get the IP from non-middleware context (no `future.v8_middleware` flag).
+    // Users *themselves* must provide this `ip` field if they use a particular
+    // adapter.
+    if (
+      details.context &&
+      typeof details.context === "object" &&
+      "ip" in details.context &&
+      typeof details.context.ip === "string"
+    ) {
+      ip = details.context.ip;
+    }
 
-  if (xArcjetIp) {
-    ip = xArcjetIp;
-  }
+    const xArcjetIp = isDevelopment(process.env)
+      ? headers.get("x-arcjet-ip")
+      : undefined;
 
-  if (!ip) {
-    ip = findIp(details.request, {
-      platform: platform(process.env),
-      proxies: state.proxies,
-    });
+    if (xArcjetIp) {
+      ip = xArcjetIp;
+    }
+
+    if (!ip) {
+      ip = findIp(details.request, {
+        platform: platform(process.env),
+        proxies: state.proxies,
+      });
+    }
   }
 
   if (!ip) {

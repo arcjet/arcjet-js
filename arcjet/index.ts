@@ -3216,6 +3216,19 @@ export interface ArcjetOptions<
    * Log interface to emit useful information from the SDK (optional).
    */
   log?: ArcjetLogger;
+  /**
+   * Disable automatic IP detection and require manual IP passing via `ipSrc`
+   * parameter to `protect()` (default: `false`).
+   *
+   * @warning
+   * Disabling automatic IP detection is not recommended unless you have
+   * written your own IP detection logic that considers the correct parsing of IP
+   * headers. Accepting client IPs from untrusted sources can expose your
+   * application to IP spoofing attacks. See the
+   * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Forwarded-For | MDN documentation}
+   * for further guidance.
+   */
+  disableAutomaticIpDetection?: boolean;
 }
 
 /**
@@ -3309,6 +3322,9 @@ export default function arcjet<
     throw new Error("Rules are required");
   }
 
+  const disableAutomaticIpDetection =
+    options.disableAutomaticIpDetection ?? false;
+
   async function protect<Props extends PlainObject>(
     rules: ArcjetRule[],
     ctx: ArcjetAdapterContext,
@@ -3318,6 +3334,15 @@ export default function arcjet<
     // `protect()` with no value and we don't want to crash
     if (typeof request === "undefined") {
       request = {} as typeof request;
+    }
+
+    // Validate that IP is provided when automatic IP detection is disabled.
+    // This is a safety check in the base SDK; adapters should also validate
+    // before calling protect() to provide better error messages.
+    if (disableAutomaticIpDetection && (!request.ip || request.ip === "")) {
+      throw new Error(
+        "ipSrc is required when disableAutomaticIpDetection is enabled",
+      );
     }
 
     const details: ArcjetRequestDetails = Object.freeze({

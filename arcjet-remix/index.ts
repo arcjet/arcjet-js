@@ -73,6 +73,28 @@ type MaybeProperties<T> =
       [properties: T];
 
 /**
+ * Additional options that can be passed to protect() method.
+ *
+ * @template DisableAutoIp
+ *   Whether automatic IP detection is disabled.
+ */
+type ProtectOptions<DisableAutoIp extends boolean | undefined> =
+  DisableAutoIp extends true ? { ipSrc: string } : { ipSrc?: string };
+
+/**
+ * Combined properties and options for protect() method.
+ *
+ * @template Props
+ *   Properties required for running rules.
+ * @template DisableAutoIp
+ *   Whether automatic IP detection is disabled.
+ */
+type PropsWithOptions<
+  Props extends PlainObject,
+  DisableAutoIp extends boolean | undefined,
+> = Props & ProtectOptions<DisableAutoIp>;
+
+/**
  * Configuration for {@linkcode createRemoteClient}.
  */
 export type RemoteClientOptions = {
@@ -153,6 +175,19 @@ export type ArcjetOptions<
      * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
      */
     proxies?: Array<string>;
+    /**
+     * Disable automatic IP detection and require manual IP passing via `ipSrc`
+     * parameter to `protect()` (default: `false`).
+     *
+     * @warning
+     * Disabling automatic IP detection is not recommended unless you have
+     * written your own IP detection logic that considers the correct parsing of IP
+     * headers. Accepting client IPs from untrusted sources can expose your
+     * application to IP spoofing attacks. See the
+     * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Forwarded-For | MDN documentation}
+     * for further guidance.
+     */
+    disableAutomaticIpDetection?: boolean;
   }
 >;
 
@@ -164,8 +199,13 @@ export type ArcjetOptions<
  *
  * @template Props
  *   Configuration.
+ * @template DisableAutoIp
+ *   Whether automatic IP detection is disabled.
  */
-export interface ArcjetRemix<Props extends PlainObject> {
+export interface ArcjetRemix<
+  Props extends PlainObject,
+  DisableAutoIp extends boolean | undefined = false,
+> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -177,13 +217,14 @@ export interface ArcjetRemix<Props extends PlainObject> {
    *   decision.
    * @param props
    *   Additional properties required for running rules against a request.
+   *   When `disableAutomaticIpDetection` is `true`, must include `ipSrc` with the client IP.
    * @returns
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
-   *   Arcjet’s decision about the request.
+   *   Arcjet's decision about the request.
    */
   protect(
     request: ArcjetRemixRequest,
-    ...props: MaybeProperties<Props>
+    ...props: MaybeProperties<PropsWithOptions<Props, DisableAutoIp>>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -201,7 +242,10 @@ export interface ArcjetRemix<Props extends PlainObject> {
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetRemix<Props & (Rule extends ArcjetRule<infer P> ? P : {})>;
+  ): ArcjetRemix<
+    Props & (Rule extends ArcjetRule<infer P> ? P : {}),
+    DisableAutoIp
+  >;
 }
 
 /**
@@ -227,7 +271,10 @@ export default function arcjet<
   const Characteristics extends readonly string[],
 >(
   options: ArcjetOptions<Rules, Characteristics>,
-): ArcjetRemix<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
+): ArcjetRemix<
+  ExtraProps<Rules> & CharacteristicProps<Characteristics>,
+  typeof options.disableAutomaticIpDetection
+> {
   const client = options.client ?? createRemoteClient();
 
   const log = options.log
@@ -240,6 +287,9 @@ export default function arcjet<
     ? options.proxies.map(parseProxy)
     : undefined;
 
+  const disableAutomaticIpDetection =
+    options.disableAutomaticIpDetection ?? false;
+
   if (isDevelopment(process.env)) {
     log.warn(
       "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
@@ -249,6 +299,7 @@ export default function arcjet<
   function toArcjetRequest<Props extends PlainObject>(
     { request, context }: ArcjetRemixRequest,
     props: Props,
+    ipSrc?: string,
   ): ArcjetRequest<Props> {
     const cookies = request.headers.get("cookie") ?? "";
 
@@ -256,19 +307,35 @@ export default function arcjet<
     const headers = new ArcjetHeaders(request.headers);
 
     const url = new URL(request.url);
-    const xArcjetIp = isDevelopment(process.env)
-      ? headers.get("x-arcjet-ip")
-      : undefined;
-    let ip =
-      xArcjetIp ||
-      findIp(
-        {
-          // The `getLoadContext` API will attach the `ip` to the context
-          ip: context?.ip,
-          headers,
-        },
-        { platform: platform(process.env), proxies },
-      );
+
+    let ip: string;
+
+    if (disableAutomaticIpDetection) {
+      // When automatic IP detection is disabled, use the provided ipSrc
+      ip = ipSrc || "";
+    } else {
+      // When automatic IP detection is enabled, use findIp()
+      if (ipSrc) {
+        log.warn(
+          "ipSrc parameter ignored because disableAutomaticIpDetection is not enabled",
+        );
+      }
+
+      const xArcjetIp = isDevelopment(process.env)
+        ? headers.get("x-arcjet-ip")
+        : undefined;
+      ip =
+        xArcjetIp ||
+        findIp(
+          {
+            // The `getLoadContext` API will attach the `ip` to the context
+            ip: context?.ip,
+            headers,
+          },
+          { platform: platform(process.env), proxies },
+        );
+    }
+
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
@@ -294,17 +361,35 @@ export default function arcjet<
     };
   }
 
-  function withClient<Properties extends PlainObject>(
-    aj: Arcjet<Properties>,
-  ): ArcjetRemix<Properties> {
-    const client: ArcjetRemix<Properties> = {
+  function withClient<
+    Properties extends PlainObject,
+    DisableAutoIp extends boolean | undefined,
+  >(aj: Arcjet<Properties>): ArcjetRemix<Properties, DisableAutoIp> {
+    const client: ArcjetRemix<Properties, DisableAutoIp> = {
       withRule(rule) {
         const client = aj.withRule(rule);
         return withClient(client);
       },
       async protect(details, props?) {
+        // Extract ipSrc from props if present
+        const propsWithOptions = (props || {}) as PropsWithOptions<
+          Properties,
+          DisableAutoIp
+        >;
+        const { ipSrc, ...restProps } = propsWithOptions as {
+          ipSrc?: string;
+          [key: string]: unknown;
+        };
+
+        // Validate ipSrc is provided when automatic IP detection is disabled
+        if (disableAutomaticIpDetection && !ipSrc) {
+          throw new Error(
+            "ipSrc is required when disableAutomaticIpDetection is enabled",
+          );
+        }
+
         // Cast of `{}` because here we switch from `undefined` to `Properties`.
-        const req = toArcjetRequest(details, props || ({} as Properties));
+        const req = toArcjetRequest(details, restProps as Properties, ipSrc);
 
         const getBody = async () => {
           const clonedRequest = details.request.clone();
