@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/fastify",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Arcjet SDK for Fastify",
   "keywords": [
     "analyze",
@@ -50,21 +50,21 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/env": "1.1.0",
-    "@arcjet/headers": "1.1.0",
-    "@arcjet/ip": "1.1.0",
-    "@arcjet/logger": "1.1.0",
-    "@arcjet/protocol": "1.1.0",
-    "@arcjet/transport": "1.1.0",
-    "arcjet": "1.1.0"
+    "@arcjet/env": "1.2.0",
+    "@arcjet/headers": "1.2.0",
+    "@arcjet/ip": "1.2.0",
+    "@arcjet/logger": "1.2.0",
+    "@arcjet/protocol": "1.2.0",
+    "@arcjet/transport": "1.2.0",
+    "arcjet": "1.2.0"
   },
   "peerDependencies": {
     "fastify": ">=5"
   },
   "devDependencies": {
-    "@arcjet/cache": "1.1.0",
-    "@arcjet/eslint-config": "1.1.0",
-    "@arcjet/rollup-config": "1.1.0",
+    "@arcjet/cache": "1.2.0",
+    "@arcjet/eslint-config": "1.2.0",
+    "@arcjet/rollup-config": "1.2.0",
     "@rollup/wasm-node": "4.57.0",
     "@types/node": "25.1.0",
     "eslint": "9.39.2",

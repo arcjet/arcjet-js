@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...arcjet-v1.2.0) (2026-02-17)
+
+
+### 🚀 New Features
+
+* **filter:** add support for local filter fields ([#5819](https://github.com/arcjet/arcjet-js/issues/5819)) ([42e1a06](https://github.com/arcjet/arcjet-js/commit/42e1a06bd649ed8d9a0d2644b01095f2fcf97835))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** better `protectSignup` error messages ([#5797](https://github.com/arcjet/arcjet-js/issues/5797)) ([06267d9](https://github.com/arcjet/arcjet-js/commit/06267d96ed48b46c9a4596bb296e4e28faa69350))
+* **arcjet:** better error w/o `rules` ([#5799](https://github.com/arcjet/arcjet-js/issues/5799)) ([57be82b](https://github.com/arcjet/arcjet-js/commit/57be82bb19ea9ea10552f08d965f316bccfd2a67))
+
+
+### 📚 Tests
+
+* **arcjet:** remove unneeded type casts ([#5798](https://github.com/arcjet/arcjet-js/issues/5798)) ([42616a9](https://github.com/arcjet/arcjet-js/commit/42616a9ff6d08a571637adb83042680f0aaec81e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.1.0 to 1.2.0
+    * @arcjet/cache bumped from 1.1.0 to 1.2.0
+    * @arcjet/duration bumped from 1.1.0 to 1.2.0
+    * @arcjet/headers bumped from 1.1.0 to 1.2.0
+    * @arcjet/protocol bumped from 1.1.0 to 1.2.0
+    * @arcjet/runtime bumped from 1.1.0 to 1.2.0
+    * @arcjet/stable-hash bumped from 1.1.0 to 1.2.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0 to 1.2.0
+    * @arcjet/rollup-config bumped from 1.1.0 to 1.2.0
+
 ## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...arcjet-v1.1.0) (2026-02-05)
 
 
