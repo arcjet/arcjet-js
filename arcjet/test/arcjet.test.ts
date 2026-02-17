@@ -145,6 +145,84 @@ test("`arcjet`", async function (t) {
     );
 
     await t.test(
+      "should throw when disableAutomaticIpDetection is true and IP is missing",
+      async function () {
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [],
+          disableAutomaticIpDetection: true,
+        });
+
+        await assert.rejects(
+          // @ts-expect-error: test runtime behavior - IP is intentionally missing.
+          async () => await instance.protect({}, { ip: "" }),
+          /ipSrc is required when disableAutomaticIpDetection is enabled/,
+        );
+      },
+    );
+
+    await t.test(
+      "should throw when disableAutomaticIpDetection is true and IP is undefined",
+      async function () {
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [],
+          disableAutomaticIpDetection: true,
+        });
+
+        await assert.rejects(
+          // @ts-expect-error: test runtime behavior - IP is intentionally missing.
+          async () => await instance.protect({}, {}),
+          /ipSrc is required when disableAutomaticIpDetection is enabled/,
+        );
+      },
+    );
+
+    await t.test(
+      "should use provided IP when disableAutomaticIpDetection is true",
+      async function () {
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [],
+          disableAutomaticIpDetection: true,
+        });
+
+        const decision = await instance.protect(createContext(), {
+          ...createRequest(),
+          ip: "8.8.8.8",
+        });
+
+        assert.equal(decision.isAllowed(), true);
+      },
+    );
+
+    await t.test(
+      "should not throw when disableAutomaticIpDetection is false",
+      async function () {
+        const instance = arcjet({
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [],
+          disableAutomaticIpDetection: false,
+        });
+
+        const decision = await instance.protect(createContext(), {
+          ...createRequest(),
+          ip: "8.8.8.8",
+        });
+
+        assert.equal(decision.isAllowed(), true);
+      },
+    );
+
+    await t.test(
       "should call `validate` and `protect` on rules",
       async function () {
         const calls: Array<string> = [];

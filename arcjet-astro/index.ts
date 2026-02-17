@@ -18,6 +18,7 @@ const resolvedVirtualClientId = "\0ARCJET_VIRTUAL_CLIENT";
 const validateMode = z.enum(["LIVE", "DRY_RUN"]);
 const validateProxies = z.array(z.string());
 const validateCharacteristics = z.array(z.string());
+const validateDisableAutomaticIpDetection = z.boolean();
 const validateClientOptions = z
   .object({
     baseUrl: z.string().optional(),
@@ -208,6 +209,19 @@ export type ArcjetOptions<Characteristics extends readonly string[]> = {
    * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
    */
   proxies?: string[];
+  /**
+   * Disable automatic IP detection and require manual IP passing via `ipSrc`
+   * parameter to `protect()` (default: `false`).
+   *
+   * @warning
+   * Disabling automatic IP detection is not recommended unless you have
+   * written your own IP detection logic that considers the correct parsing of IP
+   * headers. Accepting client IPs from untrusted sources can expose your
+   * application to IP spoofing attacks. See the
+   * {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Forwarded-For | MDN documentation}
+   * for further guidance.
+   */
+  disableAutomaticIpDetection?: boolean;
 };
 
 function validateAndSerialize<
@@ -635,7 +649,13 @@ export function createRemoteClient(options?: RemoteClientOptions | undefined) {
 export default function arcjet<Characteristics extends readonly string[]>(
   options: ArcjetOptions<Characteristics> = { rules: [] },
 ): AstroIntegration {
-  const { rules, characteristics, client, proxies } = options;
+  const {
+    rules,
+    characteristics,
+    client,
+    proxies,
+    disableAutomaticIpDetection,
+  } = options;
   const arcjetImports = new Set();
   const arcjetRules: string[] = [];
   for (const rule of rules) {
@@ -650,6 +670,10 @@ export default function arcjet<Characteristics extends readonly string[]>(
 
   const proxiesInjection = proxies
     ? `proxies: ${validateAndSerialize(validateProxies, proxies)},`
+    : "";
+
+  const disableAutomaticIpDetectionInjection = disableAutomaticIpDetection
+    ? `disableAutomaticIpDetection: ${validateAndSerialize(validateDisableAutomaticIpDetection, disableAutomaticIpDetection)},`
     : "";
 
   const clientInjection = client
@@ -753,6 +777,7 @@ export default function arcjet<Characteristics extends readonly string[]>(
                           ],
                           ${characteristicsInjection}
                           ${proxiesInjection}
+                          ${disableAutomaticIpDetectionInjection}
                           ${clientInjection}
                         })
 
@@ -815,6 +840,7 @@ export default function arcjet<Characteristics extends readonly string[]>(
               ],
               ${characteristicsInjection}
               ${proxiesInjection}
+              ${disableAutomaticIpDetectionInjection}
               ${clientInjection}
             })
             export default client

@@ -10,6 +10,8 @@ import arcjetNode, {
   type ArcjetRule,
   ArcjetAllowDecision,
   ArcjetDecision,
+  ArcjetErrorDecision,
+  ArcjetErrorReason,
   ArcjetReason,
   ArcjetRuleResult,
   createRemoteClient,
@@ -400,6 +402,169 @@ test("`arcjetNode`", async function (t) {
       "185.199.108.2",
     ]);
   });
+
+  await t.test(
+    "should require ipSrc when disableAutomaticIpDetection is true",
+    async function () {
+      const restore = capture();
+
+      const arcjet = arcjetNode({
+        client: createLocalClient(),
+        key: exampleKey,
+        disableAutomaticIpDetection: true,
+        rules: [],
+      });
+
+      const { server, url } = await createSimpleServer({
+        async decide(request) {
+          try {
+            return await arcjet.protect(request);
+          } catch (error) {
+            // Return an error decision if protect throws
+            return new ArcjetErrorDecision({
+              ttl: 0,
+              reason: new ArcjetErrorReason(
+                error instanceof Error ? error.message : String(error),
+              ),
+              results: [],
+            });
+          }
+        },
+      });
+
+      const response = await fetch(url);
+
+      await server.close();
+      restore();
+
+      // Should get an error response since ipSrc is required but not provided
+      assert.equal(response.status, 500);
+      const body = await response.text();
+      assert.match(
+        body,
+        /ipSrc is required when disableAutomaticIpDetection is enabled/,
+      );
+    },
+  );
+
+  await t.test(
+    "should use ipSrc when disableAutomaticIpDetection is true",
+    async function () {
+      const restore = capture();
+
+      const ips: Array<unknown> = [];
+
+      const arcjet = arcjetNode({
+        client: createLocalClient(),
+        key: exampleKey,
+        disableAutomaticIpDetection: true,
+        rules: [
+          [
+            {
+              mode: "LIVE",
+              priority: 1,
+              async protect(_context, details) {
+                ips.push(details.ip);
+                return new ArcjetRuleResult({
+                  conclusion: "ALLOW",
+                  fingerprint: "",
+                  reason: new ArcjetReason(),
+                  ruleId: "",
+                  state: "RUN",
+                  ttl: 0,
+                });
+              },
+              validate() {},
+              version: 0,
+              type: "",
+            },
+          ],
+        ],
+      });
+
+      const { server, url } = await createSimpleServer({
+        decide: (request) => arcjet.protect(request, { ipSrc: "8.8.8.8" }),
+      });
+
+      await fetch(url, {
+        headers: { "x-forwarded-for": "185.199.108.1" },
+      });
+
+      await server.close();
+      restore();
+
+      // Should use the provided ipSrc, not the X-Forwarded-For header
+      assert.deepEqual(ips, ["8.8.8.8"]);
+    },
+  );
+
+  await t.test(
+    "should log warning when ipSrc provided but auto-detection enabled",
+    async function () {
+      const restore = capture();
+
+      const warnings: Array<string> = [];
+      const ips: Array<unknown> = [];
+
+      const arcjet = arcjetNode({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: {
+          ...console,
+          debug() {},
+          warn(...args: Array<unknown>) {
+            warnings.push(args.join(" "));
+          },
+        },
+        rules: [
+          [
+            {
+              mode: "LIVE",
+              priority: 1,
+              async protect(_context, details) {
+                ips.push(details.ip);
+                return new ArcjetRuleResult({
+                  conclusion: "ALLOW",
+                  fingerprint: "",
+                  reason: new ArcjetReason(),
+                  ruleId: "",
+                  state: "RUN",
+                  ttl: 0,
+                });
+              },
+              validate() {},
+              version: 0,
+              type: "",
+            },
+          ],
+        ],
+      });
+
+      const { server, url } = await createSimpleServer({
+        decide: (request) => arcjet.protect(request, { ipSrc: "8.8.8.8" }),
+      });
+
+      await fetch(url, {
+        headers: { "x-forwarded-for": "185.199.108.1" },
+      });
+
+      await server.close();
+      restore();
+
+      // Should warn about ignored ipSrc
+      assert.equal(
+        warnings.some((w) =>
+          w.includes(
+            "ipSrc parameter ignored because disableAutomaticIpDetection is not enabled",
+          ),
+        ),
+        true,
+      );
+
+      // Should use automatic IP detection from X-Forwarded-For
+      assert.deepEqual(ips, ["185.199.108.1"]);
+    },
+  );
 
   await t.test("should prefer `x-arcjet-ip` in development", async function () {
     const restore = capture();
