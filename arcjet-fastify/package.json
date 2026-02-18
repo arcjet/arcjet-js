@@ -66,7 +66,7 @@
     "@arcjet/eslint-config": "1.1.0",
     "@arcjet/rollup-config": "1.1.0",
     "@rollup/wasm-node": "4.57.0",
-    "@types/node": "25.1.0",
+    "@types/node": "25.2.3",
     "eslint": "9.39.2",
     "fastify": "5.7.3",
     "typescript": "5.9.3"
