@@ -4,6 +4,7 @@ import type {
   ArcjetEmailRule,
   ArcjetBotRule,
   ArcjetFilterRule,
+  ArcjetPromptInjectionDetectionRule,
   ArcjetRule,
   ArcjetMode,
   ArcjetRequestDetails,
@@ -32,6 +33,7 @@ import {
   ArcjetErrorDecision,
   ArcjetShieldReason,
   ArcjetFilterReason,
+  ArcjetPromptInjectionDetectionReason,
   ArcjetRateLimitReason,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
@@ -910,6 +912,28 @@ function validateShieldOptions(value: unknown): asserts value is ShieldOptions {
 }
 
 /**
+ * Validate detect prompt injection options.
+ *
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not detect prompt injection options.
+ */
+function validateDetectPromptInjectionOptions(
+  value: unknown,
+): asserts value is DetectPromptInjectionOptions {
+  validateInterface(value, {
+    name: "detectPromptInjection",
+    validations: [
+      { key: "mode", required: false, validate: validateMode },
+      { key: "threshold", required: false, validate: validateNumber },
+    ],
+  });
+}
+
+/**
  * Validate protect signup options.
  *
  * @param value
@@ -1516,6 +1540,7 @@ const Priority = {
   RateLimit: 4,
   BotDetection: 5,
   EmailValidation: 6,
+  DetectPromptInjection: 7,
 };
 
 type PlainObject = { [key: string]: unknown };
@@ -2851,6 +2876,28 @@ export type ShieldOptions = {
 };
 
 /**
+ * Configuration for the prompt injection detection rule.
+ */
+export type DetectPromptInjectionOptions = {
+  /**
+   * Block mode of the rule (default: `"DRY_RUN"`).
+   *
+   * `"DRY_RUN"` will allow all requests while still providing access to the
+   * rule results.
+   * `"LIVE"` will block requests when prompt injection is detected.
+   */
+  mode?: ArcjetMode;
+
+  /**
+   * The score threshold above which a request is considered a prompt injection
+   * attempt (default: `0.5`).
+   *
+   * Must be in the range (0.0, 1.0) exclusive.
+   */
+  threshold?: number;
+};
+
+/**
  * Arcjet Shield WAF rule.
  *
  * Applying this rule protects your application against common attacks,
@@ -2938,6 +2985,137 @@ export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
           conclusion: "ALLOW",
           reason: new ArcjetShieldReason({
             shieldTriggered: false,
+          }),
+        });
+      },
+    },
+  ];
+}
+
+/**
+ * Arcjet prompt injection detection rule.
+ *
+ * Analyzes LLM prompts to detect prompt injection attempts.
+ *
+ * The Arcjet prompt injection detection rule analyzes prompts sent to LLM
+ * applications to detect jailbreak and injection attempts.
+ * The analysis is performed server-side.
+ *
+ * @param options
+ *   Configuration for the prompt injection detection rule.
+ * @returns
+ *   Prompt injection detection rule to provide to the SDK in the `rules` field.
+ *
+ * @example
+ *   ```ts
+ *   detectPromptInjection({ mode: "LIVE", threshold: 0.7 });
+ *   ```
+ * @example
+ *   ```ts
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY,
+ *     rules: [detectPromptInjection({ mode: "LIVE", threshold: 0.5 })],
+ *   });
+ *   ```
+ */
+export function detectPromptInjection(
+  options: DetectPromptInjectionOptions = {},
+): [ArcjetPromptInjectionDetectionRule] {
+  validateDetectPromptInjectionOptions(options);
+
+  const type = "PROMPT_INJECTION_DETECTION";
+  const version = 0;
+  const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
+  const threshold = options.threshold ?? 0.5;
+
+  // Validate threshold range: must be in (0.0, 1.0) exclusive
+  if (threshold <= 0.0 || threshold >= 1.0) {
+    throw new Error(
+      "`detectPromptInjection` options error: `threshold` must be between 0.0 and 1.0 (exclusive)",
+    );
+  }
+
+  const MAX_MESSAGE_LENGTH = 131072; // ~128KB
+
+  return [
+    {
+      type,
+      version,
+      threshold,
+      priority: Priority.DetectPromptInjection,
+      mode,
+      validate(
+        _context: ArcjetContext,
+        details: unknown,
+      ): asserts details is ArcjetRequestDetails & {
+        detectPromptInjectionMessage: string;
+      } {
+        validateDetails(details);
+
+        // Validate that detectPromptInjectionMessage exists and is a string
+        if (!("detectPromptInjectionMessage" in details.extra)) {
+          throw new Error(
+            "detectPromptInjection rule requires `detectPromptInjectionMessage` to be set",
+          );
+        }
+
+        const message = details.extra.detectPromptInjectionMessage;
+        if (typeof message !== "string") {
+          throw new Error(
+            "detectPromptInjection rule requires `detectPromptInjectionMessage` to be a string",
+          );
+        }
+
+        if (message.length === 0) {
+          throw new Error(
+            "detectPromptInjection rule requires `detectPromptInjectionMessage` to be non-empty",
+          );
+        }
+
+        if (message.length > MAX_MESSAGE_LENGTH) {
+          throw new Error(
+            `detectPromptInjection rule requires \`detectPromptInjectionMessage\` to be less than ${MAX_MESSAGE_LENGTH} characters`,
+          );
+        }
+      },
+      async protect(
+        context: ArcjetContext,
+        _details: ArcjetRequestDetails & {
+          detectPromptInjectionMessage: string;
+        },
+      ): Promise<ArcjetRuleResult> {
+        const ruleId = await hasher.hash(
+          hasher.string("type", type),
+          hasher.uint32("version", version),
+          hasher.string("mode", mode),
+          hasher.float64("threshold", threshold),
+        );
+
+        const { fingerprint } = context;
+
+        const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
+        if (cached) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl,
+            state: "CACHED",
+            conclusion: cached.conclusion,
+            reason: cached.reason,
+          });
+        }
+
+        // Prompt injection detection is server-side only
+        // Return NOT_RUN to allow the server to analyze the message
+        return new ArcjetRuleResult({
+          ruleId,
+          fingerprint,
+          ttl: 0,
+          state: "NOT_RUN",
+          conclusion: "ALLOW",
+          reason: new ArcjetPromptInjectionDetectionReason({
+            injectionDetected: false,
+            score: 0.0,
           }),
         });
       },

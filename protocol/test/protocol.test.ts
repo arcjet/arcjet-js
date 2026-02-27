@@ -16,6 +16,7 @@ test("@arcjet/protocol", async function (t) {
       "ArcjetErrorReason",
       "ArcjetFilterReason",
       "ArcjetIpDetails",
+      "ArcjetPromptInjectionDetectionReason",
       "ArcjetRateLimitReason",
       "ArcjetReason",
       "ArcjetRuleResult",

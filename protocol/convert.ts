@@ -14,6 +14,7 @@ import {
   EmailType,
   ErrorReasonSchema,
   Mode,
+  PromptInjectionDetectionReasonSchema,
   RateLimitAlgorithm,
   ReasonSchema,
   RuleSchema,
@@ -32,6 +33,7 @@ import {
   type ArcjetFilterRule,
   type ArcjetFixedWindowRateLimitRule,
   type ArcjetMode,
+  type ArcjetPromptInjectionDetectionRule,
   type ArcjetRateLimitRule,
   type ArcjetRuleState,
   type ArcjetRule,
@@ -51,6 +53,7 @@ import {
   ArcjetErrorReason,
   ArcjetFilterReason,
   ArcjetIpDetails,
+  ArcjetPromptInjectionDetectionReason,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
@@ -286,6 +289,13 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         denied: reason.denied,
       });
     }
+    case "promptInjectionDetection": {
+      const reason = proto.reason.value;
+      return new ArcjetPromptInjectionDetectionReason({
+        injectionDetected: reason.injectionDetected,
+        score: reason.score,
+      });
+    }
     case "bot": {
       return new ArcjetErrorReason("bot detection v1 is deprecated");
     }
@@ -404,6 +414,18 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         value: create(SensitiveInfoReasonSchema, {
           allowed: reason.allowed,
           denied: reason.denied,
+        }),
+      },
+    });
+  }
+
+  if (reason.isPromptInjectionDetection()) {
+    return create(ReasonSchema, {
+      reason: {
+        case: "promptInjectionDetection",
+        value: create(PromptInjectionDetectionReasonSchema, {
+          injectionDetected: reason.injectionDetected,
+          score: reason.score,
         }),
       },
     });
@@ -632,6 +654,12 @@ function isSensitiveInfoRule<Props extends {}>(
   return rule.type === "SENSITIVE_INFO";
 }
 
+function isPromptInjectionDetectionRule(
+  rule: RuleWithType,
+): rule is ArcjetPromptInjectionDetectionRule {
+  return rule.type === "PROMPT_INJECTION_DETECTION";
+}
+
 export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   rule: ArcjetRule<Props>,
 ): Rule {
@@ -758,6 +786,19 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
           mode: ArcjetModeToProtocol(rule.mode),
           allow: rule.allow,
           deny: rule.deny,
+        },
+      },
+    });
+  }
+
+  if (isPromptInjectionDetectionRule(rule)) {
+    return create(RuleSchema, {
+      rule: {
+        case: "promptInjectionDetection",
+        value: {
+          mode: ArcjetModeToProtocol(rule.mode),
+          threshold: rule.threshold,
+          version: rule.version,
         },
       },
     });
