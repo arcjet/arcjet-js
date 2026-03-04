@@ -2890,7 +2890,7 @@ export type DetectPromptInjectionOptions = {
 
   /**
    * The score threshold above which a request is considered a prompt injection
-   * attempt (default: `0.5`).
+   * attempt (default: `0.5`) e.g. anything over `0.5` is malicious.
    *
    * Must be in the range (0.0, 1.0) exclusive.
    */
@@ -2999,7 +2999,7 @@ export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
  *
  * The Arcjet prompt injection detection rule analyzes prompts sent to LLM
  * applications to detect jailbreak and injection attempts.
- * The analysis is performed server-side.
+ * The analysis is performed through Arcjet's Cloud API.
  *
  * @param options
  *   Configuration for the prompt injection detection rule.
@@ -3008,17 +3008,17 @@ export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
  *
  * @example
  *   ```ts
- *   detectPromptInjection({ mode: "LIVE", threshold: 0.7 });
+ *   experimental_detectPromptInjection({ mode: "LIVE", threshold: 0.7 });
  *   ```
  * @example
  *   ```ts
  *   const aj = arcjet({
  *     key: process.env.ARCJET_KEY,
- *     rules: [detectPromptInjection({ mode: "LIVE", threshold: 0.5 })],
+ *     rules: [experimental_detectPromptInjection({ mode: "LIVE", threshold: 0.5 })],
  *   });
  *   ```
  */
-export function detectPromptInjection(
+export function experimental_detectPromptInjection(
   options: DetectPromptInjectionOptions = {},
 ): [ArcjetPromptInjectionDetectionRule] {
   validateDetectPromptInjectionOptions(options);
@@ -3034,8 +3034,6 @@ export function detectPromptInjection(
       "`detectPromptInjection` options error: `threshold` must be between 0.0 and 1.0 (exclusive)",
     );
   }
-
-  const MAX_MESSAGE_LENGTH = 131072; // ~128KB
 
   return [
     {
@@ -3069,12 +3067,6 @@ export function detectPromptInjection(
         if (message.length === 0) {
           throw new Error(
             "detectPromptInjection rule requires `detectPromptInjectionMessage` to be non-empty",
-          );
-        }
-
-        if (message.length > MAX_MESSAGE_LENGTH) {
-          throw new Error(
-            `detectPromptInjection rule requires \`detectPromptInjectionMessage\` to be less than ${MAX_MESSAGE_LENGTH} characters`,
           );
         }
       },

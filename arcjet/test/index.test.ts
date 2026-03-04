@@ -24,7 +24,7 @@ test("arcjet", async function (t) {
       "botCategories",
       "default",
       "detectBot",
-      "detectPromptInjection",
+      "experimental_detectPromptInjection",
       "filter",
       "fixedWindow",
       "protectSignup",

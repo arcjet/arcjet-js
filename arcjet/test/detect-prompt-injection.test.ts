@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test, mock } from "node:test";
 import { MemoryCache } from "@arcjet/cache";
-import { ArcjetDenyDecision, ArcjetReason } from "@arcjet/protocol";
+import { ArcjetDenyDecision } from "@arcjet/protocol";
 import arcjet, {
   type ArcjetCacheEntry,
   type ArcjetContext,
@@ -9,7 +9,7 @@ import arcjet, {
   type ArcjetPromptInjectionDetectionRule,
   ArcjetAllowDecision,
   ArcjetPromptInjectionDetectionReason,
-  detectPromptInjection,
+  experimental_detectPromptInjection as detectPromptInjection,
 } from "../index.js";
 
 test("detectPromptInjection", async function (t) {
@@ -141,21 +141,6 @@ test("detectPromptInjection", async function (t) {
   );
 
   await t.test(
-    "should throw if detectPromptInjectionMessage exceeds max length",
-    async function () {
-      const rule: ArcjetPromptInjectionDetectionRule =
-        detectPromptInjection()[0];
-      const context = createContext();
-      const details = createRequest();
-      details.extra.detectPromptInjectionMessage = "a".repeat(131073); // Just over limit
-
-      assert.throws(function () {
-        const _ = rule.validate(context, details);
-      }, /detectPromptInjection rule requires `detectPromptInjectionMessage` to be less than 131072 characters/);
-    },
-  );
-
-  await t.test(
     "should accept valid detectPromptInjectionMessage",
     async function () {
       const rule: ArcjetPromptInjectionDetectionRule =
@@ -163,21 +148,6 @@ test("detectPromptInjection", async function (t) {
       const context = createContext();
       const details = createRequest();
       details.extra.detectPromptInjectionMessage = "This is a valid prompt";
-
-      assert.doesNotThrow(function () {
-        const _ = rule.validate(context, details);
-      });
-    },
-  );
-
-  await t.test(
-    "should accept detectPromptInjectionMessage at max length",
-    async function () {
-      const rule: ArcjetPromptInjectionDetectionRule =
-        detectPromptInjection()[0];
-      const context = createContext();
-      const details = createRequest();
-      details.extra.detectPromptInjectionMessage = "a".repeat(131072); // Exactly at limit
 
       assert.doesNotThrow(function () {
         const _ = rule.validate(context, details);
