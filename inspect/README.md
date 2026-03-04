@@ -94,9 +94,9 @@ server.listen(8000);
 
 ## API
 
-This package exports the identifier
-[`isMissingUserAgent`][api-is-missing-user-agent].
-[`isSpoofedBot`][api-is-spoofed-bot].
+This package exports the identifiers
+[`isMissingUserAgent`][api-is-missing-user-agent],
+[`isSpoofedBot`][api-is-spoofed-bot], and
 [`isVerifiedBot`][api-is-verified-bot].
 There is no default export.
 

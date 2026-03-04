@@ -1,3 +1,5 @@
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -72,4 +74,6 @@ and non-string values from being set.
 
 [arcjet]: https://arcjet.com
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-arcjet-headers]: #new-arcjetheadersinit
 [mdn-headers]: https://developer.mozilla.org/en-US/docs/Web/API/Headers
+[typescript]: https://www.typescriptlang.org/

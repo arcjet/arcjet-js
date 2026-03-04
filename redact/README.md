@@ -115,7 +115,7 @@ Options for the `redact` function (TypeScript type).
 - `replace` (`(entity: string, plainText: string) => string | undefined`, optional)
   — custom replace function to redact sensitive information
 
-### `redact(candidate[, options])
+### `redact(candidate[, options])`
 
 Redact sensitive info.
 
@@ -123,7 +123,7 @@ Redact sensitive info.
 
 - `candidate` (`string`)
   — value to redact.
-- `options` ([`Options`][api-options], optional)
+- `options` ([`RedactOptions`][api-redact-options], optional)
   — configuration
 
 ###### Returns

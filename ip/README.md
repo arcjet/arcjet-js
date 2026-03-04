@@ -68,7 +68,7 @@ console.log(ip); // => "1.1.1.1"
 
 This package exports the identifiers
 [`findIp`][api-find-ip] and [`parseProxy`][api-parse-proxy].
-The default export is [`findIp`][api-find-ip]
+The default export is [`findIp`][api-find-ip].
 
 This package exports the [TypeScript][] types
 [`Cidr`][api-cidr],
