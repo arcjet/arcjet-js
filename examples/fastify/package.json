@@ -1,11 +1,11 @@
 {
   "dependencies": {
     "@arcjet/fastify": "file:../../arcjet-fastify",
-    "fastify": "^5.0.0"
+    "fastify": "^5.7.4"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^24.10.9",
+    "typescript": "^5.9.3"
   },
   "name": "examples-fastify",
   "private": true,
