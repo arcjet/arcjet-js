@@ -33,3 +33,6 @@ updates:
       # Ref: https://github.com/bytecodealliance/jco/issues/500
       - dependency-name: "@bytecodealliance/jco"
         versions: [">1.5.0"]
+      # Sync @node/types to v24 (latest lts)
+      - dependency-name: "@types/node"
+        versions: [">25.0.0"]

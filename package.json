@@ -17,10 +17,12 @@
     "test": "turbo test"
   },
   "devDependencies": {
-    "turbo": "^2.8.0"
+    "turbo": "2.8.0"
   },
   "overrides": {
-    "cookie": ">=0.7.2",
+    "@sveltejs/kit": {
+      "cookie": "0.7.2"
+    },
     "esbuild": ">=0.25.0",
     "rollup": "npm:@rollup/wasm-node"
   }
