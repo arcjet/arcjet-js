@@ -62,7 +62,7 @@
   "devDependencies": {
     "@arcjet/eslint-config": "1.1.0",
     "@arcjet/rollup-config": "1.1.0",
-    "@rollup/wasm-node": "4.57.1",
+    "@rollup/wasm-node": "4.59.0",
     "@sveltejs/kit": "2.53.4",
     "@sveltejs/vite-plugin-svelte": "6.2.4",
     "@types/node": "24.11.0",
