@@ -20,7 +20,7 @@ lint:
   enabled:
     - shellcheck@0.10.0
     - shfmt@3.6.0
-    - trivy@0.59.1
+    - trivy@0.69.2
     - yamllint@1.35.1
     - semgrep@1.107.0
     - gitleaks@8.23.3
