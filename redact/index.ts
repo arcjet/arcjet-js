@@ -144,8 +144,10 @@ function noOpReplace(
 }
 /* c8 ignore stop */
 
-interface RedactedSensitiveInfoEntity
-  extends Omit<RedactedSensitiveInfoEntityWasm, "identifiedType"> {
+interface RedactedSensitiveInfoEntity extends Omit<
+  RedactedSensitiveInfoEntityWasm,
+  "identifiedType"
+> {
   identifiedType: string;
 }
 

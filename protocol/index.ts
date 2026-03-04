@@ -1471,8 +1471,9 @@ export type ArcjetRule<Props extends {} = {}> = {
 /**
  * Abstract rate limit rule.
  */
-export interface ArcjetRateLimitRule<Props extends {}>
-  extends ArcjetRule<Props> {
+export interface ArcjetRateLimitRule<
+  Props extends {},
+> extends ArcjetRule<Props> {
   /**
    * Kind.
    */
@@ -1492,8 +1493,9 @@ export interface ArcjetRateLimitRule<Props extends {}>
 /**
  * Token bucket rate limit rule.
  */
-export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
-  extends ArcjetRateLimitRule<Props> {
+export interface ArcjetTokenBucketRateLimitRule<
+  Props extends {},
+> extends ArcjetRateLimitRule<Props> {
   /**
    * Algorithm kind.
    */
@@ -1518,8 +1520,9 @@ export interface ArcjetTokenBucketRateLimitRule<Props extends {}>
 /**
  * Fixed window rate limit rule.
  */
-export interface ArcjetFixedWindowRateLimitRule<Props extends {}>
-  extends ArcjetRateLimitRule<Props> {
+export interface ArcjetFixedWindowRateLimitRule<
+  Props extends {},
+> extends ArcjetRateLimitRule<Props> {
   /**
    * Algorithm kind.
    */
@@ -1539,8 +1542,9 @@ export interface ArcjetFixedWindowRateLimitRule<Props extends {}>
 /**
  * Sliding window rate limit rule.
  */
-export interface ArcjetSlidingWindowRateLimitRule<Props extends {}>
-  extends ArcjetRateLimitRule<Props> {
+export interface ArcjetSlidingWindowRateLimitRule<
+  Props extends {},
+> extends ArcjetRateLimitRule<Props> {
   /**
    * Algorithm kind.
    */
@@ -1560,8 +1564,9 @@ export interface ArcjetSlidingWindowRateLimitRule<Props extends {}>
 /**
  * Email rule.
  */
-export interface ArcjetEmailRule<Props extends { email: string }>
-  extends ArcjetRule<Props> {
+export interface ArcjetEmailRule<
+  Props extends { email: string },
+> extends ArcjetRule<Props> {
   /**
    * Kind.
    */
@@ -1595,10 +1600,9 @@ export interface ArcjetEmailRule<Props extends { email: string }>
 /**
  * Filter rule.
  */
-export interface ArcjetFilterRule
-  extends ArcjetRule<{
-    filterLocal?: Record<string, string> | null | undefined;
-  }> {
+export interface ArcjetFilterRule extends ArcjetRule<{
+  filterLocal?: Record<string, string> | null | undefined;
+}> {
   /**
    * List of expressions that allow a request when one matches and deny otherwise.
    */
@@ -1618,8 +1622,9 @@ export interface ArcjetFilterRule
 /**
  * Sensitive info rule.
  */
-export interface ArcjetSensitiveInfoRule<Props extends {}>
-  extends ArcjetRule<Props> {
+export interface ArcjetSensitiveInfoRule<
+  Props extends {},
+> extends ArcjetRule<Props> {
   /**
    * Kind.
    */
