@@ -78,7 +78,7 @@ This package exports the [TypeScript][] types
 
 ### `Cidr`
 
-One of the CIDR ranges (TypeScript type).
+This type represents a parsed CIDR range that you can use as a trusted proxy.
 
 ###### Type
 
@@ -91,19 +91,19 @@ type Cidr = Ipv4Cidr | Ipv6Cidr;
 
 ### `Options`
 
-Configuration (TypeScript type).
+You can pass these options to configure how `findIp` looks up the client IP.
 
 ###### Fields
 
 - `platform` ([`Platform`][api-platform], optional)
-  — platform the code is running on;
-  used to allow only known more trustworthy headers
+  — the platform your code is running on; we use this to only trust
+  headers that are known to be set by that platform
 - `proxies` (`Array<Cidr | string>`, optional)
-  — trusted proxies
+  — a list of trusted proxies to skip when resolving the client IP
 
 ### `Platform`
 
-Platform name (TypeScript type).
+This type represents the platform names that `findIp` recognizes.
 
 ###### Type
 
@@ -113,48 +113,56 @@ type Platform = "cloudflare" | "firebase" | "fly-io" | "render" | "vercel";
 
 ### `RequestLike`
 
-Interface that looks like a request (TypeScript).
+This type represents a request-like object that `findIp` can extract an IP
+address from. It supports several shapes because different platforms expose
+request information differently.
 
 ###### Fields
 
 - `headers` (`Headers | Record<string, Array<string> | string | undefined>`)
-  — headers
+  — the request headers
 - `info` (`{remoteAddress?: string}`, optional)
-  — some platforms pass `info`
+  — some platforms pass connection info here
 - `ip` (`unknown`, optional)
-  — some platforms such as provide `ip` directly on `request`
+  — some platforms provide the IP directly on the request object
 - `requestContext` (`{identity?: {sourceIp?: string}}`, optional)
-  — Some platforms pass `requestContext`
+  — some platforms pass a request context with identity info
 - `socket` (`{remoteAddress?: string}`, optional)
-  — Some platforms pass a socket
+  — some platforms pass a socket with the remote address
 
 ### `findIp(request[, options])`
 
-Find a client IP address on a request-like object.
+Finds the client IP address from a request-like object. If you pass a
+`platform` in the options, we only trust headers that are known to be set
+by that platform.
 
 ###### Parameters
 
 - `request` ([`RequestLike`][api-request-like])
-  — request-like object.
+  — the request to extract an IP from
 - `options` ([`Options`][api-options], optional)
-  — configuration
+  — configuration for platform and trusted proxies
 
 ###### Returns
 
-Found IP address (`string`); empty string if not found.
+The found IP address (`string`), or an empty string if no IP could be
+determined.
 
 ### `parseProxy(value)`
 
-Parse CIDR addresses and keep non-CIDR IP addresses.
+Parses a CIDR address string into a [`Cidr`][api-cidr] object, or returns
+the value as-is if it is a plain IP address. You can use this to build a
+list of trusted proxies.
 
 ###### Parameters
 
 - `value` (`string`)
-  — value to parse
+  — an IP address or CIDR range to parse
 
 ###### Returns
 
-Parsed [`Cidr`][api-cidr] if range or given `value` if IP.
+A parsed [`Cidr`][api-cidr] if the value is a range, or the given `value`
+string if it is a plain IP.
 
 ## Considerations
 

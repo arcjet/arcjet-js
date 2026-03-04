@@ -79,7 +79,9 @@ This package exports the [TypeScript][] types
 
 ### `Env`
 
-Environment (TypeScript type).
+This type represents the environment object that you pass to the functions in
+this package. It includes known Arcjet and platform-specific environment
+variables.
 
 ###### Type
 
@@ -100,7 +102,7 @@ export type Env = {
 
 ### `Platform`
 
-Platform name (TypeScript type).
+This type represents the platform names that can be detected.
 
 ###### Type
 
@@ -110,25 +112,27 @@ type Platform = "firebase" | "fly-io" | "render" | "vercel";
 
 ### `baseUrl(environment)`
 
-Get the base URL of an Arcjet API.
+Returns the base URL for the Arcjet API. You can use this if you need to
+know which API endpoint Arcjet will talk to.
 
 ###### Parameters
 
 - `environment` ([`Env`][api-env])
-  — environment
+  — the environment object, typically `process.env`
 
 ###### Returns
 
-Base URL of Arcjet API (`string`).
+Base URL of the Arcjet API (`string`).
 
 ### `isDevelopment(environment)`
 
-Check if the environment is development.
+Checks whether the current environment is a development environment. We use
+this internally to adjust behavior between development and production.
 
 ###### Parameters
 
 - `environment` ([`Env`][api-env])
-  — environment
+  — the environment object, typically `process.env`
 
 ###### Returns
 
@@ -136,12 +140,13 @@ Whether the environment is development (`boolean`).
 
 ### `logLevel(environment)`
 
-Get the log level.
+Returns the configured log level from the environment. If no log level is
+set, it defaults to `"warn"`.
 
 ###### Parameters
 
 - `environment` ([`Env`][api-env])
-  — environment
+  — the environment object, typically `process.env`
 
 ###### Returns
 
@@ -149,16 +154,18 @@ Log level (`"debug" | "error" | "info" | "warn"`).
 
 ### `platform(environment)`
 
-Detect the platform.
+Detects which platform your code is running on based on environment
+variables.
 
 ###### Parameters
 
 - `environment` ([`Env`][api-env])
-  — environment
+  — the environment object, typically `process.env`
 
 ###### Returns
 
-Name of platform if found ([`Platform`][api-platform]).
+Name of the platform if found ([`Platform`][api-platform]), or `undefined`
+otherwise.
 
 ## License
 

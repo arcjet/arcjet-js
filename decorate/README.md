@@ -101,11 +101,9 @@ This package exports the [TypeScript][] type
 
 ### `ArcjetCanDecorate`
 
-Decorable value (TypeScript type).
-
-Something that looks like `Headers` (Fetch),
-`OutgoingMessage` (Node.js), or
-`Response` (Fetch).
+This type represents a value that you can decorate with rate limit headers.
+It can be anything that looks like `Headers` (Fetch),
+`OutgoingMessage` (Node.js), or `Response` (Fetch).
 
 ###### Type
 
@@ -115,9 +113,8 @@ type ArcjetCanDecorate = HeaderLike | OutgoingMessageLike | ResponseLike;
 
 ### `setRateLimitHeaders(value, decision)`
 
-Decorate something based on an Arcjet decision with rate limit headers.
-
-Sets `RateLimit-Policy` and `RateLimit` and conform to the
+Decorates a response with rate limit headers based on an Arcjet decision.
+It sets `RateLimit-Policy` and `RateLimit` headers that conform to the
 [Rate Limit fields for
 HTTP](https://ietf-wg-httpapi.github.io/ratelimit-headers/draft-ietf-httpapi-ratelimit-headers.html)
 draft specification.
@@ -125,9 +122,9 @@ draft specification.
 ###### Parameters
 
 - `value` ([`ArcjetCanDecorate`][api-arcjet-can-decorate])
-  — decorable value
+  — the response or headers object to decorate
 - `decision` (`ArcjetDecision`)
-  — decision from `protect()`
+  — the decision returned from `protect()`
 
 ###### Returns
 

@@ -61,20 +61,21 @@ This package exports no [TypeScript][] types.
 
 ### `createTransport(baseUrl)`
 
-Create a transport that talks over
-HTTP/2 (in Node.js, with `@connectrpc/connect-node`) and
-HTTP (in Bun, Edge Light, and `workerd`, with `@connectrpc/connect-web`)
-
-A thin wrapper around [`createConnectTransport`][connect-create-transport].
+Creates a transport that talks over HTTP/2 using
+`@connectrpc/connect-node`. This is a thin wrapper around
+[`createConnectTransport`][connect-create-transport].
+Alternative entry points exist for Bun, Edge Light, and `workerd` that use
+`@connectrpc/connect-web` instead.
 
 ###### Parameters
 
 - `baseUrl` (`string`, example: `https://example.com/my-api`)
-  — base URI for all HTTP requests
+  — the base URL for all HTTP requests
 
 ###### Returns
 
-Connect transport used to make RPC calls.
+A Connect transport that you can pass to `createClient` from
+`@arcjet/protocol`.
 
 ## License
 

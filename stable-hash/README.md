@@ -79,7 +79,8 @@ This package exports the [TypeScript][] types
 
 ### `FieldHasher`
 
-Hash a field (TypeScript type).
+This type represents a function that hashes a single field. You get one of
+these back from `bool`, `string`, `stringSliceOrdered`, and `uint32`.
 
 ###### Type
 
@@ -89,98 +90,102 @@ type FieldHasher = (data: StringWriter) => void;
 
 ### `StringWriter`
 
-Writer (TypeScript type).
+This type represents a writer that the hasher writes data into.
 
 ###### Fields
 
-- `writeString` (`(data: string): undefined`)
-  — write data
+- `writeString(data: string): void`
+  — writes data to the hash
 
 ### `bool(key, value)`
 
-Create a hasher for a boolean.
+Creates a field hasher for a boolean value.
 
 ###### Parameters
 
 - `key` (`string`)
-  — key
+  — the field name
 - `value` (`boolean`)
-  — value
+  — the boolean value to hash
 
 ###### Returns
 
-Hasher ([`FieldHasher`][api-field-hasher]).
+A field hasher ([`FieldHasher`][api-field-hasher]).
 
 ### `hash(…hashers)`
 
-Hash fields.
+Hashes multiple fields together and returns a stable hash string. You pass
+in the field hashers created by `bool`, `string`, `stringSliceOrdered`, and
+`uint32`.
 
 ###### Parameters
 
 - `hashers` ([`Array<FieldHasher>`][api-field-hasher])
-  — hashers
+  — the field hashers to combine
 
 ###### Returns
 
-Promise that resolves to a hash (`Promise<string>`).
+A `Promise` that resolves to the hash (`Promise<string>`).
 
 ### `makeHasher(subtle)`
 
-Create a hasher.
+Creates a new hash function using the provided `SubtleCrypto`
+implementation. We use this internally to support different crypto
+implementations across runtimes.
 
 ###### Parameters
 
 - `subtle` (`SubtleCryptoLike`)
-  — subtle crypto
+  — a `SubtleCrypto`-like implementation
 
 ###### Returns
 
-Hasher ([`hash`][api-hash])
+A hash function ([`hash`][api-hash]).
 
-### `stringSliceOrdered(key, value)`
+### `stringSliceOrdered(key, values)`
 
-Create a hasher for an array of strings.
+Creates a field hasher for an ordered array of strings.
 
 ###### Parameters
 
 - `key` (`string`)
-  — key
-- `value` (`Array<string>`)
-  — value
+  — the field name
+- `values` (`ReadonlyArray<string>`)
+  — the string array to hash
 
 ###### Returns
 
-Hasher ([`FieldHasher`][api-field-hasher]).
+A field hasher ([`FieldHasher`][api-field-hasher]).
 
 ### `string(key, value)`
 
-Create a hasher for a string.
+Creates a field hasher for a string value.
 
 ###### Parameters
 
 - `key` (`string`)
-  — key
+  — the field name
 - `value` (`string`)
-  — value
+  — the string value to hash
 
 ###### Returns
 
-Hasher ([`FieldHasher`][api-field-hasher]).
+A field hasher ([`FieldHasher`][api-field-hasher]).
 
 ### `uint32(key, value)`
 
-Create a hasher for an unsigned 32-bit integer.
+Creates a field hasher for an unsigned 32-bit integer.
 
 ###### Parameters
 
 - `key` (`string`)
-  — key
+  — the field name
 - `value` (`number`)
-  — value
+  — the integer value to hash
 
 ###### Returns
 
-Hasher ([`FieldHasher`][api-field-hasher]).
+A field hasher ([`FieldHasher`][api-field-hasher]).
 
 ## License
 

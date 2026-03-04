@@ -67,7 +67,7 @@ This package exports the [TypeScript][] type [`Runtime`][api-runtime-type].
 
 ### `Runtime`
 
-Runtime environment that can be detected (TypeScript type).
+This type represents the runtime environments that can be detected.
 
 ###### Type
 
@@ -77,11 +77,12 @@ type Runtime = "workerd" | "deno" | "node" | "bun" | "edge-light" | "";
 
 ### `runtime()`
 
-Detect the current runtime environment at runtime.
+Detects which runtime environment your code is currently running in.
 
 ###### Returns
 
-Runtime (`string`); empty string if not found.
+The detected runtime (`string`), or an empty string if the runtime could not
+be determined.
 
 ## License
 

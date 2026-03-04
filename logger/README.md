@@ -71,12 +71,10 @@ This package exports the [TypeScript][] types
 
 ### `LogLevel`
 
-Supported log levels (TypeScript type).
-
-The order from most verbose to least verbose is
-`debug`, `info`, `warn`, to `error`.
-When using for example `info`, then `warn` and `error` messages
-are also logged.
+This type represents the supported log levels. The order from most verbose
+to least verbose is `debug`, `info`, `warn`, to `error`. For example, when
+you set the level to `info`, then `warn` and `error` messages are also
+logged.
 
 ###### Type
 
@@ -86,39 +84,40 @@ type LogLevel = "debug" | "error" | "info" | "warn";
 
 ### `Options`
 
-Configuration (TypeScript type).
+You can pass these options when creating a new logger.
 
 ###### Fields
 
-- `level` ([`LogLevel`][api-log-level], optional)
-  — log level
+- `level` ([`LogLevel`][api-log-level])
+  — the log level to use
 
-### `new Logger([options])`
+### `new Logger(options)`
 
-Create a new logger.
+Creates a new logger instance.
 
 ###### Parameters
 
-- `options` ([`Options`][api-options], optional)
-  — configuration
+- `options` ([`Options`][api-options])
+  — configuration for the logger
 
 ###### Returns
 
-Logger.
+A `Logger` instance.
 
 #### `Logger#[debug | error | info | warn]([mergingObject, ][message, ]…interpolationValues)`
 
-Depending on the configured log level, either do nothing or print a log message.
-
-The message template and intepolation values are passed through
-[`sprintf`][arcjet-sprintf].
+Depending on the configured log level, these methods either do nothing or
+print a log message. The message template and interpolation values are passed
+through [`sprintf`][arcjet-sprintf].
 
 ###### Parameters
 
+- `mergingObject` (`Record<string, unknown>`, optional)
+  — an object to merge into the log output
 - `message` (`string`)
-  — template
+  — the message template
 - `interpolationValues` (`Array<unknown>`)
-  — parameters to interpolate
+  — values to interpolate into the template
 
 ###### Returns
 

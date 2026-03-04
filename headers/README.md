@@ -63,10 +63,17 @@ This package exports no [TypeScript][] types.
 
 ### `new ArcjetHeaders([init])`
 
-Arcjet headers.
+Creates a new `ArcjetHeaders` instance. We use this internally to prevent
+the `cookie` header from being set and to ensure only string values are used.
 
-This exists to prevent the `cookie` header from being set
-and non-string values from being set.
+###### Parameters
+
+- `init` (`Headers | Array<[string, string]> | Record<string, Array<string> | string | undefined>`, optional)
+  — initial headers to set
+
+###### Returns
+
+An `ArcjetHeaders` instance that extends the standard `Headers` class.
 
 ## License
 

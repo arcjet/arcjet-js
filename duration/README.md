@@ -65,12 +65,12 @@ This package does not export [TypeScript][] types.
 
 ### `parse(value)`
 
-Parse a duration into a number representing seconds while ensuring the value
+Parses a duration into a number representing seconds while ensuring the value
 fits within an unsigned 32-bit integer.
 
-If a number is passed it is validated and returned.
+If you pass a number, it is validated and returned as-is.
 
-If a string is passed it must be in the form of digits followed by a unit.
+If you pass a string, it must be in the form of digits followed by a unit.
 Supported units are `s` (seconds),
 `m` (minutes),
 `h` (hours),
@@ -79,7 +79,7 @@ and `d` (days).
 ###### Parameters
 
 - `value` (`number` or `string`)
-  — value to parse
+  — the duration to parse
 
 ###### Returns
 

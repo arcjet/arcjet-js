@@ -67,18 +67,19 @@ This package exports no [TypeScript][] types.
 
 ### `sprintf(template, …values)`
 
-Format a string with placeholders using the provided arguments.
+Formats a string by replacing placeholders with the provided values. See
+[Substitutions](#substitutions) below for the supported placeholder types.
 
 ###### Parameters
 
 - `template` (`string`)
-  — template
-- `values` (`Array<string>`)
-  – values to interpolate
+  — the format string with placeholders
+- `values` (`Array<unknown>`)
+  — values to interpolate into the template
 
 ###### Returns
 
-Formatted string (`string`).
+The formatted string (`string`).
 
 ## Substitutions
 

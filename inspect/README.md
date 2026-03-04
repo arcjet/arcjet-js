@@ -104,93 +104,94 @@ This package exports no [TypeScript][] types.
 
 ### `isMissingUserAgent(result)`
 
-Check for a bot missing a `User-Agent` header.
-
-You may want to block such requests because a missing `User-Agent` header is
-a good indicator of a malicious request since it is recommended by
+Determines if a bot rule result detected a request with a missing
+`User-Agent` header. You may want to block such requests because a missing
+`User-Agent` header is a good indicator of a malicious request, since it is
+recommended by
 [_HTTP Semantics_ from IETF](https://datatracker.ietf.org/doc/html/rfc9110#field.user-agent).
 
 ###### Parameters
 
-- `result` (`Result`)
-  — rule result
+- `result` (`ArcjetRuleResult`)
+  — a rule result from the Arcjet decision
 
 ###### Returns
 
-`true` if the bot rule result was `LIVE` and the request had no `User-Agent` header,
-`false` if the bot rule result was `LIVE` and the request had a `User-Agent` header,
-`undefined` if the rule result was non-bot or `DRY_RUN` (`boolean | undefined`).
+This function returns `true` if the bot rule result was `LIVE` and the
+request had no `User-Agent` header, `false` if the bot rule result was
+`LIVE` and the request had a `User-Agent` header, or `undefined` if the rule
+result was non-bot or `DRY_RUN` (`boolean | undefined`).
 
 ###### Availability
 
-Bot protection is available if `detectBot` is used.
+Bot protection is available when you use `detectBot`.
 See [_Bot protection_ on
 `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
 for more info.
 
-Missing `User-Agent` detection is part of all plans including the free plans.
+Missing `User-Agent` detection is part of all plans including the free plan.
 See [_Error handling_ on
 `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#error-handling)
 for more info.
 
 ### `isSpoofedBot(result)`
 
-Check for a spoofed bot.
-
-You may want to block such requests because they were likely spoofed.
+Determines if a bot rule result detected a spoofed request. You may want to
+block such requests because they were likely spoofed.
 
 ###### Parameters
 
-- `result` (`Result`)
-  — rule result
+- `result` (`ArcjetRuleResult`)
+  — a rule result from the Arcjet decision
 
 ###### Returns
 
-`true` if the bot rule result was `LIVE` and detected a spoofed bot,
-`false` if the bot rule result was `LIVE` and did not detect a spoofed bot,
-`undefined` if the rule result was non-bot or `DRY_RUN` (`boolean | undefined`).
+This function returns `true` if the bot rule result was `LIVE` and detected
+a spoofed bot, `false` if the bot rule result was `LIVE` and did not detect
+a spoofed bot, or `undefined` if the rule result was non-bot or `DRY_RUN`
+(`boolean | undefined`).
 
 ###### Availability
 
-Bot protection is available if `detectBot` is used.
+Bot protection is available when you use `detectBot`.
 See [_Bot protection_ on
 `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
 for more info.
 
-Spoofed bot detection is part of advanced bot protection features which
-are not available on free plans but are available on the starter and
-business plans.
+Spoofed bot detection is part of advanced bot protection features which are
+not available on free plans but are available on the starter and business
+plans.
 See [_Bot verification_ on
 `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
 for more info.
 
 ### `isVerifiedBot(result)`
 
-Check for a verified bot.
-
-You may want to ignore other signals for such requests.
+Determines if a bot rule result detected a verified bot. You may want to
+allow such requests or ignore other signals for them.
 
 ###### Parameters
 
-- `result` (`Result`)
-  — rule result
+- `result` (`ArcjetRuleResult`)
+  — a rule result from the Arcjet decision
 
 ###### Returns
 
-`true` if the bot rule result was `LIVE` and detected a verified bot,
-`false` if the bot rule result was `LIVE` and did not detect a verified bot,
-`undefined` if the rule result was non-bot or `DRY_RUN` (`boolean | undefined`).
+This function returns `true` if the bot rule result was `LIVE` and detected
+a verified bot, `false` if the bot rule result was `LIVE` and did not detect
+a verified bot, or `undefined` if the rule result was non-bot or `DRY_RUN`
+(`boolean | undefined`).
 
 ###### Availability
 
-Bot protection is available if `detectBot` is used.
+Bot protection is available when you use `detectBot`.
 See [_Bot protection_ on
 `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
 for more info.
 
-Verified bot detection is part of advanced bot protection features which
-are not available on free plans but are available on the starter and
-business plans.
+Verified bot detection is part of advanced bot protection features which are
+not available on free plans but are available on the starter and business
+plans.
 See [_Bot verification_ on
 `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
 for more info.

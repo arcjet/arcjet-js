@@ -85,7 +85,8 @@ This package exports the [TypeScript][] types
 
 ### `ArcjetSensitiveInfoType`
 
-Types of standard sensitive information that can be detected (TypeScript type).
+This type represents the kinds of sensitive information that can be detected
+out of the box.
 
 ###### Type
 
@@ -99,37 +100,38 @@ type ArcjetSensitiveInfoType =
 
 ### `RedactOptions`
 
-Options for the `redact` function (TypeScript type).
+You can pass these options to configure how `redact` works.
 
 ###### Fields
 
 - `contextWindowSize` (`number`, default: `1`)
-  — number of tokens to consider
-- `detect` (`(tokens: Array<string>) => Array<string>`, optional)
-  — custom detection function to identify sensitive information.
+  — the number of tokens to consider for context
+- `detect` (`(tokens: string[]) => ReadonlyArray<string | undefined>`, optional)
+  — a custom detection function to identify sensitive information
 - `entities` (`Array<string>`, default: all builtin and detect entities)
-  — entities to redact;
-  includes the builtin
+  — which entities to redact; this includes the builtin
   [`ArcjetSensitiveInfoType`][api-arcjet-sensitive-info-type]s and
-  custom types as returned by `detect`
-- `replace` (`(entity: string, plainText: string) => string | undefined`, optional)
-  — custom replace function to redact sensitive information
+  any custom types returned by your `detect` function
+- `replace` (`(entity: string, plaintext: string) => string | undefined`, optional)
+  — a custom replace function to control how sensitive information is
+  redacted
 
 ### `redact(candidate[, options])`
 
-Redact sensitive info.
+Redacts sensitive information in a string. You can use the returned
+`unredact` function to restore the original values later.
 
 ###### Parameters
 
 - `candidate` (`string`)
-  — value to redact.
+  — the string to redact
 - `options` ([`RedactOptions`][api-redact-options], optional)
-  — configuration
+  — configuration for what to redact and how
 
 ###### Returns
 
-Promise that resolves to a tuple with the redacted string and a function to
-unredact it (`Promise<[string, Unredact]>`).
+This function returns a `Promise` that resolves to a tuple with the redacted
+string and a function to unredact it (`Promise<[string, Unredact]>`).
 
 ## License
 
