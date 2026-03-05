@@ -173,6 +173,20 @@ export declare type IpDetails = Message<"proto.decide.v1alpha1.IpDetails"> & {
    * @generated from field: bool is_relay = 22;
    */
   isRelay: boolean;
+
+  /**
+   * Whether the IP address has been flagged as an abuser.
+   *
+   * @generated from field: bool is_abuser = 23;
+   */
+  isAbuser: boolean;
+
+  /**
+   * Bots is the list of bots that the IP address belongs to.
+   *
+   * @generated from field: map<string, string> bots = 24;
+   */
+  bots: { [key: string]: string };
 };
 
 /**
@@ -271,6 +285,15 @@ export declare type Reason = Message<"proto.decide.v1alpha1.Reason"> & {
      */
     value: FilterReason;
     case: "filter";
+  } | {
+    /**
+     * Contains details about the prompt injection detection analysis when
+     * the decision was made based on a prompt injection detection rule.
+     *
+     * @generated from field: proto.decide.v1alpha1.PromptInjectionDetectionReason prompt_injection_detection = 10;
+     */
+    value: PromptInjectionDetectionReason;
+    case: "promptInjectionDetection";
   } | { case: undefined; value?: undefined };
 };
 
@@ -563,6 +586,36 @@ export declare type ErrorReason = Message<"proto.decide.v1alpha1.ErrorReason"> &
  * Use `create(ErrorReasonSchema)` to create a new message.
  */
 export declare const ErrorReasonSchema: GenMessage<ErrorReason>;
+
+/**
+ * Details of an AI prompt injection detection decision.
+ *
+ * @generated from message proto.decide.v1alpha1.PromptInjectionDetectionReason
+ */
+export declare type PromptInjectionDetectionReason = Message<"proto.decide.v1alpha1.PromptInjectionDetectionReason"> & {
+  /**
+   * Whether a prompt injection attempt was detected in the input.
+   *
+   * @generated from field: bool injection_detected = 1;
+   */
+  injectionDetected: boolean;
+
+  /**
+   * The prompt injection confidence score, scaled to [0, 1]. Values near 0
+   * indicate benign input, values near 1 indicate a prompt injection attempt.
+   * This is compared against the configured threshold to determine the
+   * conclusion.
+   *
+   * @generated from field: double score = 2;
+   */
+  score: number;
+};
+
+/**
+ * Describes the message proto.decide.v1alpha1.PromptInjectionDetectionReason.
+ * Use `create(PromptInjectionDetectionReasonSchema)` to create a new message.
+ */
+export declare const PromptInjectionDetectionReasonSchema: GenMessage<PromptInjectionDetectionReason>;
 
 /**
  * @generated from message proto.decide.v1alpha1.IdentifiedEntity
@@ -1014,6 +1067,42 @@ export declare type FilterRule = Message<"proto.decide.v1alpha1.FilterRule"> & {
 export declare const FilterRuleSchema: GenMessage<FilterRule>;
 
 /**
+ * The configuration for a prompt injection detection rule.
+ *
+ * @generated from message proto.decide.v1alpha1.PromptInjectionDetectionRule
+ */
+export declare type PromptInjectionDetectionRule = Message<"proto.decide.v1alpha1.PromptInjectionDetectionRule"> & {
+  /**
+   * @generated from field: proto.decide.v1alpha1.Mode mode = 1;
+   */
+  mode: Mode;
+
+  /**
+   * The score threshold above which a request is considered a prompt
+   * injection attempt. Defaults to 0.5 if not specified. Must be in the
+   * range (0.0, 1.0) exclusive when specified - values of exactly 0.0 or
+   * 1.0 are not valid.
+   *
+   * @generated from field: optional double threshold = 2;
+   */
+  threshold?: number;
+
+  /**
+   * The version of the rule being executed. This is incremented by SDKs when
+   * a breaking change is made to the configuration or behavior of the rule.
+   *
+   * @generated from field: proto.decide.v1alpha1.PromptInjectionDetectionRuleVersion version = 3;
+   */
+  version: PromptInjectionDetectionRuleVersion;
+};
+
+/**
+ * Describes the message proto.decide.v1alpha1.PromptInjectionDetectionRule.
+ * Use `create(PromptInjectionDetectionRuleSchema)` to create a new message.
+ */
+export declare const PromptInjectionDetectionRuleSchema: GenMessage<PromptInjectionDetectionRule>;
+
+/**
  * The configuration for Arcjet.
  *
  * @generated from message proto.decide.v1alpha1.Rule
@@ -1064,6 +1153,12 @@ export declare type Rule = Message<"proto.decide.v1alpha1.Rule"> & {
      */
     value: FilterRule;
     case: "filter";
+  } | {
+    /**
+     * @generated from field: proto.decide.v1alpha1.PromptInjectionDetectionRule prompt_injection_detection = 8;
+     */
+    value: PromptInjectionDetectionRule;
+    case: "promptInjectionDetection";
   } | { case: undefined; value?: undefined };
 };
 
@@ -1898,6 +1993,24 @@ export enum FilterRuleVersion {
  * Describes the enum proto.decide.v1alpha1.FilterRuleVersion.
  */
 export declare const FilterRuleVersionSchema: GenEnum<FilterRuleVersion>;
+
+/**
+ * @generated from enum proto.decide.v1alpha1.PromptInjectionDetectionRuleVersion
+ */
+export enum PromptInjectionDetectionRuleVersion {
+  /**
+   * This is equivalent to V0 since rules without a version specified will
+   * default to this value.
+   *
+   * @generated from enum value: PROMPT_INJECTION_DETECTION_RULE_VERSION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+}
+
+/**
+ * Describes the enum proto.decide.v1alpha1.PromptInjectionDetectionRuleVersion.
+ */
+export declare const PromptInjectionDetectionRuleVersionSchema: GenEnum<PromptInjectionDetectionRuleVersion>;
 
 /**
  * @generated from service proto.decide.v1alpha1.DecideService

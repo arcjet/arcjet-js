@@ -116,6 +116,24 @@ export function string(key: string, value: string): FieldHasher {
 }
 
 /**
+ * Create a hasher for a 64-bit floating point number.
+ *
+ * @param key
+ *   Key.
+ * @param value
+ *   Value.
+ * @returns
+ *   Hasher.
+ */
+export function float64(key: string, value: number): FieldHasher {
+  return (data: StringWriter) => {
+    data.writeString(key);
+    data.writeString(fieldSeparator);
+    data.writeString(value.toString());
+  };
+}
+
+/**
  * Create a hasher for an array of strings.
  *
  * @param key

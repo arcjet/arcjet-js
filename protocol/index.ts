@@ -107,6 +107,7 @@ export class ArcjetReason {
     | "ERROR"
     | "FILTER"
     | "SENSITIVE_INFO"
+    | "PROMPT_INJECTION_DETECTION"
     | undefined;
 
   /**
@@ -188,6 +189,16 @@ export class ArcjetReason {
   isFilter(): this is ArcjetFilterReason {
     return this.type === "FILTER";
   }
+
+  /**
+   * Check if this is a prompt injection detection reason.
+   *
+   * @returns
+   *   Whether this is a prompt injection detection reason.
+   */
+  isPromptInjectionDetection(): this is ArcjetPromptInjectionDetectionReason {
+    return this.type === "PROMPT_INJECTION_DETECTION";
+  }
 }
 
 /**
@@ -237,6 +248,56 @@ export class ArcjetFilterReason extends ArcjetReason {
 
     this.matchedExpressions = init.matchedExpressions;
     this.undeterminedExpressions = init.undeterminedExpressions;
+  }
+}
+
+/**
+ * Configuration for `ArcjetPromptInjectionDetectionReason`.
+ */
+interface ArcjetPromptInjectionDetectionReasonInit {
+  /**
+   * Whether a prompt injection attempt was detected in the input.
+   */
+  injectionDetected?: boolean | undefined;
+
+  /**
+   * The prompt injection confidence score, scaled to [0, 1].
+   */
+  score?: number | undefined;
+}
+
+/**
+ * Prompt injection detection reason.
+ */
+export class ArcjetPromptInjectionDetectionReason extends ArcjetReason {
+  /**
+   * Kind.
+   */
+  type = "PROMPT_INJECTION_DETECTION" as const;
+
+  /**
+   * Whether a prompt injection attempt was detected.
+   */
+  injectionDetected: boolean;
+
+  /**
+   * The prompt injection confidence score.
+   */
+  score: number;
+
+  /**
+   * Create a prompt injection detection reason.
+   *
+   * @param init
+   *   Configuration.
+   * @returns
+   *   Prompt injection detection reason.
+   */
+  constructor(init: ArcjetPromptInjectionDetectionReasonInit) {
+    super();
+
+    this.injectionDetected = init.injectionDetected ?? false;
+    this.score = init.score ?? 0.0;
   }
 }
 
@@ -1669,6 +1730,23 @@ export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {
    * Kind.
    */
   type: "SHIELD";
+}
+
+/**
+ * Prompt injection detection rule.
+ */
+export interface ArcjetPromptInjectionDetectionRule
+  extends ArcjetRule<{ detectPromptInjectionMessage: string }> {
+  /**
+   * Kind.
+   */
+  type: "PROMPT_INJECTION_DETECTION";
+
+  /**
+   * The score threshold above which a request is considered a prompt
+   * injection attempt.
+   */
+  threshold: number;
 }
 
 /**
