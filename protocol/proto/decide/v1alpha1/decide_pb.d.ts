@@ -287,13 +287,13 @@ export declare type Reason = Message<"proto.decide.v1alpha1.Reason"> & {
     case: "filter";
   } | {
     /**
-     * Contains details about the prompt injection detection analysis when
+     * Contains details about the prompt injection analysis when
      * the decision was made based on a prompt injection detection rule.
      *
-     * @generated from field: proto.decide.v1alpha1.PromptInjectionDetectionReason prompt_injection_detection = 10;
+     * @generated from field: proto.decide.v1alpha1.PromptInjectionReason prompt_injection = 10;
      */
-    value: PromptInjectionDetectionReason;
-    case: "promptInjectionDetection";
+    value: PromptInjectionReason;
+    case: "promptInjection";
   } | { case: undefined; value?: undefined };
 };
 
@@ -588,11 +588,11 @@ export declare type ErrorReason = Message<"proto.decide.v1alpha1.ErrorReason"> &
 export declare const ErrorReasonSchema: GenMessage<ErrorReason>;
 
 /**
- * Details of an AI prompt injection detection decision.
+ * Details of an AI prompt injection decision.
  *
- * @generated from message proto.decide.v1alpha1.PromptInjectionDetectionReason
+ * @generated from message proto.decide.v1alpha1.PromptInjectionReason
  */
-export declare type PromptInjectionDetectionReason = Message<"proto.decide.v1alpha1.PromptInjectionDetectionReason"> & {
+export declare type PromptInjectionReason = Message<"proto.decide.v1alpha1.PromptInjectionReason"> & {
   /**
    * Whether a prompt injection attempt was detected in the input.
    *
@@ -612,10 +612,10 @@ export declare type PromptInjectionDetectionReason = Message<"proto.decide.v1alp
 };
 
 /**
- * Describes the message proto.decide.v1alpha1.PromptInjectionDetectionReason.
- * Use `create(PromptInjectionDetectionReasonSchema)` to create a new message.
+ * Describes the message proto.decide.v1alpha1.PromptInjectionReason.
+ * Use `create(PromptInjectionReasonSchema)` to create a new message.
  */
-export declare const PromptInjectionDetectionReasonSchema: GenMessage<PromptInjectionDetectionReason>;
+export declare const PromptInjectionReasonSchema: GenMessage<PromptInjectionReason>;
 
 /**
  * @generated from message proto.decide.v1alpha1.IdentifiedEntity

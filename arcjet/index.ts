@@ -33,7 +33,7 @@ import {
   ArcjetErrorDecision,
   ArcjetShieldReason,
   ArcjetFilterReason,
-  ArcjetPromptInjectionDetectionReason,
+  ArcjetPromptInjectionReason,
   ArcjetRateLimitReason,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
@@ -3105,7 +3105,7 @@ export function experimental_detectPromptInjection(
           ttl: 0,
           state: "NOT_RUN",
           conclusion: "ALLOW",
-          reason: new ArcjetPromptInjectionDetectionReason({
+          reason: new ArcjetPromptInjectionReason({
             injectionDetected: false,
             score: 0.0,
           }),
