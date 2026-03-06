@@ -122,7 +122,6 @@ jobs:
           - express-validate-email
           - fastify
           - nestjs
-          - nextjs-14-nextauth-4
           - nextjs-app-dir-rate-limit
           - nextjs-app-dir-validate-email
           - nextjs-bot-categories
