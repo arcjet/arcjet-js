@@ -20,7 +20,7 @@ jobs:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     container:
       image: returntocorp/semgrep
-    if: (github.actor != 'dependabot[bot]')
+    if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
     steps:
       # Environment security
       - name: Harden Runner

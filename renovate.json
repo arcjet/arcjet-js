@@ -1,0 +1,60 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [":dependencyDashboardApproval"],
+  "enabledManagers": ["github-actions", "npm"],
+  "minimumReleaseAge": "7 days",
+  "schedule": [],
+  "updateNotScheduled": false,
+  "semanticCommitScope": "",
+  "semanticCommitType": "deps",
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "dependencyDashboardCategory": "GitHub Actions updates"
+    },
+    {
+      "matchManagers": ["npm"],
+      "dependencyDashboardCategory": "JavaScript updates"
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "semanticCommitScope": "dev",
+      "semanticCommitType": "deps",
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "automerge": true
+    },
+    {
+      "matchManagers": ["npm", "github-actions"],
+      "matchPackageNames": ["node", "@types/node", "actions/node-versions"],
+      "groupName": "node",
+      "allowedVersions": "<25"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@bytecodealliance/jco"],
+      "allowedVersions": "<=1.5.0"
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}",
+  "prBodyColumns": ["Package", "Change"],
+  "ignorePresets": ["mergeConfidence:all-badges"],
+  "vulnerabilityAlerts": {
+    "groupName": null,
+    "dependencyDashboardApproval": true,
+    "rangeStrategy": "update-lockfile",
+    "commitMessageSuffix": "[security]",
+    "branchTopic": "{{{datasource}}}-{{{depNameSanitized}}}-vulnerability",
+    "prCreation": "immediate",
+    "vulnerabilityFixStrategy": "lowest"
+  }
+}
