@@ -8,11 +8,11 @@
   "dependencies": {
     "@arcjet/inspect": "file:../../inspect",
     "@arcjet/node": "file:../../arcjet-node",
-    "express": "^5.1.0"
+    "express": "^5.2.1"
   },
   "devDependencies": {
-    "@types/express": "^5.0.3",
-    "@types/node": "^24.0.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.9",
     "typescript": "^5"
   }
 }
