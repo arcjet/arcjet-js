@@ -8,7 +8,7 @@ import arcjet, {
   type ArcjetRequestDetails,
   type ArcjetPromptInjectionDetectionRule,
   ArcjetAllowDecision,
-  ArcjetPromptInjectionDetectionReason,
+  ArcjetPromptInjectionReason,
   experimental_detectPromptInjection as detectPromptInjection,
 } from "../index.js";
 
@@ -168,7 +168,7 @@ test("detectPromptInjection", async function (t) {
 
     assert.equal(result.state, "NOT_RUN");
     assert.equal(result.conclusion, "ALLOW");
-    assert.ok(result.reason instanceof ArcjetPromptInjectionDetectionReason);
+    assert.ok(result.reason instanceof ArcjetPromptInjectionReason);
     assert.equal(result.reason.injectionDetected, false);
     assert.equal(result.reason.score, 0.0);
   });
@@ -186,7 +186,7 @@ test("detectPromptInjection", async function (t) {
 
     assert.equal(result.state, "NOT_RUN");
     assert.equal(result.conclusion, "ALLOW");
-    assert.ok(result.reason instanceof ArcjetPromptInjectionDetectionReason);
+    assert.ok(result.reason instanceof ArcjetPromptInjectionReason);
   });
 
   await t.test("should use cache if available", async function () {
@@ -207,7 +207,7 @@ test("detectPromptInjection", async function (t) {
       result1.fingerprint,
       {
         conclusion: "DENY",
-        reason: new ArcjetPromptInjectionDetectionReason({
+        reason: new ArcjetPromptInjectionReason({
           injectionDetected: true,
           score: 0.95,
         }),
@@ -220,16 +220,12 @@ test("detectPromptInjection", async function (t) {
 
     assert.equal(result2.state, "CACHED");
     assert.equal(result2.conclusion, "DENY");
-    assert.ok(result2.reason instanceof ArcjetPromptInjectionDetectionReason);
+    assert.ok(result2.reason instanceof ArcjetPromptInjectionReason);
     assert.equal(
-      (result2.reason as ArcjetPromptInjectionDetectionReason)
-        .injectionDetected,
+      (result2.reason as ArcjetPromptInjectionReason).injectionDetected,
       true,
     );
-    assert.equal(
-      (result2.reason as ArcjetPromptInjectionDetectionReason).score,
-      0.95,
-    );
+    assert.equal((result2.reason as ArcjetPromptInjectionReason).score, 0.95);
   });
 
   await t.test("should have correct priority", async function () {
@@ -302,7 +298,7 @@ test("integration with arcjet client", async function (t) {
         decide: mock.fn(async () => {
           return new ArcjetDenyDecision({
             ttl: 300,
-            reason: new ArcjetPromptInjectionDetectionReason({
+            reason: new ArcjetPromptInjectionReason({
               injectionDetected: true,
               score: 0.92,
             }),
@@ -341,16 +337,13 @@ test("integration with arcjet client", async function (t) {
 
       assert.ok(decision instanceof ArcjetDenyDecision);
       assert.equal(decision.conclusion, "DENY");
-      assert.ok(
-        decision.reason instanceof ArcjetPromptInjectionDetectionReason,
-      );
+      assert.ok(decision.reason instanceof ArcjetPromptInjectionReason);
       assert.equal(
-        (decision.reason as ArcjetPromptInjectionDetectionReason)
-          .injectionDetected,
+        (decision.reason as ArcjetPromptInjectionReason).injectionDetected,
         true,
       );
       assert.equal(
-        (decision.reason as ArcjetPromptInjectionDetectionReason).score,
+        (decision.reason as ArcjetPromptInjectionReason).score,
         0.92,
       );
     },
@@ -361,7 +354,7 @@ test("integration with arcjet client", async function (t) {
       decide: mock.fn(async () => {
         return new ArcjetAllowDecision({
           ttl: 0,
-          reason: new ArcjetPromptInjectionDetectionReason({
+          reason: new ArcjetPromptInjectionReason({
             injectionDetected: false,
             score: 0.15,
           }),
@@ -399,16 +392,12 @@ test("integration with arcjet client", async function (t) {
 
     assert.ok(decision instanceof ArcjetAllowDecision);
     assert.equal(decision.conclusion, "ALLOW");
-    assert.ok(decision.reason instanceof ArcjetPromptInjectionDetectionReason);
+    assert.ok(decision.reason instanceof ArcjetPromptInjectionReason);
     assert.equal(
-      (decision.reason as ArcjetPromptInjectionDetectionReason)
-        .injectionDetected,
+      (decision.reason as ArcjetPromptInjectionReason).injectionDetected,
       false,
     );
-    assert.equal(
-      (decision.reason as ArcjetPromptInjectionDetectionReason).score,
-      0.15,
-    );
+    assert.equal((decision.reason as ArcjetPromptInjectionReason).score, 0.15);
   });
 
   await t.test(
@@ -421,7 +410,7 @@ test("integration with arcjet client", async function (t) {
           receivedDetails = args[1] as ArcjetRequestDetails;
           return new ArcjetAllowDecision({
             ttl: 0,
-            reason: new ArcjetPromptInjectionDetectionReason({
+            reason: new ArcjetPromptInjectionReason({
               injectionDetected: false,
               score: 0.1,
             }),

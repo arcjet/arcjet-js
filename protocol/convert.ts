@@ -14,7 +14,7 @@ import {
   EmailType,
   ErrorReasonSchema,
   Mode,
-  PromptInjectionDetectionReasonSchema,
+  PromptInjectionReasonSchema,
   RateLimitAlgorithm,
   ReasonSchema,
   RuleSchema,
@@ -53,7 +53,7 @@ import {
   ArcjetErrorReason,
   ArcjetFilterReason,
   ArcjetIpDetails,
-  ArcjetPromptInjectionDetectionReason,
+  ArcjetPromptInjectionReason,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
@@ -289,9 +289,9 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         denied: reason.denied,
       });
     }
-    case "promptInjectionDetection": {
+    case "promptInjection": {
       const reason = proto.reason.value;
-      return new ArcjetPromptInjectionDetectionReason({
+      return new ArcjetPromptInjectionReason({
         injectionDetected: reason.injectionDetected,
         score: reason.score,
       });
@@ -419,11 +419,11 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
     });
   }
 
-  if (reason.isPromptInjectionDetection()) {
+  if (reason.isPromptInjection()) {
     return create(ReasonSchema, {
       reason: {
-        case: "promptInjectionDetection",
-        value: create(PromptInjectionDetectionReasonSchema, {
+        case: "promptInjection",
+        value: create(PromptInjectionReasonSchema, {
           injectionDetected: reason.injectionDetected,
           score: reason.score,
         }),
@@ -654,7 +654,7 @@ function isSensitiveInfoRule<Props extends {}>(
   return rule.type === "SENSITIVE_INFO";
 }
 
-function isPromptInjectionDetectionRule(
+function isPromptInjectionRule(
   rule: RuleWithType,
 ): rule is ArcjetPromptInjectionDetectionRule {
   return rule.type === "PROMPT_INJECTION_DETECTION";
@@ -791,7 +791,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
     });
   }
 
-  if (isPromptInjectionDetectionRule(rule)) {
+  if (isPromptInjectionRule(rule)) {
     return create(RuleSchema, {
       rule: {
         case: "promptInjectionDetection",

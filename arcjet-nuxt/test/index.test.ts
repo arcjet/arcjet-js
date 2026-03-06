@@ -21,7 +21,7 @@ test("@arcjet/nuxt (api)", async function (t) {
       "ArcjetErrorReason",
       "ArcjetFilterReason",
       "ArcjetIpDetails",
-      "ArcjetPromptInjectionDetectionReason",
+      "ArcjetPromptInjectionReason",
       "ArcjetRateLimitReason",
       "ArcjetReason",
       "ArcjetRuleResult",

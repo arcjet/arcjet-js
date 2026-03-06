@@ -191,12 +191,12 @@ export class ArcjetReason {
   }
 
   /**
-   * Check if this is a prompt injection detection reason.
+   * Check if this is a prompt injection reason.
    *
    * @returns
-   *   Whether this is a prompt injection detection reason.
+   *   Whether this is a prompt injection reason.
    */
-  isPromptInjectionDetection(): this is ArcjetPromptInjectionDetectionReason {
+  isPromptInjection(): this is ArcjetPromptInjectionReason {
     return this.type === "PROMPT_INJECTION_DETECTION";
   }
 }
@@ -252,9 +252,9 @@ export class ArcjetFilterReason extends ArcjetReason {
 }
 
 /**
- * Configuration for `ArcjetPromptInjectionDetectionReason`.
+ * Configuration for `ArcjetPromptInjectionReason`.
  */
-interface ArcjetPromptInjectionDetectionReasonInit {
+interface ArcjetPromptInjectionReasonInit {
   /**
    * Whether a prompt injection attempt was detected in the input.
    */
@@ -267,9 +267,9 @@ interface ArcjetPromptInjectionDetectionReasonInit {
 }
 
 /**
- * Prompt injection detection reason.
+ * Prompt injection reason.
  */
-export class ArcjetPromptInjectionDetectionReason extends ArcjetReason {
+export class ArcjetPromptInjectionReason extends ArcjetReason {
   /**
    * Kind.
    */
@@ -286,14 +286,14 @@ export class ArcjetPromptInjectionDetectionReason extends ArcjetReason {
   score: number;
 
   /**
-   * Create a prompt injection detection reason.
+   * Create a prompt injection reason.
    *
    * @param init
    *   Configuration.
    * @returns
-   *   Prompt injection detection reason.
+   *   Prompt injection reason.
    */
-  constructor(init: ArcjetPromptInjectionDetectionReasonInit) {
+  constructor(init: ArcjetPromptInjectionReasonInit) {
     super();
 
     this.injectionDetected = init.injectionDetected ?? false;
@@ -1735,8 +1735,9 @@ export interface ArcjetShieldRule<Props extends {}> extends ArcjetRule<Props> {
 /**
  * Prompt injection detection rule.
  */
-export interface ArcjetPromptInjectionDetectionRule
-  extends ArcjetRule<{ detectPromptInjectionMessage: string }> {
+export interface ArcjetPromptInjectionDetectionRule extends ArcjetRule<{
+  detectPromptInjectionMessage: string;
+}> {
   /**
    * Kind.
    */

@@ -48,7 +48,7 @@ test("`@arcjet/bun`: should expose the public api", async function () {
     "ArcjetErrorReason",
     "ArcjetFilterReason",
     "ArcjetIpDetails",
-    "ArcjetPromptInjectionDetectionReason",
+    "ArcjetPromptInjectionReason",
     "ArcjetRateLimitReason",
     "ArcjetReason",
     "ArcjetRuleResult",
