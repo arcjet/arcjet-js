@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...@arcjet/stable-hash-v1.2.0) (2026-03-06)
+
+
+### 🚀 New Features
+
+* add detect_prompt_injection rule ([#5871](https://github.com/arcjet/arcjet-js/issues/5871)) ([b801a6b](https://github.com/arcjet/arcjet-js/commit/b801a6b0f54e910cd13666c3689157bbe1812bc6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.1.0 to 1.2.0
+    * @arcjet/rollup-config bumped from 1.1.0 to 1.2.0
+
 ## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/stable-hash-v1.1.0) (2026-02-05)
 
 

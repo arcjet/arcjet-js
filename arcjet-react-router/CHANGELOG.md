@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...@arcjet/react-router-v1.2.0) (2026-03-06)
+
+
+### 🚀 New Features
+
+* add detect_prompt_injection rule ([#5871](https://github.com/arcjet/arcjet-js/issues/5871)) ([b801a6b](https://github.com/arcjet/arcjet-js/commit/b801a6b0f54e910cd13666c3689157bbe1812bc6))
+
+
+### 🧹 Miscellaneous Chores
+
+* rename to reasonPromptInjection ([#5902](https://github.com/arcjet/arcjet-js/issues/5902)) ([7b78000](https://github.com/arcjet/arcjet-js/commit/7b780004242ec28998a983817ea78ebeab3a34d3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.1.0 to 1.2.0
+    * @arcjet/env bumped from 1.1.0 to 1.2.0
+    * @arcjet/headers bumped from 1.1.0 to 1.2.0
+    * @arcjet/ip bumped from 1.1.0 to 1.2.0
+    * @arcjet/logger bumped from 1.1.0 to 1.2.0
+    * @arcjet/protocol bumped from 1.1.0 to 1.2.0
+    * @arcjet/transport bumped from 1.1.0 to 1.2.0
+    * arcjet bumped from 1.1.0 to 1.2.0
+  * devDependencies
+    * @arcjet/cache bumped from 1.1.0 to 1.2.0
+    * @arcjet/eslint-config bumped from 1.1.0 to 1.2.0
+    * @arcjet/rollup-config bumped from 1.1.0 to 1.2.0
+
 ## [1.1.0](https://github.com/arcjet/arcjet-js/compare/v1.0.0...@arcjet/react-router-v1.1.0) (2026-02-05)
 
 
