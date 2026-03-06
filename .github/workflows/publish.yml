@@ -32,4 +32,64 @@ jobs:
       - name: Publish packages
         env:
           TAG: ${{ github.event.inputs.tag }}
-        run: npm publish --tag "$TAG" --workspaces
+        run: |
+          # npm publish --workspaces publishes in alphabetical directory order,
+          # NOT dependency order. This means packages like @arcjet/astro get
+          # published before their dependencies (e.g. @arcjet/body, @arcjet/env)
+          # exist on the registry, causing 409 Conflict errors.
+          #
+          # To fix this, we publish in levels based on the dependency graph.
+          # Each level is a single command. Packages within a level have no
+          # internal dependencies on each other. Each level's dependencies
+          # are fully published before the next level starts.
+          # If you add a new package, insert it in the correct level.
+
+          # Level 0: no internal dependencies
+          npm publish --tag "$TAG" \
+            --workspace @arcjet/analyze-wasm \
+            --workspace @arcjet/body \
+            --workspace @arcjet/cache \
+            --workspace @arcjet/duration \
+            --workspace @arcjet/env \
+            --workspace @arcjet/eslint-config \
+            --workspace @arcjet/headers \
+            --workspace @arcjet/ip \
+            --workspace @arcjet/redact-wasm \
+            --workspace @arcjet/rollup-config \
+            --workspace @arcjet/runtime \
+            --workspace @arcjet/sprintf \
+            --workspace @arcjet/stable-hash \
+            --workspace @arcjet/transport \
+            --workspace nosecone
+
+          # Level 1: depend on level 0
+          npm publish --tag "$TAG" \
+            --workspace @arcjet/logger \
+            --workspace @arcjet/protocol \
+            --workspace @arcjet/redact \
+            --workspace @nosecone/next \
+            --workspace @nosecone/sveltekit
+
+          # Level 2: depend on levels 0-1
+          npm publish --tag "$TAG" \
+            --workspace @arcjet/analyze \
+            --workspace @arcjet/decorate \
+            --workspace @arcjet/inspect
+
+          # Level 3: core SDK
+          npm publish --tag "$TAG" \
+            --workspace arcjet
+
+          # Level 4: public framework integrations
+          npm publish --tag "$TAG" \
+            --workspace @arcjet/astro \
+            --workspace @arcjet/bun \
+            --workspace @arcjet/deno \
+            --workspace @arcjet/fastify \
+            --workspace @arcjet/nest \
+            --workspace @arcjet/next \
+            --workspace @arcjet/node \
+            --workspace @arcjet/nuxt \
+            --workspace @arcjet/react-router \
+            --workspace @arcjet/remix \
+            --workspace @arcjet/sveltekit
