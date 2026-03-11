@@ -520,6 +520,7 @@ export function ArcjetIpDetailsFromProtocol(
     isProxy: ipDetails.isProxy,
     isTor: ipDetails.isTor,
     isRelay: ipDetails.isRelay,
+    isAbuser: ipDetails.isAbuser,
   });
 }
 
