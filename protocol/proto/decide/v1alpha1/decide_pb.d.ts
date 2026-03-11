@@ -220,7 +220,8 @@ export declare type Reason = Message<"proto.decide.v1alpha1.Reason"> & {
      * Contains details about the edge rules which were triggered when the
      * decision was made based on an edge rule.
      *
-     * @generated from field: proto.decide.v1alpha1.EdgeRuleReason edge_rule = 2;
+     * @generated from field: proto.decide.v1alpha1.EdgeRuleReason edge_rule = 2 [deprecated = true];
+     * @deprecated
      */
     value: EdgeRuleReason;
     case: "edgeRule";
@@ -367,6 +368,7 @@ export declare const RateLimitReasonSchema: GenMessage<RateLimitReason>;
  * Details of an edge rule decision. Unimplemented.
  *
  * @generated from message proto.decide.v1alpha1.EdgeRuleReason
+ * @deprecated
  */
 export declare type EdgeRuleReason = Message<"proto.decide.v1alpha1.EdgeRuleReason"> & {
 };
@@ -374,6 +376,7 @@ export declare type EdgeRuleReason = Message<"proto.decide.v1alpha1.EdgeRuleReas
 /**
  * Describes the message proto.decide.v1alpha1.EdgeRuleReason.
  * Use `create(EdgeRuleReasonSchema)` to create a new message.
+ * @deprecated
  */
 export declare const EdgeRuleReasonSchema: GenMessage<EdgeRuleReason>;
 

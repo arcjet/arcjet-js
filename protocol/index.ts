@@ -793,6 +793,7 @@ interface ArcjetIpDetailsInit {
   isProxy?: boolean | undefined;
   isTor?: boolean | undefined;
   isRelay?: boolean | undefined;
+  isAbuser?: boolean | undefined;
 }
 
 /**
@@ -932,6 +933,12 @@ export class ArcjetIpDetails {
         enumerable: false,
         writable: false,
         value: init.isRelay ?? false,
+      },
+      _isAbuser: {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: init.isAbuser ?? false,
       },
     });
   }
@@ -1130,6 +1137,17 @@ export class ArcjetIpDetails {
   isRelay(): boolean {
     // @ts-expect-error because we attach this with Object.defineProperties
     return this._isRelay;
+  }
+
+  /**
+   * Check if the IP address has been flagged as an abuser.
+   *
+   * @returns
+   *   Whether the IP address has been flagged as an abuser.
+   */
+  isAbuser(): boolean {
+    // @ts-expect-error because we attach this with Object.defineProperties
+    return this._isAbuser;
   }
 }
 
