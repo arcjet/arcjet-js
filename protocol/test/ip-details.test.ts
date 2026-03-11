@@ -164,6 +164,11 @@ test("ArcjetIpDetails", async function (t) {
     const details = createIpDetails();
     assert.equal(details.isVpn(), false);
   });
+
+  await t.test("isAbuser", function () {
+    const details = createIpDetails();
+    assert.equal(details.isAbuser(), false);
+  });
 });
 
 function createIpDetails(): ArcjetIpDetails {
@@ -183,6 +188,7 @@ function createIpDetails(): ArcjetIpDetails {
     isRelay: false,
     isTor: false,
     isVpn: false,
+    isAbuser: false,
     latitude: 39.90008,
     longitude: -79.71643,
     postalCode: "15472",
