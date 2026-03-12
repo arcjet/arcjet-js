@@ -66,6 +66,26 @@ export type ClientOptions = {
   sdkVersion: string;
 };
 
+export function decideTimeout(timeout: number, rules: ArcjetRule[]): number {
+  let result = timeout;
+
+  for (const rule of rules) {
+    if (rule.type === "EMAIL") {
+      // If an email rule is configured, we double the timeout.
+      // See https://github.com/arcjet/arcjet-js/issues/1697
+      result = timeout * 2;
+    }
+
+    if (rule.type === "PROMPT_INJECTION_DETECTION") {
+      // We document the latency of this rule independently from other
+      // `protect` calls, so we enforce a minimum timeout of 1 second.
+      result = Math.max(result, 1_000);
+    }
+  }
+
+  return result;
+}
+
 export function createClient(options: ClientOptions): Client {
   const { transport, sdkVersion, baseUrl, timeout } = options;
 
@@ -81,13 +101,8 @@ export function createClient(options: ClientOptions): Client {
     ): Promise<ArcjetDecision> {
       const { log } = context;
 
-      let hasValidateEmail = false;
       const protoRules: Rule[] = [];
       for (const rule of rules) {
-        if (rule.type === "EMAIL") {
-          hasValidateEmail = true;
-        }
-
         protoRules.push(ArcjetRuleToProtocol(rule));
       }
 
@@ -120,9 +135,7 @@ export function createClient(options: ClientOptions): Client {
 
       const response = await client.decide(decideRequest, {
         headers: { Authorization: `Bearer ${context.key}` },
-        // If an email rule is configured, we double the timeout.
-        // See https://github.com/arcjet/arcjet-js/issues/1697
-        timeoutMs: hasValidateEmail ? timeout * 2 : timeout,
+        timeoutMs: decideTimeout(timeout, rules),
       });
 
       const decision = ArcjetDecisionFromProtocol(response.decision);

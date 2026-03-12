@@ -11,7 +11,7 @@ import {
   RuleSchema,
   SDKStack,
 } from "../proto/decide/v1alpha1/decide_pb.js";
-import { type ClientOptions, createClient } from "../client.js";
+import { type ClientOptions, createClient, decideTimeout } from "../client.js";
 import {
   type ArcjetCacheEntry,
   type ArcjetConclusion,
@@ -862,4 +862,90 @@ test("createClient", async (t) => {
       assert.equal(calls, 0);
     });
   });
+});
+
+test("decideTimeout", async (t) => {
+  const baseRule = {
+    mode: "LIVE" as const,
+    priority: 1,
+    protect() {
+      assert.fail();
+    },
+    validate() {},
+    version: 0,
+  };
+
+  await t.test("should return the timeout as-is with no rules", () => {
+    assert.equal(decideTimeout(500, []), 500);
+  });
+
+  await t.test(
+    "should return the timeout as-is with unrelated rules",
+    () => {
+      assert.equal(
+        decideTimeout(500, [{ ...baseRule, type: "RATE_LIMIT" }]),
+        500,
+      );
+    },
+  );
+
+  await t.test(
+    "should double the timeout if there is an email rule",
+    () => {
+      assert.equal(
+        decideTimeout(500, [{ ...baseRule, type: "EMAIL" }]),
+        1000,
+      );
+    },
+  );
+
+  await t.test(
+    "should enforce a minimum of 1s if there is a prompt injection rule",
+    () => {
+      assert.equal(
+        decideTimeout(500, [
+          { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
+        ]),
+        1000,
+      );
+    },
+  );
+
+  await t.test(
+    "should not change timeout for prompt injection rule if already above 1s",
+    () => {
+      assert.equal(
+        decideTimeout(2000, [
+          { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
+        ]),
+        2000,
+      );
+    },
+  );
+
+  await t.test(
+    "should double the timeout with email and prompt injection rules",
+    () => {
+      assert.equal(
+        decideTimeout(500, [
+          { ...baseRule, type: "EMAIL" },
+          { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
+        ]),
+        1000,
+      );
+    },
+  );
+
+  await t.test(
+    "should double the timeout with email rule when doubled exceeds 1s minimum",
+    () => {
+      assert.equal(
+        decideTimeout(750, [
+          { ...baseRule, type: "EMAIL" },
+          { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
+        ]),
+        1500,
+      );
+    },
+  );
 });
