@@ -66,6 +66,43 @@ export type ClientOptions = {
   sdkVersion: string;
 };
 
+/**
+ * Compute the timeout for a `Decide` request based on the configured rules.
+ *
+ * @internal Exported for testing only.
+ * @param timeout
+ *   Base timeout in milliseconds.
+ * @param rules
+ *   Rules that will be evaluated in this request.
+ * @returns
+ *   Adjusted timeout in milliseconds.
+ */
+export function decideTimeout(timeout: number, rules: ArcjetRule[]): number {
+  let hasEmail = false;
+  let hasPromptInjection = false;
+
+  for (const rule of rules) {
+    if (rule.type === "EMAIL") {
+      hasEmail = true;
+    }
+    if (rule.type === "PROMPT_INJECTION_DETECTION") {
+      hasPromptInjection = true;
+    }
+  }
+
+  // If an email rule is configured, we double the timeout.
+  // See https://github.com/arcjet/arcjet-js/issues/1697
+  let result = hasEmail ? timeout * 2 : timeout;
+
+  if (hasPromptInjection) {
+    // We document the latency of this rule independently from other
+    // `protect` calls, so we enforce a minimum timeout of 1 second.
+    result = Math.max(result, 1_000);
+  }
+
+  return result;
+}
+
 export function createClient(options: ClientOptions): Client {
   const { transport, sdkVersion, baseUrl, timeout } = options;
 
@@ -81,13 +118,8 @@ export function createClient(options: ClientOptions): Client {
     ): Promise<ArcjetDecision> {
       const { log } = context;
 
-      let hasValidateEmail = false;
       const protoRules: Rule[] = [];
       for (const rule of rules) {
-        if (rule.type === "EMAIL") {
-          hasValidateEmail = true;
-        }
-
         protoRules.push(ArcjetRuleToProtocol(rule));
       }
 
@@ -120,9 +152,7 @@ export function createClient(options: ClientOptions): Client {
 
       const response = await client.decide(decideRequest, {
         headers: { Authorization: `Bearer ${context.key}` },
-        // If an email rule is configured, we double the timeout.
-        // See https://github.com/arcjet/arcjet-js/issues/1697
-        timeoutMs: hasValidateEmail ? timeout * 2 : timeout,
+        timeoutMs: decideTimeout(timeout, rules),
       });
 
       const decision = ArcjetDecisionFromProtocol(response.decision);
