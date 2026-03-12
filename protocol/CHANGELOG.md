@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...@arcjet/protocol-v1.3.0) (2026-03-12)
+
+
+### 🚀 New Features
+
+* add botnet category and IP abuser detection ([#5913](https://github.com/arcjet/arcjet-js/issues/5913)) ([d307e26](https://github.com/arcjet/arcjet-js/commit/d307e26205bd530d38e4b10ca845ccddab4ff2bd))
+* set minimum timeout when `detectPromptInjection` rule present ([#5922](https://github.com/arcjet/arcjet-js/issues/5922)) ([36ec27e](https://github.com/arcjet/arcjet-js/commit/36ec27e18df137f3b81288cff5dbf7f852ac1258))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.2.0 to 1.3.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.2.0 to 1.3.0
+    * @arcjet/rollup-config bumped from 1.2.0 to 1.3.0
+
 ## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...@arcjet/protocol-v1.2.0) (2026-03-06)
 
 

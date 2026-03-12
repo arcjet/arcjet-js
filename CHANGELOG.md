@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...v1.3.0) (2026-03-12)
+
+
+### 🚀 New Features
+
+* add botnet category and IP abuser detection ([#5913](https://github.com/arcjet/arcjet-js/issues/5913)) ([d307e26](https://github.com/arcjet/arcjet-js/commit/d307e26205bd530d38e4b10ca845ccddab4ff2bd))
+* graduate experimental_detectPromptInjection to detectPromptInjection ([#5920](https://github.com/arcjet/arcjet-js/issues/5920)) ([0e0e4c1](https://github.com/arcjet/arcjet-js/commit/0e0e4c180f4b757b798e3041fa1f34521d1d5610))
+* set minimum timeout when `detectPromptInjection` rule present ([#5922](https://github.com/arcjet/arcjet-js/issues/5922)) ([36ec27e](https://github.com/arcjet/arcjet-js/commit/36ec27e18df137f3b81288cff5dbf7f852ac1258))
+
+
+### 🧹 Miscellaneous Chores
+
+* publish packages in topological dependency order ([#5911](https://github.com/arcjet/arcjet-js/issues/5911)) ([3068548](https://github.com/arcjet/arcjet-js/commit/30685486d25b98db438d4d664d35b216ceed7bed))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump tar from 7.5.10 to 7.5.11 in /examples/nextjs-app-dir-validate-email ([#5916](https://github.com/arcjet/arcjet-js/issues/5916)) ([22784d4](https://github.com/arcjet/arcjet-js/commit/22784d4b5c84de32d94ae5a50f05cc6ef99ff64b))
+* **deps-dev:** bump tar from 7.5.10 to 7.5.11 in /examples/nextjs-ip-details ([#5914](https://github.com/arcjet/arcjet-js/issues/5914)) ([e7f14ee](https://github.com/arcjet/arcjet-js/commit/e7f14eeb9713baf4040ae491e39cf20b1911abf4))
+* **deps-dev:** bump tar from 7.5.10 to 7.5.11 in /examples/nextjs-pages-wrap ([#5915](https://github.com/arcjet/arcjet-js/issues/5915)) ([46a94ee](https://github.com/arcjet/arcjet-js/commit/46a94ee59f0c39c9df5cb616f231294ca90af473))
+
 ## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...v1.2.0) (2026-03-06)
 
 

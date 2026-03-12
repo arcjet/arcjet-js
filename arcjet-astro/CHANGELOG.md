@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...@arcjet/astro-v1.3.0) (2026-03-12)
+
+
+### 🚀 New Features
+
+* graduate experimental_detectPromptInjection to detectPromptInjection ([#5920](https://github.com/arcjet/arcjet-js/issues/5920)) ([0e0e4c1](https://github.com/arcjet/arcjet-js/commit/0e0e4c180f4b757b798e3041fa1f34521d1d5610))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.2.0 to 1.3.0
+    * @arcjet/env bumped from 1.2.0 to 1.3.0
+    * @arcjet/headers bumped from 1.2.0 to 1.3.0
+    * @arcjet/ip bumped from 1.2.0 to 1.3.0
+    * @arcjet/logger bumped from 1.2.0 to 1.3.0
+    * @arcjet/protocol bumped from 1.2.0 to 1.3.0
+    * @arcjet/transport bumped from 1.2.0 to 1.3.0
+    * arcjet bumped from 1.2.0 to 1.3.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.2.0 to 1.3.0
+    * @arcjet/rollup-config bumped from 1.2.0 to 1.3.0
+
 ## [1.2.0](https://github.com/arcjet/arcjet-js/compare/v1.1.0...@arcjet/astro-v1.2.0) (2026-03-06)
 
 
