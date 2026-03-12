@@ -67,20 +67,26 @@ export type ClientOptions = {
 };
 
 export function decideTimeout(timeout: number, rules: ArcjetRule[]): number {
-  let result = timeout;
+  let hasEmail = false;
+  let hasPromptInjection = false;
 
   for (const rule of rules) {
     if (rule.type === "EMAIL") {
-      // If an email rule is configured, we double the timeout.
-      // See https://github.com/arcjet/arcjet-js/issues/1697
-      result = timeout * 2;
+      hasEmail = true;
     }
-
     if (rule.type === "PROMPT_INJECTION_DETECTION") {
-      // We document the latency of this rule independently from other
-      // `protect` calls, so we enforce a minimum timeout of 1 second.
-      result = Math.max(result, 1_000);
+      hasPromptInjection = true;
     }
+  }
+
+  // If an email rule is configured, we double the timeout.
+  // See https://github.com/arcjet/arcjet-js/issues/1697
+  let result = hasEmail ? timeout * 2 : timeout;
+
+  if (hasPromptInjection) {
+    // We document the latency of this rule independently from other
+    // `protect` calls, so we enforce a minimum timeout of 1 second.
+    result = Math.max(result, 1_000);
   }
 
   return result;
