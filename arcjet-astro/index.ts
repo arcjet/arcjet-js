@@ -1,5 +1,6 @@
 import type {
   BotOptions,
+  DetectPromptInjectionOptions,
   EmailOptions,
   FilterOptions,
   FixedWindowRateLimitOptions,
@@ -136,6 +137,13 @@ const validateProtectSignupOptions = z
   })
   .strict();
 
+const validateDetectPromptInjectionOptions = z
+  .object({
+    mode: validateMode.optional(),
+    threshold: z.number().optional(),
+  })
+  .strict();
+
 type IntegrationRule<Characteristics extends readonly string[]> =
   | {
       type: "shield";
@@ -175,6 +183,10 @@ type IntegrationRule<Characteristics extends readonly string[]> =
   | {
       type: "protectSignup";
       options: ProtectSignupOptions<Characteristics>;
+    }
+  | {
+      type: "detectPromptInjection";
+      options: DetectPromptInjectionOptions;
     };
 
 // TODO: This only supports serializable options, so no custom loggers are
@@ -311,6 +323,16 @@ function integrationRuleToClientRule<Characteristics extends readonly string[]>(
       return {
         importName: `protectSignup`,
         code: `protectSignup(${serializedOpts})`,
+      } as const;
+    }
+    case "detectPromptInjection": {
+      const serializedOpts = validateAndSerialize(
+        validateDetectPromptInjectionOptions,
+        rule.options,
+      );
+      return {
+        importName: `detectPromptInjection`,
+        code: `detectPromptInjection(${serializedOpts})`,
       } as const;
     }
     default: {
@@ -588,6 +610,38 @@ export function protectSignup<Characteristics extends readonly string[]>(
     options,
   } as const satisfies IntegrationRule<Characteristics>;
 }
+
+// Note: please keep JSDocs in sync with `arcjet` core.
+/**
+ * Arcjet prompt injection detection rule.
+ *
+ * Analyzes LLM prompts to detect prompt injection attempts.
+ *
+ * The Arcjet prompt injection detection rule analyzes prompts sent to LLM
+ * applications to detect jailbreak and injection attempts.
+ * The analysis is performed through Arcjet's Cloud API.
+ *
+ * @param options
+ *   Configuration for the prompt injection detection rule.
+ * @returns
+ *   Astro integration Prompt injection detection rule to provide to the SDK in the `rules` field.
+ */
+export function detectPromptInjection(
+  options: DetectPromptInjectionOptions = {},
+) {
+  return {
+    type: "detectPromptInjection",
+    options,
+  } as const satisfies IntegrationRule<Array<string>>;
+}
+
+/**
+ * Arcjet prompt injection detection rule.
+ *
+ * @deprecated
+ *   Use `detectPromptInjection` instead.
+ */
+export const experimental_detectPromptInjection = detectPromptInjection;
 
 /**
  * Configuration for {@linkcode createRemoteClient}.

@@ -3,6 +3,8 @@ import test from "node:test";
 import arcjet, {
   createRemoteClient,
   detectBot,
+  detectPromptInjection,
+  experimental_detectPromptInjection,
   filter,
   fixedWindow,
   protectSignup,
@@ -19,6 +21,8 @@ test("@arcjet/astro (api)", async function (t) {
       "createRemoteClient",
       "default",
       "detectBot",
+      "detectPromptInjection",
+      "experimental_detectPromptInjection",
       "filter",
       "fixedWindow",
       "protectSignup",
