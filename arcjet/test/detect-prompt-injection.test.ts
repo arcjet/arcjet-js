@@ -9,7 +9,7 @@ import arcjet, {
   type ArcjetPromptInjectionDetectionRule,
   ArcjetAllowDecision,
   ArcjetPromptInjectionReason,
-  experimental_detectPromptInjection as detectPromptInjection,
+  detectPromptInjection,
 } from "../index.js";
 
 test("detectPromptInjection", async function (t) {
