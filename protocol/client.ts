@@ -66,6 +66,17 @@ export type ClientOptions = {
   sdkVersion: string;
 };
 
+/**
+ * Compute the timeout for a `Decide` request based on the configured rules.
+ *
+ * @internal Exported for testing only.
+ * @param timeout
+ *   Base timeout in milliseconds.
+ * @param rules
+ *   Rules that will be evaluated in this request.
+ * @returns
+ *   Adjusted timeout in milliseconds.
+ */
 export function decideTimeout(timeout: number, rules: ArcjetRule[]): number {
   let hasEmail = false;
   let hasPromptInjection = false;
