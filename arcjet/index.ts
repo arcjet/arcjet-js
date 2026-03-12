@@ -3008,17 +3008,17 @@ export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
  *
  * @example
  *   ```ts
- *   experimental_detectPromptInjection({ mode: "LIVE", threshold: 0.7 });
+ *   detectPromptInjection({ mode: "LIVE", threshold: 0.7 });
  *   ```
  * @example
  *   ```ts
  *   const aj = arcjet({
  *     key: process.env.ARCJET_KEY,
- *     rules: [experimental_detectPromptInjection({ mode: "LIVE", threshold: 0.5 })],
+ *     rules: [detectPromptInjection({ mode: "LIVE", threshold: 0.5 })],
  *   });
  *   ```
  */
-export function experimental_detectPromptInjection(
+export function detectPromptInjection(
   options: DetectPromptInjectionOptions = {},
 ): [ArcjetPromptInjectionDetectionRule] {
   validateDetectPromptInjectionOptions(options);
@@ -3114,6 +3114,14 @@ export function experimental_detectPromptInjection(
     },
   ];
 }
+
+/**
+ * Arcjet prompt injection detection rule.
+ *
+ * @deprecated
+ *   Use `detectPromptInjection` instead.
+ */
+export const experimental_detectPromptInjection = detectPromptInjection;
 
 /**
  * Configuration for signup form protection rule.

@@ -58,6 +58,7 @@ test("`@arcjet/bun`: should expose the public api", async function () {
     "createRemoteClient",
     "default",
     "detectBot",
+    "detectPromptInjection",
     "experimental_detectPromptInjection",
     "filter",
     "fixedWindow",

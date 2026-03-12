@@ -31,6 +31,7 @@ test("@arcjet/nuxt (api)", async function (t) {
       "createRemoteClient",
       "default",
       "detectBot",
+      "detectPromptInjection",
       "experimental_detectPromptInjection",
       "filter",
       "fixedWindow",

@@ -49,6 +49,7 @@ test("`@arcjet/node`", async function (t) {
       "createRemoteClient",
       "default",
       "detectBot",
+      "detectPromptInjection",
       "experimental_detectPromptInjection",
       "filter",
       "fixedWindow",
