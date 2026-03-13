@@ -1,3 +1,6 @@
+<!-- trunk-ignore-all(markdownlint/MD024) -->
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -42,7 +45,7 @@ Install with npm in Node.js:
 npm install @arcjet/decorate
 ```
 
-## Example
+## Use
 
 ```ts
 import http from "node:http";
@@ -87,10 +90,53 @@ const server = http.createServer(async function (
 server.listen(8000);
 ```
 
+## API
+
+This package exports the identifier
+[`setRateLimitHeaders`][api-set-rate-limit-headers].
+There is no default export.
+
+This package exports the [TypeScript][] type
+[`ArcjetCanDecorate`][api-arcjet-can-decorate].
+
+### `ArcjetCanDecorate`
+
+This type represents a value that you can decorate with rate limit headers.
+It can be anything that looks like `Headers` (Fetch),
+`OutgoingMessage` (Node.js), or `Response` (Fetch).
+
+###### Type
+
+```ts
+type ArcjetCanDecorate = HeaderLike | OutgoingMessageLike | ResponseLike;
+```
+
+### `setRateLimitHeaders(value, decision)`
+
+Decorates a response with rate limit headers based on an Arcjet decision.
+It sets `RateLimit-Policy` and `RateLimit` headers that conform to the
+[Rate Limit fields for
+HTTP](https://ietf-wg-httpapi.github.io/ratelimit-headers/draft-ietf-httpapi-ratelimit-headers.html)
+draft specification.
+
+###### Parameters
+
+- `value` ([`ArcjetCanDecorate`][api-arcjet-can-decorate])
+  — the response or headers object to decorate
+- `decision` (`ArcjetDecision`)
+  — the decision returned from `protect()`
+
+###### Returns
+
+Nothing (`undefined`).
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-arcjet-can-decorate]: #arcjetcandecorate
+[api-set-rate-limit-headers]: #setratelimitheadersvalue-decision
 [ietf-rate-limit]: https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-ratelimit-headers-08
+[typescript]: https://www.typescriptlang.org/

@@ -1,3 +1,5 @@
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -26,6 +28,8 @@ redaction library.
 - [npm package (`@arcjet/redact`)](https://www.npmjs.com/package/@arcjet/redact)
 - [GitHub source code (`redact/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/redact)
 
+See [`docs.arcjet.com`][redact-ref] for more on the API.
+
 ## What is this?
 
 This package provides functionality to redact sensitive info.
@@ -52,10 +56,6 @@ Install with npm in Node.js:
 npm install @arcjet/redact
 ```
 
-## Reference
-
-The full reference documentation can be found in the [Arcjet docs][redact-ref].
-
 ## Use
 
 ```ts
@@ -73,12 +73,76 @@ const unredacted = unredact("Your email address is <Redacted email #0>");
 console.log(unredacted); // "Your email address is john@example.com"
 ```
 
+## API
+
+This package exports the identifiers
+[`redact`][api-redact].
+There is no default export.
+
+This package exports the [TypeScript][] types
+[`ArcjetSensitiveInfoType`][api-arcjet-sensitive-info-type] and
+[`RedactOptions`][api-redact-options].
+
+### `ArcjetSensitiveInfoType`
+
+This type represents the kinds of sensitive information that can be detected
+out of the box.
+
+###### Type
+
+```ts
+type ArcjetSensitiveInfoType =
+  | "credit-card-number"
+  | "email"
+  | "ip-address"
+  | "phone-number";
+```
+
+### `RedactOptions`
+
+You can pass these options to configure how `redact` works.
+
+###### Fields
+
+- `contextWindowSize` (`number`, default: `1`)
+  — the number of tokens to consider for context
+- `detect` (`(tokens: string[]) => ReadonlyArray<string | undefined>`, optional)
+  — a custom detection function to identify sensitive information
+- `entities` (`Array<string>`, default: all builtin and detect entities)
+  — which entities to redact; this includes the builtin
+  [`ArcjetSensitiveInfoType`][api-arcjet-sensitive-info-type]s and
+  any custom types returned by your `detect` function
+- `replace` (`(entity: string, plaintext: string) => string | undefined`, optional)
+  — a custom replace function to control how sensitive information is
+  redacted
+
+### `redact(candidate[, options])`
+
+Redacts sensitive information in a string. You can use the returned
+`unredact` function to restore the original values later.
+
+###### Parameters
+
+- `candidate` (`string`)
+  — the string to redact
+- `options` ([`RedactOptions`][api-redact-options], optional)
+  — configuration for what to redact and how
+
+###### Returns
+
+This function returns a `Promise` that resolves to a tuple with the redacted
+string and a function to unredact it (`Promise<[string, Unredact]>`).
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-arcjet-sensitive-info-type]: #arcjetsensitiveinfotype
+[api-redact-options]: #redactoptions
+[api-redact]: #redactcandidate-options
 [arcjet]: https://arcjet.com
-[redact-ref]: https://docs.arcjet.com/redact/reference
 [github-arcjet-analyze-wasm-what]: https://github.com/arcjet/arcjet-js/tree/main/analyze-wasm#what-is-this
 [github-arcjet-redact-wasm]: https://github.com/arcjet/arcjet-js/tree/main/redact-wasm
+[redact-ref]: https://docs.arcjet.com/redact/reference
+[typescript]: https://www.typescriptlang.org/

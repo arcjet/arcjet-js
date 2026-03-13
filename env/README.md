@@ -1,3 +1,6 @@
+<!-- trunk-ignore-all(markdownlint/MD024) -->
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -17,22 +20,6 @@
 </p>
 
 [Arcjet][arcjet] environment detection.
-
-Currently operates on an environment object with the type:
-
-```ts
-type Env = {
-  ARCJET_BASE_URL?: string;
-  ARCJET_ENV?: string;
-  ARCJET_LOG_LEVEL?: string;
-  FIREBASE_CONFIG?: string;
-  FLY_APP_NAME?: string;
-  MODE?: string;
-  NODE_ENV?: string;
-  RENDER?: string;
-  VERCEL?: string;
-};
-```
 
 - [npm package (`@arcjet/env`)](https://www.npmjs.com/package/@arcjet/env)
 - [GitHub source code (`env/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/env)
@@ -57,7 +44,7 @@ Install with npm in Node.js:
 npm install @arcjet/env
 ```
 
-## Example
+## Use
 
 ```ts
 import process from "node:process";
@@ -77,9 +64,119 @@ console.log(logLevel({ ARCJET_LOG_LEVEL: "" })); // => "warn"
 console.log(baseUrl(process.env)); // => "https://decide.arcjet.com"
 ```
 
+## API
+
+This package exports the identifiers
+[`baseUrl`][api-base-url],
+[`isDevelopment`][api-is-development],
+[`logLevel`][api-log-level], and
+[`platform`][api-platform].
+There is no default export.
+
+This package exports the [TypeScript][] types
+[`Env`][api-env] and
+[`Platform`][api-platform-type].
+
+### `Env`
+
+This type represents the environment object that you pass to the functions in
+this package. It includes known Arcjet and platform-specific environment
+variables.
+
+###### Type
+
+```ts
+export type Env = {
+  [key: string]: unknown;
+  ARCJET_BASE_URL?: string | undefined;
+  ARCJET_ENV?: string | undefined;
+  ARCJET_LOG_LEVEL?: string | undefined;
+  FIREBASE_CONFIG?: string | undefined;
+  FLY_APP_NAME?: string | undefined;
+  MODE?: string | undefined;
+  NODE_ENV?: string | undefined;
+  RENDER?: string | undefined;
+  VERCEL?: string | undefined;
+};
+```
+
+### `Platform`
+
+This type represents the platform names that can be detected.
+
+###### Type
+
+```ts
+type Platform = "firebase" | "fly-io" | "render" | "vercel";
+```
+
+### `baseUrl(environment)`
+
+Returns the base URL for the Arcjet API. You can use this if you need to
+know which API endpoint Arcjet will talk to.
+
+###### Parameters
+
+- `environment` ([`Env`][api-env])
+  — the environment object, typically `process.env`
+
+###### Returns
+
+Base URL of the Arcjet API (`string`).
+
+### `isDevelopment(environment)`
+
+Checks whether the current environment is a development environment. We use
+this internally to adjust behavior between development and production.
+
+###### Parameters
+
+- `environment` ([`Env`][api-env])
+  — the environment object, typically `process.env`
+
+###### Returns
+
+Whether the environment is development (`boolean`).
+
+### `logLevel(environment)`
+
+Returns the configured log level from the environment. If no log level is
+set, it defaults to `"warn"`.
+
+###### Parameters
+
+- `environment` ([`Env`][api-env])
+  — the environment object, typically `process.env`
+
+###### Returns
+
+Log level (`"debug" | "error" | "info" | "warn"`).
+
+### `platform(environment)`
+
+Detects which platform your code is running on based on environment
+variables.
+
+###### Parameters
+
+- `environment` ([`Env`][api-env])
+  — the environment object, typically `process.env`
+
+###### Returns
+
+Name of the platform if found ([`Platform`][api-platform]), or `undefined`
+otherwise.
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-env]: #env
+[api-base-url]: #baseurlenvironment
+[api-is-development]: #isdevelopmentenvironment
+[api-log-level]: #loglevelenvironment
+[api-platform-type]: #platform
+[api-platform]: #platformenvironment
+[typescript]: https://www.typescriptlang.org/

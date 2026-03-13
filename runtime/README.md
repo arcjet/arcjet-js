@@ -1,3 +1,5 @@
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -55,6 +57,33 @@ import { runtime } from "@arcjet/runtime";
 console.log(runtime()); // => "bun" or "node" and such
 ```
 
+## API
+
+This package exports the identifier
+[`runtime`][api-runtime].
+There is no default export.
+
+This package exports the [TypeScript][] type [`Runtime`][api-runtime-type].
+
+### `Runtime`
+
+This type represents the runtime environments that can be detected.
+
+###### Type
+
+```ts
+type Runtime = "workerd" | "deno" | "node" | "bun" | "edge-light" | "";
+```
+
+### `runtime()`
+
+Detects which runtime environment your code is currently running in.
+
+###### Returns
+
+The detected runtime (`string`), or an empty string if the runtime could not
+be determined.
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
@@ -64,8 +93,11 @@ Derivative work based on [`std-env`][std-env] licensed under
 Our work cherry picks only what we need.
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-runtime-type]: #runtime
+[api-runtime]: #runtime-1
 [arcjet]: https://arcjet.com
 [runtime-keys]: https://runtime-keys.proposal.wintercg.org/
 [wintercg]: https://wintercg.org/
 [std-env-license]: https://github.com/unjs/std-env/blob/7e8cb7b/LICENCE
 [std-env]: https://github.com/unjs/std-env/blob/d57a5d8/src/runtimes.ts
+[typescript]: https://www.typescriptlang.org/
