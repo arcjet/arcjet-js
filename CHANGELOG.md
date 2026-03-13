@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...v1.3.1) (2026-03-13)
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump tar from 7.5.10 to 7.5.11 in /examples/nextjs-app-dir-rate-limit ([#5924](https://github.com/arcjet/arcjet-js/issues/5924)) ([db91f18](https://github.com/arcjet/arcjet-js/commit/db91f184e2c39bf0a17af294774872ff5ba08e91))
+
 ## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...v1.3.0) (2026-03-12)
 
 
