@@ -650,7 +650,8 @@ export type ArcjetWellKnownBot =
   | "ZGRAT_BOTNET"
   | "ZOOMINFO_CRAWLER"
   | "ZUM_CRAWLER"
-  | "ZUPERLIST_CRAWLER";
+  | "ZUPERLIST_CRAWLER"
+  | "ARCJET_SIGNALS";
 
 export type ArcjetBotCategory =
   | "CATEGORY:ACADEMIC"
