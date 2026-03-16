@@ -344,6 +344,20 @@ test("expressions", async function (t) {
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
       });
+
+      await t.test(
+        "deny if absent cookie has len() eq 0 (deny rule)",
+        async function () {
+          const [rule] = filter({
+            deny: ['len(http.request.cookie["NEXT_LOCALE"]) eq 0'],
+          });
+          const result = await rule.protect(createContext(), {
+            ...createRequest(),
+            cookies: "",
+          });
+          assert.equal(result.conclusion, "DENY");
+        },
+      );
     });
 
     await t.test("`http.request.headers`", async function (t) {
@@ -362,6 +376,21 @@ test("expressions", async function (t) {
         const result = await rule.protect(createContext(), createRequest());
         assert.equal(result.conclusion, "DENY");
       });
+
+      await t.test(
+        "deny if absent header has len() eq 0 (deny rule)",
+        async function () {
+          const [rule] = filter({
+            deny: ['len(http.request.headers["user-agent"]) eq 0'],
+          });
+          const { headers, ...requestWithoutUA } = createRequest();
+          const result = await rule.protect(createContext(), {
+            ...requestWithoutUA,
+            headers: new Headers(),
+          });
+          assert.equal(result.conclusion, "DENY");
+        },
+      );
     });
 
     await t.test("`http.request.method`", async function (t) {
@@ -974,6 +1003,76 @@ test("matrix", async function (t) {
     assert.deepEqual(reason.matchedExpressions, []);
     assert.deepEqual(reason.undeterminedExpressions, []);
   });
+
+  await t.test(
+    "deny list (absent map field: len() eq 0 matches)",
+    async function () {
+      const [rule] = filter({
+        deny: ['len(http.request.headers["user-agent"]) eq 0'],
+      });
+      const result = await rule.protect(createContext(), {
+        ...createRequest(),
+        headers: new Headers(),
+      });
+      assert.equal(result.conclusion, "DENY");
+      const reason = result.reason;
+      assert(reason.isFilter());
+      assert.deepEqual(reason.matchedExpressions, [
+        'len(http.request.headers["user-agent"]) eq 0',
+      ]);
+      assert.deepEqual(reason.undeterminedExpressions, []);
+    },
+  );
+
+  await t.test(
+    "deny list (absent map field: len() eq 0 does not match when header present)",
+    async function () {
+      const [rule] = filter({
+        deny: ['len(http.request.headers["user-agent"]) eq 0'],
+      });
+      const result = await rule.protect(createContext(), createRequest());
+      assert.equal(result.conclusion, "ALLOW");
+      const reason = result.reason;
+      assert(reason.isFilter());
+      assert.deepEqual(reason.matchedExpressions, []);
+      assert.deepEqual(reason.undeterminedExpressions, []);
+    },
+  );
+
+  await t.test(
+    "deny list (absent cookie: len() eq 0 matches)",
+    async function () {
+      const [rule] = filter({
+        deny: ['len(http.request.cookie["NEXT_LOCALE"]) eq 0'],
+      });
+      const result = await rule.protect(createContext(), {
+        ...createRequest(),
+        cookies: "",
+      });
+      assert.equal(result.conclusion, "DENY");
+      const reason = result.reason;
+      assert(reason.isFilter());
+      assert.deepEqual(reason.matchedExpressions, [
+        'len(http.request.cookie["NEXT_LOCALE"]) eq 0',
+      ]);
+      assert.deepEqual(reason.undeterminedExpressions, []);
+    },
+  );
+
+  await t.test(
+    "deny list (absent cookie: len() eq 0 does not match when cookie present)",
+    async function () {
+      const [rule] = filter({
+        deny: ['len(http.request.cookie["NEXT_LOCALE"]) eq 0'],
+      });
+      const result = await rule.protect(createContext(), createRequest());
+      assert.equal(result.conclusion, "ALLOW");
+      const reason = result.reason;
+      assert(reason.isFilter());
+      assert.deepEqual(reason.matchedExpressions, []);
+      assert.deepEqual(reason.undeterminedExpressions, []);
+    },
+  );
 
   await t.test("deny list (optional field: unknown)", async function () {
     const [rule] = filter({ deny: ["ip.src.vpn"] });
