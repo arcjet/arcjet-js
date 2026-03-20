@@ -20,7 +20,6 @@ lint:
   enabled:
     - shellcheck@0.11.0
     - shfmt@3.6.0
-    - trivy@0.69.3
     - yamllint@1.38.0
     - semgrep@1.153.1
     - gitleaks@8.30.0
@@ -35,6 +34,7 @@ lint:
     # tfsec and checkov are replaced by Trivy
     - taplo
     - tfsec
+    - trivy
     - checkov
   ignore:
     - linters: [ALL]
