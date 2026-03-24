@@ -16,9 +16,7 @@
   </a>
 </p>
 
-[Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Bot detection. Rate limiting. Email validation. Attack protection. Data
-redaction. A developer-first approach to security.
+[Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks.
 
 This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework. **Find
 our other [SDKs on GitHub][sdks-github]**.
@@ -26,48 +24,44 @@ our other [SDKs on GitHub][sdks-github]**.
 - [npm package (`@arcjet/next`)](https://www.npmjs.com/package/@arcjet/next)
 - [GitHub source code (`arcjet-next/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-next)
 
+## Features
+
+- 🔒 [Prompt injection detection][prompt-injection-docs] — detect and block
+  prompt injection attacks before they reach your AI model.
+- 🤖 [Bot protection][bot-protection-docs] — manage traffic from automated
+  clients and bots, with [verification and
+  categorization][bot-categories-docs].
+- 🛑 [Rate limiting][rate-limiting-docs] — limit the number of requests a
+  client can make. Use token bucket limits to enforce per-user AI token budgets.
+- 🛡️ [Shield WAF][shield-docs] — protect your application against common
+  attacks, including the OWASP Top 10.
+- 📧 [Email validation][email-validation-docs] — prevent users from signing up
+  with fake or disposable email addresses.
+- 📝 [Signup form protection][signup-protection-docs] — combines rate limiting,
+  bot protection, and email validation to protect your signup forms.
+- 🕵️‍♂️ [Sensitive information detection][sensitive-info-docs] — detect and block
+  PII (emails, phone numbers, credit cards) in request content.
+- 🎯 [Request filters][filters-docs] — filter requests using expression-based
+  rules against request properties.
+- 🚅 [Nosecone][nosecone-docs] — set security headers such as
+  `Content-Security-Policy` (CSP).
+
 ## Example
 
 Try an Arcjet protected Next.js app live at
 [`example.arcjet.com`][example-next-url]
 ([source code][example-next-source]).
 
-## Features
-
-Arcjet security features for protecting Next.js apps:
-
-- 🤖 [Bot protection][bot-protection-quick-start] - manage traffic by automated
-  clients and bots.
-- 🛑 [Rate limiting][rate-limiting-quick-start] - limit the number of requests a
-  client can make.
-- 🛡️ [Shield WAF][shield-quick-start] - protect your application against common
-  attacks.
-- 📧 [Email validation][email-validation-quick-start] - prevent users from
-  signing up with fake email addresses.
-- 📝 [Signup form protection][signup-protection-quick-start] - combines rate
-  limiting, bot protection, and email validation to protect your signup forms.
-- 🕵️‍♂️ [Sensitive information detection][sensitive-info-quick-start] - block
-  personally identifiable information (PII).
-- 🚅 [Nosecone][nosecone-quick-start] - set security headers such as
-  `Content-Security-Policy` (CSP).
-
-## Quick start
-
-This example will protect a Next.js API route with a rate limit, bot detection,
-and Shield WAF.
-
-You can also find this [quick start guide][quick-start] in the docs.
-
 ## What is this?
 
 This is our adapter to integrate Arcjet into Next.js.
-Arcjet helps you secure your Next web application.
+Arcjet helps you secure your Next.js web application.
 This package exists so that we can provide the best possible experience to
-Next users.
+Next.js users.
 
 ## When should I use this?
 
-You can use this if you are using Next.js.
+Use this if you are using Next.js.
 See our [_Get started_ guide][arcjet-get-started] for other supported
 frameworks.
 
@@ -80,60 +74,458 @@ Install with npm in Node.js:
 npm install @arcjet/next
 ```
 
-## Use
+## Quick start
+
+This example protects a Next.js AI chat route: blocking automated clients that
+inflate costs, enforcing per-user token budgets, detecting sensitive information
+in messages, and blocking prompt injection attacks before they reach the model.
+
+Install the [Vercel AI SDK][vercel-ai-sdk] and an AI provider:
+
+```sh
+npm install ai @ai-sdk/openai
+```
+
+Create a new API route at `/app/api/chat/route.ts`:
 
 ```ts
-import arcjet, { shield } from "@arcjet/next";
-import { NextResponse } from "next/server";
-
-// Get your Arcjet key at <https://app.arcjet.com>.
-// Set it as an environment variable instead of hard coding it.
-const arcjetKey = process.env.ARCJET_KEY;
-
-if (!arcjetKey) {
-  throw new Error("Cannot find `ARCJET_KEY` environment variable");
-}
+import { openai } from "@ai-sdk/openai";
+import arcjet, {
+  detectBot,
+  detectPromptInjection,
+  sensitiveInfo,
+  shield,
+  tokenBucket,
+} from "@arcjet/next";
+import type { UIMessage } from "ai";
+import { convertToModelMessages, isTextUIPart, streamText } from "ai";
 
 const aj = arcjet({
-  key: arcjetKey,
+  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  // Track budgets per user — replace "userId" with any stable identifier
+  characteristics: ["userId"],
   rules: [
-    // Shield protects your app from common attacks.
-    // Use `DRY_RUN` instead of `LIVE` to only log.
+    // Shield protects against common web attacks e.g. SQL injection
     shield({ mode: "LIVE" }),
+    // Block all automated clients — bots inflate AI costs
+    detectBot({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+      allow: [], // Block all bots. See https://arcjet.com/bot-list
+    }),
+    // Enforce budgets to control AI costs. Adjust rates and limits as needed.
+    tokenBucket({
+      mode: "LIVE",
+      refillRate: 2_000, // Refill 2,000 tokens per hour
+      interval: "1h",
+      capacity: 5_000, // Maximum 5,000 tokens in the bucket
+    }),
+    // Block messages containing sensitive information to prevent data leaks
+    sensitiveInfo({
+      mode: "LIVE",
+      // Block PII types that should never appear in AI prompts.
+      // Remove types your app legitimately handles (e.g. EMAIL for a support bot).
+      deny: ["CREDIT_CARD_NUMBER", "EMAIL"],
+    }),
+    // Detect prompt injection attacks before they reach your AI model
+    detectPromptInjection({
+      mode: "LIVE",
+    }),
+  ],
+});
+
+export async function POST(req: Request) {
+  const userId = "user-123"; // Replace with your session/auth lookup
+  const { messages }: { messages: UIMessage[] } = await req.json();
+  const modelMessages = await convertToModelMessages(messages);
+
+  // Estimate token cost: ~1 token per 4 characters of text (rough heuristic).
+  // For accurate counts use https://www.npmjs.com/package/tiktoken
+  const totalChars = modelMessages.reduce((sum, m) => {
+    const content =
+      typeof m.content === "string" ? m.content : JSON.stringify(m.content);
+    return sum + content.length;
+  }, 0);
+  const estimate = Math.ceil(totalChars / 4);
+
+  // Extract the most recent user message to scan for injection and PII.
+  // Pass all messages if you want to scan the full conversation.
+  const lastMessage: string = (messages.at(-1)?.parts ?? [])
+    .filter(isTextUIPart)
+    .map((p) => p.text)
+    .join(" ");
+
+  const decision = await aj.protect(req, {
+    userId,
+    requested: estimate,
+    sensitiveInfoValue: lastMessage,
+    detectPromptInjectionMessage: lastMessage,
+  });
+
+  if (decision.isDenied()) {
+    if (decision.reason.isBot()) {
+      return new Response("Automated clients are not permitted", {
+        status: 403,
+      });
+    } else if (decision.reason.isRateLimit()) {
+      return new Response("AI usage limit exceeded", { status: 429 });
+    } else if (decision.reason.isSensitiveInfo()) {
+      return new Response("Sensitive information detected", { status: 400 });
+    } else if (decision.reason.isPromptInjection()) {
+      return new Response(
+        "Prompt injection detected — please rephrase your message",
+        { status: 400 },
+      );
+    } else {
+      return new Response("Forbidden", { status: 403 });
+    }
+  }
+
+  const result = await streamText({
+    model: openai("gpt-4o"),
+    messages: modelMessages,
+  });
+
+  return result.toUIMessageStreamResponse();
+}
+```
+
+For the full reference, see the [Arcjet Next.js SDK docs][arcjet-reference-next].
+
+## Prompt injection detection
+
+Detect and block prompt injection attacks — attempts to override your AI
+model's instructions — before they reach your model. Pass the user's message
+via `detectPromptInjectionMessage` on each `protect()` call.
+
+```ts
+import arcjet, { detectPromptInjection } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    detectPromptInjection({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+      threshold: 0.5, // Score above which requests are blocked (default: 0.5)
+    }),
+  ],
+});
+
+export async function POST(request: Request) {
+  const { message } = await request.json();
+
+  const decision = await aj.protect(request, {
+    detectPromptInjectionMessage: message,
+  });
+
+  if (decision.isDenied() && decision.reason.isPromptInjection()) {
+    return NextResponse.json(
+      { error: "Prompt injection detected — please rephrase your message" },
+      { status: 400 },
+    );
+  }
+
+  // Forward to your AI model...
+}
+```
+
+## Bot protection
+
+Arcjet allows you to configure a list of bots to allow or deny. Specifying
+`allow` means all other bots are denied. An empty allow list blocks all bots.
+
+```ts
+import arcjet, { detectBot } from "@arcjet/next";
+import { isSpoofedBot } from "@arcjet/inspect";
+import { NextResponse } from "next/server";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    detectBot({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+      allow: [
+        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+        // Uncomment to allow these other common bot categories:
+        // "CATEGORY:MONITOR",  // Uptime monitoring services
+        // "CATEGORY:PREVIEW",  // Link previews e.g. Slack, Discord
+        // See the full list at https://arcjet.com/bot-list
+      ],
+    }),
   ],
 });
 
 export async function GET(request: Request) {
   const decision = await aj.protect(request);
 
-  if (decision.isDenied()) {
-    return NextResponse.json({ message: "Forbidden" }, { status: 429 });
+  if (decision.isDenied() && decision.reason.isBot()) {
+    return NextResponse.json({ error: "No bots allowed" }, { status: 403 });
+  }
+
+  // Verifies the authenticity of common bots using IP data.
+  // Verification isn't always possible, so check the results separately.
+  // https://docs.arcjet.com/bot-protection/reference#bot-verification
+  if (decision.results.some(isSpoofedBot)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   return NextResponse.json({ message: "Hello world" });
 }
 ```
 
-For more on how to configure Arcjet with Next.js and how to protect Next,
-see the [Arcjet Next.js SDK reference][arcjet-reference-next] on our website.
+### Bot categories
+
+Bots can be configured by [category][bot-categories-docs] and/or by [specific
+bot name][bot-list]. For example, to allow search engines and the OpenAI
+crawler, but deny all other bots:
+
+```ts
+detectBot({
+  mode: "LIVE",
+  allow: ["CATEGORY:SEARCH_ENGINE", "OPENAI_CRAWLER_SEARCH"],
+});
+```
+
+### Verified vs spoofed bots
+
+Bots claiming to be well-known crawlers (e.g. Googlebot) are verified by
+checking their IP address against the known IP ranges for that bot. If a bot
+fails verification, it is labeled as spoofed. Use `isSpoofedBot` from
+`@arcjet/inspect` to check:
+
+```ts
+import { isSpoofedBot } from "@arcjet/inspect";
+
+if (decision.results.some(isSpoofedBot)) {
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
+```
+
+## Rate limiting
+
+Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
+controlling AI token budgets.
+
+```ts
+import arcjet, { tokenBucket, slidingWindow, fixedWindow } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  characteristics: ["userId"], // Track per user
+  rules: [
+    // Token bucket: ideal for controlling AI token costs
+    tokenBucket({
+      mode: "LIVE",
+      refillRate: 2_000, // Refill 2,000 tokens per hour
+      interval: "1h",
+      capacity: 5_000, // Maximum 5,000 tokens in the bucket
+    }),
+  ],
+});
+
+const decision = await aj.protect(request, {
+  userId: "user-123",
+  requested: estimate, // Number of tokens to deduct
+});
+
+if (decision.isDenied() && decision.reason.isRateLimit()) {
+  return NextResponse.json(
+    { error: "AI usage limit exceeded" },
+    { status: 429 },
+  );
+}
+```
+
+## Sensitive information detection
+
+Detect and block PII in request content such as email addresses, phone
+numbers, and credit card numbers. Pass the content to scan via
+`sensitiveInfoValue` on each `protect()` call.
+
+```ts
+import arcjet, { sensitiveInfo } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    sensitiveInfo({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+      deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER"],
+    }),
+  ],
+});
+
+export async function POST(request: Request) {
+  const { message } = await request.json();
+
+  const decision = await aj.protect(request, {
+    sensitiveInfoValue: message,
+  });
+
+  if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
+    return NextResponse.json(
+      { error: "Sensitive information detected" },
+      { status: 400 },
+    );
+  }
+}
+```
+
+## Request filters
+
+Filter requests using expression-based rules against request properties (IP,
+headers, path, method, etc.).
+
+```ts
+import arcjet, { filterRequest } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    filterRequest({
+      mode: "LIVE",
+      deny: ['ip.src == "1.2.3.4"', 'http.request.uri.path contains "/admin"'],
+    }),
+  ],
+});
+```
+
+## IP analysis
+
+Arcjet enriches every request with IP metadata. Use these helpers to make
+policy decisions based on network signals:
+
+```ts
+const decision = await aj.protect(request);
+
+if (decision.ip.isHosting()) {
+  // Requests from cloud/hosting providers are often automated.
+  // https://docs.arcjet.com/blueprints/vpn-proxy-detection
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
+
+if (decision.ip.isVpn() || decision.ip.isProxy() || decision.ip.isTor()) {
+  // Handle VPN/proxy traffic according to your policy
+}
+
+// Access geolocation and network details
+console.log(decision.ip.country, decision.ip.city, decision.ip.asn);
+```
+
+## Custom characteristics
+
+Track and limit requests by any stable identifier — user ID, API key, session,
+etc. — rather than IP address alone.
+
+```ts
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  characteristics: ["userId"], // Declare at the SDK level
+  rules: [
+    tokenBucket({
+      mode: "LIVE",
+      refillRate: 2_000,
+      interval: "1h",
+      capacity: 5_000,
+    }),
+  ],
+});
+
+// Pass the characteristic value at request time
+const decision = await aj.protect(request, {
+  userId: "user-123", // Replace with your actual user ID
+  requested: estimate,
+});
+```
+
+## Best practices
+
+See the [Arcjet best practices][best-practices] for detailed guidance. Key
+recommendations:
+
+**Create a single client instance** and reuse it with `withRule()` for
+route-specific rules. The SDK caches decisions and configuration, so creating a
+new instance per request wastes that work.
+
+```ts
+// lib/arcjet.ts — create once, import everywhere
+import arcjet, { shield } from "@arcjet/next";
+
+export default arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    shield({ mode: "LIVE" }), // base rules applied to every request
+  ],
+});
+```
+
+```ts
+// app/api/chat/route.ts — extend per-route with withRule()
+import aj from "@/lib/arcjet";
+import { detectBot, tokenBucket } from "@arcjet/next";
+
+const routeAj = aj.withRule(detectBot({ mode: "LIVE", allow: [] })).withRule(
+  tokenBucket({
+    mode: "LIVE",
+    refillRate: 2_000,
+    interval: "1h",
+    capacity: 5_000,
+  }),
+);
+
+export async function POST(req: Request) {
+  const decision = await routeAj.protect(req, { requested: 500 });
+  // ...
+}
+```
+
+**Other recommendations:**
+
+- **Call `protect()` in route handlers, not middleware.** Middleware lacks route
+  context, making it hard to apply route-specific rules or customize responses.
+- **Call `protect()` once per request.** Calling it in both middleware and a
+  handler doubles the work and can produce unexpected results.
+- **Start rules in `DRY_RUN` mode** to observe behavior before switching to
+  `LIVE`. This lets you tune thresholds without affecting real traffic.
+- **Configure proxies** if your app runs behind a load balancer or reverse proxy
+  so Arcjet resolves the real client IP:
+  ```ts
+  arcjet({
+    key: process.env.ARCJET_KEY!,
+    rules: [],
+    proxies: ["100.100.100.100"],
+  });
+  ```
+- **Handle errors explicitly.** `protect()` never throws — on error it returns
+  an `ERROR` result. Fail open by logging and allowing the request:
+  ```ts
+  if (decision.isErrored()) {
+    console.error("Arcjet error", decision.reason.message);
+    // allow the request to proceed
+  }
+  ```
 
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[arcjet]: https://arcjet.com
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-next]: https://docs.arcjet.com/reference/nextjs
-[arcjet]: https://arcjet.com
+[next-js]: https://nextjs.org/
+[vercel-ai-sdk]: https://sdk.vercel.ai/
 [example-next-url]: https://example.arcjet.com
 [example-next-source]: https://github.com/arcjet/example-nextjs
-[next-js]: https://nextjs.org/
-[quick-start]: https://docs.arcjet.com/get-started?f=next-js
-[apache-license]: http://www.apache.org/licenses/LICENSE-2.0
-[bot-protection-quick-start]: https://docs.arcjet.com/bot-protection/quick-start?f=next-js
-[rate-limiting-quick-start]: https://docs.arcjet.com/rate-limiting/quick-start?f=next-js
-[shield-quick-start]: https://docs.arcjet.com/shield/quick-start?f=next-js
-[email-validation-quick-start]: https://docs.arcjet.com/email-validation/quick-start?f=next-js
-[signup-protection-quick-start]: https://docs.arcjet.com/signup-protection/quick-start?f=next-js
-[sensitive-info-quick-start]: https://docs.arcjet.com/sensitive-info/quick-start?f=next-js
-[nosecone-quick-start]: https://docs.arcjet.com/nosecone/quick-start?f=next-js
 [sdks-github]: https://github.com/arcjet
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[bot-protection-docs]: https://docs.arcjet.com/bot-protection
+[bot-categories-docs]: https://docs.arcjet.com/bot-protection/identifying-bots
+[bot-list]: https://arcjet.com/bot-list
+[rate-limiting-docs]: https://docs.arcjet.com/rate-limiting
+[shield-docs]: https://docs.arcjet.com/shield
+[email-validation-docs]: https://docs.arcjet.com/email-validation
+[signup-protection-docs]: https://docs.arcjet.com/signup-protection
+[sensitive-info-docs]: https://docs.arcjet.com/sensitive-info
+[filters-docs]: https://docs.arcjet.com/filters
+[prompt-injection-docs]: https://docs.arcjet.com/detect-prompt-injection
+[nosecone-docs]: https://docs.arcjet.com/nosecone/quick-start
+[best-practices]: https://docs.arcjet.com/best-practices

@@ -55,13 +55,6 @@ function isActive(
  * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
  * for more info.
  *
- * Spoofed bot detection is part of advanced bot protection features which
- * are not available on free plans but are available on the starter and
- * business plans.
- * See [*Bot verification* on
- * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
- * for more info.
- *
  * @example
  *   ```ts
  *   import { isSpoofedBot } from "@arcjet/inspect";
@@ -172,13 +165,6 @@ export function isSpoofedBot(result: ArcjetRuleResult): boolean | undefined {
  * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
  * for more info.
  *
- * Verified bot detection is part of advanced bot protection features which
- * are not available on free plans but are available on the starter and
- * business plans.
- * See [*Bot verification* on
- * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
- * for more info.
- *
  * @example
  *   ```ts
  *   import { isVerifiedBot } from "@arcjet/inspect";
@@ -287,11 +273,6 @@ export function isVerifiedBot(result: ArcjetRuleResult): boolean | undefined {
  * Bot protection is available if `detectBot` is used.
  * See [*Bot protection* on
  * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
- * for more info.
- *
- * Missing `User-Agent` detection is part of all plans including the free plans.
- * See [*Error handling* on
- * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#error-handling)
  * for more info.
  *
  * @example
