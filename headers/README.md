@@ -1,3 +1,5 @@
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -51,10 +53,34 @@ const headers = new ArcjetHeaders({ abc: "123" });
 console.log(headers.get("abc")); // => "123"
 ```
 
+## API
+
+This package exports the identifier
+[`ArcjetHeaders`][api-arcjet-headers].
+The default export is [`ArcjetHeaders`][api-arcjet-headers].
+
+This package exports no [TypeScript][] types.
+
+### `new ArcjetHeaders([init])`
+
+Creates a new `ArcjetHeaders` instance. We use this internally to prevent
+the `cookie` header from being set and to ensure only string values are used.
+
+###### Parameters
+
+- `init` (`Headers | Array<[string, string]> | Record<string, Array<string> | string | undefined>`, optional)
+  — initial headers to set
+
+###### Returns
+
+An `ArcjetHeaders` instance that extends the standard `Headers` class.
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-arcjet-headers]: #new-arcjetheadersinit
 [mdn-headers]: https://developer.mozilla.org/en-US/docs/Web/API/Headers
+[typescript]: https://www.typescriptlang.org/

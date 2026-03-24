@@ -1,3 +1,6 @@
+<!-- trunk-ignore-all(markdownlint/MD024) -->
+<!-- trunk-ignore-all(markdownlint/MD001) -->
+
 <a href="https://arcjet.com" target="_arcjet-home">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
@@ -42,7 +45,7 @@ Install with npm in Node.js:
 npm install @arcjet/logger
 ```
 
-## Example
+## Use
 
 ```ts
 import { Logger } from "@arcjet/logger";
@@ -56,16 +59,80 @@ logger.error("%d + %d = %d", 1, 2, 3);
 // Logs ✦Aj ERROR 1 + 2 = 3
 ```
 
-## Log levels
+## API
 
-Log levels can be changed by setting the `ARCJET_LOG_LEVEL` environment variable
-to one of: `"DEBUG"`, `"LOG"`, `"WARN"`, or `"ERROR"`.
+This package exports the identifier
+[`Logger`][api-logger].
+There is no default export.
+
+This package exports the [TypeScript][] types
+[`LogLevel`][api-log-level] and
+[`Options`][api-options].
+
+### `LogLevel`
+
+This type represents the supported log levels. The order from most verbose
+to least verbose is `debug`, `info`, `warn`, to `error`. For example, when
+you set the level to `info`, then `warn` and `error` messages are also
+logged.
+
+###### Type
+
+```ts
+type LogLevel = "debug" | "error" | "info" | "warn";
+```
+
+### `Options`
+
+You can pass these options when creating a new logger.
+
+###### Fields
+
+- `level` ([`LogLevel`][api-log-level])
+  — the log level to use
+
+### `new Logger(options)`
+
+Creates a new logger instance.
+
+###### Parameters
+
+- `options` ([`Options`][api-options])
+  — configuration for the logger
+
+###### Returns
+
+A `Logger` instance.
+
+#### `Logger#[debug | error | info | warn]([mergingObject, ][message, ]…interpolationValues)`
+
+Depending on the configured log level, these methods either do nothing or
+print a log message. The message template and interpolation values are passed
+through [`sprintf`][arcjet-sprintf].
+
+###### Parameters
+
+- `mergingObject` (`Record<string, unknown>`, optional)
+  — an object to merge into the log output
+- `message` (`string`)
+  — the message template
+- `interpolationValues` (`Array<unknown>`)
+  — values to interpolate into the template
+
+###### Returns
+
+Nothing (`undefined`).
 
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
+[api-logger]: #new-loggeroptions
+[api-log-level]: #loglevel
+[api-options]: #options
+[arcjet-sprintf]: ../sprintf/
 [arcjet]: https://arcjet.com
 [github-pino]: https://github.com/pinojs/pino
 [pino-api]: https://github.com/pinojs/pino/blob/8db130eba0439e61c802448d31eb1998cebfbc98/docs/api.md#logger
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[typescript]: https://www.typescriptlang.org/
