@@ -27,23 +27,24 @@ This is the [Arcjet][arcjet] SDK for [Astro][astro].
 
 ## Features
 
-- 🔒 [Prompt injection detection][prompt-injection-docs] — detect and block
-  prompt injection attacks before they reach your AI model.
-- 🤖 [Bot protection][bot-protection-docs] — manage traffic from automated
-  clients and bots, with [verification and
-  categorization][bot-categories-docs].
-- 🛑 [Rate limiting][rate-limiting-docs] — limit the number of requests a
-  client can make. Use token bucket limits to enforce per-user AI token budgets.
-- 🛡️ [Shield WAF][shield-docs] — protect your application against common
-  attacks, including the OWASP Top 10.
-- 📧 [Email validation][email-validation-docs] — prevent users from signing up
-  with fake or disposable email addresses.
-- 📝 [Signup form protection][signup-protection-docs] — combines rate limiting,
-  bot protection, and email validation to protect your signup forms.
-- 🕵️‍♂️ [Sensitive information detection][sensitive-info-docs] — detect and block
-  PII (emails, phone numbers, credit cards) in request content.
-- 🎯 [Request filters][filters-docs] — filter requests using expression-based
-  rules against request properties.
+- 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
+  prompt injection attacks before they reach your LLM.
+- 🤖 [Bot Protection](#bot-protection) — stop scrapers, credential stuffers,
+  and AI crawlers from abusing your endpoints.
+- 🛑 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
+  window algorithms; model AI token budgets per user.
+- 🕵️ [Sensitive Information Detection](#sensitive-information-detection) — block
+  PII, credit cards, and custom patterns from entering your AI pipeline.
+- 🛡️ [Shield WAF](#shield-waf) — protect against SQL injection, XSS, and other
+  common web attacks.
+- 📧 [Email Validation](#email-validation) — block disposable, invalid, and
+  undeliverable addresses at signup.
+- 📝 [Signup Form Protection][signup-protection-docs] — combines bot protection,
+  email validation, and rate limiting to protect your signup forms.
+- 🎯 [Request Filters](#request-filters) — expression-based rules on IP, path,
+  headers, and custom fields.
+- 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
+  detection included with every request.
 
 ## Getting started
 
@@ -278,7 +279,7 @@ Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
 controlling AI token budgets.
 
 ```js
-import arcjet, { tokenBucket, slidingWindow, fixedWindow } from "@arcjet/astro";
+import arcjet, { tokenBucket } from "@arcjet/astro";
 
 // In astro.config.mjs:
 arcjet({
@@ -340,24 +341,124 @@ if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
 }
 ```
 
+## Shield WAF
+
+Protect your application against common web attacks, including the OWASP
+Top 10.
+
+```js
+import arcjet, { shield } from "@arcjet/astro";
+import { defineConfig } from "astro/config";
+
+export default defineConfig({
+  integrations: [
+    arcjet({
+      rules: [
+        shield({
+          mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+        }),
+      ],
+    }),
+  ],
+});
+```
+
+## Email validation
+
+Validate and verify email addresses, blocking disposable, invalid, or
+undeliverable addresses.
+
+```js
+import arcjet, { validateEmail } from "@arcjet/astro";
+import { defineConfig } from "astro/config";
+
+export default defineConfig({
+  integrations: [
+    arcjet({
+      rules: [
+        validateEmail({
+          mode: "LIVE",
+          deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+        }),
+      ],
+    }),
+  ],
+});
+```
+
+```ts
+// In your API route:
+const decision = await aj.protect(request, {
+  email: "user@example.com",
+});
+
+if (decision.isDenied() && decision.reason.isEmail()) {
+  return Response.json({ error: "Invalid email address" }, { status: 400 });
+}
+```
+
 ## Request filters
 
 Filter requests using expression-based rules against request properties (IP,
 headers, path, method, etc.).
 
 ```js
-import arcjet, { filterRequest } from "@arcjet/astro";
+import arcjet, { filter } from "@arcjet/astro";
 
 // In astro.config.mjs:
 arcjet({
   rules: [
-    filterRequest({
+    filter({
       mode: "LIVE",
       deny: ['ip.src == "1.2.3.4"'],
     }),
   ],
 });
 ```
+
+### Block by country
+
+Restrict access to specific countries — useful for licensing, compliance, or
+regional rollouts. The `allow` list denies all countries not listed:
+
+```js
+filter({
+  mode: "LIVE",
+  // Allow only US traffic — all other countries are denied
+  allow: ['ip.src.country == "US"'],
+});
+```
+
+### Block VPN and proxy traffic
+
+Prevent anonymized traffic from accessing sensitive endpoints — useful for
+fraud prevention, enforcing geo-restrictions, and reducing abuse:
+
+```js
+filter({
+  mode: "LIVE",
+  deny: [
+    "ip.src.vpn", // VPN services
+    "ip.src.proxy", // Open proxies
+    "ip.src.tor", // Tor exit nodes
+  ],
+});
+```
+
+For more nuanced handling, use `decision.ip` helpers after calling `protect()`:
+
+```ts
+const decision = await aj.protect(request);
+
+if (decision.ip.isVpn() || decision.ip.isTor()) {
+  return Response.json({ error: "VPN traffic not allowed" }, { status: 403 });
+}
+```
+
+See the [Request Filters docs][filters-docs],
+[IP Geolocation blueprint](https://docs.arcjet.com/blueprints/ip-geolocation), and
+[VPN/Proxy Detection blueprint](https://docs.arcjet.com/blueprints/vpn-proxy-detection)
+for more details.
 
 ## IP analysis
 
@@ -468,14 +569,8 @@ export const POST: APIRoute = async ({ request }) => {
 [astro]: https://astro.build/
 [quick-start]: https://docs.arcjet.com/get-started/astro
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
-[bot-protection-docs]: https://docs.arcjet.com/bot-protection
 [bot-categories-docs]: https://docs.arcjet.com/bot-protection/identifying-bots
 [bot-list]: https://arcjet.com/bot-list
-[rate-limiting-docs]: https://docs.arcjet.com/rate-limiting
-[shield-docs]: https://docs.arcjet.com/shield
-[email-validation-docs]: https://docs.arcjet.com/email-validation
 [signup-protection-docs]: https://docs.arcjet.com/signup-protection
-[sensitive-info-docs]: https://docs.arcjet.com/sensitive-info
 [filters-docs]: https://docs.arcjet.com/filters
-[prompt-injection-docs]: https://docs.arcjet.com/detect-prompt-injection
 [best-practices]: https://docs.arcjet.com/best-practices

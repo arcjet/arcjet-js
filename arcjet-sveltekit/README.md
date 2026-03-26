@@ -27,23 +27,24 @@ This is the [Arcjet][arcjet] SDK for [SvelteKit][sveltekit].
 
 ## Features
 
-- 🔒 [Prompt injection detection][prompt-injection-docs] — detect and block
-  prompt injection attacks before they reach your AI model.
-- 🤖 [Bot protection][bot-protection-docs] — manage traffic from automated
-  clients and bots, with [verification and
-  categorization][bot-categories-docs].
-- 🛑 [Rate limiting][rate-limiting-docs] — limit the number of requests a
-  client can make. Use token bucket limits to enforce per-user AI token budgets.
-- 🛡️ [Shield WAF][shield-docs] — protect your application against common
-  attacks, including the OWASP Top 10.
-- 📧 [Email validation][email-validation-docs] — prevent users from signing up
-  with fake or disposable email addresses.
-- 📝 [Signup form protection][signup-protection-docs] — combines rate limiting,
-  bot protection, and email validation to protect your signup forms.
-- 🕵️‍♂️ [Sensitive information detection][sensitive-info-docs] — detect and block
-  PII (emails, phone numbers, credit cards) in request content.
-- 🎯 [Request filters][filters-docs] — filter requests using expression-based
-  rules against request properties.
+- 🔒 [Prompt Injection Detection][prompt-injection-docs] — detect and block
+  prompt injection attacks before they reach your LLM.
+- 🤖 [Bot Protection][bot-protection-docs] — stop scrapers, credential stuffers,
+  and AI crawlers from abusing your endpoints.
+- 🛑 [Rate Limiting][rate-limiting-docs] — token bucket, fixed window, and sliding
+  window algorithms; model AI token budgets per user.
+- 🕵️ [Sensitive Information Detection][sensitive-info-docs] — block
+  PII, credit cards, and custom patterns from entering your AI pipeline.
+- 🛡️ [Shield WAF][shield-docs] — protect against SQL injection, XSS, and other
+  common web attacks.
+- 📧 [Email Validation][email-validation-docs] — block disposable, invalid, and
+  undeliverable addresses at signup.
+- 📝 [Signup Form Protection][signup-protection-docs] — combines bot protection,
+  email validation, and rate limiting to protect your signup forms.
+- 🎯 [Request Filters][filters-docs] — expression-based rules on IP, path,
+  headers, and custom fields.
+- 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
+  detection included with every request.
 
 ## Getting started
 
@@ -315,24 +316,113 @@ if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
 }
 ```
 
+## Shield WAF
+
+Protect your application against common web attacks, including the OWASP
+Top 10.
+
+```ts
+import arcjet, { shield } from "@arcjet/sveltekit";
+
+const aj = arcjet({
+  key: env.ARCJET_KEY,
+  rules: [
+    shield({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+    }),
+  ],
+});
+```
+
+## Email validation
+
+Validate and verify email addresses, blocking disposable, invalid, or
+undeliverable addresses.
+
+```ts
+import arcjet, { validateEmail } from "@arcjet/sveltekit";
+
+const aj = arcjet({
+  key: env.ARCJET_KEY,
+  rules: [
+    validateEmail({
+      mode: "LIVE",
+      deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+    }),
+  ],
+});
+
+const decision = await aj.protect(event, {
+  email: "user@example.com",
+});
+
+if (decision.isDenied() && decision.reason.isEmail()) {
+  return error(400, "Invalid email address");
+}
+```
+
 ## Request filters
 
 Filter requests using expression-based rules against request properties (IP,
 headers, path, method, etc.).
 
 ```ts
-import arcjet, { filterRequest } from "@arcjet/sveltekit";
+import arcjet, { filter } from "@arcjet/sveltekit";
 
 const aj = arcjet({
   key: env.ARCJET_KEY,
   rules: [
-    filterRequest({
+    filter({
       mode: "LIVE",
       deny: ['ip.src == "1.2.3.4"'],
     }),
   ],
 });
 ```
+
+### Block by country
+
+Restrict access to specific countries — useful for licensing, compliance, or
+regional rollouts. The `allow` list denies all countries not listed:
+
+```ts
+filter({
+  mode: "LIVE",
+  // Allow only US traffic — all other countries are denied
+  allow: ['ip.src.country == "US"'],
+});
+```
+
+### Block VPN and proxy traffic
+
+Prevent anonymized traffic from accessing sensitive endpoints — useful for
+fraud prevention, enforcing geo-restrictions, and reducing abuse:
+
+```ts
+filter({
+  mode: "LIVE",
+  deny: [
+    "ip.src.vpn", // VPN services
+    "ip.src.proxy", // Open proxies
+    "ip.src.tor", // Tor exit nodes
+  ],
+});
+```
+
+For more nuanced handling, use `decision.ip` helpers after calling `protect()`:
+
+```ts
+const decision = await aj.protect(event);
+
+if (decision.ip.isVpn() || decision.ip.isTor()) {
+  return error(403, "VPN traffic not allowed");
+}
+```
+
+See the [Request Filters docs][filters-docs],
+[IP Geolocation blueprint](https://docs.arcjet.com/blueprints/ip-geolocation), and
+[VPN/Proxy Detection blueprint](https://docs.arcjet.com/blueprints/vpn-proxy-detection)
+for more details.
 
 ## IP analysis
 

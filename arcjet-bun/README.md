@@ -25,23 +25,24 @@ This is the [Arcjet][arcjet] SDK for [Bun][bun-sh].
 
 ## Features
 
-- 🔒 [Prompt injection detection][prompt-injection-docs] — detect and block
-  prompt injection attacks before they reach your AI model.
-- 🤖 [Bot protection][bot-protection-docs] — manage traffic from automated
-  clients and bots, with [verification and
-  categorization][bot-categories-docs].
-- 🛑 [Rate limiting][rate-limiting-docs] — limit the number of requests a
-  client can make. Use token bucket limits to enforce per-user AI token budgets.
-- 🛡️ [Shield WAF][shield-docs] — protect your application against common
-  attacks, including the OWASP Top 10.
-- 📧 [Email validation][email-validation-docs] — prevent users from signing up
-  with fake or disposable email addresses.
-- 📝 [Signup form protection][signup-protection-docs] — combines rate limiting,
-  bot protection, and email validation to protect your signup forms.
-- 🕵️‍♂️ [Sensitive information detection][sensitive-info-docs] — detect and block
-  PII (emails, phone numbers, credit cards) in request content.
-- 🎯 [Request filters][filters-docs] — filter requests using expression-based
-  rules against request properties.
+- 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
+  prompt injection attacks before they reach your LLM.
+- 🤖 [Bot Protection](#bot-protection) — stop scrapers, credential stuffers, and
+  AI crawlers from abusing your endpoints.
+- 🛑 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
+  window algorithms; model AI token budgets per user.
+- 🕵️ [Sensitive Information Detection](#sensitive-information-detection) — block
+  PII, credit cards, and custom patterns from entering your AI pipeline.
+- 🛡️ [Shield WAF](#shield-waf) — protect against SQL injection, XSS, and other
+  common web attacks.
+- 📧 [Email Validation](#email-validation) — block disposable, invalid, and
+  undeliverable addresses at signup.
+- 📝 [Signup Form Protection][signup-protection-docs] — combines bot protection,
+  email validation, and rate limiting to protect your signup forms.
+- 🎯 [Request Filters](#request-filters) — expression-based rules on IP, path,
+  headers, and custom fields.
+- 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
+  detection included with every request.
 
 ## Getting started
 
@@ -153,6 +154,7 @@ via `detectPromptInjectionMessage` on each `protect()` call.
 
 ```ts
 import arcjet, { detectPromptInjection } from "@arcjet/bun";
+import { env } from "bun";
 
 const aj = arcjet({
   key: env.ARCJET_KEY!,
@@ -180,6 +182,7 @@ export default {
     }
 
     // Forward to your AI model...
+    return new Response("OK");
   }),
 };
 ```
@@ -192,6 +195,7 @@ Arcjet allows you to configure a list of bots to allow or deny. Specifying
 ```ts
 import arcjet, { detectBot } from "@arcjet/bun";
 import { isSpoofedBot } from "@arcjet/inspect";
+import { env } from "bun";
 
 const aj = arcjet({
   key: env.ARCJET_KEY!,
@@ -257,7 +261,8 @@ Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
 controlling AI token budgets.
 
 ```ts
-import arcjet, { tokenBucket, slidingWindow, fixedWindow } from "@arcjet/bun";
+import arcjet, { tokenBucket } from "@arcjet/bun";
+import { env } from "bun";
 
 const aj = arcjet({
   key: env.ARCJET_KEY!,
@@ -290,6 +295,7 @@ numbers, and credit card numbers. Pass the content to scan via
 
 ```ts
 import arcjet, { sensitiveInfo } from "@arcjet/bun";
+import { env } from "bun";
 
 const aj = arcjet({
   key: env.ARCJET_KEY!,
@@ -310,24 +316,116 @@ if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
 }
 ```
 
+## Shield WAF
+
+Protect your application against common web attacks, including the OWASP
+Top 10.
+
+```ts
+import arcjet, { shield } from "@arcjet/bun";
+import { env } from "bun";
+
+const aj = arcjet({
+  key: env.ARCJET_KEY!,
+  rules: [
+    shield({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+    }),
+  ],
+});
+```
+
+## Email validation
+
+Validate and verify email addresses, blocking disposable, invalid, or
+undeliverable addresses.
+
+```ts
+import arcjet, { validateEmail } from "@arcjet/bun";
+import { env } from "bun";
+
+const aj = arcjet({
+  key: env.ARCJET_KEY!,
+  rules: [
+    validateEmail({
+      mode: "LIVE",
+      deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+    }),
+  ],
+});
+
+const decision = await aj.protect(req, {
+  email: "user@example.com",
+});
+
+if (decision.isDenied() && decision.reason.isEmail()) {
+  return new Response("Invalid email address", { status: 400 });
+}
+```
+
 ## Request filters
 
 Filter requests using expression-based rules against request properties (IP,
 headers, path, method, etc.).
 
 ```ts
-import arcjet, { filterRequest } from "@arcjet/bun";
+import arcjet, { filter } from "@arcjet/bun";
+import { env } from "bun";
 
 const aj = arcjet({
   key: env.ARCJET_KEY!,
   rules: [
-    filterRequest({
+    filter({
       mode: "LIVE",
       deny: ['ip.src == "1.2.3.4"'],
     }),
   ],
 });
 ```
+
+### Block by country
+
+Restrict access to specific countries — useful for licensing, compliance, or
+regional rollouts. The `allow` list denies all countries not listed:
+
+```ts
+filter({
+  mode: "LIVE",
+  // Allow only US traffic — all other countries are denied
+  allow: ['ip.src.country == "US"'],
+});
+```
+
+### Block VPN and proxy traffic
+
+Prevent anonymized traffic from accessing sensitive endpoints — useful for
+fraud prevention, enforcing geo-restrictions, and reducing abuse:
+
+```ts
+filter({
+  mode: "LIVE",
+  deny: [
+    "ip.src.vpn", // VPN services
+    "ip.src.proxy", // Open proxies
+    "ip.src.tor", // Tor exit nodes
+  ],
+});
+```
+
+For more nuanced handling, use `decision.ip` helpers after calling `protect()`:
+
+```ts
+const decision = await aj.protect(req);
+
+if (decision.ip.isVpn() || decision.ip.isTor()) {
+  return new Response("VPN traffic not allowed", { status: 403 });
+}
+```
+
+See the [Request Filters docs][filters-docs],
+[IP Geolocation blueprint](https://docs.arcjet.com/blueprints/ip-geolocation), and
+[VPN/Proxy Detection blueprint](https://docs.arcjet.com/blueprints/vpn-proxy-detection)
+for more details.
 
 ## IP analysis
 
@@ -457,14 +555,8 @@ bun test
 [bun-sh]: https://bun.sh/
 [quick-start]: https://docs.arcjet.com/get-started/bun
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
-[bot-protection-docs]: https://docs.arcjet.com/bot-protection
 [bot-categories-docs]: https://docs.arcjet.com/bot-protection/identifying-bots
 [bot-list]: https://arcjet.com/bot-list
-[rate-limiting-docs]: https://docs.arcjet.com/rate-limiting
-[shield-docs]: https://docs.arcjet.com/shield
-[email-validation-docs]: https://docs.arcjet.com/email-validation
 [signup-protection-docs]: https://docs.arcjet.com/signup-protection
-[sensitive-info-docs]: https://docs.arcjet.com/sensitive-info
 [filters-docs]: https://docs.arcjet.com/filters
-[prompt-injection-docs]: https://docs.arcjet.com/detect-prompt-injection
 [best-practices]: https://docs.arcjet.com/best-practices

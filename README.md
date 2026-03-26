@@ -21,37 +21,24 @@ for JS.
 
 ## Features
 
-Arcjet security features for protecting JS apps:
-
-- 🔒 [Prompt injection detection][feature-prompt-injection]
-  — detect and block prompt injection attacks on your AI application, preventing
-  users from hijacking your AI model's instructions.
-- 🤖 [Bot protection][feature-bot-protection]
-  — detect bots, block bad bots, verify legitimate bots, and reduce unwanted
-  automated requests before they reach your application.
-- 🛑 [Rate limiting][feature-rate-limiting]
-  — control how many requests a client can make to your application or API over
-  a given period of time. Use token bucket limits to enforce per-user AI token
-  budgets.
-- 🛡️ [Shield WAF][feature-shield]
-  — protects your application against common web attacks, including the OWASP
-  Top 10, by analyzing requests over time and blocking clients that show
-  suspicious behavior.
-- 📧 [Email validation][feature-email-validation]
-  — validate and verify email addresses in your application to reduce spam and
-  fraudulent signups.
-- 📝 [Signup form protection][feature-signup-protection]
-  — combines bot protection, email validation, and rate limiting to protect
-  your signup and lead capture forms from spam, fake accounts, and signup
-  fraud.
-- 🕵️‍♂️ [Sensitive information][feature-sensitive-info]
-  — detect and block sensitive data in request bodies before it enters your
-  application. Use it to prevent clients from sending personally identifiable
-  information (PII) and other data you do not want to handle.
-- 🎯 [Filters][feature-filters]
-  — define custom security and traffic rules inside your application code. Use
-  filters to block unwanted traffic based on request fields, IP reputation,
-  geography, VPN or proxy usage, and other signals.
+- 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
+  prompt injection attacks before they reach your LLM.
+- 🤖 [Bot Protection](#bot-protection) — stop scrapers, credential stuffers, and
+  AI crawlers from abusing your endpoints.
+- 🛑 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
+  window algorithms; model AI token budgets per user.
+- 🕵️ [Sensitive Information Detection](#sensitive-information-detection) — block
+  PII, credit cards, and custom patterns from entering your AI pipeline.
+- 🛡️ [Shield WAF](#shield-waf) — protect against SQL injection, XSS, and other
+  common web attacks.
+- 📧 [Email Validation](#email-validation) — block disposable, invalid, and
+  undeliverable addresses at signup.
+- 📝 [Signup Form Protection][feature-signup-protection] — combines bot
+  protection, email validation, and rate limiting to protect your signup forms.
+- 🎯 [Request Filters](#request-filters) — expression-based rules on IP, path,
+  headers, and custom fields.
+- 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
+  detection included with every request.
 
 ## Quick start
 
@@ -105,15 +92,16 @@ Arcjet security features for protecting JS apps:
 
 Read the docs at [`docs.arcjet.com`][arcjet-docs].
 
+> **Note:** Examples below use `@arcjet/next` for illustration. Replace with
+> the SDK for your runtime — `@arcjet/node`, `@arcjet/bun`, `@arcjet/sveltekit`,
+> etc. The API is identical across all [SDKs](#sdks).
+
 ### Next.js AI protection example
 
 This example protects a Next.js AI chat route using the [Vercel AI
 SDK][vercel-ai-sdk]: blocking automated clients that inflate costs, enforcing
 per-user token budgets, detecting sensitive information in messages, and
 blocking prompt injection attacks before they reach the model.
-
-> Examples use `@arcjet/next`. Replace with `@arcjet/node`, `@arcjet/bun`, or
-> any other [SDK](#sdks) for your runtime.
 
 ```ts
 // app/api/chat/route.ts
@@ -220,9 +208,6 @@ export async function POST(req: Request) {
 Detect and block prompt injection attacks — attempts to override your AI
 model's instructions — before they reach your model. Pass the user's message
 via `detectPromptInjectionMessage` on each `protect()` call.
-
-> Examples use `@arcjet/next`. Replace with `@arcjet/node`, `@arcjet/bun`, or
-> any other [SDK](#sdks) for your runtime.
 
 ```ts
 import arcjet, { detectPromptInjection } from "@arcjet/next";
@@ -368,24 +353,112 @@ if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
 }
 ```
 
+### Shield WAF
+
+Protect your application against common web attacks, including the OWASP
+Top 10.
+
+```ts
+import arcjet, { shield } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    shield({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+    }),
+  ],
+});
+```
+
+### Email validation
+
+Validate and verify email addresses, blocking disposable, invalid, or
+undeliverable addresses.
+
+```ts
+import arcjet, { validateEmail } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    validateEmail({
+      mode: "LIVE",
+      deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+    }),
+  ],
+});
+
+const decision = await aj.protect(request, {
+  email: "user@example.com",
+});
+
+if (decision.isDenied() && decision.reason.isEmail()) {
+  return new Response("Invalid email address", { status: 400 });
+}
+```
+
 ### Request filters
 
 Filter requests using expression-based rules against request properties (IP,
 headers, path, method, etc.).
 
 ```ts
-import arcjet, { filterRequest } from "@arcjet/next";
+import arcjet, { filter } from "@arcjet/next";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
-    filterRequest({
+    filter({
       mode: "LIVE",
       deny: ['ip.src == "1.2.3.4"', 'http.request.uri.path contains "/admin"'],
     }),
   ],
 });
 ```
+
+#### Block by country
+
+Restrict access to specific countries — useful for licensing, compliance, or
+regional rollouts. The `allow` list denies all countries not listed:
+
+```ts
+filter({
+  mode: "LIVE",
+  // Allow only US traffic — all other countries are denied
+  allow: ['ip.src.country == "US"'],
+});
+```
+
+#### Block VPN and proxy traffic
+
+Prevent anonymized traffic from accessing sensitive endpoints — useful for
+fraud prevention, enforcing geo-restrictions, and reducing abuse:
+
+```ts
+filter({
+  mode: "LIVE",
+  deny: [
+    "ip.src.vpn", // VPN services
+    "ip.src.proxy", // Open proxies
+    "ip.src.tor", // Tor exit nodes
+  ],
+});
+```
+
+For more nuanced handling, use `decision.ip` helpers after calling `protect()`:
+
+```ts
+const decision = await aj.protect(request);
+
+if (decision.ip.isVpn() || decision.ip.isTor()) {
+  return new Response("VPN traffic not allowed", { status: 403 });
+}
+```
+
+See the [Request Filters docs][feature-filters],
+[IP Geolocation blueprint][blueprint-ip-geolocation], and
+[VPN/Proxy Detection blueprint][blueprint-vpn-proxy] for more details.
 
 ### IP analysis
 
@@ -575,14 +648,20 @@ This repository follows the [Arcjet Support Policy][arcjet-support].
 
 This repository follows the [Arcjet Security Policy][arcjet-security].
 
+## Development
+
+This is a monorepo managed with [npm workspaces][npm-workspaces] and
+[Turborepo][turborepo]. Each package lives in its own directory at the repo
+root (e.g. `arcjet-next/`, `analyze/`).
+
+If you want to use Arcjet then you should install a specific package for your
+runtime (e.g. `@arcjet/next` for Next.js). If you want to contribute to the
+development of the SDKs see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Compatibility
 
-Packages maintained in this repository are compatible with maintained
+Packages maintained in this repository are compatible with LTS
 versions of Node.js and the current minor release of TypeScript.
-
-The current release line,
-`@arcjet/*` on `1.0.0-beta.*`,
-is compatible with Node.js 20.
 
 ## License
 
@@ -620,13 +699,8 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [blueprint-sampling-traffic]: https://docs.arcjet.com/blueprints/sampling
 [blueprint-vpn-proxy]: https://docs.arcjet.com/blueprints/vpn-proxy-detection
 [feature-bot-protection]: https://docs.arcjet.com/bot-protection
-[feature-email-validation]: https://docs.arcjet.com/email-validation
 [feature-filters]: https://docs.arcjet.com/filters
-[feature-rate-limiting]: https://docs.arcjet.com/rate-limiting
-[feature-sensitive-info]: https://docs.arcjet.com/sensitive-info
-[feature-shield]: https://docs.arcjet.com/shield
 [feature-signup-protection]: https://docs.arcjet.com/signup-protection
-[feature-prompt-injection]: https://docs.arcjet.com/detect-prompt-injection
 [bot-list]: https://arcjet.com/bot-list
 [best-practices]: https://docs.arcjet.com/best-practices
 [quick-start-astro]: https://docs.arcjet.com/get-started?f=astro
@@ -643,3 +717,5 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [quick-start-react-router]: https://docs.arcjet.com/get-started?f=react-router
 [quick-start-remix]: https://docs.arcjet.com/get-started?f=remix
 [quick-start-sveltekit]: https://docs.arcjet.com/get-started?f=sveltekit
+[npm-workspaces]: https://docs.npmjs.com/cli/using-npm/workspaces
+[turborepo]: https://turbo.build/repo

@@ -243,18 +243,18 @@ const decision = await aj.protect(context, {
 });
 ```
 
-### `filterRequest(options)`
+### `filter(options)`
 
 Filters requests using expression-based rules against request properties (IP,
 headers, path, method, etc.).
 
 ```ts
-import arcjet, { filterRequest } from "arcjet";
+import arcjet, { filter } from "arcjet";
 
 const aj = arcjet({
   // ...
   rules: [
-    filterRequest({
+    filter({
       mode: "LIVE",
       deny: [
         'ip.src == "1.2.3.4"',
@@ -265,6 +265,48 @@ const aj = arcjet({
   ],
 });
 ```
+
+#### Block by country
+
+Restrict access to specific countries — useful for licensing, compliance, or
+regional rollouts. The `allow` list denies all countries not listed:
+
+```ts
+filter({
+  mode: "LIVE",
+  // Allow only US traffic — all other countries are denied
+  allow: ['ip.src.country == "US"'],
+});
+```
+
+#### Block VPN and proxy traffic
+
+Prevent anonymized traffic from accessing sensitive endpoints — useful for
+fraud prevention, enforcing geo-restrictions, and reducing abuse:
+
+```ts
+filter({
+  mode: "LIVE",
+  deny: [
+    "ip.src.vpn", // VPN services
+    "ip.src.proxy", // Open proxies
+    "ip.src.tor", // Tor exit nodes
+  ],
+});
+```
+
+For more nuanced handling, use `decision.ip` helpers after calling `protect()`:
+
+```ts
+const decision = await aj.protect(context, {});
+
+if (decision.ip.isVpn() || decision.ip.isTor()) {
+  // Block VPN traffic
+}
+```
+
+See the [filter expression reference][filter-reference] for the full list of
+supported fields and operators.
 
 ### `protectSignup(options)`
 
@@ -353,6 +395,27 @@ for (const result of decision.results) {
     console.log("Spoofed:", result.reason.spoofed);
   }
 }
+```
+
+## IP analysis
+
+Arcjet enriches every request with IP metadata. Use these helpers to make
+policy decisions based on network signals:
+
+```ts
+const decision = await aj.protect(context, {});
+
+if (decision.ip.isHosting()) {
+  // Requests from cloud/hosting providers are often automated.
+  // https://docs.arcjet.com/blueprints/vpn-proxy-detection
+}
+
+if (decision.ip.isVpn() || decision.ip.isProxy() || decision.ip.isTor()) {
+  // Handle VPN/proxy traffic according to your policy
+}
+
+// Access geolocation and network details
+console.log(decision.ip.country, decision.ip.city, decision.ip.asn);
 ```
 
 ## Custom adapter example
@@ -493,3 +556,4 @@ Reference documentation is available at [docs.arcjet.com][ts-sdk-docs].
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [github-arcjet-sdks]: https://github.com/arcjet/arcjet-js#sdks
 [best-practices]: https://docs.arcjet.com/best-practices
+[filter-reference]: https://docs.arcjet.com/filters/reference#expression-language
