@@ -129,11 +129,6 @@ See [_Bot protection_ on
 `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
 for more info.
 
-Missing `User-Agent` detection is part of all plans including the free plan.
-See [_Error handling_ on
-`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#error-handling)
-for more info.
-
 ### `isSpoofedBot(result)`
 
 Determines if a bot rule result detected a spoofed request. You may want to
@@ -158,13 +153,6 @@ See [_Bot protection_ on
 `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
 for more info.
 
-Spoofed bot detection is part of advanced bot protection features which are
-not available on free plans but are available on the starter and business
-plans.
-See [_Bot verification_ on
-`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
-for more info.
-
 ### `isVerifiedBot(result)`
 
 Determines if a bot rule result detected a verified bot. You may want to
@@ -187,13 +175,6 @@ a verified bot, or `undefined` if the rule result was non-bot or `DRY_RUN`
 Bot protection is available when you use `detectBot`.
 See [_Bot protection_ on
 `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
-for more info.
-
-Verified bot detection is part of advanced bot protection features which are
-not available on free plans but are available on the starter and business
-plans.
-See [_Bot verification_ on
-`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/reference#bot-verification)
 for more info.
 
 ## License

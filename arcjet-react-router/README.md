@@ -19,22 +19,34 @@
   </a>
 </p>
 
-[Arcjet][arcjet] helps developers protect their apps in just a few lines of
-code. Implement rate limiting, bot protection, email verification, and defense
-against common attacks.
+[Arcjet][arcjet] is the runtime security platform that ships with your AI code.
+Stop bots and automated attacks from burning your AI budget, leaking data, or
+misusing tools with Arcjet's AI security building blocks.
 
 This is the [Arcjet][arcjet] SDK for [React Router][react-router].
 
-- [GitHub source code (`arcjet-react-router/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-react-router)
 - [npm package (`@arcjet/react-router`)](https://www.npmjs.com/package/@arcjet/react-router)
+- [GitHub source code (`arcjet-react-router/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-react-router)
 
-## Example
+## Features
 
-Try an Arcjet protected Next.js app live at
-[`example.arcjet.com`][example-next-url]
-([source code][example-next-source]).
-See [`arcjet/example-react-router`][example-react-router-source] for a
-React Router example.
+- 🔒 [Prompt injection detection][prompt-injection-docs] — detect and block
+  prompt injection attacks before they reach your AI model.
+- 🤖 [Bot protection][bot-protection-docs] — manage traffic from automated
+  clients and bots, with [verification and
+  categorization][bot-categories-docs].
+- 🛑 [Rate limiting][rate-limiting-docs] — limit the number of requests a
+  client can make. Use token bucket limits to enforce per-user AI token budgets.
+- 🛡️ [Shield WAF][shield-docs] — protect your application against common
+  attacks, including the OWASP Top 10.
+- 📧 [Email validation][email-validation-docs] — prevent users from signing up
+  with fake or disposable email addresses.
+- 📝 [Signup form protection][signup-protection-docs] — combines rate limiting,
+  bot protection, and email validation to protect your signup forms.
+- 🕵️‍♂️ [Sensitive information detection][sensitive-info-docs] — detect and block
+  PII (emails, phone numbers, credit cards) in request content.
+- 🎯 [Request filters][filters-docs] — filter requests using expression-based
+  rules against request properties.
 
 ## What is this?
 
@@ -43,9 +55,9 @@ Arcjet helps you secure your React Router website.
 
 ## When should I use this?
 
-You can use this if you are using React Router.
+Use this if you are using React Router.
 See our [_Get started_ guide][arcjet-get-started] for other supported
-frameworks.
+frameworks and runtimes.
 
 ## Install
 
@@ -56,236 +68,399 @@ Install with npm in Node.js:
 npm install @arcjet/react-router
 ```
 
-## Use
+## Quick start
 
-In a route such as `app/routes/home.tsx` do something like:
+This example protects a React Router route with bot detection, Shield WAF,
+and token bucket rate limiting.
 
 ```tsx
-import arcjet, { shield } from "@arcjet/react-router";
-import type { ReactNode } from "react";
+// app/routes/home.tsx
+import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/react-router";
+import { isSpoofedBot } from "@arcjet/inspect";
 import type { Route } from "../routes/+types/home";
 
-// Get your Arcjet key at <https://app.arcjet.com>.
-// Set it as an environment variable instead of hard coding it.
-const arcjetKey = process.env.ARCJET_KEY;
-
-if (!arcjetKey) {
-  throw new Error("Cannot find `ARCJET_KEY` environment variable");
-}
-
 const aj = arcjet({
-  key: arcjetKey,
+  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
   rules: [
-    // Shield protects your app from common attacks.
-    // Use `DRY_RUN` instead of `LIVE` to only log.
+    // Shield protects your app from common attacks e.g. SQL injection
     shield({ mode: "LIVE" }),
+    // Create a bot detection rule
+    detectBot({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+      // Block all bots except the following
+      allow: [
+        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+        // Uncomment to allow these other common bot categories
+        // See the full list at https://arcjet.com/bot-list
+        //"CATEGORY:MONITOR", // Uptime monitoring services
+        //"CATEGORY:PREVIEW", // Link previews e.g. Slack, Discord
+      ],
+    }),
+    // Token bucket rate limit. Other algorithms are supported.
+    tokenBucket({
+      mode: "LIVE",
+      refillRate: 5, // Refill 5 tokens per interval
+      interval: 10, // Refill every 10 seconds
+      capacity: 10, // Bucket capacity of 10 tokens
+    }),
   ],
 });
 
-export default function Home(): ReactNode {
-  return <h1>Hello!</h1>;
-}
-
-export async function loader(
-  loaderArguments: Route.LoaderArgs,
-): Promise<undefined> {
-  const decision = await aj.protect(loaderArguments);
+export async function loader(args: Route.LoaderArgs) {
+  const decision = await aj.protect(args, { requested: 5 }); // Deduct 5 tokens
+  console.log("Arcjet decision", decision);
 
   if (decision.isDenied()) {
-    throw new Response(
-      undefined,
-      decision.reason.isRateLimit()
-        ? { statusText: "Too many requests", status: 429 }
-        : { statusText: "Forbidden", status: 403 },
-    );
+    if (decision.reason.isRateLimit()) {
+      throw new Response(undefined, {
+        status: 429,
+        statusText: "Too many requests",
+      });
+    } else if (decision.reason.isBot()) {
+      throw new Response(undefined, {
+        status: 403,
+        statusText: "No bots allowed",
+      });
+    } else {
+      throw new Response(undefined, { status: 403, statusText: "Forbidden" });
+    }
   }
+
+  // Requests from hosting IPs are likely from bots.
+  // https://docs.arcjet.com/blueprints/vpn-proxy-detection
+  if (decision.ip.isHosting()) {
+    throw new Response(undefined, { status: 403, statusText: "Forbidden" });
+  }
+
+  // Verifies the authenticity of common bots using IP data.
+  // Verification isn't always possible, so check the results separately.
+  // https://docs.arcjet.com/bot-protection/reference#bot-verification
+  if (decision.results.some(isSpoofedBot)) {
+    throw new Response(undefined, { status: 403, statusText: "Forbidden" });
+  }
+
+  return { message: "Hello world" };
+}
+
+export default function Home() {
+  return <h1>Hello!</h1>;
 }
 ```
 
-<!--
+## Prompt injection detection
 
-TODO: enable when this exists.
+Detect and block prompt injection attacks — attempts to override your AI
+model's instructions — before they reach your model. Pass the user's message
+via `detectPromptInjectionMessage` on each `protect()` call.
 
-For more on how to configure Arcjet with React Router and how to protect
-React Router,
-see the [Arcjet React Router SDK reference][arcjet-reference-react-router] on our website.
+```tsx
+import arcjet, { detectPromptInjection } from "@arcjet/react-router";
+import type { Route } from "../routes/+types/chat";
 
-[arcjet-reference-react-router]: https://docs.arcjet.com/reference/react-router
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    detectPromptInjection({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+      threshold: 0.5, // Score above which requests are blocked (default: 0.5)
+    }),
+  ],
+});
 
--->
+export async function action(args: Route.ActionArgs) {
+  const formData = await args.request.formData();
+  const message = String(formData.get("message"));
 
-## API
+  const decision = await aj.protect(args, {
+    detectPromptInjectionMessage: message,
+  });
 
-This package exports the identifier
-[`createRemoteClient`][api-create-remote-client].
-The default export is [`arcjet`][api-arcjet].
-It also exports all identifiers from `arcjet` core.
+  if (decision.isDenied() && decision.reason.isPromptInjection()) {
+    throw new Response(
+      "Prompt injection detected — please rephrase your message",
+      { status: 400 },
+    );
+  }
 
-This package exports the [TypeScript][] types
-[`ArcjetOptions`][api-arcjet-options],
-[`ArcjetReactRouterRequest`][api-arcjet-react-router-request],
-[`ArcjetReactRouter`][api-arcjet-react-router], and
-[`RemoteClientOptions`][api-remote-client-options].
-It also exports all types from `arcjet` core.
+  // Forward to your AI model...
+}
+```
 
-### `ArcjetOptions`
+## Bot protection
 
-Configuration for the React Router integration of Arcjet (TypeScript type).
+Arcjet allows you to configure a list of bots to allow or deny. Specifying
+`allow` means all other bots are denied. An empty allow list blocks all bots.
 
-###### Fields
+```tsx
+import arcjet, { detectBot } from "@arcjet/react-router";
+import { isSpoofedBot } from "@arcjet/inspect";
 
-- `characteristics`
-  (`Array<string>`, default: `["ip.src"]`)
-  — characteristics to track a user by;
-  can also be passed to rules
-- `client`
-  (`Client`, optional)
-  — client used to make requests to the Arcjet API;
-  this is configured by adapters (such as `@arcjet/react-router`) but can be
-  overwritten for testing purposes
-- `key`
-  (`string`, **required**)
-  — API key to identify the site in Arcjet
-- `log`
-  (`ArcjetLogger`, optional)
-  — log interface to emit useful information;
-  this is configured by adapters (such as `@arcjet/react-router`) but can be
-  overwritten for testing purposes
-- `proxies`
-  (`Array<string>`, optional, example: `["100.100.100.100", "100.100.100.0/24"]`)
-  — IP addresses and CIDR ranges of trusted load balancers and proxies
-- `rules`
-  (`Array<Array<Rule>>`, **required**)
-  — rules to apply when protecting a request
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    detectBot({
+      mode: "LIVE",
+      allow: [
+        "CATEGORY:SEARCH_ENGINE",
+        // See the full list at https://arcjet.com/bot-list
+      ],
+    }),
+  ],
+});
 
-### `ArcjetReactRouterRequest`
+// In your loader/action:
+const decision = await aj.protect(args);
 
-Request for the React Router integration of Arcjet (TypeScript type).
+if (decision.isDenied() && decision.reason.isBot()) {
+  throw new Response(undefined, { status: 403, statusText: "No bots allowed" });
+}
 
-###### Fields
+// Verifies the authenticity of common bots using IP data.
+if (decision.results.some(isSpoofedBot)) {
+  throw new Response(undefined, { status: 403, statusText: "Forbidden" });
+}
+```
 
-- `context`
-  (`unknown`, optional)
-  — context for the React Router request;
-  the `ip` (`string`) field is used if available
-- `request`
-  (`Request`, **required**)
-  — DOM request
+### Bot categories
 
-### `ArcjetReactRouter`
+Bots can be configured by [category][bot-categories-docs] and/or by [specific
+bot name][bot-list]. For example, to allow search engines and the OpenAI
+crawler, but deny all other bots:
 
-Instance of the React Router integration of Arcjet (TypeScript type).
+```ts
+detectBot({
+  mode: "LIVE",
+  allow: ["CATEGORY:SEARCH_ENGINE", "OPENAI_CRAWLER_SEARCH"],
+});
+```
 
-Primarily has a `protect()` method to make a decision about how a request
-should be handled.
+### Verified vs spoofed bots
 
-#### `ArcjetReactRouter#protect(details, properties?)`
+Bots claiming to be well-known crawlers (e.g. Googlebot) are verified by
+checking their IP address against known IP ranges. If a bot fails verification,
+it is labeled as spoofed. Use `isSpoofedBot` from `@arcjet/inspect` to check:
 
-Make a decision about how to handle a request.
+```ts
+import { isSpoofedBot } from "@arcjet/inspect";
 
-This will analyze the request locally where possible and otherwise call
-the Arcjet decision API.
+if (decision.results.some(isSpoofedBot)) {
+  throw new Response(undefined, { status: 403, statusText: "Forbidden" });
+}
+```
 
-###### Parameters
+## Rate limiting
 
-- `details`
-  ([`ArcjetReactRouterRequest`][api-arcjet-react-router-request], **required**)
-  — details about the React Router request that Arcjet needs to make a decision.
-- `properties`
-  (`object`, optional)
-  — additional properties required for running rules against a request.
+Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
+controlling AI token budgets.
 
-###### Returns
+```tsx
+import arcjet, {
+  tokenBucket,
+  slidingWindow,
+  fixedWindow,
+} from "@arcjet/react-router";
 
-Promise that resolves to an Arcjet decision indicating Arcjet’s decision about
-the request (`Promise<ArcjetDecision>`).
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  characteristics: ["userId"], // Track per user
+  rules: [
+    tokenBucket({
+      mode: "LIVE",
+      refillRate: 2_000, // Refill 2,000 tokens per hour
+      interval: "1h",
+      capacity: 5_000, // Maximum 5,000 tokens in the bucket
+    }),
+  ],
+});
 
-#### `ArcjetReactRouter#withRule(rule)`
+const decision = await aj.protect(args, {
+  userId: "user-123",
+  requested: estimate, // Number of tokens to deduct
+});
 
-Augment the client with another rule.
+if (decision.isDenied() && decision.reason.isRateLimit()) {
+  throw new Response(undefined, {
+    status: 429,
+    statusText: "Rate limit exceeded",
+  });
+}
+```
 
-Useful for varying rules based on criteria in your handler such as
-different rate limit for logged in users.
+## Sensitive information detection
 
-###### Parameters
+Detect and block PII in request content such as email addresses, phone
+numbers, and credit card numbers. Pass the content to scan via
+`sensitiveInfoValue` on each `protect()` call.
 
-- `rule`
-  (`Array<Rule>`, **required**)
-  — rule to add to Arcjet
+```tsx
+import arcjet, { sensitiveInfo } from "@arcjet/react-router";
 
-###### Returns
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    sensitiveInfo({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+      deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER"],
+    }),
+  ],
+});
 
-Arcjet instance augmented with the given rule
-([`ArcjetReactRouter`][api-arcjet-react-router]).
+const decision = await aj.protect(args, {
+  sensitiveInfoValue: userMessage, // The text content to scan
+});
 
-### `RemoteClientOptions`
+if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
+  throw new Response("Sensitive information detected", { status: 400 });
+}
+```
 
-Configuration for [`createRemoteClient`][api-create-remote-client]
-(TypeScript type).
+## Request filters
 
-###### Fields
+Filter requests using expression-based rules against request properties (IP,
+headers, path, method, etc.).
 
-- `baseUrl`
-  (`string`, optional)
-  — base URI for HTTP requests to Decide API;
-  defaults to the environment variable `ARCJET_BASE_URL`
-  (if that value is known and allowed)
-  and the standard production API otherwise
-- `timeout`
-  (`number`, optional)
-  — timeout in milliseconds for the Decide API;
-  defaults to `500` in production and `1000` in development
+```tsx
+import arcjet, { filterRequest } from "@arcjet/react-router";
 
-### `arcjet`
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    filterRequest({
+      mode: "LIVE",
+      deny: ['ip.src == "1.2.3.4"'],
+    }),
+  ],
+});
+```
 
-Create a new React Router integration of Arcjet.
+## IP analysis
 
-> 👉 **Tip**:
-> build your initial base client with as many rules as possible outside of a
-> request handler;
-> if you need more rules inside handlers later then you can call `withRule()`
-> on that base client.
+Arcjet enriches every request with IP metadata. Use these helpers to make
+policy decisions based on network signals:
 
-###### Parameters
+```ts
+const decision = await aj.protect(args);
 
-- `options`
-  ([`ArcjetOptions`][api-arcjet-options], **required**)
-  — configuration
+if (decision.ip.isHosting()) {
+  // Requests from cloud/hosting providers are often automated.
+  // https://docs.arcjet.com/blueprints/vpn-proxy-detection
+  throw new Response(undefined, { status: 403, statusText: "Forbidden" });
+}
 
-###### Returns
+if (decision.ip.isVpn() || decision.ip.isProxy() || decision.ip.isTor()) {
+  // Handle VPN/proxy traffic according to your policy
+}
 
-React Router integration of Arcjet
-([`ArcjetReactRouter`][api-arcjet-react-router]).
+// Access geolocation and network details
+console.log(decision.ip.country, decision.ip.city, decision.ip.asn);
+```
 
-### `createRemoteClient`
+## Custom characteristics
 
-Create a remote client.
+Track and limit requests by any stable identifier — user ID, API key, session,
+etc. — rather than IP address alone.
 
-###### Parameters
+```tsx
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  characteristics: ["userId"], // Declare at the SDK level
+  rules: [
+    tokenBucket({
+      mode: "LIVE",
+      refillRate: 2_000,
+      interval: "1h",
+      capacity: 5_000,
+    }),
+  ],
+});
 
-- `options`
-  ([`RemoteClientOptions`][api-remote-client-options], optional)
-  — configuration
+// Pass the characteristic value at request time
+const decision = await aj.protect(args, {
+  userId: "user-123", // Replace with your actual user ID
+  requested: estimate,
+});
+```
 
-###### Returns
+## Best practices
 
-Client (`Client`).
+See the [Arcjet best practices][best-practices] for detailed guidance. Key
+recommendations:
+
+**Create a single client instance** and reuse it with `withRule()` for
+route-specific rules. The SDK caches decisions and configuration, so creating a
+new instance per request wastes that work.
+
+```ts
+// app/lib/arcjet.ts — create once, import everywhere
+import arcjet, { shield } from "@arcjet/react-router";
+
+export default arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    shield({ mode: "LIVE" }), // base rules applied to every request
+  ],
+});
+```
+
+```tsx
+// app/routes/chat.tsx — extend per-route with withRule()
+import aj from "../lib/arcjet.js";
+import { detectBot, tokenBucket } from "@arcjet/react-router";
+import type { Route } from "../routes/+types/chat";
+
+const routeAj = aj.withRule(detectBot({ mode: "LIVE", allow: [] })).withRule(
+  tokenBucket({
+    mode: "LIVE",
+    refillRate: 2_000,
+    interval: "1h",
+    capacity: 5_000,
+  }),
+);
+
+export async function action(args: Route.ActionArgs) {
+  const decision = await routeAj.protect(args, { requested: 500 });
+  // ...
+}
+```
+
+**Other recommendations:**
+
+- **Start rules in `DRY_RUN` mode** to observe behavior before switching to
+  `LIVE`. This lets you tune thresholds without affecting real traffic.
+- **Configure proxies** if your app runs behind a load balancer or reverse proxy
+  so Arcjet resolves the real client IP:
+  ```ts
+  arcjet({
+    key: process.env.ARCJET_KEY!,
+    rules: [],
+    proxies: ["100.100.100.100"],
+  });
+  ```
+- **Handle errors explicitly.** `protect()` never throws — on error it returns
+  an `ERROR` result. Fail open by logging and allowing the request:
+  ```ts
+  if (decision.isErrored()) {
+    console.error("Arcjet error", decision.reason.message);
+    // allow the request to proceed
+  }
+  ```
 
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
-[apache-license]: http://www.apache.org/licenses/LICENSE-2.0
-[api-arcjet-options]: #arcjetoptions
-[api-arcjet-react-router-request]: #arcjetreactrouterrequest
-[api-arcjet-react-router]: #arcjetreactrouter
-[api-arcjet]: #arcjetoptions
-[api-create-remote-client]: #createremoteclient
-[api-remote-client-options]: #remoteclientoptions
-[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet]: https://arcjet.com
-[example-next-source]: https://github.com/arcjet/example-nextjs
-[example-next-url]: https://example.arcjet.com
-[example-react-router-source]: https://github.com/arcjet/example-react-router
+[arcjet-get-started]: https://docs.arcjet.com/get-started
 [react-router]: https://reactrouter.com/
-[typescript]: https://www.typescriptlang.org/
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[bot-protection-docs]: https://docs.arcjet.com/bot-protection
+[bot-categories-docs]: https://docs.arcjet.com/bot-protection/identifying-bots
+[bot-list]: https://arcjet.com/bot-list
+[rate-limiting-docs]: https://docs.arcjet.com/rate-limiting
+[shield-docs]: https://docs.arcjet.com/shield
+[email-validation-docs]: https://docs.arcjet.com/email-validation
+[signup-protection-docs]: https://docs.arcjet.com/signup-protection
+[sensitive-info-docs]: https://docs.arcjet.com/sensitive-info
+[filters-docs]: https://docs.arcjet.com/filters
+[prompt-injection-docs]: https://docs.arcjet.com/detect-prompt-injection
+[best-practices]: https://docs.arcjet.com/best-practices
