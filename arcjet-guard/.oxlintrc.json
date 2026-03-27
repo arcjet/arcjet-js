@@ -1,0 +1,55 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "options": {
+    "typeAware": true
+  },
+  "plugins": ["typescript", "unicorn", "oxc", "import", "node", "promise"],
+  "categories": {
+    "correctness": "error",
+    "pedantic": "error",
+    "suspicious": "error"
+  },
+  "rules": {
+    "eslint/max-lines-per-function": "off",
+    "eslint/max-lines": "off",
+    "eslint/no-inline-comments": "off",
+    "eslint/no-promise-executor-return": "off",
+    "eslint/no-warning-comments": "off",
+    "typescript/explicit-function-return-type": "error",
+    "typescript/no-floating-promises": [
+      "error",
+      {
+        "allowForKnownSafeCalls": [
+          {
+            "from": "package",
+            "name": [
+              "after",
+              "afterEach",
+              "before",
+              "beforeEach",
+              "describe",
+              "it",
+              "suite",
+              "test"
+            ],
+            "package": "node:test"
+          }
+        ]
+      }
+    ],
+    "typescript/no-unsafe-type-assertion": "error"
+  },
+  "overrides": [
+    {
+      "files": ["test/runtime/deno.test.ts", "test/runtime/bun.test.ts"],
+      "rules": {
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-argument": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/strict-boolean-expressions": "off"
+      }
+    }
+  ]
+}
