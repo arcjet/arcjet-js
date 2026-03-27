@@ -173,6 +173,27 @@ export declare type RuleDetectPromptInjection = Message<"proto.decide.v2.RuleDet
 export declare const RuleDetectPromptInjectionSchema: GenMessage<RuleDetectPromptInjection>;
 
 /**
+ * EntityList wraps a list of entity type strings for use inside a oneof.
+ *
+ * @generated from message proto.decide.v2.EntityList
+ */
+export declare type EntityList = Message<"proto.decide.v2.EntityList"> & {
+  /**
+   * Entity type strings, e.g. "EMAIL", "PHONE_NUMBER", "IP_ADDRESS",
+   * "CREDIT_CARD_NUMBER".
+   *
+   * @generated from field: repeated string entities = 1;
+   */
+  entities: string[];
+};
+
+/**
+ * Describes the message proto.decide.v2.EntityList.
+ * Use `create(EntityListSchema)` to create a new message.
+ */
+export declare const EntityListSchema: GenMessage<EntityList>;
+
+/**
  * RuleLocalSensitiveInfo is a local sensitive information detection rule —
  * evaluated locally by the SDK.
  *
@@ -180,24 +201,29 @@ export declare const RuleDetectPromptInjectionSchema: GenMessage<RuleDetectPromp
  */
 export declare type RuleLocalSensitiveInfo = Message<"proto.decide.v2.RuleLocalSensitiveInfo"> & {
   /**
-   * Config: entity types to allow (everything else is denied).
-   * Mutually exclusive with config_entities_deny — only one may be set.
-   * Validated server-side.
-   * Values are entity type strings: "EMAIL", "PHONE_NUMBER",
-   * "IP_ADDRESS", "CREDIT_CARD_NUMBER".
+   * Config: which entity types to filter. Exactly one must be set:
+   * - entities_allow: only these types are denied (everything else allowed).
+   * - entities_deny: only these types are allowed (everything else denied).
    *
-   * @generated from field: repeated string config_entities_allow = 1;
+   * @generated from oneof proto.decide.v2.RuleLocalSensitiveInfo.config_entity_filter
    */
-  configEntitiesAllow: string[];
-
-  /**
-   * Config: entity types to deny (everything else is allowed).
-   * Mutually exclusive with config_entities_allow — only one may be set.
-   * Validated server-side.
-   *
-   * @generated from field: repeated string config_entities_deny = 2;
-   */
-  configEntitiesDeny: string[];
+  configEntityFilter: {
+    /**
+     * Entity types to allow (everything else is denied).
+     *
+     * @generated from field: proto.decide.v2.EntityList config_entities_allow = 1;
+     */
+    value: EntityList;
+    case: "configEntitiesAllow";
+  } | {
+    /**
+     * Entity types to deny (everything else is allowed).
+     *
+     * @generated from field: proto.decide.v2.EntityList config_entities_deny = 2;
+     */
+    value: EntityList;
+    case: "configEntitiesDeny";
+  } | { case: undefined; value?: undefined };
 
   /**
    * Input: a hash of the analyzed text, for correlation and caching.
@@ -245,9 +271,9 @@ export declare type RuleLocalSensitiveInfo = Message<"proto.decide.v2.RuleLocalS
    * Time spent computing the result, in milliseconds.
    * Optional so the server can distinguish "not measured" from 0 ms.
    *
-   * @generated from field: optional uint64 result_computed_in_ms = 21;
+   * @generated from field: optional uint64 result_duration_ms = 21;
    */
-  resultComputedInMs?: bigint;
+  resultDurationMs?: bigint;
 };
 
 /**
@@ -315,9 +341,9 @@ export declare type RuleLocalCustom = Message<"proto.decide.v2.RuleLocalCustom">
    * Time spent computing the result, in milliseconds.
    * Optional so the server can distinguish "not measured" from 0 ms.
    *
-   * @generated from field: optional uint64 result_computed_in_ms = 21;
+   * @generated from field: optional uint64 result_duration_ms = 21;
    */
-  resultComputedInMs?: bigint;
+  resultDurationMs?: bigint;
 };
 
 /**
@@ -492,11 +518,11 @@ export declare type ResultTokenBucket = Message<"proto.decide.v2.ResultTokenBuck
   maxTokens: number;
 
   /**
-   * The number of seconds until the bucket is fully refilled.
+   * Unix timestamp (seconds) at which the bucket will be fully refilled.
    *
-   * @generated from field: uint32 reset_seconds = 4;
+   * @generated from field: uint32 reset_at_unix_seconds = 4;
    */
-  resetSeconds: number;
+  resetAtUnixSeconds: number;
 
   /**
    * The refill rate (tokens per interval).
@@ -548,11 +574,11 @@ export declare type ResultFixedWindow = Message<"proto.decide.v2.ResultFixedWind
   maxRequests: number;
 
   /**
-   * The number of seconds until the window resets.
+   * Unix timestamp (seconds) at which the current window expires.
    *
-   * @generated from field: uint32 reset_seconds = 4;
+   * @generated from field: uint32 reset_at_unix_seconds = 4;
    */
-  resetSeconds: number;
+  resetAtUnixSeconds: number;
 
   /**
    * The window duration in seconds.
@@ -597,11 +623,11 @@ export declare type ResultSlidingWindow = Message<"proto.decide.v2.ResultSliding
   maxRequests: number;
 
   /**
-   * The number of seconds until the oldest request in the window expires.
+   * Unix timestamp (seconds) at which the oldest request in the window expires.
    *
-   * @generated from field: uint32 reset_seconds = 4;
+   * @generated from field: uint32 reset_at_unix_seconds = 4;
    */
-  resetSeconds: number;
+  resetAtUnixSeconds: number;
 
   /**
    * The sliding window interval in seconds.
@@ -710,6 +736,8 @@ export declare const ResultLocalCustomSchema: GenMessage<ResultLocalCustom>;
 /**
  * ResultNotRun is the result for a rule that was not evaluated (e.g. skipped
  * by the server).
+ * SDKs should treat ResultNotRun as ALLOW (fail open). Error handling and
+ * conclusion synthesis from ResultNotRun/ResultError is an SDK responsibility.
  *
  * @generated from message proto.decide.v2.ResultNotRun
  */
@@ -725,6 +753,8 @@ export declare const ResultNotRunSchema: GenMessage<ResultNotRun>;
 /**
  * ResultError is the result for a rule that encountered an error during
  * evaluation.
+ * SDKs should treat ResultError as ALLOW (fail open). Error handling and
+ * conclusion synthesis from ResultNotRun/ResultError is an SDK responsibility.
  *
  * @generated from message proto.decide.v2.ResultError
  */
@@ -737,7 +767,10 @@ export declare type ResultError = Message<"proto.decide.v2.ResultError"> & {
   message: string;
 
   /**
-   * Machine-readable error code for programmatic handling (e.g. "EVALUATOR_NOT_FOUND").
+   * Machine-readable error code for programmatic handling.
+   * Codes follow the format "AJ" + 4 digits (e.g. "AJ1100").
+   * The canonical registry is maintained server-side. Codes are stable
+   * across releases — SDKs may match on them for programmatic handling.
    *
    * @generated from field: string code = 2;
    */
@@ -938,23 +971,25 @@ export declare type GuardRequest = Message<"proto.decide.v2.GuardRequest"> & {
    * Monotonic clock — no clock skew.
    * Optional so the server can distinguish "not measured" from 0 ms.
    *
-   * @generated from field: optional uint64 local_eval_ms = 2;
+   * @generated from field: optional uint64 local_eval_duration_ms = 2;
    */
-  localEvalMs?: bigint;
+  localEvalDurationMs?: bigint;
 
   /**
    * Client wall clock at message send time (Unix epoch, milliseconds).
    * Subject to clock skew but allows the server to estimate one-way
-   * network latency as: server_receive_time - sent_at_ms - local_eval_ms.
+   * network latency as: server_receive_time - sent_at_unix_ms - local_eval_duration_ms.
    * Server should discard outliers where skew is clearly unreasonable.
    * Optional so the server can distinguish "not sent" from epoch 0.
    *
-   * @generated from field: optional uint64 sent_at_ms = 3;
+   * @generated from field: optional uint64 sent_at_unix_ms = 3;
    */
-  sentAtMs?: bigint;
+  sentAtUnixMs?: bigint;
 
   /**
    * A label identifying the protection boundary (e.g. "tools.weather").
+   * Required. Max 256 bytes. Only lowercase letters, digits, dash, and dot.
+   * Must start and end with a lowercase letter or digit.
    *
    * @generated from field: string label = 10;
    */
@@ -1110,13 +1145,6 @@ export enum GuardRuleType {
   UNSPECIFIED = 0,
 
   /**
-   * A custom user-defined rule.
-   *
-   * @generated from enum value: GUARD_RULE_TYPE_CUSTOM = 3;
-   */
-  CUSTOM = 3,
-
-  /**
    * Token bucket rate limiting.
    *
    * @generated from enum value: GUARD_RULE_TYPE_TOKEN_BUCKET = 10;
@@ -1150,6 +1178,13 @@ export enum GuardRuleType {
    * @generated from enum value: GUARD_RULE_TYPE_LOCAL_SENSITIVE_INFO = 20;
    */
   LOCAL_SENSITIVE_INFO = 20,
+
+  /**
+   * Custom user-defined rule (evaluated locally by the SDK).
+   *
+   * @generated from enum value: GUARD_RULE_TYPE_LOCAL_CUSTOM = 29;
+   */
+  LOCAL_CUSTOM = 29,
 }
 
 /**

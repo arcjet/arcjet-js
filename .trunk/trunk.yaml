@@ -47,6 +47,9 @@ lint:
         - .github/CODEOWNERS
         - .github/.release-please-manifest.json
         - examples/**
+        # Arcjet Guard is testing next-gen static analysis tools and will run
+        # on its own for now. We will integrate if it is successful.
+        - arcjet-guard/**
   threshold:
     - linters: [markdownlint]
       level: medium

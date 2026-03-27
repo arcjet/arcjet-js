@@ -24,8 +24,6 @@ export type Reason =
 /** Rule evaluation mode. */
 export type Mode = "LIVE" | "DRY_RUN";
 
-// ── Rule Results ──────────────────────────────────────────────────
-
 /** Result from a token bucket rate limit evaluation. */
 export type RuleResultTokenBucket = {
   readonly conclusion: "ALLOW" | "DENY";
@@ -121,8 +119,6 @@ export type RuleResult =
   | RuleResultError
   | RuleResultUnknown;
 
-// ── Decisions ─────────────────────────────────────────────────────
-
 /** Base shape shared by all decisions. */
 export type DecisionBase = {
   /** Per-rule results, one per submission, in submission order. */
@@ -148,8 +144,6 @@ export type DecisionDeny = DecisionBase & {
 /** A guard decision — either `"ALLOW"` or `"DENY"`. */
 export type Decision = DecisionAllow | DecisionDeny;
 
-// ── Internal symbol ───────────────────────────────────────────────
-
 import type { symbolArcjetInternal } from "./symbol.ts";
 
 /** @internal */
@@ -167,9 +161,6 @@ export type InternalDecision = Decision & {
   };
 };
 
-// ── Rule config and input types ───────────────────────────────────
-
-/** Options common to all rule config calls. */
 /** Token bucket rate limiting config. */
 export interface TokenBucketConfig {
   mode?: Mode;
@@ -232,20 +223,39 @@ export interface LocalDetectSensitiveInfoConfig {
   deny?: string[];
 }
 
+/** Result returned by a custom rule's `evaluate` function. */
+export interface CustomEvaluateResult {
+  /** Whether the rule allows or denies. */
+  conclusion: "ALLOW" | "DENY";
+  /** Optional arbitrary key-value data to include in the result. */
+  data?: Record<string, string>;
+}
+
+/**
+ * Signature for a custom rule's local evaluation function.
+ *
+ * Receives the config data and the per-request input data.
+ * Can be synchronous or asynchronous.
+ */
+export type CustomEvaluateFn = (
+  config: Readonly<Record<string, string>>,
+  input: Readonly<Record<string, string>>,
+) => CustomEvaluateResult | Promise<CustomEvaluateResult>;
+
 /** Custom local rule config. */
 export interface LocalCustomConfig {
   mode?: Mode;
   label?: string;
   metadata?: Record<string, string>;
   data?: Record<string, string>;
+  /** Optional local evaluation function. When provided, the SDK runs it locally and sends the result to the server. */
+  evaluate?: CustomEvaluateFn;
 }
 
 /** Custom local rule input. */
 export interface LocalCustomInput {
   data: Record<string, string>;
 }
-
-// ── Concrete RuleWithConfig types ─────────────────────────────────
 
 /** A configured token bucket rule. */
 export type RuleWithConfigTokenBucket = {
@@ -316,8 +326,6 @@ export type RuleWithConfig =
   | RuleWithConfigSensitiveInfo
   | RuleWithConfigCustom;
 
-// ── Concrete RuleWithInput types ──────────────────────────────────
-
 /** A token bucket rule with bound input. */
 export type RuleWithInputTokenBucket = {
   readonly type: "TOKEN_BUCKET";
@@ -373,6 +381,7 @@ export type RuleWithInputCustom = {
   readonly type: "CUSTOM";
   readonly config: LocalCustomConfig;
   readonly input: LocalCustomInput;
+  readonly evaluate?: CustomEvaluateFn;
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
   result(decision: Decision): RuleResultCustom | null;
   deniedResult(decision: Decision): RuleResultCustom | null;

@@ -7,30 +7,18 @@
  * pulling in `@types/node` which would pollute the portable core
  * with Node-only APIs.
  */
-
-// ── performance (WinterTC / Web Performance API) ───────────────────────
-
 declare const performance: {
   now(): number;
 };
-
-// ── crypto (Web Crypto API) ────────────────────────────────────────────
-
 declare const crypto: {
   randomUUID(): string;
 };
-
-// ── AbortSignal (DOM Abort API — available everywhere) ─────────────────
-
 declare interface AbortSignal {
   readonly aborted: boolean;
   readonly reason: unknown;
   addEventListener(type: string, listener: () => void): void;
   removeEventListener(type: string, listener: () => void): void;
 }
-
-// ── process (Node/Bun only — guarded by typeof at runtime) ─────────────
-
 declare var process:
   | {
       env: Record<string, string | undefined>;

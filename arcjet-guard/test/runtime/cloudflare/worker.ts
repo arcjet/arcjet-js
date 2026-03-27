@@ -1,18 +1,70 @@
 /**
- * Cloudflare Worker smoke test — calls a real mock server via the
- * fetch transport and returns the decision as JSON.
+ * Cloudflare Worker test — runs all shared test cases inside the Worker
+ * using in-memory transport, plus a smoke test against a real mock server.
  *
- * The server URL is passed as the `ARCJET_BASE_URL` binding.
+ * The server URL is passed as the `ARCJET_BASE_URL` binding for the
+ * real-network smoke test.
  */
 
-import { launchArcjet, tokenBucket } from "../../../src/fetch.ts";
+import {
+  launchArcjet,
+  launchArcjetWithTransport,
+  tokenBucket,
+  fixedWindow,
+  slidingWindow,
+  detectPromptInjection,
+  localDetectSensitiveInfo,
+  localCustom,
+} from "../../../src/fetch.ts";
+import { cases } from "../../_shared/cases.ts";
+import type { GuardSurface } from "../../_shared/cases.ts";
 
 interface Env {
   ARCJET_BASE_URL: string;
 }
 
+const surface: GuardSurface = {
+  launchArcjetWithTransport,
+  tokenBucket,
+  fixedWindow,
+  slidingWindow,
+  detectPromptInjection,
+  localDetectSensitiveInfo,
+  localCustom,
+};
+
+interface TestResult {
+  name: string;
+  passed: boolean;
+  error?: string;
+}
+
 export default {
-  async fetch(_request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+
+    // /cases — run all shared test cases via in-memory transport
+    if (url.pathname === "/cases") {
+      const results: TestResult[] = [];
+
+      for (const tc of cases) {
+        try {
+          await tc.run(surface);
+          results.push({ name: tc.name, passed: true });
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          results.push({ name: tc.name, passed: false, error: message });
+        }
+      }
+
+      const allPassed = results.every((r) => r.passed);
+      return Response.json(
+        { allPassed, total: results.length, results },
+        { status: allPassed ? 200 : 500 },
+      );
+    }
+
+    // / — original smoke test against real server
     try {
       const arcjet = launchArcjet({
         key: "ajkey_dummy",

@@ -8,6 +8,7 @@
  * @packageDocumentation
  */
 
+import { detectSensitiveInfo, type SensitiveInfoEntity } from "@arcjet/analyze";
 import { create } from "@bufbuild/protobuf";
 
 import {
@@ -15,6 +16,8 @@ import {
   type GuardRuleResult as ProtoGuardRuleResult,
   type GuardRuleSubmission,
   type GuardResponse as ProtoGuardResponse,
+  type RuleLocalSensitiveInfo,
+  type RuleLocalCustom,
   GuardRuleSubmissionSchema,
   GuardRuleSchema,
   RuleTokenBucketSchema,
@@ -23,6 +26,10 @@ import {
   RuleDetectPromptInjectionSchema,
   RuleLocalSensitiveInfoSchema,
   RuleLocalCustomSchema,
+  ResultLocalSensitiveInfoSchema,
+  ResultLocalCustomSchema,
+  ResultErrorSchema,
+  EntityListSchema,
   GuardConclusion,
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
@@ -44,6 +51,49 @@ async function sha256Hex(text: string): Promise<string> {
   return Array.from(new Uint8Array(hash))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+}
+
+/** No-op logger satisfying the `AnalyzeContext` contract. */
+const noopLog = {
+  debug(): void {},
+  info(): void {},
+  warn(): void {},
+  error(): void {},
+};
+
+/** Minimal context for `@arcjet/analyze` — only `log` is used for sensitive info. */
+const analyzeContext = { log: noopLog, characteristics: [] as string[] };
+
+/** Convert a proto-style entity string (`"EMAIL"`) to a WASM entity tag. */
+function stringToEntity(s: string): SensitiveInfoEntity {
+  switch (s) {
+    case "EMAIL":
+      return { tag: "email" };
+    case "PHONE_NUMBER":
+      return { tag: "phone-number" };
+    case "IP_ADDRESS":
+      return { tag: "ip-address" };
+    case "CREDIT_CARD_NUMBER":
+      return { tag: "credit-card-number" };
+    default:
+      return { tag: "custom", val: s };
+  }
+}
+
+/** Convert a WASM entity tag back to a proto-style string. */
+function entityToString(e: SensitiveInfoEntity): string {
+  switch (e.tag) {
+    case "email":
+      return "EMAIL";
+    case "phone-number":
+      return "PHONE_NUMBER";
+    case "ip-address":
+      return "IP_ADDRESS";
+    case "credit-card-number":
+      return "CREDIT_CARD_NUMBER";
+    case "custom":
+      return e.val;
+  }
 }
 
 /**
@@ -277,27 +327,106 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
       });
     case "SENSITIVE_INFO": {
       const hash = await sha256Hex(rule.input);
+
+      const entities = rule.config.deny
+        ? { tag: "deny" as const, val: rule.config.deny.map((s) => stringToEntity(s)) }
+        : { tag: "allow" as const, val: (rule.config.allow ?? []).map((s) => stringToEntity(s)) };
+
+      let localResult: RuleLocalSensitiveInfo["localResult"];
+      let resultDurationMs: bigint | undefined;
+
+      const evalStart = performance.now();
+      try {
+        const result = await detectSensitiveInfo(analyzeContext, rule.input, entities, 1);
+        resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
+
+        const deniedTypes = result.denied.map((d) => entityToString(d.identifiedType));
+        localResult = {
+          case: "resultComputed" as const,
+          value: create(ResultLocalSensitiveInfoSchema, {
+            conclusion: result.denied.length > 0 ? GuardConclusion.DENY : GuardConclusion.ALLOW,
+            detected: result.denied.length > 0 || result.allowed.length > 0,
+            detectedEntityTypes: deniedTypes,
+          }),
+        };
+      } catch (err: unknown) {
+        resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
+        localResult = {
+          case: "resultError" as const,
+          value: create(ResultErrorSchema, {
+            message: err instanceof Error ? err.message : "WASM detection failed",
+            code: "WASM_ERROR",
+          }),
+        };
+      }
+
       return create(GuardRuleSchema, {
         rule: {
           case: "localSensitiveInfo",
           value: create(RuleLocalSensitiveInfoSchema, {
-            configEntitiesAllow: rule.config.allow ?? [],
-            configEntitiesDeny: rule.config.deny ?? [],
+            configEntityFilter: rule.config.deny
+              ? {
+                  case: "configEntitiesDeny" as const,
+                  value: create(EntityListSchema, { entities: rule.config.deny }),
+                }
+              : {
+                  case: "configEntitiesAllow" as const,
+                  value: create(EntityListSchema, { entities: rule.config.allow ?? [] }),
+                },
             inputTextHash: hash,
+            localResult,
+            resultDurationMs,
           }),
         },
       });
     }
-    case "CUSTOM":
+    case "CUSTOM": {
+      let localResult: RuleLocalCustom["localResult"] | undefined;
+      let resultDurationMs: bigint | undefined;
+
+      if (rule.evaluate) {
+        const evalStart = performance.now();
+        try {
+          const evalResult = await rule.evaluate(rule.config.data ?? {}, rule.input.data);
+          resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
+          localResult = {
+            case: "resultComputed" as const,
+            value: create(ResultLocalCustomSchema, {
+              conclusion:
+                evalResult.conclusion === "DENY" ? GuardConclusion.DENY : GuardConclusion.ALLOW,
+              data: evalResult.data ?? {},
+            }),
+          };
+        } catch (err: unknown) {
+          resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
+          localResult = {
+            case: "resultError" as const,
+            value: create(ResultErrorSchema, {
+              message: err instanceof Error ? err.message : "Custom rule evaluation failed",
+              code: "CUSTOM_EVAL_ERROR",
+            }),
+          };
+        }
+      }
+
+      const customValue: Parameters<typeof create<typeof RuleLocalCustomSchema>>[1] = {
+        configData: rule.config.data ?? {},
+        inputData: rule.input.data,
+      };
+      if (localResult !== undefined) {
+        customValue.localResult = localResult;
+      }
+      if (resultDurationMs !== undefined) {
+        customValue.resultDurationMs = resultDurationMs;
+      }
+
       return create(GuardRuleSchema, {
         rule: {
           case: "localCustom",
-          value: create(RuleLocalCustomSchema, {
-            configData: rule.config.data ?? {},
-            inputData: rule.input.data,
-          }),
+          value: create(RuleLocalCustomSchema, customValue),
         },
       });
+    }
   }
 }
 

@@ -213,7 +213,8 @@ describe("ruleToProto", () => {
 
     assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
     if (proto.rule?.rule.case === "localSensitiveInfo") {
-      assert.deepEqual(proto.rule.rule.value.configEntitiesAllow, ["EMAIL"]);
+      assert.equal(proto.rule.rule.value.configEntityFilter.case, "configEntitiesAllow");
+      assert.deepEqual(proto.rule.rule.value.configEntityFilter.value?.entities, ["EMAIL"]);
     }
   });
 
@@ -452,7 +453,7 @@ describe("decisionFromProto", () => {
         resultId: "gres_test1",
         configId: input[symbolArcjetInternal].configId,
         inputId: input[symbolArcjetInternal].inputId,
-        type: GuardRuleType.CUSTOM,
+        type: GuardRuleType.LOCAL_CUSTOM,
         result: {
           case: "localCustom",
           value: create(ResultLocalCustomSchema, {
@@ -1012,7 +1013,7 @@ describe("Config-level results() and deniedResult() for all rule types", () => {
         resultId: "gres_custom",
         configId: input[symbolArcjetInternal].configId,
         inputId: input[symbolArcjetInternal].inputId,
-        type: GuardRuleType.CUSTOM,
+        type: GuardRuleType.LOCAL_CUSTOM,
         result: {
           case: "localCustom",
           value: create(ResultLocalCustomSchema, {
@@ -1098,7 +1099,7 @@ describe("Input-level deniedResult() for remaining rule types", () => {
         resultId: "gres_custom",
         configId: input[symbolArcjetInternal].configId,
         inputId: input[symbolArcjetInternal].inputId,
-        type: GuardRuleType.CUSTOM,
+        type: GuardRuleType.LOCAL_CUSTOM,
         result: {
           case: "localCustom",
           value: create(ResultLocalCustomSchema, {

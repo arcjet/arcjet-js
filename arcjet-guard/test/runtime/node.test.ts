@@ -26,9 +26,9 @@ import {
 } from "@arcjet/guard";
 import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
 
-import { startH2Server, startH2SecureServer } from "../_shared/mock-server.ts";
 import { cases } from "../_shared/cases.ts";
 import type { GuardSurface } from "../_shared/cases.ts";
+import { startH2Server, startH2SecureServer } from "../_shared/mock-server.ts";
 
 const surface: GuardSurface = {
   launchArcjetWithTransport,

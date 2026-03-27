@@ -29,10 +29,12 @@ import {
   slidingWindowAllow,
   promptInjectionDeny,
   sensitiveInfoDeny,
+  sensitiveInfoAllow,
   customRuleAllow,
+  customRuleDeny,
   multiRuleAllow,
   errorResult,
-} from "./mock-server.ts";
+} from "./mock-handlers.ts";
 /** The public SDK functions a runner provides. */
 export interface GuardSurface {
   launchArcjetWithTransport: typeof launchArcjetWithTransport;
@@ -160,6 +162,42 @@ export const cases: TestCase[] = [
   },
 
   {
+    name: "sensitive info WASM detects email on deny list",
+    async run(s) {
+      const rule = s.localDetectSensitiveInfo({ deny: ["EMAIL"] });
+      const input = rule("contact me at test@example.com");
+      const arcjet = guard(s, sensitiveInfoDeny);
+      const decision = await arcjet.guard({ label: "test", rules: [input] });
+
+      assert.equal(decision.conclusion, "DENY");
+    },
+  },
+
+  {
+    name: "sensitive info WASM allows when entity is on allow list",
+    async run(s) {
+      const rule = s.localDetectSensitiveInfo({ allow: ["EMAIL"] });
+      const input = rule("contact me at test@example.com");
+      const arcjet = guard(s, sensitiveInfoAllow);
+      const decision = await arcjet.guard({ label: "test", rules: [input] });
+
+      assert.equal(decision.conclusion, "ALLOW");
+    },
+  },
+
+  {
+    name: "sensitive info WASM allows clean text",
+    async run(s) {
+      const rule = s.localDetectSensitiveInfo({ deny: ["EMAIL"] });
+      const input = rule("nothing sensitive here");
+      const arcjet = guard(s, sensitiveInfoAllow);
+      const decision = await arcjet.guard({ label: "test", rules: [input] });
+
+      assert.equal(decision.conclusion, "ALLOW");
+    },
+  },
+
+  {
     name: "custom rule ALLOW",
     async run(s) {
       const rule = s.localCustom({});
@@ -168,6 +206,67 @@ export const cases: TestCase[] = [
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
       assert.equal(decision.conclusion, "ALLOW");
+    },
+  },
+
+  {
+    name: "custom rule with evaluate — DENY",
+    async run(s) {
+      const rule = s.localCustom({
+        data: { threshold: "0.5" },
+        evaluate: (config, input) => {
+          const score = parseFloat(input["score"] ?? "0");
+          const threshold = parseFloat(config["threshold"] ?? "0");
+          return score > threshold
+            ? { conclusion: "DENY" as const }
+            : { conclusion: "ALLOW" as const };
+        },
+      });
+      const input = rule({ data: { score: "0.8" } });
+      const arcjet = guard(s, customRuleDeny);
+      const decision = await arcjet.guard({ label: "test", rules: [input] });
+
+      assert.equal(decision.conclusion, "DENY");
+    },
+  },
+
+  {
+    name: "custom rule with evaluate — ALLOW",
+    async run(s) {
+      const rule = s.localCustom({
+        data: { threshold: "0.5" },
+        evaluate: (config, input) => {
+          const score = parseFloat(input["score"] ?? "0");
+          const threshold = parseFloat(config["threshold"] ?? "0");
+          return score > threshold
+            ? { conclusion: "DENY" as const }
+            : { conclusion: "ALLOW" as const };
+        },
+      });
+      const input = rule({ data: { score: "0.3" } });
+      const arcjet = guard(s, customRuleAllow);
+      const decision = await arcjet.guard({ label: "test", rules: [input] });
+
+      assert.equal(decision.conclusion, "ALLOW");
+    },
+  },
+
+  {
+    name: "custom rule with async evaluate",
+    async run(s) {
+      const rule = s.localCustom({
+        evaluate: async (_config, input) => {
+          await Promise.resolve();
+          return input["action"] === "block"
+            ? { conclusion: "DENY" as const }
+            : { conclusion: "ALLOW" as const };
+        },
+      });
+      const input = rule({ data: { action: "block" } });
+      const arcjet = guard(s, customRuleDeny);
+      const decision = await arcjet.guard({ label: "test", rules: [input] });
+
+      assert.equal(decision.conclusion, "DENY");
     },
   },
 

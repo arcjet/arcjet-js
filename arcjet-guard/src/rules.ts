@@ -360,16 +360,30 @@ export function localDetectSensitiveInfo(
 }
 
 /**
- * Create a custom rule with user-defined data.
+ * Create a custom rule with user-defined data and optional local evaluation.
  *
  * Returns a configured rule that can be called with arbitrary
  * key-value input data to produce a `RuleWithInput` ready for
  * `.guard()`. Both config and input data are forwarded to the
  * Arcjet API as string maps.
  *
+ * When `evaluate` is provided, the SDK calls it locally before
+ * sending the request. The function receives `(configData, inputData)`
+ * and must return `{ conclusion: "ALLOW" | "DENY", data?: Record<string, string> }`.
+ * The local result is sent to the server alongside the config/input data.
+ *
  * @example
  * ```ts
- * const custom = localCustom({ data: { threshold: "0.5" } });
+ * const custom = localCustom({
+ *   data: { threshold: "0.5" },
+ *   evaluate: (config, input) => {
+ *     const score = parseFloat(input["score"] ?? "0");
+ *     const threshold = parseFloat(config["threshold"] ?? "0");
+ *     return score > threshold
+ *       ? { conclusion: "DENY", data: { reason: "score too high" } }
+ *       : { conclusion: "ALLOW" };
+ *   },
+ * });
  * const decision = await arcjet.guard({
  *   label: "tools.score",
  *   rules: [custom({ data: { score: "0.8" } })],
@@ -386,6 +400,7 @@ export function localCustom(config: LocalCustomConfig = {}): RuleWithConfigCusto
         type: "CUSTOM" as const,
         config,
         input,
+        ...(config.evaluate ? { evaluate: config.evaluate } : {}),
         [symbolArcjetInternal]: { configId, inputId },
         result(decision: Decision): RuleResultCustom | null {
           return findResult<RuleResultCustom>(decision, configId, inputId);

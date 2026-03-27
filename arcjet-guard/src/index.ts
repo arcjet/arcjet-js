@@ -60,6 +60,8 @@ export type {
   LocalDetectSensitiveInfoConfig,
   LocalCustomConfig,
   LocalCustomInput,
+  CustomEvaluateResult,
+  CustomEvaluateFn,
   GuardOptions,
 } from "./types.ts";
 

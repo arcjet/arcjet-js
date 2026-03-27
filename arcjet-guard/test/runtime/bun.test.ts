@@ -1,23 +1,49 @@
 /**
- * Runtime smoke test: Bun — connect-node transport with HTTP/2 over TLS.
+ * Runtime test: Bun — shared in-memory cases + connect-node HTTP/2 over TLS.
+ *
+ * 1. Runs the full shared test suite using in-memory transport
+ * 2. Runs a smoke test over real HTTPS HTTP/2 with a self-signed cert
  *
  * Bun's `fetch` does not support HTTP/2 (https://github.com/oven-sh/bun/issues/7194),
  * but `node:http2` works well (95% of gRPC tests pass). The `"bun"` export
  * condition in package.json resolves to the `node` entrypoint which uses
  * `@connectrpc/connect-node` and `node:http2` directly.
  *
- * This test validates that path end-to-end against a self-signed HTTPS
- * HTTP/2 server using Bun's native test runner.
- *
  * Run: bun test test/runtime/bun.test.ts
  */
 
 import { describe, test, beforeAll, afterAll, expect } from "bun:test";
 
-import { launchArcjetWithTransport, tokenBucket } from "@arcjet/guard";
+import {
+  launchArcjetWithTransport,
+  tokenBucket,
+  fixedWindow,
+  slidingWindow,
+  detectPromptInjection,
+  localDetectSensitiveInfo,
+  localCustom,
+} from "@arcjet/guard";
 import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
 
+import { cases } from "../_shared/cases.ts";
+import type { GuardSurface } from "../_shared/cases.ts";
 import { startH2SecureServer } from "../_shared/mock-server.ts";
+
+const surface: GuardSurface = {
+  launchArcjetWithTransport,
+  tokenBucket,
+  fixedWindow,
+  slidingWindow,
+  detectPromptInjection,
+  localDetectSensitiveInfo,
+  localCustom,
+};
+
+describe("In-memory shared cases (Bun entrypoint)", () => {
+  for (const tc of cases) {
+    test(tc.name, () => tc.run(surface));
+  }
+});
 
 describe("Bun: connect-node HTTP/2 over TLS (self-signed)", () => {
   let baseUrl: string;

@@ -1,21 +1,44 @@
 /**
- * Runtime smoke test: Deno — fetch transport with HTTP/2 over TLS.
+ * Runtime test: Deno — shared in-memory cases + fetch transport over HTTPS HTTP/2.
  *
- * Proves that Deno's fetch negotiates HTTP/2 via ALPN when connecting
- * to an HTTPS server. Uses the Connect-Web transport (same as
- * `@arcjet/guard/fetch`) with a custom `Deno.createHttpClient()` to
- * trust the test CA certificate.
+ * 1. Runs the full shared test suite using in-memory transport
+ * 2. Runs a smoke test proving Deno's fetch negotiates HTTP/2 via ALPN
  *
  * Deno doesn't implement `http2.createSecureServer`, so the HTTPS H2
  * mock server runs as a Node subprocess via `h2-server-subprocess.ts`.
  *
- * Run: deno test --allow-all test/runtime/deno.test.ts
+ * Run: deno test --no-check --allow-all test/runtime/deno.test.ts
  */
 
 import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { createConnectTransport } from "npm:@connectrpc/connect-web";
 
-import { launchArcjetWithTransport, tokenBucket } from "../../src/index.ts";
+import {
+  launchArcjetWithTransport,
+  tokenBucket,
+  fixedWindow,
+  slidingWindow,
+  detectPromptInjection,
+  localDetectSensitiveInfo,
+  localCustom,
+} from "../../src/index.ts";
+import { cases } from "../_shared/cases.ts";
+import type { GuardSurface } from "../_shared/cases.ts";
+
+const surface: GuardSurface = {
+  launchArcjetWithTransport,
+  tokenBucket,
+  fixedWindow,
+  slidingWindow,
+  detectPromptInjection,
+  localDetectSensitiveInfo,
+  localCustom,
+};
+
+// Run all shared in-memory cases
+for (const tc of cases) {
+  Deno.test(`Shared: ${tc.name}`, () => tc.run(surface));
+}
 
 /**
  * Start the H2 TLS mock server in a Node subprocess.

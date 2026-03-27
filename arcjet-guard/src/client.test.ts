@@ -429,6 +429,162 @@ describe("In-memory server: sensitive info", () => {
     assert.equal(result.type, "SENSITIVE_INFO");
     assert.deepEqual(result.detectedEntityTypes, ["SSN"]);
   });
+
+  test("local WASM result is sent to server — deny list with email", async () => {
+    const rule = localDetectSensitiveInfo({ deny: ["EMAIL"] });
+    const input = rule("contact me at test@example.com please");
+
+    const arcjet = guardWithMock((req) => {
+      const sub = req.ruleSubmissions[0];
+      assert.equal(sub.rule?.rule.case, "localSensitiveInfo");
+      if (sub.rule?.rule.case === "localSensitiveInfo") {
+        const value = sub.rule.rule.value;
+        // Verify local WASM detection ran and sent results
+        assert.equal(value.localResult.case, "resultComputed");
+        if (value.localResult.case === "resultComputed") {
+          assert.equal(value.localResult.value.conclusion, GuardConclusion.DENY);
+          assert.equal(value.localResult.value.detected, true);
+          assert.ok(value.localResult.value.detectedEntityTypes.includes("EMAIL"));
+        }
+        // Hash is still sent for correlation
+        assert.ok(value.inputTextHash.length > 0);
+        // Timing was measured
+        assert.ok(value.resultDurationMs !== undefined);
+      }
+
+      return create(GuardResponseSchema, {
+        decision: create(GuardDecisionSchema, {
+          id: "gdec_deny_email",
+          conclusion: GuardConclusion.DENY,
+          ruleResults: [
+            create(GuardRuleResultSchema, {
+              resultId: "gres_1",
+              configId: sub.configId,
+              inputId: sub.inputId,
+              type: GuardRuleType.LOCAL_SENSITIVE_INFO,
+              result: {
+                case: "localSensitiveInfo",
+                value: create(ResultLocalSensitiveInfoSchema, {
+                  conclusion: GuardConclusion.DENY,
+                  detected: true,
+                  detectedEntityTypes: ["EMAIL"],
+                }),
+              },
+            }),
+          ],
+        }),
+      });
+    });
+
+    const decision = await arcjet.guard({
+      label: "tools.email-check",
+      rules: [input],
+    });
+
+    assert.equal(decision.conclusion, "DENY");
+  });
+
+  test("local WASM result is sent to server — allow list with email", async () => {
+    const rule = localDetectSensitiveInfo({ allow: ["EMAIL"] });
+    const input = rule("contact me at test@example.com please");
+
+    const arcjet = guardWithMock((req) => {
+      const sub = req.ruleSubmissions[0];
+      assert.equal(sub.rule?.rule.case, "localSensitiveInfo");
+      if (sub.rule?.rule.case === "localSensitiveInfo") {
+        const value = sub.rule.rule.value;
+        // Verify local WASM detection ran and sent results
+        assert.equal(value.localResult.case, "resultComputed");
+        if (value.localResult.case === "resultComputed") {
+          // Email is allowed so conclusion is ALLOW
+          assert.equal(value.localResult.value.conclusion, GuardConclusion.ALLOW);
+          assert.equal(value.localResult.value.detected, true);
+          // detectedEntityTypes only lists denied entities
+          assert.deepEqual(value.localResult.value.detectedEntityTypes, []);
+        }
+      }
+
+      return create(GuardResponseSchema, {
+        decision: create(GuardDecisionSchema, {
+          id: "gdec_allow_email",
+          conclusion: GuardConclusion.ALLOW,
+          ruleResults: [
+            create(GuardRuleResultSchema, {
+              resultId: "gres_1",
+              configId: sub.configId,
+              inputId: sub.inputId,
+              type: GuardRuleType.LOCAL_SENSITIVE_INFO,
+              result: {
+                case: "localSensitiveInfo",
+                value: create(ResultLocalSensitiveInfoSchema, {
+                  conclusion: GuardConclusion.ALLOW,
+                  detected: true,
+                  detectedEntityTypes: [],
+                }),
+              },
+            }),
+          ],
+        }),
+      });
+    });
+
+    const decision = await arcjet.guard({
+      label: "tools.email-check",
+      rules: [input],
+    });
+
+    assert.equal(decision.conclusion, "ALLOW");
+  });
+
+  test("local WASM result — no sensitive info in text", async () => {
+    const rule = localDetectSensitiveInfo({ deny: ["EMAIL"] });
+    const input = rule("nothing sensitive here at all");
+
+    const arcjet = guardWithMock((req) => {
+      const sub = req.ruleSubmissions[0];
+      assert.equal(sub.rule?.rule.case, "localSensitiveInfo");
+      if (sub.rule?.rule.case === "localSensitiveInfo") {
+        const value = sub.rule.rule.value;
+        assert.equal(value.localResult.case, "resultComputed");
+        if (value.localResult.case === "resultComputed") {
+          assert.equal(value.localResult.value.conclusion, GuardConclusion.ALLOW);
+          assert.equal(value.localResult.value.detected, false);
+          assert.deepEqual(value.localResult.value.detectedEntityTypes, []);
+        }
+      }
+
+      return create(GuardResponseSchema, {
+        decision: create(GuardDecisionSchema, {
+          id: "gdec_allow_clean",
+          conclusion: GuardConclusion.ALLOW,
+          ruleResults: [
+            create(GuardRuleResultSchema, {
+              resultId: "gres_1",
+              configId: sub.configId,
+              inputId: sub.inputId,
+              type: GuardRuleType.LOCAL_SENSITIVE_INFO,
+              result: {
+                case: "localSensitiveInfo",
+                value: create(ResultLocalSensitiveInfoSchema, {
+                  conclusion: GuardConclusion.ALLOW,
+                  detected: false,
+                  detectedEntityTypes: [],
+                }),
+              },
+            }),
+          ],
+        }),
+      });
+    });
+
+    const decision = await arcjet.guard({
+      label: "tools.clean",
+      rules: [input],
+    });
+
+    assert.equal(decision.conclusion, "ALLOW");
+    assert.equal(decision.hasError(), false);
+  });
 });
 describe("In-memory server: custom rule", () => {
   test("ALLOW — custom data round-trip", async () => {
@@ -456,7 +612,7 @@ describe("In-memory server: custom rule", () => {
               resultId: "gres_1",
               configId: sub.configId,
               inputId: sub.inputId,
-              type: GuardRuleType.CUSTOM,
+              type: GuardRuleType.LOCAL_CUSTOM,
               result: {
                 case: "localCustom",
                 value: create(ResultLocalCustomSchema, {
@@ -480,6 +636,171 @@ describe("In-memory server: custom rule", () => {
     assert.ok(result);
     assert.equal(result.type, "CUSTOM");
     assert.deepEqual(result.data, { passed: "true" });
+  });
+
+  test("DENY — local evaluate function denies", async () => {
+    const rule = localCustom({
+      data: { threshold: "0.5" },
+      evaluate: (config, input) => {
+        const score = parseFloat(input["score"] ?? "0");
+        const threshold = parseFloat(config["threshold"] ?? "0");
+        return score > threshold
+          ? { conclusion: "DENY" as const, data: { reason: "too high" } }
+          : { conclusion: "ALLOW" as const };
+      },
+    });
+    const input = rule({ data: { score: "0.8" } });
+
+    const arcjet = guardWithMock((req) => {
+      const sub = req.ruleSubmissions[0];
+      assert.equal(sub.rule?.rule.case, "localCustom");
+      if (sub.rule?.rule.case === "localCustom") {
+        // Verify the local evaluation result was sent to server
+        assert.equal(sub.rule.rule.value.localResult.case, "resultComputed");
+        if (sub.rule.rule.value.localResult.case === "resultComputed") {
+          assert.equal(sub.rule.rule.value.localResult.value.conclusion, GuardConclusion.DENY);
+          assert.deepEqual(
+            Object.fromEntries(Object.entries(sub.rule.rule.value.localResult.value.data)),
+            { reason: "too high" },
+          );
+        }
+      }
+
+      return create(GuardResponseSchema, {
+        decision: create(GuardDecisionSchema, {
+          id: "gdec_deny_custom",
+          conclusion: GuardConclusion.DENY,
+          ruleResults: [
+            create(GuardRuleResultSchema, {
+              resultId: "gres_1",
+              configId: sub.configId,
+              inputId: sub.inputId,
+              type: GuardRuleType.LOCAL_CUSTOM,
+              result: {
+                case: "localCustom",
+                value: create(ResultLocalCustomSchema, {
+                  conclusion: GuardConclusion.DENY,
+                  data: { reason: "too high" },
+                }),
+              },
+            }),
+          ],
+        }),
+      });
+    });
+
+    const decision = await arcjet.guard({
+      label: "tools.score",
+      rules: [input],
+    });
+
+    assert.equal(decision.conclusion, "DENY");
+    if (decision.conclusion === "DENY") {
+      assert.equal(decision.reason, "CUSTOM");
+    }
+    const result = input.result(decision);
+    assert.ok(result);
+    assert.deepEqual(result.data, { reason: "too high" });
+  });
+
+  test("ALLOW — local evaluate function allows", async () => {
+    const rule = localCustom({
+      data: { threshold: "0.5" },
+      evaluate: (config, input) => {
+        const score = parseFloat(input["score"] ?? "0");
+        const threshold = parseFloat(config["threshold"] ?? "0");
+        return score > threshold
+          ? { conclusion: "DENY" as const }
+          : { conclusion: "ALLOW" as const };
+      },
+    });
+    const input = rule({ data: { score: "0.3" } });
+
+    const arcjet = guardWithMock((req) => {
+      const sub = req.ruleSubmissions[0];
+      if (sub.rule?.rule.case === "localCustom") {
+        assert.equal(sub.rule.rule.value.localResult.case, "resultComputed");
+        if (sub.rule.rule.value.localResult.case === "resultComputed") {
+          assert.equal(sub.rule.rule.value.localResult.value.conclusion, GuardConclusion.ALLOW);
+        }
+      }
+
+      return create(GuardResponseSchema, {
+        decision: create(GuardDecisionSchema, {
+          id: "gdec_allow_custom",
+          conclusion: GuardConclusion.ALLOW,
+          ruleResults: [
+            create(GuardRuleResultSchema, {
+              resultId: "gres_1",
+              configId: sub.configId,
+              inputId: sub.inputId,
+              type: GuardRuleType.LOCAL_CUSTOM,
+              result: {
+                case: "localCustom",
+                value: create(ResultLocalCustomSchema, {
+                  conclusion: GuardConclusion.ALLOW,
+                }),
+              },
+            }),
+          ],
+        }),
+      });
+    });
+
+    const decision = await arcjet.guard({
+      label: "tools.score",
+      rules: [input],
+    });
+
+    assert.equal(decision.conclusion, "ALLOW");
+  });
+
+  test("evaluate throws — resultError sent, server decides", async () => {
+    const rule = localCustom({
+      evaluate: () => {
+        throw new Error("eval crashed");
+      },
+    });
+    const input = rule({ data: {} });
+
+    const arcjet = guardWithMock((req) => {
+      const sub = req.ruleSubmissions[0];
+      if (sub.rule?.rule.case === "localCustom") {
+        assert.equal(sub.rule.rule.value.localResult.case, "resultError");
+        if (sub.rule.rule.value.localResult.case === "resultError") {
+          assert.equal(sub.rule.rule.value.localResult.value.message, "eval crashed");
+        }
+      }
+
+      // Server decides ALLOW (fail-open)
+      return create(GuardResponseSchema, {
+        decision: create(GuardDecisionSchema, {
+          id: "gdec_allow_fallback",
+          conclusion: GuardConclusion.ALLOW,
+          ruleResults: [
+            create(GuardRuleResultSchema, {
+              resultId: "gres_1",
+              configId: sub.configId,
+              inputId: sub.inputId,
+              type: GuardRuleType.LOCAL_CUSTOM,
+              result: {
+                case: "localCustom",
+                value: create(ResultLocalCustomSchema, {
+                  conclusion: GuardConclusion.ALLOW,
+                }),
+              },
+            }),
+          ],
+        }),
+      });
+    });
+
+    const decision = await arcjet.guard({
+      label: "tools.fallback",
+      rules: [input],
+    });
+
+    assert.equal(decision.conclusion, "ALLOW");
   });
 });
 describe("In-memory server: multi-rule", () => {
@@ -1049,13 +1370,12 @@ describe("Cancellation via signal", () => {
       transport,
     });
 
-    await assert.rejects(
-      () =>
-        arcjet.guard({
-          label: "test.aborted",
-          rules: [input],
-          signal: controller.signal,
-        }),
+    await assert.rejects(() =>
+      arcjet.guard({
+        label: "test.aborted",
+        rules: [input],
+        signal: controller.signal,
+      }),
     );
   });
 });

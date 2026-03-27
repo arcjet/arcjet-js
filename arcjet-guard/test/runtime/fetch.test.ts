@@ -40,9 +40,9 @@ import {
   localCustom,
 } from "@arcjet/guard/fetch";
 
-import { startHttpServer } from "../_shared/mock-server.ts";
 import { cases } from "../_shared/cases.ts";
 import type { GuardSurface } from "../_shared/cases.ts";
+import { startHttpServer } from "../_shared/mock-server.ts";
 
 const surface: GuardSurface = {
   launchArcjetWithTransport,

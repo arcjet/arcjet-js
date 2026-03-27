@@ -1,9 +1,14 @@
-# Contributing to @arcjet/guard
+# Contributing to `@arcjet/guard`
 
 ## Prerequisites
 
 - Node.js >= 22.18.0
 - npm
+
+Optional for runtime tests:
+
+- [Bun](https://bun.sh/) >= 1
+- [Deno](https://deno.land/) >= stable / lts
 
 ## Install dependencies
 
@@ -15,7 +20,8 @@ npm ci
 
 ### Build
 
-Bundles source with rolldown and emits `.d.ts` declarations with tsc:
+Bundles source with [rolldown](https://rolldown.rs) and emits `.d.ts`
+declarations via `rolldown-plugin-dts`:
 
 ```sh
 npm run build
@@ -23,71 +29,77 @@ npm run build
 
 ### Type check
 
+Uses [`tsgo`](https://github.com/nicolo-ribaudo/typescript-go-nightly)
+(TypeScript native preview):
+
 ```sh
 npm run typecheck
 ```
 
 ### Lint
 
-Runs both syntax-level and type-aware rules (powered by `oxlint-tsgolint`):
+Uses [oxlint](https://oxc.rs/docs/guide/usage/linter) with type-aware rules
+powered by `oxlint-tsgolint`:
 
 ```sh
-npx oxlint
+npm run lint
 ```
 
 ### Format
 
-Check formatting:
+Check formatting with [oxfmt](https://oxc.rs/docs/guide/usage/formatter):
 
 ```sh
-npx oxfmt --check src/ test/
+npm run format:check
 ```
 
 Fix formatting:
 
 ```sh
-npx oxfmt src/ test/
+npm run format
 ```
 
 ### Test
 
-Unit tests (no build required):
+Unit tests (no build required — runs from `.ts` source via Node's built-in
+type stripping):
 
 ```sh
 npm run test-unit
 ```
 
-Runtime smoke tests (build first):
+Runtime tests (build first — imports from `dist/` via package exports):
 
 ```sh
-npm run test-runtime-node       # Node.js HTTP/2
-npm run test-runtime-fetch      # Fetch HTTP/1.1
+npm run test-runtime-node       # Node.js HTTP/2 + HTTPS
+npm run test-runtime-fetch      # Fetch HTTP/1.1 (connect-web)
+npm run test-runtime-bun        # Bun HTTP/2 over TLS
+npm run test-runtime-deno       # Deno fetch + ALPN over TLS
 npm run test-runtime-cloudflare # Cloudflare Workers via miniflare
-npm run test-runtime            # All runtime tests
+npm run test-runtime            # Node + Fetch + Cloudflare
 ```
 
-All tests + lint:
+All checks (build + lint + unit tests):
 
 ```sh
 npm test
 ```
 
-### Full static analysis + tests
+## Architecture notes
 
-```sh
-npx tsc --noEmit && npx oxlint && npx oxfmt --check src/ test/ && npm run build && node --test src/guard.test.ts src/client.test.ts test/runtime/node.test.ts test/runtime/fetch.test.ts test/runtime/cloudflare/cloudflare.test.ts
-```
-
-## Notes
-
-- Tests run from `.ts` source
-- Linting uses type-aware rules via `oxlint-tsgolint` (powered by
-  `typescript-go`). The `typeAware` option in `.oxlintrc.json` enables rules
-  like `no-floating-promises` and `strict-boolean-expressions` that require
-  type information.
-- Runtime smoke tests require `npm run build` first — they import from the
-  published `dist/` output via package exports.
-- The Cloudflare Worker test bundles a thin worker in-memory with rolldown and
-  runs it via miniflare against a real mock server.
-
-DO NOT UNDER ANY CIRCUMSTANCES ADD RANDOM COMMENTS WITH --- or === in the source files. Looking at you claude.
+- **No generics in public types.** Each rule kind gets its own concrete
+  discriminated union types (`RuleWithConfigTokenBucket`,
+  `RuleWithInputTokenBucket`, etc.) for straightforward narrowing.
+- **Two entrypoints.** `./node` uses HTTP/2 via `@connectrpc/connect-node`;
+  `./fetch` uses the Fetch API via `@connectrpc/connect-web`. The root export
+  branches via conditional exports.
+- **Local WASM detection.** Sensitive info detection runs locally via
+  `@arcjet/analyze` before sending results to the server.
+- **Shared test cases.** The 19 shared test cases in `test/_shared/cases.ts`
+  are run by every runtime (Node, Fetch, Bun, Deno, Cloudflare Workers).
+  Runtime-agnostic mock handlers live in `test/_shared/mock-handlers.ts`;
+  Node-specific servers live in `test/_shared/mock-server.ts`.
+- **Deno `--no-check`.** Deno's type checker cannot resolve
+  `@bufbuild/protobuf` v2 generics (it collapses `MessageInit<T>` to
+  `MessageInit<Message>`). This only affects the test helpers — published
+  `.d.ts` files have fully resolved types.

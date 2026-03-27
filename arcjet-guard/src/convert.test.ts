@@ -37,8 +37,6 @@ import {
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 
-// ── conclusionFromProto ───────────────────────────────────────────
-
 describe("conclusionFromProto", () => {
   test("ALLOW maps to 'ALLOW'", () => {
     assert.equal(conclusionFromProto(GuardConclusion.ALLOW), "ALLOW");
@@ -52,8 +50,6 @@ describe("conclusionFromProto", () => {
     assert.equal(conclusionFromProto(GuardConclusion.UNSPECIFIED), "ALLOW");
   });
 });
-
-// ── reasonFromCase ────────────────────────────────────────────────
 
 describe("reasonFromCase", () => {
   test("tokenBucket → RATE_LIMIT", () => {
@@ -97,8 +93,6 @@ describe("reasonFromCase", () => {
     assert.equal(reasonFromCase("somethingNew"), "UNKNOWN");
   });
 });
-
-// ── resultFromProto ───────────────────────────────────────────────
 
 describe("resultFromProto", () => {
   test("tokenBucket result", () => {
@@ -226,7 +220,7 @@ describe("resultFromProto", () => {
   test("localCustom result", () => {
     const pr = create(GuardRuleResultSchema, {
       resultId: "gres_1",
-      type: GuardRuleType.CUSTOM,
+      type: GuardRuleType.LOCAL_CUSTOM,
       result: {
         case: "localCustom",
         value: create(ResultLocalCustomSchema, {
@@ -328,8 +322,6 @@ describe("resultFromProto", () => {
   });
 });
 
-// ── ruleToProto ───────────────────────────────────────────────────
-
 describe("ruleToProto", () => {
   test("converts token bucket rule to proto", async () => {
     const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
@@ -399,17 +391,61 @@ describe("ruleToProto", () => {
     }
   });
 
-  test("converts sensitive info rule to proto", async () => {
+  test("converts sensitive info rule to proto with local WASM result", async () => {
     const rule = localDetectSensitiveInfo({ allow: ["EMAIL"] });
     const input = rule("my email is foo@bar.com");
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
     if (proto.rule?.rule.case === "localSensitiveInfo") {
-      assert.deepEqual(proto.rule.rule.value.configEntitiesAllow, ["EMAIL"]);
+      assert.equal(proto.rule.rule.value.configEntityFilter.case, "configEntitiesAllow");
+      assert.deepEqual(proto.rule.rule.value.configEntityFilter.value?.entities, ["EMAIL"]);
       // The text is hashed, not sent directly
       assert.ok(proto.rule.rule.value.inputTextHash);
       assert.notEqual(proto.rule.rule.value.inputTextHash, "my email is foo@bar.com");
+      // Local WASM detection should have run
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+      if (proto.rule.rule.value.localResult.case === "resultComputed") {
+        // EMAIL is allowed so no denied entities → ALLOW
+        assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.ALLOW);
+        assert.equal(proto.rule.rule.value.localResult.value.detected, true);
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, []);
+      }
+      assert.ok(proto.rule.rule.value.resultDurationMs !== undefined);
+    }
+  });
+
+  test("sensitive info WASM denies when entity is in deny list", async () => {
+    const rule = localDetectSensitiveInfo({ deny: ["EMAIL"] });
+    const input = rule("my email is foo@bar.com");
+    const proto = await ruleToProto(input);
+
+    assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+    if (proto.rule?.rule.case === "localSensitiveInfo") {
+      assert.equal(proto.rule.rule.value.configEntityFilter.case, "configEntitiesDeny");
+      assert.deepEqual(proto.rule.rule.value.configEntityFilter.value?.entities, ["EMAIL"]);
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+      if (proto.rule.rule.value.localResult.case === "resultComputed") {
+        assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.DENY);
+        assert.equal(proto.rule.rule.value.localResult.value.detected, true);
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, ["EMAIL"]);
+      }
+    }
+  });
+
+  test("sensitive info WASM allows when no sensitive info detected", async () => {
+    const rule = localDetectSensitiveInfo({ deny: ["EMAIL"] });
+    const input = rule("nothing sensitive here");
+    const proto = await ruleToProto(input);
+
+    assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+    if (proto.rule?.rule.case === "localSensitiveInfo") {
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+      if (proto.rule.rule.value.localResult.case === "resultComputed") {
+        assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.ALLOW);
+        assert.equal(proto.rule.rule.value.localResult.value.detected, false);
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, []);
+      }
     }
   });
 
@@ -426,6 +462,102 @@ describe("ruleToProto", () => {
       assert.deepEqual(Object.fromEntries(Object.entries(proto.rule.rule.value.inputData)), {
         score: "0.8",
       });
+      // No evaluate fn → localResult not set
+      assert.equal(proto.rule.rule.value.localResult.case, undefined);
+    }
+  });
+
+  test("custom rule with sync evaluate — DENY", async () => {
+    const rule = localCustom({
+      data: { threshold: "0.5" },
+      evaluate: (config, input) => {
+        const score = parseFloat(input["score"] ?? "0");
+        const threshold = parseFloat(config["threshold"] ?? "0");
+        return score > threshold
+          ? { conclusion: "DENY" as const, data: { reason: "score too high" } }
+          : { conclusion: "ALLOW" as const };
+      },
+    });
+    const input = rule({ data: { score: "0.8" } });
+    const proto = await ruleToProto(input);
+
+    assert.equal(proto.rule?.rule.case, "localCustom");
+    if (proto.rule?.rule.case === "localCustom") {
+      const value = proto.rule.rule.value;
+      assert.equal(value.localResult.case, "resultComputed");
+      if (value.localResult.case === "resultComputed") {
+        assert.equal(value.localResult.value.conclusion, GuardConclusion.DENY);
+        assert.deepEqual(Object.fromEntries(Object.entries(value.localResult.value.data)), {
+          reason: "score too high",
+        });
+      }
+      assert.ok(value.resultDurationMs !== undefined);
+    }
+  });
+
+  test("custom rule with sync evaluate — ALLOW", async () => {
+    const rule = localCustom({
+      data: { threshold: "0.5" },
+      evaluate: (config, input) => {
+        const score = parseFloat(input["score"] ?? "0");
+        const threshold = parseFloat(config["threshold"] ?? "0");
+        return score > threshold
+          ? { conclusion: "DENY" as const }
+          : { conclusion: "ALLOW" as const, data: { margin: String(threshold - score) } };
+      },
+    });
+    const input = rule({ data: { score: "0.3" } });
+    const proto = await ruleToProto(input);
+
+    assert.equal(proto.rule?.rule.case, "localCustom");
+    if (proto.rule?.rule.case === "localCustom") {
+      const value = proto.rule.rule.value;
+      assert.equal(value.localResult.case, "resultComputed");
+      if (value.localResult.case === "resultComputed") {
+        assert.equal(value.localResult.value.conclusion, GuardConclusion.ALLOW);
+      }
+    }
+  });
+
+  test("custom rule with async evaluate", async () => {
+    const rule = localCustom({
+      evaluate: async (_config, input) => {
+        await new Promise((resolve) => setTimeout(resolve, 1));
+        return input["action"] === "block"
+          ? { conclusion: "DENY" as const }
+          : { conclusion: "ALLOW" as const };
+      },
+    });
+    const input = rule({ data: { action: "block" } });
+    const proto = await ruleToProto(input);
+
+    assert.equal(proto.rule?.rule.case, "localCustom");
+    if (proto.rule?.rule.case === "localCustom") {
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+      if (proto.rule.rule.value.localResult.case === "resultComputed") {
+        assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.DENY);
+      }
+    }
+  });
+
+  test("custom rule evaluate throws → resultError", async () => {
+    const rule = localCustom({
+      evaluate: () => {
+        throw new Error("boom");
+      },
+    });
+    const input = rule({ data: {} });
+    const proto = await ruleToProto(input);
+
+    assert.equal(proto.rule?.rule.case, "localCustom");
+    if (proto.rule?.rule.case === "localCustom") {
+      const value = proto.rule.rule.value;
+      assert.equal(value.localResult.case, "resultError");
+      if (value.localResult.case === "resultError") {
+        assert.equal(value.localResult.value.message, "boom");
+        assert.equal(value.localResult.value.code, "CUSTOM_EVAL_ERROR");
+      }
+      assert.ok(value.resultDurationMs !== undefined);
     }
   });
 
@@ -468,8 +600,6 @@ describe("ruleToProto", () => {
     assert.deepEqual({ ...proto.metadata }, { env: "test" });
   });
 });
-
-// ── decisionFromProto ─────────────────────────────────────────────
 
 /** Build a proto GuardResponse with the given conclusion and rule results. */
 function makeResponse(
@@ -661,7 +791,7 @@ describe("decisionFromProto", () => {
         resultId: "gres_test1",
         configId: input[symbolArcjetInternal].configId,
         inputId: input[symbolArcjetInternal].inputId,
-        type: GuardRuleType.CUSTOM,
+        type: GuardRuleType.LOCAL_CUSTOM,
         result: {
           case: "localCustom",
           value: create(ResultLocalCustomSchema, {

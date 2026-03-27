@@ -54,13 +54,13 @@ export function createGuardClient(options: GuardClientOptions): {
         opts.rules.map((rule: RuleWithInput) => ruleToProto(rule)),
       );
 
-      const localEvalMs = BigInt(Math.round(performance.now() - startMs));
-      const sentAtMs = BigInt(Date.now());
+      const localEvalDurationMs = BigInt(Math.round(performance.now() - startMs));
+      const sentAtUnixMs = BigInt(Date.now());
 
       const guardRequest = create(GuardRequestSchema, {
         userAgent,
-        localEvalMs,
-        sentAtMs,
+        localEvalDurationMs,
+        sentAtUnixMs,
         label: opts.label,
         metadata: opts.metadata ?? {},
         ruleSubmissions: protoRules,

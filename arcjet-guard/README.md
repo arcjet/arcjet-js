@@ -1,43 +1,57 @@
-# @arcjet/guard
+<a href="https://arcjet.com" target="_arcjet-home">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://arcjet.com/logo/arcjet-dark-lockup-voyage-horizontal.svg">
+    <img src="https://arcjet.com/logo/arcjet-light-lockup-voyage-horizontal.svg" alt="Arcjet Logo" height="128" width="auto">
+  </picture>
+</a>
 
-Arcjet Guards SDK — AI guardrails for rate limiting, prompt injection
-detection, sensitive information detection, and custom rules.
+# `@arcjet/guard`
+
+<p>
+  <a href="https://www.npmjs.com/package/@arcjet/guard">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/npm/v/%40arcjet%2Fguard?style=flat-square&label=%E2%9C%A6Aj&labelColor=000000&color=5C5866">
+      <img alt="npm badge" src="https://img.shields.io/npm/v/%40arcjet%2Fguard?style=flat-square&label=%E2%9C%A6Aj&labelColor=ECE6F0&color=ECE6F0">
+    </picture>
+  </a>
+</p>
+
+[Arcjet][arcjet] helps developers protect their apps in just a few lines of
+code. Implement rate limiting, bot protection, email verification, and defense
+against common attacks.
+
+This is the [Arcjet][arcjet] Guards SDK for AI guardrails — rate limiting,
+prompt injection detection, sensitive information detection, and custom rules.
+**Find our other [SDKs on GitHub][sdks-github]**.
+
+## Features
+
+- 🪣 **Token bucket rate limiting** — smooth, burst-friendly rate control.
+- 🪟 **Fixed window rate limiting** — simple request counting per time window.
+- 📐 **Sliding window rate limiting** — rolling window for smoother limits.
+- 🛡️ **Prompt injection detection** — detect and block prompt injection
+  attacks.
+- 🕵️ **Sensitive information detection** — block PII with local WASM-based
+  detection via [`@arcjet/analyze`][arcjet-analyze].
+- 🔧 **Custom rules** — define your own local evaluation logic.
 
 ## Runtime support
 
 | Runtime            | Minimum version          | Entrypoint                              | Transport                             |
 | ------------------ | ------------------------ | --------------------------------------- | ------------------------------------- |
 | Node.js            | 22.18.0                  | `@arcjet/guard` or `@arcjet/guard/node` | HTTP/2 via `@connectrpc/connect-node` |
-| Bun                | 1                        | `@arcjet/guard/fetch`                   | Fetch via `@connectrpc/connect-web`   |
+| Bun                | 1                        | `@arcjet/guard` or `@arcjet/guard/fetch`| Fetch via `@connectrpc/connect-web`   |
 | Deno               | `stable` / `lts`         | `@arcjet/guard/fetch`                   | Fetch via `@connectrpc/connect-web`   |
 | Cloudflare Workers | compat date `2025-09-01` | `@arcjet/guard/fetch`                   | Fetch via `@connectrpc/connect-web`   |
 
 The bare `@arcjet/guard` specifier uses
 [conditional exports](https://nodejs.org/api/packages.html#conditional-exports):
-it resolves to `@arcjet/guard/node` under the `"node"` condition and falls back
-to `@arcjet/guard/fetch` everywhere else.
+it resolves to `@arcjet/guard/node` under the `"node"` and `"bun"` conditions
+and falls back to `@arcjet/guard/fetch` everywhere else.
 
-### Why `2025-09-01` for Cloudflare Workers?
+## Installation
 
-The `2025-09-01` compatibility date enables
-[`enable_nodejs_http_server_modules`](https://developers.cloudflare.com/workers/configuration/compatibility-flags/#enable-nodejs-http-server-modules),
-which makes `node:http` server modules available. While the `@arcjet/guard/fetch`
-entrypoint does not use Node APIs directly, `@connectrpc/connect-web` and its
-dependencies rely on globals and polyfills that are only fully available at this
-compatibility date.
-
-### ES target
-
-TypeScript is configured with `lib: ["es2023", "webworker"]` and
-`target: "es2023"`. ES2023 is fully supported by V8 11.3+ (Node 22),
-JavaScriptCore (Bun 1), and the current Cloudflare Workers V8 engine.
-The `webworker` lib provides cross-runtime web platform types
-(`performance`, `crypto`, `AbortSignal`, `fetch`, etc.) without pulling
-in DOM types like `window` or `document`.
-
-## Install
-
-```sh
+```shell
 npm install @arcjet/guard
 ```
 
@@ -85,18 +99,6 @@ const decision = await arcjet.guard({
 });
 ```
 
-### Explicit transport
-
-```ts
-import { launchArcjetWithTransport } from "@arcjet/guard";
-import { createTransport } from "@arcjet/guard/node";
-
-const arcjet = launchArcjetWithTransport({
-  key: "ajkey_...",
-  transport: createTransport("https://decide.arcjet.com"),
-});
-```
-
 ## Entrypoints
 
 | Specifier             | Description                                        |
@@ -133,4 +135,9 @@ const result = limitCall.result(decision); // single result for this input
 
 ## License
 
-Apache-2.0
+Licensed under the [Apache License, Version 2.0][apache-license].
+
+[arcjet]: https://arcjet.com
+[sdks-github]: https://github.com/arcjet
+[arcjet-analyze]: https://www.npmjs.com/package/@arcjet/analyze
+[apache-license]: http://www.apache.org/licenses/LICENSE-2.0
