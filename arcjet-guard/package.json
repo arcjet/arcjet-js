@@ -81,7 +81,6 @@
     "@connectrpc/connect-web": "^2.0.0"
   },
   "devDependencies": {
-    "@types/bun": "1.3.11",
     "@typescript/native-preview": "7.0.0-dev.20260326.1",
     "miniflare": "4.20260317.2",
     "oxfmt": "0.42.0",
