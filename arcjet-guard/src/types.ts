@@ -84,7 +84,7 @@ export type RuleResultCustom = {
 /** Result for a rule that was not evaluated. */
 export type RuleResultNotRun = {
   readonly conclusion: "ALLOW";
-  readonly reason: Reason;
+  readonly reason: "NOT_RUN";
   readonly type: "NOT_RUN";
 };
 
@@ -94,7 +94,7 @@ export type RuleResultNotRun = {
  */
 export type RuleResultError = {
   readonly conclusion: "ALLOW";
-  readonly reason: Reason;
+  readonly reason: "ERROR";
   readonly type: "RULE_ERROR";
   readonly message: string;
   readonly code: string;

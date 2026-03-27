@@ -33,6 +33,7 @@ export interface GuardClientOptions {
 export function createGuardClient(options: GuardClientOptions): {
   guard(opts: GuardOptions): Promise<Decision>;
 } {
+  // TODO: Dynamically build the user agent.
   const { key, transport, userAgent = "arcjet-guard-js/0.1.0" } = options;
 
   const client = createConnectClient(DecideService, transport);

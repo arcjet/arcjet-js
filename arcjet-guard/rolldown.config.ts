@@ -26,11 +26,6 @@ export default defineConfig({
   },
   platform: "neutral",
   tsconfig: "./tsconfig.json",
-  transform: {
-    define: {
-      __ARCJET_SDK_VERSION__: JSON.stringify(pkg.version),
-    },
-  },
   external(id: string): boolean {
     return (
       isBuiltin(id) ||
