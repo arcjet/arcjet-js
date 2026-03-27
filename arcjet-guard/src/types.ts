@@ -31,7 +31,7 @@ export type RuleResultTokenBucket = {
   readonly type: "TOKEN_BUCKET";
   readonly remainingTokens: number;
   readonly maxTokens: number;
-  readonly resetSeconds: number;
+  readonly resetAtUnixSeconds: number;
   readonly refillRate: number;
   readonly refillIntervalSeconds: number;
 };
@@ -43,7 +43,7 @@ export type RuleResultFixedWindow = {
   readonly type: "FIXED_WINDOW";
   readonly remainingRequests: number;
   readonly maxRequests: number;
-  readonly resetSeconds: number;
+  readonly resetAtUnixSeconds: number;
   readonly windowSeconds: number;
 };
 
@@ -54,7 +54,7 @@ export type RuleResultSlidingWindow = {
   readonly type: "SLIDING_WINDOW";
   readonly remainingRequests: number;
   readonly maxRequests: number;
-  readonly resetSeconds: number;
+  readonly resetAtUnixSeconds: number;
   readonly intervalSeconds: number;
 };
 

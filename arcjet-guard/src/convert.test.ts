@@ -107,7 +107,7 @@ describe("resultFromProto", () => {
           conclusion: GuardConclusion.ALLOW,
           remainingTokens: 95,
           maxTokens: 100,
-          resetSeconds: 60,
+          resetAtUnixSeconds: 60,
           refillRate: 10,
           refillIntervalSeconds: 60,
         }),
@@ -121,7 +121,7 @@ describe("resultFromProto", () => {
     if (result.type === "TOKEN_BUCKET") {
       assert.equal(result.remainingTokens, 95);
       assert.equal(result.maxTokens, 100);
-      assert.equal(result.resetSeconds, 60);
+      assert.equal(result.resetAtUnixSeconds, 60);
       assert.equal(result.refillRate, 10);
       assert.equal(result.refillIntervalSeconds, 60);
     }
@@ -137,7 +137,7 @@ describe("resultFromProto", () => {
           conclusion: GuardConclusion.DENY,
           remainingRequests: 0,
           maxRequests: 100,
-          resetSeconds: 1800,
+          resetAtUnixSeconds: 1800,
           windowSeconds: 3600,
         }),
       },
@@ -163,7 +163,7 @@ describe("resultFromProto", () => {
           conclusion: GuardConclusion.ALLOW,
           remainingRequests: 450,
           maxRequests: 500,
-          resetSeconds: 30,
+          resetAtUnixSeconds: 30,
           intervalSeconds: 60,
         }),
       },
@@ -632,7 +632,7 @@ describe("decisionFromProto", () => {
             conclusion: GuardConclusion.ALLOW,
             remainingTokens: 95,
             maxTokens: 100,
-            resetSeconds: 60,
+            resetAtUnixSeconds: 60,
             refillRate: 10,
             refillIntervalSeconds: 60,
           }),
@@ -670,7 +670,7 @@ describe("decisionFromProto", () => {
             conclusion: GuardConclusion.DENY,
             remainingRequests: 0,
             maxRequests: 100,
-            resetSeconds: 1800,
+            resetAtUnixSeconds: 1800,
             windowSeconds: 3600,
           }),
         },
@@ -708,7 +708,7 @@ describe("decisionFromProto", () => {
             conclusion: GuardConclusion.ALLOW,
             remainingRequests: 450,
             maxRequests: 500,
-            resetSeconds: 30,
+            resetAtUnixSeconds: 30,
             intervalSeconds: 60,
           }),
         },
@@ -918,7 +918,7 @@ describe("decisionFromProto", () => {
             conclusion: GuardConclusion.ALLOW,
             remainingTokens: 95,
             maxTokens: 100,
-            resetSeconds: 60,
+            resetAtUnixSeconds: 60,
             refillRate: 10,
             refillIntervalSeconds: 60,
           }),
@@ -935,7 +935,7 @@ describe("decisionFromProto", () => {
             conclusion: GuardConclusion.ALLOW,
             remainingTokens: 90,
             maxTokens: 100,
-            resetSeconds: 58,
+            resetAtUnixSeconds: 58,
             refillRate: 10,
             refillIntervalSeconds: 60,
           }),
@@ -995,7 +995,7 @@ describe("decisionFromProto", () => {
             conclusion: GuardConclusion.ALLOW,
             remainingTokens: 95,
             maxTokens: 100,
-            resetSeconds: 60,
+            resetAtUnixSeconds: 60,
             refillRate: 10,
             refillIntervalSeconds: 60,
           }),
@@ -1023,7 +1023,7 @@ describe("decisionFromProto", () => {
             conclusion: GuardConclusion.DENY,
             remainingTokens: 0,
             maxTokens: 100,
-            resetSeconds: 60,
+            resetAtUnixSeconds: 60,
             refillRate: 10,
             refillIntervalSeconds: 60,
           }),

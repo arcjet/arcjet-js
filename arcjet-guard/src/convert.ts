@@ -167,7 +167,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         type: "TOKEN_BUCKET",
         remainingTokens: v.remainingTokens,
         maxTokens: v.maxTokens,
-        resetSeconds: v.resetSeconds,
+        resetAtUnixSeconds: v.resetAtUnixSeconds,
         refillRate: v.refillRate,
         refillIntervalSeconds: v.refillIntervalSeconds,
       };
@@ -180,7 +180,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         type: "FIXED_WINDOW",
         remainingRequests: v.remainingRequests,
         maxRequests: v.maxRequests,
-        resetSeconds: v.resetSeconds,
+        resetAtUnixSeconds: v.resetAtUnixSeconds,
         windowSeconds: v.windowSeconds,
       };
     }
@@ -192,7 +192,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         type: "SLIDING_WINDOW",
         remainingRequests: v.remainingRequests,
         maxRequests: v.maxRequests,
-        resetSeconds: v.resetSeconds,
+        resetAtUnixSeconds: v.resetAtUnixSeconds,
         intervalSeconds: v.intervalSeconds,
       };
     }
