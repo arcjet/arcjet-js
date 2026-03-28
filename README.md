@@ -21,15 +21,14 @@ for JS.
 
 ## Getting started
 
-1. **Get your API key** — [Sign up at `app.arcjet.com`](https://app.arcjet.com)
-   (free tier available).
+1. **Get your API key** — [Sign up at `app.arcjet.com`](https://app.arcjet.com).
 2. **Install the SDK for your framework:** Every feature works with any JavaScript application.
 
 | Framework    | Package                         | Install                      |
 | ------------ | ------------------------------- | ---------------------------- |
 | Next.js      | `@arcjet/next`                  | `npm i @arcjet/next`         |
 | Node.js      | `@arcjet/node`                  | `npm i @arcjet/node`         |
-| Bun          | `@arcjet/bun`                   | `npm i @arcjet/bun`          |
+| Bun          | `@arcjet/bun`                   | `bun add @arcjet/bun`        |
 | Deno         | `@arcjet/deno`                  | `deno add npm:@arcjet/deno`  |
 | Express      | `@arcjet/node`                  | `npm i @arcjet/node`         |
 | Fastify      | `@arcjet/fastify`               | `npm i @arcjet/fastify`      |
@@ -303,7 +302,7 @@ export async function GET(request: Request) {
     return new Response("No bots allowed", { status: 403 });
   }
 
-  // Arcjet Pro plan verifies the authenticity of common bots using IP data.
+  // Arcjet verifies the authenticity of common bots using IP data.
   // Verification isn't always possible, so check the results separately.
   // https://docs.arcjet.com/bot-protection/reference#bot-verification
   if (decision.results.some(isSpoofedBot)) {

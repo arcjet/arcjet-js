@@ -23,7 +23,7 @@ This is the [Arcjet][arcjet] SDK for [Bun][bun-sh].
 ## Getting started
 
 1. Get your API key at [`app.arcjet.com`](https://app.arcjet.com)
-2. `npm install @arcjet/bun`
+2. `bun add @arcjet/bun`
 3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
 4. Add Arcjet to your server — see the [quick start](#quick-start) below
 
