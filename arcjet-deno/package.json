@@ -1,17 +1,24 @@
 {
   "name": "@arcjet/deno",
   "version": "1.3.0",
-  "description": "Arcjet SDK for Deno",
+  "description": "Arcjet runtime security SDK for Deno — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
+    "ai",
     "analyze",
     "arcjet",
     "attack",
+    "bot-detection",
     "deno",
     "limit",
+    "llm",
+    "pii",
+    "prompt-injection",
     "protect",
+    "rate-limiting",
     "secure",
     "security",
-    "verify"
+    "verify",
+    "waf"
   ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",

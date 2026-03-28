@@ -1,17 +1,24 @@
 {
   "name": "@arcjet/remix",
   "version": "1.3.0",
-  "description": "Arcjet SDK for Remix",
+  "description": "Arcjet runtime security SDK for Remix — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
+    "ai",
     "analyze",
     "arcjet",
     "attack",
+    "bot-detection",
     "limit",
+    "llm",
+    "pii",
+    "prompt-injection",
     "protect",
+    "rate-limiting",
     "remix",
     "secure",
     "security",
-    "verify"
+    "verify",
+    "waf"
   ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",

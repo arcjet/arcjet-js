@@ -16,14 +16,21 @@
   </a>
 </p>
 
-[Arcjet][arcjet] is the runtime security platform that ships with your AI code.
-Stop bots and automated attacks from burning your AI budget, leaking data, or
-misusing tools with Arcjet's AI security building blocks.
+[Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks. Every feature works with any Fastify application.
 
 This is the [Arcjet][arcjet] SDK for [Fastify][fastify].
 
-- [npm package (`@arcjet/fastify`)](https://www.npmjs.com/package/@arcjet/fastify)
-- [GitHub source code (`arcjet-fastify/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-fastify)
+## Getting started
+
+1. Get your API key at [`app.arcjet.com`](https://app.arcjet.com)
+2. `npm install @arcjet/fastify`
+3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
+4. Add Arcjet to your server — see the [quick start](#quick-start) below
+
+[npm package](https://www.npmjs.com/package/@arcjet/fastify) |
+[GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-fastify) |
+[Full docs][arcjet-reference-fastify] |
+[Other SDKs on GitHub](https://github.com/arcjet)
 
 ## Features
 
@@ -45,32 +52,6 @@ This is the [Arcjet][arcjet] SDK for [Fastify][fastify].
   headers, and custom fields.
 - 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
   detection included with every request.
-
-## Getting started
-
-Visit the [quick start guide][quick-start] to get started.
-
-## What is this?
-
-This is our adapter to integrate Arcjet into Fastify.
-Arcjet helps you secure your Fastify server.
-This package exists so that we can provide the best possible experience to
-Fastify users.
-
-## When should I use this?
-
-Use this if you are using Fastify.
-See our [_Get started_ guide][arcjet-get-started] for other supported
-frameworks and runtimes.
-
-## Install
-
-This package is ESM only.
-Install with npm in Node.js:
-
-```sh
-npm install @arcjet/fastify
-```
 
 ## Quick start
 
@@ -151,7 +132,7 @@ For the full reference, see the [Arcjet Fastify SDK docs][arcjet-reference-fasti
 
 Detect and block prompt injection attacks — attempts to override your AI
 model's instructions — before they reach your model. Pass the user's message
-via `detectPromptInjectionMessage` on each `protect()` call.
+via `detectPromptInjectionMessage` on each `protect()` call. Tune sensitivity with the `threshold` parameter (0.0–1.0, default 0.5) — higher values are more conservative.
 
 ```ts
 import arcjet, { detectPromptInjection } from "@arcjet/fastify";
@@ -190,6 +171,16 @@ fastify.post("/chat", async function (request, reply) {
 
 Arcjet allows you to configure a list of bots to allow or deny. Specifying
 `allow` means all other bots are denied. An empty allow list blocks all bots.
+
+Available categories: `CATEGORY:ACADEMIC`, `CATEGORY:ADVERTISING`,
+`CATEGORY:AI`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`, `CATEGORY:ARCHIVE`,
+`CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`, `CATEGORY:GOOGLE`,
+`CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
+`CATEGORY:OPTIMIZER`, `CATEGORY:PREVIEW`, `CATEGORY:PROGRAMMATIC`,
+`CATEGORY:SEARCH_ENGINE`, `CATEGORY:SLACK`, `CATEGORY:SOCIAL`,
+`CATEGORY:TOOL`, `CATEGORY:UNKNOWN`, `CATEGORY:VERCEL`,
+`CATEGORY:WEBHOOK`, `CATEGORY:YAHOO`. You can also allow or deny
+[specific bots by name][bot-list].
 
 ```ts
 import arcjet, { detectBot } from "@arcjet/fastify";
@@ -250,8 +241,12 @@ if (decision.results.some(isSpoofedBot)) {
 
 ## Rate limiting
 
-Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
-controlling AI token budgets.
+Arcjet supports token bucket, fixed window, and sliding window algorithms.
+Token buckets are ideal for controlling AI token budgets — set `capacity` to
+the max tokens a user can spend, `refillRate` to how many tokens are restored
+per `interval`, and deduct tokens per request via `requested` in `protect()`.
+The `interval` accepts strings (`"1s"`, `"1m"`, `"1h"`, `"1d"`) or seconds as
+a number. Use `characteristics` to track limits per user instead of per IP.
 
 ```ts
 import arcjet, { tokenBucket } from "@arcjet/fastify";
@@ -281,9 +276,10 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ## Sensitive information detection
 
-Detect and block PII in request content such as email addresses, phone
-numbers, and credit card numbers. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call.
+Detect and block PII in request content. Pass the content to scan via
+`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
+`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
+provide a custom `detect` callback for additional patterns.
 
 ```ts
 import arcjet, { sensitiveInfo } from "@arcjet/fastify";
@@ -327,8 +323,8 @@ const aj = arcjet({
 
 ## Email validation
 
-Validate and verify email addresses, blocking disposable, invalid, or
-undeliverable addresses.
+Validate and verify email addresses. Deny types: `DISPOSABLE`, `FREE`,
+`NO_MX_RECORDS`, `NO_GRAVATAR`, `INVALID`.
 
 ```ts
 import arcjet, { validateEmail } from "@arcjet/fastify";
@@ -531,10 +527,8 @@ export async function chatHandler(request: any, reply: any) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
-[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-fastify]: https://docs.arcjet.com/reference/fastify
 [fastify]: https://fastify.dev/
-[quick-start]: https://docs.arcjet.com/get-started/fastify
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [bot-categories-docs]: https://docs.arcjet.com/bot-protection/identifying-bots
 [bot-list]: https://arcjet.com/bot-list

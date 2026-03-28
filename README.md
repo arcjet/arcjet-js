@@ -19,6 +19,46 @@
 This is the monorepo containing various [Arcjet][arcjet] open source packages
 for JS.
 
+## Getting started
+
+1. **Get your API key** — [Sign up at `app.arcjet.com`](https://app.arcjet.com)
+   (free tier available).
+2. **Install the SDK for your framework:** Every feature works with any JavaScript application.
+
+| Framework    | Package                         | Install                      |
+| ------------ | ------------------------------- | ---------------------------- |
+| Next.js      | `@arcjet/next`                  | `npm i @arcjet/next`         |
+| Node.js      | `@arcjet/node`                  | `npm i @arcjet/node`         |
+| Bun          | `@arcjet/bun`                   | `npm i @arcjet/bun`          |
+| Deno         | `@arcjet/deno`                  | `deno add npm:@arcjet/deno`  |
+| Express      | `@arcjet/node`                  | `npm i @arcjet/node`         |
+| Fastify      | `@arcjet/fastify`               | `npm i @arcjet/fastify`      |
+| Hono         | `@arcjet/node` or `@arcjet/bun` | `npm i @arcjet/node`         |
+| NestJS       | `@arcjet/nest`                  | `npm i @arcjet/nest`         |
+| Nuxt         | `@arcjet/nuxt`                  | `npm i @arcjet/nuxt`         |
+| Remix        | `@arcjet/remix`                 | `npm i @arcjet/remix`        |
+| React Router | `@arcjet/react-router`          | `npm i @arcjet/react-router` |
+| SvelteKit    | `@arcjet/sveltekit`             | `npm i @arcjet/sveltekit`    |
+| Astro        | `@arcjet/astro`                 | `npm i @arcjet/astro`        |
+
+3. **Set your environment variable:**
+
+```sh
+# .env.local (or your framework's env file)
+ARCJET_KEY=ajkey_yourkey
+```
+
+4. **Protect a route** — see the [AI protection example](#vercel-ai-sdk-example)
+   or individual [feature examples](#features) below.
+
+### Get help
+
+[Join our Discord server][discord-invite] or [reach out for support][support].
+
+- [Documentation](https://docs.arcjet.com) — full reference and guides
+- [Example apps](#example-apps) — working starter projects for every framework
+- [Blueprints](#blueprints) — recipes for common security patterns
+
 ## Features
 
 - 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
@@ -39,27 +79,6 @@ for JS.
   headers, and custom fields.
 - 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
   detection included with every request.
-
-## Quick start
-
-- [Astro][quick-start-astro]
-- [Bun + Hono][quick-start-bun-hono]
-- [Bun][quick-start-bun]
-- [Deno][quick-start-deno]
-- [Fastify][quick-start-fastify]
-- [NestJS][quick-start-nest-js]
-- [Next.js][quick-start-next-js]
-- [Node.js + Express][quick-start-node-js-express]
-- [Node.js + Hono][quick-start-node-js-hono]
-- [Node.js][quick-start-node-js]
-- [Nuxt][quick-start-nuxt]
-- [React Router][quick-start-react-router]
-- [Remix][quick-start-remix]
-- [SvelteKit][quick-start-sveltekit]
-
-### Get help
-
-[Join our Discord server][discord-invite] or [reach out for support][support].
 
 ## Example apps
 
@@ -96,7 +115,7 @@ Read the docs at [`docs.arcjet.com`][arcjet-docs].
 > the SDK for your runtime — `@arcjet/node`, `@arcjet/bun`, `@arcjet/sveltekit`,
 > etc. The API is identical across all [SDKs](#sdks).
 
-### Next.js AI protection example
+### Vercel AI SDK example
 
 This example protects a Next.js AI chat route using the [Vercel AI
 SDK][vercel-ai-sdk]: blocking automated clients that inflate costs, enforcing
@@ -207,7 +226,9 @@ export async function POST(req: Request) {
 
 Detect and block prompt injection attacks — attempts to override your AI
 model's instructions — before they reach your model. Pass the user's message
-via `detectPromptInjectionMessage` on each `protect()` call.
+via `detectPromptInjectionMessage` on each `protect()` call. Tune sensitivity
+with the `threshold` parameter (0.0–1.0, default 0.5) — higher values are more
+conservative.
 
 ```ts
 import arcjet, { detectPromptInjection } from "@arcjet/next";
@@ -244,6 +265,16 @@ export async function POST(request: Request) {
 
 Arcjet allows you to configure a list of bots to allow or deny. Specifying
 `allow` means all other bots are denied. An empty allow list blocks all bots.
+
+Available categories: `CATEGORY:ACADEMIC`, `CATEGORY:ADVERTISING`,
+`CATEGORY:AI`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`, `CATEGORY:ARCHIVE`,
+`CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`, `CATEGORY:GOOGLE`,
+`CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
+`CATEGORY:OPTIMIZER`, `CATEGORY:PREVIEW`, `CATEGORY:PROGRAMMATIC`,
+`CATEGORY:SEARCH_ENGINE`, `CATEGORY:SLACK`, `CATEGORY:SOCIAL`,
+`CATEGORY:TOOL`, `CATEGORY:UNKNOWN`, `CATEGORY:VERCEL`,
+`CATEGORY:WEBHOOK`, `CATEGORY:YAHOO`. You can also allow or deny
+[specific bots by name][bot-list].
 
 ```ts
 import arcjet, { detectBot } from "@arcjet/next";
@@ -296,8 +327,12 @@ detectBot({
 
 ### Rate limiting
 
-Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
-controlling AI token budgets.
+Arcjet supports token bucket, fixed window, and sliding window algorithms.
+Token buckets are ideal for controlling AI token budgets — set `capacity` to
+the max tokens a user can spend, `refillRate` to how many tokens are restored
+per `interval`, and deduct tokens per request via `requested` in `protect()`.
+The `interval` accepts strings (`"1s"`, `"1m"`, `"1h"`, `"1d"`) or seconds as
+a number. Use `characteristics` to track limits per user instead of per IP.
 
 ```ts
 import arcjet, { tokenBucket } from "@arcjet/next";
@@ -327,9 +362,10 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ### Sensitive information detection
 
-Detect and block PII in request content such as email addresses, phone
-numbers, and credit card numbers. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call.
+Detect and block PII in request content. Pass the content to scan via
+`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
+`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
+provide a custom `detect` callback for additional patterns.
 
 ```ts
 import arcjet, { sensitiveInfo } from "@arcjet/next";
@@ -373,8 +409,8 @@ const aj = arcjet({
 
 ### Email validation
 
-Validate and verify email addresses, blocking disposable, invalid, or
-undeliverable addresses.
+Validate and verify email addresses. Deny types: `DISPOSABLE`, `FREE`,
+`NO_MX_RECORDS`, `NO_GRAVATAR`, `INVALID`.
 
 ```ts
 import arcjet, { validateEmail } from "@arcjet/next";
@@ -703,19 +739,5 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [feature-signup-protection]: https://docs.arcjet.com/signup-protection
 [bot-list]: https://arcjet.com/bot-list
 [best-practices]: https://docs.arcjet.com/best-practices
-[quick-start-astro]: https://docs.arcjet.com/get-started?f=astro
-[quick-start-bun-hono]: https://docs.arcjet.com/get-started?f=bun-hono
-[quick-start-bun]: https://docs.arcjet.com/get-started?f=bun
-[quick-start-deno]: https://docs.arcjet.com/get-started?f=deno
-[quick-start-fastify]: https://docs.arcjet.com/get-started?f=fastify
-[quick-start-nest-js]: https://docs.arcjet.com/get-started?f=nest-js
-[quick-start-next-js]: https://docs.arcjet.com/get-started?f=next-js
-[quick-start-node-js-express]: https://docs.arcjet.com/get-started?f=node-js-express
-[quick-start-node-js-hono]: https://docs.arcjet.com/get-started?f=node-js-hono
-[quick-start-node-js]: https://docs.arcjet.com/get-started?f=node-js
-[quick-start-nuxt]: https://docs.arcjet.com/get-started?f=nuxt
-[quick-start-react-router]: https://docs.arcjet.com/get-started?f=react-router
-[quick-start-remix]: https://docs.arcjet.com/get-started?f=remix
-[quick-start-sveltekit]: https://docs.arcjet.com/get-started?f=sveltekit
 [npm-workspaces]: https://docs.npmjs.com/cli/using-npm/workspaces
 [turborepo]: https://turbo.build/repo

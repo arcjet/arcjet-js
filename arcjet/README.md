@@ -18,35 +18,15 @@
 
 [Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks.
 
-This is the [Arcjet][arcjet] TypeScript and JavaScript SDK core.
+This is the [Arcjet][arcjet] TypeScript and JavaScript SDK core. **Most users
+should install a framework SDK instead** (`@arcjet/next`, `@arcjet/node`,
+`@arcjet/bun`, etc.) — see the [framework SDKs][github-arcjet-sdks]. Use this
+package directly only if you are building a custom adapter for a runtime not
+yet supported. Every feature works with any JavaScript application.
 
-- [npm package (`arcjet`)](https://www.npmjs.com/package/arcjet)
-- [GitHub source code (`arcjet/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet)
-
-## What is this?
-
-This is the core package. It exposes all Arcjet protection rules and types.
-The functionality here is consumed by our [framework SDKs][github-arcjet-sdks]
-(such as `@arcjet/next`, `@arcjet/node`, `@arcjet/bun`) that each integrate
-with a particular runtime or framework.
-
-## When should I use this?
-
-We recommend using one of our runtime or framework specific packages rather
-than this one directly. See our [_Get started_ guide][arcjet-get-started] for
-more info.
-
-Use this package directly only if you are building a custom adapter for a
-runtime or framework not yet supported.
-
-## Install
-
-This package is ESM only.
-Install with npm in Node.js:
-
-```sh
-npm install arcjet
-```
+[npm package](https://www.npmjs.com/package/arcjet) |
+[GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet) |
+[Full docs][ts-sdk-docs]
 
 ## Rules
 
@@ -76,6 +56,15 @@ const aj = arcjet({
 Detects and blocks automated clients and bots. Configure `allow` to permit
 specific bot categories or named bots; all others are denied.
 
+Available categories: `CATEGORY:ACADEMIC`, `CATEGORY:ADVERTISING`,
+`CATEGORY:AI`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`, `CATEGORY:ARCHIVE`,
+`CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`, `CATEGORY:GOOGLE`,
+`CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
+`CATEGORY:OPTIMIZER`, `CATEGORY:PREVIEW`, `CATEGORY:PROGRAMMATIC`,
+`CATEGORY:SEARCH_ENGINE`, `CATEGORY:SLACK`, `CATEGORY:SOCIAL`,
+`CATEGORY:TOOL`, `CATEGORY:UNKNOWN`, `CATEGORY:VERCEL`,
+`CATEGORY:WEBHOOK`, `CATEGORY:YAHOO`.
+
 ```ts
 import arcjet, { detectBot } from "arcjet";
 
@@ -98,8 +87,11 @@ const aj = arcjet({
 
 ### `tokenBucket(options)`
 
-Token bucket rate limit. Ideal for controlling AI token budgets: deduct tokens
-proportional to the estimated cost of each request.
+Token bucket rate limit. Ideal for controlling AI token budgets. Set `capacity`
+to the max tokens a user can spend, `refillRate` to how many tokens are
+restored per `interval`, and deduct tokens per request via `requested` in
+`protect()`. The `interval` accepts strings (`"1s"`, `"1m"`, `"1h"`, `"1d"`)
+or seconds as a number.
 
 ```ts
 import arcjet, { tokenBucket } from "arcjet";
@@ -195,7 +187,9 @@ if (decision.isDenied() && decision.reason.isPromptInjection()) {
 ### `sensitiveInfo(options)`
 
 Detects and blocks sensitive information (PII) in request content. Pass the
-content to scan via `sensitiveInfoValue` on each `protect()` call.
+content to scan via `sensitiveInfoValue` on each `protect()` call. Built-in
+entity types: `CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`.
+You can also provide a custom `detect` callback for additional patterns.
 
 ```ts
 import arcjet, { sensitiveInfo } from "arcjet";
@@ -222,8 +216,8 @@ const decision = await aj.protect(context, {
 
 ### `validateEmail(options)`
 
-Validates and verifies email addresses, blocking disposable, invalid, or
-undeliverable addresses.
+Validates and verifies email addresses. Deny types: `DISPOSABLE`, `FREE`,
+`NO_MX_RECORDS`, `NO_GRAVATAR`, `INVALID`.
 
 ```ts
 import arcjet, { validateEmail } from "arcjet";
@@ -553,7 +547,6 @@ Reference documentation is available at [docs.arcjet.com][ts-sdk-docs].
 [arcjet]: https://arcjet.com
 [ts-sdk-docs]: https://docs.arcjet.com/reference/ts-js
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
-[arcjet-get-started]: https://docs.arcjet.com/get-started
 [github-arcjet-sdks]: https://github.com/arcjet/arcjet-js#sdks
 [best-practices]: https://docs.arcjet.com/best-practices
 [filter-reference]: https://docs.arcjet.com/filters/reference#expression-language

@@ -16,60 +16,41 @@
   </a>
 </p>
 
-[Arcjet][arcjet] is the runtime security platform that ships with your AI code.
-Stop bots and automated attacks from burning your AI budget, leaking data, or
-misusing tools with Arcjet's AI security building blocks.
+[Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks. Every feature works with any Deno application.
 
 This is the [Arcjet][arcjet] SDK for [Deno][deno].
 
-- [npm package (`@arcjet/deno`)](https://www.npmjs.com/package/@arcjet/deno)
-- [GitHub source code (`arcjet-deno/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-deno)
+## Getting started
+
+1. Get your API key at [`app.arcjet.com`](https://app.arcjet.com)
+2. `deno add npm:@arcjet/deno`
+3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
+4. Add Arcjet to your server — see the [quick start](#quick-start) below
+
+[GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-deno) |
+[Full docs][arcjet-reference-deno] |
+[Other SDKs on GitHub](https://github.com/arcjet)
 
 ## Features
 
-- 🔒 [Prompt Injection Detection][prompt-injection-docs] — detect and block
+- 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
   prompt injection attacks before they reach your LLM.
-- 🤖 [Bot Protection][bot-protection-docs] — stop scrapers, credential stuffers,
-  and AI crawlers from abusing your endpoints.
-- 🛑 [Rate Limiting][rate-limiting-docs] — token bucket, fixed window, and sliding
+- 🤖 [Bot Protection](#bot-protection) — stop scrapers, credential stuffers, and
+  AI crawlers from abusing your endpoints.
+- 🛑 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
   window algorithms; model AI token budgets per user.
-- 🕵️ [Sensitive Information Detection][sensitive-info-docs] — block
+- 🕵️ [Sensitive Information Detection](#sensitive-information-detection) — block
   PII, credit cards, and custom patterns from entering your AI pipeline.
-- 🛡️ [Shield WAF][shield-docs] — protect against SQL injection, XSS, and other
+- 🛡️ [Shield WAF](#shield-waf) — protect against SQL injection, XSS, and other
   common web attacks.
-- 📧 [Email Validation][email-validation-docs] — block disposable, invalid, and
+- 📧 [Email Validation](#email-validation) — block disposable, invalid, and
   undeliverable addresses at signup.
-- 📝 [Signup Form Protection][signup-protection-docs] — combines bot protection,
-  email validation, and rate limiting to protect your signup forms.
-- 🎯 [Request Filters][filters-docs] — expression-based rules on IP, path,
+- 📝 [Signup Form Protection](https://docs.arcjet.com/signup-protection) — combines
+  bot protection, email validation, and rate limiting to protect your signup forms.
+- 🎯 [Request Filters](#request-filters) — expression-based rules on IP, path,
   headers, and custom fields.
 - 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
   detection included with every request.
-
-## Getting started
-
-Visit the [quick start guide][quick-start] to get started.
-
-## What is this?
-
-This is our adapter to integrate Arcjet into Deno.
-Arcjet helps you secure your Deno server.
-This package exists so that we can provide the best possible experience to
-Deno users.
-
-## When should I use this?
-
-Use this if you are using Deno.
-See our [_Get started_ guide][arcjet-get-started] for other supported
-frameworks and runtimes.
-
-## Install
-
-Install with Deno:
-
-```sh
-deno install npm:@arcjet/deno
-```
 
 ## Quick start
 
@@ -148,7 +129,7 @@ For the full reference, see the [Arcjet Deno SDK docs][arcjet-reference-deno].
 
 Detect and block prompt injection attacks — attempts to override your AI
 model's instructions — before they reach your model. Pass the user's message
-via `detectPromptInjectionMessage` on each `protect()` call.
+via `detectPromptInjectionMessage` on each `protect()` call. Tune sensitivity with the `threshold` parameter (0.0–1.0, default 0.5) — higher values are more conservative.
 
 ```ts
 import arcjet, { detectPromptInjection } from "npm:@arcjet/deno";
@@ -187,6 +168,16 @@ Deno.serve(
 
 Arcjet allows you to configure a list of bots to allow or deny. Specifying
 `allow` means all other bots are denied. An empty allow list blocks all bots.
+
+Available categories: `CATEGORY:ACADEMIC`, `CATEGORY:ADVERTISING`,
+`CATEGORY:AI`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`, `CATEGORY:ARCHIVE`,
+`CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`, `CATEGORY:GOOGLE`,
+`CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
+`CATEGORY:OPTIMIZER`, `CATEGORY:PREVIEW`, `CATEGORY:PROGRAMMATIC`,
+`CATEGORY:SEARCH_ENGINE`, `CATEGORY:SLACK`, `CATEGORY:SOCIAL`,
+`CATEGORY:TOOL`, `CATEGORY:UNKNOWN`, `CATEGORY:VERCEL`,
+`CATEGORY:WEBHOOK`, `CATEGORY:YAHOO`. You can also allow or deny
+[specific bots by name][bot-list].
 
 ```ts
 import arcjet, { detectBot } from "npm:@arcjet/deno";
@@ -247,8 +238,12 @@ if (decision.results.some(isSpoofedBot)) {
 
 ## Rate limiting
 
-Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
-controlling AI token budgets.
+Arcjet supports token bucket, fixed window, and sliding window algorithms.
+Token buckets are ideal for controlling AI token budgets — set `capacity` to
+the max tokens a user can spend, `refillRate` to how many tokens are restored
+per `interval`, and deduct tokens per request via `requested` in `protect()`.
+The `interval` accepts strings (`"1s"`, `"1m"`, `"1h"`, `"1d"`) or seconds as
+a number. Use `characteristics` to track limits per user instead of per IP.
 
 ```ts
 import arcjet, {
@@ -282,9 +277,10 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ## Sensitive information detection
 
-Detect and block PII in request content such as email addresses, phone
-numbers, and credit card numbers. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call.
+Detect and block PII in request content. Pass the content to scan via
+`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
+`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
+provide a custom `detect` callback for additional patterns.
 
 ```ts
 import arcjet, { sensitiveInfo } from "npm:@arcjet/deno";
@@ -331,8 +327,8 @@ const aj = arcjet({
 
 ## Email validation
 
-Validate and verify email addresses, blocking disposable, invalid, or
-undeliverable addresses.
+Validate and verify email addresses. Deny types: `DISPOSABLE`, `FREE`,
+`NO_MX_RECORDS`, `NO_GRAVATAR`, `INVALID`.
 
 ```ts
 import arcjet, { validateEmail } from "npm:@arcjet/deno";
@@ -539,19 +535,10 @@ deno test test/index.test.ts --allow-env --allow-net --no-check
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
-[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-deno]: https://docs.arcjet.com/reference/deno
 [deno]: https://deno.com/
-[quick-start]: https://docs.arcjet.com/get-started/deno
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
-[bot-protection-docs]: https://docs.arcjet.com/bot-protection
 [bot-categories-docs]: https://docs.arcjet.com/bot-protection/identifying-bots
 [bot-list]: https://arcjet.com/bot-list
-[rate-limiting-docs]: https://docs.arcjet.com/rate-limiting
-[shield-docs]: https://docs.arcjet.com/shield
-[email-validation-docs]: https://docs.arcjet.com/email-validation
-[signup-protection-docs]: https://docs.arcjet.com/signup-protection
-[sensitive-info-docs]: https://docs.arcjet.com/sensitive-info
 [filters-docs]: https://docs.arcjet.com/filters
-[prompt-injection-docs]: https://docs.arcjet.com/detect-prompt-injection
 [best-practices]: https://docs.arcjet.com/best-practices
