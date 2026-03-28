@@ -16,56 +16,42 @@
   </a>
 </p>
 
-[Arcjet][arcjet] is the runtime security platform that ships with your AI code.
-Stop bots and automated attacks from burning your AI budget, leaking data, or
-misusing tools with Arcjet's AI security building blocks.
+[Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks. Every feature works with any Remix application.
 
 This is the [Arcjet][arcjet] SDK for [Remix][remix].
 
-- [npm package (`@arcjet/remix`)](https://www.npmjs.com/package/@arcjet/remix)
-- [GitHub source code (`arcjet-remix/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-remix)
+## Getting started
+
+1. Get your API key at [`app.arcjet.com`](https://app.arcjet.com)
+2. `npm install @arcjet/remix`
+3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
+4. Add Arcjet to your app — see the [quick start](#quick-start) below
+
+[npm package](https://www.npmjs.com/package/@arcjet/remix) |
+[GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-remix) |
+[Full docs][arcjet-reference-remix] |
+[Other SDKs on GitHub](https://github.com/arcjet)
 
 ## Features
 
-- 🔒 [Prompt injection detection][prompt-injection-docs] — detect and block
-  prompt injection attacks before they reach your AI model.
-- 🤖 [Bot protection][bot-protection-docs] — manage traffic from automated
-  clients and bots, with [verification and
-  categorization][bot-categories-docs].
-- 🛑 [Rate limiting][rate-limiting-docs] — limit the number of requests a
-  client can make. Use token bucket limits to enforce per-user AI token budgets.
-- 🛡️ [Shield WAF][shield-docs] — protect your application against common
-  attacks, including the OWASP Top 10.
-- 📧 [Email validation][email-validation-docs] — prevent users from signing up
-  with fake or disposable email addresses.
-- 📝 [Signup form protection][signup-protection-docs] — combines rate limiting,
-  bot protection, and email validation to protect your signup forms.
-- 🕵️‍♂️ [Sensitive information detection][sensitive-info-docs] — detect and block
-  PII (emails, phone numbers, credit cards) in request content.
-- 🎯 [Request filters][filters-docs] — filter requests using expression-based
-  rules against request properties.
-
-## What is this?
-
-This is our adapter to integrate Arcjet into Remix.
-Arcjet helps you secure your Remix website.
-This package exists so that we can provide the best possible experience to
-Remix users.
-
-## When should I use this?
-
-Use this if you are using Remix.
-See our [_Get started_ guide][arcjet-get-started] for other supported
-frameworks and runtimes.
-
-## Install
-
-This package is ESM only.
-Install with npm in Node.js:
-
-```sh
-npm install @arcjet/remix
-```
+- 🔒 [Prompt Injection Detection][prompt-injection-docs] — detect and block
+  prompt injection attacks before they reach your LLM.
+- 🤖 [Bot Protection][bot-protection-docs] — stop scrapers, credential stuffers,
+  and AI crawlers from abusing your endpoints.
+- 🛑 [Rate Limiting][rate-limiting-docs] — token bucket, fixed window, and sliding
+  window algorithms; model AI token budgets per user.
+- 🕵️ [Sensitive Information Detection][sensitive-info-docs] — block
+  PII, credit cards, and custom patterns from entering your AI pipeline.
+- 🛡️ [Shield WAF][shield-docs] — protect against SQL injection, XSS, and other
+  common web attacks.
+- 📧 [Email Validation][email-validation-docs] — block disposable, invalid, and
+  undeliverable addresses at signup.
+- 📝 [Signup Form Protection][signup-protection-docs] — combines bot protection,
+  email validation, and rate limiting to protect your signup forms.
+- 🎯 [Request Filters][filters-docs] — expression-based rules on IP, path,
+  headers, and custom fields.
+- 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
+  detection included with every request.
 
 ## Quick start
 
@@ -148,7 +134,7 @@ For the full reference, see the [Arcjet Remix SDK docs][arcjet-reference-remix].
 
 Detect and block prompt injection attacks — attempts to override your AI
 model's instructions — before they reach your model. Pass the user's message
-via `detectPromptInjectionMessage` on each `protect()` call.
+via `detectPromptInjectionMessage` on each `protect()` call. Tune sensitivity with the `threshold` parameter (0.0–1.0, default 0.5) — higher values are more conservative.
 
 ```tsx
 import arcjet, { detectPromptInjection } from "@arcjet/remix";
@@ -187,6 +173,16 @@ export async function action(args: ActionFunctionArgs) {
 
 Arcjet allows you to configure a list of bots to allow or deny. Specifying
 `allow` means all other bots are denied. An empty allow list blocks all bots.
+
+Available categories: `CATEGORY:ACADEMIC`, `CATEGORY:ADVERTISING`,
+`CATEGORY:AI`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`, `CATEGORY:ARCHIVE`,
+`CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`, `CATEGORY:GOOGLE`,
+`CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
+`CATEGORY:OPTIMIZER`, `CATEGORY:PREVIEW`, `CATEGORY:PROGRAMMATIC`,
+`CATEGORY:SEARCH_ENGINE`, `CATEGORY:SLACK`, `CATEGORY:SOCIAL`,
+`CATEGORY:TOOL`, `CATEGORY:UNKNOWN`, `CATEGORY:VERCEL`,
+`CATEGORY:WEBHOOK`, `CATEGORY:YAHOO`. You can also allow or deny
+[specific bots by name][bot-list].
 
 ```tsx
 import arcjet, { detectBot } from "@arcjet/remix";
@@ -247,8 +243,12 @@ if (decision.results.some(isSpoofedBot)) {
 
 ## Rate limiting
 
-Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
-controlling AI token budgets.
+Arcjet supports token bucket, fixed window, and sliding window algorithms.
+Token buckets are ideal for controlling AI token budgets — set `capacity` to
+the max tokens a user can spend, `refillRate` to how many tokens are restored
+per `interval`, and deduct tokens per request via `requested` in `protect()`.
+The `interval` accepts strings (`"1s"`, `"1m"`, `"1h"`, `"1d"`) or seconds as
+a number. Use `characteristics` to track limits per user instead of per IP.
 
 ```tsx
 import arcjet, { tokenBucket, slidingWindow, fixedWindow } from "@arcjet/remix";
@@ -278,9 +278,10 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ## Sensitive information detection
 
-Detect and block PII in request content such as email addresses, phone
-numbers, and credit card numbers. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call.
+Detect and block PII in request content. Pass the content to scan via
+`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
+`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
+provide a custom `detect` callback for additional patterns.
 
 ```tsx
 import arcjet, { sensitiveInfo } from "@arcjet/remix";
@@ -307,24 +308,113 @@ if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
 }
 ```
 
+## Shield WAF
+
+Protect your application against common web attacks, including the OWASP
+Top 10.
+
+```tsx
+import arcjet, { shield } from "@arcjet/remix";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    shield({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+    }),
+  ],
+});
+```
+
+## Email validation
+
+Validate and verify email addresses. Deny types: `DISPOSABLE`, `FREE`,
+`NO_MX_RECORDS`, `NO_GRAVATAR`, `INVALID`.
+
+```tsx
+import arcjet, { validateEmail } from "@arcjet/remix";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    validateEmail({
+      mode: "LIVE",
+      deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+    }),
+  ],
+});
+
+const decision = await aj.protect(args, {
+  email: "user@example.com",
+});
+
+if (decision.isDenied() && decision.reason.isEmail()) {
+  throw Response.json({ error: "Invalid email address" }, { status: 400 });
+}
+```
+
 ## Request filters
 
 Filter requests using expression-based rules against request properties (IP,
 headers, path, method, etc.).
 
 ```tsx
-import arcjet, { filterRequest } from "@arcjet/remix";
+import arcjet, { filter } from "@arcjet/remix";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
-    filterRequest({
+    filter({
       mode: "LIVE",
       deny: ['ip.src == "1.2.3.4"'],
     }),
   ],
 });
 ```
+
+### Block by country
+
+Restrict access to specific countries — useful for licensing, compliance, or
+regional rollouts. The `allow` list denies all countries not listed:
+
+```tsx
+filter({
+  mode: "LIVE",
+  // Allow only US traffic — all other countries are denied
+  allow: ['ip.src.country == "US"'],
+});
+```
+
+### Block VPN and proxy traffic
+
+Prevent anonymized traffic from accessing sensitive endpoints — useful for
+fraud prevention, enforcing geo-restrictions, and reducing abuse:
+
+```tsx
+filter({
+  mode: "LIVE",
+  deny: [
+    "ip.src.vpn", // VPN services
+    "ip.src.proxy", // Open proxies
+    "ip.src.tor", // Tor exit nodes
+  ],
+});
+```
+
+For more nuanced handling, use `decision.ip` helpers after calling `protect()`:
+
+```ts
+const decision = await aj.protect(args);
+
+if (decision.ip.isVpn() || decision.ip.isTor()) {
+  throw Response.json({ error: "VPN traffic not allowed" }, { status: 403 });
+}
+```
+
+See the [Request Filters docs][filters-docs],
+[IP Geolocation blueprint](https://docs.arcjet.com/blueprints/ip-geolocation), and
+[VPN/Proxy Detection blueprint](https://docs.arcjet.com/blueprints/vpn-proxy-detection)
+for more details.
 
 ## IP analysis
 
@@ -443,7 +533,6 @@ export async function action(args: ActionFunctionArgs) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
-[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-remix]: https://docs.arcjet.com/reference/remix
 [remix]: https://remix.run/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

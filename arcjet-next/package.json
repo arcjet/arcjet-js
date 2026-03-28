@@ -1,18 +1,25 @@
 {
   "name": "@arcjet/next",
   "version": "1.3.0",
-  "description": "Arcjet SDK for the Next.js framework",
+  "description": "Arcjet runtime security SDK for Next.js — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
+    "ai",
     "analyze",
     "arcjet",
     "attack",
+    "bot-detection",
     "limit",
-    "nextjs",
+    "llm",
     "next",
+    "nextjs",
+    "pii",
+    "prompt-injection",
     "protect",
+    "rate-limiting",
     "secure",
     "security",
-    "verify"
+    "verify",
+    "waf"
   ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",

@@ -19,60 +19,66 @@
 This is the monorepo containing various [Arcjet][arcjet] open source packages
 for JS.
 
-## Features
+## Getting started
 
-Arcjet security features for protecting JS apps:
+1. **Get your API key** — [Sign up at `app.arcjet.com`](https://app.arcjet.com)
+   (free tier available).
+2. **Install the SDK for your framework:** Every feature works with any JavaScript application.
 
-- 🔒 [Prompt injection detection][feature-prompt-injection]
-  — detect and block prompt injection attacks on your AI application, preventing
-  users from hijacking your AI model's instructions.
-- 🤖 [Bot protection][feature-bot-protection]
-  — detect bots, block bad bots, verify legitimate bots, and reduce unwanted
-  automated requests before they reach your application.
-- 🛑 [Rate limiting][feature-rate-limiting]
-  — control how many requests a client can make to your application or API over
-  a given period of time. Use token bucket limits to enforce per-user AI token
-  budgets.
-- 🛡️ [Shield WAF][feature-shield]
-  — protects your application against common web attacks, including the OWASP
-  Top 10, by analyzing requests over time and blocking clients that show
-  suspicious behavior.
-- 📧 [Email validation][feature-email-validation]
-  — validate and verify email addresses in your application to reduce spam and
-  fraudulent signups.
-- 📝 [Signup form protection][feature-signup-protection]
-  — combines bot protection, email validation, and rate limiting to protect
-  your signup and lead capture forms from spam, fake accounts, and signup
-  fraud.
-- 🕵️‍♂️ [Sensitive information][feature-sensitive-info]
-  — detect and block sensitive data in request bodies before it enters your
-  application. Use it to prevent clients from sending personally identifiable
-  information (PII) and other data you do not want to handle.
-- 🎯 [Filters][feature-filters]
-  — define custom security and traffic rules inside your application code. Use
-  filters to block unwanted traffic based on request fields, IP reputation,
-  geography, VPN or proxy usage, and other signals.
+| Framework    | Package                         | Install                      |
+| ------------ | ------------------------------- | ---------------------------- |
+| Next.js      | `@arcjet/next`                  | `npm i @arcjet/next`         |
+| Node.js      | `@arcjet/node`                  | `npm i @arcjet/node`         |
+| Bun          | `@arcjet/bun`                   | `npm i @arcjet/bun`          |
+| Deno         | `@arcjet/deno`                  | `deno add npm:@arcjet/deno`  |
+| Express      | `@arcjet/node`                  | `npm i @arcjet/node`         |
+| Fastify      | `@arcjet/fastify`               | `npm i @arcjet/fastify`      |
+| Hono         | `@arcjet/node` or `@arcjet/bun` | `npm i @arcjet/node`         |
+| NestJS       | `@arcjet/nest`                  | `npm i @arcjet/nest`         |
+| Nuxt         | `@arcjet/nuxt`                  | `npm i @arcjet/nuxt`         |
+| Remix        | `@arcjet/remix`                 | `npm i @arcjet/remix`        |
+| React Router | `@arcjet/react-router`          | `npm i @arcjet/react-router` |
+| SvelteKit    | `@arcjet/sveltekit`             | `npm i @arcjet/sveltekit`    |
+| Astro        | `@arcjet/astro`                 | `npm i @arcjet/astro`        |
 
-## Quick start
+3. **Set your environment variable:**
 
-- [Astro][quick-start-astro]
-- [Bun + Hono][quick-start-bun-hono]
-- [Bun][quick-start-bun]
-- [Deno][quick-start-deno]
-- [Fastify][quick-start-fastify]
-- [NestJS][quick-start-nest-js]
-- [Next.js][quick-start-next-js]
-- [Node.js + Express][quick-start-node-js-express]
-- [Node.js + Hono][quick-start-node-js-hono]
-- [Node.js][quick-start-node-js]
-- [Nuxt][quick-start-nuxt]
-- [React Router][quick-start-react-router]
-- [Remix][quick-start-remix]
-- [SvelteKit][quick-start-sveltekit]
+```sh
+# .env.local (or your framework's env file)
+ARCJET_KEY=ajkey_yourkey
+```
+
+4. **Protect a route** — see the [AI protection example](#vercel-ai-sdk-example)
+   or individual [feature examples](#features) below.
 
 ### Get help
 
 [Join our Discord server][discord-invite] or [reach out for support][support].
+
+- [Documentation](https://docs.arcjet.com) — full reference and guides
+- [Example apps](#example-apps) — working starter projects for every framework
+- [Blueprints](#blueprints) — recipes for common security patterns
+
+## Features
+
+- 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
+  prompt injection attacks before they reach your LLM.
+- 🤖 [Bot Protection](#bot-protection) — stop scrapers, credential stuffers, and
+  AI crawlers from abusing your endpoints.
+- 🛑 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
+  window algorithms; model AI token budgets per user.
+- 🕵️ [Sensitive Information Detection](#sensitive-information-detection) — block
+  PII, credit cards, and custom patterns from entering your AI pipeline.
+- 🛡️ [Shield WAF](#shield-waf) — protect against SQL injection, XSS, and other
+  common web attacks.
+- 📧 [Email Validation](#email-validation) — block disposable, invalid, and
+  undeliverable addresses at signup.
+- 📝 [Signup Form Protection][feature-signup-protection] — combines bot
+  protection, email validation, and rate limiting to protect your signup forms.
+- 🎯 [Request Filters](#request-filters) — expression-based rules on IP, path,
+  headers, and custom fields.
+- 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
+  detection included with every request.
 
 ## Example apps
 
@@ -105,15 +111,16 @@ Arcjet security features for protecting JS apps:
 
 Read the docs at [`docs.arcjet.com`][arcjet-docs].
 
-### Next.js AI protection example
+> **Note:** Examples below use `@arcjet/next` for illustration. Replace with
+> the SDK for your runtime — `@arcjet/node`, `@arcjet/bun`, `@arcjet/sveltekit`,
+> etc. The API is identical across all [SDKs](#sdks).
+
+### Vercel AI SDK example
 
 This example protects a Next.js AI chat route using the [Vercel AI
 SDK][vercel-ai-sdk]: blocking automated clients that inflate costs, enforcing
 per-user token budgets, detecting sensitive information in messages, and
 blocking prompt injection attacks before they reach the model.
-
-> Examples use `@arcjet/next`. Replace with `@arcjet/node`, `@arcjet/bun`, or
-> any other [SDK](#sdks) for your runtime.
 
 ```ts
 // app/api/chat/route.ts
@@ -219,10 +226,9 @@ export async function POST(req: Request) {
 
 Detect and block prompt injection attacks — attempts to override your AI
 model's instructions — before they reach your model. Pass the user's message
-via `detectPromptInjectionMessage` on each `protect()` call.
-
-> Examples use `@arcjet/next`. Replace with `@arcjet/node`, `@arcjet/bun`, or
-> any other [SDK](#sdks) for your runtime.
+via `detectPromptInjectionMessage` on each `protect()` call. Tune sensitivity
+with the `threshold` parameter (0.0–1.0, default 0.5) — higher values are more
+conservative.
 
 ```ts
 import arcjet, { detectPromptInjection } from "@arcjet/next";
@@ -259,6 +265,16 @@ export async function POST(request: Request) {
 
 Arcjet allows you to configure a list of bots to allow or deny. Specifying
 `allow` means all other bots are denied. An empty allow list blocks all bots.
+
+Available categories: `CATEGORY:ACADEMIC`, `CATEGORY:ADVERTISING`,
+`CATEGORY:AI`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`, `CATEGORY:ARCHIVE`,
+`CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`, `CATEGORY:GOOGLE`,
+`CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
+`CATEGORY:OPTIMIZER`, `CATEGORY:PREVIEW`, `CATEGORY:PROGRAMMATIC`,
+`CATEGORY:SEARCH_ENGINE`, `CATEGORY:SLACK`, `CATEGORY:SOCIAL`,
+`CATEGORY:TOOL`, `CATEGORY:UNKNOWN`, `CATEGORY:VERCEL`,
+`CATEGORY:WEBHOOK`, `CATEGORY:YAHOO`. You can also allow or deny
+[specific bots by name][bot-list].
 
 ```ts
 import arcjet, { detectBot } from "@arcjet/next";
@@ -311,8 +327,12 @@ detectBot({
 
 ### Rate limiting
 
-Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
-controlling AI token budgets.
+Arcjet supports token bucket, fixed window, and sliding window algorithms.
+Token buckets are ideal for controlling AI token budgets — set `capacity` to
+the max tokens a user can spend, `refillRate` to how many tokens are restored
+per `interval`, and deduct tokens per request via `requested` in `protect()`.
+The `interval` accepts strings (`"1s"`, `"1m"`, `"1h"`, `"1d"`) or seconds as
+a number. Use `characteristics` to track limits per user instead of per IP.
 
 ```ts
 import arcjet, { tokenBucket } from "@arcjet/next";
@@ -342,9 +362,10 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ### Sensitive information detection
 
-Detect and block PII in request content such as email addresses, phone
-numbers, and credit card numbers. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call.
+Detect and block PII in request content. Pass the content to scan via
+`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
+`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
+provide a custom `detect` callback for additional patterns.
 
 ```ts
 import arcjet, { sensitiveInfo } from "@arcjet/next";
@@ -368,24 +389,112 @@ if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
 }
 ```
 
+### Shield WAF
+
+Protect your application against common web attacks, including the OWASP
+Top 10.
+
+```ts
+import arcjet, { shield } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    shield({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+    }),
+  ],
+});
+```
+
+### Email validation
+
+Validate and verify email addresses. Deny types: `DISPOSABLE`, `FREE`,
+`NO_MX_RECORDS`, `NO_GRAVATAR`, `INVALID`.
+
+```ts
+import arcjet, { validateEmail } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    validateEmail({
+      mode: "LIVE",
+      deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+    }),
+  ],
+});
+
+const decision = await aj.protect(request, {
+  email: "user@example.com",
+});
+
+if (decision.isDenied() && decision.reason.isEmail()) {
+  return new Response("Invalid email address", { status: 400 });
+}
+```
+
 ### Request filters
 
 Filter requests using expression-based rules against request properties (IP,
 headers, path, method, etc.).
 
 ```ts
-import arcjet, { filterRequest } from "@arcjet/next";
+import arcjet, { filter } from "@arcjet/next";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
-    filterRequest({
+    filter({
       mode: "LIVE",
       deny: ['ip.src == "1.2.3.4"', 'http.request.uri.path contains "/admin"'],
     }),
   ],
 });
 ```
+
+#### Block by country
+
+Restrict access to specific countries — useful for licensing, compliance, or
+regional rollouts. The `allow` list denies all countries not listed:
+
+```ts
+filter({
+  mode: "LIVE",
+  // Allow only US traffic — all other countries are denied
+  allow: ['ip.src.country == "US"'],
+});
+```
+
+#### Block VPN and proxy traffic
+
+Prevent anonymized traffic from accessing sensitive endpoints — useful for
+fraud prevention, enforcing geo-restrictions, and reducing abuse:
+
+```ts
+filter({
+  mode: "LIVE",
+  deny: [
+    "ip.src.vpn", // VPN services
+    "ip.src.proxy", // Open proxies
+    "ip.src.tor", // Tor exit nodes
+  ],
+});
+```
+
+For more nuanced handling, use `decision.ip` helpers after calling `protect()`:
+
+```ts
+const decision = await aj.protect(request);
+
+if (decision.ip.isVpn() || decision.ip.isTor()) {
+  return new Response("VPN traffic not allowed", { status: 403 });
+}
+```
+
+See the [Request Filters docs][feature-filters],
+[IP Geolocation blueprint][blueprint-ip-geolocation], and
+[VPN/Proxy Detection blueprint][blueprint-vpn-proxy] for more details.
 
 ### IP analysis
 
@@ -575,14 +684,20 @@ This repository follows the [Arcjet Support Policy][arcjet-support].
 
 This repository follows the [Arcjet Security Policy][arcjet-security].
 
+## Development
+
+This is a monorepo managed with [npm workspaces][npm-workspaces] and
+[Turborepo][turborepo]. Each package lives in its own directory at the repo
+root (e.g. `arcjet-next/`, `analyze/`).
+
+If you want to use Arcjet then you should install a specific package for your
+runtime (e.g. `@arcjet/next` for Next.js). If you want to contribute to the
+development of the SDKs see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Compatibility
 
-Packages maintained in this repository are compatible with maintained
+Packages maintained in this repository are compatible with LTS
 versions of Node.js and the current minor release of TypeScript.
-
-The current release line,
-`@arcjet/*` on `1.0.0-beta.*`,
-is compatible with Node.js 20.
 
 ## License
 
@@ -620,26 +735,9 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [blueprint-sampling-traffic]: https://docs.arcjet.com/blueprints/sampling
 [blueprint-vpn-proxy]: https://docs.arcjet.com/blueprints/vpn-proxy-detection
 [feature-bot-protection]: https://docs.arcjet.com/bot-protection
-[feature-email-validation]: https://docs.arcjet.com/email-validation
 [feature-filters]: https://docs.arcjet.com/filters
-[feature-rate-limiting]: https://docs.arcjet.com/rate-limiting
-[feature-sensitive-info]: https://docs.arcjet.com/sensitive-info
-[feature-shield]: https://docs.arcjet.com/shield
 [feature-signup-protection]: https://docs.arcjet.com/signup-protection
-[feature-prompt-injection]: https://docs.arcjet.com/detect-prompt-injection
 [bot-list]: https://arcjet.com/bot-list
 [best-practices]: https://docs.arcjet.com/best-practices
-[quick-start-astro]: https://docs.arcjet.com/get-started?f=astro
-[quick-start-bun-hono]: https://docs.arcjet.com/get-started?f=bun-hono
-[quick-start-bun]: https://docs.arcjet.com/get-started?f=bun
-[quick-start-deno]: https://docs.arcjet.com/get-started?f=deno
-[quick-start-fastify]: https://docs.arcjet.com/get-started?f=fastify
-[quick-start-nest-js]: https://docs.arcjet.com/get-started?f=nest-js
-[quick-start-next-js]: https://docs.arcjet.com/get-started?f=next-js
-[quick-start-node-js-express]: https://docs.arcjet.com/get-started?f=node-js-express
-[quick-start-node-js-hono]: https://docs.arcjet.com/get-started?f=node-js-hono
-[quick-start-node-js]: https://docs.arcjet.com/get-started?f=node-js
-[quick-start-nuxt]: https://docs.arcjet.com/get-started?f=nuxt
-[quick-start-react-router]: https://docs.arcjet.com/get-started?f=react-router
-[quick-start-remix]: https://docs.arcjet.com/get-started?f=remix
-[quick-start-sveltekit]: https://docs.arcjet.com/get-started?f=sveltekit
+[npm-workspaces]: https://docs.npmjs.com/cli/using-npm/workspaces
+[turborepo]: https://turbo.build/repo

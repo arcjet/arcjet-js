@@ -16,63 +16,44 @@
   </a>
 </p>
 
-[Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks.
+[Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks. Every feature works with any Next.js application.
 
-This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework. **Find
-our other [SDKs on GitHub][sdks-github]**.
+This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework.
 
-- [npm package (`@arcjet/next`)](https://www.npmjs.com/package/@arcjet/next)
-- [GitHub source code (`arcjet-next/` in `arcjet/arcjet-js`)](https://github.com/arcjet/arcjet-js/tree/main/arcjet-next)
+## Getting started
+
+1. Get your API key at [`app.arcjet.com`](https://app.arcjet.com)
+2. `npm install @arcjet/next`
+3. Set `ARCJET_KEY=ajkey_yourkey` in `.env.local`
+4. Add Arcjet to your route — see the [quick start](#quick-start) below
+
+[npm package](https://www.npmjs.com/package/@arcjet/next) |
+[GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-next) |
+[Full docs][arcjet-reference-next] |
+[Other SDKs][sdks-github]
 
 ## Features
 
-- 🔒 [Prompt injection detection][prompt-injection-docs] — detect and block
-  prompt injection attacks before they reach your AI model.
-- 🤖 [Bot protection][bot-protection-docs] — manage traffic from automated
-  clients and bots, with [verification and
-  categorization][bot-categories-docs].
-- 🛑 [Rate limiting][rate-limiting-docs] — limit the number of requests a
-  client can make. Use token bucket limits to enforce per-user AI token budgets.
-- 🛡️ [Shield WAF][shield-docs] — protect your application against common
-  attacks, including the OWASP Top 10.
-- 📧 [Email validation][email-validation-docs] — prevent users from signing up
-  with fake or disposable email addresses.
-- 📝 [Signup form protection][signup-protection-docs] — combines rate limiting,
-  bot protection, and email validation to protect your signup forms.
-- 🕵️‍♂️ [Sensitive information detection][sensitive-info-docs] — detect and block
-  PII (emails, phone numbers, credit cards) in request content.
-- 🎯 [Request filters][filters-docs] — filter requests using expression-based
-  rules against request properties.
+- 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
+  prompt injection attacks before they reach your LLM.
+- 🤖 [Bot Protection](#bot-protection) — stop scrapers, credential stuffers, and
+  AI crawlers from abusing your endpoints.
+- 🛑 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
+  window algorithms; model AI token budgets per user.
+- 🕵️ [Sensitive Information Detection](#sensitive-information-detection) — block
+  PII, credit cards, and custom patterns from entering your AI pipeline.
+- 🛡️ [Shield WAF](#shield-waf) — protect against SQL injection, XSS, and other
+  common web attacks.
+- 📧 [Email Validation](#email-validation) — block disposable, invalid, and
+  undeliverable addresses at signup.
+- 📝 [Signup Form Protection][signup-protection-docs] — combines bot protection,
+  email validation, and rate limiting to protect your signup forms.
+- 🎯 [Request Filters](#request-filters) — expression-based rules on IP, path,
+  headers, and custom fields.
+- 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
+  detection included with every request.
 - 🚅 [Nosecone][nosecone-docs] — set security headers such as
   `Content-Security-Policy` (CSP).
-
-## Example
-
-Try an Arcjet protected Next.js app live at
-[`example.arcjet.com`][example-next-url]
-([source code][example-next-source]).
-
-## What is this?
-
-This is our adapter to integrate Arcjet into Next.js.
-Arcjet helps you secure your Next.js web application.
-This package exists so that we can provide the best possible experience to
-Next.js users.
-
-## When should I use this?
-
-Use this if you are using Next.js.
-See our [_Get started_ guide][arcjet-get-started] for other supported
-frameworks.
-
-## Install
-
-This package is ESM only.
-Install with npm in Node.js:
-
-```sh
-npm install @arcjet/next
-```
 
 ## Quick start
 
@@ -195,10 +176,13 @@ For the full reference, see the [Arcjet Next.js SDK docs][arcjet-reference-next]
 
 Detect and block prompt injection attacks — attempts to override your AI
 model's instructions — before they reach your model. Pass the user's message
-via `detectPromptInjectionMessage` on each `protect()` call.
+via `detectPromptInjectionMessage` on each `protect()` call. Tune sensitivity
+with the `threshold` parameter (0.0–1.0, default 0.5) — higher values are more
+conservative.
 
 ```ts
 import arcjet, { detectPromptInjection } from "@arcjet/next";
+import { NextResponse } from "next/server";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -232,6 +216,16 @@ export async function POST(request: Request) {
 
 Arcjet allows you to configure a list of bots to allow or deny. Specifying
 `allow` means all other bots are denied. An empty allow list blocks all bots.
+
+Available categories: `CATEGORY:ACADEMIC`, `CATEGORY:ADVERTISING`,
+`CATEGORY:AI`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`, `CATEGORY:ARCHIVE`,
+`CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`, `CATEGORY:GOOGLE`,
+`CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
+`CATEGORY:OPTIMIZER`, `CATEGORY:PREVIEW`, `CATEGORY:PROGRAMMATIC`,
+`CATEGORY:SEARCH_ENGINE`, `CATEGORY:SLACK`, `CATEGORY:SOCIAL`,
+`CATEGORY:TOOL`, `CATEGORY:UNKNOWN`, `CATEGORY:VERCEL`,
+`CATEGORY:WEBHOOK`, `CATEGORY:YAHOO`. You can also allow or deny
+[specific bots by name][bot-list].
 
 ```ts
 import arcjet, { detectBot } from "@arcjet/next";
@@ -302,11 +296,16 @@ if (decision.results.some(isSpoofedBot)) {
 
 ## Rate limiting
 
-Arcjet supports multiple rate limiting algorithms. Token buckets are ideal for
-controlling AI token budgets.
+Arcjet supports token bucket, fixed window, and sliding window algorithms.
+Token buckets are ideal for controlling AI token budgets — set `capacity` to
+the max tokens a user can spend, `refillRate` to how many tokens are restored
+per `interval`, and deduct tokens per request via `requested` in `protect()`.
+The `interval` accepts strings (`"1s"`, `"1m"`, `"1h"`, `"1d"`) or seconds as
+a number. Use `characteristics` to track limits per user instead of per IP.
 
 ```ts
-import arcjet, { tokenBucket, slidingWindow, fixedWindow } from "@arcjet/next";
+import arcjet, { tokenBucket } from "@arcjet/next";
+import { NextResponse } from "next/server";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -337,12 +336,14 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ## Sensitive information detection
 
-Detect and block PII in request content such as email addresses, phone
-numbers, and credit card numbers. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call.
+Detect and block PII in request content. Pass the content to scan via
+`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
+`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
+provide a custom `detect` callback for additional patterns.
 
 ```ts
 import arcjet, { sensitiveInfo } from "@arcjet/next";
+import { NextResponse } from "next/server";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -370,24 +371,122 @@ export async function POST(request: Request) {
 }
 ```
 
+## Shield WAF
+
+Protect your application against common web attacks, including the OWASP
+Top 10.
+
+```ts
+import arcjet, { shield } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    shield({
+      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+    }),
+  ],
+});
+```
+
+## Email validation
+
+Validate and verify email addresses. Deny types: `DISPOSABLE`, `FREE`,
+`NO_MX_RECORDS`, `NO_GRAVATAR`, `INVALID`.
+
+```ts
+import arcjet, { validateEmail } from "@arcjet/next";
+import { NextResponse } from "next/server";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    validateEmail({
+      mode: "LIVE",
+      deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+    }),
+  ],
+});
+
+export async function POST(request: Request) {
+  const { email } = await request.json();
+
+  const decision = await aj.protect(request, { email });
+
+  if (decision.isDenied() && decision.reason.isEmail()) {
+    return NextResponse.json(
+      { error: "Invalid email address" },
+      { status: 400 },
+    );
+  }
+}
+```
+
 ## Request filters
 
 Filter requests using expression-based rules against request properties (IP,
 headers, path, method, etc.).
 
 ```ts
-import arcjet, { filterRequest } from "@arcjet/next";
+import arcjet, { filter } from "@arcjet/next";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
-    filterRequest({
+    filter({
       mode: "LIVE",
       deny: ['ip.src == "1.2.3.4"', 'http.request.uri.path contains "/admin"'],
     }),
   ],
 });
 ```
+
+### Block by country
+
+Restrict access to specific countries — useful for licensing, compliance, or
+regional rollouts. The `allow` list denies all countries not listed:
+
+```ts
+filter({
+  mode: "LIVE",
+  // Allow only US traffic — all other countries are denied
+  allow: ['ip.src.country == "US"'],
+});
+```
+
+### Block VPN and proxy traffic
+
+Prevent anonymized traffic from accessing sensitive endpoints — useful for
+fraud prevention, enforcing geo-restrictions, and reducing abuse:
+
+```ts
+filter({
+  mode: "LIVE",
+  deny: [
+    "ip.src.vpn", // VPN services
+    "ip.src.proxy", // Open proxies
+    "ip.src.tor", // Tor exit nodes
+  ],
+});
+```
+
+For more nuanced handling, use `decision.ip` helpers after calling `protect()`:
+
+```ts
+const decision = await aj.protect(request);
+
+if (decision.ip.isVpn() || decision.ip.isTor()) {
+  return NextResponse.json(
+    { error: "VPN traffic not allowed" },
+    { status: 403 },
+  );
+}
+```
+
+See the [Request Filters docs][filters-docs],
+[IP Geolocation blueprint](https://docs.arcjet.com/blueprints/ip-geolocation), and
+[VPN/Proxy Detection blueprint](https://docs.arcjet.com/blueprints/vpn-proxy-detection)
+for more details.
 
 ## IP analysis
 
@@ -435,6 +534,33 @@ const decision = await aj.protect(request, {
   userId: "user-123", // Replace with your actual user ID
   requested: estimate,
 });
+```
+
+## Server components and actions
+
+`@arcjet/next` exports a `request()` helper that works anywhere you don't have
+direct access to the incoming `Request` object e.g. server actions.
+
+```ts
+import arcjet, { shield } from "@arcjet/next";
+import { request } from "@arcjet/next";
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [shield({ mode: "LIVE" })],
+});
+
+export async function myServerAction() {
+  "use server";
+  const req = await request();
+  const decision = await aj.protect(req);
+
+  if (decision.isDenied()) {
+    throw new Error("Forbidden");
+  }
+
+  // ...
+}
 ```
 
 ## Best practices
@@ -509,23 +635,14 @@ export async function POST(req: Request) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
-[arcjet-get-started]: https://docs.arcjet.com/get-started
 [arcjet-reference-next]: https://docs.arcjet.com/reference/nextjs
 [next-js]: https://nextjs.org/
 [vercel-ai-sdk]: https://sdk.vercel.ai/
-[example-next-url]: https://example.arcjet.com
-[example-next-source]: https://github.com/arcjet/example-nextjs
 [sdks-github]: https://github.com/arcjet
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
-[bot-protection-docs]: https://docs.arcjet.com/bot-protection
 [bot-categories-docs]: https://docs.arcjet.com/bot-protection/identifying-bots
 [bot-list]: https://arcjet.com/bot-list
-[rate-limiting-docs]: https://docs.arcjet.com/rate-limiting
-[shield-docs]: https://docs.arcjet.com/shield
-[email-validation-docs]: https://docs.arcjet.com/email-validation
 [signup-protection-docs]: https://docs.arcjet.com/signup-protection
-[sensitive-info-docs]: https://docs.arcjet.com/sensitive-info
 [filters-docs]: https://docs.arcjet.com/filters
-[prompt-injection-docs]: https://docs.arcjet.com/detect-prompt-injection
 [nosecone-docs]: https://docs.arcjet.com/nosecone/quick-start
 [best-practices]: https://docs.arcjet.com/best-practices

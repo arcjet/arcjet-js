@@ -1,18 +1,25 @@
 {
   "name": "@arcjet/node",
   "version": "1.3.0",
-  "description": "Arcjet SDK for Node.js",
+  "description": "Arcjet runtime security SDK for Node.js — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
+    "ai",
     "analyze",
     "arcjet",
     "attack",
+    "bot-detection",
     "limit",
-    "nodejs",
+    "llm",
     "node",
+    "nodejs",
+    "pii",
+    "prompt-injection",
     "protect",
+    "rate-limiting",
     "secure",
     "security",
-    "verify"
+    "verify",
+    "waf"
   ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",

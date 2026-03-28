@@ -1,18 +1,25 @@
 {
   "name": "@arcjet/bun",
   "version": "1.3.0",
-  "description": "Arcjet SDK for Bun",
+  "description": "Arcjet runtime security SDK for Bun — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
+    "ai",
     "analyze",
     "arcjet",
     "attack",
-    "bun.sh",
+    "bot-detection",
     "bun",
+    "bun.sh",
     "limit",
+    "llm",
+    "pii",
+    "prompt-injection",
     "protect",
+    "rate-limiting",
     "secure",
     "security",
-    "verify"
+    "verify",
+    "waf"
   ],
   "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
