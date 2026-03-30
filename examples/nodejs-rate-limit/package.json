@@ -10,7 +10,7 @@
     "nosecone": "../../nosecone"
   },
   "devDependencies": {
-    "@types/node": "^24.10.9",
+    "@types/node": "^24.11.0",
     "typescript": "^5"
   }
 }
