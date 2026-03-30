@@ -11,7 +11,7 @@ import type {
   TokenBucketRateLimitOptions,
 } from "arcjet";
 import type { AstroIntegration } from "astro";
-import { z, type ZodType, type ZodTypeDef } from "astro/zod";
+import { z } from "astro/zod";
 import fs from "node:fs/promises";
 
 const resolvedVirtualClientId = "\0ARCJET_VIRTUAL_CLIENT";
@@ -222,11 +222,10 @@ export type ArcjetOptions<Characteristics extends readonly string[]> = {
   proxies?: string[];
 };
 
-function validateAndSerialize<
-  Output = any,
-  Def extends ZodTypeDef = ZodTypeDef,
-  Input = Output,
->(schema: ZodType<Output, Def, Input>, value: unknown): string {
+function validateAndSerialize(
+  schema: { parse(value: unknown): unknown },
+  value: unknown,
+): string {
   const v = schema.parse(value);
   return v ? JSON.stringify(v) : "";
 }
