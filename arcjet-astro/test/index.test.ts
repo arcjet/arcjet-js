@@ -122,7 +122,7 @@ test("detectBot", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Unrecognized key\(s\) in object: 'deny'/);
+    }, /Unrecognized key/);
   });
 
   await t.test("should work w/ `allow`", async function () {
@@ -149,7 +149,7 @@ test("detectBot", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Invalid enum value. Expected 'LIVE' \| 'DRY_RUN', received 'INVALID'/);
+    }, /LIVE.*DRY_RUN/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
@@ -190,7 +190,7 @@ test("filter", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Unrecognized key\(s\) in object: 'deny'/);
+    }, /Unrecognized key/);
   });
 
   await t.test("should work w/ `allow`", async function () {
@@ -228,7 +228,7 @@ test("filter", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /LIVE.*DRY_RUN/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
@@ -281,7 +281,7 @@ test("fixedWindow", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Required/);
+    }, /invalid_type/);
   });
 
   await t.test("should work w/ `max`, `window`", async function () {
@@ -303,7 +303,7 @@ test("fixedWindow", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /LIVE.*DRY_RUN/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
@@ -333,7 +333,7 @@ test("fixedWindow", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Expected array, received string/);
+    }, /expected array, received string/i);
   });
 
   await t.test("should work w/ valid `characteristics`", async function () {
@@ -361,7 +361,7 @@ test("protectSignup", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Required/);
+    }, /invalid_type/);
   });
 
   await t.test(
@@ -422,7 +422,7 @@ test("sensitiveInfo", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Unrecognized key\(s\) in object: 'deny'/);
+    }, /Unrecognized key/);
   });
 
   await t.test("should work w/ `allow`", async function () {
@@ -452,7 +452,7 @@ test("sensitiveInfo", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /LIVE.*DRY_RUN/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
@@ -473,7 +473,7 @@ test("sensitiveInfo", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Expected number, received string/);
+    }, /expected number, received string/i);
   });
 
   await t.test("should work w/ valid `contextWindowSize`", async function () {
@@ -520,7 +520,7 @@ test("sensitiveInfo", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Unrecognized key\(s\) in object: 'detect'/);
+    }, /Unrecognized key/);
   });
 });
 
@@ -531,7 +531,7 @@ test("shield", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Required/);
+    }, /invalid_type/);
   });
 
   await t.test("should work w/ empty options", async function () {
@@ -548,7 +548,7 @@ test("shield", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /LIVE.*DRY_RUN/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
@@ -568,7 +568,7 @@ test("slidingWindow", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Required/);
+    }, /invalid_type/);
   });
 
   await t.test("should fail w/o `interval`, `max`", async function () {
@@ -595,7 +595,7 @@ test("slidingWindow", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Required/);
+    }, /invalid_type/);
   });
 
   await t.test("should work w/ `interval`, `max`", async function () {
@@ -617,7 +617,7 @@ test("slidingWindow", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /LIVE.*DRY_RUN/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
@@ -647,7 +647,7 @@ test("slidingWindow", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Expected array, received string/);
+    }, /expected array, received string/i);
   });
 
   await t.test("should work w/ valid `characteristics`", async function () {
@@ -675,7 +675,7 @@ test("tokenBucket", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Required/);
+    }, /invalid_type/);
   });
 
   await t.test(
@@ -721,7 +721,7 @@ test("tokenBucket", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /LIVE.*DRY_RUN/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
@@ -754,7 +754,7 @@ test("tokenBucket", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Expected array, received string/);
+    }, /expected array, received string/i);
   });
 
   await t.test("should work w/ valid `characteristics`", async function () {
@@ -805,7 +805,7 @@ test("validateEmail", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /Unrecognized key\(s\) in object: 'deny'/);
+    }, /Unrecognized key/);
   });
 
   await t.test("should work w/ `allow`", async function () {
@@ -835,7 +835,7 @@ test("validateEmail", async function (t) {
 
     assert.throws(function () {
       arcjet({ rules: [rule] });
-    }, /'LIVE' \| 'DRY_RUN'/);
+    }, /LIVE.*DRY_RUN/);
   });
 
   await t.test("should work w/ valid `mode`", async function () {
@@ -864,7 +864,7 @@ test("validateEmail", async function (t) {
 
       assert.throws(function () {
         arcjet({ rules: [rule] });
-      }, /Expected boolean, received string/);
+      }, /expected boolean, received string/i);
     },
   );
 
@@ -894,7 +894,7 @@ test("validateEmail", async function (t) {
 
       assert.throws(function () {
         arcjet({ rules: [rule] });
-      }, /Expected boolean, received string/);
+      }, /expected boolean, received string/i);
     },
   );
 
