@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@arcjet/analyze-wasm-v1.3.1) (2026-03-30)
+
+
+### 🪲 Bug Fixes
+
+* **filter:** update wasm and add tests for len() on absent map fields ([#5929](https://github.com/arcjet/arcjet-js/issues/5929)) ([d2a3161](https://github.com/arcjet/arcjet-js/commit/d2a31615439e103cdd20d9e8a5e771339379fe50))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.0 to 1.3.1
+    * @arcjet/rollup-config bumped from 1.3.0 to 1.3.1
+
 ## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...@arcjet/analyze-wasm-v1.3.0) (2026-03-12)
 
 

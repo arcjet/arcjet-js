@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@arcjet/logger-v1.3.1) (2026-03-30)
+
+
+### 📝 Documentation
+
+* add api sections ([#5803](https://github.com/arcjet/arcjet-js/issues/5803)) ([a203381](https://github.com/arcjet/arcjet-js/commit/a20338124900c483ddead52be4bc3382b24ac652))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/sprintf bumped from 1.3.0 to 1.3.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.0 to 1.3.1
+    * @arcjet/rollup-config bumped from 1.3.0 to 1.3.1
+
 ## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...@arcjet/logger-v1.3.0) (2026-03-12)
 
 
