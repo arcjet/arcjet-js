@@ -5,7 +5,7 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "npm@11.6.2",
+  "packageManager": "npm@11.11.0",
   "workspaces": [
     "*"
   ],
@@ -17,7 +17,7 @@
     "test": "turbo test"
   },
   "devDependencies": {
-    "turbo": "2.8.0"
+    "turbo": "2.8.12"
   },
   "overrides": {
     "@sveltejs/kit": {
