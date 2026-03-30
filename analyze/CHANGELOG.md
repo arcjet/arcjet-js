@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@arcjet/analyze-v1.3.1) (2026-03-30)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze-wasm bumped from 1.3.0 to 1.3.1
+    * @arcjet/protocol bumped from 1.3.0 to 1.3.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.0 to 1.3.1
+    * @arcjet/rollup-config bumped from 1.3.0 to 1.3.1
+
 ## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...@arcjet/analyze-v1.3.0) (2026-03-12)
 
 

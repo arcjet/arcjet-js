@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@arcjet/bun-v1.3.1) (2026-03-30)
+
+
+### 🪲 Bug Fixes
+
+* install command & pricing references ([#5959](https://github.com/arcjet/arcjet-js/issues/5959)) ([7e54cbd](https://github.com/arcjet/arcjet-js/commit/7e54cbd2c1b3559df5f43194ed6f2ec89af5bdda))
+
+
+### 🧹 Miscellaneous Chores
+
+* **docs:** refresh READMEs ([#5951](https://github.com/arcjet/arcjet-js/issues/5951)) ([e1957d3](https://github.com/arcjet/arcjet-js/commit/e1957d32f043225f543f32bef2643737428c5356))
+* refresh READMEs ([#5940](https://github.com/arcjet/arcjet-js/issues/5940)) ([dae94a1](https://github.com/arcjet/arcjet-js/commit/dae94a1d4ee8e4ae4a2926f77f5e3c726ea67525))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.3.0 to 1.3.1
+    * @arcjet/env bumped from 1.3.0 to 1.3.1
+    * @arcjet/headers bumped from 1.3.0 to 1.3.1
+    * @arcjet/ip bumped from 1.3.0 to 1.3.1
+    * @arcjet/logger bumped from 1.3.0 to 1.3.1
+    * @arcjet/protocol bumped from 1.3.0 to 1.3.1
+    * @arcjet/transport bumped from 1.3.0 to 1.3.1
+    * arcjet bumped from 1.3.0 to 1.3.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.0 to 1.3.1
+    * @arcjet/rollup-config bumped from 1.3.0 to 1.3.1
+
 ## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...@arcjet/bun-v1.3.0) (2026-03-12)
 
 

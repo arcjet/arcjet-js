@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@arcjet/protocol-v1.3.1) (2026-03-30)
+
+
+### 🧹 Miscellaneous Chores
+
+* add ARCJET_SIGNALS to well-known bots list ([#5930](https://github.com/arcjet/arcjet-js/issues/5930)) ([a936e87](https://github.com/arcjet/arcjet-js/commit/a936e87df15dba457301870428431662b1a7ef20))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.3.0 to 1.3.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.0 to 1.3.1
+    * @arcjet/rollup-config bumped from 1.3.0 to 1.3.1
+
 ## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...@arcjet/protocol-v1.3.0) (2026-03-12)
 
 

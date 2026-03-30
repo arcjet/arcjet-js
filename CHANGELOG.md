@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...v1.3.1) (2026-03-30)
+
+
+### 🪲 Bug Fixes
+
+* **filter:** update wasm and add tests for len() on absent map fields ([#5929](https://github.com/arcjet/arcjet-js/issues/5929)) ([d2a3161](https://github.com/arcjet/arcjet-js/commit/d2a31615439e103cdd20d9e8a5e771339379fe50))
+* install command & pricing references ([#5959](https://github.com/arcjet/arcjet-js/issues/5959)) ([7e54cbd](https://github.com/arcjet/arcjet-js/commit/7e54cbd2c1b3559df5f43194ed6f2ec89af5bdda))
+
+
+### 📝 Documentation
+
+* add api sections ([#5803](https://github.com/arcjet/arcjet-js/issues/5803)) ([a203381](https://github.com/arcjet/arcjet-js/commit/a20338124900c483ddead52be4bc3382b24ac652))
+
+
+### 🧹 Miscellaneous Chores
+
+* add ARCJET_SIGNALS to well-known bots list ([#5930](https://github.com/arcjet/arcjet-js/issues/5930)) ([a936e87](https://github.com/arcjet/arcjet-js/commit/a936e87df15dba457301870428431662b1a7ef20))
+* **astro:** support astro@6 ([#5963](https://github.com/arcjet/arcjet-js/issues/5963)) ([0058e90](https://github.com/arcjet/arcjet-js/commit/0058e90853067717f5af4826231c66f93b6ed657))
+* **docs:** refresh READMEs ([#5951](https://github.com/arcjet/arcjet-js/issues/5951)) ([e1957d3](https://github.com/arcjet/arcjet-js/commit/e1957d32f043225f543f32bef2643737428c5356))
+* refresh READMEs ([#5940](https://github.com/arcjet/arcjet-js/issues/5940)) ([dae94a1](https://github.com/arcjet/arcjet-js/commit/dae94a1d4ee8e4ae4a2926f77f5e3c726ea67525))
+* **trunk:** disable trivy ([#5937](https://github.com/arcjet/arcjet-js/issues/5937)) ([d5b5b62](https://github.com/arcjet/arcjet-js/commit/d5b5b6297db6daaf787a7f98111c9a8087119a34))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump flatted from 3.3.3 to 3.4.2 in /examples/nestjs ([#5939](https://github.com/arcjet/arcjet-js/issues/5939)) ([1731808](https://github.com/arcjet/arcjet-js/commit/17318086fef5bb1f335b02083d7b7b73e31a836a))
+* **deps-dev:** bump tar from 7.5.10 to 7.5.11 in /examples/nextjs-app-dir-rate-limit ([#5924](https://github.com/arcjet/arcjet-js/issues/5924)) ([db91f18](https://github.com/arcjet/arcjet-js/commit/db91f184e2c39bf0a17af294774872ff5ba08e91))
+* **deps:** bump tar from 7.5.10 to 7.5.11 in /examples/nuxt ([#5925](https://github.com/arcjet/arcjet-js/issues/5925)) ([66cb779](https://github.com/arcjet/arcjet-js/commit/66cb779e05d5ec96bff0e7bc95c9f2593b326a98))
+
 ## [1.3.0](https://github.com/arcjet/arcjet-js/compare/v1.2.0...v1.3.0) (2026-03-12)
 
 
