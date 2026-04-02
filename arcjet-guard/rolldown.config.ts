@@ -9,20 +9,17 @@ import pkg from "./package.json" with { type: "json" };
 const dependencies = Object.keys(pkg.dependencies ?? {});
 const devDependencies = Object.keys(pkg.devDependencies ?? {});
 
-const input = Object.fromEntries(
-  globSync("src/**/*.ts", { exclude: ["**/*.d.ts", "**/*.test.ts"] }).map((f) => [
-    f.replace(/\.ts$/, ""),
-    f,
-  ]),
-);
+const input = globSync("src/**/*.ts", { exclude: ["**/*.d.ts", "**/*.test.ts"] });
 
 export default defineConfig({
   input,
   plugins: [dts()],
   output: {
+    cleanDir: true,
     dir: "dist",
     format: "esm",
     preserveModules: true,
+    preserveModulesRoot: "src",
   },
   platform: "neutral",
   tsconfig: "./tsconfig.json",

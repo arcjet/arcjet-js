@@ -2,7 +2,7 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node
 {
   "name": "arcjet-js",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:20-trixie",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-trixie",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {

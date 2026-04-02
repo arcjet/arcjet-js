@@ -28,7 +28,11 @@ import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect
 
 import { cases } from "../_shared/cases.ts";
 import type { GuardSurface } from "../_shared/cases.ts";
-import { startH2Server, startH2SecureServer } from "../_shared/mock-server.ts";
+import {
+  startH2Server,
+  startH2SecureServer,
+  getLastCapturedUserAgent,
+} from "../_shared/mock-server.ts";
 
 const surface: GuardSurface = {
   launchArcjetWithTransport,
@@ -82,6 +86,11 @@ describe("Runtime: Node.js HTTP/2 transport", () => {
     const result = input.result(decision);
     assert.ok(result);
     assert.equal(result.remainingTokens, 95);
+
+    // Verify user agent includes WinterCG key and Node.js navigator
+    assert.match(getLastCapturedUserAgent(), /^arcjet-guard-js\//);
+    assert.match(getLastCapturedUserAgent(), /node\/\d+/);
+    assert.match(getLastCapturedUserAgent(), /Node\.js/);
   });
 });
 

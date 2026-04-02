@@ -58,6 +58,7 @@ export type {
   SlidingWindowInput,
   DetectPromptInjectionConfig,
   LocalDetectSensitiveInfoConfig,
+  SensitiveInfoEntityType,
   LocalCustomConfig,
   LocalCustomInput,
   CustomEvaluateResult,
@@ -77,6 +78,27 @@ export {
 export interface LaunchOptions {
   /** Arcjet API key (starts with `"ajkey_"`). */
   key: string;
+
+  /**
+   * Not supported in `@arcjet/guard`.
+   *
+   * Rules are passed per `.guard()` call, not at launch time.
+   * See {@link GuardOptions.rules}.
+   *
+   * @deprecated
+   */
+  rules?: never;
+
+  /**
+   * Not supported in `@arcjet/guard`.
+   *
+   * `@arcjet/guard` does not have the `characteristics` concept from
+   * `@arcjet/node`. Use the `key` field on each rule input instead.
+   *
+   * @deprecated
+   */
+  characteristics?: never;
+
   /**
    * Override the default API base URL (`https://decide.arcjet.com`).
    * @internal

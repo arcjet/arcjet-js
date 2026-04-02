@@ -310,11 +310,11 @@ export function detectPromptInjection(
  * hash is transmitted, never the raw content.
  *
  * Use `allow` / `deny` in the config to filter which entity types
- * trigger a denial (e.g. `{ deny: ["SSN", "CREDIT_CARD"] }`).
+ * trigger a denial (e.g. `{ deny: ["CREDIT_CARD_NUMBER", "PHONE_NUMBER"] }`).
  *
  * @example
  * ```ts
- * const si = localDetectSensitiveInfo({ deny: ["SSN"] });
+ * const si = localDetectSensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"] });
  * const decision = await arcjet.guard({
  *   label: "tools.summary",
  *   rules: [si(userMessage)],

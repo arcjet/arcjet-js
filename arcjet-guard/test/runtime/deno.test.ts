@@ -10,7 +10,7 @@
  * Run: deno test --no-check --allow-all test/runtime/deno.test.ts
  */
 
-import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assert, assertEquals, assertMatch } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { createConnectTransport } from "npm:@connectrpc/connect-web";
 
 import {
@@ -22,6 +22,7 @@ import {
   localDetectSensitiveInfo,
   localCustom,
 } from "../../src/index.ts";
+import { userAgent } from "../../src/version.ts";
 import { cases } from "../_shared/cases.ts";
 import type { GuardSurface } from "../_shared/cases.ts";
 
@@ -39,6 +40,13 @@ const surface: GuardSurface = {
 for (const tc of cases) {
   Deno.test(`Shared: ${tc.name}`, () => tc.run(surface));
 }
+
+Deno.test("userAgent includes WinterCG deno key and Deno navigator", () => {
+  const ua = userAgent();
+  assertMatch(ua, /^arcjet-guard-js\//);
+  assertMatch(ua, /deno\/\d+/);
+  assertMatch(ua, /Deno\//);
+});
 
 /**
  * Start the H2 TLS mock server in a Node subprocess.

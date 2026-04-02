@@ -42,7 +42,7 @@ import {
 
 import { cases } from "../_shared/cases.ts";
 import type { GuardSurface } from "../_shared/cases.ts";
-import { startHttpServer } from "../_shared/mock-server.ts";
+import { startHttpServer, getLastCapturedUserAgent } from "../_shared/mock-server.ts";
 
 const surface: GuardSurface = {
   launchArcjetWithTransport,
@@ -88,5 +88,10 @@ describe("Runtime: Fetch (connect-web) transport", () => {
     const result = input.result(decision);
     assert.ok(result);
     assert.equal(result.remainingTokens, 95);
+
+    // Verify user agent includes WinterCG key and Node.js navigator
+    assert.match(getLastCapturedUserAgent(), /^arcjet-guard-js\//);
+    assert.match(getLastCapturedUserAgent(), /node\/\d+/);
+    assert.match(getLastCapturedUserAgent(), /Node\.js/);
   });
 });

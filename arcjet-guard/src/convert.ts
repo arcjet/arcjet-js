@@ -34,6 +34,7 @@ import {
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
+import type { SensitiveInfoEntityType } from "./types.ts";
 import type {
   Conclusion,
   Decision,
@@ -64,8 +65,8 @@ const noopLog = {
 /** Minimal context for `@arcjet/analyze` — only `log` is used for sensitive info. */
 const analyzeContext = { log: noopLog, characteristics: [] as string[] };
 
-/** Convert a proto-style entity string (`"EMAIL"`) to a WASM entity tag. */
-function stringToEntity(s: string): SensitiveInfoEntity {
+/** Convert an SDK entity type string to a WASM entity tag. */
+function stringToEntity(s: SensitiveInfoEntityType): SensitiveInfoEntity {
   switch (s) {
     case "EMAIL":
       return { tag: "email" };
@@ -75,13 +76,11 @@ function stringToEntity(s: string): SensitiveInfoEntity {
       return { tag: "ip-address" };
     case "CREDIT_CARD_NUMBER":
       return { tag: "credit-card-number" };
-    default:
-      return { tag: "custom", val: s };
   }
 }
 
-/** Convert a WASM entity tag back to a proto-style string. */
-function entityToString(e: SensitiveInfoEntity): string {
+/** Convert a WASM entity tag back to an SDK entity type string. */
+function entityToString(e: SensitiveInfoEntity): SensitiveInfoEntityType {
   switch (e.tag) {
     case "email":
       return "EMAIL";
@@ -92,7 +91,9 @@ function entityToString(e: SensitiveInfoEntity): string {
     case "credit-card-number":
       return "CREDIT_CARD_NUMBER";
     case "custom":
-      return e.val;
+      throw new Error(
+        `Assert \`@arcjet/guard\` does not support configuring custom sensitive info entities and will never return them in results.`,
+      );
   }
 }
 
@@ -262,7 +263,7 @@ export async function ruleToProto(rule: RuleWithInput): Promise<GuardRuleSubmiss
   const submission: Parameters<typeof create<typeof GuardRuleSubmissionSchema>>[1] = {
     configId: rule[symbolArcjetInternal].configId,
     inputId: rule[symbolArcjetInternal].inputId,
-    metadata: rule.config.metadata ?? {},
+    metadata: ruleMetadataToProto(rule),
     rule: guardRule,
     mode,
   };
@@ -270,6 +271,20 @@ export async function ruleToProto(rule: RuleWithInput): Promise<GuardRuleSubmiss
     submission.label = rule.config.label;
   }
   return create(GuardRuleSubmissionSchema, submission);
+}
+
+/**
+ * Merge config-level and input-level metadata for a rule submission.
+ * Input-level values take priority on key conflict.
+ * String inputs (prompt injection, sensitive info) don't carry metadata.
+ *
+ * @internal
+ */
+function ruleMetadataToProto(rule: RuleWithInput): Record<string, string> {
+  return {
+    ...rule.config.metadata,
+    ...(typeof rule.input === "string" ? undefined : rule.input.metadata),
+  };
 }
 
 /**
@@ -287,7 +302,7 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
             configRefillRate: rule.config.refillRate,
             configIntervalSeconds: rule.config.intervalSeconds,
             configMaxTokens: rule.config.maxTokens,
-            inputKey: rule.input.key,
+            inputKey: await sha256Hex(rule.input.key),
             inputRequested: rule.input.requested ?? 1,
           }),
         },
@@ -299,7 +314,7 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
           value: create(RuleFixedWindowSchema, {
             configMaxRequests: rule.config.maxRequests,
             configWindowSeconds: rule.config.windowSeconds,
-            inputKey: rule.input.key,
+            inputKey: await sha256Hex(rule.input.key),
             inputRequested: rule.input.requested ?? 1,
           }),
         },
@@ -311,7 +326,7 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
           value: create(RuleSlidingWindowSchema, {
             configMaxRequests: rule.config.maxRequests,
             configIntervalSeconds: rule.config.intervalSeconds,
-            inputKey: rule.input.key,
+            inputKey: await sha256Hex(rule.input.key),
             inputRequested: rule.input.requested ?? 1,
           }),
         },
@@ -389,14 +404,25 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
         try {
           const evalResult = await rule.evaluate(rule.config.data ?? {}, rule.input.data);
           resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
-          localResult = {
-            case: "resultComputed" as const,
-            value: create(ResultLocalCustomSchema, {
-              conclusion:
-                evalResult.conclusion === "DENY" ? GuardConclusion.DENY : GuardConclusion.ALLOW,
-              data: evalResult.data ?? {},
-            }),
-          };
+
+          if (evalResult.conclusion !== "ALLOW" && evalResult.conclusion !== "DENY") {
+            localResult = {
+              case: "resultError" as const,
+              value: create(ResultErrorSchema, {
+                message: `localCustom evaluate() returned invalid conclusion "${String(evalResult.conclusion)}" — must be "ALLOW" or "DENY"`,
+                code: "INVALID_CONCLUSION",
+              }),
+            };
+          } else {
+            localResult = {
+              case: "resultComputed" as const,
+              value: create(ResultLocalCustomSchema, {
+                conclusion:
+                  evalResult.conclusion === "DENY" ? GuardConclusion.DENY : GuardConclusion.ALLOW,
+                data: evalResult.data ?? {},
+              }),
+            };
+          }
         } catch (err: unknown) {
           resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
           localResult = {

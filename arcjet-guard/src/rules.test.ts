@@ -165,11 +165,18 @@ describe("localDetectSensitiveInfo", () => {
     assert.equal(typeof rule, "function");
   });
 
-  test("preserves allow/deny config", () => {
-    const rule = localDetectSensitiveInfo({ allow: ["EMAIL"], deny: ["SSN"] });
+  test("preserves allow config", () => {
+    const rule = localDetectSensitiveInfo({ allow: ["EMAIL"] });
 
     assert.deepEqual(rule.config.allow, ["EMAIL"]);
-    assert.deepEqual(rule.config.deny, ["SSN"]);
+    assert.equal(rule.config.deny, undefined);
+  });
+
+  test("preserves deny config", () => {
+    const rule = localDetectSensitiveInfo({ deny: ["PHONE_NUMBER"] });
+
+    assert.deepEqual(rule.config.deny, ["PHONE_NUMBER"]);
+    assert.equal(rule.config.allow, undefined);
   });
 
   test("produces RuleWithInput with string input", () => {

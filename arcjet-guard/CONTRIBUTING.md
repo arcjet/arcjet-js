@@ -29,7 +29,7 @@ npm run build
 
 ### Type check
 
-Uses [`tsgo`](https://github.com/nicolo-ribaudo/typescript-go-nightly)
+Uses [`tsgo`](https://github.com/microsoft/typescript-go)
 (TypeScript native preview):
 
 ```sh
@@ -76,7 +76,6 @@ npm run test-runtime-fetch      # Fetch HTTP/1.1 (connect-web)
 npm run test-runtime-bun        # Bun HTTP/2 over TLS
 npm run test-runtime-deno       # Deno fetch + ALPN over TLS
 npm run test-runtime-cloudflare # Cloudflare Workers via miniflare
-npm run test-runtime            # Node + Fetch + Cloudflare
 ```
 
 All checks (build + lint + unit tests):

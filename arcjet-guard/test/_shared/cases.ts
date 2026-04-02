@@ -153,7 +153,7 @@ export const cases: TestCase[] = [
     name: "sensitive info DENY",
     async run(s) {
       const rule = s.localDetectSensitiveInfo({});
-      const input = rule("my SSN is 123-45-6789");
+      const input = rule("my phone is 555-123-4567");
       const arcjet = guard(s, sensitiveInfoDeny);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
@@ -344,12 +344,12 @@ export const cases: TestCase[] = [
   },
 
   {
-    name: "empty rules throws before RPC",
+    name: "empty rules returns fail-open ALLOW",
     async run(s) {
       const arcjet = guard(s, tokenBucketAllow);
-      await assert.rejects(() => arcjet.guard({ label: "test", rules: [] }), {
-        message: /at least one rule/i,
-      });
+      const decision = await arcjet.guard({ label: "test", rules: [] });
+      assert.equal(decision.conclusion, "ALLOW");
+      assert.equal(decision.hasError(), true);
     },
   },
 ];

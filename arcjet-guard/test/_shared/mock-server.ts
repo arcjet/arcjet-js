@@ -60,7 +60,19 @@ export {
 
 /** Connect routes that echo back ALLOW for any single-rule request. */
 function mockRoutes(router: import("@connectrpc/connect").ConnectRouter): void {
-  router.service(DecideService, { guard: tokenBucketAllow });
+  router.service(DecideService, {
+    guard: (req) => {
+      _lastCapturedUserAgent = req.userAgent;
+      return tokenBucketAllow(req);
+    },
+  });
+}
+
+let _lastCapturedUserAgent = "";
+
+/** Last `userAgent` proto field received by the mock server. */
+export function getLastCapturedUserAgent(): string {
+  return _lastCapturedUserAgent;
 }
 
 /** Start a cleartext HTTP/2 server with the mock handler. Returns { baseUrl, close }. */

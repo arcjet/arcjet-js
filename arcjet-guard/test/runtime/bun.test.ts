@@ -27,7 +27,7 @@ import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect
 
 import { cases } from "../_shared/cases.ts";
 import type { GuardSurface } from "../_shared/cases.ts";
-import { startH2SecureServer } from "../_shared/mock-server.ts";
+import { startH2SecureServer, getLastCapturedUserAgent } from "../_shared/mock-server.ts";
 
 const surface: GuardSurface = {
   launchArcjetWithTransport,
@@ -82,5 +82,11 @@ describe("Bun: connect-node HTTP/2 over TLS (self-signed)", () => {
     const result = input.result(decision);
     expect(result).toBeDefined();
     expect(result!.remainingTokens).toBe(95);
+
+    // Verify user agent includes WinterCG key and Bun navigator
+    const ua = getLastCapturedUserAgent();
+    expect(ua).toMatch(/^arcjet-guard-js\//);
+    expect(ua).toMatch(/bun\/\d+/);
+    expect(ua).toMatch(/Bun\//);
   });
 });

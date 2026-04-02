@@ -8,11 +8,27 @@
  */
 
 import { create } from "@bufbuild/protobuf";
-import { type Transport, createClient as createConnectClient } from "@connectrpc/connect";
+import {
+  ConnectError,
+  type Transport,
+  createClient as createConnectClient,
+} from "@connectrpc/connect";
 
 import { ruleToProto, decisionFromProto } from "./convert.ts";
-import { DecideService, GuardRequestSchema } from "./proto/proto/decide/v2/decide_pb.js";
-import type { Decision, GuardOptions, RuleWithInput } from "./types.ts";
+import {
+  DecideService,
+  GuardRequestSchema,
+  type GuardResponse,
+} from "./proto/proto/decide/v2/decide_pb.js";
+import { symbolArcjetInternal } from "./symbol.ts";
+import type {
+  Decision,
+  GuardOptions,
+  InternalDecision,
+  InternalResult,
+  RuleWithInput,
+} from "./types.ts";
+import { userAgent as defaultUserAgent } from "./version.ts";
 
 /** Options for creating a guard client. */
 export interface GuardClientOptions {
@@ -33,8 +49,7 @@ export interface GuardClientOptions {
 export function createGuardClient(options: GuardClientOptions): {
   guard(opts: GuardOptions): Promise<Decision>;
 } {
-  // TODO: Dynamically build the user agent.
-  const { key, transport, userAgent = "arcjet-guard-js/0.1.0" } = options;
+  const { key, transport, userAgent = defaultUserAgent() } = options;
 
   const client = createConnectClient(DecideService, transport);
 
@@ -42,18 +57,26 @@ export function createGuardClient(options: GuardClientOptions): {
     /**
      * Evaluate a set of guard rules and return a decision.
      *
-     * @throws {Error} If `rules` is empty.
      */
     async guard(opts: GuardOptions): Promise<Decision> {
       if (opts.rules.length === 0) {
-        throw new Error("guard() requires at least one rule");
+        return failOpen("guard() requires at least one rule");
       }
+
+      opts.signal?.throwIfAborted();
 
       const startMs = performance.now();
 
-      const protoRules = await Promise.all(
-        opts.rules.map((rule: RuleWithInput) => ruleToProto(rule)),
-      );
+      let protoRules;
+      try {
+        protoRules = await Promise.all(opts.rules.map((rule: RuleWithInput) => ruleToProto(rule)));
+      } catch (cause: unknown) {
+        opts.signal?.throwIfAborted();
+        const message = cause instanceof Error ? cause.message : "Local rule evaluation failed";
+        return failOpen(message);
+      }
+
+      opts.signal?.throwIfAborted();
 
       const localEvalDurationMs = BigInt(Math.round(performance.now() - startMs));
       const sentAtUnixMs = BigInt(Date.now());
@@ -85,9 +108,55 @@ export function createGuardClient(options: GuardClientOptions): {
         callOptions.signal = opts.signal;
       }
 
-      const response = await client.guard(guardRequest, callOptions);
+      let response: GuardResponse;
+      try {
+        response = await client.guard(guardRequest, callOptions);
+      } catch (cause: unknown) {
+        opts.signal?.throwIfAborted();
 
-      return decisionFromProto(response, opts.rules);
+        const message =
+          cause instanceof ConnectError
+            ? `[${cause.code}] ${cause.message}`
+            : cause instanceof Error
+              ? cause.message
+              : "Unknown error";
+        return failOpen(message);
+      }
+
+      opts.signal?.throwIfAborted();
+
+      try {
+        return decisionFromProto(response, opts.rules);
+      } catch (cause: unknown) {
+        const message = cause instanceof Error ? cause.message : "Failed to parse server response";
+        return failOpen(message);
+      }
     },
   };
+}
+
+/**
+ * Synthesize a fail-open ALLOW decision from a transport or server error.
+ *
+ * Used when the server returns a `ConnectError` (e.g. validation failure,
+ * timeout, network error). The decision is ALLOW (fail-open) with a single
+ * error result carrying the message.
+ */
+function failOpen(message: string): Decision {
+  const errorResult: InternalResult = {
+    conclusion: "ALLOW",
+    reason: "ERROR",
+    type: "RULE_ERROR",
+    message,
+    code: "TRANSPORT_ERROR",
+    [symbolArcjetInternal]: { configId: "", inputId: "" },
+  };
+  const d: InternalDecision = {
+    conclusion: "ALLOW" as const,
+    id: "",
+    results: [errorResult],
+    hasError: () => true,
+    [symbolArcjetInternal]: { results: [errorResult] },
+  };
+  return d;
 }

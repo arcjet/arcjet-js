@@ -383,9 +383,9 @@ describe("In-memory server: prompt injection", () => {
   });
 });
 describe("In-memory server: sensitive info", () => {
-  test("DENY — SSN detected", async () => {
-    const rule = localDetectSensitiveInfo({ deny: ["SSN"] });
-    const input = rule("My SSN is 123-45-6789");
+  test("DENY — phone number detected", async () => {
+    const rule = localDetectSensitiveInfo({ deny: ["PHONE_NUMBER"] });
+    const input = rule("My phone is 555-123-4567");
 
     const arcjet = guardWithMock((req) => {
       const sub = req.ruleSubmissions[0];
@@ -406,7 +406,7 @@ describe("In-memory server: sensitive info", () => {
                 value: create(ResultLocalSensitiveInfoSchema, {
                   conclusion: GuardConclusion.DENY,
                   detected: true,
-                  detectedEntityTypes: ["SSN"],
+                  detectedEntityTypes: ["PHONE_NUMBER"],
                 }),
               },
             }),
@@ -427,7 +427,7 @@ describe("In-memory server: sensitive info", () => {
     const result = input.result(decision);
     assert.ok(result);
     assert.equal(result.type, "SENSITIVE_INFO");
-    assert.deepEqual(result.detectedEntityTypes, ["SSN"]);
+    assert.deepEqual(result.detectedEntityTypes, ["PHONE_NUMBER"]);
   });
 
   test("local WASM result is sent to server — deny list with email", async () => {
@@ -1037,12 +1037,12 @@ describe("In-memory server: request metadata", () => {
 
     await arcjet.guard({
       label: "tools.weather",
-      metadata: { region: "us-east-1", userId: "u_abc" },
+      metadata: { region: "us-east-1", user_id: "u_abc" },
       rules: [input],
     });
 
     assert.equal(receivedLabel, "tools.weather");
-    assert.deepEqual(receivedMetadata, { region: "us-east-1", userId: "u_abc" });
+    assert.deepEqual(receivedMetadata, { region: "us-east-1", user_id: "u_abc" });
   });
 
   test("user-agent is sent in the request body", async () => {
@@ -1142,17 +1142,17 @@ describe("In-memory server: DRY_RUN mode", () => {
   });
 });
 describe("In-memory server: error handling", () => {
-  test("empty rules throws before RPC", async () => {
+  test("empty rules returns fail-open ALLOW", async () => {
     const arcjet = guardWithMock(() => {
       throw new Error("should not be called");
     });
 
-    await assert.rejects(() => arcjet.guard({ label: "test", rules: [] }), {
-      message: "guard() requires at least one rule",
-    });
+    const decision = await arcjet.guard({ label: "test", rules: [] });
+    assert.equal(decision.conclusion, "ALLOW");
+    assert.equal(decision.hasError(), true);
   });
 
-  test("server error propagates as ConnectError", async () => {
+  test("server error returns fail-open ALLOW with error result", async () => {
     const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
     const input = rule({ key: "user_1" });
 
@@ -1160,14 +1160,14 @@ describe("In-memory server: error handling", () => {
       throw new ConnectError("service unavailable", Code.Unavailable);
     });
 
-    await assert.rejects(
-      () => arcjet.guard({ label: "test", rules: [input] }),
-      (err: unknown) => {
-        assert.ok(err instanceof ConnectError);
-        assert.equal(err.code, Code.Unavailable);
-        return true;
-      },
-    );
+    const decision = await arcjet.guard({ label: "test", rules: [input] });
+    assert.equal(decision.conclusion, "ALLOW");
+    assert.equal(decision.hasError(), true);
+    assert.equal(decision.results.length, 1);
+    assert.equal(decision.results[0]?.type, "RULE_ERROR");
+    if (decision.results[0]?.type === "RULE_ERROR") {
+      assert.ok(decision.results[0].message.includes("service unavailable"));
+    }
   });
 
   test("server returns error result — fail-open", async () => {

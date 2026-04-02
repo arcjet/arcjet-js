@@ -12,11 +12,15 @@
  *
  * @example
  * ```ts
- * // Deno / Cloudflare Workers:
- * import { launchArcjet, tokenBucket } from "@arcjet/guard/fetch";
+ * import { launchArcjet, tokenBucket } from "@arcjet/guard";
  *
  * const arcjet = launchArcjet({ key: "ajkey_..." });
  * ```
+ *
+ * Unlike some other `@arcjet/*` packages `@arcjet/guard` never reads any
+ * environment variables directly. All configuration must be passed explicitly
+ * via `launchArcjet()` options, `Arcjet.guard()`, or rule inputs. This
+ * includes `ARCJET_ENV` and `ARCJET_BASE_URL` among others.
  *
  * @packageDocumentation
  */
@@ -55,6 +59,7 @@ export {
   type SlidingWindowInput,
   type DetectPromptInjectionConfig,
   type LocalDetectSensitiveInfoConfig,
+  type SensitiveInfoEntityType,
   type LocalCustomConfig,
   type LocalCustomInput,
 
@@ -86,6 +91,7 @@ import { createTransport } from "./transport-fetch.ts";
  * @example
  * ```ts
  * import { launchArcjet, tokenBucket } from "@arcjet/guard/fetch";
+ * // or explicitly: import { launchArcjet } from "@arcjet/guard/fetch";
  *
  * const arcjet = launchArcjet({ key: "ajkey_..." });
  * const limit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });

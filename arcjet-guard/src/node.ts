@@ -10,7 +10,17 @@
  * // or explicitly: import { launchArcjet } from "@arcjet/guard/node";
  *
  * const arcjet = launchArcjet({ key: "ajkey_..." });
+ * const limit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+ * const decision = await arcjet.guard({
+ *   label: "tools.weather",
+ *   rules: [limit({ key: userId })],
+ * });
  * ```
+ *
+ * Unlike some other `@arcjet/*` packages `@arcjet/guard` never reads any
+ * environment variables directly. All configuration must be passed explicitly
+ * via `launchArcjet()` options, `Arcjet.guard()`, or rule inputs. This
+ * includes `ARCJET_ENV` and `ARCJET_BASE_URL` among others.
  *
  * @packageDocumentation
  */
@@ -49,6 +59,7 @@ export {
   type SlidingWindowInput,
   type DetectPromptInjectionConfig,
   type LocalDetectSensitiveInfoConfig,
+  type SensitiveInfoEntityType,
   type LocalCustomConfig,
   type LocalCustomInput,
 

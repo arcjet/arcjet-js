@@ -18,7 +18,7 @@ import { describe, test, before, after } from "node:test";
 import { Miniflare } from "miniflare";
 import { rolldown } from "rolldown";
 
-import { startHttpServer } from "../../_shared/mock-server.ts";
+import { startHttpServer, getLastCapturedUserAgent } from "../../_shared/mock-server.ts";
 
 const WORKER_ENTRY = "test/runtime/cloudflare/worker.ts";
 
@@ -95,5 +95,10 @@ describe("Runtime: Cloudflare Workers (miniflare)", () => {
     assert.equal(json.conclusion, "ALLOW");
     assert.equal(json.hasError, false);
     assert.equal(json.remainingTokens, 95);
+
+    // Verify user agent from inside the Worker includes workerd key and Cloudflare navigator
+    assert.match(getLastCapturedUserAgent(), /^arcjet-guard-js\//);
+    assert.match(getLastCapturedUserAgent(), /workerd/);
+    assert.match(getLastCapturedUserAgent(), /Cloudflare-Workers/);
   });
 });

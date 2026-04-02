@@ -164,7 +164,7 @@ describe("ruleToProto", () => {
       assert.equal(v.configRefillRate, 10);
       assert.equal(v.configIntervalSeconds, 60);
       assert.equal(v.configMaxTokens, 100);
-      assert.equal(v.inputKey, "user_1");
+      assert.equal(v.inputKey, "79b0aa0042b3c05617c378046a6553ec2cd81e9995959a6012f9b497a18ec82b");
       assert.equal(v.inputRequested, 5);
     }
   });
@@ -178,7 +178,10 @@ describe("ruleToProto", () => {
     if (proto.rule?.rule.case === "fixedWindow") {
       assert.equal(proto.rule.rule.value.configMaxRequests, 100);
       assert.equal(proto.rule.rule.value.configWindowSeconds, 3600);
-      assert.equal(proto.rule.rule.value.inputKey, "user_1");
+      assert.equal(
+        proto.rule.rule.value.inputKey,
+        "79b0aa0042b3c05617c378046a6553ec2cd81e9995959a6012f9b497a18ec82b",
+      );
       assert.equal(proto.rule.rule.value.inputRequested, 1); // default
     }
   });
@@ -416,7 +419,7 @@ describe("decisionFromProto", () => {
 
   test("DENY decision with sensitive info result", () => {
     const rule = localDetectSensitiveInfo();
-    const input = rule("my SSN is 123-45-6789");
+    const input = rule("my phone is 555-123-4567");
 
     const response = makeResponse(GuardConclusion.DENY, [
       {
@@ -429,7 +432,7 @@ describe("decisionFromProto", () => {
           value: create(ResultLocalSensitiveInfoSchema, {
             conclusion: GuardConclusion.DENY,
             detected: true,
-            detectedEntityTypes: ["SSN"],
+            detectedEntityTypes: ["PHONE_NUMBER"],
           }),
         },
       },
@@ -441,7 +444,7 @@ describe("decisionFromProto", () => {
     const result = input.result(decision);
     assert.ok(result);
     assert.equal(result.type, "SENSITIVE_INFO");
-    assert.deepEqual(result.detectedEntityTypes, ["SSN"]);
+    assert.deepEqual(result.detectedEntityTypes, ["PHONE_NUMBER"]);
   });
 
   test("ALLOW decision with custom result", () => {
@@ -977,8 +980,8 @@ describe("Config-level results() and deniedResult() for all rule types", () => {
   });
 
   test("localDetectSensitiveInfo: results() and deniedResult()", () => {
-    const rule = localDetectSensitiveInfo({ deny: ["SSN"] });
-    const input = rule("my SSN is 123-45-6789");
+    const rule = localDetectSensitiveInfo({ deny: ["PHONE_NUMBER"] });
+    const input = rule("my phone is 555-123-4567");
 
     const response = makeResponse(GuardConclusion.DENY, [
       {
@@ -1065,8 +1068,8 @@ describe("Input-level deniedResult() for remaining rule types", () => {
   });
 
   test("localDetectSensitiveInfo input.deniedResult() returns denied result", () => {
-    const rule = localDetectSensitiveInfo({ deny: ["SSN"] });
-    const input = rule("my SSN is 123-45-6789");
+    const rule = localDetectSensitiveInfo({ deny: ["PHONE_NUMBER"] });
+    const input = rule("my phone is 555-123-4567");
 
     const response = makeResponse(GuardConclusion.DENY, [
       {
