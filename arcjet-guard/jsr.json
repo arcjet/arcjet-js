@@ -1,0 +1,13 @@
+{
+  "$schema": "https://jsr.io/schema/config-file.v1.json",
+  "name": "@arcjet/guard",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/fetch.ts",
+    "./node": "./src/node.ts",
+    "./fetch": "./src/fetch.ts"
+  },
+  "publish": {
+    "include": ["src/**/*.ts", "src/**/*.js", "package.json", "LICENSE", "README.md"]
+  }
+}

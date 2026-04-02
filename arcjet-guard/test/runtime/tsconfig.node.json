@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationDir": null,
+    "emitDeclarationOnly": false,
+    "isolatedDeclarations": false,
+    "noEmit": true,
+    "rootDir": "../..",
+    "types": ["node"]
+  },
+  "include": [
+    "node.test.ts",
+    "fetch.test.ts",
+    "cloudflare/cloudflare.test.ts",
+    "cloudflare/worker.ts",
+    "../_shared/**/*.ts"
+  ],
+  "exclude": []
+}

@@ -1,0 +1,164 @@
+name: Guard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - arcjet-guard/**
+      - .github/workflows/guard.yml
+  pull_request:
+    paths:
+      - arcjet-guard/**
+      - .github/workflows/guard.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DO_NOT_TRACK: "1"
+
+defaults:
+  run:
+    working-directory: arcjet-guard
+
+jobs:
+  build:
+    name: "Build & Unit Test (Node ${{ matrix.node }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24, 25]
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        with:
+          disable-sudo-and-containers: true
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit tests (with coverage)
+        run: npm run test-unit
+
+  lint:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        with:
+          disable-sudo-and-containers: true
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint (oxlint)
+        run: npm run lint
+
+      - name: Type check (tsgo)
+        run: npm run typecheck
+
+  runtime:
+    name: "Runtime (${{ matrix.runtime }}${{ matrix.node-version && format(' node{0}', matrix.node-version) || matrix.deno-version && format(' {0}', matrix.deno-version) || matrix.bun-version && format(' {0}', matrix.bun-version) || '' }})"
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runtime: node
+            script: test-runtime-node
+            node-version: 22
+          - runtime: node
+            script: test-runtime-node
+            node-version: 24
+          - runtime: node
+            script: test-runtime-node
+            node-version: 25
+          - runtime: fetch
+            script: test-runtime-fetch
+            node-version: 22
+          - runtime: fetch
+            script: test-runtime-fetch
+            node-version: 24
+          - runtime: fetch
+            script: test-runtime-fetch
+            node-version: 25
+          - runtime: cloudflare
+            script: test-runtime-cloudflare
+          - runtime: bun
+            script: test-runtime-bun
+            bun-version: 1.3.0
+          - runtime: bun
+            script: test-runtime-bun
+            bun-version: latest
+          - runtime: deno
+            script: test-runtime-deno
+            deno-version: lts
+          - runtime: deno
+            script: test-runtime-deno
+            deno-version: latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        with:
+          disable-sudo-and-containers: true
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: ${{ matrix.node-version || '24' }}
+
+      - name: Setup Bun
+        if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
+        with:
+          bun-version: ${{ matrix.bun-version }}
+
+      - name: Setup Deno
+        if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@bdaa2e4f849cbc8d7b46337cf37db0dc9b321074 # v2.0.3
+        with:
+          deno-version: ${{ matrix.deno-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Runtime test (${{ matrix.runtime }})
+        run: npm run ${{ matrix.script }}

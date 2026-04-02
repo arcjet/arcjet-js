@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "lib": ["deno.ns"],
+    "verbatimModuleSyntax": true
+  },
+  "include": ["deno.test.ts"]
+}
