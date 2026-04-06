@@ -298,14 +298,9 @@ const denied = limit.deniedResult(decision); // first denied result, or null
 
 ## MCP server
 
-Arcjet provides an [MCP server](https://docs.arcjet.com/mcp-server) at
-`https://api.arcjet.com/mcp` that lets AI assistants and coding tools manage
-your Arcjet account — list teams and sites, create sites, retrieve API keys,
-and monitor requests. Connect it to ChatGPT, Claude, Cursor, VS Code with
-Copilot, or any client that supports the MCP specification.
-
-See the [MCP server docs](https://docs.arcjet.com/mcp-server) for setup
-instructions.
+Connect your AI assistant to the Arcjet MCP server at
+`https://api.arcjet.com/mcp` to manage sites, retrieve SDK keys, and more.
+See the [docs](https://docs.arcjet.com/mcp-server) for setup instructions.
 
 ## Runtime support
 
