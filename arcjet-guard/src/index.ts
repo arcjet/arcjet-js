@@ -11,6 +11,10 @@
  * `launchArcjet()`, or import from the bare `@arcjet/guard` specifier
  * which resolves to the correct transport via conditional exports.
  *
+ * Arcjet also provides an MCP server at `https://api.arcjet.com/mcp` that
+ * lets AI assistants manage your account, retrieve API keys, and monitor
+ * requests. See {@link https://docs.arcjet.com/mcp-server} for details.
+ *
  * @packageDocumentation
  */
 
