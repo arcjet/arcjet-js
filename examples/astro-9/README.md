@@ -5,7 +5,11 @@
   </picture>
 </a>
 
-# Arcjet Integration with Astro
+# Arcjet Integration with Astro (v5)
+
+> [!WARNING]
+> This example tracks an older version of Astro (v5). See the
+> [`astro`](../astro/) example for the latest version.
 
 This example shows how to use the Arcjet Integration with
 [astro](https://astro.build/).
