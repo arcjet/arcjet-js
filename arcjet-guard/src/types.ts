@@ -312,6 +312,22 @@ export interface TokenBucketConfig {
    * ```
    */
   maxTokens: number;
+  /**
+   * Bucket identifier for grouping rate limit counters in the dashboard.
+   * Validated as a slug (max 256 bytes, letters/digits/dash/dot,
+   * must start and end with a letter or digit).
+   *
+   * Different configs sharing the same bucket name still get independent
+   * counters — a config hash is appended server-side.
+   *
+   * @default "default-token-bucket"
+   *
+   * @example
+   * ```ts
+   * tokenBucket({ bucket: "user-tokens", refillRate: 10, intervalSeconds: 60, maxTokens: 100 })
+   * ```
+   */
+  bucket?: string;
 }
 
 /** Token bucket rate limiting input. */
@@ -418,6 +434,22 @@ export interface FixedWindowConfig {
    * ```
    */
   windowSeconds: number;
+  /**
+   * Bucket identifier for grouping rate limit counters in the dashboard.
+   * Validated as a slug (max 256 bytes, letters/digits/dash/dot,
+   * must start and end with a letter or digit).
+   *
+   * Different configs sharing the same bucket name still get independent
+   * counters — a config hash is appended server-side.
+   *
+   * @default "default-fixed-window"
+   *
+   * @example
+   * ```ts
+   * fixedWindow({ bucket: "page-views", maxRequests: 100, windowSeconds: 60 })
+   * ```
+   */
+  bucket?: string;
 }
 
 /** Fixed window rate limiting input. */
@@ -524,6 +556,22 @@ export interface SlidingWindowConfig {
    * ```
    */
   intervalSeconds: number;
+  /**
+   * Bucket identifier for grouping rate limit counters in the dashboard.
+   * Validated as a slug (max 256 bytes, letters/digits/dash/dot,
+   * must start and end with a letter or digit).
+   *
+   * Different configs sharing the same bucket name still get independent
+   * counters — a config hash is appended server-side.
+   *
+   * @default "default-sliding-window"
+   *
+   * @example
+   * ```ts
+   * slidingWindow({ bucket: "event-writes", maxRequests: 1_000, intervalSeconds: 3600 })
+   * ```
+   */
+  bucket?: string;
 }
 
 /** Sliding window rate limiting input. */
@@ -850,6 +898,8 @@ export type RuleWithConfigTokenBucket = {
   (input: TokenBucketInput): RuleWithInputTokenBucket;
   /** Extract all token bucket results from a decision. */
   results(decision: Decision): RuleResultTokenBucket[];
+  /** Return the first token bucket result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultTokenBucket | null;
   /** Return the first denied token bucket result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultTokenBucket | null;
 };
@@ -866,6 +916,8 @@ export type RuleWithConfigFixedWindow = {
   (input: FixedWindowInput): RuleWithInputFixedWindow;
   /** Extract all fixed window results from a decision. */
   results(decision: Decision): RuleResultFixedWindow[];
+  /** Return the first fixed window result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultFixedWindow | null;
   /** Return the first denied fixed window result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultFixedWindow | null;
 };
@@ -882,6 +934,8 @@ export type RuleWithConfigSlidingWindow = {
   (input: SlidingWindowInput): RuleWithInputSlidingWindow;
   /** Extract all sliding window results from a decision. */
   results(decision: Decision): RuleResultSlidingWindow[];
+  /** Return the first sliding window result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultSlidingWindow | null;
   /** Return the first denied sliding window result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultSlidingWindow | null;
 };
@@ -898,6 +952,8 @@ export type RuleWithConfigPromptInjection = {
   (input: string): RuleWithInputPromptInjection;
   /** Extract all prompt injection results from a decision. */
   results(decision: Decision): RuleResultPromptInjection[];
+  /** Return the first prompt injection result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultPromptInjection | null;
   /** Return the first denied prompt injection result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultPromptInjection | null;
 };
@@ -914,6 +970,8 @@ export type RuleWithConfigSensitiveInfo = {
   (input: string): RuleWithInputSensitiveInfo;
   /** Extract all sensitive info results from a decision. */
   results(decision: Decision): RuleResultSensitiveInfo[];
+  /** Return the first sensitive info result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultSensitiveInfo | null;
   /** Return the first denied sensitive info result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultSensitiveInfo | null;
 };
@@ -930,6 +988,8 @@ export type RuleWithConfigCustom = {
   (input: LocalCustomInput): RuleWithInputCustom;
   /** Extract all custom rule results from a decision. */
   results(decision: Decision): RuleResultCustom[];
+  /** Return the first custom rule result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultCustom | null;
   /** Return the first denied custom rule result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultCustom | null;
 };
@@ -953,9 +1013,11 @@ export type RuleWithInputTokenBucket = {
   readonly input: TokenBucketInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultTokenBucket[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultTokenBucket | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultTokenBucket | null;
 };
 
@@ -969,9 +1031,11 @@ export type RuleWithInputFixedWindow = {
   readonly input: FixedWindowInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultFixedWindow[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultFixedWindow | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultFixedWindow | null;
 };
 
@@ -985,9 +1049,11 @@ export type RuleWithInputSlidingWindow = {
   readonly input: SlidingWindowInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultSlidingWindow[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultSlidingWindow | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultSlidingWindow | null;
 };
 
@@ -1001,9 +1067,11 @@ export type RuleWithInputPromptInjection = {
   readonly input: string;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultPromptInjection[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultPromptInjection | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultPromptInjection | null;
 };
 
@@ -1017,9 +1085,11 @@ export type RuleWithInputSensitiveInfo = {
   readonly input: string;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultSensitiveInfo[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultSensitiveInfo | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultSensitiveInfo | null;
 };
 
@@ -1035,9 +1105,11 @@ export type RuleWithInputCustom = {
   readonly evaluate?: CustomEvaluateFn;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultCustom[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultCustom | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultCustom | null;
 };
 

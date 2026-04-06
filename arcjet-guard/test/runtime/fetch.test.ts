@@ -74,7 +74,11 @@ describe("Runtime: Fetch (connect-web) transport", () => {
 
   test("token bucket ALLOW over real HTTP/1.1 fetch", async () => {
     const arcjet = launchArcjet({ key: "ajkey_dummy", baseUrl });
-    const limit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const limit = tokenBucket({
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = limit({ key: "user_1" });
 
     const decision = await arcjet.guard({

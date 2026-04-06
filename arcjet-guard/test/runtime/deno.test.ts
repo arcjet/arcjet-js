@@ -103,7 +103,11 @@ Deno.test("Deno: token bucket ALLOW over HTTPS HTTP/2 (fetch transport)", async 
       fetch: (input, init) => fetch(input, { ...init, redirect: "follow", client: httpClient }),
     });
     const arcjet = launchArcjetWithTransport({ key: "ajkey_dummy", transport });
-    const limit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const limit = tokenBucket({
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = limit({ key: "user_1" });
 
     const decision = await arcjet.guard({

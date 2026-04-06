@@ -13,7 +13,12 @@ import { symbolArcjetInternal } from "./symbol.ts";
 
 describe("tokenBucket", () => {
   test("returns a callable with type discriminant", () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
 
     assert.equal(rule.type, "TOKEN_BUCKET");
     assert.equal(typeof rule, "function");
@@ -28,8 +33,30 @@ describe("tokenBucket", () => {
     assert.equal(rule.config.maxTokens, 100);
   });
 
-  test("produces RuleWithInput with correct type and fields", () => {
+  test("bucket is optional", () => {
     const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+
+    assert.equal(rule.config.bucket, undefined);
+  });
+
+  test("bucket is preserved when set", () => {
+    const rule = tokenBucket({
+      bucket: "user-tokens",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
+
+    assert.equal(rule.config.bucket, "user-tokens");
+  });
+
+  test("produces RuleWithInput with correct type and fields", () => {
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1", requested: 5 });
 
     assert.equal(input.type, "TOKEN_BUCKET");
@@ -39,7 +66,12 @@ describe("tokenBucket", () => {
   });
 
   test("produces unique inputId per call", () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const a = rule({ key: "alice" });
     const b = rule({ key: "bob" });
 
@@ -47,7 +79,12 @@ describe("tokenBucket", () => {
   });
 
   test("shares configId across inputs", () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const a = rule({ key: "alice" });
     const b = rule({ key: "bob" });
 
@@ -55,15 +92,20 @@ describe("tokenBucket", () => {
   });
 
   test("has configId on the rule itself", () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     assert.equal(rule[symbolArcjetInternal].configId, input[symbolArcjetInternal].configId);
   });
 
   test("different factory instances have different configIds", () => {
-    const a = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
-    const b = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const a = tokenBucket({ bucket: "test", refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const b = tokenBucket({ bucket: "test", refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
 
     assert.notEqual(a[symbolArcjetInternal].configId, b[symbolArcjetInternal].configId);
   });
@@ -71,21 +113,33 @@ describe("tokenBucket", () => {
 
 describe("fixedWindow", () => {
   test("returns a callable with type discriminant", () => {
-    const rule = fixedWindow({ maxRequests: 100, windowSeconds: 3600 });
+    const rule = fixedWindow({ bucket: "test", maxRequests: 100, windowSeconds: 3600 });
 
     assert.equal(rule.type, "FIXED_WINDOW");
     assert.equal(typeof rule, "function");
   });
 
   test("preserves config", () => {
-    const rule = fixedWindow({ maxRequests: 100, windowSeconds: 3600 });
+    const rule = fixedWindow({ bucket: "test", maxRequests: 100, windowSeconds: 3600 });
 
     assert.equal(rule.config.maxRequests, 100);
     assert.equal(rule.config.windowSeconds, 3600);
   });
 
-  test("produces RuleWithInput with correct type and fields", () => {
+  test("bucket is optional", () => {
     const rule = fixedWindow({ maxRequests: 100, windowSeconds: 3600 });
+
+    assert.equal(rule.config.bucket, undefined);
+  });
+
+  test("bucket is preserved when set", () => {
+    const rule = fixedWindow({ bucket: "page-views", maxRequests: 100, windowSeconds: 3600 });
+
+    assert.equal(rule.config.bucket, "page-views");
+  });
+
+  test("produces RuleWithInput with correct type and fields", () => {
+    const rule = fixedWindow({ bucket: "test", maxRequests: 100, windowSeconds: 3600 });
     const input = rule({ key: "user_1" });
 
     assert.equal(input.type, "FIXED_WINDOW");
@@ -94,7 +148,7 @@ describe("fixedWindow", () => {
   });
 
   test("shares configId across inputs", () => {
-    const rule = fixedWindow({ maxRequests: 100, windowSeconds: 3600 });
+    const rule = fixedWindow({ bucket: "test", maxRequests: 100, windowSeconds: 3600 });
     const a = rule({ key: "alice" });
     const b = rule({ key: "bob" });
 
@@ -104,21 +158,33 @@ describe("fixedWindow", () => {
 
 describe("slidingWindow", () => {
   test("returns a callable with type discriminant", () => {
-    const rule = slidingWindow({ maxRequests: 500, intervalSeconds: 60 });
+    const rule = slidingWindow({ bucket: "test", maxRequests: 500, intervalSeconds: 60 });
 
     assert.equal(rule.type, "SLIDING_WINDOW");
     assert.equal(typeof rule, "function");
   });
 
   test("preserves config", () => {
-    const rule = slidingWindow({ maxRequests: 500, intervalSeconds: 60 });
+    const rule = slidingWindow({ bucket: "test", maxRequests: 500, intervalSeconds: 60 });
 
     assert.equal(rule.config.maxRequests, 500);
     assert.equal(rule.config.intervalSeconds, 60);
   });
 
-  test("produces RuleWithInput with correct type and fields", () => {
+  test("bucket is optional", () => {
     const rule = slidingWindow({ maxRequests: 500, intervalSeconds: 60 });
+
+    assert.equal(rule.config.bucket, undefined);
+  });
+
+  test("bucket is preserved when set", () => {
+    const rule = slidingWindow({ bucket: "event-writes", maxRequests: 500, intervalSeconds: 60 });
+
+    assert.equal(rule.config.bucket, "event-writes");
+  });
+
+  test("produces RuleWithInput with correct type and fields", () => {
+    const rule = slidingWindow({ bucket: "test", maxRequests: 500, intervalSeconds: 60 });
     const input = rule({ key: "user_1" });
 
     assert.equal(input.type, "SLIDING_WINDOW");
@@ -213,7 +279,12 @@ describe("localCustom", () => {
 
 describe("Rule config options", () => {
   test("mode defaults to undefined (LIVE)", () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     assert.equal(input.config.mode, undefined);
@@ -221,6 +292,7 @@ describe("Rule config options", () => {
 
   test("DRY_RUN mode is preserved", () => {
     const rule = tokenBucket({
+      bucket: "test",
       refillRate: 10,
       intervalSeconds: 60,
       maxTokens: 100,
@@ -233,6 +305,7 @@ describe("Rule config options", () => {
 
   test("label is preserved", () => {
     const rule = tokenBucket({
+      bucket: "test",
       refillRate: 10,
       intervalSeconds: 60,
       maxTokens: 100,
@@ -245,6 +318,7 @@ describe("Rule config options", () => {
 
   test("metadata is preserved", () => {
     const rule = tokenBucket({
+      bucket: "test",
       refillRate: 10,
       intervalSeconds: 60,
       maxTokens: 100,
@@ -258,7 +332,12 @@ describe("Rule config options", () => {
 
 describe("result() and deniedResult() with no decision data", () => {
   test("result() returns null for a plain decision", () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     // A decision without [kInternal] — result lookup should return null
@@ -273,7 +352,12 @@ describe("result() and deniedResult() with no decision data", () => {
   });
 
   test("deniedResult() returns null for a plain decision", () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     const decision = {
@@ -287,7 +371,12 @@ describe("result() and deniedResult() with no decision data", () => {
   });
 
   test("results() returns empty array for a plain decision", () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
 
     const decision = {
       conclusion: "ALLOW" as const,
@@ -300,7 +389,12 @@ describe("result() and deniedResult() with no decision data", () => {
   });
 
   test("deniedResult() on RuleWithConfig returns null for a plain decision", () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
 
     const decision = {
       conclusion: "ALLOW" as const,

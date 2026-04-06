@@ -32,7 +32,7 @@ import { userAgent as defaultUserAgent } from "./version.ts";
 
 /** Options for creating a guard client. */
 export interface GuardClientOptions {
-  /** Arcjet API key. */
+  /** Arcjet key. */
   key: string;
   /** Connect RPC transport. */
   transport: Transport;

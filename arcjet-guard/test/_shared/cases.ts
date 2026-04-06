@@ -64,7 +64,12 @@ export const cases: TestCase[] = [
   {
     name: "token bucket ALLOW",
     async run(s) {
-      const rule = s.tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+      const rule = s.tokenBucket({
+        bucket: "test",
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+      });
       const input = rule({ key: "user_1", requested: 5 });
       const arcjet = guard(s, tokenBucketAllow);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
@@ -81,7 +86,12 @@ export const cases: TestCase[] = [
   {
     name: "token bucket DENY",
     async run(s) {
-      const rule = s.tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+      const rule = s.tokenBucket({
+        bucket: "test",
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+      });
       const input = rule({ key: "user_1" });
       const arcjet = guard(s, tokenBucketDeny);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
@@ -273,8 +283,18 @@ export const cases: TestCase[] = [
   {
     name: "multi-rule ALLOW",
     async run(s) {
-      const rule1 = s.tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
-      const rule2 = s.tokenBucket({ refillRate: 5, intervalSeconds: 30, maxTokens: 50 });
+      const rule1 = s.tokenBucket({
+        bucket: "test",
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+      });
+      const rule2 = s.tokenBucket({
+        bucket: "test",
+        refillRate: 5,
+        intervalSeconds: 30,
+        maxTokens: 50,
+      });
       const input1 = rule1({ key: "user_1" });
       const input2 = rule2({ key: "user_1" });
       const arcjet = guard(s, multiRuleAllow);
@@ -288,7 +308,12 @@ export const cases: TestCase[] = [
   {
     name: "API key sent as Bearer token",
     async run(s) {
-      const rule = s.tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+      const rule = s.tokenBucket({
+        bucket: "test",
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+      });
       const input = rule({ key: "user_1" });
 
       let capturedAuth = "";
@@ -308,7 +333,12 @@ export const cases: TestCase[] = [
   {
     name: "label and metadata sent to server",
     async run(s) {
-      const rule = s.tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+      const rule = s.tokenBucket({
+        bucket: "test",
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+      });
       const input = rule({ key: "user_1" });
 
       let capturedLabel = "";
@@ -333,7 +363,12 @@ export const cases: TestCase[] = [
   {
     name: "server error result — fail-open",
     async run(s) {
-      const rule = s.tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+      const rule = s.tokenBucket({
+        bucket: "test",
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+      });
       const input = rule({ key: "user_1" });
       const arcjet = guard(s, errorResult);
       const decision = await arcjet.guard({ label: "test", rules: [input] });

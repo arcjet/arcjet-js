@@ -25,6 +25,7 @@ import {
   ResultLocalCustomSchema,
   ResultErrorSchema,
   GuardConclusion,
+  GuardReason,
   GuardRuleType,
   type GuardRequest,
   type GuardResponse,
@@ -46,6 +47,7 @@ export {
   ResultLocalCustomSchema,
   ResultErrorSchema,
   GuardConclusion,
+  GuardReason,
   GuardRuleType,
   type GuardRequest,
   type GuardResponse,
@@ -105,6 +107,7 @@ export function tokenBucketDeny(req: GuardRequest): GuardResponse {
     decision: create(GuardDecisionSchema, {
       id: "gdec_deny_tb",
       conclusion: GuardConclusion.DENY,
+      reason: GuardReason.RATE_LIMIT,
       ruleResults: [
         create(GuardRuleResultSchema, {
           resultId: "gres_tb_deny",
@@ -164,6 +167,7 @@ export function fixedWindowDeny(req: GuardRequest): GuardResponse {
     decision: create(GuardDecisionSchema, {
       id: "gdec_deny_fw",
       conclusion: GuardConclusion.DENY,
+      reason: GuardReason.RATE_LIMIT,
       ruleResults: [
         create(GuardRuleResultSchema, {
           resultId: "gres_fw_deny",
@@ -222,6 +226,7 @@ export function promptInjectionDeny(req: GuardRequest): GuardResponse {
     decision: create(GuardDecisionSchema, {
       id: "gdec_deny_pi",
       conclusion: GuardConclusion.DENY,
+      reason: GuardReason.PROMPT_INJECTION,
       ruleResults: [
         create(GuardRuleResultSchema, {
           resultId: "gres_pi_deny",
@@ -247,6 +252,7 @@ export function sensitiveInfoDeny(req: GuardRequest): GuardResponse {
     decision: create(GuardDecisionSchema, {
       id: "gdec_deny_si",
       conclusion: GuardConclusion.DENY,
+      reason: GuardReason.SENSITIVE_INFO,
       ruleResults: [
         create(GuardRuleResultSchema, {
           resultId: "gres_si_deny",
@@ -322,6 +328,7 @@ export function customRuleDeny(req: GuardRequest): GuardResponse {
     decision: create(GuardDecisionSchema, {
       id: "gdec_deny_custom",
       conclusion: GuardConclusion.DENY,
+      reason: GuardReason.CUSTOM,
       ruleResults: [
         create(GuardRuleResultSchema, {
           resultId: "gres_custom_deny",
