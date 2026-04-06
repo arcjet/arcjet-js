@@ -1,5 +1,5 @@
 {
-  "name": "astro",
+  "name": "astro-5",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@arcjet/astro": "file:../../arcjet-astro",
-    "@astrojs/node": "^10.0.4",
-    "astro": "^6.1.4",
+    "@astrojs/node": "^9.5.5",
+    "astro": "^5.18.1",
     "typescript": "^5.9.3"
   }
 }

@@ -1,0 +1,26 @@
+---
+import { actions } from 'astro:actions';
+
+// Pages that use Astro Actions can be prerendered because the form submission
+// via POST is never prerendered.
+export const prerender = true;
+
+const result = Astro.getActionResult(actions.bot);
+---
+
+<div id="detect-bot">
+  {result ? (
+    <div>{result.error ? result.error.message || result.error.code : result.data}</div>
+  ) : (
+    <form  method="POST" action={actions.bot}>
+      Are you a bot?
+      <button>Check</button>
+    </form>
+  )}
+</div>
+
+<style>
+  #detect-bot {
+    margin: 5px auto;
+  }
+</style>
