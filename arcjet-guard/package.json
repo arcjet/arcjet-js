@@ -56,12 +56,6 @@
       "import": "./dist/fetch.js"
     }
   },
-  "typesVersions": {
-    "*": {
-      "node": ["./dist/node.d.ts"],
-      "fetch": ["./dist/fetch.d.ts"]
-    }
-  },
   "publishConfig": {
     "access": "public",
     "tag": "experimental"
