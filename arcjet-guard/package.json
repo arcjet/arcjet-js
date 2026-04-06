@@ -22,6 +22,8 @@
     "dist/"
   ],
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "bun": {
@@ -52,6 +54,12 @@
     "./fetch": {
       "types": "./dist/fetch.d.ts",
       "import": "./dist/fetch.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "node": ["./dist/node.d.ts"],
+      "fetch": ["./dist/fetch.d.ts"]
     }
   },
   "publishConfig": {
