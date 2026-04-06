@@ -38,13 +38,25 @@ export declare type RuleTokenBucket = Message<"proto.decide.v2.RuleTokenBucket">
   configMaxTokens: number;
 
   /**
-   * Input: the key to track rate limits against (e.g. user ID).
-   * Validated server-side: required, max 128 bytes, ASCII alphanumeric
-   * plus dash and underscore ([a-zA-Z0-9_-]).
+   * Config: the bucket identifier. Groups rate limit counters for
+   * dashboard display and analytics. Required. Validated as a slug
+   * (max 256 bytes, letters/digits/dash/dot, must start
+   * and end with a letter or digit). Note: dots are allowed here
+   * (unlike input_key_hash which uses stricter ID validation).
    *
-   * @generated from field: string input_key = 10;
+   * @generated from field: string config_bucket = 4;
    */
-  inputKey: string;
+  configBucket: string;
+
+  /**
+   * Input: a hash of the rate limit key(s) computed by the SDK.
+   * The SDK accepts a single value or array of values, joins and
+   * SHA-256 hashes them, then sends the hex digest here.
+   * Required, max 128 bytes, ASCII [a-zA-Z0-9_-].
+   *
+   * @generated from field: string input_key_hash = 10;
+   */
+  inputKeyHash: string;
 
   /**
    * Input: the number of tokens requested.
@@ -83,13 +95,25 @@ export declare type RuleFixedWindow = Message<"proto.decide.v2.RuleFixedWindow">
   configWindowSeconds: number;
 
   /**
-   * Input: the key to track rate limits against (e.g. user ID).
-   * Validated server-side: required, max 128 bytes, ASCII alphanumeric
-   * plus dash and underscore ([a-zA-Z0-9_-]).
+   * Config: the bucket identifier. Groups rate limit counters for
+   * dashboard display and analytics. Required. Validated as a slug
+   * (max 256 bytes, letters/digits/dash/dot, must start
+   * and end with a letter or digit). Note: dots are allowed here
+   * (unlike input_key_hash which uses stricter ID validation).
    *
-   * @generated from field: string input_key = 10;
+   * @generated from field: string config_bucket = 3;
    */
-  inputKey: string;
+  configBucket: string;
+
+  /**
+   * Input: a hash of the rate limit key(s) computed by the SDK.
+   * The SDK accepts a single value or array of values, joins and
+   * SHA-256 hashes them, then sends the hex digest here.
+   * Required, max 128 bytes, ASCII [a-zA-Z0-9_-].
+   *
+   * @generated from field: string input_key_hash = 10;
+   */
+  inputKeyHash: string;
 
   /**
    * Input: the number of requests to count.
@@ -128,13 +152,25 @@ export declare type RuleSlidingWindow = Message<"proto.decide.v2.RuleSlidingWind
   configIntervalSeconds: number;
 
   /**
-   * Input: the key to track rate limits against (e.g. user ID).
-   * Validated server-side: required, max 128 bytes, ASCII alphanumeric
-   * plus dash and underscore ([a-zA-Z0-9_-]).
+   * Config: the bucket identifier. Groups rate limit counters for
+   * dashboard display and analytics. Required. Validated as a slug
+   * (max 256 bytes, letters/digits/dash/dot, must start
+   * and end with a letter or digit). Note: dots are allowed here
+   * (unlike input_key_hash which uses stricter ID validation).
    *
-   * @generated from field: string input_key = 10;
+   * @generated from field: string config_bucket = 3;
    */
-  inputKey: string;
+  configBucket: string;
+
+  /**
+   * Input: a hash of the rate limit key(s) computed by the SDK.
+   * The SDK accepts a single value or array of values, joins and
+   * SHA-256 hashes them, then sends the hex digest here.
+   * Required, max 128 bytes, ASCII [a-zA-Z0-9_-].
+   *
+   * @generated from field: string input_key_hash = 10;
+   */
+  inputKeyHash: string;
 
   /**
    * Input: the number of requests to count.
@@ -160,6 +196,8 @@ export declare const RuleSlidingWindowSchema: GenMessage<RuleSlidingWindow>;
 export declare type RuleDetectPromptInjection = Message<"proto.decide.v2.RuleDetectPromptInjection"> & {
   /**
    * Input: the text to analyze for prompt injection.
+   * Max 128 KiB (131072 bytes). Texts exceeding this limit produce an
+   * error result (AJ1131).
    *
    * @generated from field: string input_text = 10;
    */
@@ -1029,6 +1067,16 @@ export declare type GuardResponse = Message<"proto.decide.v2.GuardResponse"> & {
    * @generated from field: proto.decide.v2.GuardDecision decision = 1;
    */
   decision?: GuardDecision;
+
+  /**
+   * Non-fatal errors encountered during request validation (e.g. invalid
+   * metadata keys that were stripped). Each entry has a machine-readable
+   * code and a human-readable message. The SDK should surface these via
+   * its isError() helper but the decision is still valid.
+   *
+   * @generated from field: repeated proto.decide.v2.ResultError errors = 2;
+   */
+  errors: ResultError[];
 };
 
 /**
