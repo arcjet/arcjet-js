@@ -109,7 +109,7 @@ export {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 
   // Transport-agnostic factory
   launchArcjetWithTransport,

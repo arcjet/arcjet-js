@@ -18,7 +18,7 @@ import type {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "../../src/rules.ts";
 import {
   createMockTransport,
@@ -33,6 +33,9 @@ import {
   customRuleAllow,
   customRuleDeny,
   multiRuleAllow,
+  mixedRuleAllow,
+  mixedRuleCustomDeny,
+  multiCustomAllow,
   errorResult,
 } from "./mock-handlers.ts";
 /** The public SDK functions a runner provides. */
@@ -43,7 +46,7 @@ export interface GuardSurface {
   slidingWindow: typeof slidingWindow;
   detectPromptInjection: typeof detectPromptInjection;
   localDetectSensitiveInfo: typeof localDetectSensitiveInfo;
-  localCustom: typeof localCustom;
+  defineCustomRule: typeof defineCustomRule;
 }
 
 /** A single test case. */
@@ -210,8 +213,11 @@ export const cases: TestCase[] = [
   {
     name: "custom rule ALLOW",
     async run(s) {
-      const rule = s.localCustom({});
-      const input = rule({ data: { value: "hello" } });
+      const customRule = s.defineCustomRule({
+        evaluate: () => ({ conclusion: "ALLOW" as const }),
+      });
+      const rule = customRule({});
+      const input = rule({});
       const arcjet = guard(s, customRuleAllow);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
@@ -222,17 +228,17 @@ export const cases: TestCase[] = [
   {
     name: "custom rule with evaluate — DENY",
     async run(s) {
-      const rule = s.localCustom({
-        data: { threshold: "0.5" },
+      const customRule = s.defineCustomRule<{ threshold: string }, { score: string }>({
         evaluate: (config, input) => {
-          const score = parseFloat(input["score"] ?? "0");
-          const threshold = parseFloat(config["threshold"] ?? "0");
+          const score = parseFloat(input.score);
+          const threshold = parseFloat(config.threshold);
           return score > threshold
             ? { conclusion: "DENY" as const }
             : { conclusion: "ALLOW" as const };
         },
       });
-      const input = rule({ data: { score: "0.8" } });
+      const rule = customRule({ threshold: "0.5" });
+      const input = rule({ score: "0.8" });
       const arcjet = guard(s, customRuleDeny);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
@@ -243,17 +249,17 @@ export const cases: TestCase[] = [
   {
     name: "custom rule with evaluate — ALLOW",
     async run(s) {
-      const rule = s.localCustom({
-        data: { threshold: "0.5" },
+      const customRule = s.defineCustomRule<{ threshold: string }, { score: string }>({
         evaluate: (config, input) => {
-          const score = parseFloat(input["score"] ?? "0");
-          const threshold = parseFloat(config["threshold"] ?? "0");
+          const score = parseFloat(input.score);
+          const threshold = parseFloat(config.threshold);
           return score > threshold
             ? { conclusion: "DENY" as const }
             : { conclusion: "ALLOW" as const };
         },
       });
-      const input = rule({ data: { score: "0.3" } });
+      const rule = customRule({ threshold: "0.5" });
+      const input = rule({ score: "0.3" });
       const arcjet = guard(s, customRuleAllow);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
@@ -264,15 +270,16 @@ export const cases: TestCase[] = [
   {
     name: "custom rule with async evaluate",
     async run(s) {
-      const rule = s.localCustom({
+      const customRule = s.defineCustomRule<Record<string, string>, { action: string }>({
         evaluate: async (_config, input) => {
           await Promise.resolve();
-          return input["action"] === "block"
+          return input.action === "block"
             ? { conclusion: "DENY" as const }
             : { conclusion: "ALLOW" as const };
         },
       });
-      const input = rule({ data: { action: "block" } });
+      const rule = customRule({});
+      const input = rule({ action: "block" });
       const arcjet = guard(s, customRuleDeny);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
@@ -385,6 +392,154 @@ export const cases: TestCase[] = [
       const decision = await arcjet.guard({ label: "test", rules: [] });
       assert.equal(decision.conclusion, "ALLOW");
       assert.equal(decision.hasError(), true);
+    },
+  },
+
+  {
+    name: "token bucket + custom rule — both ALLOW",
+    async run(s) {
+      const rl = s.tokenBucket({
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+      });
+      const customRule = s.defineCustomRule<{ threshold: string }, { score: string }>({
+        evaluate: (config, input) => {
+          return parseFloat(input.score) > parseFloat(config.threshold)
+            ? { conclusion: "DENY" as const }
+            : { conclusion: "ALLOW" as const };
+        },
+      });
+      const custom = customRule({ threshold: "0.5" });
+
+      const arcjet = guard(s, mixedRuleAllow);
+      const decision = await arcjet.guard({
+        label: "test.mixed",
+        rules: [rl({ key: "user_1" }), custom({ score: "0.3" })],
+      });
+
+      assert.equal(decision.conclusion, "ALLOW");
+      assert.equal(decision.results.length, 2);
+    },
+  },
+
+  {
+    name: "token bucket ALLOW + custom rule DENY — decision is DENY",
+    async run(s) {
+      const rl = s.tokenBucket({
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+      });
+      const customRule = s.defineCustomRule<{ threshold: string }, { score: string }>({
+        evaluate: (config, input) => {
+          return parseFloat(input.score) > parseFloat(config.threshold)
+            ? { conclusion: "DENY" as const }
+            : { conclusion: "ALLOW" as const };
+        },
+      });
+      const custom = customRule({ threshold: "0.5" });
+
+      const arcjet = guard(s, mixedRuleCustomDeny);
+      const decision = await arcjet.guard({
+        label: "test.mixed",
+        rules: [rl({ key: "user_1" }), custom({ score: "0.8" })],
+      });
+
+      assert.equal(decision.conclusion, "DENY");
+      assert.equal(decision.results.length, 2);
+    },
+  },
+
+  {
+    name: "two different custom rules — both ALLOW with distinct results",
+    async run(s) {
+      const ruleA = s.defineCustomRule<{ name: string }, { x: string }>({
+        evaluate: () => ({ conclusion: "ALLOW" as const }),
+      });
+      const ruleB = s.defineCustomRule<{ name: string }, { y: string }>({
+        evaluate: () => ({ conclusion: "ALLOW" as const }),
+      });
+
+      const configA = ruleA({ name: "rule-a" });
+      const configB = ruleB({ name: "rule-b" });
+
+      const arcjet = guard(s, multiCustomAllow);
+      const decision = await arcjet.guard({
+        label: "test.multi-custom",
+        rules: [configA({ x: "1" }), configB({ y: "2" })],
+      });
+
+      assert.equal(decision.conclusion, "ALLOW");
+      assert.equal(decision.results.length, 2);
+
+      const resultA = configA.result(decision);
+      const resultB = configB.result(decision);
+      assert.notEqual(resultA, null);
+      assert.notEqual(resultB, null);
+      assert.equal(resultA?.data["index"], "0");
+      assert.equal(resultB?.data["index"], "1");
+    },
+  },
+
+  {
+    name: "custom rule result data is accessible via .result()",
+    async run(s) {
+      const customRule = s.defineCustomRule({
+        evaluate: () => ({ conclusion: "DENY" as const }),
+      });
+      const rule = customRule({});
+      const input = rule({});
+
+      const arcjet = guard(s, customRuleDeny);
+      const decision = await arcjet.guard({ label: "test", rules: [input] });
+
+      const result = rule.result(decision);
+      assert.notEqual(result, null);
+      assert.equal(result?.conclusion, "DENY");
+      assert.equal(result?.type, "CUSTOM");
+      assert.equal(result?.data["reason"], "denied by server");
+    },
+  },
+
+  {
+    name: "custom rule deniedResult() returns null on ALLOW",
+    async run(s) {
+      const customRule = s.defineCustomRule({
+        evaluate: () => ({ conclusion: "ALLOW" as const }),
+      });
+      const rule = customRule({});
+      const input = rule({});
+
+      const arcjet = guard(s, customRuleAllow);
+      const decision = await arcjet.guard({ label: "test", rules: [input] });
+
+      assert.equal(rule.deniedResult(decision), null);
+      assert.notEqual(rule.result(decision), null);
+    },
+  },
+
+  {
+    name: "custom rule evaluate receives config and input data",
+    async run(s) {
+      let capturedConfig: Record<string, string> = {};
+      let capturedInput: Record<string, string> = {};
+
+      const customRule = s.defineCustomRule<{ flag: string }, { value: string }>({
+        evaluate: (config, input) => {
+          capturedConfig = { ...config };
+          capturedInput = { ...input };
+          return { conclusion: "ALLOW" as const };
+        },
+      });
+      const rule = customRule({ flag: "on" });
+      const input = rule({ value: "test-value" });
+
+      const arcjet = guard(s, customRuleAllow);
+      await arcjet.guard({ label: "test", rules: [input] });
+
+      assert.equal(capturedConfig["flag"], "on");
+      assert.equal(capturedInput["value"], "test-value");
     },
   },
 ];

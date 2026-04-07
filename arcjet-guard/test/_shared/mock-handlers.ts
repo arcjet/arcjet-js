@@ -401,3 +401,125 @@ export function errorResult(req: GuardRequest): GuardResponse {
     }),
   });
 }
+
+/**
+ * Build a mixed-rule ALLOW response — handles any combination of rule types.
+ * Each submission gets a matching ALLOW result based on its rule type.
+ */
+export function mixedRuleAllow(req: GuardRequest): GuardResponse {
+  return create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      id: "gdec_allow_mixed",
+      conclusion: GuardConclusion.ALLOW,
+      ruleResults: req.ruleSubmissions.map((sub, i) => {
+        const ruleCase = sub.rule?.rule.case;
+        if (ruleCase === "localCustom") {
+          return create(GuardRuleResultSchema, {
+            resultId: `gres_mixed_${i}`,
+            configId: sub.configId,
+            inputId: sub.inputId,
+            type: GuardRuleType.LOCAL_CUSTOM,
+            result: {
+              case: "localCustom",
+              value: create(ResultLocalCustomSchema, {
+                conclusion: GuardConclusion.ALLOW,
+                data: { index: String(i) },
+              }),
+            },
+          });
+        }
+        return create(GuardRuleResultSchema, {
+          resultId: `gres_mixed_${i}`,
+          configId: sub.configId,
+          inputId: sub.inputId,
+          type: GuardRuleType.TOKEN_BUCKET,
+          result: {
+            case: "tokenBucket",
+            value: create(ResultTokenBucketSchema, {
+              conclusion: GuardConclusion.ALLOW,
+              remainingTokens: 90,
+              maxTokens: 100,
+              resetAtUnixSeconds: 60,
+              refillRate: 10,
+              refillIntervalSeconds: 60,
+            }),
+          },
+        });
+      }),
+    }),
+  });
+}
+
+/**
+ * Build a mixed-rule response where the custom rule DENYs.
+ * Rate limit rules ALLOW, custom rule DENYs.
+ */
+export function mixedRuleCustomDeny(req: GuardRequest): GuardResponse {
+  return create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      id: "gdec_deny_mixed",
+      conclusion: GuardConclusion.DENY,
+      reason: GuardReason.CUSTOM,
+      ruleResults: req.ruleSubmissions.map((sub, i) => {
+        const ruleCase = sub.rule?.rule.case;
+        if (ruleCase === "localCustom") {
+          return create(GuardRuleResultSchema, {
+            resultId: `gres_mixed_${i}`,
+            configId: sub.configId,
+            inputId: sub.inputId,
+            type: GuardRuleType.LOCAL_CUSTOM,
+            result: {
+              case: "localCustom",
+              value: create(ResultLocalCustomSchema, {
+                conclusion: GuardConclusion.DENY,
+                data: { reason: "flagged" },
+              }),
+            },
+          });
+        }
+        return create(GuardRuleResultSchema, {
+          resultId: `gres_mixed_${i}`,
+          configId: sub.configId,
+          inputId: sub.inputId,
+          type: GuardRuleType.TOKEN_BUCKET,
+          result: {
+            case: "tokenBucket",
+            value: create(ResultTokenBucketSchema, {
+              conclusion: GuardConclusion.ALLOW,
+              remainingTokens: 90,
+              maxTokens: 100,
+              resetAtUnixSeconds: 60,
+              refillRate: 10,
+              refillIntervalSeconds: 60,
+            }),
+          },
+        });
+      }),
+    }),
+  });
+}
+
+/** Build a response for two custom rules — both ALLOW with distinct data. */
+export function multiCustomAllow(req: GuardRequest): GuardResponse {
+  return create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      id: "gdec_allow_multi_custom",
+      conclusion: GuardConclusion.ALLOW,
+      ruleResults: req.ruleSubmissions.map((sub, i) =>
+        create(GuardRuleResultSchema, {
+          resultId: `gres_multi_custom_${i}`,
+          configId: sub.configId,
+          inputId: sub.inputId,
+          type: GuardRuleType.LOCAL_CUSTOM,
+          result: {
+            case: "localCustom",
+            value: create(ResultLocalCustomSchema, {
+              conclusion: GuardConclusion.ALLOW,
+              data: { index: String(i), checked: "true" },
+            }),
+          },
+        }),
+      ),
+    }),
+  });
+}

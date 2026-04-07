@@ -42,6 +42,8 @@ import type {
   RuleWithInputSensitiveInfo,
   RuleWithConfigCustom,
   RuleWithInputCustom,
+  CustomEvaluateFn,
+  CustomEvaluateResult,
 } from "./types.ts";
 
 /** Generate a random opaque identifier. */
@@ -422,82 +424,119 @@ export function localDetectSensitiveInfo(
 }
 
 /**
- * Create a custom rule with user-defined data and optional local evaluation.
+ * Define a typed custom rule.
  *
- * Use this when the built-in rules don't cover your use case — for
- * example, scoring requests with your own model, checking feature
- * flags, or integrating an external abuse signal. You supply a local
- * `evaluate` function that runs before the RPC; its result is sent
- * to the server for logging and analytics alongside the config/input
- * data.
+ * Returns a factory function that creates `RuleWithConfigCustom<TData>`
+ * instances. The config, input, and result data types are preserved
+ * through the entire chain — from rule creation to `.result()` on
+ * the decision.
  *
- * Returns a configured rule that can be called with arbitrary
- * key-value input data to produce a `RuleWithInput` ready for
- * `.guard()`.
- *
- * When `evaluate` is provided, the SDK calls it locally before
- * sending the request. The function receives `(configData, inputData)`
- * and must return `{ conclusion: "ALLOW" | "DENY", data?: Record<string, string> }`.
- * The local result is sent to the server alongside the config/input data.
+ * @typeParam TConfig - Shape of the config data (string values).
+ * @typeParam TInput  - Shape of the per-request input data (string values).
+ * @typeParam TData   - Shape of the result data returned by `evaluate`.
  *
  * @example
  * ```ts
- * const custom = localCustom({
- *   data: { threshold: "0.5" },
+ * const topicBlock = defineCustomRule<
+ *   { blockedTopic: string },
+ *   { topic: string },
+ *   { matched: string }
+ * >({
  *   evaluate: (config, input) => {
- *     const score = parseFloat(input["score"] ?? "0");
- *     const threshold = parseFloat(config["threshold"] ?? "0");
- *     return score > threshold
- *       ? { conclusion: "DENY", data: { reason: "score too high" } }
- *       : { conclusion: "ALLOW" };
+ *     if (input.topic === config.blockedTopic) {
+ *       return { conclusion: "DENY", data: { matched: input.topic } };
+ *     }
+ *     return { conclusion: "ALLOW" };
  *   },
  * });
+ *
+ * // Create the rule config at module scope
+ * const rule = topicBlock({ blockedTopic: "politics" });
+ *
+ * // Per request
  * const decision = await arcjet.guard({
- *   label: "tools.score",
- *   rules: [custom({ data: { score: "0.8" } })],
+ *   rules: [rule({ topic: userTopic })],
  * });
+ * const r = rule.result(decision);
+ * if (r) {
+ *   r.data.matched; // string — fully typed
+ * }
  * ```
  */
-export function localCustom(config: LocalCustomConfig = {}): RuleWithConfigCustom {
-  const configId = randomId();
+export function defineCustomRule<
+  TConfig extends Record<string, string>,
+  TInput extends Record<string, string>,
+  TData extends Record<string, string> = Record<string, string>,
+>(options: {
+  evaluate: (
+    config: Readonly<TConfig>,
+    input: Readonly<TInput>,
+    options: { signal?: AbortSignal },
+  ) => CustomEvaluateResult<TData> | Promise<CustomEvaluateResult<TData>>;
+}): (
+  config: TConfig & {
+    mode?: "LIVE" | "DRY_RUN";
+    label?: string;
+    metadata?: Record<string, string>;
+  },
+) => RuleWithConfigCustom<TData, TInput> {
+  return (config) => {
+    const { mode, label, metadata, ...data } = config;
+    const configId = randomId();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing generic evaluate to untyped internal form
+    const evaluate: CustomEvaluateFn = options.evaluate as unknown as CustomEvaluateFn;
+    const configObj = {
+      ...(mode === undefined ? {} : { mode }),
+      ...(label === undefined ? {} : { label }),
+      ...(metadata === undefined ? {} : { metadata }),
+      data: data as Record<string, string>,
+      evaluate,
+    } satisfies LocalCustomConfig;
 
-  const rule = Object.assign(
-    (input: LocalCustomInput): RuleWithInputCustom => {
-      const inputId = randomId();
-      return {
+    const rule = Object.assign(
+      (input: TInput & { metadata?: Record<string, string> }): RuleWithInputCustom<TData> => {
+        const { metadata: inputMetadata, ...inputData } = input;
+        const inputId = randomId();
+        const inputObj: LocalCustomInput = {
+          data: inputData as Record<string, string>,
+          ...(inputMetadata === undefined ? {} : { metadata: inputMetadata }),
+        };
+        return {
+          type: "CUSTOM" as const,
+          config: configObj,
+          input: inputObj,
+          evaluate,
+          [symbolArcjetInternal]: { configId, inputId },
+          result(decision: Decision): RuleResultCustom<TData> | null {
+            return findResult<RuleResultCustom<TData>>(decision, configId, inputId);
+          },
+          deniedResult(decision: Decision): RuleResultCustom<TData> | null {
+            const r = findResult<RuleResultCustom<TData>>(decision, configId, inputId);
+            return r !== null && r.conclusion === "DENY" ? r : null;
+          },
+          results(decision: Decision): RuleResultCustom<TData>[] {
+            const r = findResult<RuleResultCustom<TData>>(decision, configId, inputId);
+            return r === null ? [] : [r];
+          },
+        };
+      },
+      {
         type: "CUSTOM" as const,
-        config,
-        input,
-        ...(config.evaluate ? { evaluate: config.evaluate } : {}),
-        [symbolArcjetInternal]: { configId, inputId },
-        result(decision: Decision): RuleResultCustom | null {
-          return findResult<RuleResultCustom>(decision, configId, inputId);
+        config: configObj,
+        [symbolArcjetInternal]: { configId },
+        results(decision: Decision): RuleResultCustom<TData>[] {
+          return findResults<RuleResultCustom<TData>>(decision, configId);
         },
-        deniedResult(decision: Decision): RuleResultCustom | null {
-          const r = findResult<RuleResultCustom>(decision, configId, inputId);
-          return r !== null && r.conclusion === "DENY" ? r : null;
+        result(decision: Decision): RuleResultCustom<TData> | null {
+          return findResults<RuleResultCustom<TData>>(decision, configId)[0] ?? null;
         },
-        results(decision: Decision): RuleResultCustom[] {
-          const r = findResult<RuleResultCustom>(decision, configId, inputId);
-          return r === null ? [] : [r];
+        deniedResult(decision: Decision): RuleResultCustom<TData> | null {
+          return findDeniedResult<RuleResultCustom<TData>>(decision, configId);
         },
-      };
-    },
-    {
-      type: "CUSTOM" as const,
-      config,
-      [symbolArcjetInternal]: { configId },
-      results(decision: Decision): RuleResultCustom[] {
-        return findResults<RuleResultCustom>(decision, configId);
       },
-      result(decision: Decision): RuleResultCustom | null {
-        return findResults<RuleResultCustom>(decision, configId)[0] ?? null;
-      },
-      deniedResult(decision: Decision): RuleResultCustom | null {
-        return findDeniedResult<RuleResultCustom>(decision, configId);
-      },
-    },
-  );
+    );
 
-  return rule;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- generic call signature cast
+    return rule as unknown as RuleWithConfigCustom<TData, TInput>;
+  };
 }

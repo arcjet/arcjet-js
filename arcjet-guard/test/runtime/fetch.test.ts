@@ -37,7 +37,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "@arcjet/guard/fetch";
 
 import { cases } from "../_shared/cases.ts";
@@ -51,7 +51,7 @@ const surface: GuardSurface = {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 };
 
 describe("In-memory shared cases (Fetch entrypoint)", () => {

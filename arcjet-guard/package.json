@@ -60,7 +60,7 @@
   },
   "scripts": {
     "build": "rolldown -c rolldown.config.ts",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsgo --noEmit && tsgo --project tsconfig.lint.json --noEmit",
     "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "format": "oxfmt",
     "format:check": "oxfmt --check",

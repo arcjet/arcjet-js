@@ -128,15 +128,15 @@ export type RuleResultSensitiveInfo = {
 };
 
 /** Result from a custom local rule evaluation. */
-export type RuleResultCustom = {
+export type RuleResultCustom<TData extends Record<string, string> = Record<string, string>> = {
   /** Whether the request was allowed or denied by this rule. */
   readonly conclusion: "ALLOW" | "DENY";
   /** The reason category — always `"CUSTOM"` for custom rules. */
   readonly reason: "CUSTOM";
   /** Discriminant — always `"CUSTOM"`. */
   readonly type: "CUSTOM";
-  /** Arbitrary key-value data returned by the custom rule's `evaluate` function. */
-  readonly data: Readonly<Record<string, string>>;
+  /** Key-value data returned by the custom rule's `evaluate` function. */
+  readonly data: Readonly<TData>;
 };
 
 /** Result for a rule that was not evaluated. */
@@ -799,11 +799,13 @@ export type LocalDetectSensitiveInfoConfig =
     };
 
 /** Result returned by a custom rule's `evaluate` function. */
-export interface CustomEvaluateResult {
+export interface CustomEvaluateResult<
+  TData extends Record<string, string> = Record<string, string>,
+> {
   /** Whether the rule allows or denies. */
   conclusion: "ALLOW" | "DENY";
-  /** Optional arbitrary key-value data to include in the result. */
-  data?: Record<string, string>;
+  /** Optional key-value data to include in the result. */
+  data?: TData;
 }
 
 /**
@@ -812,10 +814,15 @@ export interface CustomEvaluateResult {
  * Receives the config data and the per-request input data.
  * Can be synchronous or asynchronous.
  */
-export type CustomEvaluateFn = (
-  config: Readonly<Record<string, string>>,
-  input: Readonly<Record<string, string>>,
-) => CustomEvaluateResult | Promise<CustomEvaluateResult>;
+export type CustomEvaluateFn<
+  TConfig extends Record<string, string> = Record<string, string>,
+  TInput extends Record<string, string> = Record<string, string>,
+  TData extends Record<string, string> = Record<string, string>,
+> = (
+  config: Readonly<TConfig>,
+  input: Readonly<TInput>,
+  options: { signal?: AbortSignal },
+) => CustomEvaluateResult<TData> | Promise<CustomEvaluateResult<TData>>;
 
 /** Custom local rule config. */
 export interface LocalCustomConfig {
@@ -849,10 +856,9 @@ export interface LocalCustomConfig {
    *
    * @example
    * ```ts
-   * localCustom({
+   * defineCustomRule({
    *   evaluate: myHandler,
-   *   metadata: { rule_version: "2", team: "trust-safety" },
-   * })
+   * })({ metadata: { rule_version: "2", team: "trust-safety" } })
    * ```
    */
   metadata?: Record<string, string>;
@@ -879,8 +885,8 @@ export interface LocalCustomInput {
    *
    * @example
    * ```ts
-   * const rule = localCustom({ evaluate: myHandler });
-   * rule({ data: { user_input: text }, metadata: { trace_id: traceId } })
+   * const rule = defineCustomRule({ evaluate: myHandler })({});
+   * rule({ userInput: text, metadata: { traceId: traceId } })
    * ```
    */
   metadata?: Record<string, string>;
@@ -977,7 +983,10 @@ export type RuleWithConfigSensitiveInfo = {
 };
 
 /** A configured custom rule. */
-export type RuleWithConfigCustom = {
+export type RuleWithConfigCustom<
+  TData extends Record<string, string> = Record<string, string>,
+  TInput extends Record<string, string> = Record<string, string>,
+> = {
   /** Discriminant — always `"CUSTOM"`. */
   readonly type: "CUSTOM";
   /** The custom rule configuration for this rule instance. */
@@ -985,13 +994,13 @@ export type RuleWithConfigCustom = {
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
   /** Bind per-request input to produce a `RuleWithInputCustom`. */
-  (input: LocalCustomInput): RuleWithInputCustom;
+  (input: TInput & { metadata?: Record<string, string> }): RuleWithInputCustom<TData>;
   /** Extract all custom rule results from a decision. */
-  results(decision: Decision): RuleResultCustom[];
+  results(decision: Decision): RuleResultCustom<TData>[];
   /** Return the first custom rule result regardless of conclusion, or `null` if none. */
-  result(decision: Decision): RuleResultCustom | null;
+  result(decision: Decision): RuleResultCustom<TData> | null;
   /** Return the first denied custom rule result, or `null` if none. */
-  deniedResult(decision: Decision): RuleResultCustom | null;
+  deniedResult(decision: Decision): RuleResultCustom<TData> | null;
 };
 
 /** Union of all configured rule types. */
@@ -1094,7 +1103,7 @@ export type RuleWithInputSensitiveInfo = {
 };
 
 /** A custom rule with bound input. */
-export type RuleWithInputCustom = {
+export type RuleWithInputCustom<TData extends Record<string, string> = Record<string, string>> = {
   /** Discriminant — always `"CUSTOM"`. */
   readonly type: "CUSTOM";
   /** The custom rule configuration for this rule instance. */
@@ -1106,11 +1115,11 @@ export type RuleWithInputCustom = {
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
   /** Find this submission's results as an array (empty or single-element). */
-  results(decision: Decision): RuleResultCustom[];
+  results(decision: Decision): RuleResultCustom<TData>[];
   /** Find this submission's result in a decision, or `null` if not present. */
-  result(decision: Decision): RuleResultCustom | null;
+  result(decision: Decision): RuleResultCustom<TData> | null;
   /** Find this submission's denied result, or `null` if not denied. */
-  deniedResult(decision: Decision): RuleResultCustom | null;
+  deniedResult(decision: Decision): RuleResultCustom<TData> | null;
 };
 
 /** Union of all rule-with-input types. */

@@ -234,28 +234,32 @@ if (decision.conclusion === "DENY" && decision.reason === "SENSITIVE_INFO") {
 
 Define your own local evaluation logic with arbitrary key-value data. When
 `evaluate` is provided, the SDK calls it locally before sending the request.
-The function receives `(configData, inputData)` and must return
+The function receives `(config, input, { signal })` and must return
 `{ conclusion: "ALLOW" | "DENY" }`.
 
 ```ts
-import { launchArcjet, localCustom } from "@arcjet/guard";
+import { launchArcjet, defineCustomRule } from "@arcjet/guard";
 
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
-const custom = localCustom({
-  data: { threshold: "0.5" },
+const topicBlock = defineCustomRule<
+  { blockedTopic: string },
+  { topic: string },
+  { matched: string }
+>({
   evaluate: (config, input) => {
-    const score = parseFloat(input["score"] ?? "0");
-    const threshold = parseFloat(config["threshold"] ?? "0");
-    return score > threshold
-      ? { conclusion: "DENY", data: { reason: "score too high" } }
-      : { conclusion: "ALLOW" };
+    if (input.topic === config.blockedTopic) {
+      return { conclusion: "DENY", data: { matched: input.topic } };
+    }
+    return { conclusion: "ALLOW" };
   },
 });
 
+const rule = topicBlock({ blockedTopic: "politics" });
+
 const decision = await arcjet.guard({
-  label: "tools.score",
-  rules: [custom({ data: { score: "0.8" } })],
+  label: "tools.chat",
+  rules: [rule({ topic: userTopic })],
 });
 ```
 
@@ -298,7 +302,7 @@ if (denied) {
 
 Methods available on both `RuleWithConfig` and `RuleWithInput`:
 
-| Method                   | `RuleWithConfig` (e.g. `limit`) | `RuleWithInput` (e.g. `rl`)   |
+| Method                   | `RuleWithConfig` (e.g. `limit`) | `RuleWithInput` (e.g. `rl`)        |
 | ------------------------ | ------------------------------- | ---------------------------------- |
 | `results(decision)`      | All results for this config     | Single-element or empty array      |
 | `result(decision)`       | First result (any conclusion)   | This submission's result           |

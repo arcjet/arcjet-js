@@ -35,7 +35,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 
@@ -530,8 +530,10 @@ describe("ruleToProto", () => {
   });
 
   test("converts custom rule to proto", async () => {
-    const rule = localCustom({ data: { threshold: "0.5" } });
-    const input = rule({ data: { score: "0.8" } });
+    const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
+      threshold: "0.5",
+    });
+    const input = rule({ score: "0.8" });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -542,14 +544,13 @@ describe("ruleToProto", () => {
       assert.deepEqual(Object.fromEntries(Object.entries(proto.rule.rule.value.inputData)), {
         score: "0.8",
       });
-      // No evaluate fn → localResult not set
-      assert.equal(proto.rule.rule.value.localResult.case, undefined);
+      // evaluate fn is present → localResult is computed
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
     }
   });
 
   test("custom rule with sync evaluate — DENY", async () => {
-    const rule = localCustom({
-      data: { threshold: "0.5" },
+    const rule = defineCustomRule({
       evaluate: (config, input) => {
         const score = parseFloat(input["score"] ?? "0");
         const threshold = parseFloat(config["threshold"] ?? "0");
@@ -557,8 +558,8 @@ describe("ruleToProto", () => {
           ? { conclusion: "DENY" as const, data: { reason: "score too high" } }
           : { conclusion: "ALLOW" as const };
       },
-    });
-    const input = rule({ data: { score: "0.8" } });
+    })({ threshold: "0.5" });
+    const input = rule({ score: "0.8" });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -576,8 +577,7 @@ describe("ruleToProto", () => {
   });
 
   test("custom rule with sync evaluate — ALLOW", async () => {
-    const rule = localCustom({
-      data: { threshold: "0.5" },
+    const rule = defineCustomRule({
       evaluate: (config, input) => {
         const score = parseFloat(input["score"] ?? "0");
         const threshold = parseFloat(config["threshold"] ?? "0");
@@ -585,8 +585,8 @@ describe("ruleToProto", () => {
           ? { conclusion: "DENY" as const }
           : { conclusion: "ALLOW" as const, data: { margin: String(threshold - score) } };
       },
-    });
-    const input = rule({ data: { score: "0.3" } });
+    })({ threshold: "0.5" });
+    const input = rule({ score: "0.3" });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -600,15 +600,15 @@ describe("ruleToProto", () => {
   });
 
   test("custom rule with async evaluate", async () => {
-    const rule = localCustom({
+    const rule = defineCustomRule({
       evaluate: async (_config, input) => {
         await new Promise((resolve) => setTimeout(resolve, 1));
         return input["action"] === "block"
           ? { conclusion: "DENY" as const }
           : { conclusion: "ALLOW" as const };
       },
-    });
-    const input = rule({ data: { action: "block" } });
+    })({});
+    const input = rule({ action: "block" });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -621,12 +621,12 @@ describe("ruleToProto", () => {
   });
 
   test("custom rule evaluate throws → resultError", async () => {
-    const rule = localCustom({
+    const rule = defineCustomRule({
       evaluate: () => {
         throw new Error("boom");
       },
-    });
-    const input = rule({ data: {} });
+    })({});
+    const input = rule({});
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -885,8 +885,10 @@ describe("decisionFromProto", () => {
   });
 
   test("ALLOW decision with custom result", () => {
-    const rule = localCustom({ data: { threshold: "0.5" } });
-    const input = rule({ data: { score: "0.3" } });
+    const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
+      threshold: "0.5",
+    });
+    const input = rule({ score: "0.3" });
 
     const response = makeResponse(GuardConclusion.ALLOW, [
       {

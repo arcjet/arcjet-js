@@ -123,7 +123,7 @@ export {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "./rules.ts";
 
 /**

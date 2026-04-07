@@ -7,7 +7,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 
@@ -254,29 +254,6 @@ describe("localDetectSensitiveInfo", () => {
   });
 });
 
-describe("localCustom", () => {
-  test("returns a callable with type discriminant", () => {
-    const rule = localCustom();
-
-    assert.equal(rule.type, "CUSTOM");
-    assert.equal(typeof rule, "function");
-  });
-
-  test("preserves data config", () => {
-    const rule = localCustom({ data: { threshold: "0.5" } });
-
-    assert.deepEqual(rule.config.data, { threshold: "0.5" });
-  });
-
-  test("produces RuleWithInput with object input", () => {
-    const rule = localCustom({ data: { threshold: "0.5" } });
-    const input = rule({ data: { score: "0.8" } });
-
-    assert.equal(input.type, "CUSTOM");
-    assert.deepEqual(input.input.data, { score: "0.8" });
-  });
-});
-
 describe("Rule config options", () => {
   test("mode defaults to undefined (LIVE)", () => {
     const rule = tokenBucket({
@@ -403,6 +380,103 @@ describe("result() and deniedResult() with no decision data", () => {
       hasError: (): boolean => false,
     };
 
+    assert.equal(rule.deniedResult(decision), null);
+  });
+});
+
+describe("defineCustomRule", () => {
+  test("returns a factory that produces typed RuleWithConfigCustom", () => {
+    const scoreRule = defineCustomRule<
+      { threshold: string },
+      { score: string },
+      { reason: string }
+    >({
+      evaluate: (config, input) => {
+        const score = parseFloat(input.score);
+        const threshold = parseFloat(config.threshold);
+        return score > threshold
+          ? { conclusion: "DENY", data: { reason: "score too high" } }
+          : { conclusion: "ALLOW" };
+      },
+    });
+
+    const rule = scoreRule({ threshold: "0.5" });
+    assert.equal(rule.type, "CUSTOM");
+    assert.equal(typeof rule, "function");
+  });
+
+  test("preserves config data", () => {
+    const scoreRule = defineCustomRule<{ threshold: string }, { score: string }>({
+      evaluate: () => ({ conclusion: "ALLOW" }),
+    });
+
+    const rule = scoreRule({ threshold: "0.5", label: "test" });
+    assert.equal(rule.config.data?.["threshold"], "0.5");
+    assert.equal(rule.config.label, "test");
+  });
+
+  test("produces RuleWithInputCustom with correct input data", () => {
+    const scoreRule = defineCustomRule<{ threshold: string }, { score: string }>({
+      evaluate: () => ({ conclusion: "ALLOW" }),
+    });
+
+    const rule = scoreRule({ threshold: "0.5" });
+    const input = rule({ score: "0.8" });
+    assert.equal(input.type, "CUSTOM");
+    assert.equal(input.input.data["score"], "0.8");
+  });
+
+  test("supports mode and metadata on config", () => {
+    const scoreRule = defineCustomRule<{ threshold: string }, { score: string }>({
+      evaluate: () => ({ conclusion: "ALLOW" }),
+    });
+
+    const rule = scoreRule({ threshold: "0.5", mode: "DRY_RUN", metadata: { env: "test" } });
+    assert.equal(rule.config.mode, "DRY_RUN");
+    assert.deepEqual(rule.config.metadata, { env: "test" });
+  });
+
+  test("shares configId across inputs", () => {
+    const scoreRule = defineCustomRule<{ threshold: string }, { score: string }>({
+      evaluate: () => ({ conclusion: "ALLOW" }),
+    });
+
+    const rule = scoreRule({ threshold: "0.5" });
+    const a = rule({ score: "0.1" });
+    const b = rule({ score: "0.9" });
+    assert.equal(a[symbolArcjetInternal].configId, b[symbolArcjetInternal].configId);
+    assert.notEqual(a[symbolArcjetInternal].inputId, b[symbolArcjetInternal].inputId);
+  });
+
+  test("different factory calls produce different configIds", () => {
+    const scoreRule = defineCustomRule<{ threshold: string }, { score: string }>({
+      evaluate: () => ({ conclusion: "ALLOW" }),
+    });
+
+    const a = scoreRule({ threshold: "0.5" });
+    const b = scoreRule({ threshold: "0.5" });
+    assert.notEqual(a[symbolArcjetInternal].configId, b[symbolArcjetInternal].configId);
+  });
+
+  test("result methods return null for a plain decision", () => {
+    const scoreRule = defineCustomRule<{ threshold: string }, { score: string }>({
+      evaluate: () => ({ conclusion: "ALLOW" }),
+    });
+
+    const rule = scoreRule({ threshold: "0.5" });
+    const input = rule({ score: "0.8" });
+
+    const decision = {
+      conclusion: "ALLOW" as const,
+      id: "gdec_test",
+      results: [],
+      hasError: (): boolean => false,
+    };
+
+    assert.equal(input.result(decision), null);
+    assert.equal(input.deniedResult(decision), null);
+    assert.deepEqual(rule.results(decision), []);
+    assert.equal(rule.result(decision), null);
     assert.equal(rule.deniedResult(decision), null);
   });
 });

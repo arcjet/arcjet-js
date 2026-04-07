@@ -20,7 +20,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "../../src/index.ts";
 import { userAgent } from "../../src/version.ts";
 import { cases } from "../_shared/cases.ts";
@@ -33,7 +33,7 @@ const surface: GuardSurface = {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 };
 
 // Run all shared in-memory cases

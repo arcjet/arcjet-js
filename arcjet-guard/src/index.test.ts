@@ -12,7 +12,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "./index.ts";
 import {
   DecideService,
@@ -31,7 +31,7 @@ describe("re-exports", () => {
     assert.equal(typeof slidingWindow, "function");
     assert.equal(typeof detectPromptInjection, "function");
     assert.equal(typeof localDetectSensitiveInfo, "function");
-    assert.equal(typeof localCustom, "function");
+    assert.equal(typeof defineCustomRule, "function");
   });
 
   test("launchArcjetWithTransport is exported", () => {

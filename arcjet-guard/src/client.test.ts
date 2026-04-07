@@ -42,7 +42,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "./rules.ts";
 /** Build a mock transport that responds with the given handler. */
 function mockTransport(
@@ -604,8 +604,10 @@ describe("In-memory server: sensitive info", () => {
 });
 describe("In-memory server: custom rule", () => {
   test("ALLOW — custom data round-trip", async () => {
-    const rule = localCustom({ data: { threshold: "0.5" } });
-    const input = rule({ data: { score: "0.3" } });
+    const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
+      threshold: "0.5",
+    });
+    const input = rule({ score: "0.3" });
 
     const arcjet = guardWithMock((req) => {
       const sub = req.ruleSubmissions[0];
@@ -655,8 +657,7 @@ describe("In-memory server: custom rule", () => {
   });
 
   test("DENY — local evaluate function denies", async () => {
-    const rule = localCustom({
-      data: { threshold: "0.5" },
+    const rule = defineCustomRule({
       evaluate: (config, input) => {
         const score = parseFloat(input["score"] ?? "0");
         const threshold = parseFloat(config["threshold"] ?? "0");
@@ -664,8 +665,8 @@ describe("In-memory server: custom rule", () => {
           ? { conclusion: "DENY" as const, data: { reason: "too high" } }
           : { conclusion: "ALLOW" as const };
       },
-    });
-    const input = rule({ data: { score: "0.8" } });
+    })({ threshold: "0.5" });
+    const input = rule({ score: "0.8" });
 
     const arcjet = guardWithMock((req) => {
       const sub = req.ruleSubmissions[0];
@@ -721,8 +722,7 @@ describe("In-memory server: custom rule", () => {
   });
 
   test("ALLOW — local evaluate function allows", async () => {
-    const rule = localCustom({
-      data: { threshold: "0.5" },
+    const rule = defineCustomRule({
       evaluate: (config, input) => {
         const score = parseFloat(input["score"] ?? "0");
         const threshold = parseFloat(config["threshold"] ?? "0");
@@ -730,8 +730,8 @@ describe("In-memory server: custom rule", () => {
           ? { conclusion: "DENY" as const }
           : { conclusion: "ALLOW" as const };
       },
-    });
-    const input = rule({ data: { score: "0.3" } });
+    })({ threshold: "0.5" });
+    const input = rule({ score: "0.3" });
 
     const arcjet = guardWithMock((req) => {
       const sub = req.ruleSubmissions[0];
@@ -773,12 +773,12 @@ describe("In-memory server: custom rule", () => {
   });
 
   test("evaluate throws — resultError sent, server decides", async () => {
-    const rule = localCustom({
+    const rule = defineCustomRule({
       evaluate: () => {
         throw new Error("eval crashed");
       },
-    });
-    const input = rule({ data: {} });
+    })({});
+    const input = rule({});
 
     const arcjet = guardWithMock((req) => {
       const sub = req.ruleSubmissions[0];

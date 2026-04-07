@@ -283,10 +283,13 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
  * Switches on the `type` discriminant so TypeScript narrows config/input
  * automatically — no casts required.
  */
-export async function ruleToProto(rule: RuleWithInput): Promise<GuardRuleSubmission> {
+export async function ruleToProto(
+  rule: RuleWithInput,
+  signal?: AbortSignal,
+): Promise<GuardRuleSubmission> {
   const mode = rule.config.mode === "DRY_RUN" ? GuardRuleMode.DRY_RUN : GuardRuleMode.LIVE;
 
-  const guardRule = await ruleBodyToProto(rule);
+  const guardRule = await ruleBodyToProto(rule, signal);
 
   const submission: Parameters<typeof create<typeof GuardRuleSubmissionSchema>>[1] = {
     configId: rule[symbolArcjetInternal].configId,
@@ -320,7 +323,7 @@ function ruleMetadataToProto(rule: RuleWithInput): Record<string, string> {
  *
  * @internal
  */
-async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
+async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promise<GuardRule> {
   switch (rule.type) {
     case "TOKEN_BUCKET":
       return create(GuardRuleSchema, {
@@ -433,7 +436,11 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
       if (rule.evaluate) {
         const evalStart = performance.now();
         try {
-          const evalResult = await rule.evaluate(rule.config.data ?? {}, rule.input.data);
+          const evalResult = await rule.evaluate(
+            rule.config.data ?? {},
+            rule.input.data,
+            signal === undefined ? {} : { signal },
+          );
           resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
 
           if (evalResult.conclusion !== "ALLOW" && evalResult.conclusion !== "DENY") {

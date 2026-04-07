@@ -14,7 +14,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "../../../src/fetch.ts";
 import { cases } from "../../_shared/cases.ts";
 import type { GuardSurface } from "../../_shared/cases.ts";
@@ -30,7 +30,7 @@ const surface: GuardSurface = {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 };
 
 interface TestResult {

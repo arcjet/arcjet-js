@@ -69,7 +69,9 @@ export function createGuardClient(options: GuardClientOptions): {
 
       let protoRules;
       try {
-        protoRules = await Promise.all(opts.rules.map((rule: RuleWithInput) => ruleToProto(rule)));
+        protoRules = await Promise.all(
+          opts.rules.map((rule: RuleWithInput) => ruleToProto(rule, opts.signal)),
+        );
       } catch (cause: unknown) {
         opts.signal?.throwIfAborted();
         const message = cause instanceof Error ? cause.message : "Local rule evaluation failed";
