@@ -425,7 +425,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         case: "promptInjection",
         value: create(PromptInjectionReasonSchema, {
           injectionDetected: reason.injectionDetected,
-          score: reason.score,
+          score: reason.score ?? 0.0,
         }),
       },
     });
@@ -798,7 +798,7 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         case: "promptInjectionDetection",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          threshold: rule.threshold,
+          threshold: rule.threshold ?? 0.5,
           version: rule.version,
         },
       },

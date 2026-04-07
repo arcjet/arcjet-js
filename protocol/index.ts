@@ -291,7 +291,7 @@ export class ArcjetPromptInjectionReason extends ArcjetReason {
    *   This field is no longer respected by the server and will be removed in
    *   a future release.
    */
-  score: number;
+  score?: number;
 
   /**
    * Create a prompt injection reason.
@@ -1777,7 +1777,7 @@ export interface ArcjetPromptInjectionDetectionRule extends ArcjetRule<{
    *   This field is no longer respected by the server and will be removed in
    *   a future release.
    */
-  threshold: number;
+  threshold?: number;
 }
 
 /**
