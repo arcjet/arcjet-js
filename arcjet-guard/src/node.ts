@@ -121,6 +121,10 @@ import { createTransport } from "./transport-node.ts";
 /**
  * Create an Arcjet guard client using the Node.js HTTP/2 transport.
  *
+ * Connect to the Arcjet MCP server at `https://api.arcjet.com/mcp` to manage
+ * sites, retrieve SDK keys, and more. Learn more at
+ * {@link https://docs.arcjet.com/mcp-server}.
+ *
  * **Create once, reuse everywhere.** The returned client holds a
  * persistent HTTP/2 connection that is optimistically pre-connected.
  * Wrapping this in a function that creates a new client per request

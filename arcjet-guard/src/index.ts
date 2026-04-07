@@ -62,6 +62,10 @@
  * environment variables directly. All configuration must be passed
  * explicitly via `launchArcjet()` options, `.guard()`, or rule inputs.
  *
+ * Connect to the Arcjet MCP server at `https://api.arcjet.com/mcp` to manage
+ * sites, retrieve SDK keys, and more. Learn more at
+ * {@link https://docs.arcjet.com/mcp-server}.
+ *
  * @packageDocumentation
  */
 

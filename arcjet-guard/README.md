@@ -373,6 +373,12 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   dashboard. Different configs sharing the same bucket name still get
   independent counters — a config hash is appended server-side.
 
+## MCP server
+
+Connect your AI assistant to the Arcjet MCP server at
+`https://api.arcjet.com/mcp` to manage sites, retrieve SDK keys, and more.
+See the [docs](https://docs.arcjet.com/mcp-server) for setup instructions.
+
 ## Runtime support
 
 | Runtime            | Minimum version          |
