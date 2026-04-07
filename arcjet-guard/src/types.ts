@@ -266,8 +266,8 @@ export interface TokenBucketConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -358,8 +358,8 @@ export interface TokenBucketInput {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -400,8 +400,8 @@ export interface FixedWindowConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -480,8 +480,8 @@ export interface FixedWindowInput {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -522,8 +522,8 @@ export interface SlidingWindowConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -602,8 +602,8 @@ export interface SlidingWindowInput {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -638,8 +638,8 @@ export interface DetectPromptInjectionConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -686,8 +686,8 @@ export interface LocalDetectSensitiveInfoConfigAllow {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -744,8 +744,8 @@ export interface LocalDetectSensitiveInfoConfigDeny {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -850,15 +850,15 @@ export interface LocalCustomConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
    * ```ts
    * defineCustomRule({
    *   evaluate: myHandler,
-   * })({ metadata: { rule_version: "2", team: "trust-safety" } })
+   * })({ data: { ... }, metadata: { ruleVersion: "2", team: "trust-safety" } })
    * ```
    */
   metadata?: Record<string, string>;
@@ -879,14 +879,14 @@ export interface LocalCustomInput {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
    * ```ts
-   * const rule = defineCustomRule({ evaluate: myHandler })({});
-   * rule({ userInput: text, metadata: { traceId: traceId } })
+   * const rule = defineCustomRule({ evaluate: myHandler })({ data: {} });
+   * rule({ data: { userInput: text }, metadata: { traceId: traceId } })
    * ```
    */
   metadata?: Record<string, string>;
@@ -994,7 +994,7 @@ export type RuleWithConfigCustom<
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
   /** Bind per-request input to produce a `RuleWithInputCustom`. */
-  (input: TInput & { metadata?: Record<string, string> }): RuleWithInputCustom<TData>;
+  (input: { data: TInput; metadata?: Record<string, string> }): RuleWithInputCustom<TData>;
   /** Extract all custom rule results from a decision. */
   results(decision: Decision): RuleResultCustom<TData>[];
   /** Return the first custom rule result regardless of conclusion, or `null` if none. */
@@ -1149,8 +1149,8 @@ export interface GuardOptions {
    *
    * Constraints:
    * - Max 20 key-value pairs.
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example

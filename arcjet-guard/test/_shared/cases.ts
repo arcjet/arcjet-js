@@ -216,8 +216,8 @@ export const cases: TestCase[] = [
       const customRule = s.defineCustomRule({
         evaluate: () => ({ conclusion: "ALLOW" as const }),
       });
-      const rule = customRule({});
-      const input = rule({});
+      const rule = customRule({ data: {} });
+      const input = rule({ data: {} });
       const arcjet = guard(s, customRuleAllow);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
@@ -237,8 +237,8 @@ export const cases: TestCase[] = [
             : { conclusion: "ALLOW" as const };
         },
       });
-      const rule = customRule({ threshold: "0.5" });
-      const input = rule({ score: "0.8" });
+      const rule = customRule({ data: { threshold: "0.5" } });
+      const input = rule({ data: { score: "0.8" } });
       const arcjet = guard(s, customRuleDeny);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
@@ -258,8 +258,8 @@ export const cases: TestCase[] = [
             : { conclusion: "ALLOW" as const };
         },
       });
-      const rule = customRule({ threshold: "0.5" });
-      const input = rule({ score: "0.3" });
+      const rule = customRule({ data: { threshold: "0.5" } });
+      const input = rule({ data: { score: "0.3" } });
       const arcjet = guard(s, customRuleAllow);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
@@ -278,8 +278,8 @@ export const cases: TestCase[] = [
             : { conclusion: "ALLOW" as const };
         },
       });
-      const rule = customRule({});
-      const input = rule({ action: "block" });
+      const rule = customRule({ data: {} });
+      const input = rule({ data: { action: "block" } });
       const arcjet = guard(s, customRuleDeny);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
@@ -410,12 +410,12 @@ export const cases: TestCase[] = [
             : { conclusion: "ALLOW" as const };
         },
       });
-      const custom = customRule({ threshold: "0.5" });
+      const custom = customRule({ data: { threshold: "0.5" } });
 
       const arcjet = guard(s, mixedRuleAllow);
       const decision = await arcjet.guard({
         label: "test.mixed",
-        rules: [rl({ key: "user_1" }), custom({ score: "0.3" })],
+        rules: [rl({ key: "user_1" }), custom({ data: { score: "0.3" } })],
       });
 
       assert.equal(decision.conclusion, "ALLOW");
@@ -438,12 +438,12 @@ export const cases: TestCase[] = [
             : { conclusion: "ALLOW" as const };
         },
       });
-      const custom = customRule({ threshold: "0.5" });
+      const custom = customRule({ data: { threshold: "0.5" } });
 
       const arcjet = guard(s, mixedRuleCustomDeny);
       const decision = await arcjet.guard({
         label: "test.mixed",
-        rules: [rl({ key: "user_1" }), custom({ score: "0.8" })],
+        rules: [rl({ key: "user_1" }), custom({ data: { score: "0.8" } })],
       });
 
       assert.equal(decision.conclusion, "DENY");
@@ -461,13 +461,13 @@ export const cases: TestCase[] = [
         evaluate: () => ({ conclusion: "ALLOW" as const }),
       });
 
-      const configA = ruleA({ name: "rule-a" });
-      const configB = ruleB({ name: "rule-b" });
+      const configA = ruleA({ data: { name: "rule-a" } });
+      const configB = ruleB({ data: { name: "rule-b" } });
 
       const arcjet = guard(s, multiCustomAllow);
       const decision = await arcjet.guard({
         label: "test.multi-custom",
-        rules: [configA({ x: "1" }), configB({ y: "2" })],
+        rules: [configA({ data: { x: "1" } }), configB({ data: { y: "2" } })],
       });
 
       assert.equal(decision.conclusion, "ALLOW");
@@ -488,8 +488,8 @@ export const cases: TestCase[] = [
       const customRule = s.defineCustomRule({
         evaluate: () => ({ conclusion: "DENY" as const }),
       });
-      const rule = customRule({});
-      const input = rule({});
+      const rule = customRule({ data: {} });
+      const input = rule({ data: {} });
 
       const arcjet = guard(s, customRuleDeny);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
@@ -508,8 +508,8 @@ export const cases: TestCase[] = [
       const customRule = s.defineCustomRule({
         evaluate: () => ({ conclusion: "ALLOW" as const }),
       });
-      const rule = customRule({});
-      const input = rule({});
+      const rule = customRule({ data: {} });
+      const input = rule({ data: {} });
 
       const arcjet = guard(s, customRuleAllow);
       const decision = await arcjet.guard({ label: "test", rules: [input] });
@@ -532,8 +532,8 @@ export const cases: TestCase[] = [
           return { conclusion: "ALLOW" as const };
         },
       });
-      const rule = customRule({ flag: "on" });
-      const input = rule({ value: "test-value" });
+      const rule = customRule({ data: { flag: "on" } });
+      const input = rule({ data: { value: "test-value" } });
 
       const arcjet = guard(s, customRuleAllow);
       await arcjet.guard({ label: "test", rules: [input] });

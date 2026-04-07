@@ -451,11 +451,11 @@ export function localDetectSensitiveInfo(
  * });
  *
  * // Create the rule config at module scope
- * const rule = topicBlock({ blockedTopic: "politics" });
+ * const rule = topicBlock({ data: { blockedTopic: "politics" } });
  *
  * // Per request
  * const decision = await arcjet.guard({
- *   rules: [rule({ topic: userTopic })],
+ *   rules: [rule({ data: { topic: userTopic } })],
  * });
  * const r = rule.result(decision);
  * if (r) {
@@ -474,14 +474,15 @@ export function defineCustomRule<
     options: { signal?: AbortSignal },
   ) => CustomEvaluateResult<TData> | Promise<CustomEvaluateResult<TData>>;
 }): (
-  config: TConfig & {
+  config: {
+    data: TConfig;
     mode?: "LIVE" | "DRY_RUN";
     label?: string;
     metadata?: Record<string, string>;
   },
 ) => RuleWithConfigCustom<TData, TInput> {
   return (config) => {
-    const { mode, label, metadata, ...data } = config;
+    const { data, mode, label, metadata } = config;
     const configId = randomId();
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing generic evaluate to untyped internal form
     const evaluate: CustomEvaluateFn = options.evaluate as unknown as CustomEvaluateFn;
@@ -494,8 +495,8 @@ export function defineCustomRule<
     } satisfies LocalCustomConfig;
 
     const rule = Object.assign(
-      (input: TInput & { metadata?: Record<string, string> }): RuleWithInputCustom<TData> => {
-        const { metadata: inputMetadata, ...inputData } = input;
+      (input: { data: TInput; metadata?: Record<string, string> }): RuleWithInputCustom<TData> => {
+        const { data: inputData, metadata: inputMetadata } = input;
         const inputId = randomId();
         const inputObj: LocalCustomInput = {
           data: inputData as Record<string, string>,

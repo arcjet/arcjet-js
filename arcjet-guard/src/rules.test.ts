@@ -400,7 +400,7 @@ describe("defineCustomRule", () => {
       },
     });
 
-    const rule = scoreRule({ threshold: "0.5" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
     assert.equal(rule.type, "CUSTOM");
     assert.equal(typeof rule, "function");
   });
@@ -410,7 +410,7 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
 
-    const rule = scoreRule({ threshold: "0.5", label: "test" });
+    const rule = scoreRule({ data: { threshold: "0.5" }, label: "test" });
     assert.equal(rule.config.data?.["threshold"], "0.5");
     assert.equal(rule.config.label, "test");
   });
@@ -420,8 +420,8 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
 
-    const rule = scoreRule({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
     assert.equal(input.type, "CUSTOM");
     assert.equal(input.input.data["score"], "0.8");
   });
@@ -431,7 +431,7 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
 
-    const rule = scoreRule({ threshold: "0.5", mode: "DRY_RUN", metadata: { env: "test" } });
+    const rule = scoreRule({ data: { threshold: "0.5" }, mode: "DRY_RUN", metadata: { env: "test" } });
     assert.equal(rule.config.mode, "DRY_RUN");
     assert.deepEqual(rule.config.metadata, { env: "test" });
   });
@@ -441,9 +441,9 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
 
-    const rule = scoreRule({ threshold: "0.5" });
-    const a = rule({ score: "0.1" });
-    const b = rule({ score: "0.9" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const a = rule({ data: { score: "0.1" } });
+    const b = rule({ data: { score: "0.9" } });
     assert.equal(a[symbolArcjetInternal].configId, b[symbolArcjetInternal].configId);
     assert.notEqual(a[symbolArcjetInternal].inputId, b[symbolArcjetInternal].inputId);
   });
@@ -453,8 +453,8 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
 
-    const a = scoreRule({ threshold: "0.5" });
-    const b = scoreRule({ threshold: "0.5" });
+    const a = scoreRule({ data: { threshold: "0.5" } });
+    const b = scoreRule({ data: { threshold: "0.5" } });
     assert.notEqual(a[symbolArcjetInternal].configId, b[symbolArcjetInternal].configId);
   });
 
@@ -463,8 +463,8 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
 
-    const rule = scoreRule({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
 
     const decision = {
       conclusion: "ALLOW" as const,

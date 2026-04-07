@@ -31,7 +31,7 @@ This is the [Arcjet][arcjet] Guards SDK.
 
 1. Get your Arcjet key at [`app.arcjet.com`](https://app.arcjet.com)
 2. `npm install @arcjet/guard`
-3. Pass your key to `launchArcjet()`
+3. Pass your key to `launchArcjet({ key: process.env.ARCJET_KEY! })`
 4. Add a guard to your code — see the [quick start](#quick-start) below
 
 [npm package](https://www.npmjs.com/package/@arcjet/guard) |
@@ -255,11 +255,11 @@ const topicBlock = defineCustomRule<
   },
 });
 
-const rule = topicBlock({ blockedTopic: "politics" });
+const rule = topicBlock({ data: { blockedTopic: "politics" } });
 
 const decision = await arcjet.guard({
   label: "tools.chat",
-  rules: [rule({ topic: userTopic })],
+  rules: [rule({ data: { topic: userTopic } })],
 });
 ```
 

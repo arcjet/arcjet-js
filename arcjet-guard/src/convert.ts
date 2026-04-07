@@ -166,6 +166,8 @@ export function reasonFromProto(r: GuardReason): Reason {
       return "NOT_RUN";
     case GuardReason.UNSPECIFIED:
       return "UNKNOWN";
+    default:
+      return "UNKNOWN";
   }
 }
 

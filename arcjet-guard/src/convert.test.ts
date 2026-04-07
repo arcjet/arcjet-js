@@ -531,9 +531,9 @@ describe("ruleToProto", () => {
 
   test("converts custom rule to proto", async () => {
     const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
-      threshold: "0.5",
+      data: { threshold: "0.5" },
     });
-    const input = rule({ score: "0.8" });
+    const input = rule({ data: { score: "0.8" } });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -558,8 +558,8 @@ describe("ruleToProto", () => {
           ? { conclusion: "DENY" as const, data: { reason: "score too high" } }
           : { conclusion: "ALLOW" as const };
       },
-    })({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    })({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -585,8 +585,8 @@ describe("ruleToProto", () => {
           ? { conclusion: "DENY" as const }
           : { conclusion: "ALLOW" as const, data: { margin: String(threshold - score) } };
       },
-    })({ threshold: "0.5" });
-    const input = rule({ score: "0.3" });
+    })({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.3" } });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -607,8 +607,8 @@ describe("ruleToProto", () => {
           ? { conclusion: "DENY" as const }
           : { conclusion: "ALLOW" as const };
       },
-    })({});
-    const input = rule({ action: "block" });
+    })({ data: {} });
+    const input = rule({ data: { action: "block" } });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -625,8 +625,8 @@ describe("ruleToProto", () => {
       evaluate: () => {
         throw new Error("boom");
       },
-    })({});
-    const input = rule({});
+    })({ data: {} });
+    const input = rule({ data: {} });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -886,9 +886,9 @@ describe("decisionFromProto", () => {
 
   test("ALLOW decision with custom result", () => {
     const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
-      threshold: "0.5",
+      data: { threshold: "0.5" },
     });
-    const input = rule({ score: "0.3" });
+    const input = rule({ data: { score: "0.3" } });
 
     const response = makeResponse(GuardConclusion.ALLOW, [
       {

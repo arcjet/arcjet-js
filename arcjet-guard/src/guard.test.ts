@@ -83,9 +83,9 @@ describe("Rule factories", () => {
 
   test("defineCustomRule returns a RuleWithConfig", () => {
     const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
-      foo: "bar",
+      data: { foo: "bar" },
     });
-    const input = rule({ baz: "qux" });
+    const input = rule({ data: { baz: "qux" } });
 
     assert.ok(input[symbolArcjetInternal].configId);
     assert.equal(input.type, "CUSTOM");
@@ -262,9 +262,9 @@ describe("ruleToProto", () => {
 
   test("converts custom rule to proto", async () => {
     const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
-      threshold: "0.5",
+      data: { threshold: "0.5" },
     });
-    const input = rule({ score: "0.8" });
+    const input = rule({ data: { score: "0.8" } });
     const proto = await ruleToProto(input);
 
     assert.equal(proto.rule?.rule.case, "localCustom");
@@ -511,9 +511,9 @@ describe("decisionFromProto", () => {
 
   test("ALLOW decision with custom result", () => {
     const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
-      threshold: "0.5",
+      data: { threshold: "0.5" },
     });
-    const input = rule({ score: "0.3" });
+    const input = rule({ data: { score: "0.3" } });
 
     const response = makeResponse(GuardConclusion.ALLOW, [
       {
@@ -1141,9 +1141,9 @@ describe("Config-level results() and deniedResult() for all rule types", () => {
 
   test("defineCustomRule: results() and deniedResult()", () => {
     const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
-      threshold: "0.5",
+      data: { threshold: "0.5" },
     });
-    const input = rule({ score: "0.8" });
+    const input = rule({ data: { score: "0.8" } });
 
     const response = makeResponse(
       GuardConclusion.DENY,
@@ -1241,9 +1241,9 @@ describe("Input-level deniedResult() for remaining rule types", () => {
 
   test("defineCustomRule input.deniedResult() returns denied result", () => {
     const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
-      threshold: "0.5",
+      data: { threshold: "0.5" },
     });
-    const input = rule({ score: "0.8" });
+    const input = rule({ data: { score: "0.8" } });
 
     const response = makeResponse(
       GuardConclusion.DENY,

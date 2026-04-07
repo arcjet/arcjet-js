@@ -403,8 +403,9 @@ export function errorResult(req: GuardRequest): GuardResponse {
 }
 
 /**
- * Build a mixed-rule ALLOW response — handles any combination of rule types.
- * Each submission gets a matching ALLOW result based on its rule type.
+ * Build a mixed-rule ALLOW response.
+ * Custom rules get a custom ALLOW result; all other rule types get a
+ * token bucket ALLOW result.
  */
 export function mixedRuleAllow(req: GuardRequest): GuardResponse {
   return create(GuardResponseSchema, {

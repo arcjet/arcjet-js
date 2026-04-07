@@ -72,21 +72,21 @@ describe("defineCustomRule", () => {
   type _CheckData = Assert<AssertEqual<DataField, Readonly<{ reason: string; actual: string }>>>;
 
   test("factory produces RuleWithConfigCustom with CUSTOM type", () => {
-    const rule = scoreRule({ threshold: "0.5" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
 
     assert.equal(rule.type, "CUSTOM");
     assert.equal(typeof rule, "function");
   });
 
   test("config data is extracted from typed config fields", () => {
-    const rule = scoreRule({ threshold: "0.9" });
+    const rule = scoreRule({ data: { threshold: "0.9" } });
 
     assert.equal(rule.config.data?.["threshold"], "0.9");
   });
 
   test("common config fields (mode, label, metadata) are preserved", () => {
     const rule = scoreRule({
-      threshold: "0.5",
+      data: { threshold: "0.5" },
       mode: "DRY_RUN",
       label: "abuse-score",
       metadata: { env: "staging" },
@@ -98,15 +98,15 @@ describe("defineCustomRule", () => {
   });
 
   test("input data is extracted from typed input fields", () => {
-    const rule = scoreRule({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
 
     assert.equal(input.input.data["score"], "0.8");
   });
 
   test("input metadata is preserved separately", () => {
-    const rule = scoreRule({ threshold: "0.5" });
-    const input = rule({ score: "0.8", metadata: { trace_id: "t-123" } });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" }, metadata: { trace_id: "t-123" } });
 
     assert.deepEqual(input.input.metadata, { trace_id: "t-123" });
     // metadata should not leak into data
@@ -114,52 +114,52 @@ describe("defineCustomRule", () => {
   });
 
   test("input without metadata does not set metadata on input object", () => {
-    const rule = scoreRule({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
 
     assert.equal(input.input.metadata, undefined);
   });
 
   test("evaluate function is attached to the input", () => {
-    const rule = scoreRule({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
 
     assert.equal(typeof input.evaluate, "function");
   });
 
   test("evaluate function is attached to the config", () => {
-    const rule = scoreRule({ threshold: "0.5" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
 
     assert.equal(typeof rule.config.evaluate, "function");
   });
 
   test("unique configId per factory call", () => {
-    const a = scoreRule({ threshold: "0.1" });
-    const b = scoreRule({ threshold: "0.2" });
+    const a = scoreRule({ data: { threshold: "0.1" } });
+    const b = scoreRule({ data: { threshold: "0.2" } });
 
     assert.notEqual(a[symbolArcjetInternal].configId, b[symbolArcjetInternal].configId);
   });
 
   test("shared configId across inputs from the same config", () => {
-    const rule = scoreRule({ threshold: "0.5" });
-    const a = rule({ score: "0.1" });
-    const b = rule({ score: "0.9" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const a = rule({ data: { score: "0.1" } });
+    const b = rule({ data: { score: "0.9" } });
 
     assert.equal(a[symbolArcjetInternal].configId, b[symbolArcjetInternal].configId);
     assert.equal(rule[symbolArcjetInternal].configId, a[symbolArcjetInternal].configId);
   });
 
   test("unique inputId per input call", () => {
-    const rule = scoreRule({ threshold: "0.5" });
-    const a = rule({ score: "0.1" });
-    const b = rule({ score: "0.9" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const a = rule({ data: { score: "0.1" } });
+    const b = rule({ data: { score: "0.9" } });
 
     assert.notEqual(a[symbolArcjetInternal].inputId, b[symbolArcjetInternal].inputId);
   });
 
   test("result() returns null when decision has no results", () => {
-    const rule = scoreRule({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
     const decision = emptyDecision();
 
     assert.equal(input.result(decision), null);
@@ -167,8 +167,8 @@ describe("defineCustomRule", () => {
   });
 
   test("deniedResult() returns null when decision has no results", () => {
-    const rule = scoreRule({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
     const decision = emptyDecision();
 
     assert.equal(input.deniedResult(decision), null);
@@ -176,8 +176,8 @@ describe("defineCustomRule", () => {
   });
 
   test("results() returns empty array when decision has no results", () => {
-    const rule = scoreRule({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    const rule = scoreRule({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
     const decision = emptyDecision();
 
     assert.deepEqual(input.results(decision), []);
@@ -186,13 +186,14 @@ describe("defineCustomRule", () => {
 
   test("async evaluate function is preserved", () => {
     const asyncRule = defineCustomRule<{ url: string }, { body: string }, { flagged: string }>({
-      evaluate: (_config, _input) => {
+      evaluate: async (_config, _input) => {
+        await Promise.resolve();
         return { conclusion: "ALLOW" as const };
       },
     });
 
-    const rule = asyncRule({ url: "https://example.com" });
-    const input = rule({ body: "hello" });
+    const rule = asyncRule({ data: { url: "https://example.com" } });
+    const input = rule({ data: { body: "hello" } });
 
     assert.equal(typeof input.evaluate, "function");
   });
@@ -206,8 +207,8 @@ describe("defineCustomRule", () => {
       },
     });
 
-    const rule = simpleRule({ flag: "blocked" });
-    const input = rule({ value: "blocked" });
+    const rule = simpleRule({ data: { flag: "blocked" } });
+    const input = rule({ data: { value: "blocked" } });
 
     assert.equal(input.type, "CUSTOM");
     assert.equal(input.input.data["value"], "blocked");
@@ -230,8 +231,8 @@ describe("defineCustomRule", () => {
       },
     });
 
-    const rule = noConfigRule({});
-    const input = rule({ text: "short" });
+    const rule = noConfigRule({ data: {} });
+    const input = rule({ data: { text: "short" } });
 
     assert.equal(input.type, "CUSTOM");
     assert.equal(rule.config.evaluate !== undefined, true);
@@ -245,8 +246,8 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "DENY" }),
     });
 
-    const configA = ruleA({ a: "1" });
-    const configB = ruleB({ b: "2" });
+    const configA = ruleA({ data: { a: "1" } });
+    const configB = ruleB({ data: { b: "2" } });
 
     assert.notEqual(configA[symbolArcjetInternal].configId, configB[symbolArcjetInternal].configId);
     assert.equal(configA.type, "CUSTOM");
@@ -262,8 +263,8 @@ describe("defineCustomRule", () => {
       },
     });
 
-    const config = rule({ x: "1" });
-    const input = config({ y: "2" });
+    const config = rule({ data: { x: "1" } });
+    const input = config({ data: { y: "2" } });
 
     assert.equal(typeof input.evaluate, "function");
     // Signal is provided by the SDK at call time, not by the user — just verify the param exists
@@ -285,8 +286,8 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
 
-    const lowThreshold = rule({ threshold: "0.1" });
-    const highThreshold = rule({ threshold: "0.9" });
+    const lowThreshold = rule({ data: { threshold: "0.1" } });
+    const highThreshold = rule({ data: { threshold: "0.9" } });
 
     assert.equal(lowThreshold.config.data?.["threshold"], "0.1");
     assert.equal(highThreshold.config.data?.["threshold"], "0.9");
@@ -304,10 +305,10 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "DENY" }),
     });
 
-    const configA = ruleA({ a: "1" });
-    const configB = ruleB({ b: "2" });
-    const inputA = configA({ x: "a" });
-    const inputB = configB({ y: "b" });
+    const configA = ruleA({ data: { a: "1" } });
+    const configB = ruleB({ data: { b: "2" } });
+    const inputA = configA({ data: { x: "a" } });
+    const inputB = configB({ data: { y: "b" } });
 
     assert.notEqual(inputA[symbolArcjetInternal].configId, inputB[symbolArcjetInternal].configId);
   });
@@ -316,7 +317,7 @@ describe("defineCustomRule", () => {
     const rule = defineCustomRule<Record<string, string>, Record<string, string>>({
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
-    const config = rule({});
+    const config = rule({ data: {} });
 
     // mode defaults to undefined which the server interprets as LIVE
     assert.equal(config.config.mode, undefined);
@@ -326,7 +327,7 @@ describe("defineCustomRule", () => {
     const rule = defineCustomRule<Record<string, string>, Record<string, string>>({
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
-    const config = rule({ mode: "DRY_RUN" });
+    const config = rule({ data: {}, mode: "DRY_RUN" });
 
     assert.equal(config.config.mode, "DRY_RUN");
   });
@@ -335,8 +336,8 @@ describe("defineCustomRule", () => {
     const rule = defineCustomRule<{ x: string }, { y: string }>({
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
-    const config = rule({ x: "1" });
-    const input = config({ y: "2" });
+    const config = rule({ data: { x: "1" } });
+    const input = config({ data: { y: "2" } });
 
     const configId = input[symbolArcjetInternal].configId;
     const inputId = input[symbolArcjetInternal].inputId;
@@ -356,8 +357,8 @@ describe("defineCustomRule", () => {
     const rule = defineCustomRule<{ x: string }, { y: string }>({
       evaluate: () => ({ conclusion: "DENY" }),
     });
-    const config = rule({ x: "1" });
-    const input = config({ y: "2" });
+    const config = rule({ data: { x: "1" } });
+    const input = config({ data: { y: "2" } });
 
     const configId = input[symbolArcjetInternal].configId;
     const inputId = input[symbolArcjetInternal].inputId;
@@ -378,9 +379,9 @@ describe("defineCustomRule", () => {
     const rule = defineCustomRule<{ x: string }, { y: string }>({
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
-    const config = rule({ x: "1" });
-    const input1 = config({ y: "a" });
-    const input2 = config({ y: "b" });
+    const config = rule({ data: { x: "1" } });
+    const input1 = config({ data: { y: "a" } });
+    const input2 = config({ data: { y: "b" } });
 
     const configId = config[symbolArcjetInternal].configId;
     const inputId1 = input1[symbolArcjetInternal].inputId;
@@ -410,9 +411,9 @@ describe("defineCustomRule", () => {
     const rule = defineCustomRule<{ x: string }, { y: string }>({
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
-    const config = rule({ x: "1" });
-    const input1 = config({ y: "a" });
-    const input2 = config({ y: "b" });
+    const config = rule({ data: { x: "1" } });
+    const input1 = config({ data: { y: "a" } });
+    const input2 = config({ data: { y: "b" } });
 
     const configId = config[symbolArcjetInternal].configId;
     const inputId1 = input1[symbolArcjetInternal].inputId;
@@ -443,9 +444,9 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "DENY" }),
     });
 
-    const configA = ruleA({ a: "1" });
-    const configB = ruleB({ b: "2" });
-    const inputB = configB({ y: "val" });
+    const configA = ruleA({ data: { a: "1" } });
+    const configB = ruleB({ data: { b: "2" } });
+    const inputB = configB({ data: { y: "val" } });
 
     // Decision only has a result for ruleB
     const configIdB = inputB[symbolArcjetInternal].configId;

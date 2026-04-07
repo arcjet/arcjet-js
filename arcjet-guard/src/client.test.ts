@@ -605,9 +605,9 @@ describe("In-memory server: sensitive info", () => {
 describe("In-memory server: custom rule", () => {
   test("ALLOW — custom data round-trip", async () => {
     const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
-      threshold: "0.5",
+      data: { threshold: "0.5" },
     });
-    const input = rule({ score: "0.3" });
+    const input = rule({ data: { score: "0.3" } });
 
     const arcjet = guardWithMock((req) => {
       const sub = req.ruleSubmissions[0];
@@ -665,8 +665,8 @@ describe("In-memory server: custom rule", () => {
           ? { conclusion: "DENY" as const, data: { reason: "too high" } }
           : { conclusion: "ALLOW" as const };
       },
-    })({ threshold: "0.5" });
-    const input = rule({ score: "0.8" });
+    })({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.8" } });
 
     const arcjet = guardWithMock((req) => {
       const sub = req.ruleSubmissions[0];
@@ -730,8 +730,8 @@ describe("In-memory server: custom rule", () => {
           ? { conclusion: "DENY" as const }
           : { conclusion: "ALLOW" as const };
       },
-    })({ threshold: "0.5" });
-    const input = rule({ score: "0.3" });
+    })({ data: { threshold: "0.5" } });
+    const input = rule({ data: { score: "0.3" } });
 
     const arcjet = guardWithMock((req) => {
       const sub = req.ruleSubmissions[0];
@@ -777,8 +777,8 @@ describe("In-memory server: custom rule", () => {
       evaluate: () => {
         throw new Error("eval crashed");
       },
-    })({});
-    const input = rule({});
+    })({ data: {} });
+    const input = rule({ data: {} });
 
     const arcjet = guardWithMock((req) => {
       const sub = req.ruleSubmissions[0];
