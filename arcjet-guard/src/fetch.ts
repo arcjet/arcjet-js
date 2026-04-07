@@ -88,6 +88,10 @@ import { createTransport } from "./transport-fetch.ts";
  * Compatible with Deno, Bun, Cloudflare Workers, browsers, and
  * any runtime providing the WHATWG Fetch API.
  *
+ * Connect to the Arcjet MCP server at `https://api.arcjet.com/mcp` to manage
+ * sites, retrieve SDK keys, and more. Learn more at
+ * {@link https://docs.arcjet.com/mcp-server}.
+ *
  * @example
  * ```ts
  * import { launchArcjet, tokenBucket } from "@arcjet/guard/fetch";

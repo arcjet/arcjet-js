@@ -296,6 +296,12 @@ const denied = limit.deniedResult(decision); // first denied result, or null
   Arcjet dashboard and help correlate decisions with specific tool calls or
   API endpoints.
 
+## MCP server
+
+Connect your AI assistant to the Arcjet MCP server at
+`https://api.arcjet.com/mcp` to manage sites, retrieve SDK keys, and more.
+See the [docs](https://docs.arcjet.com/mcp-server) for setup instructions.
+
 ## Runtime support
 
 | Runtime            | Minimum version          |
