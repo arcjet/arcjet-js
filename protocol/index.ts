@@ -264,7 +264,8 @@ interface ArcjetPromptInjectionReasonInit {
    * The prompt injection confidence score, scaled to [0, 1].
    *
    * @deprecated
-   *   This field is no longer used and will be removed in a future release.
+   *   This field is no longer respected by the server and will be removed in
+   *   a future release.
    */
   score?: number | undefined;
 }
@@ -287,7 +288,8 @@ export class ArcjetPromptInjectionReason extends ArcjetReason {
    * The prompt injection confidence score.
    *
    * @deprecated
-   *   This field is no longer used and will be removed in a future release.
+   *   This field is no longer respected by the server and will be removed in
+   *   a future release.
    */
   score: number;
 
@@ -1772,7 +1774,8 @@ export interface ArcjetPromptInjectionDetectionRule extends ArcjetRule<{
    * injection attempt.
    *
    * @deprecated
-   *   This field is no longer used and will be removed in a future release.
+   *   This field is no longer respected by the server and will be removed in
+   *   a future release.
    */
   threshold: number;
 }

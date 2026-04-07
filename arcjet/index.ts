@@ -2895,7 +2895,8 @@ export type DetectPromptInjectionOptions = {
    * Must be in the range (0.0, 1.0) exclusive.
    *
    * @deprecated
-   *   This option is no longer used and will be removed in a future release.
+   *   This option is no longer respected by the server and will be removed in
+   *   a future release.
    */
   threshold?: number;
 };
