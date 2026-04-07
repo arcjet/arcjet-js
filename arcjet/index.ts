@@ -2893,6 +2893,9 @@ export type DetectPromptInjectionOptions = {
    * attempt (default: `0.5`) e.g. anything over `0.5` is malicious.
    *
    * Must be in the range (0.0, 1.0) exclusive.
+   *
+   * @deprecated
+   *   This option is no longer used and will be removed in a future release.
    */
   threshold?: number;
 };
@@ -3008,13 +3011,13 @@ export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
  *
  * @example
  *   ```ts
- *   detectPromptInjection({ mode: "LIVE", threshold: 0.7 });
+ *   detectPromptInjection({ mode: "LIVE" });
  *   ```
  * @example
  *   ```ts
  *   const aj = arcjet({
  *     key: process.env.ARCJET_KEY,
- *     rules: [detectPromptInjection({ mode: "LIVE", threshold: 0.5 })],
+ *     rules: [detectPromptInjection({ mode: "LIVE" })],
  *   });
  *   ```
  */
