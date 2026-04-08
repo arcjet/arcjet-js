@@ -431,7 +431,11 @@ describe("defineCustomRule", () => {
       evaluate: () => ({ conclusion: "ALLOW" }),
     });
 
-    const rule = scoreRule({ data: { threshold: "0.5" }, mode: "DRY_RUN", metadata: { env: "test" } });
+    const rule = scoreRule({
+      data: { threshold: "0.5" },
+      mode: "DRY_RUN",
+      metadata: { env: "test" },
+    });
     assert.equal(rule.config.mode, "DRY_RUN");
     assert.deepEqual(rule.config.metadata, { env: "test" });
   });

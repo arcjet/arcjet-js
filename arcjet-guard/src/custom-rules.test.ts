@@ -106,9 +106,9 @@ describe("defineCustomRule", () => {
 
   test("input metadata is preserved separately", () => {
     const rule = scoreRule({ data: { threshold: "0.5" } });
-    const input = rule({ data: { score: "0.8" }, metadata: { trace_id: "t-123" } });
+    const input = rule({ data: { score: "0.8" }, metadata: { traceId: "t-123" } });
 
-    assert.deepEqual(input.input.metadata, { trace_id: "t-123" });
+    assert.deepEqual(input.input.metadata, { traceId: "t-123" });
     // metadata should not leak into data
     assert.equal(input.input.data["metadata"], undefined);
   });

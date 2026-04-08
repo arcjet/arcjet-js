@@ -473,14 +473,12 @@ export function defineCustomRule<
     input: Readonly<TInput>,
     options: { signal?: AbortSignal },
   ) => CustomEvaluateResult<TData> | Promise<CustomEvaluateResult<TData>>;
-}): (
-  config: {
-    data: TConfig;
-    mode?: "LIVE" | "DRY_RUN";
-    label?: string;
-    metadata?: Record<string, string>;
-  },
-) => RuleWithConfigCustom<TData, TInput> {
+}): (config: {
+  data: TConfig;
+  mode?: "LIVE" | "DRY_RUN";
+  label?: string;
+  metadata?: Record<string, string>;
+}) => RuleWithConfigCustom<TData, TInput> {
   return (config) => {
     const { data, mode, label, metadata } = config;
     const configId = randomId();
