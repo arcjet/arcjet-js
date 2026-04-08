@@ -29,9 +29,9 @@ This is the [Arcjet][arcjet] Guards SDK.
 
 ## Getting started
 
-1. Get your API key at [`app.arcjet.com`](https://app.arcjet.com)
+1. Get your Arcjet key at [`app.arcjet.com`](https://app.arcjet.com)
 2. `npm install @arcjet/guard`
-3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
+3. Pass your key to `launchArcjet({ key: process.env.ARCJET_KEY! })`
 4. Add a guard to your code — see the [quick start](#quick-start) below
 
 [npm package](https://www.npmjs.com/package/@arcjet/guard) |
@@ -57,21 +57,21 @@ prompt injection detection.
 ```ts
 import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard";
 
+// Create the Arcjet client once at module scope
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
-const limit = tokenBucket({
-  refillRate: 10,
-  intervalSeconds: 60,
-  maxTokens: 100,
-});
+// Configure reusable rules
+const limitRule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+const piRule = detectPromptInjection();
 
-const pi = detectPromptInjection();
-
+// Per request — create rule inputs each time
+const rl = limitRule({ key: userId, requested: tokenCount });
 const decision = await arcjet.guard({
   label: "tools.weather",
-  rules: [limit({ key: userId }), pi(userMessage)],
+  rules: [rl, piRule(userMessage)],
 });
 
+// Overall decision
 if (decision.conclusion === "DENY") {
   if (decision.reason === "RATE_LIMIT") {
     throw new Error("Rate limited — try again later");
@@ -82,23 +82,41 @@ if (decision.conclusion === "DENY") {
   throw new Error("Request denied");
 }
 
+// Check for errors (fail-open — errors don't cause denials)
+if (decision.hasError()) {
+  console.warn("At least one rule errored");
+}
+
+// From a RuleWithInput — result for this specific submission
+const r = rl.result(decision);
+if (r) {
+  console.log(r.remainingTokens, r.maxTokens);
+}
+
+// From a RuleWithConfig — first denied result across all submissions
+const denied = limitRule.deniedResult(decision);
+if (denied) {
+  console.log(denied.remainingTokens); // 0
+}
+
 // Proceed with your AI tool call...
 ```
 
 ## Rate limiting
 
-Arcjet supports token bucket, fixed window, and sliding window algorithms.
-Token buckets are ideal for controlling AI token budgets — set `maxTokens` to
-the max tokens a user can spend, `refillRate` to how many tokens are restored
-per `intervalSeconds`, and deduct tokens per request via `requested`. Use the
-`key` to track limits per user.
+### Token bucket
+
+Use this when requests have variable cost — for example, an LLM endpoint
+where each call consumes a different number of tokens. The bucket refills at
+a steady rate and allows bursts up to `maxTokens`.
 
 ```ts
 import { launchArcjet, tokenBucket } from "@arcjet/guard";
 
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
-const limit = tokenBucket({
+const limitRule = tokenBucket({
+  bucket: "user-tokens", // Optional — defaults to "default-token-bucket"
   refillRate: 2_000, // Refill 2,000 tokens per interval
   intervalSeconds: 3600, // Refill every hour
   maxTokens: 5_000, // Maximum 5,000 tokens in the bucket
@@ -106,7 +124,7 @@ const limit = tokenBucket({
 
 const decision = await arcjet.guard({
   label: "tools.chat",
-  rules: [limit({ key: userId, requested: tokenEstimate })],
+  rules: [limitRule({ key: userId, requested: tokenEstimate })],
 });
 
 if (decision.conclusion === "DENY" && decision.reason === "RATE_LIMIT") {
@@ -116,58 +134,68 @@ if (decision.conclusion === "DENY" && decision.reason === "RATE_LIMIT") {
 
 ### Fixed window
 
-Simple request counting per time window:
+Use this when you need a hard cap per time period — the counter resets at
+the end of each window. Simple to reason about, but allows bursts at
+window boundaries. If that matters, use sliding window instead.
 
 ```ts
-import { fixedWindow } from "@arcjet/guard";
+import { launchArcjet, fixedWindow } from "@arcjet/guard";
 
-const limit = fixedWindow({
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const limitRule = fixedWindow({
+  bucket: "page-views", // Optional — defaults to "default-fixed-window"
   maxRequests: 1000, // Maximum requests per window
   windowSeconds: 3600, // 1-hour window
 });
 
-// In your handler:
 const decision = await arcjet.guard({
   label: "api.search",
-  rules: [limit({ key: teamId })],
+  rules: [limitRule({ key: teamId })],
 });
 ```
 
 ### Sliding window
 
-Rolling window for smoother limits:
+Use this when you need smooth rate limiting without the burst-at-boundary
+problem of fixed windows. The server interpolates between the previous and
+current window, so limits are enforced across any rolling time span. Good
+default choice for API rate limits.
 
 ```ts
-import { slidingWindow } from "@arcjet/guard";
+import { launchArcjet, slidingWindow } from "@arcjet/guard";
 
-const limit = slidingWindow({
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const limitRule = slidingWindow({
+  bucket: "event-writes", // Optional — defaults to "default-sliding-window"
   maxRequests: 500, // Maximum requests per interval
   intervalSeconds: 60, // 1-minute rolling window
 });
 
-// In your handler:
 const decision = await arcjet.guard({
   label: "api.events",
-  rules: [limit({ key: userId })],
+  rules: [limitRule({ key: userId })],
 });
 ```
 
 ## Prompt injection detection
 
 Detect and block prompt injection attacks — attempts to override your AI
-model's instructions — before they reach your model. Pass the user's message
-as the input to the rule.
+model's instructions — before they reach your model. Also useful for
+scanning tool call results that contain untrusted input (e.g. a "fetch"
+tool that loads a webpage which could embed injected instructions).
 
 ```ts
 import { launchArcjet, detectPromptInjection } from "@arcjet/guard";
 
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
-const pi = detectPromptInjection();
+const piRule = detectPromptInjection();
 
 const decision = await arcjet.guard({
   label: "tools.chat",
-  rules: [pi(userMessage)],
+  rules: [piRule(userMessage)],
 });
 
 if (decision.conclusion === "DENY" && decision.reason === "PROMPT_INJECTION") {
@@ -206,75 +234,120 @@ if (decision.conclusion === "DENY" && decision.reason === "SENSITIVE_INFO") {
 
 Define your own local evaluation logic with arbitrary key-value data. When
 `evaluate` is provided, the SDK calls it locally before sending the request.
-The function receives `(configData, inputData)` and must return
+The function receives `(config, input, { signal })` and must return
 `{ conclusion: "ALLOW" | "DENY" }`.
 
 ```ts
-import { launchArcjet, localCustom } from "@arcjet/guard";
+import { launchArcjet, defineCustomRule } from "@arcjet/guard";
 
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
-const custom = localCustom({
-  data: { threshold: "0.5" },
+const topicBlock = defineCustomRule<
+  { blockedTopic: string },
+  { topic: string },
+  { matched: string }
+>({
   evaluate: (config, input) => {
-    const score = parseFloat(input["score"] ?? "0");
-    const threshold = parseFloat(config["threshold"] ?? "0");
-    return score > threshold
-      ? { conclusion: "DENY", data: { reason: "score too high" } }
-      : { conclusion: "ALLOW" };
+    if (input.topic === config.blockedTopic) {
+      return { conclusion: "DENY", data: { matched: input.topic } };
+    }
+    return { conclusion: "ALLOW" };
   },
 });
 
+const rule = topicBlock({ data: { blockedTopic: "politics" } });
+
 const decision = await arcjet.guard({
-  label: "tools.score",
-  rules: [custom({ data: { score: "0.8" } })],
+  label: "tools.chat",
+  rules: [rule({ data: { topic: userTopic } })],
 });
 ```
 
 ## Decision inspection
 
-Every `.guard()` call returns a `Decision` object with three layers of detail:
+Every `.guard()` call returns a `Decision` object. You can inspect it at
+three levels of detail:
 
 ```ts
-// Layer 1: conclusion and reason
+const rl = limitRule({ key: userId, requested: tokenCount });
+const decision = await arcjet.guard({
+  label: "tools.weather",
+  rules: [rl, piRule(userMessage)],
+});
+
+// Overall decision
 decision.conclusion; // "ALLOW" | "DENY"
 decision.reason; // "RATE_LIMIT" | "PROMPT_INJECTION" | ... (only on DENY)
 
-// Layer 2: error signal
-decision.hasError(); // true if any rule errored (fail-open)
+// Error check (fail-open — errors don't cause denials)
+decision.hasError(); // true if any rule errored
 
-// Layer 3: per-rule results
-const results = limit.results(decision); // all results for this config
-const result = limitCall.result(decision); // single result for this input
-const denied = limit.deniedResult(decision); // first denied result, or null
+// Per-rule results — iterate all
+for (const result of decision.results) {
+  console.log(result.type, result.conclusion);
+}
+
+// From a RuleWithInput — this specific submission's result
+const r = rl.result(decision);
+if (r) {
+  console.log(r.remainingTokens, r.maxTokens);
+}
+
+// From a RuleWithConfig — first denied result across all submissions
+const denied = limitRule.deniedResult(decision);
+if (denied) {
+  console.log(denied.remainingTokens); // 0
+}
 ```
+
+Methods available on both `RuleWithConfig` and `RuleWithInput`:
+
+| Method                   | `RuleWithConfig` (e.g. `limit`) | `RuleWithInput` (e.g. `rl`)        |
+| ------------------------ | ------------------------------- | ---------------------------------- |
+| `results(decision)`      | All results for this config     | Single-element or empty array      |
+| `result(decision)`       | First result (any conclusion)   | This submission's result           |
+| `deniedResult(decision)` | First denied result             | This submission's result if denied |
 
 ## Best practices
 
-- **Create rule configs once** at module scope and reuse them with per-request
-  input. The config ID is stable across calls, enabling server-side
-  aggregation.
+- **Create the client and rule configs once** at module scope, not per
+  request. The client holds a persistent connection (HTTP/2 on Node.js);
+  rule configs carry stable IDs used for server-side aggregation.
 
   ```ts
-  // Create once at module scope
-  const limit = tokenBucket({
-    refillRate: 10,
-    intervalSeconds: 60,
-    maxTokens: 100,
-  });
+  // Create the client once at module scope
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
-  // Reuse with different inputs per request
+  // Configure reusable rules (also at module scope)
+  const limitRule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+
+  // Per request — created each time
   const decision = await arcjet.guard({
     label: "tools.weather",
-    rules: [limit({ key: userId })],
+    rules: [limitRule({ key: userId })],
   });
+  ```
+
+- **Don't wrap `launchArcjet()` in a helper function.** This defeats
+  connection reuse:
+
+  ```ts
+  // Bad — creates a new client (and connection) every call
+  function getArcjet() {
+    return launchArcjet({ key: process.env.ARCJET_KEY! });
+  }
+  const decision = await getArcjet().guard({ ... });
+
+  // Good — reuses the client
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const decision = await arcjet.guard({ ... });
   ```
 
 - **Start rules in `DRY_RUN` mode** to observe behavior before switching to
   `LIVE`. This lets you tune thresholds without affecting real traffic:
 
   ```ts
-  const limit = tokenBucket({
+  const limitRule = tokenBucket({
     mode: "DRY_RUN",
     refillRate: 10,
     intervalSeconds: 60,
@@ -296,6 +369,10 @@ const denied = limit.deniedResult(decision); // first denied result, or null
   Arcjet dashboard and help correlate decisions with specific tool calls or
   API endpoints.
 
+- **Use `bucket`** on rate limit rules to name your counters in the
+  dashboard. Different configs sharing the same bucket name still get
+  independent counters — a config hash is appended server-side.
+
 ## MCP server
 
 Connect your AI assistant to the Arcjet MCP server at
@@ -312,10 +389,9 @@ See the [docs](https://docs.arcjet.com/mcp-server) for setup instructions.
 | Cloudflare Workers | compat date `2025-09-01` |
 
 > [!TIP]
-> The SDK automatically picks the best transport for your runtime —
-> HTTP/2 via `node:http2` on Node.js and Bun, or fetch on Deno and Cloudflare
-> Workers. You can override this by importing from `@arcjet/guard/node` or
-> `@arcjet/guard/fetch` directly.
+> Import from `@arcjet/guard` — the correct transport is selected
+> automatically via conditional exports (HTTP/2 on Node.js and Bun,
+> fetch-based on Deno and Cloudflare Workers).
 
 ## License
 

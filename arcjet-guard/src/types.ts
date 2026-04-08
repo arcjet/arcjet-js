@@ -128,15 +128,15 @@ export type RuleResultSensitiveInfo = {
 };
 
 /** Result from a custom local rule evaluation. */
-export type RuleResultCustom = {
+export type RuleResultCustom<TData extends Record<string, string> = Record<string, string>> = {
   /** Whether the request was allowed or denied by this rule. */
   readonly conclusion: "ALLOW" | "DENY";
   /** The reason category — always `"CUSTOM"` for custom rules. */
   readonly reason: "CUSTOM";
   /** Discriminant — always `"CUSTOM"`. */
   readonly type: "CUSTOM";
-  /** Arbitrary key-value data returned by the custom rule's `evaluate` function. */
-  readonly data: Readonly<Record<string, string>>;
+  /** Key-value data returned by the custom rule's `evaluate` function. */
+  readonly data: Readonly<TData>;
 };
 
 /** Result for a rule that was not evaluated. */
@@ -266,8 +266,8 @@ export interface TokenBucketConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -312,6 +312,22 @@ export interface TokenBucketConfig {
    * ```
    */
   maxTokens: number;
+  /**
+   * Bucket identifier for grouping rate limit counters in the dashboard.
+   * Validated as a slug (max 256 bytes, letters/digits/dash/dot,
+   * must start and end with a letter or digit).
+   *
+   * Different configs sharing the same bucket name still get independent
+   * counters — a config hash is appended server-side.
+   *
+   * @default "default-token-bucket"
+   *
+   * @example
+   * ```ts
+   * tokenBucket({ bucket: "user-tokens", refillRate: 10, intervalSeconds: 60, maxTokens: 100 })
+   * ```
+   */
+  bucket?: string;
 }
 
 /** Token bucket rate limiting input. */
@@ -342,8 +358,8 @@ export interface TokenBucketInput {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -384,8 +400,8 @@ export interface FixedWindowConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -418,6 +434,22 @@ export interface FixedWindowConfig {
    * ```
    */
   windowSeconds: number;
+  /**
+   * Bucket identifier for grouping rate limit counters in the dashboard.
+   * Validated as a slug (max 256 bytes, letters/digits/dash/dot,
+   * must start and end with a letter or digit).
+   *
+   * Different configs sharing the same bucket name still get independent
+   * counters — a config hash is appended server-side.
+   *
+   * @default "default-fixed-window"
+   *
+   * @example
+   * ```ts
+   * fixedWindow({ bucket: "page-views", maxRequests: 100, windowSeconds: 60 })
+   * ```
+   */
+  bucket?: string;
 }
 
 /** Fixed window rate limiting input. */
@@ -448,8 +480,8 @@ export interface FixedWindowInput {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -490,8 +522,8 @@ export interface SlidingWindowConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -524,6 +556,22 @@ export interface SlidingWindowConfig {
    * ```
    */
   intervalSeconds: number;
+  /**
+   * Bucket identifier for grouping rate limit counters in the dashboard.
+   * Validated as a slug (max 256 bytes, letters/digits/dash/dot,
+   * must start and end with a letter or digit).
+   *
+   * Different configs sharing the same bucket name still get independent
+   * counters — a config hash is appended server-side.
+   *
+   * @default "default-sliding-window"
+   *
+   * @example
+   * ```ts
+   * slidingWindow({ bucket: "event-writes", maxRequests: 1_000, intervalSeconds: 3600 })
+   * ```
+   */
+  bucket?: string;
 }
 
 /** Sliding window rate limiting input. */
@@ -554,8 +602,8 @@ export interface SlidingWindowInput {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -590,8 +638,8 @@ export interface DetectPromptInjectionConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -638,8 +686,8 @@ export interface LocalDetectSensitiveInfoConfigAllow {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -696,8 +744,8 @@ export interface LocalDetectSensitiveInfoConfigDeny {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
@@ -751,11 +799,13 @@ export type LocalDetectSensitiveInfoConfig =
     };
 
 /** Result returned by a custom rule's `evaluate` function. */
-export interface CustomEvaluateResult {
+export interface CustomEvaluateResult<
+  TData extends Record<string, string> = Record<string, string>,
+> {
   /** Whether the rule allows or denies. */
   conclusion: "ALLOW" | "DENY";
-  /** Optional arbitrary key-value data to include in the result. */
-  data?: Record<string, string>;
+  /** Optional key-value data to include in the result. */
+  data?: TData;
 }
 
 /**
@@ -764,10 +814,15 @@ export interface CustomEvaluateResult {
  * Receives the config data and the per-request input data.
  * Can be synchronous or asynchronous.
  */
-export type CustomEvaluateFn = (
-  config: Readonly<Record<string, string>>,
-  input: Readonly<Record<string, string>>,
-) => CustomEvaluateResult | Promise<CustomEvaluateResult>;
+export type CustomEvaluateFn<
+  TConfig extends Record<string, string> = Record<string, string>,
+  TInput extends Record<string, string> = Record<string, string>,
+  TData extends Record<string, string> = Record<string, string>,
+> = (
+  config: Readonly<TConfig>,
+  input: Readonly<TInput>,
+  options: { signal?: AbortSignal },
+) => CustomEvaluateResult<TData> | Promise<CustomEvaluateResult<TData>>;
 
 /** Custom local rule config. */
 export interface LocalCustomConfig {
@@ -795,16 +850,15 @@ export interface LocalCustomConfig {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
    * ```ts
-   * localCustom({
+   * defineCustomRule({
    *   evaluate: myHandler,
-   *   metadata: { rule_version: "2", team: "trust-safety" },
-   * })
+   * })({ data: { ... }, metadata: { ruleVersion: "2", team: "trust-safety" } })
    * ```
    */
   metadata?: Record<string, string>;
@@ -825,14 +879,14 @@ export interface LocalCustomInput {
    *
    * Constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example
    * ```ts
-   * const rule = localCustom({ evaluate: myHandler });
-   * rule({ data: { user_input: text }, metadata: { trace_id: traceId } })
+   * const rule = defineCustomRule({ evaluate: myHandler })({ data: {} });
+   * rule({ data: { userInput: text }, metadata: { traceId: traceId } })
    * ```
    */
   metadata?: Record<string, string>;
@@ -850,6 +904,8 @@ export type RuleWithConfigTokenBucket = {
   (input: TokenBucketInput): RuleWithInputTokenBucket;
   /** Extract all token bucket results from a decision. */
   results(decision: Decision): RuleResultTokenBucket[];
+  /** Return the first token bucket result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultTokenBucket | null;
   /** Return the first denied token bucket result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultTokenBucket | null;
 };
@@ -866,6 +922,8 @@ export type RuleWithConfigFixedWindow = {
   (input: FixedWindowInput): RuleWithInputFixedWindow;
   /** Extract all fixed window results from a decision. */
   results(decision: Decision): RuleResultFixedWindow[];
+  /** Return the first fixed window result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultFixedWindow | null;
   /** Return the first denied fixed window result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultFixedWindow | null;
 };
@@ -882,6 +940,8 @@ export type RuleWithConfigSlidingWindow = {
   (input: SlidingWindowInput): RuleWithInputSlidingWindow;
   /** Extract all sliding window results from a decision. */
   results(decision: Decision): RuleResultSlidingWindow[];
+  /** Return the first sliding window result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultSlidingWindow | null;
   /** Return the first denied sliding window result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultSlidingWindow | null;
 };
@@ -898,6 +958,8 @@ export type RuleWithConfigPromptInjection = {
   (input: string): RuleWithInputPromptInjection;
   /** Extract all prompt injection results from a decision. */
   results(decision: Decision): RuleResultPromptInjection[];
+  /** Return the first prompt injection result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultPromptInjection | null;
   /** Return the first denied prompt injection result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultPromptInjection | null;
 };
@@ -914,12 +976,17 @@ export type RuleWithConfigSensitiveInfo = {
   (input: string): RuleWithInputSensitiveInfo;
   /** Extract all sensitive info results from a decision. */
   results(decision: Decision): RuleResultSensitiveInfo[];
+  /** Return the first sensitive info result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultSensitiveInfo | null;
   /** Return the first denied sensitive info result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultSensitiveInfo | null;
 };
 
 /** A configured custom rule. */
-export type RuleWithConfigCustom = {
+export type RuleWithConfigCustom<
+  TData extends Record<string, string> = Record<string, string>,
+  TInput extends Record<string, string> = Record<string, string>,
+> = {
   /** Discriminant — always `"CUSTOM"`. */
   readonly type: "CUSTOM";
   /** The custom rule configuration for this rule instance. */
@@ -927,11 +994,13 @@ export type RuleWithConfigCustom = {
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
   /** Bind per-request input to produce a `RuleWithInputCustom`. */
-  (input: LocalCustomInput): RuleWithInputCustom;
+  (input: { data: TInput; metadata?: Record<string, string> }): RuleWithInputCustom<TData>;
   /** Extract all custom rule results from a decision. */
-  results(decision: Decision): RuleResultCustom[];
+  results(decision: Decision): RuleResultCustom<TData>[];
+  /** Return the first custom rule result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultCustom<TData> | null;
   /** Return the first denied custom rule result, or `null` if none. */
-  deniedResult(decision: Decision): RuleResultCustom | null;
+  deniedResult(decision: Decision): RuleResultCustom<TData> | null;
 };
 
 /** Union of all configured rule types. */
@@ -953,9 +1022,11 @@ export type RuleWithInputTokenBucket = {
   readonly input: TokenBucketInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultTokenBucket[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultTokenBucket | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultTokenBucket | null;
 };
 
@@ -969,9 +1040,11 @@ export type RuleWithInputFixedWindow = {
   readonly input: FixedWindowInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultFixedWindow[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultFixedWindow | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultFixedWindow | null;
 };
 
@@ -985,9 +1058,11 @@ export type RuleWithInputSlidingWindow = {
   readonly input: SlidingWindowInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultSlidingWindow[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultSlidingWindow | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultSlidingWindow | null;
 };
 
@@ -1001,9 +1076,11 @@ export type RuleWithInputPromptInjection = {
   readonly input: string;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultPromptInjection[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultPromptInjection | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultPromptInjection | null;
 };
 
@@ -1017,14 +1094,16 @@ export type RuleWithInputSensitiveInfo = {
   readonly input: string;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultSensitiveInfo[];
+  /** Find this submission's result in a decision, or `null` if not present. */
   result(decision: Decision): RuleResultSensitiveInfo | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
+  /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultSensitiveInfo | null;
 };
 
 /** A custom rule with bound input. */
-export type RuleWithInputCustom = {
+export type RuleWithInputCustom<TData extends Record<string, string> = Record<string, string>> = {
   /** Discriminant — always `"CUSTOM"`. */
   readonly type: "CUSTOM";
   /** The custom rule configuration for this rule instance. */
@@ -1035,10 +1114,12 @@ export type RuleWithInputCustom = {
   readonly evaluate?: CustomEvaluateFn;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
-  /** Find this rule's result in a decision, or `null` if not present. */
-  result(decision: Decision): RuleResultCustom | null;
-  /** Find this rule's denied result in a decision, or `null` if not denied. */
-  deniedResult(decision: Decision): RuleResultCustom | null;
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultCustom<TData>[];
+  /** Find this submission's result in a decision, or `null` if not present. */
+  result(decision: Decision): RuleResultCustom<TData> | null;
+  /** Find this submission's denied result, or `null` if not denied. */
+  deniedResult(decision: Decision): RuleResultCustom<TData> | null;
 };
 
 /** Union of all rule-with-input types. */
@@ -1068,8 +1149,8 @@ export interface GuardOptions {
    *
    * Constraints:
    * - Max 20 key-value pairs.
-   * - Keys: 1–64 bytes, lowercase letters/digits/dash/dot/underscore,
-   *   must start with a lowercase letter or digit.
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
    * - Values: max 512 bytes.
    *
    * @example

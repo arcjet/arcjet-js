@@ -22,7 +22,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "@arcjet/guard";
 import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
 
@@ -41,7 +41,7 @@ const surface: GuardSurface = {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 };
 
 describe("In-memory shared cases (Node entrypoint)", () => {
@@ -72,7 +72,11 @@ describe("Runtime: Node.js HTTP/2 transport", () => {
       sessionManager,
     });
     const arcjet = launchArcjetWithTransport({ key: "ajkey_dummy", transport });
-    const limit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const limit = tokenBucket({
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = limit({ key: "user_1" });
 
     const decision = await arcjet.guard({
@@ -117,7 +121,11 @@ describe("Runtime: Node.js HTTP/2 over TLS (self-signed)", () => {
       sessionManager,
     });
     const arcjet = launchArcjetWithTransport({ key: "ajkey_dummy", transport });
-    const limit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const limit = tokenBucket({
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = limit({ key: "user_1" });
 
     const decision = await arcjet.guard({

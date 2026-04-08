@@ -32,6 +32,7 @@ import {
   ResultLocalCustomSchema,
   ResultErrorSchema,
   GuardConclusion,
+  GuardReason,
   GuardRuleType,
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
@@ -41,7 +42,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "./rules.ts";
 /** Build a mock transport that responds with the given handler. */
 function mockTransport(
@@ -67,7 +68,12 @@ function guardWithMock(handler: Parameters<typeof mockTransport>[0]): ArcjetGuar
 }
 describe("In-memory server: token bucket", () => {
   test("ALLOW — tokens remaining", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1", requested: 5 });
 
     const arcjet = guardWithMock((req) => {
@@ -119,7 +125,12 @@ describe("In-memory server: token bucket", () => {
   });
 
   test("DENY — rate limited", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     const arcjet = guardWithMock((req) => {
@@ -128,6 +139,7 @@ describe("In-memory server: token bucket", () => {
         decision: create(GuardDecisionSchema, {
           id: "gdec_deny_tb",
           conclusion: GuardConclusion.DENY,
+          reason: GuardReason.RATE_LIMIT,
           ruleResults: [
             create(GuardRuleResultSchema, {
               resultId: "gres_1",
@@ -167,7 +179,7 @@ describe("In-memory server: token bucket", () => {
 });
 describe("In-memory server: fixed window", () => {
   test("ALLOW — within limit", async () => {
-    const rule = fixedWindow({ maxRequests: 1000, windowSeconds: 3600 });
+    const rule = fixedWindow({ bucket: "test", maxRequests: 1000, windowSeconds: 3600 });
     const input = rule({ key: "team_1" });
 
     const arcjet = guardWithMock((req) => {
@@ -210,7 +222,7 @@ describe("In-memory server: fixed window", () => {
   });
 
   test("DENY — over limit", async () => {
-    const rule = fixedWindow({ maxRequests: 100, windowSeconds: 3600 });
+    const rule = fixedWindow({ bucket: "test", maxRequests: 100, windowSeconds: 3600 });
     const input = rule({ key: "user_1" });
 
     const arcjet = guardWithMock((req) => {
@@ -219,6 +231,7 @@ describe("In-memory server: fixed window", () => {
         decision: create(GuardDecisionSchema, {
           id: "gdec_deny_fw",
           conclusion: GuardConclusion.DENY,
+          reason: GuardReason.RATE_LIMIT,
           ruleResults: [
             create(GuardRuleResultSchema, {
               resultId: "gres_1",
@@ -254,7 +267,7 @@ describe("In-memory server: fixed window", () => {
 });
 describe("In-memory server: sliding window", () => {
   test("ALLOW — within limit", async () => {
-    const rule = slidingWindow({ maxRequests: 500, intervalSeconds: 60 });
+    const rule = slidingWindow({ bucket: "test", maxRequests: 500, intervalSeconds: 60 });
     const input = rule({ key: "user_1" });
 
     const arcjet = guardWithMock((req) => {
@@ -315,6 +328,7 @@ describe("In-memory server: prompt injection", () => {
         decision: create(GuardDecisionSchema, {
           id: "gdec_deny_pi",
           conclusion: GuardConclusion.DENY,
+          reason: GuardReason.PROMPT_INJECTION,
           ruleResults: [
             create(GuardRuleResultSchema, {
               resultId: "gres_1",
@@ -395,6 +409,7 @@ describe("In-memory server: sensitive info", () => {
         decision: create(GuardDecisionSchema, {
           id: "gdec_deny_si",
           conclusion: GuardConclusion.DENY,
+          reason: GuardReason.SENSITIVE_INFO,
           ruleResults: [
             create(GuardRuleResultSchema, {
               resultId: "gres_1",
@@ -456,6 +471,7 @@ describe("In-memory server: sensitive info", () => {
         decision: create(GuardDecisionSchema, {
           id: "gdec_deny_email",
           conclusion: GuardConclusion.DENY,
+          reason: GuardReason.SENSITIVE_INFO,
           ruleResults: [
             create(GuardRuleResultSchema, {
               resultId: "gres_1",
@@ -588,7 +604,9 @@ describe("In-memory server: sensitive info", () => {
 });
 describe("In-memory server: custom rule", () => {
   test("ALLOW — custom data round-trip", async () => {
-    const rule = localCustom({ data: { threshold: "0.5" } });
+    const rule = defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
+      data: { threshold: "0.5" },
+    });
     const input = rule({ data: { score: "0.3" } });
 
     const arcjet = guardWithMock((req) => {
@@ -639,8 +657,7 @@ describe("In-memory server: custom rule", () => {
   });
 
   test("DENY — local evaluate function denies", async () => {
-    const rule = localCustom({
-      data: { threshold: "0.5" },
+    const rule = defineCustomRule({
       evaluate: (config, input) => {
         const score = parseFloat(input["score"] ?? "0");
         const threshold = parseFloat(config["threshold"] ?? "0");
@@ -648,7 +665,7 @@ describe("In-memory server: custom rule", () => {
           ? { conclusion: "DENY" as const, data: { reason: "too high" } }
           : { conclusion: "ALLOW" as const };
       },
-    });
+    })({ data: { threshold: "0.5" } });
     const input = rule({ data: { score: "0.8" } });
 
     const arcjet = guardWithMock((req) => {
@@ -670,6 +687,7 @@ describe("In-memory server: custom rule", () => {
         decision: create(GuardDecisionSchema, {
           id: "gdec_deny_custom",
           conclusion: GuardConclusion.DENY,
+          reason: GuardReason.CUSTOM,
           ruleResults: [
             create(GuardRuleResultSchema, {
               resultId: "gres_1",
@@ -704,8 +722,7 @@ describe("In-memory server: custom rule", () => {
   });
 
   test("ALLOW — local evaluate function allows", async () => {
-    const rule = localCustom({
-      data: { threshold: "0.5" },
+    const rule = defineCustomRule({
       evaluate: (config, input) => {
         const score = parseFloat(input["score"] ?? "0");
         const threshold = parseFloat(config["threshold"] ?? "0");
@@ -713,7 +730,7 @@ describe("In-memory server: custom rule", () => {
           ? { conclusion: "DENY" as const }
           : { conclusion: "ALLOW" as const };
       },
-    });
+    })({ data: { threshold: "0.5" } });
     const input = rule({ data: { score: "0.3" } });
 
     const arcjet = guardWithMock((req) => {
@@ -756,11 +773,11 @@ describe("In-memory server: custom rule", () => {
   });
 
   test("evaluate throws — resultError sent, server decides", async () => {
-    const rule = localCustom({
+    const rule = defineCustomRule({
       evaluate: () => {
         throw new Error("eval crashed");
       },
-    });
+    })({ data: {} });
     const input = rule({ data: {} });
 
     const arcjet = guardWithMock((req) => {
@@ -805,7 +822,12 @@ describe("In-memory server: custom rule", () => {
 });
 describe("In-memory server: multi-rule", () => {
   test("ALLOW — all rules pass", async () => {
-    const rateLimit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rateLimit = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const promptScan = detectPromptInjection();
 
     const rl = rateLimit({ key: "user_1" });
@@ -875,7 +897,12 @@ describe("In-memory server: multi-rule", () => {
   });
 
   test("DENY — one rule denies", async () => {
-    const rateLimit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rateLimit = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const promptScan = detectPromptInjection();
 
     const rl = rateLimit({ key: "user_1" });
@@ -888,6 +915,7 @@ describe("In-memory server: multi-rule", () => {
         decision: create(GuardDecisionSchema, {
           id: "gdec_multi_deny",
           conclusion: GuardConclusion.DENY,
+          reason: GuardReason.PROMPT_INJECTION,
           ruleResults: [
             create(GuardRuleResultSchema, {
               resultId: "gres_1",
@@ -943,7 +971,12 @@ describe("In-memory server: multi-rule", () => {
 });
 describe("In-memory server: auth header", () => {
   test("API key is sent as Bearer token", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     let receivedAuth: string | null = null;
@@ -997,7 +1030,12 @@ describe("In-memory server: auth header", () => {
 });
 describe("In-memory server: request metadata", () => {
   test("label and metadata are sent to the server", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     let receivedLabel = "";
@@ -1046,7 +1084,12 @@ describe("In-memory server: request metadata", () => {
   });
 
   test("user-agent is sent in the request body", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     let receivedUA = "";
@@ -1093,6 +1136,7 @@ describe("In-memory server: request metadata", () => {
 describe("In-memory server: DRY_RUN mode", () => {
   test("DRY_RUN mode is sent to the server", async () => {
     const rule = tokenBucket({
+      bucket: "test",
       refillRate: 10,
       intervalSeconds: 60,
       maxTokens: 100,
@@ -1153,7 +1197,12 @@ describe("In-memory server: error handling", () => {
   });
 
   test("server error returns fail-open ALLOW with error result", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     const arcjet = guardWithMock(() => {
@@ -1171,7 +1220,12 @@ describe("In-memory server: error handling", () => {
   });
 
   test("server returns error result — fail-open", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     const arcjet = guardWithMock((req) => {
@@ -1220,11 +1274,13 @@ describe("In-memory server: stateful mock", () => {
           const sub = req.ruleSubmissions[0];
           const remaining = Math.max(0, 10 - callCount);
           const conclusion = remaining > 0 ? GuardConclusion.ALLOW : GuardConclusion.DENY;
+          const reason = remaining > 0 ? GuardReason.UNSPECIFIED : GuardReason.RATE_LIMIT;
 
           return create(GuardResponseSchema, {
             decision: create(GuardDecisionSchema, {
               id: `gdec_${callCount}`,
               conclusion,
+              reason,
               ruleResults: [
                 create(GuardRuleResultSchema, {
                   resultId: `gres_${callCount}`,
@@ -1255,7 +1311,7 @@ describe("In-memory server: stateful mock", () => {
       transport,
     });
 
-    const rule = tokenBucket({ refillRate: 1, intervalSeconds: 60, maxTokens: 10 });
+    const rule = tokenBucket({ bucket: "test", refillRate: 1, intervalSeconds: 60, maxTokens: 10 });
 
     // First 9 calls should ALLOW
     for (let i = 1; i <= 9; i++) {
@@ -1280,7 +1336,12 @@ describe("In-memory server: stateful mock", () => {
 
 describe("Cancellation via signal", () => {
   test("signal is forwarded to the RPC call", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     const controller = new AbortController();
@@ -1330,7 +1391,12 @@ describe("Cancellation via signal", () => {
   });
 
   test("pre-aborted signal rejects the RPC call", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     const controller = new AbortController();

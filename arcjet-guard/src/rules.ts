@@ -42,6 +42,8 @@ import type {
   RuleWithInputSensitiveInfo,
   RuleWithConfigCustom,
   RuleWithInputCustom,
+  CustomEvaluateFn,
+  CustomEvaluateResult,
 } from "./types.ts";
 
 /** Generate a random opaque identifier. */
@@ -94,13 +96,19 @@ function findDeniedResult<T extends RuleResult>(decision: Decision, configId: st
 /**
  * Create a token bucket rate limiting rule.
  *
+ * Use this when requests have variable cost — for example, an LLM
+ * endpoint where each call consumes a different number of tokens.
+ * The bucket refills at a steady rate and allows bursts up to
+ * `maxTokens`, so users can spend tokens quickly but are throttled
+ * once the bucket drains.
+ *
  * Returns a configured rule that can be called with per-request input
  * (key + optional requested token count) to produce a `RuleWithInput`
  * ready for `.guard()`.
  *
  * @example
  * ```ts
- * const limit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+ * const limit = tokenBucket({ bucket: "user-tokens", refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
  * const decision = await arcjet.guard({
  *   label: "api.chat",
  *   rules: [limit({ key: userId })],
@@ -125,6 +133,10 @@ export function tokenBucket(config: TokenBucketConfig): RuleWithConfigTokenBucke
           const r = findResult<RuleResultTokenBucket>(decision, configId, inputId);
           return r !== null && r.conclusion === "DENY" ? r : null;
         },
+        results(decision: Decision): RuleResultTokenBucket[] {
+          const r = findResult<RuleResultTokenBucket>(decision, configId, inputId);
+          return r === null ? [] : [r];
+        },
       };
     },
     {
@@ -133,6 +145,9 @@ export function tokenBucket(config: TokenBucketConfig): RuleWithConfigTokenBucke
       [symbolArcjetInternal]: { configId },
       results(decision: Decision): RuleResultTokenBucket[] {
         return findResults<RuleResultTokenBucket>(decision, configId);
+      },
+      result(decision: Decision): RuleResultTokenBucket | null {
+        return findResults<RuleResultTokenBucket>(decision, configId)[0] ?? null;
       },
       deniedResult(decision: Decision): RuleResultTokenBucket | null {
         return findDeniedResult<RuleResultTokenBucket>(decision, configId);
@@ -146,13 +161,19 @@ export function tokenBucket(config: TokenBucketConfig): RuleWithConfigTokenBucke
 /**
  * Create a fixed window rate limiting rule.
  *
+ * Use this when you need a hard cap per time period — for example,
+ * "100 requests per hour". The counter resets to zero at the end of
+ * each window. Simple to reason about, but allows bursts at window
+ * boundaries (a user could make 100 requests at 11:59 and 100 more
+ * at 12:00). If that matters, use {@link slidingWindow} instead.
+ *
  * Returns a configured rule that can be called with per-request input
  * (key + optional requested count) to produce a `RuleWithInput`
  * ready for `.guard()`.
  *
  * @example
  * ```ts
- * const limit = fixedWindow({ maxRequests: 1000, windowSeconds: 3600 });
+ * const limit = fixedWindow({ bucket: "page-views", maxRequests: 1000, windowSeconds: 3600 });
  * const decision = await arcjet.guard({
  *   label: "api.search",
  *   rules: [limit({ key: teamId })],
@@ -177,6 +198,10 @@ export function fixedWindow(config: FixedWindowConfig): RuleWithConfigFixedWindo
           const r = findResult<RuleResultFixedWindow>(decision, configId, inputId);
           return r !== null && r.conclusion === "DENY" ? r : null;
         },
+        results(decision: Decision): RuleResultFixedWindow[] {
+          const r = findResult<RuleResultFixedWindow>(decision, configId, inputId);
+          return r === null ? [] : [r];
+        },
       };
     },
     {
@@ -185,6 +210,9 @@ export function fixedWindow(config: FixedWindowConfig): RuleWithConfigFixedWindo
       [symbolArcjetInternal]: { configId },
       results(decision: Decision): RuleResultFixedWindow[] {
         return findResults<RuleResultFixedWindow>(decision, configId);
+      },
+      result(decision: Decision): RuleResultFixedWindow | null {
+        return findResults<RuleResultFixedWindow>(decision, configId)[0] ?? null;
       },
       deniedResult(decision: Decision): RuleResultFixedWindow | null {
         return findDeniedResult<RuleResultFixedWindow>(decision, configId);
@@ -198,13 +226,18 @@ export function fixedWindow(config: FixedWindowConfig): RuleWithConfigFixedWindo
 /**
  * Create a sliding window rate limiting rule.
  *
+ * Use this when you need smooth rate limiting without the burst-at-boundary
+ * problem of fixed windows. The server interpolates between the previous
+ * and current window, so "100 requests per hour" is enforced across
+ * any rolling 60-minute span. Good default choice for API rate limits.
+ *
  * Returns a configured rule that can be called with per-request input
  * (key + optional requested count) to produce a `RuleWithInput`
  * ready for `.guard()`.
  *
  * @example
  * ```ts
- * const limit = slidingWindow({ maxRequests: 500, intervalSeconds: 60 });
+ * const limit = slidingWindow({ bucket: "event-writes", maxRequests: 500, intervalSeconds: 60 });
  * const decision = await arcjet.guard({
  *   label: "api.events",
  *   rules: [limit({ key: userId })],
@@ -229,6 +262,10 @@ export function slidingWindow(config: SlidingWindowConfig): RuleWithConfigSlidin
           const r = findResult<RuleResultSlidingWindow>(decision, configId, inputId);
           return r !== null && r.conclusion === "DENY" ? r : null;
         },
+        results(decision: Decision): RuleResultSlidingWindow[] {
+          const r = findResult<RuleResultSlidingWindow>(decision, configId, inputId);
+          return r === null ? [] : [r];
+        },
       };
     },
     {
@@ -237,6 +274,9 @@ export function slidingWindow(config: SlidingWindowConfig): RuleWithConfigSlidin
       [symbolArcjetInternal]: { configId },
       results(decision: Decision): RuleResultSlidingWindow[] {
         return findResults<RuleResultSlidingWindow>(decision, configId);
+      },
+      result(decision: Decision): RuleResultSlidingWindow | null {
+        return findResults<RuleResultSlidingWindow>(decision, configId)[0] ?? null;
       },
       deniedResult(decision: Decision): RuleResultSlidingWindow | null {
         return findDeniedResult<RuleResultSlidingWindow>(decision, configId);
@@ -250,9 +290,15 @@ export function slidingWindow(config: SlidingWindowConfig): RuleWithConfigSlidin
 /**
  * Create a server-side prompt injection detection rule.
  *
+ * Use this when your application passes user-supplied text to an LLM
+ * and you want to block attempts to override system prompts or
+ * extract hidden instructions. Also useful for scanning tool call
+ * results that contain untrusted input — for example, a "fetch" tool
+ * that loads a webpage which could embed injected instructions.
+ *
  * Returns a configured rule that can be called with user-supplied text
  * to produce a `RuleWithInput` ready for `.guard()`. The text is sent
- * to the Arcjet API for analysis.
+ * to the Arcjet Cloud API for analysis.
  *
  * @example
  * ```ts
@@ -283,6 +329,10 @@ export function detectPromptInjection(
           const r = findResult<RuleResultPromptInjection>(decision, configId, inputId);
           return r !== null && r.conclusion === "DENY" ? r : null;
         },
+        results(decision: Decision): RuleResultPromptInjection[] {
+          const r = findResult<RuleResultPromptInjection>(decision, configId, inputId);
+          return r === null ? [] : [r];
+        },
       };
     },
     {
@@ -291,6 +341,9 @@ export function detectPromptInjection(
       [symbolArcjetInternal]: { configId },
       results(decision: Decision): RuleResultPromptInjection[] {
         return findResults<RuleResultPromptInjection>(decision, configId);
+      },
+      result(decision: Decision): RuleResultPromptInjection | null {
+        return findResults<RuleResultPromptInjection>(decision, configId)[0] ?? null;
       },
       deniedResult(decision: Decision): RuleResultPromptInjection | null {
         return findDeniedResult<RuleResultPromptInjection>(decision, configId);
@@ -304,13 +357,17 @@ export function detectPromptInjection(
 /**
  * Create a sensitive information detection rule.
  *
- * Returns a configured rule that can be called with user-supplied text
- * to produce a `RuleWithInput` ready for `.guard()`. The text is
- * hashed (SHA-256) before being sent to the Arcjet API — only the
- * hash is transmitted, never the raw content.
+ * Use this to prevent PII (emails, phone numbers, credit card numbers)
+ * from being sent to third-party services or stored in logs. The
+ * detection runs locally via WASM — only a SHA-256 hash of the text
+ * is transmitted to the Arcjet Cloud API, never the raw content.
  *
- * Use `allow` / `deny` in the config to filter which entity types
+ * Use `allow` / `deny` in the config to control which entity types
  * trigger a denial (e.g. `{ deny: ["CREDIT_CARD_NUMBER", "PHONE_NUMBER"] }`).
+ * Omitting both denies all detected entity types.
+ *
+ * Returns a configured rule that can be called with user-supplied text
+ * to produce a `RuleWithInput` ready for `.guard()`.
  *
  * @example
  * ```ts
@@ -341,6 +398,10 @@ export function localDetectSensitiveInfo(
           const r = findResult<RuleResultSensitiveInfo>(decision, configId, inputId);
           return r !== null && r.conclusion === "DENY" ? r : null;
         },
+        results(decision: Decision): RuleResultSensitiveInfo[] {
+          const r = findResult<RuleResultSensitiveInfo>(decision, configId, inputId);
+          return r === null ? [] : [r];
+        },
       };
     },
     {
@@ -349,6 +410,9 @@ export function localDetectSensitiveInfo(
       [symbolArcjetInternal]: { configId },
       results(decision: Decision): RuleResultSensitiveInfo[] {
         return findResults<RuleResultSensitiveInfo>(decision, configId);
+      },
+      result(decision: Decision): RuleResultSensitiveInfo | null {
+        return findResults<RuleResultSensitiveInfo>(decision, configId)[0] ?? null;
       },
       deniedResult(decision: Decision): RuleResultSensitiveInfo | null {
         return findDeniedResult<RuleResultSensitiveInfo>(decision, configId);
@@ -360,69 +424,118 @@ export function localDetectSensitiveInfo(
 }
 
 /**
- * Create a custom rule with user-defined data and optional local evaluation.
+ * Define a typed custom rule.
  *
- * Returns a configured rule that can be called with arbitrary
- * key-value input data to produce a `RuleWithInput` ready for
- * `.guard()`. Both config and input data are forwarded to the
- * Arcjet API as string maps.
+ * Returns a factory function that creates `RuleWithConfigCustom<TData>`
+ * instances. The config, input, and result data types are preserved
+ * through the entire chain — from rule creation to `.result()` on
+ * the decision.
  *
- * When `evaluate` is provided, the SDK calls it locally before
- * sending the request. The function receives `(configData, inputData)`
- * and must return `{ conclusion: "ALLOW" | "DENY", data?: Record<string, string> }`.
- * The local result is sent to the server alongside the config/input data.
+ * @typeParam TConfig - Shape of the config data (string values).
+ * @typeParam TInput  - Shape of the per-request input data (string values).
+ * @typeParam TData   - Shape of the result data returned by `evaluate`.
  *
  * @example
  * ```ts
- * const custom = localCustom({
- *   data: { threshold: "0.5" },
+ * const topicBlock = defineCustomRule<
+ *   { blockedTopic: string },
+ *   { topic: string },
+ *   { matched: string }
+ * >({
  *   evaluate: (config, input) => {
- *     const score = parseFloat(input["score"] ?? "0");
- *     const threshold = parseFloat(config["threshold"] ?? "0");
- *     return score > threshold
- *       ? { conclusion: "DENY", data: { reason: "score too high" } }
- *       : { conclusion: "ALLOW" };
+ *     if (input.topic === config.blockedTopic) {
+ *       return { conclusion: "DENY", data: { matched: input.topic } };
+ *     }
+ *     return { conclusion: "ALLOW" };
  *   },
  * });
+ *
+ * // Create the rule config at module scope
+ * const rule = topicBlock({ data: { blockedTopic: "politics" } });
+ *
+ * // Per request
  * const decision = await arcjet.guard({
- *   label: "tools.score",
- *   rules: [custom({ data: { score: "0.8" } })],
+ *   rules: [rule({ data: { topic: userTopic } })],
  * });
+ * const r = rule.result(decision);
+ * if (r) {
+ *   r.data.matched; // string — fully typed
+ * }
  * ```
  */
-export function localCustom(config: LocalCustomConfig = {}): RuleWithConfigCustom {
-  const configId = randomId();
+export function defineCustomRule<
+  TConfig extends Record<string, string>,
+  TInput extends Record<string, string>,
+  TData extends Record<string, string> = Record<string, string>,
+>(options: {
+  evaluate: (
+    config: Readonly<TConfig>,
+    input: Readonly<TInput>,
+    options: { signal?: AbortSignal },
+  ) => CustomEvaluateResult<TData> | Promise<CustomEvaluateResult<TData>>;
+}): (config: {
+  data: TConfig;
+  mode?: "LIVE" | "DRY_RUN";
+  label?: string;
+  metadata?: Record<string, string>;
+}) => RuleWithConfigCustom<TData, TInput> {
+  return (config) => {
+    const { data, mode, label, metadata } = config;
+    const configId = randomId();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing generic evaluate to untyped internal form
+    const evaluate: CustomEvaluateFn = options.evaluate as unknown as CustomEvaluateFn;
+    const configObj = {
+      ...(mode === undefined ? {} : { mode }),
+      ...(label === undefined ? {} : { label }),
+      ...(metadata === undefined ? {} : { metadata }),
+      data: data as Record<string, string>,
+      evaluate,
+    } satisfies LocalCustomConfig;
 
-  const rule = Object.assign(
-    (input: LocalCustomInput): RuleWithInputCustom => {
-      const inputId = randomId();
-      return {
+    const rule = Object.assign(
+      (input: { data: TInput; metadata?: Record<string, string> }): RuleWithInputCustom<TData> => {
+        const { data: inputData, metadata: inputMetadata } = input;
+        const inputId = randomId();
+        const inputObj: LocalCustomInput = {
+          data: inputData as Record<string, string>,
+          ...(inputMetadata === undefined ? {} : { metadata: inputMetadata }),
+        };
+        return {
+          type: "CUSTOM" as const,
+          config: configObj,
+          input: inputObj,
+          evaluate,
+          [symbolArcjetInternal]: { configId, inputId },
+          result(decision: Decision): RuleResultCustom<TData> | null {
+            return findResult<RuleResultCustom<TData>>(decision, configId, inputId);
+          },
+          deniedResult(decision: Decision): RuleResultCustom<TData> | null {
+            const r = findResult<RuleResultCustom<TData>>(decision, configId, inputId);
+            return r !== null && r.conclusion === "DENY" ? r : null;
+          },
+          results(decision: Decision): RuleResultCustom<TData>[] {
+            const r = findResult<RuleResultCustom<TData>>(decision, configId, inputId);
+            return r === null ? [] : [r];
+          },
+        };
+      },
+      {
         type: "CUSTOM" as const,
-        config,
-        input,
-        ...(config.evaluate ? { evaluate: config.evaluate } : {}),
-        [symbolArcjetInternal]: { configId, inputId },
-        result(decision: Decision): RuleResultCustom | null {
-          return findResult<RuleResultCustom>(decision, configId, inputId);
+        config: configObj,
+        [symbolArcjetInternal]: { configId },
+        results(decision: Decision): RuleResultCustom<TData>[] {
+          return findResults<RuleResultCustom<TData>>(decision, configId);
         },
-        deniedResult(decision: Decision): RuleResultCustom | null {
-          const r = findResult<RuleResultCustom>(decision, configId, inputId);
-          return r !== null && r.conclusion === "DENY" ? r : null;
+        result(decision: Decision): RuleResultCustom<TData> | null {
+          return findResults<RuleResultCustom<TData>>(decision, configId)[0] ?? null;
         },
-      };
-    },
-    {
-      type: "CUSTOM" as const,
-      config,
-      [symbolArcjetInternal]: { configId },
-      results(decision: Decision): RuleResultCustom[] {
-        return findResults<RuleResultCustom>(decision, configId);
+        deniedResult(decision: Decision): RuleResultCustom<TData> | null {
+          return findDeniedResult<RuleResultCustom<TData>>(decision, configId);
+        },
       },
-      deniedResult(decision: Decision): RuleResultCustom | null {
-        return findDeniedResult<RuleResultCustom>(decision, configId);
-      },
-    },
-  );
+    );
 
-  return rule;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- generic call signature cast
+    return rule as unknown as RuleWithConfigCustom<TData, TInput>;
+  };
 }

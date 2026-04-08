@@ -10,17 +10,57 @@
  * On Bun, the `"."` export resolves to the `node` entrypoint which uses
  * `node:http2` directly for HTTP/2 support.
  *
+ * **Lifecycle:** Create the client once at module scope and reuse it.
+ *
  * @example
  * ```ts
- * import { launchArcjet, tokenBucket } from "@arcjet/guard";
+ * import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard";
  *
+ * // Create the client once at module scope
  * const arcjet = launchArcjet({ key: "ajkey_..." });
+ *
+ * // Configure reusable rules (also at module scope)
+ * const limitRule = tokenBucket({ bucket: "user-tokens", refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+ * const piRule = detectPromptInjection();
+ *
+ * // Per request — create rule inputs each time
+ * const rl = limitRule({ key: userId, requested: tokenCount });
+ * const decision = await arcjet.guard({
+ *   label: "tools.weather",
+ *   rules: [rl, piRule(userMessage)],
+ * });
+ *
+ * // Overall decision
+ * if (decision.conclusion === "DENY") {
+ *   console.log(decision.reason); // "RATE_LIMIT", "PROMPT_INJECTION", etc.
+ * }
+ *
+ * // Check for errors (fail-open — errors don't cause denials)
+ * if (decision.hasError()) {
+ *   console.warn("At least one rule errored");
+ * }
+ *
+ * // Per-rule results
+ * for (const result of decision.results) {
+ *   console.log(result.type, result.conclusion);
+ * }
+ *
+ * // From a RuleWithInput — result for this specific submission
+ * const r = rl.result(decision);
+ * if (r) {
+ *   console.log(r.remainingTokens, r.maxTokens);
+ * }
+ *
+ * // From a RuleWithConfig — first denied result across all submissions
+ * const denied = limitRule.deniedResult(decision);
+ * if (denied) {
+ *   console.log(denied.remainingTokens); // 0
+ * }
  * ```
  *
- * Unlike some other `@arcjet/*` packages `@arcjet/guard` never reads any
- * environment variables directly. All configuration must be passed explicitly
- * via `launchArcjet()` options, `Arcjet.guard()`, or rule inputs. This
- * includes `ARCJET_ENV` and `ARCJET_BASE_URL` among others.
+ * Unlike some other `@arcjet/*` packages, `@arcjet/guard` never reads
+ * environment variables directly. All configuration must be passed
+ * explicitly via `launchArcjet()` options, `.guard()`, or rule inputs.
  *
  * @packageDocumentation
  */
@@ -69,7 +109,7 @@ export {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 
   // Transport-agnostic factory
   launchArcjetWithTransport,
@@ -92,17 +132,58 @@ import { createTransport } from "./transport-fetch.ts";
  * sites, retrieve SDK keys, and more. Learn more at
  * {@link https://docs.arcjet.com/mcp-server}.
  *
+ * **Create once, reuse everywhere.** The returned client should be
+ * created at module scope so it can be shared across requests.
+ *
+ * Three lifetimes to keep in mind:
+ * 1. **Client** (`launchArcjet`) — create once at module scope.
+ * 2. **Rule config** (`tokenBucket(...)`) — create once at module scope (recommended).
+ * 3. **Rule input** (`limitRule({ key })`) — create per request / tool call.
+ *
  * @example
  * ```ts
- * import { launchArcjet, tokenBucket } from "@arcjet/guard/fetch";
- * // or explicitly: import { launchArcjet } from "@arcjet/guard/fetch";
+ * import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard";
  *
+ * // Create the client once at module scope
  * const arcjet = launchArcjet({ key: "ajkey_..." });
- * const limit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+ *
+ * // Configure reusable rules (also at module scope)
+ * const limitRule = tokenBucket({ bucket: "user-tokens", refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+ * const piRule = detectPromptInjection();
+ *
+ * // Per request — create rule inputs each time
+ * const rl = limitRule({ key: userId, requested: tokenCount });
  * const decision = await arcjet.guard({
  *   label: "tools.weather",
- *   rules: [limit({ key: userId })],
+ *   rules: [rl, piRule(userMessage)],
  * });
+ *
+ * // Overall decision
+ * if (decision.conclusion === "DENY") {
+ *   console.log(decision.reason); // "RATE_LIMIT", "PROMPT_INJECTION", etc.
+ * }
+ *
+ * // Check for errors (fail-open — errors don't cause denials)
+ * if (decision.hasError()) {
+ *   console.warn("At least one rule errored");
+ * }
+ *
+ * // Per-rule results
+ * for (const result of decision.results) {
+ *   console.log(result.type, result.conclusion);
+ * }
+ *
+ * // From a RuleWithInput — result for this specific submission
+ * const r = rl.result(decision);
+ * if (r) {
+ *   console.log(r.remainingTokens, r.maxTokens);
+ * }
+ *
+ * // From a RuleWithConfig — first denied result across all submissions
+ * const denied = limitRule.deniedResult(decision);
+ * if (denied) {
+ *   console.log(denied.remainingTokens); // 0
+ * }
  * ```
  */
 export function launchArcjet(options: LaunchOptions): ArcjetGuard {
