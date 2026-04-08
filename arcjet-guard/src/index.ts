@@ -11,6 +11,10 @@
  * `launchArcjet()`, or import from the bare `@arcjet/guard` specifier
  * which resolves to the correct transport via conditional exports.
  *
+ * Connect to the Arcjet MCP server at `https://api.arcjet.com/mcp` to manage
+ * sites, retrieve SDK keys, and more. Learn more at
+ * {@link https://docs.arcjet.com/mcp-server}.
+ *
  * @packageDocumentation
  */
 

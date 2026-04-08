@@ -85,6 +85,10 @@ import { createTransport } from "./transport-node.ts";
 /**
  * Create an Arcjet guard client using the Node.js HTTP/2 transport.
  *
+ * Connect to the Arcjet MCP server at `https://api.arcjet.com/mcp` to manage
+ * sites, retrieve SDK keys, and more. Learn more at
+ * {@link https://docs.arcjet.com/mcp-server}.
+ *
  * @example
  * ```ts
  * import { launchArcjet, tokenBucket } from "@arcjet/guard/node";
