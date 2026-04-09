@@ -31,6 +31,7 @@ import {
   ResultErrorSchema,
   EntityListSchema,
   GuardConclusion,
+  GuardReason,
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
@@ -135,6 +136,35 @@ export function reasonFromCase(caseName: string | undefined): Reason {
     case "notRun":
       return "NOT_RUN";
     case undefined:
+      return "UNKNOWN";
+    default:
+      return "UNKNOWN";
+  }
+}
+
+/**
+ * Map a proto `GuardReason` enum to the SDK `Reason` string.
+ *
+ * Used for the decision-level reason provided by the server, which
+ * follows a fixed priority (SensitiveInfo > RateLimit > PromptInjection > Custom).
+ *
+ * @internal
+ */
+export function reasonFromProto(r: GuardReason): Reason {
+  switch (r) {
+    case GuardReason.RATE_LIMIT:
+      return "RATE_LIMIT";
+    case GuardReason.PROMPT_INJECTION:
+      return "PROMPT_INJECTION";
+    case GuardReason.SENSITIVE_INFO:
+      return "SENSITIVE_INFO";
+    case GuardReason.CUSTOM:
+      return "CUSTOM";
+    case GuardReason.ERROR:
+      return "ERROR";
+    case GuardReason.NOT_RUN:
+      return "NOT_RUN";
+    case GuardReason.UNSPECIFIED:
       return "UNKNOWN";
     default:
       return "UNKNOWN";
@@ -255,10 +285,13 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
  * Switches on the `type` discriminant so TypeScript narrows config/input
  * automatically — no casts required.
  */
-export async function ruleToProto(rule: RuleWithInput): Promise<GuardRuleSubmission> {
+export async function ruleToProto(
+  rule: RuleWithInput,
+  signal?: AbortSignal,
+): Promise<GuardRuleSubmission> {
   const mode = rule.config.mode === "DRY_RUN" ? GuardRuleMode.DRY_RUN : GuardRuleMode.LIVE;
 
-  const guardRule = await ruleBodyToProto(rule);
+  const guardRule = await ruleBodyToProto(rule, signal);
 
   const submission: Parameters<typeof create<typeof GuardRuleSubmissionSchema>>[1] = {
     configId: rule[symbolArcjetInternal].configId,
@@ -292,7 +325,7 @@ function ruleMetadataToProto(rule: RuleWithInput): Record<string, string> {
  *
  * @internal
  */
-async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
+async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promise<GuardRule> {
   switch (rule.type) {
     case "TOKEN_BUCKET":
       return create(GuardRuleSchema, {
@@ -302,7 +335,8 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
             configRefillRate: rule.config.refillRate,
             configIntervalSeconds: rule.config.intervalSeconds,
             configMaxTokens: rule.config.maxTokens,
-            inputKey: await sha256Hex(rule.input.key),
+            configBucket: rule.config.bucket ?? "default-token-bucket",
+            inputKeyHash: await sha256Hex(rule.input.key),
             inputRequested: rule.input.requested ?? 1,
           }),
         },
@@ -314,7 +348,8 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
           value: create(RuleFixedWindowSchema, {
             configMaxRequests: rule.config.maxRequests,
             configWindowSeconds: rule.config.windowSeconds,
-            inputKey: await sha256Hex(rule.input.key),
+            configBucket: rule.config.bucket ?? "default-fixed-window",
+            inputKeyHash: await sha256Hex(rule.input.key),
             inputRequested: rule.input.requested ?? 1,
           }),
         },
@@ -326,7 +361,8 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
           value: create(RuleSlidingWindowSchema, {
             configMaxRequests: rule.config.maxRequests,
             configIntervalSeconds: rule.config.intervalSeconds,
-            inputKey: await sha256Hex(rule.input.key),
+            configBucket: rule.config.bucket ?? "default-sliding-window",
+            inputKeyHash: await sha256Hex(rule.input.key),
             inputRequested: rule.input.requested ?? 1,
           }),
         },
@@ -402,7 +438,11 @@ async function ruleBodyToProto(rule: RuleWithInput): Promise<GuardRule> {
       if (rule.evaluate) {
         const evalStart = performance.now();
         try {
-          const evalResult = await rule.evaluate(rule.config.data ?? {}, rule.input.data);
+          const evalResult = await rule.evaluate(
+            rule.config.data ?? {},
+            rule.input.data,
+            signal === undefined ? {} : { signal },
+          );
           resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
 
           if (evalResult.conclusion !== "ALLOW" && evalResult.conclusion !== "DENY") {
@@ -502,20 +542,11 @@ export function decisionFromProto(
 
   const results: readonly RuleResult[] = internalResults;
 
-  const hasError = (): boolean => results.some((r) => r.type === "RULE_ERROR");
+  const hasResponseErrors = response.errors.length > 0;
+  const hasError = (): boolean => hasResponseErrors || results.some((r) => r.type === "RULE_ERROR");
 
   const conclusion = conclusionFromProto(proto.conclusion);
-  const reason = reasonFromCase(
-    proto.ruleResults.find((r) => {
-      // Find the first live DENY result's case to derive the reason
-      const sdkConclusion = conclusionFromProto(
-        r.result.value && "conclusion" in r.result.value
-          ? r.result.value.conclusion
-          : GuardConclusion.UNSPECIFIED,
-      );
-      return sdkConclusion === "DENY";
-    })?.result.case,
-  );
+  const reason = reasonFromProto(proto.reason);
 
   if (conclusion === "DENY") {
     const d: InternalDecision = {

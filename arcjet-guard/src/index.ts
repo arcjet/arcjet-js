@@ -5,11 +5,62 @@
  * information detection, and custom rules for AI tool calls and other
  * backend operations.
  *
- * This module is the portable core — it re-exports types and rule
- * factories but does **not** include a transport. Import from
- * `@arcjet/guard/node` or `@arcjet/guard/fetch` for a runtime-specific
- * `launchArcjet()`, or import from the bare `@arcjet/guard` specifier
- * which resolves to the correct transport via conditional exports.
+ * Import everything from the root specifier — the correct transport
+ * is selected automatically via conditional exports (HTTP/2 on Node.js
+ * and Bun, fetch-based on Deno, Cloudflare Workers, and browsers).
+ *
+ * **Lifecycle:** Create the client and rule configs once at module
+ * scope. Only rule *inputs* are created per request.
+ *
+ * @example
+ * ```ts
+ * import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard";
+ *
+ * // Create the client once at module scope
+ * const arcjet = launchArcjet({ key: "ajkey_..." });
+ *
+ * // Configure reusable rules (also at module scope)
+ * const limitRule = tokenBucket({ bucket: "user-tokens", refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+ * const piRule = detectPromptInjection();
+ *
+ * // Per request — create rule inputs each time
+ * const rl = limitRule({ key: userId, requested: tokenCount });
+ * const decision = await arcjet.guard({
+ *   label: "tools.weather",
+ *   rules: [rl, piRule(userMessage)],
+ * });
+ *
+ * // Overall decision
+ * if (decision.conclusion === "DENY") {
+ *   console.log(decision.reason); // "RATE_LIMIT", "PROMPT_INJECTION", etc.
+ * }
+ *
+ * // Check for errors (fail-open — errors don't cause denials)
+ * if (decision.hasError()) {
+ *   console.warn("At least one rule errored");
+ * }
+ *
+ * // Per-rule results
+ * for (const result of decision.results) {
+ *   console.log(result.type, result.conclusion);
+ * }
+ *
+ * // From a RuleWithInput — result for this specific submission
+ * const r = rl.result(decision);
+ * if (r) {
+ *   console.log(r.remainingTokens, r.maxTokens);
+ * }
+ *
+ * // From a RuleWithConfig — first denied result across all submissions
+ * const denied = limitRule.deniedResult(decision);
+ * if (denied) {
+ *   console.log(denied.remainingTokens); // 0
+ * }
+ * ```
+ *
+ * Unlike some other `@arcjet/*` packages, `@arcjet/guard` never reads
+ * environment variables directly. All configuration must be passed
+ * explicitly via `launchArcjet()` options, `.guard()`, or rule inputs.
  *
  * Connect to the Arcjet MCP server at `https://api.arcjet.com/mcp` to manage
  * sites, retrieve SDK keys, and more. Learn more at
@@ -76,11 +127,20 @@ export {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "./rules.ts";
-/** Options for `launchArcjet()`. */
+
+/**
+ * Options for `launchArcjet()`.
+ *
+ * The client returned by `launchArcjet()` should be created **once** at
+ * module scope and reused across requests. On Node.js it holds a
+ * persistent HTTP/2 connection; on fetch runtimes it caches the
+ * transport configuration. Creating a new client per request wastes
+ * these resources.
+ */
 export interface LaunchOptions {
-  /** Arcjet API key (starts with `"ajkey_"`). */
+  /** Arcjet key (starts with `"ajkey_"`). */
   key: string;
 
   /**

@@ -37,7 +37,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "@arcjet/guard/fetch";
 
 import { cases } from "../_shared/cases.ts";
@@ -51,7 +51,7 @@ const surface: GuardSurface = {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 };
 
 describe("In-memory shared cases (Fetch entrypoint)", () => {
@@ -74,7 +74,11 @@ describe("Runtime: Fetch (connect-web) transport", () => {
 
   test("token bucket ALLOW over real HTTP/1.1 fetch", async () => {
     const arcjet = launchArcjet({ key: "ajkey_dummy", baseUrl });
-    const limit = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const limit = tokenBucket({
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = limit({ key: "user_1" });
 
     const decision = await arcjet.guard({

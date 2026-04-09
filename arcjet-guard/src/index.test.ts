@@ -12,7 +12,7 @@ import {
   slidingWindow,
   detectPromptInjection,
   localDetectSensitiveInfo,
-  localCustom,
+  defineCustomRule,
 } from "./index.ts";
 import {
   DecideService,
@@ -31,7 +31,7 @@ describe("re-exports", () => {
     assert.equal(typeof slidingWindow, "function");
     assert.equal(typeof detectPromptInjection, "function");
     assert.equal(typeof localDetectSensitiveInfo, "function");
-    assert.equal(typeof localCustom, "function");
+    assert.equal(typeof defineCustomRule, "function");
   });
 
   test("launchArcjetWithTransport is exported", () => {
@@ -60,7 +60,12 @@ describe("launchArcjetWithTransport", () => {
   });
 
   test("guard() calls through to transport and returns a decision", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     const transport = createRouterTransport(({ service }) => {
@@ -113,7 +118,12 @@ describe("launchArcjetWithTransport", () => {
 
 describe("_launchWithTransportFactory", () => {
   test("creates transport from factory and returns guard client", async () => {
-    const rule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
     const input = rule({ key: "user_1" });
 
     let receivedBaseUrl = "";

@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/guard",
-  "version": "0.1.0-experimental.1",
+  "version": "0.1.0-experimental.2",
   "description": "Arcjet Guards SDK — AI guardrails for rate limiting, prompt injection detection, and sensitive info detection",
   "homepage": "https://arcjet.com",
   "bugs": {
@@ -62,7 +62,7 @@
   },
   "scripts": {
     "build": "rolldown -c rolldown.config.ts",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsgo --noEmit && tsgo --project tsconfig.lint.json --noEmit",
     "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
