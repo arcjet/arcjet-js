@@ -42,7 +42,7 @@
     "index.js"
   ],
   "scripts": {
-    "build": "rolldown -c rolldown.config.ts",
+    "build": "rm -f *.js *.d.ts test/*.js test/*.d.ts && rolldown -c rolldown.config.ts",
     "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "test-api": "node --experimental-vm-modules --test -- test/*.test.js",
     "test-coverage": "node --experimental-test-coverage --experimental-vm-modules --test -- test/*.test.js",

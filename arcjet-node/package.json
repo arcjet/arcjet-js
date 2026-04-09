@@ -48,7 +48,7 @@
     "index.js"
   ],
   "scripts": {
-    "build": "rolldown -c rolldown.config.ts",
+    "build": "rm -f *.js *.d.ts test/*.js test/*.d.ts && rolldown -c rolldown.config.ts",
     "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "test-api": "node --test -- test/*.test.js",
     "test-coverage#": "TODO: after node 20, use: ` --test-coverage-branches=100 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=100`",

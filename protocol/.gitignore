@@ -141,3 +141,5 @@ convert.d.ts
 well-known-bots.js
 well-known-bots.d.ts
 test/*.js
+test/*.d.ts
+_virtual/

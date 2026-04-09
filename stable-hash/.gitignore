@@ -139,3 +139,5 @@ index.d.ts
 workerd.js
 workerd.d.ts
 test/*.js
+test/*.d.ts
+_virtual/

@@ -71,7 +71,7 @@
     "url": "git+https://github.com/arcjet/arcjet-js.git"
   },
   "scripts": {
-    "build": "rolldown -c rolldown.config.ts",
+    "build": "rm -f *.js *.d.ts test/*.js test/*.d.ts && rolldown -c rolldown.config.ts",
     "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "prepack": "npm run build",
     "test-api": "node --test -- test/*.test.js",

@@ -2,3 +2,5 @@
 *.d.ts
 !eslint.config.js
 !rollup.config.js
+test/*.d.ts
+_virtual/

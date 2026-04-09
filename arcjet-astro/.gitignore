@@ -137,3 +137,5 @@ internal.d.ts
 middleware.js
 middleware.d.ts
 test/*.js
+test/*.d.ts
+_virtual/

@@ -95,6 +95,11 @@ export default defineConfig({
         if (id.endsWith(".wasm") || id.endsWith(".wasm?module")) {
           return { id, external: true };
         }
+        // Externalize jco-generated component files to prevent dts plugin
+        // from overwriting the jco-generated .d.ts declarations
+        if (id.includes("/wasm/") && id.endsWith(".js")) {
+          return { id, external: true };
+        }
         return null;
       },
     },

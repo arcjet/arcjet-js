@@ -2,3 +2,5 @@
 index.js
 internal.js
 test/*.js
+test/*.d.ts
+_virtual/

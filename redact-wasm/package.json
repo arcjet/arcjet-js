@@ -53,7 +53,7 @@
     "test-api": "node --test -- test/*.test.js",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
     "test": "npm run build && npm run lint && npm run typecheck && npm run test-coverage",
-    "build:rolldown": "rolldown -c rolldown.config.ts",
+    "build:rolldown": "rm -rf _virtual/ && rm -f *.js *.d.ts test/*.js test/*.d.ts && rolldown -c rolldown.config.ts",
     "typecheck": "tsgo --noEmit && tsgo --project tsconfig.lint.json --noEmit",
     "format": "oxfmt",
     "format:check": "oxfmt --check"

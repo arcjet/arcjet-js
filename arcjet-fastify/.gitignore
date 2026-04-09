@@ -1,3 +1,5 @@
 test/**/*.js
 index.d.ts
 index.js
+test/*.d.ts
+_virtual/

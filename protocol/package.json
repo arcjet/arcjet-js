@@ -42,7 +42,7 @@
     "well-known-bots.js"
   ],
   "scripts": {
-    "build": "rolldown -c rolldown.config.ts",
+    "build": "rm -f *.js *.d.ts test/*.js test/*.d.ts && rolldown -c rolldown.config.ts",
     "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "test-api": "node --test -- test/*.test.js",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",

@@ -133,3 +133,5 @@ dist
 index.js
 index.d.ts
 test/*.js
+test/*.d.ts
+_virtual/

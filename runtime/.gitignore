@@ -135,3 +135,5 @@ edge-light.d.ts
 index.js
 index.d.ts
 test/*.js
+test/*.d.ts
+_virtual/

@@ -140,3 +140,4 @@ workerd.js
 workerd.d.ts
 test/*.js
 _virtual/*.js
+test/*.d.ts
