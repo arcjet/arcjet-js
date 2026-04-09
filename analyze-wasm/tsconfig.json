@@ -1,4 +1,19 @@
 {
   "extends": "../tsconfig.base.json",
-  "include": ["**/*.ts", "wasm.d.ts"]
+  "compilerOptions": {
+    "outDir": ".",
+    "declarationDir": ".",
+    "rootDir": ".",
+    "types": []
+  },
+  "include": [
+    "**/*.ts",
+    "wasm.d.ts"
+  ],
+  "exclude": [
+    "node_modules/",
+    "test/",
+    "*.d.ts",
+    "*.config.ts"
+  ]
 }

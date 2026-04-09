@@ -19,27 +19,52 @@
   ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false,
       "outputLogs": "full"
     },
     "lint": {
-      "dependsOn": ["^lint"],
+      "dependsOn": [
+        "^lint"
+      ],
       "cache": false,
       "outputLogs": "full"
     },
     "test-api": {
-      "dependsOn": ["^test-api"],
+      "dependsOn": [
+        "^test-api"
+      ],
       "cache": false,
       "outputLogs": "full"
     },
     "test-coverage": {
-      "dependsOn": ["^test-coverage"],
+      "dependsOn": [
+        "^test-coverage"
+      ],
       "cache": false,
       "outputLogs": "full"
     },
     "test": {
-      "dependsOn": ["^test"],
+      "dependsOn": [
+        "^test"
+      ],
+      "cache": false,
+      "outputLogs": "full"
+    },
+    "format": {
+      "cache": false,
+      "outputLogs": "full"
+    },
+    "format:check": {
+      "cache": false,
+      "outputLogs": "full"
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^typecheck"
+      ],
       "cache": false,
       "outputLogs": "full"
     }

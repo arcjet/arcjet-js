@@ -32,8 +32,10 @@
     "eslint.config.js"
   ],
   "scripts": {
-    "lint": "eslint .",
-    "test": "npm run lint"
+    "lint": "oxlint",
+    "test": "npm run lint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "dependencies": {
     "@eslint/js": "9.39.3",
@@ -45,7 +47,8 @@
     "eslint": "^9"
   },
   "devDependencies": {
-    "eslint": "9.39.3"
+    "oxfmt": "0.43.0",
+    "oxlint": "1.58.0"
   },
   "publishConfig": {
     "access": "public",

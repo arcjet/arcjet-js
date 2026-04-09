@@ -1,4 +1,18 @@
 {
   "extends": "../tsconfig.base.json",
-  "include": ["**/*.ts", "astro-env.d.ts"]
+  "compilerOptions": {
+    "outDir": ".",
+    "declarationDir": ".",
+    "rootDir": ".",
+    "types": []
+  },
+  "include": [
+    "*.ts"
+  ],
+  "exclude": [
+    "node_modules/",
+    "test/",
+    "*.d.ts",
+    "*.config.ts"
+  ]
 }

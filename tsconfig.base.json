@@ -2,20 +2,31 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "composite": false,
-    "esModuleInterop": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "erasableSyntaxOnly": true,
     "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
     "incremental": false,
-    "lib": ["esnext"],
-    // `@rollup/plugin-typescript` does not support several values from `extends`.
-    // So it is needed to pass `moduleResolution` and `module` explicitly.
-    // Reference: <https://github.com/rollup/plugins/issues/1583>.
-    // When changing these, also update `rollup-config/index.js`.
-    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "lib": [
+      "esnext"
+    ],
     "module": "esnext",
-    "preserveWatchOutput": true,
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedSideEffectImports": true,
+    "resolveJsonModule": true,
+    "rewriteRelativeImportExtensions": true,
+    "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
     "verbatimModuleSyntax": true
   },
-  "exclude": ["node_modules/"]
+  "exclude": [
+    "node_modules/"
+  ]
 }

@@ -36,22 +36,26 @@
     "index.js"
   ],
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
+    "build": "rolldown -c rolldown.config.ts",
+    "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "test-api": "node --test -- test/*.test.js",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
-    "test": "npm run build && npm run lint && npm run test-coverage"
+    "test": "npm run build && npm run lint && npm run typecheck && npm run test-coverage",
+    "typecheck": "tsgo --noEmit && tsgo --project tsconfig.lint.json --noEmit",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "dependencies": {
     "@arcjet/sprintf": "1.3.1"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.3.1",
-    "@arcjet/rollup-config": "1.3.1",
-    "@rollup/wasm-node": "4.59.0",
     "@types/node": "24.11.0",
-    "eslint": "9.39.3",
-    "typescript": "5.9.3"
+    "@typescript/native-preview": "7.0.0-dev.20260331.1",
+    "oxfmt": "0.43.0",
+    "oxlint": "1.58.0",
+    "oxlint-tsgolint": "0.18.1",
+    "rolldown": "1.0.0-rc.12",
+    "rolldown-plugin-dts": "0.23.2"
   },
   "publishConfig": {
     "access": "public",
