@@ -142,7 +142,7 @@ For the full reference, see the [Arcjet Astro SDK docs][arcjet-reference-astro].
 
 Detect and block prompt injection attacks — attempts to override your AI
 model's instructions — before they reach your model. Pass the user's message
-via `detectPromptInjectionMessage` on each `protect()` call. Tune sensitivity with the `threshold` parameter (0.0–1.0, default 0.5) — higher values are more conservative.
+via `detectPromptInjectionMessage` on each `protect()` call.
 
 Configure in `astro.config.mjs`:
 
@@ -156,7 +156,6 @@ export default defineConfig({
       rules: [
         detectPromptInjection({
           mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
-          threshold: 0.5, // Score above which requests are blocked (default: 0.5)
         }),
       ],
     }),

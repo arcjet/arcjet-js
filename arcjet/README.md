@@ -169,8 +169,6 @@ const aj = arcjet({
   rules: [
     detectPromptInjection({
       mode: "LIVE", // "LIVE" blocks | "DRY_RUN" logs only
-      threshold: 0.5, // Score above which requests are blocked (default: 0.5)
-      // Must be in range (0.0, 1.0) exclusive
     }),
   ],
 });
