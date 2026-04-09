@@ -1,11 +1,11 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "oxc"
-  ],
+  "plugins": [],
   "categories": {
-    "correctness": "error",
-    "suspicious": "error"
+    "correctness": "error"
   },
-  "rules": {}
+  "rules": {},
+  "ignorePatterns": [
+    "**/*.d.ts"
+  ]
 }

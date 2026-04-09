@@ -900,6 +900,7 @@ test("`arcjetNode`", async function (t) {
             }
           },
         }),
+        // @ts-expect-error duplex is valid for streaming request bodies
         duplex: "half",
         headers: { "Content-Type": "text/plain" },
         method: "POST",

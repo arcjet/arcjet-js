@@ -3,9 +3,11 @@
   "compilerOptions": {
     "outDir": ".",
     "declarationDir": ".",
-    "rootDir": ".",
-    "types": []
+    "rootDir": "."
   },
+  "files": [
+    "astro-env.d.ts"
+  ],
   "include": [
     "*.ts"
   ],

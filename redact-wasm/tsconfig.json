@@ -3,9 +3,11 @@
   "compilerOptions": {
     "outDir": ".",
     "declarationDir": ".",
-    "rootDir": ".",
-    "types": []
+    "rootDir": "."
   },
+  "files": [
+    "wasm.d.ts"
+  ],
   "include": [
     "*.ts"
   ],

@@ -10,32 +10,14 @@ const dependencies = Object.keys(pkg.dependencies ?? {});
 const devDependencies = Object.keys(pkg.devDependencies ?? {});
 const peerDependencies = Object.keys(pkg.peerDependencies ?? {});
 
-function replace(values: Record<string, string>): import("rolldown").Plugin {
-  return {
-    name: "replace",
-    transform(code) {
-      let result = code;
-      for (const [key, value] of Object.entries(values)) {
-        result = result.replaceAll(key, value);
-      }
-      if (result !== code) {
-        return { code: result };
-      }
-    },
-  };
-}
-
 const input = [
-  ...globSync("*.ts", { exclude: ["*.d.ts"] }),
+  ...globSync("*.ts", { exclude: ["*.d.ts", "*.config.ts"] }),
   ...globSync("test/**/*.ts"),
 ];
 
 export default defineConfig({
   input,
   plugins: [
-    replace({
-      __ARCJET_SDK_VERSION__: pkg.version,
-    }),
     dts(),
   ],
   output: {

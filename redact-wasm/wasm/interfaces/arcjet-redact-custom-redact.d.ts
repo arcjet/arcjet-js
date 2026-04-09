@@ -1,21 +1,24 @@
-export namespace ArcjetRedactCustomRedact {
+//#region wasm/interfaces/arcjet-redact-custom-redact.d.ts
+declare namespace ArcjetRedactCustomRedact {
   export function detectSensitiveInfo(tokens: Array<string>): Array<SensitiveInfoEntity | undefined>;
   export function redactSensitiveInfo(entityType: SensitiveInfoEntity, plaintext: string): string | undefined;
 }
-export type SensitiveInfoEntity = SensitiveInfoEntityEmail | SensitiveInfoEntityPhoneNumber | SensitiveInfoEntityIpAddress | SensitiveInfoEntityCreditCardNumber | SensitiveInfoEntityCustom;
-export interface SensitiveInfoEntityEmail {
-  tag: 'email',
+type SensitiveInfoEntity = SensitiveInfoEntityEmail | SensitiveInfoEntityPhoneNumber | SensitiveInfoEntityIpAddress | SensitiveInfoEntityCreditCardNumber | SensitiveInfoEntityCustom;
+interface SensitiveInfoEntityEmail {
+  tag: 'email';
 }
-export interface SensitiveInfoEntityPhoneNumber {
-  tag: 'phone-number',
+interface SensitiveInfoEntityPhoneNumber {
+  tag: 'phone-number';
 }
-export interface SensitiveInfoEntityIpAddress {
-  tag: 'ip-address',
+interface SensitiveInfoEntityIpAddress {
+  tag: 'ip-address';
 }
-export interface SensitiveInfoEntityCreditCardNumber {
-  tag: 'credit-card-number',
+interface SensitiveInfoEntityCreditCardNumber {
+  tag: 'credit-card-number';
 }
-export interface SensitiveInfoEntityCustom {
-  tag: 'custom',
-  val: string,
+interface SensitiveInfoEntityCustom {
+  tag: 'custom';
+  val: string;
 }
+//#endregion
+export { ArcjetRedactCustomRedact, SensitiveInfoEntity };

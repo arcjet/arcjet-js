@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { globSync } from "node:fs";
+import { globSync, readFileSync } from "node:fs";
 import { isBuiltin } from "node:module";
 
 import { defineConfig } from "rolldown";
@@ -82,7 +82,7 @@ function wasmToModule(): import("rolldown").Plugin {
 }
 
 const input = [
-  ...globSync("*.ts", { exclude: ["*.d.ts"] }),
+  ...globSync("*.ts", { exclude: ["*.d.ts", "*.config.ts"] }),
   ...globSync("test/**/*.ts"),
 ];
 

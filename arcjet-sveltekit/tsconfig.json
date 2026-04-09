@@ -3,12 +3,13 @@
   "compilerOptions": {
     "outDir": ".",
     "declarationDir": ".",
-    "rootDir": ".",
-    "types": []
+    "rootDir": "."
   },
-  "include": [
-    "**/*.ts",
+  "files": [
     "env.d.ts"
+  ],
+  "include": [
+    "*.ts"
   ],
   "exclude": [
     "node_modules/",

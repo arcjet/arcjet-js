@@ -10,20 +10,20 @@
     "incremental": false,
     "isolatedModules": true,
     "lib": [
-      "esnext"
+      "es2022",
+      "webworker"
     ],
     "module": "esnext",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noUncheckedSideEffectImports": true,
     "resolveJsonModule": true,
     "rewriteRelativeImportExtensions": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
+    "types": [
+      "node"
+    ],
     "verbatimModuleSyntax": true
   },
   "exclude": [

@@ -1,6 +1,8 @@
 import { globSync } from "node:fs";
 import { isBuiltin } from "node:module";
 
+import { readFileSync } from "node:fs";
+
 import { defineConfig } from "rolldown";
 import { dts } from "rolldown-plugin-dts";
 
@@ -25,8 +27,10 @@ function replace(values: Record<string, string>): import("rolldown").Plugin {
   };
 }
 
+const version = JSON.parse(readFileSync("./package.json", "utf8")).version as string;
+
 const input = [
-  ...globSync("*.ts", { exclude: ["*.d.ts"] }),
+  ...globSync("*.ts", { exclude: ["*.d.ts", "*.config.ts"] }),
   ...globSync("test/**/*.ts"),
 ];
 
@@ -34,7 +38,7 @@ export default defineConfig({
   input,
   plugins: [
     replace({
-      __ARCJET_SDK_VERSION__: pkg.version,
+      __ARCJET_SDK_VERSION__: version,
     }),
     dts(),
   ],
