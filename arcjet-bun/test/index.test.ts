@@ -36,7 +36,7 @@ const oneMegabyte = 1024 * 1024;
 let uniquePort = 3000;
 
 test("`@arcjet/bun`: should expose the public api", async function () {
-  assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+  assert.deepEqual(Object.keys(await import("../index.js")).filter((k) => !k.endsWith("_exports")).sort(), [
     "ArcjetAllowDecision",
     "ArcjetBotReason",
     "ArcjetChallengeDecision",

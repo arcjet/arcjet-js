@@ -56,7 +56,6 @@ describe("ArcjetRedact", () => {
     });
 
     test("it will throw WebAssembly is not available", async () => {
-      // @ts-expect-error: not typed in `@types/node` yet.
       const Assembly: any = WebAssembly;
 
       // Fake a WebAssembly failure
