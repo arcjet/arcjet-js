@@ -78,6 +78,8 @@ ARCJET_KEY=ajkey_yourkey
   headers, and custom fields.
 - 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
   detection included with every request.
+- 🧩 [Arcjet Guard](#arcjet-guard) — lower-level API for AI agent tool calls and
+  background tasks where there is no HTTP request.
 
 ## Example apps
 
@@ -540,6 +542,272 @@ const decision = await aj.protect(request, {
 });
 ```
 
+## Arcjet Guard
+
+> **Experimental** — `@arcjet/guard` is a new lower-level API designed for AI
+> agent tool calls and background tasks where there is no HTTP request object.
+> It gives you fine-grained, per-call control over rate limiting, prompt
+> injection detection, sensitive information detection, and custom rules.
+
+### How it differs from framework SDKs
+
+|                        | Framework SDKs (`@arcjet/next`, etc.)             | `@arcjet/guard`                                              |
+| ---------------------- | ------------------------------------------------- | ------------------------------------------------------------ |
+| **Designed for**       | HTTP request protection                           | AI agent tool calls, background jobs                         |
+| **Request object**     | Required (`protect(request, ...)`)                | Not needed                                                   |
+| **Rule binding**       | Rules configured once, input via `protect()` opts | Rules configured as functions, called with input per invocation |
+| **Rate limit key**     | IP or `characteristics` dict                      | Explicit `key` string (SHA-256 hashed before sending)        |
+| **Custom rules**       | Not supported                                     | `defineCustomRule` with typed config/input/data               |
+
+### Installation
+
+```sh
+npm i @arcjet/guard
+```
+
+### Quick start
+
+```ts
+import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard";
+
+// Create the Arcjet client once at module scope
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+// Configure reusable rules
+const limitRule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+const piRule = detectPromptInjection();
+
+// Per request — create rule inputs each time
+async function handleToolCall(userId: string, userMessage: string, tokenCount: number) {
+  const rl = limitRule({ key: userId, requested: tokenCount });
+  const decision = await arcjet.guard({
+    label: "tools.weather",
+    rules: [rl, piRule(userMessage)],
+  });
+
+  if (decision.conclusion === "DENY") {
+    throw new Error(`Blocked: ${decision.reason}`);
+  }
+
+  // safe to proceed
+}
+```
+
+### Rate limiting (Guard)
+
+Token bucket, fixed window, and sliding window algorithms are available.
+Configure the rule once, then call it with a `key` (and optional `requested`
+token count) for each invocation.
+
+#### Token bucket (Guard)
+
+```ts
+import { launchArcjet, tokenBucket } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const limitRule = tokenBucket({
+  refillRate: 2_000,      // tokens added per interval
+  intervalSeconds: 3600,  // seconds between refills
+  maxTokens: 5_000,       // maximum bucket capacity
+});
+
+const decision = await arcjet.guard({
+  label: "tools.chat",
+  rules: [limitRule({ key: userId, requested: tokenEstimate })],
+});
+
+if (decision.conclusion === "DENY" && decision.reason === "RATE_LIMIT") {
+  throw new Error("Rate limit exceeded");
+}
+```
+
+#### Fixed window (Guard)
+
+```ts
+import { launchArcjet, fixedWindow } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const limitRule = fixedWindow({
+  maxRequests: 1000,    // maximum requests per window
+  windowSeconds: 3600,  // 1-hour window
+});
+
+const decision = await arcjet.guard({
+  label: "api.search",
+  rules: [limitRule({ key: teamId })],
+});
+```
+
+#### Sliding window (Guard)
+
+```ts
+import { launchArcjet, slidingWindow } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const limitRule = slidingWindow({
+  maxRequests: 500,       // maximum requests per interval
+  intervalSeconds: 60,    // 1-minute rolling window
+});
+
+const decision = await arcjet.guard({
+  label: "api.events",
+  rules: [limitRule({ key: userId })],
+});
+```
+
+### Prompt injection detection (Guard)
+
+```ts
+import { launchArcjet, detectPromptInjection } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const piRule = detectPromptInjection();
+
+const decision = await arcjet.guard({
+  label: "tools.chat",
+  rules: [piRule(userMessage)],
+});
+
+if (decision.conclusion === "DENY" && decision.reason === "PROMPT_INJECTION") {
+  throw new Error("Prompt injection detected — please rephrase your message");
+}
+```
+
+### Sensitive information detection (Guard)
+
+Detects PII locally — the raw text never leaves the SDK. Built-in entity
+types: `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`, `CREDIT_CARD_NUMBER`.
+
+```ts
+import { launchArcjet, localDetectSensitiveInfo } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const si = localDetectSensitiveInfo({
+  deny: ["CREDIT_CARD_NUMBER", "PHONE_NUMBER"],
+});
+
+const decision = await arcjet.guard({
+  label: "tools.summary",
+  rules: [si(userMessage)],
+});
+
+if (decision.conclusion === "DENY" && decision.reason === "SENSITIVE_INFO") {
+  throw new Error("Sensitive information detected");
+}
+```
+
+### Custom rules (Guard)
+
+Define your own local evaluation logic with arbitrary key-value data. When
+`evaluate` is provided, the SDK calls it locally before sending the request.
+The function receives `(config, input, { signal })` and must return
+`{ conclusion: "ALLOW" | "DENY" }`.
+
+```ts
+import { launchArcjet, defineCustomRule } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const topicBlock = defineCustomRule<
+  { blockedTopic: string },
+  { topic: string },
+  { matched: string }
+>({
+  evaluate: (config, input) => {
+    if (input.topic === config.blockedTopic) {
+      return { conclusion: "DENY", data: { matched: input.topic } };
+    }
+    return { conclusion: "ALLOW" };
+  },
+});
+
+const rule = topicBlock({ data: { blockedTopic: "politics" } });
+
+const decision = await arcjet.guard({
+  label: "tools.chat",
+  rules: [rule({ data: { topic: userTopic } })],
+});
+```
+
+### Per-rule results (Guard)
+
+Both the configured rule and the bound input provide typed result accessors:
+
+```ts
+const limitRule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+const rl = limitRule({ key: userId, requested: 5 });
+
+const decision = await arcjet.guard({ label: "tools.weather", rules: [rl] });
+
+// From the bound input (matches exact invocation)
+const r = rl.result(decision);
+if (r) {
+  console.log(r.remainingTokens, r.maxTokens);
+}
+
+// From the configured rule (matches all invocations of this rule)
+const ruleResult = limitRule.result(decision);
+
+// Check only denied results
+const denied = rl.deniedResult(decision);
+if (denied) {
+  console.log(`Rate limited — resets at ${denied.resetAtUnixSeconds}`);
+}
+```
+
+Methods available on both `RuleWithConfig` and `RuleWithInput`:
+
+| Method                   | `RuleWithConfig` (e.g. `limitRule`) | `RuleWithInput` (e.g. `rl`)        |
+| ------------------------ | ----------------------------------- | ---------------------------------- |
+| `results(decision)`      | All results for this config         | Single-element or empty array      |
+| `result(decision)`       | First result (any conclusion)       | This submission's result           |
+| `deniedResult(decision)` | First denied result                 | This submission's result if denied |
+
+### Decision API (Guard)
+
+```ts
+const decision = await arcjet.guard({ label: "tools.weather", rules: [...] });
+
+// Layer 1: conclusion and reason
+decision.conclusion;   // "ALLOW" or "DENY"
+decision.reason;       // "RATE_LIMIT", "PROMPT_INJECTION", "SENSITIVE_INFO", "CUSTOM", "ERROR", etc.
+
+// Layer 2: error detection
+decision.hasError();   // true if any rule errored or the server reported diagnostics
+
+// Layer 3: per-rule results (see "Per-rule results" above)
+for (const result of decision.results) {
+  console.log(result.type, result.conclusion);
+}
+```
+
+### `guard()` parameter reference
+
+| Parameter  | Type                | Description                                         |
+| ---------- | ------------------- | --------------------------------------------------- |
+| `rules`    | `RuleWithInput[]`   | Bound rule inputs (required)                        |
+| `label`    | `string`            | Label identifying this guard call (required)        |
+| `metadata` | `Record<string, string> \| undefined` | Optional key-value metadata   |
+
+### DRY_RUN mode (Guard)
+
+All guard rules accept a `mode` parameter. Use `"DRY_RUN"` to evaluate rules
+without blocking:
+
+```ts
+const limitRule = tokenBucket({
+  mode: "DRY_RUN",
+  refillRate: 10,
+  intervalSeconds: 60,
+  maxTokens: 100,
+});
+```
+
 ## Best practices
 
 See the [Arcjet best practices][best-practices] for detailed guidance. Key
@@ -620,6 +888,7 @@ find a specific one through the categories and descriptions below.
 - [`@arcjet/bun`](./arcjet-bun/README.md): SDK for Bun.
 - [`@arcjet/deno`](./arcjet-deno/README.md): SDK for Deno.
 - [`@arcjet/fastify`](./arcjet-fastify/README.md): SDK for Fastify.
+- [`@arcjet/guard`](./arcjet-guard/README.md): Guards SDK for AI agent tool calls and background tasks.
 - [`@arcjet/nest`](./arcjet-nest/README.md): SDK for NestJS.
 - [`@arcjet/next`](./arcjet-next/README.md): SDK for Next.js.
 - [`@arcjet/node`](./arcjet-node/README.md): SDK for Node.js.
