@@ -115,7 +115,6 @@ jobs:
       matrix:
         folder:
           - astro
-          - astro-5
           - express-bots
           - express-newman
           - express-rate-limit
