@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...v1.4.0) (2026-04-14)
+
+
+### 🚀 New Features
+
+* **guard:** promote @arcjet/guard from experimental to stable release ([#5996](https://github.com/arcjet/arcjet-js/issues/5996)) ([f511f44](https://github.com/arcjet/arcjet-js/commit/f511f446912d3a677772bf84744b2853b7dc5e49))
+
+
+### 📝 Documentation
+
+* add @arcjet/guard documentation to root README ([#5993](https://github.com/arcjet/arcjet-js/issues/5993)) ([4be39c8](https://github.com/arcjet/arcjet-js/commit/4be39c8286dbab851583a1c66ce6555246afd92e))
+* add MCP server mentions to @arcjet/guard ([#5974](https://github.com/arcjet/arcjet-js/issues/5974)) ([cd398c0](https://github.com/arcjet/arcjet-js/commit/cd398c0fb551e6ea394584e7a8d8cf45a8a88b52))
+
+
+### 🧹 Miscellaneous Chores
+
+* add `.claude/` to .gitignore ([#5988](https://github.com/arcjet/arcjet-js/issues/5988)) ([6f0f922](https://github.com/arcjet/arcjet-js/commit/6f0f922b5f7bc25a46c5fe4e4faa2eaf863bea13))
+* always trigger workflows on release-please branch ([#5998](https://github.com/arcjet/arcjet-js/issues/5998)) ([6554cd1](https://github.com/arcjet/arcjet-js/commit/6554cd190837bc75908a239a350f3b3bc778dcc8))
+* delete astro-5 example ([#5995](https://github.com/arcjet/arcjet-js/issues/5995)) ([38487cb](https://github.com/arcjet/arcjet-js/commit/38487cb49b2500c90f0992cfb3ea554adfcaa5cc))
+* Deprecate `score` and `threshold` fields in `detectPromptInjection` ([#5987](https://github.com/arcjet/arcjet-js/issues/5987)) ([de46cb7](https://github.com/arcjet/arcjet-js/commit/de46cb78275cda1abcca2e34dc77cd49c4f27049))
+* **examples:** Add Astro 5 example, upgrade main Astro example to v6 ([#5975](https://github.com/arcjet/arcjet-js/issues/5975)) ([a77c077](https://github.com/arcjet/arcjet-js/commit/a77c07724bacf65da3af52cd60e56132f99cc4de))
+* **guard:** add legacy type resolution for typescript@&lt;=5 ([#5978](https://github.com/arcjet/arcjet-js/issues/5978)) ([fd6ad6d](https://github.com/arcjet/arcjet-js/commit/fd6ad6dff6f32379ec1e119a98675b7577469c56))
+* **guard:** introduce arcjet guard js ([#5957](https://github.com/arcjet/arcjet-js/issues/5957)) ([53ff2e2](https://github.com/arcjet/arcjet-js/commit/53ff2e206c665431799e47d43c938b486d6b6eb7))
+* **guard:** update protobuf ([#5986](https://github.com/arcjet/arcjet-js/issues/5986)) ([25f0e9e](https://github.com/arcjet/arcjet-js/commit/25f0e9e0d6acd81024addeadb9083b7e78b8a226))
+* **proto:** sync generated proto ([#5994](https://github.com/arcjet/arcjet-js/issues/5994)) ([25b11fe](https://github.com/arcjet/arcjet-js/commit/25b11feb2b811749d180cf0c5ed5d81b823aad8d))
+* regenerate wasm binaries after aws-lc-rs update ([#5969](https://github.com/arcjet/arcjet-js/issues/5969)) ([bda5448](https://github.com/arcjet/arcjet-js/commit/bda544851f3133be47d5a16863a83dfcb6dbd10d))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump vite from 7.3.1 to 7.3.2 ([#5980](https://github.com/arcjet/arcjet-js/issues/5980)) ([8a253f6](https://github.com/arcjet/arcjet-js/commit/8a253f621d30f0e345954863019dd3200c04e0e1))
+* **deps-dev:** bump vite from 7.3.1 to 7.3.2 in /examples/react-router ([#5982](https://github.com/arcjet/arcjet-js/issues/5982)) ([ddf3416](https://github.com/arcjet/arcjet-js/commit/ddf34162074df45231279b76c1fa74255139aafc))
+* **deps-dev:** bump vite from 7.3.1 to 7.3.2 in /examples/react-router-middleware ([#5985](https://github.com/arcjet/arcjet-js/issues/5985)) ([e36cf35](https://github.com/arcjet/arcjet-js/commit/e36cf3517a624a93d99f0aa27d3b5e510c602f15))
+* **deps:** bump @nestjs/core from 11.1.17 to 11.1.18 in /examples/nestjs ([#5983](https://github.com/arcjet/arcjet-js/issues/5983)) ([514ae8b](https://github.com/arcjet/arcjet-js/commit/514ae8b812cf790d55ad0c00fc097a00ef49363a))
+* **deps:** bump unhead and @unhead/vue in /examples/nuxt ([#5989](https://github.com/arcjet/arcjet-js/issues/5989)) ([6add894](https://github.com/arcjet/arcjet-js/commit/6add894f9061e03deed4adb6af12daf9b9f8ab62))
+* **deps:** bump vite from 7.3.1 to 7.3.2 in /examples/nuxt ([#5981](https://github.com/arcjet/arcjet-js/issues/5981)) ([97138bc](https://github.com/arcjet/arcjet-js/commit/97138bcaf0755bce6cf1bc550c8079b5706e37a5))
+* **deps:** bump vite in /examples/remix-express ([#5977](https://github.com/arcjet/arcjet-js/issues/5977)) ([3b97d6f](https://github.com/arcjet/arcjet-js/commit/3b97d6f93a141b63060d14ba65cdadf798736370))
+
 ## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...v1.3.1) (2026-03-30)
 
 

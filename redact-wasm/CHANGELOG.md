@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@arcjet/redact-wasm-v1.4.0) (2026-04-14)
+
+
+### 🧹 Miscellaneous Chores
+
+* regenerate wasm binaries after aws-lc-rs update ([#5969](https://github.com/arcjet/arcjet-js/issues/5969)) ([bda5448](https://github.com/arcjet/arcjet-js/commit/bda544851f3133be47d5a16863a83dfcb6dbd10d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.1 to 1.4.0
+    * @arcjet/rollup-config bumped from 1.3.1 to 1.4.0
+
 ## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@arcjet/redact-wasm-v1.3.1) (2026-03-30)
 
 

@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@nosecone/next-v1.4.0) (2026-04-14)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@nosecone/next:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.3.1 to 1.4.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.1 to 1.4.0
+    * @arcjet/rollup-config bumped from 1.3.1 to 1.4.0
+
 ## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@nosecone/next-v1.3.1) (2026-03-30)
 
 

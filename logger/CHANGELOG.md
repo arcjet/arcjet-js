@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@arcjet/logger-v1.4.0) (2026-04-14)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/logger:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/sprintf bumped from 1.3.1 to 1.4.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.1 to 1.4.0
+    * @arcjet/rollup-config bumped from 1.3.1 to 1.4.0
+
 ## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@arcjet/logger-v1.3.1) (2026-03-30)
 
 
