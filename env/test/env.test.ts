@@ -179,5 +179,18 @@ describe("env", () => {
       }),
       "https://decide.arcjet.com",
     );
+    // Non-matching orb.local in path or fragment.
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://evil.com/.orb.local",
+      }),
+      "https://decide.arcjet.com",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://evil.com#.orb.local",
+      }),
+      "https://decide.arcjet.com",
+    );
   });
 });

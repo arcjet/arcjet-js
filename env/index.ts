@@ -144,15 +144,20 @@ const baseUrlAllowed = [
  *   Base URL of Arcjet API.
  */
 export function baseUrl(environment: Env) {
-  // Use ARCJET_BASE_URL if it is set and belongs to our allowlist or ends in
-  // .orb.local; otherwise use the hardcoded default.
+  // Use ARCJET_BASE_URL if it is set and belongs to our allowlist or has a
+  // hostname ending in .orb.local; otherwise use the hardcoded default.
   if (typeof environment["ARCJET_BASE_URL"] === "string") {
-    if (
-      baseUrlAllowed.includes(environment["ARCJET_BASE_URL"]) ||
-      environment["ARCJET_BASE_URL"].endsWith(".orb.local") ||
-      environment["ARCJET_BASE_URL"].endsWith(".orb.local/")
-    ) {
+    if (baseUrlAllowed.includes(environment["ARCJET_BASE_URL"])) {
       return environment["ARCJET_BASE_URL"];
+    }
+
+    try {
+      const hostname = new URL(environment["ARCJET_BASE_URL"]).hostname;
+      if (hostname.endsWith(".orb.local")) {
+        return environment["ARCJET_BASE_URL"];
+      }
+    } catch {
+      // Invalid URL, fall through to default.
     }
   }
 
