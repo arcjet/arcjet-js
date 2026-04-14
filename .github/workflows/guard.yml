@@ -2,7 +2,9 @@ name: Guard
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - release-please--branches--main
     paths:
       - arcjet-guard/**
       - .github/workflows/guard.yml
