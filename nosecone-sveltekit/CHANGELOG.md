@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@nosecone/sveltekit-v1.4.0) (2026-04-14)
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump vite from 7.3.1 to 7.3.2 ([#5980](https://github.com/arcjet/arcjet-js/issues/5980)) ([8a253f6](https://github.com/arcjet/arcjet-js/commit/8a253f621d30f0e345954863019dd3200c04e0e1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.3.1 to 1.4.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.1 to 1.4.0
+    * @arcjet/rollup-config bumped from 1.3.1 to 1.4.0
+
 ## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@nosecone/sveltekit-v1.3.1) (2026-03-30)
 
 

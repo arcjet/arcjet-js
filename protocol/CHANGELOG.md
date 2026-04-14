@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@arcjet/protocol-v1.4.0) (2026-04-14)
+
+
+### 🧹 Miscellaneous Chores
+
+* Deprecate `score` and `threshold` fields in `detectPromptInjection` ([#5987](https://github.com/arcjet/arcjet-js/issues/5987)) ([de46cb7](https://github.com/arcjet/arcjet-js/commit/de46cb78275cda1abcca2e34dc77cd49c4f27049))
+* **proto:** sync generated proto ([#5994](https://github.com/arcjet/arcjet-js/issues/5994)) ([25b11fe](https://github.com/arcjet/arcjet-js/commit/25b11feb2b811749d180cf0c5ed5d81b823aad8d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.3.1 to 1.4.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.3.1 to 1.4.0
+    * @arcjet/rollup-config bumped from 1.3.1 to 1.4.0
+
 ## [1.3.1](https://github.com/arcjet/arcjet-js/compare/v1.3.0...@arcjet/protocol-v1.3.1) (2026-03-30)
 
 

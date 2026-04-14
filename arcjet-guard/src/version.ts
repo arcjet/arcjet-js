@@ -1,5 +1,5 @@
 /** SDK version. Updated by the release process. */
-export const VERSION = "1.3.1"; // x-release-please-version
+export const VERSION = "1.4.0"; // x-release-please-version
 
 /**
  * Build a user-agent string with SDK version, runtime key, and navigator info.
