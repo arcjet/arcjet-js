@@ -604,14 +604,22 @@ export declare type PromptInjectionReason = Message<"proto.decide.v1alpha1.Promp
   injectionDetected: boolean;
 
   /**
-   * The prompt injection confidence score, scaled to [0, 1]. Values near 0
-   * indicate benign input, values near 1 indicate a prompt injection attempt.
-   * This is compared against the configured threshold to determine the
-   * conclusion.
+   * Deprecated: The underlying model produces a binary verdict; this field
+   * now returns exclusively 0.005 (benign) or 0.995 (injection) to match
+   * the model's hardcoded output values. Use injection_detected instead.
    *
-   * @generated from field: double score = 2;
+   * @generated from field: double score = 2 [deprecated = true];
+   * @deprecated
    */
   score: number;
+
+  /**
+   * The number of tokens processed in the input for the prompt injection
+   * analysis.
+   *
+   * @generated from field: uint32 total_tokens = 3;
+   */
+  totalTokens: number;
 };
 
 /**
@@ -1081,12 +1089,12 @@ export declare type PromptInjectionDetectionRule = Message<"proto.decide.v1alpha
   mode: Mode;
 
   /**
-   * The score threshold above which a request is considered a prompt
-   * injection attempt. Defaults to 0.5 if not specified. Must be in the
-   * range (0.0, 1.0) exclusive when specified - values of exactly 0.0 or
-   * 1.0 are not valid.
+   * Deprecated: The underlying model produces a binary verdict so a
+   * configurable threshold is not meaningful. This field is ignored; the
+   * decision is determined solely by the model's binary classification.
    *
-   * @generated from field: optional double threshold = 2;
+   * @generated from field: optional double threshold = 2 [deprecated = true];
+   * @deprecated
    */
   threshold?: number;
 
