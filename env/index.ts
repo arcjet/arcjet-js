@@ -145,12 +145,12 @@ const baseUrlAllowed = [
  */
 export function baseUrl(environment: Env) {
   // Use ARCJET_BASE_URL if it is set and belongs to our allowlist or ends in
-  // orb.local; otherwise use the hardcoded default.
+  // .orb.local; otherwise use the hardcoded default.
   if (typeof environment["ARCJET_BASE_URL"] === "string") {
     if (
       baseUrlAllowed.includes(environment["ARCJET_BASE_URL"]) ||
-      environment["ARCJET_BASE_URL"].endsWith("orb.local") ||
-      environment["ARCJET_BASE_URL"].endsWith("orb.local/")
+      environment["ARCJET_BASE_URL"].endsWith(".orb.local") ||
+      environment["ARCJET_BASE_URL"].endsWith(".orb.local/")
     ) {
       return environment["ARCJET_BASE_URL"];
     }

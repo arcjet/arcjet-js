@@ -165,5 +165,19 @@ describe("env", () => {
       }),
       "https://foo.bar.orb.local/",
     );
+
+    // Non-matching orb.local (no dot boundary).
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://evilorb.local",
+      }),
+      "https://decide.arcjet.com",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://evilorb.local/",
+      }),
+      "https://decide.arcjet.com",
+    );
   });
 });
