@@ -106,6 +106,18 @@ describe("env", () => {
       "https://decide.arcjet.orb.local",
     );
     assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://anything.orb.local",
+      }),
+      "https://anything.orb.local",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://foo.bar.orb.local",
+      }),
+      "https://foo.bar.orb.local",
+    );
+    assert.equal(
       env.baseUrl({ FLY_APP_NAME: "foobar" }),
       "https://fly.decide.arcjet.com",
     );
@@ -140,6 +152,45 @@ describe("env", () => {
         ARCJET_BASE_URL: "https://decide.arcjet.orb.local/",
       }),
       "https://decide.arcjet.orb.local/",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://anything.orb.local/",
+      }),
+      "https://anything.orb.local/",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://foo.bar.orb.local/",
+      }),
+      "https://foo.bar.orb.local/",
+    );
+
+    // Non-matching orb.local (no dot boundary).
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://evilorb.local",
+      }),
+      "https://decide.arcjet.com",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://evilorb.local/",
+      }),
+      "https://decide.arcjet.com",
+    );
+    // Non-matching orb.local in path or fragment.
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://evil.com/.orb.local",
+      }),
+      "https://decide.arcjet.com",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://evil.com#.orb.local",
+      }),
+      "https://decide.arcjet.com",
     );
   });
 });
