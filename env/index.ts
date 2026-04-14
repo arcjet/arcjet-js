@@ -128,13 +128,11 @@ const baseUrlAllowed = [
   "https://decide.arcjettest.com",
   "https://fly.decide.arcjet.com",
   "https://fly.decide.arcjettest.com",
-  "https://decide.arcjet.orb.local",
   // Allow trailing slashes
   "https://decide.arcjet.com/",
   "https://decide.arcjettest.com/",
   "https://fly.decide.arcjet.com/",
   "https://fly.decide.arcjettest.com/",
-  "https://decide.arcjet.orb.local/",
 ];
 
 /**
@@ -146,13 +144,16 @@ const baseUrlAllowed = [
  *   Base URL of Arcjet API.
  */
 export function baseUrl(environment: Env) {
-  // Use ARCJET_BASE_URL if it is set and belongs to our allowlist; otherwise
-  // use the hardcoded default.
-  if (
-    typeof environment["ARCJET_BASE_URL"] === "string" &&
-    baseUrlAllowed.includes(environment["ARCJET_BASE_URL"])
-  ) {
-    return environment["ARCJET_BASE_URL"];
+  // Use ARCJET_BASE_URL if it is set and belongs to our allowlist or ends in
+  // orb.local; otherwise use the hardcoded default.
+  if (typeof environment["ARCJET_BASE_URL"] === "string") {
+    if (
+      baseUrlAllowed.includes(environment["ARCJET_BASE_URL"]) ||
+      environment["ARCJET_BASE_URL"].endsWith("orb.local") ||
+      environment["ARCJET_BASE_URL"].endsWith("orb.local/")
+    ) {
+      return environment["ARCJET_BASE_URL"];
+    }
   }
 
   // If we're running on fly.io, use the Arcjet Decide Service hosted on fly

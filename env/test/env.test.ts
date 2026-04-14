@@ -106,6 +106,18 @@ describe("env", () => {
       "https://decide.arcjet.orb.local",
     );
     assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://anything.orb.local",
+      }),
+      "https://anything.orb.local",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://foo.bar.orb.local",
+      }),
+      "https://foo.bar.orb.local",
+    );
+    assert.equal(
       env.baseUrl({ FLY_APP_NAME: "foobar" }),
       "https://fly.decide.arcjet.com",
     );
@@ -140,6 +152,18 @@ describe("env", () => {
         ARCJET_BASE_URL: "https://decide.arcjet.orb.local/",
       }),
       "https://decide.arcjet.orb.local/",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://anything.orb.local/",
+      }),
+      "https://anything.orb.local/",
+    );
+    assert.equal(
+      env.baseUrl({
+        ARCJET_BASE_URL: "https://foo.bar.orb.local/",
+      }),
+      "https://foo.bar.orb.local/",
     );
   });
 });
