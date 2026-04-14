@@ -1,5 +1,5 @@
 /** SDK version. Updated by the release process. */
-export const VERSION = "0.1.0-experimental.2";
+export const VERSION = "1.3.1"; // x-release-please-version
 
 /**
  * Build a user-agent string with SDK version, runtime key, and navigator info.
@@ -9,12 +9,12 @@ export const VERSION = "0.1.0-experimental.2";
  * context since runtimes use their own capitalization there.
  *
  * Output examples:
-arcjet-guard-js/0.1.0-experimental.2 (node/22.22.1; Node.js/22)"
- * - `"arcjet-guard-js/0.1.0-experimental.2 (bun/1.2.19; Bun/1.2.19)"
- * - `"arcjet-guard-js/0.1.0-experimental.2 (deno/2.4.2; Deno/2.4.2)"
- * - `"arcjet-guard-js/0.1.0-experimental.2 (workerd; Cloudflare-Workers)"
- * - `"arcjet-guard-js/0.1.0-experimental.2 (edge-light)"
- * - `"arcjet-guard-js/0.1.0-experimental.2"
+ * - `"arcjet-guard-js/1.3.1 (node/22.22.1; Node.js/22)"`
+ * - `"arcjet-guard-js/1.3.1 (bun/1.2.19; Bun/1.2.19)"`
+ * - `"arcjet-guard-js/1.3.1 (deno/2.4.2; Deno/2.4.2)"`
+ * - `"arcjet-guard-js/1.3.1 (workerd; Cloudflare-Workers)"`
+ * - `"arcjet-guard-js/1.3.1 (edge-light)"`
+ * - `"arcjet-guard-js/1.3.1"`
  *
  * @see https://runtime-keys.proposal.wintercg.org/
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent

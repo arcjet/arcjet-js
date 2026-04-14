@@ -52,6 +52,17 @@
       "component": "@arcjet/fastify",
       "skip-github-release": true
     },
+    "arcjet-guard": {
+      "component": "@arcjet/guard",
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
+    },
     "arcjet-nest": {
       "component": "@arcjet/nest",
       "skip-github-release": true
@@ -191,6 +202,7 @@
         "@arcjet/env",
         "@arcjet/eslint-config",
         "@arcjet/fastify",
+        "@arcjet/guard",
         "@arcjet/headers",
         "@arcjet/inspect",
         "@arcjet/ip",
