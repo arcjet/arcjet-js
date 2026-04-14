@@ -551,13 +551,13 @@ const decision = await aj.protect(request, {
 
 ### How it differs from framework SDKs
 
-|                        | Framework SDKs (`@arcjet/next`, etc.)             | `@arcjet/guard`                                              |
-| ---------------------- | ------------------------------------------------- | ------------------------------------------------------------ |
-| **Designed for**       | HTTP request protection                           | AI agent tool calls, background jobs                         |
-| **Request object**     | Required (`protect(request, ...)`)                | Not needed                                                   |
-| **Rule binding**       | Rules configured once, input via `protect()` opts | Rules configured as functions, called with input per invocation |
-| **Rate limit key**     | IP or `characteristics` dict                      | Explicit `key` string (SHA-256 hashed before sending)        |
-| **Custom rules**       | Not supported                                     | `defineCustomRule` with typed config/input/data               |
+|                    | Framework SDKs (`@arcjet/next`, etc.)             | `@arcjet/guard`                                                 |
+| ------------------ | ------------------------------------------------- | --------------------------------------------------------------- |
+| **Designed for**   | HTTP request protection                           | AI agent tool calls, background jobs                            |
+| **Request object** | Required (`protect(request, ...)`)                | Not needed                                                      |
+| **Rule binding**   | Rules configured once, input via `protect()` opts | Rules configured as functions, called with input per invocation |
+| **Rate limit key** | IP or `characteristics` dict                      | Explicit `key` string (SHA-256 hashed before sending)           |
+| **Custom rules**   | Not supported                                     | `defineCustomRule` with typed config/input/data                 |
 
 ### Installation
 
@@ -568,17 +568,29 @@ npm i @arcjet/guard
 ### Quick start
 
 ```ts
-import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard";
+import {
+  launchArcjet,
+  tokenBucket,
+  detectPromptInjection,
+} from "@arcjet/guard";
 
 // Create the Arcjet client once at module scope
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 // Configure reusable rules
-const limitRule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+const limitRule = tokenBucket({
+  refillRate: 10,
+  intervalSeconds: 60,
+  maxTokens: 100,
+});
 const piRule = detectPromptInjection();
 
 // Per request — create rule inputs each time
-async function handleToolCall(userId: string, userMessage: string, tokenCount: number) {
+async function handleToolCall(
+  userId: string,
+  userMessage: string,
+  tokenCount: number,
+) {
   const rl = limitRule({ key: userId, requested: tokenCount });
   const decision = await arcjet.guard({
     label: "tools.weather",
@@ -607,9 +619,9 @@ import { launchArcjet, tokenBucket } from "@arcjet/guard";
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 const limitRule = tokenBucket({
-  refillRate: 2_000,      // tokens added per interval
-  intervalSeconds: 3600,  // seconds between refills
-  maxTokens: 5_000,       // maximum bucket capacity
+  refillRate: 2_000, // tokens added per interval
+  intervalSeconds: 3600, // seconds between refills
+  maxTokens: 5_000, // maximum bucket capacity
 });
 
 const decision = await arcjet.guard({
@@ -630,8 +642,8 @@ import { launchArcjet, fixedWindow } from "@arcjet/guard";
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 const limitRule = fixedWindow({
-  maxRequests: 1000,    // maximum requests per window
-  windowSeconds: 3600,  // 1-hour window
+  maxRequests: 1000, // maximum requests per window
+  windowSeconds: 3600, // 1-hour window
 });
 
 const decision = await arcjet.guard({
@@ -648,8 +660,8 @@ import { launchArcjet, slidingWindow } from "@arcjet/guard";
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 const limitRule = slidingWindow({
-  maxRequests: 500,       // maximum requests per interval
-  intervalSeconds: 60,    // 1-minute rolling window
+  maxRequests: 500, // maximum requests per interval
+  intervalSeconds: 60, // 1-minute rolling window
 });
 
 const decision = await arcjet.guard({
@@ -739,7 +751,11 @@ const decision = await arcjet.guard({
 Both the configured rule and the bound input provide typed result accessors:
 
 ```ts
-const limitRule = tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 });
+const limitRule = tokenBucket({
+  refillRate: 10,
+  intervalSeconds: 60,
+  maxTokens: 100,
+});
 const rl = limitRule({ key: userId, requested: 5 });
 
 const decision = await arcjet.guard({ label: "tools.weather", rules: [rl] });
@@ -788,11 +804,11 @@ for (const result of decision.results) {
 
 ### `guard()` parameter reference
 
-| Parameter  | Type                | Description                                         |
-| ---------- | ------------------- | --------------------------------------------------- |
-| `rules`    | `RuleWithInput[]`   | Bound rule inputs (required)                        |
-| `label`    | `string`            | Label identifying this guard call (required)        |
-| `metadata` | `Record<string, string> \| undefined` | Optional key-value metadata   |
+| Parameter  | Type                                  | Description                                  |
+| ---------- | ------------------------------------- | -------------------------------------------- |
+| `rules`    | `RuleWithInput[]`                     | Bound rule inputs (required)                 |
+| `label`    | `string`                              | Label identifying this guard call (required) |
+| `metadata` | `Record<string, string> \| undefined` | Optional key-value metadata                  |
 
 ### DRY_RUN mode (Guard)
 
