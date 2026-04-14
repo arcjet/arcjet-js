@@ -7,10 +7,6 @@
 
 # `@arcjet/guard`
 
-> **⚠️ Experimental — not yet stable.** This version is in early development.
-> It may stop working at any time, and there are no compatibility guarantees.
-> Use a stable release train for production environments.
-
 <p>
   <a href="https://www.npmjs.com/package/@arcjet/guard">
     <picture>

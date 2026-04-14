@@ -78,7 +78,8 @@ jobs:
 
           # Level 3: core SDK
           npm publish --tag "$TAG" \
-            --workspace arcjet
+            --workspace arcjet \
+            --workspace @arcjet/guard
 
           # Level 4: public framework integrations
           npm publish --tag "$TAG" \
