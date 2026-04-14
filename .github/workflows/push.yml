@@ -5,6 +5,7 @@ on:
     # Only ever run `push` events against protected branches, likely just `main`
     branches:
       - main
+      - release-please--branches--main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
