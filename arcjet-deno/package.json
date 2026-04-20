@@ -64,8 +64,8 @@
     "@arcjet/eslint-config": "1.4.0",
     "@arcjet/rollup-config": "1.4.0",
     "@types/deno": "2.5.0",
-    "@rollup/wasm-node": "4.59.0",
-    "eslint": "9.39.3",
+    "@rollup/wasm-node": "4.59.1",
+    "eslint": "9.39.4",
     "typescript": "5.9.3"
   },
   "publishConfig": {

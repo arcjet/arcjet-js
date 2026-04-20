@@ -23,7 +23,7 @@
     "@arcjet/cache": "1.4.0",
     "@arcjet/eslint-config": "1.4.0",
     "@arcjet/rollup-config": "1.4.0",
-    "eslint": "9.39.3",
+    "eslint": "9.39.4",
     "react-router": "7.13.1",
     "typescript": "5.9.3"
   },
