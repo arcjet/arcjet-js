@@ -13,10 +13,14 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
+      # Required field but unused while open-pull-requests-limit is 0.
+      # Revisit the cadence if that limit is ever raised.
       interval: "daily"
     open-pull-requests-limit: 0
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
+      # Required field but unused while open-pull-requests-limit is 0.
+      # Revisit the cadence if that limit is ever raised.
       interval: "daily"
     open-pull-requests-limit: 0
