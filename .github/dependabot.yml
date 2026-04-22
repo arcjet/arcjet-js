@@ -1,0 +1,22 @@
+# Dependency updates for this repository are managed by Renovate
+# (see `renovate.json`), including vulnerability alerts. This file
+# exists solely to stop Dependabot from opening duplicate version-update
+# PRs. `open-pull-requests-limit: 0` disables version updates for each
+# listed ecosystem.
+#
+# Dependabot security updates (the repo-level feature that auto-opens
+# security PRs independently of this file) should be disabled under
+# Settings > Code security so Renovate's `vulnerabilityAlerts` is the
+# single source of security PRs.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 0
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 0
