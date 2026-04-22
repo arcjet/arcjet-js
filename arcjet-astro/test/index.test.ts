@@ -961,7 +961,7 @@ test("@arcjet/astro", async function (t) {
           },
           label: "",
           options: {
-            dest: {
+            destination: {
               write() {
                 return true;
               },
