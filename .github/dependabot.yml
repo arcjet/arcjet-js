@@ -1,0 +1,26 @@
+# Split of responsibilities:
+#   - Dependabot handles security updates (enabled via the repo-level
+#     "Dependabot security updates" toggle under Settings > Code security;
+#     those PRs open independently of this file).
+#   - Renovate (see `renovate.json`) handles everything else, including
+#     regular version updates.
+#
+# This file exists to stop Dependabot from also opening version-update
+# PRs. `open-pull-requests-limit: 0` disables version updates for each
+# listed ecosystem without affecting Dependabot security updates.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      # Required field but unused while open-pull-requests-limit is 0.
+      # Revisit the cadence if that limit is ever raised.
+      interval: "daily"
+    open-pull-requests-limit: 0
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Required field but unused while open-pull-requests-limit is 0.
+      # Revisit the cadence if that limit is ever raised.
+      interval: "daily"
+    open-pull-requests-limit: 0
