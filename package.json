@@ -21,6 +21,7 @@
     "turbo": "2.8.20"
   },
   "overrides": {
+    "@bufbuild/protobuf": "2.12.0",
     "@sveltejs/kit": {
       "cookie": "0.7.2"
     },
