@@ -28,10 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     # Release Please is very fast, so we set a tiny timeout
     timeout-minutes: 2
-    # Release Please creates a Pull Request with changes to files
+    # The GitHub App token handles write permissions for contents and
+    # pull-requests, so this job only needs minimal GITHUB_TOKEN permissions.
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     steps:
       # Environment security
       - name: Harden Runner
@@ -40,9 +40,16 @@ jobs:
           disable-sudo-and-containers: true
           egress-policy: audit
 
+      - name: Generate GitHub App Token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Release Please
         uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           config-file: .github/release-please-config.json
           manifest-file: .github/.release-please-manifest.json
