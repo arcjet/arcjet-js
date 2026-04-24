@@ -55,12 +55,15 @@ jobs:
           echo ""
 
           # Write patterns to a file (one per line), filtering blanks
-          echo "$TARGET_PATHS" | grep -vE '^\s*$' > /tmp/patterns.txt
+          echo "$TARGET_PATHS" | grep -vE '^\s*$' > /tmp/patterns.txt || true
           echo "Patterns:"
           cat /tmp/patterns.txt
           echo ""
 
-          if git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -qEf /tmp/patterns.txt; then
+          if [ ! -s /tmp/patterns.txt ]; then
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "Result: no patterns provided"
+          elif git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -qEf /tmp/patterns.txt; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
             echo "Result: relevant changes found"
           else

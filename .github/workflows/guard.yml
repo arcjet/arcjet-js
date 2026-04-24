@@ -196,6 +196,8 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     permissions: {}
+    # Override the workflow-level working-directory default (arcjet-guard/)
+    # since this job has no checkout step
     defaults:
       run:
         working-directory: .
