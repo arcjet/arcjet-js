@@ -49,12 +49,6 @@
   "prBodyColumns": ["Package", "Change"],
   "ignorePresets": ["mergeConfidence:all-badges"],
   "vulnerabilityAlerts": {
-    "groupName": null,
-    "dependencyDashboardApproval": true,
-    "rangeStrategy": "update-lockfile",
-    "commitMessageSuffix": "[security]",
-    "branchTopic": "{{{datasource}}}-{{{depNameSanitized}}}-vulnerability",
-    "prCreation": "immediate",
-    "vulnerabilityFixStrategy": "lowest"
+    "enabled": false
   }
 }
