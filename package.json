@@ -5,7 +5,7 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "npm@11.12.0",
+  "packageManager": "npm@11.11.0",
   "workspaces": [
     "*",
     "!arcjet-guard"
@@ -18,7 +18,7 @@
     "test": "turbo test"
   },
   "devDependencies": {
-    "turbo": "2.8.20"
+    "turbo": "2.8.12"
   },
   "overrides": {
     "@bufbuild/protobuf": "2.12.0",
