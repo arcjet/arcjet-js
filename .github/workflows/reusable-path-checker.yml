@@ -55,7 +55,7 @@ jobs:
           echo ""
 
           # Write patterns to a file (one per line), filtering blanks
-          echo "$TARGET_PATHS" | grep -v '^\s*$' > /tmp/patterns.txt
+          echo "$TARGET_PATHS" | grep -vE '^\s*$' > /tmp/patterns.txt
           echo "Patterns:"
           cat /tmp/patterns.txt
           echo ""

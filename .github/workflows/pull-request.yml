@@ -61,6 +61,7 @@ jobs:
     needs: [path_check_test, tests_run]
     if: always()
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Check result
         run: |
@@ -131,6 +132,7 @@ jobs:
     needs: [path_check_examples, examples_run]
     if: always()
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Check result
         run: |
