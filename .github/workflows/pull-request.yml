@@ -10,14 +10,141 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  # ── Test path: path_check_test → tests_run (conditional) → tests (gate) ──
+  path_check_test:
+    name: Check test paths
+    uses: ./.github/workflows/reusable-path-checker.yml
+    with:
+      target-paths: |
+        ^analyze
+        ^arcjet/
+        ^arcjet-(astro|bun|deno|fastify|nest|next|node|nuxt|react-router|remix|sveltekit)/
+        ^body/
+        ^cache/
+        ^decorate/
+        ^duration/
+        ^env/
+        ^eslint-config/
+        ^headers/
+        ^inspect/
+        ^ip/
+        ^logger/
+        ^nosecone
+        ^protocol/
+        ^redact
+        ^rollup-config/
+        ^runtime/
+        ^sprintf/
+        ^stable-hash/
+        ^transport/
+        ^package\.json$
+        ^package-lock\.json$
+        ^turbo\.json$
+        ^tsconfig\.base\.json$
+        ^\.npmrc$
+        ^\.github/workflows/(reusable-test|reusable-path-checker|pull-request|merge-queue|push)\.yml$
+      base-sha: ${{ github.event.pull_request.base.sha }}
+      head-sha: ${{ github.event.pull_request.head.sha }}
+    permissions:
+      contents: read
+
+  tests_run:
+    needs: path_check_test
+    if: needs.path_check_test.outputs.should_run == 'true'
     name: Run tests
     uses: ./.github/workflows/reusable-test.yml
     permissions:
       contents: read
 
-  examples:
+  tests:
+    name: JS tests
+    needs: [path_check_test, tests_run]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check result
+        run: |
+          PATH_CHECK="${{ needs.path_check_test.result }}"
+          RUN_RESULT="${{ needs.tests_run.result }}"
+
+          if [[ "$PATH_CHECK" == "failure" || "$PATH_CHECK" == "cancelled" ]]; then
+            echo "Path check failed or was cancelled"
+            exit 1
+          fi
+
+          if [[ "$RUN_RESULT" == "failure" || "$RUN_RESULT" == "cancelled" ]]; then
+            echo "Tests failed or were cancelled"
+            exit 1
+          fi
+
+          echo "Tests: path_check=$PATH_CHECK, tests=$RUN_RESULT"
+
+  # ── Example path: path_check_examples → examples_run (conditional) → examples (gate) ──
+  path_check_examples:
+    name: Check example paths
+    uses: ./.github/workflows/reusable-path-checker.yml
+    with:
+      target-paths: |
+        ^examples/
+        ^analyze
+        ^arcjet/
+        ^arcjet-(astro|bun|deno|fastify|nest|next|node|nuxt|react-router|remix|sveltekit)/
+        ^body/
+        ^cache/
+        ^decorate/
+        ^duration/
+        ^env/
+        ^eslint-config/
+        ^headers/
+        ^inspect/
+        ^ip/
+        ^logger/
+        ^nosecone
+        ^protocol/
+        ^redact
+        ^rollup-config/
+        ^runtime/
+        ^sprintf/
+        ^stable-hash/
+        ^transport/
+        ^package\.json$
+        ^package-lock\.json$
+        ^turbo\.json$
+        ^tsconfig\.base\.json$
+        ^\.npmrc$
+        ^\.github/workflows/(reusable-examples|reusable-path-checker|pull-request|merge-queue|push)\.yml$
+      base-sha: ${{ github.event.pull_request.base.sha }}
+      head-sha: ${{ github.event.pull_request.head.sha }}
+    permissions:
+      contents: read
+
+  examples_run:
+    needs: path_check_examples
+    if: needs.path_check_examples.outputs.should_run == 'true'
     name: Build examples
     uses: ./.github/workflows/reusable-examples.yml
     permissions:
       contents: read
+
+  examples:
+    name: Examples
+    needs: [path_check_examples, examples_run]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check result
+        run: |
+          PATH_CHECK="${{ needs.path_check_examples.result }}"
+          RUN_RESULT="${{ needs.examples_run.result }}"
+
+          if [[ "$PATH_CHECK" == "failure" || "$PATH_CHECK" == "cancelled" ]]; then
+            echo "Path check failed or was cancelled"
+            exit 1
+          fi
+
+          if [[ "$RUN_RESULT" == "failure" || "$RUN_RESULT" == "cancelled" ]]; then
+            echo "Examples failed or were cancelled"
+            exit 1
+          fi
+
+          echo "Examples: path_check=$PATH_CHECK, examples=$RUN_RESULT"

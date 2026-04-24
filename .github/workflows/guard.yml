@@ -4,14 +4,12 @@ on:
   push:
     branches:
       - main
-      - release-please--branches--main
     paths:
       - arcjet-guard/**
       - .github/workflows/guard.yml
   pull_request:
-    paths:
-      - arcjet-guard/**
-      - .github/workflows/guard.yml
+    types: [opened, synchronize, reopened]
+  merge_group: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,8 +23,32 @@ defaults:
     working-directory: arcjet-guard
 
 jobs:
+  path_check:
+    name: Check paths
+    uses: ./.github/workflows/reusable-path-checker.yml
+    with:
+      target-paths: |
+        ^arcjet-guard/
+        ^\.github/workflows/guard\.yml$
+      base-sha: >-
+        ${{ github.event_name == 'pull_request'
+            && github.event.pull_request.base.sha
+            || github.event_name == 'merge_group'
+            && github.event.merge_group.base_sha
+            || github.event.before }}
+      head-sha: >-
+        ${{ github.event_name == 'pull_request'
+            && github.event.pull_request.head.sha
+            || github.event_name == 'merge_group'
+            && github.event.merge_group.head_sha
+            || github.sha }}
+    permissions:
+      contents: read
+
   build:
     name: "Build & Unit Test (Node ${{ matrix.node }})"
+    needs: path_check
+    if: needs.path_check.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -60,6 +82,8 @@ jobs:
 
   lint:
     name: Lint & Typecheck
+    needs: path_check
+    if: needs.path_check.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -93,7 +117,8 @@ jobs:
   runtime:
     name: "Runtime (${{ matrix.runtime }}${{ matrix.node-version && format(' node{0}', matrix.node-version) || matrix.deno-version && format(' {0}', matrix.deno-version) || matrix.bun-version && format(' {0}', matrix.bun-version) || '' }})"
     runs-on: ubuntu-latest
-    needs: build
+    needs: [path_check, build]
+    if: needs.path_check.outputs.should_run == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -164,3 +189,33 @@ jobs:
 
       - name: Runtime test (${{ matrix.runtime }})
         run: npm run ${{ matrix.script }}
+
+  guard:
+    name: Guard tests
+    needs: [path_check, build, lint, runtime]
+    if: always()
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Check result
+        run: |
+          PATH_CHECK="${{ needs.path_check.result }}"
+          BUILD="${{ needs.build.result }}"
+          LINT="${{ needs.lint.result }}"
+          RUNTIME="${{ needs.runtime.result }}"
+
+          if [[ "$PATH_CHECK" == "failure" || "$PATH_CHECK" == "cancelled" ]]; then
+            echo "Path check failed or was cancelled"
+            exit 1
+          fi
+
+          for result in "$BUILD" "$LINT" "$RUNTIME"; do
+            if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
+              echo "Guard tests failed or were cancelled"
+              exit 1
+            fi
+          done
+
+          echo "Guard: path_check=$PATH_CHECK, build=$BUILD, lint=$LINT, runtime=$RUNTIME"
