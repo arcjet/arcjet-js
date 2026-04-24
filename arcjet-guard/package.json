@@ -83,7 +83,7 @@
   },
   "devDependencies": {
     "@types/node": "22.19.15",
-    "@typescript/native-preview": "7.0.0-dev.20260331.1",
+    "@typescript/native-preview": "7.0.0-dev.20260421.2",
     "miniflare": "4.20260329.0",
     "oxfmt": "0.43.0",
     "oxlint": "1.58.0",
