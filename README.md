@@ -57,6 +57,8 @@ ARCJET_KEY=ajkey_yourkey
 - [Documentation](https://docs.arcjet.com) — full reference and guides
 - [Example apps](#example-apps) — working starter projects for every framework
 - [Blueprints](#blueprints) — recipes for common security patterns
+- [AI agent skills][arcjet-skills] — let your AI coding agent add Arcjet
+  protections (`npx skills add arcjet/skills`)
 
 ## Features
 
@@ -1020,5 +1022,6 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [feature-signup-protection]: https://docs.arcjet.com/signup-protection
 [bot-list]: https://arcjet.com/bot-list
 [best-practices]: https://docs.arcjet.com/best-practices
+[arcjet-skills]: https://github.com/arcjet/skills
 [npm-workspaces]: https://docs.npmjs.com/cli/using-npm/workspaces
 [turborepo]: https://turbo.build/repo

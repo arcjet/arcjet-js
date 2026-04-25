@@ -31,6 +31,9 @@ This is the [Arcjet][arcjet] SDK for [Deno][deno].
 [Full docs][arcjet-reference-deno] |
 [Other SDKs on GitHub](https://github.com/arcjet)
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
@@ -534,6 +537,7 @@ deno test test/index.test.ts --allow-env --allow-net --no-check
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [arcjet-reference-deno]: https://docs.arcjet.com/reference/deno
 [deno]: https://deno.com/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

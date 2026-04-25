@@ -32,6 +32,9 @@ This is the [Arcjet][arcjet] SDK for [SvelteKit][sveltekit].
 [Full docs][arcjet-reference-sveltekit] |
 [Other SDKs on GitHub](https://github.com/arcjet)
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🔒 [Prompt Injection Detection][prompt-injection-docs] — detect and block
@@ -533,6 +536,7 @@ export async function POST(event: RequestEvent) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [arcjet-reference-sveltekit]: https://docs.arcjet.com/reference/sveltekit
 [sveltekit]: https://kit.svelte.dev/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

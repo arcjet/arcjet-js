@@ -32,6 +32,9 @@ This is the [Arcjet][arcjet] SDK for [Fastify][fastify].
 [Full docs][arcjet-reference-fastify] |
 [Other SDKs on GitHub](https://github.com/arcjet)
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
@@ -526,6 +529,7 @@ export async function chatHandler(request: any, reply: any) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [arcjet-reference-fastify]: https://docs.arcjet.com/reference/fastify
 [fastify]: https://fastify.dev/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

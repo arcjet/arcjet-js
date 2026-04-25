@@ -32,6 +32,9 @@ This is the [Arcjet][arcjet] SDK for [NestJS][nest-js].
 [Full docs][arcjet-reference-nest] |
 [Other SDKs][sdks-github]
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🔒 [Prompt Injection Detection][prompt-injection-docs] — detect and block
@@ -603,6 +606,7 @@ export class ChatController {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [arcjet-reference-nest]: https://docs.arcjet.com/reference/nestjs
 [nest-js]: https://nestjs.com/
 [sdks-github]: https://github.com/arcjet

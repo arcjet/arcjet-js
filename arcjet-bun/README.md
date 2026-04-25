@@ -32,6 +32,9 @@ This is the [Arcjet][arcjet] SDK for [Bun][bun-sh].
 [Full docs][arcjet-reference-bun] |
 [Other SDKs on GitHub](https://github.com/arcjet)
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
@@ -547,6 +550,7 @@ bun test
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [arcjet-reference-bun]: https://docs.arcjet.com/reference/bun
 [bun-sh]: https://bun.sh/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

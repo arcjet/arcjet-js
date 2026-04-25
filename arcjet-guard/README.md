@@ -34,6 +34,9 @@ This is the [Arcjet][arcjet] Guards SDK.
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-guard) |
 [Other SDKs][sdks-github]
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🪣 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
@@ -394,5 +397,6 @@ See the [docs](https://docs.arcjet.com/mcp-server) for setup instructions.
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [sdks-github]: https://github.com/arcjet
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

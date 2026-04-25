@@ -32,6 +32,9 @@ This is the [Arcjet][arcjet] SDK for [Astro][astro].
 [Full docs][arcjet-reference-astro] |
 [Other SDKs on GitHub](https://github.com/arcjet)
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
@@ -559,6 +562,7 @@ export const POST: APIRoute = async ({ request }) => {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [arcjet-reference-astro]: https://docs.arcjet.com/reference/astro
 [astro]: https://astro.build/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

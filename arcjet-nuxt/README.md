@@ -32,6 +32,9 @@ This is the [Arcjet][arcjet] SDK for [Nuxt][nuxt].
 [Full docs][arcjet-reference-nuxt] |
 [Other SDKs on GitHub](https://github.com/arcjet)
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🔒 [Prompt Injection Detection][prompt-injection-docs] — detect and block
@@ -543,6 +546,7 @@ export default defineEventHandler(async (event) => {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [arcjet-reference-nuxt]: https://docs.arcjet.com/reference/nuxt
 [nuxt]: https://nuxt.com/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

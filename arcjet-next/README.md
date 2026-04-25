@@ -32,6 +32,9 @@ This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework.
 [Full docs][arcjet-reference-next] |
 [Other SDKs][sdks-github]
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
@@ -632,6 +635,7 @@ export async function POST(req: Request) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [arcjet-reference-next]: https://docs.arcjet.com/reference/nextjs
 [next-js]: https://nextjs.org/
 [vercel-ai-sdk]: https://sdk.vercel.ai/

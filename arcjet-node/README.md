@@ -32,6 +32,9 @@ This is the [Arcjet][arcjet] SDK for [Node.js][node-js].
 [Full docs][arcjet-reference-node] |
 [Other SDKs][sdks-github]
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Features
 
 - 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
@@ -545,6 +548,7 @@ export async function handler(req, res) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [arcjet-reference-node]: https://docs.arcjet.com/reference/nodejs
 [node-js]: https://nodejs.org/
 [sdks-github]: https://github.com/arcjet

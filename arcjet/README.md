@@ -28,6 +28,9 @@ yet supported. Every feature works with any JavaScript application.
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet) |
 [Full docs][ts-sdk-docs]
 
+**Using an AI coding agent?** Install [Arcjet Skills][arcjet-skills] to let
+your agent add Arcjet protections: `npx skills add arcjet/skills`
+
 ## Rules
 
 The `arcjet` core exports the following protection rules. Each rule is passed
@@ -543,6 +546,7 @@ Reference documentation is available at [docs.arcjet.com][ts-sdk-docs].
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-skills]: https://github.com/arcjet/skills
 [ts-sdk-docs]: https://docs.arcjet.com/reference/ts-js
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
 [github-arcjet-sdks]: https://github.com/arcjet/arcjet-js#sdks
