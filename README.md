@@ -50,6 +50,10 @@ ARCJET_KEY=ajkey_yourkey
 4. **Protect a route** — see the [AI protection example](#vercel-ai-sdk-example)
    or individual [feature examples](#features) below.
 
+> **💡 Tip:** Use the [Arcjet CLI][arcjet-cli] (`npx @arcjet/cli`) for guided
+> project setup, managing sites, and inspecting traffic from the terminal. See
+> the [CLI documentation][arcjet-cli] for details.
+
 ### Get help
 
 [Join our Discord server][discord-invite] or [reach out for support][support].
@@ -913,6 +917,12 @@ find a specific one through the categories and descriptions below.
 - [`@arcjet/remix`](./arcjet-remix/README.md): SDK for Remix.
 - [`@arcjet/sveltekit`](./arcjet-sveltekit/README.md): SDK for SvelteKit.
 
+### CLI
+
+- [`arcjet`][arcjet-cli]: Terminal access to the Arcjet platform — manage sites,
+  inspect traffic, and configure security rules. Install via Homebrew
+  (`brew install arcjet/tap/arcjet`) or run via npx (`npx @arcjet/cli`).
+
 ### Nosecone
 
 See [the docs][nosecone-docs] for details.
@@ -986,6 +996,7 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 
 [arcjet-example]: https://example.arcjet.com
 [arcjet]: https://arcjet.com
+[arcjet-cli]: https://github.com/arcjet/cli
 [github-arcjet-example-astro]: https://github.com/arcjet/example-astro
 [github-arcjet-example-deno]: https://github.com/arcjet/example-deno
 [github-arcjet-example-express]: https://github.com/arcjet/example-expressjs

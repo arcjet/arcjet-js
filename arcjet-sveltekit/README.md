@@ -27,6 +27,9 @@ This is the [Arcjet][arcjet] SDK for [SvelteKit][sveltekit].
 3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
 4. Add Arcjet to your app — see the [quick start](#quick-start) below
 
+> **💡 Tip:** Use the [Arcjet CLI][arcjet-cli] (`npx @arcjet/cli`) for guided
+> project setup, managing sites, and inspecting traffic from the terminal.
+
 [npm package](https://www.npmjs.com/package/@arcjet/sveltekit) |
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-sveltekit) |
 [Full docs][arcjet-reference-sveltekit] |
@@ -533,6 +536,7 @@ export async function POST(event: RequestEvent) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-cli]: https://github.com/arcjet/cli
 [arcjet-reference-sveltekit]: https://docs.arcjet.com/reference/sveltekit
 [sveltekit]: https://kit.svelte.dev/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

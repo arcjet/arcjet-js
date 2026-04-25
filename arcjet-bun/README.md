@@ -27,6 +27,9 @@ This is the [Arcjet][arcjet] SDK for [Bun][bun-sh].
 3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
 4. Add Arcjet to your server — see the [quick start](#quick-start) below
 
+> **💡 Tip:** Use the [Arcjet CLI][arcjet-cli] (`npx @arcjet/cli`) for guided
+> project setup, managing sites, and inspecting traffic from the terminal.
+
 [npm package](https://www.npmjs.com/package/@arcjet/bun) |
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-bun) |
 [Full docs][arcjet-reference-bun] |
@@ -547,6 +550,7 @@ bun test
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-cli]: https://github.com/arcjet/cli
 [arcjet-reference-bun]: https://docs.arcjet.com/reference/bun
 [bun-sh]: https://bun.sh/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

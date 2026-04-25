@@ -30,6 +30,9 @@ This is the [Arcjet][arcjet] Guards SDK.
 3. Pass your key to `launchArcjet({ key: process.env.ARCJET_KEY! })`
 4. Add a guard to your code — see the [quick start](#quick-start) below
 
+> **💡 Tip:** Use the [Arcjet CLI][arcjet-cli] (`npx @arcjet/cli`) for guided
+> project setup, managing sites, and inspecting traffic from the terminal.
+
 [npm package](https://www.npmjs.com/package/@arcjet/guard) |
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-guard) |
 [Other SDKs][sdks-github]
@@ -394,5 +397,6 @@ See the [docs](https://docs.arcjet.com/mcp-server) for setup instructions.
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-cli]: https://github.com/arcjet/cli
 [sdks-github]: https://github.com/arcjet
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

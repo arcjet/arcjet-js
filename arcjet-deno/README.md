@@ -27,6 +27,9 @@ This is the [Arcjet][arcjet] SDK for [Deno][deno].
 3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
 4. Add Arcjet to your server — see the [quick start](#quick-start) below
 
+> **💡 Tip:** Use the [Arcjet CLI][arcjet-cli] (`npx @arcjet/cli`) for guided
+> project setup, managing sites, and inspecting traffic from the terminal.
+
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-deno) |
 [Full docs][arcjet-reference-deno] |
 [Other SDKs on GitHub](https://github.com/arcjet)
@@ -534,6 +537,7 @@ deno test test/index.test.ts --allow-env --allow-net --no-check
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-cli]: https://github.com/arcjet/cli
 [arcjet-reference-deno]: https://docs.arcjet.com/reference/deno
 [deno]: https://deno.com/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

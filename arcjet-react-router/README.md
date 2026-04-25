@@ -30,6 +30,9 @@ This is the [Arcjet][arcjet] SDK for [React Router][react-router].
 3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
 4. Add Arcjet to your app — see the [quick start](#quick-start) below
 
+> **💡 Tip:** Use the [Arcjet CLI][arcjet-cli] (`npx @arcjet/cli`) for guided
+> project setup, managing sites, and inspecting traffic from the terminal.
+
 [npm package](https://www.npmjs.com/package/@arcjet/react-router) |
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-react-router) |
 [Full docs][arcjet-reference-react-router] |
@@ -495,6 +498,7 @@ export async function action(args: Route.ActionArgs) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-cli]: https://github.com/arcjet/cli
 [arcjet-reference-react-router]: https://docs.arcjet.com/reference/react-router
 [react-router]: https://reactrouter.com/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0

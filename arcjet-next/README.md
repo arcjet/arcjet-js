@@ -27,6 +27,9 @@ This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework.
 3. Set `ARCJET_KEY=ajkey_yourkey` in `.env.local`
 4. Add Arcjet to your route — see the [quick start](#quick-start) below
 
+> **💡 Tip:** Use the [Arcjet CLI][arcjet-cli] (`npx @arcjet/cli`) for guided
+> project setup, managing sites, and inspecting traffic from the terminal.
+
 [npm package](https://www.npmjs.com/package/@arcjet/next) |
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-next) |
 [Full docs][arcjet-reference-next] |
@@ -632,6 +635,7 @@ export async function POST(req: Request) {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-cli]: https://github.com/arcjet/cli
 [arcjet-reference-next]: https://docs.arcjet.com/reference/nextjs
 [next-js]: https://nextjs.org/
 [vercel-ai-sdk]: https://sdk.vercel.ai/

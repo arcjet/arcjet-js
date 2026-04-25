@@ -27,6 +27,9 @@ This is the [Arcjet][arcjet] SDK for [Nuxt][nuxt].
 3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
 4. Add Arcjet to your app — see the [quick start](#quick-start) below
 
+> **💡 Tip:** Use the [Arcjet CLI][arcjet-cli] (`npx @arcjet/cli`) for guided
+> project setup, managing sites, and inspecting traffic from the terminal.
+
 [npm package](https://www.npmjs.com/package/@arcjet/nuxt) |
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet-nuxt) |
 [Full docs][arcjet-reference-nuxt] |
@@ -543,6 +546,7 @@ export default defineEventHandler(async (event) => {
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [arcjet]: https://arcjet.com
+[arcjet-cli]: https://github.com/arcjet/cli
 [arcjet-reference-nuxt]: https://docs.arcjet.com/reference/nuxt
 [nuxt]: https://nuxt.com/
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
