@@ -19,10 +19,60 @@
 This is the monorepo containing various [Arcjet][arcjet] open source packages
 for JS.
 
+## Which package do I need?
+
+Arcjet protects two types of entry points. Pick the right path for your use
+case:
+
+| Entry point            | When to use                                                                                                    | Package                                             |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| **Request protection** | HTTP route handlers, API endpoints, middleware — anything with an incoming `Request` object.                   | `@arcjet/next`, `@arcjet/node`, `@arcjet/bun`, etc. |
+| **Guard protection**   | AI agent tool calls, MCP server handlers, queue workers, background jobs — anything _without_ an HTTP request. | [`@arcjet/guard`](./arcjet-guard/README.md)         |
+
+Not sure? If you have an HTTP request, use a [framework SDK](#sdks). If you
+don't, use [`@arcjet/guard`](./arcjet-guard/README.md). You can use both in the
+same project.
+
 ## Getting started
 
-1. **Get your API key** — [Sign up at `app.arcjet.com`](https://app.arcjet.com).
-2. **Install the SDK for your framework:** Every feature works with any JavaScript application.
+The fastest way to get started is with an AI coding agent. Log in, install
+a skill, and let your agent handle the rest.
+
+### Step 1: Log in with the CLI
+
+```sh
+npx @arcjet/cli auth login
+```
+
+You can also sign up and manage keys at
+[`app.arcjet.com`](https://app.arcjet.com?utm_campaign=arcjet-js), or connect
+the [Arcjet MCP server](https://docs.arcjet.com/mcp-server) to your AI
+assistant.
+
+### Step 2: Install a skill
+
+Skills give your agent the documentation to detect your framework, install
+the SDK, and wire up protection rules. Install one per use case:
+
+**Request protection** (HTTP routes):
+
+```sh
+npx skills add arcjet/skills --skill add-route-protection
+```
+
+**Guard protection** (tool calls, MCP servers, queues):
+
+```sh
+npx skills add arcjet/skills --skill add-guard-protection
+```
+
+> You can also use the [Arcjet plugin for Claude Code and
+> Cursor](https://docs.arcjet.com/arcjet-plugin), which bundles skills, MCP,
+> and coding rules.
+
+### Step 3: Install the SDK
+
+**For request protection** — pick the SDK for your framework:
 
 | Framework    | Package                         | Install                      |
 | ------------ | ------------------------------- | ---------------------------- |
@@ -40,15 +90,24 @@ for JS.
 | SvelteKit    | `@arcjet/sveltekit`             | `npm i @arcjet/sveltekit`    |
 | Astro        | `@arcjet/astro`                 | `npm i @arcjet/astro`        |
 
-3. **Set your environment variable:**
+**For guard protection:**
 
 ```sh
-# .env.local (or your framework's env file)
-ARCJET_KEY=ajkey_yourkey
+npm i @arcjet/guard
 ```
 
-4. **Protect a route** — see the [AI protection example](#vercel-ai-sdk-example)
-   or individual [feature examples](#features) below.
+### Step 4: Tell your agent what to protect
+
+Ask your coding agent to implement protection. The skill you installed in
+Step 2 gives it everything it needs. For example:
+
+> "Add Arcjet bot protection and rate limiting to my /api/chat route"
+
+> "Add Arcjet guard with prompt injection detection to my MCP tool handler"
+
+The agent will install the right package, configure rules, and wire up
+`protect()` or `guard()` calls — or see the [full list of protections](#features)
+below.
 
 ### Get help
 
@@ -60,26 +119,21 @@ ARCJET_KEY=ajkey_yourkey
 
 ## Features
 
-- 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
-  prompt injection attacks before they reach your LLM.
-- 🤖 [Bot Protection](#bot-protection) — stop scrapers, credential stuffers, and
-  AI crawlers from abusing your endpoints.
-- 🛑 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
-  window algorithms; model AI token budgets per user.
-- 🕵️ [Sensitive Information Detection](#sensitive-information-detection) — block
-  PII, credit cards, and custom patterns from entering your AI pipeline.
-- 🛡️ [Shield WAF](#shield-waf) — protect against SQL injection, XSS, and other
-  common web attacks.
-- 📧 [Email Validation](#email-validation) — block disposable, invalid, and
-  undeliverable addresses at signup.
-- 📝 [Signup Form Protection][feature-signup-protection] — combines bot
-  protection, email validation, and rate limiting to protect your signup forms.
-- 🎯 [Request Filters](#request-filters) — expression-based rules on IP, path,
-  headers, and custom fields.
-- 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, and hosting
-  detection included with every request.
-- 🧩 [Arcjet Guard](#arcjet-guard) — lower-level API for AI agent tool calls and
-  background tasks where there is no HTTP request.
+| Feature                                                                                                           | Request SDKs | Guard |
+| ----------------------------------------------------------------------------------------------------------------- | :----------: | :---: |
+| 🛑 [Rate Limiting](#rate-limiting) — token bucket, fixed window, sliding window                                   |      ✅      |  ✅   |
+| 🔒 [Prompt Injection Detection](#prompt-injection-detection) — block attacks before they reach your LLM           |      ✅      |  ✅   |
+| 🕵️ [Sensitive Information Detection](#sensitive-information-detection) — block PII, credit cards, custom patterns |      ✅      |  ✅   |
+| 🤖 [Bot Protection](#bot-protection) — stop scrapers, credential stuffers, AI crawlers                            |      ✅      |   —   |
+| 🛡️ [Shield WAF](#shield-waf) — protect against SQL injection, XSS, OWASP Top 10                                   |      ✅      |   —   |
+| 📧 [Email Validation](#email-validation) — block disposable, invalid, undeliverable addresses                     |      ✅      |   —   |
+| 📝 [Signup Form Protection][feature-signup-protection] — bot + email + rate limiting combined                     |      ✅      |   —   |
+| 🎯 [Request Filters](#request-filters) — expression-based rules on IP, path, headers                              |      ✅      |   —   |
+| 🌐 [IP Analysis](#ip-analysis) — geolocation, ASN, VPN, proxy, Tor, hosting detection                             |      ✅      |   —   |
+| 🔧 [Custom Rules](#custom-rules-guard) — define your own local evaluation logic                                   |      —       |  ✅   |
+
+**Request SDKs** = `@arcjet/next`, `@arcjet/node`, `@arcjet/bun`, etc. — for HTTP routes.
+**Guard** = `@arcjet/guard` — for tool calls, MCP servers, queues, and anything without an HTTP request.
 
 ## Example apps
 
@@ -137,7 +191,7 @@ import type { UIMessage } from "ai";
 import { convertToModelMessages, isTextUIPart, streamText } from "ai";
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  key: process.env.ARCJET_KEY!, // Get your key with: npx @arcjet/cli sites get-key
   // Track budgets per user — replace "userId" with any stable identifier
   characteristics: ["userId"],
   rules: [
