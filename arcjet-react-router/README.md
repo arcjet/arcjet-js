@@ -34,9 +34,9 @@ an HTTP request), see [`@arcjet/guard`](https://github.com/arcjet/arcjet-js/tree
    ```sh
    npx @arcjet/cli auth login
    ```
-2. Install the route protection skill to give your coding agent the docs it needs:
+2. Install the request protection skill to give your coding agent the docs it needs:
    ```sh
-   npx skills add arcjet/skills --skill add-route-protection
+   npx skills add arcjet/skills --skill add-request-protection
    ```
 3. Tell your agent what to protect — it handles the rest.
 

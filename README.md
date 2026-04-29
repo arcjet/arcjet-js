@@ -57,7 +57,7 @@ the SDK, and wire up protection rules. Install one per use case:
 **Request protection** (HTTP routes):
 
 ```sh
-npx skills add arcjet/skills --skill add-route-protection
+npx skills add arcjet/skills --skill add-request-protection
 ```
 
 **Guard protection** (tool calls, MCP servers, queues):
