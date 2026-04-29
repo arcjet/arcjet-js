@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.4.1](https://github.com/arcjet/arcjet-js/compare/v1.4.0...v1.4.1) (2026-04-29)
+
+
+### 🪲 Bug Fixes
+
+* update @bufbuild/protobuf to 2.12.0 and add root override to fix Bun build ([#6014](https://github.com/arcjet/arcjet-js/issues/6014)) ([ba8f1a3](https://github.com/arcjet/arcjet-js/commit/ba8f1a3081a1dbbcd3fae2f315312e85cb7415ba))
+
+
+### 📝 Documentation
+
+* refresh root, next, and guard READMEs for guards release ([#6017](https://github.com/arcjet/arcjet-js/issues/6017)) ([994232c](https://github.com/arcjet/arcjet-js/commit/994232c83346cd75b93fc01095e7c1e5796b49c1))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump astro from 6.1.2 to 6.1.6 ([#6003](https://github.com/arcjet/arcjet-js/issues/6003)) ([6730508](https://github.com/arcjet/arcjet-js/commit/6730508b15e1aa23f4e662f2111e53bd6058573c))
+* **deps-dev:** bump fastify from 5.8.4 to 5.8.5 ([#6000](https://github.com/arcjet/arcjet-js/issues/6000)) ([fe37f56](https://github.com/arcjet/arcjet-js/commit/fe37f565cbb2dbc8a0f69f9b115e57a29ab86795))
+* **deps:** bump @astrojs/node from 10.0.4 to 10.0.5 in /examples/astro ([#6008](https://github.com/arcjet/arcjet-js/issues/6008)) ([cdffb7d](https://github.com/arcjet/arcjet-js/commit/cdffb7dacffb10550c00fcd11b0b03f39c62cf11))
+* **deps:** bump astro from 6.1.4 to 6.1.8 in /examples/astro ([#6001](https://github.com/arcjet/arcjet-js/issues/6001)) ([69b4198](https://github.com/arcjet/arcjet-js/commit/69b41986de879ec0f094ce9609d11b64fea3978e))
+
+
+### ✅ Continuous Integration
+
+* split update duties between Dependabot (security) and Renovate ([#6006](https://github.com/arcjet/arcjet-js/issues/6006)) ([a8a22c9](https://github.com/arcjet/arcjet-js/commit/a8a22c9d3cfdeebac824cc4638135dbc6cc98137))
+
 ## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...v1.4.0) (2026-04-14)
 
 

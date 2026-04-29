@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.1](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@nosecone/sveltekit-v1.4.1) (2026-04-29)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@nosecone/sveltekit:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.4.0 to 1.4.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.4.0 to 1.4.1
+    * @arcjet/rollup-config bumped from 1.4.0 to 1.4.1
+
 ## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@nosecone/sveltekit-v1.4.0) (2026-04-14)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "arcjet",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Arcjet runtime security SDK — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF for JavaScript and TypeScript apps",
   "keywords": [
     "ai",
@@ -54,17 +54,17 @@
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.4.0",
-    "@arcjet/cache": "1.4.0",
-    "@arcjet/duration": "1.4.0",
-    "@arcjet/headers": "1.4.0",
-    "@arcjet/protocol": "1.4.0",
-    "@arcjet/runtime": "1.4.0",
-    "@arcjet/stable-hash": "1.4.0"
+    "@arcjet/analyze": "1.4.1",
+    "@arcjet/cache": "1.4.1",
+    "@arcjet/duration": "1.4.1",
+    "@arcjet/headers": "1.4.1",
+    "@arcjet/protocol": "1.4.1",
+    "@arcjet/runtime": "1.4.1",
+    "@arcjet/stable-hash": "1.4.1"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.4.0",
-    "@arcjet/rollup-config": "1.4.0",
+    "@arcjet/eslint-config": "1.4.1",
+    "@arcjet/rollup-config": "1.4.1",
     "@rollup/wasm-node": "4.60.0",
     "@types/node": "24.12.0",
     "eslint": "9.39.4",
