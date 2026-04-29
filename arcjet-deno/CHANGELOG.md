@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.4.1](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@arcjet/deno-v1.4.1) (2026-04-29)
+
+
+### 📝 Documentation
+
+* refresh root, next, and guard READMEs for guards release ([#6017](https://github.com/arcjet/arcjet-js/issues/6017)) ([994232c](https://github.com/arcjet/arcjet-js/commit/994232c83346cd75b93fc01095e7c1e5796b49c1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.4.0 to 1.4.1
+    * @arcjet/env bumped from 1.4.0 to 1.4.1
+    * @arcjet/headers bumped from 1.4.0 to 1.4.1
+    * @arcjet/ip bumped from 1.4.0 to 1.4.1
+    * @arcjet/logger bumped from 1.4.0 to 1.4.1
+    * @arcjet/protocol bumped from 1.4.0 to 1.4.1
+    * @arcjet/transport bumped from 1.4.0 to 1.4.1
+    * arcjet bumped from 1.4.0 to 1.4.1
+  * devDependencies
+    * @arcjet/cache bumped from 1.4.0 to 1.4.1
+    * @arcjet/eslint-config bumped from 1.4.0 to 1.4.1
+    * @arcjet/rollup-config bumped from 1.4.0 to 1.4.1
+
 ## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@arcjet/deno-v1.4.0) (2026-04-14)
 
 
