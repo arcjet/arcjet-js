@@ -18,11 +18,31 @@
 
 [Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks. Every feature works with any Next.js application.
 
-This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework.
+This is the [Arcjet][arcjet] SDK for [Next.js][next-js] **request protection** —
+use it to protect HTTP route handlers and API endpoints. If you need to protect
+AI agent tool calls, MCP server handlers, or background jobs (anything without
+an HTTP request), see [`@arcjet/guard`](https://github.com/arcjet/arcjet-js/tree/main/arcjet-guard).
 
 ## Getting started
 
-1. Get your API key at [`app.arcjet.com`](https://app.arcjet.com)
+### Quick setup with an AI agent
+
+1. Log in with the CLI:
+   ```sh
+   npx @arcjet/cli auth login
+   ```
+2. Install the request protection skill to give your coding agent the docs it needs:
+   ```sh
+   npx skills add arcjet/skills --skill add-request-protection
+   ```
+3. Tell your agent what to protect — it handles the rest.
+
+### Manual setup
+
+1. **Log in** with the CLI (or at [`app.arcjet.com`](https://app.arcjet.com?utm_campaign=arcjet-js)):
+   ```sh
+   npx @arcjet/cli auth login
+   ```
 2. `npm install @arcjet/next`
 3. Set `ARCJET_KEY=ajkey_yourkey` in `.env.local`
 4. Add Arcjet to your route — see the [quick start](#quick-start) below
@@ -33,6 +53,23 @@ This is the [Arcjet][arcjet] SDK for the [Next.js][next-js] framework.
 [Other SDKs][sdks-github]
 
 ## Features
+
+All features below are available with `@arcjet/next` for request protection.
+For guard protection (tool calls, MCP servers, queues) see
+[`@arcjet/guard`](https://github.com/arcjet/arcjet-js/tree/main/arcjet-guard).
+
+| Feature                         | `@arcjet/next` | `@arcjet/guard` |
+| ------------------------------- | :------------: | :-------------: |
+| Rate Limiting                   |       ✅       |       ✅        |
+| Prompt Injection Detection      |       ✅       |       ✅        |
+| Sensitive Information Detection |       ✅       |       ✅        |
+| Bot Protection                  |       ✅       |        —        |
+| Shield WAF                      |       ✅       |        —        |
+| Email Validation                |       ✅       |        —        |
+| Signup Form Protection          |       ✅       |        —        |
+| Request Filters                 |       ✅       |        —        |
+| IP Analysis                     |       ✅       |        —        |
+| Custom Rules                    |       —        |       ✅        |
 
 - 🔒 [Prompt Injection Detection](#prompt-injection-detection) — detect and block
   prompt injection attacks before they reach your LLM.
@@ -82,7 +119,7 @@ import type { UIMessage } from "ai";
 import { convertToModelMessages, isTextUIPart, streamText } from "ai";
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!, // Get your site key from https://app.arcjet.com
+  key: process.env.ARCJET_KEY!, // Get your key with: npx @arcjet/cli sites get-key
   // Track budgets per user — replace "userId" with any stable identifier
   characteristics: ["userId"],
   rules: [

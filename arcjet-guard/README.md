@@ -21,11 +21,32 @@ Guards provide rate limiting, prompt injection detection, sensitive information
 detection, and custom rules for AI tool calls and other backend operations.
 Every feature works on Node.js, Deno, Bun, and Cloudflare Workers.
 
-This is the [Arcjet][arcjet] Guards SDK.
+This is the [Arcjet][arcjet] Guards SDK for **non-request protection** — use it
+for AI agent tool calls, MCP server handlers, queue workers, background jobs,
+and anything else that doesn't have an HTTP request object. If you're protecting
+HTTP routes, use a [framework SDK](https://github.com/arcjet/arcjet-js#sdks)
+like `@arcjet/next` or `@arcjet/node` instead.
 
 ## Getting started
 
-1. Get your Arcjet key at [`app.arcjet.com`](https://app.arcjet.com)
+### Quick setup with an AI agent
+
+1. Log in with the CLI:
+   ```sh
+   npx @arcjet/cli auth login
+   ```
+2. Install the guard protection skill to give your coding agent the docs it needs:
+   ```sh
+   npx skills add arcjet/skills --skill add-guard-protection
+   ```
+3. Tell your agent what to protect — it handles the rest.
+
+### Manual setup
+
+1. **Log in** with the CLI (or at [`app.arcjet.com`](https://app.arcjet.com?utm_campaign=arcjet-js)):
+   ```sh
+   npx @arcjet/cli auth login
+   ```
 2. `npm install @arcjet/guard`
 3. Pass your key to `launchArcjet({ key: process.env.ARCJET_KEY! })`
 4. Add a guard to your code — see the [quick start](#quick-start) below
@@ -35,6 +56,21 @@ This is the [Arcjet][arcjet] Guards SDK.
 [Other SDKs][sdks-github]
 
 ## Features
+
+Guards share some features with the request SDKs but are designed for
+non-HTTP contexts. Here's what's available where:
+
+| Feature                         | Request SDKs | `@arcjet/guard` |
+| ------------------------------- | :----------: | :-------------: |
+| Rate Limiting                   |      ✅      |       ✅        |
+| Prompt Injection Detection      |      ✅      |       ✅        |
+| Sensitive Information Detection |      ✅      |       ✅        |
+| Custom Rules                    |      —       |       ✅        |
+| Bot Protection                  |      ✅      |        —        |
+| Shield WAF                      |      ✅      |        —        |
+| Email Validation                |      ✅      |        —        |
+| Request Filters                 |      ✅      |        —        |
+| IP Analysis                     |      ✅      |        —        |
 
 - 🪣 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
   window algorithms; model AI token budgets per user.
@@ -374,6 +410,8 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
 Connect your AI assistant to the Arcjet MCP server at
 `https://api.arcjet.com/mcp` to manage sites, retrieve SDK keys, and more.
 See the [docs](https://docs.arcjet.com/mcp-server) for setup instructions.
+
+You can also manage sites and keys with the CLI: `npx @arcjet/cli`.
 
 ## Runtime support
 
