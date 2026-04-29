@@ -62,7 +62,7 @@ jobs:
           node-version: 20
       - uses: denoland/setup-deno@bdaa2e4f849cbc8d7b46337cf37db0dc9b321074 # v2.0.3
         with:
-          deno-version: v2.4.2
+          deno-version: 2.7.13
       - run: npm ci && npm run build
       - run: deno install
         working-directory: "examples/${{matrix.folder}}"
