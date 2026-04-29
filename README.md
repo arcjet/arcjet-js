@@ -70,7 +70,7 @@ npx skills add arcjet/skills --skill add-guard-protection
 > Cursor](https://docs.arcjet.com/arcjet-plugin), which bundles skills, MCP,
 > and coding rules.
 
-### Step 3: Install the SDK
+### Step 3: Install the package
 
 **For request protection** — pick the SDK for your framework:
 

@@ -60,17 +60,17 @@ like `@arcjet/next` or `@arcjet/node` instead.
 Guards share some features with the request SDKs but are designed for
 non-HTTP contexts. Here's what's available where:
 
-| Feature | Request SDKs | `@arcjet/guard` |
-| --- | :---: | :---: |
-| Rate Limiting | ✅ | ✅ |
-| Prompt Injection Detection | ✅ | ✅ |
-| Sensitive Information Detection | ✅ | ✅ |
-| Custom Rules | — | ✅ |
-| Bot Protection | ✅ | — |
-| Shield WAF | ✅ | — |
-| Email Validation | ✅ | — |
-| Request Filters | ✅ | — |
-| IP Analysis | ✅ | — |
+| Feature                         | Request SDKs | `@arcjet/guard` |
+| ------------------------------- | :----------: | :-------------: |
+| Rate Limiting                   |      ✅      |       ✅        |
+| Prompt Injection Detection      |      ✅      |       ✅        |
+| Sensitive Information Detection |      ✅      |       ✅        |
+| Custom Rules                    |      —       |       ✅        |
+| Bot Protection                  |      ✅      |        —        |
+| Shield WAF                      |      ✅      |        —        |
+| Email Validation                |      ✅      |        —        |
+| Request Filters                 |      ✅      |        —        |
+| IP Analysis                     |      ✅      |        —        |
 
 - 🪣 [Rate Limiting](#rate-limiting) — token bucket, fixed window, and sliding
   window algorithms; model AI token budgets per user.
