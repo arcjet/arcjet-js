@@ -18,11 +18,31 @@
 
 [Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks. Every feature works with any Nuxt application.
 
-This is the [Arcjet][arcjet] SDK for [Nuxt][nuxt].
+This is the [Arcjet][arcjet] SDK for [Nuxt][nuxt] **request protection** —
+use it to protect HTTP route handlers and API endpoints. If you need to protect
+AI agent tool calls, MCP server handlers, or background jobs (anything without
+an HTTP request), see [`@arcjet/guard`](https://github.com/arcjet/arcjet-js/tree/main/arcjet-guard).
 
 ## Getting started
 
-1. Get your API key at [`app.arcjet.com`](https://app.arcjet.com)
+### Quick setup with an AI agent
+
+1. Log in with the CLI:
+   ```sh
+   npx @arcjet/cli auth login
+   ```
+2. Install the route protection skill to give your coding agent the docs it needs:
+   ```sh
+   npx skills add arcjet/skills --skill add-route-protection
+   ```
+3. Tell your agent what to protect — it handles the rest.
+
+### Manual setup
+
+1. **Log in** with the CLI (or at [`app.arcjet.com`](https://app.arcjet.com?utm_campaign=arcjet-js)):
+   ```sh
+   npx @arcjet/cli auth login
+   ```
 2. `npm install @arcjet/nuxt`
 3. Set `ARCJET_KEY=ajkey_yourkey` in your environment
 4. Add Arcjet to your app — see the [quick start](#quick-start) below
@@ -33,6 +53,23 @@ This is the [Arcjet][arcjet] SDK for [Nuxt][nuxt].
 [Other SDKs on GitHub](https://github.com/arcjet)
 
 ## Features
+
+All features below are available with `@arcjet/nuxt` for request protection.
+For guard protection (tool calls, MCP servers, queues) see
+[`@arcjet/guard`](https://github.com/arcjet/arcjet-js/tree/main/arcjet-guard).
+
+| Feature                         | `@arcjet/nuxt` | `@arcjet/guard` |
+| ------------------------------- | :------------: | :-------------: |
+| Rate Limiting                   |       ✅       |       ✅        |
+| Prompt Injection Detection      |       ✅       |       ✅        |
+| Sensitive Information Detection |       ✅       |       ✅        |
+| Bot Protection                  |       ✅       |        —        |
+| Shield WAF                      |       ✅       |        —        |
+| Email Validation                |       ✅       |        —        |
+| Signup Form Protection          |       ✅       |        —        |
+| Request Filters                 |       ✅       |        —        |
+| IP Analysis                     |       ✅       |        —        |
+| Custom Rules                    |       —        |       ✅        |
 
 - 🔒 [Prompt Injection Detection][prompt-injection-docs] — detect and block
   prompt injection attacks before they reach your LLM.
@@ -61,7 +98,7 @@ First, add this package to `modules` and configure `arcjet.key` in
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
-  arcjet: { key: process.env.ARCJET_KEY }, // Get your site key from https://app.arcjet.com
+  arcjet: { key: process.env.ARCJET_KEY }, // Get your key with: npx @arcjet/cli sites get-key
   compatibilityDate: "2025-07-15",
   modules: ["@arcjet/nuxt"],
 });
