@@ -22,9 +22,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^15",
+    "postcss": "^8.5.10",
     "typescript": "^5"
   },
   "overrides": {
-    "postcss": "^8.5.10"
+    "postcss": "$postcss"
   }
 }
