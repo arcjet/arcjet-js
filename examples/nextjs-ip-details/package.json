@@ -25,8 +25,11 @@
     "autoprefixer": "^10",
     "eslint": "^9",
     "eslint-config-next": "^15",
-    "postcss": "^8",
+    "postcss": "^8.5.10",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": "$postcss"
   }
 }
