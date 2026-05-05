@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.1](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@arcjet/transport-v1.4.1) (2026-05-05)
+
+
+### 🪲 Bug Fixes
+
+* update @bufbuild/protobuf to 2.12.0 and add root override to fix Bun build ([#6014](https://github.com/arcjet/arcjet-js/issues/6014)) ([ba8f1a3](https://github.com/arcjet/arcjet-js/commit/ba8f1a3081a1dbbcd3fae2f315312e85cb7415ba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.4.0 to 1.4.1
+    * @arcjet/rollup-config bumped from 1.4.0 to 1.4.1
+
 ## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@arcjet/transport-v1.4.0) (2026-04-14)
 
 

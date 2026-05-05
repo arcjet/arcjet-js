@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.4.1](https://github.com/arcjet/arcjet-js/compare/v1.4.0...arcjet-v1.4.1) (2026-05-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.4.0 to 1.4.1
+    * @arcjet/cache bumped from 1.4.0 to 1.4.1
+    * @arcjet/duration bumped from 1.4.0 to 1.4.1
+    * @arcjet/headers bumped from 1.4.0 to 1.4.1
+    * @arcjet/protocol bumped from 1.4.0 to 1.4.1
+    * @arcjet/runtime bumped from 1.4.0 to 1.4.1
+    * @arcjet/stable-hash bumped from 1.4.0 to 1.4.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.4.0 to 1.4.1
+    * @arcjet/rollup-config bumped from 1.4.0 to 1.4.1
+
 ## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...arcjet-v1.4.0) (2026-04-14)
 
 
