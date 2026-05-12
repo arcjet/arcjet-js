@@ -1,0 +1,8 @@
+# zizmor static-analysis config. See https://docs.zizmor.sh/configuration/
+
+rules:
+  cache-poisoning:
+    # guard.yml triggers on push-to-main, which matches zizmor's "publishing"
+    # heuristic, but it only runs tests — no artifacts are published.
+    ignore:
+      - guard.yml

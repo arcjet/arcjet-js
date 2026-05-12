@@ -1,0 +1,63 @@
+name: Lint workflows
+
+on:
+  merge_group: {}
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/**
+      - dev/mise.toml
+      - dev/mise.lock
+  pull_request:
+    # Recommended by Graphite: https://graphite.dev/docs/github-configuration-guidelines#github-actions
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/**
+      - dev/mise.toml
+      - dev/mise.lock
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workflow_lint:
+    name: actionlint + zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          disable-sudo-and-containers: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            mise.jdx.dev:443
+            mise.run:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Install mise
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          working_directory: dev
+
+      - name: actionlint
+        run: actionlint -color
+
+      - name: zizmor
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: zizmor --min-severity=medium .github/workflows/
