@@ -15,7 +15,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+      - uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           allowed-endpoints: >
             api.github.com:443
@@ -46,7 +46,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+      - uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           allowed-endpoints: >
             api.github.com:443
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 20
-      - uses: denoland/setup-deno@bdaa2e4f849cbc8d7b46337cf37db0dc9b321074 # v2.0.3
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
         with:
           deno-version: v2.4.2
       - run: npm ci && npm run build
@@ -82,7 +82,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+      - uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           allowed-endpoints: >
             api.github.com:443

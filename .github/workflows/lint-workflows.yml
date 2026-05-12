@@ -32,10 +32,17 @@ jobs:
       contents: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           disable-sudo-and-containers: true
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            mise.jdx.dev:443
+            mise.run:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -50,7 +57,6 @@ jobs:
       - name: actionlint
         run: actionlint -color
 
-      # Drop --min-severity once the suppressed low-severity findings are triaged.
       - name: zizmor
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
