@@ -20,7 +20,7 @@ jobs:
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     container:
-      image: returntocorp/semgrep
+      image: semgrep/semgrep:latest@sha256:326e5f41cc972bb423b764a14febbb62bbad29ee1c01820805d077dd868fea48
     if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
     steps:
       # Environment security
@@ -34,6 +34,8 @@ jobs:
       # Most toolchains require checkout first
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Run checks
         run: semgrep ci

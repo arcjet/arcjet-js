@@ -1,0 +1,12 @@
+# Declarative toolchain versions used by .github/workflows/lint-workflows.yml.
+# mise (https://mise.jdx.dev/) installs these in CI so the workflow lint gate
+# pins the exact actionlint/zizmor versions that ran when findings were last
+# triaged.
+
+[settings]
+# Pin resolved versions in mise.lock.
+lockfile = true
+
+[tools]
+actionlint = "1.7.12"
+zizmor = "1.24.1"
