@@ -12,7 +12,7 @@
   "dependencies": {
     "@arcjet/decorate": "file:../../decorate",
     "@arcjet/next": "file:../../arcjet-next",
-    "next": "^15",
+    "next": "^15.5.18",
     "react": "^19",
     "react-dom": "^19"
   },
@@ -24,7 +24,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
     "eslint": "^9",
-    "eslint-config-next": "^15",
+    "eslint-config-next": "^15.5.18",
     "postcss": "^8.5.10",
     "tailwindcss": "^4",
     "typescript": "^5"
