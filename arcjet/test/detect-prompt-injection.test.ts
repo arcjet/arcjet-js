@@ -528,6 +528,9 @@ test("integration with arcjet client", async function (t) {
         }),
       };
 
+      // arcjet rejects >10 rules locally (without ever calling decide) and
+      // reports the failure — see the `rules.length > 10` guard in
+      // `arcjet/index.ts`. We configure 11 rules to exercise that path.
       const tooManyRules = Array.from({ length: 10 }, () =>
         detectPromptInjection({ mode: "LIVE" }),
       );
