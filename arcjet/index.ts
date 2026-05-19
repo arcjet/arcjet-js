@@ -3527,6 +3527,21 @@ export default function arcjet<
 
     remoteDetails = Object.freeze(remoteDetails);
 
+    // The prompt injection message must reach `decide` unredacted so the
+    // server can run inference. Reports, by contrast, are dashboard/logging
+    // only — the server never re-runs detection on them — so the raw message
+    // (which may contain PII or other sensitive user input) is redacted here,
+    // for the same reason `sensitiveInfoValue` is redacted in `remoteDetails`
+    // above.
+    const reportExtra = { ...remoteDetails.extra };
+    if (reportExtra.detectPromptInjectionMessage !== undefined) {
+      reportExtra.detectPromptInjectionMessage = "<redacted>";
+    }
+    const reportDetails = Object.freeze({
+      ...remoteDetails,
+      extra: reportExtra,
+    });
+
     const characteristics = options.characteristics
       ? [...options.characteristics]
       : [];
@@ -3595,7 +3610,7 @@ export default function arcjet<
 
       client.report(
         context,
-        remoteDetails,
+        reportDetails,
         decision,
         // No rules because we've determined they were too long and we don't
         // want to try to send them to the server
@@ -3712,7 +3727,7 @@ export default function arcjet<
             // Only a DENY decision is reported to avoid creating 2 entries for
             // a request. Upon ALLOW, the `decide` call will create an entry for
             // the request.
-            client.report(context, remoteDetails, decision, rules);
+            client.report(context, reportDetails, decision, rules);
 
             if (result.ttl > 0) {
               log.debug(
@@ -3793,7 +3808,7 @@ export default function arcjet<
         results,
       });
 
-      client.report(context, remoteDetails, decision, rules);
+      client.report(context, reportDetails, decision, rules);
 
       return decision;
     } finally {
