@@ -3527,8 +3527,12 @@ export default function arcjet<
 
     remoteDetails = Object.freeze(remoteDetails);
 
-    // The prompt injection message must reach `decide` unredacted so the server
-    // can run inference, but `report` calls are dashboard-logging only.
+    // The prompt injection message must reach `decide` unredacted so the
+    // server can run inference. Reports, by contrast, are dashboard/logging
+    // only — the server never re-runs detection on them — so the raw message
+    // (which may contain PII or other sensitive user input) is redacted here,
+    // for the same reason `sensitiveInfoValue` is redacted in `remoteDetails`
+    // above.
     const reportDetails = Object.freeze({
       ...remoteDetails,
       extra:
