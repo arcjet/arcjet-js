@@ -3533,15 +3533,13 @@ export default function arcjet<
     // (which may contain PII or other sensitive user input) is redacted here,
     // for the same reason `sensitiveInfoValue` is redacted in `remoteDetails`
     // above.
+    const reportExtra = { ...remoteDetails.extra };
+    if (reportExtra.detectPromptInjectionMessage !== undefined) {
+      reportExtra.detectPromptInjectionMessage = "<redacted>";
+    }
     const reportDetails = Object.freeze({
       ...remoteDetails,
-      extra:
-        remoteDetails.extra.detectPromptInjectionMessage !== undefined
-          ? {
-              ...remoteDetails.extra,
-              detectPromptInjectionMessage: "<redacted>",
-            }
-          : remoteDetails.extra,
+      extra: reportExtra,
     });
 
     const characteristics = options.characteristics
