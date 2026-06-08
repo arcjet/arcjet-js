@@ -1,10 +1,13 @@
 // Verify (or regenerate) the bundled Cloudflare IP ranges against the lists
 // Cloudflare publishes. Run on a schedule in CI so we notice when they change.
 //
-//   node scripts/verify-ranges.ts            # check, exit non-zero on drift
-//   node scripts/verify-ranges.ts --write    # rewrite cloudflare.ts in place
+// Prefer the package scripts, which build first so the `../index.ts` import
+// (which re-exports the generated `./cloudflare.js`) resolves:
 //
-// Run with a Node version that strips TypeScript types (the repo uses Node 24).
+//   npm run verify-ranges -w @arcjet/ip   # check, exit non-zero on drift
+//   npm run generate -w @arcjet/ip        # rewrite cloudflare.ts in place
+//
+// Runs with a Node version that strips TypeScript types (the repo uses Node 24).
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

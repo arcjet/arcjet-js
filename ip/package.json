@@ -38,12 +38,13 @@
   ],
   "scripts": {
     "build": "rollup --config rollup.config.js",
-    "generate": "node scripts/verify-ranges.ts --write",
+    "generate": "npm run build && node scripts/verify-ranges.ts --write",
     "lint": "eslint .",
     "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test -- test/*.test.js",
+    "test-coverage#": "TODO: after node 20, use: ` --test-coverage-branches=100 --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=100`",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
     "test": "npm run build && npm run lint && npm run test-coverage",
-    "verify-ranges": "node scripts/verify-ranges.ts"
+    "verify-ranges": "npm run build && node scripts/verify-ranges.ts"
   },
   "dependencies": {},
   "devDependencies": {
