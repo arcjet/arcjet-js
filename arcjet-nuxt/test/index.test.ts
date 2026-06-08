@@ -28,6 +28,7 @@ test("@arcjet/nuxt (api)", async function (t) {
       "ArcjetSensitiveInfoReason",
       "ArcjetShieldReason",
       "botCategories",
+      "cloudflare",
       "createRemoteClient",
       "default",
       "detectBot",

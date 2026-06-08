@@ -35,6 +35,7 @@ test("@arcjet/react-router", async function (t) {
       "ArcjetSensitiveInfoReason",
       "ArcjetShieldReason",
       "botCategories",
+      "cloudflare",
       "createRemoteClient",
       "default",
       "detectBot",

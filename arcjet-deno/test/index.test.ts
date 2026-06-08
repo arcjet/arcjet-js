@@ -65,6 +65,7 @@ test("`@arcjet/deno`", async function (t) {
       "ArcjetSensitiveInfoReason",
       "ArcjetShieldReason",
       "botCategories",
+      "cloudflare",
       "createRemoteClient",
       "default",
       "detectBot",

@@ -10,7 +10,10 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import { findIp, parseProxy } from "@arcjet/ip";
+import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+
+export { cloudflare } from "@arcjet/ip";
+export type { ProxyService } from "@arcjet/ip";
 import { ArcjetHeaders } from "@arcjet/headers";
 import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
@@ -257,8 +260,12 @@ export type ArcjetOptions<
     /**
      * IP addresses and CIDR ranges of trusted load balancers and proxies
      * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+     *
+     * Proxy services such as {@linkcode cloudflare} can also be included to read
+     * the real client IP from a service-specific header when the request comes
+     * from that service.
      */
-    proxies?: Array<string>;
+    proxies?: Array<string | ProxyService>;
   }
 >;
 
@@ -343,7 +350,7 @@ export default function arcjet<
       });
 
   const proxies = Array.isArray(options.proxies)
-    ? options.proxies.map(parseProxy)
+    ? parseProxies(options.proxies)
     : undefined;
 
   if (isDevelopment(env)) {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { findIp, parseProxy } from "../index.js";
+import { cloudflare, findIp, parseProxies, parseProxy } from "../index.js";
 
 type Proxy = ReturnType<typeof parseProxy>;
 
@@ -185,11 +185,29 @@ const cases: Array<Case> = [
 test("@arcjet/ip", async function (t) {
   await t.test("should expose the public api", async function () {
     assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "cloudflare",
       "default",
       "findIp",
+      "parseProxies",
       "parseProxy",
     ]);
   });
+});
+
+test("`parseProxies`", async (t) => {
+  await t.test(
+    "parses CIDR strings while passing through IPs and services",
+    () => {
+      const service = cloudflare();
+      const result = parseProxies(["1.2.3.0/24", "1.2.3.4", service]);
+      // A CIDR range string is parsed to a `Cidr` object.
+      assert.equal(typeof result[0], "object");
+      // A plain IP string is passed through unchanged.
+      assert.equal(result[1], "1.2.3.4");
+      // A `ProxyService` object is passed through unchanged.
+      assert.equal(result[2], service);
+    },
+  );
 });
 
 test("`findIp`", async (t) => {

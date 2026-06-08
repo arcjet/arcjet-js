@@ -55,6 +55,7 @@ test("`@arcjet/bun`: should expose the public api", async function () {
     "ArcjetSensitiveInfoReason",
     "ArcjetShieldReason",
     "botCategories",
+    "cloudflare",
     "createRemoteClient",
     "default",
     "detectBot",
