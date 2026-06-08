@@ -365,10 +365,11 @@ export function detectPromptInjection(
  * called with user-supplied text to produce a `RuleWithInput` ready for
  * `.guard()`. The text is sent to the Arcjet Cloud API for analysis.
  *
- * **Experimental.** No moderation model is wired up server-side yet, so this
- * rule currently returns an error result — which is fail open, so
+ * **Experimental.** The rule name and result shape may change. This
+ * functionality may not be available yet, so while this rule is experimental
+ * a call may simply return an error result. Errors are fail open, so
  * `decision.hasError()` reports `true` while the conclusion stays `"ALLOW"`.
- * The rule name and result shape may change.
+ * Check the latest version of this SDK to see whether the rule is now stable.
  *
  * @example
  * ```ts
