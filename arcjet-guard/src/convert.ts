@@ -24,6 +24,7 @@ import {
   RuleFixedWindowSchema,
   RuleSlidingWindowSchema,
   RuleDetectPromptInjectionSchema,
+  RuleModerateContentSchema,
   RuleLocalSensitiveInfoSchema,
   RuleLocalCustomSchema,
   ResultLocalSensitiveInfoSchema,
@@ -127,6 +128,8 @@ export function reasonFromCase(caseName: string | undefined): Reason {
       return "RATE_LIMIT";
     case "promptInjection":
       return "PROMPT_INJECTION";
+    case "moderateContent":
+      return "MODERATE_CONTENT";
     case "localSensitiveInfo":
       return "SENSITIVE_INFO";
     case "localCustom":
@@ -156,6 +159,8 @@ export function reasonFromProto(r: GuardReason): Reason {
       return "RATE_LIMIT";
     case GuardReason.PROMPT_INJECTION:
       return "PROMPT_INJECTION";
+    case GuardReason.MODERATE_CONTENT:
+      return "MODERATE_CONTENT";
     case GuardReason.SENSITIVE_INFO:
       return "SENSITIVE_INFO";
     case GuardReason.CUSTOM:
@@ -232,6 +237,13 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: conclusionFromProto(pr.result.value.conclusion),
         reason: "PROMPT_INJECTION",
         type: "PROMPT_INJECTION",
+      };
+    }
+    case "moderateContent": {
+      return {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "MODERATE_CONTENT",
+        type: "MODERATE_CONTENT",
       };
     }
     case "localSensitiveInfo": {
@@ -372,6 +384,15 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
         rule: {
           case: "detectPromptInjection",
           value: create(RuleDetectPromptInjectionSchema, {
+            inputText: rule.input,
+          }),
+        },
+      });
+    case "MODERATE_CONTENT":
+      return create(GuardRuleSchema, {
+        rule: {
+          case: "moderateContent",
+          value: create(RuleModerateContentSchema, {
             inputText: rule.input,
           }),
         },

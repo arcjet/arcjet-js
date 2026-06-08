@@ -6,6 +6,7 @@ import {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
+  experimental_moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
 } from "./rules.ts";
@@ -217,6 +218,36 @@ describe("detectPromptInjection", () => {
 
   test("preserves mode in config", () => {
     const rule = detectPromptInjection({ mode: "DRY_RUN" });
+    const input = rule("text");
+
+    assert.equal(input.config.mode, "DRY_RUN");
+  });
+});
+
+describe("experimental_moderateContent", () => {
+  test("returns a callable with type discriminant", () => {
+    const rule = experimental_moderateContent();
+
+    assert.equal(rule.type, "MODERATE_CONTENT");
+    assert.equal(typeof rule, "function");
+  });
+
+  test("default config is empty", () => {
+    const rule = experimental_moderateContent();
+
+    assert.deepEqual(rule.config, {});
+  });
+
+  test("produces RuleWithInput with string input", () => {
+    const rule = experimental_moderateContent();
+    const input = rule("some text");
+
+    assert.equal(input.type, "MODERATE_CONTENT");
+    assert.equal(input.input, "some text");
+  });
+
+  test("preserves mode in config", () => {
+    const rule = experimental_moderateContent({ mode: "DRY_RUN" });
     const input = rule("text");
 
     assert.equal(input.config.mode, "DRY_RUN");

@@ -211,6 +211,33 @@ export declare type RuleDetectPromptInjection = Message<"proto.decide.v2.RuleDet
 export declare const RuleDetectPromptInjectionSchema: GenMessage<RuleDetectPromptInjection>;
 
 /**
+ * RuleModerateContent is a content moderation rule.
+ *
+ * Mirrors RuleDetectPromptInjection: the text is sent to Arcjet's model
+ * inference path and classified as harmful or not. The rule is experimental and
+ * currently has no model wired up server-side, so it returns an error result
+ * (ResultError) until a moderation model is attached.
+ *
+ * @generated from message proto.decide.v2.RuleModerateContent
+ */
+export declare type RuleModerateContent = Message<"proto.decide.v2.RuleModerateContent"> & {
+  /**
+   * Input: the text to analyze for harmful content.
+   * Max 128 KiB (131072 bytes). Texts exceeding this limit produce an
+   * error result (AJ1141).
+   *
+   * @generated from field: string input_text = 10;
+   */
+  inputText: string;
+};
+
+/**
+ * Describes the message proto.decide.v2.RuleModerateContent.
+ * Use `create(RuleModerateContentSchema)` to create a new message.
+ */
+export declare const RuleModerateContentSchema: GenMessage<RuleModerateContent>;
+
+/**
  * EntityList wraps a list of entity type strings for use inside a oneof.
  *
  * @generated from message proto.decide.v2.EntityList
@@ -436,6 +463,14 @@ export declare type GuardRule = Message<"proto.decide.v2.GuardRule"> & {
      */
     value: RuleDetectPromptInjection;
     case: "detectPromptInjection";
+  } | {
+    /**
+     * Content moderation rule.
+     *
+     * @generated from field: proto.decide.v2.RuleModerateContent moderate_content = 5;
+     */
+    value: RuleModerateContent;
+    case: "moderateContent";
   } | {
     /**
      * Sensitive information detection rule (evaluated locally by the SDK).
@@ -710,6 +745,34 @@ export declare type ResultPromptInjection = Message<"proto.decide.v2.ResultPromp
 export declare const ResultPromptInjectionSchema: GenMessage<ResultPromptInjection>;
 
 /**
+ * ResultModerateContent contains result details for a content moderation
+ * evaluation.
+ *
+ * @generated from message proto.decide.v2.ResultModerateContent
+ */
+export declare type ResultModerateContent = Message<"proto.decide.v2.ResultModerateContent"> & {
+  /**
+   * The conclusion for this rule (ALLOW or DENY).
+   *
+   * @generated from field: proto.decide.v2.GuardConclusion conclusion = 1;
+   */
+  conclusion: GuardConclusion;
+
+  /**
+   * Whether harmful content was detected.
+   *
+   * @generated from field: bool detected = 2;
+   */
+  detected: boolean;
+};
+
+/**
+ * Describes the message proto.decide.v2.ResultModerateContent.
+ * Use `create(ResultModerateContentSchema)` to create a new message.
+ */
+export declare const ResultModerateContentSchema: GenMessage<ResultModerateContent>;
+
+/**
  * ResultLocalSensitiveInfo contains result details for a sensitive information
  * detection evaluation.
  *
@@ -903,6 +966,14 @@ export declare type GuardRuleResult = Message<"proto.decide.v2.GuardRuleResult">
      */
     value: ResultPromptInjection;
     case: "promptInjection";
+  } | {
+    /**
+     * Content moderation result.
+     *
+     * @generated from field: proto.decide.v2.ResultModerateContent moderate_content = 14;
+     */
+    value: ResultModerateContent;
+    case: "moderateContent";
   } | {
     /**
      * Sensitive information detection result.
@@ -1172,6 +1243,13 @@ export enum GuardReason {
    * @generated from enum value: GUARD_REASON_SENSITIVE_INFO = 12;
    */
   SENSITIVE_INFO = 12,
+
+  /**
+   * The conclusion was due to a content moderation rule.
+   *
+   * @generated from enum value: GUARD_REASON_MODERATE_CONTENT = 13;
+   */
+  MODERATE_CONTENT = 13,
 }
 
 /**
@@ -1219,6 +1297,13 @@ export enum GuardRuleType {
    * @generated from enum value: GUARD_RULE_TYPE_PROMPT_INJECTION = 13;
    */
   PROMPT_INJECTION = 13,
+
+  /**
+   * Content moderation.
+   *
+   * @generated from enum value: GUARD_RULE_TYPE_MODERATE_CONTENT = 14;
+   */
+  MODERATE_CONTENT = 14,
 
   /**
    * Sensitive information detection (evaluated locally by the SDK).

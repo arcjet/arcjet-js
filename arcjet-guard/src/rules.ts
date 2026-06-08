@@ -17,6 +17,7 @@ import type {
   RuleResultCustom,
   RuleResultFixedWindow,
   RuleResultPromptInjection,
+  RuleResultModerateContent,
   RuleResultSensitiveInfo,
   RuleResultSlidingWindow,
   RuleResultTokenBucket,
@@ -27,6 +28,7 @@ import type {
   SlidingWindowConfig,
   SlidingWindowInput,
   DetectPromptInjectionConfig,
+  ExperimentalModerateContentConfig,
   LocalDetectSensitiveInfoConfig,
   LocalCustomConfig,
   LocalCustomInput,
@@ -38,6 +40,8 @@ import type {
   RuleWithInputSlidingWindow,
   RuleWithConfigPromptInjection,
   RuleWithInputPromptInjection,
+  RuleWithConfigModerateContent,
+  RuleWithInputModerateContent,
   RuleWithConfigSensitiveInfo,
   RuleWithInputSensitiveInfo,
   RuleWithConfigCustom,
@@ -347,6 +351,72 @@ export function detectPromptInjection(
       },
       deniedResult(decision: Decision): RuleResultPromptInjection | null {
         return findDeniedResult<RuleResultPromptInjection>(decision, configId);
+      },
+    },
+  );
+
+  return rule;
+}
+
+/**
+ * Create a content moderation rule (experimental).
+ *
+ * Mirrors {@link detectPromptInjection}: returns a configured rule that can be
+ * called with user-supplied text to produce a `RuleWithInput` ready for
+ * `.guard()`. The text is sent to the Arcjet Cloud API for analysis.
+ *
+ * **Experimental.** No moderation model is wired up server-side yet, so this
+ * rule currently returns an error result — which is fail open, so
+ * `decision.hasError()` reports `true` while the conclusion stays `"ALLOW"`.
+ * The rule name and result shape may change.
+ *
+ * @example
+ * ```ts
+ * const moderate = experimental_moderateContent();
+ * const decision = await arcjet.guard({
+ *   label: "tools.chat",
+ *   rules: [moderate(userMessage)],
+ * });
+ * ```
+ */
+export function experimental_moderateContent(
+  config: ExperimentalModerateContentConfig = {},
+): RuleWithConfigModerateContent {
+  const configId = randomId();
+
+  const rule = Object.assign(
+    (input: string): RuleWithInputModerateContent => {
+      const inputId = randomId();
+      return {
+        type: "MODERATE_CONTENT" as const,
+        config,
+        input,
+        [symbolArcjetInternal]: { configId, inputId },
+        result(decision: Decision): RuleResultModerateContent | null {
+          return findResult<RuleResultModerateContent>(decision, configId, inputId);
+        },
+        deniedResult(decision: Decision): RuleResultModerateContent | null {
+          const r = findResult<RuleResultModerateContent>(decision, configId, inputId);
+          return r !== null && r.conclusion === "DENY" ? r : null;
+        },
+        results(decision: Decision): RuleResultModerateContent[] {
+          const r = findResult<RuleResultModerateContent>(decision, configId, inputId);
+          return r === null ? [] : [r];
+        },
+      };
+    },
+    {
+      type: "MODERATE_CONTENT" as const,
+      config,
+      [symbolArcjetInternal]: { configId },
+      results(decision: Decision): RuleResultModerateContent[] {
+        return findResults<RuleResultModerateContent>(decision, configId);
+      },
+      result(decision: Decision): RuleResultModerateContent | null {
+        return findResults<RuleResultModerateContent>(decision, configId)[0] ?? null;
+      },
+      deniedResult(decision: Decision): RuleResultModerateContent | null {
+        return findDeniedResult<RuleResultModerateContent>(decision, configId);
       },
     },
   );
