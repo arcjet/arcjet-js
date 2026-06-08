@@ -31,15 +31,19 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "files": [
+    "cloudflare.d.ts",
+    "cloudflare.js",
     "index.d.ts",
     "index.js"
   ],
   "scripts": {
     "build": "rollup --config rollup.config.js",
+    "generate": "node scripts/verify-ranges.ts --write",
     "lint": "eslint .",
     "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
-    "test": "npm run build && npm run lint && npm run test-coverage"
+    "test-coverage": "node --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test -- test/*.test.js",
+    "test": "npm run build && npm run lint && npm run test-coverage",
+    "verify-ranges": "node scripts/verify-ranges.ts"
   },
   "dependencies": {},
   "devDependencies": {

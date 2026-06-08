@@ -6,7 +6,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { type Cidr, findIp, parseProxy } from "@arcjet/ip";
+import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
 import { createClient } from "@arcjet/protocol/client.js";
@@ -29,6 +29,8 @@ import arcjetCore from "arcjet";
 // resulting in unneeded breaking changes,
 // we must be explicit about what is exported.
 export * from "arcjet";
+export { cloudflare } from "@arcjet/ip";
+export type { ProxyService } from "@arcjet/ip";
 
 declare const emptyObjectSymbol: unique symbol;
 
@@ -203,8 +205,12 @@ export type ArcjetOptions<
   /**
    * One or more IP Address of trusted proxies in front of the application.
    * These addresses will be excluded when Arcjet detects a public IP address.
+   *
+   * Proxy services such as {@linkcode cloudflare} can also be included to read
+   * the real client IP from a service-specific header when the request comes
+   * from that service.
    */
-  proxies?: ReadonlyArray<string> | null | undefined;
+  proxies?: ReadonlyArray<string | ProxyService> | null | undefined;
 };
 
 /**
@@ -235,7 +241,7 @@ export default function arcjet<
   const log = options.log
     ? options.log
     : new Logger({ level: logLevel(process.env) });
-  const proxies = options.proxies ? options.proxies.map(parseProxy) : undefined;
+  const proxies = options.proxies ? parseProxies(options.proxies) : undefined;
 
   if (isDevelopment(process.env)) {
     log.warn(
@@ -303,7 +309,7 @@ export default function arcjet<
 function toArcjetRequest<Properties extends PlainObject>(
   request: ArcjetFastifyRequest,
   log: ArcjetLogger,
-  proxies: ReadonlyArray<Cidr | string> | undefined,
+  proxies: ReadonlyArray<Cidr | string | ProxyService> | undefined,
   properties: Properties,
 ): ArcjetRequest<Properties> {
   const requestHeaders = request.headers || {};

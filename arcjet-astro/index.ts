@@ -10,14 +10,30 @@ import type {
   SlidingWindowRateLimitOptions,
   TokenBucketRateLimitOptions,
 } from "arcjet";
+import type { ProxyService } from "@arcjet/ip";
 import type { AstroIntegration } from "astro";
 import { z } from "astro/zod";
 import fs from "node:fs/promises";
 
+export { cloudflare } from "@arcjet/ip";
+export type { ProxyService } from "@arcjet/ip";
+
 const resolvedVirtualClientId = "\0ARCJET_VIRTUAL_CLIENT";
 
 const validateMode = z.enum(["LIVE", "DRY_RUN"]);
-const validateProxies = z.array(z.string());
+// A proxy service (such as the one created by `cloudflare()`) is a plain,
+// JSON-serializable object, so it survives being injected into the generated
+// client config. Ranges must be strings here because parsed `Cidr` objects
+// would not serialize; `findIp` parses these strings at runtime.
+const validateProxyService = z.object({
+  kind: z.literal("service"),
+  name: z.string(),
+  ranges: z.array(z.string()),
+  clientIp: z.array(
+    z.object({ header: z.string(), format: z.enum(["ip", "ips"]) }),
+  ),
+});
+const validateProxies = z.array(z.union([z.string(), validateProxyService]));
 const validateCharacteristics = z.array(z.string());
 const validateClientOptions = z
   .object({
@@ -218,8 +234,12 @@ export type ArcjetOptions<Characteristics extends readonly string[]> = {
   /**
    * IP addresses and CIDR ranges of trusted load balancers and proxies
    * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+   *
+   * Proxy services such as {@linkcode cloudflare} can also be included to read
+   * the real client IP from a service-specific header when the request comes
+   * from that service.
    */
-  proxies?: string[];
+  proxies?: Array<string | ProxyService>;
 };
 
 function validateAndSerialize(

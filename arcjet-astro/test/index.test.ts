@@ -18,6 +18,7 @@ import arcjet, {
 test("@arcjet/astro (api)", async function (t) {
   await t.test("should expose the public api", async function () {
     assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+      "cloudflare",
       "createRemoteClient",
       "default",
       "detectBot",

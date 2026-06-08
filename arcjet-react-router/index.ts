@@ -6,7 +6,7 @@ import {
   platform,
 } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { type Cidr, findIp, parseProxy } from "@arcjet/ip";
+import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
@@ -25,6 +25,8 @@ import arcjetCore, {
 } from "arcjet";
 
 export * from "arcjet";
+export { cloudflare } from "@arcjet/ip";
+export type { ProxyService } from "@arcjet/ip";
 
 let warnedForAutomaticBodyRead = false;
 
@@ -60,8 +62,12 @@ export interface ArcjetOptions<
   /**
    * IP addresses and CIDR ranges of trusted load balancers and proxies
    * (optional, example: `["100.100.100.100", "100.100.100.0/24"]`).
+   *
+   * Proxy services such as {@linkcode cloudflare} can also be included to read
+   * the real client IP from a service-specific header when the request comes
+   * from that service.
    */
-  proxies?: ReadonlyArray<string> | null | undefined;
+  proxies?: ReadonlyArray<string | ProxyService> | null | undefined;
 }
 
 /**
@@ -174,7 +180,7 @@ interface State {
   /**
    * Configured proxies.
    */
-  proxies: ReadonlyArray<Cidr | string>;
+  proxies: ReadonlyArray<Cidr | string | ProxyService>;
 }
 
 /**
@@ -204,7 +210,7 @@ export default function arcjet<
   const state: State = {
     client: options.client ?? createRemoteClient(),
     log: options.log ?? new Logger({ level: logLevel(process.env) }),
-    proxies: options.proxies?.map(parseProxy) ?? [],
+    proxies: options.proxies ? parseProxies(options.proxies) : [],
   };
 
   if (isDevelopment(process.env)) {

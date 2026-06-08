@@ -53,6 +53,82 @@ function isIpv6Cidr(cidr: unknown): cidr is Ipv6Cidr {
   );
 }
 
+function isProxyService(value: unknown): value is ProxyService {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "kind" in value &&
+    value.kind === "service"
+  );
+}
+
+// Resolve a candidate IP found in a (trusted) header or platform field.
+//
+// Returns `undefined` when the candidate is not a usable global IP, so callers
+// can continue to the next candidate exactly as before. When services are
+// configured and the candidate is the edge address of one of them, the real
+// client IP is read from that service's declared header(s) instead.
+//
+// The service header carries the same trust level as the candidate it is read
+// from. For platform- or socket-attested candidates (`request.ip`,
+// `socket.remoteAddress`, the platform-specific header branches) that means the
+// service header cannot be spoofed by a client connecting directly. For
+// candidates pulled from a generic header walk (e.g. the `x-forwarded-for`
+// fallback when no `platform` is set) it carries no more trust than the
+// surrounding header walk already does — a direct client can forge both.
+function resolveCandidate(
+  candidate: unknown,
+  services: ReadonlyArray<ProxyService>,
+  proxies: ReadonlyArray<string | Cidr>,
+  headers: HeaderLike["headers"],
+): string | undefined {
+  if (!isGlobalIp(candidate, proxies)) {
+    return undefined;
+  }
+
+  if (services.length === 0) {
+    return candidate;
+  }
+
+  // The candidate already passed `isGlobalIp` above, so it is a routable IP.
+  // It is therefore the edge address of a service exactly when it falls inside
+  // that service's ranges, i.e. when treating those ranges as proxies makes it
+  // no longer "global". This reuses the same matching as trusted proxies.
+  const service = services.find(
+    (service) => !isGlobalIp(candidate, service.ranges),
+  );
+  if (!service) {
+    return candidate;
+  }
+
+  // The candidate is a known service edge but we can't read its headers, so we
+  // can't recover the real client IP. Skip it rather than returning the proxy.
+  if (typeof headers !== "object" || headers === null) {
+    return undefined;
+  }
+
+  for (const { header, format } of service.clientIp) {
+    const value = getHeader(headers, header);
+    // `parseXForwardedFor` trims each item; mirror that for the single-IP
+    // format so a header value padded with whitespace still parses.
+    const items =
+      format === "ip"
+        ? [typeof value === "string" ? value.trim() : value]
+        : parseXForwardedFor(value).reverse();
+    for (const item of items) {
+      // The client IP from a service header is the real client, so we don't
+      // resolve services again (avoiding loops); only filter trusted proxies.
+      if (isGlobalIp(item, proxies)) {
+        return item;
+      }
+    }
+  }
+
+  // The candidate is a known service edge but none of its headers held a usable
+  // client IP. Skip it rather than returning the proxy address.
+  return undefined;
+}
+
 function isTrustedProxy(
   ip: string,
   segments: ReadonlyArray<number>,
@@ -206,6 +282,27 @@ export function parseProxy(value: string): string | Cidr {
   } else {
     return value;
   }
+}
+
+/**
+ * Parse a list of trusted proxies.
+ *
+ * CIDR range strings are parsed to {@linkcode Cidr} (so they match by range);
+ * plain IP strings and {@linkcode ProxyService} objects (such as those created
+ * by {@linkcode cloudflare}) are passed through unchanged. Use this to
+ * normalize the `proxies` option before handing it to {@linkcode findIp}.
+ *
+ * @param proxies
+ *   Trusted proxies to parse.
+ * @returns
+ *   Parsed proxies.
+ */
+export function parseProxies(
+  proxies: ReadonlyArray<string | ProxyService>,
+): Array<string | Cidr | ProxyService> {
+  return proxies.map((proxy) =>
+    typeof proxy === "string" ? parseProxy(proxy) : proxy,
+  );
 }
 
 function isIpv4Tuple(segements?: ArrayLike<number>): segements is Ipv4Tuple {
@@ -802,6 +899,56 @@ export type Platform =
   | "vercel";
 
 /**
+ * Format of a client IP header set by a proxy service.
+ *
+ * - `"ip"` — a single IP address (e.g. `CF-Connecting-IP`).
+ * - `"ips"` — an `X-Forwarded-For`-style comma separated list, parsed
+ *   tail-to-head.
+ */
+export type ClientIpFormat = "ip" | "ips";
+
+/**
+ * A client IP header set by a proxy service.
+ */
+export interface ClientIpHeader {
+  /**
+   * Header name (lower-case).
+   */
+  header: string;
+  /**
+   * How to parse the header value.
+   */
+  format: ClientIpFormat;
+}
+
+/**
+ * A trusted proxy service (such as Cloudflare) sitting in front of the
+ * application.
+ *
+ * Identified by IP range, with the header(s) that carry the real client IP.
+ * Create one with a helper such as {@linkcode cloudflare} and include it in the
+ * `proxies` array.
+ */
+export interface ProxyService {
+  /**
+   * Discriminant marking this entry as a proxy service.
+   */
+  kind: "service";
+  /**
+   * Name of the service (such as `"cloudflare"`).
+   */
+  name: string;
+  /**
+   * IP addresses and CIDR ranges that identify this service.
+   */
+  ranges: ReadonlyArray<string | Cidr>;
+  /**
+   * Header(s) this service uses to relay the real client IP, in priority order.
+   */
+  clientIp: ReadonlyArray<ClientIpHeader>;
+}
+
+/**
  * Configuration.
  */
 export interface Options {
@@ -812,8 +959,13 @@ export interface Options {
   platform?: Platform | null | undefined;
   /**
    * Trusted proxies.
+   *
+   * IP addresses and CIDR ranges are treated as trusted load balancers or
+   * proxies and skipped when finding the client IP. Proxy services created with
+   * a helper such as {@linkcode cloudflare} additionally declare which header
+   * carries the real client IP.
    */
-  proxies?: ReadonlyArray<string | Cidr> | null | undefined;
+  proxies?: ReadonlyArray<string | Cidr | ProxyService> | null | undefined;
 }
 
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
@@ -870,6 +1022,7 @@ export function findIp(
 ): string {
   const { platform, proxies: rawProxies } = options || {};
   const proxies: Array<Cidr | string> = [];
+  const services: Array<ProxyService> = [];
 
   if (Array.isArray(rawProxies)) {
     for (const cidrOrIp of rawProxies) {
@@ -880,30 +1033,60 @@ export function findIp(
       if (isIpv4Cidr(cidrOrIp) || isIpv6Cidr(cidrOrIp)) {
         proxies.push(cidrOrIp);
       }
+
+      if (isProxyService(cidrOrIp)) {
+        // Parse any CIDR range strings to `Cidr` so they match by range rather
+        // than exact string equality.
+        const ranges: Array<string | Cidr> = [];
+        for (const range of cidrOrIp.ranges) {
+          ranges.push(typeof range === "string" ? parseProxy(range) : range);
+        }
+        services.push({ ...cidrOrIp, ranges });
+      }
     }
   }
 
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.
-  if (isGlobalIp(request.ip, proxies)) {
-    return request.ip;
+  const ipFromRequest = resolveCandidate(
+    request.ip,
+    services,
+    proxies,
+    request.headers,
+  );
+  if (ipFromRequest) {
+    return ipFromRequest;
   }
 
-  const socketRemoteAddress = request.socket?.remoteAddress;
-  if (isGlobalIp(socketRemoteAddress, proxies)) {
+  const socketRemoteAddress = resolveCandidate(
+    request.socket?.remoteAddress,
+    services,
+    proxies,
+    request.headers,
+  );
+  if (socketRemoteAddress) {
     return socketRemoteAddress;
   }
 
-  const infoRemoteAddress = request.info?.remoteAddress;
-  if (isGlobalIp(infoRemoteAddress, proxies)) {
+  const infoRemoteAddress = resolveCandidate(
+    request.info?.remoteAddress,
+    services,
+    proxies,
+    request.headers,
+  );
+  if (infoRemoteAddress) {
     return infoRemoteAddress;
   }
 
   // AWS Api Gateway + Lambda
-  const requestContextIdentitySourceIp =
-    request.requestContext?.identity?.sourceIp;
-  if (isGlobalIp(requestContextIdentitySourceIp, proxies)) {
+  const requestContextIdentitySourceIp = resolveCandidate(
+    request.requestContext?.identity?.sourceIp,
+    services,
+    proxies,
+    request.headers,
+  );
+  if (requestContextIdentitySourceIp) {
     return requestContextIdentitySourceIp;
   }
 
@@ -938,8 +1121,13 @@ export function findIp(
 
   // Firebase https://github.com/arcjet/arcjet-js/issues/5383
   if (platform === "firebase") {
-    const fahClientIp = getHeader(request.headers, "x-fah-client-ip");
-    if (isGlobalIp(fahClientIp, proxies)) {
+    const fahClientIp = resolveCandidate(
+      getHeader(request.headers, "x-fah-client-ip"),
+      services,
+      proxies,
+      request.headers,
+    );
+    if (fahClientIp) {
       return fahClientIp;
     }
 
@@ -950,8 +1138,14 @@ export function findIp(
     const xForwardedFor = getHeader(request.headers, "x-forwarded-for");
     const xForwardedForItems = parseXForwardedFor(xForwardedFor);
     for (const item of xForwardedForItems.reverse()) {
-      if (isGlobalIp(item, proxies)) {
-        return item;
+      const resolved = resolveCandidate(
+        item,
+        services,
+        proxies,
+        request.headers,
+      );
+      if (resolved) {
+        return resolved;
       }
     }
 
@@ -964,8 +1158,13 @@ export function findIp(
   // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
   if (platform === "fly-io") {
     // Fly-Client-IP: https://fly.io/docs/networking/request-headers/#fly-client-ip
-    const flyClientIp = getHeader(request.headers, "fly-client-ip");
-    if (isGlobalIp(flyClientIp, proxies)) {
+    const flyClientIp = resolveCandidate(
+      getHeader(request.headers, "fly-client-ip"),
+      services,
+      proxies,
+      request.headers,
+    );
+    if (flyClientIp) {
       return flyClientIp;
     }
 
@@ -979,8 +1178,13 @@ export function findIp(
     // https://vercel.com/docs/edge-network/headers/request-headers#x-real-ip
     // Also used by `@vercel/functions`, see:
     // https://github.com/vercel/vercel/blob/d7536d52c87712b1b3f83e4b0fd535a1fb7e384c/packages/functions/src/headers.ts#L12
-    const xRealIp = getHeader(request.headers, "x-real-ip");
-    if (isGlobalIp(xRealIp, proxies)) {
+    const xRealIp = resolveCandidate(
+      getHeader(request.headers, "x-real-ip"),
+      services,
+      proxies,
+      request.headers,
+    );
+    if (xRealIp) {
       return xRealIp;
     }
 
@@ -999,8 +1203,14 @@ export function findIp(
     // first IP will be closest to the user (and the most likely to be spoofed),
     // we want to iterate tail-to-head so we reverse the list.
     for (const item of xVercelForwardedForItems.reverse()) {
-      if (isGlobalIp(item, proxies)) {
-        return item;
+      const resolved = resolveCandidate(
+        item,
+        services,
+        proxies,
+        request.headers,
+      );
+      if (resolved) {
+        return resolved;
       }
     }
 
@@ -1016,8 +1226,14 @@ export function findIp(
     // first IP will be closest to the user (and the most likely to be spoofed),
     // we want to iterate tail-to-head so we reverse the list.
     for (const item of xForwardedForItems.reverse()) {
-      if (isGlobalIp(item, proxies)) {
-        return item;
+      const resolved = resolveCandidate(
+        item,
+        services,
+        proxies,
+        request.headers,
+      );
+      if (resolved) {
+        return resolved;
       }
     }
 
@@ -1029,8 +1245,13 @@ export function findIp(
 
   if (platform === "render") {
     // True-Client-IP: https://community.render.com/t/what-number-of-proxies-sit-in-front-of-an-express-app-deployed-on-render/35981/2
-    const trueClientIp = getHeader(request.headers, "true-client-ip");
-    if (isGlobalIp(trueClientIp, proxies)) {
+    const trueClientIp = resolveCandidate(
+      getHeader(request.headers, "true-client-ip"),
+      services,
+      proxies,
+      request.headers,
+    );
+    if (trueClientIp) {
       return trueClientIp;
     }
 
@@ -1049,70 +1270,121 @@ export function findIp(
   // first IP will be closest to the user (and the most likely to be spoofed),
   // we want to iterate tail-to-head so we reverse the list.
   for (const item of xForwardedForItems.reverse()) {
-    if (isGlobalIp(item, proxies)) {
-      return item;
+    const resolved = resolveCandidate(item, services, proxies, request.headers);
+    if (resolved) {
+      return resolved;
     }
   }
 
   // Standard headers used by Amazon EC2, Heroku, and others.
-  const xClientIp = getHeader(request.headers, "x-client-ip");
-  if (isGlobalIp(xClientIp, proxies)) {
+  const xClientIp = resolveCandidate(
+    getHeader(request.headers, "x-client-ip"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (xClientIp) {
     return xClientIp;
   }
 
   // DigitalOcean.
   // DO-Connecting-IP: https://www.digitalocean.com/community/questions/app-platform-client-ip
-  const doConnectingIp = getHeader(request.headers, "do-connecting-ip");
-  if (isGlobalIp(doConnectingIp, proxies)) {
+  const doConnectingIp = resolveCandidate(
+    getHeader(request.headers, "do-connecting-ip"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (doConnectingIp) {
     return doConnectingIp;
   }
 
   // Fastly and Firebase hosting header (When forwared to cloud function)
   // Fastly-Client-IP
-  const fastlyClientIp = getHeader(request.headers, "fastly-client-ip");
-  if (isGlobalIp(fastlyClientIp, proxies)) {
+  const fastlyClientIp = resolveCandidate(
+    getHeader(request.headers, "fastly-client-ip"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (fastlyClientIp) {
     return fastlyClientIp;
   }
 
   // Akamai
   // True-Client-IP
-  const trueClientIp = getHeader(request.headers, "true-client-ip");
-  if (isGlobalIp(trueClientIp, proxies)) {
+  const trueClientIp = resolveCandidate(
+    getHeader(request.headers, "true-client-ip"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (trueClientIp) {
     return trueClientIp;
   }
 
   // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies
   // X-Real-IP
-  const xRealIp = getHeader(request.headers, "x-real-ip");
-  if (isGlobalIp(xRealIp, proxies)) {
+  const xRealIp = resolveCandidate(
+    getHeader(request.headers, "x-real-ip"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (xRealIp) {
     return xRealIp;
   }
 
   // Rackspace LB and Riverbed's Stingray?
-  const xClusterClientIp = getHeader(request.headers, "x-cluster-client-ip");
-  if (isGlobalIp(xClusterClientIp, proxies)) {
+  const xClusterClientIp = resolveCandidate(
+    getHeader(request.headers, "x-cluster-client-ip"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (xClusterClientIp) {
     return xClusterClientIp;
   }
 
-  const xForwarded = getHeader(request.headers, "x-forwarded");
-  if (isGlobalIp(xForwarded, proxies)) {
+  const xForwarded = resolveCandidate(
+    getHeader(request.headers, "x-forwarded"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (xForwarded) {
     return xForwarded;
   }
 
-  const forwardedFor = getHeader(request.headers, "forwarded-for");
-  if (isGlobalIp(forwardedFor, proxies)) {
+  const forwardedFor = resolveCandidate(
+    getHeader(request.headers, "forwarded-for"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (forwardedFor) {
     return forwardedFor;
   }
 
-  const forwarded = getHeader(request.headers, "forwarded");
-  if (isGlobalIp(forwarded, proxies)) {
+  const forwarded = resolveCandidate(
+    getHeader(request.headers, "forwarded"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (forwarded) {
     return forwarded;
   }
 
   // Google Cloud App Engine
   // X-Appengine-User-IP: https://cloud.google.com/appengine/docs/standard/reference/request-headers?tab=node.js
-  const xAppEngineUserIp = getHeader(request.headers, "x-appengine-user-ip");
-  if (isGlobalIp(xAppEngineUserIp, proxies)) {
+  const xAppEngineUserIp = resolveCandidate(
+    getHeader(request.headers, "x-appengine-user-ip"),
+    services,
+    proxies,
+    request.headers,
+  );
+  if (xAppEngineUserIp) {
     return xAppEngineUserIp;
   }
 
@@ -1123,6 +1395,9 @@ export function findIp(
  * One of the CIDR ranges.
  */
 export type Cidr = Ipv4Cidr | Ipv6Cidr;
+
+export { cloudflare } from "./cloudflare.js";
+export type { CloudflareOptions } from "./cloudflare.js";
 
 /**
  * Find an IP address.

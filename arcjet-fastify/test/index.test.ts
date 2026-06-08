@@ -49,6 +49,7 @@ test("`@arcjet/fastify`", async function (t) {
       "ArcjetSensitiveInfoReason",
       "ArcjetShieldReason",
       "botCategories",
+      "cloudflare",
       "createRemoteClient",
       "default",
       "detectBot",

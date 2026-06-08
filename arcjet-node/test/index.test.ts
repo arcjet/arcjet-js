@@ -46,6 +46,7 @@ test("`@arcjet/node`", async function (t) {
       "ArcjetSensitiveInfoReason",
       "ArcjetShieldReason",
       "botCategories",
+      "cloudflare",
       "createRemoteClient",
       "default",
       "detectBot",
