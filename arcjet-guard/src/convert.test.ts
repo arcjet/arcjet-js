@@ -251,6 +251,9 @@ describe("resultFromProto", () => {
     assert.equal(result.type, "MODERATE_CONTENT");
     assert.equal(result.reason, "MODERATE_CONTENT");
     assert.equal(result.conclusion, "DENY");
+    if (result.type === "MODERATE_CONTENT") {
+      assert.equal(result.detected, true);
+    }
   });
 
   test("localSensitiveInfo result", () => {

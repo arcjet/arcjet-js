@@ -244,6 +244,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: conclusionFromProto(pr.result.value.conclusion),
         reason: "MODERATE_CONTENT",
         type: "MODERATE_CONTENT",
+        detected: pr.result.value.detected,
       };
     }
     case "localSensitiveInfo": {

@@ -119,6 +119,8 @@ export type RuleResultModerateContent = {
   readonly reason: "MODERATE_CONTENT";
   /** Discriminant — always `"MODERATE_CONTENT"`. */
   readonly type: "MODERATE_CONTENT";
+  /** Whether harmful content was detected in the input text. */
+  readonly detected: boolean;
 };
 
 /** Result from a sensitive information detection evaluation. */
