@@ -82,14 +82,14 @@
     "@connectrpc/connect-web": "^2.0.0"
   },
   "devDependencies": {
-    "@types/node": "22.19.15",
-    "@typescript/native-preview": "7.0.0-dev.20260421.2",
+    "@types/node": "22.19.19",
+    "@typescript/native-preview": "7.0.0-dev.20260602.1",
     "miniflare": "4.20260529.0",
-    "oxfmt": "0.43.0",
+    "oxfmt": "0.53.0",
     "oxlint": "1.58.0",
     "oxlint-tsgolint": "0.18.1",
-    "rolldown": "1.0.0-rc.12",
-    "rolldown-plugin-dts": "0.23.2"
+    "rolldown": "1.0.3",
+    "rolldown-plugin-dts": "0.25.2"
   },
   "engines": {
     "node": ">=22.18.0"
