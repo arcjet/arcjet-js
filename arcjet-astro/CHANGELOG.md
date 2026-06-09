@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@arcjet/astro-v1.5.0) (2026-06-09)
+
+
+### 🚀 New Features
+
+* support proxy services such as Cloudflare for client IP detection ([#6060](https://github.com/arcjet/arcjet-js/issues/6060)) ([f77ead5](https://github.com/arcjet/arcjet-js/commit/f77ead56a04f5123d6c7ff031123b53419b1622b))
+
+
+### 📝 Documentation
+
+* refresh root, next, and guard READMEs for guards release ([#6017](https://github.com/arcjet/arcjet-js/issues/6017)) ([994232c](https://github.com/arcjet/arcjet-js/commit/994232c83346cd75b93fc01095e7c1e5796b49c1))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump astro from 6.1.2 to 6.1.6 ([#6003](https://github.com/arcjet/arcjet-js/issues/6003)) ([6730508](https://github.com/arcjet/arcjet-js/commit/6730508b15e1aa23f4e662f2111e53bd6058573c))
+* **deps-dev:** bump astro from 6.1.6 to 6.1.10 ([#6031](https://github.com/arcjet/arcjet-js/issues/6031)) ([ea8963d](https://github.com/arcjet/arcjet-js/commit/ea8963ddb2e20541777329322d20dfc21d720a4a))
+* **deps-dev:** bump next from 16.2.4 to 16.2.6 in /arcjet-next ([#6028](https://github.com/arcjet/arcjet-js/issues/6028)) ([082c20f](https://github.com/arcjet/arcjet-js/commit/082c20fbb3aab1ecca2abc24aabd62bf4064b62c))
+* **deps-dev:** bump next from 16.2.4 to 16.2.6 in /nosecone-next ([#6027](https://github.com/arcjet/arcjet-js/issues/6027)) ([29f3de1](https://github.com/arcjet/arcjet-js/commit/29f3de1d537b505a84b763427695af25cc5011c0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.4.0 to 1.5.0
+    * @arcjet/env bumped from 1.4.0 to 1.5.0
+    * @arcjet/headers bumped from 1.4.0 to 1.5.0
+    * @arcjet/ip bumped from 1.4.0 to 1.5.0
+    * @arcjet/logger bumped from 1.4.0 to 1.5.0
+    * @arcjet/protocol bumped from 1.4.0 to 1.5.0
+    * @arcjet/transport bumped from 1.4.0 to 1.5.0
+    * arcjet bumped from 1.4.0 to 1.5.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.4.0 to 1.5.0
+    * @arcjet/rollup-config bumped from 1.4.0 to 1.5.0
+
 ## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@arcjet/astro-v1.4.0) (2026-04-14)
 
 
