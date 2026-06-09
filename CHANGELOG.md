@@ -1,5 +1,64 @@
 # Changelog
 
+## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...v1.5.0) (2026-06-09)
+
+
+### 🚀 New Features
+
+* support proxy services such as Cloudflare for client IP detection ([#6060](https://github.com/arcjet/arcjet-js/issues/6060)) ([f77ead5](https://github.com/arcjet/arcjet-js/commit/f77ead56a04f5123d6c7ff031123b53419b1622b))
+
+
+### 🪲 Bug Fixes
+
+* redact `detectPromptInjectionMessage` from report calls ([#6041](https://github.com/arcjet/arcjet-js/issues/6041)) ([b490fc7](https://github.com/arcjet/arcjet-js/commit/b490fc76299d643846cb4fa8d7b142d23a889fc9))
+* update @bufbuild/protobuf to 2.12.0 and add root override to fix Bun build ([#6014](https://github.com/arcjet/arcjet-js/issues/6014)) ([ba8f1a3](https://github.com/arcjet/arcjet-js/commit/ba8f1a3081a1dbbcd3fae2f315312e85cb7415ba))
+
+
+### 📝 Documentation
+
+* clarify label/bucket slug validation in @arcjet/guard types ([#6043](https://github.com/arcjet/arcjet-js/issues/6043)) ([81293b3](https://github.com/arcjet/arcjet-js/commit/81293b3f310fb6c5e5136e747667a73a64fdd369))
+* refresh root, next, and guard READMEs for guards release ([#6017](https://github.com/arcjet/arcjet-js/issues/6017)) ([994232c](https://github.com/arcjet/arcjet-js/commit/994232c83346cd75b93fc01095e7c1e5796b49c1))
+
+
+### 🧹 Miscellaneous Chores
+
+* configure release-please to use GitHub App Token ([#6019](https://github.com/arcjet/arcjet-js/issues/6019)) ([571b1b7](https://github.com/arcjet/arcjet-js/commit/571b1b759a7ec827ec245cb9a35e90690970ed2b))
+* remove redundant esbuild and flatted overrides ([#6020](https://github.com/arcjet/arcjet-js/issues/6020)) ([ca2ad5a](https://github.com/arcjet/arcjet-js/commit/ca2ad5a4d0289de5d09872e69d3e449b721d77c0))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump astro from 6.1.2 to 6.1.6 ([#6003](https://github.com/arcjet/arcjet-js/issues/6003)) ([6730508](https://github.com/arcjet/arcjet-js/commit/6730508b15e1aa23f4e662f2111e53bd6058573c))
+* **deps-dev:** bump astro from 6.1.6 to 6.1.10 ([#6031](https://github.com/arcjet/arcjet-js/issues/6031)) ([ea8963d](https://github.com/arcjet/arcjet-js/commit/ea8963ddb2e20541777329322d20dfc21d720a4a))
+* **deps-dev:** bump fast-uri from 3.1.0 to 3.1.2 ([#6023](https://github.com/arcjet/arcjet-js/issues/6023)) ([1d000d3](https://github.com/arcjet/arcjet-js/commit/1d000d391865eb8d34462cc7438144c02a6662fb))
+* **deps-dev:** bump fast-uri from 3.1.0 to 3.1.2 in /examples/nestjs ([#6024](https://github.com/arcjet/arcjet-js/issues/6024)) ([f830a47](https://github.com/arcjet/arcjet-js/commit/f830a47d75e0331be21abc8a47e77b87d6ed8200))
+* **deps-dev:** bump fastify from 5.8.4 to 5.8.5 ([#6000](https://github.com/arcjet/arcjet-js/issues/6000)) ([fe37f56](https://github.com/arcjet/arcjet-js/commit/fe37f565cbb2dbc8a0f69f9b115e57a29ab86795))
+* **deps-dev:** bump ip-address from 10.1.0 to 10.2.0 in /examples/express-newman ([#6021](https://github.com/arcjet/arcjet-js/issues/6021)) ([11dd637](https://github.com/arcjet/arcjet-js/commit/11dd63705521549bf93ffbc9518a0c08d9b92ee3))
+* **deps-dev:** bump next from 16.2.4 to 16.2.6 ([#6029](https://github.com/arcjet/arcjet-js/issues/6029)) ([dcf85e1](https://github.com/arcjet/arcjet-js/commit/dcf85e1d9f18fe1e9f97227694a6d9fb4668a8fb))
+* **deps-dev:** bump next from 16.2.4 to 16.2.6 in /arcjet-next ([#6028](https://github.com/arcjet/arcjet-js/issues/6028)) ([082c20f](https://github.com/arcjet/arcjet-js/commit/082c20fbb3aab1ecca2abc24aabd62bf4064b62c))
+* **deps-dev:** bump next from 16.2.4 to 16.2.6 in /nosecone-next ([#6027](https://github.com/arcjet/arcjet-js/issues/6027)) ([29f3de1](https://github.com/arcjet/arcjet-js/commit/29f3de1d537b505a84b763427695af25cc5011c0))
+* **deps:** bump @astrojs/node from 10.0.4 to 10.0.5 in /examples/astro ([#6008](https://github.com/arcjet/arcjet-js/issues/6008)) ([cdffb7d](https://github.com/arcjet/arcjet-js/commit/cdffb7dacffb10550c00fcd11b0b03f39c62cf11))
+* **deps:** bump astro from 6.1.4 to 6.1.8 in /examples/astro ([#6001](https://github.com/arcjet/arcjet-js/issues/6001)) ([69b4198](https://github.com/arcjet/arcjet-js/commit/69b41986de879ec0f094ce9609d11b64fea3978e))
+* **deps:** bump astro from 6.1.8 to 6.3.2 in /examples/astro ([#6032](https://github.com/arcjet/arcjet-js/issues/6032)) ([6397074](https://github.com/arcjet/arcjet-js/commit/63970749f8bdaa6c384431dc35eb22665634e04d))
+* **deps:** bump brace-expansion from 5.0.5 to 5.0.6 in /examples/nuxt ([#6039](https://github.com/arcjet/arcjet-js/issues/6039)) ([dac76d1](https://github.com/arcjet/arcjet-js/commit/dac76d1a76fa695296eacfa3643c9392965d0769))
+* **deps:** bump devalue from 5.6.4 to 5.8.1 ([#6034](https://github.com/arcjet/arcjet-js/issues/6034)) ([def151d](https://github.com/arcjet/arcjet-js/commit/def151dbfd63f1856fa1eabeb191169db89566cb))
+* **deps:** bump devalue from 5.6.4 to 5.8.1 in /examples/astro ([#6038](https://github.com/arcjet/arcjet-js/issues/6038)) ([c683d82](https://github.com/arcjet/arcjet-js/commit/c683d8271c6b087587cbf83cbd247c65b5aab23d))
+* **deps:** bump devalue from 5.6.4 to 5.8.1 in /examples/nuxt ([#6035](https://github.com/arcjet/arcjet-js/issues/6035)) ([9203466](https://github.com/arcjet/arcjet-js/commit/92034666956312385dd6e964a2ca64165cc54bb5))
+* **deps:** bump fast-uri from 3.1.0 to 3.1.2 in /examples/fastify ([#6026](https://github.com/arcjet/arcjet-js/issues/6026)) ([c7bffe1](https://github.com/arcjet/arcjet-js/commit/c7bffe19f6e205c6b743e752809ddc1a1a32a2c9))
+* **deps:** bump nitropack from 2.13.3 to 2.13.4 in /examples/nuxt ([#6022](https://github.com/arcjet/arcjet-js/issues/6022)) ([ecacd00](https://github.com/arcjet/arcjet-js/commit/ecacd005ed2159da48958437e9209a8af075cf05))
+* **deps:** bump nuxt and @nuxt/nitro-server to 4.4.6 in examples/nuxt ([#6055](https://github.com/arcjet/arcjet-js/issues/6055)) ([74573e3](https://github.com/arcjet/arcjet-js/commit/74573e3afb7a84519d884aec29de1a29840032d2))
+* **deps:** bump qs to 6.15.2 in examples ([#6051](https://github.com/arcjet/arcjet-js/issues/6051)) ([f784256](https://github.com/arcjet/arcjet-js/commit/f7842567383e082554ccdd71c6e9db51878d66e1))
+* **deps:** bump simple-git from 3.33.0 to 3.36.0 in /examples/nuxt ([#6025](https://github.com/arcjet/arcjet-js/issues/6025)) ([bff84fb](https://github.com/arcjet/arcjet-js/commit/bff84fb35df3e7989da141616720496eff196b16))
+* **deps:** bump svelte and @sveltejs/kit in examples/sveltekit ([#6053](https://github.com/arcjet/arcjet-js/issues/6053)) ([4e44e85](https://github.com/arcjet/arcjet-js/commit/4e44e85037d14cb71f3b71590107595058da7090))
+* **deps:** bump turbo, svelte, @sveltejs/kit and transitives ([#6052](https://github.com/arcjet/arcjet-js/issues/6052)) ([57b263e](https://github.com/arcjet/arcjet-js/commit/57b263e320a2c180fa8882c96e264f39f86bede0))
+
+
+### ✅ Continuous Integration
+
+* add workflow lint gate (actionlint + zizmor) ([#6030](https://github.com/arcjet/arcjet-js/issues/6030)) ([f1f4707](https://github.com/arcjet/arcjet-js/commit/f1f470700d0cdda3cd4121d86713bd9e88ea7f5b))
+* allow mise attestation-verification endpoints in lint-workflows ([#6061](https://github.com/arcjet/arcjet-js/issues/6061)) ([8fdeb39](https://github.com/arcjet/arcjet-js/commit/8fdeb3954712d0d6d3ace9d83668441cc22001ed))
+* split update duties between Dependabot (security) and Renovate ([#6006](https://github.com/arcjet/arcjet-js/issues/6006)) ([a8a22c9](https://github.com/arcjet/arcjet-js/commit/a8a22c9d3cfdeebac824cc4638135dbc6cc98137))
+
 ## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...v1.4.0) (2026-04-14)
 
 

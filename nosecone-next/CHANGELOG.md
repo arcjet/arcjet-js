@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@nosecone/next-v1.5.0) (2026-06-09)
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump next from 16.2.4 to 16.2.6 ([#6029](https://github.com/arcjet/arcjet-js/issues/6029)) ([dcf85e1](https://github.com/arcjet/arcjet-js/commit/dcf85e1d9f18fe1e9f97227694a6d9fb4668a8fb))
+* **deps-dev:** bump next from 16.2.4 to 16.2.6 in /arcjet-next ([#6028](https://github.com/arcjet/arcjet-js/issues/6028)) ([082c20f](https://github.com/arcjet/arcjet-js/commit/082c20fbb3aab1ecca2abc24aabd62bf4064b62c))
+* **deps-dev:** bump next from 16.2.4 to 16.2.6 in /nosecone-next ([#6027](https://github.com/arcjet/arcjet-js/issues/6027)) ([29f3de1](https://github.com/arcjet/arcjet-js/commit/29f3de1d537b505a84b763427695af25cc5011c0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.4.0 to 1.5.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.4.0 to 1.5.0
+    * @arcjet/rollup-config bumped from 1.4.0 to 1.5.0
+
 ## [1.4.0](https://github.com/arcjet/arcjet-js/compare/v1.3.1...@nosecone/next-v1.4.0) (2026-04-14)
 
 
