@@ -1,4 +1,4 @@
-function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.instantiate) {
+export function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.instantiate) {
   
   class ComponentError extends Error {
     constructor (value) {
@@ -993,5 +993,3 @@ function instantiate(getCoreModule, imports, instantiateCore = WebAssembly.insta
   const maybeSyncReturn = runNext(null);
   return promise || maybeSyncReturn;
 }
-
-export { instantiate };
