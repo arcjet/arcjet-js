@@ -11,6 +11,7 @@ import {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
+  experimental_moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
 } from "./index.ts";
@@ -30,6 +31,7 @@ describe("re-exports", () => {
     assert.equal(typeof fixedWindow, "function");
     assert.equal(typeof slidingWindow, "function");
     assert.equal(typeof detectPromptInjection, "function");
+    assert.equal(typeof experimental_moderateContent, "function");
     assert.equal(typeof localDetectSensitiveInfo, "function");
     assert.equal(typeof defineCustomRule, "function");
   });

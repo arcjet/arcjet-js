@@ -15,6 +15,7 @@ export type Conclusion = "ALLOW" | "DENY";
 export type Reason =
   | "RATE_LIMIT"
   | "PROMPT_INJECTION"
+  | "MODERATE_CONTENT"
   | "SENSITIVE_INFO"
   | "CUSTOM"
   | "ERROR"
@@ -106,6 +107,22 @@ export type RuleResultPromptInjection = {
   readonly type: "PROMPT_INJECTION";
 };
 
+/**
+ * Result from a content moderation evaluation.
+ *
+ * Experimental — see {@link experimental_moderateContent}.
+ */
+export type RuleResultModerateContent = {
+  /** Whether the request was allowed or denied by this rule. */
+  readonly conclusion: "ALLOW" | "DENY";
+  /** The reason category — always `"MODERATE_CONTENT"` for this rule. */
+  readonly reason: "MODERATE_CONTENT";
+  /** Discriminant — always `"MODERATE_CONTENT"`. */
+  readonly type: "MODERATE_CONTENT";
+  /** Whether harmful content was detected in the input text. */
+  readonly detected: boolean;
+};
+
 /** Result from a sensitive information detection evaluation. */
 export type RuleResultSensitiveInfo = {
   /** Whether the request was allowed or denied by this rule. */
@@ -182,6 +199,7 @@ export type RuleResult =
   | RuleResultFixedWindow
   | RuleResultSlidingWindow
   | RuleResultPromptInjection
+  | RuleResultModerateContent
   | RuleResultSensitiveInfo
   | RuleResultCustom
   | RuleResultNotRun
@@ -660,6 +678,40 @@ export interface DetectPromptInjectionConfig {
 }
 
 /**
+ * Content moderation config.
+ *
+ * Experimental — see {@link experimental_moderateContent}.
+ */
+export interface ExperimentalModerateContentConfig {
+  /**
+   * Evaluation mode. `"LIVE"` enforces the rule; `"DRY_RUN"` evaluates
+   * without blocking.
+   *
+   * @default "LIVE"
+   */
+  mode?: Mode;
+  /**
+   * Optional human-readable label for this rule instance.
+   *
+   * Must contain only ASCII letters, digits, hyphens, underscores,
+   * dots, and forward slashes. Maximum 256 characters.
+   *
+   * @example `"chat.moderate-content"`
+   */
+  label?: string;
+  /**
+   * Key-value metadata attached to this rule for analytics.
+   *
+   * Constraints:
+   * - Max 20 key-value pairs per rule submission (combined config + input).
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
+   * - Values: max 512 bytes.
+   */
+  metadata?: Record<string, string>;
+}
+
+/**
  * Sensitive info config: allowlist mode.
  *
  * Only the listed entity types are allowed through — everything else
@@ -974,6 +1026,28 @@ export type RuleWithConfigPromptInjection = {
   deniedResult(decision: Decision): RuleResultPromptInjection | null;
 };
 
+/**
+ * A configured content moderation rule.
+ *
+ * Experimental — see {@link experimental_moderateContent}.
+ */
+export type RuleWithConfigModerateContent = {
+  /** Discriminant — always `"MODERATE_CONTENT"`. */
+  readonly type: "MODERATE_CONTENT";
+  /** The content moderation configuration for this rule instance. */
+  readonly config: ExperimentalModerateContentConfig;
+  /** @internal */
+  readonly [symbolArcjetInternal]: { readonly configId: string };
+  /** Bind the text to moderate to produce a `RuleWithInputModerateContent`. */
+  (input: string): RuleWithInputModerateContent;
+  /** Extract all content moderation results from a decision. */
+  results(decision: Decision): RuleResultModerateContent[];
+  /** Return the first content moderation result regardless of conclusion, or `null` if none. */
+  result(decision: Decision): RuleResultModerateContent | null;
+  /** Return the first denied content moderation result, or `null` if none. */
+  deniedResult(decision: Decision): RuleResultModerateContent | null;
+};
+
 /** A configured sensitive info detection rule. */
 export type RuleWithConfigSensitiveInfo = {
   /** Discriminant — always `"SENSITIVE_INFO"`. */
@@ -1019,6 +1093,7 @@ export type RuleWithConfig =
   | RuleWithConfigFixedWindow
   | RuleWithConfigSlidingWindow
   | RuleWithConfigPromptInjection
+  | RuleWithConfigModerateContent
   | RuleWithConfigSensitiveInfo
   | RuleWithConfigCustom;
 
@@ -1094,6 +1169,28 @@ export type RuleWithInputPromptInjection = {
   deniedResult(decision: Decision): RuleResultPromptInjection | null;
 };
 
+/**
+ * A content moderation rule with bound input.
+ *
+ * Experimental — see {@link experimental_moderateContent}.
+ */
+export type RuleWithInputModerateContent = {
+  /** Discriminant — always `"MODERATE_CONTENT"`. */
+  readonly type: "MODERATE_CONTENT";
+  /** The content moderation configuration for this rule instance. */
+  readonly config: ExperimentalModerateContentConfig;
+  /** The bound text to moderate. */
+  readonly input: string;
+  /** @internal */
+  readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
+  /** Find this submission's results as an array (empty or single-element). */
+  results(decision: Decision): RuleResultModerateContent[];
+  /** Find this submission's result in a decision, or `null` if not present. */
+  result(decision: Decision): RuleResultModerateContent | null;
+  /** Find this submission's denied result, or `null` if not denied. */
+  deniedResult(decision: Decision): RuleResultModerateContent | null;
+};
+
 /** A sensitive info rule with bound input. */
 export type RuleWithInputSensitiveInfo = {
   /** Discriminant — always `"SENSITIVE_INFO"`. */
@@ -1138,6 +1235,7 @@ export type RuleWithInput =
   | RuleWithInputFixedWindow
   | RuleWithInputSlidingWindow
   | RuleWithInputPromptInjection
+  | RuleWithInputModerateContent
   | RuleWithInputSensitiveInfo
   | RuleWithInputCustom;
 
