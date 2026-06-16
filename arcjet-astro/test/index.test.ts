@@ -973,6 +973,8 @@ test("@arcjet/astro", async function (t) {
           error() {},
           debug() {},
           warn() {},
+          flush() {},
+          close() {},
         };
       }
     },
