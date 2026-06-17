@@ -90,12 +90,21 @@ export function detectProxy(
     // Log a line at startup so it is easy to know when a proxy is being used.
     // We deliberately do not log the proxy URL itself: it can contain
     // credentials, and not logging it is simpler and safer than redacting it.
-    const log =
-      options?.log ??
-      new Logger({
-        level: logLevel({ ARCJET_LOG_LEVEL: process.env.ARCJET_LOG_LEVEL }),
-      });
-    log.info("Connecting to the Arcjet API through a proxy");
+    let log = options?.log;
+    if (!log) {
+      try {
+        log = new Logger({
+          level: logLevel({ ARCJET_LOG_LEVEL: process.env.ARCJET_LOG_LEVEL }),
+        });
+      } catch {
+        // Building the default logger reads `ARCJET_LOG_LEVEL`, which can throw
+        // on runtimes that gate environment access (e.g. Deno without
+        // `--allow-env`) when the proxy came from an explicit `proxyEnv`. Skip
+        // the startup line rather than failing transport creation; the proxy is
+        // still returned below.
+      }
+    }
+    log?.info("Connecting to the Arcjet API through a proxy");
   }
 
   return proxyUrl;
