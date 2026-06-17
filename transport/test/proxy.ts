@@ -5,7 +5,6 @@ import http from "node:http";
 import net from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Duplex } from "node:stream";
 
 /**
  * Standard proxy environment variables that we save and restore around tests
@@ -21,14 +20,13 @@ const proxyEnvironmentKeys = [
 ];
 
 /**
- * Live `CONNECT` tunnel sockets per proxy server.
+ * Open tunnel sockets per `CONNECT` proxy.
  *
- * A `CONNECT` socket is detached from the server's normal connection tracking,
- * so neither `server.close()` nor `server.closeAllConnections()` will shut it
- * down. We track them here so `close()` can destroy them and stop a keep-alive
- * agent from holding the server open forever.
+ * A `net.Server` has no `closeAllConnections()`, and a keep-alive agent holds
+ * the tunnel open, so we track the accepted sockets here and destroy them in
+ * `close()` to let the server shut down.
  */
-const tunnelSockets = new WeakMap<http.Server, Set<Duplex>>();
+const tunnelSockets = new WeakMap<net.Server, Set<net.Socket>>();
 
 /**
  * Start listening on a random port on the loopback interface.
@@ -42,7 +40,7 @@ const tunnelSockets = new WeakMap<http.Server, Set<Duplex>>();
  *   Base URL the server is listening on.
  */
 export async function listen(
-  server: http.Server,
+  server: net.Server,
   protocol: "http" | "https" = "http",
 ): Promise<string> {
   await new Promise<void>((resolve) => {
@@ -64,7 +62,7 @@ export async function listen(
  * @returns
  *   Promise that resolves once the server is closed.
  */
-export async function close(server: http.Server): Promise<void> {
+export async function close(server: net.Server): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     server.close((error) => {
       if (error) {
@@ -74,10 +72,15 @@ export async function close(server: http.Server): Promise<void> {
       }
     });
 
-    // A keep-alive agent holds connections open, so `close()` would otherwise
-    // wait forever. Force normal connections shut, then destroy any `CONNECT`
-    // tunnel sockets (which `closeAllConnections()` doesn't track).
-    server.closeAllConnections();
+    // A keep-alive agent (and an open tunnel) holds connections open, so
+    // `close()` would otherwise wait forever. Force them shut: HTTP(S) servers
+    // expose `closeAllConnections()`, while `CONNECT` proxies are `net.Server`s
+    // whose accepted sockets we tracked above (destroying one tears down its
+    // tunnel, which the upstream side follows via its `close` handler).
+    const httpServer = server as net.Server & {
+      closeAllConnections?: () => void;
+    };
+    httpServer.closeAllConnections?.();
     const sockets = tunnelSockets.get(server);
     if (sockets) {
       for (const socket of sockets) {
@@ -188,12 +191,16 @@ export async function withHttpProxyEnvironment<T>(
 }
 
 /**
- * Create a tunneling HTTP proxy that handles the `CONNECT` method.
+ * Create a tunneling proxy that handles the `CONNECT` method.
  *
  * This is how a proxy handles HTTPS targets: the client sends
  * `CONNECT host:port`, the proxy opens a raw TCP tunnel to the origin and pipes
  * bytes through without terminating TLS. The proxy asserts that the requested
  * authority matches the expected origin before tunneling.
+ *
+ * Implemented with `node:net` rather than `http.createServer().on("connect")`
+ * because some runtimes' Node compatibility layers (e.g. older Deno) don't emit
+ * the `connect` event, whereas a raw TCP server works everywhere.
  *
  * @param expectedAuthority
  *   `host:port` the proxy expects to tunnel to.
@@ -205,48 +212,50 @@ export async function withHttpProxyEnvironment<T>(
 export function createConnectProxy(
   expectedAuthority: string,
   onConnect: () => void,
-): http.Server {
-  // Only `CONNECT` is expected; reject anything else so a mistaken
-  // absolute-form request can't silently pass.
-  const proxy = http.createServer((incoming, outgoing) => {
-    outgoing.writeHead(405);
-    outgoing.end();
-  });
+): net.Server {
+  const separator = expectedAuthority.lastIndexOf(":");
+  const host = expectedAuthority.slice(0, separator);
+  const port = Number(expectedAuthority.slice(separator + 1));
 
-  const sockets = new Set<Duplex>();
-  tunnelSockets.set(proxy, sockets);
+  const sockets = new Set<net.Socket>();
+  const proxy = net.createServer((client) => {
+    sockets.add(client);
+    client.on("close", () => sockets.delete(client));
+    client.on("error", () => {});
 
-  proxy.on("connect", (request, clientSocket, head) => {
-    onConnect();
-
-    assert.ok(request.url);
-    assert.equal(request.url, expectedAuthority);
-
-    sockets.add(clientSocket);
-    clientSocket.on("close", () => sockets.delete(clientSocket));
-
-    // Build the upstream target from the trusted `expectedAuthority` rather
-    // than the (asserted, but externally provided) request URL.
-    const separator = expectedAuthority.lastIndexOf(":");
-    const host = expectedAuthority.slice(0, separator);
-    const port = Number(expectedAuthority.slice(separator + 1));
-
-    const upstream = net.connect(port, host, () => {
-      clientSocket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
-      if (head.length > 0) {
-        upstream.write(head);
+    let request = "";
+    function onData(chunk: Buffer) {
+      request += chunk.toString("utf8");
+      const lineEnd = request.indexOf("\r\n");
+      // Wait until the full CONNECT request line has arrived. A client only
+      // sends tunnel (TLS) bytes after the `200`, so nothing is lost here.
+      if (lineEnd === -1) {
+        return;
       }
-      upstream.pipe(clientSocket);
-      clientSocket.pipe(upstream);
-    });
+      client.off("data", onData);
 
-    upstream.on("error", () => clientSocket.destroy());
-    clientSocket.on("error", () => upstream.destroy());
-    // When the tunnel's client side is torn down (e.g. on `close()`), drop the
-    // upstream connection too so the origin server can close cleanly.
-    clientSocket.on("close", () => upstream.destroy());
+      onConnect();
+      const match = /^CONNECT (\S+) HTTP\/1\.1$/.exec(request.slice(0, lineEnd));
+      assert.ok(match, "expected a CONNECT request");
+      // Tunnel to the trusted `expectedAuthority`, not the (asserted, but
+      // externally provided) request target.
+      assert.equal(match[1], expectedAuthority);
+
+      const upstream = net.connect(port, host, () => {
+        client.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+        upstream.pipe(client);
+        client.pipe(upstream);
+      });
+      upstream.on("error", () => client.destroy());
+      // When the client side is torn down (e.g. on `close()`), drop the
+      // upstream connection too so the origin server can close cleanly.
+      client.on("close", () => upstream.destroy());
+    }
+
+    client.on("data", onData);
   });
 
+  tunnelSockets.set(proxy, sockets);
   return proxy;
 }
 
