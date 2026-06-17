@@ -16,7 +16,7 @@ function detect(
   };
 
   try {
-    return { proxy: detectProxy(baseUrl, proxyEnv), logged };
+    return { proxy: detectProxy(new URL(baseUrl), proxyEnv), logged };
   } finally {
     console.info = original;
   }
@@ -31,9 +31,10 @@ describe("detectProxy", () => {
   });
 
   test("throws on an invalid base URL", () => {
-    // Matches `@arcjet/transport`: an invalid URL is a programming error and
-    // surfaces rather than being swallowed.
-    assert.throws(() => detectProxy("not a url", {}), /Invalid URL/);
+    // `detectProxy` takes a parsed `URL`, so an invalid base URL surfaces when
+    // the caller constructs it (here, via the `detect` helper) rather than
+    // being swallowed — matching how `createTransport` parses up front.
+    assert.throws(() => detect("not a url", {}), /Invalid URL/);
   });
 
   test("resolves the proxy for HTTPS and HTTP targets", () => {
@@ -97,7 +98,7 @@ describe("detectProxy", () => {
     };
 
     try {
-      detectProxy("https://decide.arcjet.com", {
+      detectProxy(new URL("https://decide.arcjet.com"), {
         HTTPS_PROXY: "http://user:secret@proxy.example.com:3128",
         ARCJET_LOG_LEVEL: "info",
       });

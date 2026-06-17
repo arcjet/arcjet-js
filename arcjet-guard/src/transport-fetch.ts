@@ -34,7 +34,7 @@ export function createTransport(baseUrl: string): Transport {
   // standard proxy environment variables natively); we detect only to log a
   // line when a proxy is in use. Edge runtimes without proxy environment
   // support simply won't detect one.
-  detectProxy(baseUrl);
+  detectProxy(new URL(baseUrl));
 
   return createFetchTransport(baseUrl);
 }

@@ -57,7 +57,8 @@ function isDeno(): boolean {
  * setup cost.
  */
 export function createTransport(baseUrl: string): Transport {
-  const proxyUrl = detectProxy(baseUrl);
+  const url = new URL(baseUrl);
+  const proxyUrl = detectProxy(url);
 
   if (typeof proxyUrl === "string") {
     // Bun resolves to this Node entry point for HTTP/2, and Deno can reach it
@@ -84,11 +85,11 @@ export function createTransport(baseUrl: string): Transport {
     const proxyEnvironment: Partial<
       Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
     > =
-      new URL(baseUrl).protocol === "https:"
+      url.protocol === "https:"
         ? { HTTPS_PROXY: proxyUrl }
         : { HTTP_PROXY: proxyUrl };
     const agent =
-      new URL(baseUrl).protocol === "https:"
+      url.protocol === "https:"
         ? new https.Agent({ keepAlive: true, proxyEnv: proxyEnvironment })
         : new http.Agent({ keepAlive: true, proxyEnv: proxyEnvironment });
 

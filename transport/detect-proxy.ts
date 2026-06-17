@@ -49,26 +49,27 @@ export interface TransportOptions {
 }
 
 /**
- * Detect the proxy that applies to a base URL and log a line when one is found.
+ * Detect the proxy that applies to a URL and log a line when one is found.
  *
  * Standard proxy environment variables (`HTTP_PROXY` and `HTTPS_PROXY`,
  * respecting `NO_PROXY`) are auto-detected. When a proxy applies, a single line
  * is logged at startup so it is easy to know when a proxy is being used. The
  * proxy URL itself is not logged, since it can contain credentials.
  *
- * @param baseUrl
- *   Base URL that requests will be made to.
+ * Takes an already-parsed `URL` so callers that also need it (e.g. to pick an
+ * HTTP vs HTTPS agent) don't parse the base URL twice.
+ *
+ * @param url
+ *   URL that requests will be made to.
  * @param options
  *   Configuration (optional).
  * @returns
- *   Proxy URL that applies to `baseUrl`, or `undefined` when no proxy applies.
+ *   Proxy URL that applies to `url`, or `undefined` when no proxy applies.
  */
 export function detectProxy(
-  baseUrl: string,
+  url: URL,
   options?: TransportOptions,
 ): string | undefined {
-  const url = new URL(baseUrl);
-
   // Default to detecting proxy configuration from `process.env`. Passing
   // `false` disables proxy detection entirely.
   const proxyEnv =

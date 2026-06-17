@@ -32,7 +32,7 @@ export function createTransport(
   options?: TransportOptions,
 ): Transport {
   // Deno's `fetch` performs the proxying itself; we detect to log a line.
-  detectProxy(baseUrl, options);
+  detectProxy(new URL(baseUrl), options);
 
   return createConnectTransport({
     baseUrl,

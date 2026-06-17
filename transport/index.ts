@@ -37,11 +37,10 @@ export function createTransport(
   baseUrl: string,
   options?: TransportOptions,
 ): Transport {
-  const proxyUrl = detectProxy(baseUrl, options);
+  const url = new URL(baseUrl);
+  const proxyUrl = detectProxy(url, options);
 
   if (typeof proxyUrl === "string") {
-    const url = new URL(baseUrl);
-
     // We hand the agent only the single proxy we resolved (rather than the
     // whole environment) so it routes through exactly the proxy we detected,
     // honoring the `proxyEnv` option and our own `NO_PROXY` handling rather than

@@ -13,28 +13,25 @@
 export type ProxyEnvironment = Record<string, string | undefined>;
 
 /**
- * Detect the proxy that applies to a base URL and log a line when one is found.
+ * Detect the proxy that applies to a URL and log a line when one is found.
  *
  * Standard proxy environment variables (`HTTP_PROXY` and `HTTPS_PROXY`,
  * respecting `NO_PROXY`) are auto-detected. When a proxy applies, a single line
  * is logged at startup so it is easy to know one is in use; the proxy URL itself
  * is not logged, since it can contain credentials.
  *
- * @param baseUrl Base URL that requests will be made to.
+ * Takes an already-parsed `URL` so callers that also need it (e.g. to pick an
+ * HTTP vs HTTPS agent) don't parse the base URL twice.
+ *
+ * @param url URL that requests will be made to.
  * @param proxyEnv Environment variables to inspect (defaults to the current
  *   runtime's environment when available).
- * @returns Proxy URL that applies to `baseUrl`, or `undefined` when none does.
+ * @returns Proxy URL that applies to `url`, or `undefined` when none does.
  */
 export function detectProxy(
-  baseUrl: string,
+  url: URL,
   proxyEnv: ProxyEnvironment | undefined = currentEnvironment(),
 ): string | undefined {
-  // Parse the URL up front, outside the try/catch, so an invalid `baseUrl`
-  // throws rather than being silently swallowed — matching `@arcjet/transport`,
-  // where this behavior is relied on. Only environment access (below) is
-  // treated as recoverable.
-  const url = new URL(baseUrl);
-
   if (proxyEnv === undefined) {
     return undefined;
   }
