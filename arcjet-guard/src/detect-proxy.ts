@@ -53,7 +53,16 @@ export function detectProxy(
     // Log a line at startup so it is easy to know when a proxy is being used.
     // We deliberately do not log the proxy URL itself: it can contain
     // credentials, and not logging it is simpler and safer than redacting it.
-    console.info("Connecting to the Arcjet API through a proxy");
+    //
+    // Gate on `ARCJET_LOG_LEVEL` so this matches `@arcjet/transport`, which logs
+    // the same line through `@arcjet/logger` at `info` level — hidden unless the
+    // level is `info` or `debug`, and silenceable. This copy is edge-safe and
+    // can't import `@arcjet/logger`, so read the level from the same environment
+    // we resolved the proxy from.
+    const level = proxyEnv["ARCJET_LOG_LEVEL"];
+    if (level === "info" || level === "debug") {
+      console.info("Connecting to the Arcjet API through a proxy");
+    }
   }
 
   return proxyUrl;

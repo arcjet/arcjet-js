@@ -52,12 +52,30 @@ describe("detectProxy", () => {
     );
   });
 
-  test("logs once when a proxy is in use", () => {
+  test("logs once when a proxy is in use and the level allows it", () => {
+    assert.equal(
+      detect("https://decide.arcjet.com", {
+        HTTPS_PROXY: "http://proxy.example.com:3128",
+        ARCJET_LOG_LEVEL: "info",
+      }).logged,
+      true,
+    );
+  });
+
+  test("does not log by default (level below `info`)", () => {
+    // Matches @arcjet/transport, whose default `warn` level hides this line.
     assert.equal(
       detect("https://decide.arcjet.com", {
         HTTPS_PROXY: "http://proxy.example.com:3128",
       }).logged,
-      true,
+      false,
+    );
+    assert.equal(
+      detect("https://decide.arcjet.com", {
+        HTTPS_PROXY: "http://proxy.example.com:3128",
+        ARCJET_LOG_LEVEL: "warn",
+      }).logged,
+      false,
     );
   });
 
@@ -81,6 +99,7 @@ describe("detectProxy", () => {
     try {
       detectProxy("https://decide.arcjet.com", {
         HTTPS_PROXY: "http://user:secret@proxy.example.com:3128",
+        ARCJET_LOG_LEVEL: "info",
       });
     } finally {
       console.info = original;
