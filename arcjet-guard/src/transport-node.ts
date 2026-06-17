@@ -31,27 +31,44 @@ function isBun(): boolean {
 }
 
 /**
+ * Whether the current runtime is Deno.
+ *
+ * The `"deno"` export condition routes Deno to the fetch entry point, so it
+ * shouldn't normally reach this Node entry point. But an explicit
+ * `@arcjet/guard/node` import would, and Deno's Node HTTP agent — like Bun's —
+ * does not implement the `proxyEnv` proxy option, so the agent path below would
+ * silently bypass the proxy. Detect it to fall back to the fetch transport,
+ * whose native `fetch` honors the proxy environment variables.
+ */
+function isDeno(): boolean {
+  return "Deno" in globalThis;
+}
+
+/**
  * Create a Connect transport for the given base URL.
  *
  * When a proxy is detected (`HTTP_PROXY`/`HTTPS_PROXY`, respecting `NO_PROXY`),
  * Node routes through it over HTTP/1.1 using the built-in proxy support of the
- * Node.js HTTP agent. Bun's Node HTTP agent doesn't support that, so on Bun we
- * use the fetch transport instead and let Bun's `fetch` proxy natively (the
- * same approach as `@arcjet/transport`'s Bun entry point). Without a proxy it
- * connects directly over HTTP/2, optimistically pre-connecting so the first
- * `.guard()` call doesn't pay the full TCP + TLS setup cost.
+ * Node.js HTTP agent. Bun's and Deno's Node HTTP agents don't support that, so
+ * on those runtimes we use the fetch transport instead and let their native
+ * `fetch` proxy (the same approach as `@arcjet/transport`'s Bun and Deno entry
+ * points). Without a proxy it connects directly over HTTP/2, optimistically
+ * pre-connecting so the first `.guard()` call doesn't pay the full TCP + TLS
+ * setup cost.
  */
 export function createTransport(baseUrl: string): Transport {
   const proxyUrl = detectProxy(baseUrl);
 
   if (typeof proxyUrl === "string") {
-    // Bun resolves to this Node entry point for HTTP/2, but its Node HTTP agent
-    // ignores the `proxyEnv` option, so the agent path below would silently
-    // bypass the proxy. Bun's `fetch` honors the proxy environment variables
-    // natively, so route through the fetch transport instead — matching how
-    // `@arcjet/transport` handles Bun. The proxy was already detected and
-    // logged above, so build the transport directly without detecting again.
-    if (isBun()) {
+    // Bun resolves to this Node entry point for HTTP/2, and Deno can reach it
+    // via an explicit `@arcjet/guard/node` import. Neither runtime's Node HTTP
+    // agent implements the `proxyEnv` option, so the agent path below would
+    // silently bypass the proxy. Both honor the proxy environment variables in
+    // their native `fetch`, so route through the fetch transport instead —
+    // matching how `@arcjet/transport` handles Bun and Deno. The proxy was
+    // already detected and logged above, so build the transport directly
+    // without detecting again.
+    if (isBun() || isDeno()) {
       return createFetchTransport(baseUrl);
     }
 

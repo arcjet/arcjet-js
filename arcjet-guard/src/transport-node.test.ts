@@ -71,4 +71,36 @@ describe("createTransport (node)", () => {
       console.info = originalInfo;
     }
   });
+
+  test("uses the fetch transport on Deno when a proxy is detected", () => {
+    const hadDeno = "Deno" in globalThis;
+    const originalDeno: unknown = Reflect.get(globalThis, "Deno");
+    const originalProxy = process.env.HTTPS_PROXY;
+    const originalInfo = console.info;
+    console.info = (): void => {};
+    // Simulate the Deno runtime, whose Node HTTP agent ignores `proxyEnv`.
+    // (The `deno` export condition normally routes Deno to the fetch entry, but
+    // an explicit `@arcjet/guard/node` import reaches this code path.)
+    Reflect.set(globalThis, "Deno", {});
+    process.env.HTTPS_PROXY = "http://127.0.0.1:1";
+
+    try {
+      const transport = createTransport("https://decide.arcjet.com");
+
+      assert.equal(typeof transport, "object");
+      assert.notEqual(transport, null);
+    } finally {
+      if (hadDeno) {
+        Reflect.set(globalThis, "Deno", originalDeno);
+      } else {
+        Reflect.deleteProperty(globalThis, "Deno");
+      }
+      if (originalProxy === undefined) {
+        delete process.env.HTTPS_PROXY;
+      } else {
+        process.env.HTTPS_PROXY = originalProxy;
+      }
+      console.info = originalInfo;
+    }
+  });
 });

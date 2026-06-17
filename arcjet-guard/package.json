@@ -38,6 +38,10 @@
         "types": "./dist/fetch.d.ts",
         "import": "./dist/fetch.js"
       },
+      "deno": {
+        "types": "./dist/fetch.d.ts",
+        "import": "./dist/fetch.js"
+      },
       "node": {
         "types": "./dist/node.d.ts",
         "import": "./dist/node.js"
