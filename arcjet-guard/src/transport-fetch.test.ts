@@ -1,42 +1,11 @@
 import assert from "node:assert/strict";
-import { afterEach, beforeEach, describe, test } from "node:test";
+import { describe, test } from "node:test";
 
+import { isolateProxyEnvironment } from "../test/_shared/proxy-env.ts";
 import { createTransport } from "./transport-fetch.ts";
 
-// Standard proxy variables, cleared around every test so the host environment
-// (e.g. a developer or CI runner with `HTTPS_PROXY` set) can't flip these cases
-// onto the proxy path or leak a stray startup log.
-const proxyEnvironmentKeys = [
-  "HTTP_PROXY",
-  "http_proxy",
-  "HTTPS_PROXY",
-  "https_proxy",
-  "NO_PROXY",
-  "no_proxy",
-];
-
 describe("createTransport (fetch)", () => {
-  const saved = new Map<string, string>();
-
-  beforeEach(() => {
-    for (const key of proxyEnvironmentKeys) {
-      const value = process.env[key];
-      if (typeof value === "string") {
-        saved.set(key, value);
-      }
-      delete process.env[key];
-    }
-  });
-
-  afterEach(() => {
-    for (const key of proxyEnvironmentKeys) {
-      delete process.env[key];
-    }
-    for (const [key, value] of saved) {
-      process.env[key] = value;
-    }
-    saved.clear();
-  });
+  isolateProxyEnvironment();
 
   test("is a function", () => {
     assert.equal(typeof createTransport, "function");

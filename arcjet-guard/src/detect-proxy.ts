@@ -146,60 +146,89 @@ function isNoProxy(url: URL, noProxy: string | undefined): boolean {
   // `url.hostname` wraps IPv6 addresses in brackets (e.g. `[::1]`); strip them
   // so entries can be written with or without brackets.
   const hostname = url.hostname.toLowerCase().replaceAll(/^\[|\]$/g, "");
-  const port = url.port === "" ? (url.protocol === "https:" ? "443" : "80") : url.port;
+  const port =
+    url.port === "" ? (url.protocol === "https:" ? "443" : "80") : url.port;
 
   for (const raw of noProxy.split(/[\s,]+/)) {
     if (raw === "") {
       continue;
     }
 
+    // `*` bypasses the proxy for every host.
     if (raw === "*") {
       return true;
     }
 
-    let entry = raw.toLowerCase();
-    let entryPort: string | undefined;
+    const entry = parseNoProxyEntry(raw);
 
-    // Split off an optional `:port`. A bracketed IPv6 entry (`[::1]:8080`) keeps
-    // its port outside the brackets, a bare IPv6 entry (`::1`) has no port, and
-    // everything else treats a single trailing `:<digits>` as the port (so IPv6
-    // colons are not mistaken for one).
-    const bracketed = entry.match(/^\[(.+)\](?::([0-9]+))?$/);
-    if (bracketed === null) {
-      const colon = entry.lastIndexOf(":");
-      if (colon !== -1 && colon === entry.indexOf(":") && /^[0-9]+$/.test(entry.slice(colon + 1))) {
-        entryPort = entry.slice(colon + 1);
-        entry = entry.slice(0, colon);
-      }
-    } else {
-      entry = bracketed[1] ?? "";
-      entryPort = bracketed[2];
-    }
-
-    if (typeof entryPort === "string" && entryPort !== port) {
+    // A port on the entry must match the target's (default) port.
+    if (entry.port !== undefined && entry.port !== port) {
       continue;
     }
 
-    // Strip a leading wildcard or dot so `.example.com`, `*.example.com`, and
-    // `example.com` all match the domain and its subdomains.
-    if (entry.startsWith("*.")) {
-      entry = entry.slice(1);
-    }
-
-    if (entry.startsWith(".")) {
-      entry = entry.slice(1);
-    }
-
-    if (entry === "") {
-      continue;
-    }
-
-    if (hostname === entry || hostname.endsWith("." + entry)) {
+    if (entry.host !== "" && hostMatches(hostname, entry.host)) {
       return true;
     }
   }
 
   return false;
+}
+
+/**
+ * Parse one `NO_PROXY` entry into its host and optional port.
+ *
+ * @param raw
+ *   A single entry from the `NO_PROXY` list (already split out and non-empty).
+ * @returns
+ *   The lowercased host (with any `*.`/`.` wildcard prefix and IPv6 brackets
+ *   removed) and the explicit `:port`, if the entry had one.
+ */
+function parseNoProxyEntry(raw: string): {
+  host: string;
+  port: string | undefined;
+} {
+  const entry = raw.toLowerCase();
+
+  // Split off an optional `:port`. A bracketed IPv6 entry (`[::1]:8080`) keeps
+  // its port outside the brackets, a bare IPv6 entry (`::1`) has no port, and
+  // everything else treats a single trailing `:<digits>` as the port (so IPv6
+  // colons are not mistaken for one).
+  let host = entry;
+  let port: string | undefined;
+  const bracketed = entry.match(/^\[(.+)\](?::([0-9]+))?$/);
+  if (bracketed === null) {
+    const colon = entry.lastIndexOf(":");
+    if (
+      colon !== -1 &&
+      colon === entry.indexOf(":") &&
+      /^[0-9]+$/.test(entry.slice(colon + 1))
+    ) {
+      host = entry.slice(0, colon);
+      port = entry.slice(colon + 1);
+    }
+  } else {
+    host = bracketed[1] ?? "";
+    port = bracketed[2];
+  }
+
+  // Strip a leading `*.` or `.` so `.example.com`, `*.example.com`, and
+  // `example.com` all match the domain and its subdomains.
+  return { host: host.replace(/^\*?\./, ""), port };
+}
+
+/**
+ * Whether a host name matches a `NO_PROXY` entry host, exactly or as a
+ * subdomain.
+ *
+ * @param hostname
+ *   Host name of the URL being requested.
+ * @param host
+ *   Host parsed from a `NO_PROXY` entry.
+ * @returns
+ *   Whether the host name is, or is a subdomain of, the entry host.
+ */
+function hostMatches(hostname: string, host: string): boolean {
+  return hostname === host || hostname.endsWith("." + host);
 }
 
 /**

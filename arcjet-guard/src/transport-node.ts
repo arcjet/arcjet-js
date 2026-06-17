@@ -60,61 +60,55 @@ export function createTransport(baseUrl: string): Transport {
   const url = new URL(baseUrl);
   const proxyUrl = detectProxy(url);
 
-  if (typeof proxyUrl === "string") {
-    // Bun resolves to this Node entry point for HTTP/2, and Deno can reach it
-    // via an explicit `@arcjet/guard/node` import. Neither runtime's Node HTTP
-    // agent implements the `proxyEnv` option, so the agent path below would
-    // silently bypass the proxy. Both honor the proxy environment variables in
-    // their native `fetch`, so route through the fetch transport instead —
-    // matching how `@arcjet/transport` handles Bun and Deno. The proxy was
-    // already detected and logged above, so build the transport directly
-    // without detecting again.
-    if (isBun() || isDeno()) {
-      return createFetchTransport(baseUrl);
-    }
+  // No proxy: connect directly over HTTP/2, optimistically pre-connecting so
+  // the first `.guard()` call doesn't pay the full TCP + TLS setup cost.
+  if (proxyUrl === undefined) {
+    const sessionManager = new Http2SessionManager(baseUrl, {
+      // AWS Global Accelerator doesn't support PING so we use a very high idle
+      // timeout. Ref:
+      // https://docs.aws.amazon.com/global-accelerator/latest/dg/introduction-how-it-works.html#about-idle-timeout
+      idleConnectionTimeoutMs: 340 * 1000,
+    });
 
-    // Hand the agent only the single proxy we resolved (rather than the whole
-    // environment) so it routes through exactly the proxy we detected, using
-    // our `NO_PROXY` handling as the single source of truth. `keepAlive` lets
-    // it reuse the connection to the proxy across requests, since the direct
-    // HTTP/2 path keeps a long-lived session.
-    //
-    // Type the literal with the exact proxy variable names so a misspelled key
-    // is a compile error; the `proxyEnv` option's `ProcessEnv` index signature
-    // would otherwise accept any key and silently disable proxying.
-    const proxyEnvironment: Partial<
-      Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
-    > =
-      url.protocol === "https:"
-        ? { HTTPS_PROXY: proxyUrl }
-        : { HTTP_PROXY: proxyUrl };
-    const agent =
-      url.protocol === "https:"
-        ? new https.Agent({ keepAlive: true, proxyEnv: proxyEnvironment })
-        : new http.Agent({ keepAlive: true, proxyEnv: proxyEnvironment });
+    // Optimistic pre-connect — failures are silently ignored because the
+    // real RPC call will retry the connection anyway.
+    void sessionManager.connect().catch(() => {});
 
-    // Node's built-in proxy support only works over HTTP/1.1.
     return createConnectTransport({
       baseUrl,
-      httpVersion: "1.1",
-      nodeOptions: { agent },
+      httpVersion: "2",
+      sessionManager,
     });
   }
 
-  const sessionManager = new Http2SessionManager(baseUrl, {
-    // AWS Global Accelerator doesn't support PING so we use a very high idle
-    // timeout. Ref:
-    // https://docs.aws.amazon.com/global-accelerator/latest/dg/introduction-how-it-works.html#about-idle-timeout
-    idleConnectionTimeoutMs: 340 * 1000,
-  });
+  // Proxy on Bun or Deno: their Node HTTP agent ignores the `proxyEnv` option
+  // (Bun resolves `.` to this entry point for HTTP/2; Deno only reaches it via
+  // an explicit `@arcjet/guard/node` import), but their native `fetch` honors
+  // the proxy environment variables — so use the fetch transport instead,
+  // matching how `@arcjet/transport` handles Bun and Deno. The proxy was
+  // already detected and logged above, so build it directly without detecting
+  // again.
+  if (isBun() || isDeno()) {
+    return createFetchTransport(baseUrl);
+  }
 
-  // Optimistic pre-connect — failures are silently ignored because the
-  // real RPC call will retry the connection anyway.
-  void sessionManager.connect().catch(() => {});
+  // Proxy on Node: route through it over HTTP/1.1 using the agent's built-in
+  // proxy support. Hand the agent only the single proxy variable we resolved,
+  // typed with the exact key names so a misspelled key is a compile error (the
+  // `proxyEnv` index signature would otherwise accept any key and silently
+  // bypass the proxy). `keepAlive` reuses the proxy connection across requests.
+  const isHttps = url.protocol === "https:";
+  const proxyEnvironment: Partial<
+    Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
+  > = isHttps ? { HTTPS_PROXY: proxyUrl } : { HTTP_PROXY: proxyUrl };
+  const agent = isHttps
+    ? new https.Agent({ keepAlive: true, proxyEnv: proxyEnvironment })
+    : new http.Agent({ keepAlive: true, proxyEnv: proxyEnvironment });
 
+  // Node's built-in proxy support only works over HTTP/1.1.
   return createConnectTransport({
     baseUrl,
-    httpVersion: "2",
-    sessionManager,
+    httpVersion: "1.1",
+    nodeOptions: { agent },
   });
 }

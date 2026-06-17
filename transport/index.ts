@@ -41,36 +41,27 @@ export function createTransport(
   const proxyUrl = detectProxy(url, options);
 
   if (typeof proxyUrl === "string") {
-    // We hand the agent only the single proxy we resolved (rather than the
-    // whole environment) so it routes through exactly the proxy we detected,
-    // honoring the `proxyEnv` option and our own `NO_PROXY` handling rather than
-    // re-resolving the environment. That keeps detection as the single source of
-    // truth: if we decided a proxy applies, the agent uses it.
+    // Hand the agent only the single proxy variable we resolved (not the whole
+    // environment) so it routes through exactly the proxy our detection chose,
+    // honoring the `proxyEnv` option and our own `NO_PROXY` handling. `keepAlive`
+    // lets the agent reuse the connection to the proxy across requests, like the
+    // long-lived session of the direct HTTP/2 path.
     //
-    // `keepAlive` lets the agent reuse the connection to the proxy across
-    // requests; the direct HTTP/2 path keeps a long-lived session, so without
-    // it the proxy path would open a fresh connection on every call.
-    // We hand the agent only the single proxy variable we resolved. Type the
-    // literal with the exact proxy variable names first so a misspelled key is
-    // a compile error (the `proxyEnv` option is typed as `ProcessEnv`, whose
-    // index signature would otherwise accept any key and silently disable
-    // proxying). The final assertion to `ProcessEnv` is still needed because
-    // some type augmentations (e.g. when this source is bundled into a Next.js
-    // app) make `ProcessEnv` require `NODE_ENV`, so a bare object literal isn't
-    // accepted. The object is correct at runtime — the agent only reads proxy
-    // variables from it.
+    // Type the literal with the exact proxy variable names so a misspelled key
+    // is a compile error (the `proxyEnv` option is `ProcessEnv`, whose index
+    // signature would otherwise accept any key and silently disable proxying).
+    // The `as unknown as ProcessEnv` is still needed because some augmentations
+    // (e.g. bundling into a Next.js app) make `ProcessEnv` require `NODE_ENV`,
+    // so a bare object literal isn't accepted; the object is correct at runtime.
+    const isHttps = url.protocol === "https:";
     const proxyEnvironment: Partial<
       Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
-    > =
-      url.protocol === "https:"
-        ? { HTTPS_PROXY: proxyUrl }
-        : { HTTP_PROXY: proxyUrl };
+    > = isHttps ? { HTTPS_PROXY: proxyUrl } : { HTTP_PROXY: proxyUrl };
     const proxyEnv = proxyEnvironment as unknown as NodeJS.ProcessEnv;
 
-    const agent =
-      url.protocol === "https:"
-        ? new https.Agent({ keepAlive: true, proxyEnv })
-        : new http.Agent({ keepAlive: true, proxyEnv });
+    const agent = isHttps
+      ? new https.Agent({ keepAlive: true, proxyEnv })
+      : new http.Agent({ keepAlive: true, proxyEnv });
 
     // Node's built-in proxy support only works over HTTP/1.1.
     return createConnectTransport({

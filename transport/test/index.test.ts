@@ -3,6 +3,7 @@ import http2 from "node:http2";
 import http from "node:http";
 import https from "node:https";
 import test from "node:test";
+import type { Transport } from "@connectrpc/connect";
 import { connectNodeAdapter } from "@connectrpc/connect-node";
 import { createClient } from "@connectrpc/connect";
 import { createTransport as createTransportBun } from "../bun.js";
@@ -57,6 +58,27 @@ function loggedProxy(
 }
 
 let uniquePort = 3400;
+
+// Start an HTTP origin serving the Eliza service, run `fn` with its URL, then
+// close it.
+async function withHttpOrigin(
+  fn: (url: string) => Promise<void>,
+): Promise<void> {
+  const port = uniquePort++;
+  const server = http.createServer(elizaRoutes());
+
+  await new Promise<void>(function (resolve) {
+    server.listen({ port }, function () {
+      resolve();
+    });
+  });
+
+  try {
+    await fn("http://localhost:" + port);
+  } finally {
+    await server.close();
+  }
+}
 
 test("@arcjet/transport", async function (t) {
   await t.test("should expose the public api", async function () {
@@ -380,86 +402,22 @@ test("@arcjet/transport", async function (t) {
     },
   );
 
-  await t.test("should work over HTTP on Bun", async function () {
-    const port = uniquePort++;
-    const url = "http://localhost:" + port;
+  // Each web-runtime entry point uses `@connectrpc/connect-web` over HTTP/1.1;
+  // they differ only in the runtime they target. Exercise each the same way.
+  const webRuntimes: Array<[string, (url: string) => Transport]> = [
+    ["Bun", createTransportBun],
+    ["Deno", createTransportDeno],
+    ["Vercel Edge", createTransportEdge],
+    ["Cloudflare Workers", createTransportWorkerd],
+  ];
 
-    const server = http.createServer(elizaRoutes());
-
-    await new Promise(function (resolve) {
-      server.listen({ port }, function () {
-        resolve(undefined);
+  for (const [name, create] of webRuntimes) {
+    await t.test("should work over HTTP on " + name, async function () {
+      await withHttpOrigin(async function (url) {
+        const client = createClient(ElizaService, create(url));
+        const result = await client.say({ sentence: "Hi!" });
+        assert.equal(result.sentence, "You said `Hi!`");
       });
     });
-
-    const client = createClient(ElizaService, createTransportBun(url));
-    const result = await client.say({ sentence: "Hi!" });
-
-    await server.close();
-
-    assert.equal(result.sentence, "You said `Hi!`");
-  });
-
-  await t.test("should work over HTTP on Deno", async function () {
-    const port = uniquePort++;
-    const url = "http://localhost:" + port;
-
-    const server = http.createServer(elizaRoutes());
-
-    await new Promise(function (resolve) {
-      server.listen({ port }, function () {
-        resolve(undefined);
-      });
-    });
-
-    const client = createClient(ElizaService, createTransportDeno(url));
-    const result = await client.say({ sentence: "Hi!" });
-
-    await server.close();
-
-    assert.equal(result.sentence, "You said `Hi!`");
-  });
-
-  await t.test("should work over HTTP on Vercel Edge", async function () {
-    const port = uniquePort++;
-    const url = "http://localhost:" + port;
-
-    const server = http.createServer(elizaRoutes());
-
-    await new Promise(function (resolve) {
-      server.listen({ port }, function () {
-        resolve(undefined);
-      });
-    });
-
-    const client = createClient(ElizaService, createTransportEdge(url));
-    const result = await client.say({ sentence: "Hi!" });
-
-    await server.close();
-
-    assert.equal(result.sentence, "You said `Hi!`");
-  });
-
-  await t.test(
-    "should work over HTTP on Cloudflare Workers",
-    async function () {
-      const port = uniquePort++;
-      const url = "http://localhost:" + port;
-
-      const server = http.createServer(elizaRoutes());
-
-      await new Promise(function (resolve) {
-        server.listen({ port }, function () {
-          resolve(undefined);
-        });
-      });
-
-      const client = createClient(ElizaService, createTransportWorkerd(url));
-      const result = await client.say({ sentence: "Hi!" });
-
-      await server.close();
-
-      assert.equal(result.sentence, "You said `Hi!`");
-    },
-  );
+  }
 });
