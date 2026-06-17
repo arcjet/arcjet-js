@@ -123,10 +123,11 @@ jobs:
       matrix:
         include:
           # Bun's native-fetch proxy support is exercised here (not under Node).
-          # Use 1.3.0+, since that is where it was verified to work.
+          # 1.3.0 does not honor the proxy env vars in `fetch`; 1.3.14 is the
+          # version verified to work.
           - runtime: bun
             script: test-runtime-bun
-            bun-version: 1.3.0
+            bun-version: 1.3.14
           - runtime: bun
             script: test-runtime-bun
             bun-version: latest
@@ -144,6 +145,7 @@ jobs:
           allowed-endpoints: >
             api.github.com:443
             deno.com:443
+            dl.deno.land:443
             github.com:443
             nodejs.org:443
             objects.githubusercontent.com:443
