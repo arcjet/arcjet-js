@@ -125,7 +125,8 @@ function proxyForUrl(url: URL, proxyEnv: ProxyEnvironment): string | undefined {
  *
  * Supports the common `NO_PROXY` syntax: a comma- or space-separated list of
  * host suffixes, an optional leading `.` or `*.`, an optional `:port`, and `*`
- * to match everything.
+ * to match everything. Entries are matched as host names; IP/CIDR ranges (e.g.
+ * `10.0.0.0/8`) are not supported, the same as curl.
  *
  * @param url URL that requests will be made to.
  * @param noProxy Value of the `NO_PROXY` environment variable.

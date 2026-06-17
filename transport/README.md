@@ -97,6 +97,13 @@ built-in proxy support:
 - **Edge Light** and **`workerd`** — these edge runtimes don't support outbound
   proxy environment variables, so no proxy is used.
 
+`NO_PROXY` accepts a comma- or space-separated list of host suffixes, each with
+an optional leading `.` or `*.` and an optional `:port`, plus `*` to bypass the
+proxy for every host. Entries are matched as host names; IP/CIDR ranges (such as
+`10.0.0.0/8`) are not supported, the same as [curl][curl-noproxy]. On Bun and
+Deno the runtime's `fetch` applies `NO_PROXY` itself, so its exact semantics are
+the runtime's.
+
 ###### Parameters
 
 - `baseUrl` (`string`, example: `https://example.com/my-api`)
@@ -145,5 +152,6 @@ Configuration for `createTransport` (TypeScript type).
 [arcjet]: https://arcjet.com
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [connect-create-transport]: https://connectrpc.com/docs/web/choosing-a-protocol/
+[curl-noproxy]: https://curl.se/docs/manpage.html#--noproxy
 [squid]: https://www.squid-cache.org/
 [typescript]: https://www.typescriptlang.org/
