@@ -55,25 +55,23 @@ describe("createTransport (node)", () => {
     });
   });
 
-  test("builds a transport when a proxy is detected", () => {
-    const originalProxy = process.env.HTTPS_PROXY;
-    const originalInfo = console.info;
-    console.info = (): void => {};
+  test("builds an HTTPS-proxy transport for an https target", () => {
     process.env.HTTPS_PROXY = "http://127.0.0.1:1";
 
-    try {
-      const transport = createTransport("https://decide.arcjet.com");
+    const transport = createTransport("https://decide.arcjet.com");
 
-      assert.equal(typeof transport, "object");
-      assert.notEqual(transport, null);
-    } finally {
-      if (originalProxy === undefined) {
-        delete process.env.HTTPS_PROXY;
-      } else {
-        process.env.HTTPS_PROXY = originalProxy;
-      }
-      console.info = originalInfo;
-    }
+    assert.equal(typeof transport, "object");
+    assert.notEqual(transport, null);
+  });
+
+  test("builds an HTTP-proxy transport for an http target", () => {
+    // Exercises the `http.Agent` branch (the https one is covered above).
+    process.env.HTTP_PROXY = "http://127.0.0.1:1";
+
+    const transport = createTransport("http://decide.arcjet.com");
+
+    assert.equal(typeof transport, "object");
+    assert.notEqual(transport, null);
   });
 
   test("uses the fetch transport on Bun when a proxy is detected", () => {
