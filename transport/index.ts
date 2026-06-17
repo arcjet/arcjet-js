@@ -51,16 +51,20 @@ export function createTransport(
     // `keepAlive` lets the agent reuse the connection to the proxy across
     // requests; the direct HTTP/2 path keeps a long-lived session, so without
     // it the proxy path would open a fresh connection on every call.
+    // We hand the agent only the single proxy variable we resolved. Its
+    // `proxyEnv` option is typed as `ProcessEnv`, which some type augmentations
+    // (e.g. when this source is bundled into a Next.js app) make require
+    // `NODE_ENV`, so a bare `{ HTTPS_PROXY }` literal isn't accepted. The object
+    // is correct at runtime — the agent only reads proxy variables from it — so
+    // we assert the type rather than pulling in the whole environment.
+    const proxyEnv = (url.protocol === "https:"
+      ? { HTTPS_PROXY: proxyUrl }
+      : { HTTP_PROXY: proxyUrl }) as unknown as NodeJS.ProcessEnv;
+
     const agent =
       url.protocol === "https:"
-        ? new https.Agent({
-            keepAlive: true,
-            proxyEnv: { HTTPS_PROXY: proxyUrl },
-          })
-        : new http.Agent({
-            keepAlive: true,
-            proxyEnv: { HTTP_PROXY: proxyUrl },
-          });
+        ? new https.Agent({ keepAlive: true, proxyEnv })
+        : new http.Agent({ keepAlive: true, proxyEnv });
 
     // Node's built-in proxy support only works over HTTP/1.1.
     return createConnectTransport({

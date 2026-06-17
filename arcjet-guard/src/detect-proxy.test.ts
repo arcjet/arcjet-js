@@ -80,9 +80,10 @@ describe("detectProxy", () => {
       console.info = original;
     }
 
-    const serialized = JSON.stringify(messages);
-    assert.ok(!serialized.includes("secret"));
-    assert.ok(!serialized.includes("proxy.example.com"));
+    // Only the fixed message is logged — never the proxy URL, so credentials
+    // and host can't leak. Asserting the exact output is stronger than checking
+    // for substrings.
+    assert.deepEqual(messages, ["Connecting to the Arcjet API through a proxy"]);
   });
 
   test("honors `NO_PROXY`", () => {
@@ -122,5 +123,61 @@ describe("detectProxy", () => {
         `NO_PROXY=${noProxy} for ${baseUrl}`,
       );
     }
+  });
+
+  test("returns undefined when reading the environment throws", () => {
+    // Simulate a runtime that gates environment access behind a permission
+    // (e.g. Deno without `--allow-env`), where reading a variable throws.
+    const throwing = new Proxy<Record<string, string | undefined>>(
+      {},
+      {
+        get(): never {
+          throw new Error("permission denied");
+        },
+      },
+    );
+
+    const { proxy, logged } = detect("https://decide.arcjet.com", throwing);
+
+    assert.equal(proxy, undefined);
+    assert.equal(logged, false);
+  });
+
+  test("ignores uppercase `HTTP_PROXY` under CGI (httpoxy)", () => {
+    // With `REQUEST_METHOD` set (a CGI environment), uppercase `HTTP_PROXY` —
+    // which an inbound `Proxy` header can populate — is ignored for HTTP.
+    assert.equal(
+      detect("http://api.example.com/", {
+        HTTP_PROXY: "http://attacker.example.com:3128",
+        REQUEST_METHOD: "GET",
+      }).proxy,
+      undefined,
+    );
+
+    // Lowercase `http_proxy` is still honored under CGI.
+    assert.equal(
+      detect("http://api.example.com/", {
+        http_proxy: "http://proxy.example.com:3128",
+        REQUEST_METHOD: "GET",
+      }).proxy,
+      "http://proxy.example.com:3128",
+    );
+
+    // HTTPS targets are unaffected (no header maps to `HTTPS_PROXY`).
+    assert.equal(
+      detect("https://api.example.com/", {
+        HTTPS_PROXY: "http://proxy.example.com:3128",
+        REQUEST_METHOD: "GET",
+      }).proxy,
+      "http://proxy.example.com:3128",
+    );
+
+    // Without `REQUEST_METHOD`, uppercase `HTTP_PROXY` is honored as usual.
+    assert.equal(
+      detect("http://api.example.com/", {
+        HTTP_PROXY: "http://proxy.example.com:3128",
+      }).proxy,
+      "http://proxy.example.com:3128",
+    );
   });
 });

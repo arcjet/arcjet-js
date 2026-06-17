@@ -75,8 +75,16 @@ export function createProxy(
     onRequest();
 
     assert.ok(incoming.url);
-    const target = new URL(incoming.url);
-    assert.equal(target.origin, expectedOrigin);
+    const requested = new URL(incoming.url);
+    assert.equal(requested.origin, expectedOrigin);
+
+    // Build the forwarded URL from the trusted `expectedOrigin` rather than the
+    // incoming request, so the request target's host can't be influenced by the
+    // (asserted, but still externally provided) request URL.
+    const target = new URL(
+      requested.pathname + requested.search,
+      expectedOrigin,
+    );
 
     const forwarded = http.request(
       target,

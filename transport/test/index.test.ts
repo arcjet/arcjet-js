@@ -280,6 +280,59 @@ test("@arcjet/transport", async function (t) {
     }
   });
 
+  await t.test(
+    "should not throw when reading the environment fails",
+    function () {
+      // Simulate a runtime that gates environment access behind a permission
+      // (e.g. Deno without `--allow-env`), where reading a variable throws.
+      const throwing = new Proxy<Record<string, string | undefined>>(
+        {},
+        {
+          get() {
+            throw new Error("permission denied");
+          },
+        },
+      );
+
+      assert.equal(
+        loggedProxy("https://decide.arcjet.com", throwing),
+        undefined,
+      );
+    },
+  );
+
+  await t.test(
+    "should ignore uppercase `HTTP_PROXY` under CGI (httpoxy)",
+    function () {
+      // With `REQUEST_METHOD` set (a CGI environment), uppercase `HTTP_PROXY` —
+      // which an inbound `Proxy` header can populate — is ignored for HTTP.
+      assert.equal(
+        loggedProxy("http://api.example.com/", {
+          HTTP_PROXY: "http://attacker.example.com:3128",
+          REQUEST_METHOD: "GET",
+        }),
+        undefined,
+      );
+
+      // Lowercase `http_proxy` is still honored under CGI.
+      assert.equal(
+        loggedProxy("http://api.example.com/", {
+          http_proxy: "http://proxy.example.com:3128",
+          REQUEST_METHOD: "GET",
+        }),
+        proxyMessage,
+      );
+
+      // Without `REQUEST_METHOD`, uppercase `HTTP_PROXY` is honored as usual.
+      assert.equal(
+        loggedProxy("http://api.example.com/", {
+          HTTP_PROXY: "http://proxy.example.com:3128",
+        }),
+        proxyMessage,
+      );
+    },
+  );
+
   await t.test("should work over HTTP on Bun", async function () {
     const port = uniquePort++;
     const url = "http://localhost:" + port;

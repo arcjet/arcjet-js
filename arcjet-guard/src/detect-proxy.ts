@@ -33,7 +33,15 @@ export function detectProxy(
     return undefined;
   }
 
-  const proxyUrl = proxyForUrl(new URL(baseUrl), proxyEnv);
+  let proxyUrl: string | undefined;
+  try {
+    proxyUrl = proxyForUrl(new URL(baseUrl), proxyEnv);
+  } catch {
+    // Reading proxy environment variables can throw on runtimes that gate
+    // environment access behind a permission (e.g. Deno without `--allow-env`).
+    // Treat that as "no proxy" rather than failing transport creation.
+    return undefined;
+  }
 
   if (typeof proxyUrl === "string") {
     // Log a line at startup so it is easy to know when a proxy is being used.
@@ -80,10 +88,20 @@ function currentEnvironment(): ProxyEnvironment | undefined {
  * @returns Proxy URL to use, or `undefined` when no proxy applies.
  */
 function proxyForUrl(url: URL, proxyEnv: ProxyEnvironment): string | undefined {
+  // httpoxy mitigation: under CGI the inbound `Proxy` request header is exposed
+  // as the `HTTP_PROXY` environment variable, so honoring uppercase `HTTP_PROXY`
+  // for HTTP targets could let a request control outbound proxying. When a CGI
+  // environment is detected (`REQUEST_METHOD` is set), ignore it and use only
+  // the lowercase `http_proxy`. See https://httpoxy.org.
+  const httpProxy =
+    proxyEnv["REQUEST_METHOD"] === undefined
+      ? firstValue(proxyEnv["http_proxy"], proxyEnv["HTTP_PROXY"])
+      : firstValue(proxyEnv["http_proxy"]);
+
   const proxyUrl =
     url.protocol === "https:"
       ? firstValue(proxyEnv["https_proxy"], proxyEnv["HTTPS_PROXY"])
-      : firstValue(proxyEnv["http_proxy"], proxyEnv["HTTP_PROXY"]);
+      : httpProxy;
 
   if (typeof proxyUrl !== "string") {
     return undefined;
