@@ -77,16 +77,20 @@ export function createTransport(baseUrl: string): Transport {
     // our `NO_PROXY` handling as the single source of truth. `keepAlive` lets
     // it reuse the connection to the proxy across requests, since the direct
     // HTTP/2 path keeps a long-lived session.
+    //
+    // Type the literal with the exact proxy variable names so a misspelled key
+    // is a compile error; the `proxyEnv` option's `ProcessEnv` index signature
+    // would otherwise accept any key and silently disable proxying.
+    const proxyEnvironment: Partial<
+      Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
+    > =
+      new URL(baseUrl).protocol === "https:"
+        ? { HTTPS_PROXY: proxyUrl }
+        : { HTTP_PROXY: proxyUrl };
     const agent =
       new URL(baseUrl).protocol === "https:"
-        ? new https.Agent({
-            keepAlive: true,
-            proxyEnv: { HTTPS_PROXY: proxyUrl },
-          })
-        : new http.Agent({
-            keepAlive: true,
-            proxyEnv: { HTTP_PROXY: proxyUrl },
-          });
+        ? new https.Agent({ keepAlive: true, proxyEnv: proxyEnvironment })
+        : new http.Agent({ keepAlive: true, proxyEnv: proxyEnvironment });
 
     // Node's built-in proxy support only works over HTTP/1.1.
     return createConnectTransport({
