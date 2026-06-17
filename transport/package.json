@@ -56,8 +56,8 @@
     "lint": "eslint .",
     "test-api": "node --test -- test/*.test.js",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
-    "test-runtime-bun": "npm run build && bun test test/runtime/proxy.bun.test.ts",
-    "test-runtime-deno": "npm run build && deno test --allow-all --no-check test/runtime/proxy.deno.test.ts",
+    "test-runtime-bun": "npm run build && HTTPS_PROXY=http://127.0.0.1:49219 bun test test/runtime/proxy.bun.test.ts",
+    "test-runtime-deno": "npm run build && HTTPS_PROXY=http://127.0.0.1:49219 deno test --allow-all --no-check test/runtime/proxy.deno.test.ts",
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {

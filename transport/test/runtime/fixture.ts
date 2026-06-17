@@ -45,42 +45,49 @@ function elizaAdapter() {
 }
 
 /**
- * Start an HTTPS Eliza origin reachable only through a `CONNECT` proxy and
- * point `HTTPS_PROXY` at the proxy so the runtime's native `fetch` tunnels
+ * Start an HTTPS Eliza origin reachable only through a `CONNECT` proxy listening
+ * on the port from `HTTPS_PROXY`, so the runtime's native `fetch` tunnels
  * through it.
+ *
+ * `HTTPS_PROXY` must be set by the `test-runtime-*` npm script *before the
+ * process starts* — that mirrors how a proxy is configured in production (a
+ * plain environment variable), and it's required because Bun and older Deno
+ * only read the proxy environment at startup, not when `fetch` is called.
  *
  * @returns
  *   The running fixture.
  */
 export async function startProxyFixture(): Promise<ProxyFixture> {
+  const configuredProxy = process.env.HTTPS_PROXY;
+  if (!configuredProxy) {
+    throw new Error(
+      "HTTPS_PROXY must be set by the test-runtime-* npm script for this test",
+    );
+  }
+  const proxyPort = Number(new URL(configuredProxy).port);
+
   const { key, cert } = generateSelfSignedCert();
 
   const origin = https.createServer({ key, cert }, elizaAdapter());
   const originUrl = await listen(origin, "https");
   const authority = new URL(originUrl).host;
 
+  // We don't trust the origin's self-signed certificate (disabling TLS
+  // verification is a security anti-pattern), so the handshake over the tunnel
+  // is expected to fail; the test only checks that the request was routed
+  // through the proxy via CONNECT.
   let connectRequests = 0;
   const proxy = createConnectProxy(authority, () => {
     connectRequests++;
   });
-  const proxyUrl = await listen(proxy);
-
-  // Point the runtime's native `fetch` at the proxy. We don't trust the
-  // origin's self-signed certificate (disabling TLS verification is a security
-  // anti-pattern), so the handshake over the tunnel is expected to fail; the
-  // test only checks that the request was routed through the proxy via CONNECT.
-  const previousProxy = process.env.HTTPS_PROXY;
-  process.env.HTTPS_PROXY = proxyUrl;
+  await new Promise<void>((resolve) => {
+    proxy.listen(proxyPort, "127.0.0.1", () => resolve());
+  });
 
   return {
     originUrl,
     connectCount: () => connectRequests,
     close: async () => {
-      if (previousProxy === undefined) {
-        delete process.env.HTTPS_PROXY;
-      } else {
-        process.env.HTTPS_PROXY = previousProxy;
-      }
       await close(proxy);
       await close(origin);
     },
