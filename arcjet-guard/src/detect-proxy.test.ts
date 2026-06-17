@@ -30,6 +30,12 @@ describe("detectProxy", () => {
     assert.equal(logged, false);
   });
 
+  test("throws on an invalid base URL", () => {
+    // Matches `@arcjet/transport`: an invalid URL is a programming error and
+    // surfaces rather than being swallowed.
+    assert.throws(() => detectProxy("not a url", {}), /Invalid URL/);
+  });
+
   test("resolves the proxy for HTTPS and HTTP targets", () => {
     assert.equal(
       detect("https://decide.arcjet.com", {

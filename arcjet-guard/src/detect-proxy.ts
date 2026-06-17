@@ -29,13 +29,19 @@ export function detectProxy(
   baseUrl: string,
   proxyEnv: ProxyEnvironment | undefined = currentEnvironment(),
 ): string | undefined {
+  // Parse the URL up front, outside the try/catch, so an invalid `baseUrl`
+  // throws rather than being silently swallowed — matching `@arcjet/transport`,
+  // where this behavior is relied on. Only environment access (below) is
+  // treated as recoverable.
+  const url = new URL(baseUrl);
+
   if (proxyEnv === undefined) {
     return undefined;
   }
 
   let proxyUrl: string | undefined;
   try {
-    proxyUrl = proxyForUrl(new URL(baseUrl), proxyEnv);
+    proxyUrl = proxyForUrl(url, proxyEnv);
   } catch {
     // Reading proxy environment variables can throw on runtimes that gate
     // environment access behind a permission (e.g. Deno without `--allow-env`).
