@@ -253,10 +253,12 @@ export function createConnectProxy(
 /**
  * Generate a throwaway self-signed certificate for `127.0.0.1`.
  *
- * Used to stand up an HTTPS origin so the HTTPS-through-proxy (`CONNECT`) path
- * can be exercised end to end. The client trusts it via
- * `NODE_TLS_REJECT_UNAUTHORIZED=0` in the test, since `createTransport`'s agent
- * doesn't expose a `ca` option.
+ * Used to stand up a real HTTPS origin so the HTTPS-through-proxy (`CONNECT`)
+ * path can be exercised. The client deliberately doesn't trust this
+ * certificate — `createTransport`'s agent exposes no `ca` option and disabling
+ * TLS verification is a security anti-pattern — so the handshake over the
+ * tunnel is expected to fail; the test verifies routing via the proxy
+ * receiving the `CONNECT`.
  *
  * @returns
  *   PEM-encoded private key and certificate.

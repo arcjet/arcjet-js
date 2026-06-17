@@ -16,7 +16,6 @@
     "https_proxy",
     "NO_PROXY",
     "no_proxy",
-    "NODE_TLS_REJECT_UNAUTHORIZED",
     "OPENAI_API_KEY",
     "FIREBASE_CONFIG",
     "FLY_APP_NAME",

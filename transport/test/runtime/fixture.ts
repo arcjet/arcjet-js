@@ -65,14 +65,12 @@ export async function startProxyFixture(): Promise<ProxyFixture> {
   });
   const proxyUrl = await listen(proxy);
 
-  // Point the runtime's native `fetch` at the proxy. The origin uses a
-  // self-signed certificate, so verification is disabled: Bun reads
-  // `NODE_TLS_REJECT_UNAUTHORIZED`, while Deno needs the
-  // `--unsafely-ignore-certificate-errors` flag (set by the npm script).
+  // Point the runtime's native `fetch` at the proxy. We don't trust the
+  // origin's self-signed certificate (disabling TLS verification is a security
+  // anti-pattern), so the handshake over the tunnel is expected to fail; the
+  // test only checks that the request was routed through the proxy via CONNECT.
   const previousProxy = process.env.HTTPS_PROXY;
-  const previousReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
   process.env.HTTPS_PROXY = proxyUrl;
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
   return {
     originUrl,
@@ -82,11 +80,6 @@ export async function startProxyFixture(): Promise<ProxyFixture> {
         delete process.env.HTTPS_PROXY;
       } else {
         process.env.HTTPS_PROXY = previousProxy;
-      }
-      if (previousReject === undefined) {
-        delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-      } else {
-        process.env.NODE_TLS_REJECT_UNAUTHORIZED = previousReject;
       }
       await close(proxy);
       await close(origin);

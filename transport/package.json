@@ -57,7 +57,7 @@
     "test-api": "node --test -- test/*.test.js",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
     "test-runtime-bun": "npm run build && bun test test/runtime/proxy.bun.test.ts",
-    "test-runtime-deno": "npm run build && deno test --allow-all --unsafely-ignore-certificate-errors --no-check test/runtime/proxy.deno.test.ts",
+    "test-runtime-deno": "npm run build && deno test --allow-all --no-check test/runtime/proxy.deno.test.ts",
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
