@@ -45,7 +45,6 @@
   },
   "overrides": {
     "@vanilla-extract/integration": ">=8.0.1",
-    "cookie": "0.7.1",
     "esbuild": ">=0.25.0",
     "qs": "6.15.2",
     "tar": ">=7.5.7",
