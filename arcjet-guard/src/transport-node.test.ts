@@ -20,4 +20,55 @@ describe("createTransport (node)", () => {
       createTransport("https://example.com");
     });
   });
+
+  test("builds a transport when a proxy is detected", () => {
+    const originalProxy = process.env.HTTPS_PROXY;
+    const originalInfo = console.info;
+    console.info = (): void => {};
+    process.env.HTTPS_PROXY = "http://127.0.0.1:1";
+
+    try {
+      const transport = createTransport("https://decide.arcjet.com");
+
+      assert.equal(typeof transport, "object");
+      assert.notEqual(transport, null);
+    } finally {
+      if (originalProxy === undefined) {
+        delete process.env.HTTPS_PROXY;
+      } else {
+        process.env.HTTPS_PROXY = originalProxy;
+      }
+      console.info = originalInfo;
+    }
+  });
+
+  test("uses the fetch transport on Bun when a proxy is detected", () => {
+    const hadBun = "Bun" in globalThis;
+    const originalBun: unknown = Reflect.get(globalThis, "Bun");
+    const originalProxy = process.env.HTTPS_PROXY;
+    const originalInfo = console.info;
+    console.info = (): void => {};
+    // Simulate the Bun runtime, whose Node HTTP agent ignores `proxyEnv`.
+    Reflect.set(globalThis, "Bun", {});
+    process.env.HTTPS_PROXY = "http://127.0.0.1:1";
+
+    try {
+      const transport = createTransport("https://decide.arcjet.com");
+
+      assert.equal(typeof transport, "object");
+      assert.notEqual(transport, null);
+    } finally {
+      if (hadBun) {
+        Reflect.set(globalThis, "Bun", originalBun);
+      } else {
+        Reflect.deleteProperty(globalThis, "Bun");
+      }
+      if (originalProxy === undefined) {
+        delete process.env.HTTPS_PROXY;
+      } else {
+        process.env.HTTPS_PROXY = originalProxy;
+      }
+      console.info = originalInfo;
+    }
+  });
 });

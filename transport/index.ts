@@ -1,19 +1,75 @@
+import type { Transport } from "@connectrpc/connect";
 import {
   createConnectTransport,
   Http2SessionManager,
 } from "@connectrpc/connect-node";
+import * as http from "node:http";
+import * as https from "node:https";
+import { detectProxy } from "./detect-proxy.js";
+
+export type {
+  ProxyEnvironment,
+  TransportLogger,
+  TransportOptions,
+} from "./detect-proxy.js";
+
+import type { TransportOptions } from "./detect-proxy.js";
 
 /**
- * Create a transport that talks over HTTP/2 using Connect RPC.
+ * Create a transport that talks to the Arcjet API using Connect RPC.
  *
  * A thin wrapper around {@linkcode createConnectTransport}.
  *
+ * When a standard proxy environment variable (`HTTP_PROXY` or `HTTPS_PROXY`,
+ * respecting `NO_PROXY`) is detected, the transport routes requests through the
+ * proxy over HTTP/1.1 using the built-in proxy support of the Node.js HTTP
+ * agent and logs a line at startup. Otherwise it connects directly over
+ * HTTP/2.
+ *
  * @param baseUrl
  *   Base URI for all HTTP requests (example: `https://example.com/my-api`).
+ * @param options
+ *   Configuration (optional).
  * @returns
  *   Connect transport used to make RPC calls.
  */
-export function createTransport(baseUrl: string) {
+export function createTransport(
+  baseUrl: string,
+  options?: TransportOptions,
+): Transport {
+  const proxyUrl = detectProxy(baseUrl, options);
+
+  if (typeof proxyUrl === "string") {
+    const url = new URL(baseUrl);
+
+    // We hand the agent only the single proxy we resolved (rather than the
+    // whole environment) so it routes through exactly the proxy we detected,
+    // honoring the `proxyEnv` option and our own `NO_PROXY` handling rather than
+    // re-resolving the environment. That keeps detection as the single source of
+    // truth: if we decided a proxy applies, the agent uses it.
+    //
+    // `keepAlive` lets the agent reuse the connection to the proxy across
+    // requests; the direct HTTP/2 path keeps a long-lived session, so without
+    // it the proxy path would open a fresh connection on every call.
+    const agent =
+      url.protocol === "https:"
+        ? new https.Agent({
+            keepAlive: true,
+            proxyEnv: { HTTPS_PROXY: proxyUrl },
+          })
+        : new http.Agent({
+            keepAlive: true,
+            proxyEnv: { HTTP_PROXY: proxyUrl },
+          });
+
+    // Node's built-in proxy support only works over HTTP/1.1.
+    return createConnectTransport({
+      baseUrl,
+      httpVersion: "1.1",
+      nodeOptions: { agent },
+    });
+  }
+
   // We create our own session manager so we can attempt to pre-connect
   const sessionManager = new Http2SessionManager(baseUrl, {
     // AWS Global Accelerator doesn't support PING so we use a very high idle

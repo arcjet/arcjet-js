@@ -1,0 +1,236 @@
+import process from "node:process";
+import { logLevel } from "@arcjet/env";
+import { Logger } from "@arcjet/logger";
+
+/**
+ * Map of environment variables used to detect an outbound proxy.
+ *
+ * This is the same shape as `process.env`.
+ */
+export type ProxyEnvironment = Record<string, string | undefined>;
+
+/**
+ * Minimal logger used to print a line when a proxy is detected.
+ */
+export interface TransportLogger {
+  /**
+   * Log an informational message.
+   *
+   * @param message
+   *   Template.
+   * @param interpolationValues
+   *   Parameters to interpolate.
+   * @returns
+   *   Nothing.
+   */
+  info(message: string, ...interpolationValues: unknown[]): void;
+}
+
+/**
+ * Configuration shared by all transports.
+ */
+export interface TransportOptions {
+  /**
+   * Logger used to print a line at startup when a proxy is detected (optional).
+   *
+   * Defaults to a logger configured from the `ARCJET_LOG_LEVEL` environment
+   * variable.
+   */
+  log?: TransportLogger | undefined;
+
+  /**
+   * Environment variables used to detect an outbound proxy (optional).
+   *
+   * Defaults to `process.env` so standard proxy environment variables
+   * (`HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY`) are auto-detected. Pass
+   * `false` to ignore proxy environment variables entirely.
+   */
+  proxyEnv?: ProxyEnvironment | false | undefined;
+}
+
+/**
+ * Detect the proxy that applies to a base URL and log a line when one is found.
+ *
+ * Standard proxy environment variables (`HTTP_PROXY` and `HTTPS_PROXY`,
+ * respecting `NO_PROXY`) are auto-detected. When a proxy applies, a single line
+ * is logged at startup so it is easy to know when a proxy is being used. The
+ * proxy URL itself is not logged, since it can contain credentials.
+ *
+ * @param baseUrl
+ *   Base URL that requests will be made to.
+ * @param options
+ *   Configuration (optional).
+ * @returns
+ *   Proxy URL that applies to `baseUrl`, or `undefined` when no proxy applies.
+ */
+export function detectProxy(
+  baseUrl: string,
+  options?: TransportOptions,
+): string | undefined {
+  const url = new URL(baseUrl);
+
+  // Default to detecting proxy configuration from `process.env`. Passing
+  // `false` disables proxy detection entirely.
+  const proxyEnv =
+    options?.proxyEnv === false
+      ? undefined
+      : (options?.proxyEnv ?? process.env);
+
+  const proxyUrl = proxyEnv ? proxyForUrl(url, proxyEnv) : undefined;
+
+  if (typeof proxyUrl === "string") {
+    // Log a line at startup so it is easy to know when a proxy is being used.
+    // We deliberately do not log the proxy URL itself: it can contain
+    // credentials, and not logging it is simpler and safer than redacting it.
+    const log =
+      options?.log ??
+      new Logger({
+        level: logLevel({ ARCJET_LOG_LEVEL: process.env.ARCJET_LOG_LEVEL }),
+      });
+    log.info("Connecting to the Arcjet API through a proxy");
+  }
+
+  return proxyUrl;
+}
+
+// ---------------------------------------------------------------------------
+// Keep the proxy-resolution logic below in sync with the copy in
+// `@arcjet/guard` (`arcjet-guard/src/detect-proxy.ts`). The two packages
+// intentionally duplicate it rather than share a module: `@arcjet/guard`
+// bundles a fetch transport that runs on edge runtimes without `process` or
+// these dependencies, so it keeps an edge-safe copy with no imports. Only the
+// `detectProxy` entry point above differs between the copies; the helpers
+// below should stay logically identical (the two may differ only in line
+// wrapping, since each package runs a different formatter).
+// ---------------------------------------------------------------------------
+
+/**
+ * Find the proxy that should be used for a URL, if any.
+ *
+ * Honors `NO_PROXY` so the result reflects the connection that will actually be
+ * made.
+ *
+ * @param url
+ *   URL that requests will be made to.
+ * @param proxyEnv
+ *   Environment variables to inspect.
+ * @returns
+ *   Proxy URL to use, or `undefined` when no proxy applies.
+ */
+function proxyForUrl(url: URL, proxyEnv: ProxyEnvironment): string | undefined {
+  const proxyUrl =
+    url.protocol === "https:"
+      ? firstValue(proxyEnv["https_proxy"], proxyEnv["HTTPS_PROXY"])
+      : firstValue(proxyEnv["http_proxy"], proxyEnv["HTTP_PROXY"]);
+
+  if (typeof proxyUrl !== "string") {
+    return undefined;
+  }
+
+  if (isNoProxy(url, firstValue(proxyEnv["no_proxy"], proxyEnv["NO_PROXY"]))) {
+    return undefined;
+  }
+
+  return proxyUrl;
+}
+
+/**
+ * Determine whether a URL should bypass the proxy because of `NO_PROXY`.
+ *
+ * Supports the common `NO_PROXY` syntax: a comma- or space-separated list of
+ * host suffixes, an optional leading `.` or `*.`, an optional `:port`, and `*`
+ * to match everything.
+ *
+ * @param url
+ *   URL that requests will be made to.
+ * @param noProxy
+ *   Value of the `NO_PROXY` environment variable.
+ * @returns
+ *   Whether the proxy should be bypassed.
+ */
+function isNoProxy(url: URL, noProxy: string | undefined): boolean {
+  if (typeof noProxy !== "string") {
+    return false;
+  }
+
+  // `url.hostname` wraps IPv6 addresses in brackets (e.g. `[::1]`); strip them
+  // so entries can be written with or without brackets.
+  const hostname = url.hostname.toLowerCase().replaceAll(/^\[|\]$/g, "");
+  const port =
+    url.port === "" ? (url.protocol === "https:" ? "443" : "80") : url.port;
+
+  for (const raw of noProxy.split(/[\s,]+/)) {
+    if (raw === "") {
+      continue;
+    }
+
+    if (raw === "*") {
+      return true;
+    }
+
+    let entry = raw.toLowerCase();
+    let entryPort: string | undefined;
+
+    // Split off an optional `:port`. A bracketed IPv6 entry (`[::1]:8080`) keeps
+    // its port outside the brackets, a bare IPv6 entry (`::1`) has no port, and
+    // everything else treats a single trailing `:<digits>` as the port (so IPv6
+    // colons are not mistaken for one).
+    const bracketed = entry.match(/^\[(.+)\](?::([0-9]+))?$/);
+    if (bracketed === null) {
+      const colon = entry.lastIndexOf(":");
+      if (
+        colon !== -1 &&
+        colon === entry.indexOf(":") &&
+        /^[0-9]+$/.test(entry.slice(colon + 1))
+      ) {
+        entryPort = entry.slice(colon + 1);
+        entry = entry.slice(0, colon);
+      }
+    } else {
+      entry = bracketed[1] ?? "";
+      entryPort = bracketed[2];
+    }
+
+    if (typeof entryPort === "string" && entryPort !== port) {
+      continue;
+    }
+
+    // Strip a leading wildcard or dot so `.example.com`, `*.example.com`, and
+    // `example.com` all match the domain and its subdomains.
+    if (entry.startsWith("*.")) {
+      entry = entry.slice(1);
+    }
+
+    if (entry.startsWith(".")) {
+      entry = entry.slice(1);
+    }
+
+    if (entry === "") {
+      continue;
+    }
+
+    if (hostname === entry || hostname.endsWith("." + entry)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Get the first non-empty string from a list of values.
+ *
+ * @param values
+ *   Values to inspect.
+ * @returns
+ *   First non-empty string, or `undefined`.
+ */
+function firstValue(...values: Array<string | undefined>): string | undefined {
+  for (const value of values) {
+    if (typeof value === "string" && value !== "") {
+      return value;
+    }
+  }
+
+  return undefined;
+}

@@ -430,6 +430,25 @@ See the [docs](https://docs.arcjet.com/mcp-server) for setup instructions.
 
 You can also manage sites and keys with the CLI: `npx @arcjet/cli`.
 
+## Proxy support
+
+The standard proxy environment variables (`HTTP_PROXY` and `HTTPS_PROXY`, while
+respecting `NO_PROXY`) are auto-detected, making it possible to connect to the
+Arcjet API through a proxy such as [Squid](https://www.squid-cache.org/). When a
+proxy is in use, a line is logged at startup; the proxy
+URL itself is not logged, since it can contain credentials. How the request is
+actually proxied depends on the runtime:
+
+- **Node.js** — uses the HTTP/2 transport; when a proxy is detected, requests
+  are routed through it over HTTP/1.1 using the built-in proxy support of the
+  Node.js HTTP agent, otherwise made directly over HTTP/2.
+- **Bun** — uses the HTTP/2 transport directly, but its Node HTTP agent doesn't
+  support proxying, so when a proxy is detected it falls back to the fetch-based
+  transport and Bun's `fetch` performs the proxying natively.
+- **Deno** — the runtime's `fetch` performs the proxying natively.
+- **Cloudflare Workers** and other edge runtimes don't support outbound proxy
+  environment variables, so no proxy is used.
+
 ## Runtime support
 
 | Runtime            | Minimum version          |

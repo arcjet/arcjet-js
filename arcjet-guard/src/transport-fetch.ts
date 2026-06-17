@@ -11,6 +11,8 @@
 import type { Transport } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 
+import { detectProxy } from "./detect-proxy.ts";
+
 /**
  * Create a Connect transport using the web (fetch-based) protocol.
  *
@@ -28,6 +30,27 @@ import { createConnectTransport } from "@connectrpc/connect-web";
  * @see https://github.com/connectrpc/connect-es/pull/1082
  */
 export function createTransport(baseUrl: string): Transport {
+  // The runtime's `fetch` performs any proxying itself (e.g. Deno honors the
+  // standard proxy environment variables natively); we detect only to log a
+  // line when a proxy is in use. Edge runtimes without proxy environment
+  // support simply won't detect one.
+  detectProxy(baseUrl);
+
+  return createFetchTransport(baseUrl);
+}
+
+/**
+ * Build the fetch-based Connect transport without detecting a proxy.
+ *
+ * Separated from {@link createTransport} so the Node entry point can reuse it
+ * on Bun — where the proxy has already been detected and logged, and Bun's
+ * `fetch` performs the proxying itself — without logging the startup line a
+ * second time.
+ *
+ * Overrides `redirect` to `"follow"` because some edge runtimes (workerd,
+ * edge-light) reject the `"error"` default set by connect-web.
+ */
+export function createFetchTransport(baseUrl: string): Transport {
   return createConnectTransport({
     baseUrl,
     fetch: (input: RequestInfo | URL, init?: RequestInit) =>

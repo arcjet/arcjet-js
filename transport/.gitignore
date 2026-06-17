@@ -132,6 +132,10 @@ dist
 # Generated files
 bun.js
 bun.d.ts
+deno.js
+deno.d.ts
+detect-proxy.js
+detect-proxy.d.ts
 edge-light.js
 edge-light.d.ts
 index.js

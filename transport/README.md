@@ -68,33 +68,82 @@ This package exports the identifier
 [`createTransport`][api-create-transport].
 There is no default export.
 
-This package exports no [TypeScript][] types.
+This package exports the [TypeScript][] types
+[`ProxyEnvironment`][api-proxy-environment],
+[`TransportLogger`][api-transport-logger], and
+[`TransportOptions`][api-transport-options].
 
-### `createTransport(baseUrl)`
+### `createTransport(baseUrl[, options])`
 
-Creates a transport that talks over HTTP/2 using
-`@connectrpc/connect-node`. This is a thin wrapper around
-[`createConnectTransport`][connect-create-transport].
-Alternative entry points exist for Bun, Edge Light, and `workerd` that use
-`@connectrpc/connect-web` instead.
+Creates a transport that talks to the Arcjet API. On Node.js it uses
+`@connectrpc/connect-node` over HTTP/2; separate entry points for Bun, Deno,
+Edge Light, and `workerd` use `@connectrpc/connect-web` instead. This is a thin
+wrapper around [`createConnectTransport`][connect-create-transport].
+
+### Proxy support
+
+The standard proxy environment variables (`HTTP_PROXY` and `HTTPS_PROXY`, while
+respecting `NO_PROXY`) are auto-detected, making it possible to connect to the
+Arcjet API through a proxy such as [Squid][squid]. When a proxy is in use, a
+line is logged at startup at `info` level (so set `ARCJET_LOG_LEVEL=info` to see
+it). The proxy URL itself is not logged, since it can contain credentials. How
+the request is actually proxied depends on the runtime, using each runtime's
+built-in proxy support:
+
+- **Node.js** — requests are routed through the proxy over HTTP/1.1 using the
+  built-in proxy support of the Node.js HTTP agent; otherwise they are made
+  directly over HTTP/2.
+- **Bun** and **Deno** — the runtime's `fetch` performs the proxying natively.
+- **Edge Light** and **`workerd`** — these edge runtimes don't support outbound
+  proxy environment variables, so no proxy is used.
 
 ###### Parameters
 
 - `baseUrl` (`string`, example: `https://example.com/my-api`)
   — the base URL for all HTTP requests
+- `options` ([`TransportOptions`][api-transport-options], optional)
+  — configuration
 
 ###### Returns
 
 A Connect transport that you can pass to `createClient` from
 `@arcjet/protocol`.
 
+### `ProxyEnvironment`
+
+Map of environment variables used to detect an outbound proxy (TypeScript
+type). This is the same shape as `process.env`.
+
+### `TransportLogger`
+
+Logger used to print a line at startup when a proxy is detected (TypeScript
+type). It must provide an `info` method.
+
+### `TransportOptions`
+
+Configuration for `createTransport` (TypeScript type).
+
+###### Fields
+
+- `log` ([`TransportLogger`][api-transport-logger], optional)
+  — logger used to print a line at startup when a proxy is detected; defaults
+  to a logger configured from the `ARCJET_LOG_LEVEL` environment variable
+- `proxyEnv` ([`ProxyEnvironment`][api-proxy-environment] or `false`, optional)
+  — environment variables used to detect an outbound proxy; defaults to
+  `process.env` so standard proxy environment variables are auto-detected; pass
+  `false` to ignore proxy environment variables
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
-[api-create-transport]: #createtransportbaseurl
+[api-create-transport]: #createtransportbaseurl-options
+[api-proxy-environment]: #proxyenvironment
+[api-transport-logger]: #transportlogger
+[api-transport-options]: #transportoptions
 [arcjet]: https://arcjet.com
 [arcjet-get-started]: https://docs.arcjet.com/get-started
 [connect-create-transport]: https://connectrpc.com/docs/web/choosing-a-protocol/
+[squid]: https://www.squid-cache.org/
 [typescript]: https://www.typescriptlang.org/

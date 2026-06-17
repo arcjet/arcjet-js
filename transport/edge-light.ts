@@ -12,9 +12,24 @@
 // * <https://github.com/connectrpc/connect-es/pull/1082>
 // * <https://github.com/e2b-dev/E2B/pull/669/files>
 // * <https://github.com/connectrpc/connect-es/issues/577#issuecomment-2210103503>
+import type { Transport } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 
-export function createTransport(baseUrl: string) {
+export type {
+  ProxyEnvironment,
+  TransportLogger,
+  TransportOptions,
+} from "./detect-proxy.js";
+
+import type { TransportOptions } from "./detect-proxy.js";
+
+export function createTransport(
+  baseUrl: string,
+  // These edge runtimes don't support outbound proxy environment variables, so
+  // the options are accepted for API parity with the other entry points but no
+  // proxy is detected or used.
+  _options?: TransportOptions,
+): Transport {
   return createConnectTransport({
     baseUrl,
     fetch: fetchProxy,
