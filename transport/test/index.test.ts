@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import http2 from "node:http2";
 import http from "node:http";
+import https from "node:https";
 import test from "node:test";
 import { connectNodeAdapter } from "@connectrpc/connect-node";
 import { createClient } from "@connectrpc/connect";
@@ -12,7 +13,9 @@ import { createTransport } from "../index.js";
 import { ElizaService } from "./eliza_pb.js";
 import {
   close,
+  createConnectProxy,
   createProxy,
+  generateSelfSignedCert,
   listen,
   withHttpProxyEnvironment,
 } from "./proxy.js";
@@ -117,6 +120,53 @@ test("@arcjet/transport", async function (t) {
       }
 
       assert.equal(proxyRequests, 1);
+    },
+  );
+
+  await t.test(
+    "should work through `HTTPS_PROXY` over HTTP/1.1 via CONNECT",
+    async function () {
+      // The production Arcjet API is HTTPS, so the proxy is reached through an
+      // HTTP/1.1 CONNECT tunnel rather than absolute-form forwarding. Stand up a
+      // self-signed HTTPS origin and a tunneling proxy to exercise that path
+      // end to end.
+      const { key, cert } = generateSelfSignedCert();
+      const origin = https.createServer({ key, cert }, elizaRoutes());
+      const originUrl = await listen(origin, "https");
+      const authority = new URL(originUrl).host;
+
+      let connectRequests = 0;
+      const proxy = createConnectProxy(authority, () => {
+        connectRequests++;
+      });
+      const proxyUrl = await listen(proxy);
+
+      // `createTransport`'s agent doesn't expose a `ca` option, so trust the
+      // self-signed origin by disabling TLS verification for this test only.
+      const previousReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+      try {
+        const client = createClient(
+          ElizaService,
+          createTransport(originUrl, {
+            log: { info() {} },
+            proxyEnv: { HTTPS_PROXY: proxyUrl },
+          }),
+        );
+        const result = await client.say({ sentence: "Hi!" });
+        assert.equal(result.sentence, "You said `Hi!`");
+      } finally {
+        if (previousReject === undefined) {
+          delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+        } else {
+          process.env.NODE_TLS_REJECT_UNAUTHORIZED = previousReject;
+        }
+        await close(proxy);
+        await close(origin);
+      }
+
+      assert.equal(connectRequests, 1);
     },
   );
 
