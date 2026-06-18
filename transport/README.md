@@ -42,6 +42,17 @@ Install with npm in Node.js:
 npm install @arcjet/transport
 ```
 
+## Node.js version support
+
+This package requires `>=22.21.0 <23 || >=24.5.0`. Proxy support relies on the
+built-in proxy support of the Node.js HTTP agent, which is only available on
+Node.js `>=22.21.0` and, on the 24 line, `>=24.5.0`. Node.js 20 is end-of-life
+and Node.js 23 is not supported. Anyone tracking an active LTS release is
+unaffected.
+
+Because every Arcjet SDK depends on this package, the same requirement applies
+across the Arcjet SDKs.
+
 ## Use
 
 ```ts
