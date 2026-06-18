@@ -119,7 +119,7 @@ function detectRuntime(): string | undefined {
 
   // Node.js
   // WinterCG key: "node"
-  // @see https://nodejs.org/docs/latest-v20.x/api/process.html#processversion
+  // @see https://nodejs.org/docs/latest-v22.x/api/process.html#processversion
   if ("process" in g) {
     const proc = g["process"];
     if (typeof proc === "object" && proc !== null && "version" in proc) {

@@ -417,10 +417,16 @@ You can also manage sites and keys with the CLI: `npx @arcjet/cli`.
 
 | Runtime            | Minimum version          |
 | ------------------ | ------------------------ |
-| Node.js            | 22.18.0                  |
+| Node.js            | 22.21.0 [^node]          |
 | Bun                | 1.3.0                    |
 | Deno               | `stable` / `lts`         |
 | Cloudflare Workers | compat date `2025-09-01` |
+
+[^node]:
+    Requires `>=22.21.0 <23 || >=24.5.0`. Node.js 20 is end-of-life and Node.js
+    23 is not supported; on the 24 line the built-in HTTP agent proxy support
+    used for the API transport landed in 24.5.0. Anyone tracking an active LTS
+    release is unaffected.
 
 > [!TIP]
 > Import from `@arcjet/guard` — the correct transport is selected

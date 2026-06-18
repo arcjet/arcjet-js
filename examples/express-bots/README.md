@@ -33,11 +33,6 @@ This example shows how to use Arcjet to perform bot detection with a Node.js
    npm start
    ```
 
-   This assumes you're using Node.js 20 or later because the `start` script
-   loads a local environment file with `--env-file`. If you're using an older
-   version of Node.js, you can use a package like
-   [dotenv](https://www.npmjs.com/package/dotenv) to load the environment file.
-
 4. Visit `http://localhost:3000/` in your browser to see a welcome message.
 5. Use curl to access `http://localhost:3000/` and the request will be denied.
    `curl http://localhost:3000/`

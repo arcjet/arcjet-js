@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24, 25]
+        node: [22, 24, 26]
     permissions:
       contents: read
     steps:
@@ -110,7 +110,7 @@ jobs:
             node-version: 24
           - runtime: node
             script: test-runtime-node
-            node-version: 25
+            node-version: 26
           - runtime: fetch
             script: test-runtime-fetch
             node-version: 22
@@ -119,7 +119,7 @@ jobs:
             node-version: 24
           - runtime: fetch
             script: test-runtime-fetch
-            node-version: 25
+            node-version: 26
           - runtime: cloudflare
             script: test-runtime-cloudflare
           - runtime: bun

@@ -33,11 +33,6 @@ protected by Arcjet using [Newman][newman-docs].
    npm start
    ```
 
-   This assumes you're using Node.js 20 or later because the `start` script
-   loads a local environment file with `--env-file`. If you're using an older
-   version of Node.js, you can use a package like
-   [dotenv](https://www.npmjs.com/package/dotenv) to load the environment file.
-
 5. In another terminal, run the included Postman Collections as tests:
 
    - `npx newman run tests/low-rate-limit.json`

@@ -36,10 +36,6 @@ npm start
 > make sure to rename `.env.local.example` to `.env.local` and add your Arcjet
 > key.
 
-> 👉 **Note**:
-> If you get a `node: bad option: --env-file` error please update to
-> Node.js 20 or later.
-
 Now visit `http://localhost:3000/`: you should see “Hello world”.
 Refresh the page to trigger the rate limit: you should see “Too many requests”.
 You’ll be blocked for 10 seconds.

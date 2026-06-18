@@ -33,11 +33,6 @@ This example shows how to use Arcjet to perform Sensitive Information detection 
    npm start
    ```
 
-   This assumes you're using Node.js 20 or later because the `start` script
-   loads a local environment file with `--env-file`. If you're using an older
-   version of Node.js, you can use a package like
-   [dotenv](https://www.npmjs.com/package/dotenv) to load the environment file.
-
 4. Execute to POST request to `http://localhost:3000/` without any sensitive data.
    `curl http://localhost:3000/ -H "Content-Type: text/plain" -X POST --data "hello world!"`
 5. Execute to POST request to `http://localhost:3000/` with some blocked entities in the body

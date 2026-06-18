@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js >= 22.18.0
+- Node.js >= 22.21.0 (`>=22.21.0 <23 || >=24.5.0`)
 - npm
 
 Optional for runtime tests:
