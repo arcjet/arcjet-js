@@ -43,25 +43,30 @@ export function createTransport(
   if (typeof proxyUrl === "string") {
     // Hand the agent only the single proxy variable we resolved (not the whole
     // environment) so it routes through exactly the proxy our detection chose,
-    // honoring the `proxyEnv` option and our own `NO_PROXY` handling. `keepAlive`
-    // lets the agent reuse the connection to the proxy across requests, like the
-    // long-lived session of the direct HTTP/2 path.
+    // honoring our `NO_PROXY` handling. `keepAlive` lets the agent reuse the
+    // connection to the proxy across requests, like the long-lived session of
+    // the direct HTTP/2 path.
     //
     // Type the literal with the exact proxy variable names so a misspelled key
-    // is a compile error (the `proxyEnv` option is `ProcessEnv`, whose index
-    // signature would otherwise accept any key and silently disable proxying).
-    // The `as unknown as ProcessEnv` is still needed because some augmentations
-    // (e.g. bundling into a Next.js app) make `ProcessEnv` require `NODE_ENV`,
-    // so a bare object literal isn't accepted; the object is correct at runtime.
+    // is a compile error. The agent's `proxyEnv` option only exists in
+    // @types/node 24.x, but this source is also type-checked on the 22.x line
+    // (e.g. when bundled into @arcjet/next or @arcjet/sveltekit), so `proxyEnv`
+    // is added through an intersection type rather than relying on it being a
+    // known `AgentOptions` property. The `as unknown as ProcessEnv` is needed
+    // because some augmentations (e.g. Next.js) make `ProcessEnv` require
+    // `NODE_ENV`; the object is correct at runtime.
     const isHttps = url.protocol === "https:";
     const proxyEnvironment: Partial<
       Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
     > = isHttps ? { HTTPS_PROXY: proxyUrl } : { HTTP_PROXY: proxyUrl };
-    const proxyEnv = proxyEnvironment as unknown as NodeJS.ProcessEnv;
+    const options: http.AgentOptions & { proxyEnv: NodeJS.ProcessEnv } = {
+      keepAlive: true,
+      proxyEnv: proxyEnvironment as unknown as NodeJS.ProcessEnv,
+    };
 
     const agent = isHttps
-      ? new https.Agent({ keepAlive: true, proxyEnv })
-      : new http.Agent({ keepAlive: true, proxyEnv });
+      ? new https.Agent(options)
+      : new http.Agent(options);
 
     // Node's built-in proxy support only works over HTTP/1.1.
     return createConnectTransport({

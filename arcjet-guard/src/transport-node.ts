@@ -94,16 +94,20 @@ export function createTransport(baseUrl: string): Transport {
 
   // Proxy on Node: route through it over HTTP/1.1 using the agent's built-in
   // proxy support. Hand the agent only the single proxy variable we resolved,
-  // typed with the exact key names so a misspelled key is a compile error (the
-  // `proxyEnv` index signature would otherwise accept any key and silently
-  // bypass the proxy). `keepAlive` reuses the proxy connection across requests.
+  // typed with the exact key names so a misspelled key is a compile error.
+  // `keepAlive` reuses the proxy connection across requests. The agent's
+  // `proxyEnv` option only exists in @types/node 24.x, so it's added through an
+  // intersection type to keep this type-checking on the 22.x line used across
+  // the monorepo.
   const isHttps = url.protocol === "https:";
   const proxyEnvironment: Partial<
     Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
   > = isHttps ? { HTTPS_PROXY: proxyUrl } : { HTTP_PROXY: proxyUrl };
-  const agent = isHttps
-    ? new https.Agent({ keepAlive: true, proxyEnv: proxyEnvironment })
-    : new http.Agent({ keepAlive: true, proxyEnv: proxyEnvironment });
+  const options: http.AgentOptions & { proxyEnv: typeof proxyEnvironment } = {
+    keepAlive: true,
+    proxyEnv: proxyEnvironment,
+  };
+  const agent = isHttps ? new https.Agent(options) : new http.Agent(options);
 
   // Node's built-in proxy support only works over HTTP/1.1.
   return createConnectTransport({
