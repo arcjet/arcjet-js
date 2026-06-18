@@ -1,0 +1,29 @@
+{
+  "features": {
+    "ghcr.io/devcontainers-extra/features/deno-asdf:2.0.16": {
+      "version": "2.0.16",
+      "resolved": "ghcr.io/devcontainers-extra/features/deno-asdf@sha256:55eba9e5d1a15158787fb34fda9a2308045dc6a0e38f41bd4e0ed4c967fa5aaa",
+      "integrity": "sha256:55eba9e5d1a15158787fb34fda9a2308045dc6a0e38f41bd4e0ed4c967fa5aaa"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2.3.2": {
+      "version": "2.3.2",
+      "resolved": "ghcr.io/devcontainers/features/common-utils@sha256:c5fecdd9a372a69c8c869e6f9c62fb815ed0b04cbe1485613c8dce5d9264ecb4",
+      "integrity": "sha256:c5fecdd9a372a69c8c869e6f9c62fb815ed0b04cbe1485613c8dce5d9264ecb4"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1.1.0": {
+      "version": "1.1.0",
+      "resolved": "ghcr.io/devcontainers/features/github-cli@sha256:d22f50b70ed75339b4eed1ba9ecde3a1791f90e88d37936517e3bace0bbad671",
+      "integrity": "sha256:d22f50b70ed75339b4eed1ba9ecde3a1791f90e88d37936517e3bace0bbad671"
+    },
+    "ghcr.io/prulloac/devcontainer-features/bun:1.2.0": {
+      "version": "1.2.0",
+      "resolved": "ghcr.io/prulloac/devcontainer-features/bun@sha256:d73ff97653e603acd102514baf6b63873fca54d5b883722c7d8344efeeb51097",
+      "integrity": "sha256:d73ff97653e603acd102514baf6b63873fca54d5b883722c7d8344efeeb51097"
+    },
+    "ghcr.io/trunk-io/devcontainer-feature/trunk:1.1.0": {
+      "version": "1.1.0",
+      "resolved": "ghcr.io/trunk-io/devcontainer-feature/trunk@sha256:8d913c1753a4e188400da05c64c958c78caedb2c92b984988891c443c3cc1e4d",
+      "integrity": "sha256:8d913c1753a4e188400da05c64c958c78caedb2c92b984988891c443c3cc1e4d"
+    }
+  }
+}
