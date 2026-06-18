@@ -82,7 +82,7 @@
     "@connectrpc/connect-web": "^2.0.0"
   },
   "devDependencies": {
-    "@types/node": "22.19.19",
+    "@types/node": "22.19.21",
     "@typescript/native-preview": "7.0.0-dev.20260602.1",
     "miniflare": "4.20260529.0",
     "oxfmt": "0.53.0",
@@ -92,6 +92,6 @@
     "rolldown-plugin-dts": "0.25.2"
   },
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.21.0 <23 || >=24.5.0"
   }
 }

@@ -32,9 +32,15 @@
     },
     {
       "matchManagers": ["npm", "github-actions"],
-      "matchPackageNames": ["node", "@types/node", "actions/node-versions"],
+      "matchPackageNames": ["node", "actions/node-versions"],
       "groupName": "node",
-      "allowedVersions": "<25"
+      "allowedVersions": "<27"
+    },
+    {
+      "description": "Pin @types/node to the oldest supported Node.js line (22.x) so type checking reflects the minimum supported runtime rather than a newer one.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<23"
     },
     {
       "matchManagers": ["npm"],

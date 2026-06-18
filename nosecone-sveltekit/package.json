@@ -37,7 +37,7 @@
     "url": "https://arcjet.com"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.21.0 <23 || >=24.5.0"
   },
   "type": "module",
   "main": "./index.js",
@@ -65,7 +65,7 @@
     "@rollup/wasm-node": "4.61.0",
     "@sveltejs/kit": "2.60.1",
     "@sveltejs/vite-plugin-svelte": "7.0.0",
-    "@types/node": "24.12.4",
+    "@types/node": "22.19.21",
     "eslint": "9.39.4",
     "svelte": "5.55.7",
     "typescript": "5.9.3",
