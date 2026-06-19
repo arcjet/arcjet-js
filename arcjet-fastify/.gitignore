@@ -1,3 +1,6 @@
 test/**/*.js
 index.d.ts
 index.js
+
+# Generated files
+dist/

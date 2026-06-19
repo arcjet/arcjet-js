@@ -21,7 +21,7 @@ import arcjetFastify, {
   protectSignup,
   sensitiveInfo,
   validateEmail,
-} from "../index.js";
+} from "../dist/index.js";
 
 const exampleKey = "ajkey_yourkey";
 const oneMegabyte = 1024 * 1024;
@@ -30,7 +30,7 @@ let uniquePort = 3200;
 
 test("`@arcjet/fastify`", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
       "ArcjetAllowDecision",
       "ArcjetBotReason",
       "ArcjetChallengeDecision",
