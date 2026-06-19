@@ -130,12 +130,4 @@ dist
 .pnp.*
 
 # Generated files
-bun.js
-bun.d.ts
-edge-light.js
-edge-light.d.ts
-index.js
-index.d.ts
-workerd.js
-workerd.d.ts
-test/*.js
+dist/
