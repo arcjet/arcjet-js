@@ -8,8 +8,8 @@
 // Run: bun test test/runtime/proxy.bun.test.ts
 import { expect, test } from "bun:test";
 import { createClient } from "@connectrpc/connect";
-import { createTransport } from "../../bun.js";
-import { ElizaService } from "../eliza_pb.js";
+import { createTransport } from "../../dist/bun.js";
+import { ElizaService } from "../eliza_pb.ts";
 import { startProxyFixture } from "./fixture.ts";
 
 test("routes through `HTTPS_PROXY` via Bun's native fetch", async () => {

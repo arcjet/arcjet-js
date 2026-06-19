@@ -32,7 +32,7 @@ function read(relativePath: string): string {
 }
 
 test("proxy-resolution helpers stay in sync across packages", function () {
-  const transport = sharedHelpers(read("../detect-proxy.ts"));
+  const transport = sharedHelpers(read("../src/detect-proxy.ts"));
   const guard = sharedHelpers(read("../../arcjet-guard/src/detect-proxy.ts"));
 
   assert.equal(

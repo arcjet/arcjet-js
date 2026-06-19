@@ -9,8 +9,8 @@
 //   --no-check test/runtime/proxy.deno.test.ts
 import assert from "node:assert/strict";
 import { createClient } from "@connectrpc/connect";
-import { createTransport } from "../../deno.js";
-import { ElizaService } from "../eliza_pb.js";
+import { createTransport } from "../../dist/deno.js";
+import { ElizaService } from "../eliza_pb.ts";
 import { startProxyFixture } from "./fixture.ts";
 
 Deno.test("routes through `HTTPS_PROXY` via Deno's native fetch", async () => {

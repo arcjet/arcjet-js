@@ -12,13 +12,13 @@
 // exercises the `CONNECT` path rather than plaintext-HTTP forwarding.
 import https from "node:https";
 import { connectNodeAdapter } from "@connectrpc/connect-node";
-import { ElizaService } from "../eliza_pb.js";
+import { ElizaService } from "../eliza_pb.ts";
 import {
   close,
   createConnectProxy,
   generateSelfSignedCert,
   listen,
-} from "../proxy.js";
+} from "../proxy.ts";
 
 /**
  * A running proxy + origin pair for a single runtime proxy test.

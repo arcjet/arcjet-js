@@ -6,13 +6,13 @@ import test from "node:test";
 import type { Transport } from "@connectrpc/connect";
 import { connectNodeAdapter } from "@connectrpc/connect-node";
 import { createClient } from "@connectrpc/connect";
-import { createTransport as createTransportBun } from "../bun.js";
-import { createTransport as createTransportDeno } from "../deno.js";
-import { createTransport as createTransportEdge } from "../edge-light.js";
-import { createTransport as createTransportWorkerd } from "../workerd.js";
-import { createTransport } from "../index.js";
-import { createTunnelingConnection } from "../proxy-tunnel.js";
-import { ElizaService } from "./eliza_pb.js";
+import { createTransport as createTransportBun } from "../dist/bun.js";
+import { createTransport as createTransportDeno } from "../dist/deno.js";
+import { createTransport as createTransportEdge } from "../dist/edge-light.js";
+import { createTransport as createTransportWorkerd } from "../dist/workerd.js";
+import { createTransport } from "../dist/index.js";
+import { createTunnelingConnection } from "../dist/proxy-tunnel.js";
+import { ElizaService } from "./eliza_pb.ts";
 import {
   close,
   createConnectProxy,
@@ -21,7 +21,7 @@ import {
   listen,
   trackHttp2Sessions,
   withHttpProxyEnvironment,
-} from "./proxy.js";
+} from "./proxy.ts";
 
 function elizaRoutes() {
   return connectNodeAdapter({
@@ -84,7 +84,7 @@ async function withHttpOrigin(
 
 test("@arcjet/transport", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
       "createTransport",
     ]);
   });

@@ -28,39 +28,43 @@
     "node": ">=22.21.0 <23 || >=24.5.0"
   },
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "bun": "./bun.js",
-    "deno": "./deno.js",
-    "edge-light": "./edge-light.js",
-    "workerd": "./workerd.js",
-    "default": "./index.js"
+    ".": {
+      "bun": {
+        "types": "./dist/bun.d.ts",
+        "default": "./dist/bun.js"
+      },
+      "deno": {
+        "types": "./dist/deno.d.ts",
+        "default": "./dist/deno.js"
+      },
+      "edge-light": {
+        "types": "./dist/edge-light.d.ts",
+        "default": "./dist/edge-light.js"
+      },
+      "workerd": {
+        "types": "./dist/workerd.d.ts",
+        "default": "./dist/workerd.js"
+      },
+      "default": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
-    "bun.d.ts",
-    "bun.js",
-    "deno.d.ts",
-    "deno.js",
-    "detect-proxy.d.ts",
-    "detect-proxy.js",
-    "edge-light.d.ts",
-    "edge-light.js",
-    "index.d.ts",
-    "index.js",
-    "proxy-tunnel.d.ts",
-    "proxy-tunnel.js",
-    "workerd.d.ts",
-    "workerd.js"
+    "dist"
   ],
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
+    "build": "tsdown",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
     "test-runtime-bun": "npm run build && HTTPS_PROXY=http://127.0.0.1:49219 bun test test/runtime/proxy.bun.test.ts",
     "test-runtime-deno": "npm run build && HTTPS_PROXY=http://127.0.0.1:49219 deno test --allow-all --no-check test/runtime/proxy.deno.test.ts",
-    "test": "npm run build && npm run lint && npm run test-coverage"
+    "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
     "@arcjet/env": "1.7.0",
@@ -71,11 +75,8 @@
     "@connectrpc/connect-web": "2.1.2"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.7.0",
-    "@arcjet/rollup-config": "1.7.0",
-    "@rollup/wasm-node": "4.62.2",
     "@types/node": "22.19.21",
-    "eslint": "9.39.4",
+    "tsdown": "0.22.3",
     "typescript": "5.9.3"
   },
   "publishConfig": {
