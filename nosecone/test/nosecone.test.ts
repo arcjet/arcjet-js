@@ -18,11 +18,11 @@ import nosecone, {
   createXssProtection,
   NoseconeValidationError,
   withVercelToolbar,
-} from "../index.js";
+} from "../dist/index.js";
 
 test("nosecone", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
       // TODO(@wooorm-arcjet): that’s a ton, perhaps make it smaller.
       "CONTENT_SECURITY_POLICY_DIRECTIVES",
       "CROSS_ORIGIN_EMBEDDER_POLICIES",
