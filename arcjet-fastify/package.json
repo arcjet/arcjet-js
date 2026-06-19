@@ -42,18 +42,22 @@
     "node": ">=22.21.0 <23 || >=24.5.0"
   },
   "type": "module",
-  "exports": "./index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
-    "index.d.ts",
-    "index.js"
+    "dist"
   ],
   "scripts": {
-    "build": "rollup --config",
-    "lint": "eslint .",
+    "build": "tsdown",
     "prepublishOnly": "npm run build",
-    "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=80 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=90 -- test/*.test.js",
-    "test": "npm run build && npm run lint && npm run test-coverage"
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=80 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=90 -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
     "@arcjet/env": "1.7.0",
@@ -69,16 +73,15 @@
   },
   "devDependencies": {
     "@arcjet/cache": "1.7.0",
-    "@arcjet/eslint-config": "1.7.0",
-    "@arcjet/rollup-config": "1.7.0",
-    "@rollup/wasm-node": "4.62.2",
     "@types/node": "22.19.21",
-    "eslint": "9.39.4",
     "fastify": "5.8.5",
+    "tsdown": "0.22.3",
     "typescript": "5.9.3"
   },
   "publishConfig": {
     "access": "public",
     "tag": "latest"
-  }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
 }
