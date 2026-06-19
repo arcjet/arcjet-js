@@ -28,37 +28,38 @@
     "node": ">=22.21.0 <23 || >=24.5.0"
   },
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "edge-light": "./edge-light.js",
-    "workerd": "./workerd.js",
-    "default": "./index.js"
+    ".": {
+      "edge-light": {
+        "types": "./dist/edge-light.d.ts",
+        "default": "./dist/edge-light.js"
+      },
+      "workerd": {
+        "types": "./dist/workerd.d.ts",
+        "default": "./dist/workerd.js"
+      },
+      "default": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
-    "edge-light.d.ts",
-    "edge-light.js",
-    "hasher.d.ts",
-    "hasher.js",
-    "index.d.ts",
-    "index.js",
-    "workerd.d.ts",
-    "workerd.js"
+    "dist"
   ],
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
-    "test": "npm run build && npm run lint && npm run test-coverage"
+    "build": "tsdown",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.7.0",
-    "@arcjet/rollup-config": "1.7.0",
-    "@rollup/wasm-node": "4.62.2",
     "@types/node": "22.19.21",
-    "eslint": "9.39.4",
+    "tsdown": "0.22.3",
     "typescript": "5.9.3"
   },
   "publishConfig": {

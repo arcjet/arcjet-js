@@ -7,8 +7,8 @@ import {
   string,
   stringSliceOrdered,
   makeHasher,
-} from "../hasher.js";
-import type { StringWriter } from "../hasher.js";
+} from "../dist/hasher.js";
+import type { StringWriter } from "../dist/hasher.js";
 
 describe("hasher", () => {
   const maxUint32 = 4294967295;
