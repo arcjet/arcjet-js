@@ -10,8 +10,8 @@ import {
   ReportResponseSchema,
   RuleSchema,
   SDKStack,
-} from "../proto/decide/v1alpha1/decide_pb.js";
-import { type ClientOptions, createClient, decideTimeout } from "../client.js";
+} from "../dist/proto/decide/v1alpha1/decide_pb.js";
+import { type ClientOptions, createClient, decideTimeout } from "../dist/client.js";
 import {
   type ArcjetCacheEntry,
   type ArcjetConclusion,
@@ -25,7 +25,7 @@ import {
   ArcjetErrorReason,
   ArcjetReason,
   ArcjetRuleResult,
-} from "../index.js";
+} from "../dist/index.js";
 
 class ArcjetInvalidDecision extends ArcjetDecision {
   conclusion: ArcjetConclusion;
