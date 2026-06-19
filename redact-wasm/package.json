@@ -29,40 +29,40 @@
     "node": ">=22.21.0 <23 || >=24.5.0"
   },
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "edge-light": "./edge-light.js",
-    "workerd": "./workerd.js",
-    "default": "./index.js"
+    ".": {
+      "edge-light": {
+        "types": "./dist/edge-light.d.ts",
+        "default": "./dist/edge-light.js"
+      },
+      "workerd": {
+        "types": "./dist/workerd.d.ts",
+        "default": "./dist/workerd.js"
+      },
+      "default": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
-    "_virtual/",
-    "wasm/",
-    "edge-light.d.ts",
-    "edge-light.js",
-    "index.d.ts",
-    "index.js",
-    "workerd.d.ts",
-    "workerd.js"
+    "dist"
   ],
   "scripts": {
-    "build:jco": "jco transpile --instantiation async --no-wasi-shim --out-dir wasm/ -- wasm/arcjet_analyze_bindings_redact.component.wasm",
-    "build:rollup": "rollup --config rollup.config.js",
-    "build": "npm run build:jco && npm run build:rollup",
-    "lint": "eslint .",
-    "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
-    "test": "npm run build && npm run lint && npm run test-coverage"
+    "build:jco": "jco transpile --instantiation async --no-wasi-shim --out-dir src/wasm/ -- src/wasm/arcjet_analyze_bindings_redact.component.wasm",
+    "build": "npm run build:jco && tsdown",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.6.1",
-    "@arcjet/rollup-config": "1.6.1",
     "@bytecodealliance/jco": "1.5.0",
-    "@rollup/wasm-node": "4.62.2",
     "@types/node": "22.19.21",
-    "eslint": "9.39.4",
+    "tsdown": "0.22.3",
     "typescript": "5.9.3"
   },
   "publishConfig": {
