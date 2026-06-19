@@ -18,7 +18,7 @@ import {
   RuleSchema,
   RuleState,
   SDKStack,
-} from "../proto/decide/v1alpha1/decide_pb.js";
+} from "../dist/proto/decide/v1alpha1/decide_pb.js";
 import {
   ArcjetModeToProtocol,
   ArcjetEmailTypeToProtocol,
@@ -35,7 +35,7 @@ import {
   ArcjetDecisionToProtocol,
   ArcjetDecisionFromProtocol,
   ArcjetRuleToProtocol,
-} from "../convert.js";
+} from "../dist/convert.js";
 import {
   type ArcjetBotRule,
   type ArcjetEmailRule,
@@ -60,7 +60,7 @@ import {
   ArcjetRuleResult,
   ArcjetSensitiveInfoReason,
   ArcjetShieldReason,
-} from "../index.js";
+} from "../dist/index.js";
 
 test("convert", async (t) => {
   await t.test("ArcjetModeToProtocol", async (t) => {
