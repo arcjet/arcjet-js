@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { initializeWasm } from "../index.js";
+import { initializeWasm } from "../dist/index.js";
 
 const wasm = await initializeWasm(detectNothing, replaceNothing);
 assert.ok(wasm);
 
 test("@arcjet/redact-wasm", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
       "initializeWasm",
     ]);
   });
