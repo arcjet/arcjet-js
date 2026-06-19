@@ -38,16 +38,14 @@
   },
   "engines": {},
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "index.d.ts",
-    "index.js"
+    "dist"
   ],
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "test": "npm run build && npm run lint"
+    "build": "tsdown",
+    "test": "npm run build"
   },
   "dependencies": {
     "@arcjet/body": "1.5.0",
@@ -60,14 +58,18 @@
     "arcjet": "1.5.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.5.0",
-    "@arcjet/rollup-config": "1.5.0",
-    "@rollup/wasm-node": "4.61.0",
-    "eslint": "9.39.4",
+    "tsdown": "0.22.3",
     "typescript": "5.9.3"
   },
   "publishConfig": {
     "access": "public",
     "tag": "latest"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   }
 }
