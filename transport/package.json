@@ -48,6 +48,8 @@
     "edge-light.js",
     "index.d.ts",
     "index.js",
+    "proxy-tunnel.d.ts",
+    "proxy-tunnel.js",
     "workerd.d.ts",
     "workerd.js"
   ],

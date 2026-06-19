@@ -6,6 +6,7 @@ import {
 import * as http from "node:http";
 import * as https from "node:https";
 import { detectProxy } from "./detect-proxy.js";
+import { createTunnelingConnection } from "./proxy-tunnel.js";
 
 export type {
   ProxyEnvironment,
@@ -22,9 +23,11 @@ import type { TransportOptions } from "./detect-proxy.js";
  *
  * When a standard proxy environment variable (`HTTP_PROXY` or `HTTPS_PROXY`,
  * respecting `NO_PROXY`) is detected, the transport routes requests through the
- * proxy over HTTP/1.1 using the built-in proxy support of the Node.js HTTP
- * agent and logs a line at startup. Otherwise it connects directly over
- * HTTP/2.
+ * proxy and logs a line at startup. By default it proxies over HTTP/1.1 using
+ * the built-in proxy support of the Node.js HTTP agent; set
+ * `options.proxyHttpVersion` to `"2"` to instead tunnel HTTP/2 to the origin
+ * via `CONNECT` (see {@linkcode TransportOptions.proxyHttpVersion}). Without a
+ * proxy it always connects directly over HTTP/2.
  *
  * @param baseUrl
  *   Base URI for all HTTP requests (example: `https://example.com/my-api`).
@@ -41,11 +44,36 @@ export function createTransport(
   const proxyUrl = detectProxy(url, options);
 
   if (typeof proxyUrl === "string") {
-    // Hand the agent only the single proxy variable we resolved (not the whole
-    // environment) so it routes through exactly the proxy our detection chose,
-    // honoring our `NO_PROXY` handling. `keepAlive` lets the agent reuse the
-    // connection to the proxy across requests, like the long-lived session of
-    // the direct HTTP/2 path.
+    // HTTP/2 through the proxy: open a `CONNECT` tunnel and keep HTTP/2 to the
+    // origin end-to-end (the proxy only blindly forwards the tunnel, so ALPN is
+    // negotiated directly with the origin). Reuse the same pre-connecting
+    // session manager as the direct path so pings and the idle timeout behave
+    // identically; only the underlying connection is tunneled.
+    if (options?.proxyHttpVersion === "2") {
+      const sessionManager = new Http2SessionManager(
+        baseUrl,
+        // AWS Global Accelerator doesn't support PING so we use a very high
+        // idle timeout. Ref:
+        // https://docs.aws.amazon.com/global-accelerator/latest/dg/introduction-how-it-works.html#about-idle-timeout
+        { idleConnectionTimeoutMs: 340 * 1000 },
+        { createConnection: createTunnelingConnection(proxyUrl) },
+      );
+
+      // We ignore the promise result because this is an optimistic pre-connect.
+      sessionManager.connect();
+
+      return createConnectTransport({
+        baseUrl,
+        httpVersion: "2",
+        sessionManager,
+      });
+    }
+
+    // HTTP/1.1 through the proxy (default). Hand the agent only the single
+    // proxy variable we resolved (not the whole environment) so it routes
+    // through exactly the proxy our detection chose, honoring our `NO_PROXY`
+    // handling. `keepAlive` lets the agent reuse the connection to the proxy
+    // across requests, like the long-lived session of the direct HTTP/2 path.
     //
     // Type the literal with the exact proxy variable names so a misspelled key
     // is a compile error. The agent's `proxyEnv` option only exists in
@@ -59,14 +87,14 @@ export function createTransport(
     const proxyEnvironment: Partial<
       Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
     > = isHttps ? { HTTPS_PROXY: proxyUrl } : { HTTP_PROXY: proxyUrl };
-    const options: http.AgentOptions & { proxyEnv: NodeJS.ProcessEnv } = {
+    const agentOptions: http.AgentOptions & { proxyEnv: NodeJS.ProcessEnv } = {
       keepAlive: true,
       proxyEnv: proxyEnvironment as unknown as NodeJS.ProcessEnv,
     };
 
     const agent = isHttps
-      ? new https.Agent(options)
-      : new http.Agent(options);
+      ? new https.Agent(agentOptions)
+      : new http.Agent(agentOptions);
 
     // Node's built-in proxy support only works over HTTP/1.1.
     return createConnectTransport({

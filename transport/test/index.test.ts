@@ -11,6 +11,7 @@ import { createTransport as createTransportDeno } from "../deno.js";
 import { createTransport as createTransportEdge } from "../edge-light.js";
 import { createTransport as createTransportWorkerd } from "../workerd.js";
 import { createTransport } from "../index.js";
+import { createTunnelingConnection } from "../proxy-tunnel.js";
 import { ElizaService } from "./eliza_pb.js";
 import {
   close,
@@ -185,6 +186,111 @@ test("@arcjet/transport", async function (t) {
       assert.ok(
         connectRequests >= 1,
         "expected the HTTPS request to be tunneled through the proxy via CONNECT",
+      );
+    },
+  );
+
+  await t.test(
+    "should preserve HTTP/2 through a proxy when `proxyHttpVersion` is `2`",
+    async function () {
+      // A cleartext HTTP/2 (h2c) origin lets us drive a real round trip through
+      // the tunnel without certificates: the `CONNECT` proxy tunnels TCP and
+      // the transport speaks HTTP/2 over it end-to-end.
+      const origin = http2.createServer(elizaRoutes());
+      const originUrl = await listen(origin);
+      const authority = new URL(originUrl).host;
+
+      let connectRequests = 0;
+      const proxy = createConnectProxy(authority, () => {
+        connectRequests++;
+      });
+      const proxyUrl = await listen(proxy);
+
+      try {
+        const client = createClient(
+          ElizaService,
+          createTransport(originUrl, {
+            log: { info() {} },
+            proxyEnv: { HTTP_PROXY: proxyUrl },
+            proxyHttpVersion: "2",
+          }),
+        );
+        const result = await client.say({ sentence: "Hi!" });
+        assert.equal(result.sentence, "You said `Hi!`");
+      } finally {
+        await close(proxy);
+        await close(origin);
+      }
+
+      assert.ok(
+        connectRequests >= 1,
+        "expected the request to be tunneled through the proxy via CONNECT",
+      );
+    },
+  );
+
+  await t.test(
+    "should negotiate HTTP/2 (ALPN `h2`) end-to-end through a CONNECT proxy",
+    async function () {
+      // The production API is HTTPS, where HTTP/2 is selected by ALPN during the
+      // TLS handshake. That handshake happens directly with the origin inside
+      // the tunnel, so the proxy can't downgrade it. We trust the test origin's
+      // certificate here (via `ca`) so the handshake completes and we can assert
+      // the negotiated protocol — exercising the tunnel helper the way the
+      // transport uses it.
+      const { key, cert } = generateSelfSignedCert();
+      const origin = http2.createSecureServer({ key, cert });
+      origin.on("stream", function (stream) {
+        stream.respond({ ":status": 200 });
+        stream.end("ok");
+      });
+      const originUrl = await listen(origin, "https");
+      const authority = new URL(originUrl).host;
+
+      let connectRequests = 0;
+      const proxy = createConnectProxy(authority, () => {
+        connectRequests++;
+      });
+      const proxyUrl = await listen(proxy);
+
+      const session = http2.connect(originUrl, {
+        ca: cert,
+        createConnection: createTunnelingConnection(proxyUrl),
+      });
+
+      try {
+        await new Promise<void>(function (resolve, reject) {
+          session.once("connect", () => resolve());
+          session.once("error", reject);
+        });
+
+        assert.equal(
+          session.alpnProtocol,
+          "h2",
+          "expected HTTP/2 to be negotiated with the origin through the tunnel",
+        );
+
+        // A round trip proves the tunnel carries real HTTP/2 frames, not just a
+        // completed handshake.
+        const body = await new Promise<string>(function (resolve, reject) {
+          const request = session.request({ ":path": "/" });
+          let data = "";
+          request.setEncoding("utf8");
+          request.on("data", (chunk) => (data += chunk));
+          request.on("end", () => resolve(data));
+          request.on("error", reject);
+          request.end();
+        });
+        assert.equal(body, "ok");
+      } finally {
+        session.close();
+        await close(proxy);
+        await close(origin);
+      }
+
+      assert.ok(
+        connectRequests >= 1,
+        "expected the request to be tunneled through the proxy via CONNECT",
       );
     },
   );
