@@ -28,34 +28,42 @@
     "node": ">=22.21.0 <23 || >=24.5.0"
   },
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "cloudflare.d.ts",
-    "cloudflare.js",
-    "index.d.ts",
-    "index.js"
+    "dist"
   ],
   "scripts": {
-    "build": "rollup --config rollup.config.js",
+    "build": "tsdown",
     "generate": "npm run build && node scripts/verify-ranges.ts --write",
-    "lint": "eslint .",
-    "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=100 --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=100 -- test/*.test.js",
-    "test": "npm run build && npm run lint && npm run test-coverage",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=100 --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=100 -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage",
     "verify-ranges": "npm run build && node scripts/verify-ranges.ts"
   },
   "dependencies": {},
   "devDependencies": {
-    "@arcjet/eslint-config": "1.7.0",
-    "@arcjet/rollup-config": "1.7.0",
-    "@rollup/wasm-node": "4.62.2",
     "@types/node": "22.19.21",
-    "eslint": "9.39.4",
+    "tsdown": "0.22.3",
     "typescript": "5.9.3"
   },
   "publishConfig": {
     "access": "public",
     "tag": "latest"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cloudflare": {
+      "types": "./dist/cloudflare.d.ts",
+      "default": "./dist/cloudflare.js"
+    },
+    "./cloudflare.js": {
+      "types": "./dist/cloudflare.d.ts",
+      "default": "./dist/cloudflare.js"
+    },
+    "./package.json": "./package.json"
   }
 }

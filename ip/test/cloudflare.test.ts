@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { cloudflare, findIp, parseProxy, type ProxyService } from "../index.js";
+import { cloudflare, findIp, parseProxy, type ProxyService } from "../dist/index.js";
 
 // The real client IP for the customer report lived only in `cf-connecting-ip`
 // while every other header carried the Cloudflare edge address.

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseProxy } from "../index.js";
+import { parseProxy } from "../dist/index.js";
 
 test("parseProxy", async (t) => {
   await t.test("handles strings proxies without parsing", () => {
