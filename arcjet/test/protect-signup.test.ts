@@ -9,7 +9,7 @@ import arcjet, {
   ArcjetAllowDecision,
   ArcjetReason,
   protectSignup,
-} from "../index.js";
+} from "../dist/index.js";
 
 const exampleKey = "ajkey_yourkey";
 

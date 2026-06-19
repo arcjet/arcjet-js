@@ -1,7 +1,4 @@
 {
   "extends": "../tsconfig.base.json",
-  // The Cloudflare Workers runtime test uses miniflare/rolldown and worker
-  // globals that aren't part of the Node build, so it is excluded from
-  // type-checking here and run directly via `node --test`.
-  "exclude": ["node_modules/", "test/runtime/**"]
+  "include": ["src/**/*.ts"]
 }

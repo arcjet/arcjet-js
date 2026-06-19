@@ -9,7 +9,7 @@ import arcjet, {
   fixedWindow,
   slidingWindow,
   tokenBucket,
-} from "../index.js";
+} from "../dist/index.js";
 
 type Assert<T extends true> = T;
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for

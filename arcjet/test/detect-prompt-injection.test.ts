@@ -11,7 +11,7 @@ import arcjet, {
   ArcjetPromptInjectionReason,
   detectPromptInjection,
   sensitiveInfo,
-} from "../index.js";
+} from "../dist/index.js";
 
 test("detectPromptInjection", async function (t) {
   await t.test(

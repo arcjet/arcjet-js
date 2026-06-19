@@ -7,7 +7,7 @@ import arcjet, {
   ArcjetReason,
   ArcjetSensitiveInfoReason,
   sensitiveInfo,
-} from "../index.js";
+} from "../dist/index.js";
 
 class TestCache {
   get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(
