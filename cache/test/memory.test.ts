@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MemoryCache } from "../index.js";
+import { MemoryCache } from "../dist/index.js";
 
 test("MemoryCache", async (t) => {
   await t.test("MemoryCache#set", async (t) => {
