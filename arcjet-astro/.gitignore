@@ -130,10 +130,4 @@ dist
 .pnp.*
 
 # Generated files
-index.js
-index.d.ts
-internal.js
-internal.d.ts
-middleware.js
-middleware.d.ts
-test/*.js
+dist/
