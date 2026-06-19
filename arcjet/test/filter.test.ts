@@ -9,7 +9,7 @@ import arcjet, {
   ArcjetAllowDecision,
   ArcjetErrorReason,
   filter,
-} from "../index.js";
+} from "../dist/index.js";
 
 test("filter", async function (t) {
   await t.test("should throw w/o `options`", async function () {

@@ -9,7 +9,7 @@ import {
   ArcjetErrorReason,
   ArcjetRateLimitReason,
   ArcjetReason,
-} from "../index.js";
+} from "../dist/index.js";
 
 describe("ArcjetDecision", () => {
   test("will default the `id` property if not specified", () => {

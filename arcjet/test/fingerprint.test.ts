@@ -7,7 +7,7 @@ import arcjet, {
   type ArcjetRequest,
   ArcjetAllowDecision,
   ArcjetReason,
-} from "../index.js";
+} from "../dist/index.js";
 
 const exampleKey = "ajkey_yourkey";
 

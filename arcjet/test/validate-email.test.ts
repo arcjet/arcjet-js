@@ -6,7 +6,7 @@ import {
   type ArcjetContext,
   type ArcjetRequestDetails,
   validateEmail,
-} from "../index.js";
+} from "../dist/index.js";
 
 test("`validateEmail`", async function (t) {
   await t.test("should throw w/o `options`", async function () {
