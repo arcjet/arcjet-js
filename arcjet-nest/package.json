@@ -41,16 +41,14 @@
     "node": ">=22.21.0 <23 || >=24.5.0"
   },
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "index.d.ts",
-    "index.js"
+    "dist"
   ],
   "scripts": {
-    "build": "rollup --config rollup.config.mjs",
-    "lint": "eslint .",
-    "test": "npm run build && npm run lint"
+    "build": "tsdown",
+    "test": "npm run build"
   },
   "dependencies": {
     "@arcjet/env": "1.5.0",
@@ -67,18 +65,22 @@
     "reflect-metadata": "^0.1.12 || ^0.2.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.5.0",
-    "@arcjet/rollup-config": "1.5.0",
     "@nestjs/common": "11.1.17",
-    "@rollup/wasm-node": "4.61.0",
     "@types/node": "22.19.21",
-    "eslint": "9.39.4",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
+    "tsdown": "0.22.3",
     "typescript": "5.9.3"
   },
   "publishConfig": {
     "access": "public",
     "tag": "latest"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   }
 }
