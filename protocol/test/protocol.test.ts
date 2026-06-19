@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ArcjetReason, ArcjetRuleResult } from "../index.js";
+import { ArcjetReason, ArcjetRuleResult } from "../dist/index.js";
 
 test("@arcjet/protocol", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
       "ArcjetAllowDecision",
       "ArcjetBotReason",
       "ArcjetChallengeDecision",
