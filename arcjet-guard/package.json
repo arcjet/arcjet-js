@@ -61,7 +61,7 @@
     "tag": "latest"
   },
   "scripts": {
-    "build": "rolldown -c rolldown.config.ts",
+    "build": "tsdown",
     "typecheck": "tsgo --noEmit && tsgo --project tsconfig.lint.json --noEmit",
     "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "format": "oxfmt",
@@ -88,8 +88,7 @@
     "oxfmt": "0.53.0",
     "oxlint": "1.58.0",
     "oxlint-tsgolint": "0.18.1",
-    "rolldown": "1.0.3",
-    "rolldown-plugin-dts": "0.25.2"
+    "tsdown": "0.22.3"
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0"
