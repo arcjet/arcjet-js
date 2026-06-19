@@ -92,9 +92,9 @@ jobs:
           # Every package version must equal the tag being published (the
           # workspace releases in lockstep via linked-versions).
           expected="${EXPECTED#v}"
-          # The jq and node programs are single-quoted on purpose.
+          # The jq program is single-quoted on purpose.
           # shellcheck disable=SC2016
-          mismatched="$({ npm pkg get version --workspaces | jq -r --arg v "$expected" 'to_entries[] | select(.value != $v) | "\(.key)@\(.value)"'; EXPECTED_VERSION="$expected" node --print 'const v = require("./arcjet-guard/package.json").version; v === process.env.EXPECTED_VERSION ? "" : `@arcjet/guard@${v}`'; } | grep . || true)"
+          mismatched="$(npm pkg get version --workspaces | jq -r --arg v "$expected" 'to_entries[] | select(.value != $v) | "\(.key)@\(.value)"')"
           if [ -n "$mismatched" ]; then
             echo "$mismatched"
             echo "::error::These package versions do not match tag '$EXPECTED'; dispatch the workflow on the tag that matches the versions being published."
@@ -103,13 +103,13 @@ jobs:
       - name: Assert stable versions when publishing to the latest dist-tag
         if: inputs['dist-tag'] == 'latest'
         run: |
-          # The jq and node programs are single-quoted on purpose.
+          # The jq program is single-quoted on purpose.
           # shellcheck disable=SC2016
           # Publishing to `latest` requires stable semver versions (x.y.z);
           # anything else (1.7.0-rc.1, 2.0.0-beta.0, ...) must go to a
           # pre-release channel such as `rc`. Runs before the approval gate
           # so an invalid request fails without asking a human.
-          invalid="$({ npm pkg get version --workspaces | jq -r 'to_entries[] | select(.value | test("^[0-9]+\\.[0-9]+\\.[0-9]+$") | not) | "\(.key)@\(.value)"'; node --print 'const v = require("./arcjet-guard/package.json").version; /^\d+\.\d+\.\d+$/.test(v) ? "" : `@arcjet/guard@${v}`'; } | grep . || true)"
+          invalid="$(npm pkg get version --workspaces | jq -r 'to_entries[] | select(.value | test("^[0-9]+\\.[0-9]+\\.[0-9]+$") | not) | "\(.key)@\(.value)"')"
           if [ -n "$invalid" ]; then
             echo "$invalid"
             echo "::error::These versions do not look like stable releases; re-run with a pre-release dist-tag (e.g. 'rc') instead of 'latest'."
@@ -120,10 +120,9 @@ jobs:
           DIST_TAG: ${{ inputs['dist-tag'] }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
-          # The jq and node programs are single-quoted on purpose.
+          # The jq program is single-quoted on purpose.
           # shellcheck disable=SC2016
           versions="$(npm pkg get version --workspaces | jq -r 'to_entries[] | "\(.key)@\(.value)"')"
-          guard="@arcjet/guard@$(node --print 'require("./arcjet-guard/package.json").version')"
           {
             echo "## Publish request"
             echo "- npm dist-tag: \`$DIST_TAG\`"
@@ -134,7 +133,6 @@ jobs:
             echo
             echo '```'
             echo "$versions"
-            echo "$guard"
             echo '```'
             echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -211,9 +209,10 @@ jobs:
             --workspace @arcjet/decorate \
             --workspace @arcjet/inspect
 
-          # Level 3: core SDK
+          # Level 3: core SDK + guard (depend on @arcjet/analyze from Level 2)
           npm publish \
-            --workspace arcjet
+            --workspace arcjet \
+            --workspace @arcjet/guard
 
           # Level 4: public framework integrations
           npm publish \
@@ -228,23 +227,3 @@ jobs:
             --workspace @arcjet/react-router \
             --workspace @arcjet/remix \
             --workspace @arcjet/sveltekit
-      # @arcjet/guard is excluded from npm workspaces and manages its own
-      # dependencies, so it must be installed and published separately.
-      # It depends on @arcjet/analyze (Level 2), so it runs after Level 3.
-      # TODO: This is temporary until the tooling is unified (oxlint, oxfmt,
-      # TypeScript Go, rolldown) and it can rejoin the main workspaces.
-      - name: Publish @arcjet/guard
-        env:
-          npm_config_tag: ${{ inputs['dist-tag'] }}
-          DRY_RUN: ${{ inputs.dry-run }}
-        working-directory: arcjet-guard
-        run: |
-          npm ci
-          npm run build
-          npm test
-          # Unlike the "Publish packages" step, this step runs more than
-          # publish commands, and `npm ci` also honors dry-run: exporting
-          # npm_config_dry_run for the whole step would turn the install
-          # above into a no-op and break the build. The input is held in the
-          # inert DRY_RUN name and applied only to the publish command.
-          npm_config_dry_run="$DRY_RUN" npm publish
