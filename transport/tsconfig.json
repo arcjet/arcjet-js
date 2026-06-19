@@ -1,7 +1,4 @@
 {
   "extends": "../tsconfig.base.json",
-  // The Bun and Deno runtime tests use runtime-specific globals and module
-  // specifiers (`bun:test`, `Deno`) that aren't part of the Node build, so they
-  // are excluded from type-checking here and run directly on their runtimes.
-  "exclude": ["node_modules/", "test/runtime/**"]
+  "include": ["src/**/*.ts"]
 }
