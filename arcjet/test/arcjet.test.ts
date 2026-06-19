@@ -12,7 +12,7 @@ import arcjet, {
   ArcjetDenyDecision,
   ArcjetReason,
   ArcjetRuleResult,
-} from "../index.js";
+} from "../dist/index.js";
 
 const exampleKey = "ajkey_yourkey";
 
