@@ -18,16 +18,7 @@ function parseXForwardedFor(value?: string | null): string[] {
 }
 
 type Ipv4Tuple = [number, number, number, number];
-type Ipv6Tuple = [
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-];
+type Ipv6Tuple = [number, number, number, number, number, number, number, number];
 
 function isIpv4Cidr(cidr: unknown): cidr is Ipv4Cidr {
   return (
@@ -54,12 +45,7 @@ function isIpv6Cidr(cidr: unknown): cidr is Ipv6Cidr {
 }
 
 function isProxyService(value: unknown): value is ProxyService {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "kind" in value &&
-    value.kind === "service"
-  );
+  return typeof value === "object" && value !== null && "kind" in value && value.kind === "service";
 }
 
 // Resolve a candidate IP found in a (trusted) header or platform field.
@@ -94,9 +80,7 @@ function resolveCandidate(
   // It is therefore the edge address of a service exactly when it falls inside
   // that service's ranges, i.e. when treating those ranges as proxies makes it
   // no longer "global". This reuses the same matching as trusted proxies.
-  const service = services.find(
-    (service) => !isGlobalIp(candidate, service.ranges),
-  );
+  const service = services.find((service) => !isGlobalIp(candidate, service.ranges));
   if (!service) {
     return candidate;
   }
@@ -114,7 +98,8 @@ function resolveCandidate(
     const items =
       format === "ip"
         ? [typeof value === "string" ? value.trim() : value]
-        : parseXForwardedFor(value).reverse();
+        : // oxlint-disable-next-line unicorn/no-array-reverse
+          parseXForwardedFor(value).reverse();
     for (const item of items) {
       // The client IP from a service header is the real client, so we don't
       // resolve services again (avoiding loops); only filter trusted proxies.
@@ -300,9 +285,7 @@ export function parseProxy(value: string): string | Cidr {
 export function parseProxies(
   proxies: ReadonlyArray<string | ProxyService>,
 ): Array<string | Cidr | ProxyService> {
-  return proxies.map((proxy) =>
-    typeof proxy === "string" ? parseProxy(proxy) : proxy,
-  );
+  return proxies.map((proxy) => (typeof proxy === "string" ? parseProxy(proxy) : proxy));
 }
 
 function isIpv4Tuple(segements?: ArrayLike<number>): segements is Ipv4Tuple {
@@ -408,11 +391,7 @@ class Parser {
     });
   }
 
-  readNumber(
-    radix: 10 | 16,
-    maxDigits?: number | undefined,
-    allowZeroPrefix: boolean = false,
-  ) {
+  readNumber(radix: 10 | 16, maxDigits?: number | undefined, allowZeroPrefix: boolean = false) {
     return this.readAtomically((p) => {
       let result = 0;
       let digitCount = 0;
@@ -430,11 +409,7 @@ class Parser {
         });
       }
 
-      for (
-        let digit = nextCharAsDigit();
-        digit !== undefined;
-        digit = nextCharAsDigit()
-      ) {
+      for (let digit = nextCharAsDigit(); digit !== undefined; digit = nextCharAsDigit()) {
         result = result * radix;
         result = result + digit;
         digitCount += 1;
@@ -737,12 +712,7 @@ function isGlobalIpv6(
   }
 
   // Discard-Only Address Block (`100::/64`)
-  if (
-    segments[0] === 0x100 &&
-    segments[1] === 0 &&
-    segments[2] === 0 &&
-    segments[3] === 0
-  ) {
+  if (segments[0] === 0x100 && segments[1] === 0 && segments[2] === 0 && segments[3] === 0) {
     return false;
   }
 
@@ -891,12 +861,7 @@ export type RequestLike = {
 /**
  * Platform name.
  */
-export type Platform =
-  | "cloudflare"
-  | "firebase"
-  | "fly-io"
-  | "render"
-  | "vercel";
+export type Platform = "cloudflare" | "firebase" | "fly-io" | "render" | "vercel";
 
 /**
  * Format of a client IP header set by a proxy service.
@@ -1016,10 +981,7 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
  * @returns
  *   Found IP address; empty string if not found.
  */
-export function findIp(
-  request: RequestLike,
-  options?: Options | null | undefined,
-): string {
+export function findIp(request: RequestLike, options?: Options | null | undefined): string {
   const { platform, proxies: rawProxies } = options || {};
   const proxies: Array<Cidr | string> = [];
   const services: Array<ProxyService> = [];
@@ -1049,12 +1011,7 @@ export function findIp(
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.
-  const ipFromRequest = resolveCandidate(
-    request.ip,
-    services,
-    proxies,
-    request.headers,
-  );
+  const ipFromRequest = resolveCandidate(request.ip, services, proxies, request.headers);
   if (ipFromRequest) {
     return ipFromRequest;
   }
@@ -1137,13 +1094,9 @@ export function findIp(
     // `proxies`.
     const xForwardedFor = getHeader(request.headers, "x-forwarded-for");
     const xForwardedForItems = parseXForwardedFor(xForwardedFor);
+    // oxlint-disable-next-line unicorn/no-array-reverse
     for (const item of xForwardedForItems.reverse()) {
-      const resolved = resolveCandidate(
-        item,
-        services,
-        proxies,
-        request.headers,
-      );
+      const resolved = resolveCandidate(item, services, proxies, request.headers);
       if (resolved) {
         return resolved;
       }
@@ -1192,23 +1145,16 @@ export function findIp(
     // By default, it seems this will be 1 address, but they discuss trusted
     // proxy forwarding so we try to parse it like normal. See
     // https://vercel.com/docs/edge-network/headers/request-headers#custom-x-forwarded-for-ip
-    const xVercelForwardedFor = getHeader(
-      request.headers,
-      "x-vercel-forwarded-for",
-    );
+    const xVercelForwardedFor = getHeader(request.headers, "x-vercel-forwarded-for");
     const xVercelForwardedForItems = parseXForwardedFor(xVercelForwardedFor);
     // As per MDN X-Forwarded-For Headers documentation at
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
     // We may find more than one IP in the `x-forwarded-for` header. Since the
     // first IP will be closest to the user (and the most likely to be spoofed),
     // we want to iterate tail-to-head so we reverse the list.
+    // oxlint-disable-next-line unicorn/no-array-reverse
     for (const item of xVercelForwardedForItems.reverse()) {
-      const resolved = resolveCandidate(
-        item,
-        services,
-        proxies,
-        request.headers,
-      );
+      const resolved = resolveCandidate(item, services, proxies, request.headers);
       if (resolved) {
         return resolved;
       }
@@ -1225,13 +1171,9 @@ export function findIp(
     // We may find more than one IP in the `x-forwarded-for` header. Since the
     // first IP will be closest to the user (and the most likely to be spoofed),
     // we want to iterate tail-to-head so we reverse the list.
+    // oxlint-disable-next-line unicorn/no-array-reverse
     for (const item of xForwardedForItems.reverse()) {
-      const resolved = resolveCandidate(
-        item,
-        services,
-        proxies,
-        request.headers,
-      );
+      const resolved = resolveCandidate(item, services, proxies, request.headers);
       if (resolved) {
         return resolved;
       }
@@ -1269,6 +1211,7 @@ export function findIp(
   // We may find more than one IP in the `x-forwarded-for` header. Since the
   // first IP will be closest to the user (and the most likely to be spoofed),
   // we want to iterate tail-to-head so we reverse the list.
+  // oxlint-disable-next-line unicorn/no-array-reverse
   for (const item of xForwardedForItems.reverse()) {
     const resolved = resolveCandidate(item, services, proxies, request.headers);
     if (resolved) {
