@@ -78,7 +78,9 @@ export type RemoteClientOptions = {
  * @returns
  *   Client.
  */
-export function createRemoteClient(options?: RemoteClientOptions | null | undefined) {
+export function createRemoteClient(
+  options?: RemoteClientOptions | null | undefined,
+): ReturnType<typeof createClient> {
   const settings = options ?? {};
   const baseUrl = settings.baseUrl ?? baseUrlFromEnvironment(process.env);
 

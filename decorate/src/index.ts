@@ -148,7 +148,7 @@ function nearestLimit(current: ArcjetRateLimitReason, next: ArcjetRateLimitReaso
  * @returns
  *   Nothing.
  */
-export function setRateLimitHeaders(value: ArcjetCanDecorate, decision: ArcjetDecision) {
+export function setRateLimitHeaders(value: ArcjetCanDecorate, decision: ArcjetDecision): void {
   const rateLimitReasons = decision.results.map(extractReason).filter(isRateLimitReason);
 
   let policy: string;

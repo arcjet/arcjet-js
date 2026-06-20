@@ -96,10 +96,7 @@ function directivesToSvelteKitConfig(
 ): SvelteKitCsp["directives"] {
   const sveltekitDirectives: SvelteKitCsp["directives"] = {};
   for (const [optionKey, optionValues] of Object.entries(directives)) {
-    const key = CONTENT_SECURITY_POLICY_DIRECTIVES.get(
-      // @ts-expect-error because we're validating this option key
-      optionKey,
-    );
+    const key = CONTENT_SECURITY_POLICY_DIRECTIVES.get(optionKey);
     if (!key) {
       throw new NoseconeValidationError(`${optionKey} is not a Content-Security-Policy directive`);
     }

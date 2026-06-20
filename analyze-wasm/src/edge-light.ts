@@ -26,7 +26,9 @@ async function moduleFromPath(path: string): Promise<WebAssemblyLike.Module> {
  * @returns
  *   Promise that resolves to the initialized component.
  */
-export async function initializeWasm(coreImports: ImportObject) {
+export async function initializeWasm(
+  coreImports: ImportObject,
+): Promise<Awaited<ReturnType<typeof instantiate>> | undefined> {
   try {
     return instantiate(moduleFromPath, coreImports);
   } catch {

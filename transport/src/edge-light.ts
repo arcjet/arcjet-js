@@ -14,7 +14,7 @@
 // * <https://github.com/connectrpc/connect-es/issues/577#issuecomment-2210103503>
 import { createConnectTransport } from "@connectrpc/connect-web";
 
-export function createTransport(baseUrl: string) {
+export function createTransport(baseUrl: string): ReturnType<typeof createConnectTransport> {
   return createConnectTransport({
     baseUrl,
     fetch: fetchProxy,

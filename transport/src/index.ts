@@ -10,7 +10,7 @@ import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect
  * @returns
  *   Connect transport used to make RPC calls.
  */
-export function createTransport(baseUrl: string) {
+export function createTransport(baseUrl: string): ReturnType<typeof createConnectTransport> {
   // We create our own session manager so we can attempt to pre-connect
   const sessionManager = new Http2SessionManager(baseUrl, {
     // AWS Global Accelerator doesn't support PING so we use a very high idle

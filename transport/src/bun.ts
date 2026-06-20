@@ -3,7 +3,7 @@
 // Bun slightly differs in how it implements Node APIs and that causes problems.
 import { createConnectTransport } from "@connectrpc/connect-web";
 
-export function createTransport(baseUrl: string) {
+export function createTransport(baseUrl: string): ReturnType<typeof createConnectTransport> {
   return createConnectTransport({
     baseUrl,
   });
