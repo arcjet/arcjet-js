@@ -143,10 +143,7 @@ export function float64(key: string, value: number): FieldHasher {
  * @returns
  *   Hasher.
  */
-export function stringSliceOrdered(
-  key: string,
-  values: ReadonlyArray<string>,
-): FieldHasher {
+export function stringSliceOrdered(key: string, values: ReadonlyArray<string>): FieldHasher {
   return (data: StringWriter) => {
     data.writeString(key);
     data.writeString(fieldSeparator);
@@ -178,9 +175,7 @@ export function makeHasher(subtle: SubtleCryptoLike) {
    * @returns
    *   Promise to a hash.
    */
-  return async function hash(
-    ...hashers: ReadonlyArray<FieldHasher>
-  ): Promise<string> {
+  return async function hash(...hashers: ReadonlyArray<FieldHasher>): Promise<string> {
     const h = new Sha256(subtle);
     for (const hasher of hashers) {
       hasher(h);
@@ -219,6 +214,7 @@ export function makeHasher(subtle: SubtleCryptoLike) {
 // https://github.com/feross/buffer/blob/5857e295f4d37e3ad02c3abcbf7e8e5ef51f3be6/index.js#L2096-L2106
 const hexSliceLookupTable = (function () {
   const alphabet = "0123456789abcdef";
+  // oxlint-disable-next-line unicorn/no-new-array
   const table = new Array(256);
   for (let i = 0; i < 16; ++i) {
     const i16 = i * 16;

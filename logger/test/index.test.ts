@@ -1,17 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { Logger } from "../dist/index.js";
 
 test("@arcjet/logger", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
-      "Logger",
-    ]);
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), ["Logger"]);
   });
 
   await t.test("should fail for non-string levels", async function () {
     assert.throws(function () {
       // @ts-expect-error: test runtime behavior.
+      // oxlint-disable-next-line eslint/no-new
       new Logger({ level: 1 });
     }, /Invalid log level/);
   });
@@ -19,6 +19,7 @@ test("@arcjet/logger", async function (t) {
   await t.test("should fail for unknown levels", async function () {
     assert.throws(function () {
       // @ts-expect-error: test runtime behavior.
+      // oxlint-disable-next-line eslint/no-new
       new Logger({ level: "boom" });
     }, /Unknown log level: boom/);
   });
@@ -160,49 +161,41 @@ test("@arcjet/logger", async function (t) {
     console.debug = consoleDebug;
   });
 
-  await t.test(
-    "should support a message object w/ `msg` field",
-    async function () {
-      const consoleDebug = console.debug;
-      let calls = 0;
+  await t.test("should support a message object w/ `msg` field", async function () {
+    const consoleDebug = console.debug;
+    let calls = 0;
 
-      console.debug = function (...parameters: ReadonlyArray<unknown>) {
-        assert.deepEqual(parameters, [
-          '✦Aj DEBUG hi\n      key: "value"\n      msg: "hi"',
-        ]);
-        calls++;
-      };
+    console.debug = function (...parameters: ReadonlyArray<unknown>) {
+      assert.deepEqual(parameters, ['✦Aj DEBUG hi\n      key: "value"\n      msg: "hi"']);
+      calls++;
+    };
 
-      assert.equal(calls, 0);
+    assert.equal(calls, 0);
 
-      const logger = new Logger({ level: "debug" });
-      logger.debug({ key: "value", msg: "hi" });
-      assert.equal(calls, 1);
+    const logger = new Logger({ level: "debug" });
+    logger.debug({ key: "value", msg: "hi" });
+    assert.equal(calls, 1);
 
-      console.debug = consoleDebug;
-    },
-  );
+    console.debug = consoleDebug;
+  });
 
-  await t.test(
-    "should support a message object w/ a message parameter",
-    async function () {
-      const consoleDebug = console.debug;
-      let calls = 0;
+  await t.test("should support a message object w/ a message parameter", async function () {
+    const consoleDebug = console.debug;
+    let calls = 0;
 
-      console.debug = function (...parameters: ReadonlyArray<unknown>) {
-        assert.deepEqual(parameters, ['✦Aj DEBUG hi\n      key: "value"']);
-        calls++;
-      };
+    console.debug = function (...parameters: ReadonlyArray<unknown>) {
+      assert.deepEqual(parameters, ['✦Aj DEBUG hi\n      key: "value"']);
+      calls++;
+    };
 
-      assert.equal(calls, 0);
+    assert.equal(calls, 0);
 
-      const logger = new Logger({ level: "debug" });
-      logger.debug({ key: "value" }, "hi");
-      assert.equal(calls, 1);
+    const logger = new Logger({ level: "debug" });
+    logger.debug({ key: "value" }, "hi");
+    assert.equal(calls, 1);
 
-      console.debug = consoleDebug;
-    },
-  );
+    console.debug = consoleDebug;
+  });
 
   await t.test(
     "should support a message object w/ all kinds of primitive values",
@@ -238,71 +231,62 @@ test("@arcjet/logger", async function (t) {
     },
   );
 
-  await t.test(
-    "should support a message object w/ object values",
-    async function () {
-      const consoleDebug = console.debug;
-      let calls = 0;
+  await t.test("should support a message object w/ object values", async function () {
+    const consoleDebug = console.debug;
+    let calls = 0;
 
-      console.debug = function (...parameters: ReadonlyArray<unknown>) {
-        assert.deepEqual(parameters, [
-          '✦Aj DEBUG hi\n      a: ["value",1]\n      b: {"c":true}\n      d: [Circular]',
-        ]);
-        calls++;
-      };
+    console.debug = function (...parameters: ReadonlyArray<unknown>) {
+      assert.deepEqual(parameters, [
+        '✦Aj DEBUG hi\n      a: ["value",1]\n      b: {"c":true}\n      d: [Circular]',
+      ]);
+      calls++;
+    };
 
-      assert.equal(calls, 0);
+    assert.equal(calls, 0);
 
-      const cyclical: Record<string, unknown> = {};
-      cyclical.self = cyclical;
+    const cyclical: Record<string, unknown> = {};
+    cyclical.self = cyclical;
 
-      const logger = new Logger({ level: "debug" });
-      logger.debug({ a: ["value", 1], b: { c: true }, d: cyclical }, "hi");
-      assert.equal(calls, 1);
+    const logger = new Logger({ level: "debug" });
+    logger.debug({ a: ["value", 1], b: { c: true }, d: cyclical }, "hi");
+    assert.equal(calls, 1);
 
-      console.debug = consoleDebug;
-    },
-  );
+    console.debug = consoleDebug;
+  });
 
-  await t.test(
-    "should support format codes and parameters (matching)",
-    async function () {
-      const consoleDebug = console.debug;
-      let calls = 0;
+  await t.test("should support format codes and parameters (matching)", async function () {
+    const consoleDebug = console.debug;
+    let calls = 0;
 
-      console.debug = function (...parameters: ReadonlyArray<unknown>) {
-        assert.deepEqual(parameters, ['✦Aj DEBUG hi: value, 1, {"key":true}']);
-        calls++;
-      };
+    console.debug = function (...parameters: ReadonlyArray<unknown>) {
+      assert.deepEqual(parameters, ['✦Aj DEBUG hi: value, 1, {"key":true}']);
+      calls++;
+    };
 
-      assert.equal(calls, 0);
+    assert.equal(calls, 0);
 
-      const logger = new Logger({ level: "debug" });
-      logger.debug("hi: %s, %d, %j", "value", 1, { key: true }, "more");
-      assert.equal(calls, 1);
+    const logger = new Logger({ level: "debug" });
+    logger.debug("hi: %s, %d, %j", "value", 1, { key: true }, "more");
+    assert.equal(calls, 1);
 
-      console.debug = consoleDebug;
-    },
-  );
+    console.debug = consoleDebug;
+  });
 
-  await t.test(
-    "should support format codes and parameters (non-matching)",
-    async function () {
-      const consoleDebug = console.debug;
-      let calls = 0;
+  await t.test("should support format codes and parameters (non-matching)", async function () {
+    const consoleDebug = console.debug;
+    let calls = 0;
 
-      console.debug = function (...parameters: ReadonlyArray<unknown>) {
-        assert.deepEqual(parameters, ["✦Aj DEBUG hi: %s, %d"]);
-        calls++;
-      };
+    console.debug = function (...parameters: ReadonlyArray<unknown>) {
+      assert.deepEqual(parameters, ["✦Aj DEBUG hi: %s, %d"]);
+      calls++;
+    };
 
-      assert.equal(calls, 0);
+    assert.equal(calls, 0);
 
-      const logger = new Logger({ level: "debug" });
-      logger.debug("hi: %s, %d", 1, "value");
-      assert.equal(calls, 1);
+    const logger = new Logger({ level: "debug" });
+    logger.debug("hi: %s, %d", 1, "value");
+    assert.equal(calls, 1);
 
-      console.debug = consoleDebug;
-    },
-  );
+    console.debug = consoleDebug;
+  });
 });

@@ -1,11 +1,8 @@
+// oxlint-disable-next-line import/no-named-as-default
 import nosecone, { defaults as baseDefaults } from "nosecone";
 import type { Options } from "nosecone";
 
-export {
-  withVercelToolbar,
-  type Options,
-  type NoseconeOptions,
-} from "nosecone";
+export { withVercelToolbar, type Options, type NoseconeOptions } from "nosecone";
 
 /**
  * Nosecone Next.js defaults.
@@ -15,14 +12,8 @@ export const defaults = {
   contentSecurityPolicy: {
     directives: {
       ...baseDefaults.contentSecurityPolicy.directives,
-      scriptSrc: [
-        ...baseDefaults.contentSecurityPolicy.directives.scriptSrc,
-        ...nextScriptSrc(),
-      ],
-      styleSrc: [
-        ...baseDefaults.contentSecurityPolicy.directives.styleSrc,
-        ...nextStyleSrc(),
-      ],
+      scriptSrc: [...baseDefaults.contentSecurityPolicy.directives.scriptSrc, ...nextScriptSrc()],
+      styleSrc: [...baseDefaults.contentSecurityPolicy.directives.styleSrc, ...nextStyleSrc()],
     },
   },
 } as const;

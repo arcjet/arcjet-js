@@ -1,5 +1,6 @@
-import { describe, test } from "node:test";
 import assert from "node:assert";
+import { describe, test } from "node:test";
+
 import { sprintf } from "../dist/index.js";
 
 // This translates the 2nd argument to a spread
@@ -67,12 +68,10 @@ describe("quick-format-unescaped", () => {
     assert.equal(format("foo %j", [{ foo: "foo" }]), 'foo {"foo":"foo"}');
     assert.equal(format("foo %j %j", [{ foo: "foo" }]), 'foo {"foo":"foo"} %j');
     assert.equal(format("foo %j", ["foo"]), "foo 'foo'"); // TODO: isn't this wrong?
+    // oxlint-disable-next-line unicorn/consistent-function-scoping
     assert.equal(format("foo %j", [function foo() {}]), "foo foo");
     assert.equal(format("foo %j", [function () {}]), "foo <anonymous>");
-    assert.equal(
-      format("foo %j", [{ foo: "foo" }, "not-printed"]),
-      'foo {"foo":"foo"}',
-    );
+    assert.equal(format("foo %j", [{ foo: "foo" }, "not-printed"]), 'foo {"foo":"foo"}');
     // assert.equal(
     //   format("foo %j", [{ foo: "foo" }], {
     //     stringify() {
@@ -122,10 +121,7 @@ describe("quick-format-unescaped", () => {
     assert.equal(format("%d%o", [11, { aa: 22 }]), '11{"aa":22}');
     assert.equal(format("%d%d%d", [11, 22, 33]), "112233");
     // assert.equal(format("%d%d%s", [11, 22, 33]), "112233");
-    assert.equal(
-      format("%d%o%d%s", [11, { aa: 22 }, 33, "sss"]),
-      '11{"aa":22}33sss',
-    );
+    assert.equal(format("%d%o%d%s", [11, { aa: 22 }, 33, "sss"]), '11{"aa":22}33sss');
     assert.equal(format("%d%%%d", [11, 22]), "11%22");
     // assert.equal(format("%d%%%s", [11, 22]), "11%22");
   });

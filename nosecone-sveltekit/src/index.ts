@@ -1,3 +1,5 @@
+import type { Handle, KitConfig } from "@sveltejs/kit";
+// oxlint-disable-next-line import/no-named-as-default
 import nosecone, {
   CONTENT_SECURITY_POLICY_DIRECTIVES,
   QUOTED,
@@ -5,13 +7,8 @@ import nosecone, {
   NoseconeValidationError,
 } from "nosecone";
 import type { CspDirectives, Options } from "nosecone";
-import type { Handle, KitConfig } from "@sveltejs/kit";
 
-export {
-  withVercelToolbar,
-  type Options,
-  type NoseconeOptions,
-} from "nosecone";
+export { withVercelToolbar, type Options, type NoseconeOptions } from "nosecone";
 
 /**
  * Nosecone SvelteKit defaults.
@@ -104,9 +101,7 @@ function directivesToSvelteKitConfig(
       optionKey,
     );
     if (!key) {
-      throw new NoseconeValidationError(
-        `${optionKey} is not a Content-Security-Policy directive`,
-      );
+      throw new NoseconeValidationError(`${optionKey} is not a Content-Security-Policy directive`);
     }
 
     // Skip anything falsey
@@ -142,9 +137,7 @@ function directivesToSvelteKitConfig(
  * @returns
  *   SvelteKit Content Security Policy configuration.
  */
-export function csp(
-  options?: ContentSecurityPolicyConfig | undefined,
-): SvelteKitCsp {
+export function csp(options?: ContentSecurityPolicyConfig | undefined): SvelteKitCsp {
   return {
     mode: options?.mode ? options.mode : "auto",
     directives:

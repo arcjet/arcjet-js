@@ -1,3 +1,14 @@
+import * as analyze from "@arcjet/analyze";
+import type {
+  AnalyzeRequest,
+  DetectedSensitiveInfoEntity,
+  SensitiveInfoEntity,
+  BotConfig,
+  EmailValidationConfig,
+} from "@arcjet/analyze";
+import { MemoryCache } from "@arcjet/cache";
+import * as duration from "@arcjet/duration";
+import { ArcjetHeaders } from "@arcjet/headers";
 import type {
   ArcjetCacheEntry,
   ArcjetContext,
@@ -37,19 +48,8 @@ import {
   ArcjetRateLimitReason,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
-import * as analyze from "@arcjet/analyze";
-import type {
-  AnalyzeRequest,
-  DetectedSensitiveInfoEntity,
-  SensitiveInfoEntity,
-  BotConfig,
-  EmailValidationConfig,
-} from "@arcjet/analyze";
-import * as duration from "@arcjet/duration";
-import { ArcjetHeaders } from "@arcjet/headers";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
-import { MemoryCache } from "@arcjet/cache";
 
 export * from "@arcjet/protocol";
 
@@ -65,11 +65,7 @@ function errorMessage(err: unknown): string {
       return err;
     }
 
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
+    if (typeof err === "object" && "message" in err && typeof err.message === "string") {
       return err.message;
     }
   }
@@ -116,9 +112,11 @@ type UnionToIntersection<Union> =
         (distributedUnion: Union) => void
       : // This won't happen.
         never
-  ) extends // Infer the `Intersection` type since TypeScript represents the positional
-  // arguments of unions of functions as an intersection of the union.
-  (mergedIntersection: infer Intersection) => void
+  ) extends (
+    // Infer the `Intersection` type since TypeScript represents the positional
+    // arguments of unions of functions as an intersection of the union.
+    mergedIntersection: infer Intersection,
+  ) => void
     ? // The `& Union` is to allow indexing by the resulting type
       Intersection & Union
     : never;
@@ -332,9 +330,7 @@ function extraProps<Props extends PlainObject>(
   const extra: Map<string, string> = new Map();
   for (const [key, value] of Object.entries(details)) {
     if (isUnknownRequestProperty(key)) {
-      const toString = isJsonRequestProperty(key)
-        ? toStringJson
-        : toStringArbitrary;
+      const toString = isJsonRequestProperty(key) ? toStringJson : toStringArbitrary;
       extra.set(key, toString(value));
     }
   }
@@ -450,9 +446,7 @@ function validateInterface(
 
   for (const { key, validate, required } of validations) {
     if (required && !Object.hasOwn(valueRecord, key)) {
-      throw new Error(
-        `\`${name}\` options error: \`${String(key)}\` is required`,
-      );
+      throw new Error(`\`${name}\` options error: \`${String(key)}\` is required`);
     }
 
     const value = valueRecord[key];
@@ -463,6 +457,7 @@ function validateInterface(
       try {
         validate(String(key), value);
       } catch (err) {
+        // oxlint-disable-next-line eslint/preserve-caught-error
         throw new Error(`\`${name}\` options error: ${errorMessage(err)}`);
       }
     }
@@ -481,10 +476,7 @@ function validateInterface(
  * @throws
  *   When not an array.
  */
-function validateArray(
-  path: string,
-  value: unknown,
-): asserts value is Array<unknown> {
+function validateArray(path: string, value: unknown): asserts value is Array<unknown> {
   if (!Array.isArray(value)) {
     throw new Error(`invalid type for \`${path}\` - expected an array`);
   }
@@ -502,10 +494,7 @@ function validateArray(
  * @throws
  *   When not a boolean.
  */
-function validateBoolean(
-  path: string,
-  value: unknown,
-): asserts value is boolean {
+function validateBoolean(path: string, value: unknown): asserts value is boolean {
   if (typeof value !== "boolean") {
     throw new Error(`invalid type for \`${path}\` - expected boolean`);
   }
@@ -521,9 +510,7 @@ function validateBoolean(
  * @throws
  *   When not request details.
  */
-function validateDetails(
-  value: unknown,
-): asserts value is ArcjetRequestDetails {
+function validateDetails(value: unknown): asserts value is ArcjetRequestDetails {
   validateInterface(value, {
     name: "details",
     validations: [
@@ -555,10 +542,7 @@ function validateDetails(
  * @throws
  *   When not a headers interface.
  */
-function validateHeaders(
-  path: string,
-  value: unknown,
-): asserts value is Headers {
+function validateHeaders(path: string, value: unknown): asserts value is Headers {
   if (value === null || typeof value !== "object") {
     throw new Error(`invalid value for \`${path}\` - expected headers object`);
   }
@@ -588,14 +572,9 @@ function validateHeaders(
  * @throws
  *   When neither number nor string.
  */
-function validateNumberOrString(
-  path: string,
-  value: unknown,
-): asserts value is number | string {
+function validateNumberOrString(path: string, value: unknown): asserts value is number | string {
   if (typeof value !== "number" && typeof value !== "string") {
-    throw new Error(
-      `invalid type for \`${path}\` - expected one of string, number`,
-    );
+    throw new Error(`invalid type for \`${path}\` - expected one of string, number`);
   }
 }
 
@@ -629,10 +608,7 @@ function validateNumber(path: string, value: unknown): asserts value is number {
  * @throws
  *   When not an array of strings.
  */
-function validateStringArray(
-  path: string,
-  value: unknown,
-): asserts value is Array<string> {
+function validateStringArray(path: string, value: unknown): asserts value is Array<string> {
   validateArray(path, value);
 
   for (const [index, subvalue] of value.entries()) {
@@ -717,14 +693,9 @@ function validateFunction(
  * @throws
  *   When not an Arcjet mode.
  */
-function validateMode(
-  path: string,
-  value: unknown,
-): asserts value is ArcjetMode {
+function validateMode(path: string, value: unknown): asserts value is ArcjetMode {
   if (value !== "DRY_RUN" && value !== "LIVE") {
-    throw new Error(
-      `invalid value for \`${path}\` - expected one of 'LIVE', 'DRY_RUN'`,
-    );
+    throw new Error(`invalid value for \`${path}\` - expected one of 'LIVE', 'DRY_RUN'`);
   }
 }
 
@@ -740,10 +711,7 @@ function validateMode(
  * @throws
  *   When not an array of email types.
  */
-function validateEmailTypes(
-  path: string,
-  value: unknown,
-): asserts value is Array<ArcjetEmailType> {
+function validateEmailTypes(path: string, value: unknown): asserts value is Array<ArcjetEmailType> {
   validateArray(path, value);
 
   for (const [index, subvalue] of value.entries()) {
@@ -845,9 +813,7 @@ function validateSlidingWindowOptions(
  * @throws
  *   When not sensitive info options.
  */
-function validateSensitiveInfoOptions(
-  value: unknown,
-): asserts value is SensitiveInfoOptions {
+function validateSensitiveInfoOptions(value: unknown): asserts value is SensitiveInfoOptions {
   validateInterface(value, {
     name: "sensitiveInfo",
     validations: [
@@ -1010,9 +976,7 @@ function validateFilterOptions(value: unknown): asserts value is FilterOptions {
  * @template Characteristics
  *   Characteristics to track a user by.
  */
-export type TokenBucketRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+export type TokenBucketRateLimitOptions<Characteristics extends readonly string[]> = {
   /**
    * Block mode of the rule (default: `"DRY_RUN"`).
    *
@@ -1060,9 +1024,7 @@ export type TokenBucketRateLimitOptions<
  * @template Characteristics
  *   Characteristics to track a user by.
  */
-export type FixedWindowRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+export type FixedWindowRateLimitOptions<Characteristics extends readonly string[]> = {
   /**
    * Block mode of the rule (default: `"DRY_RUN"`).
    *
@@ -1100,9 +1062,7 @@ export type FixedWindowRateLimitOptions<
  * @template Characteristics
  *   Characteristics to track a user by.
  */
-export type SlidingWindowRateLimitOptions<
-  Characteristics extends readonly string[],
-> = {
+export type SlidingWindowRateLimitOptions<Characteristics extends readonly string[]> = {
   /**
    * Block mode of the rule (default: `"DRY_RUN"`).
    *
@@ -1336,9 +1296,7 @@ export type EmailOptions = EmailOptionsAllow | EmailOptionsDeny;
  */
 export type SensitiveInfoOptionsAllow<
   DetectedEntities extends string | undefined = undefined,
-  ListedEntities extends
-    | ArcjetSensitiveInfoType
-    | Exclude<DetectedEntities, undefined> =
+  ListedEntities extends ArcjetSensitiveInfoType | Exclude<DetectedEntities, undefined> =
     | ArcjetSensitiveInfoType
     | Exclude<DetectedEntities, undefined>,
 > = {
@@ -1409,9 +1367,7 @@ export type SensitiveInfoOptionsAllow<
  */
 export type SensitiveInfoOptionsDeny<
   DetectedEntities extends string | undefined = undefined,
-  ListedEntities extends
-    | ArcjetSensitiveInfoType
-    | Exclude<DetectedEntities, undefined> =
+  ListedEntities extends ArcjetSensitiveInfoType | Exclude<DetectedEntities, undefined> =
     | ArcjetSensitiveInfoType
     | Exclude<DetectedEntities, undefined>,
 > = {
@@ -1481,9 +1437,7 @@ export type SensitiveInfoOptionsDeny<
  */
 export type SensitiveInfoOptions<
   DetectedEntities extends string | undefined = undefined,
-  ListedEntities extends
-    | ArcjetSensitiveInfoType
-    | Exclude<DetectedEntities, undefined> =
+  ListedEntities extends ArcjetSensitiveInfoType | Exclude<DetectedEntities, undefined> =
     | ArcjetSensitiveInfoType
     | Exclude<DetectedEntities, undefined>,
 > =
@@ -1600,10 +1554,7 @@ export type CharacteristicProps<Characteristics extends readonly string[]> =
   Characteristics extends []
     ? {}
     : {
-        [K in ExcludeBuiltinCharacteristic<Characteristics[number]>]:
-          | boolean
-          | number
-          | string;
+        [K in ExcludeBuiltinCharacteristic<Characteristics[number]>]: boolean | number | string;
       };
 
 // Rules can specify they require specific props on an ArcjetRequest
@@ -1762,17 +1713,11 @@ function isRateLimitRule<Props extends PlainObject>(
  * @link https://docs.arcjet.com/rate-limiting/algorithms#token-bucket
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function tokenBucket<
-  const Characteristics extends readonly string[] = [],
->(
+export function tokenBucket<const Characteristics extends readonly string[] = []>(
   options: TokenBucketRateLimitOptions<Characteristics>,
 ): [
   ArcjetTokenBucketRateLimitRule<
-    Simplify<
-      UnionToIntersection<
-        { requested: number } | CharacteristicProps<Characteristics>
-      >
-    >
+    Simplify<UnionToIntersection<{ requested: number } | CharacteristicProps<Characteristics>>>
   >,
 ] {
   validateTokenBucketOptions(options);
@@ -1921,9 +1866,7 @@ export function tokenBucket<
  * @link https://docs.arcjet.com/rate-limiting/algorithms#fixed-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function fixedWindow<
-  const Characteristics extends readonly string[] = [],
->(
+export function fixedWindow<const Characteristics extends readonly string[] = []>(
   options: FixedWindowRateLimitOptions<Characteristics>,
 ): [ArcjetFixedWindowRateLimitRule<CharacteristicProps<Characteristics>>] {
   validateFixedWindowOptions(options);
@@ -2055,9 +1998,7 @@ export function fixedWindow<
  * @link https://docs.arcjet.com/rate-limiting/algorithms#sliding-window
  * @link https://docs.arcjet.com/rate-limiting/reference
  */
-export function slidingWindow<
-  const Characteristics extends readonly string[] = [],
->(
+export function slidingWindow<const Characteristics extends readonly string[] = []>(
   options: SlidingWindowRateLimitOptions<Characteristics>,
 ): [ArcjetSlidingWindowRateLimitRule<CharacteristicProps<Characteristics>>] {
   validateSlidingWindowOptions(options);
@@ -2161,9 +2102,7 @@ export function slidingWindow<
  * @returns
  *   Entity object.
  */
-function protocolSensitiveInfoEntitiesToAnalyze(
-  entity: unknown,
-): SensitiveInfoEntity {
+function protocolSensitiveInfoEntitiesToAnalyze(entity: unknown): SensitiveInfoEntity {
   if (typeof entity !== "string") {
     throw new Error("invalid entity type");
   }
@@ -2200,9 +2139,7 @@ function protocolSensitiveInfoEntitiesToAnalyze(
  * @returns
  *   Entity name.
  */
-function analyzeSensitiveInfoEntitiesToString(
-  entity: SensitiveInfoEntity,
-): string {
+function analyzeSensitiveInfoEntitiesToString(entity: SensitiveInfoEntity): string {
   if (entity.tag === "email") {
     return "EMAIL";
   }
@@ -2320,9 +2257,7 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
  */
 export function sensitiveInfo<
   DetectedEntities extends string | undefined = undefined,
-  ListedEntities extends
-    | ArcjetSensitiveInfoType
-    | Exclude<DetectedEntities, undefined> =
+  ListedEntities extends ArcjetSensitiveInfoType | Exclude<DetectedEntities, undefined> =
     | ArcjetSensitiveInfoType
     | Exclude<DetectedEntities, undefined>,
 >(
@@ -2334,21 +2269,13 @@ export function sensitiveInfo<
 ] {
   validateSensitiveInfoOptions(options);
 
-  if (
-    typeof options.allow !== "undefined" &&
-    typeof options.deny !== "undefined"
-  ) {
+  if (typeof options.allow !== "undefined" && typeof options.deny !== "undefined") {
     throw new Error(
       "`sensitiveInfo` options error: `allow` and `deny` cannot be provided together",
     );
   }
-  if (
-    typeof options.allow === "undefined" &&
-    typeof options.deny === "undefined"
-  ) {
-    throw new Error(
-      "`sensitiveInfo` options error: either `allow` or `deny` must be specified",
-    );
+  if (typeof options.allow === "undefined" && typeof options.deny === "undefined") {
+    throw new Error("`sensitiveInfo` options error: either `allow` or `deny` must be specified");
   }
 
   const type = "SENSITIVE_INFO";
@@ -2395,10 +2322,7 @@ export function sensitiveInfo<
           try {
             value = await context.getBody();
           } catch (error) {
-            context.log.error(
-              "failed to get request body: %s",
-              errorMessage(error),
-            );
+            context.log.error("failed to get request body: %s", errorMessage(error));
 
             return new ArcjetRuleResult({
               ruleId,
@@ -2407,8 +2331,7 @@ export function sensitiveInfo<
               state: "NOT_RUN",
               conclusion: "ERROR",
               reason: new ArcjetErrorReason(
-                "Cannot read body for sensitive info detection: " +
-                  errorMessage(error),
+                "Cannot read body for sensitive info detection: " + errorMessage(error),
               ),
             });
           }
@@ -2425,9 +2348,7 @@ export function sensitiveInfo<
         }
 
         let entitiesTag: "allow" | "deny" = "allow";
-        let entitiesVal: Array<
-          ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>
-        > = [];
+        let entitiesVal: Array<ReturnType<typeof protocolSensitiveInfoEntitiesToAnalyze>> = [];
 
         if (Array.isArray(options.allow)) {
           entitiesTag = "allow";
@@ -2524,26 +2445,16 @@ export function sensitiveInfo<
  * @link https://docs.arcjet.com/email-validation
  * @link https://docs.arcjet.com/email-validation/reference
  */
-export function validateEmail(
-  options: EmailOptions,
-): [ArcjetEmailRule<{ email: string }>] {
+export function validateEmail(options: EmailOptions): [ArcjetEmailRule<{ email: string }>] {
   validateEmailOptions(options);
 
-  if (
-    typeof options.allow !== "undefined" &&
-    typeof options.deny !== "undefined"
-  ) {
+  if (typeof options.allow !== "undefined" && typeof options.deny !== "undefined") {
     throw new Error(
       "`validateEmail` options error: `allow` and `deny` cannot be provided together",
     );
   }
-  if (
-    typeof options.allow === "undefined" &&
-    typeof options.deny === "undefined"
-  ) {
-    throw new Error(
-      "`validateEmail` options error: either `allow` or `deny` must be specified",
-    );
+  if (typeof options.allow === "undefined" && typeof options.deny === "undefined") {
+    throw new Error("`validateEmail` options error: either `allow` or `deny` must be specified");
   }
 
   const type = "EMAIL";
@@ -2600,10 +2511,7 @@ export function validateEmail(
       validate(_context, details) {
         validateDetails(details);
         // `email` is already validated to be a `string | undefined`.
-        assert(
-          typeof details.email === "string",
-          "ValidateEmail requires `email` to be set.",
-        );
+        assert(typeof details.email === "string", "ValidateEmail requires `email` to be set.");
       },
 
       async protect(
@@ -2724,21 +2632,11 @@ export function validateEmail(
 export function detectBot(options: BotOptions): [ArcjetBotRule<{}>] {
   validateBotOptions(options);
 
-  if (
-    typeof options.allow !== "undefined" &&
-    typeof options.deny !== "undefined"
-  ) {
-    throw new Error(
-      "`detectBot` options error: `allow` and `deny` cannot be provided together",
-    );
+  if (typeof options.allow !== "undefined" && typeof options.deny !== "undefined") {
+    throw new Error("`detectBot` options error: `allow` and `deny` cannot be provided together");
   }
-  if (
-    typeof options.allow === "undefined" &&
-    typeof options.deny === "undefined"
-  ) {
-    throw new Error(
-      "`detectBot` options error: either `allow` or `deny` must be specified",
-    );
+  if (typeof options.allow === "undefined" && typeof options.deny === "undefined") {
+    throw new Error("`detectBot` options error: either `allow` or `deny` must be specified");
   }
 
   const type = "BOT";
@@ -2818,11 +2716,7 @@ export function detectBot(options: BotOptions): [ArcjetBotRule<{}>] {
           });
         }
 
-        const result = await analyze.detectBot(
-          context,
-          toAnalyzeRequest(request),
-          config,
-        );
+        const result = await analyze.detectBot(context, toAnalyzeRequest(request), config);
 
         const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
@@ -3210,9 +3104,7 @@ export type ProtectSignupOptions<Characteristics extends readonly string[]> = {
 export function protectSignup<const Characteristics extends string[] = []>(
   options: ProtectSignupOptions<Characteristics>,
 ): [
-  rateLimit: ArcjetSlidingWindowRateLimitRule<
-    CharacteristicProps<Characteristics>
-  >,
+  rateLimit: ArcjetSlidingWindowRateLimitRule<CharacteristicProps<Characteristics>>,
   bot: ArcjetBotRule<{}>,
   email: ArcjetEmailRule<{ email: string }>,
 ] {
@@ -3294,10 +3186,7 @@ export function filter(options: FilterOptions): [ArcjetFilterRule] {
       priority: Priority.Filter,
       async protect(context, request) {
         const ruleId = await ruleIdPromise;
-        const [cached, ttl] = await context.cache.get(
-          ruleId,
-          context.fingerprint,
-        );
+        const [cached, ttl] = await context.cache.get(ruleId, context.fingerprint);
 
         if (cached) {
           return new ArcjetRuleResult({
@@ -3422,10 +3311,7 @@ export interface Arcjet<Props extends PlainObject> {
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
    *   Arcjet’s decision about the request.
    */
-  protect(
-    ctx: ArcjetAdapterContext,
-    request: ArcjetRequest<Props>,
-  ): Promise<ArcjetDecision>;
+  protect(ctx: ArcjetAdapterContext, request: ArcjetRequest<Props>): Promise<ArcjetDecision>;
 
   /**
    * Augment the client with another rule.
@@ -3542,9 +3428,7 @@ export default function arcjet<
       extra: reportExtra,
     });
 
-    const characteristics = options.characteristics
-      ? [...options.characteristics]
-      : [];
+    const characteristics = options.characteristics ? [...options.characteristics] : [];
 
     const waitUntil = lookupWaitUntil();
 
@@ -3560,10 +3444,7 @@ export default function arcjet<
 
     const logFingerprintPerf = perf.measure("fingerprint");
     try {
-      fingerprint = await analyze.generateFingerprint(
-        baseContext,
-        toAnalyzeRequest(details),
-      );
+      fingerprint = await analyze.generateFingerprint(baseContext, toAnalyzeRequest(details));
       log.debug("fingerprint (%s): %s", rt, fingerprint);
     } catch (error) {
       log.error(
@@ -3573,9 +3454,7 @@ export default function arcjet<
 
       const decision = new ArcjetErrorDecision({
         ttl: 0,
-        reason: new ArcjetErrorReason(
-          `Failed to build fingerprint - ${errorMessage(error)}`,
-        ),
+        reason: new ArcjetErrorReason(`Failed to build fingerprint - ${errorMessage(error)}`),
         // No results because we couldn't create a fingerprint
         results: [],
       });
@@ -3693,11 +3572,7 @@ export default function arcjet<
             "Local rule result:",
           );
         } catch (err) {
-          log.error(
-            "Failure running rule: %s due to %s",
-            rule.type,
-            errorMessage(err),
-          );
+          log.error("Failure running rule: %s due to %s", rule.type, errorMessage(err));
 
           results[idx] = new ArcjetRuleResult({
             // TODO(#4030): Figure out if we can get a Rule ID in this error case
@@ -3769,11 +3644,9 @@ export default function arcjet<
     const logRemotePerf = perf.measure("remote");
     try {
       const logDediceApiPerf = perf.measure("decideApi");
-      const decision = await client
-        .decide(context, remoteDetails, rules)
-        .finally(() => {
-          logDediceApiPerf();
-        });
+      const decision = await client.decide(context, remoteDetails, rules).finally(() => {
+        logDediceApiPerf();
+      });
 
       // If the decision is to block and we have a non-zero TTL, we cache the
       // block locally
@@ -3798,10 +3671,7 @@ export default function arcjet<
 
       return decision;
     } catch (err) {
-      log.info(
-        "Encountered problem getting remote decision: %s",
-        errorMessage(err),
-      );
+      log.info("Encountered problem getting remote decision: %s", errorMessage(err));
       const decision = new ArcjetErrorDecision({
         ttl: 0,
         reason: new ArcjetErrorReason(err),

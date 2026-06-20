@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import arcjet, {
   createRemoteClient,
   detectBot,
@@ -365,37 +366,31 @@ test("protectSignup", async function (t) {
     }, /invalid_type/);
   });
 
-  await t.test(
-    "should fail w/o `bots`, `email`, `rateLimit`",
-    async function () {
-      // @ts-expect-error: test runtime behavior.
-      const rule = protectSignup({});
+  await t.test("should fail w/o `bots`, `email`, `rateLimit`", async function () {
+    // @ts-expect-error: test runtime behavior.
+    const rule = protectSignup({});
 
-      assert.throws(function () {
-        arcjet({ rules: [rule] });
-      });
-    },
-  );
-
-  await t.test(
-    "should work w/ `bots`, `email`, `rateLimit`",
-    async function () {
-      const rule = protectSignup({
-        bots: { allow: ["CURL"] },
-        email: { allow: ["FREE", "NO_GRAVATAR"] },
-        rateLimit: { interval: "30m", max: 60 },
-      });
-
-      assert.equal(rule.type, "protectSignup");
-      assert.deepEqual(rule.options, {
-        bots: { allow: ["CURL"] },
-        email: { allow: ["FREE", "NO_GRAVATAR"] },
-        rateLimit: { interval: "30m", max: 60 },
-      });
-
+    assert.throws(function () {
       arcjet({ rules: [rule] });
-    },
-  );
+    });
+  });
+
+  await t.test("should work w/ `bots`, `email`, `rateLimit`", async function () {
+    const rule = protectSignup({
+      bots: { allow: ["CURL"] },
+      email: { allow: ["FREE", "NO_GRAVATAR"] },
+      rateLimit: { interval: "30m", max: 60 },
+    });
+
+    assert.equal(rule.type, "protectSignup");
+    assert.deepEqual(rule.options, {
+      bots: { allow: ["CURL"] },
+      email: { allow: ["FREE", "NO_GRAVATAR"] },
+      rateLimit: { interval: "30m", max: 60 },
+    });
+
+    arcjet({ rules: [rule] });
+  });
 });
 
 test("sensitiveInfo", async function (t) {
@@ -486,29 +481,23 @@ test("sensitiveInfo", async function (t) {
     arcjet({ rules: [rule] });
   });
 
-  await t.test(
-    "should type error w/ custom entity in `allow`",
-    async function () {
-      const rule = sensitiveInfo({
-        // @ts-expect-error: test type behavior.
-        allow: ["custom-entity"],
-      });
+  await t.test("should type error w/ custom entity in `allow`", async function () {
+    const rule = sensitiveInfo({
+      // @ts-expect-error: test type behavior.
+      allow: ["custom-entity"],
+    });
 
-      arcjet({ rules: [rule] });
-    },
-  );
+    arcjet({ rules: [rule] });
+  });
 
-  await t.test(
-    "should type error w/ custom entity in `deny`",
-    async function () {
-      const rule = sensitiveInfo({
-        // @ts-expect-error: test type behavior.
-        deny: ["custom-entity"],
-      });
+  await t.test("should type error w/ custom entity in `deny`", async function () {
+    const rule = sensitiveInfo({
+      // @ts-expect-error: test type behavior.
+      deny: ["custom-entity"],
+    });
 
-      arcjet({ rules: [rule] });
-    },
-  );
+    arcjet({ rules: [rule] });
+  });
 
   await t.test("should type error w/ `detect`", async function () {
     const rule = sensitiveInfo({
@@ -679,37 +668,31 @@ test("tokenBucket", async function (t) {
     }, /invalid_type/);
   });
 
-  await t.test(
-    "should fail w/o `capacity`, `interval`, `refillRate`",
-    async function () {
-      // @ts-expect-error: test runtime behavior.
-      const rule = tokenBucket({});
+  await t.test("should fail w/o `capacity`, `interval`, `refillRate`", async function () {
+    // @ts-expect-error: test runtime behavior.
+    const rule = tokenBucket({});
 
-      assert.throws(function () {
-        arcjet({ rules: [rule] });
-      });
-    },
-  );
-
-  await t.test(
-    "should work w/ `capacity`, `interval`, `refillRate`",
-    async function () {
-      const rule = tokenBucket({
-        capacity: 50,
-        interval: "1m",
-        refillRate: 10,
-      });
-
-      assert.equal(rule.type, "tokenBucket");
-      assert.deepEqual(rule.options, {
-        capacity: 50,
-        interval: "1m",
-        refillRate: 10,
-      });
-
+    assert.throws(function () {
       arcjet({ rules: [rule] });
-    },
-  );
+    });
+  });
+
+  await t.test("should work w/ `capacity`, `interval`, `refillRate`", async function () {
+    const rule = tokenBucket({
+      capacity: 50,
+      interval: "1m",
+      refillRate: 10,
+    });
+
+    assert.equal(rule.type, "tokenBucket");
+    assert.deepEqual(rule.options, {
+      capacity: 50,
+      interval: "1m",
+      refillRate: 10,
+    });
+
+    arcjet({ rules: [rule] });
+  });
 
   await t.test("should fail w/ invalid `mode`", async function () {
     const rule = tokenBucket({
@@ -854,20 +837,17 @@ test("validateEmail", async function (t) {
     arcjet({ rules: [rule] });
   });
 
-  await t.test(
-    "should fail w/ invalid `allowDomainLiteral`",
-    async function () {
-      const rule = validateEmail({
-        // @ts-expect-error: test runtime behavior.
-        allowDomainLiteral: "INVALID",
-        allow: ["FREE", "NO_GRAVATAR"],
-      });
+  await t.test("should fail w/ invalid `allowDomainLiteral`", async function () {
+    const rule = validateEmail({
+      // @ts-expect-error: test runtime behavior.
+      allowDomainLiteral: "INVALID",
+      allow: ["FREE", "NO_GRAVATAR"],
+    });
 
-      assert.throws(function () {
-        arcjet({ rules: [rule] });
-      }, /expected boolean, received string/i);
-    },
-  );
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /expected boolean, received string/i);
+  });
 
   await t.test("should work w/ valid `allowDomainLiteral`", async function () {
     const rule = validateEmail({
@@ -884,99 +864,91 @@ test("validateEmail", async function (t) {
     arcjet({ rules: [rule] });
   });
 
-  await t.test(
-    "should fail w/ invalid `requireTopLevelDomain`",
-    async function () {
-      const rule = validateEmail({
-        allow: ["FREE", "NO_GRAVATAR"],
-        // @ts-expect-error: test runtime behavior.
-        requireTopLevelDomain: "INVALID",
-      });
+  await t.test("should fail w/ invalid `requireTopLevelDomain`", async function () {
+    const rule = validateEmail({
+      allow: ["FREE", "NO_GRAVATAR"],
+      // @ts-expect-error: test runtime behavior.
+      requireTopLevelDomain: "INVALID",
+    });
 
-      assert.throws(function () {
-        arcjet({ rules: [rule] });
-      }, /expected boolean, received string/i);
-    },
-  );
-
-  await t.test(
-    "should work w/ valid `requireTopLevelDomain`",
-    async function () {
-      const rule = validateEmail({
-        allow: ["FREE", "NO_GRAVATAR"],
-        requireTopLevelDomain: true,
-      });
-
-      assert.equal(rule.type, "email");
-      assert.deepEqual(rule.options, {
-        allow: ["FREE", "NO_GRAVATAR"],
-        requireTopLevelDomain: true,
-      });
-
+    assert.throws(function () {
       arcjet({ rules: [rule] });
-    },
-  );
+    }, /expected boolean, received string/i);
+  });
+
+  await t.test("should work w/ valid `requireTopLevelDomain`", async function () {
+    const rule = validateEmail({
+      allow: ["FREE", "NO_GRAVATAR"],
+      requireTopLevelDomain: true,
+    });
+
+    assert.equal(rule.type, "email");
+    assert.deepEqual(rule.options, {
+      allow: ["FREE", "NO_GRAVATAR"],
+      requireTopLevelDomain: true,
+    });
+
+    arcjet({ rules: [rule] });
+  });
 });
 
 test("@arcjet/astro", async function (t) {
-  await t.test(
-    "should create an integration that injects the configured rules",
-    async function () {
-      const rule = filter({
-        allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
-        // Note: `mode` should be possible to omit.
-        mode: "LIVE",
-      });
+  await t.test("should create an integration that injects the configured rules", async function () {
+    const rule = filter({
+      allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+      // Note: `mode` should be possible to omit.
+      mode: "LIVE",
+    });
 
-      const client = arcjet({ rules: [rule] });
+    const client = arcjet({ rules: [rule] });
 
-      const done = client.hooks["astro:config:done"];
+    const done = client.hooks["astro:config:done"];
 
-      assert(done);
+    assert(done);
 
-      let called = false;
+    let called = false;
 
-      // @ts-expect-error: `config` and `setAdapter` are not used in our integration.
-      await done({
-        buildOutput: "server",
-        injectTypes(injectedType) {
-          assert.equal(injectedType.filename, "client.d.ts");
-          assert.match(injectedType.content, /filter\(/);
-          assert.match(
-            injectedType.content,
-            /http\.request\.headers\[\\"user-agent\\"] ~ \\"Chrome\\"/,
-          );
-          called = true;
-          return new URL("about:blank");
+    // @ts-expect-error: `config` and `setAdapter` are not used in our integration.
+    await done({
+      buildOutput: "server",
+      injectTypes(injectedType) {
+        assert.equal(injectedType.filename, "client.d.ts");
+        assert.match(injectedType.content, /filter\(/);
+        assert.match(
+          injectedType.content,
+          /http\.request\.headers\[\\"user-agent\\"] ~ \\"Chrome\\"/,
+        );
+        called = true;
+        return new URL("about:blank");
+      },
+      logger: createLogger(),
+    });
+
+    assert.equal(called, true);
+
+    // Create an interface that matches Astro loggers but does nothing.
+    // oxlint-disable-next-line unicorn/consistent-function-scoping
+    function createLogger() {
+      return {
+        fork() {
+          return createLogger();
         },
-        logger: createLogger(),
-      });
-
-      assert.equal(called, true);
-
-      // Create an interface that matches Astro loggers but does nothing.
-      function createLogger() {
-        return {
-          fork() {
-            return createLogger();
-          },
-          label: "",
-          options: {
-            destination: {
-              write() {
-                return true;
-              },
+        label: "",
+        options: {
+          destination: {
+            write() {
+              return true;
             },
-            level: "info" as const,
           },
-          info() {},
-          error() {},
-          debug() {},
-          warn() {},
-          flush() {},
-          close() {},
-        };
-      }
-    },
-  );
+          level: "info" as const,
+        },
+        info() {},
+        error() {},
+        debug() {},
+        warn() {},
+        flush() {},
+        close() {},
+      };
+    }
+  });
 });
