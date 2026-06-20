@@ -55,6 +55,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
     "test": "npm run build"
   },
   "dependencies": {
@@ -69,7 +70,7 @@
   },
   "devDependencies": {
     "tsdown": "0.22.3",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "engines": {}
 }

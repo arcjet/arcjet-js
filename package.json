@@ -12,9 +12,11 @@
     "test-coverage": "turbo run test-coverage",
     "test": "turbo test",
     "format": "oxfmt --disable-nested-config",
-    "format:check": "oxfmt --disable-nested-config --check"
+    "format:check": "oxfmt --disable-nested-config --check",
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "@typescript/native-preview": "7.0.0-dev.20260602.1",
     "oxfmt": "0.55.0",
     "oxlint": "1.70.0",
     "turbo": "2.9.18"

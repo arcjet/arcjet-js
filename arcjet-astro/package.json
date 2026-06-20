@@ -57,6 +57,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
     "test-api": "node --test -- test/*.test.ts",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
     "test": "npm run build && npm run test-coverage"
@@ -74,7 +75,7 @@
   "devDependencies": {
     "astro": "7.0.3",
     "tsdown": "0.22.3",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "peerDependencies": {
     "astro": "^5.9.3 || ^6.0.0 || ^7.0.0"
