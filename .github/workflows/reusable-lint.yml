@@ -35,3 +35,8 @@ jobs:
         run: npm run lint
       - name: Format check (oxfmt)
         run: npm run format:check
+      # Type checking needs each package's dependencies built (for their .d.ts).
+      - name: Build
+        run: npm run build
+      - name: Type check (tsgo)
+        run: npm run typecheck
