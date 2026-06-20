@@ -5,13 +5,22 @@
     "esModuleInterop": true,
     "exactOptionalPropertyTypes": true,
     "incremental": false,
-    "lib": ["esnext"],
+    "lib": [
+      "esnext",
+      "webworker"
+    ],
     "moduleResolution": "bundler",
     "module": "esnext",
     "preserveWatchOutput": true,
+    "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "types": [
+      "node"
+    ]
   },
-  "exclude": ["node_modules/"]
+  "exclude": [
+    "node_modules/"
+  ]
 }

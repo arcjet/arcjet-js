@@ -55,6 +55,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
     "prepack": "npm run build",
     "test-api": "node --test -- test/*.test.ts",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
@@ -74,7 +75,7 @@
     "@nuxt/kit": "4.4.8",
     "@nuxt/schema": "4.4.8",
     "tsdown": "0.22.3",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "peerDependencies": {
     "@nuxt/kit": ">=4",
