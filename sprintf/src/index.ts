@@ -71,10 +71,7 @@ export function sprintf(template: string, ...values: unknown[]): string {
   let valueIndex = 0;
   let lastPosition = -1;
   for (let index = 0; index < template.length; ) {
-    if (
-      template.charCodeAt(index) === PERCENT_CODE &&
-      index + 1 < template.length
-    ) {
+    if (template.charCodeAt(index) === PERCENT_CODE && index + 1 < template.length) {
       lastPosition = lastPosition > -1 ? lastPosition : 0;
       switch (template.charCodeAt(index + 1)) {
         case LOWERCASE_D_CODE:

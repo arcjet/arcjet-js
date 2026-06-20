@@ -7,7 +7,9 @@
 //
 // Run: bun test test/runtime/proxy.bun.test.ts
 import { expect, test } from "bun:test";
+
 import { createClient } from "@connectrpc/connect";
+
 import { createTransport } from "../../dist/bun.js";
 import { ElizaService } from "../eliza_pb.ts";
 import { startProxyFixture } from "./fixture.ts";
@@ -16,10 +18,7 @@ test("routes through `HTTPS_PROXY` via Bun's native fetch", async () => {
   const fixture = await startProxyFixture();
 
   try {
-    const client = createClient(
-      ElizaService,
-      createTransport(fixture.originUrl),
-    );
+    const client = createClient(ElizaService, createTransport(fixture.originUrl));
     // Expected to reject at the TLS handshake (untrusted self-signed cert); we
     // only care that it was tunneled through the proxy via CONNECT.
     await client.say({ sentence: "Hi!" }).catch(() => {});

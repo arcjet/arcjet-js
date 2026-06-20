@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { ArcjetReason, ArcjetRuleResult } from "../dist/index.js";
 
 test("@arcjet/protocol", async function (t) {

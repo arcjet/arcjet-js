@@ -37,14 +37,10 @@ export function uuidV7Bytes(
   random: Uint8Array = randomBytes(),
 ): Uint8Array {
   if (!Number.isInteger(nowMs) || nowMs < 0 || nowMs >= 2 ** 48) {
-    throw new RangeError(
-      `uuidV7Bytes: \`nowMs\` must be an integer in [0, 2 ** 48), got ${nowMs}`,
-    );
+    throw new RangeError(`uuidV7Bytes: \`nowMs\` must be an integer in [0, 2 ** 48), got ${nowMs}`);
   }
   if (random.length !== 10) {
-    throw new RangeError(
-      `uuidV7Bytes: \`random\` must be exactly 10 bytes, got ${random.length}`,
-    );
+    throw new RangeError(`uuidV7Bytes: \`random\` must be exactly 10 bytes, got ${random.length}`);
   }
   const timestampMs = BigInt(nowMs);
   const randA = BigInt((random[0] << 4) | (random[1] >> 4)); // 12 bits
@@ -89,10 +85,6 @@ function encodeCrockford(bytes: Uint8Array): string {
  *
  * `nowMs` and `random` are injectable for deterministic testing.
  */
-export function typeid(
-  prefix: string,
-  nowMs?: number,
-  random?: Uint8Array,
-): string {
+export function typeid(prefix: string, nowMs?: number, random?: Uint8Array): string {
   return `${prefix}_${encodeCrockford(uuidV7Bytes(nowMs, random))}`;
 }

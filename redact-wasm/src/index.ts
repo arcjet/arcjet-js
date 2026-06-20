@@ -2,13 +2,12 @@
 //
 /// <reference types="./wasm.js" />
 
-import { instantiate } from "./wasm/arcjet_analyze_bindings_redact.component.js";
-import type { ImportObject } from "./wasm/arcjet_analyze_bindings_redact.component.js";
-import type { ArcjetRedactCustomRedact } from "./wasm/interfaces/arcjet-redact-custom-redact.js";
-
 import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_bindings_redact.component.core.wasm?js";
 import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_bindings_redact.component.core2.wasm?js";
 import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_bindings_redact.component.core3.wasm?js";
+import { instantiate } from "./wasm/arcjet_analyze_bindings_redact.component.js";
+import type { ImportObject } from "./wasm/arcjet_analyze_bindings_redact.component.js";
+import type { ArcjetRedactCustomRedact } from "./wasm/interfaces/arcjet-redact-custom-redact.js";
 
 const componentCoreWasmPromise = componentCoreWasm();
 const componentCore2WasmPromise = componentCore2Wasm();
@@ -38,10 +37,7 @@ async function moduleFromPath(path: string): Promise<WebAssemblyLike.Module> {
  * @returns
  *   Promise to the initialized WebAssembly instance.
  */
-export async function initializeWasm(
-  detect: CustomDetect,
-  replace: CustomRedact,
-) {
+export async function initializeWasm(detect: CustomDetect, replace: CustomRedact) {
   const coreImports: ImportObject = {
     "arcjet:redact/custom-redact": {
       detectSensitiveInfo: detect,

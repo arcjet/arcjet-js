@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
+
 import { ArcjetHeaders } from "../dist/index.js";
 
 test("@arcjet/headers", async function (t) {

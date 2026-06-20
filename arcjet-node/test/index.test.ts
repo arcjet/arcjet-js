@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import http from "node:http";
 import test from "node:test";
+
 import { MemoryCache } from "@arcjet/cache";
 import type { Client } from "@arcjet/protocol/client.js";
+
 import arcjetNode, {
   type ArcjetCacheEntry,
   type ArcjetContext,
@@ -93,30 +95,27 @@ test("`createRemoteClient`", async function (t) {
 });
 
 test("`arcjetNode`", async function (t) {
-  await t.test(
-    "should warn about IP addresses missing in development",
-    async function () {
-      let parameters: unknown;
-      const restore = capture();
+  await t.test("should warn about IP addresses missing in development", async function () {
+    let parameters: unknown;
+    const restore = capture();
 
-      arcjetNode({
-        key: "",
-        log: {
-          ...console,
-          warn(...rest) {
-            parameters = rest;
-          },
+    arcjetNode({
+      key: "",
+      log: {
+        ...console,
+        warn(...rest) {
+          parameters = rest;
         },
-        rules: [],
-      });
+      },
+      rules: [],
+    });
 
-      restore();
+    restore();
 
-      assert.deepEqual(parameters, [
-        "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
-      ]);
-    },
-  );
+    assert.deepEqual(parameters, [
+      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
+    ]);
+  });
 
   await t.test(
     "should not warn about IP addresses missing when not in development",
@@ -143,85 +142,79 @@ test("`arcjetNode`", async function (t) {
   );
 
   await t.test("`.protect()`", async function (t) {
-    await t.test(
-      "should warn about IPs missing in non-development",
-      async function () {
-        let parameters: unknown;
-        const restore = capture();
-        process.env.ARCJET_ENV = "";
+    await t.test("should warn about IPs missing in non-development", async function () {
+      let parameters: unknown;
+      const restore = capture();
+      process.env.ARCJET_ENV = "";
 
-        const arcjet = arcjetNode({
-          characteristics: [],
-          client: createLocalClient(),
-          key: exampleKey,
-          log: {
-            ...console,
-            debug() {},
-            error() {},
-            warn(...rest) {
-              parameters = rest;
-            },
+      const arcjet = arcjetNode({
+        characteristics: [],
+        client: createLocalClient(),
+        key: exampleKey,
+        log: {
+          ...console,
+          debug() {},
+          error() {},
+          warn(...rest) {
+            parameters = rest;
           },
-          rules: [detectBot({ deny: ["CURL"], mode: "LIVE" })],
-        });
+        },
+        rules: [detectBot({ deny: ["CURL"], mode: "LIVE" })],
+      });
 
-        // Not called when constructing.
-        assert.deepEqual(parameters, undefined);
+      // Not called when constructing.
+      assert.deepEqual(parameters, undefined);
 
-        const { server, url } = await createSimpleServer({
-          decide: arcjet.protect,
-        });
+      const { server, url } = await createSimpleServer({
+        decide: arcjet.protect,
+      });
 
-        await fetch(url, { headers: { "user-agent": "Test" } });
+      await fetch(url, { headers: { "user-agent": "Test" } });
 
-        await server.close();
+      await server.close();
 
-        restore();
+      restore();
 
-        // Called when calling `protect()`.
-        assert.deepEqual(parameters, [
-          'Client IP address is missing. If this is a dev environment set the ARCJET_ENV env var to "development"',
-        ]);
-      },
-    );
+      // Called when calling `protect()`.
+      assert.deepEqual(parameters, [
+        'Client IP address is missing. If this is a dev environment set the ARCJET_ENV env var to "development"',
+      ]);
+    });
 
-    await t.test(
-      "should not warn about IPs missing in development",
-      async function () {
-        let parameters: unknown;
-        const restore = capture();
+    await t.test("should not warn about IPs missing in development", async function () {
+      let parameters: unknown;
+      const restore = capture();
 
-        const arcjet = arcjetNode({
-          characteristics: [],
-          client: createLocalClient(),
-          key: exampleKey,
-          log: {
-            ...console,
-            debug() {},
-            warn(...rest) {
-              parameters = rest;
-            },
+      const arcjet = arcjetNode({
+        characteristics: [],
+        client: createLocalClient(),
+        key: exampleKey,
+        log: {
+          ...console,
+          debug() {},
+          warn(...rest) {
+            parameters = rest;
           },
-          rules: [detectBot({ deny: ["CURL"], mode: "LIVE" })],
-        });
+        },
+        rules: [detectBot({ deny: ["CURL"], mode: "LIVE" })],
+      });
 
-        // Called when constructing, so set to `undefined` again.
-        parameters = undefined;
+      // Called when constructing, so set to `undefined` again.
+      parameters = undefined;
 
-        const { server, url } = await createSimpleServer({
-          decide: arcjet.protect,
-        });
+      const { server, url } = await createSimpleServer({
+        decide: arcjet.protect,
+      });
 
-        await fetch(url, { headers: { "user-agent": "Test" } });
+      await fetch(url, { headers: { "user-agent": "Test" } });
 
-        await server.close();
+      await server.close();
 
-        restore();
+      restore();
 
-        // Not called when calling `protect()`.
-        assert.deepEqual(parameters, undefined);
-      },
-    );
+      // Not called when calling `protect()`.
+      assert.deepEqual(parameters, undefined);
+    });
 
     await t.test("should protect a request", async function () {
       const restore = capture();
@@ -297,56 +290,53 @@ test("`arcjetNode`", async function (t) {
       });
     });
 
-    await t.test(
-      "should forward a `correlationId` passed as an option",
-      async function () {
-        const restore = capture();
+    await t.test("should forward a `correlationId` passed as an option", async function () {
+      const restore = capture();
 
-        let request: ArcjetRequestDetails | undefined;
+      let request: ArcjetRequestDetails | undefined;
 
-        const arcjet = arcjetNode({
-          client: createLocalClient(),
-          key: exampleKey,
-          rules: [
-            [
-              {
-                mode: "LIVE",
-                priority: 1,
-                async protect(_context, details) {
-                  request = details;
-                  return new ArcjetRuleResult({
-                    conclusion: "ALLOW",
-                    fingerprint: "",
-                    reason: new ArcjetReason(),
-                    ruleId: "",
-                    state: "RUN",
-                    ttl: 0,
-                  });
-                },
-                validate() {},
-                version: 0,
-                type: "",
+      const arcjet = arcjetNode({
+        client: createLocalClient(),
+        key: exampleKey,
+        rules: [
+          [
+            {
+              mode: "LIVE",
+              priority: 1,
+              async protect(_context, details) {
+                request = details;
+                return new ArcjetRuleResult({
+                  conclusion: "ALLOW",
+                  fingerprint: "",
+                  reason: new ArcjetReason(),
+                  ruleId: "",
+                  state: "RUN",
+                  ttl: 0,
+                });
               },
-            ],
+              validate() {},
+              version: 0,
+              type: "",
+            },
           ],
-        });
+        ],
+      });
 
-        const { server, url } = await createSimpleServer({
-          decide: (req) => arcjet.protect(req, { correlationId: "wf_abcdef" }),
-        });
+      const { server, url } = await createSimpleServer({
+        decide: (req) => arcjet.protect(req, { correlationId: "wf_abcdef" }),
+      });
 
-        const response = await fetch(new URL("/a?b#c", url), {
-          headers: { cookie: "session=a", "user-agent": "Test" },
-        });
+      const response = await fetch(new URL("/a?b#c", url), {
+        headers: { cookie: "session=a", "user-agent": "Test" },
+      });
 
-        await server.close();
-        restore();
+      await server.close();
+      restore();
 
-        assert.equal(response.status, 200);
-        assert.ok(request);
-        assert.equal(request.correlationId, "wf_abcdef");
-      },
-    );
+      assert.equal(response.status, 200);
+      assert.ok(request);
+      assert.equal(request.correlationId, "wf_abcdef");
+    });
   });
 
   await t.test("`.withRule()`", async function (t) {
@@ -736,9 +726,7 @@ test("`arcjetNode`", async function (t) {
 
     assert.equal(response.status, 200);
     assert.deepEqual(warnings, [
-      [
-        "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
-      ],
+      ["Arcjet will use 127.0.0.1 when missing public IP address in development mode"],
       [
         "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
       ],
@@ -860,178 +848,160 @@ test("`arcjetNode`", async function (t) {
     assert.equal(response.status, 403);
   });
 
-  await t.test(
-    "should support `sensitiveInfo` on form data",
-    async function () {
-      const restore = capture();
+  await t.test("should support `sensitiveInfo` on form data", async function () {
+    const restore = capture();
 
-      const arcjet = arcjetNode({
-        client: createLocalClient(),
-        key: exampleKey,
-        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-      });
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
 
-      const { server, url } = await createSimpleServer({
-        decide: arcjet.protect,
-      });
+    const { server, url } = await createSimpleServer({
+      decide: arcjet.protect,
+    });
 
-      const formData = new FormData();
-      formData.append("message", "My email is My email is alice@arcjet.com");
+    const formData = new FormData();
+    formData.append("message", "My email is My email is alice@arcjet.com");
 
-      const response = await fetch(url, { body: formData, method: "POST" });
+    const response = await fetch(url, { body: formData, method: "POST" });
 
-      server.close();
-      restore();
+    server.close();
+    restore();
 
-      assert.equal(response.status, 403);
-    },
-  );
+    assert.equal(response.status, 403);
+  });
 
-  await t.test(
-    "should support `sensitiveInfo` on plain text",
-    async function () {
-      const restore = capture();
+  await t.test("should support `sensitiveInfo` on plain text", async function () {
+    const restore = capture();
 
-      const arcjet = arcjetNode({
-        client: createLocalClient(),
-        key: exampleKey,
-        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-      });
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
 
-      const { server, url } = await createSimpleServer({
-        decide: arcjet.protect,
-      });
+    const { server, url } = await createSimpleServer({
+      decide: arcjet.protect,
+    });
 
-      const response = await fetch(url, {
-        body: "My email is alice@arcjet.com",
-        method: "POST",
-      });
+    const response = await fetch(url, {
+      body: "My email is alice@arcjet.com",
+      method: "POST",
+    });
 
-      server.close();
-      restore();
+    server.close();
+    restore();
 
-      assert.equal(response.status, 403);
-    },
-  );
+    assert.equal(response.status, 403);
+  });
 
-  await t.test(
-    "should support `sensitiveInfo` on streamed plain text",
-    async function () {
-      const restore = capture();
+  await t.test("should support `sensitiveInfo` on streamed plain text", async function () {
+    const restore = capture();
 
-      const arcjet = arcjetNode({
-        client: createLocalClient(),
-        key: exampleKey,
-        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-      });
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
 
-      const { server, url } = await createSimpleServer({
-        decide: arcjet.protect,
-      });
+    const { server, url } = await createSimpleServer({
+      decide: arcjet.protect,
+    });
 
-      const response = await fetch(url, {
-        body: new ReadableStream({
-          start(controller) {
-            const parts = "My email is alice@arcjet.com".split(" ");
-            let first = true;
-            const time = 10;
+    const response = await fetch(url, {
+      body: new ReadableStream({
+        start(controller) {
+          const parts = "My email is alice@arcjet.com".split(" ");
+          let first = true;
+          const time = 10;
 
-            setTimeout(tick, time);
+          setTimeout(tick, time);
 
-            function tick() {
-              const part = parts.shift();
-              if (part) {
-                controller.enqueue(
-                  new TextEncoder().encode((first ? "" : " ") + part),
-                );
-                first = false;
-                setTimeout(tick, time);
-              } else {
-                controller.enqueue(new TextEncoder().encode("\n"));
-                controller.close();
-              }
+          function tick() {
+            const part = parts.shift();
+            if (part) {
+              controller.enqueue(new TextEncoder().encode((first ? "" : " ") + part));
+              first = false;
+              setTimeout(tick, time);
+            } else {
+              controller.enqueue(new TextEncoder().encode("\n"));
+              controller.close();
             }
-          },
-        }),
-        duplex: "half",
-        headers: { "Content-Type": "text/plain" },
-        method: "POST",
-      });
+          }
+        },
+      }),
+      duplex: "half",
+      headers: { "Content-Type": "text/plain" },
+      method: "POST",
+    });
 
-      server.close();
-      restore();
+    server.close();
+    restore();
 
-      assert.equal(response.status, 403);
-    },
-  );
+    assert.equal(response.status, 403);
+  });
 
-  await t.test(
-    "should support `sensitiveInfo` on a megabyte of data",
-    async function () {
-      const restore = capture();
+  await t.test("should support `sensitiveInfo` on a megabyte of data", async function () {
+    const restore = capture();
 
-      const arcjet = arcjetNode({
-        client: createLocalClient(),
-        key: exampleKey,
-        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-      });
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
 
-      const { server, url } = await createSimpleServer({
-        decide: arcjet.protect,
-      });
-      const message = "My email is alice@arcjet.com";
-      const body = "a".repeat(oneMegabyte - message.length - 1) + " " + message;
+    const { server, url } = await createSimpleServer({
+      decide: arcjet.protect,
+    });
+    const message = "My email is alice@arcjet.com";
+    const body = "a".repeat(oneMegabyte - message.length - 1) + " " + message;
 
-      const response = await fetch(url, { body, method: "POST" });
+    const response = await fetch(url, { body, method: "POST" });
 
-      server.close();
-      restore();
+    server.close();
+    restore();
 
-      assert.equal(response.status, 403);
-    },
-  );
+    assert.equal(response.status, 403);
+  });
 
   // TODO(GH-4562): this is hardcoded in `arcjet-node` currently to allow up to 1mb.
   // Make configurable and document.
-  await t.test(
-    "should not support `sensitiveInfo` on 5 megabytes of data",
-    async function () {
-      const restore = capture();
-      let parameters: Array<unknown> | undefined;
+  await t.test("should not support `sensitiveInfo` on 5 megabytes of data", async function () {
+    const restore = capture();
+    let parameters: Array<unknown> | undefined;
 
-      const arcjet = arcjetNode({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug() {},
-          warn() {},
-          error(...rest) {
-            parameters = rest;
-          },
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        ...console,
+        debug() {},
+        warn() {},
+        error(...rest) {
+          parameters = rest;
         },
-        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-      });
+      },
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
 
-      const { server, url } = await createSimpleServer({
-        decide: arcjet.protect,
-      });
-      const message = "My email is alice@arcjet.com";
-      const body =
-        "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
+    const { server, url } = await createSimpleServer({
+      decide: arcjet.protect,
+    });
+    const message = "My email is alice@arcjet.com";
+    const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
 
-      const response = await fetch(url, { body, method: "POST" });
+    const response = await fetch(url, { body, method: "POST" });
 
-      server.close();
-      restore();
+    server.close();
+    restore();
 
-      assert.equal(response.status, 200);
-      assert.deepEqual(parameters, [
-        "failed to get request body: %s",
-        "Cannot read stream whose expected length exceeds limit",
-      ]);
-    },
-  );
+    assert.equal(response.status, 200);
+    assert.deepEqual(parameters, [
+      "failed to get request body: %s",
+      "Cannot read stream whose expected length exceeds limit",
+    ]);
+  });
 
   await t.test(
     "should support `sensitiveInfo` on string data exposed through a `body-parser` like method",
@@ -1105,33 +1075,30 @@ test("`arcjetNode`", async function (t) {
     },
   );
 
-  await t.test(
-    "should support `sensitiveInfo` w/ `sensitiveInfoValue`",
-    async function () {
-      const restore = capture();
+  await t.test("should support `sensitiveInfo` w/ `sensitiveInfoValue`", async function () {
+    const restore = capture();
 
-      const arcjet = arcjetNode({
-        client: createLocalClient(),
-        key: exampleKey,
-        rules: [sensitiveInfo({ allow: [], mode: "LIVE" })],
-      });
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [sensitiveInfo({ allow: [], mode: "LIVE" })],
+    });
 
-      const { server, url } = await createSimpleServer({
-        async decide(request) {
-          return arcjet.protect(request, {
-            sensitiveInfoValue: "My email is alice@arcjet.com",
-          });
-        },
-      });
+    const { server, url } = await createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request, {
+          sensitiveInfoValue: "My email is alice@arcjet.com",
+        });
+      },
+    });
 
-      const response = await fetch(url);
+    const response = await fetch(url);
 
-      await server.close();
-      restore();
+    await server.close();
+    restore();
 
-      assert.equal(response.status, 403);
-    },
-  );
+    assert.equal(response.status, 403);
+  });
 
   await t.test("should support `validateEmail`", async function () {
     const restore = capture();
@@ -1270,157 +1237,150 @@ test("`arcjetNode`", async function (t) {
     assert.equal(responseBravo.status, 200);
   });
 
-  await t.test(
-    "should support a custom rule w/ optional extra fields",
-    async function () {
-      const restore = capture();
-      // Custom rule that denies requests when an optional extra field is `"alpha"`.
-      const denyExtraAlpha: ArcjetRule<{ field?: string | null | undefined }> =
-        {
-          mode: "LIVE",
-          priority: 1,
-          async protect(_context, details) {
-            const field = details.extra.field;
+  await t.test("should support a custom rule w/ optional extra fields", async function () {
+    const restore = capture();
+    // Custom rule that denies requests when an optional extra field is `"alpha"`.
+    const denyExtraAlpha: ArcjetRule<{ field?: string | null | undefined }> = {
+      mode: "LIVE",
+      priority: 1,
+      async protect(_context, details) {
+        const field = details.extra.field;
 
-            if (field === "alpha") {
-              return new ArcjetRuleResult({
-                conclusion: "DENY",
-                fingerprint: "",
-                reason: new ArcjetReason(),
-                ruleId: "",
-                state: "RUN",
-                ttl: 0,
-              });
-            }
-
-            return new ArcjetRuleResult({
-              conclusion: "ALLOW",
-              fingerprint: "",
-              reason: new ArcjetReason(),
-              ruleId: "",
-              state: "RUN",
-              ttl: 0,
-            });
-          },
-          type: "",
-          validate() {},
-          version: 0,
-        };
-
-      const arcjet = arcjetNode({
-        client: createLocalClient(),
-        key: exampleKey,
-        rules: [[denyExtraAlpha]],
-      });
-
-      let { server, url } = await createSimpleServer({
-        async decide(request) {
-          return arcjet.protect(request, { field: "alpha" });
-        },
-      });
-      const responseAlpha = await fetch(url);
-      await server.close();
-
-      ({ server, url } = await createSimpleServer({
-        async decide(request) {
-          return arcjet.protect(request, { field: "bravo" });
-        },
-      }));
-      const responseBravo = await fetch(url);
-      await server.close();
-
-      ({ server, url } = await createSimpleServer({
-        async decide(request) {
-          return arcjet.protect(request);
-        },
-      }));
-      const responseMissing = await fetch(url);
-      await server.close();
-
-      restore();
-
-      assert.equal(responseAlpha.status, 403);
-      assert.equal(responseBravo.status, 200);
-      assert.equal(responseMissing.status, 200);
-    },
-  );
-
-  await t.test(
-    "should support a custom rule w/ required extra fields",
-    async function () {
-      const restore = capture();
-      // Custom rule that denies requests when a required extra field is `"alpha"`.
-      const denyExtraAlphaRequired: ArcjetRule<{ field: string }> = {
-        mode: "LIVE",
-        priority: 1,
-        async protect(_context, details) {
-          const field = details.extra.field;
-
-          // A local error result would be overwritten by the server but a
-          // local deny persists.
-          if (!field || field === "alpha") {
-            return new ArcjetRuleResult({
-              conclusion: "DENY",
-              fingerprint: "",
-              reason: new ArcjetReason(),
-              ruleId: "",
-              state: "RUN",
-              ttl: 0,
-            });
-          }
-
+        if (field === "alpha") {
           return new ArcjetRuleResult({
-            conclusion: "ALLOW",
+            conclusion: "DENY",
             fingerprint: "",
             reason: new ArcjetReason(),
             ruleId: "",
             state: "RUN",
             ttl: 0,
           });
-        },
-        type: "",
-        validate() {},
-        version: 0,
-      };
+        }
 
-      const arcjet = arcjetNode({
-        client: createLocalClient(),
-        key: exampleKey,
-        rules: [[denyExtraAlphaRequired]],
-      });
+        return new ArcjetRuleResult({
+          conclusion: "ALLOW",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      },
+      type: "",
+      validate() {},
+      version: 0,
+    };
 
-      let { server, url } = await createSimpleServer({
-        async decide(request) {
-          return arcjet.protect(request, { field: "alpha" });
-        },
-      });
-      const responseAlpha = await fetch(url);
-      await server.close();
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [[denyExtraAlpha]],
+    });
 
-      ({ server, url } = await createSimpleServer({
-        async decide(request) {
-          return arcjet.protect(request, { field: "bravo" });
-        },
-      }));
-      const responseBravo = await fetch(url);
-      await server.close();
+    let { server, url } = await createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request, { field: "alpha" });
+      },
+    });
+    const responseAlpha = await fetch(url);
+    await server.close();
 
-      ({ server, url } = await createSimpleServer({
-        async decide(request) {
-          // @ts-expect-error: type error is expected as this use is wrong.
-          return arcjet.protect(request);
-        },
-      }));
-      const responseMissing = await fetch(url);
-      await server.close();
+    ({ server, url } = await createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request, { field: "bravo" });
+      },
+    }));
+    const responseBravo = await fetch(url);
+    await server.close();
 
-      restore();
+    ({ server, url } = await createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request);
+      },
+    }));
+    const responseMissing = await fetch(url);
+    await server.close();
 
-      assert.equal(responseAlpha.status, 403);
-      assert.equal(responseBravo.status, 200);
-      assert.equal(responseMissing.status, 403);
-    },
-  );
+    restore();
+
+    assert.equal(responseAlpha.status, 403);
+    assert.equal(responseBravo.status, 200);
+    assert.equal(responseMissing.status, 200);
+  });
+
+  await t.test("should support a custom rule w/ required extra fields", async function () {
+    const restore = capture();
+    // Custom rule that denies requests when a required extra field is `"alpha"`.
+    const denyExtraAlphaRequired: ArcjetRule<{ field: string }> = {
+      mode: "LIVE",
+      priority: 1,
+      async protect(_context, details) {
+        const field = details.extra.field;
+
+        // A local error result would be overwritten by the server but a
+        // local deny persists.
+        if (!field || field === "alpha") {
+          return new ArcjetRuleResult({
+            conclusion: "DENY",
+            fingerprint: "",
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          });
+        }
+
+        return new ArcjetRuleResult({
+          conclusion: "ALLOW",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      },
+      type: "",
+      validate() {},
+      version: 0,
+    };
+
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [[denyExtraAlphaRequired]],
+    });
+
+    let { server, url } = await createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request, { field: "alpha" });
+      },
+    });
+    const responseAlpha = await fetch(url);
+    await server.close();
+
+    ({ server, url } = await createSimpleServer({
+      async decide(request) {
+        return arcjet.protect(request, { field: "bravo" });
+      },
+    }));
+    const responseBravo = await fetch(url);
+    await server.close();
+
+    ({ server, url } = await createSimpleServer({
+      async decide(request) {
+        // @ts-expect-error: type error is expected as this use is wrong.
+        return arcjet.protect(request);
+      },
+    }));
+    const responseMissing = await fetch(url);
+    await server.close();
+
+    restore();
+
+    assert.equal(responseAlpha.status, 403);
+    assert.equal(responseBravo.status, 200);
+    assert.equal(responseMissing.status, 403);
+  });
 });
 
 /**

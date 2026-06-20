@@ -8,10 +8,7 @@ import type {
 /**
  * Types of standard sensitive information that can be detected.
  */
-export type ArcjetSensitiveInfoType = Exclude<
-  SensitiveInfoEntity["tag"],
-  "custom"
->;
+export type ArcjetSensitiveInfoType = Exclude<SensitiveInfoEntity["tag"], "custom">;
 
 /**
  * Options for the `redact` function.
@@ -23,9 +20,7 @@ export type ArcjetSensitiveInfoType = Exclude<
  */
 export type RedactOptions<
   DetectedEntities extends string | undefined = undefined,
-  ListedEntities extends
-    | ArcjetSensitiveInfoType
-    | Exclude<DetectedEntities, undefined> =
+  ListedEntities extends ArcjetSensitiveInfoType | Exclude<DetectedEntities, undefined> =
     | ArcjetSensitiveInfoType
     | Exclude<DetectedEntities, undefined>,
 > = {
@@ -136,10 +131,7 @@ function performReplacementInText(
 function noOpDetect(_tokens: string[]): Array<SensitiveInfoEntity | undefined> {
   return [];
 }
-function noOpReplace(
-  _input: SensitiveInfoEntity,
-  _plaintext: string,
-): string | undefined {
+function noOpReplace(_input: SensitiveInfoEntity, _plaintext: string): string | undefined {
   return undefined;
 }
 /* c8 ignore stop */
@@ -153,9 +145,7 @@ interface RedactedSensitiveInfoEntity extends Omit<
 
 function getWasmOptions<
   DetectedEntities extends string | undefined = undefined,
-  ListedEntities extends
-    | ArcjetSensitiveInfoType
-    | Exclude<DetectedEntities, undefined> =
+  ListedEntities extends ArcjetSensitiveInfoType | Exclude<DetectedEntities, undefined> =
     | ArcjetSensitiveInfoType
     | Exclude<DetectedEntities, undefined>,
 >(
@@ -198,9 +188,7 @@ function getWasmOptions<
 
 async function callRedactWasm<
   DetectedEntities extends string | undefined = undefined,
-  ListedEntities extends
-    | ArcjetSensitiveInfoType
-    | Exclude<DetectedEntities, undefined> =
+  ListedEntities extends ArcjetSensitiveInfoType | Exclude<DetectedEntities, undefined> =
     | ArcjetSensitiveInfoType
     | Exclude<DetectedEntities, undefined>,
 >(
@@ -220,10 +208,7 @@ async function callRedactWasm<
   let convertedReplace = noOpReplace;
   if (typeof options?.replace === "function") {
     const replace = options.replace;
-    convertedReplace = (
-      identifiedType: SensitiveInfoEntity,
-      plaintext: string,
-    ) => {
+    convertedReplace = (identifiedType: SensitiveInfoEntity, plaintext: string) => {
       return replace(
         // @ts-expect-error because we know this is coming from Wasm
         wasmEntitiesToString(identifiedType),
@@ -244,9 +229,7 @@ async function callRedactWasm<
       };
     });
   } else {
-    throw new Error(
-      "redact failed to run because Wasm is not supported in this environment",
-    );
+    throw new Error("redact failed to run because Wasm is not supported in this environment");
   }
 }
 
@@ -268,9 +251,7 @@ type Unredact = (input: string) => string;
  */
 export async function redact<
   const DetectedEntities extends string | undefined = undefined,
-  const ListedEntities extends
-    | ArcjetSensitiveInfoType
-    | Exclude<DetectedEntities, undefined> =
+  const ListedEntities extends ArcjetSensitiveInfoType | Exclude<DetectedEntities, undefined> =
     | ArcjetSensitiveInfoType
     | Exclude<DetectedEntities, undefined>,
 >(

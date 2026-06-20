@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { cloudflare, findIp, parseProxy, type ProxyService } from "../dist/index.js";
 
 // The real client IP for the customer report lived only in `cf-connecting-ip`
@@ -83,10 +84,7 @@ test("findIp with proxy services", async (t) => {
       ["cf-connecting-ip", "  8.8.8.8  "],
     ]);
 
-    assert.equal(
-      findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }),
-      "8.8.8.8",
-    );
+    assert.equal(findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }), "8.8.8.8");
   });
 
   await t.test("reads an IPv4 client from `cf-connecting-ip`", () => {
@@ -95,10 +93,7 @@ test("findIp with proxy services", async (t) => {
       ["cf-connecting-ip", "8.8.8.8"],
     ]);
 
-    assert.equal(
-      findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }),
-      "8.8.8.8",
-    );
+    assert.equal(findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }), "8.8.8.8");
   });
 
   await t.test(
@@ -112,62 +107,41 @@ test("findIp with proxy services", async (t) => {
         ["cf-connecting-ip", "9.9.9.9"],
       ]);
 
-      assert.equal(
-        findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }),
-        "8.8.8.8",
-      );
+      assert.equal(findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }), "8.8.8.8");
     },
   );
 
-  await t.test(
-    "returns empty when the Cloudflare hop has no usable client IP header",
-    () => {
-      const headers = new Headers([["x-real-ip", CF_EDGE_IPV4]]);
+  await t.test("returns empty when the Cloudflare hop has no usable client IP header", () => {
+    const headers = new Headers([["x-real-ip", CF_EDGE_IPV4]]);
 
-      assert.equal(
-        findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }),
-        "",
-      );
-    },
-  );
+    assert.equal(findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }), "");
+  });
 
-  await t.test(
-    "skips a Cloudflare hop whose client IP header is itself non-global",
-    () => {
-      const headers = new Headers([
-        ["x-real-ip", CF_EDGE_IPV4],
-        ["cf-connecting-ip", "127.0.0.1"],
-      ]);
+  await t.test("skips a Cloudflare hop whose client IP header is itself non-global", () => {
+    const headers = new Headers([
+      ["x-real-ip", CF_EDGE_IPV4],
+      ["cf-connecting-ip", "127.0.0.1"],
+    ]);
 
-      assert.equal(
-        findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }),
-        "",
-      );
-    },
-  );
+    assert.equal(findIp({ headers }, { platform: "vercel", proxies: [cloudflare()] }), "");
+  });
 
   await t.test("resolves a service edge found on `request.ip`", () => {
     const headers = new Headers([["cf-connecting-ip", "8.8.4.4"]]);
 
-    assert.equal(
-      findIp({ ip: CF_EDGE_IPV4, headers }, { proxies: [cloudflare()] }),
-      "8.8.4.4",
-    );
+    assert.equal(findIp({ ip: CF_EDGE_IPV4, headers }, { proxies: [cloudflare()] }), "8.8.4.4");
   });
 
-  await t.test(
-    "returns empty for a service edge on `request.ip` when headers are unusable",
-    () => {
-      assert.equal(
-        findIp(
-          // Headers intentionally invalid to exercise the safety guard.
-          { ip: CF_EDGE_IPV4, headers: null as unknown as Headers },
-          { proxies: [cloudflare()] },
-        ),
-        "",
-      );
-    },
-  );
+  await t.test("returns empty for a service edge on `request.ip` when headers are unusable", () => {
+    assert.equal(
+      findIp(
+        // Headers intentionally invalid to exercise the safety guard.
+        { ip: CF_EDGE_IPV4, headers: null as unknown as Headers },
+        { proxies: [cloudflare()] },
+      ),
+      "",
+    );
+  });
 
   await t.test(
     "supports a service with an `ips` (X-Forwarded-For style) client header and a pre-parsed range",

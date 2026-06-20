@@ -76,9 +76,7 @@ export interface CloudflareOptions {
  * @returns
  *   Proxy service descriptor to include in the `proxies` array.
  */
-export function cloudflare(
-  options?: CloudflareOptions | null | undefined,
-): ProxyService {
+export function cloudflare(options?: CloudflareOptions | null | undefined): ProxyService {
   // An empty `ranges` array is treated as "not provided" and falls back to the
   // bundled defaults, matching how `isTrustedProxy` treats an empty `proxies`
   // list. Trusting an empty list would silently disable Cloudflare detection

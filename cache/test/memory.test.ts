@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+
 import { MemoryCache } from "../dist/index.js";
 
 test("MemoryCache", async (t) => {
@@ -126,21 +127,15 @@ test("MemoryCache", async (t) => {
       const cache = new MemoryCache();
 
       cache.set("namespace", "key", "value", 10);
-      assert.deepEqual(await cache.get("namespace", "other-key"), [
-        undefined,
-        0,
-      ]);
+      assert.deepEqual(await cache.get("namespace", "other-key"), [undefined, 0]);
     });
 
-    await t.test(
-      "should resolve a value for a value that’s existing and alive",
-      async () => {
-        const cache = new MemoryCache();
+    await t.test("should resolve a value for a value that’s existing and alive", async () => {
+      const cache = new MemoryCache();
 
-        cache.set("namespace", "key", "value", 10);
-        assert.deepEqual(await cache.get("namespace", "key"), ["value", 10]);
-      },
-    );
+      cache.set("namespace", "key", "value", 10);
+      assert.deepEqual(await cache.get("namespace", "key"), ["value", 10]);
+    });
 
     await t.test("should resolve empty for an expired value", async () => {
       const cache = new MemoryCache();

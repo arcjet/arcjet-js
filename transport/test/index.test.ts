@@ -1,17 +1,19 @@
 import assert from "node:assert/strict";
-import http2 from "node:http2";
 import http from "node:http";
+import http2 from "node:http2";
 import https from "node:https";
 import test from "node:test";
+
 import type { Transport } from "@connectrpc/connect";
-import { connectNodeAdapter } from "@connectrpc/connect-node";
 import { createClient } from "@connectrpc/connect";
+import { connectNodeAdapter } from "@connectrpc/connect-node";
+
 import { createTransport as createTransportBun } from "../dist/bun.js";
 import { createTransport as createTransportDeno } from "../dist/deno.js";
 import { createTransport as createTransportEdge } from "../dist/edge-light.js";
-import { createTransport as createTransportWorkerd } from "../dist/workerd.js";
 import { createTransport } from "../dist/index.js";
 import { createTunnelingConnection } from "../dist/proxy-tunnel.js";
+import { createTransport as createTransportWorkerd } from "../dist/workerd.js";
 import { ElizaService } from "./eliza_pb.ts";
 import {
   close,
@@ -63,9 +65,7 @@ let uniquePort = 3400;
 
 // Start an HTTP origin serving the Eliza service, run `fn` with its URL, then
 // close it.
-async function withHttpOrigin(
-  fn: (url: string) => Promise<void>,
-): Promise<void> {
+async function withHttpOrigin(fn: (url: string) => Promise<void>): Promise<void> {
   const port = uniquePort++;
   const server = http.createServer(elizaRoutes());
 
@@ -84,9 +84,7 @@ async function withHttpOrigin(
 
 test("@arcjet/transport", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
-      "createTransport",
-    ]);
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), ["createTransport"]);
   });
 
   await t.test("should throw w/o `url`", async function () {
@@ -117,79 +115,73 @@ test("@arcjet/transport", async function (t) {
     assert.equal(result.sentence, "You said `Hi!`");
   });
 
-  await t.test(
-    "should work through `HTTP_PROXY` over HTTP/1.1",
-    async function () {
-      const origin = http.createServer(elizaRoutes());
-      const originUrl = await listen(origin);
+  await t.test("should work through `HTTP_PROXY` over HTTP/1.1", async function () {
+    const origin = http.createServer(elizaRoutes());
+    const originUrl = await listen(origin);
 
-      let proxyRequests = 0;
-      const proxy = createProxy(originUrl, () => {
-        proxyRequests++;
-      });
-      const proxyUrl = await listen(proxy);
+    let proxyRequests = 0;
+    const proxy = createProxy(originUrl, () => {
+      proxyRequests++;
+    });
+    const proxyUrl = await listen(proxy);
 
-      try {
-        await withHttpProxyEnvironment(proxyUrl, async () => {
-          const client = createClient(
-            ElizaService,
-            createTransport(originUrl, { log: { info() {} } }),
-          );
-          const result = await client.say({ sentence: "Hi!" });
-          assert.equal(result.sentence, "You said `Hi!`");
-        });
-      } finally {
-        await close(proxy);
-        await close(origin);
-      }
-
-      assert.equal(proxyRequests, 1);
-    },
-  );
-
-  await t.test(
-    "should route an HTTPS target through `HTTPS_PROXY` via CONNECT",
-    async function () {
-      // The production Arcjet API is HTTPS, which the Node agent reaches by
-      // sending an HTTP/1.1 CONNECT to the proxy before the TLS handshake —
-      // unlike the absolute-form forwarding used for HTTP. We verify that
-      // routing by asserting the proxy receives the CONNECT. We deliberately
-      // do NOT trust the test origin's self-signed certificate (disabling TLS
-      // verification is a security anti-pattern), so the handshake over the
-      // tunnel is expected to fail; the CONNECT is what proves the routing.
-      const { key, cert } = generateSelfSignedCert();
-      const origin = https.createServer({ key, cert }, elizaRoutes());
-      const originUrl = await listen(origin, "https");
-      const authority = new URL(originUrl).host;
-
-      let connectRequests = 0;
-      const proxy = createConnectProxy(authority, () => {
-        connectRequests++;
-      });
-      const proxyUrl = await listen(proxy);
-
-      try {
+    try {
+      await withHttpProxyEnvironment(proxyUrl, async () => {
         const client = createClient(
           ElizaService,
-          createTransport(originUrl, {
-            log: { info() {} },
-            proxyEnv: { HTTPS_PROXY: proxyUrl },
-          }),
+          createTransport(originUrl, { log: { info() {} } }),
         );
-        // Expected to reject at the TLS handshake (untrusted self-signed cert);
-        // we only care that it was tunneled through the proxy via CONNECT.
-        await client.say({ sentence: "Hi!" }).catch(() => {});
-      } finally {
-        await close(proxy);
-        await close(origin);
-      }
+        const result = await client.say({ sentence: "Hi!" });
+        assert.equal(result.sentence, "You said `Hi!`");
+      });
+    } finally {
+      await close(proxy);
+      await close(origin);
+    }
 
-      assert.ok(
-        connectRequests >= 1,
-        "expected the HTTPS request to be tunneled through the proxy via CONNECT",
+    assert.equal(proxyRequests, 1);
+  });
+
+  await t.test("should route an HTTPS target through `HTTPS_PROXY` via CONNECT", async function () {
+    // The production Arcjet API is HTTPS, which the Node agent reaches by
+    // sending an HTTP/1.1 CONNECT to the proxy before the TLS handshake —
+    // unlike the absolute-form forwarding used for HTTP. We verify that
+    // routing by asserting the proxy receives the CONNECT. We deliberately
+    // do NOT trust the test origin's self-signed certificate (disabling TLS
+    // verification is a security anti-pattern), so the handshake over the
+    // tunnel is expected to fail; the CONNECT is what proves the routing.
+    const { key, cert } = generateSelfSignedCert();
+    const origin = https.createServer({ key, cert }, elizaRoutes());
+    const originUrl = await listen(origin, "https");
+    const authority = new URL(originUrl).host;
+
+    let connectRequests = 0;
+    const proxy = createConnectProxy(authority, () => {
+      connectRequests++;
+    });
+    const proxyUrl = await listen(proxy);
+
+    try {
+      const client = createClient(
+        ElizaService,
+        createTransport(originUrl, {
+          log: { info() {} },
+          proxyEnv: { HTTPS_PROXY: proxyUrl },
+        }),
       );
-    },
-  );
+      // Expected to reject at the TLS handshake (untrusted self-signed cert);
+      // we only care that it was tunneled through the proxy via CONNECT.
+      await client.say({ sentence: "Hi!" }).catch(() => {});
+    } finally {
+      await close(proxy);
+      await close(origin);
+    }
+
+    assert.ok(
+      connectRequests >= 1,
+      "expected the HTTPS request to be tunneled through the proxy via CONNECT",
+    );
+  });
 
   await t.test(
     "should preserve HTTP/2 through a proxy when `proxyHttpVersion` is `2`",
@@ -386,46 +378,43 @@ test("@arcjet/transport", async function (t) {
     },
   );
 
-  await t.test(
-    "should connect directly over HTTP/2 when `NO_PROXY` matches",
-    async function () {
-      const port = uniquePort++;
-      const url = "http://localhost:" + port;
+  await t.test("should connect directly over HTTP/2 when `NO_PROXY` matches", async function () {
+    const port = uniquePort++;
+    const url = "http://localhost:" + port;
 
-      const server = trackHttp2Sessions(http2.createServer(elizaRoutes()));
+    const server = trackHttp2Sessions(http2.createServer(elizaRoutes()));
 
-      await new Promise(function (resolve) {
-        server.listen({ port }, function () {
-          resolve(undefined);
-        });
+    await new Promise(function (resolve) {
+      server.listen({ port }, function () {
+        resolve(undefined);
       });
+    });
 
-      let logged = false;
-      try {
-        const client = createClient(
-          ElizaService,
-          createTransport(url, {
-            log: {
-              info() {
-                logged = true;
-              },
+    let logged = false;
+    try {
+      const client = createClient(
+        ElizaService,
+        createTransport(url, {
+          log: {
+            info() {
+              logged = true;
             },
-            proxyEnv: {
-              HTTP_PROXY: "http://127.0.0.1:1",
-              NO_PROXY: "localhost",
-            },
-          }),
-        );
-        const result = await client.say({ sentence: "Hi!" });
-        assert.equal(result.sentence, "You said `Hi!`");
-      } finally {
-        await close(server);
-      }
+          },
+          proxyEnv: {
+            HTTP_PROXY: "http://127.0.0.1:1",
+            NO_PROXY: "localhost",
+          },
+        }),
+      );
+      const result = await client.say({ sentence: "Hi!" });
+      assert.equal(result.sentence, "You said `Hi!`");
+    } finally {
+      await close(server);
+    }
 
-      // The proxy was bypassed, so nothing should have been logged.
-      assert.equal(logged, false);
-    },
-  );
+    // The proxy was bypassed, so nothing should have been logged.
+    assert.equal(logged, false);
+  });
 
   await t.test("should allow explicit proxy environment", async function () {
     const origin = http.createServer(elizaRoutes());
@@ -546,58 +535,49 @@ test("@arcjet/transport", async function (t) {
     }
   });
 
-  await t.test(
-    "should not throw when reading the environment fails",
-    function () {
-      // Simulate a runtime that gates environment access behind a permission
-      // (e.g. Deno without `--allow-env`), where reading a variable throws.
-      const throwing = new Proxy<Record<string, string | undefined>>(
-        {},
-        {
-          get() {
-            throw new Error("permission denied");
-          },
+  await t.test("should not throw when reading the environment fails", function () {
+    // Simulate a runtime that gates environment access behind a permission
+    // (e.g. Deno without `--allow-env`), where reading a variable throws.
+    const throwing = new Proxy<Record<string, string | undefined>>(
+      {},
+      {
+        get() {
+          throw new Error("permission denied");
         },
-      );
+      },
+    );
 
-      assert.equal(
-        loggedProxy("https://decide.arcjet.com", throwing),
-        undefined,
-      );
-    },
-  );
+    assert.equal(loggedProxy("https://decide.arcjet.com", throwing), undefined);
+  });
 
-  await t.test(
-    "should ignore uppercase `HTTP_PROXY` under CGI (httpoxy)",
-    function () {
-      // With `REQUEST_METHOD` set (a CGI environment), uppercase `HTTP_PROXY` —
-      // which an inbound `Proxy` header can populate — is ignored for HTTP.
-      assert.equal(
-        loggedProxy("http://api.example.com/", {
-          HTTP_PROXY: "http://attacker.example.com:3128",
-          REQUEST_METHOD: "GET",
-        }),
-        undefined,
-      );
+  await t.test("should ignore uppercase `HTTP_PROXY` under CGI (httpoxy)", function () {
+    // With `REQUEST_METHOD` set (a CGI environment), uppercase `HTTP_PROXY` —
+    // which an inbound `Proxy` header can populate — is ignored for HTTP.
+    assert.equal(
+      loggedProxy("http://api.example.com/", {
+        HTTP_PROXY: "http://attacker.example.com:3128",
+        REQUEST_METHOD: "GET",
+      }),
+      undefined,
+    );
 
-      // Lowercase `http_proxy` is still honored under CGI.
-      assert.equal(
-        loggedProxy("http://api.example.com/", {
-          http_proxy: "http://proxy.example.com:3128",
-          REQUEST_METHOD: "GET",
-        }),
-        proxyMessage,
-      );
+    // Lowercase `http_proxy` is still honored under CGI.
+    assert.equal(
+      loggedProxy("http://api.example.com/", {
+        http_proxy: "http://proxy.example.com:3128",
+        REQUEST_METHOD: "GET",
+      }),
+      proxyMessage,
+    );
 
-      // Without `REQUEST_METHOD`, uppercase `HTTP_PROXY` is honored as usual.
-      assert.equal(
-        loggedProxy("http://api.example.com/", {
-          HTTP_PROXY: "http://proxy.example.com:3128",
-        }),
-        proxyMessage,
-      );
-    },
-  );
+    // Without `REQUEST_METHOD`, uppercase `HTTP_PROXY` is honored as usual.
+    assert.equal(
+      loggedProxy("http://api.example.com/", {
+        HTTP_PROXY: "http://proxy.example.com:3128",
+      }),
+      proxyMessage,
+    );
+  });
 
   // Each web-runtime entry point uses `@connectrpc/connect-web` over HTTP/1.1;
   // they differ only in the runtime they target. Exercise each the same way.

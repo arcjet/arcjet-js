@@ -4,55 +4,32 @@
   "description": "The TypeScript & JavaScript interface into the Arcjet protocol",
   "keywords": [
     "arcjet",
-    "utility",
+    "protocol",
     "util",
-    "protocol"
+    "utility"
   ],
-  "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "protocol"
-  },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
     "email": "support@arcjet.com"
   },
+  "license": "Apache-2.0",
   "author": {
     "name": "Arcjet",
     "email": "support@arcjet.com",
     "url": "https://arcjet.com"
   },
-  "engines": {
-    "node": ">=22.21.0 <23 || >=24.5.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "protocol"
   },
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "tsdown",
-    "test-api": "node --test -- test/*.test.ts",
-    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
-    "test": "npm run build && npm run test-coverage"
-  },
-  "dependencies": {
-    "@arcjet/cache": "1.7.0",
-    "@bufbuild/protobuf": "2.12.0",
-    "@connectrpc/connect": "2.1.2"
-  },
-  "devDependencies": {
-    "@types/node": "22.19.21",
-    "tsdown": "0.22.3",
-    "typescript": "5.9.3"
-  },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
-  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -83,5 +60,28 @@
       "default": "./dist/well-known-bots.js"
     },
     "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage"
+  },
+  "dependencies": {
+    "@arcjet/cache": "1.7.0",
+    "@bufbuild/protobuf": "2.12.0",
+    "@connectrpc/connect": "2.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.21",
+    "tsdown": "0.22.3",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
   }
 }

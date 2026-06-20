@@ -678,10 +678,7 @@ export type ArcjetBotCategory =
   | "CATEGORY:WEBHOOK"
   | "CATEGORY:YAHOO";
 
-export const categories: Record<
-  ArcjetBotCategory,
-  readonly ArcjetWellKnownBot[]
-> = Object.freeze({
+export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]> = Object.freeze({
   "CATEGORY:ACADEMIC": Object.freeze<ArcjetWellKnownBot[]>([
     "ACADEMICBOT_RTU",
     "BLACKBOARD_CRAWLER",
@@ -772,10 +769,7 @@ export const categories: Record<
     "AMAZON_CRAWLER",
     "AMAZON_ROUTE53_HEALTH_CHECK",
   ]),
-  "CATEGORY:APPLE": Object.freeze<ArcjetWellKnownBot[]>([
-    "APPLE_CRAWLER",
-    "IMESSAGE_PREVIEW",
-  ]),
+  "CATEGORY:APPLE": Object.freeze<ArcjetWellKnownBot[]>(["APPLE_CRAWLER", "IMESSAGE_PREVIEW"]),
   "CATEGORY:ARCHIVE": Object.freeze<ArcjetWellKnownBot[]>([
     "ARCHIVEORG_ARCHIVER",
     "CCBOT_CRAWLER",
@@ -1062,10 +1056,7 @@ export const categories: Record<
     "YANDEX_CRAWLER",
     "YANDEX_CRAWLER_JAVASCRIPT",
   ]),
-  "CATEGORY:SLACK": Object.freeze<ArcjetWellKnownBot[]>([
-    "SLACK_CRAWLER",
-    "SLACK_IMAGE_PROXY",
-  ]),
+  "CATEGORY:SLACK": Object.freeze<ArcjetWellKnownBot[]>(["SLACK_CRAWLER", "SLACK_IMAGE_PROXY"]),
   "CATEGORY:SOCIAL": Object.freeze<ArcjetWellKnownBot[]>([
     "DIGG_CRAWLER",
     "DISCORD_CRAWLER",
@@ -1464,10 +1455,7 @@ export const categories: Record<
     "VERCEL_CRAWLER",
     "VERCEL_MONITOR_PREVIEW",
   ]),
-  "CATEGORY:WEBHOOK": Object.freeze<ArcjetWellKnownBot[]>([
-    "ADYEN_WEBHOOK",
-    "STRIPE_WEBHOOK",
-  ]),
+  "CATEGORY:WEBHOOK": Object.freeze<ArcjetWellKnownBot[]>(["ADYEN_WEBHOOK", "STRIPE_WEBHOOK"]),
   "CATEGORY:YAHOO": Object.freeze<ArcjetWellKnownBot[]>([
     "YAHOO_CRAWLER",
     "YAHOO_CRAWLER_JAPAN",

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { MemoryCache } from "@arcjet/cache";
+
 import {
   type ArcjetCacheEntry,
   type ArcjetContext,
@@ -25,15 +27,12 @@ test("`validateEmail`", async function (t) {
     }, /`validateEmail` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
-  await t.test(
-    "should throw if neither `allow` nor `deny` are passed",
-    async function () {
-      assert.throws(function () {
-        // @ts-expect-error: test runtime behavior.
-        validateEmail({});
-      }, /`validateEmail` options error: either `allow` or `deny` must be specified/);
-    },
-  );
+  await t.test("should throw if neither `allow` nor `deny` are passed", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      validateEmail({});
+    }, /`validateEmail` options error: either `allow` or `deny` must be specified/);
+  });
 
   await t.test("should throw if `allow` is not an array", async function () {
     assert.throws(function () {
@@ -53,65 +52,50 @@ test("`validateEmail`", async function (t) {
     }, /`validateEmail` options error: invalid type for `deny` - expected an array/);
   });
 
-  await t.test(
-    "should throw if `allow` contains unknown values",
-    async function () {
-      assert.throws(function () {
-        validateEmail({
-          // @ts-expect-error: test runtime behavior.
-          allow: ["x"],
-        });
-      }, /`validateEmail` options error: invalid value for `allow\[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'/);
-    },
-  );
-
-  await t.test(
-    "should throw if `deny` contains unknown values",
-    async function () {
-      assert.throws(function () {
-        validateEmail({
-          // @ts-expect-error: test runtime behavior.
-          deny: ["x"],
-        });
-      }, /`validateEmail` options error: invalid value for `deny\[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'/);
-    },
-  );
-
-  await t.test(
-    "should throw if `allow` and `deny` are both passed",
-    async function () {
-      assert.throws(function () {
+  await t.test("should throw if `allow` contains unknown values", async function () {
+    assert.throws(function () {
+      validateEmail({
         // @ts-expect-error: test runtime behavior.
-        validateEmail({ allow: [], deny: [] });
-      }, /`validateEmail` options error: `allow` and `deny` cannot be provided together/);
-    },
-  );
+        allow: ["x"],
+      });
+    }, /`validateEmail` options error: invalid value for `allow\[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'/);
+  });
 
-  await t.test(
-    "should throw if `allowDomainLiteral` is not a boolean",
-    async function () {
-      assert.throws(function () {
-        validateEmail({
-          // @ts-expect-error: test runtime behavior.
-          allowDomainLiteral: "x",
-          deny: [],
-        });
-      }, /`validateEmail` options error: invalid type for `allowDomainLiteral` - expected boolean/);
-    },
-  );
+  await t.test("should throw if `deny` contains unknown values", async function () {
+    assert.throws(function () {
+      validateEmail({
+        // @ts-expect-error: test runtime behavior.
+        deny: ["x"],
+      });
+    }, /`validateEmail` options error: invalid value for `deny\[0]` - expected one of 'DISPOSABLE', 'FREE', 'NO_MX_RECORDS', 'NO_GRAVATAR', 'INVALID'/);
+  });
 
-  await t.test(
-    "should throw if `requireTopLevelDomain` is not a boolean",
-    async function () {
-      assert.throws(function () {
-        validateEmail({
-          deny: [],
-          // @ts-expect-error: test runtime behavior.
-          requireTopLevelDomain: "x",
-        });
-      }, /`validateEmail` options error: invalid type for `requireTopLevelDomain` - expected boolean/);
-    },
-  );
+  await t.test("should throw if `allow` and `deny` are both passed", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      validateEmail({ allow: [], deny: [] });
+    }, /`validateEmail` options error: `allow` and `deny` cannot be provided together/);
+  });
+
+  await t.test("should throw if `allowDomainLiteral` is not a boolean", async function () {
+    assert.throws(function () {
+      validateEmail({
+        // @ts-expect-error: test runtime behavior.
+        allowDomainLiteral: "x",
+        deny: [],
+      });
+    }, /`validateEmail` options error: invalid type for `allowDomainLiteral` - expected boolean/);
+  });
+
+  await t.test("should throw if `requireTopLevelDomain` is not a boolean", async function () {
+    assert.throws(function () {
+      validateEmail({
+        deny: [],
+        // @ts-expect-error: test runtime behavior.
+        requireTopLevelDomain: "x",
+      });
+    }, /`validateEmail` options error: invalid type for `requireTopLevelDomain` - expected boolean/);
+  });
 
   await t.test("should support known types in `allow`", async function () {
     const [rule] = validateEmail({
@@ -119,13 +103,7 @@ test("`validateEmail`", async function (t) {
     });
 
     assert.equal(rule.type, "EMAIL");
-    assert.deepEqual(rule.allow, [
-      "DISPOSABLE",
-      "FREE",
-      "NO_GRAVATAR",
-      "NO_MX_RECORDS",
-      "INVALID",
-    ]);
+    assert.deepEqual(rule.allow, ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"]);
   });
 
   await t.test("should support known types in `deny`", async function () {
@@ -134,13 +112,7 @@ test("`validateEmail`", async function (t) {
     });
 
     assert.equal(rule.type, "EMAIL");
-    assert.deepEqual(rule.deny, [
-      "DISPOSABLE",
-      "FREE",
-      "NO_GRAVATAR",
-      "NO_MX_RECORDS",
-      "INVALID",
-    ]);
+    assert.deepEqual(rule.deny, ["DISPOSABLE", "FREE", "NO_GRAVATAR", "NO_MX_RECORDS", "INVALID"]);
   });
 
   await t.test("`.validate()`", async function (t) {
@@ -188,47 +160,38 @@ test("`validateEmail`", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
       });
 
-      await t.test(
-        "should deny an invalid email (`allow: []`)",
-        async function () {
-          const [rule] = validateEmail({ allow: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice",
-          });
+      await t.test("should deny an invalid email (`allow: []`)", async function () {
+        const [rule] = validateEmail({ allow: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice",
+        });
 
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+        assert.equal(result.conclusion, "DENY");
+      });
 
       // This sounds like a bug.
       // Invalid emails are always denied as it is nonsensical to allow them.
       // Passing `allow: ["INVALID"]` is equivalent to `allow: []`.
-      await t.test(
-        'should deny an invalid email (`allow: ["INVALID"]`)',
-        async function () {
-          const [rule] = validateEmail({ allow: ["INVALID"] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice",
-          });
+      await t.test('should deny an invalid email (`allow: ["INVALID"]`)', async function () {
+        const [rule] = validateEmail({ allow: ["INVALID"] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice",
+        });
 
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+        assert.equal(result.conclusion, "DENY");
+      });
 
-      await t.test(
-        "should deny an invalid email (no domain)",
-        async function () {
-          const [rule] = validateEmail({ allow: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice@",
-          });
+      await t.test("should deny an invalid email (no domain)", async function () {
+        const [rule] = validateEmail({ allow: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice@",
+        });
 
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+        assert.equal(result.conclusion, "DENY");
+      });
 
       await t.test("should deny an invalid email (no name)", async function () {
         const [rule] = validateEmail({ allow: [] });
@@ -240,57 +203,45 @@ test("`validateEmail`", async function (t) {
         assert.equal(result.conclusion, "DENY");
       });
 
-      await t.test(
-        "should allow a valid email (one character name)",
-        async function () {
-          const [rule] = validateEmail({ allow: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "a@arcjet.com",
-          });
+      await t.test("should allow a valid email (one character name)", async function () {
+        const [rule] = validateEmail({ allow: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "a@arcjet.com",
+        });
 
-          assert.equal(result.conclusion, "ALLOW");
-        },
-      );
+        assert.equal(result.conclusion, "ALLOW");
+      });
 
-      await t.test(
-        "should allow a valid email (one character domain parts)",
-        async function () {
-          const [rule] = validateEmail({ allow: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "a@b.c",
-          });
+      await t.test("should allow a valid email (one character domain parts)", async function () {
+        const [rule] = validateEmail({ allow: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "a@b.c",
+        });
 
-          assert.equal(result.conclusion, "ALLOW");
-        },
-      );
+        assert.equal(result.conclusion, "ALLOW");
+      });
 
-      await t.test(
-        "should allow a valid email (many domain parts)",
-        async function () {
-          const [rule] = validateEmail({ allow: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice@exa.mple.arc.jet.com",
-          });
+      await t.test("should allow a valid email (many domain parts)", async function () {
+        const [rule] = validateEmail({ allow: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice@exa.mple.arc.jet.com",
+        });
 
-          assert.equal(result.conclusion, "ALLOW");
-        },
-      );
+        assert.equal(result.conclusion, "ALLOW");
+      });
 
-      await t.test(
-        "should deny a domain literal by default",
-        async function () {
-          const [rule] = validateEmail({ allow: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice@[127.0.0.1]",
-          });
+      await t.test("should deny a domain literal by default", async function () {
+        const [rule] = validateEmail({ allow: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice@[127.0.0.1]",
+        });
 
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+        assert.equal(result.conclusion, "DENY");
+      });
 
       await t.test(
         "should allow a domain literal w/ `allowDomainLiteral: true`",
@@ -321,18 +272,15 @@ test("`validateEmail`", async function (t) {
         },
       );
 
-      await t.test(
-        "should deny a domain with one part (no dots) by default",
-        async function () {
-          const [rule] = validateEmail({ allow: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice@arcjet",
-          });
+      await t.test("should deny a domain with one part (no dots) by default", async function () {
+        const [rule] = validateEmail({ allow: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice@arcjet",
+        });
 
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+        assert.equal(result.conclusion, "DENY");
+      });
 
       await t.test(
         "should deny a domain with one part w/ `requireTopLevelDomain: true`",
@@ -380,127 +328,100 @@ test("`validateEmail`", async function (t) {
         assert.equal(result.conclusion, "DENY");
       });
 
-      await t.test(
-        'should allow a free email (`allow: ["FREE"]`)',
-        async function () {
-          const [rule] = validateEmail({ allow: ["FREE"] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice@gmail.com",
-          });
+      await t.test('should allow a free email (`allow: ["FREE"]`)', async function () {
+        const [rule] = validateEmail({ allow: ["FREE"] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice@gmail.com",
+        });
 
-          assert.equal(result.conclusion, "ALLOW");
-        },
-      );
+        assert.equal(result.conclusion, "ALLOW");
+      });
 
-      await t.test(
-        'should produce `state: "DRY_RUN"` if mode is not given',
-        async function () {
-          const [rule] = validateEmail({ allow: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice",
-          });
+      await t.test('should produce `state: "DRY_RUN"` if mode is not given', async function () {
+        const [rule] = validateEmail({ allow: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice",
+        });
 
-          assert.equal(result.state, "DRY_RUN");
-        },
-      );
+        assert.equal(result.state, "DRY_RUN");
+      });
 
-      await t.test(
-        'should produce `state: "DRY_RUN"` for `mode: "DRY_RUN"`',
-        async function () {
-          const [rule] = validateEmail({ allow: [], mode: "DRY_RUN" });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice",
-          });
+      await t.test('should produce `state: "DRY_RUN"` for `mode: "DRY_RUN"`', async function () {
+        const [rule] = validateEmail({ allow: [], mode: "DRY_RUN" });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice",
+        });
 
-          assert.equal(result.state, "DRY_RUN");
-        },
-      );
+        assert.equal(result.state, "DRY_RUN");
+      });
 
-      await t.test(
-        'should produce `state: "RUN"` for `mode: "LIVE"`',
-        async function () {
-          const [rule] = validateEmail({ allow: [], mode: "LIVE" });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice",
-          });
+      await t.test('should produce `state: "RUN"` for `mode: "LIVE"`', async function () {
+        const [rule] = validateEmail({ allow: [], mode: "LIVE" });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice",
+        });
 
-          assert.equal(result.state, "RUN");
-        },
-      );
+        assert.equal(result.state, "RUN");
+      });
 
-      await t.test(
-        "should produce `ttl: 0` results for a valid email",
-        async function () {
-          const [rule] = validateEmail({ allow: [], mode: "LIVE" });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice@arcjet.com",
-          });
+      await t.test("should produce `ttl: 0` results for a valid email", async function () {
+        const [rule] = validateEmail({ allow: [], mode: "LIVE" });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice@arcjet.com",
+        });
 
-          assert.equal(result.ttl, 0);
-        },
-      );
+        assert.equal(result.ttl, 0);
+      });
 
-      await t.test(
-        "should produce `ttl: 0` results for an invalid email",
-        async function () {
-          const [rule] = validateEmail({ allow: [], mode: "LIVE" });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice",
-          });
+      await t.test("should produce `ttl: 0` results for an invalid email", async function () {
+        const [rule] = validateEmail({ allow: [], mode: "LIVE" });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice",
+        });
 
-          assert.equal(result.ttl, 0);
-        },
-      );
+        assert.equal(result.ttl, 0);
+      });
     });
 
     await t.test("`deny`", async function (t) {
-      await t.test(
-        "should allow a valid email (`deny: []`)",
-        async function () {
-          const [rule] = validateEmail({ deny: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice@arcjet.com",
-          });
+      await t.test("should allow a valid email (`deny: []`)", async function () {
+        const [rule] = validateEmail({ deny: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice@arcjet.com",
+        });
 
-          assert.equal(result.conclusion, "ALLOW");
-        },
-      );
+        assert.equal(result.conclusion, "ALLOW");
+      });
 
       // This sounds like a bug.
       // Invalid emails are always denied as it is nonsensical to allow them.
       // Passing `deny: []` is equivalent to `deny: ["INVALID"]`.
-      await t.test(
-        "should deny an invalid email (`deny: []`)",
-        async function () {
-          const [rule] = validateEmail({ deny: [] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice",
-          });
+      await t.test("should deny an invalid email (`deny: []`)", async function () {
+        const [rule] = validateEmail({ deny: [] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice",
+        });
 
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+        assert.equal(result.conclusion, "DENY");
+      });
 
-      await t.test(
-        'should deny an invalid email (`deny: ["INVALID"]`)',
-        async function () {
-          const [rule] = validateEmail({ deny: ["INVALID"] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice",
-          });
+      await t.test('should deny an invalid email (`deny: ["INVALID"]`)', async function () {
+        const [rule] = validateEmail({ deny: ["INVALID"] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice",
+        });
 
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+        assert.equal(result.conclusion, "DENY");
+      });
 
       await t.test("should allow a free email (`deny: []`)", async function () {
         const [rule] = validateEmail({ deny: [] });
@@ -512,18 +433,15 @@ test("`validateEmail`", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
       });
 
-      await t.test(
-        'should deny a free email (`deny: ["FREE"]`)',
-        async function () {
-          const [rule] = validateEmail({ deny: ["FREE"] });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            email: "alice@gmail.com",
-          });
+      await t.test('should deny a free email (`deny: ["FREE"]`)', async function () {
+        const [rule] = validateEmail({ deny: ["FREE"] });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          email: "alice@gmail.com",
+        });
 
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+        assert.equal(result.conclusion, "DENY");
+      });
     });
   });
 });

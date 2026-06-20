@@ -10,15 +10,15 @@
  */
 import http from "node:http";
 
-import { create } from "@bufbuild/protobuf";
-import { connectNodeAdapter } from "@connectrpc/connect-node";
-import type { ConnectRouter } from "@connectrpc/connect";
 import {
   Conclusion,
   DecideResponseSchema,
   DecideService,
   ReportResponseSchema,
 } from "@arcjet/protocol/proto/decide/v1alpha1/decide_pb.js";
+import { create } from "@bufbuild/protobuf";
+import type { ConnectRouter } from "@connectrpc/connect";
+import { connectNodeAdapter } from "@connectrpc/connect-node";
 
 let decideCalls = 0;
 let lastDecideRequest: {
@@ -64,9 +64,7 @@ export async function startHttpServer(
   lastDecideRequest = null;
 
   const server = http.createServer(connectNodeAdapter({ routes }));
-  await new Promise<void>((resolve) =>
-    server.listen(port, "127.0.0.1", resolve),
-  );
+  await new Promise<void>((resolve) => server.listen(port, "127.0.0.1", resolve));
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- always AddressInfo after listen()
   const addr = server.address() as import("node:net").AddressInfo;
   return {

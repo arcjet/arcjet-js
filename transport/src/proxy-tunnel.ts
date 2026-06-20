@@ -48,9 +48,7 @@ export function createTunnelingConnection(
       ? undefined
       : "Basic " +
         Buffer.from(
-          decodeURIComponent(proxy.username) +
-            ":" +
-            decodeURIComponent(proxy.password),
+          decodeURIComponent(proxy.username) + ":" + decodeURIComponent(proxy.password),
         ).toString("base64");
 
   return function createConnection(authority, options): Duplex {
@@ -124,14 +122,10 @@ export function createTunnelingConnection(
 
       proxySocket.off("data", onData);
 
-      const statusLine = head
-        .subarray(0, head.indexOf("\r\n"))
-        .toString("latin1");
+      const statusLine = head.subarray(0, head.indexOf("\r\n")).toString("latin1");
       const status = Number(statusLine.split(" ")[1]);
       if (!(status >= 200 && status < 300)) {
-        const error = new Error(
-          "Proxy CONNECT failed with status: " + statusLine.trim(),
-        );
+        const error = new Error("Proxy CONNECT failed with status: " + statusLine.trim());
         proxySocket.destroy(error);
         bridge.destroy(error);
         return;
@@ -175,9 +169,7 @@ export function createTunnelingConnection(
           while (inbound.length >= 9) {
             const payloadLength = inbound.readUIntBE(0, 3);
             if (payloadLength > maxFramePayload) {
-              bridge.destroy(
-                new Error("Proxy tunnel received an oversized HTTP/2 frame"),
-              );
+              bridge.destroy(new Error("Proxy tunnel received an oversized HTTP/2 frame"));
               return;
             }
             const frameLength = 9 + payloadLength;

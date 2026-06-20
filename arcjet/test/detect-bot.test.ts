@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
+
 import { MemoryCache } from "@arcjet/cache";
+
 import { type ArcjetCacheEntry, ArcjetBotReason, detectBot } from "../dist/index.js";
 
 describe("Primitive > detectBot", () => {
@@ -201,9 +203,10 @@ describe("Primitive > detectBot", () => {
 
   test("uses cache", async () => {
     class TestCache {
-      get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(
-        async () => [undefined, 0],
-      );
+      get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(async () => [
+        undefined,
+        0,
+      ]);
       set = mock.fn();
     }
 

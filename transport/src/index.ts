@@ -1,18 +1,13 @@
-import type { Transport } from "@connectrpc/connect";
-import {
-  createConnectTransport,
-  Http2SessionManager,
-} from "@connectrpc/connect-node";
 import * as http from "node:http";
 import * as https from "node:https";
+
+import type { Transport } from "@connectrpc/connect";
+import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
+
 import { detectProxy } from "./detect-proxy.js";
 import { createTunnelingConnection } from "./proxy-tunnel.js";
 
-export type {
-  ProxyEnvironment,
-  TransportLogger,
-  TransportOptions,
-} from "./detect-proxy.js";
+export type { ProxyEnvironment, TransportLogger, TransportOptions } from "./detect-proxy.js";
 
 import type { TransportOptions } from "./detect-proxy.js";
 
@@ -36,10 +31,7 @@ import type { TransportOptions } from "./detect-proxy.js";
  * @returns
  *   Connect transport used to make RPC calls.
  */
-export function createTransport(
-  baseUrl: string,
-  options?: TransportOptions,
-): Transport {
+export function createTransport(baseUrl: string, options?: TransportOptions): Transport {
   const url = new URL(baseUrl);
   const proxyUrl = detectProxy(url, options);
 
@@ -66,17 +58,15 @@ export function createTransport(
     // because some augmentations (e.g. Next.js) make `ProcessEnv` require
     // `NODE_ENV`; the object is correct at runtime.
     const isHttps = url.protocol === "https:";
-    const proxyEnvironment: Partial<
-      Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
-    > = isHttps ? { HTTPS_PROXY: proxyUrl } : { HTTP_PROXY: proxyUrl };
+    const proxyEnvironment: Partial<Record<"HTTP_PROXY" | "HTTPS_PROXY", string>> = isHttps
+      ? { HTTPS_PROXY: proxyUrl }
+      : { HTTP_PROXY: proxyUrl };
     const agentOptions: http.AgentOptions & { proxyEnv: NodeJS.ProcessEnv } = {
       keepAlive: true,
       proxyEnv: proxyEnvironment as unknown as NodeJS.ProcessEnv,
     };
 
-    const agent = isHttps
-      ? new https.Agent(agentOptions)
-      : new http.Agent(agentOptions);
+    const agent = isHttps ? new https.Agent(agentOptions) : new http.Agent(agentOptions);
 
     // Node's built-in proxy support only works over HTTP/1.1.
     return createConnectTransport({

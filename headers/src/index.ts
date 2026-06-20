@@ -19,11 +19,7 @@ type HeadersInit =
 export class ArcjetHeaders extends Headers {
   constructor(init?: HeadersInit | undefined) {
     super();
-    if (
-      typeof init !== "undefined" &&
-      typeof init !== "string" &&
-      init !== null
-    ) {
+    if (typeof init !== "undefined" && typeof init !== "string" && init !== null) {
       if (isIterable(init)) {
         for (const [key, value] of init) {
           this.append(key, value);

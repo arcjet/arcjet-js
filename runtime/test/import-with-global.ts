@@ -1,10 +1,7 @@
-import { createContext, runInContext, SourceTextModule } from "node:vm";
 import { readFile } from "node:fs/promises";
+import { createContext, runInContext, SourceTextModule } from "node:vm";
 
-export async function importWithGlobal(
-  target: string,
-  global: Record<string, unknown>,
-) {
+export async function importWithGlobal(target: string, global: Record<string, unknown>) {
   const context = createContext(global);
   const mod = new SourceTextModule(`export * from "${target}"`, { context });
   await mod.link(async (specifier) => {

@@ -1,30 +1,6 @@
-import { timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { create } from "@bufbuild/protobuf";
-import {
-  type Decision,
-  type IpDetails,
-  type Reason,
-  type Rule,
-  type RuleResult,
-  BotV2ReasonSchema,
-  Conclusion,
-  DecisionSchema,
-  EdgeRuleReasonSchema,
-  EmailReasonSchema,
-  EmailType,
-  ErrorReasonSchema,
-  Mode,
-  PromptInjectionReasonSchema,
-  RateLimitAlgorithm,
-  ReasonSchema,
-  RuleSchema,
-  RuleState,
-  RuleResultSchema,
-  SDKStack,
-  SensitiveInfoReasonSchema,
-  ShieldReasonSchema,
-  RateLimitReasonSchema,
-} from "./proto/decide/v1alpha1/decide_pb.js";
+import { timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
+
 import {
   type ArcjetBotRule,
   type ArcjetConclusion,
@@ -60,6 +36,31 @@ import {
   ArcjetSensitiveInfoReason,
   ArcjetShieldReason,
 } from "./index.js";
+import {
+  type Decision,
+  type IpDetails,
+  type Reason,
+  type Rule,
+  type RuleResult,
+  BotV2ReasonSchema,
+  Conclusion,
+  DecisionSchema,
+  EdgeRuleReasonSchema,
+  EmailReasonSchema,
+  EmailType,
+  ErrorReasonSchema,
+  Mode,
+  PromptInjectionReasonSchema,
+  RateLimitAlgorithm,
+  ReasonSchema,
+  RuleSchema,
+  RuleState,
+  RuleResultSchema,
+  SDKStack,
+  SensitiveInfoReasonSchema,
+  ShieldReasonSchema,
+  RateLimitReasonSchema,
+} from "./proto/decide/v1alpha1/decide_pb.js";
 
 export function ArcjetModeToProtocol(mode: ArcjetMode) {
   switch (mode) {
@@ -74,9 +75,7 @@ export function ArcjetModeToProtocol(mode: ArcjetMode) {
   }
 }
 
-export function ArcjetEmailTypeToProtocol(
-  emailType: ArcjetEmailType,
-): EmailType {
+export function ArcjetEmailTypeToProtocol(emailType: ArcjetEmailType): EmailType {
   switch (emailType) {
     case "DISPOSABLE":
       return EmailType.DISPOSABLE;
@@ -95,9 +94,7 @@ export function ArcjetEmailTypeToProtocol(
   }
 }
 
-export function ArcjetEmailTypeFromProtocol(
-  emailType: EmailType,
-): ArcjetEmailType {
+export function ArcjetEmailTypeFromProtocol(emailType: EmailType): ArcjetEmailType {
   switch (emailType) {
     case EmailType.UNSPECIFIED:
       throw new Error("Invalid EmailType");
@@ -166,9 +163,7 @@ export function ArcjetRuleStateToProtocol(stack: ArcjetRuleState): RuleState {
   }
 }
 
-export function ArcjetRuleStateFromProtocol(
-  ruleState: RuleState,
-): ArcjetRuleState {
+export function ArcjetRuleStateFromProtocol(ruleState: RuleState): ArcjetRuleState {
   switch (ruleState) {
     case RuleState.UNSPECIFIED:
       throw new Error("Invalid RuleState");
@@ -187,9 +182,7 @@ export function ArcjetRuleStateFromProtocol(
   }
 }
 
-export function ArcjetConclusionToProtocol(
-  conclusion: ArcjetConclusion,
-): Conclusion {
+export function ArcjetConclusionToProtocol(conclusion: ArcjetConclusion): Conclusion {
   switch (conclusion) {
     case "ALLOW":
       return Conclusion.ALLOW;
@@ -206,9 +199,7 @@ export function ArcjetConclusionToProtocol(
   }
 }
 
-export function ArcjetConclusionFromProtocol(
-  conclusion: Conclusion,
-): ArcjetConclusion {
+export function ArcjetConclusionFromProtocol(conclusion: Conclusion): ArcjetConclusion {
   switch (conclusion) {
     case Conclusion.UNSPECIFIED:
       throw new Error("Invalid Conclusion");
@@ -244,9 +235,7 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
         remaining: reason.remaining,
         reset: reason.resetInSeconds,
         window: reason.windowInSeconds,
-        resetTime: reason.resetTime
-          ? timestampDate(reason.resetTime)
-          : undefined,
+        resetTime: reason.resetTime ? timestampDate(reason.resetTime) : undefined,
       });
     }
     case "botV2": {
@@ -277,8 +266,7 @@ export function ArcjetReasonFromProtocol(proto?: Reason) {
       const reason = proto.reason.value;
       return new ArcjetFilterReason({
         matchedExpressions:
-          reason.matchedExpressions ||
-          (reason.matchedExpression ? [reason.matchedExpression] : []),
+          reason.matchedExpressions || (reason.matchedExpression ? [reason.matchedExpression] : []),
         undeterminedExpressions: reason.undeterminedExpressions,
       });
     }
@@ -434,9 +422,7 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
   return create(ReasonSchema);
 }
 
-export function ArcjetRuleResultToProtocol(
-  ruleResult: ArcjetRuleResult,
-): RuleResult {
+export function ArcjetRuleResultToProtocol(ruleResult: ArcjetRuleResult): RuleResult {
   return create(RuleResultSchema, {
     ruleId: ruleResult.ruleId,
     fingerprint: ruleResult.fingerprint,
@@ -447,9 +433,7 @@ export function ArcjetRuleResultToProtocol(
   });
 }
 
-export function ArcjetRuleResultFromProtocol(
-  proto: RuleResult,
-): ArcjetRuleResult {
+export function ArcjetRuleResultFromProtocol(proto: RuleResult): ArcjetRuleResult {
   return new ArcjetRuleResult({
     ruleId: proto.ruleId,
     fingerprint: proto.fingerprint,
@@ -470,9 +454,7 @@ export function ArcjetDecisionToProtocol(decision: ArcjetDecision): Decision {
   });
 }
 
-export function ArcjetIpDetailsFromProtocol(
-  ipDetails?: IpDetails,
-): ArcjetIpDetails {
+export function ArcjetIpDetailsFromProtocol(ipDetails?: IpDetails): ArcjetIpDetails {
   if (!ipDetails) {
     return new ArcjetIpDetails();
   }
@@ -483,16 +465,10 @@ export function ArcjetIpDetailsFromProtocol(
   return new ArcjetIpDetails({
     // If we have a non-0 latitude, or a 0 latitude with a non-0 accuracy radius
     // then we have a latitude from the Decide service
-    latitude:
-      ipDetails.latitude || ipDetails.accuracyRadius
-        ? ipDetails.latitude
-        : undefined,
+    latitude: ipDetails.latitude || ipDetails.accuracyRadius ? ipDetails.latitude : undefined,
     // If we have a non-0 longitude, or a 0 longitude with a non-0 accuracy
     // radius then we have a longitude from the Decide service
-    longitude:
-      ipDetails.longitude || ipDetails.accuracyRadius
-        ? ipDetails.longitude
-        : undefined,
+    longitude: ipDetails.longitude || ipDetails.accuracyRadius ? ipDetails.longitude : undefined,
     // If we have a non-0 latitude/longitude/accuracyRadius, we assume that the
     // accuracyRadius value was set
     accuracyRadius:
@@ -504,11 +480,9 @@ export function ArcjetIpDetailsFromProtocol(
     city: ipDetails.city !== "" ? ipDetails.city : undefined,
     region: ipDetails.region !== "" ? ipDetails.region : undefined,
     country: ipDetails.country !== "" ? ipDetails.country : undefined,
-    countryName:
-      ipDetails.countryName !== "" ? ipDetails.countryName : undefined,
+    countryName: ipDetails.countryName !== "" ? ipDetails.countryName : undefined,
     continent: ipDetails.continent !== "" ? ipDetails.continent : undefined,
-    continentName:
-      ipDetails.continentName !== "" ? ipDetails.continentName : undefined,
+    continentName: ipDetails.continentName !== "" ? ipDetails.continentName : undefined,
     asn: ipDetails.asn !== "" ? ipDetails.asn : undefined,
     asnName: ipDetails.asnName !== "" ? ipDetails.asnName : undefined,
     asnDomain: ipDetails.asnDomain !== "" ? ipDetails.asnDomain : undefined,
@@ -524,9 +498,7 @@ export function ArcjetIpDetailsFromProtocol(
   });
 }
 
-export function ArcjetDecisionFromProtocol(
-  decision?: Decision,
-): ArcjetDecision {
+export function ArcjetDecisionFromProtocol(decision?: Decision): ArcjetDecision {
   if (typeof decision === "undefined") {
     return new ArcjetErrorDecision({
       reason: new ArcjetErrorReason("Missing Decision"),
@@ -597,9 +569,7 @@ interface RuleWithType {
   type: string;
 }
 
-function isRateLimitRule<Props extends {}>(
-  rule: RuleWithType,
-): rule is ArcjetRateLimitRule<Props> {
+function isRateLimitRule<Props extends {}>(rule: RuleWithType): rule is ArcjetRateLimitRule<Props> {
   return rule.type === "RATE_LIMIT";
 }
 
@@ -619,9 +589,7 @@ function isSlidingWindowRule<Props extends {}>(
   return isRateLimitRule(rule) && rule.algorithm === "SLIDING_WINDOW";
 }
 
-function isBotRule<Props extends {}>(
-  rule: RuleWithType,
-): rule is ArcjetBotRule<Props> {
+function isBotRule<Props extends {}>(rule: RuleWithType): rule is ArcjetBotRule<Props> {
   return rule.type === "BOT";
 }
 
@@ -643,9 +611,7 @@ function isFilterRule(rule: RuleWithType): rule is ArcjetFilterRule {
   return rule.type === "FILTER";
 }
 
-function isShieldRule<Props extends {}>(
-  rule: RuleWithType,
-): rule is ArcjetShieldRule<Props> {
+function isShieldRule<Props extends {}>(rule: RuleWithType): rule is ArcjetShieldRule<Props> {
   return rule.type === "SHIELD";
 }
 
@@ -655,9 +621,7 @@ function isSensitiveInfoRule<Props extends {}>(
   return rule.type === "SENSITIVE_INFO";
 }
 
-function isPromptInjectionRule(
-  rule: RuleWithType,
-): rule is ArcjetPromptInjectionDetectionRule {
+function isPromptInjectionRule(rule: RuleWithType): rule is ArcjetPromptInjectionDetectionRule {
   return rule.type === "PROMPT_INJECTION_DETECTION";
 }
 
@@ -714,12 +678,8 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
   }
 
   if (isEmailRule(rule)) {
-    const allow = Array.isArray(rule.allow)
-      ? rule.allow.map(ArcjetEmailTypeToProtocol)
-      : [];
-    const deny = Array.isArray(rule.deny)
-      ? rule.deny.map(ArcjetEmailTypeToProtocol)
-      : [];
+    const allow = Array.isArray(rule.allow) ? rule.allow.map(ArcjetEmailTypeToProtocol) : [];
+    const deny = Array.isArray(rule.deny) ? rule.deny.map(ArcjetEmailTypeToProtocol) : [];
     return create(RuleSchema, {
       rule: {
         case: "email",

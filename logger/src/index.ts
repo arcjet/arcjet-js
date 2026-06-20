@@ -47,11 +47,7 @@ export type LoggerOptions = Options;
 
 const PREFIX = "✦Aj";
 
-function getMessage(
-  mergingObject: unknown,
-  message: unknown,
-  interpolationValues: unknown[],
-) {
+function getMessage(mergingObject: unknown, message: unknown, interpolationValues: unknown[]) {
   // The first argument was the message so juggle the arguments
   if (typeof mergingObject === "string") {
     interpolationValues = [message, ...interpolationValues];

@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { MemoryCache } from "@arcjet/cache";
 import type { Client } from "@arcjet/protocol/client.js";
+
 import arcjet, {
   type ArcjetCacheEntry,
   type ArcjetContext,
@@ -21,25 +23,19 @@ test("`protectSignup`", async function (t) {
     }, /`protectSignup` options error: expected object/);
   });
 
-  await t.test(
-    "should throw w/o `email`, `rateLimit` options",
-    async function () {
-      assert.throws(function () {
-        // @ts-expect-error: test runtime behavior.
-        protectSignup({ bots: { allow: [] } });
-      }, /`protectSignup` options error: `rateLimit` is required/);
-    },
-  );
+  await t.test("should throw w/o `email`, `rateLimit` options", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      protectSignup({ bots: { allow: [] } });
+    }, /`protectSignup` options error: `rateLimit` is required/);
+  });
 
-  await t.test(
-    "should throw w/o `bots`, `rateLimit` options",
-    async function () {
-      assert.throws(function () {
-        // @ts-expect-error: test runtime behavior.
-        protectSignup({ email: { allow: [] } });
-      }, /`protectSignup` options error: `rateLimit` is required/);
-    },
-  );
+  await t.test("should throw w/o `bots`, `rateLimit` options", async function () {
+    assert.throws(function () {
+      // @ts-expect-error: test runtime behavior.
+      protectSignup({ email: { allow: [] } });
+    }, /`protectSignup` options error: `rateLimit` is required/);
+  });
 
   await t.test("should throw w/o `bots`, `email` options", async function () {
     assert.throws(function () {
@@ -75,169 +71,151 @@ test("`protectSignup`", async function (t) {
     }, /`protectSignup` options error: `rateLimit` is required/);
   });
 
-  await t.test(
-    "should not throw w/ `bots`, `email`, and `rateLimit` options",
-    async function () {
-      assert.doesNotThrow(function () {
-        protectSignup({
-          bots: { allow: [] },
-          email: { allow: [] },
-          rateLimit: { interval: 60, max: 5 },
-        });
+  await t.test("should not throw w/ `bots`, `email`, and `rateLimit` options", async function () {
+    assert.doesNotThrow(function () {
+      protectSignup({
+        bots: { allow: [] },
+        email: { allow: [] },
+        rateLimit: { interval: 60, max: 5 },
       });
-    },
-  );
+    });
+  });
 
   // More specific tests for all fields in options are in `detect-bots.test.ts`,
   // `rate-limit.test.ts`, and `validate-email.test.ts`.
 });
 
 test("`arcjet` w/ `protectSignup()`", async function (t) {
-  await t.test(
-    "should log and yield an allow decision w/o `email`",
-    async function () {
-      let errorParameters: unknown;
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug() {},
-          error(...parameters) {
-            errorParameters = parameters;
-          },
+  await t.test("should log and yield an allow decision w/o `email`", async function () {
+    let errorParameters: unknown;
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        ...console,
+        debug() {},
+        error(...parameters) {
+          errorParameters = parameters;
         },
-        rules: [
-          protectSignup({
-            bots: { allow: [], mode: "LIVE" },
-            email: { allow: [], mode: "LIVE" },
-            rateLimit: { interval: 60, max: 5, mode: "LIVE" },
-          }),
-        ],
-      });
+      },
+      rules: [
+        protectSignup({
+          bots: { allow: [], mode: "LIVE" },
+          email: { allow: [], mode: "LIVE" },
+          rateLimit: { interval: 60, max: 5, mode: "LIVE" },
+        }),
+      ],
+    });
 
-      const decision = await instance.protect(
-        createContext(),
-        // @ts-expect-error: this type error is expected.
-        createRequest(),
-      );
+    const decision = await instance.protect(
+      createContext(),
+      // @ts-expect-error: this type error is expected.
+      createRequest(),
+    );
 
-      // It’s an `allow` because it’s a configuration error.
-      assert.equal(decision.conclusion, "ALLOW");
-      assert.deepEqual(errorParameters, [
-        "Failure running rule: %s due to %s",
-        "EMAIL",
-        "ValidateEmail requires `email` to be set.",
-      ]);
-    },
-  );
+    // It’s an `allow` because it’s a configuration error.
+    assert.equal(decision.conclusion, "ALLOW");
+    assert.deepEqual(errorParameters, [
+      "Failure running rule: %s due to %s",
+      "EMAIL",
+      "ValidateEmail requires `email` to be set.",
+    ]);
+  });
 
-  await t.test(
-    "should yield a deny decision w/ an invalid `email`",
-    async function () {
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: { ...console, debug() {} },
-        rules: [
-          protectSignup({
-            bots: { allow: [], mode: "LIVE" },
-            email: { allow: [], mode: "LIVE" },
-            rateLimit: { interval: 60, max: 5, mode: "LIVE" },
-          }),
-        ],
-      });
+  await t.test("should yield a deny decision w/ an invalid `email`", async function () {
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: { ...console, debug() {} },
+      rules: [
+        protectSignup({
+          bots: { allow: [], mode: "LIVE" },
+          email: { allow: [], mode: "LIVE" },
+          rateLimit: { interval: 60, max: 5, mode: "LIVE" },
+        }),
+      ],
+    });
 
-      const decision = await instance.protect(createContext(), {
-        ...createRequest(),
-        email: "alice",
-      });
+    const decision = await instance.protect(createContext(), {
+      ...createRequest(),
+      email: "alice",
+    });
 
-      assert.equal(decision.conclusion, "DENY");
-    },
-  );
+    assert.equal(decision.conclusion, "DENY");
+  });
 
-  await t.test(
-    "should yield an allow decision w/ a valid `email`",
-    async function () {
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: { ...console, debug() {} },
-        rules: [
-          protectSignup({
-            bots: { allow: [], mode: "LIVE" },
-            email: { allow: [], mode: "LIVE" },
-            rateLimit: { interval: 60, max: 5, mode: "LIVE" },
-          }),
-        ],
-      });
+  await t.test("should yield an allow decision w/ a valid `email`", async function () {
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: { ...console, debug() {} },
+      rules: [
+        protectSignup({
+          bots: { allow: [], mode: "LIVE" },
+          email: { allow: [], mode: "LIVE" },
+          rateLimit: { interval: 60, max: 5, mode: "LIVE" },
+        }),
+      ],
+    });
 
-      const decision = await instance.protect(createContext(), {
-        ...createRequest(),
-        email: "alice@arcjet.com",
-      });
+    const decision = await instance.protect(createContext(), {
+      ...createRequest(),
+      email: "alice@arcjet.com",
+    });
 
-      assert.equal(decision.conclusion, "ALLOW");
-    },
-  );
+    assert.equal(decision.conclusion, "ALLOW");
+  });
 
-  await t.test(
-    "should yield a deny decision w/ a bot user agent",
-    async function () {
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: { ...console, debug() {} },
-        rules: [
-          protectSignup({
-            bots: { allow: [], mode: "LIVE" },
-            email: { allow: [], mode: "LIVE" },
-            rateLimit: { interval: 60, max: 5, mode: "LIVE" },
-          }),
-        ],
-      });
+  await t.test("should yield a deny decision w/ a bot user agent", async function () {
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: { ...console, debug() {} },
+      rules: [
+        protectSignup({
+          bots: { allow: [], mode: "LIVE" },
+          email: { allow: [], mode: "LIVE" },
+          rateLimit: { interval: 60, max: 5, mode: "LIVE" },
+        }),
+      ],
+    });
 
-      const decision = await instance.protect(createContext(), {
-        ...createRequest(),
-        email: "alice@arcjet.com",
-        headers: {
-          "user-agent": "Googlebot/2.1 (+http://www.google.com/bot.html)",
-        },
-      });
+    const decision = await instance.protect(createContext(), {
+      ...createRequest(),
+      email: "alice@arcjet.com",
+      headers: {
+        "user-agent": "Googlebot/2.1 (+http://www.google.com/bot.html)",
+      },
+    });
 
-      assert.equal(decision.conclusion, "DENY");
-    },
-  );
+    assert.equal(decision.conclusion, "DENY");
+  });
 
-  await t.test(
-    "should yield an allow decision w/ a browser user agent",
-    async function () {
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: { ...console, debug() {} },
-        rules: [
-          protectSignup({
-            bots: { allow: [], mode: "LIVE" },
-            email: { allow: [], mode: "LIVE" },
-            rateLimit: { interval: 60, max: 5, mode: "LIVE" },
-          }),
-        ],
-      });
+  await t.test("should yield an allow decision w/ a browser user agent", async function () {
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: { ...console, debug() {} },
+      rules: [
+        protectSignup({
+          bots: { allow: [], mode: "LIVE" },
+          email: { allow: [], mode: "LIVE" },
+          rateLimit: { interval: 60, max: 5, mode: "LIVE" },
+        }),
+      ],
+    });
 
-      const decision = await instance.protect(createContext(), {
-        ...createRequest(),
-        email: "alice@arcjet.com",
-        headers: {
-          "user-agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-        },
-      });
+    const decision = await instance.protect(createContext(), {
+      ...createRequest(),
+      email: "alice@arcjet.com",
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      },
+    });
 
-      assert.equal(decision.conclusion, "ALLOW");
-    },
-  );
+    assert.equal(decision.conclusion, "ALLOW");
+  });
 
   // No tests for rate limiting as that happens remotely.
 });

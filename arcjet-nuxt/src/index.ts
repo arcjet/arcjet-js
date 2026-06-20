@@ -1,9 +1,6 @@
 import fs from "node:fs/promises";
-import {
-  addServerTemplate,
-  addTypeTemplate,
-  defineNuxtModule,
-} from "@nuxt/kit";
+
+import { addServerTemplate, addTypeTemplate, defineNuxtModule } from "@nuxt/kit";
 
 /**
  * Configuration for `@arcjet/nuxt` as used in `nuxt.config.ts`.

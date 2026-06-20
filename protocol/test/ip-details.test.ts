@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { ArcjetIpDetails } from "../dist/index.js";
 
 test("ArcjetIpDetails", async function (t) {

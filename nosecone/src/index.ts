@@ -32,20 +32,13 @@ export type BaseSource =
   | "'unsafe-inline'"
   | "'wasm-unsafe-eval'"
   | "'none'";
-export type CryptoSource =
-  `'${"nonce" | "sha256" | "sha384" | "sha512"}-${string}'`;
+export type CryptoSource = `'${"nonce" | "sha256" | "sha384" | "sha512"}-${string}'`;
 export type FrameSource = HostSource | SchemeSource | "'self'" | "'none'";
 export type HostNameScheme = `${string}.${string}` | "localhost";
 export type HostSource = `${HostProtocolSchemes}${HostNameScheme}${PortScheme}`;
 export type HostProtocolSchemes = `${string}://` | "";
 export type PortScheme = `:${number}` | "" | ":*";
-export type SchemeSource =
-  | "http:"
-  | "https:"
-  | "data:"
-  | "mediastream:"
-  | "blob:"
-  | "filesystem:";
+export type SchemeSource = "http:" | "https:" | "data:" | "mediastream:" | "blob:" | "filesystem:";
 export type Source = HostSource | SchemeSource | CryptoSource | BaseSource;
 export type StaticOrDynamic<S> = boolean | null | ReadonlyArray<S | (() => S)>;
 
@@ -86,16 +79,12 @@ export interface CspDirectives {
       >
     | undefined;
   formAction?: StaticOrDynamic<Source | ActionSource> | undefined;
-  frameAncestors?:
-    | StaticOrDynamic<HostSource | SchemeSource | FrameSource>
-    | undefined;
+  frameAncestors?: StaticOrDynamic<HostSource | SchemeSource | FrameSource> | undefined;
   navigateTo?: StaticOrDynamic<Source | ActionSource> | undefined;
   reportUri?: string[] | undefined;
   reportTo?: string[] | undefined;
   requireTrustedTypesFor?: ReadonlyArray<"script"> | undefined;
-  trustedTypes?:
-    | ReadonlyArray<"none" | "allow-duplicates" | "*" | string>
-    | undefined;
+  trustedTypes?: ReadonlyArray<"none" | "allow-duplicates" | "*" | string> | undefined;
   upgradeInsecureRequests?: boolean | undefined;
 }
 
@@ -137,11 +126,7 @@ export interface CrossOriginOpenerPolicyConfig {
   /**
    * Policy.
    */
-  policy?:
-    | "same-origin"
-    | "same-origin-allow-popups"
-    | "unsafe-none"
-    | undefined;
+  policy?: "same-origin" | "same-origin-allow-popups" | "unsafe-none" | undefined;
 }
 
 /**
@@ -209,12 +194,7 @@ export interface PermittedCrossDomainPoliciesConfig {
   /**
    * Permitted policies.
    */
-  permittedPolicies?:
-    | "none"
-    | "master-only"
-    | "by-content-type"
-    | "all"
-    | undefined;
+  permittedPolicies?: "none" | "master-only" | "by-content-type" | "all" | undefined;
 }
 
 /**
@@ -246,10 +226,7 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy
    * - https://owasp.org/www-project-secure-headers/#cross-origin-embedder-policy
    */
-  crossOriginEmbedderPolicy?:
-    | CrossOriginEmbedderPolicyConfig
-    | boolean
-    | undefined;
+  crossOriginEmbedderPolicy?: CrossOriginEmbedderPolicyConfig | boolean | undefined;
   /**
    * Configure the `Cross-Origin-Opener-Policy` header, which helps
    * process-isolate your page.
@@ -276,10 +253,7 @@ export interface Options {
    * - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Resource-Policy
    * - https://owasp.org/www-project-secure-headers/#cross-origin-resource-policy
    */
-  crossOriginResourcePolicy?:
-    | CrossOriginResourcePolicyConfig
-    | boolean
-    | undefined;
+  crossOriginResourcePolicy?: CrossOriginResourcePolicyConfig | boolean | undefined;
   /**
    * Configure the `Origin-Agent-Cluster` header, which provides a mechanism to
    * allow web applications to isolate their origins from other processes.
@@ -375,10 +349,7 @@ export interface Options {
    * See also:
    * - https://owasp.org/www-project-secure-headers/#x-permitted-cross-domain-policies
    */
-  xPermittedCrossDomainPolicies?:
-    | PermittedCrossDomainPoliciesConfig
-    | boolean
-    | undefined;
+  xPermittedCrossDomainPolicies?: PermittedCrossDomainPoliciesConfig | boolean | undefined;
   /**
    * Disable the `X-XSS-Protection` header, which could introduce a browser
    * side-channel in legacy browsers if enabled.
@@ -638,11 +609,8 @@ export class NoseconeValidationError extends Error {
  * @returns
  *   `Content-Security-Policy` header.
  */
-export function createContentSecurityPolicy(
-  options?: ContentSecurityPolicyConfig | undefined,
-) {
-  const directives =
-    options?.directives ?? defaults.contentSecurityPolicy.directives;
+export function createContentSecurityPolicy(options?: ContentSecurityPolicyConfig | undefined) {
+  const directives = options?.directives ?? defaults.contentSecurityPolicy.directives;
   const cspEntries = [];
   for (const [optionKey, optionValues] of Object.entries(directives)) {
     const key = CONTENT_SECURITY_POLICY_DIRECTIVES.get(
@@ -650,9 +618,7 @@ export function createContentSecurityPolicy(
       optionKey,
     );
     if (!key) {
-      throw new NoseconeValidationError(
-        `${optionKey} is not a Content-Security-Policy directive`,
-      );
+      throw new NoseconeValidationError(`${optionKey} is not a Content-Security-Policy directive`);
     }
 
     // Skip anything falsey
@@ -684,9 +650,7 @@ export function createContentSecurityPolicy(
             value,
           )
         ) {
-          throw new NoseconeValidationError(
-            "invalid sandbox value in Content-Security-Policy",
-          );
+          throw new NoseconeValidationError("invalid sandbox value in Content-Security-Policy");
         }
       }
     }
@@ -716,9 +680,7 @@ export function createCrossOriginEmbedderPolicy(
   if (CROSS_ORIGIN_EMBEDDER_POLICIES.has(policy)) {
     return ["cross-origin-embedder-policy", policy] as const;
   } else {
-    throw new NoseconeValidationError(
-      `invalid value for Cross-Origin-Embedder-Policy`,
-    );
+    throw new NoseconeValidationError(`invalid value for Cross-Origin-Embedder-Policy`);
   }
 }
 
@@ -730,17 +692,13 @@ export function createCrossOriginEmbedderPolicy(
  * @returns
  *   `Cross-Origin-Opener-Policy` header.
  */
-export function createCrossOriginOpenerPolicy(
-  options?: CrossOriginOpenerPolicyConfig | undefined,
-) {
+export function createCrossOriginOpenerPolicy(options?: CrossOriginOpenerPolicyConfig | undefined) {
   const policy = options?.policy ?? defaults.crossOriginOpenerPolicy.policy;
 
   if (CROSS_ORIGIN_OPENER_POLICIES.has(policy)) {
     return ["cross-origin-opener-policy", policy] as const;
   } else {
-    throw new NoseconeValidationError(
-      `invalid value for Cross-Origin-Opener-Policy`,
-    );
+    throw new NoseconeValidationError(`invalid value for Cross-Origin-Opener-Policy`);
   }
 }
 
@@ -760,9 +718,7 @@ export function createCrossOriginResourcePolicy(
   if (CROSS_ORIGIN_RESOURCE_POLICIES.has(policy)) {
     return ["cross-origin-resource-policy", policy] as const;
   } else {
-    throw new NoseconeValidationError(
-      `invalid value for Cross-Origin-Resource-Policy`,
-    );
+    throw new NoseconeValidationError(`invalid value for Cross-Origin-Resource-Policy`);
   }
 }
 
@@ -784,9 +740,7 @@ export function createOriginAgentCluster() {
  * @returns
  *   `Referrer-Policy` header.
  */
-export function createReferrerPolicy(
-  options?: ReferrerPolicyConfig | undefined,
-) {
+export function createReferrerPolicy(options?: ReferrerPolicyConfig | undefined) {
   const policy = options?.policy ?? defaults.referrerPolicy.policy;
 
   if (Array.isArray(policy)) {
@@ -796,17 +750,13 @@ export function createReferrerPolicy(
         if (REFERRER_POLICIES.has(token)) {
           tokens.add(token);
         } else {
-          throw new NoseconeValidationError(
-            `invalid value for Referrer-Policy`,
-          );
+          throw new NoseconeValidationError(`invalid value for Referrer-Policy`);
         }
       }
 
       return ["referrer-policy", Array.from(tokens).join(",")] as const;
     } else {
-      throw new NoseconeValidationError(
-        "must provide at least one policy for Referrer-Policy",
-      );
+      throw new NoseconeValidationError("must provide at least one policy for Referrer-Policy");
     }
   }
 
@@ -821,13 +771,10 @@ export function createReferrerPolicy(
  * @returns
  *   `Strict-Transport-Security` header.
  */
-export function createStrictTransportSecurity(
-  options?: StrictTransportSecurityConfig | undefined,
-) {
+export function createStrictTransportSecurity(options?: StrictTransportSecurityConfig | undefined) {
   let maxAge = options?.maxAge ?? defaults.strictTransportSecurity.maxAge;
   const includeSubDomains =
-    options?.includeSubDomains ??
-    defaults.strictTransportSecurity.includeSubDomains;
+    options?.includeSubDomains ?? defaults.strictTransportSecurity.includeSubDomains;
   const preload = options?.preload ?? defaults.strictTransportSecurity.preload;
 
   if (maxAge >= 0 && Number.isFinite(maxAge)) {
@@ -868,9 +815,7 @@ export function createContentTypeOptions() {
  * @returns
  *   `X-DNS-Prefetch-Control` header.
  */
-export function createDnsPrefetchControl(
-  options?: DnsPrefetchControlConfig | undefined,
-) {
+export function createDnsPrefetchControl(options?: DnsPrefetchControlConfig | undefined) {
   const allow = options?.allow ?? defaults.xDnsPrefetchControl.allow;
   const headerValue = allow ? "on" : "off";
   return ["x-dns-prefetch-control", headerValue] as const;
@@ -913,15 +858,12 @@ export function createPermittedCrossDomainPolicies(
   options?: PermittedCrossDomainPoliciesConfig | undefined,
 ) {
   const permittedPolicies =
-    options?.permittedPolicies ??
-    defaults.xPermittedCrossDomainPolicies.permittedPolicies;
+    options?.permittedPolicies ?? defaults.xPermittedCrossDomainPolicies.permittedPolicies;
 
   if (PERMITTED_CROSS_DOMAIN_POLICIES.has(permittedPolicies)) {
     return ["x-permitted-cross-domain-policies", permittedPolicies] as const;
   } else {
-    throw new NoseconeValidationError(
-      `invalid value for X-Permitted-Cross-Domain-Policies`,
-    );
+    throw new NoseconeValidationError(`invalid value for X-Permitted-Cross-Domain-Policies`);
   }
 }
 
@@ -944,29 +886,23 @@ export function createXssProtection() {
  *   `Headers` with the configured security headers.
  */
 export function nosecone(options?: Options | undefined): Headers {
-  let contentSecurityPolicy =
-    options?.contentSecurityPolicy ?? defaults.contentSecurityPolicy;
+  let contentSecurityPolicy = options?.contentSecurityPolicy ?? defaults.contentSecurityPolicy;
   let crossOriginEmbedderPolicy =
     options?.crossOriginEmbedderPolicy ?? defaults.crossOriginEmbedderPolicy;
   let crossOriginOpenerPolicy =
     options?.crossOriginOpenerPolicy ?? defaults.crossOriginOpenerPolicy;
   let crossOriginResourcePolicy =
     options?.crossOriginResourcePolicy ?? defaults.crossOriginResourcePolicy;
-  const originAgentCluster =
-    options?.originAgentCluster ?? defaults.originAgentCluster;
+  const originAgentCluster = options?.originAgentCluster ?? defaults.originAgentCluster;
   let referrerPolicy = options?.referrerPolicy ?? defaults.referrerPolicy;
   let strictTransportSecurity =
     options?.strictTransportSecurity ?? defaults.strictTransportSecurity;
-  const xContentTypeOptions =
-    options?.xContentTypeOptions ?? defaults.xContentTypeOptions;
-  let xDnsPrefetchControl =
-    options?.xDnsPrefetchControl ?? defaults.xDnsPrefetchControl;
-  const xDownloadOptions =
-    options?.xDownloadOptions ?? defaults.xDownloadOptions;
+  const xContentTypeOptions = options?.xContentTypeOptions ?? defaults.xContentTypeOptions;
+  let xDnsPrefetchControl = options?.xDnsPrefetchControl ?? defaults.xDnsPrefetchControl;
+  const xDownloadOptions = options?.xDownloadOptions ?? defaults.xDownloadOptions;
   let xFrameOptions = options?.xFrameOptions ?? defaults.xFrameOptions;
   let xPermittedCrossDomainPolicies =
-    options?.xPermittedCrossDomainPolicies ??
-    defaults.xPermittedCrossDomainPolicies;
+    options?.xPermittedCrossDomainPolicies ?? defaults.xPermittedCrossDomainPolicies;
   const xXssProtection = options?.xXssProtection ?? defaults.xXssProtection;
 
   if (contentSecurityPolicy === true) {
@@ -1000,30 +936,22 @@ export function nosecone(options?: Options | undefined): Headers {
   const headers = new Headers();
 
   if (contentSecurityPolicy) {
-    const [headerName, headerValue] = createContentSecurityPolicy(
-      contentSecurityPolicy,
-    );
+    const [headerName, headerValue] = createContentSecurityPolicy(contentSecurityPolicy);
     headers.set(headerName, headerValue);
   }
 
   if (crossOriginEmbedderPolicy) {
-    const [headerName, headerValue] = createCrossOriginEmbedderPolicy(
-      crossOriginEmbedderPolicy,
-    );
+    const [headerName, headerValue] = createCrossOriginEmbedderPolicy(crossOriginEmbedderPolicy);
     headers.set(headerName, headerValue);
   }
 
   if (crossOriginOpenerPolicy) {
-    const [headerName, headerValue] = createCrossOriginOpenerPolicy(
-      crossOriginOpenerPolicy,
-    );
+    const [headerName, headerValue] = createCrossOriginOpenerPolicy(crossOriginOpenerPolicy);
     headers.set(headerName, headerValue);
   }
 
   if (crossOriginResourcePolicy) {
-    const [headerName, headerValue] = createCrossOriginResourcePolicy(
-      crossOriginResourcePolicy,
-    );
+    const [headerName, headerValue] = createCrossOriginResourcePolicy(crossOriginResourcePolicy);
     headers.set(headerName, headerValue);
   }
 
@@ -1038,9 +966,7 @@ export function nosecone(options?: Options | undefined): Headers {
   }
 
   if (strictTransportSecurity) {
-    const [headerName, headerValue] = createStrictTransportSecurity(
-      strictTransportSecurity,
-    );
+    const [headerName, headerValue] = createStrictTransportSecurity(strictTransportSecurity);
     headers.set(headerName, headerValue);
   }
 
@@ -1050,8 +976,7 @@ export function nosecone(options?: Options | undefined): Headers {
   }
 
   if (xDnsPrefetchControl) {
-    const [headerName, headerValue] =
-      createDnsPrefetchControl(xDnsPrefetchControl);
+    const [headerName, headerValue] = createDnsPrefetchControl(xDnsPrefetchControl);
     headers.set(headerName, headerValue);
   }
 
@@ -1144,9 +1069,7 @@ export function withVercelToolbar(config: Options) {
         ...contentSecurityPolicy.directives,
         scriptSrc: scriptSrc
           ? [
-              ...scriptSrc.filter(
-                (v) => v !== "'none'" && v !== "https://vercel.live",
-              ),
+              ...scriptSrc.filter((v) => v !== "'none'" && v !== "https://vercel.live"),
               "https://vercel.live",
             ]
           : scriptSrc,
@@ -1154,9 +1077,7 @@ export function withVercelToolbar(config: Options) {
           ? [
               ...connectSrc.filter(
                 (v) =>
-                  v !== "'none'" &&
-                  v !== "https://vercel.live" &&
-                  v !== "wss://ws-us3.pusher.com",
+                  v !== "'none'" && v !== "https://vercel.live" && v !== "wss://ws-us3.pusher.com",
               ),
               "https://vercel.live",
               "wss://ws-us3.pusher.com",
@@ -1180,19 +1101,14 @@ export function withVercelToolbar(config: Options) {
           : imgSrc,
         frameSrc: frameSrc
           ? [
-              ...frameSrc.filter(
-                (v) => v !== "'none'" && v !== "https://vercel.live",
-              ),
+              ...frameSrc.filter((v) => v !== "'none'" && v !== "https://vercel.live"),
               "https://vercel.live",
             ]
           : frameSrc,
         styleSrc: styleSrc
           ? [
               ...styleSrc.filter(
-                (v) =>
-                  v !== "'none'" &&
-                  v !== "https://vercel.live" &&
-                  v !== "'unsafe-inline'",
+                (v) => v !== "'none'" && v !== "https://vercel.live" && v !== "'unsafe-inline'",
               ),
               "https://vercel.live",
               "'unsafe-inline'",

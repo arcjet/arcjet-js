@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../dist/index.js";
+
 import {
   type ArcjetRuleState,
   ArcjetBotReason,
   ArcjetErrorReason,
   ArcjetRuleResult,
 } from "@arcjet/protocol";
+
+import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../dist/index.js";
 
 test("@arcjet/inspect", async function (t) {
   await t.test("should expose the public api", async function () {
@@ -20,11 +22,7 @@ test("@arcjet/inspect", async function (t) {
 
 describe("isSpoofedBot", () => {
   test("returns true for active bots that are spoofed", () => {
-    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = [
-      "RUN",
-      "NOT_RUN",
-      "CACHED",
-    ];
+    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = ["RUN", "NOT_RUN", "CACHED"];
 
     for (const state of activeStates) {
       assert.equal(
@@ -49,11 +47,7 @@ describe("isSpoofedBot", () => {
   });
 
   test("returns false for active bots that are not spoofed", () => {
-    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = [
-      "RUN",
-      "NOT_RUN",
-      "CACHED",
-    ];
+    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = ["RUN", "NOT_RUN", "CACHED"];
 
     for (const state of activeStates) {
       assert.equal(
@@ -153,11 +147,7 @@ describe("isSpoofedBot", () => {
 
 describe("isVerifiedBot", () => {
   test("returns true for active bots that are verified", () => {
-    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = [
-      "RUN",
-      "NOT_RUN",
-      "CACHED",
-    ];
+    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = ["RUN", "NOT_RUN", "CACHED"];
 
     for (const state of activeStates) {
       assert.equal(
@@ -182,11 +172,7 @@ describe("isVerifiedBot", () => {
   });
 
   test("returns false for active bots that are not verified", () => {
-    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = [
-      "RUN",
-      "NOT_RUN",
-      "CACHED",
-    ];
+    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = ["RUN", "NOT_RUN", "CACHED"];
 
     for (const state of activeStates) {
       assert.equal(
@@ -286,11 +272,7 @@ describe("isVerifiedBot", () => {
 
 describe("isMissingUserAgent", () => {
   test("returns true for active errors about missing user-agent header", () => {
-    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = [
-      "RUN",
-      "NOT_RUN",
-      "CACHED",
-    ];
+    const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = ["RUN", "NOT_RUN", "CACHED"];
 
     for (const state of activeStates) {
       // Server error message
