@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import { describe, it, test } from "node:test";
 
+// oxlint-disable-next-line import/no-named-as-default
 import nosecone, {
   defaults,
   createContentSecurityPolicy,
@@ -119,8 +120,7 @@ describe("nosecone", () => {
           });
         },
         {
-          message:
-            "validation error: invalid is not a Content-Security-Policy directive",
+          message: "validation error: invalid is not a Content-Security-Policy directive",
         },
       );
     });
@@ -152,8 +152,7 @@ describe("nosecone", () => {
           });
         },
         {
-          message:
-            "validation error: invalid sandbox value in Content-Security-Policy",
+          message: "validation error: invalid sandbox value in Content-Security-Policy",
         },
       );
     });
@@ -173,28 +172,19 @@ describe("nosecone", () => {
   describe("createCrossOriginEmbedderPolicy", () => {
     it("uses default configuration if no options provided", () => {
       const policy = createCrossOriginEmbedderPolicy();
-      assert.deepStrictEqual(policy, [
-        "cross-origin-embedder-policy",
-        "require-corp",
-      ]);
+      assert.deepStrictEqual(policy, ["cross-origin-embedder-policy", "require-corp"]);
     });
 
     it("uses default policy if none provided", () => {
       const policy = createCrossOriginEmbedderPolicy({});
-      assert.deepStrictEqual(policy, [
-        "cross-origin-embedder-policy",
-        "require-corp",
-      ]);
+      assert.deepStrictEqual(policy, ["cross-origin-embedder-policy", "require-corp"]);
     });
 
     it("builds the header with options", () => {
       const policy = createCrossOriginEmbedderPolicy({
         policy: "credentialless",
       });
-      assert.deepStrictEqual(policy, [
-        "cross-origin-embedder-policy",
-        "credentialless",
-      ]);
+      assert.deepStrictEqual(policy, ["cross-origin-embedder-policy", "credentialless"]);
     });
 
     it("throws if provided an invalid policy", () => {
@@ -206,8 +196,7 @@ describe("nosecone", () => {
           });
         },
         {
-          message:
-            "validation error: invalid value for Cross-Origin-Embedder-Policy",
+          message: "validation error: invalid value for Cross-Origin-Embedder-Policy",
         },
       );
     });
@@ -216,28 +205,19 @@ describe("nosecone", () => {
   describe("createCrossOriginOpenerPolicy", () => {
     it("uses default configuration if no options provided", () => {
       const policy = createCrossOriginOpenerPolicy();
-      assert.deepStrictEqual(policy, [
-        "cross-origin-opener-policy",
-        "same-origin",
-      ]);
+      assert.deepStrictEqual(policy, ["cross-origin-opener-policy", "same-origin"]);
     });
 
     it("uses default policy if none provided", () => {
       const policy = createCrossOriginOpenerPolicy({});
-      assert.deepStrictEqual(policy, [
-        "cross-origin-opener-policy",
-        "same-origin",
-      ]);
+      assert.deepStrictEqual(policy, ["cross-origin-opener-policy", "same-origin"]);
     });
 
     it("builds the header with options", () => {
       const policy = createCrossOriginOpenerPolicy({
         policy: "same-origin-allow-popups",
       });
-      assert.deepStrictEqual(policy, [
-        "cross-origin-opener-policy",
-        "same-origin-allow-popups",
-      ]);
+      assert.deepStrictEqual(policy, ["cross-origin-opener-policy", "same-origin-allow-popups"]);
     });
 
     it("throws if provided an invalid policy", () => {
@@ -249,8 +229,7 @@ describe("nosecone", () => {
           });
         },
         {
-          message:
-            "validation error: invalid value for Cross-Origin-Opener-Policy",
+          message: "validation error: invalid value for Cross-Origin-Opener-Policy",
         },
       );
     });
@@ -259,28 +238,19 @@ describe("nosecone", () => {
   describe("createCrossOriginResourcePolicy", () => {
     it("uses default configuration if no options provided", () => {
       const policy = createCrossOriginResourcePolicy();
-      assert.deepStrictEqual(policy, [
-        "cross-origin-resource-policy",
-        "same-origin",
-      ]);
+      assert.deepStrictEqual(policy, ["cross-origin-resource-policy", "same-origin"]);
     });
 
     it("uses default policy if none provided", () => {
       const policy = createCrossOriginResourcePolicy({});
-      assert.deepStrictEqual(policy, [
-        "cross-origin-resource-policy",
-        "same-origin",
-      ]);
+      assert.deepStrictEqual(policy, ["cross-origin-resource-policy", "same-origin"]);
     });
 
     it("builds the header with options", () => {
       const policy = createCrossOriginResourcePolicy({
         policy: "cross-origin",
       });
-      assert.deepStrictEqual(policy, [
-        "cross-origin-resource-policy",
-        "cross-origin",
-      ]);
+      assert.deepStrictEqual(policy, ["cross-origin-resource-policy", "cross-origin"]);
     });
 
     it("throws if provided an invalid policy", () => {
@@ -292,8 +262,7 @@ describe("nosecone", () => {
           });
         },
         {
-          message:
-            "validation error: invalid value for Cross-Origin-Resource-Policy",
+          message: "validation error: invalid value for Cross-Origin-Resource-Policy",
         },
       );
     });
@@ -349,8 +318,7 @@ describe("nosecone", () => {
           });
         },
         {
-          message:
-            "validation error: must provide at least one policy for Referrer-Policy",
+          message: "validation error: must provide at least one policy for Referrer-Policy",
         },
       );
     });
@@ -395,10 +363,7 @@ describe("nosecone", () => {
         includeSubDomains: false,
         preload: true,
       });
-      assert.deepStrictEqual(policy, [
-        "strict-transport-security",
-        "max-age=10; preload",
-      ]);
+      assert.deepStrictEqual(policy, ["strict-transport-security", "max-age=10; preload"]);
     });
 
     it("can disable includeSubDomains and preload", () => {
@@ -406,10 +371,7 @@ describe("nosecone", () => {
         includeSubDomains: false,
         preload: false,
       });
-      assert.deepStrictEqual(policy, [
-        "strict-transport-security",
-        "max-age=31536000",
-      ]);
+      assert.deepStrictEqual(policy, ["strict-transport-security", "max-age=31536000"]);
     });
 
     it("rounds maxAge down if decimal", () => {
@@ -534,28 +496,19 @@ describe("nosecone", () => {
   describe("createPermittedCrossDomainPolicies", () => {
     it("uses default configuration if no options provided", () => {
       const policy = createPermittedCrossDomainPolicies();
-      assert.deepStrictEqual(policy, [
-        "x-permitted-cross-domain-policies",
-        "none",
-      ]);
+      assert.deepStrictEqual(policy, ["x-permitted-cross-domain-policies", "none"]);
     });
 
     it("uses default policy if none provided", () => {
       const policy = createPermittedCrossDomainPolicies({});
-      assert.deepStrictEqual(policy, [
-        "x-permitted-cross-domain-policies",
-        "none",
-      ]);
+      assert.deepStrictEqual(policy, ["x-permitted-cross-domain-policies", "none"]);
     });
 
     it("builds the header with options", () => {
       const policy = createPermittedCrossDomainPolicies({
         permittedPolicies: "master-only",
       });
-      assert.deepStrictEqual(policy, [
-        "x-permitted-cross-domain-policies",
-        "master-only",
-      ]);
+      assert.deepStrictEqual(policy, ["x-permitted-cross-domain-policies", "master-only"]);
     });
 
     it("throws if provided an invalid permittedPolicies", () => {
@@ -567,8 +520,7 @@ describe("nosecone", () => {
           });
         },
         {
-          message:
-            "validation error: invalid value for X-Permitted-Cross-Domain-Policies",
+          message: "validation error: invalid value for X-Permitted-Cross-Domain-Policies",
         },
       );
     });
@@ -712,27 +664,13 @@ describe("nosecone", () => {
           directives: {
             baseUri: ["'none'"],
             childSrc: ["'none'"],
-            connectSrc: [
-              "'self'",
-              "https://vercel.live",
-              "wss://ws-us3.pusher.com",
-            ],
+            connectSrc: ["'self'", "https://vercel.live", "wss://ws-us3.pusher.com"],
             defaultSrc: ["'self'"],
-            fontSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://assets.vercel.com",
-            ],
+            fontSrc: ["'self'", "https://vercel.live", "https://assets.vercel.com"],
             formAction: ["'self'"],
             frameAncestors: ["'none'"],
             frameSrc: ["https://vercel.live"],
-            imgSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://vercel.com",
-              "data:",
-              "blob:",
-            ],
+            imgSrc: ["'self'", "https://vercel.live", "https://vercel.com", "data:", "blob:"],
             manifestSrc: ["'self'"],
             mediaSrc: ["'self'"],
             objectSrc: ["'none'"],
@@ -815,24 +753,10 @@ describe("nosecone", () => {
       assert.deepStrictEqual(policy, {
         contentSecurityPolicy: {
           directives: {
-            connectSrc: [
-              "'self'",
-              "https://vercel.live",
-              "wss://ws-us3.pusher.com",
-            ],
-            fontSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://assets.vercel.com",
-            ],
+            connectSrc: ["'self'", "https://vercel.live", "wss://ws-us3.pusher.com"],
+            fontSrc: ["'self'", "https://vercel.live", "https://assets.vercel.com"],
             frameSrc: ["https://vercel.live"],
-            imgSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://vercel.com",
-              "data:",
-              "blob:",
-            ],
+            imgSrc: ["'self'", "https://vercel.live", "https://vercel.com", "data:", "blob:"],
             scriptSrc: ["'self'", "https://vercel.live"],
             styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
           },
@@ -861,12 +785,7 @@ describe("nosecone", () => {
             connectSrc: ["https://vercel.live", "wss://ws-us3.pusher.com"],
             fontSrc: ["https://vercel.live", "https://assets.vercel.com"],
             frameSrc: ["https://vercel.live"],
-            imgSrc: [
-              "https://vercel.live",
-              "https://vercel.com",
-              "data:",
-              "blob:",
-            ],
+            imgSrc: ["https://vercel.live", "https://vercel.com", "data:", "blob:"],
             scriptSrc: ["https://vercel.live"],
             styleSrc: ["https://vercel.live", "'unsafe-inline'"],
           },
@@ -892,24 +811,10 @@ describe("nosecone", () => {
       assert.deepStrictEqual(policy, {
         contentSecurityPolicy: {
           directives: {
-            connectSrc: [
-              "'self'",
-              "https://vercel.live",
-              "wss://ws-us3.pusher.com",
-            ],
-            fontSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://assets.vercel.com",
-            ],
+            connectSrc: ["'self'", "https://vercel.live", "wss://ws-us3.pusher.com"],
+            fontSrc: ["'self'", "https://vercel.live", "https://assets.vercel.com"],
             frameSrc: ["'self'", "https://vercel.live"],
-            imgSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://vercel.com",
-              "data:",
-              "blob:",
-            ],
+            imgSrc: ["'self'", "https://vercel.live", "https://vercel.com", "data:", "blob:"],
             scriptSrc: ["'self'", "https://vercel.live"],
             styleSrc: ["'self'", "https://vercel.live", "'unsafe-inline'"],
           },
@@ -930,27 +835,13 @@ describe("nosecone", () => {
           directives: {
             baseUri: ["'none'"],
             childSrc: ["'none'"],
-            connectSrc: [
-              "'self'",
-              "https://vercel.live",
-              "wss://ws-us3.pusher.com",
-            ],
+            connectSrc: ["'self'", "https://vercel.live", "wss://ws-us3.pusher.com"],
             defaultSrc: ["'self'"],
-            fontSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://assets.vercel.com",
-            ],
+            fontSrc: ["'self'", "https://vercel.live", "https://assets.vercel.com"],
             formAction: ["'self'"],
             frameAncestors: ["'none'"],
             frameSrc: ["https://vercel.live"],
-            imgSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://vercel.com",
-              "data:",
-              "blob:",
-            ],
+            imgSrc: ["'self'", "https://vercel.live", "https://vercel.com", "data:", "blob:"],
             manifestSrc: ["'self'"],
             mediaSrc: ["'self'"],
             objectSrc: ["'none'"],
@@ -972,27 +863,13 @@ describe("nosecone", () => {
           directives: {
             baseUri: ["'none'"],
             childSrc: ["'none'"],
-            connectSrc: [
-              "'self'",
-              "https://vercel.live",
-              "wss://ws-us3.pusher.com",
-            ],
+            connectSrc: ["'self'", "https://vercel.live", "wss://ws-us3.pusher.com"],
             defaultSrc: ["'self'"],
-            fontSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://assets.vercel.com",
-            ],
+            fontSrc: ["'self'", "https://vercel.live", "https://assets.vercel.com"],
             formAction: ["'self'"],
             frameAncestors: ["'none'"],
             frameSrc: ["https://vercel.live"],
-            imgSrc: [
-              "'self'",
-              "https://vercel.live",
-              "https://vercel.com",
-              "data:",
-              "blob:",
-            ],
+            imgSrc: ["'self'", "https://vercel.live", "https://vercel.com", "data:", "blob:"],
             manifestSrc: ["'self'"],
             mediaSrc: ["'self'"],
             objectSrc: ["'none'"],

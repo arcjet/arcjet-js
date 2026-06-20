@@ -1,16 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import type { Cache } from "@arcjet/cache";
 import { create } from "@bufbuild/protobuf";
 import { createRouterTransport } from "@connectrpc/connect";
-import {
-  Conclusion,
-  DecideResponseSchema,
-  DecideService,
-  ReportResponseSchema,
-  RuleSchema,
-  SDKStack,
-} from "../dist/proto/decide/v1alpha1/decide_pb.js";
+
 import { type ClientOptions, createClient, decideTimeout } from "../dist/client.js";
 import {
   type ArcjetCacheEntry,
@@ -26,6 +20,14 @@ import {
   ArcjetReason,
   ArcjetRuleResult,
 } from "../dist/index.js";
+import {
+  Conclusion,
+  DecideResponseSchema,
+  DecideService,
+  ReportResponseSchema,
+  RuleSchema,
+  SDKStack,
+} from "../dist/proto/decide/v1alpha1/decide_pb.js";
 
 class ArcjetInvalidDecision extends ArcjetDecision {
   conclusion: ArcjetConclusion;
@@ -137,48 +139,45 @@ test("createClient", async (t) => {
     assert.equal(calls, 1);
   });
 
-  await t.test(
-    "should double the given `timeout` if there is an email rule",
-    async () => {
-      let calls = 0;
+  await t.test("should double the given `timeout` if there is an email rule", async () => {
+    let calls = 0;
 
-      const client = createClient({
-        ...exampleClientOptions,
-        timeout: 9876,
-        transport: createRouterTransport(function ({ service }) {
-          service(DecideService, {
-            decide(_, handlerContext) {
-              assert.equal(calls, 0);
-              calls++;
+    const client = createClient({
+      ...exampleClientOptions,
+      timeout: 9876,
+      transport: createRouterTransport(function ({ service }) {
+        service(DecideService, {
+          decide(_, handlerContext) {
+            assert.equal(calls, 0);
+            calls++;
 
-              const ms = handlerContext.timeoutMs();
-              // The code above takes about 1 or 2 ms off the timeout we pass.
-              // Allow a very large number to prevent flakey tests.
-              assert.ok(typeof ms === "number");
-              assert.ok(ms > 18000);
-              assert.ok(ms < 20000);
-              return create(DecideResponseSchema);
-            },
-          });
-        }),
-      });
-
-      await client.decide(exampleContext, exampleDetails, [
-        {
-          mode: "LIVE",
-          priority: 1,
-          protect() {
-            assert.fail();
+            const ms = handlerContext.timeoutMs();
+            // The code above takes about 1 or 2 ms off the timeout we pass.
+            // Allow a very large number to prevent flakey tests.
+            assert.ok(typeof ms === "number");
+            assert.ok(ms > 18000);
+            assert.ok(ms < 20000);
+            return create(DecideResponseSchema);
           },
-          type: "EMAIL",
-          validate() {},
-          version: 0,
-        },
-      ]);
+        });
+      }),
+    });
 
-      assert.equal(calls, 1);
-    },
-  );
+    await client.decide(exampleContext, exampleDetails, [
+      {
+        mode: "LIVE",
+        priority: 1,
+        protect() {
+          assert.fail();
+        },
+        type: "EMAIL",
+        validate() {},
+        version: 0,
+      },
+    ]);
+
+    assert.equal(calls, 1);
+  });
 
   await t.test("should allow overriding `sdkStack` (valid)", async () => {
     let calls = 0;
@@ -207,39 +206,33 @@ test("createClient", async (t) => {
     assert.equal(calls, 1);
   });
 
-  await t.test(
-    "should allow overriding `sdkStack` (invalid, UNSPECIFIED)",
-    async () => {
-      let calls = 0;
+  await t.test("should allow overriding `sdkStack` (invalid, UNSPECIFIED)", async () => {
+    let calls = 0;
 
-      const client = createClient({
-        ...exampleClientOptions,
-        transport: createRouterTransport(({ service }) => {
-          service(DecideService, {
-            decide(decideRequest) {
-              assert.equal(calls, 0);
-              calls++;
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide(decideRequest) {
+            assert.equal(calls, 0);
+            calls++;
 
-              assert.equal(
-                decideRequest.sdkStack,
-                SDKStack.SDK_STACK_UNSPECIFIED,
-              );
+            assert.equal(decideRequest.sdkStack, SDKStack.SDK_STACK_UNSPECIFIED);
 
-              return create(DecideResponseSchema, {
-                decision: { conclusion: Conclusion.ALLOW },
-              });
-            },
-          });
-        }),
-        // @ts-expect-error
-        sdkStack: "SOMETHING_INVALID",
-      });
+            return create(DecideResponseSchema, {
+              decision: { conclusion: Conclusion.ALLOW },
+            });
+          },
+        });
+      }),
+      // @ts-expect-error
+      sdkStack: "SOMETHING_INVALID",
+    });
 
-      await client.decide(exampleContext, exampleDetails, []);
+    await client.decide(exampleContext, exampleDetails, []);
 
-      assert.equal(calls, 1);
-    },
-  );
+    assert.equal(calls, 1);
+  });
 
   await t.test(
     "should send `correlationId` in the decide request",
@@ -496,6 +489,7 @@ test("createClient", async (t) => {
             assert.equal(calls, 0);
             calls++;
 
+            // oxlint-disable-next-line promise/always-return
             promise.then(() => {
               assert.equal(calls, 1);
               calls++;
@@ -531,10 +525,7 @@ test("createClient", async (t) => {
                 calls++;
 
                 assert.ok(typeof reportRequest.decision === "object");
-                assert.equal(
-                  reportRequest.decision.conclusion,
-                  Conclusion.ALLOW,
-                );
+                assert.equal(reportRequest.decision.conclusion, Conclusion.ALLOW);
                 setTimeout(resolve);
               } catch (error) {
                 reject(error);
@@ -575,10 +566,7 @@ test("createClient", async (t) => {
                 calls++;
 
                 assert.ok(typeof reportRequest.decision === "object");
-                assert.equal(
-                  reportRequest.decision.conclusion,
-                  Conclusion.DENY,
-                );
+                assert.equal(reportRequest.decision.conclusion, Conclusion.DENY);
 
                 setTimeout(resolve);
               } catch (error) {
@@ -620,10 +608,7 @@ test("createClient", async (t) => {
                 calls++;
 
                 assert.ok(typeof reportRequest.decision === "object");
-                assert.equal(
-                  reportRequest.decision.conclusion,
-                  Conclusion.ERROR,
-                );
+                assert.equal(reportRequest.decision.conclusion, Conclusion.ERROR);
 
                 setTimeout(resolve);
               } catch (error) {
@@ -665,10 +650,7 @@ test("createClient", async (t) => {
                 calls++;
 
                 assert.ok(typeof reportRequest.decision === "object");
-                assert.equal(
-                  reportRequest.decision.conclusion,
-                  Conclusion.CHALLENGE,
-                );
+                assert.equal(reportRequest.decision.conclusion, Conclusion.CHALLENGE);
 
                 setTimeout(resolve);
               } catch (error) {
@@ -696,49 +678,38 @@ test("createClient", async (t) => {
     });
   });
 
-  await t.test(
-    "should support a report w/ an unspecified decision",
-    async () => {
-      return new Promise((resolve, reject) => {
-        let calls = 0;
+  await t.test("should support a report w/ an unspecified decision", async () => {
+    return new Promise((resolve, reject) => {
+      let calls = 0;
 
-        const client = createClient({
-          ...exampleClientOptions,
-          transport: createRouterTransport(({ service }) => {
-            service(DecideService, {
-              report(reportRequest) {
-                try {
-                  assert.equal(calls, 0);
-                  calls++;
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            report(reportRequest) {
+              try {
+                assert.equal(calls, 0);
+                calls++;
 
-                  assert.ok(typeof reportRequest.decision === "object");
-                  assert.equal(
-                    reportRequest.decision.conclusion,
-                    Conclusion.UNSPECIFIED,
-                  );
+                assert.ok(typeof reportRequest.decision === "object");
+                assert.equal(reportRequest.decision.conclusion, Conclusion.UNSPECIFIED);
 
-                  setTimeout(resolve);
-                } catch (error) {
-                  reject(error);
-                }
+                setTimeout(resolve);
+              } catch (error) {
+                reject(error);
+              }
 
-                return create(ReportResponseSchema);
-              },
-            });
-          }),
-        });
-
-        client.report(
-          exampleContext,
-          exampleDetails,
-          new ArcjetInvalidDecision(),
-          [],
-        );
-
-        assert.equal(calls, 0);
+              return create(ReportResponseSchema);
+            },
+          });
+        }),
       });
-    },
-  );
+
+      client.report(exampleContext, exampleDetails, new ArcjetInvalidDecision(), []);
+
+      assert.equal(calls, 0);
+    });
+  });
 
   await t.test("should support a report w/ a rule", async () => {
     return new Promise((resolve, reject) => {
@@ -755,10 +726,7 @@ test("createClient", async (t) => {
 
                 assert.deepEqual(reportRequest.rules, [create(RuleSchema)]);
                 assert.ok(typeof reportRequest.decision === "object");
-                assert.equal(
-                  reportRequest.decision.conclusion,
-                  Conclusion.DENY,
-                );
+                assert.equal(reportRequest.decision.conclusion, Conclusion.DENY);
 
                 setTimeout(resolve);
               } catch (error) {
@@ -799,58 +767,55 @@ test("createClient", async (t) => {
     });
   });
 
-  await t.test(
-    "should call `info` on a problem reporting, not `error`, `warn`",
-    async () => {
-      return new Promise((resolve) => {
-        let calls = 0;
+  await t.test("should call `info` on a problem reporting, not `error`, `warn`", async () => {
+    return new Promise((resolve) => {
+      let calls = 0;
 
-        const client = createClient({
-          ...exampleClientOptions,
-          transport: createRouterTransport(({ service }) => {
-            service(DecideService, {
-              report() {
-                throw new Error("Boom");
-              },
-            });
-          }),
-        });
+      const client = createClient({
+        ...exampleClientOptions,
+        transport: createRouterTransport(({ service }) => {
+          service(DecideService, {
+            report() {
+              throw new Error("Boom");
+            },
+          });
+        }),
+      });
 
-        client.report(
-          {
-            ...exampleContext,
-            log: {
-              ...exampleLogger,
-              error() {
-                assert.fail();
-              },
-              info(...parameters) {
-                assert.equal(calls, 0);
-                assert.deepEqual(parameters, [
-                  "Encountered problem sending report: %s",
-                  "[internal] internal error",
-                ]);
-                calls++;
-                resolve(undefined);
-              },
-              warn() {
-                assert.fail();
-              },
+      client.report(
+        {
+          ...exampleContext,
+          log: {
+            ...exampleLogger,
+            error() {
+              assert.fail();
+            },
+            info(...parameters) {
+              assert.equal(calls, 0);
+              assert.deepEqual(parameters, [
+                "Encountered problem sending report: %s",
+                "[internal] internal error",
+              ]);
+              calls++;
+              resolve(undefined);
+            },
+            warn() {
+              assert.fail();
             },
           },
-          exampleDetails,
-          new ArcjetAllowDecision({
-            reason: new ArcjetReason(),
-            results: [],
-            ttl: 0,
-          }),
-          [],
-        );
+        },
+        exampleDetails,
+        new ArcjetAllowDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        }),
+        [],
+      );
 
-        assert.equal(calls, 0);
-      });
-    },
-  );
+      assert.equal(calls, 0);
+    });
+  });
 
   await t.test("should decide with top-level `characteristics`", async () => {
     let calls = 0;
@@ -873,11 +838,7 @@ test("createClient", async (t) => {
       }),
     });
 
-    await client.decide(
-      { ...exampleContext, characteristics: ["ip.src"] },
-      exampleDetails,
-      [],
-    );
+    await client.decide({ ...exampleContext, characteristics: ["ip.src"] }, exampleDetails, []);
 
     assert.equal(calls, 1);
   });
@@ -949,73 +910,39 @@ test("decideTimeout", async (t) => {
     assert.equal(decideTimeout(500, []), 500);
   });
 
-  await t.test(
-    "should return the timeout as-is with unrelated rules",
-    () => {
-      assert.equal(
-        decideTimeout(500, [{ ...baseRule, type: "RATE_LIMIT" }]),
-        500,
-      );
-    },
-  );
+  await t.test("should return the timeout as-is with unrelated rules", () => {
+    assert.equal(decideTimeout(500, [{ ...baseRule, type: "RATE_LIMIT" }]), 500);
+  });
 
-  await t.test(
-    "should double the timeout if there is an email rule",
-    () => {
-      assert.equal(
-        decideTimeout(500, [{ ...baseRule, type: "EMAIL" }]),
-        1000,
-      );
-    },
-  );
+  await t.test("should double the timeout if there is an email rule", () => {
+    assert.equal(decideTimeout(500, [{ ...baseRule, type: "EMAIL" }]), 1000);
+  });
 
-  await t.test(
-    "should enforce a minimum of 1s if there is a prompt injection rule",
-    () => {
-      assert.equal(
-        decideTimeout(500, [
-          { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
-        ]),
-        1000,
-      );
-    },
-  );
+  await t.test("should enforce a minimum of 1s if there is a prompt injection rule", () => {
+    assert.equal(decideTimeout(500, [{ ...baseRule, type: "PROMPT_INJECTION_DETECTION" }]), 1000);
+  });
 
-  await t.test(
-    "should not change timeout for prompt injection rule if already above 1s",
-    () => {
-      assert.equal(
-        decideTimeout(2000, [
-          { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
-        ]),
-        2000,
-      );
-    },
-  );
+  await t.test("should not change timeout for prompt injection rule if already above 1s", () => {
+    assert.equal(decideTimeout(2000, [{ ...baseRule, type: "PROMPT_INJECTION_DETECTION" }]), 2000);
+  });
 
-  await t.test(
-    "should double the timeout with email and prompt injection rules",
-    () => {
-      assert.equal(
-        decideTimeout(500, [
-          { ...baseRule, type: "EMAIL" },
-          { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
-        ]),
-        1000,
-      );
-    },
-  );
+  await t.test("should double the timeout with email and prompt injection rules", () => {
+    assert.equal(
+      decideTimeout(500, [
+        { ...baseRule, type: "EMAIL" },
+        { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
+      ]),
+      1000,
+    );
+  });
 
-  await t.test(
-    "should double the timeout with email rule when doubled exceeds 1s minimum",
-    () => {
-      assert.equal(
-        decideTimeout(750, [
-          { ...baseRule, type: "EMAIL" },
-          { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
-        ]),
-        1500,
-      );
-    },
-  );
+  await t.test("should double the timeout with email rule when doubled exceeds 1s minimum", () => {
+    assert.equal(
+      decideTimeout(750, [
+        { ...baseRule, type: "EMAIL" },
+        { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
+      ]),
+      1500,
+    );
+  });
 });

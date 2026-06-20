@@ -1,7 +1,8 @@
 // NestJS requires this. Usually it is imported via their runtime but we
 // import it to be sure.
+// oxlint-disable-next-line import/no-unassigned-import
 import "reflect-metadata";
-
+import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -14,16 +15,15 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
-import { ArcjetHeaders } from "@arcjet/headers";
+import { readBody } from "@arcjet/body";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
+import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
-import { readBody } from "@arcjet/body";
 import { Inject, SetMetadata } from "@nestjs/common";
 import type {
   CanActivate,
@@ -138,10 +138,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   });
 }
 
-type EventHandlerLike = (
-  event: string,
-  listener: (...args: any[]) => void,
-) => void;
+type EventHandlerLike = (event: string, listener: (...args: any[]) => void) => void;
 
 /**
  * Nest request.
@@ -323,14 +320,10 @@ function arcjet<
         level: logLevel(process.env),
       });
 
-  const proxies = Array.isArray(options.proxies)
-    ? parseProxies(options.proxies)
-    : undefined;
+  const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
 
   if (isDevelopment(process.env)) {
-    log.warn(
-      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
-    );
+    log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
   }
 
   function toArcjetRequest<Props extends PlainObject>(
@@ -343,9 +336,7 @@ function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    const xArcjetIp = isDevelopment(process.env)
-      ? headers.get("x-arcjet-ip")
-      : undefined;
+    const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
     let ip =
       xArcjetIp ||
       findIp(
@@ -400,11 +391,7 @@ function arcjet<
     }
 
     // Do some very simple validation, but also try/catch around URL parsing
-    if (
-      typeof request.url !== "undefined" &&
-      request.url !== "" &&
-      host !== ""
-    ) {
+    if (typeof request.url !== "undefined" && request.url !== "" && host !== "") {
       try {
         const url = new URL(request.url, `${protocol}//${host}`);
         path = url.pathname;
@@ -561,10 +548,7 @@ let ArcjetGuard = class ArcjetGuard implements CanActivate {
     let aj = this.aj;
 
     // If rules have been added with the decorator, augment the client
-    const rules = getAllAndMerge(ARCJET_WITH_RULES, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const rules = getAllAndMerge(ARCJET_WITH_RULES, [context.getHandler(), context.getClass()]);
     if (Array.isArray(rules)) {
       aj = rules.reduce((aj, rule) => aj.withRule(rule), aj);
     }
@@ -593,6 +577,7 @@ export { ArcjetGuard };
  *
  * See: <https://docs.nestjs.com/modules>.
  */
+// oxlint-disable-next-line typescript/no-extraneous-class
 export class ArcjetModule {
   /**
    * Create a Nest module for the Arcjet Nest integration.
@@ -658,9 +643,7 @@ export class ArcjetModule {
     const Rules extends (Primitive | Product)[],
     const Characteristics extends readonly string[],
   >(
-    options: ConfigurableModuleAsyncOptions<
-      ArcjetOptions<Rules, Characteristics>
-    > & {
+    options: ConfigurableModuleAsyncOptions<ArcjetOptions<Rules, Characteristics>> & {
       /**
        * Whether to make the module global-scoped (`boolean`, default: `false`).
        *
@@ -712,10 +695,7 @@ export class ArcjetModule {
     if (options.useExisting || options.useFactory) {
       if (options.inject && options.provideInjectionTokensFrom) {
         providers.push(
-          ...getInjectionProviders(
-            options.provideInjectionTokensFrom,
-            options.inject,
-          ),
+          ...getInjectionProviders(options.provideInjectionTokensFrom, options.inject),
         );
       }
     }
@@ -760,10 +740,7 @@ function decorate(decorators: any[], target: any, key?: any, desc?: any): any {
 
 // Creates a decorator for a constructor parameter. Pulled out of `tslib` to
 // avoid build failures.
-function param(
-  paramIndex: number,
-  decorator: (target: any, key: any, paramIndex: number) => void,
-) {
+function param(paramIndex: number, decorator: (target: any, key: any, paramIndex: number) => void) {
   return function (target: any, key: any) {
     decorator(target, key, paramIndex);
   };

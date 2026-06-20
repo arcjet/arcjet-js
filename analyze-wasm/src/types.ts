@@ -38,8 +38,7 @@ export type BotResult = GeneratedBotResult;
  *   Array of `undefined` for tokens that are not sensitive or a `string` used as
  *   a label for sensitive info.
  */
-export type DetectSensitiveInfoFunction =
-  typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
+export type DetectSensitiveInfoFunction = typeof ArcjetJsReqSensitiveInformationIdentifier.detect;
 
 /**
  * Span of sensitive info,
@@ -95,4 +94,5 @@ export type SensitiveInfoEntity = GeneratedSensitiveInfoEntity;
 export type SensitiveInfoResult = GeneratedSensitiveInfoResult;
 
 // Mark file as module.
+// oxlint-disable-next-line typescript/no-useless-empty-export, unicorn/require-module-specifiers
 export {};

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
+
 import { sprintf } from "../dist/index.js";
 
 function makeDigitSuite(sequence: string) {
@@ -35,6 +36,7 @@ function makeObjectSuite(sequence: string) {
   });
 
   test(`replaces ${sequence} with function name`, () => {
+    // oxlint-disable-next-line unicorn/consistent-function-scoping
     function foobar() {}
     assert.equal(sprintf(`${sequence}`, foobar), `foobar`);
   });
@@ -63,10 +65,7 @@ function makeObjectSuite(sequence: string) {
   });
 
   test(`does not replace ${sequence} if replacement is undefined`, () => {
-    assert.equal(
-      sprintf(`%s ${sequence}`, "missing:", undefined),
-      `missing: ${sequence}`,
-    );
+    assert.equal(sprintf(`%s ${sequence}`, "missing:", undefined), `missing: ${sequence}`);
   });
 }
 

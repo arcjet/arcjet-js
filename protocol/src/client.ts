@@ -1,14 +1,6 @@
 import { create } from "@bufbuild/protobuf";
-import {
-  type Transport,
-  createClient as createConnectRpcClient,
-} from "@connectrpc/connect";
-import {
-  type Rule,
-  DecideService,
-  DecideRequestSchema,
-  ReportRequestSchema,
-} from "./proto/decide/v1alpha1/decide_pb.js";
+import { type Transport, createClient as createConnectRpcClient } from "@connectrpc/connect";
+
 import {
   ArcjetDecisionFromProtocol,
   ArcjetDecisionToProtocol,
@@ -22,6 +14,12 @@ import {
   type ArcjetStack,
   ArcjetDecision,
 } from "./index.js";
+import {
+  type Rule,
+  DecideService,
+  DecideRequestSchema,
+  ReportRequestSchema,
+} from "./proto/decide/v1alpha1/decide_pb.js";
 
 // TODO: Dedupe with `errorMessage` in core
 function errorMessage(err: unknown): string {
@@ -30,11 +28,7 @@ function errorMessage(err: unknown): string {
       return err;
     }
 
-    if (
-      typeof err === "object" &&
-      "message" in err &&
-      typeof err.message === "string"
-    ) {
+    if (typeof err === "object" && "message" in err && typeof err.message === "string") {
       return err.message;
     }
   }
@@ -221,6 +215,7 @@ export function createClient(options: ClientOptions): Client {
           // if an email rule is configured.
           timeoutMs: 2_000, // 2 seconds
         })
+        // oxlint-disable-next-line promise/always-return
         .then((response) => {
           log.debug(
             {
