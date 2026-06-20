@@ -55,6 +55,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
     "test": "npm run build"
   },
   "dependencies": {
@@ -71,7 +72,7 @@
     "@arcjet/cache": "1.5.0",
     "@types/deno": "2.7.0",
     "tsdown": "0.22.3",
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "engines": {}
 }
