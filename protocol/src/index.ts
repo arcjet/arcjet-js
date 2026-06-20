@@ -216,7 +216,7 @@ export class ArcjetFilterReason extends ArcjetReason {
   /**
    * Expressions that matched.
    */
-  matchedExpressions;
+  matchedExpressions: ArcjetFilterReasonInit["matchedExpressions"];
 
   /**
    * Kind.
@@ -226,7 +226,7 @@ export class ArcjetFilterReason extends ArcjetReason {
   /**
    * Expression that could not be matched.
    */
-  undeterminedExpressions;
+  undeterminedExpressions: ArcjetFilterReasonInit["undeterminedExpressions"];
 
   /**
    * Create a filter reason.
@@ -761,7 +761,7 @@ export class ArcjetRuleResult {
    * @returns
    *   Whether the rule result is denied.
    */
-  isDenied() {
+  isDenied(): boolean {
     return this.conclusion === "DENY";
   }
 }
