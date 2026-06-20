@@ -39,10 +39,7 @@ const tunnelSockets = new WeakMap<net.Server, Set<net.Socket>>();
  * *session*). We track sessions per server via {@linkcode trackHttp2Sessions}
  * and destroy them in {@linkcode close} to release the client connection.
  */
-const http2Sessions = new WeakMap<
-  net.Server,
-  Set<http2.ServerHttp2Session>
->();
+const http2Sessions = new WeakMap<net.Server, Set<http2.ServerHttp2Session>>();
 
 /**
  * Track the HTTP/2 sessions a server accepts so {@linkcode close} can destroy
@@ -54,9 +51,9 @@ const http2Sessions = new WeakMap<
  * @returns
  *   The same server, for chaining with `http2.createServer(...)`.
  */
-export function trackHttp2Sessions<
-  T extends http2.Http2Server | http2.Http2SecureServer,
->(server: T): T {
+export function trackHttp2Sessions<T extends http2.Http2Server | http2.Http2SecureServer>(
+  server: T,
+): T {
   const sessions = new Set<http2.ServerHttp2Session>();
   server.on("session", (session) => {
     sessions.add(session);
@@ -150,10 +147,7 @@ export async function close(server: net.Server): Promise<void> {
  * @returns
  *   Proxy server.
  */
-export function createProxy(
-  expectedOrigin: string,
-  onRequest: () => void,
-): http.Server {
+export function createProxy(expectedOrigin: string, onRequest: () => void): http.Server {
   return http.createServer((incoming, outgoing) => {
     onRequest();
 
@@ -164,10 +158,7 @@ export function createProxy(
     // Build the forwarded URL from the trusted `expectedOrigin` rather than the
     // incoming request, so the request target's host can't be influenced by the
     // (asserted, but still externally provided) request URL.
-    const target = new URL(
-      requested.pathname + requested.search,
-      expectedOrigin,
-    );
+    const target = new URL(requested.pathname + requested.search, expectedOrigin);
 
     const forwarded = http.request(
       target,

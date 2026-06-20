@@ -3406,10 +3406,7 @@ export default function arcjet<
       query: request.query,
       extra: extraProps(request),
       email: typeof request.email === "string" ? request.email : undefined,
-      correlationId:
-        typeof request.correlationId === "string"
-          ? request.correlationId
-          : undefined,
+      correlationId: typeof request.correlationId === "string" ? request.correlationId : undefined,
     });
 
     // Copy of the request details for remote use, which redacts sensitive fields.

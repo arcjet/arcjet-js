@@ -17,20 +17,14 @@
 // * <https://github.com/connectrpc/connect-es/issues/577#issuecomment-2210103503>
 import type { Transport } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
+
 import { detectProxy } from "./detect-proxy.js";
 
-export type {
-  ProxyEnvironment,
-  TransportLogger,
-  TransportOptions,
-} from "./detect-proxy.js";
+export type { ProxyEnvironment, TransportLogger, TransportOptions } from "./detect-proxy.js";
 
 import type { TransportOptions } from "./detect-proxy.js";
 
-export function createTransport(
-  baseUrl: string,
-  options?: TransportOptions,
-): Transport {
+export function createTransport(baseUrl: string, options?: TransportOptions): Transport {
   // Deno's `fetch` performs the proxying itself; we detect to log a line.
   detectProxy(new URL(baseUrl), options);
 

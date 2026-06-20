@@ -5,52 +5,31 @@
   "keywords": [
     "arcjet",
     "ip",
-    "utility",
-    "util"
+    "util",
+    "utility"
   ],
-  "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "ip"
-  },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
     "email": "support@arcjet.com"
   },
+  "license": "Apache-2.0",
   "author": {
     "name": "Arcjet",
     "email": "support@arcjet.com",
     "url": "https://arcjet.com"
   },
-  "engines": {
-    "node": ">=22.21.0 <23 || >=24.5.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "ip"
   },
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "tsdown",
-    "generate": "npm run build && node scripts/verify-ranges.ts --write",
-    "test-api": "node --test -- test/*.test.ts",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=100 --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=100 -- test/*.test.ts",
-    "test": "npm run build && npm run test-coverage",
-    "verify-ranges": "npm run build && node scripts/verify-ranges.ts"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "22.19.21",
-    "tsdown": "0.22.3",
-    "typescript": "5.9.3"
-  },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
-  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -65,5 +44,26 @@
       "default": "./dist/cloudflare.js"
     },
     "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "generate": "npm run build && node scripts/verify-ranges.ts --write",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=100 --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=100 -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage",
+    "verify-ranges": "npm run build && node scripts/verify-ranges.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "22.19.21",
+    "tsdown": "0.22.3",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
   }
 }

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
+
 import { MemoryCache } from "@arcjet/cache";
+
 import arcjet, {
   type ArcjetCacheEntry,
   ArcjetAllowDecision,
@@ -10,9 +12,7 @@ import arcjet, {
 } from "../dist/index.js";
 
 class TestCache {
-  get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(
-    async () => [undefined, 0],
-  );
+  get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(async () => [undefined, 0]);
   set = mock.fn();
 }
 
@@ -190,9 +190,7 @@ describe("Primitive > sensitiveInfo", () => {
       characteristics: [],
       cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () =>
-        Promise.resolve(
-          "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
-        ),
+        Promise.resolve("127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567"),
     };
     const details = {
       ip: "172.100.1.1",
@@ -284,9 +282,7 @@ describe("Primitive > sensitiveInfo", () => {
       characteristics: [],
       cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () =>
-        Promise.resolve(
-          "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
-        ),
+        Promise.resolve("127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567"),
     };
     const details = {
       ip: "172.100.1.1",
@@ -343,9 +339,7 @@ describe("Primitive > sensitiveInfo", () => {
       characteristics: [],
       cache: new MemoryCache<ArcjetCacheEntry>(),
       getBody: () =>
-        Promise.resolve(
-          "127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567",
-        ),
+        Promise.resolve("127.0.0.1 test@example.com 4242424242424242 +353 87 123 4567"),
     };
     const details = {
       ip: "172.100.1.1",
@@ -448,8 +442,7 @@ describe("Primitive > sensitiveInfo", () => {
       log: createMockLogger(),
       characteristics: [],
       cache: new MemoryCache<ArcjetCacheEntry>(),
-      getBody: () =>
-        Promise.resolve("127.0.0.1 test@example.com +353 87 123 4567"),
+      getBody: () => Promise.resolve("127.0.0.1 test@example.com +353 87 123 4567"),
     };
     const details = {
       ip: "172.100.1.1",

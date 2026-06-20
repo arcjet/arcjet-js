@@ -11,25 +11,25 @@
     "verify",
     "wasm"
   ],
-  "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "analyze-wasm"
-  },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
     "email": "support@arcjet.com"
   },
+  "license": "Apache-2.0",
   "author": {
     "name": "Arcjet",
     "email": "support@arcjet.com",
     "url": "https://arcjet.com"
   },
-  "engines": {
-    "node": ">=22.21.0 <23 || >=24.5.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "analyze-wasm"
   },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -50,9 +50,10 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist"
-  ],
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "scripts": {
     "build:jco": "jco transpile --instantiation async --no-wasi-shim --out-dir src/wasm/ -- src/wasm/arcjet_analyze_js_req.component.wasm",
     "build": "npm run build:jco && tsdown",
@@ -67,8 +68,7 @@
     "tsdown": "0.22.3",
     "typescript": "5.9.3"
   },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
   }
 }

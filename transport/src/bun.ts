@@ -7,20 +7,14 @@
 // only need to detect and log when a proxy is in use.
 import type { Transport } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
+
 import { detectProxy } from "./detect-proxy.js";
 
-export type {
-  ProxyEnvironment,
-  TransportLogger,
-  TransportOptions,
-} from "./detect-proxy.js";
+export type { ProxyEnvironment, TransportLogger, TransportOptions } from "./detect-proxy.js";
 
 import type { TransportOptions } from "./detect-proxy.js";
 
-export function createTransport(
-  baseUrl: string,
-  options?: TransportOptions,
-): Transport {
+export function createTransport(baseUrl: string, options?: TransportOptions): Transport {
   // Bun's `fetch` performs the proxying itself; we detect to log a line.
   detectProxy(new URL(baseUrl), options);
 

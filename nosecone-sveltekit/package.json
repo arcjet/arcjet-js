@@ -5,7 +5,6 @@
   "keywords": [
     "arcjet",
     "coep",
-    "coep",
     "content-security-policy",
     "coop",
     "corp",
@@ -17,34 +16,42 @@
     "http",
     "nosecone",
     "protect",
-    "sveltekit",
-    "svelte"
+    "svelte",
+    "sveltekit"
   ],
-  "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "nosecone-sveltekit"
-  },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
     "email": "support@arcjet.com"
   },
+  "license": "Apache-2.0",
   "author": {
     "name": "Arcjet",
     "email": "support@arcjet.com",
     "url": "https://arcjet.com"
   },
-  "engines": {
-    "node": ">=22.21.0 <23 || >=24.5.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "nosecone-sveltekit"
   },
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "scripts": {
     "build": "tsdown",
     "test-api": "node --test -- test/*.test.ts",
@@ -53,9 +60,6 @@
   },
   "dependencies": {
     "nosecone": "1.6.1"
-  },
-  "peerDependencies": {
-    "@sveltejs/kit": ">=2"
   },
   "devDependencies": {
     "@sveltejs/kit": "2.66.0",
@@ -66,15 +70,10 @@
     "typescript": "5.9.3",
     "vite": "8.0.16"
   },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+  "peerDependencies": {
+    "@sveltejs/kit": ">=2"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./package.json": "./package.json"
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
   }
 }

@@ -2,12 +2,11 @@
 //
 /// <reference types="./wasm.js" />
 
-import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
-import type { ImportObject } from "./wasm/arcjet_analyze_js_req.component.js";
-
 import { wasm as componentCoreWasm } from "./wasm/arcjet_analyze_js_req.component.core.wasm?js";
 import { wasm as componentCore2Wasm } from "./wasm/arcjet_analyze_js_req.component.core2.wasm?js";
 import { wasm as componentCore3Wasm } from "./wasm/arcjet_analyze_js_req.component.core3.wasm?js";
+import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
+import type { ImportObject } from "./wasm/arcjet_analyze_js_req.component.js";
 
 const componentCoreWasmPromise = componentCoreWasm();
 const componentCore2WasmPromise = componentCore2Wasm();

@@ -49,10 +49,7 @@ export function runtime(): Runtime {
   // implement compatibility layers, but we want to detect them accurately.
 
   // https://developers.cloudflare.com/workers/configuration/compatibility-dates/#global-navigator
-  if (
-    typeof navigator !== "undefined" &&
-    navigator.userAgent === "Cloudflare-Workers"
-  ) {
+  if (typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers") {
     return "workerd";
   }
 

@@ -15,11 +15,7 @@
 import type { Transport } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 
-export type {
-  ProxyEnvironment,
-  TransportLogger,
-  TransportOptions,
-} from "./detect-proxy.js";
+export type { ProxyEnvironment, TransportLogger, TransportOptions } from "./detect-proxy.js";
 
 import type { TransportOptions } from "./detect-proxy.js";
 

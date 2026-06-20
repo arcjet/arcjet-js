@@ -1,12 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
+
 import { parse } from "../dist/index.js";
 
 test("@arcjet/duration", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
-      "parse",
-    ]);
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), ["parse"]);
   });
 });
 

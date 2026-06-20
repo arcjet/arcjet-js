@@ -55,32 +55,20 @@ export type Platform = "firebase" | "fly-io" | "render" | "vercel";
  *   Name of platform if found.
  */
 export function platform(environment: Env): Platform | undefined {
-  if (
-    typeof environment["FIREBASE_CONFIG"] === "string" &&
-    environment["FIREBASE_CONFIG"] !== ""
-  ) {
+  if (typeof environment["FIREBASE_CONFIG"] === "string" && environment["FIREBASE_CONFIG"] !== "") {
     return "firebase";
   }
 
-  if (
-    typeof environment["FLY_APP_NAME"] === "string" &&
-    environment["FLY_APP_NAME"] !== ""
-  ) {
+  if (typeof environment["FLY_APP_NAME"] === "string" && environment["FLY_APP_NAME"] !== "") {
     return "fly-io";
   }
 
-  if (
-    typeof environment["VERCEL"] === "string" &&
-    environment["VERCEL"] === "1"
-  ) {
+  if (typeof environment["VERCEL"] === "string" && environment["VERCEL"] === "1") {
     return "vercel";
   }
 
   // https://render.com/docs/environment-variables
-  if (
-    typeof environment["RENDER"] === "string" &&
-    environment["RENDER"] === "true"
-  ) {
+  if (typeof environment["RENDER"] === "string" && environment["RENDER"] === "true") {
     return "render";
   }
 }

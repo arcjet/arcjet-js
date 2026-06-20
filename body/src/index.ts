@@ -16,10 +16,7 @@ export type ReadBodyOpts = {
   limit?: number | null | undefined;
 };
 
-type EventHandlerLike = (
-  event: string,
-  listener: (...args: any[]) => void,
-) => void;
+type EventHandlerLike = (event: string, listener: (...args: any[]) => void) => void;
 
 /**
  * Minimal Node.js stream interface.
@@ -50,41 +47,28 @@ export async function readBodyWeb(
 
   if (typeof limit !== "number" || limit < 0 || Number.isNaN(limit)) {
     return Promise.reject(
-      new Error(
-        "Unexpected value `" +
-          limit +
-          "` for `options.limit`, expected positive number",
-      ),
+      new Error("Unexpected value `" + limit + "` for `options.limit`, expected positive number"),
     );
   }
 
-  if (
-    length !== undefined &&
-    (typeof length !== "number" || length < 0 || Number.isNaN(length))
-  ) {
+  if (length !== undefined && (typeof length !== "number" || length < 0 || Number.isNaN(length))) {
     return Promise.reject(
       new Error(
-        "Unexpected value `" +
-          length +
-          "` for `options.expectedLength`, expected positive number",
+        "Unexpected value `" + length + "` for `options.expectedLength`, expected positive number",
       ),
     );
   }
 
   // If we already know the length and it exceeds the limit, abort early.
   if (length !== undefined && length > limit) {
-    return Promise.reject(
-      new Error("Cannot read stream whose expected length exceeds limit"),
-    );
+    return Promise.reject(new Error("Cannot read stream whose expected length exceeds limit"));
   }
 
   const controller = new AbortController();
 
   // Ensure that we do not wait forever if the stream is incorrectly configured.
   const timeout = setTimeout(function () {
-    controller.abort(
-      new Error("Cannot read stream, did not receive data in time limit"),
-    );
+    controller.abort(new Error("Cannot read stream, did not receive data in time limit"));
   }, 100);
 
   const decoder = new TextDecoder("utf-8");
@@ -117,9 +101,7 @@ export async function readBodyWeb(
   }
 
   if (length !== undefined && received !== length) {
-    throw new Error(
-      "Cannot read stream whose length does not match expected length",
-    );
+    throw new Error("Cannot read stream whose length does not match expected length");
   }
 
   // Need to call it one final time to flush any remaining chars.
@@ -181,34 +163,21 @@ export async function readBody(
 
   if (typeof limit !== "number" || limit < 0 || Number.isNaN(limit)) {
     return Promise.reject(
-      new Error(
-        "Unexpected value `" +
-          limit +
-          "` for `options.limit`, expected positive number",
-      ),
+      new Error("Unexpected value `" + limit + "` for `options.limit`, expected positive number"),
     );
   }
 
-  if (
-    length !== undefined &&
-    (typeof length !== "number" || length < 0 || Number.isNaN(length))
-  ) {
+  if (length !== undefined && (typeof length !== "number" || length < 0 || Number.isNaN(length))) {
     return Promise.reject(
       new Error(
-        "Unexpected value `" +
-          length +
-          "` for `options.expectedLength`, expected positive number",
+        "Unexpected value `" + length + "` for `options.expectedLength`, expected positive number",
       ),
     );
   }
 
   if (typeof stream.on !== "function") {
     return Promise.reject(
-      new Error(
-        "Unexpected value `" +
-          stream.on +
-          "` for `stream.on`, expected function",
-      ),
+      new Error("Unexpected value `" + stream.on + "` for `stream.on`, expected function"),
     );
   }
 
@@ -228,9 +197,7 @@ export async function readBody(
 
   // If we already know the length and it exceeds the limit, abort early.
   if (length !== undefined && length > limit) {
-    return Promise.reject(
-      new Error("Cannot read stream whose expected length exceeds limit"),
-    );
+    return Promise.reject(new Error("Cannot read stream whose expected length exceeds limit"));
   }
 
   return new Promise((resolve, reject) => {
@@ -244,10 +211,7 @@ export async function readBody(
       stream.on("error", onEnd);
     }
 
-    function done(
-      err?: Error | null | undefined,
-      buffer?: string | null | undefined,
-    ) {
+    function done(err?: Error | null | undefined, buffer?: string | null | undefined) {
       // Ensure we avoid double resolve/reject if called more than once
       if (complete) return;
 
@@ -281,11 +245,7 @@ export async function readBody(
       if (err) return done(err);
 
       if (length !== undefined && received !== length) {
-        done(
-          new Error(
-            "Cannot read stream whose length does not match expected length",
-          ),
-        );
+        done(new Error("Cannot read stream whose length does not match expected length"));
       } else {
         done(undefined, buffer);
       }
@@ -308,9 +268,7 @@ export async function readBody(
     // Ensure that we don't poll forever if the stream is incorrectly configured
     setTimeout(() => {
       if (received === 0) {
-        done(
-          new Error("Cannot read stream, did not receive data in time limit"),
-        );
+        done(new Error("Cannot read stream, did not receive data in time limit"));
       }
     }, 100);
   });

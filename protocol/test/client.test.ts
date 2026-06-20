@@ -234,75 +234,62 @@ test("createClient", async (t) => {
     assert.equal(calls, 1);
   });
 
-  await t.test(
-    "should send `correlationId` in the decide request",
-    async () => {
-      let seen: string | undefined;
+  await t.test("should send `correlationId` in the decide request", async () => {
+    let seen: string | undefined;
 
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide(decideRequest) {
+            seen = decideRequest.details?.correlationId;
+
+            return create(DecideResponseSchema, {
+              decision: { conclusion: Conclusion.ALLOW },
+            });
+          },
+        });
+      }),
+    });
+
+    await client.decide(exampleContext, { ...exampleDetails, correlationId: "wf_abcdef" }, []);
+
+    assert.equal(seen, "wf_abcdef");
+  });
+
+  await t.test("should send `correlationId` in the report request", async () => {
+    return new Promise((resolve, reject) => {
       const client = createClient({
         ...exampleClientOptions,
         transport: createRouterTransport(({ service }) => {
           service(DecideService, {
-            decide(decideRequest) {
-              seen = decideRequest.details?.correlationId;
+            report(reportRequest) {
+              try {
+                assert.equal(reportRequest.details?.correlationId, "wf_abcdef");
 
-              return create(DecideResponseSchema, {
-                decision: { conclusion: Conclusion.ALLOW },
-              });
+                setTimeout(resolve);
+              } catch (error) {
+                reject(error);
+              }
+
+              return create(ReportResponseSchema);
             },
           });
         }),
       });
 
-      await client.decide(
+      client.report(
         exampleContext,
         { ...exampleDetails, correlationId: "wf_abcdef" },
+        new ArcjetDenyDecision({
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 0,
+        }),
         [],
       );
-
-      assert.equal(seen, "wf_abcdef");
-    },
-  );
-
-  await t.test(
-    "should send `correlationId` in the report request",
-    async () => {
-      return new Promise((resolve, reject) => {
-        const client = createClient({
-          ...exampleClientOptions,
-          transport: createRouterTransport(({ service }) => {
-            service(DecideService, {
-              report(reportRequest) {
-                try {
-                  assert.equal(
-                    reportRequest.details?.correlationId,
-                    "wf_abcdef",
-                  );
-
-                  setTimeout(resolve);
-                } catch (error) {
-                  reject(error);
-                }
-
-                return create(ReportResponseSchema);
-              },
-            });
-          }),
-        });
-
-        client.report(
-          exampleContext,
-          { ...exampleDetails, correlationId: "wf_abcdef" },
-          new ArcjetDenyDecision({
-            reason: new ArcjetReason(),
-            results: [],
-            ttl: 0,
-          }),
-          [],
-        );
-      });
-    },
-  );
+    });
+  });
 
   await t.test("should support rules", async () => {
     let calls = 0;

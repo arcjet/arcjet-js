@@ -1,10 +1,5 @@
 import { readBody } from "@arcjet/body";
-import {
-  baseUrl as baseUrlFromEnvironment,
-  isDevelopment,
-  logLevel,
-  platform,
-} from "@arcjet/env";
+import { baseUrl as baseUrlFromEnvironment, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
@@ -127,10 +122,7 @@ interface ArcjetH3NodeRequest {
    *
    * See <https://nodejs.org/api/http.html#messagesocket>.
    */
-  socket?:
-    | Partial<{ remoteAddress: string; encrypted: boolean }>
-    | null
-    | undefined;
+  socket?: Partial<{ remoteAddress: string; encrypted: boolean }> | null | undefined;
 
   /**
    * URL.
@@ -162,10 +154,7 @@ export interface ArcjetNuxt<Properties extends Record<PropertyKey, unknown>> {
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
    *   Arcjet’s decision about the event.
    */
-  protect(
-    event: ArcjetH3Event,
-    ...props: MaybeProperties<Properties>
-  ): Promise<ArcjetDecision>;
+  protect(event: ArcjetH3Event, ...props: MaybeProperties<Properties>): Promise<ArcjetDecision>;
 
   /**
    * Augment the client with another rule.
@@ -294,9 +283,7 @@ export default function arcjet<
     );
   }
 
-  return withClient(
-    arcjetCore({ ...options, client: state.client, key, log: state.log }),
-  );
+  return withClient(arcjetCore({ ...options, client: state.client, key, log: state.log }));
 
   function withClient<Properties extends Record<PropertyKey, unknown>>(
     baseClient: Arcjet<Properties>,
@@ -376,9 +363,7 @@ function createGetBody(state: State, event: ArcjetH3Event) {
  * @returns
  *   Client.
  */
-export function createRemoteClient(
-  options?: RemoteClientOptions | null | undefined,
-): Client {
+export function createRemoteClient(options?: RemoteClientOptions | null | undefined): Client {
   const settings = options ?? {};
   const baseUrl = settings.baseUrl ?? baseUrlFromEnvironment(process.env);
 
@@ -409,9 +394,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   properties: Properties,
 ): ArcjetRequest<Properties> {
   const headers = new ArcjetHeaders(event.node.req.headers);
-  const xArcjetIp = isDevelopment(process.env)
-    ? headers.get("x-arcjet-ip")
-    : undefined;
+  const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
   let ip =
     xArcjetIp ||
     findIp(event.node.req, {
@@ -444,11 +427,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   }
 
   // Do some very simple validation, but also try/catch around URL parsing
-  if (
-    typeof event.node.req.url !== "undefined" &&
-    event.node.req.url !== "" &&
-    host !== ""
-  ) {
+  if (typeof event.node.req.url !== "undefined" && event.node.req.url !== "" && host !== "") {
     try {
       const url = new URL(event.node.req.url || "", protocol + "//" + host);
       path = url.pathname;

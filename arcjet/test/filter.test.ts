@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { MemoryCache } from "@arcjet/cache";
 import { ArcjetDenyDecision, ArcjetReason } from "@arcjet/protocol";
+
 import arcjet, {
   type ArcjetCacheEntry,
   type ArcjetContext,
@@ -29,17 +31,14 @@ test("filter", async function (t) {
     }, /`filter` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
-  await t.test(
-    "should fail if `allow` is an unsupported value",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `allow` value.
-          allow: 1,
-        });
-      }, /`filter` options error: invalid type for `allow` - expected an array/);
-    },
-  );
+  await t.test("should fail if `allow` is an unsupported value", async function () {
+    assert.throws(function () {
+      filter({
+        // @ts-expect-error: test runtime behavior of invalid `allow` value.
+        allow: 1,
+      });
+    }, /`filter` options error: invalid type for `allow` - expected an array/);
+  });
 
   await t.test("should fail w/ empty `allow`", async function () {
     assert.throws(function () {
@@ -56,17 +55,14 @@ test("filter", async function (t) {
     }, /invalid type for `allow\[0]` - expected string/);
   });
 
-  await t.test(
-    "should fail if `deny` is an unsupported value",
-    async function () {
-      assert.throws(function () {
-        filter({
-          // @ts-expect-error: test runtime behavior of invalid `deny` value.
-          deny: 1,
-        });
-      }, /`filter` options error: invalid type for `deny` - expected an array/);
-    },
-  );
+  await t.test("should fail if `deny` is an unsupported value", async function () {
+    assert.throws(function () {
+      filter({
+        // @ts-expect-error: test runtime behavior of invalid `deny` value.
+        deny: 1,
+      });
+    }, /`filter` options error: invalid type for `deny` - expected an array/);
+  });
 
   await t.test("should fail w/ empty `deny`", async function () {
     assert.throws(function () {
@@ -83,44 +79,35 @@ test("filter", async function (t) {
     }, /invalid type for `deny\[0]` - expected string/);
   });
 
-  await t.test(
-    "should fail if `allow` and `deny` are both empty",
-    async function () {
-      assert.throws(function () {
-        filter(
-          // @ts-expect-error: test runtime behavior of invalid combination of both fields.
-          { allow: [], deny: [] },
-        );
-      }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
-    },
-  );
+  await t.test("should fail if `allow` and `deny` are both empty", async function () {
+    assert.throws(function () {
+      filter(
+        // @ts-expect-error: test runtime behavior of invalid combination of both fields.
+        { allow: [], deny: [] },
+      );
+    }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
+  });
 
-  await t.test(
-    "should fail if `allow` and `deny` are both non-empty",
-    async function () {
-      assert.throws(function () {
-        filter(
-          // @ts-expect-error: test runtime behavior of invalid combination of both fields.
-          {
-            allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
-            deny: ['http.request.headers["user-agent"] ~ "Firefox"'],
-          },
-        );
-      }, /`filter` options error: expressions must be passed in either `allow` or `deny` instead of both/);
-    },
-  );
+  await t.test("should fail if `allow` and `deny` are both non-empty", async function () {
+    assert.throws(function () {
+      filter(
+        // @ts-expect-error: test runtime behavior of invalid combination of both fields.
+        {
+          allow: ['http.request.headers["user-agent"] ~ "Chrome"'],
+          deny: ['http.request.headers["user-agent"] ~ "Firefox"'],
+        },
+      );
+    }, /`filter` options error: expressions must be passed in either `allow` or `deny` instead of both/);
+  });
 
-  await t.test(
-    "should fail if neither `allow` nor `deny` are given",
-    async function () {
-      assert.throws(function () {
-        filter(
-          // @ts-expect-error: test runtime behavior of neither `allow` nor `deny`.
-          {},
-        );
-      }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
-    },
-  );
+  await t.test("should fail if neither `allow` nor `deny` are given", async function () {
+    assert.throws(function () {
+      filter(
+        // @ts-expect-error: test runtime behavior of neither `allow` nor `deny`.
+        {},
+      );
+    }, /`filter` options error: one or more expressions must be passed in `allow` or `deny`/);
+  });
 });
 
 test("filter: `validate`", async function (t) {
@@ -243,42 +230,39 @@ test("filter: `protect`", async function (t) {
     assert.equal(second.state, "RUN");
   });
 
-  await t.test(
-    "should cache (when passed in `rules` to `arcjet`)",
-    async function () {
-      const context = createContext();
-      const aj = arcjet({
-        client: {
-          async decide() {
-            return new ArcjetDenyDecision({
-              reason: new ArcjetReason(),
-              results: [],
-              ttl: 0,
-            });
-          },
-          report() {},
+  await t.test("should cache (when passed in `rules` to `arcjet`)", async function () {
+    const context = createContext();
+    const aj = arcjet({
+      client: {
+        async decide() {
+          return new ArcjetDenyDecision({
+            reason: new ArcjetReason(),
+            results: [],
+            ttl: 0,
+          });
         },
-        key: "",
-        log: { ...context.log, debug() {} },
-        rules: [
-          filter({
-            deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
-            mode: "LIVE",
-          }),
-        ],
-      });
+        report() {},
+      },
+      key: "",
+      log: { ...context.log, debug() {} },
+      rules: [
+        filter({
+          deny: ['http.request.headers["user-agent"] ~ "Chrome"'],
+          mode: "LIVE",
+        }),
+      ],
+    });
 
-      const first = await aj.protect(context, { ...createRequest() });
-      const firstResult = first.results[0];
-      assert.equal(firstResult.conclusion, "DENY");
-      assert.equal(firstResult.state, "RUN");
+    const first = await aj.protect(context, { ...createRequest() });
+    const firstResult = first.results[0];
+    assert.equal(firstResult.conclusion, "DENY");
+    assert.equal(firstResult.state, "RUN");
 
-      const second = await aj.protect(context, { ...createRequest() });
-      const secondResult = second.results[0];
-      assert.equal(secondResult.conclusion, "DENY");
-      assert.equal(secondResult.state, "CACHED");
-    },
-  );
+    const second = await aj.protect(context, { ...createRequest() });
+    const secondResult = second.results[0];
+    assert.equal(secondResult.conclusion, "DENY");
+    assert.equal(secondResult.state, "CACHED");
+  });
 });
 
 test("expressions", async function (t) {
@@ -308,9 +292,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'local["username"] eq "alice"',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['local["username"] eq "alice"']);
       });
     });
 
@@ -345,19 +327,16 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "DENY");
       });
 
-      await t.test(
-        "deny if absent cookie has len() eq 0 (deny rule)",
-        async function () {
-          const [rule] = filter({
-            deny: ['len(http.request.cookie["NEXT_LOCALE"]) eq 0'],
-          });
-          const result = await rule.protect(createContext(), {
-            ...createRequest(),
-            cookies: "",
-          });
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+      await t.test("deny if absent cookie has len() eq 0 (deny rule)", async function () {
+        const [rule] = filter({
+          deny: ['len(http.request.cookie["NEXT_LOCALE"]) eq 0'],
+        });
+        const result = await rule.protect(createContext(), {
+          ...createRequest(),
+          cookies: "",
+        });
+        assert.equal(result.conclusion, "DENY");
+      });
     });
 
     await t.test("`http.request.headers`", async function (t) {
@@ -377,20 +356,17 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "DENY");
       });
 
-      await t.test(
-        "deny if absent header has len() eq 0 (deny rule)",
-        async function () {
-          const [rule] = filter({
-            deny: ['len(http.request.headers["user-agent"]) eq 0'],
-          });
-          const { headers, ...requestWithoutUA } = createRequest();
-          const result = await rule.protect(createContext(), {
-            ...requestWithoutUA,
-            headers: new Headers(),
-          });
-          assert.equal(result.conclusion, "DENY");
-        },
-      );
+      await t.test("deny if absent header has len() eq 0 (deny rule)", async function () {
+        const [rule] = filter({
+          deny: ['len(http.request.headers["user-agent"]) eq 0'],
+        });
+        const { headers, ...requestWithoutUA } = createRequest();
+        const result = await rule.protect(createContext(), {
+          ...requestWithoutUA,
+          headers: new Headers(),
+        });
+        assert.equal(result.conclusion, "DENY");
+      });
     });
 
     await t.test("`http.request.method`", async function (t) {
@@ -464,9 +440,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.accuracy_radius == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.accuracy_radius == ""']);
       });
     });
 
@@ -477,9 +451,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.asnum.country == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.asnum.country == ""']);
       });
     });
 
@@ -490,9 +462,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.asnum.domain == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.asnum.domain == ""']);
       });
     });
 
@@ -503,9 +473,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.asnum.name == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.asnum.name == ""']);
       });
     });
 
@@ -516,9 +484,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.asnum.type == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.asnum.type == ""']);
       });
     });
 
@@ -529,9 +495,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.asnum == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.asnum == ""']);
       });
     });
 
@@ -542,9 +506,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.city == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.city == ""']);
       });
     });
 
@@ -555,9 +517,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.continent.name == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.continent.name == ""']);
       });
     });
 
@@ -568,9 +528,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.continent == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.continent == ""']);
       });
     });
 
@@ -581,9 +539,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.country.name == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.country.name == ""']);
       });
     });
 
@@ -594,9 +550,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.country == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.country == ""']);
       });
     });
 
@@ -607,9 +561,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.crawler.name == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.crawler.name == ""']);
       });
     });
 
@@ -620,9 +572,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          "ip.src.crawler",
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ["ip.src.crawler"]);
       });
     });
 
@@ -633,9 +583,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          "ip.src.hosting",
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ["ip.src.hosting"]);
       });
     });
 
@@ -646,9 +594,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.lat == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.lat == ""']);
       });
     });
 
@@ -659,9 +605,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.lon == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.lon == ""']);
       });
     });
 
@@ -672,9 +616,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          "ip.src.mobile",
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ["ip.src.mobile"]);
       });
     });
 
@@ -685,9 +627,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.postal_code == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.postal_code == ""']);
       });
     });
 
@@ -698,9 +638,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          "ip.src.proxy",
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ["ip.src.proxy"]);
       });
     });
 
@@ -711,9 +649,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.region == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.region == ""']);
       });
     });
 
@@ -724,9 +660,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          "ip.src.relay",
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ["ip.src.relay"]);
       });
     });
 
@@ -737,9 +671,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.service == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.service == ""']);
       });
     });
 
@@ -750,9 +682,7 @@ test("expressions", async function (t) {
         assert.equal(result.conclusion, "ALLOW");
         assert(result.reason.isFilter());
         assert.deepEqual(result.reason.matchedExpressions, []);
-        assert.deepEqual(result.reason.undeterminedExpressions, [
-          'ip.src.timezone.name == ""',
-        ]);
+        assert.deepEqual(result.reason.undeterminedExpressions, ['ip.src.timezone.name == ""']);
       });
     });
 
@@ -880,9 +810,7 @@ test("matrix", async function (t) {
     assert.equal(result.conclusion, "ALLOW");
     const reason = result.reason;
     assert(reason.isFilter());
-    assert.deepEqual(reason.matchedExpressions, [
-      'http.request.headers["user-agent"] ~ "Chrome"',
-    ]);
+    assert.deepEqual(reason.matchedExpressions, ['http.request.headers["user-agent"] ~ "Chrome"']);
     assert.deepEqual(reason.undeterminedExpressions, []);
   });
 
@@ -908,69 +836,53 @@ test("matrix", async function (t) {
     assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
   });
 
-  await t.test(
-    "allow list (regular field: match, optional field: unknown)",
-    async function () {
-      const [rule] = filter({
-        allow: ['http.request.headers["user-agent"] ~ "Chrome"', "ip.src.vpn"],
-      });
-      const result = await rule.protect(createContext(), createRequest());
-      assert.equal(result.conclusion, "ALLOW");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, [
-        'http.request.headers["user-agent"] ~ "Chrome"',
-      ]);
-      assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
-    },
-  );
+  await t.test("allow list (regular field: match, optional field: unknown)", async function () {
+    const [rule] = filter({
+      allow: ['http.request.headers["user-agent"] ~ "Chrome"', "ip.src.vpn"],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, ['http.request.headers["user-agent"] ~ "Chrome"']);
+    assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
+  });
 
-  await t.test(
-    "allow list (regular field: no match, optional field: unknown)",
-    async function () {
-      const [rule] = filter({
-        allow: ['http.request.headers["user-agent"] ~ "Firefox"', "ip.src.vpn"],
-      });
-      const result = await rule.protect(createContext(), createRequest());
-      assert.equal(result.conclusion, "ALLOW");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, []);
-      assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
-    },
-  );
+  await t.test("allow list (regular field: no match, optional field: unknown)", async function () {
+    const [rule] = filter({
+      allow: ['http.request.headers["user-agent"] ~ "Firefox"', "ip.src.vpn"],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, []);
+    assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
+  });
 
-  await t.test(
-    "allow list (optional field: unknown, regular field: match)",
-    async function () {
-      const [rule] = filter({
-        allow: ["ip.src.vpn", 'http.request.headers["user-agent"] ~ "Chrome"'],
-      });
-      const result = await rule.protect(createContext(), createRequest());
-      assert.equal(result.conclusion, "ALLOW");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, [
-        'http.request.headers["user-agent"] ~ "Chrome"',
-      ]);
-      assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
-    },
-  );
+  await t.test("allow list (optional field: unknown, regular field: match)", async function () {
+    const [rule] = filter({
+      allow: ["ip.src.vpn", 'http.request.headers["user-agent"] ~ "Chrome"'],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, ['http.request.headers["user-agent"] ~ "Chrome"']);
+    assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
+  });
 
-  await t.test(
-    "allow list (optional field: unknown, regular field: no match)",
-    async function () {
-      const [rule] = filter({
-        allow: ["ip.src.vpn", 'http.request.headers["user-agent"] ~ "Firefox"'],
-      });
-      const result = await rule.protect(createContext(), createRequest());
-      assert.equal(result.conclusion, "ALLOW");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, []);
-      assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
-    },
-  );
+  await t.test("allow list (optional field: unknown, regular field: no match)", async function () {
+    const [rule] = filter({
+      allow: ["ip.src.vpn", 'http.request.headers["user-agent"] ~ "Firefox"'],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, []);
+    assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
+  });
 
   await t.test("deny list (empty)", async function () {
     assert.throws(function () {
@@ -986,9 +898,7 @@ test("matrix", async function (t) {
     assert.equal(result.conclusion, "DENY");
     const reason = result.reason;
     assert(reason.isFilter());
-    assert.deepEqual(reason.matchedExpressions, [
-      'http.request.headers["user-agent"] ~ "Chrome"',
-    ]);
+    assert.deepEqual(reason.matchedExpressions, ['http.request.headers["user-agent"] ~ "Chrome"']);
     assert.deepEqual(reason.undeterminedExpressions, []);
   });
 
@@ -1004,25 +914,20 @@ test("matrix", async function (t) {
     assert.deepEqual(reason.undeterminedExpressions, []);
   });
 
-  await t.test(
-    "deny list (absent map field: len() eq 0 matches)",
-    async function () {
-      const [rule] = filter({
-        deny: ['len(http.request.headers["user-agent"]) eq 0'],
-      });
-      const result = await rule.protect(createContext(), {
-        ...createRequest(),
-        headers: new Headers(),
-      });
-      assert.equal(result.conclusion, "DENY");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, [
-        'len(http.request.headers["user-agent"]) eq 0',
-      ]);
-      assert.deepEqual(reason.undeterminedExpressions, []);
-    },
-  );
+  await t.test("deny list (absent map field: len() eq 0 matches)", async function () {
+    const [rule] = filter({
+      deny: ['len(http.request.headers["user-agent"]) eq 0'],
+    });
+    const result = await rule.protect(createContext(), {
+      ...createRequest(),
+      headers: new Headers(),
+    });
+    assert.equal(result.conclusion, "DENY");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, ['len(http.request.headers["user-agent"]) eq 0']);
+    assert.deepEqual(reason.undeterminedExpressions, []);
+  });
 
   await t.test(
     "deny list (absent map field: len() eq 0 does not match when header present)",
@@ -1039,25 +944,20 @@ test("matrix", async function (t) {
     },
   );
 
-  await t.test(
-    "deny list (absent cookie: len() eq 0 matches)",
-    async function () {
-      const [rule] = filter({
-        deny: ['len(http.request.cookie["NEXT_LOCALE"]) eq 0'],
-      });
-      const result = await rule.protect(createContext(), {
-        ...createRequest(),
-        cookies: "",
-      });
-      assert.equal(result.conclusion, "DENY");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, [
-        'len(http.request.cookie["NEXT_LOCALE"]) eq 0',
-      ]);
-      assert.deepEqual(reason.undeterminedExpressions, []);
-    },
-  );
+  await t.test("deny list (absent cookie: len() eq 0 matches)", async function () {
+    const [rule] = filter({
+      deny: ['len(http.request.cookie["NEXT_LOCALE"]) eq 0'],
+    });
+    const result = await rule.protect(createContext(), {
+      ...createRequest(),
+      cookies: "",
+    });
+    assert.equal(result.conclusion, "DENY");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, ['len(http.request.cookie["NEXT_LOCALE"]) eq 0']);
+    assert.deepEqual(reason.undeterminedExpressions, []);
+  });
 
   await t.test(
     "deny list (absent cookie: len() eq 0 does not match when cookie present)",
@@ -1084,69 +984,53 @@ test("matrix", async function (t) {
     assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
   });
 
-  await t.test(
-    "deny list (regular field: match, optional field: unknown)",
-    async function () {
-      const [rule] = filter({
-        deny: ['http.request.headers["user-agent"] ~ "Chrome"', "ip.src.vpn"],
-      });
-      const result = await rule.protect(createContext(), createRequest());
-      assert.equal(result.conclusion, "DENY");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, [
-        'http.request.headers["user-agent"] ~ "Chrome"',
-      ]);
-      assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
-    },
-  );
+  await t.test("deny list (regular field: match, optional field: unknown)", async function () {
+    const [rule] = filter({
+      deny: ['http.request.headers["user-agent"] ~ "Chrome"', "ip.src.vpn"],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "DENY");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, ['http.request.headers["user-agent"] ~ "Chrome"']);
+    assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
+  });
 
-  await t.test(
-    "deny list (regular field: no match, optional field: unknown)",
-    async function () {
-      const [rule] = filter({
-        deny: ['http.request.headers["user-agent"] ~ "Firefox"', "ip.src.vpn"],
-      });
-      const result = await rule.protect(createContext(), createRequest());
-      assert.equal(result.conclusion, "ALLOW");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, []);
-      assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
-    },
-  );
+  await t.test("deny list (regular field: no match, optional field: unknown)", async function () {
+    const [rule] = filter({
+      deny: ['http.request.headers["user-agent"] ~ "Firefox"', "ip.src.vpn"],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, []);
+    assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
+  });
 
-  await t.test(
-    "deny list (optional field: unknown, regular field: match)",
-    async function () {
-      const [rule] = filter({
-        deny: ["ip.src.vpn", 'http.request.headers["user-agent"] ~ "Chrome"'],
-      });
-      const result = await rule.protect(createContext(), createRequest());
-      assert.equal(result.conclusion, "DENY");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, [
-        'http.request.headers["user-agent"] ~ "Chrome"',
-      ]);
-      assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
-    },
-  );
+  await t.test("deny list (optional field: unknown, regular field: match)", async function () {
+    const [rule] = filter({
+      deny: ["ip.src.vpn", 'http.request.headers["user-agent"] ~ "Chrome"'],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "DENY");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, ['http.request.headers["user-agent"] ~ "Chrome"']);
+    assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
+  });
 
-  await t.test(
-    "deny list (optional field: unknown, regular field: no match)",
-    async function () {
-      const [rule] = filter({
-        deny: ["ip.src.vpn", 'http.request.headers["user-agent"] ~ "Firefox"'],
-      });
-      const result = await rule.protect(createContext(), createRequest());
-      assert.equal(result.conclusion, "ALLOW");
-      const reason = result.reason;
-      assert(reason.isFilter());
-      assert.deepEqual(reason.matchedExpressions, []);
-      assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
-    },
-  );
+  await t.test("deny list (optional field: unknown, regular field: no match)", async function () {
+    const [rule] = filter({
+      deny: ["ip.src.vpn", 'http.request.headers["user-agent"] ~ "Firefox"'],
+    });
+    const result = await rule.protect(createContext(), createRequest());
+    assert.equal(result.conclusion, "ALLOW");
+    const reason = result.reason;
+    assert(reason.isFilter());
+    assert.deepEqual(reason.matchedExpressions, []);
+    assert.deepEqual(reason.undeterminedExpressions, ["ip.src.vpn"]);
+  });
 
   await t.test("should support `filterLocal`", async function () {
     const [rule] = filter({
@@ -1172,9 +1056,7 @@ test("matrix", async function (t) {
 
     const arcjetClient = arcjet({
       key,
-      rules: [
-        filter({ allow: ['local["username"] eq "alice"'], mode: "LIVE" }),
-      ],
+      rules: [filter({ allow: ['local["username"] eq "alice"'], mode: "LIVE" })],
       client: {
         async decide(_context, details) {
           extra = details.extra;

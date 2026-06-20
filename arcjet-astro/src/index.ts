@@ -1,3 +1,6 @@
+import fs from "node:fs/promises";
+
+import type { ProxyService } from "@arcjet/ip";
 import type {
   BotOptions,
   DetectPromptInjectionOptions,
@@ -10,10 +13,8 @@ import type {
   SlidingWindowRateLimitOptions,
   TokenBucketRateLimitOptions,
 } from "arcjet";
-import type { ProxyService } from "@arcjet/ip";
 import type { AstroIntegration } from "astro";
 import { z } from "astro/zod";
-import fs from "node:fs/promises";
 
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
@@ -29,9 +30,7 @@ const validateProxyService = z.object({
   kind: z.literal("service"),
   name: z.string(),
   ranges: z.array(z.string()),
-  clientIp: z.array(
-    z.object({ header: z.string(), format: z.enum(["ip", "ips"]) }),
-  ),
+  clientIp: z.array(z.object({ header: z.string(), format: z.enum(["ip", "ips"]) })),
 });
 const validateProxies = z.array(z.union([z.string(), validateProxyService]));
 const validateCharacteristics = z.array(z.string());
@@ -242,10 +241,7 @@ export type ArcjetOptions<Characteristics extends readonly string[]> = {
   proxies?: Array<string | ProxyService>;
 };
 
-function validateAndSerialize(
-  schema: { parse(value: unknown): unknown },
-  value: unknown,
-): string {
+function validateAndSerialize(schema: { parse(value: unknown): unknown }, value: unknown): string {
   const v = schema.parse(value);
   return v ? JSON.stringify(v) : "";
 }
@@ -255,90 +251,63 @@ function integrationRuleToClientRule<Characteristics extends readonly string[]>(
 ) {
   switch (rule.type) {
     case "shield": {
-      const serializedOpts = validateAndSerialize(
-        validateShieldOptions,
-        rule.options,
-      );
+      const serializedOpts = validateAndSerialize(validateShieldOptions, rule.options);
       return {
         importName: `shield`,
         code: `shield(${serializedOpts})`,
       } as const;
     }
     case "bot": {
-      const serializedOpts = validateAndSerialize(
-        validateBotOptions,
-        rule.options,
-      );
+      const serializedOpts = validateAndSerialize(validateBotOptions, rule.options);
       return {
         importName: `detectBot`,
         code: `detectBot(${serializedOpts})`,
       } as const;
     }
     case "email": {
-      const serializedOpts = validateAndSerialize(
-        validateEmailOptions,
-        rule.options,
-      );
+      const serializedOpts = validateAndSerialize(validateEmailOptions, rule.options);
       return {
         importName: `validateEmail`,
         code: `validateEmail(${serializedOpts})`,
       } as const;
     }
     case "filter": {
-      const serializedOpts = validateAndSerialize(
-        validateFilterOptions,
-        rule.options,
-      );
+      const serializedOpts = validateAndSerialize(validateFilterOptions, rule.options);
       return {
         importName: `filter`,
         code: `filter(${serializedOpts})`,
       } as const;
     }
     case "sensitiveInfo": {
-      const serializedOpts = validateAndSerialize(
-        validateSensitiveInfoOptions,
-        rule.options,
-      );
+      const serializedOpts = validateAndSerialize(validateSensitiveInfoOptions, rule.options);
       return {
         importName: `sensitiveInfo`,
         code: `sensitiveInfo(${serializedOpts})`,
       } as const;
     }
     case "fixedWindow": {
-      const serializedOpts = validateAndSerialize(
-        validateFixedWindowOptions,
-        rule.options,
-      );
+      const serializedOpts = validateAndSerialize(validateFixedWindowOptions, rule.options);
       return {
         importName: `fixedWindow`,
         code: `fixedWindow(${serializedOpts})`,
       } as const;
     }
     case "slidingWindow": {
-      const serializedOpts = validateAndSerialize(
-        validateSlidingWindowOptions,
-        rule.options,
-      );
+      const serializedOpts = validateAndSerialize(validateSlidingWindowOptions, rule.options);
       return {
         importName: `slidingWindow`,
         code: `slidingWindow(${serializedOpts})`,
       } as const;
     }
     case "tokenBucket": {
-      const serializedOpts = validateAndSerialize(
-        validateTokenBucketOptions,
-        rule.options,
-      );
+      const serializedOpts = validateAndSerialize(validateTokenBucketOptions, rule.options);
       return {
         importName: `tokenBucket`,
         code: `tokenBucket(${serializedOpts})`,
       } as const;
     }
     case "protectSignup": {
-      const serializedOpts = validateAndSerialize(
-        validateProtectSignupOptions,
-        rule.options,
-      );
+      const serializedOpts = validateAndSerialize(validateProtectSignupOptions, rule.options);
       return {
         importName: `protectSignup`,
         code: `protectSignup(${serializedOpts})`,
@@ -381,9 +350,7 @@ function integrationRuleToClientRule<Characteristics extends readonly string[]>(
  *   Astro integration Shield rule to provide to the SDK in the `rules` field.
  */
 export function shield(options: ShieldOptions) {
-  return { type: "shield", options } as const satisfies IntegrationRule<
-    Array<string>
-  >;
+  return { type: "shield", options } as const satisfies IntegrationRule<Array<string>>;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -408,9 +375,7 @@ export function shield(options: ShieldOptions) {
  *   Astro integration Bot rule to provide to the SDK in the `rules` field.
  */
 export function detectBot(options: BotOptions) {
-  return { type: "bot", options } as const satisfies IntegrationRule<
-    Array<string>
-  >;
+  return { type: "bot", options } as const satisfies IntegrationRule<Array<string>>;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -432,9 +397,7 @@ export function detectBot(options: BotOptions) {
  *   Astro integration Email rule to provide to the SDK in the `rules` field.
  */
 export function validateEmail(options: EmailOptions) {
-  return { type: "email", options } as const satisfies IntegrationRule<
-    Array<string>
-  >;
+  return { type: "email", options } as const satisfies IntegrationRule<Array<string>>;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -471,9 +434,7 @@ export function validateEmail(options: EmailOptions) {
  * @link https://docs.arcjet.com/filters/reference
  */
 export function filter(options: FilterOptions) {
-  return { type: "filter", options } as const satisfies IntegrationRule<
-    Array<string>
-  >;
+  return { type: "filter", options } as const satisfies IntegrationRule<Array<string>>;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -496,9 +457,7 @@ export function filter(options: FilterOptions) {
  *   Astro integration Sensitive information rule to provide to the SDK in the `rules` field.
  */
 export function sensitiveInfo(options: SensitiveInfoOptions<never>) {
-  return { type: "sensitiveInfo", options } as const satisfies IntegrationRule<
-    Array<string>
-  >;
+  return { type: "sensitiveInfo", options } as const satisfies IntegrationRule<Array<string>>;
 }
 
 // Note: please keep JSDocs in sync with `arcjet` core.
@@ -645,9 +604,7 @@ export function protectSignup<Characteristics extends readonly string[]>(
  * @returns
  *   Astro integration Prompt injection detection rule to provide to the SDK in the `rules` field.
  */
-export function detectPromptInjection(
-  options: DetectPromptInjectionOptions = {},
-) {
+export function detectPromptInjection(options: DetectPromptInjectionOptions = {}) {
   return {
     type: "detectPromptInjection",
     options,
@@ -853,10 +810,9 @@ export default function arcjet<Characteristics extends readonly string[]>(
           );
         }
 
-        const implTypes = await fs.readFile(
-          new URL("./internal.d.ts", import.meta.url),
-          { encoding: "utf-8" },
-        );
+        const implTypes = await fs.readFile(new URL("./internal.d.ts", import.meta.url), {
+          encoding: "utf-8",
+        });
 
         injectTypes({
           content: `

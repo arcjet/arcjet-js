@@ -1,12 +1,5 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { NextResponse } from "next/server.js";
-import { headers, cookies } from "next/headers.js";
-import type {
-  NextFetchEvent,
-  NextMiddleware,
-  NextRequest,
-} from "next/server.js";
-import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
+import { readBodyWeb } from "@arcjet/body";
+import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -20,13 +13,16 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import { readBodyWeb } from "@arcjet/body";
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextMiddlewareResult } from "next/dist/server/web/types.js";
+import { headers, cookies } from "next/headers.js";
+import { NextResponse } from "next/server.js";
+import type { NextFetchEvent, NextMiddleware, NextRequest } from "next/server.js";
 
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
-import { ArcjetHeaders } from "@arcjet/headers";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
+import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
@@ -49,9 +45,7 @@ export async function request(): Promise<ArcjetNextRequest> {
   const hdrs = await headers();
   const cook = await cookies();
 
-  const cookieEntries = cook
-    .getAll()
-    .map((cookie) => [cookie.name, cookie.value]);
+  const cookieEntries = cook.getAll().map((cookie) => [cookie.name, cookie.value]);
 
   return {
     headers: hdrs,
@@ -221,9 +215,7 @@ export interface ArcjetNextRequest {
    */
   cookies?:
     | {
-        [Symbol.iterator](): IterableIterator<
-          [string, { name: string; value: string }]
-        >;
+        [Symbol.iterator](): IterableIterator<[string, { name: string; value: string }]>;
       }
     | Partial<{ [key: string]: string }>;
 
@@ -245,9 +237,7 @@ function isIterable(val: any): val is Iterable<any> {
   return typeof val?.[Symbol.iterator] === "function";
 }
 
-function cookiesToArray(
-  cookies?: ArcjetNextRequest["cookies"],
-): { name: string; value: string }[] {
+function cookiesToArray(cookies?: ArcjetNextRequest["cookies"]): { name: string; value: string }[] {
   if (typeof cookies === "undefined") {
     return [];
   }
@@ -539,14 +529,10 @@ export default function arcjet<
         level: logLevel(process.env),
       });
 
-  const proxies = Array.isArray(options.proxies)
-    ? parseProxies(options.proxies)
-    : undefined;
+  const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
 
   if (isDevelopment(process.env)) {
-    log.warn(
-      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
-    );
+    log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
   }
 
   function toArcjetRequest<Props extends PlainObject>(
@@ -556,9 +542,7 @@ export default function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    const xArcjetIp = isDevelopment(process.env)
-      ? headers.get("x-arcjet-ip")
-      : undefined;
+    const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
     let ip =
       xArcjetIp ||
       findIp(
@@ -604,11 +588,7 @@ export default function arcjet<
         protocol = "http:";
       }
       // Do some very simple validation, but also try/catch around URL parsing
-      if (
-        typeof request.url !== "undefined" &&
-        request.url !== "" &&
-        host !== ""
-      ) {
+      if (typeof request.url !== "undefined" && request.url !== "" && host !== "") {
         try {
           const url = new URL(request.url, `${protocol}//${host}`);
           path = url.pathname;
@@ -634,12 +614,10 @@ export default function arcjet<
       extra["vercel-id"] = headers.get("x-vercel-id") ?? "";
       // Vercel deployment URL
       // https://vercel.com/docs/concepts/edge-network/headers
-      extra["vercel-deployment-url"] =
-        headers.get("x-vercel-deployment-url") ?? "";
+      extra["vercel-deployment-url"] = headers.get("x-vercel-deployment-url") ?? "";
       // Vercel git commit SHA
       // https://vercel.com/docs/environment-variables/system-environment-variables#VERCEL_GIT_COMMIT_SHA
-      extra["vercel-git-commit-sha"] =
-        process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
+      extra["vercel-git-commit-sha"] = process.env["VERCEL_GIT_COMMIT_SHA"] ?? "";
     }
     return {
       ...props,
@@ -748,15 +726,9 @@ export function createMiddleware(
     if (decision.isDenied()) {
       // TODO(#222): Content type negotiation using `Accept` header
       if (decision.reason.isRateLimit()) {
-        return NextResponse.json(
-          { code: 429, message: "Too Many Requests" },
-          { status: 429 },
-        );
+        return NextResponse.json({ code: 429, message: "Too Many Requests" }, { status: 429 });
       } else {
-        return NextResponse.json(
-          { code: 403, message: "Forbidden" },
-          { status: 403 },
-        );
+        return NextResponse.json({ code: 403, message: "Forbidden" }, { status: 403 });
       }
     } else {
       if (typeof existingMiddleware === "function") {
@@ -819,24 +791,16 @@ export function withArcjet<Args extends [ArcjetNextRequest, ...unknown[]], Res>(
       if (isNextApiResponse(response)) {
         // TODO(#222): Content type negotiation using `Accept` header
         if (decision.reason.isRateLimit()) {
-          return response
-            .status(429)
-            .json({ code: 429, message: "Too Many Requests" });
+          return response.status(429).json({ code: 429, message: "Too Many Requests" });
         } else {
           return response.status(403).json({ code: 403, message: "Forbidden" });
         }
       } else {
         // TODO(#222): Content type negotiation using `Accept` header
         if (decision.reason.isRateLimit()) {
-          return NextResponse.json(
-            { code: 429, message: "Too Many Requests" },
-            { status: 429 },
-          );
+          return NextResponse.json({ code: 429, message: "Too Many Requests" }, { status: 429 });
         } else {
-          return NextResponse.json(
-            { code: 403, message: "Forbidden" },
-            { status: 403 },
-          );
+          return NextResponse.json({ code: 403, message: "Forbidden" }, { status: 403 });
         }
       }
     } else {

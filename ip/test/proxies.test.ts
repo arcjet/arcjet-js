@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { parseProxy } from "../dist/index.js";
 
 test("parseProxy", async (t) => {
@@ -17,32 +18,23 @@ test("parseProxy", async (t) => {
     assert.equal(proxy.bits, 22);
   });
 
-  await t.test(
-    "fails to parse IPv4 CIDR address if bits is out of range",
-    () => {
-      assert.throws(() => {
-        parseProxy("103.21.244.0/99");
-      }, /invalid CIDR address: incorrect amount of bits/);
-    },
-  );
+  await t.test("fails to parse IPv4 CIDR address if bits is out of range", () => {
+    assert.throws(() => {
+      parseProxy("103.21.244.0/99");
+    }, /invalid CIDR address: incorrect amount of bits/);
+  });
 
-  await t.test(
-    "fails to parse IPv4 CIDR address if bits is not numeric",
-    () => {
-      assert.throws(() => {
-        parseProxy("103.21.244.0/aa");
-      }, /invalid CIDR address: incorrect amount of bits/);
-    },
-  );
+  await t.test("fails to parse IPv4 CIDR address if bits is not numeric", () => {
+    assert.throws(() => {
+      parseProxy("103.21.244.0/aa");
+    }, /invalid CIDR address: incorrect amount of bits/);
+  });
 
-  await t.test(
-    "fails to parse IPv4 CIDR address if contains more than one `/`",
-    () => {
-      assert.throws(() => {
-        parseProxy("103.21.244.0/1/2");
-      }, /invalid CIDR address: must be exactly 2 parts/);
-    },
-  );
+  await t.test("fails to parse IPv4 CIDR address if contains more than one `/`", () => {
+    assert.throws(() => {
+      parseProxy("103.21.244.0/1/2");
+    }, /invalid CIDR address: must be exactly 2 parts/);
+  });
 
   await t.test("fails if cannot parse IPv4 address", () => {
     assert.throws(() => {
@@ -59,32 +51,23 @@ test("parseProxy", async (t) => {
     assert.equal(proxy.bits, 32);
   });
 
-  await t.test(
-    "fails to parse IPv6 CIDR address if bits is out of range",
-    () => {
-      assert.throws(() => {
-        parseProxy("2400:cb00::/256");
-      }, /invalid CIDR address: incorrect amount of bits/);
-    },
-  );
+  await t.test("fails to parse IPv6 CIDR address if bits is out of range", () => {
+    assert.throws(() => {
+      parseProxy("2400:cb00::/256");
+    }, /invalid CIDR address: incorrect amount of bits/);
+  });
 
-  await t.test(
-    "fails to parse IPv6 CIDR address if bits is not numeric",
-    () => {
-      assert.throws(() => {
-        parseProxy("2400:cb00::/aa");
-      }, /invalid CIDR address: incorrect amount of bits/);
-    },
-  );
+  await t.test("fails to parse IPv6 CIDR address if bits is not numeric", () => {
+    assert.throws(() => {
+      parseProxy("2400:cb00::/aa");
+    }, /invalid CIDR address: incorrect amount of bits/);
+  });
 
-  await t.test(
-    "fails to parse IPv6 CIDR address if bits is not numeric",
-    () => {
-      assert.throws(() => {
-        parseProxy("2400:cb00::/1/2");
-      }, /invalid CIDR address: must be exactly 2 parts/);
-    },
-  );
+  await t.test("fails to parse IPv6 CIDR address if bits is not numeric", () => {
+    assert.throws(() => {
+      parseProxy("2400:cb00::/1/2");
+    }, /invalid CIDR address: must be exactly 2 parts/);
+  });
 
   await t.test("fails if cannot parse IPv6 address", () => {
     assert.throws(() => {
