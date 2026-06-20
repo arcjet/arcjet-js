@@ -1,10 +1,5 @@
 import { readBodyWeb } from "@arcjet/body";
-import {
-  baseUrl as baseUrlFromEnvironment,
-  isDevelopment,
-  logLevel,
-  platform,
-} from "@arcjet/env";
+import { baseUrl as baseUrlFromEnvironment, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
@@ -100,9 +95,7 @@ export interface ArcjetReactRouterRequest {
  * @template Properties
  *   Configuration.
  */
-export interface ArcjetReactRouter<
-  Properties extends Record<PropertyKey, unknown>,
-> {
+export interface ArcjetReactRouter<Properties extends Record<PropertyKey, unknown>> {
   /**
    * Make a decision about how to handle a request.
    *
@@ -138,9 +131,7 @@ export interface ArcjetReactRouter<
    */
   withRule<Rule extends ArcjetRule>(
     rule: Array<Rule>,
-  ): ArcjetReactRouter<
-    Properties & (Rule extends ArcjetRule<infer P> ? P : {})
-  >;
+  ): ArcjetReactRouter<Properties & (Rule extends ArcjetRule<infer P> ? P : {})>;
 }
 
 /**
@@ -219,9 +210,7 @@ export default function arcjet<
     );
   }
 
-  return withClient(
-    arcjetCore({ ...options, client: state.client, log: state.log }),
-  );
+  return withClient(arcjetCore({ ...options, client: state.client, log: state.log }));
 
   function withClient<Properties extends Record<PropertyKey, unknown>>(
     baseClient: Arcjet<Properties>,
@@ -298,9 +287,7 @@ function createGetBody(state: State, details: ArcjetReactRouterRequest) {
  * @returns
  *   Client.
  */
-export function createRemoteClient(
-  options?: RemoteClientOptions | null | undefined,
-): Client {
+export function createRemoteClient(options?: RemoteClientOptions | null | undefined): Client {
   const settings = options ?? {};
   const baseUrl = settings.baseUrl ?? baseUrlFromEnvironment(process.env);
 
@@ -345,9 +332,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
     ip = details.context.ip;
   }
 
-  const xArcjetIp = isDevelopment(process.env)
-    ? headers.get("x-arcjet-ip")
-    : undefined;
+  const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
 
   if (xArcjetIp) {
     ip = xArcjetIp;

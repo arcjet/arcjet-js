@@ -1,3 +1,5 @@
+import { readBodyWeb } from "@arcjet/body";
+import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -10,17 +12,15 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import { readBodyWeb } from "@arcjet/body";
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
-import { ArcjetHeaders } from "@arcjet/headers";
+import { env } from "$env/dynamic/private";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
+import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
-import { env } from "$env/dynamic/private";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -170,12 +170,8 @@ export interface ArcjetSvelteKitRequestEvent {
   url: URL;
 }
 
-function cookiesToString(
-  cookies: Array<{ name: string; value: string }> = [],
-): string {
-  return cookies
-    .map((v) => `${v.name}=${encodeURIComponent(v.value)}`)
-    .join("; ");
+function cookiesToString(cookies: Array<{ name: string; value: string }> = []): string {
+  return cookies.map((v) => `${v.name}=${encodeURIComponent(v.value)}`).join("; ");
 }
 
 /**
@@ -283,14 +279,10 @@ export default function arcjet<
         level: logLevel(env),
       });
 
-  const proxies = Array.isArray(options.proxies)
-    ? parseProxies(options.proxies)
-    : undefined;
+  const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
 
   if (isDevelopment(env)) {
-    log.warn(
-      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
-    );
+    log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
   }
 
   function toArcjetRequest<Props extends PlainObject>(
@@ -302,9 +294,7 @@ export default function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(event.request.headers);
 
-    const xArcjetIp = isDevelopment(env)
-      ? headers.get("x-arcjet-ip")
-      : undefined;
+    const xArcjetIp = isDevelopment(env) ? headers.get("x-arcjet-ip") : undefined;
     let ip =
       xArcjetIp ||
       findIp(
@@ -359,8 +349,7 @@ export default function arcjet<
         const getBody = async () => {
           const clonedRequest = request.request.clone();
           let expectedLength: number | undefined;
-          const expectedLengthString =
-            request.request.headers.get("content-length");
+          const expectedLengthString = request.request.headers.get("content-length");
           if (typeof expectedLengthString === "string") {
             expectedLength = parseInt(expectedLengthString, 10);
           }

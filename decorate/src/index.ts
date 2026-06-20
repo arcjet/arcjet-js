@@ -1,10 +1,6 @@
-import { sprintf } from "@arcjet/sprintf";
 import type { ArcjetDecision } from "@arcjet/protocol";
-import {
-  ArcjetRateLimitReason,
-  ArcjetReason,
-  ArcjetRuleResult,
-} from "@arcjet/protocol";
+import { ArcjetRateLimitReason, ArcjetReason, ArcjetRuleResult } from "@arcjet/protocol";
+import { sprintf } from "@arcjet/sprintf";
 
 // If these are defined, we can expect to be working with `Headers` directly.
 interface HeaderLike {
@@ -25,10 +21,7 @@ interface OutgoingMessageLike {
   getHeader: (name: string) => string[] | number | string | undefined;
   headersSent: boolean;
   hasHeader: (name: string) => boolean;
-  setHeader: (
-    name: string,
-    value: ReadonlyArray<string> | number | string,
-  ) => unknown;
+  setHeader: (name: string, value: ReadonlyArray<string> | number | string) => unknown;
 }
 
 /**
@@ -64,13 +57,8 @@ function isResponseLike(value: ArcjetCanDecorate): value is ResponseLike {
   return isHeaderLike(value.headers);
 }
 
-function isOutgoingMessageLike(
-  response: ArcjetCanDecorate,
-): response is OutgoingMessageLike {
-  if (
-    !("headersSent" in response) ||
-    typeof response.headersSent !== "boolean"
-  ) {
+function isOutgoingMessageLike(response: ArcjetCanDecorate): response is OutgoingMessageLike {
+  if (!("headersSent" in response) || typeof response.headersSent !== "boolean") {
     return false;
   }
 
@@ -89,10 +77,7 @@ function isOutgoingMessageLike(
   return true;
 }
 
-function sortByLowestMax(
-  [maxA, _windowA]: [number, number],
-  [maxB, _windowB]: [number, number],
-) {
+function sortByLowestMax([maxA, _windowA]: [number, number], [maxB, _windowB]: [number, number]) {
   return maxA - maxB;
 }
 
@@ -116,16 +101,11 @@ function extractReason(result: ArcjetRuleResult): ArcjetReason {
   return result.reason;
 }
 
-function isRateLimitReason(
-  reason: ArcjetReason,
-): reason is ArcjetRateLimitReason {
+function isRateLimitReason(reason: ArcjetReason): reason is ArcjetRateLimitReason {
   return reason.isRateLimit();
 }
 
-function nearestLimit(
-  current: ArcjetRateLimitReason,
-  next: ArcjetRateLimitReason,
-) {
+function nearestLimit(current: ArcjetRateLimitReason, next: ArcjetRateLimitReason) {
   if (current.remaining < next.remaining) {
     return current;
   }
@@ -168,13 +148,8 @@ function nearestLimit(
  * @returns
  *   Nothing.
  */
-export function setRateLimitHeaders(
-  value: ArcjetCanDecorate,
-  decision: ArcjetDecision,
-) {
-  const rateLimitReasons = decision.results
-    .map(extractReason)
-    .filter(isRateLimitReason);
+export function setRateLimitHeaders(value: ArcjetCanDecorate, decision: ArcjetDecision) {
+  const rateLimitReasons = decision.results.map(extractReason).filter(isRateLimitReason);
 
   let policy: string;
   let limit: string;
@@ -182,9 +157,7 @@ export function setRateLimitHeaders(
     const policies = new Map<number, number>();
     for (const reason of rateLimitReasons) {
       if (policies.has(reason.max)) {
-        console.error(
-          "Invalid rate limit policy—two policies should not share the same limit",
-        );
+        console.error("Invalid rate limit policy—two policies should not share the same limit");
         return;
       }
 
@@ -204,10 +177,7 @@ export function setRateLimitHeaders(
     const rl = rateLimitReasons.reduce(nearestLimit);
 
     limit = toLimitString(rl);
-    policy = Array.from(policies.entries())
-      .sort(sortByLowestMax)
-      .map(toPolicyString)
-      .join(", ");
+    policy = Array.from(policies.entries()).sort(sortByLowestMax).map(toPolicyString).join(", ");
   } else {
     // For cached decisions, we may not have rule results, but we'd still have
     // the top-level reason.
@@ -218,9 +188,7 @@ export function setRateLimitHeaders(
         typeof decision.reason.remaining !== "number" ||
         typeof decision.reason.reset !== "number"
       ) {
-        console.error(
-          sprintf("Invalid rate limit encountered: %o", decision.reason),
-        );
+        console.error(sprintf("Invalid rate limit encountered: %o", decision.reason));
         return;
       }
 
@@ -287,9 +255,7 @@ export function setRateLimitHeaders(
 
   if (isOutgoingMessageLike(value)) {
     if (value.headersSent) {
-      console.error(
-        "Headers have already been sent—cannot set RateLimit header",
-      );
+      console.error("Headers have already been sent—cannot set RateLimit header");
       return;
     }
 
@@ -320,7 +286,5 @@ export function setRateLimitHeaders(
     return;
   }
 
-  console.debug(
-    "Cannot determine if response is Response or OutgoingMessage type",
-  );
+  console.debug("Cannot determine if response is Response or OutgoingMessage type");
 }

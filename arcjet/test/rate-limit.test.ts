@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
+
 import arcjet, {
   type ArcjetCacheEntry,
   type Primitive,
@@ -38,15 +39,11 @@ type Assert<T extends true> = T;
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 type IsEqual<A, B> =
-  (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2
-    ? true
-    : false;
+  (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2 ? true : false;
 type Props<T> = T extends Primitive<infer P> ? P : never;
 
 class TestCache {
-  get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(
-    async () => [undefined, 0],
-  );
+  get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(async () => [undefined, 0]);
   set = mock.fn();
 }
 
@@ -214,10 +211,7 @@ describe("Primitive > tokenBucket", () => {
       capacity: 120,
     });
     type Test = Assert<
-      IsEqual<
-        Props<typeof rules>,
-        { requested: number; userId: string | number | boolean }
-      >
+      IsEqual<Props<typeof rules>, { requested: number; userId: string | number | boolean }>
     >;
   });
 
@@ -563,9 +557,7 @@ describe("Primitive > fixedWindow", () => {
       window: "1h",
       max: 1,
     });
-    type Test = Assert<
-      IsEqual<Props<typeof rules>, { userId: string | number | boolean }>
-    >;
+    type Test = Assert<IsEqual<Props<typeof rules>, { userId: string | number | boolean }>>;
   });
 
   test("well-known characteristics don't affect the required props", async () => {
@@ -899,9 +891,7 @@ describe("Primitive > slidingWindow", () => {
       interval: "1h",
       max: 1,
     });
-    type Test = Assert<
-      IsEqual<Props<typeof rules>, { userId: string | number | boolean }>
-    >;
+    type Test = Assert<IsEqual<Props<typeof rules>, { userId: string | number | boolean }>>;
   });
 
   test("well-known characteristics don't affect the required props", async () => {

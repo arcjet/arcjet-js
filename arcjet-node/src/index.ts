@@ -1,3 +1,4 @@
+import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -10,17 +11,16 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
-import { ArcjetHeaders } from "@arcjet/headers";
+import { readBody } from "@arcjet/body";
 import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
+import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
-import { readBody } from "@arcjet/body";
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
@@ -156,10 +156,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   });
 }
 
-type EventHandlerLike = (
-  event: string,
-  listener: (...args: any[]) => void,
-) => void;
+type EventHandlerLike = (event: string, listener: (...args: any[]) => void) => void;
 
 /**
  * Request for the Node.js integration of Arcjet.
@@ -177,9 +174,7 @@ export interface ArcjetNodeRequest {
    *
    * See <https://nodejs.org/api/http.html#messagesocket>.
    */
-  socket?:
-    | Partial<{ remoteAddress?: string | undefined; encrypted: boolean }>
-    | undefined;
+  socket?: Partial<{ remoteAddress?: string | undefined; encrypted: boolean }> | undefined;
 
   /**
    * HTTP method of the request.
@@ -294,10 +289,7 @@ export interface ArcjetNode<Props extends PlainObject> {
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
    *   Arcjet’s decision about the request.
    */
-  protect(
-    request: ArcjetNodeRequest,
-    ...props: MaybeProperties<Props>
-  ): Promise<ArcjetDecision>;
+  protect(request: ArcjetNodeRequest, ...props: MaybeProperties<Props>): Promise<ArcjetDecision>;
 
   /**
    * Augment the client with another rule.
@@ -349,14 +341,10 @@ export default function arcjet<
         level: logLevel(env),
       });
 
-  const proxies = Array.isArray(options.proxies)
-    ? parseProxies(options.proxies)
-    : undefined;
+  const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
 
   if (isDevelopment(env)) {
-    log.warn(
-      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
-    );
+    log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
   }
 
   function toArcjetRequest<Props extends PlainObject>(
@@ -369,9 +357,7 @@ export default function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    const xArcjetIp = isDevelopment(env)
-      ? headers.get("x-arcjet-ip")
-      : undefined;
+    const xArcjetIp = isDevelopment(env) ? headers.get("x-arcjet-ip") : undefined;
     let ip =
       xArcjetIp ||
       findIp(
@@ -405,11 +391,7 @@ export default function arcjet<
     }
 
     // Do some very simple validation, but also try/catch around URL parsing
-    if (
-      typeof request.url !== "undefined" &&
-      request.url !== "" &&
-      host !== ""
-    ) {
+    if (typeof request.url !== "undefined" && request.url !== "" && host !== "") {
       try {
         const url = new URL(request.url, `${protocol}//${host}`);
         path = url.pathname;

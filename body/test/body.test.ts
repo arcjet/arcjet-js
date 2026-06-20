@@ -1,9 +1,10 @@
+import * as http from "http";
+import type { AddressInfo } from "net";
 import assert from "node:assert/strict";
 import { Readable } from "node:stream";
 import { describe, test } from "node:test";
-import * as http from "http";
+
 import { readBodyWeb, readBody } from "../dist/index.js";
-import type { AddressInfo } from "net";
 
 test("@arcjet/body", async function (t) {
   await t.test("should expose the public api", async function () {
@@ -172,10 +173,7 @@ describe("reads the body from the readable stream", () => {
         await readBody(req, { limit: 1024, expectedLength: 4 });
         assert.fail("this should not return successfully");
       } catch (err) {
-        assert.match(
-          String(err),
-          /Cannot read stream whose length does not match expected length/,
-        );
+        assert.match(String(err), /Cannot read stream whose length does not match expected length/);
         req.resume();
         res.statusCode = 500;
         if (err instanceof Error) {
@@ -195,10 +193,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          assert.match(
-            body,
-            /Cannot read stream whose length does not match expected length/,
-          );
+          assert.match(body, /Cannot read stream whose length does not match expected length/);
         } finally {
           server.close(done);
         }
@@ -239,10 +234,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          assert.match(
-            body,
-            /Unexpected value `undefined` for `stream.on`, expected function/,
-          );
+          assert.match(body, /Unexpected value `undefined` for `stream.on`, expected function/);
         } finally {
           server.close(done);
         }
@@ -380,10 +372,7 @@ describe("reads the body from the readable stream", () => {
         await readBody(stream, { limit: 100 });
         assert.fail("this should not return successfully");
       } catch (err) {
-        assert.match(
-          String(err),
-          /Cannot read stream, did not receive data in time limit/,
-        );
+        assert.match(String(err), /Cannot read stream, did not receive data in time limit/);
       }
     },
   );
@@ -474,68 +463,53 @@ test("web stream", async function (t) {
     );
   });
 
-  await t.test(
-    "should fail if `limit` is literally not a number",
-    async function () {
-      const webStream = new ReadableStream();
+  await t.test("should fail if `limit` is literally not a number", async function () {
+    const webStream = new ReadableStream();
 
-      await assert.rejects(
-        readBodyWeb(webStream, { limit: NaN }),
-        /Unexpected value `NaN` for `options\.limit`, expected positive number/,
-      );
-    },
-  );
+    await assert.rejects(
+      readBodyWeb(webStream, { limit: NaN }),
+      /Unexpected value `NaN` for `options\.limit`, expected positive number/,
+    );
+  });
 
-  await t.test(
-    "should fail if `limit` is a negative number",
-    async function () {
-      const webStream = new ReadableStream();
+  await t.test("should fail if `limit` is a negative number", async function () {
+    const webStream = new ReadableStream();
 
-      await assert.rejects(
-        readBodyWeb(webStream, { limit: -1 }),
-        /Unexpected value `-1` for `options\.limit`, expected positive number/,
-      );
-    },
-  );
+    await assert.rejects(
+      readBodyWeb(webStream, { limit: -1 }),
+      /Unexpected value `-1` for `options\.limit`, expected positive number/,
+    );
+  });
 
-  await t.test(
-    "should fail if `expectedLength` is not a number",
-    async function () {
-      const webStream = new ReadableStream();
+  await t.test("should fail if `expectedLength` is not a number", async function () {
+    const webStream = new ReadableStream();
 
-      await assert.rejects(
-        readBodyWeb(webStream, {
-          // @ts-expect-error: test runtime behavior.
-          expectedLength: "1kb",
-        }),
-        /Unexpected value `1kb` for `options\.expectedLength`, expected positive number/,
-      );
-    },
-  );
+    await assert.rejects(
+      readBodyWeb(webStream, {
+        // @ts-expect-error: test runtime behavior.
+        expectedLength: "1kb",
+      }),
+      /Unexpected value `1kb` for `options\.expectedLength`, expected positive number/,
+    );
+  });
 
-  await t.test(
-    "should fail if `expectedLength` is literally not a number",
-    async function () {
-      const webStream = new ReadableStream();
+  await t.test("should fail if `expectedLength` is literally not a number", async function () {
+    const webStream = new ReadableStream();
 
-      await assert.rejects(
-        readBodyWeb(webStream, { expectedLength: NaN }),
-        /Unexpected value `NaN` for `options\.expectedLength`, expected positive number/,
-      );
-    },
-  );
+    await assert.rejects(
+      readBodyWeb(webStream, { expectedLength: NaN }),
+      /Unexpected value `NaN` for `options\.expectedLength`, expected positive number/,
+    );
+  });
 
-  await t.test(
-    "should fail if `expectedLength` is a negative number",
-    async function () {
-      const webStream = new ReadableStream();
+  await t.test("should fail if `expectedLength` is a negative number", async function () {
+    const webStream = new ReadableStream();
 
-      await assert.rejects(
-        readBodyWeb(webStream, { expectedLength: -1 }),
-        /Unexpected value `-1` for `options\.expectedLength`, expected positive number/,
-      );
-    },
-  );
+    await assert.rejects(
+      readBodyWeb(webStream, { expectedLength: -1 }),
+      /Unexpected value `-1` for `options\.expectedLength`, expected positive number/,
+    );
+  });
 
   await t.test("should limit to 1mb by default", async function () {
     const fine = "a".repeat(1048576);
@@ -574,39 +548,33 @@ test("web stream", async function (t) {
     assert.equal(body, "hello, world!");
   });
 
-  await t.test(
-    "should error if the body exceeds the length limit",
-    async function () {
-      const webStream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(new TextEncoder().encode("i am a string"));
-          controller.close();
-        },
-      });
+  await t.test("should error if the body exceeds the length limit", async function () {
+    const webStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("i am a string"));
+        controller.close();
+      },
+    });
 
-      await assert.rejects(
-        readBodyWeb(webStream, { limit: 4 }),
-        /Cannot read stream that exceeds limit/,
-      );
-    },
-  );
+    await assert.rejects(
+      readBodyWeb(webStream, { limit: 4 }),
+      /Cannot read stream that exceeds limit/,
+    );
+  });
 
-  await t.test(
-    "should error if it isn't the exact length specified",
-    async function () {
-      const webStream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(new TextEncoder().encode("hello, world!"));
-          controller.close();
-        },
-      });
+  await t.test("should error if it isn't the exact length specified", async function () {
+    const webStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("hello, world!"));
+        controller.close();
+      },
+    });
 
-      await assert.rejects(
-        readBodyWeb(webStream, { expectedLength: 4, limit: 1024 }),
-        /Cannot read stream whose length does not match expected length/,
-      );
-    },
-  );
+    await assert.rejects(
+      readBodyWeb(webStream, { expectedLength: 4, limit: 1024 }),
+      /Cannot read stream whose length does not match expected length/,
+    );
+  });
 
   await t.test("should work if `limit` is missing", async function () {
     const webStream = new ReadableStream({
@@ -629,30 +597,27 @@ test("web stream", async function (t) {
     );
   });
 
-  await t.test(
-    "should not timeout if a first chunk is sent in 100ms",
-    async function () {
-      const webStream = new ReadableStream({
-        start(controller) {
-          setTimeout(function () {
-            controller.enqueue(new TextEncoder().encode("h"));
-          }, 50);
+  await t.test("should not timeout if a first chunk is sent in 100ms", async function () {
+    const webStream = new ReadableStream({
+      start(controller) {
+        setTimeout(function () {
+          controller.enqueue(new TextEncoder().encode("h"));
+        }, 50);
 
-          setTimeout(function () {
-            controller.enqueue(new TextEncoder().encode("i"));
-          }, 100);
+        setTimeout(function () {
+          controller.enqueue(new TextEncoder().encode("i"));
+        }, 100);
 
-          setTimeout(function () {
-            controller.enqueue(new TextEncoder().encode("!"));
-            controller.close();
-          }, 150);
-        },
-      });
+        setTimeout(function () {
+          controller.enqueue(new TextEncoder().encode("!"));
+          controller.close();
+        }, 150);
+      },
+    });
 
-      const body = await readBodyWeb(webStream, { limit: 1024 });
-      assert.equal(body, "hi!");
-    },
-  );
+    const body = await readBodyWeb(webStream, { limit: 1024 });
+    assert.equal(body, "hi!");
+  });
 
   await t.test("should error if the stream errors", async function () {
     const webStream = new ReadableStream({
@@ -664,44 +629,38 @@ test("web stream", async function (t) {
     await assert.rejects(readBodyWeb(webStream, { limit: 1024 }), /boom!/);
   });
 
-  await t.test(
-    "should not read the body if `expectedLength` exceeds `limit`",
-    async function () {
-      const webStream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(new TextEncoder().encode("hi!"));
-          controller.close();
-        },
-      });
+  await t.test("should not read the body if `expectedLength` exceeds `limit`", async function () {
+    const webStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("hi!"));
+        controller.close();
+      },
+    });
 
-      await assert.rejects(
-        readBodyWeb(webStream, { expectedLength: 1025, limit: 1024 }),
-        /Cannot read stream whose expected length exceeds limit/,
-      );
+    await assert.rejects(
+      readBodyWeb(webStream, { expectedLength: 1025, limit: 1024 }),
+      /Cannot read stream whose expected length exceeds limit/,
+    );
 
-      // The fact that this works is proof that the stream was not read.
-      assert.equal(await readBodyWeb(webStream, { limit: 1024 }), "hi!");
-    },
-  );
+    // The fact that this works is proof that the stream was not read.
+    assert.equal(await readBodyWeb(webStream, { limit: 1024 }), "hi!");
+  });
 
-  await t.test(
-    "should fail if a stream is no longer readable",
-    async function () {
-      const webStream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(new TextEncoder().encode("hi!"));
-          controller.close();
-        },
-      });
+  await t.test("should fail if a stream is no longer readable", async function () {
+    const webStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("hi!"));
+        controller.close();
+      },
+    });
 
-      assert.equal(await readBodyWeb(webStream, { limit: 1024 }), "hi!");
+    assert.equal(await readBodyWeb(webStream, { limit: 1024 }), "hi!");
 
-      await assert.rejects(
-        readBodyWeb(webStream, { limit: 1024 }),
-        /Cannot read stream, did not receive data/,
-      );
-    },
-  );
+    await assert.rejects(
+      readBodyWeb(webStream, { limit: 1024 }),
+      /Cannot read stream, did not receive data/,
+    );
+  });
 
   await t.test("should support UTF8", async function () {
     const value = "🪐";

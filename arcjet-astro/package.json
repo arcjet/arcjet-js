@@ -22,29 +22,39 @@
     "waf",
     "withastro"
   ],
-  "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "arcjet-astro"
-  },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
     "email": "support@arcjet.com"
   },
+  "license": "Apache-2.0",
   "author": {
     "name": "Arcjet",
     "email": "support@arcjet.com",
     "url": "https://arcjet.com"
   },
-  "engines": {},
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "arcjet-astro"
+  },
   "files": [
     "dist"
   ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "scripts": {
     "build": "tsdown",
     "test-api": "node --test -- test/*.test.ts",
@@ -61,23 +71,13 @@
     "@arcjet/transport": "1.5.0",
     "arcjet": "1.5.0"
   },
-  "peerDependencies": {
-    "astro": "^5.9.3 || ^6.0.0"
-  },
   "devDependencies": {
     "astro": "6.4.6",
     "tsdown": "0.22.3",
     "typescript": "5.9.3"
   },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+  "peerDependencies": {
+    "astro": "^5.9.3 || ^6.0.0"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./package.json": "./package.json"
-  }
+  "engines": {}
 }

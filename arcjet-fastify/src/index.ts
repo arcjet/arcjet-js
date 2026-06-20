@@ -1,10 +1,6 @@
 import process from "node:process";
-import {
-  baseUrl as baseUrlFromEnvironment,
-  isDevelopment,
-  logLevel,
-  platform,
-} from "@arcjet/env";
+
+import { baseUrl as baseUrlFromEnvironment, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
@@ -82,9 +78,7 @@ export type RemoteClientOptions = {
  * @returns
  *   Client.
  */
-export function createRemoteClient(
-  options?: RemoteClientOptions | null | undefined,
-) {
+export function createRemoteClient(options?: RemoteClientOptions | null | undefined) {
   const settings = options ?? {};
   const baseUrl = settings.baseUrl ?? baseUrlFromEnvironment(process.env);
 
@@ -238,15 +232,11 @@ export default function arcjet<
   options: ArcjetOptions<Rules, Characteristics>,
 ): ArcjetFastify<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
   const client = options.client ?? createRemoteClient();
-  const log = options.log
-    ? options.log
-    : new Logger({ level: logLevel(process.env) });
+  const log = options.log ? options.log : new Logger({ level: logLevel(process.env) });
   const proxies = options.proxies ? parseProxies(options.proxies) : undefined;
 
   if (isDevelopment(process.env)) {
-    log.warn(
-      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
-    );
+    log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
   }
 
   function withClient<Properties extends PlainObject>(
@@ -265,10 +255,7 @@ export default function arcjet<
         return arcjetCore.protect({ getBody }, arcjetRequest);
 
         async function getBody() {
-          if (
-            fastifyRequest.body === null ||
-            fastifyRequest.body === undefined
-          ) {
+          if (fastifyRequest.body === null || fastifyRequest.body === undefined) {
             throw new Error("Cannot read body: body is missing");
           }
 
@@ -318,19 +305,13 @@ function toArcjetRequest<Properties extends PlainObject>(
   // sensitive information.
   // We send cookies to the server as a separate field on the protobuf and
   // handle them differently than other headers due to that potential.
-  const cookies =
-    typeof requestHeaders.cookie === "string" ? requestHeaders.cookie : "";
+  const cookies = typeof requestHeaders.cookie === "string" ? requestHeaders.cookie : "";
   const headers = new ArcjetHeaders(requestHeaders);
 
-  const xArcjetIp = isDevelopment(process.env)
-    ? headers.get("x-arcjet-ip")
-    : undefined;
+  const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
   let ip =
     xArcjetIp ||
-    findIp(
-      { headers, socket: request.socket },
-      { platform: platform(process.env), proxies },
-    );
+    findIp({ headers, socket: request.socket }, { platform: platform(process.env), proxies });
 
   if (ip === "") {
     if (isDevelopment(process.env)) {

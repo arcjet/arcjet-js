@@ -360,9 +360,7 @@ export function isVerifiedBot(result: ArcjetRuleResult): boolean | undefined {
  *   `false` if the bot rule result was `LIVE` and the request had a `User-Agent` header,
  *   `undefined` if the rule result was non-bot or `DRY_RUN`.
  */
-export function isMissingUserAgent(
-  result: ArcjetRuleResult,
-): boolean | undefined {
+export function isMissingUserAgent(result: ArcjetRuleResult): boolean | undefined {
   if (isActive(result) && isErrorReason(result.reason)) {
     return (
       // Error message via server bot rule

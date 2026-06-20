@@ -1,9 +1,8 @@
-import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
-import type { ImportObject } from "./wasm/arcjet_analyze_js_req.component.js";
-
 import componentCoreWasm from "./wasm/arcjet_analyze_js_req.component.core.wasm?module";
 import componentCore2Wasm from "./wasm/arcjet_analyze_js_req.component.core2.wasm?module";
 import componentCore3Wasm from "./wasm/arcjet_analyze_js_req.component.core3.wasm?module";
+import { instantiate } from "./wasm/arcjet_analyze_js_req.component.js";
+import type { ImportObject } from "./wasm/arcjet_analyze_js_req.component.js";
 
 async function moduleFromPath(path: string): Promise<WebAssemblyLike.Module> {
   if (path === "arcjet_analyze_js_req.component.core.wasm") {

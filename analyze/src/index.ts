@@ -80,13 +80,7 @@ export {
   type DetectedSensitiveInfoEntity,
 };
 
-const FREE_EMAIL_PROVIDERS = [
-  "gmail.com",
-  "yahoo.com",
-  "hotmail.com",
-  "aol.com",
-  "hotmail.co.uk",
-];
+const FREE_EMAIL_PROVIDERS = ["gmail.com", "yahoo.com", "hotmail.com", "aol.com", "hotmail.co.uk"];
 
 function noOpSensitiveInfoDetect(): SensitiveInfoEntity[] {
   return [];
@@ -167,10 +161,7 @@ export async function generateFingerprint(
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
-    return analyze.generateFingerprint(
-      JSON.stringify(request),
-      context.characteristics,
-    );
+    return analyze.generateFingerprint(JSON.stringify(request), context.characteristics);
     // Ignore the `else` branch as we test in places that have WebAssembly.
     /* node:coverage ignore next 4 */
   }
@@ -324,7 +315,5 @@ export async function matchFilters(
   }
 
   context.log.debug("WebAssembly is not supported in this runtime");
-  throw new Error(
-    "FILTER rule failed to run because Wasm is not supported in this environment.",
-  );
+  throw new Error("FILTER rule failed to run because Wasm is not supported in this environment.");
 }

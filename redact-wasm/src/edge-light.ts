@@ -1,3 +1,6 @@
+import componentCoreWasm from "./wasm/arcjet_analyze_bindings_redact.component.core.wasm?module";
+import componentCore2Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core2.wasm?module";
+import componentCore3Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core3.wasm?module";
 import { instantiate } from "./wasm/arcjet_analyze_bindings_redact.component.js";
 import type {
   ImportObject,
@@ -6,10 +9,6 @@ import type {
   SensitiveInfoEntity,
 } from "./wasm/arcjet_analyze_bindings_redact.component.js";
 import type { ArcjetRedactCustomRedact } from "./wasm/interfaces/arcjet-redact-custom-redact.js";
-
-import componentCoreWasm from "./wasm/arcjet_analyze_bindings_redact.component.core.wasm?module";
-import componentCore2Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core2.wasm?module";
-import componentCore3Wasm from "./wasm/arcjet_analyze_bindings_redact.component.core3.wasm?module";
 
 async function moduleFromPath(path: string): Promise<WebAssemblyLike.Module> {
   if (path === "arcjet_analyze_bindings_redact.component.core.wasm") {
@@ -25,10 +24,7 @@ async function moduleFromPath(path: string): Promise<WebAssemblyLike.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-export async function initializeWasm(
-  detect: CustomDetect,
-  replace: CustomRedact,
-) {
+export async function initializeWasm(detect: CustomDetect, replace: CustomRedact) {
   const coreImports: ImportObject = {
     "arcjet:redact/custom-redact": {
       detectSensitiveInfo: detect,

@@ -1,6 +1,7 @@
 import type { Cache } from "@arcjet/cache";
 import { isMessage } from "@bufbuild/protobuf";
 import { typeid } from "typeid-js";
+
 import { ReasonSchema } from "./proto/decide/v1alpha1/decide_pb.js";
 
 // Re-export the Well Known Bots from the generated file
@@ -21,20 +22,12 @@ export type ArcjetMode = "LIVE" | "DRY_RUN";
 /**
  * Names of different rate limit algorithms.
  */
-export type ArcjetRateLimitAlgorithm =
-  | "TOKEN_BUCKET"
-  | "FIXED_WINDOW"
-  | "SLIDING_WINDOW";
+export type ArcjetRateLimitAlgorithm = "TOKEN_BUCKET" | "FIXED_WINDOW" | "SLIDING_WINDOW";
 
 /**
  * Kinds of email addresses.
  */
-export type ArcjetEmailType =
-  | "DISPOSABLE"
-  | "FREE"
-  | "NO_MX_RECORDS"
-  | "NO_GRAVATAR"
-  | "INVALID";
+export type ArcjetEmailType = "DISPOSABLE" | "FREE" | "NO_MX_RECORDS" | "NO_GRAVATAR" | "INVALID";
 
 /**
  * Sensitive info identified by Arcjet.
@@ -651,9 +644,7 @@ export class ArcjetErrorReason extends ArcjetReason {
 
     if (isMessage(error, ReasonSchema)) {
       this.message =
-        error.reason.case === "error"
-          ? error.reason.value.message
-          : "Missing error reason";
+        error.reason.case === "error" ? error.reason.value.message : "Missing error reason";
       return;
     }
 
@@ -980,10 +971,7 @@ export class ArcjetIpDetails {
    * @returns
    *   Whether the IP address has accuracy info.
    */
-  hasAccuracyRadius(): this is RequiredProps<
-    this,
-    "latitude" | "longitude" | "accuracyRadius"
-  > {
+  hasAccuracyRadius(): this is RequiredProps<this, "latitude" | "longitude" | "accuracyRadius"> {
     return typeof this.accuracyRadius !== "undefined";
   }
 
@@ -1492,14 +1480,7 @@ export type ArcjetRule<Props extends {} = {}> = {
   // TODO(@wooorm-arcjet):
   // if it is intentional that people can extend rules,
   // then we need to allow that in the types.
-  type:
-    | "RATE_LIMIT"
-    | "BOT"
-    | "EMAIL"
-    | "FILTER"
-    | "SHIELD"
-    | "SENSITIVE_INFO"
-    | string;
+  type: "RATE_LIMIT" | "BOT" | "EMAIL" | "FILTER" | "SHIELD" | "SENSITIVE_INFO" | string;
 
   /**
    * Mode.
@@ -1549,18 +1530,13 @@ export type ArcjetRule<Props extends {} = {}> = {
    * @returns
    *   Promise to a rule result.
    */
-  protect(
-    context: ArcjetContext,
-    details: ArcjetRequestDetails & Props,
-  ): Promise<ArcjetRuleResult>;
+  protect(context: ArcjetContext, details: ArcjetRequestDetails & Props): Promise<ArcjetRuleResult>;
 };
 
 /**
  * Abstract rate limit rule.
  */
-export interface ArcjetRateLimitRule<
-  Props extends {},
-> extends ArcjetRule<Props> {
+export interface ArcjetRateLimitRule<Props extends {}> extends ArcjetRule<Props> {
   /**
    * Kind.
    */
@@ -1651,9 +1627,7 @@ export interface ArcjetSlidingWindowRateLimitRule<
 /**
  * Email rule.
  */
-export interface ArcjetEmailRule<
-  Props extends { email: string },
-> extends ArcjetRule<Props> {
+export interface ArcjetEmailRule<Props extends { email: string }> extends ArcjetRule<Props> {
   /**
    * Kind.
    */
@@ -1709,9 +1683,7 @@ export interface ArcjetFilterRule extends ArcjetRule<{
 /**
  * Sensitive info rule.
  */
-export interface ArcjetSensitiveInfoRule<
-  Props extends {},
-> extends ArcjetRule<Props> {
+export interface ArcjetSensitiveInfoRule<Props extends {}> extends ArcjetRule<Props> {
   /**
    * Kind.
    */

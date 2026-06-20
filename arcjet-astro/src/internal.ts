@@ -1,3 +1,10 @@
+import { readBodyWeb } from "@arcjet/body";
+import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
+import { ArcjetHeaders } from "@arcjet/headers";
+import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import { Logger } from "@arcjet/logger";
+import { createClient } from "@arcjet/protocol/client.js";
+import { createTransport } from "@arcjet/transport";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -10,14 +17,6 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
-import { readBodyWeb } from "@arcjet/body";
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
-import { ArcjetHeaders } from "@arcjet/headers";
-import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
-import { Logger } from "@arcjet/logger";
-import { createClient } from "@arcjet/protocol/client.js";
-import { createTransport } from "@arcjet/transport";
-
 import {
   ARCJET_BASE_URL,
   ARCJET_ENV,
@@ -198,10 +197,7 @@ export interface ArcjetAstro<Props extends PlainObject> {
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
    *   Arcjet’s decision about the request.
    */
-  protect(
-    request: Request,
-    ...props: MaybeProperties<Props>
-  ): Promise<ArcjetDecision>;
+  protect(request: Request, ...props: MaybeProperties<Props>): Promise<ArcjetDecision>;
 
   /**
    * Augment the client with another rule.
@@ -247,14 +243,10 @@ export function createArcjetClient<
         level: logLevel(env),
       });
 
-  const proxies = Array.isArray(options.proxies)
-    ? parseProxies(options.proxies)
-    : undefined;
+  const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
 
   if (isDevelopment(process.env)) {
-    log.warn(
-      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
-    );
+    log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
   }
 
   function toArcjetRequest<Props extends PlainObject>(
@@ -272,15 +264,9 @@ export function createArcjetClient<
     const headers = new ArcjetHeaders(request.headers);
 
     const url = new URL(request.url);
-    const xArcjetIp = isDevelopment(env)
-      ? headers.get("x-arcjet-ip")
-      : undefined;
+    const xArcjetIp = isDevelopment(env) ? headers.get("x-arcjet-ip") : undefined;
     let ip =
-      xArcjetIp ||
-      findIp(
-        { ip: clientAddress, headers },
-        { platform: platform(env), proxies },
-      );
+      xArcjetIp || findIp({ ip: clientAddress, headers }, { platform: platform(env), proxies });
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
