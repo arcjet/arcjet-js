@@ -81,7 +81,7 @@ export function platform(environment: Env): Platform | undefined {
  * @returns
  *   Whether the environment is development.
  */
-export function isDevelopment(environment: Env) {
+export function isDevelopment(environment: Env): boolean {
   return (
     environment.NODE_ENV === "development" ||
     environment.MODE === "development" ||
@@ -97,7 +97,7 @@ export function isDevelopment(environment: Env) {
  * @returns
  *   Log level.
  */
-export function logLevel(environment: Env) {
+export function logLevel(environment: Env): "debug" | "info" | "warn" | "error" {
   const level = environment["ARCJET_LOG_LEVEL"];
   switch (level) {
     case "debug":
@@ -131,7 +131,7 @@ const baseUrlAllowed = [
  * @returns
  *   Base URL of Arcjet API.
  */
-export function baseUrl(environment: Env) {
+export function baseUrl(environment: Env): string {
   // Use ARCJET_BASE_URL if it is set and belongs to our allowlist or has a
   // hostname ending in .orb.local; otherwise use the hardcoded default.
   if (typeof environment["ARCJET_BASE_URL"] === "string") {

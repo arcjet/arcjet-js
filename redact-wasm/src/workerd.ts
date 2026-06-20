@@ -24,7 +24,10 @@ async function moduleFromPath(path: string): Promise<WebAssemblyLike.Module> {
   throw new Error(`Unknown path: ${path}`);
 }
 
-export async function initializeWasm(detect: CustomDetect, replace: CustomRedact) {
+export async function initializeWasm(
+  detect: CustomDetect,
+  replace: CustomRedact,
+): Promise<Awaited<ReturnType<typeof instantiate>> | undefined> {
   const coreImports: ImportObject = {
     "arcjet:redact/custom-redact": {
       detectSensitiveInfo: detect,

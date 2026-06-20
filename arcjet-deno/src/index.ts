@@ -104,7 +104,7 @@ export type RemoteClientOptions = {
  * @returns
  *   Client.
  */
-export function createRemoteClient(options?: RemoteClientOptions) {
+export function createRemoteClient(options?: RemoteClientOptions): ReturnType<typeof createClient> {
   // We technically build this twice but they happen at startup.
   const env = Deno.env.toObject();
   const url = options?.baseUrl ?? baseUrl(env);

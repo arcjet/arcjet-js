@@ -62,7 +62,7 @@ import {
   RateLimitReasonSchema,
 } from "./proto/decide/v1alpha1/decide_pb.js";
 
-export function ArcjetModeToProtocol(mode: ArcjetMode) {
+export function ArcjetModeToProtocol(mode: ArcjetMode): Mode {
   switch (mode) {
     case "LIVE":
       return Mode.LIVE;
@@ -218,7 +218,7 @@ export function ArcjetConclusionFromProtocol(conclusion: Conclusion): ArcjetConc
   }
 }
 
-export function ArcjetReasonFromProtocol(proto?: Reason) {
+export function ArcjetReasonFromProtocol(proto?: Reason): ArcjetReason {
   if (typeof proto === "undefined") {
     return new ArcjetReason();
   }

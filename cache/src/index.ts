@@ -61,7 +61,7 @@ class Bucket<T> {
     }
   }
 
-  set(key: string, value: T, ttl: number) {
+  set(key: string, value: T, ttl: number): void {
     const expiresAt = nowInSeconds() + ttl;
     this.expires.set(key, expiresAt);
     this.data.set(key, value);
@@ -102,7 +102,7 @@ export class MemoryCache<T> implements Cache<T> {
     return namespaceCache.get(key);
   }
 
-  set(namespace: string, key: string, value: T, ttl: number) {
+  set(namespace: string, key: string, value: T, ttl: number): void {
     if (typeof namespace !== "string") {
       throw new Error("`namespace` must be a string");
     }

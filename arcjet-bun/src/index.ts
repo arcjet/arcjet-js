@@ -106,7 +106,7 @@ export type RemoteClientOptions = {
  * @returns
  *   Client.
  */
-export function createRemoteClient(options?: RemoteClientOptions) {
+export function createRemoteClient(options?: RemoteClientOptions): ReturnType<typeof createClient> {
   const url = options?.baseUrl ?? baseUrl(env);
   const timeout = options?.timeout ?? (isDevelopment(env) ? 1000 : 500);
 

@@ -1,12 +1,7 @@
 {
   "extends": "../tsconfig.base.json",
-  "include": [
-    "src/**/*.ts"
-  ],
+  "include": ["src/**/*.ts"],
   "compilerOptions": {
-    "types": [
-      "node",
-      "deno"
-    ]
+    "types": ["node", "deno"]
   }
 }

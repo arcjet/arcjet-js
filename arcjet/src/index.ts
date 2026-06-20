@@ -3026,7 +3026,8 @@ export function detectPromptInjection(
  * @deprecated
  *   Use `detectPromptInjection` instead.
  */
-export const experimental_detectPromptInjection = detectPromptInjection;
+export const experimental_detectPromptInjection: typeof detectPromptInjection =
+  detectPromptInjection;
 
 /**
  * Configuration for signup form protection rule.
