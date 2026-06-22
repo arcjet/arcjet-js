@@ -27,8 +27,8 @@
   "exports": {
     ".": {
       "bun": {
-        "types": "./dist/node.d.ts",
-        "import": "./dist/node.js"
+        "types": "./dist/bun.d.ts",
+        "import": "./dist/bun.js"
       },
       "edge-light": {
         "types": "./dist/fetch.d.ts",
@@ -54,6 +54,10 @@
     "./node": {
       "types": "./dist/node.d.ts",
       "import": "./dist/node.js"
+    },
+    "./bun": {
+      "types": "./dist/bun.d.ts",
+      "import": "./dist/bun.js"
     },
     "./fetch": {
       "types": "./dist/fetch.d.ts",

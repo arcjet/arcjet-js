@@ -1,11 +1,17 @@
 /**
- * Connect RPC transport factory for `@arcjet/guard`.
+ * Connect RPC transport factory for `@arcjet/guard` — Node.js.
  *
- * Creates an HTTP/2 transport with optimistic pre-connect and a long
- * idle timeout suitable for AWS Global Accelerator. When a standard proxy
- * environment variable is detected, Node routes through the proxy over HTTP/1.1
- * using the built-in proxy support of the Node.js HTTP agent, while Bun falls
- * back to the fetch transport so its native `fetch` performs the proxying.
+ * Without a proxy it connects directly over HTTP/2. When a standard proxy
+ * environment variable is detected, it routes through the proxy over HTTP/1.1
+ * using the built-in proxy support of the Node.js HTTP agent.
+ *
+ * This entry point is Node-only: Bun has its own entry point
+ * (`transport-bun.ts`) because its `fetch` proxies but its `node:http` agent
+ * does not, and Deno reaches the fetch entry point through the `"deno"` export
+ * condition. An explicit `@arcjet/guard/node` import on Bun or Deno still lands
+ * here and uses the Node agent — whose `proxyEnv` option those runtimes don't
+ * implement, so a proxy would not be applied on them (use the default import
+ * for proxy support there).
  *
  * @packageDocumentation
  */
@@ -14,95 +20,40 @@ import * as http from "node:http";
 import * as https from "node:https";
 
 import type { Transport } from "@connectrpc/connect";
-import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
+import { createConnectTransport } from "@connectrpc/connect-node";
 
 import { detectProxy } from "./detect-proxy.ts";
-import { createFetchTransport } from "./transport-fetch.ts";
-
-/**
- * Whether the current runtime is Bun.
- *
- * Bun resolves the `"."` export to this Node entry point for HTTP/2 support,
- * but its Node HTTP agent does not implement the `proxyEnv` proxy option, so we
- * detect it to choose a proxy strategy that works.
- */
-function isBun(): boolean {
-  return "Bun" in globalThis;
-}
-
-/**
- * Whether the current runtime is Deno.
- *
- * The `"deno"` export condition routes Deno to the fetch entry point, so it
- * shouldn't normally reach this Node entry point. But an explicit
- * `@arcjet/guard/node` import would, and Deno's Node HTTP agent — like Bun's —
- * does not implement the `proxyEnv` proxy option, so the agent path below would
- * silently bypass the proxy. Detect it to fall back to the fetch transport,
- * whose native `fetch` honors the proxy environment variables.
- */
-function isDeno(): boolean {
-  return "Deno" in globalThis;
-}
+import { createHttp2Transport } from "./transport-http2.ts";
 
 /**
  * Create a Connect transport for the given base URL.
  *
  * When a proxy is detected (`HTTP_PROXY`/`HTTPS_PROXY`, respecting `NO_PROXY`),
- * Node routes through it over HTTP/1.1 using the built-in proxy support of the
- * Node.js HTTP agent. Bun's and Deno's Node HTTP agents don't support that, so
- * on those runtimes we use the fetch transport instead and let their native
- * `fetch` proxy (the same approach as `@arcjet/transport`'s Bun and Deno entry
- * points). Without a proxy it connects directly over HTTP/2, optimistically
- * pre-connecting so the first `.guard()` call doesn't pay the full TCP + TLS
- * setup cost.
+ * the request is routed through it over HTTP/1.1 using the built-in proxy
+ * support of the Node.js HTTP agent. Without a proxy it connects directly over
+ * HTTP/2, optimistically pre-connecting so the first `.guard()` call doesn't
+ * pay the full TCP + TLS setup cost.
  */
 export function createTransport(baseUrl: string): Transport {
   const url = new URL(baseUrl);
   const proxyUrl = detectProxy(url);
 
-  // No proxy: connect directly over HTTP/2, optimistically pre-connecting so
-  // the first `.guard()` call doesn't pay the full TCP + TLS setup cost.
+  // No proxy: connect directly over HTTP/2.
   if (proxyUrl === undefined) {
-    const sessionManager = new Http2SessionManager(baseUrl, {
-      // AWS Global Accelerator doesn't support PING so we use a very high idle
-      // timeout. Ref:
-      // https://docs.aws.amazon.com/global-accelerator/latest/dg/introduction-how-it-works.html#about-idle-timeout
-      idleConnectionTimeoutMs: 340 * 1000,
-    });
-
-    // Optimistic pre-connect — failures are silently ignored because the
-    // real RPC call will retry the connection anyway.
-    void sessionManager.connect().catch(() => {});
-
-    return createConnectTransport({
-      baseUrl,
-      httpVersion: "2",
-      sessionManager,
-    });
+    return createHttp2Transport(baseUrl);
   }
 
-  // Proxy on Bun or Deno: their Node HTTP agent ignores the `proxyEnv` option
-  // (Bun resolves `.` to this entry point for HTTP/2; Deno only reaches it via
-  // an explicit `@arcjet/guard/node` import), but their native `fetch` honors
-  // the proxy environment variables — so use the fetch transport instead,
-  // matching how `@arcjet/transport` handles Bun and Deno. The proxy was
-  // already detected and logged above, so build it directly without detecting
-  // again.
-  if (isBun() || isDeno()) {
-    return createFetchTransport(baseUrl);
-  }
-
-  // Proxy on Node: route through it over HTTP/1.1 using the agent's built-in
-  // proxy support. Hand the agent only the single proxy variable we resolved,
-  // typed with the exact key names so a misspelled key is a compile error.
+  // Proxy: route through it over HTTP/1.1 using the agent's built-in proxy
+  // support. Hand the agent only the single proxy variable we resolved, typed
+  // with the exact key names so a misspelled key is a compile error.
   // `keepAlive` reuses the proxy connection across requests. The agent's
   // `proxyEnv` option only exists in @types/node 24.x, so it's added through an
   // intersection type to keep this type-checking on the 22.x line used across
   // the monorepo.
   const isHttps = url.protocol === "https:";
-  const proxyEnvironment: Partial<
-    Record<"HTTP_PROXY" | "HTTPS_PROXY", string>
-  > = isHttps ? { HTTPS_PROXY: proxyUrl } : { HTTP_PROXY: proxyUrl };
+  const proxyEnvironment: Partial<Record<"HTTP_PROXY" | "HTTPS_PROXY", string>> = isHttps
+    ? { HTTPS_PROXY: proxyUrl }
+    : { HTTP_PROXY: proxyUrl };
   const options: http.AgentOptions & { proxyEnv: typeof proxyEnvironment } = {
     keepAlive: true,
     proxyEnv: proxyEnvironment,

@@ -19,7 +19,7 @@ import { detectProxy } from "./detect-proxy.ts";
  * Compatible with Deno, Cloudflare Workers, Vercel Edge,
  * and any runtime providing the WHATWG Fetch API.
  *
- * Note: Bun's `"."` export resolves to the `node` entrypoint for HTTP/2.
+ * Note: Bun's `"."` export resolves to the `bun` entrypoint for HTTP/2.
  * This transport is still usable on Bun via `@arcjet/guard/fetch` but
  * will only use HTTP/1.1.
  *

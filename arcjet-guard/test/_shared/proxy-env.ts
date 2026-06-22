@@ -1,6 +1,6 @@
-// Shared test helpers for the `createTransport` unit tests, which all need to
-// neutralize the ambient proxy environment and (for the Bun/Deno cases) fake a
-// runtime global.
+// Shared test helper for the `createTransport` unit tests, which all need to
+// neutralize the ambient proxy environment so the host environment can't flip a
+// no-proxy case onto the proxy path.
 import { afterEach, beforeEach } from "node:test";
 
 // Standard proxy variables, cleared around every test so the host environment
@@ -41,33 +41,4 @@ export function isolateProxyEnvironment(): void {
     }
     saved.clear();
   });
-}
-
-/**
- * Run `fn` with `globalThis[name]` defined, to simulate running under the Bun
- * or Deno runtime, restoring the previous global and silencing the startup log
- * afterward.
- *
- * @param name
- *   Global to define (`"Bun"` or `"Deno"`).
- * @param fn
- *   Function to run with the simulated runtime.
- */
-export function withSimulatedRuntime(name: string, fn: () => void): void {
-  const had = name in globalThis;
-  const original: unknown = Reflect.get(globalThis, name);
-  const originalInfo = console.info;
-  Reflect.set(globalThis, name, {});
-  console.info = (): void => {};
-
-  try {
-    fn();
-  } finally {
-    if (had) {
-      Reflect.set(globalThis, name, original);
-    } else {
-      Reflect.deleteProperty(globalThis, name);
-    }
-    console.info = originalInfo;
-  }
 }
