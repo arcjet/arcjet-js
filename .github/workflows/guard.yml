@@ -53,6 +53,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ${{ github.workspace }}
 
       # Build the whole workspace so @arcjet/guard's workspace dependencies
       # (e.g. @arcjet/analyze) have their `dist/` output for guard's
@@ -88,6 +89,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ${{ github.workspace }}
 
       # Build the whole workspace so @arcjet/guard's workspace dependencies
       # (e.g. @arcjet/analyze) have their `dist/` output for guard's
@@ -175,6 +177,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ${{ github.workspace }}
 
       # Build the whole workspace so guard's workspace dependencies are
       # available to the runtime tests.
