@@ -62,18 +62,21 @@ export function createTunnelingConnection(
     // hold those bytes until the `CONNECT` tunnel is established, then flush and
     // splice the bridge onto the proxy socket.
     let tunnelReady = false;
-    const pending: Array<{ chunk: Buffer; callback: () => void }> = [];
+    const pending: Array<{
+      chunk: Buffer;
+      callback: (error?: Error | null) => void;
+    }> = [];
 
     const bridge = new Duplex({
       read() {
-        // Bytes are pushed in from the proxy socket once the tunnel is open.
+        // Push-driven; see the splice below.
       },
       write(chunk, _encoding, callback) {
         const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
         if (tunnelReady) {
-          proxySocket.write(buffer, () => callback());
+          proxySocket.write(buffer, callback);
         } else {
-          pending.push({ chunk: buffer, callback: () => callback() });
+          pending.push({ chunk: buffer, callback });
         }
       },
     });
@@ -151,6 +154,10 @@ export function createTunnelingConnection(
         proxySocket.write(queued, callback);
       }
       pending.length = 0;
+
+      // The CONNECT response head is no longer needed; release it so it isn't
+      // retained for the lifetime of the (long-lived) connection.
+      head = Buffer.alloc(0);
     }
     proxySocket.on("data", onData);
 
