@@ -1,3 +1,4 @@
+import type { Transport } from "@connectrpc/connect";
 // This file is used when running on the `workerd`.
 // Specifically workers on Cloudflare.
 // It is the same as `edge-light.ts`, which runs on Vercel.
@@ -14,7 +15,7 @@
 // * <https://github.com/connectrpc/connect-es/issues/577#issuecomment-2210103503>
 import { createConnectTransport } from "@connectrpc/connect-web";
 
-export function createTransport(baseUrl: string): ReturnType<typeof createConnectTransport> {
+export function createTransport(baseUrl: string): Transport {
   return createConnectTransport({
     baseUrl,
     fetch: fetchProxy,
