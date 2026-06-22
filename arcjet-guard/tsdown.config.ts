@@ -1,8 +1,14 @@
 import { defineConfig } from "tsdown";
 
-// The generated Protobuf code under `proto/` is shipped verbatim and imported
-// relatively. Keep those imports external and copy the directory into `dist/`
-// so every generated export (and its `.d.ts`) survives untouched.
+/**
+ * Keep the generated Protobuf code under `proto/` external.
+ *
+ * It is shipped verbatim and imported relatively, so leaving those imports
+ * external and copying the directory into `dist/` keeps every generated export
+ * (and its `.d.ts`) untouched.
+ *
+ * @internal
+ */
 const externalizeProto = {
   name: "externalize-proto",
   resolveId(source: string): { id: string; external: true } | null {
