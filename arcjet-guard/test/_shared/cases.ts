@@ -79,6 +79,7 @@ export const cases: TestCase[] = [
 
       assert.equal(decision.conclusion, "ALLOW");
       assert.equal(decision.id, "gdec_allow_tb");
+      // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
       assert.equal(decision.hasError(), false);
 
       const result = input.result(decision);
@@ -381,6 +382,7 @@ export const cases: TestCase[] = [
       const decision = await arcjet.guard({ label: "test", rules: [input] });
 
       assert.equal(decision.conclusion, "ALLOW");
+      // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
       assert.equal(decision.hasError(), true);
     },
   },
@@ -391,6 +393,7 @@ export const cases: TestCase[] = [
       const arcjet = guard(s, tokenBucketAllow);
       const decision = await arcjet.guard({ label: "test", rules: [] });
       assert.equal(decision.conclusion, "ALLOW");
+      // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
       assert.equal(decision.hasError(), true);
     },
   },

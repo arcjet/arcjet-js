@@ -35,9 +35,14 @@
  *   console.log(decision.reason); // "RATE_LIMIT", "PROMPT_INJECTION", etc.
  * }
  *
- * // Check for errors (fail-open — errors don't cause denials)
- * if (decision.hasError()) {
- *   console.warn("At least one rule errored");
+ * // Fail open by default; opt in to fail closed when a rule could not run.
+ * if (decision.hasFailedOpen()) {
+ *   console.warn("a rule could not be evaluated", decision.errorResults());
+ * }
+ *
+ * // Request diagnostics — the decision is still valid.
+ * for (const warning of decision.warnings) {
+ *   console.warn(warning.code, warning.message);
  * }
  *
  * // Per-rule results
@@ -77,6 +82,7 @@ export type {
   Conclusion,
   Reason,
   Mode,
+  Warning,
   RuleResult,
   RuleResultTokenBucket,
   RuleResultFixedWindow,

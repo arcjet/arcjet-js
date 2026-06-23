@@ -847,8 +847,10 @@ const decision = await arcjet.guard({ label: "tools.weather", rules: [...] });
 decision.conclusion;   // "ALLOW" or "DENY"
 decision.reason;       // "RATE_LIMIT", "PROMPT_INJECTION", "SENSITIVE_INFO", "CUSTOM", "ERROR", etc.
 
-// Layer 2: error detection
-decision.hasError();   // true if any rule errored or the server reported diagnostics
+// Layer 2: error/warning detection
+decision.hasFailedOpen(); // true if ALLOW only because a rule/decision could not be processed (fail-closed gate)
+decision.errorResults();  // results that errored (rules or the decision that could not be processed)
+decision.warnings;        // decision-level diagnostics (e.g. an invalid metadata key that was stripped)
 
 // Layer 3: per-rule results (see "Per-rule results" above)
 for (const result of decision.results) {

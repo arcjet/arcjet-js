@@ -83,6 +83,7 @@ export default {
 
       return Response.json({
         conclusion: decision.conclusion,
+        // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
         hasError: decision.hasError(),
         remainingTokens: result?.remainingTokens ?? null,
       });

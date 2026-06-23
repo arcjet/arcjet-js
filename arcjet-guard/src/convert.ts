@@ -44,7 +44,9 @@ import type {
   InternalResult,
   Reason,
   RuleResult,
+  RuleResultError,
   RuleWithInput,
+  Warning,
 } from "./types.ts";
 
 /** Hash a string with SHA-256 and return the hex digest. */
@@ -187,12 +189,16 @@ export function reasonFromProto(r: GuardReason): Reason {
  * @internal
  */
 export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
+  // Per-rule warnings have no data source yet — the Decide service does not
+  // emit per-rule diagnostics. Always empty until then.
+  const warnings: readonly Warning[] = [];
   switch (pr.result.case) {
     case undefined: {
       return {
         conclusion: "ALLOW" as const,
         reason: "UNKNOWN",
         type: "UNKNOWN",
+        warnings,
       };
     }
     case "tokenBucket": {
@@ -201,6 +207,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: conclusionFromProto(v.conclusion),
         reason: "RATE_LIMIT",
         type: "TOKEN_BUCKET",
+        warnings,
         remainingTokens: v.remainingTokens,
         maxTokens: v.maxTokens,
         resetAtUnixSeconds: v.resetAtUnixSeconds,
@@ -214,6 +221,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: conclusionFromProto(v.conclusion),
         reason: "RATE_LIMIT",
         type: "FIXED_WINDOW",
+        warnings,
         remainingRequests: v.remainingRequests,
         maxRequests: v.maxRequests,
         resetAtUnixSeconds: v.resetAtUnixSeconds,
@@ -226,6 +234,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: conclusionFromProto(v.conclusion),
         reason: "RATE_LIMIT",
         type: "SLIDING_WINDOW",
+        warnings,
         remainingRequests: v.remainingRequests,
         maxRequests: v.maxRequests,
         resetAtUnixSeconds: v.resetAtUnixSeconds,
@@ -237,6 +246,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: conclusionFromProto(pr.result.value.conclusion),
         reason: "PROMPT_INJECTION",
         type: "PROMPT_INJECTION",
+        warnings,
       };
     }
     case "moderateContent": {
@@ -244,6 +254,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: conclusionFromProto(pr.result.value.conclusion),
         reason: "MODERATE_CONTENT",
         type: "MODERATE_CONTENT",
+        warnings,
         detected: pr.result.value.detected,
       };
     }
@@ -253,6 +264,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: conclusionFromProto(v.conclusion),
         reason: "SENSITIVE_INFO",
         type: "SENSITIVE_INFO",
+        warnings,
         detectedEntityTypes: v.detectedEntityTypes,
       };
     }
@@ -262,6 +274,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: conclusionFromProto(v.conclusion),
         reason: "CUSTOM",
         type: "CUSTOM",
+        warnings,
         data: Object.fromEntries(Object.entries(v.data)),
       };
     }
@@ -271,6 +284,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: "ALLOW" as const,
         reason: "ERROR",
         type: "RULE_ERROR",
+        warnings,
         message: v.message || "Unknown error",
         code: v.code || "UNKNOWN",
       };
@@ -280,6 +294,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: "ALLOW" as const,
         reason: "NOT_RUN",
         type: "NOT_RUN",
+        warnings,
       };
     }
     default: {
@@ -287,6 +302,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         conclusion: "ALLOW" as const,
         reason: "UNKNOWN",
         type: "UNKNOWN",
+        warnings,
       };
     }
   }
@@ -519,6 +535,65 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
 }
 
 /**
+ * Coerce a value to a string with a fallback. Network data is untrusted — the
+ * proto's `ResultError` fields arrive over Connect-JSON, where a malformed
+ * response can put a non-string where a string is expected.
+ */
+function toStringOr(value: unknown, fallback: string): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+/**
+ * Convert the proto `GuardResponse.errors` payload (non-fatal request
+ * validation diagnostics) into decision-level {@link Warning}s, validating
+ * each entry at the SDK boundary.
+ */
+function warningsFromProto(
+  errors: readonly { code: unknown; message: unknown }[],
+): readonly Warning[] {
+  return errors.map((e) => ({
+    code: toStringOr(e.code, "UNKNOWN"),
+    message: toStringOr(e.message, "Unknown warning"),
+  }));
+}
+
+/**
+ * Build the shared diagnostic members every decision carries — `warnings` plus
+ * the derived `errorResults()` / `hasFailedOpen()` / `hasError()` helpers — from
+ * a conclusion, its results, and any decision-level warnings.
+ *
+ * `errorResults()` scans `results` for `RuleResultError` (which includes the
+ * synthetic error result used when a request could not be processed). It is
+ * computed once and closed over so `hasFailedOpen()` and `errorResults()` share
+ * a single scan rather than re-filtering on each call. `hasError()` is the
+ * deprecated conflated union (warnings ∪ errors).
+ *
+ * @internal
+ */
+export function decisionMembers(
+  conclusion: Conclusion,
+  results: readonly RuleResult[],
+  warnings: readonly Warning[],
+): {
+  warnings: readonly Warning[];
+  errorResults: () => readonly RuleResultError[];
+  hasFailedOpen: () => boolean;
+  hasError: () => boolean;
+} {
+  // Compute once; both accessors close over the same array.
+  const errored = results.filter(
+    (r): r is RuleResultError => r.type === "RULE_ERROR",
+  );
+  const errorResults = (): readonly RuleResultError[] => errored;
+  return {
+    warnings,
+    errorResults,
+    hasFailedOpen: (): boolean => conclusion === "ALLOW" && errored.length > 0,
+    hasError: (): boolean => warnings.length > 0 || errored.length > 0,
+  };
+}
+
+/**
  * Convert a proto `GuardResponse` to the SDK `Decision`.
  *
  * Correlates proto results back to SDK rule instances using
@@ -528,23 +603,29 @@ export function decisionFromProto(
   response: ProtoGuardResponse,
   _rules: readonly RuleWithInput[],
 ): Decision {
+  // Top-level diagnostics are decision-level warnings; present whether or not a
+  // decision came back.
+  const warnings = warningsFromProto(response.errors);
   const proto = response.decision;
   if (!proto) {
-    // No decision in response — synthesize an ALLOW with error.
+    // No usable decision — synthesize a fail-open ALLOW carrying an error
+    // result so `hasFailedOpen()` / `errorResults()` see the failure.
     const errorResult: InternalResult = {
       conclusion: "ALLOW",
       reason: "ERROR",
       type: "RULE_ERROR",
+      warnings: [],
       message: "No decision in response",
       code: "NO_DECISION",
       [symbolArcjetInternal]: { configId: "", inputId: "" },
     };
+    const results = [errorResult];
     const d: InternalDecision = {
       conclusion: "ALLOW" as const,
       id: "",
-      results: [errorResult],
-      hasError: () => true,
-      [symbolArcjetInternal]: { results: [errorResult] },
+      results,
+      ...decisionMembers("ALLOW", results, warnings),
+      [symbolArcjetInternal]: { results },
     };
     return d;
   }
@@ -564,9 +645,6 @@ export function decisionFromProto(
 
   const results: readonly RuleResult[] = internalResults;
 
-  const hasResponseErrors = response.errors.length > 0;
-  const hasError = (): boolean => hasResponseErrors || results.some((r) => r.type === "RULE_ERROR");
-
   const conclusion = conclusionFromProto(proto.conclusion);
   const reason = reasonFromProto(proto.reason);
 
@@ -576,7 +654,7 @@ export function decisionFromProto(
       reason,
       id: proto.id,
       results,
-      hasError,
+      ...decisionMembers("DENY", results, warnings),
       [symbolArcjetInternal]: { results: internalResults },
     };
     return d;
@@ -586,7 +664,7 @@ export function decisionFromProto(
     conclusion: "ALLOW" as const,
     id: proto.id,
     results,
-    hasError,
+    ...decisionMembers("ALLOW", results, warnings),
     [symbolArcjetInternal]: { results: internalResults },
   };
   return d;

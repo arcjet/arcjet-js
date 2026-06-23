@@ -354,6 +354,9 @@ describe("result() and deniedResult() with no decision data", () => {
       id: "gdec_test",
       results: [],
       hasError: (): boolean => false,
+      warnings: [],
+      errorResults: (): never[] => [],
+      hasFailedOpen: (): boolean => false,
     };
 
     assert.equal(input.result(decision), null);
@@ -373,6 +376,9 @@ describe("result() and deniedResult() with no decision data", () => {
       id: "gdec_test",
       results: [],
       hasError: (): boolean => false,
+      warnings: [],
+      errorResults: (): never[] => [],
+      hasFailedOpen: (): boolean => false,
     };
 
     assert.equal(input.deniedResult(decision), null);
@@ -391,6 +397,9 @@ describe("result() and deniedResult() with no decision data", () => {
       id: "gdec_test",
       results: [],
       hasError: (): boolean => false,
+      warnings: [],
+      errorResults: (): never[] => [],
+      hasFailedOpen: (): boolean => false,
     };
 
     assert.deepEqual(rule.results(decision), []);
@@ -409,6 +418,9 @@ describe("result() and deniedResult() with no decision data", () => {
       id: "gdec_test",
       results: [],
       hasError: (): boolean => false,
+      warnings: [],
+      errorResults: (): never[] => [],
+      hasFailedOpen: (): boolean => false,
     };
 
     assert.equal(rule.deniedResult(decision), null);
@@ -506,6 +518,9 @@ describe("defineCustomRule", () => {
       id: "gdec_test",
       results: [],
       hasError: (): boolean => false,
+      warnings: [],
+      errorResults: (): never[] => [],
+      hasFailedOpen: (): boolean => false,
     };
 
     assert.equal(input.result(decision), null);
