@@ -65,61 +65,8 @@
  * @packageDocumentation
  */
 
-export {
-  // Types
-  type Conclusion,
-  type Reason,
-  type Mode,
-  type RuleResult,
-  type RuleResultTokenBucket,
-  type RuleResultFixedWindow,
-  type RuleResultSlidingWindow,
-  type RuleResultPromptInjection,
-  type RuleResultModerateContent,
-  type RuleResultSensitiveInfo,
-  type RuleResultCustom,
-  type RuleResultNotRun,
-  type RuleResultError,
-  type RuleResultUnknown,
-  type Decision,
-  type DecisionAllow,
-  type DecisionDeny,
-  type DecisionBase,
-  type RuleWithInput,
-  type RuleWithConfig,
-  type GuardOptions,
-  type LaunchOptions,
-  type ArcjetGuard,
-
-  // Rule config types
-  type TokenBucketConfig,
-  type TokenBucketInput,
-  type FixedWindowConfig,
-  type FixedWindowInput,
-  type SlidingWindowConfig,
-  type SlidingWindowInput,
-  type DetectPromptInjectionConfig,
-  type ExperimentalModerateContentConfig,
-  type LocalDetectSensitiveInfoConfig,
-  type SensitiveInfoEntityType,
-  type LocalCustomConfig,
-  type LocalCustomInput,
-
-  // Rule factories
-  tokenBucket,
-  fixedWindow,
-  slidingWindow,
-  detectPromptInjection,
-  experimental_moderateContent,
-  localDetectSensitiveInfo,
-  defineCustomRule,
-
-  // Transport-agnostic factory
-  launchArcjetWithTransport,
-
-  // Internal
-  _launchWithTransportFactory,
-} from "./index.ts";
+// Shared public API surface (kept identical across entrypoints).
+export * from "./public.ts";
 
 import { _launchWithTransportFactory } from "./index.ts";
 import type { LaunchOptions, ArcjetGuard } from "./index.ts";
