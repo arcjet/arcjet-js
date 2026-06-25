@@ -71,6 +71,7 @@ export {
   type RuleResultFixedWindow,
   type RuleResultSlidingWindow,
   type RuleResultPromptInjection,
+  type RuleResultModerateContent,
   type RuleResultSensitiveInfo,
   type RuleResultCustom,
   type RuleResultNotRun,
@@ -94,6 +95,7 @@ export {
   type SlidingWindowConfig,
   type SlidingWindowInput,
   type DetectPromptInjectionConfig,
+  type ExperimentalModerateContentConfig,
   type LocalDetectSensitiveInfoConfig,
   type SensitiveInfoEntityType,
   type LocalCustomConfig,
@@ -104,6 +106,7 @@ export {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
+  experimental_moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
 
