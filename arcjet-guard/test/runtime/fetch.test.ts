@@ -87,6 +87,7 @@ describe("Runtime: Fetch (connect-web) transport", () => {
     });
 
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
 
     const result = input.result(decision);

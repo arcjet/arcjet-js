@@ -367,9 +367,10 @@ export function detectPromptInjection(
  *
  * **Experimental.** The rule name and result shape may change. This
  * functionality may not be available yet, so while this rule is experimental
- * a call may simply return an error result. Errors are fail open, so
- * `decision.hasError()` reports `true` while the conclusion stays `"ALLOW"`.
- * Check the latest version of this SDK to see whether the rule is now stable.
+ * a call may simply return an error result. Errors are fail open, so the
+ * conclusion stays `"ALLOW"` and `decision.hasFailedOpen()` reports `true`
+ * (inspect the errored result with `decision.errorResults()`). Check the
+ * latest version of this SDK to see whether the rule is now stable.
  *
  * @example
  * ```ts

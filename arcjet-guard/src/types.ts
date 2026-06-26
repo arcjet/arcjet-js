@@ -26,6 +26,21 @@ export type Reason =
 export type Mode = "LIVE" | "DRY_RUN";
 
 /**
+ * A warning means the decision (or a single rule result) was processed
+ * correctly — the result is trustworthy — but something should be fixed, e.g.
+ * an invalid metadata key that was stripped or an invalid label.
+ *
+ * Contrast with an errored result ({@link RuleResultError}), which means a rule
+ * or the decision _could not_ be processed and the security signal is degraded.
+ */
+export type Warning = {
+  /** Machine-readable code (e.g. `"AJ1100"`). */
+  readonly code: string;
+  /** Human-readable description. */
+  readonly message: string;
+};
+
+/**
  * Built-in sensitive information entity types supported by the WASM
  * analyzer. Custom entity types are not supported in `@arcjet/guard` —
  * use a custom rule instead.
@@ -49,6 +64,13 @@ export type RuleResultTokenBucket = {
   readonly reason: "RATE_LIMIT";
   /** Discriminant — always `"TOKEN_BUCKET"`. */
   readonly type: "TOKEN_BUCKET";
+  /**
+   * Per-rule warnings — this rule was processed correctly (the result is
+   * trustworthy) but something about it should be fixed. Informational; never
+   * changes the rule's conclusion. Empty until the Decide service emits
+   * per-rule diagnostics.
+   */
+  readonly warnings: readonly Warning[];
   /** Number of tokens remaining in the bucket after this evaluation. */
   readonly remainingTokens: number;
   /** Maximum capacity of the token bucket. */
@@ -69,6 +91,8 @@ export type RuleResultFixedWindow = {
   readonly reason: "RATE_LIMIT";
   /** Discriminant — always `"FIXED_WINDOW"`. */
   readonly type: "FIXED_WINDOW";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
   /** Number of requests remaining in the current window. */
   readonly remainingRequests: number;
   /** Maximum requests allowed per window. */
@@ -87,6 +111,8 @@ export type RuleResultSlidingWindow = {
   readonly reason: "RATE_LIMIT";
   /** Discriminant — always `"SLIDING_WINDOW"`. */
   readonly type: "SLIDING_WINDOW";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
   /** Number of requests remaining in the current sliding interval. */
   readonly remainingRequests: number;
   /** Maximum requests allowed per sliding interval. */
@@ -105,6 +131,8 @@ export type RuleResultPromptInjection = {
   readonly reason: "PROMPT_INJECTION";
   /** Discriminant — always `"PROMPT_INJECTION"`. */
   readonly type: "PROMPT_INJECTION";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
 };
 
 /**
@@ -119,6 +147,8 @@ export type RuleResultModerateContent = {
   readonly reason: "MODERATE_CONTENT";
   /** Discriminant — always `"MODERATE_CONTENT"`. */
   readonly type: "MODERATE_CONTENT";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
   /** Whether harmful content was detected in the input text. */
   readonly detected: boolean;
 };
@@ -131,6 +161,8 @@ export type RuleResultSensitiveInfo = {
   readonly reason: "SENSITIVE_INFO";
   /** Discriminant — always `"SENSITIVE_INFO"`. */
   readonly type: "SENSITIVE_INFO";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
   /**
    * Entity types detected in the input (e.g. `"EMAIL"`, `"PHONE_NUMBER"`).
    *
@@ -152,6 +184,8 @@ export type RuleResultCustom<TData extends Record<string, string> = Record<strin
   readonly reason: "CUSTOM";
   /** Discriminant — always `"CUSTOM"`. */
   readonly type: "CUSTOM";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
   /** Key-value data returned by the custom rule's `evaluate` function. */
   readonly data: Readonly<TData>;
 };
@@ -164,6 +198,8 @@ export type RuleResultNotRun = {
   readonly reason: "NOT_RUN";
   /** Discriminant — always `"NOT_RUN"`. */
   readonly type: "NOT_RUN";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
 };
 
 /**
@@ -177,6 +213,8 @@ export type RuleResultError = {
   readonly reason: "ERROR";
   /** Discriminant — always `"RULE_ERROR"`. */
   readonly type: "RULE_ERROR";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
   /** Human-readable error description. */
   readonly message: string;
   /** Machine-readable error code */
@@ -191,6 +229,8 @@ export type RuleResultUnknown = {
   readonly reason: "UNKNOWN";
   /** Discriminant — always `"UNKNOWN"`. */
   readonly type: "UNKNOWN";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
 };
 
 /** Union of all possible rule result types. */
@@ -212,7 +252,32 @@ export type DecisionBase = {
   readonly results: readonly RuleResult[];
   /** Server-generated unique identifier (TypeID, prefix `"gdec"`). */
   readonly id: string;
-  /** True if any rule errored during evaluation (layer 2 helper). */
+  /**
+   * Decision-level warnings — diagnostics from request validation (e.g. an
+   * invalid metadata key that was stripped). The decision is still valid; these
+   * are informational and never change the conclusion.
+   */
+  readonly warnings: readonly Warning[];
+  /**
+   * The results that errored — rules (or the decision itself) that _could not
+   * be processed_. Empty when nothing errored. Each entry carries a `code` and
+   * `message`; correlate one to a specific rule with `rule.result(decision)`.
+   */
+  errorResults(): readonly RuleResultError[];
+  /**
+   * True when this decision returned `ALLOW` only because a rule or the
+   * decision could not be processed — i.e. it failed open. Gate a fail-closed
+   * policy on this: `if (decision.hasFailedOpen()) return deny()`. "Failed open"
+   * describes an outcome of _this decision_, not the policy configuration.
+   */
+  hasFailedOpen(): boolean;
+  /**
+   * True if there is any warning or any errored rule (the old conflated union).
+   *
+   * @deprecated Use {@link DecisionBase.warnings} for request diagnostics and
+   *   {@link DecisionBase.errorResults} / {@link DecisionBase.hasFailedOpen} for
+   *   errors. Removed in the next major.
+   */
   hasError(): boolean;
 };
 

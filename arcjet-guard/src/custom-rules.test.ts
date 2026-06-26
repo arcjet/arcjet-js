@@ -465,6 +465,9 @@ function emptyDecision(): Decision {
     id: "gdec_test",
     results: [],
     hasError: (): boolean => false,
+    warnings: [],
+    errorResults: (): never[] => [],
+    hasFailedOpen: (): boolean => false,
   };
 }
 
@@ -504,6 +507,9 @@ function decisionWithMultiple(
     id: "gdec_test",
     results: ruleResults,
     hasError: (): boolean => false,
+    warnings: [],
+    errorResults: (): never[] => [],
+    hasFailedOpen: (): boolean => false,
     [symbolArcjetInternal]: { results: ruleResults },
   };
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test helper building a mock Decision

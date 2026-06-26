@@ -81,6 +81,7 @@ describe("Bun: connect-node HTTP/2 over TLS (self-signed)", () => {
     });
 
     expect(decision.conclusion).toBe("ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     expect(decision.hasError()).toBe(false);
 
     const result = input.result(decision);

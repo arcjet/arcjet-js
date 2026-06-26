@@ -85,6 +85,7 @@ describe("Runtime: Node.js HTTP/2 transport", () => {
     });
 
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
 
     const result = input.result(decision);
@@ -134,6 +135,7 @@ describe("Runtime: Node.js HTTP/2 over TLS (self-signed)", () => {
     });
 
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
 
     const result = input.result(decision);

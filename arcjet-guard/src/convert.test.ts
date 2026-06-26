@@ -775,6 +775,7 @@ describe("decisionFromProto", () => {
     assert.equal(decision.id, "gdec_test123");
     assert.equal(decision.results.length, 1);
     assert.equal(decision.results[0].type, "TOKEN_BUCKET");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
 
     const result = input.result(decision);
@@ -982,7 +983,18 @@ describe("decisionFromProto", () => {
     const decision = decisionFromProto(response, [input]);
 
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
+    // An errored rule is a rule-level error: it fails open to ALLOW, so the
+    // decision did fail open, and the errored result is inspectable.
+    assert.equal(decision.hasFailedOpen(), true);
+    assert.equal(decision.errorResults().length, 1);
+    assert.equal(decision.errorResults()[0].code, "TIMEOUT");
+    assert.equal(decision.errorResults()[0].message, "evaluator timeout");
+    // No request-level diagnostics on this response.
+    assert.equal(decision.warnings.length, 0);
+    // Per-rule warnings channel is empty until the service populates it.
+    assert.equal(decision.results[0].warnings.length, 0);
     assert.equal(decision.results[0].type, "RULE_ERROR");
     if (decision.results[0].type === "RULE_ERROR") {
       assert.equal(decision.results[0].message, "evaluator timeout");
@@ -1022,7 +1034,13 @@ describe("decisionFromProto", () => {
     const decision = decisionFromProto(response, []);
 
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
+    // A missing decision is a decision-level error: fail-open ALLOW with a
+    // single synthetic error result the caller can detect.
+    assert.equal(decision.hasFailedOpen(), true);
+    assert.equal(decision.errorResults().length, 1);
+    assert.equal(decision.errorResults()[0].code, "NO_DECISION");
   });
 
   test("unrecognized result case maps to UNKNOWN", () => {
@@ -1054,7 +1072,156 @@ describe("decisionFromProto", () => {
 
     assert.equal(decision.conclusion, "ALLOW");
     assert.equal(decision.results.length, 0);
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
+    // Clean ALLOW: no errored results, so it did not fail open.
+    assert.equal(decision.hasFailedOpen(), false);
+    assert.equal(decision.errorResults().length, 0);
+    assert.equal(decision.warnings.length, 0);
+  });
+
+  test("response errors surface as decision-level warnings", () => {
+    // The proto's `GuardResponse.errors` carries non-fatal request-validation
+    // diagnostics. The SDK surfaces them as warnings instead of dropping them.
+    const response = create(GuardResponseSchema, {
+      errors: [
+        create(ResultErrorSchema, { code: "AJ1100", message: "stripped invalid metadata key" }),
+      ],
+      decision: create(GuardDecisionSchema, {
+        id: "gdec_test123",
+        conclusion: GuardConclusion.ALLOW,
+        reason: GuardReason.UNSPECIFIED,
+        ruleResults: [],
+      }),
+    });
+
+    const decision = decisionFromProto(response, []);
+
+    // The decision is still valid (ALLOW, nothing errored) — it did NOT fail
+    // open. The diagnostic is a warning.
+    assert.equal(decision.conclusion, "ALLOW");
+    assert.equal(decision.hasFailedOpen(), false);
+    assert.equal(decision.errorResults().length, 0);
+    assert.equal(decision.warnings.length, 1);
+    assert.equal(decision.warnings[0].code, "AJ1100");
+    assert.equal(decision.warnings[0].message, "stripped invalid metadata key");
+    // The deprecated union still fires on warnings (back-compat).
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
+    assert.equal(decision.hasError(), true);
+  });
+
+  test("DENY with an errored rule does not fail open", () => {
+    // Another rule denied, so the ALLOW masking an error did not happen —
+    // hasFailedOpen() must be false even though a rule errored.
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
+    const input = rule({ key: "user_1" });
+
+    const response = makeResponse(GuardConclusion.DENY, [
+      {
+        resultId: "gres_test1",
+        configId: input[symbolArcjetInternal].configId,
+        inputId: input[symbolArcjetInternal].inputId,
+        type: GuardRuleType.TOKEN_BUCKET,
+        result: {
+          case: "error",
+          value: create(ResultErrorSchema, { message: "evaluator timeout", code: "TIMEOUT" }),
+        },
+      },
+    ]);
+
+    const decision = decisionFromProto(response, [input]);
+
+    assert.equal(decision.conclusion, "DENY");
+    assert.equal(decision.hasFailedOpen(), false);
+    // The errored result is still inspectable.
+    assert.equal(decision.errorResults().length, 1);
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
+    assert.equal(decision.hasError(), true);
+  });
+
+  test("combined decision warning and rule error keep severity separate", () => {
+    // The four-channel cell: a decision-level warning AND a rule-level error
+    // on the same decision. Severity is carried by channel, not inferred.
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
+    const input = rule({ key: "user_1" });
+
+    const response = create(GuardResponseSchema, {
+      errors: [
+        create(ResultErrorSchema, { code: "AJ1100", message: "stripped invalid metadata key" }),
+      ],
+      decision: create(GuardDecisionSchema, {
+        id: "gdec_test123",
+        conclusion: GuardConclusion.ALLOW,
+        reason: GuardReason.UNSPECIFIED,
+        ruleResults: [
+          create(GuardRuleResultSchema, {
+            resultId: "gres_test1",
+            configId: input[symbolArcjetInternal].configId,
+            inputId: input[symbolArcjetInternal].inputId,
+            type: GuardRuleType.TOKEN_BUCKET,
+            result: {
+              case: "error",
+              value: create(ResultErrorSchema, { message: "evaluator timeout", code: "TIMEOUT" }),
+            },
+          }),
+        ],
+      }),
+    });
+
+    const decision = decisionFromProto(response, [input]);
+
+    // Warning channel.
+    assert.equal(decision.warnings.length, 1);
+    assert.equal(decision.warnings[0].code, "AJ1100");
+    // Error channel.
+    assert.equal(decision.errorResults().length, 1);
+    assert.equal(decision.errorResults()[0].code, "TIMEOUT");
+    // ALLOW masking an error → failed open.
+    assert.equal(decision.hasFailedOpen(), true);
+    // Deprecated union fires on both.
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
+    assert.equal(decision.hasError(), true);
+  });
+
+  test("malformed warning fields are coerced at the boundary", () => {
+    // Connect-JSON on the wire can deliver a non-string where a string is
+    // expected (a malformed or proxied response). The SDK validates at the
+    // boundary rather than trusting the wire shape. Build a valid response via
+    // `create()`, then inject non-string values through a widening view of the
+    // error element (no narrowing assertion on the response itself).
+    const response = create(GuardResponseSchema, {
+      errors: [
+        create(ResultErrorSchema, { code: "ok", message: "ok" }),
+      ],
+      decision: {
+        id: "gdec_test123",
+        conclusion: GuardConclusion.ALLOW,
+        reason: GuardReason.UNSPECIFIED,
+        ruleResults: [],
+      },
+    });
+    // Inject non-string values through a widening view of the error element.
+    const malformed: { code: unknown; message: unknown } = response.errors[0];
+    malformed.code = 42;
+    malformed.message = null;
+
+    const decision = decisionFromProto(response, []);
+
+    assert.equal(decision.warnings.length, 1);
+    // Non-string code/message fall back to defaults rather than surfacing the
+    // raw wire values.
+    assert.equal(decision.warnings[0].code, "UNKNOWN");
+    assert.equal(decision.warnings[0].message, "Unknown warning");
   });
 
   test("multi-rule correlation — results and deniedResult", () => {

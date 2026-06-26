@@ -14,7 +14,7 @@ import {
   createClient as createConnectClient,
 } from "@connectrpc/connect";
 
-import { ruleToProto, decisionFromProto } from "./convert.ts";
+import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
 import {
   DecideService,
   GuardRequestSchema,
@@ -149,16 +149,20 @@ function failOpen(message: string): Decision {
     conclusion: "ALLOW",
     reason: "ERROR",
     type: "RULE_ERROR",
+    warnings: [],
     message,
     code: "TRANSPORT_ERROR",
     [symbolArcjetInternal]: { configId: "", inputId: "" },
   };
+  const results = [errorResult];
   const d: InternalDecision = {
     conclusion: "ALLOW" as const,
     id: "",
-    results: [errorResult],
-    hasError: () => true,
-    [symbolArcjetInternal]: { results: [errorResult] },
+    results,
+    // A transport failure is an error (the request could not be processed),
+    // carried as the error result above — not a warning.
+    ...decisionMembers("ALLOW", results, []),
+    [symbolArcjetInternal]: { results },
   };
   return d;
 }

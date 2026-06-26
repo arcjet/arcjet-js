@@ -359,6 +359,7 @@ describe("decisionFromProto", () => {
     assert.equal(decision.id, "gdec_test123");
     assert.equal(decision.results.length, 1);
     assert.equal(decision.results[0].type, "TOKEN_BUCKET");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
 
     // Layer 3 — rule.result()
@@ -568,6 +569,7 @@ describe("decisionFromProto", () => {
     const decision = decisionFromProto(response, [input]);
 
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
     assert.equal(decision.results[0].type, "RULE_ERROR");
     if (decision.results[0].type === "RULE_ERROR") {
@@ -620,6 +622,7 @@ describe("decisionFromProto", () => {
     const decision = decisionFromProto(response, [input]);
 
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
   });
 
@@ -730,13 +733,16 @@ describe("Three-layer decision inspection", () => {
     assert.equal(decision.results.length, 3);
   });
 
+  // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
   test("Layer 2: decision.hasError() is false when no errors", () => {
     const { response, rl1, rl2, pi } = multiRuleResponse();
     const decision = decisionFromProto(response, [rl1, rl2, pi]);
 
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
   });
 
+  // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
   test("Layer 2: decision.hasError() is true when a rule errored", () => {
     const rule = tokenBucket({
       bucket: "test",
@@ -763,6 +769,7 @@ describe("Three-layer decision inspection", () => {
     ]);
 
     const decision = decisionFromProto(response, [input]);
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
   });
 
@@ -869,6 +876,7 @@ describe("Edge cases", () => {
 
     assert.equal(decision.conclusion, "ALLOW");
     assert.equal(decision.results.length, 0);
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
   });
 
@@ -902,6 +910,7 @@ describe("Edge cases", () => {
     ]);
 
     const decision = decisionFromProto(response, [i1, i2]);
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
   });
 
@@ -999,6 +1008,7 @@ describe("Edge cases", () => {
 
     const decision = decisionFromProto(response, [i1, i2]);
     assert.equal(decision.conclusion, "DENY");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
   });
 });

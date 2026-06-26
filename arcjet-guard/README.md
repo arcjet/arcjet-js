@@ -114,9 +114,17 @@ if (decision.conclusion === "DENY") {
   throw new Error("Request denied");
 }
 
-// Check for errors (fail-open — errors don't cause denials)
-if (decision.hasError()) {
-  console.warn("At least one rule errored");
+// Check for failures (fail-open — errors don't cause denials). hasFailedOpen()
+// is true only when the conclusion is ALLOW because a rule or the decision
+// could not be processed — gate a fail-closed policy on it.
+if (decision.hasFailedOpen()) {
+  console.warn("Allowed only because evaluation failed open", decision.errorResults());
+}
+
+// Decision-level diagnostics (e.g. an invalid metadata key that was stripped).
+// Warnings never change the conclusion.
+for (const warning of decision.warnings) {
+  console.warn(`${warning.code}: ${warning.message}`);
 }
 
 // From a RuleWithInput — result for this specific submission
@@ -311,8 +319,10 @@ const decision = await arcjet.guard({
 decision.conclusion; // "ALLOW" | "DENY"
 decision.reason; // "RATE_LIMIT" | "PROMPT_INJECTION" | ... (only on DENY)
 
-// Error check (fail-open — errors don't cause denials)
-decision.hasError(); // true if any rule errored
+// Failure check (fail-open — errors don't cause denials)
+decision.hasFailedOpen(); // true if ALLOW only because a rule/decision could not be processed
+decision.errorResults(); // the results that errored
+decision.warnings; // decision-level request-validation diagnostics
 
 // Per-rule results — iterate all
 for (const result of decision.results) {
@@ -387,15 +397,22 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   });
   ```
 
-- **Handle errors explicitly.** Check `decision.hasError()` to detect rules
-  that errored during evaluation. The SDK fails open — an errored rule does
-  not cause a denial:
+- **Handle failures explicitly.** The SDK fails open — an errored rule does not
+  cause a denial. Check `decision.hasFailedOpen()` to detect when a decision
+  returned `ALLOW` only because a rule or the decision could not be processed,
+  and inspect `decision.errorResults()` for the details. Gate a fail-closed
+  policy on it:
 
   ```ts
-  if (decision.hasError()) {
-    console.error("Guard error — proceeding with caution");
+  if (decision.hasFailedOpen()) {
+    // Evaluation degraded — decide whether to proceed or deny.
+    console.error("Guard failed open", decision.errorResults());
   }
   ```
+
+  `decision.hasError()` still works but is deprecated: it conflated request
+  diagnostics with errors. Use `decision.warnings` for diagnostics and
+  `decision.errorResults()` / `decision.hasFailedOpen()` for errors.
 
 - **Use labels** to identify protection boundaries. Labels appear in the
   Arcjet dashboard and help correlate decisions with specific tool calls or

@@ -116,6 +116,7 @@ Deno.test("Deno: token bucket ALLOW over HTTPS HTTP/2 (fetch transport)", async 
     });
 
     assertEquals(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assertEquals(decision.hasError(), false);
 
     const result = input.result(decision);

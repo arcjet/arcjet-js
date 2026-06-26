@@ -117,6 +117,7 @@ describe("In-memory server: token bucket", () => {
     assert.equal(decision.id, "gdec_allow_tb");
     assert.equal(decision.results.length, 1);
     assert.equal(decision.results[0].type, "TOKEN_BUCKET");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
 
     const result = input.result(decision);
@@ -599,6 +600,7 @@ describe("In-memory server: sensitive info", () => {
     });
 
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
   });
 });
@@ -884,6 +886,7 @@ describe("In-memory server: multi-rule", () => {
 
     assert.equal(decision.conclusion, "ALLOW");
     assert.equal(decision.results.length, 2);
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
 
     const rlResult = rl.result(decision);
@@ -1193,7 +1196,13 @@ describe("In-memory server: error handling", () => {
 
     const decision = await arcjet.guard({ label: "test", rules: [] });
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
+    // No rules means a synthetic error result: the decision failed open.
+    assert.equal(decision.hasFailedOpen(), true);
+    assert.equal(decision.errorResults().length, 1);
+    // No request-level diagnostics.
+    assert.equal(decision.warnings.length, 0);
   });
 
   test("server error returns fail-open ALLOW with error result", async () => {
@@ -1211,9 +1220,16 @@ describe("In-memory server: error handling", () => {
 
     const decision = await arcjet.guard({ label: "test", rules: [input] });
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
     assert.equal(decision.results.length, 1);
     assert.equal(decision.results[0]?.type, "RULE_ERROR");
+    // A transport failure is a decision-level error: ALLOW only because the
+    // request could not be processed.
+    assert.equal(decision.hasFailedOpen(), true);
+    assert.equal(decision.errorResults().length, 1);
+    assert.equal(decision.errorResults()[0].code, "TRANSPORT_ERROR");
+    assert.equal(decision.warnings.length, 0);
     if (decision.results[0]?.type === "RULE_ERROR") {
       assert.ok(decision.results[0].message.includes("service unavailable"));
     }
@@ -1259,6 +1275,7 @@ describe("In-memory server: error handling", () => {
     });
 
     assert.equal(decision.conclusion, "ALLOW");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), true);
     assert.equal(decision.results[0].type, "RULE_ERROR");
   });
