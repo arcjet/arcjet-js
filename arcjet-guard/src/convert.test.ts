@@ -1200,9 +1200,7 @@ describe("decisionFromProto", () => {
     // `create()`, then inject non-string values through a widening view of the
     // error element (no narrowing assertion on the response itself).
     const response = create(GuardResponseSchema, {
-      errors: [
-        create(ResultErrorSchema, { code: "ok", message: "ok" }),
-      ],
+      errors: [create(ResultErrorSchema, { code: "ok", message: "ok" })],
       decision: {
         id: "gdec_test123",
         conclusion: GuardConclusion.ALLOW,

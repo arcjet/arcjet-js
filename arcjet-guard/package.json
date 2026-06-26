@@ -85,7 +85,7 @@
     "@types/node": "22.19.21",
     "@typescript/native-preview": "7.0.0-dev.20260602.1",
     "miniflare": "4.20260617.1",
-    "oxfmt": "0.53.0",
+    "oxfmt": "0.55.0",
     "oxlint": "1.58.0",
     "oxlint-tsgolint": "0.18.1",
     "rolldown": "1.1.2",

@@ -581,9 +581,7 @@ export function decisionMembers(
   hasError: () => boolean;
 } {
   // Compute once; both accessors close over the same array.
-  const errored = results.filter(
-    (r): r is RuleResultError => r.type === "RULE_ERROR",
-  );
+  const errored = results.filter((r): r is RuleResultError => r.type === "RULE_ERROR");
   const errorResults = (): readonly RuleResultError[] => errored;
   return {
     warnings,
