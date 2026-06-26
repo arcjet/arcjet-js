@@ -785,7 +785,7 @@ export interface ExperimentalModerateContentInput {
    * on key conflict). This is rule-level metadata, distinct from
    * {@link GuardOptions.metadata} which is sent at the request level.
    *
-   * Constraints:
+   * Service-side constraints:
    * - Max 20 key-value pairs per rule submission (combined config + input).
    * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
    *   must start with a letter or digit.
