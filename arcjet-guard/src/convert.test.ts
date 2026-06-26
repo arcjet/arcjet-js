@@ -510,6 +510,17 @@ describe("ruleToProto", () => {
     }
   });
 
+  test("merges moderate content config and call-time metadata into proto", async () => {
+    const rule = experimental_moderateContent({ metadata: { env: "test", expectedResponse: "x" } });
+    const input = rule("please moderate this", {
+      metadata: { expectedResponse: "pass" },
+    });
+    const proto = await ruleToProto(input);
+
+    // Call-time metadata wins on key conflict; config-only keys are preserved.
+    assert.deepEqual({ ...proto.metadata }, { env: "test", expectedResponse: "pass" });
+  });
+
   test("converts sensitive info rule to proto with local WASM result", async () => {
     const rule = localDetectSensitiveInfo({ allow: ["EMAIL"] });
     const input = rule("my email is foo@bar.com");

@@ -777,6 +777,29 @@ export interface ExperimentalModerateContentConfig {
 }
 
 /**
+ * Per-request options for a content moderation submission (experimental).
+ */
+export interface ExperimentalModerateContentInput {
+  /**
+   * Per-request metadata. Merged with config-level metadata (input wins
+   * on key conflict). This is rule-level metadata, distinct from
+   * {@link GuardOptions.metadata} which is sent at the request level.
+   *
+   * Service-side constraints:
+   * - Max 20 key-value pairs per rule submission (combined config + input).
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
+   * - Values: max 512 bytes.
+   *
+   * @example
+   * ```ts
+   * moderate(userMessage, { metadata: { expectedResponse: "pass" } })
+   * ```
+   */
+  metadata?: Record<string, string>;
+}
+
+/**
  * Sensitive info config: allowlist mode.
  *
  * Only the listed entity types are allowed through — everything else
@@ -1103,8 +1126,11 @@ export type RuleWithConfigModerateContent = {
   readonly config: ExperimentalModerateContentConfig;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
-  /** Bind the text to moderate to produce a `RuleWithInputModerateContent`. */
-  (input: string): RuleWithInputModerateContent;
+  /**
+   * Bind the text to moderate to produce a `RuleWithInputModerateContent`.
+   * Optionally attach per-request metadata, merged with config metadata.
+   */
+  (input: string, options?: ExperimentalModerateContentInput): RuleWithInputModerateContent;
   /** Extract all content moderation results from a decision. */
   results(decision: Decision): RuleResultModerateContent[];
   /** Return the first content moderation result regardless of conclusion, or `null` if none. */
@@ -1246,6 +1272,8 @@ export type RuleWithInputModerateContent = {
   readonly config: ExperimentalModerateContentConfig;
   /** The bound text to moderate. */
   readonly input: string;
+  /** Per-request metadata, merged with config metadata at submission time. */
+  readonly metadata?: Record<string, string>;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
   /** Find this submission's results as an array (empty or single-element). */

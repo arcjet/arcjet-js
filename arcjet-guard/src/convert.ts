@@ -338,7 +338,9 @@ export async function ruleToProto(
 /**
  * Merge config-level and input-level metadata for a rule submission.
  * Input-level values take priority on key conflict.
- * String inputs (prompt injection, sensitive info) don't carry metadata.
+ * Prompt injection and sensitive info (string inputs) don't carry
+ * per-request metadata; content moderation accepts it at call time but
+ * stores it as a sibling of `input` on the RuleWithInput, not inside it.
  *
  * @internal
  */
@@ -346,6 +348,7 @@ function ruleMetadataToProto(rule: RuleWithInput): Record<string, string> {
   return {
     ...rule.config.metadata,
     ...(typeof rule.input === "string" ? undefined : rule.input.metadata),
+    ...(rule.type === "MODERATE_CONTENT" ? rule.metadata : undefined),
   };
 }
 
