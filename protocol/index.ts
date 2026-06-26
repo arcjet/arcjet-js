@@ -1,7 +1,7 @@
 import type { Cache } from "@arcjet/cache";
 import { isMessage } from "@bufbuild/protobuf";
-import { typeid } from "typeid-js";
 import { ReasonSchema } from "./proto/decide/v1alpha1/decide_pb.js";
+import { typeid } from "./typeid.js";
 
 // Re-export the Well Known Bots from the generated file
 export type * from "./well-known-bots.js";
@@ -1253,7 +1253,7 @@ export abstract class ArcjetDecision {
     if (typeof init.id === "string") {
       this.id = init.id;
     } else {
-      this.id = typeid("lreq").toString();
+      this.id = typeid("lreq");
     }
 
     this.results = init.results;

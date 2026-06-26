@@ -24,7 +24,6 @@
     "@bufbuild/protobuf": "npm:@bufbuild/protobuf@2.11.0",
     "@connectrpc/connect": "npm:@connectrpc/connect@2.1.1",
     "@connectrpc/connect-node": "npm:@connectrpc/connect-node@2.1.1",
-    "arcjet": "../../arcjet/index.js",
-    "typeid-js": "npm:typeid-js@1.2.0"
+    "arcjet": "../../arcjet/index.js"
   }
 }
