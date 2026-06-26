@@ -1,5 +1,5 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["src/proto/**"],
+  "ignorePatterns": ["src/proto/**", "CHANGELOG.md"],
   "sortImports": {}
 }

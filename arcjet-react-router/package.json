@@ -24,7 +24,7 @@
     "@arcjet/eslint-config": "1.5.0",
     "@arcjet/rollup-config": "1.5.0",
     "eslint": "9.39.4",
-    "react-router": "7.16.0",
+    "react-router": "7.18.0",
     "typescript": "5.9.3"
   },
   "exports": "./index.js",

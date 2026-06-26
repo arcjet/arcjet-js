@@ -38,8 +38,8 @@
   "dependencies": {
     "@eslint/js": "9.39.4",
     "eslint-config-prettier": "10.1.8",
-    "eslint-config-turbo": "2.8.20",
-    "typescript-eslint": "8.57.2"
+    "eslint-config-turbo": "2.9.18",
+    "typescript-eslint": "8.61.1"
   },
   "peerDependencies": {
     "eslint": "^9"
