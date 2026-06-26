@@ -1118,6 +1118,19 @@ export declare type GuardRequest = Message<"proto.decide.v2.GuardRequest"> & {
    * @generated from field: repeated proto.decide.v2.GuardRuleSubmission rule_submissions = 12;
    */
   ruleSubmissions: GuardRuleSubmission[];
+
+  /**
+   * An optional, caller-supplied opaque identifier used to correlate this
+   * guard call with other guard() and protect() calls that belong to the same
+   * workflow, agent run, or multi-step task (e.g. a web request that kicks off
+   * a chain of tool calls). It does not affect the decision; it is stored
+   * alongside the recorded decision so a chain of actions can be
+   * reconstructed. A first-class field rather than a metadata key so it has a
+   * stable name and can be indexed. Max 256 bytes, printable ASCII.
+   *
+   * @generated from field: string correlation_id = 13;
+   */
+  correlationId: string;
 };
 
 /**
