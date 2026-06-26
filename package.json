@@ -18,7 +18,7 @@
     "test": "turbo test"
   },
   "devDependencies": {
-    "turbo": "2.9.16"
+    "turbo": "2.9.18"
   },
   "overrides": {
     "@bufbuild/protobuf": "2.12.0",

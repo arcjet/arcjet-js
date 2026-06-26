@@ -69,8 +69,8 @@
   "devDependencies": {
     "@arcjet/eslint-config": "1.5.0",
     "@arcjet/rollup-config": "1.5.0",
-    "@nestjs/common": "11.1.17",
-    "@rollup/wasm-node": "4.61.0",
+    "@nestjs/common": "11.1.27",
+    "@rollup/wasm-node": "4.62.2",
     "@types/node": "22.19.21",
     "eslint": "9.39.4",
     "reflect-metadata": "0.2.2",

@@ -22,8 +22,8 @@
   "devDependencies": {
     "@arcjet/eslint-config": "1.5.0",
     "@arcjet/rollup-config": "1.5.0",
-    "@nuxt/kit": "4.4.2",
-    "@nuxt/schema": "4.4.2",
+    "@nuxt/kit": "4.4.8",
+    "@nuxt/schema": "4.4.8",
     "eslint": "9.39.4",
     "typescript": "5.9.3"
   },
