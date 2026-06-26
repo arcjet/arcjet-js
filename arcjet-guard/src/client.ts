@@ -90,6 +90,7 @@ export function createGuardClient(options: GuardClientOptions): {
         label: opts.label,
         metadata: opts.metadata ?? {},
         ruleSubmissions: protoRules,
+        correlationId: opts.correlationId ?? "",
       });
 
       const timeoutMs =

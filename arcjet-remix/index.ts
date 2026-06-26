@@ -190,7 +190,7 @@ export interface ArcjetRemix<Props extends PlainObject> {
    */
   protect(
     request: ArcjetRemixRequest,
-    ...props: MaybeProperties<Props>
+    ...props: MaybeProperties<Props & { correlationId?: string }>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -310,8 +310,11 @@ export default function arcjet<
         return withClient(client);
       },
       async protect(details, props?) {
+        // `correlationId` is a request-independent option, not a rule prop, so
+        // pull it out before building the request from the rule properties.
+        const { correlationId, ...properties } = props ?? {};
         // Cast of `{}` because here we switch from `undefined` to `Properties`.
-        const req = toArcjetRequest(details, props || ({} as Properties));
+        const req = toArcjetRequest(details, (properties || {}) as Properties);
 
         const getBody = async () => {
           const clonedRequest = details.request.clone();
@@ -337,7 +340,7 @@ export default function arcjet<
           return readBodyWeb(clonedRequest.body, { expectedLength });
         };
 
-        return aj.protect({ getBody }, req);
+        return aj.protect({ getBody }, { ...req, correlationId });
       },
     };
 

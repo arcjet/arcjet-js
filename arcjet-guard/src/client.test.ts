@@ -1032,7 +1032,7 @@ describe("In-memory server: auth header", () => {
   });
 });
 describe("In-memory server: request metadata", () => {
-  test("label and metadata are sent to the server", async () => {
+  test("label, metadata, and correlationId are sent to the server", async () => {
     const rule = tokenBucket({
       bucket: "test",
       refillRate: 10,
@@ -1043,10 +1043,12 @@ describe("In-memory server: request metadata", () => {
 
     let receivedLabel = "";
     let receivedMetadata: Record<string, string> = {};
+    let receivedCorrelationId = "";
 
     const arcjet = guardWithMock((req) => {
       receivedLabel = req.label;
       receivedMetadata = { ...req.metadata };
+      receivedCorrelationId = req.correlationId;
 
       const sub = req.ruleSubmissions[0];
       return create(GuardResponseSchema, {
@@ -1079,11 +1081,13 @@ describe("In-memory server: request metadata", () => {
     await arcjet.guard({
       label: "tools.weather",
       metadata: { region: "us-east-1", user_id: "u_abc" },
+      correlationId: "wf_abcdef",
       rules: [input],
     });
 
     assert.equal(receivedLabel, "tools.weather");
     assert.deepEqual(receivedMetadata, { region: "us-east-1", user_id: "u_abc" });
+    assert.equal(receivedCorrelationId, "wf_abcdef");
   });
 
   test("user-agent is sent in the request body", async () => {

@@ -120,7 +120,7 @@ export interface ArcjetReactRouter<
    */
   protect(
     details: ArcjetReactRouterRequest,
-    ...rest: MaybeProperties<Properties>
+    ...rest: MaybeProperties<Properties & { correlationId?: string }>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -231,14 +231,17 @@ export default function arcjet<
         const context: ArcjetAdapterContext = {
           getBody: createGetBody(state, details),
         };
+        // `correlationId` is a request-independent option, not a rule prop, so
+        // pull it out before building the request from the rule properties.
+        const { correlationId, ...ruleProps } = properties ?? {};
         const request = toArcjetRequest(
           state,
           details,
           // Cast of `{}` because here we switch from `undefined` to `Properties`.
-          properties ?? ({} as Properties),
+          ruleProps as Properties,
         );
 
-        return baseClient.protect(context, request);
+        return baseClient.protect(context, { ...request, correlationId });
       },
       withRule(rule) {
         return withClient(baseClient.withRule(rule));

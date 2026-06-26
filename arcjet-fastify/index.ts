@@ -169,7 +169,7 @@ export interface ArcjetFastify<Props> {
    */
   protect(
     request: ArcjetFastifyRequest,
-    ...properties: MaybeProperties<Props>
+    ...properties: MaybeProperties<Props & { correlationId?: string }>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -254,15 +254,21 @@ export default function arcjet<
   ): ArcjetFastify<Properties> {
     const client: ArcjetFastify<Properties> = {
       async protect(fastifyRequest, properties?) {
+        // `correlationId` is a request-independent option, not a rule prop, so
+        // pull it out before building the request from the rule properties.
+        const { correlationId, ...ruleProps } = properties ?? {};
         const arcjetRequest = toArcjetRequest(
           fastifyRequest,
           log,
           proxies,
           // Cast of `{}` because here we switch from `undefined` to `Properties`.
-          properties || ({} as Properties),
+          ruleProps as Properties,
         );
 
-        return arcjetCore.protect({ getBody }, arcjetRequest);
+        return arcjetCore.protect(
+          { getBody },
+          { ...arcjetRequest, correlationId },
+        );
 
         async function getBody() {
           if (

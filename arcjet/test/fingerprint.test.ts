@@ -335,6 +335,50 @@ test("Fingerprint", async function (t) {
       ]);
     },
   );
+
+  await t.test(
+    "should not fingerprint on `correlationId`",
+    async function () {
+      let fingerprint: unknown;
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: {
+          ...console,
+          debug($0, ...rest) {
+            if ($0 === "fingerprint (%s): %s") {
+              fingerprint = rest[1];
+              return;
+            }
+
+            if (typeof $0 === "string" && $0.startsWith("LATENCY")) return;
+
+            console.debug($0, ...rest);
+          },
+        },
+        rules: [],
+      });
+
+      const _1 = await instance.protect(createContext(), {
+        ...createFields(),
+        correlationId: "wf_aaaaaaaa",
+      });
+      const baseline = fingerprint;
+      const _2 = await instance.protect(createContext(), {
+        ...createFields(),
+        correlationId: "wf_bbbbbbbb",
+      });
+      const differentCorrelationId = fingerprint;
+      const _3 = await instance.protect(createContext(), createFields());
+      const noCorrelationId = fingerprint;
+
+      // Two calls differing only by correlation ID must share a fingerprint
+      // (and therefore the decision cache key); omitting it must not change it
+      // either.
+      assert.equal(baseline, differentCorrelationId);
+      assert.equal(baseline, noCorrelationId);
+    },
+  );
 });
 
 /**

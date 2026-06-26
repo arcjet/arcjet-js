@@ -1365,6 +1365,29 @@ export interface GuardOptions {
    * ```
    */
   metadata?: Record<string, string>;
+  /**
+   * Optional, caller-supplied opaque identifier used to correlate this guard
+   * call with other `guard()` and `protect()` calls that belong to the same
+   * workflow, agent run, or multi-step task (for example a web request that
+   * kicks off a chain of tool calls).
+   *
+   * Unlike {@link GuardOptions.metadata}, this is a dedicated, indexable field
+   * with a stable name. It does not affect the decision; it is stored alongside
+   * the recorded decision so a chain of actions can be reconstructed.
+   *
+   * Bounded server-side to max 256 bytes of printable ASCII; values that exceed
+   * this are dropped, not truncated.
+   *
+   * @example
+   * ```ts
+   * arcjet.guard({
+   *   label: "tools.weather",
+   *   rules: [input],
+   *   correlationId: requestId,
+   * })
+   * ```
+   */
+  correlationId?: string;
   /** Maximum seconds to wait for the server response. */
   timeoutSeconds?: number;
   /** Cancellation signal. */
