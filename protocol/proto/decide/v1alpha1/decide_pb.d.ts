@@ -198,7 +198,7 @@ export declare const IpDetailsSchema: GenMessage<IpDetails>;
 /**
  * The reason for the decision. This is populated based on the selected rules
  * for deny or challenge responses. Additional details can be found in the field
- * and by logging into the Arcjet dashboard and searching for the decision ID.
+ * and by logging into the Arcjet Console and searching for the decision ID.
  *
  * @generated from message proto.decide.v1alpha1.Reason
  */
@@ -491,7 +491,7 @@ export declare const BotV2ReasonSchema: GenMessage<BotV2Reason>;
  */
 export declare type ShieldReason = Message<"proto.decide.v1alpha1.ShieldReason"> & {
   /**
-   * Whether Arcjet Shield was triggered. Log into the Arcjet dashboard and
+   * Whether Arcjet Shield was triggered. Log into the Arcjet Console and
    * search for the decision ID to find more details about which rules were
    * triggered.
    *
@@ -1300,6 +1300,18 @@ export declare type RequestDetails = Message<"proto.decide.v1alpha1.RequestDetai
    * @generated from field: string query = 11;
    */
   query: string;
+
+  /**
+   * An optional, caller-supplied opaque identifier used to correlate this
+   * request with other protect() and guard() calls that belong to the same
+   * workflow, agent run, or multi-step task. It does not affect the decision
+   * and is excluded from fingerprinting; it is stored alongside the recorded
+   * decision so a chain of actions can be reconstructed. Carried on
+   * RequestDetails so it applies to both the Decide and Report RPCs.
+   *
+   * @generated from field: string correlation_id = 12;
+   */
+  correlationId: string;
 };
 
 /**
@@ -1316,7 +1328,7 @@ export declare const RequestDetailsSchema: GenMessage<RequestDetails>;
 export declare type Decision = Message<"proto.decide.v1alpha1.Decision"> & {
   /**
    * The decision ID. This is a unique identifier for the decision which can
-   * be used to search for the request details in the Arcjet dashboard.
+   * be used to search for the request details in the Arcjet Console.
    *
    * @generated from field: string id = 1;
    */
@@ -1647,7 +1659,7 @@ export declare const EmailTypeSchema: GenEnum<EmailType>;
 /**
  * The mode to run in. This can be either `DRY_RUN` or `LIVE`. In `DRY_RUN`
  * mode, all requests will be allowed and you can review what the action would
- * have been from your dashboard. In `LIVE` mode, requests will be allowed,
+ * have been from the Arcjet Console. In `LIVE` mode, requests will be allowed,
  * challenged or blocked based on the returned decision.
  *
  * @generated from enum proto.decide.v1alpha1.Mode
@@ -1663,7 +1675,7 @@ export enum Mode {
 
   /**
    * In `DRY_RUN` mode, all requests will be allowed and you can review what
-   * the action would have been from your dashboard.
+   * the action would have been from the Arcjet Console.
    *
    * @generated from enum value: MODE_DRY_RUN = 1;
    */
@@ -1860,6 +1872,11 @@ export enum SDKStack {
    * @generated from enum value: SDK_STACK_REACT_ROUTER = 14;
    */
   SDK_STACK_REACT_ROUTER = 14,
+
+  /**
+   * @generated from enum value: SDK_STACK_GO = 15;
+   */
+  SDK_STACK_GO = 15,
 }
 
 /**
