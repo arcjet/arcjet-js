@@ -37,7 +37,17 @@
         ]
       }
     ],
-    "typescript/no-unsafe-type-assertion": "error"
+    "typescript/no-unsafe-type-assertion": "error",
+    // TODO: Rules below were newly enforced by oxlint 1.70 (clean under 1.58)
+    // and produce ~280 stylistic detections, none of which are bugs. Disabled
+    // to take the linter bump now; adopting them needs deliberate code changes.
+    // See tracking issue.
+    "typescript/prefer-readonly-parameter-types": "off",
+    "typescript/consistent-return": "off",
+    "typescript/strict-void-return": "off",
+    "typescript/no-unnecessary-type-parameters": "off",
+    "eslint/require-unicode-regexp": "off",
+    "eslint/no-underscore-dangle": "off"
   },
   "overrides": [
     {
