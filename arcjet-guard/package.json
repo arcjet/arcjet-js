@@ -84,12 +84,12 @@
   "devDependencies": {
     "@types/node": "22.19.21",
     "@typescript/native-preview": "7.0.0-dev.20260602.1",
-    "miniflare": "4.20260617.0",
+    "miniflare": "4.20260617.1",
     "oxfmt": "0.53.0",
     "oxlint": "1.58.0",
     "oxlint-tsgolint": "0.18.1",
-    "rolldown": "1.0.3",
-    "rolldown-plugin-dts": "0.25.2"
+    "rolldown": "1.1.2",
+    "rolldown-plugin-dts": "0.26.0"
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0"
