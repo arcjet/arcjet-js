@@ -28,9 +28,11 @@ import type {
   SlidingWindowConfig,
   SlidingWindowInput,
   DetectPromptInjectionConfig,
+  DetectPromptInjectionInput,
   ExperimentalModerateContentConfig,
   ExperimentalModerateContentInput,
   LocalDetectSensitiveInfoConfig,
+  LocalDetectSensitiveInfoInput,
   LocalCustomConfig,
   LocalCustomInput,
   RuleWithConfigTokenBucket,
@@ -305,12 +307,25 @@ export function slidingWindow(config: SlidingWindowConfig): RuleWithConfigSlidin
  * to produce a `RuleWithInput` ready for `.guard()`. The text is sent
  * to the Arcjet Cloud API for analysis.
  *
+ * Per-request metadata can be attached at call time and is merged with any
+ * config-level metadata (call-time wins on key conflict).
+ *
  * @example
  * ```ts
  * const pi = detectPromptInjection();
  * const decision = await arcjet.guard({
  *   label: "tools.chat",
  *   rules: [pi(userMessage)],
+ * });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Attach per-request metadata for analytics/correlation.
+ * const pi = detectPromptInjection({ metadata: { channel: "slack" } });
+ * const decision = await arcjet.guard({
+ *   label: "tools.chat",
+ *   rules: [pi(userMessage, { metadata: { source: "tool_result" } })],
  * });
  * ```
  */
@@ -320,12 +335,17 @@ export function detectPromptInjection(
   const configId = randomId();
 
   const rule = Object.assign(
-    (input: string): RuleWithInputPromptInjection => {
+    (
+      input: string,
+      options: DetectPromptInjectionInput = {},
+    ): RuleWithInputPromptInjection => {
       const inputId = randomId();
+      const { metadata } = options;
       return {
         type: "PROMPT_INJECTION" as const,
         config,
         input,
+        ...(metadata === undefined ? {} : { metadata }),
         [symbolArcjetInternal]: { configId, inputId },
         result(decision: Decision): RuleResultPromptInjection | null {
           return findResult<RuleResultPromptInjection>(decision, configId, inputId);
@@ -391,7 +411,7 @@ export function detectPromptInjection(
  * const moderate = experimental_moderateContent({ metadata: { variant: "new" } });
  * const decision = await arcjet.guard({
  *   label: "tools.chat",
- *   rules: [moderate(userMessage, { metadata: { expectedResponse: "pass" } })],
+ *   rules: [moderate(userMessage, { metadata: { expected_response: "pass" } })],
  * });
  * ```
  */
@@ -460,12 +480,25 @@ export function experimental_moderateContent(
  * Returns a configured rule that can be called with user-supplied text
  * to produce a `RuleWithInput` ready for `.guard()`.
  *
+ * Per-request metadata can be attached at call time and is merged with any
+ * config-level metadata (call-time wins on key conflict).
+ *
  * @example
  * ```ts
  * const si = localDetectSensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"] });
  * const decision = await arcjet.guard({
  *   label: "tools.summary",
  *   rules: [si(userMessage)],
+ * });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Attach per-request metadata for analytics/correlation.
+ * const si = localDetectSensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"] });
+ * const decision = await arcjet.guard({
+ *   label: "tools.summary",
+ *   rules: [si(userMessage, { metadata: { destination: "openai" } })],
  * });
  * ```
  */
@@ -475,12 +508,17 @@ export function localDetectSensitiveInfo(
   const configId = randomId();
 
   const rule = Object.assign(
-    (input: string): RuleWithInputSensitiveInfo => {
+    (
+      input: string,
+      options: LocalDetectSensitiveInfoInput = {},
+    ): RuleWithInputSensitiveInfo => {
       const inputId = randomId();
+      const { metadata } = options;
       return {
         type: "SENSITIVE_INFO" as const,
         config,
         input,
+        ...(metadata === undefined ? {} : { metadata }),
         [symbolArcjetInternal]: { configId, inputId },
         result(decision: Decision): RuleResultSensitiveInfo | null {
           return findResult<RuleResultSensitiveInfo>(decision, configId, inputId);

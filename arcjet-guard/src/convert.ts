@@ -46,6 +46,9 @@ import type {
   RuleResult,
   RuleResultError,
   RuleWithInput,
+  RuleWithInputModerateContent,
+  RuleWithInputPromptInjection,
+  RuleWithInputSensitiveInfo,
   Warning,
 } from "./types.ts";
 
@@ -336,19 +339,35 @@ export async function ruleToProto(
 }
 
 /**
+ * True when the rule's bound `input` is a string (prompt injection,
+ * content moderation, sensitive info) rather than an object.
+ *
+ * @internal
+ */
+function isStringInputRule(
+  rule: RuleWithInput,
+): rule is
+  | RuleWithInputPromptInjection
+  | RuleWithInputModerateContent
+  | RuleWithInputSensitiveInfo {
+  return typeof rule.input === "string";
+}
+
+/**
  * Merge config-level and input-level metadata for a rule submission.
- * Input-level values take priority on key conflict.
- * Prompt injection and sensitive info (string inputs) don't carry
- * per-request metadata; content moderation accepts it at call time but
- * stores it as a sibling of `input` on the RuleWithInput, not inside it.
+ * Input-level values take priority on key conflict. String-input rules
+ * carry per-request metadata as a sibling of `input` on the
+ * RuleWithInput; object-input rules carry it inside their input object.
  *
  * @internal
  */
 function ruleMetadataToProto(rule: RuleWithInput): Record<string, string> {
+  const inputMetadata = isStringInputRule(rule)
+    ? rule.metadata
+    : rule.input.metadata;
   return {
     ...rule.config.metadata,
-    ...(typeof rule.input === "string" ? undefined : rule.input.metadata),
-    ...(rule.type === "MODERATE_CONTENT" ? rule.metadata : undefined),
+    ...inputMetadata,
   };
 }
 

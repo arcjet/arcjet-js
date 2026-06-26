@@ -499,6 +499,17 @@ describe("ruleToProto", () => {
     }
   });
 
+  test("merges prompt injection config and call-time metadata into proto", async () => {
+    const rule = detectPromptInjection({ metadata: { env: "test", source: "x" } });
+    const input = rule("ignore previous instructions", {
+      metadata: { source: "tool_result" },
+    });
+    const proto = await ruleToProto(input);
+
+    // Call-time metadata wins on key conflict; config-only keys are preserved.
+    assert.deepEqual({ ...proto.metadata }, { env: "test", source: "tool_result" });
+  });
+
   test("converts moderate content rule to proto", async () => {
     const rule = experimental_moderateContent();
     const input = rule("please moderate this");
@@ -511,14 +522,14 @@ describe("ruleToProto", () => {
   });
 
   test("merges moderate content config and call-time metadata into proto", async () => {
-    const rule = experimental_moderateContent({ metadata: { env: "test", expectedResponse: "x" } });
+    const rule = experimental_moderateContent({ metadata: { env: "test", expected_response: "x" } });
     const input = rule("please moderate this", {
-      metadata: { expectedResponse: "pass" },
+      metadata: { expected_response: "pass" },
     });
     const proto = await ruleToProto(input);
 
     // Call-time metadata wins on key conflict; config-only keys are preserved.
-    assert.deepEqual({ ...proto.metadata }, { env: "test", expectedResponse: "pass" });
+    assert.deepEqual({ ...proto.metadata }, { env: "test", expected_response: "pass" });
   });
 
   test("converts sensitive info rule to proto with local WASM result", async () => {
@@ -577,6 +588,20 @@ describe("ruleToProto", () => {
         assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, []);
       }
     }
+  });
+
+  test("merges sensitive info config and call-time metadata into proto", async () => {
+    const rule = localDetectSensitiveInfo({
+      deny: ["EMAIL"],
+      metadata: { env: "test", destination: "x" },
+    });
+    const input = rule("nothing sensitive here", {
+      metadata: { destination: "openai" },
+    });
+    const proto = await ruleToProto(input);
+
+    // Call-time metadata wins on key conflict; config-only keys are preserved.
+    assert.deepEqual({ ...proto.metadata }, { env: "test", destination: "openai" });
   });
 
   test("converts custom rule to proto", async () => {

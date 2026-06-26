@@ -222,6 +222,20 @@ describe("detectPromptInjection", () => {
 
     assert.equal(input.config.mode, "DRY_RUN");
   });
+
+  test("attaches call-time metadata to the input", () => {
+    const rule = detectPromptInjection();
+    const input = rule("text", { metadata: { source: "tool_result" } });
+
+    assert.deepEqual(input.metadata, { source: "tool_result" });
+  });
+
+  test("input without metadata does not set metadata on the input object", () => {
+    const rule = detectPromptInjection();
+    const input = rule("text");
+
+    assert.equal("metadata" in input, false);
+  });
 });
 
 describe("experimental_moderateContent", () => {
@@ -255,9 +269,9 @@ describe("experimental_moderateContent", () => {
 
   test("attaches call-time metadata to the input", () => {
     const rule = experimental_moderateContent();
-    const input = rule("text", { metadata: { expectedResponse: "pass" } });
+    const input = rule("text", { metadata: { expected_response: "pass" } });
 
-    assert.deepEqual(input.metadata, { expectedResponse: "pass" });
+    assert.deepEqual(input.metadata, { expected_response: "pass" });
   });
 
   test("input without metadata does not set metadata on the input object", () => {
@@ -296,6 +310,20 @@ describe("localDetectSensitiveInfo", () => {
 
     assert.equal(input.type, "SENSITIVE_INFO");
     assert.equal(input.input, "my email is foo@bar.com");
+  });
+
+  test("attaches call-time metadata to the input", () => {
+    const rule = localDetectSensitiveInfo();
+    const input = rule("text", { metadata: { destination: "openai" } });
+
+    assert.deepEqual(input.metadata, { destination: "openai" });
+  });
+
+  test("input without metadata does not set metadata on the input object", () => {
+    const rule = localDetectSensitiveInfo();
+    const input = rule("text");
+
+    assert.equal("metadata" in input, false);
   });
 });
 

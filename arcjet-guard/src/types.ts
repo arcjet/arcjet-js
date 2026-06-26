@@ -743,6 +743,29 @@ export interface DetectPromptInjectionConfig {
 }
 
 /**
+ * Per-request options for a prompt injection submission.
+ */
+export interface DetectPromptInjectionInput {
+  /**
+   * Per-request metadata. Merged with config-level metadata (input wins
+   * on key conflict). This is rule-level metadata, distinct from
+   * {@link GuardOptions.metadata} which is sent at the request level.
+   *
+   * Service-side constraints:
+   * - Max 20 key-value pairs per rule submission (combined config + input).
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
+   * - Values: max 512 bytes.
+   *
+   * @example
+   * ```ts
+   * pi(userMessage, { metadata: { source: "tool_result" } })
+   * ```
+   */
+  metadata?: Record<string, string>;
+}
+
+/**
  * Content moderation config.
  *
  * Experimental — see {@link experimental_moderateContent}.
@@ -793,7 +816,7 @@ export interface ExperimentalModerateContentInput {
    *
    * @example
    * ```ts
-   * moderate(userMessage, { metadata: { expectedResponse: "pass" } })
+   * moderate(userMessage, { metadata: { expected_response: "pass" } })
    * ```
    */
   metadata?: Record<string, string>;
@@ -946,6 +969,29 @@ export type LocalDetectSensitiveInfoConfig =
       allow?: never;
       deny?: never;
     };
+
+/**
+ * Per-request options for a sensitive info submission.
+ */
+export interface LocalDetectSensitiveInfoInput {
+  /**
+   * Per-request metadata. Merged with config-level metadata (input wins
+   * on key conflict). This is rule-level metadata, distinct from
+   * {@link GuardOptions.metadata} which is sent at the request level.
+   *
+   * Service-side constraints:
+   * - Max 20 key-value pairs per rule submission (combined config + input).
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
+   * - Values: max 512 bytes.
+   *
+   * @example
+   * ```ts
+   * si(userMessage, { metadata: { destination: "openai" } })
+   * ```
+   */
+  metadata?: Record<string, string>;
+}
 
 /** Result returned by a custom rule's `evaluate` function. */
 export interface CustomEvaluateResult<
@@ -1104,8 +1150,11 @@ export type RuleWithConfigPromptInjection = {
   readonly config: DetectPromptInjectionConfig;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
-  /** Bind the user prompt text to produce a `RuleWithInputPromptInjection`. */
-  (input: string): RuleWithInputPromptInjection;
+  /**
+   * Bind the user prompt text to produce a `RuleWithInputPromptInjection`.
+   * Optionally attach per-request metadata, merged with config metadata.
+   */
+  (input: string, options?: DetectPromptInjectionInput): RuleWithInputPromptInjection;
   /** Extract all prompt injection results from a decision. */
   results(decision: Decision): RuleResultPromptInjection[];
   /** Return the first prompt injection result regardless of conclusion, or `null` if none. */
@@ -1147,8 +1196,11 @@ export type RuleWithConfigSensitiveInfo = {
   readonly config: LocalDetectSensitiveInfoConfig;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
-  /** Bind the input text to produce a `RuleWithInputSensitiveInfo`. */
-  (input: string): RuleWithInputSensitiveInfo;
+  /**
+   * Bind the input text to produce a `RuleWithInputSensitiveInfo`.
+   * Optionally attach per-request metadata, merged with config metadata.
+   */
+  (input: string, options?: LocalDetectSensitiveInfoInput): RuleWithInputSensitiveInfo;
   /** Extract all sensitive info results from a decision. */
   results(decision: Decision): RuleResultSensitiveInfo[];
   /** Return the first sensitive info result regardless of conclusion, or `null` if none. */
@@ -1250,6 +1302,8 @@ export type RuleWithInputPromptInjection = {
   readonly config: DetectPromptInjectionConfig;
   /** The bound user prompt text. */
   readonly input: string;
+  /** Per-request metadata, merged with config metadata at submission time. */
+  readonly metadata?: Record<string, string>;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
   /** Find this submission's results as an array (empty or single-element). */
@@ -1292,6 +1346,8 @@ export type RuleWithInputSensitiveInfo = {
   readonly config: LocalDetectSensitiveInfoConfig;
   /** The bound input text to scan. */
   readonly input: string;
+  /** Per-request metadata, merged with config metadata at submission time. */
+  readonly metadata?: Record<string, string>;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
   /** Find this submission's results as an array (empty or single-element). */
