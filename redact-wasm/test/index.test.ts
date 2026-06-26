@@ -1,15 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { initializeWasm } from "../index.js";
+
+import { initializeWasm } from "../dist/index.js";
 
 const wasm = await initializeWasm(detectNothing, replaceNothing);
 assert.ok(wasm);
 
 test("@arcjet/redact-wasm", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
-      "initializeWasm",
-    ]);
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), ["initializeWasm"]);
   });
 });
 
@@ -54,50 +53,41 @@ test("card number", async function (t) {
     ]);
   });
 
-  await t.test(
-    "should work w/ Mastercard card numbers (`22`)",
-    async function () {
-      assert.deepEqual(wasm.redact("2223003122003222", emptyOptions), [
-        {
-          end: 16,
-          identifiedType: { tag: "credit-card-number" },
-          original: "2223003122003222",
-          redacted: "<Redacted credit card number #0>",
-          start: 0,
-        },
-      ]);
-    },
-  );
+  await t.test("should work w/ Mastercard card numbers (`22`)", async function () {
+    assert.deepEqual(wasm.redact("2223003122003222", emptyOptions), [
+      {
+        end: 16,
+        identifiedType: { tag: "credit-card-number" },
+        original: "2223003122003222",
+        redacted: "<Redacted credit card number #0>",
+        start: 0,
+      },
+    ]);
+  });
 
-  await t.test(
-    "should work w/ Mastercard card numbers (`51`)",
-    async function () {
-      assert.deepEqual(wasm.redact("5105105105105100", emptyOptions), [
-        {
-          end: 16,
-          identifiedType: { tag: "credit-card-number" },
-          original: "5105105105105100",
-          redacted: "<Redacted credit card number #0>",
-          start: 0,
-        },
-      ]);
-    },
-  );
+  await t.test("should work w/ Mastercard card numbers (`51`)", async function () {
+    assert.deepEqual(wasm.redact("5105105105105100", emptyOptions), [
+      {
+        end: 16,
+        identifiedType: { tag: "credit-card-number" },
+        original: "5105105105105100",
+        redacted: "<Redacted credit card number #0>",
+        start: 0,
+      },
+    ]);
+  });
 
-  await t.test(
-    "should work w/ Mastercard card numbers (`52`)",
-    async function () {
-      assert.deepEqual(wasm.redact("5200828282828210", emptyOptions), [
-        {
-          end: 16,
-          identifiedType: { tag: "credit-card-number" },
-          original: "5200828282828210",
-          redacted: "<Redacted credit card number #0>",
-          start: 0,
-        },
-      ]);
-    },
-  );
+  await t.test("should work w/ Mastercard card numbers (`52`)", async function () {
+    assert.deepEqual(wasm.redact("5200828282828210", emptyOptions), [
+      {
+        end: 16,
+        identifiedType: { tag: "credit-card-number" },
+        original: "5200828282828210",
+        redacted: "<Redacted credit card number #0>",
+        start: 0,
+      },
+    ]);
+  });
 
   // `37` means Amex, which can be `15` digits long.
   await t.test("should work w/ Amex card numbers", async function () {
@@ -113,35 +103,29 @@ test("card number", async function (t) {
   });
 
   // `30`, `36` mean Diners club, which can be `14`, `16`, or `19` digits long.
-  await t.test(
-    "should work w/ Diners club card numbers (`30`)",
-    async function () {
-      assert.deepEqual(wasm.redact("3056930009020004", emptyOptions), [
-        {
-          end: 16,
-          identifiedType: { tag: "credit-card-number" },
-          original: "3056930009020004",
-          redacted: "<Redacted credit card number #0>",
-          start: 0,
-        },
-      ]);
-    },
-  );
+  await t.test("should work w/ Diners club card numbers (`30`)", async function () {
+    assert.deepEqual(wasm.redact("3056930009020004", emptyOptions), [
+      {
+        end: 16,
+        identifiedType: { tag: "credit-card-number" },
+        original: "3056930009020004",
+        redacted: "<Redacted credit card number #0>",
+        start: 0,
+      },
+    ]);
+  });
 
-  await t.test(
-    "should work w/ Diners club card numbers (`36`)",
-    async function () {
-      assert.deepEqual(wasm.redact("36227206271667", emptyOptions), [
-        {
-          end: 14,
-          identifiedType: { tag: "credit-card-number" },
-          original: "36227206271667",
-          redacted: "<Redacted credit card number #0>",
-          start: 0,
-        },
-      ]);
-    },
-  );
+  await t.test("should work w/ Diners club card numbers (`36`)", async function () {
+    assert.deepEqual(wasm.redact("36227206271667", emptyOptions), [
+      {
+        end: 14,
+        identifiedType: { tag: "credit-card-number" },
+        original: "36227206271667",
+        redacted: "<Redacted credit card number #0>",
+        start: 0,
+      },
+    ]);
+  });
 
   // `35` means JCB, which can be `16` through `19` digits long.
   await t.test("should work w/ JCB card numbers", async function () {
@@ -420,33 +404,21 @@ test("ip address", async function (t) {
 test("phone number", async function (t) {
   const emptyOptions = { skipCustomDetect: false, skipCustomRedact: false };
 
-  await t.test(
-    "should fail for special things such as `911`",
-    async function () {
-      assert.deepEqual(wasm.redact("911", emptyOptions), []);
-    },
-  );
+  await t.test("should fail for special things such as `911`", async function () {
+    assert.deepEqual(wasm.redact("911", emptyOptions), []);
+  });
 
-  await t.test(
-    "should fail for special things such as `112`",
-    async function () {
-      assert.deepEqual(wasm.redact("112", emptyOptions), []);
-    },
-  );
+  await t.test("should fail for special things such as `112`", async function () {
+    assert.deepEqual(wasm.redact("112", emptyOptions), []);
+  });
 
-  await t.test(
-    "should fail for short local numbers (amsterdam, no space)",
-    async function () {
-      assert.deepEqual(wasm.redact("14020", emptyOptions), []);
-    },
-  );
+  await t.test("should fail for short local numbers (amsterdam, no space)", async function () {
+    assert.deepEqual(wasm.redact("14020", emptyOptions), []);
+  });
 
-  await t.test(
-    "should fail for short local numbers (amsterdam, space)",
-    async function () {
-      assert.deepEqual(wasm.redact("14 020", emptyOptions), []);
-    },
-  );
+  await t.test("should fail for short local numbers (amsterdam, space)", async function () {
+    assert.deepEqual(wasm.redact("14 020", emptyOptions), []);
+  });
 
   await t.test("should work", async function () {
     assert.deepEqual(wasm.redact("0203344522", emptyOptions), [
@@ -556,18 +528,15 @@ test("phone number", async function (t) {
     ]);
   });
 
-  await t.test(
-    "should fail w/ something that looks like an IP",
-    async function () {
-      assert.deepEqual(
-        wasm.redact("1.2.3.4", {
-          ...emptyOptions,
-          entities: [{ tag: "phone-number" }],
-        }),
-        [],
-      );
-    },
-  );
+  await t.test("should fail w/ something that looks like an IP", async function () {
+    assert.deepEqual(
+      wasm.redact("1.2.3.4", {
+        ...emptyOptions,
+        entities: [{ tag: "phone-number" }],
+      }),
+      [],
+    );
+  });
 });
 
 function detectNothing() {

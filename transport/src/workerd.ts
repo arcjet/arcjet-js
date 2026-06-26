@@ -1,0 +1,30 @@
+import type { Transport } from "@connectrpc/connect";
+// This file is used when running on the `workerd`.
+// Specifically workers on Cloudflare.
+// It is the same as `edge-light.ts`, which runs on Vercel.
+// It uses DOM based APIs (`@connectrpc/connect-web`) to connect to the API.
+// Differing from `bun.ts` this solves the `redirect` option set to `error`
+// inside `connect` as that does not work on the edge.
+//
+// For more information, see:
+//
+// * <https://github.com/connectrpc/connect-es/pull/589>
+// * <https://github.com/connectrpc/connect-es/issues/749#issuecomment-1693507516>
+// * <https://github.com/connectrpc/connect-es/pull/1082>
+// * <https://github.com/e2b-dev/E2B/pull/669/files>
+// * <https://github.com/connectrpc/connect-es/issues/577#issuecomment-2210103503>
+import { createConnectTransport } from "@connectrpc/connect-web";
+
+export function createTransport(baseUrl: string): Transport {
+  return createConnectTransport({
+    baseUrl,
+    fetch: fetchProxy,
+  });
+}
+
+function fetchProxy(
+  input: Request | URL | string,
+  init?: RequestInit | undefined,
+): Promise<Response> {
+  return fetch(input, { ...init, redirect: "follow" });
+}

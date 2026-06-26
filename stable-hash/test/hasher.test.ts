@@ -1,14 +1,9 @@
 import assert from "node:assert/strict";
-import { describe, test } from "node:test";
 import * as nodeCrypto from "node:crypto";
-import {
-  bool,
-  uint32,
-  string,
-  stringSliceOrdered,
-  makeHasher,
-} from "../hasher.js";
-import type { StringWriter } from "../hasher.js";
+import { describe, test } from "node:test";
+
+import { bool, uint32, string, stringSliceOrdered, makeHasher } from "../dist/hasher.js";
+import type { StringWriter } from "../dist/hasher.js";
 
 describe("hasher", () => {
   const maxUint32 = 4294967295;
@@ -86,10 +81,7 @@ describe("hasher", () => {
 
     buf.reset();
     string("escaped-double-quotes", `foo\\"bar'baz\\"`)(buf);
-    assert.equal(
-      buf.toString(),
-      `escaped-double-quotes:"foo\\\\"bar'baz\\\\""`,
-    );
+    assert.equal(buf.toString(), `escaped-double-quotes:"foo\\\\"bar'baz\\\\""`);
   });
 
   test("stringSliceOrdered", () => {
@@ -109,10 +101,7 @@ describe("hasher", () => {
 
     buf.reset();
     stringSliceOrdered("empty-and-non-empty-strings", ["foo", "", "bar"])(buf);
-    assert.equal(
-      buf.toString(),
-      `empty-and-non-empty-strings:["","bar","foo",]`,
-    );
+    assert.equal(buf.toString(), `empty-and-non-empty-strings:["","bar","foo",]`);
 
     buf.reset();
     stringSliceOrdered("double-quote", [`foo"bar"`, "baz"])(buf);
@@ -124,10 +113,7 @@ describe("hasher", () => {
 
     buf.reset();
     stringSliceOrdered("both-quote", [`foo"bar'baz"`, `foo'bar"baz'`])(buf);
-    assert.equal(
-      buf.toString(),
-      `both-quote:["foo\\"bar'baz\\"","foo'bar\\"baz'",]`,
-    );
+    assert.equal(buf.toString(), `both-quote:["foo\\"bar'baz\\"","foo'bar\\"baz'",]`);
 
     buf.reset();
     stringSliceOrdered("escaped-and-non-escaped-double-quotes", [
@@ -150,10 +136,7 @@ describe("hasher", () => {
     const hash = makeHasher(subtle);
 
     // Empty
-    assert.equal(
-      await hash(),
-      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    );
+    assert.equal(await hash(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
 
     // Smoke test
     assert.equal(

@@ -42,6 +42,11 @@
       "dependsOn": ["^test"],
       "cache": false,
       "outputLogs": "full"
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "outputLogs": "full"
     }
   }
 }

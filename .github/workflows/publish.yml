@@ -54,11 +54,9 @@ jobs:
             --workspace @arcjet/cache \
             --workspace @arcjet/duration \
             --workspace @arcjet/env \
-            --workspace @arcjet/eslint-config \
             --workspace @arcjet/headers \
             --workspace @arcjet/ip \
             --workspace @arcjet/redact-wasm \
-            --workspace @arcjet/rollup-config \
             --workspace @arcjet/runtime \
             --workspace @arcjet/sprintf \
             --workspace @arcjet/stable-hash \
@@ -79,9 +77,10 @@ jobs:
             --workspace @arcjet/decorate \
             --workspace @arcjet/inspect
 
-          # Level 3: core SDK
+          # Level 3: core SDK + guards (depend on @arcjet/analyze from Level 2)
           npm publish --tag "$TAG" \
-            --workspace arcjet
+            --workspace arcjet \
+            --workspace @arcjet/guard
 
           # Level 4: public framework integrations
           npm publish --tag "$TAG" \
@@ -96,17 +95,3 @@ jobs:
             --workspace @arcjet/react-router \
             --workspace @arcjet/remix \
             --workspace @arcjet/sveltekit
-      # @arcjet/guard is excluded from npm workspaces and manages its own
-      # dependencies, so it must be installed and published separately.
-      # It depends on @arcjet/analyze (Level 2), so it runs after Level 3.
-      # TODO: This is temporary until the tooling is unified (oxlint, oxfmt,
-      # TypeScript Go, rolldown) and it can rejoin the main workspaces.
-      - name: Publish @arcjet/guard
-        env:
-          TAG: ${{ github.event.inputs.tag }}
-        working-directory: arcjet-guard
-        run: |
-          npm ci
-          npm run build
-          npm test
-          npm publish --tag "$TAG"

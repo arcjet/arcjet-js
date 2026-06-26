@@ -1,13 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { MemoryCache } from "@arcjet/cache";
 import type { Client } from "@arcjet/protocol/client.js";
+
 import arcjet, {
   type ArcjetContext,
   type ArcjetRequest,
   ArcjetAllowDecision,
   ArcjetReason,
-} from "../index.js";
+} from "../dist/index.js";
 
 const exampleKey = "ajkey_yourkey";
 
@@ -66,26 +68,11 @@ test("Fingerprint", async function (t) {
     );
   });
 
-  type Tuple = [
-    characteristics: Array<string>,
-    field: string,
-    value: unknown,
-    other: unknown,
-  ];
+  type Tuple = [characteristics: Array<string>, field: string, value: unknown, other: unknown];
   const matrix: ReadonlyArray<Tuple> = [
     [["custom"], "custom", "a", "b"],
-    [
-      ['http.request.cookie["session-id"]'],
-      "cookies",
-      "session-id=a",
-      "session-id=b",
-    ],
-    [
-      ['http.request.headers["x-custom"]'],
-      "headers",
-      { "x-custom": "a" },
-      { "x-custom": "b" },
-    ],
+    [['http.request.cookie["session-id"]'], "cookies", "session-id=a", "session-id=b"],
+    [['http.request.headers["x-custom"]'], "headers", { "x-custom": "a" }, { "x-custom": "b" }],
     [["http.host"], "host", "example.com", "example.org"],
     [["http.method"], "method", "GET", "HEAD"],
     [["http.request.uri.path"], "path", "/a", "/b"],
@@ -138,203 +125,181 @@ test("Fingerprint", async function (t) {
       },
     );
   }
-  await t.test(
-    "should fingerprint on several characteristics",
-    async function () {
-      let fingerprint: unknown;
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug($0, ...rest) {
-            if ($0 === "fingerprint (%s): %s") {
-              fingerprint = rest[1];
-              return;
-            }
+  await t.test("should fingerprint on several characteristics", async function () {
+    let fingerprint: unknown;
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        ...console,
+        debug($0, ...rest) {
+          if ($0 === "fingerprint (%s): %s") {
+            fingerprint = rest[1];
+            return;
+          }
 
-            if (typeof $0 === "string" && $0.startsWith("LATENCY")) return;
+          if (typeof $0 === "string" && $0.startsWith("LATENCY")) return;
 
-            console.debug($0, ...rest);
-          },
+          console.debug($0, ...rest);
         },
-        rules: [],
-      });
+      },
+      rules: [],
+    });
 
-      const characteristics = [
-        "http.host",
-        'http.request.cookie["session-id"]',
-        "ip.src",
-      ];
-      const _1 = await instance.protect(
-        { ...createContext(), characteristics },
-        createFields(),
-      );
-      const one = fingerprint;
-      const _2 = await instance.protect(
-        { ...createContext(), characteristics },
-        {
-          ...createFields(),
-          ip: createDifferentFields().ip,
-        },
-      );
-      const two = fingerprint;
-      const _3 = await instance.protect(
-        { ...createContext(), characteristics },
-        {
-          ...createDifferentFields(),
-          host: createFields().host,
-        },
-      );
-      const three = fingerprint;
-      const _4 = await instance.protect(
-        { ...createContext(), characteristics },
-        {
-          ...createDifferentFields(),
-          cookies: "session-id=123",
-        },
-      );
-      const four = fingerprint;
+    const characteristics = ["http.host", 'http.request.cookie["session-id"]', "ip.src"];
+    const _1 = await instance.protect({ ...createContext(), characteristics }, createFields());
+    const one = fingerprint;
+    const _2 = await instance.protect(
+      { ...createContext(), characteristics },
+      {
+        ...createFields(),
+        ip: createDifferentFields().ip,
+      },
+    );
+    const two = fingerprint;
+    const _3 = await instance.protect(
+      { ...createContext(), characteristics },
+      {
+        ...createDifferentFields(),
+        host: createFields().host,
+      },
+    );
+    const three = fingerprint;
+    const _4 = await instance.protect(
+      { ...createContext(), characteristics },
+      {
+        ...createDifferentFields(),
+        cookies: "session-id=123",
+      },
+    );
+    const four = fingerprint;
 
-      assert.notEqual(one, two);
-      assert.notEqual(two, three);
-      assert.notEqual(three, four);
-    },
-  );
+    assert.notEqual(one, two);
+    assert.notEqual(two, three);
+    assert.notEqual(three, four);
+  });
 
-  await t.test(
-    "should error if a `cookie` characteristic is not found",
-    async function () {
-      let errorParameters: unknown;
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug() {},
-          error(...parameters) {
-            errorParameters = parameters;
-          },
+  await t.test("should error if a `cookie` characteristic is not found", async function () {
+    let errorParameters: unknown;
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        ...console,
+        debug() {},
+        error(...parameters) {
+          errorParameters = parameters;
         },
-        rules: [],
-      });
+      },
+      rules: [],
+    });
 
-      const decision = await instance.protect(
-        {
-          ...createContext(),
-          characteristics: ['http.request.cookie["missing"]'],
-        },
-        createFields(),
-      );
-      assert.equal(decision.conclusion, "ERROR");
-      assert.deepEqual(errorParameters, [
-        {
-          error:
-            "unable to generate fingerprint: error generating identifier - requested `cookie.missing` characteristic but the `cookie.missing` value was empty",
-        },
-        "Failed to build fingerprint. Please verify your Characteristics.",
-      ]);
-    },
-  );
+    const decision = await instance.protect(
+      {
+        ...createContext(),
+        characteristics: ['http.request.cookie["missing"]'],
+      },
+      createFields(),
+    );
+    assert.equal(decision.conclusion, "ERROR");
+    assert.deepEqual(errorParameters, [
+      {
+        error:
+          "unable to generate fingerprint: error generating identifier - requested `cookie.missing` characteristic but the `cookie.missing` value was empty",
+      },
+      "Failed to build fingerprint. Please verify your Characteristics.",
+    ]);
+  });
 
-  await t.test(
-    "should error if a `header` characteristic is not found",
-    async function () {
-      let errorParameters: unknown;
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug() {},
-          error(...parameters) {
-            errorParameters = parameters;
-          },
+  await t.test("should error if a `header` characteristic is not found", async function () {
+    let errorParameters: unknown;
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        ...console,
+        debug() {},
+        error(...parameters) {
+          errorParameters = parameters;
         },
-        rules: [],
-      });
+      },
+      rules: [],
+    });
 
-      const decision = await instance.protect(
-        {
-          ...createContext(),
-          characteristics: ['http.request.headers["missing"]'],
-        },
-        createFields(),
-      );
-      assert.equal(decision.conclusion, "ERROR");
-      assert.deepEqual(errorParameters, [
-        {
-          error:
-            "unable to generate fingerprint: error generating identifier - requested `header.missing` characteristic but the `header.missing` value was empty",
-        },
-        "Failed to build fingerprint. Please verify your Characteristics.",
-      ]);
-    },
-  );
+    const decision = await instance.protect(
+      {
+        ...createContext(),
+        characteristics: ['http.request.headers["missing"]'],
+      },
+      createFields(),
+    );
+    assert.equal(decision.conclusion, "ERROR");
+    assert.deepEqual(errorParameters, [
+      {
+        error:
+          "unable to generate fingerprint: error generating identifier - requested `header.missing` characteristic but the `header.missing` value was empty",
+      },
+      "Failed to build fingerprint. Please verify your Characteristics.",
+    ]);
+  });
 
-  await t.test(
-    "should error if an `args` characteristic is not found",
-    async function () {
-      let errorParameters: unknown;
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug() {},
-          error(...parameters) {
-            errorParameters = parameters;
-          },
+  await t.test("should error if an `args` characteristic is not found", async function () {
+    let errorParameters: unknown;
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        ...console,
+        debug() {},
+        error(...parameters) {
+          errorParameters = parameters;
         },
-        rules: [],
-      });
+      },
+      rules: [],
+    });
 
-      const decision = await instance.protect(
-        { ...createContext(), characteristics: ['http.request.args["t"]'] },
-        createFields(),
-      );
-      assert.equal(decision.conclusion, "ERROR");
-      assert.deepEqual(errorParameters, [
-        {
-          error:
-            'unable to generate fingerprint: error generating identifier - requested a user-defined `http.request.args["t"]` characteristic but the `http.request.args["t"]` value was empty',
-        },
-        "Failed to build fingerprint. Please verify your Characteristics.",
-      ]);
-    },
-  );
+    const decision = await instance.protect(
+      { ...createContext(), characteristics: ['http.request.args["t"]'] },
+      createFields(),
+    );
+    assert.equal(decision.conclusion, "ERROR");
+    assert.deepEqual(errorParameters, [
+      {
+        error:
+          'unable to generate fingerprint: error generating identifier - requested a user-defined `http.request.args["t"]` characteristic but the `http.request.args["t"]` value was empty',
+      },
+      "Failed to build fingerprint. Please verify your Characteristics.",
+    ]);
+  });
 
-  await t.test(
-    "should error if a custom characteristic is not found",
-    async function () {
-      let errorParameters: unknown;
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug() {},
-          error(...parameters) {
-            errorParameters = parameters;
-          },
+  await t.test("should error if a custom characteristic is not found", async function () {
+    let errorParameters: unknown;
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        ...console,
+        debug() {},
+        error(...parameters) {
+          errorParameters = parameters;
         },
-        rules: [],
-      });
+      },
+      rules: [],
+    });
 
-      const decision = await instance.protect(
-        { ...createContext(), characteristics: ["custom"] },
-        createFields(),
-      );
-      assert.equal(decision.conclusion, "ERROR");
-      assert.deepEqual(errorParameters, [
-        {
-          error:
-            "unable to generate fingerprint: error generating identifier - requested a user-defined `custom` characteristic but the `custom` value was empty",
-        },
-        "Failed to build fingerprint. Please verify your Characteristics.",
-      ]);
-    },
-  );
+    const decision = await instance.protect(
+      { ...createContext(), characteristics: ["custom"] },
+      createFields(),
+    );
+    assert.equal(decision.conclusion, "ERROR");
+    assert.deepEqual(errorParameters, [
+      {
+        error:
+          "unable to generate fingerprint: error generating identifier - requested a user-defined `custom` characteristic but the `custom` value was empty",
+      },
+      "Failed to build fingerprint. Please verify your Characteristics.",
+    ]);
+  });
 });
 
 /**

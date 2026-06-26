@@ -1,21 +1,21 @@
+import { OutgoingMessage } from "http";
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
-import { setRateLimitHeaders } from "../index.js";
+
 import {
   ArcjetAllowDecision,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
 } from "@arcjet/protocol";
-import { OutgoingMessage } from "http";
+
+import { setRateLimitHeaders } from "../dist/index.js";
 
 function noop() {}
 
 test("@arcjet/decorate", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
-      "setRateLimitHeaders",
-    ]);
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), ["setRateLimitHeaders"]);
   });
 });
 
@@ -605,10 +605,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
-      assert.equal(
-        headers.get("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(headers.get("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(headers.has("RateLimit-Policy"), true);
       assert.equal(headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
@@ -651,10 +648,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
-      assert.equal(
-        headers.get("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(headers.get("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(headers.has("RateLimit-Policy"), true);
       assert.equal(headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
@@ -697,10 +691,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
-      assert.equal(
-        headers.get("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(headers.get("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(headers.has("RateLimit-Policy"), true);
       assert.equal(headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
@@ -743,10 +734,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(headers.has("RateLimit"), true);
-      assert.equal(
-        headers.get("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(headers.get("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(headers.has("RateLimit-Policy"), true);
       assert.equal(headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
@@ -1107,10 +1095,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
       assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100");
     });
@@ -1236,10 +1221,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
       assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100");
     });
@@ -1282,10 +1264,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
       assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
@@ -1328,10 +1307,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
       assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
@@ -1374,15 +1350,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
-      assert.equal(
-        resp.headers.get("RateLimit-Policy"),
-        "100;w=100, 1000;w=1000",
-      );
+      assert.equal(resp.headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("selects nearest reset in any order", () => {
@@ -1423,15 +1393,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
-      assert.equal(
-        resp.headers.get("RateLimit-Policy"),
-        "100;w=100, 1000;w=1000",
-      );
+      assert.equal(resp.headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("selects lowest max if reset are equal", () => {
@@ -1472,15 +1436,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
-      assert.equal(
-        resp.headers.get("RateLimit-Policy"),
-        "100;w=100, 1000;w=1000",
-      );
+      assert.equal(resp.headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("selects lowest max in any order", () => {
@@ -1521,15 +1479,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
-      assert.equal(
-        resp.headers.get("RateLimit-Policy"),
-        "100;w=100, 1000;w=1000",
-      );
+      assert.equal(resp.headers.get("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("warns but adds the rate limit header if RateLimit already exists", () => {
@@ -1561,10 +1513,7 @@ describe("setRateLimitHeaders", () => {
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
       assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100");
     });
@@ -1598,10 +1547,7 @@ describe("setRateLimitHeaders", () => {
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
       assert.equal(resp.headers.has("RateLimit"), true);
-      assert.equal(
-        resp.headers.get("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.headers.get("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.headers.has("RateLimit-Policy"), true);
       assert.equal(resp.headers.get("RateLimit-Policy"), "1;w=100");
     });
@@ -1980,10 +1926,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
       assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100");
     });
@@ -2109,10 +2052,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
       assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100");
     });
@@ -2155,10 +2095,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
       assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
@@ -2201,10 +2138,7 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
       assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100, 100;w=1000");
     });
@@ -2247,15 +2181,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
-      assert.equal(
-        resp.getHeader("RateLimit-Policy"),
-        "100;w=100, 1000;w=1000",
-      );
+      assert.equal(resp.getHeader("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("selects nearest reset in any order", () => {
@@ -2296,15 +2224,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
-      assert.equal(
-        resp.getHeader("RateLimit-Policy"),
-        "100;w=100, 1000;w=1000",
-      );
+      assert.equal(resp.getHeader("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("selects lowest max if reset are equal", () => {
@@ -2345,15 +2267,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
-      assert.equal(
-        resp.getHeader("RateLimit-Policy"),
-        "100;w=100, 1000;w=1000",
-      );
+      assert.equal(resp.getHeader("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("selects lowest max in any order", () => {
@@ -2394,15 +2310,9 @@ describe("setRateLimitHeaders", () => {
         }),
       );
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=100, remaining=99, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=100, remaining=99, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
-      assert.equal(
-        resp.getHeader("RateLimit-Policy"),
-        "100;w=100, 1000;w=1000",
-      );
+      assert.equal(resp.getHeader("RateLimit-Policy"), "100;w=100, 1000;w=1000");
     });
 
     test("warns but adds the rate limit header if RateLimit already exists", () => {
@@ -2434,10 +2344,7 @@ describe("setRateLimitHeaders", () => {
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
       assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100");
     });
@@ -2471,10 +2378,7 @@ describe("setRateLimitHeaders", () => {
       );
       assert.equal(warnLogSpy.mock.callCount(), 1);
       assert.equal(resp.hasHeader("RateLimit"), true);
-      assert.equal(
-        resp.getHeader("RateLimit"),
-        "limit=1, remaining=0, reset=100",
-      );
+      assert.equal(resp.getHeader("RateLimit"), "limit=1, remaining=0, reset=100");
       assert.equal(resp.hasHeader("RateLimit-Policy"), true);
       assert.equal(resp.getHeader("RateLimit-Policy"), "1;w=100");
     });

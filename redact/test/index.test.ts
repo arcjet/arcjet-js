@@ -1,12 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, test, afterEach, mock } from "node:test";
-import { redact } from "../index.js";
+
+import { redact } from "../dist/index.js";
 
 test("@arcjet/redact", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
-      "redact",
-    ]);
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), ["redact"]);
   });
 });
 
@@ -17,8 +16,7 @@ describe("ArcjetRedact", () => {
     });
 
     test("it will redact all if no entities list is given", async () => {
-      const text =
-        "email test@example.com phone 011234567 credit 4242424242424242 ip 10.12.234.2";
+      const text = "email test@example.com phone 011234567 credit 4242424242424242 ip 10.12.234.2";
       const expected =
         "email <Redacted email #0> phone <Redacted phone number #1> credit <Redacted credit card number #2> ip <Redacted IP address #3>";
       const [redacted] = await redact(text);
@@ -72,8 +70,7 @@ describe("ArcjetRedact", () => {
     });
 
     test("it will redact the configured entities only", async () => {
-      const text =
-        "email test@example.com phone 011234567 credit 4242424242424242 ip 10.12.234.2";
+      const text = "email test@example.com phone 011234567 credit 4242424242424242 ip 10.12.234.2";
       const expected =
         "email <Redacted email #0> phone <Redacted phone number #1> credit <Redacted credit card number #2> ip 10.12.234.2";
       const [redacted] = await redact(text, {
@@ -101,8 +98,7 @@ describe("ArcjetRedact", () => {
 
     test("it will use a custom replacement where configured w/ `entities`", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      const expected =
-        "email redacted-email phone 011234567 ip <Redacted IP address #1>";
+      const expected = "email redacted-email phone 011234567 ip <Redacted IP address #1>";
       const [redacted] = await redact(text, {
         entities: ["email", "ip-address"],
         replace: (entityType, plaintext) => {
@@ -121,8 +117,7 @@ describe("ArcjetRedact", () => {
     // This test is to ensure that we don't make a change which breaks it in the future.
     test("it allows replacement functions with no second param", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      const expected =
-        "email redacted-email phone 011234567 ip <Redacted IP address #1>";
+      const expected = "email redacted-email phone 011234567 ip <Redacted IP address #1>";
       const [redacted] = await redact(text, {
         entities: ["email", "ip-address"],
         replace: (entityType) => {
@@ -171,8 +166,7 @@ describe("ArcjetRedact", () => {
 
     test("it can detect entities using a custom detect function and redact custom entities using a custom redactor", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
-      const expected =
-        "email test@example.com custom-replace 011234567 ip 10.12.234.2";
+      const expected = "email test@example.com custom-replace 011234567 ip 10.12.234.2";
       const [redacted] = await redact(text, {
         entities: ["my-custom-entity"],
         contextWindowSize: 1,
@@ -198,6 +192,7 @@ describe("ArcjetRedact", () => {
         contextWindowSize: 3,
         detect: (tokens) => {
           assert.equal(tokens.length, 3);
+          // oxlint-disable-next-line unicorn/no-new-array
           return new Array(tokens.length).fill(undefined);
         },
       });
@@ -213,10 +208,8 @@ describe("ArcjetRedact", () => {
       });
       assert.equal(redacted, expectedRedacted);
 
-      const newText =
-        "hello <Redacted email #0> your phone number is <Redacted phone number #1>";
-      const expectedUnredacted =
-        "hello test@example.com your phone number is 011234567";
+      const newText = "hello <Redacted email #0> your phone number is <Redacted phone number #1>";
+      const expectedUnredacted = "hello test@example.com your phone number is 011234567";
       const unredacted = unredact(newText);
       assert.equal(unredacted, expectedUnredacted);
     });
@@ -232,8 +225,7 @@ describe("ArcjetRedact", () => {
 
       const newText =
         "hello <Redacted email #0> your phone number is <Redacted phone number #1> <Redacted phone number #1>";
-      const expectedUnredacted =
-        "hello test@example.com your phone number is 011234567 011234567";
+      const expectedUnredacted = "hello test@example.com your phone number is 011234567 011234567";
       const unredacted = unredact(newText);
       assert.equal(unredacted, expectedUnredacted);
     });
@@ -263,8 +255,7 @@ describe("ArcjetRedact", () => {
 
       const newText =
         "hello my-custom-email-replacement your phone number is <Redacted phone number #1>";
-      const expectedUnredacted =
-        "hello test@example.com your phone number is 011234567";
+      const expectedUnredacted = "hello test@example.com your phone number is 011234567";
       const unredacted = unredact(newText);
       assert.equal(unredacted, expectedUnredacted);
     });

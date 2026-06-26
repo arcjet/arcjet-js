@@ -4,49 +4,73 @@
   "description": "The TypeScript & JavaScript interface into the Arcjet protocol",
   "keywords": [
     "arcjet",
-    "utility",
+    "protocol",
     "util",
-    "protocol"
+    "utility"
   ],
-  "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "protocol"
-  },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
     "email": "support@arcjet.com"
   },
+  "license": "Apache-2.0",
   "author": {
     "name": "Arcjet",
     "email": "support@arcjet.com",
     "url": "https://arcjet.com"
   },
-  "engines": {
-    "node": ">=22.21.0 <23 || >=24.5.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "protocol"
   },
-  "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
   "files": [
-    "proto/",
-    "client.d.ts",
-    "client.js",
-    "convert.d.ts",
-    "convert.js",
-    "index.d.ts",
-    "index.js",
-    "well-known-bots.d.ts",
-    "well-known-bots.js"
+    "dist"
   ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./client.js": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./convert": {
+      "types": "./dist/convert.d.ts",
+      "default": "./dist/convert.js"
+    },
+    "./convert.js": {
+      "types": "./dist/convert.d.ts",
+      "default": "./dist/convert.js"
+    },
+    "./well-known-bots": {
+      "types": "./dist/well-known-bots.d.ts",
+      "default": "./dist/well-known-bots.js"
+    },
+    "./well-known-bots.js": {
+      "types": "./dist/well-known-bots.d.ts",
+      "default": "./dist/well-known-bots.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
-    "test": "npm run build && npm run lint && npm run test-coverage"
+    "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
     "@arcjet/cache": "1.5.0",
@@ -55,15 +79,11 @@
     "typeid-js": "1.2.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.5.0",
-    "@arcjet/rollup-config": "1.5.0",
-    "@rollup/wasm-node": "4.61.0",
     "@types/node": "22.19.21",
-    "eslint": "9.39.4",
-    "typescript": "5.9.3"
+    "tsdown": "0.22.3",
+    "typescript": "6.0.3"
   },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
   }
 }

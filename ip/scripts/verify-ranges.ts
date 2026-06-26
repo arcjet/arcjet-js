@@ -11,6 +11,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+
 import { cloudflareIpv4Ranges, cloudflareIpv6Ranges } from "../cloudflare.ts";
 import { parseProxy } from "../index.ts";
 
@@ -69,16 +70,10 @@ function formatArray(entries: ReadonlyArray<string>): string {
   return `[\n${entries.map((entry) => `  "${entry}",`).join("\n")}\n]`;
 }
 
-function replaceArray(
-  source: string,
-  name: string,
-  entries: ReadonlyArray<string>,
-): string {
+function replaceArray(source: string, name: string, entries: ReadonlyArray<string>): string {
   // Match `export const <name>: ReadonlyArray<string> = [ ... ];`. The list
   // never contains `]`, so a non-greedy character class is sufficient.
-  const pattern = new RegExp(
-    `(export const ${name}: ReadonlyArray<string> = )\\[[^\\]]*\\]`,
-  );
+  const pattern = new RegExp(`(export const ${name}: ReadonlyArray<string> = )\\[[^\\]]*\\]`);
   if (!pattern.test(source)) {
     throw new Error(`Could not find array \`${name}\` in cloudflare.ts`);
   }
@@ -93,10 +88,7 @@ function today(): string {
 async function main() {
   const write = process.argv.includes("--write");
 
-  const [liveIpv4, liveIpv6] = await Promise.all([
-    fetchRanges(IPV4_URL),
-    fetchRanges(IPV6_URL),
-  ]);
+  const [liveIpv4, liveIpv6] = await Promise.all([fetchRanges(IPV4_URL), fetchRanges(IPV6_URL)]);
 
   const ipv4Diff = diff(cloudflareIpv4Ranges, liveIpv4);
   const ipv6Diff = diff(cloudflareIpv6Ranges, liveIpv6);
@@ -112,6 +104,7 @@ async function main() {
     return;
   }
 
+  // oxlint-disable-next-line unicorn/consistent-function-scoping
   function report(label: string, d: ReturnType<typeof diff>) {
     if (d.added.length > 0) {
       console.log(`  ${label} added:   ${d.added.join(", ")}`);
@@ -125,10 +118,7 @@ async function main() {
     let source = readFileSync(sourcePath, "utf8");
     source = replaceArray(source, "cloudflareIpv4Ranges", liveIpv4);
     source = replaceArray(source, "cloudflareIpv6Ranges", liveIpv6);
-    source = source.replace(
-      /(\/\/ last verified: )\d{4}-\d{2}-\d{2}/,
-      `$1${today()}`,
-    );
+    source = source.replace(/(\/\/ last verified: )\d{4}-\d{2}-\d{2}/, `$1${today()}`);
     writeFileSync(sourcePath, source);
     console.log("Updated cloudflare.ts with current Cloudflare IP ranges:");
     report("IPv4", ipv4Diff);

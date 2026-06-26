@@ -1,41 +1,7 @@
 {
-  "author": {
-    "email": "support@arcjet.com",
-    "name": "Arcjet",
-    "url": "https://arcjet.com"
-  },
-  "bugs": {
-    "email": "support@arcjet.com",
-    "url": "https://github.com/arcjet/arcjet-js/issues"
-  },
-  "dependencies": {
-    "@arcjet/body": "1.5.0",
-    "@arcjet/env": "1.5.0",
-    "@arcjet/headers": "1.5.0",
-    "@arcjet/ip": "1.5.0",
-    "@arcjet/logger": "1.5.0",
-    "@arcjet/protocol": "1.5.0",
-    "@arcjet/transport": "1.5.0",
-    "arcjet": "1.5.0"
-  },
+  "name": "@arcjet/nuxt",
+  "version": "1.5.0",
   "description": "Arcjet runtime security SDK for Nuxt — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
-  "devDependencies": {
-    "@arcjet/eslint-config": "1.5.0",
-    "@arcjet/rollup-config": "1.5.0",
-    "@nuxt/kit": "4.4.2",
-    "@nuxt/schema": "4.4.2",
-    "eslint": "9.39.4",
-    "typescript": "5.9.3"
-  },
-  "exports": "./index.js",
-  "files": [
-    "index.d.ts",
-    "index.js",
-    "internal.d.ts",
-    "internal.js"
-  ],
-  "homepage": "https://arcjet.com",
-  "license": "Apache-2.0",
   "keywords": [
     "ai",
     "analyze",
@@ -54,28 +20,65 @@
     "verify",
     "waf"
   ],
-  "name": "@arcjet/nuxt",
-  "peerDependencies": {
-    "@nuxt/kit": ">=4",
-    "@nuxt/schema": ">=4"
+  "homepage": "https://arcjet.com",
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "arcjet-nuxt"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public",
     "tag": "latest"
   },
-  "repository": {
-    "directory": "arcjet-nuxt",
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git"
-  },
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
+    "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
     "prepack": "npm run build",
-    "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
-    "test": "npm run build && npm run lint && npm run test-coverage"
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage"
   },
-  "type": "module",
-  "version": "1.5.0"
+  "dependencies": {
+    "@arcjet/body": "1.5.0",
+    "@arcjet/env": "1.5.0",
+    "@arcjet/headers": "1.5.0",
+    "@arcjet/ip": "1.5.0",
+    "@arcjet/logger": "1.5.0",
+    "@arcjet/protocol": "1.5.0",
+    "@arcjet/transport": "1.5.0",
+    "arcjet": "1.5.0"
+  },
+  "devDependencies": {
+    "@nuxt/kit": "4.4.2",
+    "@nuxt/schema": "4.4.2",
+    "tsdown": "0.22.3",
+    "typescript": "6.0.3"
+  },
+  "peerDependencies": {
+    "@nuxt/kit": ">=4",
+    "@nuxt/schema": ">=4"
+  }
 }

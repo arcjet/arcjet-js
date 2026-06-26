@@ -1,10 +1,17 @@
 {
   "compilerOptions": {
-    "lib": ["dom.iterable", "dom", "esnext"],
+    "lib": [
+      "dom.iterable",
+      "dom",
+      "esnext"
+    ],
     "moduleResolution": "bundler",
     "module": "esnext",
     "skipLibCheck": true,
     "strict": true,
-    "target": "es2022"
+    "target": "es2022",
+    "types": [
+      "bun"
+    ]
   }
 }

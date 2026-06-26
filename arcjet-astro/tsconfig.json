@@ -1,4 +1,7 @@
 {
   "extends": "../tsconfig.base.json",
-  "include": ["**/*.ts", "astro-env.d.ts"]
+  "include": ["src/**/*.ts", "ambient.d.ts"],
+  "compilerOptions": {
+    "isolatedDeclarations": false
+  }
 }

@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import * as env from "../index.js";
+
+import * as env from "../dist/index.js";
 
 test("@arcjet/env", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
       "baseUrl",
       "isDevelopment",
       "logLevel",
@@ -19,10 +20,7 @@ describe("env", () => {
 
     // https://firebase.google.com/docs/functions/config-env
     assert.equal(env.platform({ FIREBASE_CONFIG: "" }), undefined);
-    assert.equal(
-      env.platform({ FIREBASE_CONFIG: "{databaseURL…}" }),
-      "firebase",
-    );
+    assert.equal(env.platform({ FIREBASE_CONFIG: "{databaseURL…}" }), "firebase");
 
     assert.equal(env.platform({ FLY_APP_NAME: "" }), undefined);
     assert.equal(env.platform({ FLY_APP_NAME: "foobar" }), "fly-io");
@@ -54,10 +52,7 @@ describe("env", () => {
 
   test("baseUrl", () => {
     // dev
-    assert.equal(
-      env.baseUrl({ NODE_ENV: "development" }),
-      "https://decide.arcjet.com",
-    );
+    assert.equal(env.baseUrl({ NODE_ENV: "development" }), "https://decide.arcjet.com");
     assert.equal(
       env.baseUrl({
         NODE_ENV: "development",
@@ -117,10 +112,7 @@ describe("env", () => {
       }),
       "https://foo.bar.orb.local",
     );
-    assert.equal(
-      env.baseUrl({ FLY_APP_NAME: "foobar" }),
-      "https://fly.decide.arcjet.com",
-    );
+    assert.equal(env.baseUrl({ FLY_APP_NAME: "foobar" }), "https://fly.decide.arcjet.com");
 
     // Trailing slash.
     assert.equal(

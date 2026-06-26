@@ -10,6 +10,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint
+    uses: ./.github/workflows/reusable-lint.yml
+    permissions:
+      contents: read
+
   test:
     name: Run tests
     uses: ./.github/workflows/reusable-test.yml

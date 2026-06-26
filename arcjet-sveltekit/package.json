@@ -21,36 +21,43 @@
     "verify",
     "waf"
   ],
-  "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "arcjet-sveltekit"
-  },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
     "email": "support@arcjet.com"
   },
+  "license": "Apache-2.0",
   "author": {
     "name": "Arcjet",
     "email": "support@arcjet.com",
     "url": "https://arcjet.com"
   },
-  "engines": {
-    "node": ">=22.21.0 <23 || >=24.5.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "arcjet-sveltekit"
   },
-  "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
   "files": [
-    "index.d.ts",
-    "index.js"
+    "dist"
   ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "test": "npm run build && npm run lint"
+    "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
+    "test": "npm run build"
   },
   "dependencies": {
     "@arcjet/body": "1.5.0",
@@ -62,19 +69,15 @@
     "@arcjet/transport": "1.5.0",
     "arcjet": "1.5.0"
   },
+  "devDependencies": {
+    "@types/node": "22.19.21",
+    "tsdown": "0.22.3",
+    "typescript": "6.0.3"
+  },
   "peerDependencies": {
     "svelte": "^3.54.0 || ^4.0.0 || ^5.0.0-0"
   },
-  "devDependencies": {
-    "@arcjet/eslint-config": "1.5.0",
-    "@arcjet/rollup-config": "1.5.0",
-    "@types/node": "22.19.21",
-    "@rollup/wasm-node": "4.61.0",
-    "eslint": "9.39.4",
-    "typescript": "5.9.3"
-  },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
   }
 }

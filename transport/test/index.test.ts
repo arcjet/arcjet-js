@@ -1,21 +1,21 @@
 import assert from "node:assert/strict";
-import http2 from "node:http2";
 import http from "node:http";
+import http2 from "node:http2";
 import test from "node:test";
-import { connectNodeAdapter } from "@connectrpc/connect-node";
+
 import { createClient } from "@connectrpc/connect";
-import { createTransport as createTransportBun } from "../bun.js";
-import { createTransport as createTransportEdge } from "../edge-light.js";
-import { createTransport } from "../index.js";
-import { ElizaService } from "./eliza_pb.js";
+import { connectNodeAdapter } from "@connectrpc/connect-node";
+
+import { createTransport as createTransportBun } from "../dist/bun.js";
+import { createTransport as createTransportEdge } from "../dist/edge-light.js";
+import { createTransport } from "../dist/index.js";
+import { ElizaService } from "./eliza_pb.ts";
 
 let uniquePort = 3400;
 
 test("@arcjet/transport", async function (t) {
   await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
-      "createTransport",
-    ]);
+    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), ["createTransport"]);
   });
 
   await t.test("should throw w/o `url`", async function () {

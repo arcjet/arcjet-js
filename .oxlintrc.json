@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "node", "promise"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "rules": {
+    "eslint/no-warning-comments": "off",
+    "eslint/no-shadow": "off",
+    "eslint/no-unused-vars": "off",
+    "unicorn/no-array-sort": "off"
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "examples/**",
+    "dev/**",
+    "arcjet-guard/**",
+    "**/src/wasm/**",
+    "protocol/src/proto/**"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "**/dist/**",
+    "examples/**",
+    "**/src/wasm/**",
+    "protocol/src/proto/**",
+    "arcjet-guard/**",
+    "**/*.md"
+  ],
+  "sortImports": {}
+}

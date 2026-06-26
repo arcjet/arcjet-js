@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
+
 import {
   ArcjetAllowDecision,
   ArcjetBotReason,
@@ -9,7 +10,7 @@ import {
   ArcjetErrorReason,
   ArcjetRateLimitReason,
   ArcjetReason,
-} from "../index.js";
+} from "../dist/index.js";
 
 describe("ArcjetDecision", () => {
   test("will default the `id` property if not specified", () => {
