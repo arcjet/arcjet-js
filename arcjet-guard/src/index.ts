@@ -122,6 +122,7 @@ export type {
   SlidingWindowInput,
   DetectPromptInjectionConfig,
   ExperimentalModerateContentConfig,
+  ExperimentalModerateContentInput,
   LocalDetectSensitiveInfoConfig,
   SensitiveInfoEntityType,
   LocalCustomConfig,

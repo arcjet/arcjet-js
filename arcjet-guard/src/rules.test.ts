@@ -252,6 +252,20 @@ describe("experimental_moderateContent", () => {
 
     assert.equal(input.config.mode, "DRY_RUN");
   });
+
+  test("attaches call-time metadata to the input", () => {
+    const rule = experimental_moderateContent();
+    const input = rule("text", { metadata: { expectedResponse: "pass" } });
+
+    assert.deepEqual(input.metadata, { expectedResponse: "pass" });
+  });
+
+  test("input without metadata does not set metadata on the input object", () => {
+    const rule = experimental_moderateContent();
+    const input = rule("text");
+
+    assert.equal("metadata" in input, false);
+  });
 });
 
 describe("localDetectSensitiveInfo", () => {

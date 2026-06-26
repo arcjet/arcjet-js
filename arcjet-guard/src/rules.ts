@@ -29,6 +29,7 @@ import type {
   SlidingWindowInput,
   DetectPromptInjectionConfig,
   ExperimentalModerateContentConfig,
+  ExperimentalModerateContentInput,
   LocalDetectSensitiveInfoConfig,
   LocalCustomConfig,
   LocalCustomInput,
@@ -372,12 +373,25 @@ export function detectPromptInjection(
  * (inspect the errored result with `decision.errorResults()`). Check the
  * latest version of this SDK to see whether the rule is now stable.
  *
+ * Per-request metadata can be attached at call time and is merged with any
+ * config-level metadata (call-time wins on key conflict).
+ *
  * @example
  * ```ts
  * const moderate = experimental_moderateContent();
  * const decision = await arcjet.guard({
  *   label: "tools.chat",
  *   rules: [moderate(userMessage)],
+ * });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Attach per-request metadata for analytics/correlation.
+ * const moderate = experimental_moderateContent({ metadata: { variant: "new" } });
+ * const decision = await arcjet.guard({
+ *   label: "tools.chat",
+ *   rules: [moderate(userMessage, { metadata: { expectedResponse: "pass" } })],
  * });
  * ```
  */
@@ -387,12 +401,17 @@ export function experimental_moderateContent(
   const configId = randomId();
 
   const rule = Object.assign(
-    (input: string): RuleWithInputModerateContent => {
+    (
+      input: string,
+      options: ExperimentalModerateContentInput = {},
+    ): RuleWithInputModerateContent => {
       const inputId = randomId();
+      const { metadata } = options;
       return {
         type: "MODERATE_CONTENT" as const,
         config,
         input,
+        ...(metadata === undefined ? {} : { metadata }),
         [symbolArcjetInternal]: { configId, inputId },
         result(decision: Decision): RuleResultModerateContent | null {
           return findResult<RuleResultModerateContent>(decision, configId, inputId);
