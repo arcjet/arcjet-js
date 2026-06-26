@@ -22,8 +22,12 @@ export function createTransport(baseUrl: string) {
     idleConnectionTimeoutMs: 340 * 1000,
   });
 
-  // We ignore the promise result because this is an optimistic pre-connect
-  sessionManager.connect();
+  // This is an optimistic pre-connect. In Deno, the Node HTTP/2 compatibility
+  // layer can surface background session failures as uncaught test errors, so
+  // we only warm the connection in Node.
+  if (!("Deno" in globalThis)) {
+    sessionManager.connect();
+  }
 
   return createConnectTransport({
     baseUrl,
