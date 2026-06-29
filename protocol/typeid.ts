@@ -26,12 +26,27 @@ function randomBytes(): Uint8Array {
  *
  * `nowMs` and `random` are injectable for deterministic testing; production
  * callers use the defaults.
+ *
+ * @throws {RangeError}
+ *   If `nowMs` is not an integer in the 48-bit range `[0, 2 ** 48)`, or if
+ *   `random` is not exactly 10 bytes. Both would otherwise silently produce a
+ *   malformed ID (a wrapped timestamp or zero-filled entropy).
  */
 export function uuidV7Bytes(
   nowMs: number = Date.now(),
   random: Uint8Array = randomBytes(),
 ): Uint8Array {
-  const timestampMs = BigInt(Math.trunc(nowMs));
+  if (!Number.isInteger(nowMs) || nowMs < 0 || nowMs >= 2 ** 48) {
+    throw new RangeError(
+      `uuidV7Bytes: \`nowMs\` must be an integer in [0, 2 ** 48), got ${nowMs}`,
+    );
+  }
+  if (random.length !== 10) {
+    throw new RangeError(
+      `uuidV7Bytes: \`random\` must be exactly 10 bytes, got ${random.length}`,
+    );
+  }
+  const timestampMs = BigInt(nowMs);
   const randA = BigInt((random[0] << 4) | (random[1] >> 4)); // 12 bits
   let randBFull = 0n;
   for (let i = 2; i < 10; i++) {

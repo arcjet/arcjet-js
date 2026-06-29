@@ -115,3 +115,28 @@ test("fuzz: embedded timestamp round-trips (truncated to integer ms)", () => {
     assert.equal(actualMs, BigInt(ts), `timestamp mismatch: ${actualMs} != ${ts}`);
   }
 });
+
+// --- Input validation -----------------------------------------------------
+
+test("rejects an out-of-range or non-integer `nowMs`", () => {
+  for (const bad of [-1, 2 ** 48, 2 ** 53, 1.5, NaN, Infinity, -Infinity]) {
+    assert.throws(
+      () => uuidV7Bytes(bad, zero10),
+      RangeError,
+      `expected RangeError for nowMs=${bad}`,
+    );
+  }
+  // Boundaries are valid: 0 and the largest 48-bit millisecond.
+  assert.doesNotThrow(() => uuidV7Bytes(0, zero10));
+  assert.doesNotThrow(() => uuidV7Bytes(2 ** 48 - 1, zero10));
+});
+
+test("rejects `random` that is not exactly 10 bytes", () => {
+  for (const len of [0, 9, 11, 16]) {
+    assert.throws(
+      () => uuidV7Bytes(0, new Uint8Array(len)),
+      RangeError,
+      `expected RangeError for random length ${len}`,
+    );
+  }
+});
