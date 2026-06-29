@@ -26,6 +26,12 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
+    # Only run Release Please on `main`. It pushes to
+    # `release-please--branches--main` using a GitHub App token, and App token
+    # pushes (unlike `GITHUB_TOKEN`) re-trigger workflows — so running this job
+    # on that branch makes it force-push and re-trigger itself in an infinite
+    # loop. The `test` and `examples` jobs still run on the release branch.
+    if: github.ref == 'refs/heads/main'
     # Release Please is very fast, so we set a tiny timeout
     timeout-minutes: 2
     # The GitHub App token handles write permissions for contents and
