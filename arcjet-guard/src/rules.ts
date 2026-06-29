@@ -15,6 +15,7 @@ import type {
   InternalResult,
   RuleResult,
   RuleResultCustom,
+  RuleResultError,
   RuleResultFixedWindow,
   RuleResultPromptInjection,
   RuleResultModerateContent,
@@ -66,7 +67,13 @@ function getInternalResults(decision: Decision): readonly InternalResult[] {
   return isInternalDecision(decision) ? decision[symbolArcjetInternal].results : [];
 }
 
-/** Find a single result matching the given correlation IDs. */
+/**
+ * Find a single non-error result matching the given correlation IDs.
+ *
+ * Errored results ({@link RuleResultError}) are excluded — they are surfaced
+ * only via `errorResult()`. This is the error/non-error split: a non-error
+ * accessor must never return an errored result up-cast to the rule's own type.
+ */
 function findResult<T extends RuleResult>(
   decision: Decision,
   configId: string,
@@ -74,21 +81,23 @@ function findResult<T extends RuleResult>(
 ): T | null {
   const match = getInternalResults(decision).find(
     (r) =>
-      r[symbolArcjetInternal].configId === configId && r[symbolArcjetInternal].inputId === inputId,
+      r[symbolArcjetInternal].configId === configId &&
+      r[symbolArcjetInternal].inputId === inputId &&
+      r.type !== "RULE_ERROR",
   );
   if (!match) return null;
   const result: unknown = match;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- server result matched by correlation IDs
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-error result matched by correlation IDs; RULE_ERROR excluded above
   return result as T;
 }
 
-/** Find all results for a given configId. */
+/** Find all non-error results for a given configId. */
 function findResults<T extends RuleResult>(decision: Decision, configId: string): T[] {
   return getInternalResults(decision)
-    .filter((r) => r[symbolArcjetInternal].configId === configId)
+    .filter((r) => r[symbolArcjetInternal].configId === configId && r.type !== "RULE_ERROR")
     .map((r): T => {
       const result: unknown = r;
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- server results matched by configId
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-error results matched by configId; RULE_ERROR excluded above
       return result as T;
     });
 }
@@ -96,6 +105,44 @@ function findResults<T extends RuleResult>(decision: Decision, configId: string)
 /** Find the first denied result for a given configId. */
 function findDeniedResult<T extends RuleResult>(decision: Decision, configId: string): T | null {
   return findResults<T>(decision, configId).find((r) => r.conclusion === "DENY") ?? null;
+}
+
+/**
+ * Find the errored result for one specific submission, matched by both
+ * correlation IDs. Returns only {@link RuleResultError} — never a non-error
+ * result.
+ */
+function findErrorResult(
+  decision: Decision,
+  configId: string,
+  inputId: string,
+): RuleResultError | null {
+  const match = getInternalResults(decision).find(
+    (r) =>
+      r[symbolArcjetInternal].configId === configId &&
+      r[symbolArcjetInternal].inputId === inputId &&
+      r.type === "RULE_ERROR",
+  );
+  if (!match) return null;
+  const result: unknown = match;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- matched on type === "RULE_ERROR" above
+  return result as RuleResultError;
+}
+
+/**
+ * Find the first errored result for a given configId. Mirrors
+ * {@link findDeniedResult}: if multiple invocations of the same rule errored,
+ * returns one arbitrarily. There is deliberately no `errorResults()` plural —
+ * retrieve per-submission via the bound input's `errorResult()`.
+ */
+function findErrorResultByConfig(decision: Decision, configId: string): RuleResultError | null {
+  const match = getInternalResults(decision).find(
+    (r) => r[symbolArcjetInternal].configId === configId && r.type === "RULE_ERROR",
+  );
+  if (!match) return null;
+  const result: unknown = match;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- matched on type === "RULE_ERROR" above
+  return result as RuleResultError;
 }
 
 /**
@@ -142,6 +189,9 @@ export function tokenBucket(config: TokenBucketConfig): RuleWithConfigTokenBucke
           const r = findResult<RuleResultTokenBucket>(decision, configId, inputId);
           return r === null ? [] : [r];
         },
+        errorResult(decision: Decision): RuleResultError | null {
+          return findErrorResult(decision, configId, inputId);
+        },
       };
     },
     {
@@ -156,6 +206,9 @@ export function tokenBucket(config: TokenBucketConfig): RuleWithConfigTokenBucke
       },
       deniedResult(decision: Decision): RuleResultTokenBucket | null {
         return findDeniedResult<RuleResultTokenBucket>(decision, configId);
+      },
+      errorResult(decision: Decision): RuleResultError | null {
+        return findErrorResultByConfig(decision, configId);
       },
     },
   );
@@ -207,6 +260,9 @@ export function fixedWindow(config: FixedWindowConfig): RuleWithConfigFixedWindo
           const r = findResult<RuleResultFixedWindow>(decision, configId, inputId);
           return r === null ? [] : [r];
         },
+        errorResult(decision: Decision): RuleResultError | null {
+          return findErrorResult(decision, configId, inputId);
+        },
       };
     },
     {
@@ -221,6 +277,9 @@ export function fixedWindow(config: FixedWindowConfig): RuleWithConfigFixedWindo
       },
       deniedResult(decision: Decision): RuleResultFixedWindow | null {
         return findDeniedResult<RuleResultFixedWindow>(decision, configId);
+      },
+      errorResult(decision: Decision): RuleResultError | null {
+        return findErrorResultByConfig(decision, configId);
       },
     },
   );
@@ -271,6 +330,9 @@ export function slidingWindow(config: SlidingWindowConfig): RuleWithConfigSlidin
           const r = findResult<RuleResultSlidingWindow>(decision, configId, inputId);
           return r === null ? [] : [r];
         },
+        errorResult(decision: Decision): RuleResultError | null {
+          return findErrorResult(decision, configId, inputId);
+        },
       };
     },
     {
@@ -285,6 +347,9 @@ export function slidingWindow(config: SlidingWindowConfig): RuleWithConfigSlidin
       },
       deniedResult(decision: Decision): RuleResultSlidingWindow | null {
         return findDeniedResult<RuleResultSlidingWindow>(decision, configId);
+      },
+      errorResult(decision: Decision): RuleResultError | null {
+        return findErrorResultByConfig(decision, configId);
       },
     },
   );
@@ -338,6 +403,9 @@ export function detectPromptInjection(
           const r = findResult<RuleResultPromptInjection>(decision, configId, inputId);
           return r === null ? [] : [r];
         },
+        errorResult(decision: Decision): RuleResultError | null {
+          return findErrorResult(decision, configId, inputId);
+        },
       };
     },
     {
@@ -352,6 +420,9 @@ export function detectPromptInjection(
       },
       deniedResult(decision: Decision): RuleResultPromptInjection | null {
         return findDeniedResult<RuleResultPromptInjection>(decision, configId);
+      },
+      errorResult(decision: Decision): RuleResultError | null {
+        return findErrorResultByConfig(decision, configId);
       },
     },
   );
@@ -424,6 +495,9 @@ export function experimental_moderateContent(
           const r = findResult<RuleResultModerateContent>(decision, configId, inputId);
           return r === null ? [] : [r];
         },
+        errorResult(decision: Decision): RuleResultError | null {
+          return findErrorResult(decision, configId, inputId);
+        },
       };
     },
     {
@@ -438,6 +512,9 @@ export function experimental_moderateContent(
       },
       deniedResult(decision: Decision): RuleResultModerateContent | null {
         return findDeniedResult<RuleResultModerateContent>(decision, configId);
+      },
+      errorResult(decision: Decision): RuleResultError | null {
+        return findErrorResultByConfig(decision, configId);
       },
     },
   );
@@ -493,6 +570,9 @@ export function localDetectSensitiveInfo(
           const r = findResult<RuleResultSensitiveInfo>(decision, configId, inputId);
           return r === null ? [] : [r];
         },
+        errorResult(decision: Decision): RuleResultError | null {
+          return findErrorResult(decision, configId, inputId);
+        },
       };
     },
     {
@@ -507,6 +587,9 @@ export function localDetectSensitiveInfo(
       },
       deniedResult(decision: Decision): RuleResultSensitiveInfo | null {
         return findDeniedResult<RuleResultSensitiveInfo>(decision, configId);
+      },
+      errorResult(decision: Decision): RuleResultError | null {
+        return findErrorResultByConfig(decision, configId);
       },
     },
   );
@@ -608,6 +691,9 @@ export function defineCustomRule<
             const r = findResult<RuleResultCustom<TData>>(decision, configId, inputId);
             return r === null ? [] : [r];
           },
+          errorResult(decision: Decision): RuleResultError | null {
+            return findErrorResult(decision, configId, inputId);
+          },
         };
       },
       {
@@ -622,6 +708,9 @@ export function defineCustomRule<
         },
         deniedResult(decision: Decision): RuleResultCustom<TData> | null {
           return findDeniedResult<RuleResultCustom<TData>>(decision, configId);
+        },
+        errorResult(decision: Decision): RuleResultError | null {
+          return findErrorResultByConfig(decision, configId);
         },
       },
     );

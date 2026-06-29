@@ -1058,6 +1058,12 @@ export type RuleWithConfigTokenBucket = {
   result(decision: Decision): RuleResultTokenBucket | null;
   /** Return the first denied token bucket result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultTokenBucket | null;
+  /**
+   * Return the first errored result for this rule, or `null` if none errored.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A configured fixed window rule. */
@@ -1076,6 +1082,12 @@ export type RuleWithConfigFixedWindow = {
   result(decision: Decision): RuleResultFixedWindow | null;
   /** Return the first denied fixed window result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultFixedWindow | null;
+  /**
+   * Return the first errored result for this rule, or `null` if none errored.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A configured sliding window rule. */
@@ -1094,6 +1106,12 @@ export type RuleWithConfigSlidingWindow = {
   result(decision: Decision): RuleResultSlidingWindow | null;
   /** Return the first denied sliding window result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultSlidingWindow | null;
+  /**
+   * Return the first errored result for this rule, or `null` if none errored.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A configured prompt injection detection rule. */
@@ -1112,6 +1130,12 @@ export type RuleWithConfigPromptInjection = {
   result(decision: Decision): RuleResultPromptInjection | null;
   /** Return the first denied prompt injection result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultPromptInjection | null;
+  /**
+   * Return the first errored result for this rule, or `null` if none errored.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /**
@@ -1137,6 +1161,12 @@ export type RuleWithConfigModerateContent = {
   result(decision: Decision): RuleResultModerateContent | null;
   /** Return the first denied content moderation result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultModerateContent | null;
+  /**
+   * Return the first errored result for this rule, or `null` if none errored.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A configured sensitive info detection rule. */
@@ -1155,6 +1185,12 @@ export type RuleWithConfigSensitiveInfo = {
   result(decision: Decision): RuleResultSensitiveInfo | null;
   /** Return the first denied sensitive info result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultSensitiveInfo | null;
+  /**
+   * Return the first errored result for this rule, or `null` if none errored.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A configured custom rule. */
@@ -1176,6 +1212,12 @@ export type RuleWithConfigCustom<
   result(decision: Decision): RuleResultCustom<TData> | null;
   /** Return the first denied custom rule result, or `null` if none. */
   deniedResult(decision: Decision): RuleResultCustom<TData> | null;
+  /**
+   * Return the first errored result for this rule, or `null` if none errored.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** Union of all configured rule types. */
@@ -1204,6 +1246,12 @@ export type RuleWithInputTokenBucket = {
   result(decision: Decision): RuleResultTokenBucket | null;
   /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultTokenBucket | null;
+  /**
+   * Find this submission's errored result, or `null` if it didn't error.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A fixed window rule with bound input. */
@@ -1222,6 +1270,12 @@ export type RuleWithInputFixedWindow = {
   result(decision: Decision): RuleResultFixedWindow | null;
   /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultFixedWindow | null;
+  /**
+   * Find this submission's errored result, or `null` if it didn't error.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A sliding window rule with bound input. */
@@ -1240,6 +1294,12 @@ export type RuleWithInputSlidingWindow = {
   result(decision: Decision): RuleResultSlidingWindow | null;
   /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultSlidingWindow | null;
+  /**
+   * Find this submission's errored result, or `null` if it didn't error.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A prompt injection rule with bound input. */
@@ -1258,6 +1318,12 @@ export type RuleWithInputPromptInjection = {
   result(decision: Decision): RuleResultPromptInjection | null;
   /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultPromptInjection | null;
+  /**
+   * Find this submission's errored result, or `null` if it didn't error.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /**
@@ -1282,6 +1348,12 @@ export type RuleWithInputModerateContent = {
   result(decision: Decision): RuleResultModerateContent | null;
   /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultModerateContent | null;
+  /**
+   * Find this submission's errored result, or `null` if it didn't error.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A sensitive info rule with bound input. */
@@ -1300,6 +1372,12 @@ export type RuleWithInputSensitiveInfo = {
   result(decision: Decision): RuleResultSensitiveInfo | null;
   /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultSensitiveInfo | null;
+  /**
+   * Find this submission's errored result, or `null` if it didn't error.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** A custom rule with bound input. */
@@ -1320,6 +1398,12 @@ export type RuleWithInputCustom<TData extends Record<string, string> = Record<st
   result(decision: Decision): RuleResultCustom<TData> | null;
   /** Find this submission's denied result, or `null` if not denied. */
   deniedResult(decision: Decision): RuleResultCustom<TData> | null;
+  /**
+   * Find this submission's errored result, or `null` if it didn't error.
+   * Errors are excluded from {@link result}/{@link results}/{@link deniedResult};
+   * this is the only accessor that returns them.
+   */
+  errorResult(decision: Decision): RuleResultError | null;
 };
 
 /** Union of all rule-with-input types. */
