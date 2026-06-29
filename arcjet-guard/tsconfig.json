@@ -30,7 +30,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2023",
-    "types": [],
+    "types": ["node"],
     "verbatimModuleSyntax": true
   },
   "include": ["src/**/*.ts"],

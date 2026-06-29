@@ -32,6 +32,7 @@
   "types": "./index.d.ts",
   "exports": {
     "bun": "./bun.js",
+    "deno": "./deno.js",
     "edge-light": "./edge-light.js",
     "workerd": "./workerd.js",
     "default": "./index.js"
@@ -39,10 +40,16 @@
   "files": [
     "bun.d.ts",
     "bun.js",
+    "deno.d.ts",
+    "deno.js",
+    "detect-proxy.d.ts",
+    "detect-proxy.js",
     "edge-light.d.ts",
     "edge-light.js",
     "index.d.ts",
     "index.js",
+    "proxy-tunnel.d.ts",
+    "proxy-tunnel.js",
     "workerd.d.ts",
     "workerd.js"
   ],
@@ -51,9 +58,13 @@
     "lint": "eslint .",
     "test-api": "node --test -- test/*.test.js",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
+    "test-runtime-bun": "npm run build && HTTPS_PROXY=http://127.0.0.1:49219 bun test test/runtime/proxy.bun.test.ts",
+    "test-runtime-deno": "npm run build && HTTPS_PROXY=http://127.0.0.1:49219 deno test --allow-all --no-check test/runtime/proxy.deno.test.ts",
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
+    "@arcjet/env": "1.5.0",
+    "@arcjet/logger": "1.5.0",
     "@bufbuild/protobuf": "2.12.0",
     "@connectrpc/connect": "2.1.2",
     "@connectrpc/connect-node": "2.1.2",

@@ -430,6 +430,33 @@ See the [docs](https://docs.arcjet.com/mcp-server) for setup instructions.
 
 You can also manage sites and keys with the CLI: `npx @arcjet/cli`.
 
+## Proxy support
+
+The standard proxy environment variables (`HTTP_PROXY` and `HTTPS_PROXY`, while
+respecting `NO_PROXY`) are auto-detected, making it possible to connect to the
+Arcjet API through a proxy such as [Squid](https://www.squid-cache.org/). When a
+proxy is in use, a line is logged at startup; the proxy
+URL itself is not logged, since it can contain credentials. How the request is
+actually proxied depends on the runtime:
+
+- **Node.js** — uses the HTTP/2 transport; when a proxy is detected, requests
+  are routed through it over HTTP/1.1 using the built-in proxy support of the
+  Node.js HTTP agent, otherwise made directly over HTTP/2.
+- **Bun** — uses the HTTP/2 transport directly, but its Node HTTP agent doesn't
+  support proxying, so when a proxy is detected it falls back to the fetch-based
+  transport and Bun's `fetch` performs the proxying natively.
+- **Deno** — the runtime's `fetch` performs the proxying natively.
+- **Cloudflare Workers** and other edge runtimes don't support outbound proxy
+  environment variables, so no proxy is used.
+
+`NO_PROXY` accepts a comma- or space-separated list of host suffixes, each with
+an optional leading `.` or `*.` and an optional `:port`, plus `*` to bypass the
+proxy for every host. Entries are matched as host names; IP/CIDR ranges (such as
+`10.0.0.0/8`) are not supported, the same as
+[curl](https://curl.se/docs/manpage.html#--noproxy). On Bun and Deno the
+runtime's `fetch` applies `NO_PROXY` itself, so its exact semantics are the
+runtime's.
+
 ## Runtime support
 
 | Runtime            | Minimum version          |

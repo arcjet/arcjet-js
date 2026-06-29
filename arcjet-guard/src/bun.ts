@@ -1,16 +1,16 @@
 /**
- * `@arcjet/guard/fetch` — Fetch-based entrypoint.
+ * `@arcjet/guard/bun` — Bun entrypoint.
  *
- * Uses the Connect-Web transport which works in Deno, Cloudflare Workers,
- * browsers, and any runtime with a standard `fetch` API (WinterTC minimum
- * common API). Deno's fetch transparently negotiates HTTP/2 over TLS via
- * ALPN — no special configuration needed.
- *
- * Bun's fetch does not support HTTP/2 ({@link https://github.com/oven-sh/bun/issues/7194}).
- * On Bun, the `"."` export resolves to the `bun` entrypoint which uses
- * `node:http2` directly for HTTP/2 support.
+ * Bun resolves the `"."` export here. Uses HTTP/2 via `node:http2`
+ * (`@connectrpc/connect-node`) for optimal performance with long-lived
+ * connections and optimistic pre-connect — Bun's `fetch` does not support
+ * HTTP/2 ({@link https://github.com/oven-sh/bun/issues/7194}). When a proxy is
+ * configured, it falls back to the fetch transport so Bun's native `fetch`
+ * performs the proxying.
  *
  * **Lifecycle:** Create the client once at module scope and reuse it.
+ * The underlying HTTP/2 transport maintains a persistent connection;
+ * creating a new client per request wastes that connection.
  *
  * @example
  * ```ts
@@ -35,14 +35,9 @@
  *   console.log(decision.reason); // "RATE_LIMIT", "PROMPT_INJECTION", etc.
  * }
  *
- * // Fail open by default; opt in to fail closed when a rule could not run.
- * if (decision.hasFailedOpen()) {
- *   console.warn("a rule could not be evaluated", decision.errorResults());
- * }
- *
- * // Request diagnostics — the decision is still valid.
- * for (const warning of decision.warnings) {
- *   console.warn(warning.code, warning.message);
+ * // Check for errors (fail-open — errors don't cause denials)
+ * if (decision.hasError()) {
+ *   console.warn("At least one rule errored");
  * }
  *
  * // Per-rule results
@@ -80,7 +75,6 @@ export {
   type RuleResultFixedWindow,
   type RuleResultSlidingWindow,
   type RuleResultPromptInjection,
-  type RuleResultModerateContent,
   type RuleResultSensitiveInfo,
   type RuleResultCustom,
   type RuleResultNotRun,
@@ -104,8 +98,6 @@ export {
   type SlidingWindowConfig,
   type SlidingWindowInput,
   type DetectPromptInjectionConfig,
-  type ExperimentalModerateContentConfig,
-  type ExperimentalModerateContentInput,
   type LocalDetectSensitiveInfoConfig,
   type SensitiveInfoEntityType,
   type LocalCustomConfig,
@@ -116,7 +108,6 @@ export {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
-  experimental_moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
 
@@ -129,20 +120,22 @@ export {
 
 import { _launchWithTransportFactory } from "./index.ts";
 import type { LaunchOptions, ArcjetGuard } from "./index.ts";
-import { createTransport } from "./transport-fetch.ts";
+import { createTransport } from "./transport-bun.ts";
 
 /**
- * Create an Arcjet guard client using the fetch-based transport.
+ * Create an Arcjet guard client using the Bun transport.
  *
- * Compatible with Deno, Bun, Cloudflare Workers, browsers, and
- * any runtime providing the WHATWG Fetch API.
+ * Connects over HTTP/2 by default, falling back to a fetch-based transport when
+ * a proxy is configured so Bun's native `fetch` performs the proxying.
  *
  * Connect to the Arcjet MCP server at `https://api.arcjet.com/mcp` to manage
  * sites, retrieve SDK keys, and more. Learn more at
  * {@link https://docs.arcjet.com/mcp-server}.
  *
- * **Create once, reuse everywhere.** The returned client should be
- * created at module scope so it can be shared across requests.
+ * **Create once, reuse everywhere.** The returned client holds a
+ * persistent HTTP/2 connection that is optimistically pre-connected.
+ * Wrapping this in a function that creates a new client per request
+ * defeats connection reuse and adds latency.
  *
  * Three lifetimes to keep in mind:
  * 1. **Client** (`launchArcjet`) — create once at module scope.
@@ -172,14 +165,9 @@ import { createTransport } from "./transport-fetch.ts";
  *   console.log(decision.reason); // "RATE_LIMIT", "PROMPT_INJECTION", etc.
  * }
  *
- * // Fail open by default; opt in to fail closed when a rule could not run.
- * if (decision.hasFailedOpen()) {
- *   console.warn("a rule could not be evaluated", decision.errorResults());
- * }
- *
- * // Request diagnostics — the decision is still valid.
- * for (const warning of decision.warnings) {
- *   console.warn(warning.code, warning.message);
+ * // Check for errors (fail-open — errors don't cause denials)
+ * if (decision.hasError()) {
+ *   console.warn("At least one rule errored");
  * }
  *
  * // Per-rule results
@@ -204,4 +192,4 @@ export function launchArcjet(options: LaunchOptions): ArcjetGuard {
   return _launchWithTransportFactory(createTransport, options);
 }
 
-export { createTransport } from "./transport-fetch.ts";
+export { createTransport } from "./transport-bun.ts";
