@@ -140,6 +140,7 @@ const knownFields = [
   "email",
   "cookies",
   "query",
+  "correlationId",
 ];
 
 /**
@@ -320,8 +321,14 @@ function toAnalyzeRequest(request: ArcjetRequestDetails): AnalyzeRequest {
     }
   }
 
+  // The correlation ID is deliberately excluded from the analyze request so it
+  // never feeds the fingerprint (and therefore the decision cache key). Two
+  // requests that differ only by correlation ID must share state.
+  const { correlationId, ...rest } = request;
+  void correlationId;
+
   return {
-    ...request,
+    ...rest,
     headers,
   };
 }
@@ -530,7 +537,7 @@ function validateDetails(
       ...knownFields.map(function (key) {
         return {
           key,
-          required: key !== "body" && key !== "email",
+          required: key !== "body" && key !== "email" && key !== "correlationId",
           validate: key === "headers" ? validateHeaders : validateString,
         };
       }),
@@ -3513,6 +3520,10 @@ export default function arcjet<
       query: request.query,
       extra: extraProps(request),
       email: typeof request.email === "string" ? request.email : undefined,
+      correlationId:
+        typeof request.correlationId === "string"
+          ? request.correlationId
+          : undefined,
     });
 
     // Copy of the request details for remote use, which redacts sensitive fields.

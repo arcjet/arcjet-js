@@ -687,6 +687,8 @@ test("`arcjet`", async function (t) {
           path: "/bot-protection/quick-start",
           protocol: "http:",
           query: "",
+          // Known field: must stay top-level, not be moved onto `extra`.
+          correlationId: "wf_abcdef",
         });
 
         assert.deepEqual(requestAsJson(validateDetails), {
@@ -704,8 +706,46 @@ test("`arcjet`", async function (t) {
           path: "/bot-protection/quick-start",
           protocol: "http:",
           query: "",
+          correlationId: "wf_abcdef",
         });
         assert.equal(protectDetails, validateDetails);
+      },
+    );
+
+    await t.test(
+      "should forward `correlationId` to the client `decide` call",
+      async function () {
+        let decideDetails: unknown;
+        const instance = arcjet({
+          client: {
+            async decide(_context, details) {
+              decideDetails = details;
+              return new ArcjetAllowDecision({
+                reason: new ArcjetReason(),
+                results: [],
+                ttl: 0,
+              });
+            },
+            report() {},
+          },
+          key: exampleKey,
+          log: { ...console, debug() {} },
+          rules: [],
+        });
+
+        await instance.protect(createContext(), {
+          ...createRequest(),
+          correlationId: "wf_abcdef",
+        });
+
+        assert.ok(
+          decideDetails && typeof decideDetails === "object",
+          "expected `client.decide` to be called with details",
+        );
+        assert.equal(
+          (decideDetails as { correlationId?: string }).correlationId,
+          "wf_abcdef",
+        );
       },
     );
 

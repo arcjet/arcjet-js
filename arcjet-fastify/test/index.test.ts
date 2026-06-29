@@ -285,6 +285,7 @@ test("`arcjetFastify`", async function (t) {
 
       assert.deepEqual(cleanRequest, {
         cookies: "session=a",
+        correlationId: undefined,
         email: undefined,
         extra: {},
         headers: {

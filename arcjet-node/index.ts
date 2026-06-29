@@ -296,7 +296,7 @@ export interface ArcjetNode<Props extends PlainObject> {
    */
   protect(
     request: ArcjetNodeRequest,
-    ...props: MaybeProperties<Props>
+    ...props: MaybeProperties<Props & { correlationId?: string }>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -447,8 +447,11 @@ export default function arcjet<
         return withClient(client);
       },
       async protect(request, props?) {
+        // `correlationId` is a request-independent option, not a rule prop, so
+        // pull it out before building the request from the rule properties.
+        const { correlationId, ...properties } = props ?? {};
         // Cast of `{}` because here we switch from `undefined` to `Properties`.
-        const req = toArcjetRequest(request, props || ({} as Properties));
+        const req = toArcjetRequest(request, (properties || {}) as Properties);
 
         const getBody = async () => {
           // Read the stream if the body is not present.
@@ -479,7 +482,7 @@ export default function arcjet<
           return JSON.stringify(request.body);
         };
 
-        return aj.protect({ getBody }, req);
+        return aj.protect({ getBody }, { ...req, correlationId });
       },
     };
 

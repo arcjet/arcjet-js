@@ -276,6 +276,7 @@ test("`arcjetNode`", async function (t) {
 
       assert.deepEqual(cleanRequest, {
         cookies: "session=a",
+        correlationId: undefined,
         email: undefined,
         extra: {},
         headers: {
@@ -295,6 +296,57 @@ test("`arcjetNode`", async function (t) {
         query: "?b",
       });
     });
+
+    await t.test(
+      "should forward a `correlationId` passed as an option",
+      async function () {
+        const restore = capture();
+
+        let request: ArcjetRequestDetails | undefined;
+
+        const arcjet = arcjetNode({
+          client: createLocalClient(),
+          key: exampleKey,
+          rules: [
+            [
+              {
+                mode: "LIVE",
+                priority: 1,
+                async protect(_context, details) {
+                  request = details;
+                  return new ArcjetRuleResult({
+                    conclusion: "ALLOW",
+                    fingerprint: "",
+                    reason: new ArcjetReason(),
+                    ruleId: "",
+                    state: "RUN",
+                    ttl: 0,
+                  });
+                },
+                validate() {},
+                version: 0,
+                type: "",
+              },
+            ],
+          ],
+        });
+
+        const { server, url } = await createSimpleServer({
+          decide: (req) => arcjet.protect(req, { correlationId: "wf_abcdef" }),
+        });
+
+        const response = await fetch(new URL("/a?b#c", url), {
+          headers: { cookie: "session=a", "user-agent": "Test" },
+        });
+
+        await server.close();
+        restore();
+
+        assert.equal(response.status, 200);
+        assert.ok(request);
+        assert.equal(request.correlationId, "wf_abcdef");
+      },
+    );
   });
 
   await t.test("`.withRule()`", async function (t) {

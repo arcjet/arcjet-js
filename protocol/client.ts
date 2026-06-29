@@ -133,6 +133,7 @@ export function createClient(options: ClientOptions): Client {
         cookies: details.cookies,
         query: details.query,
         extra: details.extra,
+        correlationId: details.correlationId ?? "",
       };
 
       // Build the request object from the Protobuf generated class.
@@ -192,6 +193,7 @@ export function createClient(options: ClientOptions): Client {
         cookies: details.cookies,
         query: details.query,
         extra: details.extra,
+        correlationId: details.correlationId ?? "",
       };
 
       // Build the request object from the Protobuf generated class.

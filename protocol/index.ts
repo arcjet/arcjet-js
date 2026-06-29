@@ -1477,6 +1477,17 @@ export interface ArcjetRequestDetails {
    */
   // TODO: Consider moving email to `extra` map
   email?: string | undefined;
+
+  /**
+   * Optional, caller-supplied opaque identifier used to correlate this request
+   * with other `protect()` and `guard()` calls that belong to the same
+   * workflow, agent run, or multi-step task.
+   *
+   * It does not affect the decision and is excluded from the fingerprint (and
+   * therefore the decision cache key); it is stored alongside the recorded
+   * decision so a chain of actions can be reconstructed.
+   */
+  correlationId?: string | undefined;
 }
 
 /**
