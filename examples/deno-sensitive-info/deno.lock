@@ -5,8 +5,7 @@
     "npm:@bufbuild/protobuf@2.11.0": "2.11.0",
     "npm:@connectrpc/connect-node@2.1.1": "2.1.1_@bufbuild+protobuf@2.11.0_@connectrpc+connect@2.1.1__@bufbuild+protobuf@2.11.0",
     "npm:@connectrpc/connect@2.1.1": "2.1.1_@bufbuild+protobuf@2.11.0",
-    "npm:@types/node@*": "22.15.15",
-    "npm:typeid-js@1.2.0": "1.2.0"
+    "npm:@types/node@*": "22.15.15"
   },
   "jsr": {
     "@std/dotenv@0.225.5": {
@@ -36,26 +35,15 @@
         "undici-types"
       ]
     },
-    "typeid-js@1.2.0": {
-      "integrity": "sha512-t76ZucAnvGC60ea/HjVsB0TSoB0cw9yjnfurUgtInXQWUI/VcrlZGpO23KN3iSe8yOGUgb1zr7W7uEzJ3hSljA==",
-      "dependencies": [
-        "uuid"
-      ]
-    },
     "undici-types@6.21.0": {
       "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="
-    },
-    "uuid@10.0.0": {
-      "integrity": "sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==",
-      "bin": true
     }
   },
   "workspace": {
     "dependencies": [
       "npm:@bufbuild/protobuf@2.11.0",
       "npm:@connectrpc/connect-node@2.1.1",
-      "npm:@connectrpc/connect@2.1.1",
-      "npm:typeid-js@1.2.0"
+      "npm:@connectrpc/connect@2.1.1"
     ]
   }
 }
