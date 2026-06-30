@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.6.1](https://github.com/arcjet/arcjet-js/compare/v1.6.0...@arcjet/guard-v1.6.1) (2026-06-30)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/guard:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.6.0 to 1.6.1
+
 ## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...@arcjet/guard-v1.6.0) (2026-06-30)
 
 
