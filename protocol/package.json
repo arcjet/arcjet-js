@@ -38,6 +38,8 @@
     "convert.js",
     "index.d.ts",
     "index.js",
+    "typeid.d.ts",
+    "typeid.js",
     "well-known-bots.d.ts",
     "well-known-bots.js"
   ],
