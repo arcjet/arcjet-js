@@ -80,6 +80,33 @@ export default createMiddleware();
  }
 ```
 
+### Accessing the nonce
+
+When the `Content-Security-Policy` is enabled, Nosecone generates a unique
+nonce for every request. Next.js applies it to the scripts it renders
+automatically, but third-party scripts that don't use the Next.js `<Script>`
+component need the nonce passed in manually. For example,
+[PostHog](https://posthog.com/docs/libraries/next-js) requires the nonce in its
+`init` call.
+
+Use the `nonce` function to read the nonce for the current request from a Server
+Component, Route Handler, or anywhere else `next/headers` is available:
+
+```tsx
+import { nonce } from "@nosecone/next";
+
+export default async function Page() {
+  const cspNonce = await nonce();
+
+  return <script nonce={cspNonce}>{`/* ... */`}</script>;
+}
+```
+
+The page must be dynamically rendered for the nonce to be available, which is
+the same requirement as applying the nonce to Next.js scripts (see the `app/layout.tsx`
+example above). `nonce` returns `undefined` if the `Content-Security-Policy` is
+disabled or doesn't contain a nonce.
+
 ## License
 
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
