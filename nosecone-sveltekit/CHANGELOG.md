@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...@nosecone/sveltekit-v1.6.0) (2026-06-30)
+
+
+### 🚀 New Features
+
+* require Node.js &gt;=22.21.0 and drop EOL Node.js 20 ([#6090](https://github.com/arcjet/arcjet-js/issues/6090)) ([d002118](https://github.com/arcjet/arcjet-js/commit/d00211896cd13f13dce90df9a5308fa942f334f7))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump vite from 8.0.10 to 8.0.16 ([#6074](https://github.com/arcjet/arcjet-js/issues/6074)) ([005bb8c](https://github.com/arcjet/arcjet-js/commit/005bb8c06fd5925c97083f834a6490ada42a732d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.5.0 to 1.6.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.5.0 to 1.6.0
+    * @arcjet/rollup-config bumped from 1.5.0 to 1.6.0
+
 ## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@nosecone/sveltekit-v1.5.0) (2026-06-09)
 
 

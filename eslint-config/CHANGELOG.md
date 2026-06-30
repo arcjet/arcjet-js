@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...@arcjet/eslint-config-v1.6.0) (2026-06-30)
+
+
+### 🚀 New Features
+
+* require Node.js &gt;=22.21.0 and drop EOL Node.js 20 ([#6090](https://github.com/arcjet/arcjet-js/issues/6090)) ([d002118](https://github.com/arcjet/arcjet-js/commit/d00211896cd13f13dce90df9a5308fa942f334f7))
+
 ## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@arcjet/eslint-config-v1.5.0) (2026-06-09)
 
 

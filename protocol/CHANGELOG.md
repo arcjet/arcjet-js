@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...@arcjet/protocol-v1.6.0) (2026-06-30)
+
+
+### 🚀 New Features
+
+* expose correlationId on protect() and guard() ([#6104](https://github.com/arcjet/arcjet-js/issues/6104)) ([14a3a1f](https://github.com/arcjet/arcjet-js/commit/14a3a1f201774dd9083eed26334121bfb893715a))
+* **protocol:** regenerate clients with correlation_id field ([#6098](https://github.com/arcjet/arcjet-js/issues/6098)) ([71346b3](https://github.com/arcjet/arcjet-js/commit/71346b3ad22d0fb734dedd74f327fb6e40e9d52c))
+* require Node.js &gt;=22.21.0 and drop EOL Node.js 20 ([#6090](https://github.com/arcjet/arcjet-js/issues/6090)) ([d002118](https://github.com/arcjet/arcjet-js/commit/d00211896cd13f13dce90df9a5308fa942f334f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.5.0 to 1.6.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.5.0 to 1.6.0
+    * @arcjet/rollup-config bumped from 1.5.0 to 1.6.0
+
 ## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@arcjet/protocol-v1.5.0) (2026-06-09)
 
 

@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...@arcjet/transport-v1.6.0) (2026-06-30)
+
+
+### 🚀 New Features
+
+* add outbound proxy support to @arcjet/transport and @arcjet/guard ([#6089](https://github.com/arcjet/arcjet-js/issues/6089)) ([0048dfa](https://github.com/arcjet/arcjet-js/commit/0048dfa08e95e77241eda93bc5c7392a38f58746))
+* require Node.js &gt;=22.21.0 and drop EOL Node.js 20 ([#6090](https://github.com/arcjet/arcjet-js/issues/6090)) ([d002118](https://github.com/arcjet/arcjet-js/commit/d00211896cd13f13dce90df9a5308fa942f334f7))
+
+
+### 🪲 Bug Fixes
+
+* **transport:** make HTTP/2-over-CONNECT-proxy work on Node &gt;= 26 ([#6119](https://github.com/arcjet/arcjet-js/issues/6119)) ([2b72b6c](https://github.com/arcjet/arcjet-js/commit/2b72b6ca4189575980092fd3016f850257e1dc58))
+* **transport:** skip Node 26-broken http2-proxy tests (revert force-exit) ([#6112](https://github.com/arcjet/arcjet-js/issues/6112)) ([3ae2731](https://github.com/arcjet/arcjet-js/commit/3ae27319fa3a93a035a061e24c70a96c9f065dbd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.5.0 to 1.6.0
+    * @arcjet/logger bumped from 1.5.0 to 1.6.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.5.0 to 1.6.0
+    * @arcjet/rollup-config bumped from 1.5.0 to 1.6.0
+
 ## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@arcjet/transport-v1.5.0) (2026-06-09)
 
 

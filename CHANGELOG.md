@@ -1,5 +1,73 @@
 # Changelog
 
+## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...v1.6.0) (2026-06-30)
+
+
+### 🚀 New Features
+
+* add outbound proxy support to @arcjet/transport and @arcjet/guard ([#6089](https://github.com/arcjet/arcjet-js/issues/6089)) ([0048dfa](https://github.com/arcjet/arcjet-js/commit/0048dfa08e95e77241eda93bc5c7392a38f58746))
+* **arcjet-guard:** add per-request metadata to experimental_moderateContent ([#6100](https://github.com/arcjet/arcjet-js/issues/6100)) ([fe28505](https://github.com/arcjet/arcjet-js/commit/fe285057f037f02b5cb01efa1f3fd02e75872f2b))
+* **arcjet-guard:** export experimental_moderateContent from node and fetch entrypoints ([#6097](https://github.com/arcjet/arcjet-js/issues/6097)) ([1b7fc90](https://github.com/arcjet/arcjet-js/commit/1b7fc90c5144ce4ac5304ee533877dee81dae8a2))
+* expose correlationId on protect() and guard() ([#6104](https://github.com/arcjet/arcjet-js/issues/6104)) ([14a3a1f](https://github.com/arcjet/arcjet-js/commit/14a3a1f201774dd9083eed26334121bfb893715a))
+* **guard:** add experimental_moderateContent rule ([#6059](https://github.com/arcjet/arcjet-js/issues/6059)) ([b001765](https://github.com/arcjet/arcjet-js/commit/b00176529308c802c40f28776e4c7c4ad3d40bed))
+* **guard:** error/warning decision model with hasFailedOpen() gate ([#6096](https://github.com/arcjet/arcjet-js/issues/6096)) ([8bbb885](https://github.com/arcjet/arcjet-js/commit/8bbb885fa564a23356bea0bfe98b6353add87de9))
+* **nosecone-next:** add nonce API to get the CSP nonce ([#6109](https://github.com/arcjet/arcjet-js/issues/6109)) ([165dc49](https://github.com/arcjet/arcjet-js/commit/165dc4911223154b5fa0c090813d5bbf62adb116))
+* **protocol:** regenerate clients with correlation_id field ([#6098](https://github.com/arcjet/arcjet-js/issues/6098)) ([71346b3](https://github.com/arcjet/arcjet-js/commit/71346b3ad22d0fb734dedd74f327fb6e40e9d52c))
+* require Node.js &gt;=22.21.0 and drop EOL Node.js 20 ([#6090](https://github.com/arcjet/arcjet-js/issues/6090)) ([d002118](https://github.com/arcjet/arcjet-js/commit/d00211896cd13f13dce90df9a5308fa942f334f7))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet-guard:** accept object input on string-input rules ([#6114](https://github.com/arcjet/arcjet-js/issues/6114)) ([8e828d0](https://github.com/arcjet/arcjet-js/commit/8e828d00770181a5c07deb4229764976cb9e2f68))
+* **guard:** split errorResult() from result() so errors aren't up-cast ([#6107](https://github.com/arcjet/arcjet-js/issues/6107)) ([b5317ed](https://github.com/arcjet/arcjet-js/commit/b5317ed749e104499acdb1a39033f70b4ceeee0b))
+* **transport:** make HTTP/2-over-CONNECT-proxy work on Node &gt;= 26 ([#6119](https://github.com/arcjet/arcjet-js/issues/6119)) ([2b72b6c](https://github.com/arcjet/arcjet-js/commit/2b72b6ca4189575980092fd3016f850257e1dc58))
+* **transport:** skip Node 26-broken http2-proxy tests (revert force-exit) ([#6112](https://github.com/arcjet/arcjet-js/issues/6112)) ([3ae2731](https://github.com/arcjet/arcjet-js/commit/3ae27319fa3a93a035a061e24c70a96c9f065dbd))
+
+
+### 🏎️ Performance Improvements
+
+* **analyze-wasm:** regenerate js_req wasm (Aho-Corasick bot parser + Wizer) ([#6066](https://github.com/arcjet/arcjet-js/issues/6066)) ([5f62631](https://github.com/arcjet/arcjet-js/commit/5f62631f7535e0f2c3087befa8b81bededabe24f))
+
+
+### 📝 Documentation
+
+* use unified Arcjet skill install command ([#6115](https://github.com/arcjet/arcjet-js/issues/6115)) ([3007110](https://github.com/arcjet/arcjet-js/commit/300711084e55b09608e745d25290a8aeaf4cefb3))
+
+
+### 🧹 Miscellaneous Chores
+
+* Add devcontainer lockfile ([#6092](https://github.com/arcjet/arcjet-js/issues/6092)) ([2aa7e57](https://github.com/arcjet/arcjet-js/commit/2aa7e576d00ae7b5ca675654d889dd5d09a965a0))
+
+
+### 📚 Tests
+
+* **arcjet:** force test runner to exit; add CI test-job timeouts ([#6108](https://github.com/arcjet/arcjet-js/issues/6108)) ([a34473b](https://github.com/arcjet/arcjet-js/commit/a34473bb9c5bb05a642f87834bd6772a50e7aa9c))
+* **arcjet:** verify protect() runs on Cloudflare Workers ([#6110](https://github.com/arcjet/arcjet-js/issues/6110)) ([76a86fb](https://github.com/arcjet/arcjet-js/commit/76a86fb3622b2735f155a8c6964a383c816babcb))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump js-yaml from 4.1.1 to 4.2.0 in /examples/nextjs-sensitive-info ([#6080](https://github.com/arcjet/arcjet-js/issues/6080)) ([9b9a307](https://github.com/arcjet/arcjet-js/commit/9b9a307e3e8ab001c22e5302a33e2e1e94d7eba6))
+* **deps-dev:** bump js-yaml from 4.1.1 to 4.2.0 in /examples/sveltekit ([#6072](https://github.com/arcjet/arcjet-js/issues/6072)) ([95f14c6](https://github.com/arcjet/arcjet-js/commit/95f14c63d7fbdd5e30314b6f3d353c06011dbbe7))
+* **deps-dev:** bump js-yaml from 4.1.1 to 4.3.0 in /examples/nextjs-decorate ([#6085](https://github.com/arcjet/arcjet-js/issues/6085)) ([c46f133](https://github.com/arcjet/arcjet-js/commit/c46f1332bdb371eb53f4475079bdd2f4bb917ded))
+* **deps-dev:** bump js-yaml from 4.1.1 to 4.3.0 in /examples/nextjs-ip-details ([#6106](https://github.com/arcjet/arcjet-js/issues/6106)) ([6d254d1](https://github.com/arcjet/arcjet-js/commit/6d254d1888dc02e776a1a9746a9fc8d5ba24b35b))
+* **deps-dev:** bump js-yaml from 4.1.1 to 4.3.0 in /examples/nextjs-pages-wrap ([#6084](https://github.com/arcjet/arcjet-js/issues/6084)) ([7a0ea5a](https://github.com/arcjet/arcjet-js/commit/7a0ea5aecac3d10f39d88606443c97b5609fc364))
+* **deps-dev:** bump js-yaml from 4.1.1 to 4.3.0 in /examples/nextjs-react-hook-form ([#6086](https://github.com/arcjet/arcjet-js/issues/6086)) ([dc143e0](https://github.com/arcjet/arcjet-js/commit/dc143e0b160d4d6b316191429cd2aaf9b2426b67))
+* **deps-dev:** bump js-yaml from 4.1.1 to 4.3.0 in /examples/nextjs-server-actions ([#6118](https://github.com/arcjet/arcjet-js/issues/6118)) ([5be3719](https://github.com/arcjet/arcjet-js/commit/5be3719a6e04ee2ae2e807ed1c5815598e44e2b3))
+* **deps-dev:** bump vite from 8.0.10 to 8.0.16 ([#6074](https://github.com/arcjet/arcjet-js/issues/6074)) ([005bb8c](https://github.com/arcjet/arcjet-js/commit/005bb8c06fd5925c97083f834a6490ada42a732d))
+* **deps:** bump js-yaml from 4.1.1 to 4.2.0 ([#6073](https://github.com/arcjet/arcjet-js/issues/6073)) ([91c1cd7](https://github.com/arcjet/arcjet-js/commit/91c1cd7d0c896a1904c13d4aaef10308a83c0def))
+* **deps:** bump launch-editor from 2.13.2 to 2.14.1 in /examples/nuxt ([#6081](https://github.com/arcjet/arcjet-js/issues/6081)) ([9992872](https://github.com/arcjet/arcjet-js/commit/9992872d3ee506b05f8d0034c45284284aefae17))
+* **deps:** bump nuxt from 4.4.6 to 4.4.8 in /examples/nuxt ([#6078](https://github.com/arcjet/arcjet-js/issues/6078)) ([6e9cfd0](https://github.com/arcjet/arcjet-js/commit/6e9cfd0285c10ffc3e8b49864a6353d7ae404cf4))
+* **deps:** bump shell-quote from 1.8.3 to 1.8.4 in /examples/nuxt ([#6065](https://github.com/arcjet/arcjet-js/issues/6065)) ([3c17856](https://github.com/arcjet/arcjet-js/commit/3c17856cb76ed9192f790ed4bbcfffdfe805caf6))
+* **deps:** bump undici and miniflare in /arcjet-guard ([#6091](https://github.com/arcjet/arcjet-js/issues/6091)) ([b15e4b9](https://github.com/arcjet/arcjet-js/commit/b15e4b993830c977513c2a184dea752c89ae70cc))
+* **deps:** bump undici from 6.24.1 to 6.27.0 in /examples/remix-express ([#6095](https://github.com/arcjet/arcjet-js/issues/6095)) ([c2b0f3d](https://github.com/arcjet/arcjet-js/commit/c2b0f3daf5992178399176e1e8c711b08e050c99))
+* **deps:** upgrade Next.js examples to 16.2.6 ([#6094](https://github.com/arcjet/arcjet-js/issues/6094)) ([5f9c64c](https://github.com/arcjet/arcjet-js/commit/5f9c64c293ed07016efe14fc39089e7fcd0e86a8))
+
+
+### ✅ Continuous Integration
+
+* stop release-please self-triggering loop on its own branch ([#6105](https://github.com/arcjet/arcjet-js/issues/6105)) ([514ee98](https://github.com/arcjet/arcjet-js/commit/514ee989af516da8829307de52ea56b5bd3a2f5d))
+
 ## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...v1.5.0) (2026-06-09)
 
 

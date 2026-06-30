@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...@arcjet/guard-v1.6.0) (2026-06-30)
+
+
+### 🚀 New Features
+
+* add outbound proxy support to @arcjet/transport and @arcjet/guard ([#6089](https://github.com/arcjet/arcjet-js/issues/6089)) ([0048dfa](https://github.com/arcjet/arcjet-js/commit/0048dfa08e95e77241eda93bc5c7392a38f58746))
+* **arcjet-guard:** add per-request metadata to experimental_moderateContent ([#6100](https://github.com/arcjet/arcjet-js/issues/6100)) ([fe28505](https://github.com/arcjet/arcjet-js/commit/fe285057f037f02b5cb01efa1f3fd02e75872f2b))
+* **arcjet-guard:** export experimental_moderateContent from node and fetch entrypoints ([#6097](https://github.com/arcjet/arcjet-js/issues/6097)) ([1b7fc90](https://github.com/arcjet/arcjet-js/commit/1b7fc90c5144ce4ac5304ee533877dee81dae8a2))
+* expose correlationId on protect() and guard() ([#6104](https://github.com/arcjet/arcjet-js/issues/6104)) ([14a3a1f](https://github.com/arcjet/arcjet-js/commit/14a3a1f201774dd9083eed26334121bfb893715a))
+* **guard:** add experimental_moderateContent rule ([#6059](https://github.com/arcjet/arcjet-js/issues/6059)) ([b001765](https://github.com/arcjet/arcjet-js/commit/b00176529308c802c40f28776e4c7c4ad3d40bed))
+* **guard:** error/warning decision model with hasFailedOpen() gate ([#6096](https://github.com/arcjet/arcjet-js/issues/6096)) ([8bbb885](https://github.com/arcjet/arcjet-js/commit/8bbb885fa564a23356bea0bfe98b6353add87de9))
+* **protocol:** regenerate clients with correlation_id field ([#6098](https://github.com/arcjet/arcjet-js/issues/6098)) ([71346b3](https://github.com/arcjet/arcjet-js/commit/71346b3ad22d0fb734dedd74f327fb6e40e9d52c))
+* require Node.js &gt;=22.21.0 and drop EOL Node.js 20 ([#6090](https://github.com/arcjet/arcjet-js/issues/6090)) ([d002118](https://github.com/arcjet/arcjet-js/commit/d00211896cd13f13dce90df9a5308fa942f334f7))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet-guard:** accept object input on string-input rules ([#6114](https://github.com/arcjet/arcjet-js/issues/6114)) ([8e828d0](https://github.com/arcjet/arcjet-js/commit/8e828d00770181a5c07deb4229764976cb9e2f68))
+* **guard:** split errorResult() from result() so errors aren't up-cast ([#6107](https://github.com/arcjet/arcjet-js/issues/6107)) ([b5317ed](https://github.com/arcjet/arcjet-js/commit/b5317ed749e104499acdb1a39033f70b4ceeee0b))
+
+
+### 📝 Documentation
+
+* use unified Arcjet skill install command ([#6115](https://github.com/arcjet/arcjet-js/issues/6115)) ([3007110](https://github.com/arcjet/arcjet-js/commit/300711084e55b09608e745d25290a8aeaf4cefb3))
+
+
+### 🔨 Build System
+
+* **deps:** bump undici and miniflare in /arcjet-guard ([#6091](https://github.com/arcjet/arcjet-js/issues/6091)) ([b15e4b9](https://github.com/arcjet/arcjet-js/commit/b15e4b993830c977513c2a184dea752c89ae70cc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.5.0 to 1.6.0
+
 ## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@arcjet/guard-v1.5.0) (2026-06-09)
 
 

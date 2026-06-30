@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...@arcjet/nuxt-v1.6.0) (2026-06-30)
+
+
+### 📝 Documentation
+
+* use unified Arcjet skill install command ([#6115](https://github.com/arcjet/arcjet-js/issues/6115)) ([3007110](https://github.com/arcjet/arcjet-js/commit/300711084e55b09608e745d25290a8aeaf4cefb3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.5.0 to 1.6.0
+    * @arcjet/env bumped from 1.5.0 to 1.6.0
+    * @arcjet/headers bumped from 1.5.0 to 1.6.0
+    * @arcjet/ip bumped from 1.5.0 to 1.6.0
+    * @arcjet/logger bumped from 1.5.0 to 1.6.0
+    * @arcjet/protocol bumped from 1.5.0 to 1.6.0
+    * @arcjet/transport bumped from 1.5.0 to 1.6.0
+    * arcjet bumped from 1.5.0 to 1.6.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.5.0 to 1.6.0
+    * @arcjet/rollup-config bumped from 1.5.0 to 1.6.0
+
 ## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@arcjet/nuxt-v1.5.0) (2026-06-09)
 
 

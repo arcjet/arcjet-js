@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...arcjet-v1.6.0) (2026-06-30)
+
+
+### 🚀 New Features
+
+* expose correlationId on protect() and guard() ([#6104](https://github.com/arcjet/arcjet-js/issues/6104)) ([14a3a1f](https://github.com/arcjet/arcjet-js/commit/14a3a1f201774dd9083eed26334121bfb893715a))
+* require Node.js &gt;=22.21.0 and drop EOL Node.js 20 ([#6090](https://github.com/arcjet/arcjet-js/issues/6090)) ([d002118](https://github.com/arcjet/arcjet-js/commit/d00211896cd13f13dce90df9a5308fa942f334f7))
+
+
+### 🪲 Bug Fixes
+
+* **transport:** skip Node 26-broken http2-proxy tests (revert force-exit) ([#6112](https://github.com/arcjet/arcjet-js/issues/6112)) ([3ae2731](https://github.com/arcjet/arcjet-js/commit/3ae27319fa3a93a035a061e24c70a96c9f065dbd))
+
+
+### 📚 Tests
+
+* **arcjet:** force test runner to exit; add CI test-job timeouts ([#6108](https://github.com/arcjet/arcjet-js/issues/6108)) ([a34473b](https://github.com/arcjet/arcjet-js/commit/a34473bb9c5bb05a642f87834bd6772a50e7aa9c))
+* **arcjet:** verify protect() runs on Cloudflare Workers ([#6110](https://github.com/arcjet/arcjet-js/issues/6110)) ([76a86fb](https://github.com/arcjet/arcjet-js/commit/76a86fb3622b2735f155a8c6964a383c816babcb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.5.0 to 1.6.0
+    * @arcjet/cache bumped from 1.5.0 to 1.6.0
+    * @arcjet/duration bumped from 1.5.0 to 1.6.0
+    * @arcjet/headers bumped from 1.5.0 to 1.6.0
+    * @arcjet/protocol bumped from 1.5.0 to 1.6.0
+    * @arcjet/runtime bumped from 1.5.0 to 1.6.0
+    * @arcjet/stable-hash bumped from 1.5.0 to 1.6.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.5.0 to 1.6.0
+    * @arcjet/rollup-config bumped from 1.5.0 to 1.6.0
+    * @arcjet/transport bumped from 1.5.0 to 1.6.0
+
 ## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...arcjet-v1.5.0) (2026-06-09)
 
 
