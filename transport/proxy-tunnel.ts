@@ -145,8 +145,62 @@ export function createTunnelingConnection(
       }
 
       // Splice: proxy -> bridge, so origin bytes become readable by the client.
-      proxySocket.on("data", (data: Buffer) => bridge.push(data));
-      proxySocket.on("end", () => bridge.push(null));
+      //
+      // For a cleartext (h2c) origin the bridge *is* the HTTP/2 socket, so these
+      // bytes are HTTP/2 frames. A proxy can coalesce a whole response
+      // (HEADERS + DATA + END_STREAM) into one chunk; delivered as a single
+      // synchronous read, the HTTP/2 client surfaces the DATA and the stream end
+      // in one turn, which races `@connectrpc/connect-node`'s async-iterator
+      // response reader and intermittently throws `ERR_STREAM_PREMATURE_CLOSE`
+      // on Node >= 26 (a real or TLS-wrapped socket avoids this — it delivers
+      // frames across separate reads). So for h2c we split the stream on HTTP/2
+      // frame boundaries and push one frame per tick, preserving order; the
+      // client then reads the DATA before observing END_STREAM. For an HTTPS
+      // origin the bytes are TLS records (the origin TLS socket reframes them),
+      // so we forward them unchanged.
+      if (originIsHttps) {
+        proxySocket.on("data", (data: Buffer) => bridge.push(data));
+      } else {
+        // HTTP/2's default `SETTINGS_MAX_FRAME_SIZE` is 16 KiB and we never raise
+        // it, so any frame larger than this generous cap is already a protocol
+        // violation. Bounding the buffer keeps a malicious or broken peer from
+        // using the 24-bit length field (up to ~16 MiB) to make us buffer an
+        // oversized frame before forwarding anything.
+        const maxFramePayload = 2 ** 20; // 1 MiB
+        let inbound = Buffer.alloc(0);
+        proxySocket.on("data", (data: Buffer) => {
+          inbound = Buffer.concat([inbound, data]);
+          // An HTTP/2 frame is a 9-byte header (24-bit length, then type, flags,
+          // and stream id) followed by `length` bytes of payload.
+          while (inbound.length >= 9) {
+            const payloadLength = inbound.readUIntBE(0, 3);
+            if (payloadLength > maxFramePayload) {
+              bridge.destroy(
+                new Error("Proxy tunnel received an oversized HTTP/2 frame"),
+              );
+              return;
+            }
+            const frameLength = 9 + payloadLength;
+            if (inbound.length < frameLength) {
+              break; // Wait for the rest of this frame.
+            }
+            const frame = inbound.subarray(0, frameLength);
+            inbound = inbound.subarray(frameLength);
+            setImmediate(() => {
+              if (!bridge.destroyed) {
+                bridge.push(frame);
+              }
+            });
+          }
+        });
+      }
+      proxySocket.on("end", () =>
+        setImmediate(() => {
+          if (!bridge.destroyed) {
+            bridge.push(null);
+          }
+        }),
+      );
 
       // Flush whatever the client buffered while the tunnel was establishing.
       tunnelReady = true;
@@ -173,11 +227,42 @@ export function createTunnelingConnection(
       return bridge;
     }
 
-    return tls.connect({
-      ...options,
-      socket: bridge,
-      servername: authority.hostname,
-      ALPNProtocols: ["h2"],
-    });
+    // `URL.hostname` wraps an IPv6 literal in brackets (e.g. `[::1]`), which
+    // `net.isIP` does not recognise. Strip them so an IPv6 origin is detected as
+    // an IP (and so the certificate is matched against the bare address — an IP
+    // SAN has no brackets).
+    const bareHostname =
+      authority.hostname.startsWith("[") && authority.hostname.endsWith("]")
+        ? authority.hostname.slice(1, -1)
+        : authority.hostname;
+    const originIsIpLiteral = net.isIP(bareHostname) !== 0;
+
+    try {
+      return tls.connect({
+        ...options,
+        socket: bridge,
+        // Validate the certificate against the origin host. For a hostname this
+        // is also sent as SNI below; for an IP it is the identity to match
+        // (since SNI is omitted), so the cert's IP SAN is still checked.
+        host: bareHostname,
+        // RFC 6066 §3 forbids an IP literal in the TLS SNI `servername` — it must
+        // be a DNS hostname — so we omit SNI for an IP origin (IPv4 or IPv6) and
+        // rely on `host` above for certificate validation. Node <= 24 tolerated
+        // an IP here (deprecation warning); Node >= 26 enforces the RFC and
+        // throws `ERR_INVALID_ARG_VALUE`.
+        servername: originIsIpLiteral ? undefined : bareHostname,
+        ALPNProtocols: ["h2"],
+      });
+    } catch (error) {
+      // Constructing the origin TLS connection can throw *synchronously* (for
+      // example, Node >= 26 rejects an IP-literal `servername` per RFC 6066).
+      // We have already opened `proxySocket`; if we let the throw escape we
+      // strand that open handle, which keeps the event loop — and the whole
+      // process — alive (this is what hung CI). Tear both sides down before
+      // rethrowing so a failed setup fails fast and cleanly.
+      proxySocket.destroy();
+      bridge.destroy(error as Error);
+      throw error;
+    }
   };
 }

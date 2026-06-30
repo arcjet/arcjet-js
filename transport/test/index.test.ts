@@ -19,22 +19,9 @@ import {
   createProxy,
   generateSelfSignedCert,
   listen,
+  trackHttp2Sessions,
   withHttpProxyEnvironment,
 } from "./proxy.js";
-
-// Node >= 26 changed HTTP/2 + TLS behavior in ways that break the two
-// HTTP/2-over-CONNECT-tunnel round-trip tests below: the h2c-through-tunnel
-// case surfaces `ERR_STREAM_PREMATURE_CLOSE`, and the ALPN-over-tunnel case
-// rejects the TLS `servername` because it is an IP literal (`127.0.0.1`),
-// which Node 26 no longer permits (SNI must be a hostname). When those tests
-// fail mid-handshake they also leave the tunnel socket open, which keeps the
-// test process alive and hangs the runner. Skip them on Node >= 26 until the
-// proxy-tunnel path is updated for the new behavior; they still run on 22/24.
-const nodeMajorVersion = Number.parseInt(process.versions.node, 10);
-const skipOnNode26 =
-  nodeMajorVersion >= 26
-    ? "skipped on Node >= 26: HTTP/2-over-CONNECT-tunnel behavior changed (premature close / IP-literal SNI rejected)"
-    : false;
 
 function elizaRoutes() {
   return connectNodeAdapter({
@@ -91,7 +78,7 @@ async function withHttpOrigin(
   try {
     await fn("http://localhost:" + port);
   } finally {
-    await server.close();
+    await close(server);
   }
 }
 
@@ -114,7 +101,7 @@ test("@arcjet/transport", async function (t) {
     const port = uniquePort++;
     const url = "http://localhost:" + port;
 
-    const server = http2.createServer(elizaRoutes());
+    const server = trackHttp2Sessions(http2.createServer(elizaRoutes()));
 
     await new Promise(function (resolve) {
       server.listen({ port }, function () {
@@ -125,7 +112,7 @@ test("@arcjet/transport", async function (t) {
     const client = createClient(ElizaService, createTransport(url));
     const result = await client.say({ sentence: "Hi!" });
 
-    await server.close();
+    await close(server);
 
     assert.equal(result.sentence, "You said `Hi!`");
   });
@@ -206,12 +193,11 @@ test("@arcjet/transport", async function (t) {
 
   await t.test(
     "should preserve HTTP/2 through a proxy when `proxyHttpVersion` is `2`",
-    { skip: skipOnNode26 },
     async function () {
       // A cleartext HTTP/2 (h2c) origin lets us drive a real round trip through
       // the tunnel without certificates: the `CONNECT` proxy tunnels TCP and
       // the transport speaks HTTP/2 over it end-to-end.
-      const origin = http2.createServer(elizaRoutes());
+      const origin = trackHttp2Sessions(http2.createServer(elizaRoutes()));
       const originUrl = await listen(origin);
       const authority = new URL(originUrl).host;
 
@@ -246,7 +232,6 @@ test("@arcjet/transport", async function (t) {
 
   await t.test(
     "should negotiate HTTP/2 (ALPN `h2`) end-to-end through a CONNECT proxy",
-    { skip: skipOnNode26 },
     async function () {
       // The production API is HTTPS, where HTTP/2 is selected by ALPN during the
       // TLS handshake. That handshake happens directly with the origin inside
@@ -254,6 +239,14 @@ test("@arcjet/transport", async function (t) {
       // certificate here (via `ca`) so the handshake completes and we can assert
       // the negotiated protocol — exercising the tunnel helper the way the
       // transport uses it.
+      //
+      // This origin is addressed by IP (`127.0.0.1`). RFC 6066 §3 forbids an IP
+      // literal in the TLS SNI, so the tunnel must NOT send SNI here (the cert is
+      // validated against the IP instead). This test originally failed because
+      // the tunnel set the SNI to the origin host unconditionally: an IP origin
+      // therefore produced a non-compliant IP-literal SNI, which Node <= 24
+      // tolerated (with a deprecation warning) but Node >= 26 rejects outright.
+      // The hostname companion test below covers the case where SNI *is* sent.
       const { key, cert } = generateSelfSignedCert();
       const origin = http2.createSecureServer({ key, cert });
       origin.on("stream", function (stream) {
@@ -269,19 +262,27 @@ test("@arcjet/transport", async function (t) {
       });
       const proxyUrl = await listen(proxy);
 
-      const session = http2.connect(originUrl, {
-        ca: cert,
-        createConnection: createTunnelingConnection(proxyUrl),
-      });
-
+      // `http2.connect` calls `createConnection` synchronously, so if the
+      // tunnel helper throws while setting up the connection (for example, on
+      // Node >= 26 with an IP-literal SNI) the throw surfaces from this call.
+      // Keep it inside the `try` and track the session in an outer binding so
+      // the `finally` always tears down the proxy and origin, even when the
+      // session was never created.
+      let session: http2.ClientHttp2Session | undefined;
       try {
+        const connected = http2.connect(originUrl, {
+          ca: cert,
+          createConnection: createTunnelingConnection(proxyUrl),
+        });
+        session = connected;
+
         await new Promise<void>(function (resolve, reject) {
-          session.once("connect", () => resolve());
-          session.once("error", reject);
+          connected.once("connect", () => resolve());
+          connected.once("error", reject);
         });
 
         assert.equal(
-          session.alpnProtocol,
+          connected.alpnProtocol,
           "h2",
           "expected HTTP/2 to be negotiated with the origin through the tunnel",
         );
@@ -289,7 +290,7 @@ test("@arcjet/transport", async function (t) {
         // A round trip proves the tunnel carries real HTTP/2 frames, not just a
         // completed handshake.
         const body = await new Promise<string>(function (resolve, reject) {
-          const request = session.request({ ":path": "/" });
+          const request = connected.request({ ":path": "/" });
           let data = "";
           request.setEncoding("utf8");
           request.on("data", (chunk) => (data += chunk));
@@ -299,7 +300,81 @@ test("@arcjet/transport", async function (t) {
         });
         assert.equal(body, "ok");
       } finally {
-        session.close();
+        session?.close();
+        await close(proxy);
+        await close(origin);
+      }
+
+      assert.ok(
+        connectRequests >= 1,
+        "expected the request to be tunneled through the proxy via CONNECT",
+      );
+    },
+  );
+
+  await t.test(
+    "should negotiate HTTP/2 (ALPN `h2`) to a hostname origin through a CONNECT proxy",
+    async function () {
+      // Companion to the IP test above and the production-realistic case: a
+      // hostname origin, where the tunnel *does* send SNI and the certificate is
+      // validated against it. The origin still listens on the loopback IP and the
+      // proxy dials that IP, so the tunnel stays on IPv4 regardless of how
+      // `localhost` resolves; only the SNI, `:authority`, and certificate use the
+      // hostname.
+      const hostname = "localhost";
+      const { key, cert } = generateSelfSignedCert(hostname);
+      const origin = trackHttp2Sessions(http2.createSecureServer({ key, cert }));
+      origin.on("stream", function (stream) {
+        stream.respond({ ":status": 200 });
+        stream.end("ok");
+      });
+      const loopbackUrl = await listen(origin, "https");
+      const port = new URL(loopbackUrl).port;
+      const originUrl = `https://${hostname}:${port}`;
+      const authority = new URL(originUrl).host;
+
+      let connectRequests = 0;
+      const proxy = createConnectProxy(
+        authority,
+        () => {
+          connectRequests++;
+        },
+        // Dial the loopback origin even though the authority is a hostname.
+        "127.0.0.1",
+      );
+      const proxyUrl = await listen(proxy);
+
+      let session: http2.ClientHttp2Session | undefined;
+      try {
+        const connected = http2.connect(originUrl, {
+          ca: cert,
+          createConnection: createTunnelingConnection(proxyUrl),
+        });
+        session = connected;
+
+        await new Promise<void>(function (resolve, reject) {
+          connected.once("connect", () => resolve());
+          connected.once("error", reject);
+        });
+
+        assert.equal(
+          connected.alpnProtocol,
+          "h2",
+          "expected HTTP/2 to be negotiated with the origin through the tunnel",
+        );
+
+        const body = await new Promise<string>(function (resolve, reject) {
+          const request = connected.request({ ":path": "/" });
+          let data = "";
+          request.setEncoding("utf8");
+          request.on("data", (chunk) => (data += chunk));
+          request.on("end", () => resolve(data));
+          request.on("error", reject);
+          request.end();
+        });
+        assert.equal(body, "ok");
+      } finally {
+        session?.close();
         await close(proxy);
         await close(origin);
       }
@@ -317,7 +392,7 @@ test("@arcjet/transport", async function (t) {
       const port = uniquePort++;
       const url = "http://localhost:" + port;
 
-      const server = http2.createServer(elizaRoutes());
+      const server = trackHttp2Sessions(http2.createServer(elizaRoutes()));
 
       await new Promise(function (resolve) {
         server.listen({ port }, function () {
@@ -344,7 +419,7 @@ test("@arcjet/transport", async function (t) {
         const result = await client.say({ sentence: "Hi!" });
         assert.equal(result.sentence, "You said `Hi!`");
       } finally {
-        await server.close();
+        await close(server);
       }
 
       // The proxy was bypassed, so nothing should have been logged.
@@ -384,7 +459,7 @@ test("@arcjet/transport", async function (t) {
     const port = uniquePort++;
     const url = "http://localhost:" + port;
 
-    const server = http2.createServer(elizaRoutes());
+    const server = trackHttp2Sessions(http2.createServer(elizaRoutes()));
 
     await new Promise(function (resolve) {
       server.listen({ port }, function () {
@@ -403,7 +478,7 @@ test("@arcjet/transport", async function (t) {
       const result = await client.say({ sentence: "Hi!" });
       assert.equal(result.sentence, "You said `Hi!`");
     } finally {
-      await server.close();
+      await close(server);
     }
   });
 
