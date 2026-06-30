@@ -1,0 +1,72 @@
+{
+  "name": "@arcjet/sensitive-info-rampart",
+  "version": "1.8.0",
+  "description": "Arcjet sensitive information detection backend powered by the on-device Rampart NER model",
+  "keywords": [
+    "arcjet",
+    "ner",
+    "onnx",
+    "pii",
+    "rampart",
+    "sensitive-info"
+  ],
+  "homepage": "https://arcjet.com",
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "sensitive-info-rampart"
+  },
+  "files": [
+    "NOTICE",
+    "dist",
+    "models/"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "4.2.0"
+  },
+  "devDependencies": {
+    "@arcjet/analyze": "1.8.0",
+    "@types/node": "22.19.21",
+    "arcjet": "1.8.0",
+    "tsdown": "0.22.3",
+    "typescript": "6.0.3"
+  },
+  "peerDependencies": {
+    "@arcjet/analyze": "1.8.0",
+    "arcjet": "1.8.0"
+  },
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
+  }
+}

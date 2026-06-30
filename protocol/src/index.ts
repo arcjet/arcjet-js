@@ -77,12 +77,38 @@ export type ArcjetConclusion = "ALLOW" | "DENY" | "CHALLENGE" | "ERROR";
 
 /**
  * Kinds of sensitive info.
+ *
+ * The first four types — `"EMAIL"`, `"PHONE_NUMBER"`, `"IP_ADDRESS"`, and
+ * `"CREDIT_CARD_NUMBER"` — are detected by the default WebAssembly backend
+ * bundled with `@arcjet/analyze`.
+ *
+ * The remaining types are detected by alternative detection backends such as
+ * `@arcjet/sensitive-info-rampart`, which runs an on-device named-entity
+ * recognition model. They are recognized everywhere a sensitive info type is
+ * accepted, but the default WebAssembly backend never emits them — listing one
+ * without configuring a backend that detects it has no effect.
  */
 export type ArcjetSensitiveInfoType =
   | "EMAIL"
   | "PHONE_NUMBER"
   | "IP_ADDRESS"
-  | "CREDIT_CARD_NUMBER";
+  | "CREDIT_CARD_NUMBER"
+  | "GIVEN_NAME"
+  | "SURNAME"
+  | "SSN"
+  | "URL"
+  | "TAX_ID"
+  | "BANK_ACCOUNT"
+  | "ROUTING_NUMBER"
+  | "GOVERNMENT_ID"
+  | "PASSPORT"
+  | "DRIVERS_LICENSE"
+  | "BUILDING_NUMBER"
+  | "STREET_NAME"
+  | "SECONDARY_ADDRESS"
+  | "CITY"
+  | "STATE"
+  | "ZIP_CODE";
 
 /**
  * Reason returned by a rule.

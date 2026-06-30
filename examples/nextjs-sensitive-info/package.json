@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@arcjet/next": "file:../../arcjet-next",
+    "@arcjet/sensitive-info-rampart": "file:../../sensitive-info-rampart",
     "next": "16.2.6",
     "react": "^19",
     "react-dom": "^19"
