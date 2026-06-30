@@ -8,6 +8,7 @@ test("@nosecone/next", async function (t) {
       "default",
       // TODO(@wooorm-arcjet): use a clearer name: defaults for what, function to generate them?
       "defaults",
+      "nonce",
       "nosecone",
       "withVercelToolbar",
     ]);
