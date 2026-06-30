@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
 import http from "node:http";
+import http2 from "node:http2";
 import net from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -27,6 +28,43 @@ const proxyEnvironmentKeys = [
  * `close()` to let the server shut down.
  */
 const tunnelSockets = new WeakMap<net.Server, Set<net.Socket>>();
+
+/**
+ * Open server-side HTTP/2 sessions per origin server.
+ *
+ * The client's `Http2SessionManager` keeps its session — and the underlying
+ * socket — alive for reuse with a long idle timeout, so a direct HTTP/2 origin's
+ * `server.close()` would wait on that idle connection (hanging the runner on
+ * some Node versions; `closeAllConnections()` doesn't tear down an HTTP/2
+ * *session*). We track sessions per server via {@linkcode trackHttp2Sessions}
+ * and destroy them in {@linkcode close} to release the client connection.
+ */
+const http2Sessions = new WeakMap<
+  net.Server,
+  Set<http2.ServerHttp2Session>
+>();
+
+/**
+ * Track the HTTP/2 sessions a server accepts so {@linkcode close} can destroy
+ * them. Use this for direct HTTP/2 origins (those reached without a `CONNECT`
+ * tunnel, whose teardown otherwise closes the client connection).
+ *
+ * @param server
+ *   HTTP/2 server to track sessions for.
+ * @returns
+ *   The same server, for chaining with `http2.createServer(...)`.
+ */
+export function trackHttp2Sessions<
+  T extends http2.Http2Server | http2.Http2SecureServer,
+>(server: T): T {
+  const sessions = new Set<http2.ServerHttp2Session>();
+  server.on("session", (session) => {
+    sessions.add(session);
+    session.on("close", () => sessions.delete(session));
+  });
+  http2Sessions.set(server, sessions);
+  return server;
+}
 
 /**
  * Start listening on a random port on the loopback interface.
@@ -85,6 +123,15 @@ export async function close(server: net.Server): Promise<void> {
     if (sockets) {
       for (const socket of sockets) {
         socket.destroy();
+      }
+    }
+    // Destroy any tracked HTTP/2 sessions so a client holding an idle session
+    // (see `http2Sessions`) doesn't keep `server.close()` — and the process —
+    // waiting on its idle timeout.
+    const sessions = http2Sessions.get(server);
+    if (sessions) {
+      for (const session of sessions) {
+        session.destroy();
       }
     }
   });
@@ -206,15 +253,21 @@ export async function withHttpProxyEnvironment<T>(
  *   `host:port` the proxy expects to tunnel to.
  * @param onConnect
  *   Called for every `CONNECT` request the proxy receives.
+ * @param connectHost
+ *   Host to actually open the upstream connection to (optional). Defaults to the
+ *   host in `expectedAuthority`. Pass `127.0.0.1` when the authority uses a
+ *   hostname (e.g. to exercise SNI) but the origin listens on the loopback IP,
+ *   so the tunnel stays on IPv4 regardless of how `localhost` resolves.
  * @returns
  *   Proxy server.
  */
 export function createConnectProxy(
   expectedAuthority: string,
   onConnect: () => void,
+  connectHost?: string,
 ): net.Server {
   const separator = expectedAuthority.lastIndexOf(":");
-  const host = expectedAuthority.slice(0, separator);
+  const host = connectHost ?? expectedAuthority.slice(0, separator);
   const port = Number(expectedAuthority.slice(separator + 1));
 
   const sockets = new Set<net.Socket>();
@@ -260,22 +313,29 @@ export function createConnectProxy(
 }
 
 /**
- * Generate a throwaway self-signed certificate for `127.0.0.1`.
+ * Generate a throwaway self-signed certificate for an origin.
  *
  * Used to stand up a real HTTPS origin so the HTTPS-through-proxy (`CONNECT`)
- * path can be exercised. The client deliberately doesn't trust this
- * certificate — `createTransport`'s agent exposes no `ca` option and disabling
- * TLS verification is a security anti-pattern — so the handshake over the
- * tunnel is expected to fail; the test verifies routing via the proxy
- * receiving the `CONNECT`.
+ * path can be exercised. Depending on the test, the client either trusts the
+ * certificate (via `ca`) to complete the handshake and assert the negotiated
+ * protocol, or deliberately doesn't trust it (so the handshake fails and the
+ * test only verifies routing via the proxy receiving the `CONNECT`).
  *
+ * @param host
+ *   Host the certificate identifies (defaults to `127.0.0.1`). An IP literal is
+ *   added as an `IP` subjectAltName; a hostname as a `DNS` subjectAltName (which
+ *   is what a real TLS client validates against the SNI it sends).
  * @returns
  *   PEM-encoded private key and certificate.
  */
-export function generateSelfSignedCert(): { key: string; cert: string } {
+export function generateSelfSignedCert(host = "127.0.0.1"): {
+  key: string;
+  cert: string;
+} {
   const directory = mkdtempSync(join(tmpdir(), "arcjet-transport-cert-"));
   const keyFile = join(directory, "key.pem");
   const certFile = join(directory, "cert.pem");
+  const subjectAltName = net.isIP(host) ? `IP:${host}` : `DNS:${host}`;
 
   execFileSync(
     "openssl",
@@ -292,9 +352,9 @@ export function generateSelfSignedCert(): { key: string; cert: string } {
       "-days",
       "1",
       "-subj",
-      "/CN=127.0.0.1",
+      `/CN=${host}`,
       "-addext",
-      "subjectAltName=IP:127.0.0.1",
+      `subjectAltName=${subjectAltName}`,
     ],
     { stdio: "ignore" },
   );

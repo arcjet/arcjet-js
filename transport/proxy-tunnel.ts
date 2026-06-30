@@ -145,8 +145,49 @@ export function createTunnelingConnection(
       }
 
       // Splice: proxy -> bridge, so origin bytes become readable by the client.
-      proxySocket.on("data", (data: Buffer) => bridge.push(data));
-      proxySocket.on("end", () => bridge.push(null));
+      //
+      // For a cleartext (h2c) origin the bridge *is* the HTTP/2 socket, so these
+      // bytes are HTTP/2 frames. A proxy can coalesce a whole response
+      // (HEADERS + DATA + END_STREAM) into one chunk; delivered as a single
+      // synchronous read, the HTTP/2 client surfaces the DATA and the stream end
+      // in one turn, which races `@connectrpc/connect-node`'s async-iterator
+      // response reader and intermittently throws `ERR_STREAM_PREMATURE_CLOSE`
+      // on Node >= 26 (a real or TLS-wrapped socket avoids this — it delivers
+      // frames across separate reads). So for h2c we split the stream on HTTP/2
+      // frame boundaries and push one frame per tick, preserving order; the
+      // client then reads the DATA before observing END_STREAM. For an HTTPS
+      // origin the bytes are TLS records (the origin TLS socket reframes them),
+      // so we forward them unchanged.
+      if (originIsHttps) {
+        proxySocket.on("data", (data: Buffer) => bridge.push(data));
+      } else {
+        let inbound = Buffer.alloc(0);
+        proxySocket.on("data", (data: Buffer) => {
+          inbound = Buffer.concat([inbound, data]);
+          // An HTTP/2 frame is a 9-byte header (24-bit length, then type, flags,
+          // and stream id) followed by `length` bytes of payload.
+          while (inbound.length >= 9) {
+            const frameLength = 9 + inbound.readUIntBE(0, 3);
+            if (inbound.length < frameLength) {
+              break; // Wait for the rest of this frame.
+            }
+            const frame = inbound.subarray(0, frameLength);
+            inbound = inbound.subarray(frameLength);
+            setImmediate(() => {
+              if (!bridge.destroyed) {
+                bridge.push(frame);
+              }
+            });
+          }
+        });
+      }
+      proxySocket.on("end", () =>
+        setImmediate(() => {
+          if (!bridge.destroyed) {
+            bridge.push(null);
+          }
+        }),
+      );
 
       // Flush whatever the client buffered while the tunnel was establishing.
       tunnelReady = true;
@@ -173,11 +214,34 @@ export function createTunnelingConnection(
       return bridge;
     }
 
-    return tls.connect({
-      ...options,
-      socket: bridge,
-      servername: authority.hostname,
-      ALPNProtocols: ["h2"],
-    });
+    try {
+      return tls.connect({
+        ...options,
+        socket: bridge,
+        // Validate the certificate against the origin host. For a hostname this
+        // is also sent as SNI below; for an IP it is the identity to match
+        // (since SNI is omitted), so the cert's IP SAN is still checked.
+        host: authority.hostname,
+        // RFC 6066 §3 forbids IP literals in the TLS SNI `servername`: it must
+        // be a DNS hostname. When the origin is addressed by IP we therefore
+        // omit SNI entirely (the certificate is still validated against the IP
+        // via `host` above). Node historically tolerated an IP here with a
+        // deprecation warning, but Node >= 26 enforces the RFC and throws
+        // `ERR_INVALID_ARG_VALUE`.
+        servername:
+          net.isIP(authority.hostname) === 0 ? authority.hostname : undefined,
+        ALPNProtocols: ["h2"],
+      });
+    } catch (error) {
+      // Constructing the origin TLS connection can throw *synchronously* (for
+      // example, Node >= 26 rejects an IP-literal `servername` per RFC 6066).
+      // We have already opened `proxySocket`; if we let the throw escape we
+      // strand that open handle, which keeps the event loop — and the whole
+      // process — alive (this is what hung CI). Tear both sides down before
+      // rethrowing so a failed setup fails fast and cleanly.
+      proxySocket.destroy();
+      bridge.destroy(error as Error);
+      throw error;
+    }
   };
 }
