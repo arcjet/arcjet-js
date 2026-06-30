@@ -337,18 +337,15 @@ export async function ruleToProto(
 
 /**
  * Merge config-level and input-level metadata for a rule submission.
- * Input-level values take priority on key conflict.
- * Prompt injection and sensitive info (string inputs) don't carry
- * per-request metadata; content moderation accepts it at call time but
- * stores it as a sibling of `input` on the RuleWithInput, not inside it.
+ * Input-level values take priority on key conflict. Every rule's `input`
+ * is an object carrying optional per-request `metadata`.
  *
  * @internal
  */
 function ruleMetadataToProto(rule: RuleWithInput): Record<string, string> {
   return {
     ...rule.config.metadata,
-    ...(typeof rule.input === "string" ? undefined : rule.input.metadata),
-    ...(rule.type === "MODERATE_CONTENT" ? rule.metadata : undefined),
+    ...rule.input.metadata,
   };
 }
 
@@ -404,7 +401,7 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
         rule: {
           case: "detectPromptInjection",
           value: create(RuleDetectPromptInjectionSchema, {
-            inputText: rule.input,
+            inputText: rule.input.inputText,
           }),
         },
       });
@@ -413,12 +410,12 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
         rule: {
           case: "moderateContent",
           value: create(RuleModerateContentSchema, {
-            inputText: rule.input,
+            inputText: rule.input.inputText,
           }),
         },
       });
     case "SENSITIVE_INFO": {
-      const hash = await sha256Hex(rule.input);
+      const hash = await sha256Hex(rule.input.inputText);
 
       const entities = rule.config.deny
         ? { tag: "deny" as const, val: rule.config.deny.map((s) => stringToEntity(s)) }
@@ -429,7 +426,7 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
 
       const evalStart = performance.now();
       try {
-        const result = await detectSensitiveInfo(analyzeContext, rule.input, entities, 1);
+        const result = await detectSensitiveInfo(analyzeContext, rule.input.inputText, entities, 1);
         resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
 
         const deniedTypes = result.denied.map((d) => entityToString(d.identifiedType));
