@@ -177,3 +177,35 @@ jobs:
       # (`@arcjet/env`, `@arcjet/logger`) are available to the runtime test.
       - run: npm ci && npm run build
       - run: npm run ${{ matrix.script }} --workspace=@arcjet/transport
+
+  arcjet-runtime:
+    name: arcjet protect() (Cloudflare Workers)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          # The runtime test runs against a local mock DecideService server via
+          # miniflare's bundled workerd, so no external decide endpoint is hit.
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+      # Build the whole workspace first so the SDK's dependencies (including the
+      # `workerd` entries of `@arcjet/transport` and `@arcjet/analyze-wasm`) are
+      # available to the runtime test.
+      - run: npm ci && npm run build
+      - run: npm run test-runtime-cloudflare --workspace=arcjet
