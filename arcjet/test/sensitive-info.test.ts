@@ -939,6 +939,75 @@ describe("Primitive > sensitiveInfo", () => {
 
     assert.deepEqual(extra, { sensitiveInfoValue: "<redacted>" });
   });
+
+  test("validates the `backend` option if set", async () => {
+    assert.throws(() => {
+      sensitiveInfo({
+        deny: [],
+        // @ts-expect-error: test runtime behavior.
+        backend: "nope",
+      });
+    }, /`sensitiveInfo` options error: invalid type for `backend` - expected an object with a `detect` function/);
+  });
+
+  test("uses a custom `backend` to drive the result", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: createMockLogger(),
+      characteristics: [],
+      cache: new MemoryCache<ArcjetCacheEntry>(),
+      getBody: () => Promise.resolve("unused"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: { sensitiveInfoValue: "Hi Alex" },
+    };
+
+    let seenValue: string | undefined;
+    const backend = {
+      detect: mock.fn(async (_context: unknown, value: string) => {
+        seenValue = value;
+        return {
+          allowed: [],
+          denied: [
+            {
+              start: 3,
+              end: 7,
+              identifiedType: { tag: "custom" as const, val: "GIVEN_NAME" },
+            },
+          ],
+        };
+      }),
+    };
+
+    const [rule] = sensitiveInfo({
+      mode: "LIVE",
+      deny: ["GIVEN_NAME"],
+      backend,
+    });
+
+    const result = await rule.protect(context, details);
+
+    // The custom backend was used instead of the default WebAssembly engine.
+    assert.equal(backend.detect.mock.callCount(), 1);
+    assert.equal(seenValue, "Hi Alex");
+
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    // The custom entity is reported with its plain string type.
+    assert.deepEqual(result.reason.denied, [
+      { start: 3, end: 7, identifiedType: "GIVEN_NAME" },
+    ]);
+  });
 });
 
 function createMockLogger() {
