@@ -11,6 +11,7 @@ import {
   defineCustomRule,
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
+import type { Decision, InternalResult } from "./types.ts";
 
 describe("tokenBucket", () => {
   test("returns a callable with type discriminant", () => {
@@ -542,5 +543,184 @@ describe("defineCustomRule", () => {
     assert.deepEqual(rule.results(decision), []);
     assert.equal(rule.result(decision), null);
     assert.equal(rule.deniedResult(decision), null);
+  });
+});
+
+// Build an internal token bucket result carrying correlation IDs.
+function tokenBucketResult(
+  configId: string,
+  inputId: string,
+  conclusion: "ALLOW" | "DENY" = "ALLOW",
+): InternalResult {
+  return {
+    conclusion,
+    reason: "RATE_LIMIT",
+    type: "TOKEN_BUCKET",
+    warnings: [],
+    remainingTokens: 5,
+    maxTokens: 100,
+    resetAtUnixSeconds: 0,
+    refillRate: 10,
+    refillIntervalSeconds: 60,
+    [symbolArcjetInternal]: { configId, inputId },
+  } as InternalResult;
+}
+
+// Build an internal errored result carrying correlation IDs.
+function errorResult(
+  configId: string,
+  inputId: string,
+  code = "AJ1100",
+  message = "boom",
+): InternalResult {
+  return {
+    conclusion: "ALLOW",
+    reason: "ERROR",
+    type: "RULE_ERROR",
+    warnings: [],
+    message,
+    code,
+    [symbolArcjetInternal]: { configId, inputId },
+  } as InternalResult;
+}
+
+function decisionWith(results: InternalResult[]): Decision {
+  return {
+    conclusion: "ALLOW" as const,
+    id: "gdec_test",
+    results: results.map((r) => r),
+    hasError: (): boolean => results.some((r) => r.type === "RULE_ERROR"),
+    warnings: [],
+    errorResults: () => results.filter((r) => r.type === "RULE_ERROR"),
+    hasFailedOpen: (): boolean => false,
+    [symbolArcjetInternal]: { results },
+  } as Decision;
+}
+
+describe("errorResult() and the error/non-error split", () => {
+  const config = {
+    bucket: "test",
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 100,
+  };
+
+  test("RuleWithInput.errorResult() returns the errored result", () => {
+    const rule = tokenBucket(config);
+    const input = rule({ key: "user_1" });
+    const { configId } = rule[symbolArcjetInternal];
+    const { inputId } = input[symbolArcjetInternal];
+    const decision = decisionWith([errorResult(configId, inputId, "AJ1100")]);
+
+    const err = input.errorResult(decision);
+    assert.notEqual(err, null);
+    assert.equal(err?.type, "RULE_ERROR");
+    assert.equal(err?.reason, "ERROR");
+    assert.equal(err?.conclusion, "ALLOW"); // fail open
+    assert.equal(err?.code, "AJ1100");
+  });
+
+  test("RuleWithConfig.errorResult() returns the errored result", () => {
+    const rule = tokenBucket(config);
+    const input = rule({ key: "user_1" });
+    const { configId } = rule[symbolArcjetInternal];
+    const { inputId } = input[symbolArcjetInternal];
+    const decision = decisionWith([errorResult(configId, inputId, "AJ1200")]);
+
+    const err = rule.errorResult(decision);
+    assert.notEqual(err, null);
+    assert.equal(err?.code, "AJ1200");
+  });
+
+  test("result()/results()/deniedResult() never return an errored result", () => {
+    const rule = tokenBucket(config);
+    const input = rule({ key: "user_1" });
+    const { configId } = rule[symbolArcjetInternal];
+    const { inputId } = input[symbolArcjetInternal];
+    const decision = decisionWith([errorResult(configId, inputId)]);
+
+    // The whole point of the split: errors must not leak into non-error
+    // accessors (previously they were up-cast to e.g. RuleResultTokenBucket).
+    assert.equal(input.result(decision), null);
+    assert.deepEqual(input.results(decision), []);
+    assert.equal(input.deniedResult(decision), null);
+    assert.equal(rule.result(decision), null);
+    assert.deepEqual(rule.results(decision), []);
+    assert.equal(rule.deniedResult(decision), null);
+    // ...but errorResult surfaces it.
+    assert.notEqual(input.errorResult(decision), null);
+  });
+
+  test("errorResult() returns null for a non-error result", () => {
+    const rule = tokenBucket(config);
+    const input = rule({ key: "user_1" });
+    const { configId } = rule[symbolArcjetInternal];
+    const { inputId } = input[symbolArcjetInternal];
+    const decision = decisionWith([tokenBucketResult(configId, inputId)]);
+
+    assert.equal(input.errorResult(decision), null);
+    assert.equal(rule.errorResult(decision), null);
+    assert.notEqual(input.result(decision), null);
+  });
+
+  test("a DENY is a non-error result and is not dropped", () => {
+    const rule = tokenBucket(config);
+    const input = rule({ key: "user_1" });
+    const { configId } = rule[symbolArcjetInternal];
+    const { inputId } = input[symbolArcjetInternal];
+    const decision = decisionWith([
+      tokenBucketResult(configId, inputId, "DENY"),
+    ]);
+
+    const denied = input.deniedResult(decision);
+    assert.notEqual(denied, null);
+    assert.equal(denied?.conclusion, "DENY");
+    assert.equal(input.errorResult(decision), null); // a DENY is not an error
+  });
+
+  test("two invocations resolve distinct errors by identifier", () => {
+    const rule = tokenBucket(config);
+    const call1 = rule({ key: "first" });
+    const call2 = rule({ key: "second" });
+    const { configId } = rule[symbolArcjetInternal];
+    const id1 = call1[symbolArcjetInternal].inputId;
+    const id2 = call2[symbolArcjetInternal].inputId;
+    const decision = decisionWith([
+      errorResult(configId, id1, "AJ1001", "first failed"),
+      tokenBucketResult(configId, id2, "ALLOW"),
+    ]);
+
+    const err1 = call1.errorResult(decision);
+    assert.notEqual(err1, null);
+    assert.equal(err1?.code, "AJ1001");
+    // call2 did not error; its non-error result resolves cleanly.
+    assert.equal(call2.errorResult(decision), null);
+    assert.notEqual(call2.result(decision), null);
+  });
+
+  test("there is no plural errorResults() accessor on rules", () => {
+    const rule = tokenBucket(config);
+    const input = rule({ key: "user_1" });
+    assert.equal("errorResults" in rule, false);
+    assert.equal("errorResults" in input, false);
+  });
+
+  test("errorResult() is available across all rule types", () => {
+    const inputs = [
+      fixedWindow({ maxRequests: 100, windowSeconds: 60 })({ key: "u" }),
+      slidingWindow({ maxRequests: 100, intervalSeconds: 60 })({ key: "u" }),
+      detectPromptInjection()("text"),
+      experimental_moderateContent()("text"),
+      localDetectSensitiveInfo()("text"),
+      defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
+        data: {},
+      })({ data: {} }),
+    ];
+    for (const input of inputs) {
+      const { configId, inputId } = input[symbolArcjetInternal];
+      const decision = decisionWith([errorResult(configId, inputId)]);
+      assert.notEqual(input.errorResult(decision), null);
+      assert.equal(input.result(decision), null);
+    }
   });
 });

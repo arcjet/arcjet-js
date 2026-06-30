@@ -49,6 +49,7 @@
     "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
     "test-api": "node --test -- test/*.test.js",
+    "test-runtime-cloudflare": "npm run build && node --test test/runtime/cloudflare/cloudflare.test.ts",
     "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=95 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=95 -- test/*.test.js",
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
@@ -64,9 +65,15 @@
   "devDependencies": {
     "@arcjet/eslint-config": "1.5.0",
     "@arcjet/rollup-config": "1.5.0",
+    "@arcjet/transport": "1.5.0",
+    "@bufbuild/protobuf": "2.12.0",
+    "@connectrpc/connect": "2.1.2",
+    "@connectrpc/connect-node": "2.1.2",
     "@rollup/wasm-node": "4.62.2",
     "@types/node": "22.19.21",
     "eslint": "9.39.4",
+    "miniflare": "4.20260617.1",
+    "rolldown": "1.1.2",
     "typescript": "5.9.3"
   },
   "publishConfig": {
