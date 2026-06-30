@@ -52,7 +52,7 @@ function nextScriptSrc() {
 // capturing the value without the surrounding `'nonce-'` and `'` syntax. This
 // mirrors how Next.js extracts the nonce from the header so that the value
 // returned by `nonce` is the same one Next.js applies to its own scripts. See:
-// https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/get-script-nonce-from-header.tsx
+// https://github.com/vercel/next.js/blob/647d923a3f140f9f484415406feee05aae9fd179/packages/next/src/server/app-render/get-script-nonce-from-header.tsx
 const nonceSourceRegex = /^'nonce-([A-Za-z0-9+/_-]+={0,2})'$/;
 
 /**
