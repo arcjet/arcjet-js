@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.6.1](https://github.com/arcjet/arcjet-js/compare/v1.6.0...@arcjet/protocol-v1.6.1) (2026-06-30)
+
+
+### 🪲 Bug Fixes
+
+* **protocol:** add typeid.js and typeid.d.ts to package files ([#6121](https://github.com/arcjet/arcjet-js/issues/6121)) ([bb2425f](https://github.com/arcjet/arcjet-js/commit/bb2425faf8810c430ecf10a0adf9a71eb9582a37))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.6.0 to 1.6.1
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.6.0 to 1.6.1
+    * @arcjet/rollup-config bumped from 1.6.0 to 1.6.1
+
 ## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...@arcjet/protocol-v1.6.0) (2026-06-30)
 
 
