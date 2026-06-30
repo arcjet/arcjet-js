@@ -62,7 +62,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version: 22
+          node-version: 24
       - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
         with:
           deno-version: v2.4.2
@@ -164,7 +164,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version: 22
+          node-version: 24
       - uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
         if: matrix.runtime == 'bun'
         with:
