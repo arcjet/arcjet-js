@@ -187,8 +187,10 @@ jobs:
     steps:
       - uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
-          # The runtime test runs against a local mock DecideService server via
-          # miniflare's bundled workerd, so no external decide endpoint is hit.
+          # The runtime test calls a local mock DecideService server, so the
+          # Arcjet decide endpoint is never hit. `workers.cloudflare.com` is
+          # contacted by miniflare's bundled workerd on startup (not by the
+          # test) and must be allowed so harden-runner doesn't block it.
           allowed-endpoints: >
             api.github.com:443
             github.com:443
@@ -196,6 +198,7 @@ jobs:
             objects.githubusercontent.com:443
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
+            workers.cloudflare.com:443
           disable-sudo-and-containers: true
           egress-policy: block
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
