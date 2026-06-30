@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.6.0](https://github.com/arcjet/arcjet-js/compare/v1.5.0...@arcjet/next-v1.6.0) (2026-06-30)
+
+
+### 🚀 New Features
+
+* expose correlationId on protect() and guard() ([#6104](https://github.com/arcjet/arcjet-js/issues/6104)) ([14a3a1f](https://github.com/arcjet/arcjet-js/commit/14a3a1f201774dd9083eed26334121bfb893715a))
+* require Node.js &gt;=22.21.0 and drop EOL Node.js 20 ([#6090](https://github.com/arcjet/arcjet-js/issues/6090)) ([d002118](https://github.com/arcjet/arcjet-js/commit/d00211896cd13f13dce90df9a5308fa942f334f7))
+
+
+### 📝 Documentation
+
+* use unified Arcjet skill install command ([#6115](https://github.com/arcjet/arcjet-js/issues/6115)) ([3007110](https://github.com/arcjet/arcjet-js/commit/300711084e55b09608e745d25290a8aeaf4cefb3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.5.0 to 1.6.0
+    * @arcjet/env bumped from 1.5.0 to 1.6.0
+    * @arcjet/headers bumped from 1.5.0 to 1.6.0
+    * @arcjet/ip bumped from 1.5.0 to 1.6.0
+    * @arcjet/logger bumped from 1.5.0 to 1.6.0
+    * @arcjet/protocol bumped from 1.5.0 to 1.6.0
+    * @arcjet/transport bumped from 1.5.0 to 1.6.0
+    * arcjet bumped from 1.5.0 to 1.6.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.5.0 to 1.6.0
+    * @arcjet/rollup-config bumped from 1.5.0 to 1.6.0
+
 ## [1.5.0](https://github.com/arcjet/arcjet-js/compare/v1.4.0...@arcjet/next-v1.5.0) (2026-06-09)
 
 
