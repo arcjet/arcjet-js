@@ -209,12 +209,23 @@ describe("detectPromptInjection", () => {
     assert.deepEqual(rule.config, {});
   });
 
-  test("produces RuleWithInput with string input", () => {
+  test("normalizes a bare string to the input object", () => {
     const rule = detectPromptInjection();
     const input = rule("some text");
 
     assert.equal(input.type, "PROMPT_INJECTION");
-    assert.equal(input.input, "some text");
+    assert.equal(input.input.inputText, "some text");
+  });
+
+  test("attaches call-time metadata to the input", () => {
+    const rule = detectPromptInjection();
+    const input = rule({
+      inputText: "some text",
+      metadata: { source: "tool_result" },
+    });
+
+    assert.equal(input.input.inputText, "some text");
+    assert.deepEqual(input.input.metadata, { source: "tool_result" });
   });
 
   test("preserves mode in config", () => {
@@ -239,12 +250,12 @@ describe("experimental_moderateContent", () => {
     assert.deepEqual(rule.config, {});
   });
 
-  test("produces RuleWithInput with string input", () => {
+  test("normalizes a bare string to the input object", () => {
     const rule = experimental_moderateContent();
     const input = rule("some text");
 
     assert.equal(input.type, "MODERATE_CONTENT");
-    assert.equal(input.input, "some text");
+    assert.equal(input.input.inputText, "some text");
   });
 
   test("preserves mode in config", () => {
@@ -256,16 +267,19 @@ describe("experimental_moderateContent", () => {
 
   test("attaches call-time metadata to the input", () => {
     const rule = experimental_moderateContent();
-    const input = rule("text", { metadata: { expectedResponse: "pass" } });
+    const input = rule({
+      inputText: "text",
+      metadata: { expectedResponse: "pass" },
+    });
 
-    assert.deepEqual(input.metadata, { expectedResponse: "pass" });
+    assert.deepEqual(input.input.metadata, { expectedResponse: "pass" });
   });
 
-  test("input without metadata does not set metadata on the input object", () => {
+  test("a bare string input carries no metadata", () => {
     const rule = experimental_moderateContent();
     const input = rule("text");
 
-    assert.equal("metadata" in input, false);
+    assert.equal("metadata" in input.input, false);
   });
 });
 
@@ -291,12 +305,23 @@ describe("localDetectSensitiveInfo", () => {
     assert.equal(rule.config.allow, undefined);
   });
 
-  test("produces RuleWithInput with string input", () => {
+  test("normalizes a bare string to the input object", () => {
     const rule = localDetectSensitiveInfo();
     const input = rule("my email is foo@bar.com");
 
     assert.equal(input.type, "SENSITIVE_INFO");
-    assert.equal(input.input, "my email is foo@bar.com");
+    assert.equal(input.input.inputText, "my email is foo@bar.com");
+  });
+
+  test("attaches call-time metadata to the input", () => {
+    const rule = localDetectSensitiveInfo();
+    const input = rule({
+      inputText: "my email is foo@bar.com",
+      metadata: { destination: "openai" },
+    });
+
+    assert.equal(input.input.inputText, "my email is foo@bar.com");
+    assert.deepEqual(input.input.metadata, { destination: "openai" });
   });
 });
 

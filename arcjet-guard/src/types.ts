@@ -777,9 +777,14 @@ export interface ExperimentalModerateContentConfig {
 }
 
 /**
- * Per-request options for a content moderation submission (experimental).
+ * Prompt injection detection input.
+ *
+ * Bind it by passing the object to the configured rule. A bare string is
+ * accepted as shorthand for `{ inputText }`.
  */
-export interface ExperimentalModerateContentInput {
+export interface DetectPromptInjectionInput {
+  /** The user prompt text to evaluate for prompt injection. */
+  inputText: string;
   /**
    * Per-request metadata. Merged with config-level metadata (input wins
    * on key conflict). This is rule-level metadata, distinct from
@@ -793,7 +798,63 @@ export interface ExperimentalModerateContentInput {
    *
    * @example
    * ```ts
-   * moderate(userMessage, { metadata: { expectedResponse: "pass" } })
+   * pi({ inputText: userPrompt, metadata: { source: "tool_result" } })
+   * ```
+   */
+  metadata?: Record<string, string>;
+}
+
+/**
+ * Content moderation input (experimental).
+ *
+ * Bind it by passing the object to the configured rule. A bare string is
+ * accepted as shorthand for `{ inputText }`.
+ */
+export interface ExperimentalModerateContentInput {
+  /** The text to moderate. */
+  inputText: string;
+  /**
+   * Per-request metadata. Merged with config-level metadata (input wins
+   * on key conflict). This is rule-level metadata, distinct from
+   * {@link GuardOptions.metadata} which is sent at the request level.
+   *
+   * Service-side constraints:
+   * - Max 20 key-value pairs per rule submission (combined config + input).
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
+   * - Values: max 512 bytes.
+   *
+   * @example
+   * ```ts
+   * moderate({ inputText: userMessage, metadata: { expectedResponse: "pass" } })
+   * ```
+   */
+  metadata?: Record<string, string>;
+}
+
+/**
+ * Sensitive info detection input.
+ *
+ * Bind it by passing the object to the configured rule. A bare string is
+ * accepted as shorthand for `{ inputText }`.
+ */
+export interface LocalDetectSensitiveInfoInput {
+  /** The input text to scan for sensitive information. */
+  inputText: string;
+  /**
+   * Per-request metadata. Merged with config-level metadata (input wins
+   * on key conflict). This is rule-level metadata, distinct from
+   * {@link GuardOptions.metadata} which is sent at the request level.
+   *
+   * Service-side constraints:
+   * - Max 20 key-value pairs per rule submission (combined config + input).
+   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
+   *   must start with a letter or digit.
+   * - Values: max 512 bytes.
+   *
+   * @example
+   * ```ts
+   * si({ inputText: text, metadata: { destination: "openai" } })
    * ```
    */
   metadata?: Record<string, string>;
@@ -1122,8 +1183,12 @@ export type RuleWithConfigPromptInjection = {
   readonly config: DetectPromptInjectionConfig;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
-  /** Bind the user prompt text to produce a `RuleWithInputPromptInjection`. */
-  (input: string): RuleWithInputPromptInjection;
+  /**
+   * Bind the prompt injection input to produce a
+   * `RuleWithInputPromptInjection`. A bare string is shorthand for
+   * `{ inputText }`; pass an object to also attach per-request metadata.
+   */
+  (input: string | DetectPromptInjectionInput): RuleWithInputPromptInjection;
   /** Extract all prompt injection results from a decision. */
   results(decision: Decision): RuleResultPromptInjection[];
   /** Return the first prompt injection result regardless of conclusion, or `null` if none. */
@@ -1151,10 +1216,11 @@ export type RuleWithConfigModerateContent = {
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
   /**
-   * Bind the text to moderate to produce a `RuleWithInputModerateContent`.
-   * Optionally attach per-request metadata, merged with config metadata.
+   * Bind the content moderation input to produce a
+   * `RuleWithInputModerateContent`. A bare string is shorthand for
+   * `{ inputText }`; pass an object to also attach per-request metadata.
    */
-  (input: string, options?: ExperimentalModerateContentInput): RuleWithInputModerateContent;
+  (input: string | ExperimentalModerateContentInput): RuleWithInputModerateContent;
   /** Extract all content moderation results from a decision. */
   results(decision: Decision): RuleResultModerateContent[];
   /** Return the first content moderation result regardless of conclusion, or `null` if none. */
@@ -1177,8 +1243,12 @@ export type RuleWithConfigSensitiveInfo = {
   readonly config: LocalDetectSensitiveInfoConfig;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
-  /** Bind the input text to produce a `RuleWithInputSensitiveInfo`. */
-  (input: string): RuleWithInputSensitiveInfo;
+  /**
+   * Bind the sensitive info input to produce a
+   * `RuleWithInputSensitiveInfo`. A bare string is shorthand for
+   * `{ inputText }`; pass an object to also attach per-request metadata.
+   */
+  (input: string | LocalDetectSensitiveInfoInput): RuleWithInputSensitiveInfo;
   /** Extract all sensitive info results from a decision. */
   results(decision: Decision): RuleResultSensitiveInfo[];
   /** Return the first sensitive info result regardless of conclusion, or `null` if none. */
@@ -1308,8 +1378,8 @@ export type RuleWithInputPromptInjection = {
   readonly type: "PROMPT_INJECTION";
   /** The prompt injection detection configuration for this rule instance. */
   readonly config: DetectPromptInjectionConfig;
-  /** The bound user prompt text. */
-  readonly input: string;
+  /** The bound prompt injection input. */
+  readonly input: DetectPromptInjectionInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
   /** Find this submission's results as an array (empty or single-element). */
@@ -1336,10 +1406,8 @@ export type RuleWithInputModerateContent = {
   readonly type: "MODERATE_CONTENT";
   /** The content moderation configuration for this rule instance. */
   readonly config: ExperimentalModerateContentConfig;
-  /** The bound text to moderate. */
-  readonly input: string;
-  /** Per-request metadata, merged with config metadata at submission time. */
-  readonly metadata?: Record<string, string>;
+  /** The bound content moderation input. */
+  readonly input: ExperimentalModerateContentInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
   /** Find this submission's results as an array (empty or single-element). */
@@ -1362,8 +1430,8 @@ export type RuleWithInputSensitiveInfo = {
   readonly type: "SENSITIVE_INFO";
   /** The sensitive info detection configuration for this rule instance. */
   readonly config: LocalDetectSensitiveInfoConfig;
-  /** The bound input text to scan. */
-  readonly input: string;
+  /** The bound sensitive info input. */
+  readonly input: LocalDetectSensitiveInfoInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
   /** Find this submission's results as an array (empty or single-element). */

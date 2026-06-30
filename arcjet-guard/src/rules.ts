@@ -29,9 +29,11 @@ import type {
   SlidingWindowConfig,
   SlidingWindowInput,
   DetectPromptInjectionConfig,
+  DetectPromptInjectionInput,
   ExperimentalModerateContentConfig,
   ExperimentalModerateContentInput,
   LocalDetectSensitiveInfoConfig,
+  LocalDetectSensitiveInfoInput,
   LocalCustomConfig,
   LocalCustomInput,
   RuleWithConfigTokenBucket,
@@ -385,12 +387,12 @@ export function detectPromptInjection(
   const configId = randomId();
 
   const rule = Object.assign(
-    (input: string): RuleWithInputPromptInjection => {
+    (input: string | DetectPromptInjectionInput): RuleWithInputPromptInjection => {
       const inputId = randomId();
       return {
         type: "PROMPT_INJECTION" as const,
         config,
-        input,
+        input: typeof input === "string" ? { inputText: input } : input,
         [symbolArcjetInternal]: { configId, inputId },
         result(decision: Decision): RuleResultPromptInjection | null {
           return findResult<RuleResultPromptInjection>(decision, configId, inputId);
@@ -472,17 +474,12 @@ export function experimental_moderateContent(
   const configId = randomId();
 
   const rule = Object.assign(
-    (
-      input: string,
-      options: ExperimentalModerateContentInput = {},
-    ): RuleWithInputModerateContent => {
+    (input: string | ExperimentalModerateContentInput): RuleWithInputModerateContent => {
       const inputId = randomId();
-      const { metadata } = options;
       return {
         type: "MODERATE_CONTENT" as const,
         config,
-        input,
-        ...(metadata === undefined ? {} : { metadata }),
+        input: typeof input === "string" ? { inputText: input } : input,
         [symbolArcjetInternal]: { configId, inputId },
         result(decision: Decision): RuleResultModerateContent | null {
           return findResult<RuleResultModerateContent>(decision, configId, inputId);
@@ -552,12 +549,12 @@ export function localDetectSensitiveInfo(
   const configId = randomId();
 
   const rule = Object.assign(
-    (input: string): RuleWithInputSensitiveInfo => {
+    (input: string | LocalDetectSensitiveInfoInput): RuleWithInputSensitiveInfo => {
       const inputId = randomId();
       return {
         type: "SENSITIVE_INFO" as const,
         config,
-        input,
+        input: typeof input === "string" ? { inputText: input } : input,
         [symbolArcjetInternal]: { configId, inputId },
         result(decision: Decision): RuleResultSensitiveInfo | null {
           return findResult<RuleResultSensitiveInfo>(decision, configId, inputId);
