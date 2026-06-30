@@ -1,0 +1,12 @@
+.pnp.*
+
+# Generated files
+entities.js
+entities.d.ts
+index.js
+index.d.ts
+model.js
+model.d.ts
+recognizers.js
+recognizers.d.ts
+test/*.js

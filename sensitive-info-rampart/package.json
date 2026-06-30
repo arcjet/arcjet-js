@@ -1,0 +1,75 @@
+{
+  "name": "@arcjet/sensitive-info-rampart",
+  "version": "1.6.0",
+  "description": "Arcjet sensitive information detection backend powered by the on-device Rampart NER model",
+  "keywords": [
+    "arcjet",
+    "sensitive-info",
+    "pii",
+    "ner",
+    "rampart",
+    "onnx"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://arcjet.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "sensitive-info-rampart"
+  },
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
+  },
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "NOTICE",
+    "entities.d.ts",
+    "entities.js",
+    "index.d.ts",
+    "index.js",
+    "model.d.ts",
+    "model.js",
+    "recognizers.d.ts",
+    "recognizers.js",
+    "models/"
+  ],
+  "scripts": {
+    "build": "rollup --config rollup.config.js",
+    "lint": "eslint .",
+    "test-api": "node --test -- test/*.test.js",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.js",
+    "test": "npm run build && npm run lint && npm run test-coverage"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "4.2.0"
+  },
+  "peerDependencies": {
+    "@arcjet/analyze": "1.6.0",
+    "arcjet": "1.6.0"
+  },
+  "devDependencies": {
+    "@arcjet/analyze": "1.6.0",
+    "@arcjet/eslint-config": "1.6.0",
+    "@arcjet/rollup-config": "1.6.0",
+    "@rollup/wasm-node": "4.62.2",
+    "@types/node": "22.19.21",
+    "arcjet": "1.6.0",
+    "eslint": "9.39.4",
+    "typescript": "5.9.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  }
+}

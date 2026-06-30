@@ -1,0 +1,30 @@
+@arcjet/sensitive-info-rampart
+
+The source code of this package is licensed under the Apache License, Version
+2.0 (see LICENSE).
+
+------------------------------------------------------------------------------
+Third-party bundled model
+------------------------------------------------------------------------------
+
+This package bundles a third-party machine-learning model and its associated
+tokenizer and configuration files under `models/rampart/`:
+
+  config.json, tokenizer.json, tokenizer_config.json, special_tokens_map.json,
+  vocab.txt, and onnx/model_q4.onnx
+
+  Work:    Rampart — Client-side PII redaction for AI assistants
+           (on-device PII detection model)
+  Author:  National Design Studio
+  Source:  https://huggingface.co/nationaldesignstudio/rampart
+  Copyright 2026 National Design Studio
+
+  Licensed under the Creative Commons Attribution 4.0 International License
+  (CC BY 4.0). To view a copy of this license, visit
+  https://creativecommons.org/licenses/by/4.0/ or see the full legal text in
+  `models/rampart/LICENSE`.
+
+  These model files are redistributed unmodified from the source repository.
+
+This attribution must be retained when redistributing this package or the
+bundled model files, as required by CC BY 4.0.

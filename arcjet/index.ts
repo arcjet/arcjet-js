@@ -41,7 +41,10 @@ import * as analyze from "@arcjet/analyze";
 import type {
   AnalyzeRequest,
   DetectedSensitiveInfoEntity,
+  DetectSensitiveInfoFunction,
+  SensitiveInfoEntities,
   SensitiveInfoEntity,
+  SensitiveInfoResult,
   BotConfig,
   EmailValidationConfig,
 } from "@arcjet/analyze";
@@ -537,7 +540,8 @@ function validateDetails(
       ...knownFields.map(function (key) {
         return {
           key,
-          required: key !== "body" && key !== "email" && key !== "correlationId",
+          required:
+            key !== "body" && key !== "email" && key !== "correlationId",
           validate: key === "headers" ? validateHeaders : validateString,
         };
       }),
@@ -843,6 +847,33 @@ function validateSlidingWindowOptions(
 }
 
 /**
+ * Validate a sensitive info detection backend.
+ *
+ * @param path
+ *   Path to the value being validated.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When the value is not a backend.
+ */
+function validateSensitiveInfoBackend(
+  path: string,
+  value: unknown,
+): asserts value is SensitiveInfoBackend {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    typeof (value as { detect?: unknown }).detect !== "function"
+  ) {
+    throw new Error(
+      `invalid type for \`${path}\` - expected an object with a \`detect\` function`,
+    );
+  }
+}
+
+/**
  * Validate sensitive info options.
  *
  * @param value
@@ -863,6 +894,11 @@ function validateSensitiveInfoOptions(
       { key: "deny", required: false, validate: validateStringArray },
       { key: "contextWindowSize", required: false, validate: validateNumber },
       { key: "detect", required: false, validate: validateFunction },
+      {
+        key: "backend",
+        required: false,
+        validate: validateSensitiveInfoBackend,
+      },
     ],
   });
 }
@@ -1333,6 +1369,75 @@ export type EmailOptionsDeny = {
 export type EmailOptions = EmailOptionsAllow | EmailOptionsDeny;
 
 /**
+ * Minimal context passed to a {@linkcode SensitiveInfoBackend}.
+ */
+export interface SensitiveInfoBackendContext {
+  /**
+   * Logger.
+   */
+  log: ArcjetLogger;
+}
+
+/**
+ * Per-detection options passed to a {@linkcode SensitiveInfoBackend}.
+ *
+ * These come from the `sensitiveInfo` rule configuration. A backend reads the
+ * ones it understands and ignores the rest, so the interface stays stable as
+ * options are added.
+ */
+export interface SensitiveInfoBackendOptions {
+  /**
+   * Number of tokens to pass to `detect`.
+   */
+  contextWindowSize?: number | undefined;
+  /**
+   * Custom detection function (optional).
+   */
+  detect?: DetectSensitiveInfoFunction | undefined;
+}
+
+/**
+ * Experimental: pluggable detection backend for the `sensitiveInfo` rule.
+ *
+ * The default backend uses the bundled `@arcjet/analyze` WebAssembly engine,
+ * which detects email addresses, phone numbers, IP addresses, and credit card
+ * numbers entirely locally. Provide a custom backend — for example
+ * `@arcjet/sensitive-info-rampart`, which runs an on-device NER model — to
+ * detect additional sensitive information without changing the rest of the
+ * rule.
+ *
+ * A backend receives the text to scan together with the configured allow/deny
+ * `entities` and must return which detected spans are `allowed` and which are
+ * `denied`. This matches the shape of `detectSensitiveInfo` in
+ * `@arcjet/analyze`, so the default backend is a thin wrapper over it.
+ *
+ * Backends may be asynchronous (such as model inference). They run in the
+ * request path, so their latency directly affects request handling.
+ */
+export interface SensitiveInfoBackend {
+  /**
+   * Detect sensitive information in `value`.
+   *
+   * @param context
+   *   Backend context (currently just a logger).
+   * @param value
+   *   Text to scan.
+   * @param entities
+   *   Configured allow/deny entities.
+   * @param options
+   *   Per-detection options from the rule configuration (optional).
+   * @returns
+   *   Promise for the allowed and denied spans.
+   */
+  detect(
+    context: SensitiveInfoBackendContext,
+    value: string,
+    entities: SensitiveInfoEntities,
+    options?: SensitiveInfoBackendOptions,
+  ): Promise<SensitiveInfoResult>;
+}
+
+/**
  * Configuration for the sensitive info detection rule to allow certain
  * sensitive info types and deny others.
  *
@@ -1359,12 +1464,32 @@ export type SensitiveInfoOptionsAllow<
    * You must provide either `allow` or `deny`, not both.
    *
    * You can use the following sensitive info types that can be detected
-   * natively:
+   * natively by the default backend:
    *
    * - `"CREDIT_CARD_NUMBER"`
    * - `"EMAIL"`
    * - `"IP_ADDRESS"`
    * - `"PHONE_NUMBER"`
+   *
+   * The following additional types are detected only when a `backend` that
+   * supports them is configured, such as `@arcjet/sensitive-info-rampart`:
+   *
+   * - `"GIVEN_NAME"`
+   * - `"SURNAME"`
+   * - `"SSN"`
+   * - `"URL"`
+   * - `"TAX_ID"`
+   * - `"BANK_ACCOUNT"`
+   * - `"ROUTING_NUMBER"`
+   * - `"GOVERNMENT_ID"`
+   * - `"PASSPORT"`
+   * - `"DRIVERS_LICENSE"`
+   * - `"BUILDING_NUMBER"`
+   * - `"STREET_NAME"`
+   * - `"SECONDARY_ADDRESS"`
+   * - `"CITY"`
+   * - `"STATE"`
+   * - `"ZIP_CODE"`
    *
    * You can also use labels of custom info detected by `detect`.
    */
@@ -1402,6 +1527,15 @@ export type SensitiveInfoOptionsAllow<
    *   List of entities (or undefined).
    */
   detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
+  /**
+   * Experimental: detection backend to use (default: bundled WebAssembly
+   * engine).
+   *
+   * Provide an alternative backend such as `@arcjet/sensitive-info-rampart` to
+   * detect sensitive information with an on-device model instead of the
+   * built-in pattern matching. See {@linkcode SensitiveInfoBackend}.
+   */
+  backend?: SensitiveInfoBackend;
 };
 
 /**
@@ -1437,12 +1571,32 @@ export type SensitiveInfoOptionsDeny<
    * You must provide either `allow` or `deny`, not both.
    *
    * You can use the following sensitive info types that can be detected
-   * natively:
+   * natively by the default backend:
    *
    * - `"CREDIT_CARD_NUMBER"`
    * - `"EMAIL"`
    * - `"IP_ADDRESS"`
    * - `"PHONE_NUMBER"`
+   *
+   * The following additional types are detected only when a `backend` that
+   * supports them is configured, such as `@arcjet/sensitive-info-rampart`:
+   *
+   * - `"GIVEN_NAME"`
+   * - `"SURNAME"`
+   * - `"SSN"`
+   * - `"URL"`
+   * - `"TAX_ID"`
+   * - `"BANK_ACCOUNT"`
+   * - `"ROUTING_NUMBER"`
+   * - `"GOVERNMENT_ID"`
+   * - `"PASSPORT"`
+   * - `"DRIVERS_LICENSE"`
+   * - `"BUILDING_NUMBER"`
+   * - `"STREET_NAME"`
+   * - `"SECONDARY_ADDRESS"`
+   * - `"CITY"`
+   * - `"STATE"`
+   * - `"ZIP_CODE"`
    *
    * You can also use labels of custom info detected by `detect`.
    */
@@ -1475,6 +1629,15 @@ export type SensitiveInfoOptionsDeny<
    *   List of entities (or undefined).
    */
   detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
+  /**
+   * Experimental: detection backend to use (default: bundled WebAssembly
+   * engine).
+   *
+   * Provide an alternative backend such as `@arcjet/sensitive-info-rampart` to
+   * detect sensitive information with an on-device model instead of the
+   * built-in pattern matching. See {@linkcode SensitiveInfoBackend}.
+   */
+  backend?: SensitiveInfoBackend;
 };
 
 /**
@@ -2250,6 +2413,26 @@ function convertAnalyzeDetectedSensitiveInfoEntity(
 }
 
 /**
+ * Default sensitive-info backend backed by the `@arcjet/analyze` WebAssembly
+ * engine.
+ *
+ * This preserves the existing behavior when no `backend` is provided.
+ */
+const wasmSensitiveInfoBackend: SensitiveInfoBackend = {
+  detect(context, value, entities, options) {
+    return analyze.detectSensitiveInfo(
+      // `detectSensitiveInfo` only reads `log`, but its context type also
+      // requires `characteristics`, so we supply an empty list.
+      { log: context.log, characteristics: [] },
+      value,
+      entities,
+      options?.contextWindowSize ?? 1,
+      options?.detect,
+    );
+  },
+};
+
+/**
  * Arcjet sensitive information detection rule.
  *
  * Applying this rule protects against clients sending you sensitive information
@@ -2455,13 +2638,11 @@ export function sensitiveInfo<
           val: entitiesVal,
         };
 
-        const result = await analyze.detectSensitiveInfo(
-          context,
-          value,
-          entities,
-          options.contextWindowSize || 1,
-          convertedDetect,
-        );
+        const backend = options.backend || wasmSensitiveInfoBackend;
+        const result = await backend.detect(context, value, entities, {
+          contextWindowSize: options.contextWindowSize || 1,
+          detect: convertedDetect,
+        });
 
         const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
