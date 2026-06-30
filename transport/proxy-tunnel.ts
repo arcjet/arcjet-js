@@ -161,13 +161,26 @@ export function createTunnelingConnection(
       if (originIsHttps) {
         proxySocket.on("data", (data: Buffer) => bridge.push(data));
       } else {
+        // HTTP/2's default `SETTINGS_MAX_FRAME_SIZE` is 16 KiB and we never raise
+        // it, so any frame larger than this generous cap is already a protocol
+        // violation. Bounding the buffer keeps a malicious or broken peer from
+        // using the 24-bit length field (up to ~16 MiB) to make us buffer an
+        // oversized frame before forwarding anything.
+        const maxFramePayload = 2 ** 20; // 1 MiB
         let inbound = Buffer.alloc(0);
         proxySocket.on("data", (data: Buffer) => {
           inbound = Buffer.concat([inbound, data]);
           // An HTTP/2 frame is a 9-byte header (24-bit length, then type, flags,
           // and stream id) followed by `length` bytes of payload.
           while (inbound.length >= 9) {
-            const frameLength = 9 + inbound.readUIntBE(0, 3);
+            const payloadLength = inbound.readUIntBE(0, 3);
+            if (payloadLength > maxFramePayload) {
+              bridge.destroy(
+                new Error("Proxy tunnel received an oversized HTTP/2 frame"),
+              );
+              return;
+            }
+            const frameLength = 9 + payloadLength;
             if (inbound.length < frameLength) {
               break; // Wait for the rest of this frame.
             }
@@ -214,6 +227,16 @@ export function createTunnelingConnection(
       return bridge;
     }
 
+    // `URL.hostname` wraps an IPv6 literal in brackets (e.g. `[::1]`), which
+    // `net.isIP` does not recognise. Strip them so an IPv6 origin is detected as
+    // an IP (and so the certificate is matched against the bare address — an IP
+    // SAN has no brackets).
+    const bareHostname =
+      authority.hostname.startsWith("[") && authority.hostname.endsWith("]")
+        ? authority.hostname.slice(1, -1)
+        : authority.hostname;
+    const originIsIpLiteral = net.isIP(bareHostname) !== 0;
+
     try {
       return tls.connect({
         ...options,
@@ -221,15 +244,13 @@ export function createTunnelingConnection(
         // Validate the certificate against the origin host. For a hostname this
         // is also sent as SNI below; for an IP it is the identity to match
         // (since SNI is omitted), so the cert's IP SAN is still checked.
-        host: authority.hostname,
-        // RFC 6066 §3 forbids IP literals in the TLS SNI `servername`: it must
-        // be a DNS hostname. When the origin is addressed by IP we therefore
-        // omit SNI entirely (the certificate is still validated against the IP
-        // via `host` above). Node historically tolerated an IP here with a
-        // deprecation warning, but Node >= 26 enforces the RFC and throws
-        // `ERR_INVALID_ARG_VALUE`.
-        servername:
-          net.isIP(authority.hostname) === 0 ? authority.hostname : undefined,
+        host: bareHostname,
+        // RFC 6066 §3 forbids an IP literal in the TLS SNI `servername` — it must
+        // be a DNS hostname — so we omit SNI for an IP origin (IPv4 or IPv6) and
+        // rely on `host` above for certificate validation. Node <= 24 tolerated
+        // an IP here (deprecation warning); Node >= 26 enforces the RFC and
+        // throws `ERR_INVALID_ARG_VALUE`.
+        servername: originIsIpLiteral ? undefined : bareHostname,
         ALPNProtocols: ["h2"],
       });
     } catch (error) {
