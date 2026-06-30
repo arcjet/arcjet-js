@@ -41,7 +41,7 @@
     "generate": "npm run build && node scripts/verify-ranges.ts --write",
     "lint": "eslint .",
     "test-api": "node --test -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=100 --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=100 -- test/*.test.js",
+    "test-coverage": "node --experimental-test-coverage --test --test-force-exit --test-coverage-branches=100 --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=100 -- test/*.test.js",
     "test": "npm run build && npm run lint && npm run test-coverage",
     "verify-ranges": "npm run build && node scripts/verify-ranges.ts"
   },

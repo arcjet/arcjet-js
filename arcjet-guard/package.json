@@ -75,7 +75,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test": "npm run build && npm run lint && npm run test-unit",
-    "test-unit": "node --test --experimental-test-coverage --test-coverage-include=src/** --test-coverage-exclude=src/**/*.test.ts src/**/*.test.ts",
+    "test-unit": "node --test --test-force-exit --experimental-test-coverage --test-coverage-include=src/** --test-coverage-exclude=src/**/*.test.ts src/**/*.test.ts",
     "test-runtime-node": "npm run build && node --test test/runtime/node.test.ts",
     "test-runtime-fetch": "npm run build && node --test test/runtime/fetch.test.ts",
     "test-runtime-deno": "npm run build && deno test --no-check --allow-all test/runtime/deno.test.ts",
