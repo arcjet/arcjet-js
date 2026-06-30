@@ -52,18 +52,10 @@ assistant.
 ### Step 2: Install a skill
 
 Skills give your agent the documentation to detect your framework, install
-the SDK, and wire up protection rules. Install one per use case:
-
-**Request protection** (HTTP routes):
+the SDK, and wire up request or guard protection rules.
 
 ```sh
-npx skills add arcjet/skills --skill add-request-protection
-```
-
-**Guard protection** (tool calls, MCP servers, queues):
-
-```sh
-npx skills add arcjet/skills --skill add-guard-protection
+npx skills add arcjet/skills
 ```
 
 > You can also use the [Arcjet plugin for Claude Code and

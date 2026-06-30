@@ -35,9 +35,9 @@ like `@arcjet/next` or `@arcjet/node` instead.
    ```sh
    npx @arcjet/cli auth login
    ```
-2. Install the guard protection skill to give your coding agent the docs it needs:
+2. Install the Arcjet skill to give your coding agent the docs it needs:
    ```sh
-   npx skills add arcjet/skills --skill add-guard-protection
+   npx skills add arcjet/skills
    ```
 3. Tell your agent what to protect — it handles the rest.
 
