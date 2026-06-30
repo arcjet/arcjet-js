@@ -48,8 +48,8 @@
   "scripts": {
     "build": "rollup --config rollup.config.js",
     "lint": "eslint .",
-    "test-api": "node --test --test-force-exit -- test/*.test.js",
-    "test-coverage": "node --experimental-test-coverage --test --test-force-exit --test-coverage-branches=95 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=95 -- test/*.test.js",
+    "test-api": "node --test -- test/*.test.js",
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=95 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=95 -- test/*.test.js",
     "test": "npm run build && npm run lint && npm run test-coverage"
   },
   "dependencies": {
