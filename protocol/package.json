@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/protocol",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.0",
   "description": "The TypeScript & JavaScript interface into the Arcjet protocol",
   "keywords": [
     "arcjet",
@@ -82,7 +82,7 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/cache": "1.6.1",
+    "@arcjet/cache": "1.7.0-rc.0",
     "@bufbuild/protobuf": "2.12.0",
     "@connectrpc/connect": "2.1.2"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@nosecone/sveltekit",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.0",
   "description": "Protect your SvelteKit application with secure headers",
   "keywords": [
     "arcjet",
@@ -60,7 +60,7 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "nosecone": "1.6.1"
+    "nosecone": "1.7.0-rc.0"
   },
   "devDependencies": {
     "@sveltejs/kit": "2.66.0",

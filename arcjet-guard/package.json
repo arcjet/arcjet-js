@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/guard",
-  "version": "1.6.1",
-  "description": "Arcjet Guards SDK — AI guardrails for rate limiting, prompt injection detection, and sensitive info detection",
+  "version": "1.7.0-rc.0",
+  "description": "Arcjet Guards SDK \u2014 AI guardrails for rate limiting, prompt injection detection, and sensitive info detection",
   "homepage": "https://arcjet.com",
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
@@ -83,7 +83,7 @@
     "test-runtime-cloudflare": "npm run build && node --test test/runtime/cloudflare/cloudflare.test.ts"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.6.1",
+    "@arcjet/analyze": "1.7.0-rc.0",
     "@bufbuild/protobuf": "^2.0.0",
     "@connectrpc/connect": "^2.0.0",
     "@connectrpc/connect-node": "^2.0.0",

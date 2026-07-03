@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/redact",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.0",
   "description": "Arcjet sensitive information redaction library",
   "keywords": [
     "arcjet",
@@ -49,7 +49,7 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/redact-wasm": "1.6.1"
+    "@arcjet/redact-wasm": "1.7.0-rc.0"
   },
   "devDependencies": {
     "@types/node": "22.19.21",
