@@ -115,10 +115,6 @@
       "component": "@arcjet/env",
       "skip-github-release": true
     },
-    "eslint-config": {
-      "component": "@arcjet/eslint-config",
-      "skip-github-release": true
-    },
     "headers": {
       "component": "@arcjet/headers",
       "skip-github-release": true
@@ -145,10 +141,6 @@
     },
     "redact": {
       "component": "@arcjet/redact",
-      "skip-github-release": true
-    },
-    "rollup-config": {
-      "component": "@arcjet/rollup-config",
       "skip-github-release": true
     },
     "runtime": {
@@ -200,7 +192,6 @@
         "@arcjet/deno",
         "@arcjet/duration",
         "@arcjet/env",
-        "@arcjet/eslint-config",
         "@arcjet/fastify",
         "@arcjet/guard",
         "@arcjet/headers",
@@ -216,7 +207,6 @@
         "@arcjet/redact-wasm",
         "@arcjet/redact",
         "@arcjet/remix",
-        "@arcjet/rollup-config",
         "@arcjet/runtime",
         "@arcjet/sprintf",
         "@arcjet/stable-hash",
