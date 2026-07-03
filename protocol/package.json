@@ -59,6 +59,14 @@
       "types": "./dist/well-known-bots.d.ts",
       "default": "./dist/well-known-bots.js"
     },
+    "./typeid": {
+      "types": "./dist/typeid.d.ts",
+      "default": "./dist/typeid.js"
+    },
+    "./typeid.js": {
+      "types": "./dist/typeid.d.ts",
+      "default": "./dist/typeid.js"
+    },
     "./proto/*": "./dist/proto/*",
     "./package.json": "./package.json"
   },
