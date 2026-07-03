@@ -7,7 +7,7 @@ export { withVercelToolbar, type Options, type NoseconeOptions } from "nosecone"
 /**
  * Nosecone Next.js defaults.
  */
-export const defaults = {
+export const defaults: Options = {
   ...baseDefaults,
   contentSecurityPolicy: {
     directives: {
@@ -16,7 +16,7 @@ export const defaults = {
       styleSrc: [...baseDefaults.contentSecurityPolicy.directives.styleSrc, ...nextStyleSrc()],
     },
   },
-} as const;
+};
 
 export { nosecone };
 

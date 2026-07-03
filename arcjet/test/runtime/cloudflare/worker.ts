@@ -13,7 +13,7 @@
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 
-import arcjet, { tokenBucket } from "../../../index.js";
+import arcjet, { tokenBucket } from "../../../dist/index.js";
 
 interface Env {
   ARCJET_BASE_URL: string;

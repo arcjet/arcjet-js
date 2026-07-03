@@ -8,6 +8,7 @@
   "rules": {
     "eslint/no-warning-comments": "off",
     "eslint/no-shadow": "off",
+    "eslint/no-underscore-dangle": "off",
     "eslint/no-unused-vars": "off",
     "unicorn/no-array-sort": "off"
   },

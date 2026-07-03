@@ -1350,6 +1350,7 @@ test("`arcjet`", async function (t) {
         assert.equal(decision.conclusion, "ALLOW");
         assert.equal(reportCalled, false);
 
+        // oxlint-disable-next-line unicorn/consistent-function-scoping
         function waitUntil() {
           throw new Error("unreachable");
         }
@@ -1507,6 +1508,7 @@ test("`arcjet`", async function (t) {
         assert.equal(decision.conclusion, "DENY");
         assert.equal(reportWaitUntil, waitUntil);
 
+        // oxlint-disable-next-line unicorn/consistent-function-scoping
         function waitUntil() {
           throw new Error("unreachable");
         }

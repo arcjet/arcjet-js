@@ -71,6 +71,7 @@ function encodeCrockford(bytes: Uint8Array): string {
   for (const byte of bytes) {
     n = (n << 8n) | BigInt(byte);
   }
+  // oxlint-disable-next-line unicorn/no-new-array — 26 is the length; every slot is filled below.
   const out = new Array<string>(26);
   for (let i = 25; i >= 0; i--) {
     out[i] = CROCKFORD_ALPHABET[Number(n & 0x1fn)];
