@@ -20,7 +20,9 @@ describe("createTransport (fetch)", () => {
 
   test("does not throw for valid URL", () => {
     assert.doesNotThrow(() => {
-      createTransport("https://example.com");
+      // Use the Arcjet API host, matching the other transport tests, so this
+      // stays safe if the fetch transport ever starts connecting eagerly.
+      createTransport("https://decide.arcjet.com");
     });
   });
 });
