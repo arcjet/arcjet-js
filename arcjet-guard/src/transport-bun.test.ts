@@ -20,7 +20,10 @@ describe("createTransport (bun)", () => {
 
   test("does not throw for valid URL", () => {
     assert.doesNotThrow(() => {
-      createTransport("https://example.com");
+      // Use the Arcjet API host (allowed by CI egress policies) rather than a
+      // placeholder: without a proxy this optimistically pre-connects over
+      // HTTP/2, so the URL becomes a real outbound connection.
+      createTransport("https://decide.arcjet.com");
     });
   });
 
