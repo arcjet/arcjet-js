@@ -4,10 +4,32 @@ import type { Options } from "nosecone";
 
 export { withVercelToolbar, type Options, type NoseconeOptions } from "nosecone";
 
+type BaseDirectives = (typeof baseDefaults)["contentSecurityPolicy"]["directives"];
+
 /**
  * Nosecone Next.js defaults.
+ *
+ * The type spells out the concrete directive shape rather than the wider
+ * `Options`: consumers extend the defaults by spreading
+ * `defaults.contentSecurityPolicy.directives`, so every directive must stay
+ * a concrete readonly array, as it was before `isolatedDeclarations` required
+ * an explicit annotation here. Everything is derived from `typeof
+ * baseDefaults` so the type cannot drift from the `nosecone` package.
  */
-export const defaults: Options = {
+export const defaults: Omit<typeof baseDefaults, "contentSecurityPolicy"> & {
+  readonly contentSecurityPolicy: {
+    readonly directives: Omit<BaseDirectives, "scriptSrc" | "styleSrc"> & {
+      readonly scriptSrc: readonly (
+        | BaseDirectives["scriptSrc"][number]
+        | ReturnType<typeof nextScriptSrc>[number]
+      )[];
+      readonly styleSrc: readonly (
+        | BaseDirectives["styleSrc"][number]
+        | ReturnType<typeof nextStyleSrc>[number]
+      )[];
+    };
+  };
+} = {
   ...baseDefaults,
   contentSecurityPolicy: {
     directives: {
@@ -28,11 +50,16 @@ export { nosecone };
  */
 export default nosecone;
 
-function createNonce() {
-  return `'nonce-${btoa(crypto.randomUUID())}'` as const;
+// The helpers below carry explicit return types because they are part of the
+// public type of `defaults` (via `typeof`/`ReturnType`), which
+// `isolatedDeclarations` requires to be declarable without inference.
+function createNonce(): `'nonce-${string}'` {
+  return `'nonce-${btoa(crypto.randomUUID())}'`;
 }
 
-function nextScriptSrc() {
+function nextScriptSrc():
+  | readonly [typeof createNonce, "'unsafe-eval'"]
+  | readonly [typeof createNonce] {
   return process.env.NODE_ENV === "development"
     ? // Next.js hot reloading relies on `eval` so we enable it in development
       ([createNonce, "'unsafe-eval'"] as const)

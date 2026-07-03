@@ -53,6 +53,11 @@
       "dependsOn": ["^build"],
       "cache": false,
       "outputLogs": "full"
+    },
+    "@nosecone/next#typecheck": {
+      "dependsOn": ["@nosecone/next#build", "^build"],
+      "cache": false,
+      "outputLogs": "full"
     }
   }
 }
