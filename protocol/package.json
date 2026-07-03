@@ -59,6 +59,7 @@
       "types": "./dist/well-known-bots.d.ts",
       "default": "./dist/well-known-bots.js"
     },
+    "./proto/*": "./dist/proto/*",
     "./package.json": "./package.json"
   },
   "publishConfig": {
