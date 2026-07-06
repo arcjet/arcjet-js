@@ -23,7 +23,7 @@ import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 
 /** SDK version. Updated by the release process. */
-const VERSION = "1.7.0"; // x-release-please-version
+const VERSION = "1.8.0-rc.0"; // x-release-please-version
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";

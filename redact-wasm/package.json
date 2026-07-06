@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/redact-wasm",
-  "version": "1.7.0",
+  "version": "1.8.0-rc.0",
   "description": "Arcjet sensitive information redaction detection engine",
   "keywords": [
     "arcjet",

@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/stable-hash",
-  "version": "1.7.0",
+  "version": "1.8.0-rc.0",
   "description": "Arcjet stable hashing utility",
   "keywords": [
     "arcjet",
