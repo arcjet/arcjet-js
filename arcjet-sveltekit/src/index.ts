@@ -13,8 +13,6 @@ import type {
   CharacteristicProps,
 } from "arcjet";
 
-import { VERSION } from "./version.js";
-
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
 import { env } from "$env/dynamic/private";
@@ -23,6 +21,9 @@ import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
+
+/** SDK version. Updated by the release process. */
+const VERSION = "1.6.1"; // x-release-please-version
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";

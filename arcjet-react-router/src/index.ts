@@ -19,7 +19,8 @@ import arcjetCore, {
   type Product,
 } from "arcjet";
 
-import { VERSION } from "./version.js";
+/** SDK version. Updated by the release process. */
+const VERSION = "1.6.1"; // x-release-please-version
 
 export * from "arcjet";
 export { cloudflare } from "@arcjet/ip";

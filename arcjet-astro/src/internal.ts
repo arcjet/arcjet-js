@@ -28,7 +28,8 @@ import {
   VERCEL,
 } from "astro:env/server";
 
-import { VERSION } from "./version.js";
+/** SDK version. Updated by the release process. */
+const VERSION = "1.6.1"; // x-release-please-version
 
 let warnedForAutomaticBodyRead = false;
 

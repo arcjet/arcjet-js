@@ -19,8 +19,6 @@ import { headers, cookies } from "next/headers.js";
 import { NextResponse } from "next/server.js";
 import type { NextFetchEvent, NextMiddleware, NextRequest } from "next/server.js";
 
-import { VERSION } from "./version.js";
-
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
@@ -28,6 +26,9 @@ import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
+
+/** SDK version. Updated by the release process. */
+const VERSION = "1.6.1"; // x-release-please-version
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
