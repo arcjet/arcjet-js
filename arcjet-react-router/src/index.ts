@@ -19,6 +19,8 @@ import arcjetCore, {
   type Product,
 } from "arcjet";
 
+import { VERSION } from "./version.js";
+
 export * from "arcjet";
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
@@ -297,7 +299,7 @@ export function createRemoteClient(options?: RemoteClientOptions | null | undefi
   return createClient({
     baseUrl,
     sdkStack: "REACT_ROUTER",
-    sdkVersion: "__ARCJET_SDK_VERSION__",
+    sdkVersion: VERSION,
     timeout: settings.timeout ?? (isDevelopment(process.env) ? 1000 : 500),
     transport: createTransport(baseUrl),
   });

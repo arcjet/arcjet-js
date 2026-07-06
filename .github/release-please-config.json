@@ -38,19 +38,47 @@
     },
     "arcjet-astro": {
       "component": "@arcjet/astro",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-bun": {
       "component": "@arcjet/bun",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-deno": {
       "component": "@arcjet/deno",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-fastify": {
       "component": "@arcjet/fastify",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-guard": {
       "component": "@arcjet/guard",
@@ -65,31 +93,80 @@
     },
     "arcjet-nest": {
       "component": "@arcjet/nest",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-next": {
       "component": "@arcjet/next",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-node": {
       "component": "@arcjet/node",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-nuxt": {
       "component": "@arcjet/nuxt",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-react-router": {
       "component": "@arcjet/react-router",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-remix": {
       "component": "@arcjet/remix",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-sveltekit": {
       "component": "@arcjet/sveltekit",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet": {
       "component": "arcjet",

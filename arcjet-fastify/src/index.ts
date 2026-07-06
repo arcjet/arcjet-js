@@ -21,6 +21,8 @@ import type {
 } from "arcjet";
 import arcjetCore from "arcjet";
 
+import { VERSION } from "./version.js";
+
 // TODO(@wooorm-arcjet): using `export all` will leak things in the public API,
 // resulting in unneeded breaking changes,
 // we must be explicit about what is exported.
@@ -87,7 +89,7 @@ export function createRemoteClient(
   return createClient({
     baseUrl,
     sdkStack: "FASTIFY",
-    sdkVersion: "__ARCJET_SDK_VERSION__",
+    sdkVersion: VERSION,
     timeout: settings.timeout ?? (isDevelopment(process.env) ? 1000 : 500),
     transport: createTransport(baseUrl),
   });
