@@ -21,7 +21,8 @@ import type {
 } from "arcjet";
 import arcjetCore from "arcjet";
 
-import { VERSION } from "./version.js";
+/** SDK version. Updated by the release process. */
+const VERSION = "1.6.1"; // x-release-please-version
 
 // TODO(@wooorm-arcjet): using `export all` will leak things in the public API,
 // resulting in unneeded breaking changes,
