@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.7.0](https://github.com/arcjet/arcjet-js/compare/v1.6.1...@arcjet/guard-v1.7.0) (2026-07-06)
+
+
+### 🚀 New Features
+
+* publish 1.7.0 overtop of erroneously published 1.7.0-rc.1 ([#6125](https://github.com/arcjet/arcjet-js/issues/6125)) ([2d239c5](https://github.com/arcjet/arcjet-js/commit/2d239c576be4879a0b517d4e02b857756b3f4175))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.6.1 to 1.7.0
+
 ## [1.6.1](https://github.com/arcjet/arcjet-js/compare/v1.6.0...@arcjet/guard-v1.6.1) (2026-06-30)
 
 

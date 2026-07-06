@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/arcjet/arcjet-js/compare/v1.6.1...@arcjet/eslint-config-v1.7.0) (2026-07-06)
+
+
+### 🚀 New Features
+
+* publish 1.7.0 overtop of erroneously published 1.7.0-rc.1 ([#6125](https://github.com/arcjet/arcjet-js/issues/6125)) ([2d239c5](https://github.com/arcjet/arcjet-js/commit/2d239c576be4879a0b517d4e02b857756b3f4175))
+
 ## [1.6.1](https://github.com/arcjet/arcjet-js/compare/v1.6.0...@arcjet/eslint-config-v1.6.1) (2026-06-30)
 
 
