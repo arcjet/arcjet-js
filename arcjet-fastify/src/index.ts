@@ -22,7 +22,7 @@ import type {
 import arcjetCore from "arcjet";
 
 /** SDK version. Updated by the release process. */
-const VERSION = "1.6.1"; // x-release-please-version
+const VERSION = "1.7.0"; // x-release-please-version
 
 // TODO(@wooorm-arcjet): using `export all` will leak things in the public API,
 // resulting in unneeded breaking changes,
