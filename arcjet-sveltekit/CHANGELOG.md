@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.7.0](https://github.com/arcjet/arcjet-js/compare/v1.6.1...@arcjet/sveltekit-v1.7.0) (2026-07-06)
+
+
+### 🚀 New Features
+
+* publish 1.7.0 overtop of erroneously published 1.7.0-rc.1 ([#6125](https://github.com/arcjet/arcjet-js/issues/6125)) ([2d239c5](https://github.com/arcjet/arcjet-js/commit/2d239c576be4879a0b517d4e02b857756b3f4175))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.6.1 to 1.7.0
+    * @arcjet/env bumped from 1.6.1 to 1.7.0
+    * @arcjet/headers bumped from 1.6.1 to 1.7.0
+    * @arcjet/ip bumped from 1.6.1 to 1.7.0
+    * @arcjet/logger bumped from 1.6.1 to 1.7.0
+    * @arcjet/protocol bumped from 1.6.1 to 1.7.0
+    * @arcjet/transport bumped from 1.6.1 to 1.7.0
+    * arcjet bumped from 1.6.1 to 1.7.0
+  * devDependencies
+    * @arcjet/eslint-config bumped from 1.6.1 to 1.7.0
+    * @arcjet/rollup-config bumped from 1.6.1 to 1.7.0
+
 ## [1.6.1](https://github.com/arcjet/arcjet-js/compare/v1.6.0...@arcjet/sveltekit-v1.6.1) (2026-06-30)
 
 
