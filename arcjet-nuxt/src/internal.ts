@@ -19,6 +19,8 @@ import arcjetCore, {
   type CharacteristicProps,
 } from "arcjet";
 
+import { VERSION } from "./version.js";
+
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
 
@@ -370,7 +372,7 @@ export function createRemoteClient(options?: RemoteClientOptions | null | undefi
   return createClient({
     baseUrl,
     sdkStack: "NUXT",
-    sdkVersion: "__ARCJET_SDK_VERSION__",
+    sdkVersion: VERSION,
     timeout: settings.timeout ?? (isDevelopment(process.env) ? 1000 : 500),
     transport: createTransport(baseUrl),
   });

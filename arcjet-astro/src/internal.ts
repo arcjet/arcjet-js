@@ -28,6 +28,8 @@ import {
   VERCEL,
 } from "astro:env/server";
 
+import { VERSION } from "./version.js";
+
 let warnedForAutomaticBodyRead = false;
 
 // We use a middleware to store the IP address on a `Request` with this symbol.
@@ -136,7 +138,7 @@ export function createRemoteClient(options?: RemoteClientOptions) {
   const transport = createTransport(url);
 
   const sdkStack = "ASTRO";
-  const sdkVersion = "__ARCJET_SDK_VERSION__";
+  const sdkVersion = VERSION;
 
   return createClient({
     transport,

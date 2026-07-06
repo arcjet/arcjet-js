@@ -2,6 +2,8 @@ import fs from "node:fs/promises";
 
 import { addServerTemplate, addTypeTemplate, defineNuxtModule } from "@nuxt/kit";
 
+import { VERSION } from "./version.js";
+
 /**
  * Configuration for `@arcjet/nuxt` as used in `nuxt.config.ts`.
  */
@@ -18,7 +20,7 @@ export default defineNuxtModule({
     compatibility: { nuxt: ">=4.0.0" },
     configKey: "arcjet",
     name: "@arcjet/nuxt",
-    version: "__ARCJET_SDK_VERSION__",
+    version: VERSION,
   },
   schema: { key: "" },
   setup(options: Options, nuxt) {

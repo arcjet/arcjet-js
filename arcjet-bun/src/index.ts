@@ -13,6 +13,8 @@ import type {
   CharacteristicProps,
 } from "arcjet";
 
+import { VERSION } from "./version.js";
+
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
 import { readBodyWeb } from "@arcjet/body";
@@ -114,7 +116,7 @@ export function createRemoteClient(options?: RemoteClientOptions): ReturnType<ty
   const transport = createTransport(url);
 
   const sdkStack = "BUN";
-  const sdkVersion = "__ARCJET_SDK_VERSION__";
+  const sdkVersion = VERSION;
 
   return createClient({
     transport,

@@ -1,8 +1,8 @@
+import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 // NestJS requires this. Usually it is imported via their runtime but we
 // import it to be sure.
 // oxlint-disable-next-line import/no-unassigned-import
 import "reflect-metadata";
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -15,6 +15,8 @@ import type {
   Arcjet,
   CharacteristicProps,
 } from "arcjet";
+
+import { VERSION } from "./version.js";
 
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
@@ -127,7 +129,7 @@ export function createRemoteClient(options?: RemoteClientOptions): ReturnType<ty
   const transport = createTransport(url);
 
   const sdkStack = "NESTJS";
-  const sdkVersion = "__ARCJET_SDK_VERSION__";
+  const sdkVersion = VERSION;
 
   return createClient({
     transport,
