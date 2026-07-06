@@ -56,7 +56,8 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsgo --noEmit",
-    "test": "npm run build"
+    "test-api": "node --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-api"
   },
   "dependencies": {
     "@arcjet/body": "1.7.0",
