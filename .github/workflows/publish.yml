@@ -28,6 +28,18 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
+      - name: Assert stable versions when publishing to the latest dist-tag
+        if: github.event.inputs.tag == 'latest'
+        run: |
+          # Publishing to `latest` requires stable semver versions (x.y.z);
+          # anything else (1.7.0-rc.1, 2.0.0-beta.0, ...) must go to a
+          # pre-release channel such as `rc`.
+          invalid="$(npm pkg get version --workspaces | jq -r 'to_entries[] | select(.value | test("^[0-9]+\\.[0-9]+\\.[0-9]+$") | not) | "\(.key)@\(.value)"')"
+          if [ -n "$invalid" ]; then
+            echo "$invalid"
+            echo "::error::These versions do not look like stable releases; re-run with a pre-release dist-tag (e.g. 'rc') instead of 'latest'."
+            exit 1
+          fi
       - name: Install dependencies
         run: npm ci
       - name: Run tests
