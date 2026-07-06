@@ -45,40 +45,27 @@ jobs:
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
-      - name: Summarize the publish request
+      - name: Assert valid workflow inputs
         env:
           DIST_TAG: ${{ inputs['dist-tag'] }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
-          # The jq and node programs are single-quoted on purpose.
-          # shellcheck disable=SC2016
-          versions="$(npm pkg get version --workspaces | jq -r 'to_entries[] | "\(.key)@\(.value)"')"
-          guard="@arcjet/guard@$(node --print 'require("./arcjet-guard/package.json").version')"
-          {
-            echo "## Publish request"
-            echo "- npm dist-tag: \`$DIST_TAG\`"
-            echo "- ref: \`$GITHUB_REF_NAME\` (\`$GITHUB_SHA\`)"
-            echo "- dry run: \`$DRY_RUN\`"
-            echo
-            echo "<details><summary>Versions</summary>"
-            echo
-            echo '```'
-            echo "$versions"
-            echo "$guard"
-            echo '```'
-            echo "</details>"
-          } >> "$GITHUB_STEP_SUMMARY"
-      - name: Assert a known dist-tag was provided
-        env:
-          DIST_TAG: ${{ inputs['dist-tag'] }}
-        run: |
           # The web form enforces the choice list, but API dispatches do not:
           # a missing input arrives as an empty string, and an empty
           # npm_config_tag would fall back to npm's default tag - latest.
+          # Validating both inputs here also means the later steps (including
+          # the approval-facing summary) only ever see known values.
           case "$DIST_TAG" in
             latest|rc) ;;
             *)
               echo "::error::Unknown npm dist-tag '$DIST_TAG'; expected 'latest' or 'rc'."
+              exit 1
+              ;;
+          esac
+          case "$DRY_RUN" in
+            true|false) ;;
+            *)
+              echo "::error::Invalid dry-run value; expected 'true' or 'false'."
               exit 1
               ;;
           esac
@@ -88,19 +75,16 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
         run: |
           # Publishing from a moving branch makes it ambiguous what was
-          # released; require an annotated release tag (vX.Y.Z, with an
-          # optional pre-release suffix such as v1.7.0-rc.1).
+          # released; require a release tag (vX.Y.Z, with an optional
+          # pre-release suffix such as v1.7.0-rc.1).
           if [ "$REF_TYPE" != "tag" ]; then
             echo "::error::Dispatch this workflow on a release tag (vX.Y.Z or vX.Y.Z-<pre-release>), not on branch '$REF_NAME'."
             exit 1
           fi
-          case "$REF_NAME" in
-            v[0-9]*.[0-9]*.[0-9]*) ;;
-            *)
-              echo "::error::Tag '$REF_NAME' does not look like a release tag (vX.Y.Z or vX.Y.Z-<pre-release>)."
-              exit 1
-              ;;
-          esac
+          if ! printf '%s' "$REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::Tag '$REF_NAME' does not look like a release tag (vX.Y.Z or vX.Y.Z-<pre-release>)."
+            exit 1
+          fi
       - name: Assert the package versions match the tag
         env:
           EXPECTED: ${{ github.ref_name }}
@@ -131,6 +115,29 @@ jobs:
             echo "::error::These versions do not look like stable releases; re-run with a pre-release dist-tag (e.g. 'rc') instead of 'latest'."
             exit 1
           fi
+      - name: Summarize the publish request
+        env:
+          DIST_TAG: ${{ inputs['dist-tag'] }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          # The jq and node programs are single-quoted on purpose.
+          # shellcheck disable=SC2016
+          versions="$(npm pkg get version --workspaces | jq -r 'to_entries[] | "\(.key)@\(.value)"')"
+          guard="@arcjet/guard@$(node --print 'require("./arcjet-guard/package.json").version')"
+          {
+            echo "## Publish request"
+            echo "- npm dist-tag: \`$DIST_TAG\`"
+            echo "- ref: \`$GITHUB_REF_NAME\` (\`$GITHUB_SHA\`)"
+            echo "- dry run: \`$DRY_RUN\`"
+            echo
+            echo "<details><summary>Versions</summary>"
+            echo
+            echo '```'
+            echo "$versions"
+            echo "$guard"
+            echo '```'
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
   publish:
     name: Publish
     needs: preflight
@@ -235,6 +242,9 @@ jobs:
           npm ci
           npm run build
           npm test
-          # dry-run is scoped to the publish command; the install, build, and
-          # test above must always run for real (npm ci honors dry-run).
+          # Unlike the "Publish packages" step, this step runs more than
+          # publish commands, and `npm ci` also honors dry-run: exporting
+          # npm_config_dry_run for the whole step would turn the install
+          # above into a no-op and break the build. The input is held in the
+          # inert DRY_RUN name and applied only to the publish command.
           npm_config_dry_run="$DRY_RUN" npm publish
