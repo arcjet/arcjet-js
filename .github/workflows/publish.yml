@@ -1,23 +1,145 @@
 name: Publish
+# Surface the inputs everywhere the run is shown, including the environment
+# approval notification, since the approval UI does not display
+# workflow_dispatch inputs.
+run-name: "Publish ${{ github.ref_name }} to npm dist-tag ${{ inputs['dist-tag'] }}${{ inputs.dry-run && ' (dry run)' || '' }}"
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        default: latest
-        description: The npm tag (distribution channel) to publish to.
+      dist-tag:
+        description: The npm dist-tag (distribution channel) to publish to.
         options:
           - latest
           - rc
         required: true
         type: choice
+      dry-run:
+        default: false
+        description: Run npm publish --dry-run instead of publishing.
+        type: boolean
 permissions:
+  # Reading the repository is the only default permission either job needs.
   contents: read
-  # Required for npm provenance attestations.
-  id-token: write
+# Never run two publishes at once (interleaved dependency levels could
+# publish a package before its dependencies); queue instead of cancelling
+# so an in-flight publish always completes.
+concurrency:
+  group: publish
+  cancel-in-progress: false
 jobs:
+  # Runs without approval so the npm-publish environment reviewer can open
+  # the run, read what is being published (and whether it is valid) in the
+  # step summary, then approve or reject the gated publish job.
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-latest
+    permissions:
+      # Reads the repository and the latest release for the summary.
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+      - name: Summarize the publish request
+        env:
+          DIST_TAG: ${{ inputs['dist-tag'] }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          # The jq and node programs are single-quoted on purpose.
+          # shellcheck disable=SC2016
+          versions="$(npm pkg get version --workspaces | jq -r 'to_entries[] | "\(.key)@\(.value)"')"
+          guard="@arcjet/guard@$(node --print 'require("./arcjet-guard/package.json").version')"
+          {
+            echo "## Publish request"
+            echo "- npm dist-tag: \`$DIST_TAG\`"
+            echo "- ref: \`$GITHUB_REF_NAME\` (\`$GITHUB_SHA\`)"
+            echo "- dry run: \`$DRY_RUN\`"
+            echo
+            echo "<details><summary>Versions</summary>"
+            echo
+            echo '```'
+            echo "$versions"
+            echo "$guard"
+            echo '```'
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Assert a known dist-tag was provided
+        env:
+          DIST_TAG: ${{ inputs['dist-tag'] }}
+        run: |
+          # The web form enforces the choice list, but API dispatches do not:
+          # a missing input arrives as an empty string, and an empty
+          # npm_config_tag would fall back to npm's default tag - latest.
+          case "$DIST_TAG" in
+            latest|rc) ;;
+            *)
+              echo "::error::Unknown npm dist-tag '$DIST_TAG'; expected 'latest' or 'rc'."
+              exit 1
+              ;;
+          esac
+      - name: Assert the workflow was dispatched on a release tag
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          # Publishing from a moving branch makes it ambiguous what was
+          # released; require an annotated release tag (vX.Y.Z, with an
+          # optional pre-release suffix such as v1.7.0-rc.1).
+          if [ "$REF_TYPE" != "tag" ]; then
+            echo "::error::Dispatch this workflow on a release tag (vX.Y.Z or vX.Y.Z-<pre-release>), not on branch '$REF_NAME'."
+            exit 1
+          fi
+          case "$REF_NAME" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *)
+              echo "::error::Tag '$REF_NAME' does not look like a release tag (vX.Y.Z or vX.Y.Z-<pre-release>)."
+              exit 1
+              ;;
+          esac
+      - name: Assert the package versions match the tag
+        env:
+          EXPECTED: ${{ github.ref_name }}
+        run: |
+          # Every package version must equal the tag being published (the
+          # workspace releases in lockstep via linked-versions).
+          expected="${EXPECTED#v}"
+          # The jq and node programs are single-quoted on purpose.
+          # shellcheck disable=SC2016
+          mismatched="$({ npm pkg get version --workspaces | jq -r --arg v "$expected" 'to_entries[] | select(.value != $v) | "\(.key)@\(.value)"'; EXPECTED_VERSION="$expected" node --print 'const v = require("./arcjet-guard/package.json").version; v === process.env.EXPECTED_VERSION ? "" : `@arcjet/guard@${v}`'; } | grep . || true)"
+          if [ -n "$mismatched" ]; then
+            echo "$mismatched"
+            echo "::error::These package versions do not match tag '$EXPECTED'; dispatch the workflow on the tag that matches the versions being published."
+            exit 1
+          fi
+      - name: Assert stable versions when publishing to the latest dist-tag
+        if: inputs['dist-tag'] == 'latest'
+        run: |
+          # The jq and node programs are single-quoted on purpose.
+          # shellcheck disable=SC2016
+          # Publishing to `latest` requires stable semver versions (x.y.z);
+          # anything else (1.7.0-rc.1, 2.0.0-beta.0, ...) must go to a
+          # pre-release channel such as `rc`. Runs before the approval gate
+          # so an invalid request fails without asking a human.
+          invalid="$({ npm pkg get version --workspaces | jq -r 'to_entries[] | select(.value | test("^[0-9]+\\.[0-9]+\\.[0-9]+$") | not) | "\(.key)@\(.value)"'; node --print 'const v = require("./arcjet-guard/package.json").version; /^\d+\.\d+\.\d+$/.test(v) ? "" : `@arcjet/guard@${v}`'; } | grep . || true)"
+          if [ -n "$invalid" ]; then
+            echo "$invalid"
+            echo "::error::These versions do not look like stable releases; re-run with a pre-release dist-tag (e.g. 'rc') instead of 'latest'."
+            exit 1
+          fi
   publish:
+    name: Publish
+    needs: preflight
     environment: npm-publish
     runs-on: ubuntu-latest
+    permissions:
+      # Reads the repository to build and publish the packages.
+      contents: read
+      id-token: write # Mints the OIDC token for npm provenance and trusted publishing.
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -34,7 +156,10 @@ jobs:
         run: npm test
       - name: Publish packages
         env:
-          TAG: ${{ github.event.inputs.tag }}
+          # npm reads config from the environment; this step only runs
+          # publish commands, so these apply to all of them.
+          npm_config_tag: ${{ inputs['dist-tag'] }}
+          npm_config_dry_run: ${{ inputs.dry-run }}
         run: |
           # npm publish --workspaces publishes in alphabetical directory order,
           # NOT dependency order. This means packages like @arcjet/astro get
@@ -48,7 +173,7 @@ jobs:
           # If you add a new package, insert it in the correct level.
 
           # Level 0: no internal dependencies
-          npm publish --tag "$TAG" \
+          npm publish \
             --workspace @arcjet/analyze-wasm \
             --workspace @arcjet/body \
             --workspace @arcjet/cache \
@@ -66,7 +191,7 @@ jobs:
             --workspace nosecone
 
           # Level 1: depend on level 0
-          npm publish --tag "$TAG" \
+          npm publish \
             --workspace @arcjet/logger \
             --workspace @arcjet/protocol \
             --workspace @arcjet/redact \
@@ -74,17 +199,17 @@ jobs:
             --workspace @nosecone/sveltekit
 
           # Level 2: depend on levels 0-1
-          npm publish --tag "$TAG" \
+          npm publish \
             --workspace @arcjet/analyze \
             --workspace @arcjet/decorate \
             --workspace @arcjet/inspect
 
           # Level 3: core SDK
-          npm publish --tag "$TAG" \
+          npm publish \
             --workspace arcjet
 
           # Level 4: public framework integrations
-          npm publish --tag "$TAG" \
+          npm publish \
             --workspace @arcjet/astro \
             --workspace @arcjet/bun \
             --workspace @arcjet/deno \
@@ -103,10 +228,13 @@ jobs:
       # TypeScript Go, rolldown) and it can rejoin the main workspaces.
       - name: Publish @arcjet/guard
         env:
-          TAG: ${{ github.event.inputs.tag }}
+          npm_config_tag: ${{ inputs['dist-tag'] }}
+          DRY_RUN: ${{ inputs.dry-run }}
         working-directory: arcjet-guard
         run: |
           npm ci
           npm run build
           npm test
-          npm publish --tag "$TAG"
+          # dry-run is scoped to the publish command; the install, build, and
+          # test above must always run for real (npm ci honors dry-run).
+          npm_config_dry_run="$DRY_RUN" npm publish
