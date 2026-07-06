@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/logger",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.1",
   "description": "Arcjet lightweight logger which mirrors the Pino structured logger interface",
   "keywords": [
     "arcjet",
@@ -50,7 +50,7 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/sprintf": "1.6.1"
+    "@arcjet/sprintf": "1.7.0-rc.1"
   },
   "devDependencies": {
     "@types/node": "22.19.21",

@@ -1,6 +1,6 @@
 {
   "name": "arcjet",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.1",
   "description": "Arcjet runtime security SDK — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF for JavaScript and TypeScript apps",
   "keywords": [
     "ai",
@@ -61,16 +61,16 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.6.1",
-    "@arcjet/cache": "1.6.1",
-    "@arcjet/duration": "1.6.1",
-    "@arcjet/headers": "1.6.1",
-    "@arcjet/protocol": "1.6.1",
-    "@arcjet/runtime": "1.6.1",
-    "@arcjet/stable-hash": "1.6.1"
+    "@arcjet/analyze": "1.7.0-rc.1",
+    "@arcjet/cache": "1.7.0-rc.1",
+    "@arcjet/duration": "1.7.0-rc.1",
+    "@arcjet/headers": "1.7.0-rc.1",
+    "@arcjet/protocol": "1.7.0-rc.1",
+    "@arcjet/runtime": "1.7.0-rc.1",
+    "@arcjet/stable-hash": "1.7.0-rc.1"
   },
   "devDependencies": {
-    "@arcjet/transport": "1.6.1",
+    "@arcjet/transport": "1.7.0-rc.1",
     "@bufbuild/protobuf": "2.12.0",
     "@connectrpc/connect": "2.1.2",
     "@connectrpc/connect-node": "2.1.2",

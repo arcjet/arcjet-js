@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/astro",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.1",
   "description": "Arcjet runtime security SDK for Astro — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
@@ -63,14 +63,14 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/body": "1.6.1",
-    "@arcjet/env": "1.6.1",
-    "@arcjet/headers": "1.6.1",
-    "@arcjet/ip": "1.6.1",
-    "@arcjet/logger": "1.6.1",
-    "@arcjet/protocol": "1.6.1",
-    "@arcjet/transport": "1.6.1",
-    "arcjet": "1.6.1"
+    "@arcjet/body": "1.7.0-rc.1",
+    "@arcjet/env": "1.7.0-rc.1",
+    "@arcjet/headers": "1.7.0-rc.1",
+    "@arcjet/ip": "1.7.0-rc.1",
+    "@arcjet/logger": "1.7.0-rc.1",
+    "@arcjet/protocol": "1.7.0-rc.1",
+    "@arcjet/transport": "1.7.0-rc.1",
+    "arcjet": "1.7.0-rc.1"
   },
   "devDependencies": {
     "astro": "7.0.3",

@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/analyze",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.1",
   "description": "Arcjet local analysis engine",
   "keywords": [
     "analyze",
@@ -51,8 +51,8 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/analyze-wasm": "1.6.1",
-    "@arcjet/protocol": "1.6.1"
+    "@arcjet/analyze-wasm": "1.7.0-rc.1",
+    "@arcjet/protocol": "1.7.0-rc.1"
   },
   "devDependencies": {
     "@types/node": "22.19.21",

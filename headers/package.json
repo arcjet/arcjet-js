@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/headers",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.1",
   "description": "Arcjet extension of the Headers class",
   "keywords": [
     "arcjet",

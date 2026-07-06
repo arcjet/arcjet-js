@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/env",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.1",
   "description": "Arcjet environment detection",
   "keywords": [
     "arcjet",

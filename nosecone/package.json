@@ -1,6 +1,6 @@
 {
   "name": "nosecone",
-  "version": "1.6.1",
+  "version": "1.7.0-rc.1",
   "description": "Protect your Response with secure headers",
   "keywords": [
     "arcjet",
