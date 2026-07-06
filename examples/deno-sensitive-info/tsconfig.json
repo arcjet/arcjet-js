@@ -4,7 +4,7 @@
     "moduleResolution": "bundler",
     "module": "esnext",
     "paths": {
-      "npm:@arcjet/deno": ["../../arcjet-deno/index.ts"]
+      "npm:@arcjet/deno": ["../../arcjet-deno/src/index.ts"]
     },
     "strict": true,
     "target": "es2022"

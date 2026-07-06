@@ -21,36 +21,44 @@
     "verify",
     "waf"
   ],
-  "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "arcjet-next"
-  },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
     "email": "support@arcjet.com"
   },
+  "license": "Apache-2.0",
   "author": {
     "name": "Arcjet",
     "email": "support@arcjet.com",
     "url": "https://arcjet.com"
   },
-  "engines": {
-    "node": ">=22.21.0 <23 || >=24.5.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "arcjet-next"
   },
-  "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
   "files": [
-    "index.d.ts",
-    "index.js"
+    "dist"
   ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "test": "npm run build && npm run lint"
+    "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
+    "test-api": "node --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-api"
   },
   "dependencies": {
     "@arcjet/body": "1.7.0",
@@ -62,22 +70,18 @@
     "@arcjet/transport": "1.7.0",
     "arcjet": "1.7.0"
   },
-  "peerDependencies": {
-    "next": ">=13"
-  },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.7.0",
-    "@arcjet/rollup-config": "1.7.0",
     "@types/node": "22.19.21",
-    "@rollup/wasm-node": "4.62.2",
-    "eslint": "9.39.4",
     "next": "16.2.9",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "typescript": "5.9.3"
+    "tsdown": "0.22.3",
+    "typescript": "6.0.3"
   },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+  "peerDependencies": {
+    "next": ">=13"
+  },
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
   }
 }

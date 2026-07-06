@@ -67,7 +67,7 @@ jobs:
         with:
           deno-version: v2.4.2
       - run: npm ci && npm run build
-      - run: deno test test/**/*.test.ts --allow-env --allow-net --no-check
+      - run: deno test test/**/*.test.ts --allow-env --allow-net --allow-read=. --no-check
         working-directory: arcjet-deno
   node-test:
     name: "Run tests (OS: ${{matrix.os}}, Node: ${{ matrix.node }})"

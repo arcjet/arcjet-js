@@ -2,22 +2,23 @@
   "name": "arcjet-js",
   "version": "1.7.0",
   "private": true,
-  "engines": {
-    "node": ">=22.21.0 <23 || >=24.5.0"
-  },
-  "packageManager": "npm@11.11.0",
   "workspaces": [
-    "*",
-    "!arcjet-guard"
+    "*"
   ],
   "scripts": {
     "build": "turbo run build",
-    "lint": "turbo run lint",
+    "lint": "oxlint --disable-nested-config",
     "test-api": "turbo run test-api",
     "test-coverage": "turbo run test-coverage",
-    "test": "turbo test"
+    "test": "turbo test",
+    "format": "oxfmt --disable-nested-config",
+    "format:check": "oxfmt --disable-nested-config --check",
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "@typescript/native-preview": "7.0.0-dev.20260602.1",
+    "oxfmt": "0.55.0",
+    "oxlint": "1.70.0",
     "turbo": "2.9.18"
   },
   "overrides": {
@@ -27,5 +28,9 @@
     },
     "postcss": "^8.5.10",
     "rollup": "npm:@rollup/wasm-node"
-  }
+  },
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
+  },
+  "packageManager": "npm@11.11.0"
 }

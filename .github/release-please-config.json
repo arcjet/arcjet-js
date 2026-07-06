@@ -38,19 +38,47 @@
     },
     "arcjet-astro": {
       "component": "@arcjet/astro",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/internal.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-bun": {
       "component": "@arcjet/bun",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-deno": {
       "component": "@arcjet/deno",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-fastify": {
       "component": "@arcjet/fastify",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-guard": {
       "component": "@arcjet/guard",
@@ -65,31 +93,85 @@
     },
     "arcjet-nest": {
       "component": "@arcjet/nest",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-next": {
       "component": "@arcjet/next",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-node": {
       "component": "@arcjet/node",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-nuxt": {
       "component": "@arcjet/nuxt",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "src/internal.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-react-router": {
       "component": "@arcjet/react-router",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-remix": {
       "component": "@arcjet/remix",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet-sveltekit": {
       "component": "@arcjet/sveltekit",
-      "skip-github-release": true
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/index.ts",
+          "glob": false
+        }
+      ]
     },
     "arcjet": {
       "component": "arcjet",
@@ -113,10 +195,6 @@
     },
     "env": {
       "component": "@arcjet/env",
-      "skip-github-release": true
-    },
-    "eslint-config": {
-      "component": "@arcjet/eslint-config",
       "skip-github-release": true
     },
     "headers": {
@@ -145,10 +223,6 @@
     },
     "redact": {
       "component": "@arcjet/redact",
-      "skip-github-release": true
-    },
-    "rollup-config": {
-      "component": "@arcjet/rollup-config",
       "skip-github-release": true
     },
     "runtime": {
@@ -200,7 +274,6 @@
         "@arcjet/deno",
         "@arcjet/duration",
         "@arcjet/env",
-        "@arcjet/eslint-config",
         "@arcjet/fastify",
         "@arcjet/guard",
         "@arcjet/headers",
@@ -216,7 +289,6 @@
         "@arcjet/redact-wasm",
         "@arcjet/redact",
         "@arcjet/remix",
-        "@arcjet/rollup-config",
         "@arcjet/runtime",
         "@arcjet/sprintf",
         "@arcjet/stable-hash",

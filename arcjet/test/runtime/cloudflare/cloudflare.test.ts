@@ -24,15 +24,10 @@ import { Miniflare } from "miniflare";
 import { rolldown } from "rolldown";
 import type { Plugin } from "rolldown";
 
-import {
-  startHttpServer,
-  getDecideCalls,
-  getLastDecideRequest,
-} from "./mock-server.ts";
+import { startHttpServer, getDecideCalls, getLastDecideRequest } from "./mock-server.ts";
 
 const WORKER_ENTRY = new URL("./worker.ts", import.meta.url).pathname;
-const WASM_DIR = new URL("../../../../analyze-wasm/wasm/", import.meta.url)
-  .pathname;
+const WASM_DIR = new URL("../../../../analyze-wasm/src/wasm/", import.meta.url).pathname;
 
 describe("Runtime: core arcjet protect() on Cloudflare Workers (miniflare)", () => {
   let mf: Miniflare;
@@ -126,10 +121,6 @@ describe("Runtime: core arcjet protect() on Cloudflare Workers (miniflare)", () 
     const decideRequest = getLastDecideRequest();
     assert.ok(decideRequest !== null);
     assert.equal(decideRequest.sdkVersion, "test");
-    assert.equal(
-      decideRequest.ruleCount,
-      1,
-      "expected the token bucket rule to be sent",
-    );
+    assert.equal(decideRequest.ruleCount, 1, "expected the token bucket rule to be sent");
   });
 });

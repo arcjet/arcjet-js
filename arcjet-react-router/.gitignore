@@ -2,3 +2,6 @@
 *.d.ts
 !eslint.config.js
 !rollup.config.js
+
+# Generated files
+dist/

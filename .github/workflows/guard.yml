@@ -53,9 +53,14 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ${{ github.workspace }}
 
+      # Build the whole workspace so @arcjet/guard's workspace dependencies
+      # (e.g. @arcjet/analyze) have their `dist/` output for guard's
+      # source tests and type checking.
       - name: Build
         run: npm run build
+        working-directory: ${{ github.workspace }}
 
       - name: Unit tests (with coverage)
         run: npm run test-unit
@@ -84,9 +89,14 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ${{ github.workspace }}
 
+      # Build the whole workspace so @arcjet/guard's workspace dependencies
+      # (e.g. @arcjet/analyze) have their `dist/` output for guard's
+      # source tests and type checking.
       - name: Build
         run: npm run build
+        working-directory: ${{ github.workspace }}
 
       - name: Lint (oxlint)
         run: npm run lint
@@ -167,6 +177,13 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ${{ github.workspace }}
+
+      # Build the whole workspace so guard's workspace dependencies are
+      # available to the runtime tests.
+      - name: Build
+        run: npm run build
+        working-directory: ${{ github.workspace }}
 
       - name: Runtime test (${{ matrix.runtime }})
         run: npm run ${{ matrix.script }}

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CROCKFORD_ALPHABET, typeid, uuidV7Bytes } from "../typeid.js";
+
+import { CROCKFORD_ALPHABET, typeid, uuidV7Bytes } from "../dist/typeid.js";
 
 // Ported from the Arcjet Python SDK's tests/unit/test_typeid.py — both SDKs
 // vendor the same inline TypeID generation, so they must satisfy the same

@@ -19,39 +19,46 @@
     "verify",
     "waf"
   ],
-  "license": "Apache-2.0",
   "homepage": "https://arcjet.com",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/arcjet/arcjet-js.git",
-    "directory": "arcjet"
-  },
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
     "email": "support@arcjet.com"
   },
+  "license": "Apache-2.0",
   "author": {
     "name": "Arcjet",
     "email": "support@arcjet.com",
     "url": "https://arcjet.com"
   },
-  "engines": {
-    "node": ">=22.21.0 <23 || >=24.5.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "arcjet"
   },
-  "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
   "files": [
-    "index.d.ts",
-    "index.js"
+    "dist"
   ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "scripts": {
-    "build": "rollup --config rollup.config.js",
-    "lint": "eslint .",
-    "test-api": "node --test -- test/*.test.js",
+    "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
+    "test-api": "node --test -- test/*.test.ts",
     "test-runtime-cloudflare": "npm run build && node --test test/runtime/cloudflare/cloudflare.test.ts",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=95 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=95 -- test/*.test.js",
-    "test": "npm run build && npm run lint && npm run test-coverage"
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=95 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=95 -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
     "@arcjet/analyze": "1.7.0",
@@ -63,21 +70,17 @@
     "@arcjet/stable-hash": "1.7.0"
   },
   "devDependencies": {
-    "@arcjet/eslint-config": "1.7.0",
-    "@arcjet/rollup-config": "1.7.0",
     "@arcjet/transport": "1.7.0",
     "@bufbuild/protobuf": "2.12.0",
     "@connectrpc/connect": "2.1.2",
     "@connectrpc/connect-node": "2.1.2",
-    "@rollup/wasm-node": "4.62.2",
     "@types/node": "22.19.21",
-    "eslint": "9.39.4",
     "miniflare": "4.20260617.1",
     "rolldown": "1.1.2",
-    "typescript": "5.9.3"
+    "tsdown": "0.22.3",
+    "typescript": "6.0.3"
   },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
   }
 }

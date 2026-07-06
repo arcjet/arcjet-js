@@ -1,4 +1,4 @@
 {
   "extends": "../tsconfig.base.json",
-  "exclude": ["node_modules/", "scripts/"]
+  "include": ["src/**/*.ts"]
 }

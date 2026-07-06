@@ -11,14 +11,11 @@
 // `fetch` do the tunneling. The production Arcjet API is HTTPS, so this
 // exercises the `CONNECT` path rather than plaintext-HTTP forwarding.
 import https from "node:https";
+
 import { connectNodeAdapter } from "@connectrpc/connect-node";
-import { ElizaService } from "../eliza_pb.js";
-import {
-  close,
-  createConnectProxy,
-  generateSelfSignedCert,
-  listen,
-} from "../proxy.js";
+
+import { ElizaService } from "../eliza_pb.ts";
+import { close, createConnectProxy, generateSelfSignedCert, listen } from "../proxy.ts";
 
 /**
  * A running proxy + origin pair for a single runtime proxy test.
@@ -60,9 +57,7 @@ function elizaAdapter() {
 export async function startProxyFixture(): Promise<ProxyFixture> {
   const configuredProxy = process.env.HTTPS_PROXY;
   if (!configuredProxy) {
-    throw new Error(
-      "HTTPS_PROXY must be set by the test-runtime-* npm script for this test",
-    );
+    throw new Error("HTTPS_PROXY must be set by the test-runtime-* npm script for this test");
   }
   const proxyPort = Number(new URL(configuredProxy).port);
 

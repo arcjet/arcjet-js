@@ -13,7 +13,9 @@
 
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import type { Client } from "@arcjet/protocol/client.js";
+
 import arcjetBun, {
   type ArcjetBun,
   type ArcjetRequestDetails,
@@ -28,7 +30,7 @@ import arcjetBun, {
   protectSignup,
   sensitiveInfo,
   validateEmail,
-} from "../index.js";
+} from "../dist/index.js";
 
 const exampleKey = "ajkey_yourkey";
 const oneMegabyte = 1024 * 1024;
@@ -36,7 +38,7 @@ const oneMegabyte = 1024 * 1024;
 let uniquePort = 3000;
 
 test("`@arcjet/bun`: should expose the public api", async function () {
-  assert.deepEqual(Object.keys(await import("../index.js")).sort(), [
+  assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
     "ArcjetAllowDecision",
     "ArcjetBotReason",
     "ArcjetChallengeDecision",
@@ -146,9 +148,7 @@ test("`arcjetBun().protect()`: should warn about IPs missing in non-development"
   // Not called when constructing.
   assert.deepEqual(parameters, undefined);
 
-  await arcjet.protect(
-    new Request("https://example.com/", { headers: { "user-agent": "Test" } }),
-  );
+  await arcjet.protect(new Request("https://example.com/", { headers: { "user-agent": "Test" } }));
 
   restore();
 
@@ -179,9 +179,7 @@ test("`arcjetBun().protect()`: should not warn about IPs missing in development"
   // Called when constructing, so set to `undefined` again.
   parameters = undefined;
 
-  await arcjet.protect(
-    new Request("https://example.com/", { headers: { "user-agent": "Test" } }),
-  );
+  await arcjet.protect(new Request("https://example.com/", { headers: { "user-agent": "Test" } }));
 
   restore();
 
@@ -605,9 +603,7 @@ test("`arcjetBun`: should support `sensitiveInfo`", async function () {
 
   assert.equal(response.status, 200);
   assert.deepEqual(warnings, [
-    [
-      "Arcjet will use 127.0.0.1 when missing public IP address in development mode",
-    ],
+    ["Arcjet will use 127.0.0.1 when missing public IP address in development mode"],
     [
       "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
     ],
@@ -1325,10 +1321,7 @@ export function createSimpleServer(options: SimpleServerOptions) {
       await after?.(request);
 
       if (decision.isErrored()) {
-        return new Response(
-          `Internal Server Error: "${decision.reason.message}"`,
-          { status: 500 },
-        );
+        return new Response(`Internal Server Error: "${decision.reason.message}"`, { status: 500 });
       }
 
       if (decision.isAllowed()) {

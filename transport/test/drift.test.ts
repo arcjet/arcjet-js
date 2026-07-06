@@ -25,14 +25,11 @@ function sharedHelpers(source: string): string {
 }
 
 function read(relativePath: string): string {
-  return readFileSync(
-    fileURLToPath(new URL(relativePath, import.meta.url)),
-    "utf8",
-  );
+  return readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), "utf8");
 }
 
 test("proxy-resolution helpers stay in sync across packages", function () {
-  const transport = sharedHelpers(read("../detect-proxy.ts"));
+  const transport = sharedHelpers(read("../src/detect-proxy.ts"));
   const guard = sharedHelpers(read("../../arcjet-guard/src/detect-proxy.ts"));
 
   assert.equal(

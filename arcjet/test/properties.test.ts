@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { MemoryCache } from "@arcjet/cache";
 import type { Client } from "@arcjet/protocol/client.js";
+
 import arcjet, {
   type ArcjetContext,
   type ArcjetRequest,
@@ -10,7 +12,7 @@ import arcjet, {
   ArcjetAllowDecision,
   ArcjetReason,
   ArcjetRuleResult,
-} from "../index.js";
+} from "../dist/index.js";
 
 type Assert<T extends true> = T;
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -39,9 +41,7 @@ type Assert<T extends true> = T;
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 type IsEqual<A, B> =
-  (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2
-    ? true
-    : false;
+  (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2 ? true : false;
 type Props<T> = T extends Arcjet<infer P> ? P : never;
 
 const exampleKey = "ajkey_yourkey";
@@ -69,167 +69,147 @@ test("Properties", async function (t) {
     assert.equal(decision.conclusion, "ALLOW");
   });
 
-  await t.test(
-    "should infer no properties w/ a rule defined w/o properties",
-    async function () {
-      const rule: ArcjetRule<{}> = {
-        mode: "LIVE",
-        priority: 1,
-        async protect() {
-          return new ArcjetRuleResult({
-            conclusion: "ALLOW",
-            fingerprint: "",
-            reason: new ArcjetReason(),
-            ruleId: "",
-            state: "RUN",
-            ttl: 0,
-          });
+  await t.test("should infer no properties w/ a rule defined w/o properties", async function () {
+    const rule: ArcjetRule<{}> = {
+      mode: "LIVE",
+      priority: 1,
+      async protect() {
+        return new ArcjetRuleResult({
+          conclusion: "ALLOW",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      },
+      type: "",
+      validate() {},
+      version: 0,
+    };
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: { ...console, debug() {} },
+      rules: [[rule]],
+    });
+    const decision = await instance.protect(createContext(), createRequest());
+    type PropertiesWithoutProperties = Assert<IsEqual<Props<typeof instance>, {}>>;
+    assert.equal(decision.conclusion, "ALLOW");
+
+    const withRuleInstance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: { ...console, debug() {} },
+      rules: [],
+    }).withRule([rule]);
+    const withRuleDecision = await withRuleInstance.protect(createContext(), createRequest());
+    type WithRulePropertiesWithoutProperties = Assert<IsEqual<Props<typeof withRuleInstance>, {}>>;
+    assert.equal(withRuleDecision.conclusion, "ALLOW");
+  });
+
+  await t.test("should infer properties w/ a rule defined w/ properties", async function () {
+    let errorParameters: unknown;
+    const rule: ArcjetRule<{ a: string; b: number; c: boolean }> = {
+      mode: "LIVE",
+      priority: 1,
+      async protect() {
+        return new ArcjetRuleResult({
+          conclusion: "ALLOW",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      },
+      type: "",
+      validate(_context, details) {
+        if (!details || typeof details !== "object") {
+          throw new Error("Expected `details` object");
+        }
+        if (!("extra" in details) || !details.extra || typeof details.extra !== "object") {
+          throw new Error("Expected `details.extra` object");
+        }
+        if (!("a" in details.extra) || typeof details.extra.a !== "string") {
+          throw new Error("Expected `details.extra.a` string");
+        }
+        // Extra fields are always turned into strings.
+        if (!("b" in details.extra) || typeof details.extra.b !== "string") {
+          throw new Error("Expected `details.extra.b` number");
+        }
+        if (!("c" in details.extra) || typeof details.extra.c !== "string") {
+          throw new Error("Expected `details.extra.c` boolean");
+        }
+      },
+      version: 0,
+    };
+    const instance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        ...console,
+        debug() {},
+        error(...parameters) {
+          errorParameters = parameters;
         },
-        type: "",
-        validate() {},
-        version: 0,
-      };
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: { ...console, debug() {} },
-        rules: [[rule]],
-      });
-      const decision = await instance.protect(createContext(), createRequest());
-      type PropertiesWithoutProperties = Assert<
-        IsEqual<Props<typeof instance>, {}>
-      >;
-      assert.equal(decision.conclusion, "ALLOW");
+      },
+      rules: [[rule]],
+    });
 
-      const withRuleInstance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: { ...console, debug() {} },
-        rules: [],
-      }).withRule([rule]);
-      const withRuleDecision = await withRuleInstance.protect(
-        createContext(),
-        createRequest(),
-      );
-      type WithRulePropertiesWithoutProperties = Assert<
-        IsEqual<Props<typeof withRuleInstance>, {}>
-      >;
-      assert.equal(withRuleDecision.conclusion, "ALLOW");
-    },
-  );
+    type PropertiesWithProperties = Assert<
+      IsEqual<Props<typeof instance>, { a: string; b: number; c: boolean }>
+    >;
 
-  await t.test(
-    "should infer properties w/ a rule defined w/ properties",
-    async function () {
-      let errorParameters: unknown;
-      const rule: ArcjetRule<{ a: string; b: number; c: boolean }> = {
-        mode: "LIVE",
-        priority: 1,
-        async protect() {
-          return new ArcjetRuleResult({
-            conclusion: "ALLOW",
-            fingerprint: "",
-            reason: new ArcjetReason(),
-            ruleId: "",
-            state: "RUN",
-            ttl: 0,
-          });
+    const decisionNok = await instance.protect(
+      createContext(),
+      // @ts-expect-error: this type error is expected.
+      createRequest(),
+    );
+    assert.equal(decisionNok.conclusion, "ALLOW");
+    assert.deepEqual(errorParameters, [
+      "Failure running rule: %s due to %s",
+      "",
+      "Expected `details.extra.a` string",
+    ]);
+    errorParameters = undefined;
+
+    const decisionOk = await instance.protect(createContext(), {
+      ...createRequest(),
+      a: "",
+      b: 0,
+      c: true,
+    });
+    assert.equal(decisionOk.conclusion, "ALLOW");
+    assert.equal(errorParameters, undefined);
+
+    const withRuleInstance = arcjet({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        ...console,
+        debug() {},
+        error(...parameters) {
+          errorParameters = parameters;
         },
-        type: "",
-        validate(_context, details) {
-          if (!details || typeof details !== "object") {
-            throw new Error("Expected `details` object");
-          }
-          if (
-            !("extra" in details) ||
-            !details.extra ||
-            typeof details.extra !== "object"
-          ) {
-            throw new Error("Expected `details.extra` object");
-          }
-          if (!("a" in details.extra) || typeof details.extra.a !== "string") {
-            throw new Error("Expected `details.extra.a` string");
-          }
-          // Extra fields are always turned into strings.
-          if (!("b" in details.extra) || typeof details.extra.b !== "string") {
-            throw new Error("Expected `details.extra.b` number");
-          }
-          if (!("c" in details.extra) || typeof details.extra.c !== "string") {
-            throw new Error("Expected `details.extra.c` boolean");
-          }
-        },
-        version: 0,
-      };
-      const instance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug() {},
-          error(...parameters) {
-            errorParameters = parameters;
-          },
-        },
-        rules: [[rule]],
-      });
-
-      type PropertiesWithProperties = Assert<
-        IsEqual<Props<typeof instance>, { a: string; b: number; c: boolean }>
-      >;
-
-      const decisionNok = await instance.protect(
-        createContext(),
-        // @ts-expect-error: this type error is expected.
-        createRequest(),
-      );
-      assert.equal(decisionNok.conclusion, "ALLOW");
-      assert.deepEqual(errorParameters, [
-        "Failure running rule: %s due to %s",
-        "",
-        "Expected `details.extra.a` string",
-      ]);
-      errorParameters = undefined;
-
-      const decisionOk = await instance.protect(createContext(), {
-        ...createRequest(),
-        a: "",
-        b: 0,
-        c: true,
-      });
-      assert.equal(decisionOk.conclusion, "ALLOW");
-      assert.equal(errorParameters, undefined);
-
-      const withRuleInstance = arcjet({
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug() {},
-          error(...parameters) {
-            errorParameters = parameters;
-          },
-        },
-        rules: [],
-      }).withRule([rule]);
-      const withRuleDecision = await withRuleInstance.protect(
-        createContext(),
-        // @ts-expect-error: this type error is expected.
-        createRequest(),
-      );
-      type WithRulePropertiesWithoutProperties = Assert<
-        IsEqual<
-          Props<typeof withRuleInstance>,
-          { a: string; b: number; c: boolean }
-        >
-      >;
-      assert.equal(withRuleDecision.conclusion, "ALLOW");
-      assert.deepEqual(errorParameters, [
-        "Failure running rule: %s due to %s",
-        "",
-        "Expected `details.extra.a` string",
-      ]);
-    },
-  );
+      },
+      rules: [],
+    }).withRule([rule]);
+    const withRuleDecision = await withRuleInstance.protect(
+      createContext(),
+      // @ts-expect-error: this type error is expected.
+      createRequest(),
+    );
+    type WithRulePropertiesWithoutProperties = Assert<
+      IsEqual<Props<typeof withRuleInstance>, { a: string; b: number; c: boolean }>
+    >;
+    assert.equal(withRuleDecision.conclusion, "ALLOW");
+    assert.deepEqual(errorParameters, [
+      "Failure running rule: %s due to %s",
+      "",
+      "Expected `details.extra.a` string",
+    ]);
+  });
 
   await t.test(
     "should infer properties w/ a rule defined w/ optional properties",
@@ -253,11 +233,7 @@ test("Properties", async function (t) {
           if (!details || typeof details !== "object") {
             throw new Error("Expected `details` object");
           }
-          if (
-            !("extra" in details) ||
-            !details.extra ||
-            typeof details.extra !== "object"
-          ) {
+          if (!("extra" in details) || !details.extra || typeof details.extra !== "object") {
             throw new Error("Expected `details.extra` object");
           }
           if (
@@ -287,10 +263,7 @@ test("Properties", async function (t) {
         IsEqual<Props<typeof instance>, { a?: number | null | undefined }>
       >;
 
-      const decisionOk = await instance.protect(
-        createContext(),
-        createRequest(),
-      );
+      const decisionOk = await instance.protect(createContext(), createRequest());
       assert.equal(decisionOk.conclusion, "ALLOW");
       assert.equal(errorParameters, undefined);
 
@@ -332,10 +305,7 @@ test("Properties", async function (t) {
         { ...createRequest(), a: "b" },
       );
       type WithRulePropertiesWithoutProperties = Assert<
-        IsEqual<
-          Props<typeof withRuleInstance>,
-          { a?: number | null | undefined }
-        >
+        IsEqual<Props<typeof withRuleInstance>, { a?: number | null | undefined }>
       >;
       assert.equal(withRuleDecision.conclusion, "ALLOW");
       assert.deepEqual(errorParameters, [
@@ -346,67 +316,64 @@ test("Properties", async function (t) {
     },
   );
 
-  await t.test(
-    "should infer properties w/ `characteristics`",
-    async function () {
-      const rule: ArcjetRule<{}> = {
-        mode: "LIVE",
-        priority: 1,
-        async protect() {
-          return new ArcjetRuleResult({
-            conclusion: "ALLOW",
-            fingerprint: "",
-            reason: new ArcjetReason(),
-            ruleId: "",
-            state: "RUN",
-            ttl: 0,
-          });
-        },
-        type: "",
-        validate() {},
-        version: 0,
-      };
-      const instance = arcjet({
-        characteristics: [
-          "http.host",
-          "http.method",
-          'http.request.cookie["session-id"]',
-          'http.request.headers["user-agent"]',
-          'http.request.uri.args["search"]',
-          "http.request.uri.path",
-          "ip.src",
-          "x",
-          "y.z",
-        ],
-        client: createLocalClient(),
-        key: exampleKey,
-        log: { ...console, debug() {} },
-        rules: [[rule]],
-      });
+  await t.test("should infer properties w/ `characteristics`", async function () {
+    const rule: ArcjetRule<{}> = {
+      mode: "LIVE",
+      priority: 1,
+      async protect() {
+        return new ArcjetRuleResult({
+          conclusion: "ALLOW",
+          fingerprint: "",
+          reason: new ArcjetReason(),
+          ruleId: "",
+          state: "RUN",
+          ttl: 0,
+        });
+      },
+      type: "",
+      validate() {},
+      version: 0,
+    };
+    const instance = arcjet({
+      characteristics: [
+        "http.host",
+        "http.method",
+        'http.request.cookie["session-id"]',
+        'http.request.headers["user-agent"]',
+        'http.request.uri.args["search"]',
+        "http.request.uri.path",
+        "ip.src",
+        "x",
+        "y.z",
+      ],
+      client: createLocalClient(),
+      key: exampleKey,
+      log: { ...console, debug() {} },
+      rules: [[rule]],
+    });
 
-      type PropertiesWithCharacteristics = Assert<
-        IsEqual<
-          Props<typeof instance>,
-          { x: string | number | boolean; "y.z": string | number | boolean }
-        >
-      >;
+    type PropertiesWithCharacteristics = Assert<
+      IsEqual<
+        Props<typeof instance>,
+        { x: string | number | boolean; "y.z": string | number | boolean }
+      >
+    >;
 
-      const decisionNok = await instance.protect(
-        createContext(),
-        // @ts-expect-error: this type error is expected.
-        createRequest(),
-      );
-      // TODO: should there be an error if `characteristics` are missing?
-      assert.equal(decisionNok.conclusion, "ALLOW");
+    const decisionNok = await instance.protect(
+      createContext(),
+      // @ts-expect-error: this type error is expected.
+      createRequest(),
+    );
+    // TODO: should there be an error if `characteristics` are missing?
+    assert.equal(decisionNok.conclusion, "ALLOW");
 
-      const decisionOk = await instance.protect(createContext(), {
-        ...createRequest(),
-        x: 1,
-        "y.z": true,
-      });
-      assert.equal(decisionOk.conclusion, "ALLOW");
-    },
-  );
+    const decisionOk = await instance.protect(createContext(), {
+      ...createRequest(),
+      x: 1,
+      "y.z": true,
+    });
+    assert.equal(decisionOk.conclusion, "ALLOW");
+  });
 
   await t.test("should infer properties w/ `withRule`", async function () {
     const noPropertiesRule: ArcjetRule<{}> = {
@@ -446,11 +413,7 @@ test("Properties", async function (t) {
         if (!details || typeof details !== "object") {
           throw new Error("Expected `details` object");
         }
-        if (
-          !("extra" in details) ||
-          !details.extra ||
-          typeof details.extra !== "object"
-        ) {
+        if (!("extra" in details) || !details.extra || typeof details.extra !== "object") {
           throw new Error("Expected `details.extra` object");
         }
         if (
@@ -481,11 +444,7 @@ test("Properties", async function (t) {
         if (!details || typeof details !== "object") {
           throw new Error("Expected `details` object");
         }
-        if (
-          !("extra" in details) ||
-          !details.extra ||
-          typeof details.extra !== "object"
-        ) {
+        if (!("extra" in details) || !details.extra || typeof details.extra !== "object") {
           throw new Error("Expected `details.extra` object");
         }
         if (!("a" in details.extra) || typeof details.extra.a !== "string") {
