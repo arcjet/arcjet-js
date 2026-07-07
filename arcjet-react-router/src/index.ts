@@ -20,7 +20,7 @@ import arcjetCore, {
 } from "arcjet";
 
 /** SDK version. Updated by the release process. */
-const VERSION = "1.7.0"; // x-release-please-version
+const VERSION = "1.8.0"; // x-release-please-version
 
 export * from "arcjet";
 export { cloudflare } from "@arcjet/ip";

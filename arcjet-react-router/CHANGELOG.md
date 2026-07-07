@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.8.0](https://github.com/arcjet/arcjet-js/compare/v1.7.0...@arcjet/react-router-v1.8.0) (2026-07-07)
+
+
+### 🚀 New Features
+
+* publish 1.8.0 overtop of erroneously published 1.8.0-rc.0 ([#6132](https://github.com/arcjet/arcjet-js/issues/6132)) ([3929316](https://github.com/arcjet/arcjet-js/commit/3929316e62bb9c5fbb60dfb64f341754622df4c1))
+
+
+### 🧹 Miscellaneous Chores
+
+* modernize build tooling ([#6093](https://github.com/arcjet/arcjet-js/issues/6093)) ([48b89ea](https://github.com/arcjet/arcjet-js/commit/48b89ea27596556169155cb0215d085e59982ae2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.7.0 to 1.8.0
+    * @arcjet/env bumped from 1.7.0 to 1.8.0
+    * @arcjet/headers bumped from 1.7.0 to 1.8.0
+    * @arcjet/ip bumped from 1.7.0 to 1.8.0
+    * @arcjet/logger bumped from 1.7.0 to 1.8.0
+    * @arcjet/protocol bumped from 1.7.0 to 1.8.0
+    * @arcjet/transport bumped from 1.7.0 to 1.8.0
+    * arcjet bumped from 1.7.0 to 1.8.0
+  * devDependencies
+    * @arcjet/cache bumped from 1.7.0 to 1.8.0
+
 ## [1.7.0](https://github.com/arcjet/arcjet-js/compare/v1.6.1...@arcjet/react-router-v1.7.0) (2026-07-06)
 
 
