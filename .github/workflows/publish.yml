@@ -230,3 +230,41 @@ jobs:
             --workspace @arcjet/react-router \
             --workspace @arcjet/remix \
             --workspace @arcjet/sveltekit
+      - name: Verify dist-tags
+        # Nothing was published on a dry run, so there is nothing to verify.
+        if: ${{ !inputs.dry-run }}
+        env:
+          DIST_TAG: ${{ inputs['dist-tag'] }}
+          EXPECTED: ${{ github.ref_name }}
+        run: |
+          # `npm publish` reports the requested tag but can silently write a
+          # different dist-tag while still exiting 0 - a package's
+          # publishConfig.tag once won over the requested tag, publishing a
+          # pre-release to `latest` and leaving `rc` unmoved, with a green
+          # run. Confirm every published package's requested dist-tag now
+          # resolves to this version so that failure mode fails the job.
+          version="${EXPECTED#v}"
+          # `.[]` yields the name value regardless of how npm keys the object.
+          names="$(npm pkg get name --workspaces | jq -r '.[]')"
+          failed=""
+          for pkg in $names; do
+            # A just-written dist-tag can briefly lag the publish call, so
+            # revalidate against the registry a few times before giving up.
+            actual=""
+            for attempt in 1 2 3 4 5 6; do
+              actual="$(npm view --prefer-online "$pkg" "dist-tags.$DIST_TAG" 2>/dev/null || true)"
+              [ "$actual" = "$version" ] && break
+              [ "$attempt" -lt 6 ] && sleep 5
+            done
+            if [ "$actual" = "$version" ]; then
+              echo "ok: $pkg $DIST_TAG -> $version"
+            else
+              echo "::error::$pkg dist-tag '$DIST_TAG' is '${actual:-<none>}', expected '$version'."
+              failed="$failed $pkg"
+            fi
+          done
+          if [ -n "$failed" ]; then
+            echo "::error::dist-tag verification failed for:$failed"
+            exit 1
+          fi
+          echo "Verified $DIST_TAG -> $version for all published packages."
