@@ -47,8 +47,7 @@
     "./package.json": "./package.json"
   },
   "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+    "access": "public"
   },
   "scripts": {
     "build": "tsdown",

@@ -51,8 +51,7 @@
     "./package.json": "./package.json"
   },
   "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+    "access": "public"
   },
   "scripts": {
     "build:jco": "jco transpile --instantiation async --no-wasi-shim --out-dir src/wasm/ -- src/wasm/arcjet_analyze_js_req.component.wasm",
