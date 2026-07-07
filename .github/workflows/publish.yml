@@ -51,10 +51,10 @@ jobs:
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
           # The web form enforces the choice list, but API dispatches do not:
-          # a missing input arrives as an empty string, and an empty
-          # npm_config_tag would fall back to npm's default tag - latest.
-          # Validating both inputs here also means the later steps (including
-          # the approval-facing summary) only ever see known values.
+          # a missing input arrives as an empty string, and an empty dist-tag
+          # would publish `--tag ""`. Validating both inputs here also means
+          # the later steps (including the approval-facing summary) only ever
+          # see known values.
           case "$DIST_TAG" in
             latest|rc) ;;
             *)
@@ -161,11 +161,16 @@ jobs:
         run: npm test
       - name: Publish packages
         env:
-          # npm reads config from the environment; this step only runs
-          # publish commands, so these apply to all of them.
-          npm_config_tag: ${{ inputs['dist-tag'] }}
+          DIST_TAG: ${{ inputs['dist-tag'] }}
+          # dry-run is a boolean with no publishConfig equivalent, so passing
+          # it via the environment is safe and applies to every publish below.
           npm_config_dry_run: ${{ inputs.dry-run }}
         run: |
+          # Pass the dist-tag with --tag on each publish rather than the
+          # npm_config_tag environment variable. A command-line --tag outranks
+          # a package's publishConfig.tag; the environment variable does not,
+          # so publishConfig.tag would silently win and route the publish to
+          # its tag (e.g. latest) instead of the requested one.
           # npm publish --workspaces publishes in alphabetical directory order,
           # NOT dependency order. This means packages like @arcjet/astro get
           # published before their dependencies (e.g. @arcjet/body, @arcjet/env)
@@ -178,7 +183,7 @@ jobs:
           # If you add a new package, insert it in the correct level.
 
           # Level 0: no internal dependencies
-          npm publish \
+          npm publish --tag "$DIST_TAG" \
             --workspace @arcjet/analyze-wasm \
             --workspace @arcjet/body \
             --workspace @arcjet/cache \
@@ -194,7 +199,7 @@ jobs:
             --workspace nosecone
 
           # Level 1: depend on level 0
-          npm publish \
+          npm publish --tag "$DIST_TAG" \
             --workspace @arcjet/logger \
             --workspace @arcjet/protocol \
             --workspace @arcjet/redact \
@@ -202,18 +207,18 @@ jobs:
             --workspace @nosecone/sveltekit
 
           # Level 2: depend on levels 0-1
-          npm publish \
+          npm publish --tag "$DIST_TAG" \
             --workspace @arcjet/analyze \
             --workspace @arcjet/decorate \
             --workspace @arcjet/inspect
 
           # Level 3: core SDK + guard (depend on @arcjet/analyze from Level 2)
-          npm publish \
+          npm publish --tag "$DIST_TAG" \
             --workspace arcjet \
             --workspace @arcjet/guard
 
           # Level 4: public framework integrations
-          npm publish \
+          npm publish --tag "$DIST_TAG" \
             --workspace @arcjet/astro \
             --workspace @arcjet/bun \
             --workspace @arcjet/deno \
@@ -225,3 +230,41 @@ jobs:
             --workspace @arcjet/react-router \
             --workspace @arcjet/remix \
             --workspace @arcjet/sveltekit
+      - name: Verify dist-tags
+        # Nothing was published on a dry run, so there is nothing to verify.
+        if: ${{ !inputs.dry-run }}
+        env:
+          DIST_TAG: ${{ inputs['dist-tag'] }}
+          EXPECTED: ${{ github.ref_name }}
+        run: |
+          # `npm publish` reports the requested tag but can silently write a
+          # different dist-tag while still exiting 0 - a package's
+          # publishConfig.tag once won over the requested tag, publishing a
+          # pre-release to `latest` and leaving `rc` unmoved, with a green
+          # run. Confirm every published package's requested dist-tag now
+          # resolves to this version so that failure mode fails the job.
+          version="${EXPECTED#v}"
+          # `.[]` yields the name value regardless of how npm keys the object.
+          names="$(npm pkg get name --workspaces | jq -r '.[]')"
+          failed=""
+          for pkg in $names; do
+            # A just-written dist-tag can briefly lag the publish call, so
+            # revalidate against the registry a few times before giving up.
+            actual=""
+            for attempt in 1 2 3 4 5 6; do
+              actual="$(npm view --prefer-online "$pkg" "dist-tags.$DIST_TAG" 2>/dev/null || true)"
+              [ "$actual" = "$version" ] && break
+              [ "$attempt" -lt 6 ] && sleep 5
+            done
+            if [ "$actual" = "$version" ]; then
+              echo "ok: $pkg $DIST_TAG -> $version"
+            else
+              echo "::error::$pkg dist-tag '$DIST_TAG' is '${actual:-<none>}', expected '$version'."
+              failed="$failed $pkg"
+            fi
+          done
+          if [ -n "$failed" ]; then
+            echo "::error::dist-tag verification failed for:$failed"
+            exit 1
+          fi
+          echo "Verified $DIST_TAG -> $version for all published packages."
