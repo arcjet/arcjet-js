@@ -17,11 +17,14 @@ import {
 import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
 import {
   DecideService,
+  CaptureEventSchema,
+  CaptureRequestSchema,
   GuardRequestSchema,
   type GuardResponse,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
+  CaptureOptions,
   Decision,
   GuardOptions,
   InternalDecision,
@@ -41,13 +44,14 @@ export interface GuardClientOptions {
 }
 
 /**
- * Create a guard client that calls the Guard RPC.
+ * Create a guard client that calls the Guard and Capture RPCs.
  *
- * Returns an object with a single `guard()` method. The client is
+ * Returns an object with `guard()` and `capture()` methods. The client is
  * stateless — it can be shared across requests.
  */
 export function createGuardClient(options: GuardClientOptions): {
   guard(opts: GuardOptions): Promise<Decision>;
+  capture(opts: CaptureOptions): void;
 } {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
@@ -134,6 +138,46 @@ export function createGuardClient(options: GuardClientOptions): {
         const message = cause instanceof Error ? cause.message : "Failed to parse server response";
         return failOpen(message);
       }
+    },
+
+    /** Record a fact about what the application did. */
+    capture(opts: CaptureOptions): void {
+      const sentAtUnixMs = BigInt(Date.now());
+
+      const event = create(CaptureEventSchema, {
+        eventId: crypto.randomUUID(),
+        occurredAtUnixMs: sentAtUnixMs,
+        correlationId: opts.correlationId ?? "",
+        decisionId: opts.decisionId ?? "",
+        action: opts.action,
+        metadata: opts.metadata ?? {},
+      });
+
+      const captureRequest = create(CaptureRequestSchema, {
+        userAgent,
+        sentAtUnixMs,
+        events: [event],
+      });
+
+      // Fire-and-forget, like report() in the request SDK: capture() never
+      // awaits or throws into caller code. The ack means "received", not
+      // "durably recorded" — see the capture ADR.
+      client
+        .capture(captureRequest, {
+          headers: { Authorization: `Bearer ${key}` },
+          timeoutMs: 1000,
+        })
+        // oxlint-disable-next-line promise/always-return
+        .then(() => {})
+        .catch((cause: unknown) => {
+          const message =
+            cause instanceof ConnectError
+              ? `[${cause.code}] ${cause.message}`
+              : cause instanceof Error
+                ? cause.message
+                : "Unknown error";
+          console.error(`@arcjet/guard: capture() failed to send: ${message}`);
+        });
     },
   };
 }

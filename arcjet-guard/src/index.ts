@@ -77,7 +77,7 @@
 import type { Transport } from "@connectrpc/connect";
 
 import { createGuardClient } from "./client.ts";
-import type { Decision, GuardOptions } from "./types.ts";
+import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
 export type {
   Conclusion,
   Reason,
@@ -132,6 +132,7 @@ export type {
   CustomEvaluateResult,
   CustomEvaluateFn,
   GuardOptions,
+  CaptureOptions,
 } from "./types.ts";
 
 export {
@@ -188,6 +189,26 @@ export interface LaunchOptions {
 export interface ArcjetGuard {
   /** Evaluate a set of guard rules and return a decision. */
   guard(opts: GuardOptions): Promise<Decision>;
+
+  /**
+   * Record a fact about what the application did — never a judgment.
+   *
+   * **Experimental.** Dogfooding only: the API shape may change and there is
+   * no delivery guarantee. Fire-and-forget, like `report()` in the request
+   * SDK — this never awaits, throws, or rejects into caller code. The
+   * returned `void` means the call has been initiated, not that the event
+   * was durably recorded: an ack from the server means "received," not
+   * "stored."
+   *
+   * @example
+   * ```ts
+   * arcjet.experimental_capture({
+   *   action: "refund.issued",
+   *   correlationId: "some-correlation-id",
+   * });
+   * ```
+   */
+  experimental_capture(opts: CaptureOptions): void;
 }
 
 /**
@@ -206,6 +227,9 @@ export function launchArcjetWithTransport(
   return {
     guard(opts: GuardOptions): Promise<Decision> {
       return client.guard(opts);
+    },
+    experimental_capture(opts: CaptureOptions): void {
+      client.capture(opts);
     },
   };
 }

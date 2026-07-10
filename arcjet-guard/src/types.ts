@@ -1545,3 +1545,36 @@ export interface GuardOptions {
   /** Cancellation signal. */
   signal?: AbortSignal;
 }
+
+/**
+ * Options for `.experimental_capture()`.
+ *
+ * **Experimental.** Dogfooding only — the shape of this API may change.
+ */
+export interface CaptureOptions {
+  /**
+   * The fact itself: what the application did, in customer vocabulary.
+   *
+   * Convention: `"resource.verb"`, past tense (e.g. `"refund.issued"`).
+   */
+  action: string;
+  /**
+   * Optional, caller-supplied opaque identifier used to correlate this event
+   * with other `guard()`/`protect()`/`capture()` calls that belong to the
+   * same workflow, agent run, or multi-step task.
+   *
+   * Unlike ambient tracing, this is never inherited automatically — pass it
+   * explicitly when you want events linked together.
+   */
+  correlationId?: string;
+  /**
+   * Optional join key referencing the decision (e.g. a decision `id`) that
+   * this event's action relates to.
+   */
+  decisionId?: string;
+  /**
+   * Arbitrary key-value metadata. Customer-supplied and untrusted, same size
+   * caps as {@link GuardOptions.metadata}.
+   */
+  metadata?: Record<string, string>;
+}
