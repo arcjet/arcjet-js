@@ -75,33 +75,8 @@ describe("experimental_capture", () => {
     assert.equal(event.correlationId, "wf_abcdef");
     assert.equal(event.decisionId, "gdec_abc");
     assert.deepEqual({ ...event.metadata }, { invoice: "inv_123" });
-    assert.ok(event.eventId.length > 0);
     assert.ok(event.occurredAtUnixMs > 0n);
-  });
-
-  test("mints a unique event_id per call", async () => {
-    const seen: CaptureRequest[] = [];
-    const { promise: firstSeen, resolve: resolveFirst } = deferred<void>();
-
-    const transport = mockCaptureTransport((req) => {
-      seen.push(req);
-      if (seen.length === 2) {
-        resolveFirst();
-      }
-      return create(CaptureResponseSchema, {});
-    });
-
-    const arcjet: ArcjetGuard = launchArcjetWithTransport({
-      key: "ajkey_dummy",
-      transport,
-    });
-
-    arcjet.experimental_capture({ action: "refund.issued" });
-    arcjet.experimental_capture({ action: "refund.declined" });
-
-    await firstSeen;
-    assert.equal(seen.length, 2);
-    assert.notEqual(seen[0].events[0].eventId, seen[1].events[0].eventId);
+    assert.ok(req.sentAtUnixMs !== undefined && req.sentAtUnixMs > 0n);
   });
 
   test("correlationId, decisionId, and metadata are optional", async () => {
@@ -168,6 +143,60 @@ describe("experimental_capture", () => {
 
     await promise;
     assert.equal(receivedAuth, "Bearer ajkey_dummy");
+  });
+
+  test("does not send a client event identifier", async () => {
+    const { promise, resolve } = deferred<CaptureRequest>();
+
+    const transport = mockCaptureTransport((req) => {
+      resolve(req);
+      return create(CaptureResponseSchema, {});
+    });
+
+    const arcjet: ArcjetGuard = launchArcjetWithTransport({
+      key: "ajkey_dummy",
+      transport,
+    });
+
+    arcjet.experimental_capture({ action: "refund.issued" });
+
+    // Event IDs are server-authored: the wire message has no event ID field
+    // at all, so nothing client-side can pose as an identifier.
+    const req = await promise;
+    assert.ok(!("eventId" in req.events[0]));
+  });
+
+  test("does not throw on malformed input from untyped callers", async () => {
+    const transport = mockCaptureTransport(() =>
+      create(CaptureResponseSchema, {}),
+    );
+
+    const arcjet: ArcjetGuard = launchArcjetWithTransport({
+      key: "ajkey_dummy",
+      transport,
+    });
+
+    // Plain-JS callers are not bound by the TypeScript types. Misuse of any
+    // kind must be swallowed (the event is silently dropped), never thrown
+    // into application code.
+    assert.doesNotThrow(() => {
+      arcjet.experimental_capture(
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- deliberately malformed input to simulate a plain-JS caller
+        null as unknown as Parameters<ArcjetGuard["experimental_capture"]>[0],
+      );
+    });
+    assert.doesNotThrow(() => {
+      arcjet.experimental_capture({
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- deliberately malformed input to simulate a plain-JS caller
+        action: 123 as unknown as string,
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- deliberately malformed input to simulate a plain-JS caller
+        metadata: { count: 42 } as unknown as Record<string, string>,
+      });
+    });
+
+    // Give any fire-and-forget promise a tick to settle so an unhandled
+    // rejection would surface here rather than after the test completes.
+    await new Promise((res) => setTimeout(res, 10));
   });
 
   test("does not throw when the RPC fails", async () => {

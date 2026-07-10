@@ -1174,8 +1174,13 @@ export declare const GuardResponseSchema: GenMessage<GuardResponse>;
  * did — never a judgment. See the capture ADR
  * (docs/adrs/2026-07-09-capture-trace-event-primitive.md) for the design
  * principles this schema follows: facts only, judgments derived at read
- * time; idempotent via event_id; dually-timestamped; trace-linked via
- * optional correlation_id/decision_id; nothing client-sent is trusted.
+ * time; dually-timestamped; trace-linked via optional
+ * correlation_id/decision_id; nothing client-sent is trusted.
+ *
+ * There is deliberately no client-supplied event ID: the server authors a
+ * unique, time-sortable identifier for every event it receives, the same
+ * way it authors decision IDs. The wire never suppresses duplicates —
+ * multiple events referencing the same decision are recorded as-is.
  *
  * This is an experimental, dogfooding-only first cut. The field set is
  * deliberately minimal — identity fields (actor, subject, group) are being
@@ -1185,21 +1190,11 @@ export declare const GuardResponseSchema: GenMessage<GuardResponse>;
  */
 export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
   /**
-   * SDK-minted identifier, unique per event. Exact retransmissions (same
-   * event_id) dedupe silently server-side; the wire itself never
-   * suppresses duplicates — multiple distinct events referencing the same
-   * decision are recorded as-is. Required.
-   *
-   * @generated from field: string event_id = 1;
-   */
-  eventId: string;
-
-  /**
    * Client wall clock at the time the event occurred (Unix epoch,
    * milliseconds). Informational and subject to clock skew — the server
    * separately records its own authoritative receive time.
    *
-   * @generated from field: uint64 occurred_at_unix_ms = 2;
+   * @generated from field: uint64 occurred_at_unix_ms = 1;
    */
   occurredAtUnixMs: bigint;
 
@@ -1208,7 +1203,7 @@ export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
    * other guard()/protect()/capture() calls in the same workflow or agent
    * run. There is no ambient inheritance — callers must pass it explicitly.
    *
-   * @generated from field: string correlation_id = 3;
+   * @generated from field: string correlation_id = 2;
    */
   correlationId: string;
 
@@ -1218,7 +1213,7 @@ export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
    * that decision is derived at read time by joining against it — that
    * judgment is never sent on the wire.
    *
-   * @generated from field: string decision_id = 4;
+   * @generated from field: string decision_id = 3;
    */
   decisionId: string;
 
@@ -1227,7 +1222,7 @@ export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
    * Convention: "resource.verb", past tense (e.g. "refund.issued").
    * Required.
    *
-   * @generated from field: string action = 5;
+   * @generated from field: string action = 4;
    */
   action: string;
 
@@ -1235,7 +1230,7 @@ export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
    * Arbitrary key-value metadata. Customer-supplied and untrusted, same
    * size caps as GuardRequest.metadata.
    *
-   * @generated from field: map<string, string> metadata = 6;
+   * @generated from field: map<string, string> metadata = 5;
    */
   metadata: { [key: string]: string };
 };

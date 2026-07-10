@@ -142,42 +142,43 @@ export function createGuardClient(options: GuardClientOptions): {
 
     /** Record a fact about what the application did. */
     capture(opts: CaptureOptions): void {
-      const sentAtUnixMs = BigInt(Date.now());
-
-      const event = create(CaptureEventSchema, {
-        eventId: crypto.randomUUID(),
-        occurredAtUnixMs: sentAtUnixMs,
-        correlationId: opts.correlationId ?? "",
-        decisionId: opts.decisionId ?? "",
-        action: opts.action,
-        metadata: opts.metadata ?? {},
-      });
-
-      const captureRequest = create(CaptureRequestSchema, {
-        userAgent,
-        sentAtUnixMs,
-        events: [event],
-      });
-
       // Fire-and-forget, like report() in the request SDK: capture() never
-      // awaits or throws into caller code. The ack means "received", not
-      // "durably recorded" — see the capture ADR.
-      client
-        .capture(captureRequest, {
-          headers: { Authorization: `Bearer ${key}` },
-          timeoutMs: 1000,
-        })
-        // oxlint-disable-next-line promise/always-return
-        .then(() => {})
-        .catch((cause: unknown) => {
-          const message =
-            cause instanceof ConnectError
-              ? `[${cause.code}] ${cause.message}`
-              : cause instanceof Error
-                ? cause.message
-                : "Unknown error";
-          console.error(`@arcjet/guard: capture() failed to send: ${message}`);
+      // awaits or throws into caller code — a failure of any kind (bad
+      // input, transport error, server rejection) silently drops the event.
+      // Capture is best-effort by contract (the ack means "received", not
+      // "durably recorded" — see the capture ADR); while it is experimental
+      // the SDK has no logger to report drops through, so they are silent.
+      // Event IDs are authored by the server on receipt, not minted here.
+      try {
+        const sentAtUnixMs = BigInt(Date.now());
+
+        const event = create(CaptureEventSchema, {
+          occurredAtUnixMs: sentAtUnixMs,
+          correlationId: opts.correlationId ?? "",
+          decisionId: opts.decisionId ?? "",
+          action: opts.action,
+          metadata: opts.metadata ?? {},
         });
+
+        const captureRequest = create(CaptureRequestSchema, {
+          userAgent,
+          sentAtUnixMs,
+          events: [event],
+        });
+
+        client
+          .capture(captureRequest, {
+            headers: { Authorization: `Bearer ${key}` },
+            timeoutMs: 1000,
+          })
+          // oxlint-disable-next-line promise/always-return
+          .then(() => {})
+          .catch(() => {
+            // Dropped silently — see above.
+          });
+      } catch {
+        // Dropped silently — see above.
+      }
     },
   };
 }

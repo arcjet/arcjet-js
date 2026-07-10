@@ -195,10 +195,14 @@ export interface ArcjetGuard {
    *
    * **Experimental.** Dogfooding only: the API shape may change and there is
    * no delivery guarantee. Fire-and-forget, like `report()` in the request
-   * SDK — this never awaits, throws, or rejects into caller code. The
-   * returned `void` means the call has been initiated, not that the event
-   * was durably recorded: an ack from the server means "received," not
-   * "stored."
+   * SDK — this never awaits, throws, or rejects into caller code. A failure
+   * of any kind (invalid input, transport error, server rejection) drops
+   * the event silently. The returned `void` means the call has been
+   * initiated, not that the event was durably recorded: an ack from the
+   * server means "received," not "stored."
+   *
+   * Event identifiers are authored by the server when the event is
+   * received; the SDK does not mint or expose them.
    *
    * @example
    * ```ts
