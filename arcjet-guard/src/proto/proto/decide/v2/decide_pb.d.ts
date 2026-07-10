@@ -1171,58 +1171,52 @@ export declare const GuardResponseSchema: GenMessage<GuardResponse>;
 
 /**
  * CaptureEvent is a single fact reported by the application about what it
- * did — never a judgment. See the capture ADR
- * (docs/adrs/2026-07-09-capture-trace-event-primitive.md) for the design
- * principles this schema follows: facts only, judgments derived at read
- * time; dually-timestamped; trace-linked via optional
- * correlation_id/decision_id; nothing client-sent is trusted.
+ * did — never a judgment. Judgments (e.g. whether an event agrees with a
+ * decision) are derived at read time, never sent on the wire. Nothing
+ * client-sent is trusted: anything relied upon (team, receive time, event
+ * identity) is derived server-side. See the capture ADR
+ * (docs/adrs/2026-07-09-capture-trace-event-primitive.md).
  *
- * There is deliberately no client-supplied event ID: the server authors a
- * unique, time-sortable identifier for every event it receives, the same
- * way it authors decision IDs. The wire never suppresses duplicates —
- * multiple events referencing the same decision are recorded as-is.
+ * There is no client-supplied event ID: the server authors a unique,
+ * time-sortable identifier for every event it receives. The wire never
+ * suppresses duplicates.
  *
- * This is an experimental, dogfooding-only first cut. The field set is
- * deliberately minimal — identity fields (actor, subject, group) are being
- * decided separately and will extend this message later.
+ * Timing fields (1-9)
  *
  * @generated from message proto.decide.v2.CaptureEvent
  */
 export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
   /**
-   * Client wall clock at the time the event occurred (Unix epoch,
-   * milliseconds). Informational and subject to clock skew — the server
-   * separately records its own authoritative receive time.
+   * Client wall clock when the event occurred (Unix epoch, milliseconds).
+   * Informational and subject to clock skew; the server records its own
+   * authoritative receive time.
    *
    * @generated from field: uint64 occurred_at_unix_ms = 1;
    */
   occurredAtUnixMs: bigint;
 
   /**
-   * An optional, explicitly passed identifier correlating this event with
-   * other guard()/protect()/capture() calls in the same workflow or agent
-   * run. There is no ambient inheritance — callers must pass it explicitly.
+   * Optional, explicitly passed identifier correlating this event with
+   * other calls in the same workflow or agent run. Never inherited
+   * ambiently.
    *
-   * @generated from field: string correlation_id = 2;
+   * @generated from field: string correlation_id = 10;
    */
   correlationId: string;
 
   /**
-   * An optional join key referencing the decision (e.g. a GuardDecision.id)
-   * that this event's action relates to. Whether the event agrees with
-   * that decision is derived at read time by joining against it — that
-   * judgment is never sent on the wire.
+   * Optional join key referencing the decision (e.g. a GuardDecision.id)
+   * this event's action relates to.
    *
-   * @generated from field: string decision_id = 3;
+   * @generated from field: string decision_id = 11;
    */
   decisionId: string;
 
   /**
-   * The fact itself: what the application did, in customer vocabulary.
-   * Convention: "resource.verb", past tense (e.g. "refund.issued").
-   * Required.
+   * What the application did, in customer vocabulary. Convention:
+   * "resource.verb", past tense (e.g. "refund.issued"). Required.
    *
-   * @generated from field: string action = 4;
+   * @generated from field: string action = 20;
    */
   action: string;
 
@@ -1230,7 +1224,7 @@ export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
    * Arbitrary key-value metadata. Customer-supplied and untrusted, same
    * size caps as GuardRequest.metadata.
    *
-   * @generated from field: map<string, string> metadata = 5;
+   * @generated from field: map<string, string> metadata = 21;
    */
   metadata: { [key: string]: string };
 };
@@ -1244,7 +1238,7 @@ export declare const CaptureEventSchema: GenMessage<CaptureEvent>;
 /**
  * CaptureRequest is a request to the Capture RPC.
  *
- * Observability fields (1–9), mirroring GuardRequest.
+ * Observability fields (1-9), mirroring GuardRequest.
  *
  * @generated from message proto.decide.v2.CaptureRequest
  */
@@ -1265,9 +1259,8 @@ export declare type CaptureRequest = Message<"proto.decide.v2.CaptureRequest"> &
   sentAtUnixMs?: bigint;
 
   /**
-   * The events to record. The wire carries repeated events from day one
-   * even though SDKs send one event per call today, so batching later is
-   * a transport change, not a wire change.
+   * The events to record. Repeated so transports can batch without wire
+   * changes.
    *
    * @generated from field: repeated proto.decide.v2.CaptureEvent events = 10;
    */
@@ -1281,12 +1274,10 @@ export declare type CaptureRequest = Message<"proto.decide.v2.CaptureRequest"> &
 export declare const CaptureRequestSchema: GenMessage<CaptureRequest>;
 
 /**
- * CaptureResponse is the response from the Capture RPC. Deliberately nearly
- * empty: capture is fire-and-forget, like report() in the request SDK. The
- * ack means the request was received, not that events are durably recorded —
- * persistence happens asynchronously via the guard-record pipeline. There is
- * no per-event ack status; either the request was accepted or the RPC
- * returned an error.
+ * CaptureResponse is the response from the Capture RPC. Deliberately empty:
+ * capture is fire-and-forget and there is no per-event ack status. The ack
+ * means the request was received, not that events are durably recorded —
+ * persistence is asynchronous via the guard-record pipeline.
  *
  * @generated from message proto.decide.v2.CaptureResponse
  */
