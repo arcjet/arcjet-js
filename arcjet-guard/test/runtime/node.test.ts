@@ -26,6 +26,8 @@ import {
 } from "@arcjet/guard";
 import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
 
+import { createHttp2Transport } from "../../src/transport-http2.ts";
+import type { Http2TransportHandle } from "../../src/transport-http2.ts";
 import { cases } from "../_shared/cases.ts";
 import type { GuardSurface } from "../_shared/cases.ts";
 import {
@@ -138,6 +140,48 @@ describe("Runtime: Node.js HTTP/2 over TLS (self-signed)", () => {
     // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
     assert.equal(decision.hasError(), false);
 
+    const result = input.result(decision);
+    assert.ok(result);
+    assert.equal(result.remainingTokens, 95);
+  });
+});
+
+describe("Runtime: guard HTTP/2 transport factory (keep-alive + recycling)", () => {
+  let baseUrl: string;
+  let closeServer: () => Promise<void>;
+  let handle: Http2TransportHandle | undefined;
+
+  before(async () => {
+    ({ baseUrl, close: closeServer } = await startH2Server());
+  });
+
+  after(async () => {
+    if (handle !== undefined) handle.sessionManager.abort();
+    await closeServer();
+  });
+
+  test("guard call succeeds through the production transport factory", async () => {
+    // Exercises `createHttp2Transport` itself — PING keep-alive options and
+    // the connection-recycling wrapper — against a real HTTP/2 server, unlike
+    // the transports above, which are assembled by hand.
+    handle = createHttp2Transport(baseUrl);
+    const arcjet = launchArcjetWithTransport({
+      key: "ajkey_dummy",
+      transport: handle.transport,
+    });
+    const limit = tokenBucket({
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
+    const input = limit({ key: "user_1" });
+
+    const decision = await arcjet.guard({
+      label: "test.h2.factory",
+      rules: [input],
+    });
+
+    assert.equal(decision.conclusion, "ALLOW");
     const result = input.result(decision);
     assert.ok(result);
     assert.equal(result.remainingTokens, 95);

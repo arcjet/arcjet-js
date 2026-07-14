@@ -31,7 +31,7 @@ export function createTransport(baseUrl: string): Transport {
 
   // No proxy: connect directly over HTTP/2.
   if (proxyUrl === undefined) {
-    return createHttp2Transport(baseUrl);
+    return createHttp2Transport(baseUrl).transport;
   }
 
   // Proxy: Bun's native `fetch` honors the proxy environment variables. The
