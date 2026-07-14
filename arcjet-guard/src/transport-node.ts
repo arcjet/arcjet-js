@@ -40,7 +40,7 @@ export function createTransport(baseUrl: string): Transport {
 
   // No proxy: connect directly over HTTP/2.
   if (proxyUrl === undefined) {
-    return createHttp2Transport(baseUrl);
+    return createHttp2Transport(baseUrl).transport;
   }
 
   // Proxy: route through it over HTTP/1.1 using the agent's built-in proxy
