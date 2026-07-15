@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.9.0](https://github.com/arcjet/arcjet-js/compare/v1.8.0...v1.9.0) (2026-07-15)
+
+
+### 🚀 New Features
+
+* add Rampart model backend to localDetectSensitiveInfo ([#6141](https://github.com/arcjet/arcjet-js/issues/6141)) ([a77cacc](https://github.com/arcjet/arcjet-js/commit/a77cacc392fba1d8edda2740ffda0eb1e8e14363))
+* **sensitive-info-rampart:** add on-device Rampart NER backend ([#6120](https://github.com/arcjet/arcjet-js/issues/6120)) ([f2b9e44](https://github.com/arcjet/arcjet-js/commit/f2b9e44fd858b0d04973d11127c1129d5aa26f3b))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet-guard:** detect and recycle silently dropped HTTP/2 connections ([#6137](https://github.com/arcjet/arcjet-js/issues/6137)) ([742cb4b](https://github.com/arcjet/arcjet-js/commit/742cb4ba5c0f8b648966ae2bdf41b8e335a380bc))
+* **arcjet-guard:** make connection recycling single-flight per session generation ([#6138](https://github.com/arcjet/arcjet-js/issues/6138)) ([ca0883c](https://github.com/arcjet/arcjet-js/commit/ca0883c896a7fed3b3a6055f7fac3940d6b50719))
+
+
+### 🧹 Miscellaneous Chores
+
+* seed release-please manifest for sensitive-info-rampart ([#6142](https://github.com/arcjet/arcjet-js/issues/6142)) ([39ec65f](https://github.com/arcjet/arcjet-js/commit/39ec65f5bda2893fdaeee08601ce84b83d0029ad))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump ws from 7.5.10 to 7.5.12 in /examples/remix-express ([#6140](https://github.com/arcjet/arcjet-js/issues/6140)) ([bc91c59](https://github.com/arcjet/arcjet-js/commit/bc91c596878cccf5d865a0338824a025d2c630da))
+* **deps:** bump morgan from 1.10.1 to 1.11.0 in /examples/react-router-middleware ([#6139](https://github.com/arcjet/arcjet-js/issues/6139)) ([d91afca](https://github.com/arcjet/arcjet-js/commit/d91afcaf449cc2436869d672b34452b84fe31ceb))
+* **deps:** bump morgan from 1.10.1 to 1.11.0 in /examples/remix-express ([#6135](https://github.com/arcjet/arcjet-js/issues/6135)) ([f5c1135](https://github.com/arcjet/arcjet-js/commit/f5c1135b24d094f4f54e1adf1fe7f250760014ba))
+
+
+### ✅ Continuous Integration
+
+* **publish:** pass dist-tag via --tag and drop publishConfig.tag ([#6133](https://github.com/arcjet/arcjet-js/issues/6133)) ([a429662](https://github.com/arcjet/arcjet-js/commit/a42966201819b906be047c0c95ec3c8c3d1c3f48))
+
 ## [1.8.0](https://github.com/arcjet/arcjet-js/compare/v1.7.0...v1.8.0) (2026-07-07)
 
 

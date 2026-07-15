@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/analyze",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Arcjet local analysis engine",
   "keywords": [
     "analyze",
@@ -50,8 +50,8 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/analyze-wasm": "1.8.0",
-    "@arcjet/protocol": "1.8.0"
+    "@arcjet/analyze-wasm": "1.9.0",
+    "@arcjet/protocol": "1.9.0"
   },
   "devDependencies": {
     "@bytecodealliance/jco": "1.5.0",

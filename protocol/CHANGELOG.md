@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.9.0](https://github.com/arcjet/arcjet-js/compare/v1.8.0...@arcjet/protocol-v1.9.0) (2026-07-15)
+
+
+### 🚀 New Features
+
+* add Rampart model backend to localDetectSensitiveInfo ([#6141](https://github.com/arcjet/arcjet-js/issues/6141)) ([a77cacc](https://github.com/arcjet/arcjet-js/commit/a77cacc392fba1d8edda2740ffda0eb1e8e14363))
+* **sensitive-info-rampart:** add on-device Rampart NER backend ([#6120](https://github.com/arcjet/arcjet-js/issues/6120)) ([f2b9e44](https://github.com/arcjet/arcjet-js/commit/f2b9e44fd858b0d04973d11127c1129d5aa26f3b))
+
+
+### ✅ Continuous Integration
+
+* **publish:** pass dist-tag via --tag and drop publishConfig.tag ([#6133](https://github.com/arcjet/arcjet-js/issues/6133)) ([a429662](https://github.com/arcjet/arcjet-js/commit/a42966201819b906be047c0c95ec3c8c3d1c3f48))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.8.0 to 1.9.0
+
 ## [1.8.0](https://github.com/arcjet/arcjet-js/compare/v1.7.0...@arcjet/protocol-v1.8.0) (2026-07-07)
 
 

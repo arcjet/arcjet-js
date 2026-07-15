@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.9.0](https://github.com/arcjet/arcjet-js/compare/v1.8.0...@arcjet/remix-v1.9.0) (2026-07-15)
+
+
+### ✅ Continuous Integration
+
+* **publish:** pass dist-tag via --tag and drop publishConfig.tag ([#6133](https://github.com/arcjet/arcjet-js/issues/6133)) ([a429662](https://github.com/arcjet/arcjet-js/commit/a42966201819b906be047c0c95ec3c8c3d1c3f48))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.8.0 to 1.9.0
+    * @arcjet/env bumped from 1.8.0 to 1.9.0
+    * @arcjet/headers bumped from 1.8.0 to 1.9.0
+    * @arcjet/ip bumped from 1.8.0 to 1.9.0
+    * @arcjet/logger bumped from 1.8.0 to 1.9.0
+    * @arcjet/protocol bumped from 1.8.0 to 1.9.0
+    * @arcjet/transport bumped from 1.8.0 to 1.9.0
+    * arcjet bumped from 1.8.0 to 1.9.0
+
 ## [1.8.0](https://github.com/arcjet/arcjet-js/compare/v1.7.0...@arcjet/remix-v1.8.0) (2026-07-07)
 
 
