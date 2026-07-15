@@ -11,7 +11,7 @@ import {
   defineCustomRule,
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
-import type { Decision, InternalResult } from "./types.ts";
+import type { Decision, InternalResult, SensitiveInfoBackend } from "./types.ts";
 
 describe("tokenBucket", () => {
   test("returns a callable with type discriminant", () => {
@@ -322,6 +322,44 @@ describe("localDetectSensitiveInfo", () => {
 
     assert.equal(input.input.inputText, "my email is foo@bar.com");
     assert.deepEqual(input.input.metadata, { destination: "openai" });
+  });
+
+  test("allows the four native types without a backend", () => {
+    assert.doesNotThrow(() =>
+      localDetectSensitiveInfo({
+        deny: ["EMAIL", "PHONE_NUMBER", "IP_ADDRESS", "CREDIT_CARD_NUMBER"],
+      }),
+    );
+  });
+
+  test("throws when a deny type needs a backend that is not configured", () => {
+    assert.throws(
+      () => localDetectSensitiveInfo({ deny: ["GIVEN_NAME"] }),
+      /config error: the "GIVEN_NAME" type is only detected when a `backend`/,
+    );
+  });
+
+  test("throws when an allow type needs a backend that is not configured", () => {
+    assert.throws(
+      () => localDetectSensitiveInfo({ allow: ["SSN"] }),
+      /config error: the "SSN" type is only detected when a `backend`/,
+    );
+  });
+
+  test("lists every unsupported type in the error, without duplicates", () => {
+    assert.throws(
+      () => localDetectSensitiveInfo({ deny: ["GIVEN_NAME", "SURNAME", "GIVEN_NAME"] }),
+      /the "GIVEN_NAME", "SURNAME" types are only detected/,
+    );
+  });
+
+  test("does not throw for backend-only types when a backend is configured", () => {
+    const backend: SensitiveInfoBackend = {
+      detect() {
+        return Promise.resolve({ allowed: [], denied: [] });
+      },
+    };
+    assert.doesNotThrow(() => localDetectSensitiveInfo({ deny: ["GIVEN_NAME", "SSN"], backend }));
   });
 });
 
@@ -693,9 +731,7 @@ describe("errorResult() and the error/non-error split", () => {
     const input = rule({ key: "user_1" });
     const { configId } = rule[symbolArcjetInternal];
     const { inputId } = input[symbolArcjetInternal];
-    const decision = decisionWith([
-      tokenBucketResult(configId, inputId, "DENY"),
-    ]);
+    const decision = decisionWith([tokenBucketResult(configId, inputId, "DENY")]);
 
     const denied = input.deniedResult(decision);
     assert.notEqual(denied, null);

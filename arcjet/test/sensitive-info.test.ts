@@ -111,6 +111,62 @@ describe("Primitive > sensitiveInfo", () => {
     }, /`sensitiveInfo` options error: either `allow` or `deny` must be specified/);
   });
 
+  test("allows the four native types without a backend", () => {
+    assert.doesNotThrow(() =>
+      sensitiveInfo({
+        deny: ["EMAIL", "PHONE_NUMBER", "IP_ADDRESS", "CREDIT_CARD_NUMBER"],
+      }),
+    );
+  });
+
+  test("throws when a backend-only type is listed without a backend or detect", () => {
+    assert.throws(
+      () => sensitiveInfo({ deny: ["GIVEN_NAME"] }),
+      /options error: the "GIVEN_NAME" type is only detected when a `backend`/,
+    );
+    assert.throws(
+      () => sensitiveInfo({ allow: ["SSN"] }),
+      /options error: the "SSN" type is only detected when a `backend`/,
+    );
+  });
+
+  test("lists every unsupported type in the error, without duplicates", () => {
+    assert.throws(
+      () => sensitiveInfo({ deny: ["GIVEN_NAME", "SURNAME", "GIVEN_NAME"] }),
+      /the "GIVEN_NAME", "SURNAME" types are only detected/,
+    );
+  });
+
+  test("does not throw for backend-only types when a backend is configured", () => {
+    assert.doesNotThrow(() =>
+      sensitiveInfo({
+        deny: ["GIVEN_NAME", "SSN"],
+        backend: {
+          detect() {
+            return Promise.resolve({ allowed: [], denied: [] });
+          },
+        },
+      }),
+    );
+  });
+
+  test("does not throw for backend-only types when a custom detect is provided", () => {
+    assert.doesNotThrow(() =>
+      sensitiveInfo({
+        deny: ["GIVEN_NAME"],
+        detect: () => [],
+      }),
+    );
+  });
+
+  test("ignores unknown custom entity strings (pre-existing behavior)", () => {
+    assert.doesNotThrow(() =>
+      // A custom string that is not a built-in type is left alone — the
+      // backend-support check only covers known backend-only types.
+      sensitiveInfo<"MY_CUSTOM_THING">({ deny: ["MY_CUSTOM_THING"] }),
+    );
+  });
+
   test("does not throw via `validate()`", () => {
     const context = {
       key: "test-key",

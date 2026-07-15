@@ -62,7 +62,9 @@ export type Warning = {
  * The remaining types are detected only when a {@link SensitiveInfoBackend}
  * that supports them is configured via
  * {@link LocalDetectSensitiveInfoConfigAllow.backend | `backend`}, such as
- * `@arcjet/sensitive-info-rampart`:
+ * `@arcjet/sensitive-info-rampart`. Listing one of them without such a backend
+ * is a configuration error — {@link localDetectSensitiveInfo} throws rather
+ * than accepting a rule that can never match:
  *
  * - `"GIVEN_NAME"` — Given (first) names
  * - `"SURNAME"` — Surnames (last names)
@@ -1064,7 +1066,8 @@ export interface LocalDetectSensitiveInfoConfigAllow {
    * detect sensitive information with an on-device model instead of the
    * built-in pattern matching. Types beyond `"EMAIL"`, `"PHONE_NUMBER"`,
    * `"IP_ADDRESS"`, and `"CREDIT_CARD_NUMBER"` are only detected when a backend
-   * that supports them is configured. See {@link SensitiveInfoBackend}.
+   * that supports them is configured — listing one in `allow`/`deny` without
+   * such a backend throws. See {@link SensitiveInfoBackend}.
    */
   backend?: SensitiveInfoBackend;
 }
@@ -1134,7 +1137,8 @@ export interface LocalDetectSensitiveInfoConfigDeny {
    * detect sensitive information with an on-device model instead of the
    * built-in pattern matching. Types beyond `"EMAIL"`, `"PHONE_NUMBER"`,
    * `"IP_ADDRESS"`, and `"CREDIT_CARD_NUMBER"` are only detected when a backend
-   * that supports them is configured. See {@link SensitiveInfoBackend}.
+   * that supports them is configured — listing one in `allow`/`deny` without
+   * such a backend throws. See {@link SensitiveInfoBackend}.
    */
   backend?: SensitiveInfoBackend;
 }

@@ -71,6 +71,23 @@ const noopLog = {
 const analyzeContext = { log: noopLog, characteristics: [] as string[] };
 
 /**
+ * The {@link SensitiveInfoEntityType} values the bundled WASM engine detects
+ * natively. Every other declared type is only detected when a
+ * {@link SensitiveInfoBackend} that supports it is configured; listing one
+ * without such a backend is a configuration error (see `rules.ts`).
+ *
+ * Keep in sync with the native tags mapped in {@link stringToEntity}.
+ *
+ * @internal
+ */
+export const nativeEntityTypes: ReadonlySet<SensitiveInfoEntityType> = new Set([
+  "EMAIL",
+  "PHONE_NUMBER",
+  "IP_ADDRESS",
+  "CREDIT_CARD_NUMBER",
+]);
+
+/**
  * Convert an SDK entity type string to an analyze entity tag.
  *
  * The four types the WebAssembly engine understands map to their native tag;

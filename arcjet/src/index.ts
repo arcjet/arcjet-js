@@ -1446,6 +1446,10 @@ export type SensitiveInfoOptionsAllow<
    * - `"STATE"`
    * - `"ZIP_CODE"`
    *
+   * Listing one of these additional types without a supporting `backend` (or a
+   * custom `detect` function that identifies it) throws, since the default
+   * backend can never match it.
+   *
    * You can also use labels of custom info detected by `detect`.
    */
   allow: Array<
@@ -1488,7 +1492,11 @@ export type SensitiveInfoOptionsAllow<
    *
    * Provide an alternative backend such as `@arcjet/sensitive-info-rampart` to
    * detect sensitive information with an on-device model instead of the
-   * built-in pattern matching. See {@linkcode SensitiveInfoBackend}.
+   * built-in pattern matching. Types beyond `"EMAIL"`, `"PHONE_NUMBER"`,
+   * `"IP_ADDRESS"`, and `"CREDIT_CARD_NUMBER"` are only detected when a backend
+   * that supports them is configured (or a custom `detect` function is
+   * provided) — listing one in `allow`/`deny` without either throws. See
+   * {@linkcode SensitiveInfoBackend}.
    */
   backend?: SensitiveInfoBackend;
 };
@@ -1551,6 +1559,10 @@ export type SensitiveInfoOptionsDeny<
    * - `"STATE"`
    * - `"ZIP_CODE"`
    *
+   * Listing one of these additional types without a supporting `backend` (or a
+   * custom `detect` function that identifies it) throws, since the default
+   * backend can never match it.
+   *
    * You can also use labels of custom info detected by `detect`.
    */
   deny: Array<
@@ -1588,7 +1600,11 @@ export type SensitiveInfoOptionsDeny<
    *
    * Provide an alternative backend such as `@arcjet/sensitive-info-rampart` to
    * detect sensitive information with an on-device model instead of the
-   * built-in pattern matching. See {@linkcode SensitiveInfoBackend}.
+   * built-in pattern matching. Types beyond `"EMAIL"`, `"PHONE_NUMBER"`,
+   * `"IP_ADDRESS"`, and `"CREDIT_CARD_NUMBER"` are only detected when a backend
+   * that supports them is configured (or a custom `detect` function is
+   * provided) — listing one in `allow`/`deny` without either throws. See
+   * {@linkcode SensitiveInfoBackend}.
    */
   backend?: SensitiveInfoBackend;
 };
@@ -2367,6 +2383,36 @@ const wasmSensitiveInfoBackend: SensitiveInfoBackend = {
 };
 
 /**
+ * Built-in {@linkcode ArcjetSensitiveInfoType} values that the default (WASM)
+ * backend cannot detect. Each is only detected when a
+ * {@linkcode SensitiveInfoBackend} that supports it is configured (such as
+ * `@arcjet/sensitive-info-rampart`), so listing one without a `backend` (and
+ * without a custom `detect` function) is a configuration error.
+ *
+ * This is `ArcjetSensitiveInfoType` minus the four natively-detected types
+ * (`EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`, `CREDIT_CARD_NUMBER`); keep it in sync
+ * with that union in `@arcjet/protocol`.
+ */
+const backendOnlySensitiveInfoTypes: ReadonlySet<string> = new Set([
+  "GIVEN_NAME",
+  "SURNAME",
+  "SSN",
+  "URL",
+  "TAX_ID",
+  "BANK_ACCOUNT",
+  "ROUTING_NUMBER",
+  "GOVERNMENT_ID",
+  "PASSPORT",
+  "DRIVERS_LICENSE",
+  "BUILDING_NUMBER",
+  "STREET_NAME",
+  "SECONDARY_ADDRESS",
+  "CITY",
+  "STATE",
+  "ZIP_CODE",
+]);
+
+/**
  * Arcjet sensitive information detection rule.
  *
  * Applying this rule protects against clients sending you sensitive information
@@ -2470,6 +2516,30 @@ export function sensitiveInfo<
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
   const allow = options.allow || [];
   const deny = options.deny || [];
+
+  // A configured backend handles its own supported entity types, and a custom
+  // `detect` function can identify anything the caller lists. Without either,
+  // only the default (WASM) backend runs, which detects `EMAIL`,
+  // `PHONE_NUMBER`, `IP_ADDRESS`, and `CREDIT_CARD_NUMBER`. Listing any other
+  // built-in type in that case can never match, so surface it as a config error
+  // rather than silently doing nothing.
+  if (typeof options.backend === "undefined" && typeof options.detect === "undefined") {
+    const unsupported = [...new Set([...allow, ...deny])].filter((entity) =>
+      backendOnlySensitiveInfoTypes.has(entity),
+    );
+    if (unsupported.length > 0) {
+      const list = unsupported.map((entity) => `"${entity}"`).join(", ");
+      const subject = unsupported.length === 1 ? "type is" : "types are";
+      const object = unsupported.length === 1 ? "it" : "them";
+      throw new Error(
+        `\`sensitiveInfo\` options error: the ${list} ${subject} only detected when a ` +
+          `\`backend\` that supports ${object} is configured (such as ` +
+          `\`@arcjet/sensitive-info-rampart\`) or a custom \`detect\` function is provided. ` +
+          `The default backend only detects "EMAIL", "PHONE_NUMBER", "IP_ADDRESS", and ` +
+          `"CREDIT_CARD_NUMBER".`,
+      );
+    }
+  }
 
   return [
     {
