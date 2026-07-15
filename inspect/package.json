@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/inspect",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Arcjet utilities for inspecting decisions made an the SDK",
   "keywords": [
     "arcjet",
@@ -49,7 +49,7 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/protocol": "1.8.0"
+    "@arcjet/protocol": "1.9.0"
   },
   "devDependencies": {
     "@types/node": "22.19.21",

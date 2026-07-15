@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/analyze-wasm",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "WebAssembly bindings to Arcjet's local analysis engine",
   "keywords": [
     "analyze",

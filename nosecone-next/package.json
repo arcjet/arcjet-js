@@ -1,6 +1,6 @@
 {
   "name": "@nosecone/next",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Protect your Next.js application with secure headers",
   "keywords": [
     "arcjet",
@@ -59,7 +59,7 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "nosecone": "1.8.0"
+    "nosecone": "1.9.0"
   },
   "devDependencies": {
     "@types/node": "22.19.21",

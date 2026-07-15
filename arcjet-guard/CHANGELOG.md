@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.9.0](https://github.com/arcjet/arcjet-js/compare/v1.8.0...@arcjet/guard-v1.9.0) (2026-07-15)
+
+
+### 🚀 New Features
+
+* add Rampart model backend to localDetectSensitiveInfo ([#6141](https://github.com/arcjet/arcjet-js/issues/6141)) ([a77cacc](https://github.com/arcjet/arcjet-js/commit/a77cacc392fba1d8edda2740ffda0eb1e8e14363))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet-guard:** detect and recycle silently dropped HTTP/2 connections ([#6137](https://github.com/arcjet/arcjet-js/issues/6137)) ([742cb4b](https://github.com/arcjet/arcjet-js/commit/742cb4ba5c0f8b648966ae2bdf41b8e335a380bc))
+* **arcjet-guard:** make connection recycling single-flight per session generation ([#6138](https://github.com/arcjet/arcjet-js/issues/6138)) ([ca0883c](https://github.com/arcjet/arcjet-js/commit/ca0883c896a7fed3b3a6055f7fac3940d6b50719))
+
+
+### ✅ Continuous Integration
+
+* **publish:** pass dist-tag via --tag and drop publishConfig.tag ([#6133](https://github.com/arcjet/arcjet-js/issues/6133)) ([a429662](https://github.com/arcjet/arcjet-js/commit/a42966201819b906be047c0c95ec3c8c3d1c3f48))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.8.0 to 1.9.0
+
 ## [1.8.0](https://github.com/arcjet/arcjet-js/compare/v1.7.0...@arcjet/guard-v1.8.0) (2026-07-07)
 
 
