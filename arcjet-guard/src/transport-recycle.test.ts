@@ -171,9 +171,11 @@ describe("withConnectionRecycling", () => {
     assert.equal(session.aborts, 1);
   });
 
-  test("a stale success does not reset the run for the current session", async () => {
-    // The first call is held until after a recycle, so its success reports on
-    // the old session; it must not reset the deadline run of the new one.
+  test("a success from a call started before a recycle still resets the run", async () => {
+    // The first call is held until after a recycle and a partial deadline
+    // run against the replacement connection. Its success must reset that
+    // run: a mistaken reset only delays a needed recycle, while a discarded
+    // success risks tearing down a healthy connection.
     let releaseFirst: (() => void) | undefined;
     const firstGate = new Promise<void>((resolve) => {
       releaseFirst = resolve;
@@ -205,8 +207,13 @@ describe("withConnectionRecycling", () => {
     releaseFirst?.();
     await held;
 
+    for (let index = 0; index < RECYCLE_AFTER_CONSECUTIVE_DEADLINES - 1; index++) {
+      await callIgnoringError(client);
+    }
+    assert.equal(session.aborts, 1, "the success must have reset the run");
+
     await callIgnoringError(client);
-    assert.equal(session.aborts, 2, "the stale success must not have reset the run");
+    assert.equal(session.aborts, 2, "counting must continue after the reset");
   });
 
   test("responses and errors pass through unchanged", async () => {
