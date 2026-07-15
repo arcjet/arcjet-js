@@ -1,24 +1,24 @@
 // Verify (or regenerate) the bundled Cloudflare IP ranges against the lists
 // Cloudflare publishes. Run on a schedule in CI so we notice when they change.
 //
-// Prefer the package scripts, which build first so the `../index.ts` import
-// (which re-exports the generated `./cloudflare.js`) resolves:
+// Use the package scripts, which build first so the `../dist/*.js` imports
+// resolve:
 //
 //   npm run verify-ranges -w @arcjet/ip   # check, exit non-zero on drift
-//   npm run generate -w @arcjet/ip        # rewrite cloudflare.ts in place
+//   npm run generate -w @arcjet/ip        # rewrite src/cloudflare.ts in place
 //
 // Runs with a Node version that strips TypeScript types (the repo uses Node 24).
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import { cloudflareIpv4Ranges, cloudflareIpv6Ranges } from "../cloudflare.ts";
-import { parseProxy } from "../index.ts";
+import { cloudflareIpv4Ranges, cloudflareIpv6Ranges } from "../dist/cloudflare.js";
+import { parseProxy } from "../dist/index.js";
 
 const IPV4_URL = "https://www.cloudflare.com/ips-v4/";
 const IPV6_URL = "https://www.cloudflare.com/ips-v6/";
 
-const sourcePath = fileURLToPath(new URL("../cloudflare.ts", import.meta.url));
+const sourcePath = fileURLToPath(new URL("../src/cloudflare.ts", import.meta.url));
 
 async function fetchRanges(url: string): Promise<Array<string>> {
   const response = await fetch(url);
