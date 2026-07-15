@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/body",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Arcjet utilities for extracting the body from a stream",
   "keywords": [
     "arcjet",

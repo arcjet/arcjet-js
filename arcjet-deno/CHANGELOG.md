@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/deno-v1.9.1) (2026-07-15)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/deno:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.9.0 to 1.9.1
+    * @arcjet/env bumped from 1.9.0 to 1.9.1
+    * @arcjet/headers bumped from 1.9.0 to 1.9.1
+    * @arcjet/ip bumped from 1.9.0 to 1.9.1
+    * @arcjet/logger bumped from 1.9.0 to 1.9.1
+    * @arcjet/protocol bumped from 1.9.0 to 1.9.1
+    * @arcjet/transport bumped from 1.9.0 to 1.9.1
+    * arcjet bumped from 1.9.0 to 1.9.1
+  * devDependencies
+    * @arcjet/cache bumped from 1.9.0 to 1.9.1
+
 ## [1.9.0](https://github.com/arcjet/arcjet-js/compare/v1.8.0...@arcjet/deno-v1.9.0) (2026-07-15)
 
 

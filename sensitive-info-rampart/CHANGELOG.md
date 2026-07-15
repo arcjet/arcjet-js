@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/sensitive-info-rampart-v1.9.1) (2026-07-15)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sensitive-info-rampart:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.9.0 to 1.9.1
+    * arcjet bumped from 1.9.0 to 1.9.1
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.8.0 to 1.9.1
+    * arcjet bumped from 1.8.0 to 1.9.1
+
 ## [1.9.0](https://github.com/arcjet/arcjet-js/compare/v1.8.0...@arcjet/sensitive-info-rampart-v1.9.0) (2026-07-15)
 
 

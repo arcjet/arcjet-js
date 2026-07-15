@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/remix",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Arcjet runtime security SDK for Remix — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
@@ -59,14 +59,14 @@
     "test": "npm run build && npm run test-api"
   },
   "dependencies": {
-    "@arcjet/body": "1.9.0",
-    "@arcjet/env": "1.9.0",
-    "@arcjet/headers": "1.9.0",
-    "@arcjet/ip": "1.9.0",
-    "@arcjet/logger": "1.9.0",
-    "@arcjet/protocol": "1.9.0",
-    "@arcjet/transport": "1.9.0",
-    "arcjet": "1.9.0"
+    "@arcjet/body": "1.9.1",
+    "@arcjet/env": "1.9.1",
+    "@arcjet/headers": "1.9.1",
+    "@arcjet/ip": "1.9.1",
+    "@arcjet/logger": "1.9.1",
+    "@arcjet/protocol": "1.9.1",
+    "@arcjet/transport": "1.9.1",
+    "arcjet": "1.9.1"
   },
   "devDependencies": {
     "tsdown": "0.22.3",
