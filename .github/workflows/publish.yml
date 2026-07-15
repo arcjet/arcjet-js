@@ -229,6 +229,7 @@ jobs:
             --workspace @arcjet/nuxt \
             --workspace @arcjet/react-router \
             --workspace @arcjet/remix \
+            --workspace @arcjet/sensitive-info-rampart \
             --workspace @arcjet/sveltekit
       - name: Verify dist-tags
         # Nothing was published on a dry run, so there is nothing to verify.
