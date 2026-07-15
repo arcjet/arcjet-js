@@ -77,7 +77,10 @@ export {
   type BotConfig,
   type FilterResult,
   type SensitiveInfoEntity,
+  type SensitiveInfoEntities,
+  type SensitiveInfoResult,
   type DetectedSensitiveInfoEntity,
+  type DetectSensitiveInfoFunction,
 };
 
 const FREE_EMAIL_PROVIDERS = ["gmail.com", "yahoo.com", "hotmail.com", "aol.com", "hotmail.co.uk"];
