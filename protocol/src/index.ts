@@ -85,8 +85,10 @@ export type ArcjetConclusion = "ALLOW" | "DENY" | "CHALLENGE" | "ERROR";
  * The remaining types are detected by alternative detection backends such as
  * `@arcjet/sensitive-info-rampart`, which runs an on-device named-entity
  * recognition model. They are recognized everywhere a sensitive info type is
- * accepted, but the default WebAssembly backend never emits them — listing one
- * without configuring a backend that detects it has no effect.
+ * accepted, but the default WebAssembly backend never emits them. The
+ * `sensitiveInfo` rule and `@arcjet/guard` therefore reject a configuration
+ * that lists one of these types without a supporting `backend`, rather than
+ * silently never matching.
  */
 export type ArcjetSensitiveInfoType =
   | "EMAIL"

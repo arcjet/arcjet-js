@@ -8,6 +8,12 @@
  * @packageDocumentation
  */
 
+import type {
+  DetectSensitiveInfoFunction,
+  SensitiveInfoEntities,
+  SensitiveInfoResult,
+} from "@arcjet/analyze";
+
 /** The outcome of a guard decision — only `"ALLOW"` or `"DENY"`. */
 export type Conclusion = "ALLOW" | "DENY";
 
@@ -41,20 +47,155 @@ export type Warning = {
 };
 
 /**
- * Built-in sensitive information entity types supported by the WASM
- * analyzer. Custom entity types are not supported in `@arcjet/guard` —
- * use a custom rule instead.
+ * Sensitive information entity types.
+ *
+ * Custom entity types are not supported in `@arcjet/guard` — use a custom rule
+ * instead.
+ *
+ * The default backend (the bundled WASM analyzer) detects these natively:
  *
  * - `"EMAIL"` — Email addresses
  * - `"PHONE_NUMBER"` — Phone numbers
  * - `"IP_ADDRESS"` — IPv4 and IPv6 addresses
  * - `"CREDIT_CARD_NUMBER"` — Credit/debit card numbers
+ *
+ * The remaining types are detected only when a {@link SensitiveInfoBackend}
+ * that supports them is configured via
+ * {@link LocalDetectSensitiveInfoConfigAllow.backend | `backend`}, such as
+ * `@arcjet/sensitive-info-rampart`. Listing one of them without such a backend
+ * is a configuration error — {@link localDetectSensitiveInfo} throws rather
+ * than accepting a rule that can never match:
+ *
+ * - `"GIVEN_NAME"` — Given (first) names
+ * - `"SURNAME"` — Surnames (last names)
+ * - `"SSN"` — US Social Security numbers
+ * - `"URL"` — URLs
+ * - `"TAX_ID"` — Tax identifiers
+ * - `"BANK_ACCOUNT"` — Bank account numbers
+ * - `"ROUTING_NUMBER"` — Bank routing numbers
+ * - `"GOVERNMENT_ID"` — Government identifiers
+ * - `"PASSPORT"` — Passport numbers
+ * - `"DRIVERS_LICENSE"` — Driver's license numbers
+ * - `"BUILDING_NUMBER"` — Street/building numbers
+ * - `"STREET_NAME"` — Street names
+ * - `"SECONDARY_ADDRESS"` — Secondary address lines (apartment, suite, etc.)
+ * - `"CITY"` — Cities
+ * - `"STATE"` — States/regions
+ * - `"ZIP_CODE"` — Postal/ZIP codes
  */
 export type SensitiveInfoEntityType =
   | "EMAIL"
   | "PHONE_NUMBER"
   | "IP_ADDRESS"
-  | "CREDIT_CARD_NUMBER";
+  | "CREDIT_CARD_NUMBER"
+  | "GIVEN_NAME"
+  | "SURNAME"
+  | "SSN"
+  | "URL"
+  | "TAX_ID"
+  | "BANK_ACCOUNT"
+  | "ROUTING_NUMBER"
+  | "GOVERNMENT_ID"
+  | "PASSPORT"
+  | "DRIVERS_LICENSE"
+  | "BUILDING_NUMBER"
+  | "STREET_NAME"
+  | "SECONDARY_ADDRESS"
+  | "CITY"
+  | "STATE"
+  | "ZIP_CODE";
+
+/**
+ * Logger passed to a {@link SensitiveInfoBackend} via
+ * {@link SensitiveInfoBackendContext}.
+ *
+ * Structurally compatible with the `ArcjetLogger` used by the rest of the
+ * Arcjet SDK, so a backend written against `arcjet` (such as
+ * `@arcjet/sensitive-info-rampart`) works here unchanged.
+ */
+export interface SensitiveInfoBackendLogger {
+  /** Log at debug level. */
+  debug(message: string, ...args: unknown[]): void;
+  /** Log at debug level with a merging object. */
+  debug(fields: Record<string, unknown>, message?: string, ...args: unknown[]): void;
+  /** Log at info level. */
+  info(message: string, ...args: unknown[]): void;
+  /** Log at info level with a merging object. */
+  info(fields: Record<string, unknown>, message?: string, ...args: unknown[]): void;
+  /** Log at warn level. */
+  warn(message: string, ...args: unknown[]): void;
+  /** Log at warn level with a merging object. */
+  warn(fields: Record<string, unknown>, message?: string, ...args: unknown[]): void;
+  /** Log at error level. */
+  error(message: string, ...args: unknown[]): void;
+  /** Log at error level with a merging object. */
+  error(fields: Record<string, unknown>, message?: string, ...args: unknown[]): void;
+}
+
+/**
+ * Minimal context passed to a {@link SensitiveInfoBackend}.
+ */
+export interface SensitiveInfoBackendContext {
+  /** Logger. */
+  log: SensitiveInfoBackendLogger;
+}
+
+/**
+ * Per-detection options passed to a {@link SensitiveInfoBackend}.
+ *
+ * These come from the `localDetectSensitiveInfo` rule configuration. A backend
+ * reads the ones it understands and ignores the rest, so the interface stays
+ * stable as options are added.
+ */
+export interface SensitiveInfoBackendOptions {
+  /** Number of tokens to pass to `detect`. */
+  contextWindowSize?: number | undefined;
+  /** Custom detection function (optional). */
+  detect?: DetectSensitiveInfoFunction | undefined;
+}
+
+/**
+ * Experimental: pluggable detection backend for the `localDetectSensitiveInfo`
+ * rule.
+ *
+ * The default backend uses the bundled `@arcjet/analyze` WebAssembly engine,
+ * which detects email addresses, phone numbers, IP addresses, and credit card
+ * numbers entirely locally. Provide a custom backend — for example
+ * `@arcjet/sensitive-info-rampart`, which runs an on-device NER model — to
+ * detect additional {@link SensitiveInfoEntityType} values without changing the
+ * rest of the rule.
+ *
+ * This is the same {@link SensitiveInfoBackend} contract used by the
+ * `sensitiveInfo` rule in the `arcjet` SDK, so a backend works with both. A
+ * backend receives the text to scan together with the configured allow/deny
+ * `entities` and must return which detected spans are `allowed` and which are
+ * `denied`.
+ *
+ * Backends may be asynchronous (such as model inference). They run in the
+ * request path, so their latency directly affects `.guard()` latency.
+ */
+export interface SensitiveInfoBackend {
+  /**
+   * Detect sensitive information in `value`.
+   *
+   * @param context
+   *   Backend context (currently just a logger).
+   * @param value
+   *   Text to scan.
+   * @param entities
+   *   Configured allow/deny entities.
+   * @param options
+   *   Per-detection options from the rule configuration (optional).
+   * @returns
+   *   Promise for the allowed and denied spans.
+   */
+  detect(
+    context: SensitiveInfoBackendContext,
+    value: string,
+    entities: SensitiveInfoEntities,
+    options?: SensitiveInfoBackendOptions,
+  ): Promise<SensitiveInfoResult>;
+}
 
 /** Result from a token bucket rate limit evaluation. */
 export type RuleResultTokenBucket = {
@@ -917,6 +1058,18 @@ export interface LocalDetectSensitiveInfoConfigAllow {
    */
   allow: SensitiveInfoEntityType[];
   deny?: never;
+  /**
+   * Experimental: detection backend to use (default: bundled WebAssembly
+   * engine).
+   *
+   * Provide an alternative backend such as `@arcjet/sensitive-info-rampart` to
+   * detect sensitive information with an on-device model instead of the
+   * built-in pattern matching. Types beyond `"EMAIL"`, `"PHONE_NUMBER"`,
+   * `"IP_ADDRESS"`, and `"CREDIT_CARD_NUMBER"` are only detected when a backend
+   * that supports them is configured — listing one in `allow`/`deny` without
+   * such a backend throws. See {@link SensitiveInfoBackend}.
+   */
+  backend?: SensitiveInfoBackend;
 }
 
 /**
@@ -976,6 +1129,18 @@ export interface LocalDetectSensitiveInfoConfigDeny {
    * detection, use a custom rule instead.
    */
   deny: SensitiveInfoEntityType[];
+  /**
+   * Experimental: detection backend to use (default: bundled WebAssembly
+   * engine).
+   *
+   * Provide an alternative backend such as `@arcjet/sensitive-info-rampart` to
+   * detect sensitive information with an on-device model instead of the
+   * built-in pattern matching. Types beyond `"EMAIL"`, `"PHONE_NUMBER"`,
+   * `"IP_ADDRESS"`, and `"CREDIT_CARD_NUMBER"` are only detected when a backend
+   * that supports them is configured — listing one in `allow`/`deny` without
+   * such a backend throws. See {@link SensitiveInfoBackend}.
+   */
+  backend?: SensitiveInfoBackend;
 }
 
 /**
@@ -1006,6 +1171,15 @@ export type LocalDetectSensitiveInfoConfig =
       metadata?: Record<string, string>;
       allow?: never;
       deny?: never;
+      /**
+       * Experimental: detection backend to use (default: bundled WebAssembly
+       * engine).
+       *
+       * Provide an alternative backend such as `@arcjet/sensitive-info-rampart`
+       * to detect sensitive information with an on-device model instead of the
+       * built-in pattern matching. See {@link SensitiveInfoBackend}.
+       */
+      backend?: SensitiveInfoBackend;
     };
 
 /** Result returned by a custom rule's `evaluate` function. */

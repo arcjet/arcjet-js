@@ -91,3 +91,23 @@ addon is not available on Edge:
 // app/api/arcjet-rampart/route.ts
 export const runtime = "nodejs";
 ```
+
+## Guarding AI tool calls (`@arcjet/guard`)
+
+The `/api/arcjet-guard` route uses [`@arcjet/guard`](../../arcjet-guard) instead
+of `@arcjet/next`. `@arcjet/guard` is designed for AI guardrails — checking the
+text that flows into and out of LLM tool calls — rather than protecting the HTTP
+request itself. Its `localDetectSensitiveInfo` rule accepts the same
+[`@arcjet/sensitive-info-rampart`](../../sensitive-info-rampart) `backend` as the
+`sensitiveInfo` rule, so it can detect names, addresses, and
+government/financial identifiers on-device too. Detection runs locally; only a
+SHA-256 hash of the text is sent to Arcjet.
+
+```bash
+curl http://localhost:3000/api/arcjet-guard -H "Content-Type: text/plain" -X POST --data "Hi, my name is Alex Rivera and my SSN is 472-81-0094"
+```
+
+This returns a 400 whose body lists the detected `detectedEntityTypes` (here
+`GIVEN_NAME`, `SURNAME`, and `SSN`). As with the Rampart route, this handler
+loads the on-device model, so it must run on the Node.js runtime and relies on
+the same `serverExternalPackages` configuration described above.

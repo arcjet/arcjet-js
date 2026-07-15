@@ -100,6 +100,10 @@ export {
   type DetectPromptInjectionConfig,
   type LocalDetectSensitiveInfoConfig,
   type SensitiveInfoEntityType,
+  type SensitiveInfoBackend,
+  type SensitiveInfoBackendContext,
+  type SensitiveInfoBackendOptions,
+  type SensitiveInfoBackendLogger,
   type LocalCustomConfig,
   type LocalCustomInput,
 

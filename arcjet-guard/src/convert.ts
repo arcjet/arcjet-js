@@ -36,7 +36,6 @@ import {
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
-import type { SensitiveInfoEntityType } from "./types.ts";
 import type {
   Conclusion,
   Decision,
@@ -46,6 +45,8 @@ import type {
   RuleResult,
   RuleResultError,
   RuleWithInput,
+  SensitiveInfoBackend,
+  SensitiveInfoEntityType,
   Warning,
 } from "./types.ts";
 
@@ -69,22 +70,87 @@ const noopLog = {
 /** Minimal context for `@arcjet/analyze` — only `log` is used for sensitive info. */
 const analyzeContext = { log: noopLog, characteristics: [] as string[] };
 
-/** Convert an SDK entity type string to a WASM entity tag. */
+/**
+ * The {@link SensitiveInfoEntityType} values the bundled WASM engine detects
+ * natively. Every other declared type is only detected when a
+ * {@link SensitiveInfoBackend} that supports it is configured; listing one
+ * without such a backend is a configuration error (see `rules.ts`).
+ *
+ * Keep in sync with the native tags mapped in {@link stringToEntity}.
+ *
+ * @internal
+ */
+export const nativeEntityTypes: ReadonlySet<SensitiveInfoEntityType> = new Set([
+  "EMAIL",
+  "PHONE_NUMBER",
+  "IP_ADDRESS",
+  "CREDIT_CARD_NUMBER",
+]);
+
+/**
+ * Convert an SDK entity type string to an analyze entity tag.
+ *
+ * The four types the WebAssembly engine understands map to their native tag;
+ * every other {@link SensitiveInfoEntityType} (detected only by an alternative
+ * {@link SensitiveInfoBackend}) is carried as `{ tag: "custom", val }`. This is
+ * the inverse of {@link entityToString}.
+ */
 function stringToEntity(s: SensitiveInfoEntityType): SensitiveInfoEntity {
-  switch (s) {
-    case "EMAIL":
-      return { tag: "email" };
-    case "PHONE_NUMBER":
-      return { tag: "phone-number" };
-    case "IP_ADDRESS":
-      return { tag: "ip-address" };
-    case "CREDIT_CARD_NUMBER":
-      return { tag: "credit-card-number" };
-  }
+  // The four types the bundled WASM engine understands map to their native tag.
+  // Listed explicitly (rather than via a `switch` default) so an unrecognized
+  // string can only reach the `custom` branch below, never a WASM tag.
+  if (s === "EMAIL") return { tag: "email" };
+  if (s === "PHONE_NUMBER") return { tag: "phone-number" };
+  if (s === "IP_ADDRESS") return { tag: "ip-address" };
+  if (s === "CREDIT_CARD_NUMBER") return { tag: "credit-card-number" };
+  // Every other declared type (detected only by an alternative backend such as
+  // `@arcjet/sensitive-info-rampart`) is carried as `{ tag: "custom", val }`.
+  return { tag: "custom", val: s };
 }
 
-/** Convert a WASM entity tag back to an SDK entity type string. */
-function entityToString(e: SensitiveInfoEntity): SensitiveInfoEntityType {
+/**
+ * Every declared {@link SensitiveInfoEntityType}. Used to validate the plain
+ * type strings a third-party {@link SensitiveInfoBackend} returns via a
+ * `{ tag: "custom" }` entity, so a misbehaving backend cannot inject arbitrary
+ * strings into `detectedEntityTypes` (and the union that downstream user code
+ * switches on).
+ *
+ * Keep in sync with the {@link SensitiveInfoEntityType} union in `./types.ts`.
+ */
+const knownEntityTypes = new Set<string>([
+  "EMAIL",
+  "PHONE_NUMBER",
+  "IP_ADDRESS",
+  "CREDIT_CARD_NUMBER",
+  "GIVEN_NAME",
+  "SURNAME",
+  "SSN",
+  "URL",
+  "TAX_ID",
+  "BANK_ACCOUNT",
+  "ROUTING_NUMBER",
+  "GOVERNMENT_ID",
+  "PASSPORT",
+  "DRIVERS_LICENSE",
+  "BUILDING_NUMBER",
+  "STREET_NAME",
+  "SECONDARY_ADDRESS",
+  "CITY",
+  "STATE",
+  "ZIP_CODE",
+]);
+
+/** Type guard: whether `value` is a declared {@link SensitiveInfoEntityType}. */
+function isSensitiveInfoEntityType(value: string): value is SensitiveInfoEntityType {
+  return knownEntityTypes.has(value);
+}
+
+/**
+ * Convert an analyze entity tag back to an SDK entity type string, or
+ * `undefined` when a backend returns a `custom` value outside the declared
+ * {@link SensitiveInfoEntityType} union.
+ */
+function entityToString(e: SensitiveInfoEntity): SensitiveInfoEntityType | undefined {
   switch (e.tag) {
     case "email":
       return "EMAIL";
@@ -95,11 +161,35 @@ function entityToString(e: SensitiveInfoEntity): SensitiveInfoEntityType {
     case "credit-card-number":
       return "CREDIT_CARD_NUMBER";
     case "custom":
-      throw new Error(
-        `Assert \`@arcjet/guard\` does not support configuring custom sensitive info entities and will never return them in results.`,
-      );
+      // Carried by an alternative backend (such as `@arcjet/sensitive-info-rampart`)
+      // as the plain entity type string (e.g. `"GIVEN_NAME"`). Validate it
+      // rather than trusting the backend; unknown values are dropped by the
+      // caller.
+      return isSensitiveInfoEntityType(e.val) ? e.val : undefined;
   }
 }
+
+/**
+ * Default sensitive-info backend backed by the `@arcjet/analyze` WebAssembly
+ * engine.
+ *
+ * Used when a `localDetectSensitiveInfo` rule does not configure a `backend`.
+ * This preserves the existing behavior — local detection of email addresses,
+ * phone numbers, IP addresses, and credit card numbers.
+ */
+const wasmSensitiveInfoBackend: SensitiveInfoBackend = {
+  detect(context, value, entities, options) {
+    return detectSensitiveInfo(
+      // `detectSensitiveInfo` only reads `log`, but its context type also
+      // requires `characteristics`, so we supply an empty list.
+      { log: context.log, characteristics: [] },
+      value,
+      entities,
+      options?.contextWindowSize ?? 1,
+      options?.detect,
+    );
+  },
+};
 
 /**
  * Map a proto `GuardConclusion` to the SDK `Conclusion` string.
@@ -424,12 +514,20 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
       let localResult: RuleLocalSensitiveInfo["localResult"];
       let resultDurationMs: bigint | undefined;
 
+      // Use the configured backend (such as `@arcjet/sensitive-info-rampart`)
+      // when provided; otherwise fall back to the bundled WASM engine.
+      const backend = rule.config.backend ?? wasmSensitiveInfoBackend;
+
       const evalStart = performance.now();
       try {
-        const result = await detectSensitiveInfo(analyzeContext, rule.input.inputText, entities, 1);
+        const result = await backend.detect(analyzeContext, rule.input.inputText, entities, {
+          contextWindowSize: 1,
+        });
         resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
 
-        const deniedTypes = result.denied.map((d) => entityToString(d.identifiedType));
+        const deniedTypes = result.denied
+          .map((d) => entityToString(d.identifiedType))
+          .filter((t): t is SensitiveInfoEntityType => t !== undefined);
         localResult = {
           case: "resultComputed" as const,
           value: create(ResultLocalSensitiveInfoSchema, {
@@ -443,8 +541,8 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
         localResult = {
           case: "resultError" as const,
           value: create(ResultErrorSchema, {
-            message: err instanceof Error ? err.message : "WASM detection failed",
-            code: "WASM_ERROR",
+            message: err instanceof Error ? err.message : "sensitive info detection failed",
+            code: "SENSITIVE_INFO_ERROR",
           }),
         };
       }

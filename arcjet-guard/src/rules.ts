@@ -8,6 +8,7 @@
  * @packageDocumentation
  */
 
+import { nativeEntityTypes } from "./convert.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
   Decision,
@@ -34,6 +35,7 @@ import type {
   ExperimentalModerateContentInput,
   LocalDetectSensitiveInfoConfig,
   LocalDetectSensitiveInfoInput,
+  SensitiveInfoEntityType,
   LocalCustomConfig,
   LocalCustomInput,
   RuleWithConfigTokenBucket,
@@ -520,6 +522,41 @@ export function experimental_moderateContent(
 }
 
 /**
+ * Throw if the config lists entity types the configured backend cannot detect.
+ *
+ * A configured {@link SensitiveInfoBackend} is trusted to detect whatever it
+ * declares support for, so this only checks the default (bundled WASM) backend,
+ * which detects `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`, and `CREDIT_CARD_NUMBER`.
+ * Listing any other {@link SensitiveInfoEntityType} without a `backend` that
+ * supports it (such as `@arcjet/sensitive-info-rampart`) can never match, so we
+ * surface it as a configuration error rather than silently doing nothing.
+ */
+function validateSensitiveInfoBackendSupport(config: LocalDetectSensitiveInfoConfig): void {
+  // A configured backend handles its own supported entity types.
+  if (config.backend !== undefined) {
+    return;
+  }
+
+  const entities = config.deny ?? config.allow ?? [];
+  const unsupported = [...new Set(entities)].filter(
+    (entity): entity is SensitiveInfoEntityType => !nativeEntityTypes.has(entity),
+  );
+  if (unsupported.length === 0) {
+    return;
+  }
+
+  const list = unsupported.map((entity) => `"${entity}"`).join(", ");
+  const subject = unsupported.length === 1 ? "type is" : "types are";
+  const object = unsupported.length === 1 ? "it" : "them";
+  throw new Error(
+    `\`localDetectSensitiveInfo\` config error: the ${list} ${subject} only detected ` +
+      `when a \`backend\` that supports ${object} is configured (such as ` +
+      `\`@arcjet/sensitive-info-rampart\`). The default backend only detects ` +
+      `"EMAIL", "PHONE_NUMBER", "IP_ADDRESS", and "CREDIT_CARD_NUMBER".`,
+  );
+}
+
+/**
  * Create a sensitive information detection rule.
  *
  * Use this to prevent PII (emails, phone numbers, credit card numbers)
@@ -546,6 +583,8 @@ export function experimental_moderateContent(
 export function localDetectSensitiveInfo(
   config: LocalDetectSensitiveInfoConfig = {},
 ): RuleWithConfigSensitiveInfo {
+  validateSensitiveInfoBackendSupport(config);
+
   const configId = randomId();
 
   const rule = Object.assign(
