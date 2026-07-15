@@ -48,6 +48,13 @@ export interface RecyclableSession {
  * Other errors neither count nor reset the run — only a success proves the
  * connection is alive.
  *
+ * Recycling is single-flight per suspect session: each call is stamped with
+ * the generation it started under, and outcomes from an older generation are
+ * ignored. Without this, a burst of concurrent timeouts on one dead session
+ * could cross the threshold repeatedly — the first three trigger a recycle,
+ * then three stragglers from the same old session complete and abort the
+ * freshly dialed replacement.
+ *
  * @param transport Transport whose unary calls should be watched.
  * @param session Session manager to abort when the threshold is reached.
  * @returns A transport with the same behavior plus connection recycling.
@@ -56,10 +63,12 @@ export function withConnectionRecycling(
   transport: Transport,
   session: RecyclableSession,
 ): Transport {
+  let generation = 0;
   let consecutiveDeadlines = 0;
 
   return {
     async unary(method, signal, timeoutMs, header, input, contextValues) {
+      const callGeneration = generation;
       try {
         const response = await transport.unary(
           method,
@@ -69,12 +78,20 @@ export function withConnectionRecycling(
           input,
           contextValues,
         );
-        consecutiveDeadlines = 0;
+        // A stale success says nothing about the current session's health, so
+        // it must not reset the run either.
+        if (callGeneration === generation) {
+          consecutiveDeadlines = 0;
+        }
         return response;
       } catch (error: unknown) {
-        if (ConnectError.from(error).code === Code.DeadlineExceeded) {
+        if (
+          callGeneration === generation &&
+          ConnectError.from(error).code === Code.DeadlineExceeded
+        ) {
           consecutiveDeadlines += 1;
           if (consecutiveDeadlines >= RECYCLE_AFTER_CONSECUTIVE_DEADLINES) {
+            generation += 1;
             consecutiveDeadlines = 0;
             recycle(session);
           }

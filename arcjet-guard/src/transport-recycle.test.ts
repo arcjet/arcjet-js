@@ -13,6 +13,7 @@ import { Code, ConnectError, createClient, createRouterTransport } from "@connec
 import type { Client } from "@connectrpc/connect";
 
 import { DecideService, GuardResponseSchema } from "./proto/proto/decide/v2/decide_pb.js";
+import type { GuardResponse } from "./proto/proto/decide/v2/decide_pb.js";
 import {
   withConnectionRecycling,
   RECYCLE_AFTER_CONSECUTIVE_DEADLINES,
@@ -139,6 +140,73 @@ describe("withConnectionRecycling", () => {
     }
 
     assert.equal(session.aborts, 2);
+  });
+
+  test("a burst of concurrent timeouts triggers at most one recycle", async () => {
+    // Hold every call on a shared gate so they all start against the same
+    // session generation, then fail them together: the first three failures
+    // recycle, the stragglers from the old generation must not recycle again.
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const inner = createRouterTransport(({ service }) => {
+      service(DecideService, {
+        async guard(): Promise<never> {
+          await gate;
+          throw new ConnectError("deadline", Code.DeadlineExceeded);
+        },
+      });
+    });
+    const session = fakeSession();
+    const client = createClient(DecideService, withConnectionRecycling(inner, session));
+
+    const calls: Promise<void>[] = [];
+    for (let index = 0; index < RECYCLE_AFTER_CONSECUTIVE_DEADLINES * 2; index++) {
+      calls.push(callIgnoringError(client));
+    }
+    release?.();
+    await Promise.all(calls);
+
+    assert.equal(session.aborts, 1);
+  });
+
+  test("a stale success does not reset the run for the current session", async () => {
+    // The first call is held until after a recycle, so its success reports on
+    // the old session; it must not reset the deadline run of the new one.
+    let releaseFirst: (() => void) | undefined;
+    const firstGate = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+    let call = 0;
+    const inner = createRouterTransport(({ service }) => {
+      service(DecideService, {
+        async guard(): Promise<GuardResponse> {
+          if (call++ === 0) {
+            await firstGate;
+            return create(GuardResponseSchema, {});
+          }
+          throw new ConnectError("deadline", Code.DeadlineExceeded);
+        },
+      });
+    });
+    const session = fakeSession();
+    const client = createClient(DecideService, withConnectionRecycling(inner, session));
+
+    const held = client.guard({});
+    for (let index = 0; index < RECYCLE_AFTER_CONSECUTIVE_DEADLINES; index++) {
+      await callIgnoringError(client);
+    }
+    assert.equal(session.aborts, 1);
+
+    for (let index = 0; index < RECYCLE_AFTER_CONSECUTIVE_DEADLINES - 1; index++) {
+      await callIgnoringError(client);
+    }
+    releaseFirst?.();
+    await held;
+
+    await callIgnoringError(client);
+    assert.equal(session.aborts, 2, "the stale success must not have reset the run");
   });
 
   test("responses and errors pass through unchanged", async () => {
