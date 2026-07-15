@@ -31,6 +31,7 @@
   "redact": "1.8.0",
   "redact-wasm": "1.8.0",
   "runtime": "1.8.0",
+  "sensitive-info-rampart": "1.8.0",
   "sprintf": "1.8.0",
   "stable-hash": "1.8.0",
   "transport": "1.8.0"
