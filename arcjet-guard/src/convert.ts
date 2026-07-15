@@ -79,22 +79,61 @@ const analyzeContext = { log: noopLog, characteristics: [] as string[] };
  * the inverse of {@link entityToString}.
  */
 function stringToEntity(s: SensitiveInfoEntityType): SensitiveInfoEntity {
-  switch (s) {
-    case "EMAIL":
-      return { tag: "email" };
-    case "PHONE_NUMBER":
-      return { tag: "phone-number" };
-    case "IP_ADDRESS":
-      return { tag: "ip-address" };
-    case "CREDIT_CARD_NUMBER":
-      return { tag: "credit-card-number" };
-    default:
-      return { tag: "custom", val: s };
-  }
+  // The four types the bundled WASM engine understands map to their native tag.
+  // Listed explicitly (rather than via a `switch` default) so an unrecognized
+  // string can only reach the `custom` branch below, never a WASM tag.
+  if (s === "EMAIL") return { tag: "email" };
+  if (s === "PHONE_NUMBER") return { tag: "phone-number" };
+  if (s === "IP_ADDRESS") return { tag: "ip-address" };
+  if (s === "CREDIT_CARD_NUMBER") return { tag: "credit-card-number" };
+  // Every other declared type (detected only by an alternative backend such as
+  // `@arcjet/sensitive-info-rampart`) is carried as `{ tag: "custom", val }`.
+  return { tag: "custom", val: s };
 }
 
-/** Convert an analyze entity tag back to an SDK entity type string. */
-function entityToString(e: SensitiveInfoEntity): SensitiveInfoEntityType {
+/**
+ * Every declared {@link SensitiveInfoEntityType}. Used to validate the plain
+ * type strings a third-party {@link SensitiveInfoBackend} returns via a
+ * `{ tag: "custom" }` entity, so a misbehaving backend cannot inject arbitrary
+ * strings into `detectedEntityTypes` (and the union that downstream user code
+ * switches on).
+ *
+ * Keep in sync with the {@link SensitiveInfoEntityType} union in `./types.ts`.
+ */
+const knownEntityTypes = new Set<string>([
+  "EMAIL",
+  "PHONE_NUMBER",
+  "IP_ADDRESS",
+  "CREDIT_CARD_NUMBER",
+  "GIVEN_NAME",
+  "SURNAME",
+  "SSN",
+  "URL",
+  "TAX_ID",
+  "BANK_ACCOUNT",
+  "ROUTING_NUMBER",
+  "GOVERNMENT_ID",
+  "PASSPORT",
+  "DRIVERS_LICENSE",
+  "BUILDING_NUMBER",
+  "STREET_NAME",
+  "SECONDARY_ADDRESS",
+  "CITY",
+  "STATE",
+  "ZIP_CODE",
+]);
+
+/** Type guard: whether `value` is a declared {@link SensitiveInfoEntityType}. */
+function isSensitiveInfoEntityType(value: string): value is SensitiveInfoEntityType {
+  return knownEntityTypes.has(value);
+}
+
+/**
+ * Convert an analyze entity tag back to an SDK entity type string, or
+ * `undefined` when a backend returns a `custom` value outside the declared
+ * {@link SensitiveInfoEntityType} union.
+ */
+function entityToString(e: SensitiveInfoEntity): SensitiveInfoEntityType | undefined {
   switch (e.tag) {
     case "email":
       return "EMAIL";
@@ -106,8 +145,10 @@ function entityToString(e: SensitiveInfoEntity): SensitiveInfoEntityType {
       return "CREDIT_CARD_NUMBER";
     case "custom":
       // Carried by an alternative backend (such as `@arcjet/sensitive-info-rampart`)
-      // as the plain entity type string (e.g. `"GIVEN_NAME"`).
-      return e.val as SensitiveInfoEntityType;
+      // as the plain entity type string (e.g. `"GIVEN_NAME"`). Validate it
+      // rather than trusting the backend; unknown values are dropped by the
+      // caller.
+      return isSensitiveInfoEntityType(e.val) ? e.val : undefined;
   }
 }
 
@@ -467,7 +508,9 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
         });
         resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
 
-        const deniedTypes = result.denied.map((d) => entityToString(d.identifiedType));
+        const deniedTypes = result.denied
+          .map((d) => entityToString(d.identifiedType))
+          .filter((t): t is SensitiveInfoEntityType => t !== undefined);
         localResult = {
           case: "resultComputed" as const,
           value: create(ResultLocalSensitiveInfoSchema, {

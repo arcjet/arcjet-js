@@ -620,12 +620,12 @@ describe("ruleToProto", () => {
     }> = [];
 
     const backend: SensitiveInfoBackend = {
-      async detect(_context, value, entities, options) {
+      detect(_context, value, entities, options) {
         calls.push({ value, entities, options });
-        return {
+        return Promise.resolve({
           allowed: [],
           denied: [{ start: 0, end: 4, identifiedType: { tag: "custom", val: "GIVEN_NAME" } }],
-        };
+        });
       },
     };
 
@@ -659,13 +659,13 @@ describe("ruleToProto", () => {
     let received: SensitiveInfoEntities | undefined;
 
     const backend: SensitiveInfoBackend = {
-      async detect(_context, _value, entities) {
+      detect(_context, _value, entities) {
         received = entities;
         // Deny a type not in the allow list (allow-list semantics).
-        return {
+        return Promise.resolve({
           allowed: [],
           denied: [{ start: 0, end: 7, identifiedType: { tag: "custom", val: "SURNAME" } }],
-        };
+        });
       },
     };
 
@@ -689,8 +689,8 @@ describe("ruleToProto", () => {
 
   test("backend errors are captured as a rule error result", async () => {
     const backend: SensitiveInfoBackend = {
-      async detect() {
-        throw new Error("model failed to load");
+      detect() {
+        return Promise.reject(new Error("model failed to load"));
       },
     };
 
@@ -706,6 +706,37 @@ describe("ruleToProto", () => {
         assert.equal(proto.rule.rule.value.localResult.value.code, "SENSITIVE_INFO_ERROR");
       }
       assert.ok(proto.rule.rule.value.resultDurationMs !== undefined);
+    }
+  });
+
+  test("drops backend custom entities outside the known type union", async () => {
+    const backend: SensitiveInfoBackend = {
+      detect() {
+        return Promise.resolve({
+          allowed: [],
+          denied: [
+            // A valid declared type is kept...
+            { start: 0, end: 4, identifiedType: { tag: "custom" as const, val: "GIVEN_NAME" } },
+            // ...but an arbitrary string from a misbehaving backend is dropped.
+            { start: 5, end: 9, identifiedType: { tag: "custom" as const, val: "NOT_A_REAL_TYPE" } },
+          ],
+        });
+      },
+    };
+
+    const rule = localDetectSensitiveInfo({ deny: ["GIVEN_NAME"], backend });
+    const input = rule("Jane Doe");
+    const proto = await ruleToProto(input);
+
+    assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+    if (proto.rule?.rule.case === "localSensitiveInfo") {
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+      if (proto.rule.rule.value.localResult.case === "resultComputed") {
+        // The unknown type never reaches detectedEntityTypes.
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, [
+          "GIVEN_NAME",
+        ]);
+      }
     }
   });
 

@@ -35,8 +35,6 @@ export async function POST(req: Request) {
     rules: [sensitiveInfo(value)],
   });
 
-  console.log(decision)
-
   if (decision.conclusion === "DENY" && decision.reason === "SENSITIVE_INFO") {
     const denied = sensitiveInfo.deniedResult(decision);
     return NextResponse.json(
