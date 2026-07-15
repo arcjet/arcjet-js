@@ -106,6 +106,10 @@ export {
   type LocalDetectSensitiveInfoConfig,
   type LocalDetectSensitiveInfoInput,
   type SensitiveInfoEntityType,
+  type SensitiveInfoBackend,
+  type SensitiveInfoBackendContext,
+  type SensitiveInfoBackendOptions,
+  type SensitiveInfoBackendLogger,
   type LocalCustomConfig,
   type LocalCustomInput,
 

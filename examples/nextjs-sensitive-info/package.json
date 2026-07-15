@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@arcjet/guard": "file:../../arcjet-guard",
     "@arcjet/next": "file:../../arcjet-next",
     "@arcjet/sensitive-info-rampart": "file:../../sensitive-info-rampart",
     "next": "16.2.6",

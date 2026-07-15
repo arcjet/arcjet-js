@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
+import type { SensitiveInfoEntities } from "@arcjet/analyze";
 import { create } from "@bufbuild/protobuf";
 
 import {
@@ -40,6 +41,10 @@ import {
   defineCustomRule,
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
+import type {
+  SensitiveInfoBackend,
+  SensitiveInfoBackendOptions,
+} from "./types.ts";
 
 describe("conclusionFromProto", () => {
   test("ALLOW maps to 'ALLOW'", () => {
@@ -604,6 +609,103 @@ describe("ruleToProto", () => {
         assert.equal(proto.rule.rule.value.localResult.value.detected, false);
         assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, []);
       }
+    }
+  });
+
+  test("uses a configured backend instead of the WASM engine", async () => {
+    const calls: Array<{
+      value: string;
+      entities: SensitiveInfoEntities;
+      options: SensitiveInfoBackendOptions | undefined;
+    }> = [];
+
+    const backend: SensitiveInfoBackend = {
+      async detect(_context, value, entities, options) {
+        calls.push({ value, entities, options });
+        return {
+          allowed: [],
+          denied: [{ start: 0, end: 4, identifiedType: { tag: "custom", val: "GIVEN_NAME" } }],
+        };
+      },
+    };
+
+    const rule = localDetectSensitiveInfo({ deny: ["GIVEN_NAME"], backend });
+    const input = rule("Jane went to the store");
+    const proto = await ruleToProto(input);
+
+    // The backend received the raw text and the deny entities (a Rampart-only
+    // type carried as a `custom` analyze entity).
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0]?.value, "Jane went to the store");
+    assert.equal(calls[0]?.entities.tag, "deny");
+    assert.deepEqual(calls[0]?.entities.val, [{ tag: "custom", val: "GIVEN_NAME" }]);
+
+    assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+    if (proto.rule?.rule.case === "localSensitiveInfo") {
+      assert.deepEqual(proto.rule.rule.value.configEntityFilter.value?.entities, ["GIVEN_NAME"]);
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+      if (proto.rule.rule.value.localResult.case === "resultComputed") {
+        assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.DENY);
+        assert.equal(proto.rule.rule.value.localResult.value.detected, true);
+        // The custom entity is surfaced back as its plain type string.
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, [
+          "GIVEN_NAME",
+        ]);
+      }
+    }
+  });
+
+  test("passes allow-list entities to the backend", async () => {
+    let received: SensitiveInfoEntities | undefined;
+
+    const backend: SensitiveInfoBackend = {
+      async detect(_context, _value, entities) {
+        received = entities;
+        // Deny a type not in the allow list (allow-list semantics).
+        return {
+          allowed: [],
+          denied: [{ start: 0, end: 7, identifiedType: { tag: "custom", val: "SURNAME" } }],
+        };
+      },
+    };
+
+    const rule = localDetectSensitiveInfo({ allow: ["GIVEN_NAME"], backend });
+    const input = rule("Jackson");
+    const proto = await ruleToProto(input);
+
+    assert.equal(received?.tag, "allow");
+    assert.deepEqual(received?.val, [{ tag: "custom", val: "GIVEN_NAME" }]);
+
+    assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+    if (proto.rule?.rule.case === "localSensitiveInfo") {
+      assert.equal(proto.rule.rule.value.configEntityFilter.case, "configEntitiesAllow");
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+      if (proto.rule.rule.value.localResult.case === "resultComputed") {
+        assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.DENY);
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, ["SURNAME"]);
+      }
+    }
+  });
+
+  test("backend errors are captured as a rule error result", async () => {
+    const backend: SensitiveInfoBackend = {
+      async detect() {
+        throw new Error("model failed to load");
+      },
+    };
+
+    const rule = localDetectSensitiveInfo({ deny: ["SSN"], backend });
+    const input = rule("123-45-6789");
+    const proto = await ruleToProto(input);
+
+    assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+    if (proto.rule?.rule.case === "localSensitiveInfo") {
+      assert.equal(proto.rule.rule.value.localResult.case, "resultError");
+      if (proto.rule.rule.value.localResult.case === "resultError") {
+        assert.equal(proto.rule.rule.value.localResult.value.message, "model failed to load");
+        assert.equal(proto.rule.rule.value.localResult.value.code, "SENSITIVE_INFO_ERROR");
+      }
+      assert.ok(proto.rule.rule.value.resultDurationMs !== undefined);
     }
   });
 

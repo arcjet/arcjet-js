@@ -36,7 +36,6 @@ import {
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
-import type { SensitiveInfoEntityType } from "./types.ts";
 import type {
   Conclusion,
   Decision,
@@ -46,6 +45,8 @@ import type {
   RuleResult,
   RuleResultError,
   RuleWithInput,
+  SensitiveInfoBackend,
+  SensitiveInfoEntityType,
   Warning,
 } from "./types.ts";
 
@@ -69,7 +70,14 @@ const noopLog = {
 /** Minimal context for `@arcjet/analyze` — only `log` is used for sensitive info. */
 const analyzeContext = { log: noopLog, characteristics: [] as string[] };
 
-/** Convert an SDK entity type string to a WASM entity tag. */
+/**
+ * Convert an SDK entity type string to an analyze entity tag.
+ *
+ * The four types the WebAssembly engine understands map to their native tag;
+ * every other {@link SensitiveInfoEntityType} (detected only by an alternative
+ * {@link SensitiveInfoBackend}) is carried as `{ tag: "custom", val }`. This is
+ * the inverse of {@link entityToString}.
+ */
 function stringToEntity(s: SensitiveInfoEntityType): SensitiveInfoEntity {
   switch (s) {
     case "EMAIL":
@@ -80,10 +88,12 @@ function stringToEntity(s: SensitiveInfoEntityType): SensitiveInfoEntity {
       return { tag: "ip-address" };
     case "CREDIT_CARD_NUMBER":
       return { tag: "credit-card-number" };
+    default:
+      return { tag: "custom", val: s };
   }
 }
 
-/** Convert a WASM entity tag back to an SDK entity type string. */
+/** Convert an analyze entity tag back to an SDK entity type string. */
 function entityToString(e: SensitiveInfoEntity): SensitiveInfoEntityType {
   switch (e.tag) {
     case "email":
@@ -95,11 +105,33 @@ function entityToString(e: SensitiveInfoEntity): SensitiveInfoEntityType {
     case "credit-card-number":
       return "CREDIT_CARD_NUMBER";
     case "custom":
-      throw new Error(
-        `Assert \`@arcjet/guard\` does not support configuring custom sensitive info entities and will never return them in results.`,
-      );
+      // Carried by an alternative backend (such as `@arcjet/sensitive-info-rampart`)
+      // as the plain entity type string (e.g. `"GIVEN_NAME"`).
+      return e.val as SensitiveInfoEntityType;
   }
 }
+
+/**
+ * Default sensitive-info backend backed by the `@arcjet/analyze` WebAssembly
+ * engine.
+ *
+ * Used when a `localDetectSensitiveInfo` rule does not configure a `backend`.
+ * This preserves the existing behavior — local detection of email addresses,
+ * phone numbers, IP addresses, and credit card numbers.
+ */
+const wasmSensitiveInfoBackend: SensitiveInfoBackend = {
+  detect(context, value, entities, options) {
+    return detectSensitiveInfo(
+      // `detectSensitiveInfo` only reads `log`, but its context type also
+      // requires `characteristics`, so we supply an empty list.
+      { log: context.log, characteristics: [] },
+      value,
+      entities,
+      options?.contextWindowSize ?? 1,
+      options?.detect,
+    );
+  },
+};
 
 /**
  * Map a proto `GuardConclusion` to the SDK `Conclusion` string.
@@ -424,9 +456,15 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
       let localResult: RuleLocalSensitiveInfo["localResult"];
       let resultDurationMs: bigint | undefined;
 
+      // Use the configured backend (such as `@arcjet/sensitive-info-rampart`)
+      // when provided; otherwise fall back to the bundled WASM engine.
+      const backend = rule.config.backend ?? wasmSensitiveInfoBackend;
+
       const evalStart = performance.now();
       try {
-        const result = await detectSensitiveInfo(analyzeContext, rule.input.inputText, entities, 1);
+        const result = await backend.detect(analyzeContext, rule.input.inputText, entities, {
+          contextWindowSize: 1,
+        });
         resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
 
         const deniedTypes = result.denied.map((d) => entityToString(d.identifiedType));
@@ -443,8 +481,8 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
         localResult = {
           case: "resultError" as const,
           value: create(ResultErrorSchema, {
-            message: err instanceof Error ? err.message : "WASM detection failed",
-            code: "WASM_ERROR",
+            message: err instanceof Error ? err.message : "sensitive info detection failed",
+            code: "SENSITIVE_INFO_ERROR",
           }),
         };
       }

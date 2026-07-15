@@ -270,6 +270,32 @@ if (decision.conclusion === "DENY" && decision.reason === "SENSITIVE_INFO") {
 }
 ```
 
+### On-device detection with additional entity types
+
+The default backend detects the four built-in types locally with pattern
+matching. To detect additional types — names, addresses, and government or
+financial identifiers — pass a `backend` such as
+[`@arcjet/sensitive-info-rampart`](https://www.npmjs.com/package/@arcjet/sensitive-info-rampart),
+which runs an on-device NER model. Detection still happens entirely locally;
+only a SHA-256 hash of the text is sent to Arcjet.
+
+```ts
+import { launchArcjet, localDetectSensitiveInfo } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const si = localDetectSensitiveInfo({
+  deny: ["GIVEN_NAME", "SURNAME", "EMAIL", "SSN"],
+  backend: rampart(),
+});
+
+const decision = await arcjet.guard({
+  label: "tools.summary",
+  rules: [si(userMessage)],
+});
+```
+
 ## Custom rules
 
 Define your own local evaluation logic with arbitrary key-value data. When
