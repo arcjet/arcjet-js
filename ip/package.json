@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/ip",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Arcjet utilities for finding the originating IP of a request",
   "keywords": [
     "arcjet",

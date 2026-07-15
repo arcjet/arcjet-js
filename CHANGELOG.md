@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...v1.9.1) (2026-07-15)
+
+
+### 🪲 Bug Fixes
+
+* **ip:** update verify-ranges script paths for src/dist layout ([#6143](https://github.com/arcjet/arcjet-js/issues/6143)) ([83fdb74](https://github.com/arcjet/arcjet-js/commit/83fdb747a20ef25bd26d199d6a59b9fe09dea93a))
+* **publish:** include @arcjet/sensitive-info-rampart in publish workflow ([#6145](https://github.com/arcjet/arcjet-js/issues/6145)) ([a5d0a8b](https://github.com/arcjet/arcjet-js/commit/a5d0a8b11a99d3515031d2388c0938fb8a3bdc3c))
+
 ## [1.9.0](https://github.com/arcjet/arcjet-js/compare/v1.8.0...v1.9.0) (2026-07-15)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/analyze-wasm-v1.9.1) (2026-07-15)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze-wasm:** Synchronize arcjet-js versions
+
 ## [1.9.0](https://github.com/arcjet/arcjet-js/compare/v1.8.0...@arcjet/analyze-wasm-v1.9.0) (2026-07-15)
 
 
