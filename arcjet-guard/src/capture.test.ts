@@ -101,6 +101,42 @@ describe("experimental_capture", () => {
     assert.deepEqual({ ...event.metadata }, {});
   });
 
+  test("occurredAt defaults to call time and accepts an explicit Date", async () => {
+    const explicit = new Date("2026-07-01T12:00:00Z");
+
+    for (const occurredAt of [undefined, explicit]) {
+      const { promise, resolve } = deferred<CaptureRequest>();
+
+      const transport = mockCaptureTransport((req) => {
+        resolve(req);
+        return create(CaptureResponseSchema, {});
+      });
+
+      const arcjet: ArcjetGuard = launchArcjetWithTransport({
+        key: "ajkey_dummy",
+        transport,
+      });
+
+      const before = BigInt(Date.now());
+      arcjet.experimental_capture(
+        occurredAt === undefined
+          ? { action: "refund.issued" }
+          : { action: "refund.issued", occurredAt },
+      );
+      const after = BigInt(Date.now());
+
+      const req = await promise;
+      const event = req.events[0];
+      if (occurredAt === undefined) {
+        assert.ok(event.occurredAtUnixMs >= before);
+        assert.ok(event.occurredAtUnixMs <= after);
+        assert.equal(event.occurredAtUnixMs, req.sentAtUnixMs);
+      } else {
+        assert.equal(event.occurredAtUnixMs, BigInt(occurredAt.getTime()));
+      }
+    }
+  });
+
   test("user-agent is sent in the request body", async () => {
     const { promise, resolve } = deferred<CaptureRequest>();
 
@@ -167,9 +203,7 @@ describe("experimental_capture", () => {
   });
 
   test("does not throw on malformed input from untyped callers", async () => {
-    const transport = mockCaptureTransport(() =>
-      create(CaptureResponseSchema, {}),
-    );
+    const transport = mockCaptureTransport(() => create(CaptureResponseSchema, {}));
 
     const arcjet: ArcjetGuard = launchArcjetWithTransport({
       key: "ajkey_dummy",

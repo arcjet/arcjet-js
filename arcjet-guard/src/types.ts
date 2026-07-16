@@ -1573,6 +1573,14 @@ export interface CaptureOptions {
    */
   decisionId?: string;
   /**
+   * When the action occurred. Defaults to the time of the `capture()` call;
+   * pass it explicitly when emission is deferred (e.g. from a queue or
+   * background handler). Informational and untrusted like every
+   * client-supplied timestamp — the server records its own authoritative
+   * receive time.
+   */
+  occurredAt?: Date;
+  /**
    * Arbitrary key-value metadata. Customer-supplied and untrusted, same size
    * caps as {@link GuardOptions.metadata}.
    */

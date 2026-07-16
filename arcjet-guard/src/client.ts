@@ -151,9 +151,10 @@ export function createGuardClient(options: GuardClientOptions): {
       // Event IDs are authored by the server on receipt, not minted here.
       try {
         const sentAtUnixMs = BigInt(Date.now());
+        const occurredAtUnixMs = opts.occurredAt ? BigInt(opts.occurredAt.getTime()) : sentAtUnixMs;
 
         const event = create(CaptureEventSchema, {
-          occurredAtUnixMs: sentAtUnixMs,
+          occurredAtUnixMs,
           correlationId: opts.correlationId ?? "",
           decisionId: opts.decisionId ?? "",
           action: opts.action,
