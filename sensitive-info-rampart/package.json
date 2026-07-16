@@ -62,8 +62,16 @@
     "typescript": "6.0.3"
   },
   "peerDependencies": {
-    "@arcjet/analyze": "1.8.0",
-    "arcjet": "1.8.0"
+    "@arcjet/analyze": "1.9.1",
+    "arcjet": "1.9.1"
+  },
+  "peerDependenciesMeta": {
+    "@arcjet/analyze": {
+      "optional": true
+    },
+    "arcjet": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0"
