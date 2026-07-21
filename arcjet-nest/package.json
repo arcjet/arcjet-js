@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/nest",
   "version": "1.9.1",
-  "description": "Arcjet runtime security SDK for NestJS — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
+  "description": "Arcjet runtime security SDK for NestJS \u2014 bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
     "analyze",
@@ -71,10 +71,10 @@
   },
   "devDependencies": {
     "@nestjs/common": "11.1.27",
-    "@types/node": "22.19.21",
+    "@types/node": "22.20.1",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
-    "tsdown": "0.22.3",
+    "tsdown": "0.22.7",
     "typescript": "6.0.3"
   },
   "peerDependencies": {

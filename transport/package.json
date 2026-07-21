@@ -76,8 +76,8 @@
     "@connectrpc/connect-web": "2.1.2"
   },
   "devDependencies": {
-    "@types/node": "22.19.21",
-    "tsdown": "0.22.3",
+    "@types/node": "22.20.1",
+    "tsdown": "0.22.7",
     "typescript": "6.0.3"
   },
   "engines": {

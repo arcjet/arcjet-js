@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/next",
   "version": "1.9.1",
-  "description": "Arcjet runtime security SDK for Next.js — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
+  "description": "Arcjet runtime security SDK for Next.js \u2014 bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
     "analyze",
@@ -70,11 +70,11 @@
     "arcjet": "1.9.1"
   },
   "devDependencies": {
-    "@types/node": "22.19.21",
+    "@types/node": "22.20.1",
     "next": "16.2.9",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "tsdown": "0.22.3",
+    "tsdown": "0.22.7",
     "typescript": "6.0.3"
   },
   "peerDependencies": {

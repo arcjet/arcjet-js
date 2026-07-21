@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/deno",
   "version": "1.9.1",
-  "description": "Arcjet runtime security SDK for Deno — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
+  "description": "Arcjet runtime security SDK for Deno \u2014 bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
     "analyze",
@@ -70,7 +70,7 @@
   "devDependencies": {
     "@arcjet/cache": "1.9.1",
     "@types/deno": "2.7.0",
-    "tsdown": "0.22.3",
+    "tsdown": "0.22.7",
     "typescript": "6.0.3"
   },
   "engines": {}

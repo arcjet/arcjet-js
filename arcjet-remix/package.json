@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/remix",
   "version": "1.9.1",
-  "description": "Arcjet runtime security SDK for Remix — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
+  "description": "Arcjet runtime security SDK for Remix \u2014 bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
     "analyze",
@@ -69,7 +69,7 @@
     "arcjet": "1.9.1"
   },
   "devDependencies": {
-    "tsdown": "0.22.3",
+    "tsdown": "0.22.7",
     "typescript": "6.0.3"
   },
   "engines": {}
