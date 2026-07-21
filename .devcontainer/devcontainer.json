@@ -15,14 +15,10 @@
     "ghcr.io/prulloac/devcontainer-features/bun:1.2.0": {
       "version": "1.2.19"
     },
-    "ghcr.io/trunk-io/devcontainer-feature/trunk:1.1.0": {},
     "ghcr.io/devcontainers/features/github-cli:1.1.0": {}
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
-  // Install trunk tools inside the container
-  // Uses array syntax to skip the shell: https://containers.dev/implementors/json_reference/#formatting-string-vs-array-properties
-  "updateContentCommand": ["trunk", "install"],
   // Install npm dependencies within the container
   // Uses array syntax to skip the shell: https://containers.dev/implementors/json_reference/#formatting-string-vs-array-properties
   "postCreateCommand": ["npm", "ci"],
