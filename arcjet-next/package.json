@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "@types/node": "22.20.1",
-    "next": "16.2.9",
+    "next": "16.2.10",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "tsdown": "0.22.7",
