@@ -51,6 +51,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Pin npm
+        uses: ./.github/actions/pin-npm
+
       - name: Install dependencies
         run: npm install
         working-directory: ${{ github.workspace }}
@@ -86,6 +89,9 @@ jobs:
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
+
+      - name: Pin npm
+        uses: ./.github/actions/pin-npm
 
       - name: Install dependencies
         run: npm install
@@ -162,6 +168,9 @@ jobs:
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: ${{ matrix.node-version || '24' }}
+
+      - name: Pin npm
+        uses: ./.github/actions/pin-npm
 
       - name: Setup Bun
         if: matrix.runtime == 'bun'

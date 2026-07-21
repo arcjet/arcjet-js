@@ -51,6 +51,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: Pin npm
+        uses: ./.github/actions/pin-npm
+
       - run: npm ci
 
       # Fails the job if Cloudflare's published ranges have drifted from the

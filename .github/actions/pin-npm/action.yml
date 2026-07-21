@@ -1,0 +1,13 @@
+name: Pin npm
+description: >
+  Install the npm version pinned in package.json's `packageManager` field.
+  actions/setup-node bundles whichever npm ships with the requested Node
+  version and has no input to pin a different one
+  (actions/setup-node#529, #531 are still open).
+
+runs:
+  using: composite
+  steps:
+    - name: Install pinned npm
+      shell: bash
+      run: npm install -g npm@12.0.1
