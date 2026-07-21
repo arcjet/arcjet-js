@@ -53,7 +53,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
     "test": "npm run build && npm run test-coverage"
@@ -65,7 +65,7 @@
     "@types/node": "22.20.1",
     "next": "16.2.10",
     "tsdown": "0.22.7",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   },
   "peerDependencies": {
     "next": ">=14"

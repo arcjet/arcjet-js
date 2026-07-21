@@ -54,7 +54,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
     "test": "npm run build && npm run test-api"
   },
@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "tsdown": "0.22.7",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   },
   "engines": {}
 }

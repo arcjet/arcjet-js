@@ -16,7 +16,6 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "oxfmt": "0.55.0",
     "oxlint": "1.70.0",
     "turbo": "2.10.5"
@@ -28,6 +27,9 @@
     },
     "fast-uri": "3.1.4",
     "postcss": "^8.5.10",
+    "rolldown-plugin-dts": {
+      "typescript": "7.0.2"
+    },
     "rollup": "npm:@rollup/wasm-node",
     "svgo": "4.0.2"
   },
