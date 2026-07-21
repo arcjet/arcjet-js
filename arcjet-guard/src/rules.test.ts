@@ -513,8 +513,8 @@ describe("defineCustomRule", () => {
       { reason: string }
     >({
       evaluate: (config, input) => {
-        const score = parseFloat(input.score);
-        const threshold = parseFloat(config.threshold);
+        const score = Number(input.score);
+        const threshold = Number(config.threshold);
         return score > threshold
           ? { conclusion: "DENY", data: { reason: "score too high" } }
           : { conclusion: "ALLOW" };
@@ -626,7 +626,7 @@ function tokenBucketResult(
     refillRate: 10,
     refillIntervalSeconds: 60,
     [symbolArcjetInternal]: { configId, inputId },
-  } as InternalResult;
+  };
 }
 
 // Build an internal errored result carrying correlation IDs.
@@ -644,7 +644,7 @@ function errorResult(
     message,
     code,
     [symbolArcjetInternal]: { configId, inputId },
-  } as InternalResult;
+  };
 }
 
 function decisionWith(results: InternalResult[]): Decision {
@@ -652,6 +652,7 @@ function decisionWith(results: InternalResult[]): Decision {
     conclusion: "ALLOW" as const,
     id: "gdec_test",
     results: results.map((r) => r),
+    // oxlint-disable-next-line typescript/no-deprecated -- Decision still requires hasError until it's removed in the next major
     hasError: (): boolean => results.some((r) => r.type === "RULE_ERROR"),
     warnings: [],
     errorResults: () => results.filter((r) => r.type === "RULE_ERROR"),

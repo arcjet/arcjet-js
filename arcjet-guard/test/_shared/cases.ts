@@ -231,8 +231,8 @@ export const cases: TestCase[] = [
     async run(s) {
       const customRule = s.defineCustomRule<{ threshold: string }, { score: string }>({
         evaluate: (config, input) => {
-          const score = parseFloat(input.score);
-          const threshold = parseFloat(config.threshold);
+          const score = Number(input.score);
+          const threshold = Number(config.threshold);
           return score > threshold
             ? { conclusion: "DENY" as const }
             : { conclusion: "ALLOW" as const };
@@ -252,8 +252,8 @@ export const cases: TestCase[] = [
     async run(s) {
       const customRule = s.defineCustomRule<{ threshold: string }, { score: string }>({
         evaluate: (config, input) => {
-          const score = parseFloat(input.score);
-          const threshold = parseFloat(config.threshold);
+          const score = Number(input.score);
+          const threshold = Number(config.threshold);
           return score > threshold
             ? { conclusion: "DENY" as const }
             : { conclusion: "ALLOW" as const };
@@ -408,7 +408,7 @@ export const cases: TestCase[] = [
       });
       const customRule = s.defineCustomRule<{ threshold: string }, { score: string }>({
         evaluate: (config, input) => {
-          return parseFloat(input.score) > parseFloat(config.threshold)
+          return Number(input.score) > Number(config.threshold)
             ? { conclusion: "DENY" as const }
             : { conclusion: "ALLOW" as const };
         },
@@ -436,7 +436,7 @@ export const cases: TestCase[] = [
       });
       const customRule = s.defineCustomRule<{ threshold: string }, { score: string }>({
         evaluate: (config, input) => {
-          return parseFloat(input.score) > parseFloat(config.threshold)
+          return Number(input.score) > Number(config.threshold)
             ? { conclusion: "DENY" as const }
             : { conclusion: "ALLOW" as const };
         },
