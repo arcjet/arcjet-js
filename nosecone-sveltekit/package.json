@@ -62,13 +62,13 @@
     "nosecone": "1.9.1"
   },
   "devDependencies": {
-    "@sveltejs/kit": "2.66.0",
-    "@sveltejs/vite-plugin-svelte": "7.1.2",
+    "@sveltejs/kit": "2.69.3",
+    "@sveltejs/vite-plugin-svelte": "7.2.0",
     "@types/node": "22.20.1",
-    "svelte": "5.56.3",
+    "svelte": "5.56.5",
     "tsdown": "0.22.7",
     "typescript": "6.0.3",
-    "vite": "8.0.16"
+    "vite": "8.1.4"
   },
   "peerDependencies": {
     "@sveltejs/kit": ">=2"
