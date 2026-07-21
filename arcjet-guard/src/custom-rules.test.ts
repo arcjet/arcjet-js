@@ -31,8 +31,8 @@ describe("defineCustomRule", () => {
     { reason: string; actual: string }
   >({
     evaluate: (config, input) => {
-      const score = parseFloat(input.score);
-      const threshold = parseFloat(config.threshold);
+      const score = Number(input.score);
+      const threshold = Number(config.threshold);
       return score > threshold
         ? { conclusion: "DENY", data: { reason: "too high", actual: input.score } }
         : { conclusion: "ALLOW" };
@@ -464,6 +464,7 @@ function emptyDecision(): Decision {
     conclusion: "ALLOW" as const,
     id: "gdec_test",
     results: [],
+    // oxlint-disable-next-line typescript/no-deprecated -- Decision still requires hasError until it's removed in the next major
     hasError: (): boolean => false,
     warnings: [],
     errorResults: (): never[] => [],

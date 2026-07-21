@@ -707,7 +707,7 @@ export function defineCustomRule<
         const { data: inputData, metadata: inputMetadata } = input;
         const inputId = randomId();
         const inputObj: LocalCustomInput = {
-          data: inputData as Record<string, string>,
+          data: inputData,
           ...(inputMetadata === undefined ? {} : { metadata: inputMetadata }),
         };
         return {
@@ -751,7 +751,6 @@ export function defineCustomRule<
       },
     );
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- generic call signature cast
-    return rule as unknown as RuleWithConfigCustom<TData, TInput>;
+    return rule;
   };
 }
