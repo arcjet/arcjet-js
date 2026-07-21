@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/bun",
   "version": "1.9.1",
-  "description": "Arcjet runtime security SDK for Bun \u2014 bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
+  "description": "Arcjet runtime security SDK for Bun — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
     "analyze",

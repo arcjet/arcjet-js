@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/astro",
   "version": "1.9.1",
-  "description": "Arcjet runtime security SDK for Astro \u2014 bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
+  "description": "Arcjet runtime security SDK for Astro — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
     "analyze",

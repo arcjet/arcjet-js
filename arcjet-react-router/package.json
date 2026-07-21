@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/react-router",
   "version": "1.9.1",
-  "description": "Arcjet runtime security SDK for React Router \u2014 bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
+  "description": "Arcjet runtime security SDK for React Router — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
     "analyze",

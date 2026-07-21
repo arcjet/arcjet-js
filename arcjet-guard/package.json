@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/guard",
   "version": "1.9.1",
-  "description": "Arcjet Guards SDK \u2014 AI guardrails for rate limiting, prompt injection detection, and sensitive info detection",
+  "description": "Arcjet Guards SDK — AI guardrails for rate limiting, prompt injection detection, and sensitive info detection",
   "homepage": "https://arcjet.com",
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",

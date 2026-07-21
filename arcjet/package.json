@@ -1,7 +1,7 @@
 {
   "name": "arcjet",
   "version": "1.9.1",
-  "description": "Arcjet runtime security SDK \u2014 bot protection, rate limiting, prompt injection detection, PII blocking, and WAF for JavaScript and TypeScript apps",
+  "description": "Arcjet runtime security SDK — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF for JavaScript and TypeScript apps",
   "keywords": [
     "ai",
     "analyze",
