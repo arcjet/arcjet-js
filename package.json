@@ -16,18 +16,20 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "@typescript/native-preview": "7.0.0-dev.20260602.1",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "oxfmt": "0.55.0",
     "oxlint": "1.70.0",
-    "turbo": "2.9.18"
+    "turbo": "2.10.5"
   },
   "overrides": {
-    "@bufbuild/protobuf": "2.12.0",
+    "@bufbuild/protobuf": "2.12.1",
     "@sveltejs/kit": {
       "cookie": "0.7.2"
     },
+    "fast-uri": "3.1.4",
     "postcss": "^8.5.10",
-    "rollup": "npm:@rollup/wasm-node"
+    "rollup": "npm:@rollup/wasm-node",
+    "svgo": "4.0.2"
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0",

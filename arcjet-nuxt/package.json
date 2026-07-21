@@ -73,7 +73,7 @@
   "devDependencies": {
     "@nuxt/kit": "4.4.8",
     "@nuxt/schema": "4.4.8",
-    "tsdown": "0.22.3",
+    "tsdown": "0.22.7",
     "typescript": "6.0.3"
   },
   "peerDependencies": {
