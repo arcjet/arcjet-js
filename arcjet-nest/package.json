@@ -70,7 +70,7 @@
     "arcjet": "1.9.1"
   },
   "devDependencies": {
-    "@nestjs/common": "11.1.27",
+    "@nestjs/common": "11.1.28",
     "@types/node": "22.20.1",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
