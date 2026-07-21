@@ -55,7 +55,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "test": "npm run build"
   },
   "dependencies": {
@@ -71,7 +71,7 @@
   "devDependencies": {
     "bun-types": "1.3.14",
     "tsdown": "0.22.7",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "undici-types": "7.28.0"
   },
   "engines": {}

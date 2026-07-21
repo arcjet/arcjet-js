@@ -49,7 +49,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "test-api": "node --experimental-vm-modules --test -- test/*.test.ts",
     "test-coverage": "node --experimental-test-coverage --experimental-vm-modules --test -- test/*.test.ts",
     "test": "npm run build && npm run test-coverage"
@@ -57,7 +57,7 @@
   "dependencies": {},
   "devDependencies": {
     "tsdown": "0.22.7",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0"

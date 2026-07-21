@@ -55,7 +55,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
     "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=75 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=90 --test-coverage-lines=75 -- test/*.test.ts",
     "test": "npm run build && npm run test-coverage"
@@ -74,7 +74,7 @@
     "@arcjet/cache": "1.9.1",
     "@types/node": "22.20.1",
     "tsdown": "0.22.7",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0"
