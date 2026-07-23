@@ -48,7 +48,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
     "test": "npm run build && npm run test-coverage"
@@ -56,10 +56,10 @@
   "devDependencies": {
     "@ai-sdk/provider-utils": "5.0.12",
     "@arcjet/guard": "1.9.1",
-    "@types/node": "22.19.21",
+    "@types/node": "22.20.1",
     "ai": "7.0.36",
-    "tsdown": "0.22.3",
-    "typescript": "6.0.3",
+    "tsdown": "0.22.7",
+    "typescript": "7.0.2",
     "zod": "4.4.3"
   },
   "peerDependencies": {

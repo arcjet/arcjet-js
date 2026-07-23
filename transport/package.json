@@ -60,7 +60,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
     "test-runtime-bun": "npm run build && HTTPS_PROXY=http://127.0.0.1:49219 bun test test/runtime/proxy.bun.test.ts",
@@ -70,15 +70,15 @@
   "dependencies": {
     "@arcjet/env": "1.9.1",
     "@arcjet/logger": "1.9.1",
-    "@bufbuild/protobuf": "2.12.0",
+    "@bufbuild/protobuf": "2.12.1",
     "@connectrpc/connect": "2.1.2",
     "@connectrpc/connect-node": "2.1.2",
     "@connectrpc/connect-web": "2.1.2"
   },
   "devDependencies": {
-    "@types/node": "22.19.21",
-    "tsdown": "0.22.3",
-    "typescript": "6.0.3"
+    "@types/node": "22.20.1",
+    "tsdown": "0.22.7",
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0"

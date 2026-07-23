@@ -661,8 +661,8 @@ describe("In-memory server: custom rule", () => {
   test("DENY — local evaluate function denies", async () => {
     const rule = defineCustomRule({
       evaluate: (config, input) => {
-        const score = parseFloat(input["score"] ?? "0");
-        const threshold = parseFloat(config["threshold"] ?? "0");
+        const score = Number(input["score"] ?? "0");
+        const threshold = Number(config["threshold"] ?? "0");
         return score > threshold
           ? { conclusion: "DENY" as const, data: { reason: "too high" } }
           : { conclusion: "ALLOW" as const };
@@ -726,8 +726,8 @@ describe("In-memory server: custom rule", () => {
   test("ALLOW — local evaluate function allows", async () => {
     const rule = defineCustomRule({
       evaluate: (config, input) => {
-        const score = parseFloat(input["score"] ?? "0");
-        const threshold = parseFloat(config["threshold"] ?? "0");
+        const score = Number(input["score"] ?? "0");
+        const threshold = Number(config["threshold"] ?? "0");
         return score > threshold
           ? { conclusion: "DENY" as const }
           : { conclusion: "ALLOW" as const };

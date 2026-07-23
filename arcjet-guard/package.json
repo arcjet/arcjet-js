@@ -69,7 +69,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsgo --noEmit && tsgo --project tsconfig.lint.json --noEmit",
+    "typecheck": "tsc --noEmit && tsc --project tsconfig.lint.json --noEmit",
     "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
@@ -89,13 +89,11 @@
     "@connectrpc/connect-web": "^2.0.0"
   },
   "devDependencies": {
-    "@types/node": "22.19.21",
-    "@typescript/native-preview": "7.0.0-dev.20260602.1",
-    "miniflare": "4.20260617.1",
-    "oxfmt": "0.55.0",
-    "oxlint": "1.70.0",
-    "oxlint-tsgolint": "0.23.0",
-    "tsdown": "0.22.3"
+    "@types/node": "22.20.1",
+    "miniflare": "4.20260708.1",
+    "oxlint-tsgolint": "0.24.0",
+    "tsdown": "0.22.7",
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0"

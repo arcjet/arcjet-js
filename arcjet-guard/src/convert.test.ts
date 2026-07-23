@@ -763,8 +763,8 @@ describe("ruleToProto", () => {
   test("custom rule with sync evaluate — DENY", async () => {
     const rule = defineCustomRule({
       evaluate: (config, input) => {
-        const score = parseFloat(input["score"] ?? "0");
-        const threshold = parseFloat(config["threshold"] ?? "0");
+        const score = Number(input["score"] ?? "0");
+        const threshold = Number(config["threshold"] ?? "0");
         return score > threshold
           ? { conclusion: "DENY" as const, data: { reason: "score too high" } }
           : { conclusion: "ALLOW" as const };
@@ -790,8 +790,8 @@ describe("ruleToProto", () => {
   test("custom rule with sync evaluate — ALLOW", async () => {
     const rule = defineCustomRule({
       evaluate: (config, input) => {
-        const score = parseFloat(input["score"] ?? "0");
-        const threshold = parseFloat(config["threshold"] ?? "0");
+        const score = Number(input["score"] ?? "0");
+        const threshold = Number(config["threshold"] ?? "0");
         return score > threshold
           ? { conclusion: "DENY" as const }
           : { conclusion: "ALLOW" as const, data: { margin: String(threshold - score) } };

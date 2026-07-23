@@ -19,11 +19,6 @@
       "version": "1.2.0",
       "resolved": "ghcr.io/prulloac/devcontainer-features/bun@sha256:d73ff97653e603acd102514baf6b63873fca54d5b883722c7d8344efeeb51097",
       "integrity": "sha256:d73ff97653e603acd102514baf6b63873fca54d5b883722c7d8344efeeb51097"
-    },
-    "ghcr.io/trunk-io/devcontainer-feature/trunk:1.1.0": {
-      "version": "1.1.0",
-      "resolved": "ghcr.io/trunk-io/devcontainer-feature/trunk@sha256:8d913c1753a4e188400da05c64c958c78caedb2c92b984988891c443c3cc1e4d",
-      "integrity": "sha256:8d913c1753a4e188400da05c64c958c78caedb2c92b984988891c443c3cc1e4d"
     }
   }
 }

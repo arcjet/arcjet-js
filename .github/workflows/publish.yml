@@ -45,6 +45,8 @@ jobs:
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
+      - name: Pin npm
+        uses: ./.github/actions/pin-npm
       - name: Assert valid workflow inputs
         env:
           DIST_TAG: ${{ inputs['dist-tag'] }}
@@ -155,6 +157,8 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
+      - name: Pin npm
+        uses: ./.github/actions/pin-npm
       - name: Install dependencies
         run: npm ci
       - name: Run tests
