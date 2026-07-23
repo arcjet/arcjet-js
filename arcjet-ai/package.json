@@ -1,0 +1,70 @@
+{
+  "name": "@arcjet/ai",
+  "version": "1.9.1",
+  "description": "Arcjet security helpers for the Vercel AI SDK — guard checks and audit events around agent tool calls and actions",
+  "keywords": [
+    "agent",
+    "ai",
+    "ai-sdk",
+    "arcjet",
+    "guard",
+    "llm",
+    "security",
+    "tools",
+    "vercel"
+  ],
+  "homepage": "https://arcjet.com",
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "arcjet-ai"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsgo --noEmit",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage"
+  },
+  "devDependencies": {
+    "@arcjet/guard": "1.9.1",
+    "@types/node": "22.19.21",
+    "ai": "7.0.36",
+    "tsdown": "0.22.3",
+    "typescript": "6.0.3",
+    "zod": "4.4.3"
+  },
+  "peerDependencies": {
+    "@arcjet/guard": "1.9.1",
+    "ai": ">=7 <8"
+  },
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
+  }
+}
