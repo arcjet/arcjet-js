@@ -1,0 +1,27 @@
+{
+  "name": "nextjs-ai-agent",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@arcjet/ai": "file:../../arcjet-ai",
+    "@arcjet/guard": "file:../../arcjet-guard",
+    "ai": "^7.0.36",
+    "next": "16.2.6",
+    "react": "^19",
+    "react-dom": "^19",
+    "workflow": "^4.6.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.9",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
+}
