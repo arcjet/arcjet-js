@@ -273,9 +273,9 @@
       "groupName": "arcjet-js",
       "components": [
         "root",
-        "@arcjet/analyze-wasm",
-        "@arcjet/analyze",
         "@arcjet/ai",
+        "@arcjet/analyze",
+        "@arcjet/analyze-wasm",
         "@arcjet/astro",
         "@arcjet/body",
         "@arcjet/bun",
