@@ -62,7 +62,14 @@ export class ArcjetDeniedError extends Error {
   }
 }
 
-/** Policy for `protectAction()`. */
+/**
+ * Policy for `protectAction()` — how to guard an app-invoked action.
+ *
+ * Specifies the guard action name, optional rules to evaluate, and additional
+ * metadata to merge with the request context. Rules can be rate limits, custom
+ * checks, or other guards. Omit `rules` for capture-only instrumentation
+ * (record the action without enforcing any checks).
+ */
 export interface ProtectActionPolicy {
   /** Guard label and capture action: `"resource.verb"`, past tense. */
   action: string;

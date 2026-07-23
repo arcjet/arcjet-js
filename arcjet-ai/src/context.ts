@@ -10,6 +10,15 @@ const CORRELATION_ID_RE = /^[\x20-\x7e]{1,256}$/;
 
 /**
  * Security context threaded through AI SDK calls.
+ *
+ * Plain JSON-serializable object containing a correlation ID and optional
+ * metadata. Thread it explicitly through function calls and workflow/queue
+ * inputs (never use module state or `AsyncLocalStorage`). The correlation ID
+ * joins all decisions and events for this request into one observable sequence
+ * in the Arcjet console.
+ *
+ * Generated automatically as a ULID if not provided; validation ensures
+ * caller-supplied IDs fit within 1–256 printable ASCII characters.
  */
 export interface ArcjetAiContext {
   /**
@@ -96,6 +105,21 @@ export function createAiContext(init?: {
  * @param ctx - The security context to thread through
  * @param tools - The ToolSet passed to generateText
  * @returns A context map keyed by tool name, containing only protected tools
+ *
+ * @example
+ * ```ts
+ * import { createAiContext, aiToolsContext, protectTool } from "@arcjet/ai";
+ * import { generateText } from "ai";
+ *
+ * const ctx = createAiContext();
+ * const protected = { sendEmail: protectTool(arcjet, sendEmailTool, {...}) };
+ * const result = await generateText({
+ *   model,
+ *   tools: protected,
+ *   toolsContext: aiToolsContext(ctx, protected),
+ *   prompt: "Send confirmation",
+ * });
+ * ```
  */
 export function aiToolsContext<TOOLS extends ToolSet>(
   ctx: ArcjetAiContext,
