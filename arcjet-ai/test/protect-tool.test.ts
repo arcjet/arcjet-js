@@ -81,6 +81,47 @@ function decisionFailOpenAllow(): Decision {
 }
 
 /**
+ * Stub DENY decision (non-rate-limit, e.g., PROMPT_INJECTION).
+ */
+function decisionDenyPromptInjection(): DecisionDeny {
+  return {
+    conclusion: "DENY",
+    reason: "PROMPT_INJECTION",
+    id: "gdec_deny_pi",
+    results: [
+      {
+        conclusion: "DENY",
+        reason: "PROMPT_INJECTION",
+        type: "PROMPT_INJECTION",
+      },
+    ],
+    warnings: [],
+    hasFailedOpen: () => false,
+  } as unknown as DecisionDeny;
+}
+
+/**
+ * Stub DENY decision (RATE_LIMIT without resetAtUnixSeconds).
+ */
+function decisionDenyRateLimitNoReset(): DecisionDeny {
+  return {
+    conclusion: "DENY",
+    reason: "RATE_LIMIT",
+    id: "gdec_deny_rl_no_reset",
+    results: [
+      {
+        conclusion: "DENY",
+        reason: "RATE_LIMIT",
+        type: "TOKEN_BUCKET",
+        // No resetAtUnixSeconds
+      },
+    ],
+    warnings: [],
+    hasFailedOpen: () => false,
+  } as unknown as DecisionDeny;
+}
+
+/**
  * Create a simple test tool for wrapping.
  */
 function createTestTool() {
@@ -344,26 +385,7 @@ test("AC2.7: DENY + onDeny hook → denial reshaped", async () => {
 test("AC2.8: execute throws → error propagates, capture with error outcome", async () => {
   const { client, captureCalls } = stubClient(decisionAllow());
   const testError = new Error("execute failed");
-  const { tool: testTool } = createTestTool();
 
-  // Replace execute with one that throws
-  const wrapped = protectTool(client, testTool, {
-    action: "test.action",
-    rules: [fakeRule],
-  });
-
-  // Override the execute to throw
-  const originalExecute = wrapped.execute.bind(wrapped);
-  let errorThrown: Error | undefined;
-  wrapped.execute = async (input: unknown, options: unknown) => {
-    if (typeof originalExecute === "function") {
-      // We need to test the actual throwing path. Create a new wrapped tool with a throwing inner tool.
-      throw testError;
-    }
-    return originalExecute(input, options);
-  };
-
-  // Actually, let me create a tool that throws
   const throwingTool = tool({
     description: "Test tool that throws",
     parameters: jsonSchema({
@@ -395,6 +417,60 @@ test("AC2.8: execute throws → error propagates, capture with error outcome", a
   const captureCall = captureCalls[0] as Record<string, unknown>;
   const metadata = captureCall.metadata as Record<string, string>;
   assert.equal(metadata.outcome, "error");
+});
+
+test("Untested branch: non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterSeconds, correct message", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  const { tool: testTool, executeCalls } = createTestTool();
+
+  const wrapped = protectTool(client, testTool, {
+    action: "test.action",
+    rules: [fakeRule],
+  });
+
+  const result = (await wrapped.execute({ id: "input1" }, {
+    toolCallId: "t1",
+    messages: [],
+  } as never)) as ArcjetDenialResult;
+
+  assert.equal(executeCalls.length, 0, "execute should not be called on DENY");
+  assert.strictEqual(result.arcjetDenied, true);
+  assert.equal(result.reason, "PROMPT_INJECTION");
+  assert.strictEqual(result.retryable, false, "non-rate-limit denials are not retryable");
+  assert.strictEqual(
+    result.retryAfterSeconds,
+    undefined,
+    "no retryAfterSeconds for non-rate-limit",
+  );
+  assert.ok(
+    result.message.includes("Do not retry"),
+    "non-retryable message should advise not retrying",
+  );
+});
+
+test("Untested branch: RATE_LIMIT DENY without resetAtUnixSeconds → retryable=true, no retryAfterSeconds, ' later.' message", async () => {
+  const { client } = stubClient(decisionDenyRateLimitNoReset());
+  const { tool: testTool, executeCalls } = createTestTool();
+
+  const wrapped = protectTool(client, testTool, {
+    action: "test.action",
+    rules: [fakeRule],
+  });
+
+  const result = (await wrapped.execute({ id: "input1" }, {
+    toolCallId: "t1",
+    messages: [],
+  } as never)) as ArcjetDenialResult;
+
+  assert.equal(executeCalls.length, 0, "execute should not be called on DENY");
+  assert.strictEqual(result.arcjetDenied, true);
+  assert.equal(result.reason, "RATE_LIMIT");
+  assert.strictEqual(result.retryable, true, "rate-limit denials are retryable");
+  assert.strictEqual(result.retryAfterSeconds, undefined, "no reset time available");
+  assert.ok(
+    result.message.includes(" later."),
+    "message should say 'may be retried later' when no reset time",
+  );
 });
 
 test("AC1.7: explicit correlationId override", async () => {
