@@ -3,5 +3,6 @@ import { test } from "node:test";
 
 test("@arcjet/ai builds and is importable", async () => {
   const mod = await import("../dist/index.js");
-  assert.equal(mod.experimental_placeholder, true);
+  assert.equal(typeof mod.createAiContext, "function");
+  assert.equal(typeof mod.aiToolsContext, "function");
 });
