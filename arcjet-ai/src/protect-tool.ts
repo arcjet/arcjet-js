@@ -107,7 +107,7 @@ export function protectTool<T extends Tool>(
           decision = await client.guard({
             label: policy.action,
             rules,
-            correlationId,
+            ...(correlationId !== undefined && { correlationId }),
             metadata,
           });
         } catch (error) {
