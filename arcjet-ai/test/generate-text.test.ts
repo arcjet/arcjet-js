@@ -182,9 +182,7 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
 });
 
 test("AC2.9: DENY decision → generateText completes, loop continues with denial result in first step", async () => {
-  const { client } = stubClient(
-    decisionDenyRateLimit(Math.floor(Date.now() / 1000) + 30),
-  );
+  const { client } = stubClient(decisionDenyRateLimit(Math.floor(Date.now() / 1000) + 30));
   const executeCalls: unknown[] = [];
 
   const sendEmailTool = tool({

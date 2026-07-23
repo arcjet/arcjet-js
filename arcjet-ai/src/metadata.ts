@@ -73,30 +73,28 @@ export interface SecurityMetadataFields {
  * // → { user: "user_alice", "data-class": "confidential", destination: "audit_service" }
  * ```
  */
+/**
+ * Maps each field to its guard wire key. Every key is its own name except
+ * `dataClass`, which becomes the hyphenated `data-class`.
+ */
+const WIRE_KEYS = {
+  user: "user",
+  agent: "agent",
+  workflow: "workflow",
+  dataClass: "data-class",
+  destination: "destination",
+  reversibility: "reversibility",
+  resource: "resource",
+} as const satisfies Record<keyof SecurityMetadataFields, string>;
+
 export function securityMetadata(fields: SecurityMetadataFields): Record<string, string> {
   const result: Record<string, string> = {};
 
-  // Map each field to its wire key, omitting undefined values
-  if (fields.user !== undefined) {
-    result.user = fields.user;
-  }
-  if (fields.agent !== undefined) {
-    result.agent = fields.agent;
-  }
-  if (fields.workflow !== undefined) {
-    result.workflow = fields.workflow;
-  }
-  if (fields.dataClass !== undefined) {
-    result["data-class"] = fields.dataClass;
-  }
-  if (fields.destination !== undefined) {
-    result.destination = fields.destination;
-  }
-  if (fields.reversibility !== undefined) {
-    result.reversibility = fields.reversibility;
-  }
-  if (fields.resource !== undefined) {
-    result.resource = fields.resource;
+  for (const key of Object.keys(WIRE_KEYS) as (keyof SecurityMetadataFields)[]) {
+    const value = fields[key];
+    if (value !== undefined) {
+      result[WIRE_KEYS[key]] = value;
+    }
   }
 
   return result;

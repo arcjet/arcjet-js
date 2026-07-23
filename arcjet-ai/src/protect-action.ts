@@ -1,8 +1,9 @@
 import type { DecisionDeny, RuleWithInput } from "@arcjet/guard";
 
-import { captureEvent, shouldWarn } from "./client.js";
+import { captureEvent } from "./client.js";
 import type { ArcjetAiClient } from "./client.js";
 import type { ArcjetAiContext } from "./context.js";
+import { runGuarded } from "./guarded.js";
 
 /**
  * Thrown by `protectAction()` when guard denies the action. Carries the
@@ -129,64 +130,16 @@ export async function protectAction<T>(
   policy: ProtectActionPolicy,
   fn: () => Promise<T>,
 ): Promise<T> {
-  const correlationId = ctx.correlationId;
-  const metadata = { ...ctx.metadata, ...policy.metadata };
-
-  let decisionId: string | undefined;
-  if (policy.rules !== undefined && policy.rules.length > 0) {
-    let decision;
-    try {
-      decision = await client.guard({
-        label: policy.action,
-        rules: policy.rules,
-        correlationId,
-        metadata,
-      });
-    } catch (error) {
-      if (shouldWarn()) {
-        console.warn(
-          `@arcjet/ai: guard check for "${policy.action}" errored; failing open:`,
-          error,
-        );
-      }
-      decision = undefined;
-    }
-    if (decision !== undefined) {
-      decisionId = decision.id;
-      if (decision.hasFailedOpen() && shouldWarn()) {
-        console.warn(`@arcjet/ai: guard check for "${policy.action}" failed open (API error).`);
-      }
-      if (decision.conclusion === "DENY") {
-        captureEvent(client, {
-          action: policy.action,
-          correlationId,
-          ...(decisionId !== undefined && { decisionId }),
-          metadata: { ...metadata, outcome: "denied" },
-        });
-        throw new ArcjetDeniedError(policy.action, decision);
-      }
-    }
-  }
-
-  let result: T;
-  try {
-    result = await fn();
-  } catch (error) {
-    captureEvent(client, {
-      action: policy.action,
-      correlationId,
-      ...(decisionId !== undefined && { decisionId }),
-      metadata: { ...metadata, outcome: "error" },
-    });
-    throw error;
-  }
-  captureEvent(client, {
+  return runGuarded(client, {
     action: policy.action,
-    correlationId,
-    ...(decisionId !== undefined && { decisionId }),
-    metadata: { ...metadata, outcome: "success" },
+    rules: policy.rules,
+    correlationId: ctx.correlationId,
+    metadata: { ...ctx.metadata, ...policy.metadata },
+    onDeny: (decision) => {
+      throw new ArcjetDeniedError(policy.action, decision);
+    },
+    execute: fn,
   });
-  return result;
 }
 
 /** Options for `captureAction()`. */
