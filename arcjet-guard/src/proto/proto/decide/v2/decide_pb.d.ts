@@ -1170,6 +1170,123 @@ export declare type GuardResponse = Message<"proto.decide.v2.GuardResponse"> & {
 export declare const GuardResponseSchema: GenMessage<GuardResponse>;
 
 /**
+ * CaptureEvent is a single fact reported by the application about what it
+ * did — never a judgment. Nothing client-sent is trusted: anything the
+ * platform relies on (team, receive time, event identity) is derived
+ * server-side. Event identifiers are authored by the server on receipt;
+ * there is no client-supplied event ID, and duplicate events are never
+ * suppressed on the wire.
+ *
+ * Timing fields (1-9)
+ *
+ * @generated from message proto.decide.v2.CaptureEvent
+ */
+export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
+  /**
+   * Client wall clock when the event occurred (Unix epoch, milliseconds).
+   * Informational and subject to clock skew; the server records its own
+   * authoritative receive time.
+   *
+   * @generated from field: uint64 occurred_at_unix_ms = 1;
+   */
+  occurredAtUnixMs: bigint;
+
+  /**
+   * Optional, explicitly passed identifier correlating this event with
+   * other calls in the same workflow or agent run. Never inherited
+   * ambiently.
+   *
+   * @generated from field: string correlation_id = 10;
+   */
+  correlationId: string;
+
+  /**
+   * Optional join key referencing the decision (e.g. a GuardDecision.id)
+   * this event's action relates to.
+   *
+   * @generated from field: string decision_id = 11;
+   */
+  decisionId: string;
+
+  /**
+   * What the application did. Convention: "resource.verb", past tense
+   * (e.g. "refund.issued"). Required.
+   *
+   * @generated from field: string action = 20;
+   */
+  action: string;
+
+  /**
+   * Arbitrary key-value metadata. Customer-supplied and untrusted, same
+   * size caps as GuardRequest.metadata.
+   *
+   * @generated from field: map<string, string> metadata = 21;
+   */
+  metadata: { [key: string]: string };
+};
+
+/**
+ * Describes the message proto.decide.v2.CaptureEvent.
+ * Use `create(CaptureEventSchema)` to create a new message.
+ */
+export declare const CaptureEventSchema: GenMessage<CaptureEvent>;
+
+/**
+ * CaptureRequest is a request to the Capture RPC.
+ *
+ * Observability fields (1-9), mirroring GuardRequest.
+ *
+ * @generated from message proto.decide.v2.CaptureRequest
+ */
+export declare type CaptureRequest = Message<"proto.decide.v2.CaptureRequest"> & {
+  /**
+   * The user-agent string identifying the SDK, runtime, and environment.
+   *
+   * @generated from field: string user_agent = 1;
+   */
+  userAgent: string;
+
+  /**
+   * Client wall clock at message send time (Unix epoch, milliseconds).
+   * Optional so the server can distinguish "not sent" from epoch 0.
+   *
+   * @generated from field: optional uint64 sent_at_unix_ms = 2;
+   */
+  sentAtUnixMs?: bigint;
+
+  /**
+   * The events to record. Repeated so transports can batch without wire
+   * changes.
+   *
+   * @generated from field: repeated proto.decide.v2.CaptureEvent events = 10;
+   */
+  events: CaptureEvent[];
+};
+
+/**
+ * Describes the message proto.decide.v2.CaptureRequest.
+ * Use `create(CaptureRequestSchema)` to create a new message.
+ */
+export declare const CaptureRequestSchema: GenMessage<CaptureRequest>;
+
+/**
+ * CaptureResponse is the response from the Capture RPC. Deliberately empty:
+ * capture is fire-and-forget with no per-event ack status. The ack means
+ * the request was received, not that events are durably recorded —
+ * persistence is asynchronous.
+ *
+ * @generated from message proto.decide.v2.CaptureResponse
+ */
+export declare type CaptureResponse = Message<"proto.decide.v2.CaptureResponse"> & {
+};
+
+/**
+ * Describes the message proto.decide.v2.CaptureResponse.
+ * Use `create(CaptureResponseSchema)` to create a new message.
+ */
+export declare const CaptureResponseSchema: GenMessage<CaptureResponse>;
+
+/**
  * GuardConclusion is the outcome of a guard decision — Arcjet's judgment.
  *
  * @generated from enum proto.decide.v2.GuardConclusion
@@ -1373,9 +1490,10 @@ export enum GuardRuleMode {
 export declare const GuardRuleModeSchema: GenEnum<GuardRuleMode>;
 
 /**
- * DecideService evaluates guard rules into a single decision.
- * Guard lives on DecideService to share infrastructure (auth, billing,
- * interceptors) with the existing Decide and Report RPCs.
+ * DecideService evaluates guard rules into a single decision, and separately
+ * records application-reported facts via Capture.
+ * Guard and Capture live on DecideService to share infrastructure (auth,
+ * billing, interceptors) with the existing Decide and Report RPCs.
  *
  * @generated from service proto.decide.v2.DecideService
  */
@@ -1389,6 +1507,17 @@ export declare const DecideService: GenService<{
     methodKind: "unary";
     input: typeof GuardRequestSchema;
     output: typeof GuardResponseSchema;
+  },
+  /**
+   * Record facts about what the application did. Fire-and-forget: the ack
+   * means received, not durably recorded.
+   *
+   * @generated from rpc proto.decide.v2.DecideService.Capture
+   */
+  capture: {
+    methodKind: "unary";
+    input: typeof CaptureRequestSchema;
+    output: typeof CaptureResponseSchema;
   },
 }>;
 
