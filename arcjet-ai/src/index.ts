@@ -50,3 +50,6 @@ export { createAiContext, aiToolsContext } from "./context.js";
 export type { ArcjetAiContext } from "./context.js";
 export { securityMetadata } from "./metadata.js";
 export type { SecurityMetadataFields } from "./metadata.js";
+export { protectTool } from "./protect-tool.js";
+export type { ArcjetDenialResult, ProtectToolPolicy } from "./protect-tool.js";
+export type { ArcjetAiClient, CaptureOptions } from "./client.js";
