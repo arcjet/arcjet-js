@@ -223,6 +223,7 @@ jobs:
 
           # Level 4: public framework integrations
           npm publish --tag "$DIST_TAG" \
+            --workspace @arcjet/ai \
             --workspace @arcjet/astro \
             --workspace @arcjet/bun \
             --workspace @arcjet/deno \
