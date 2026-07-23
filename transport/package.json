@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/transport",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "Transport mechanisms for the Arcjet protocol",
   "keywords": [
     "arcjet",
@@ -68,8 +68,8 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/env": "1.9.1",
-    "@arcjet/logger": "1.9.1",
+    "@arcjet/env": "1.9.2",
+    "@arcjet/logger": "1.9.2",
     "@bufbuild/protobuf": "2.12.1",
     "@connectrpc/connect": "2.1.2",
     "@connectrpc/connect-node": "2.1.2",

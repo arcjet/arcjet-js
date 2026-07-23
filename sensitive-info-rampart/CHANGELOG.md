@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.9.2](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/sensitive-info-rampart-v1.9.2) (2026-07-23)
+
+
+### 🧹 Miscellaneous Chores
+
+* document publishing and fix sensitive-info-rampart peer deps ([#6146](https://github.com/arcjet/arcjet-js/issues/6146)) ([22d48de](https://github.com/arcjet/arcjet-js/commit/22d48de4760190651fb9fe536594c744a8b7565c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.9.1 to 1.9.2
+    * arcjet bumped from 1.9.1 to 1.9.2
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.9.1 to 1.9.2
+    * arcjet bumped from 1.9.1 to 1.9.2
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/sensitive-info-rampart-v1.9.1) (2026-07-15)
 
 

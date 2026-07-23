@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/sensitive-info-rampart",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "Arcjet sensitive information detection backend powered by the on-device Rampart NER model",
   "keywords": [
     "arcjet",
@@ -55,15 +55,15 @@
     "@huggingface/transformers": "4.2.0"
   },
   "devDependencies": {
-    "@arcjet/analyze": "1.9.1",
+    "@arcjet/analyze": "1.9.2",
     "@types/node": "22.20.1",
-    "arcjet": "1.9.1",
+    "arcjet": "1.9.2",
     "tsdown": "0.22.7",
     "typescript": "7.0.2"
   },
   "peerDependencies": {
-    "@arcjet/analyze": "1.9.1",
-    "arcjet": "1.9.1"
+    "@arcjet/analyze": "1.9.2",
+    "arcjet": "1.9.2"
   },
   "peerDependenciesMeta": {
     "@arcjet/analyze": {

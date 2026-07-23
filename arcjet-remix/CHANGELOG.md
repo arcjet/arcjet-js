@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.9.2](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/remix-v1.9.2) (2026-07-23)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/remix:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.9.1 to 1.9.2
+    * @arcjet/env bumped from 1.9.1 to 1.9.2
+    * @arcjet/headers bumped from 1.9.1 to 1.9.2
+    * @arcjet/ip bumped from 1.9.1 to 1.9.2
+    * @arcjet/logger bumped from 1.9.1 to 1.9.2
+    * @arcjet/protocol bumped from 1.9.1 to 1.9.2
+    * @arcjet/transport bumped from 1.9.1 to 1.9.2
+    * arcjet bumped from 1.9.1 to 1.9.2
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/remix-v1.9.1) (2026-07-15)
 
 

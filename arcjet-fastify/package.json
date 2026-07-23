@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/fastify",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "Arcjet runtime security SDK for Fastify — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
@@ -63,16 +63,16 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/env": "1.9.1",
-    "@arcjet/headers": "1.9.1",
-    "@arcjet/ip": "1.9.1",
-    "@arcjet/logger": "1.9.1",
-    "@arcjet/protocol": "1.9.1",
-    "@arcjet/transport": "1.9.1",
-    "arcjet": "1.9.1"
+    "@arcjet/env": "1.9.2",
+    "@arcjet/headers": "1.9.2",
+    "@arcjet/ip": "1.9.2",
+    "@arcjet/logger": "1.9.2",
+    "@arcjet/protocol": "1.9.2",
+    "@arcjet/transport": "1.9.2",
+    "arcjet": "1.9.2"
   },
   "devDependencies": {
-    "@arcjet/cache": "1.9.1",
+    "@arcjet/cache": "1.9.2",
     "@types/node": "22.20.1",
     "fastify": "5.10.0",
     "tsdown": "0.22.7",
