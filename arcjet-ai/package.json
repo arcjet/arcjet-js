@@ -53,6 +53,7 @@
     "test": "npm run build && npm run test-coverage"
   },
   "devDependencies": {
+    "@ai-sdk/provider-utils": "5.0.12",
     "@arcjet/guard": "1.9.1",
     "@types/node": "22.19.21",
     "ai": "7.0.36",
@@ -61,6 +62,7 @@
     "zod": "4.4.3"
   },
   "peerDependencies": {
+    "@ai-sdk/provider-utils": ">=5 <6",
     "@arcjet/guard": "1.9.1",
     "ai": ">=7 <8"
   },

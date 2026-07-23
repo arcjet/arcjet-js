@@ -54,12 +54,16 @@ export function createAiContext(init?: {
   let correlationId: string;
 
   // Check if correlationId was explicitly provided
-  if (init && "correlationId" in init) {
-    correlationId = init.correlationId || "";
+  if (init?.correlationId !== undefined) {
+    correlationId = init.correlationId;
     // Validate caller-supplied IDs (generated ULIDs are correct by construction)
     if (!CORRELATION_ID_RE.test(correlationId)) {
       const problem =
-        correlationId.length > 256 ? `length ${correlationId.length}` : "non-printable characters";
+        correlationId.length === 0
+          ? "empty string"
+          : correlationId.length > 256
+            ? `length ${correlationId.length}`
+            : "non-printable characters";
       throw new Error(
         `@arcjet/ai: correlationId must be 1-256 characters of printable ASCII (got ${problem}); it was rejected, not truncated.`,
       );

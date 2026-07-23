@@ -26,6 +26,15 @@ test("AC1.2: caller-supplied correlationId is preserved verbatim", async () => {
   assert.equal(ctx.correlationId, supplied);
 });
 
+test("AC1.2: undefined correlationId generates a ULID instead of throwing", async () => {
+  const ctx = createAiContext({ correlationId: undefined });
+  assert.match(
+    ctx.correlationId,
+    /^[0-9ABCDEFGHJKMNPQRSTVWXYZ]{26}$/,
+    "undefined correlationId should generate a ULID, not throw",
+  );
+});
+
 test("AC1.3: rejects 257-character correlationId", async () => {
   const oversize = "x".repeat(257);
   assert.throws(
