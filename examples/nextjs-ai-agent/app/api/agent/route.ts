@@ -4,14 +4,18 @@ import { NextResponse } from "next/server";
 import { supportAgentWorkflow } from "@/workflows/support-agent";
 
 export async function POST(request: Request) {
-  let body: any;
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
     return new Response("Invalid JSON body", { status: 400 });
   }
 
-  const { question } = body;
+  if (typeof body !== "object" || body === null) {
+    return new Response("Invalid JSON body", { status: 400 });
+  }
+
+  const { question } = body as { question?: unknown };
 
   if (!question || typeof question !== "string") {
     return new Response("Missing or invalid question parameter", { status: 400 });
