@@ -34,7 +34,7 @@ import type { ArcjetAiContext } from "./context.js";
  *     },
  *     async () => {
  *       // This function runs only on ALLOW
- *       return await github.createComment({ ... });
+ *       return await github.createComment({ body: "Review completed" });
  *     },
  *   );
  * } catch (error) {
@@ -100,9 +100,10 @@ export interface ProtectActionPolicy {
  *
  * @example
  * ```ts
- * import { fixedWindow } from "@arcjet/guard";
+ * import { launchArcjet, fixedWindow } from "@arcjet/guard";
  * import { protectAction, createAiContext } from "@arcjet/ai";
  *
+ * const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
  * const limit = fixedWindow({ maxRequests: 10, windowSeconds: 60 });
  * const ctx = createAiContext({ correlationId: "workflow-456" });
  *
