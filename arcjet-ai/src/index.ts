@@ -11,11 +11,11 @@
  * ## Example
  *
  * ```ts
- * import { ArcjetGuard, tokenBucket } from "@arcjet/guard";
+ * import { launchArcjet, tokenBucket } from "@arcjet/guard";
  * import { tool, jsonSchema, generateText } from "ai";
  * import { createAiContext, aiToolsContext, protectTool } from "@arcjet/ai";
  *
- * const arcjetClient = new ArcjetGuard({ key: process.env.ARCJET_KEY! });
+ * const arcjetClient = launchArcjet({ key: process.env.ARCJET_KEY! });
  *
  * const sendEmailTool = tool({
  *   description: "Send an email",
@@ -29,10 +29,10 @@
  *
  * const protectedEmail = protectTool(arcjetClient, sendEmailTool, {
  *   action: "email.sent",
- *   rules: [tokenBucket({ mode: "LIVE", refillRate: 5, interval: 60, capacity: 5 })],
+ *   rules: [tokenBucket({ mode: "LIVE", refillRate: 5, intervalSeconds: 60, maxTokens: 5 })],
  * });
  *
- * const ctx = createAiContext({ correlationId: requestId });
+ * const ctx = createAiContext({ correlationId: "req-123" });
  * const result = await generateText({
  *   model: languageModel,
  *   tools: { sendEmail: protectedEmail },
