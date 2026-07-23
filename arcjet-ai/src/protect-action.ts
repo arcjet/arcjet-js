@@ -17,20 +17,19 @@ import type { ArcjetAiContext } from "./context.js";
  * const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
  * const ctx = createAiContext({ correlationId: "workflow-123" });
  *
+ * const commentLimit = tokenBucket({
+ *   refillRate: 5,
+ *   intervalSeconds: 60,
+ *   maxTokens: 5,
+ * });
+ *
  * try {
  *   await protectAction(
  *     arcjet,
  *     ctx,
  *     {
  *       action: "github.pr_commented",
- *       rules: [
- *         tokenBucket({
- *           mode: "LIVE",
- *           refillRate: 5,
- *           intervalSeconds: 60,
- *           maxTokens: 5,
- *         }),
- *       ],
+ *       rules: [commentLimit({ key: userId })],
  *     },
  *     async () => {
  *       // This function runs only on ALLOW
