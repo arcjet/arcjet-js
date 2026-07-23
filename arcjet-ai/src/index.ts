@@ -11,21 +11,33 @@
  * ## Example
  *
  * ```ts
- * import Anthropic from "@anthropic-ai/sdk";
- * import { arcjet, createAiContext, aiToolsContext, protectTool } from "@arcjet/ai";
+ * import { ArcjetGuard, tokenBucket } from "@arcjet/guard";
+ * import { tool, jsonSchema, generateText } from "ai";
+ * import { createAiContext, aiToolsContext, protectTool } from "@arcjet/ai";
  *
- * const aj = arcjet({ key: process.env.ARCJET_KEY! });
+ * const arcjetClient = new ArcjetGuard({ key: process.env.ARCJET_KEY! });
  *
- * const tools = {
- *   transfer_funds: protectTool(aj, { name: "transfer_funds", ... }),
- * };
+ * const sendEmailTool = tool({
+ *   description: "Send an email",
+ *   parameters: jsonSchema({
+ *     type: "object",
+ *     properties: { to: { type: "string" } },
+ *     required: ["to"],
+ *   }),
+ *   execute: async (input: { to: string }) => ({ success: true }),
+ * });
+ *
+ * const protectedEmail = protectTool(arcjetClient, sendEmailTool, {
+ *   action: "email.sent",
+ *   rules: [tokenBucket({ mode: "LIVE", refillRate: 5, interval: 60, capacity: 5 })],
+ * });
  *
  * const ctx = createAiContext({ correlationId: requestId });
- * const message = await client.messages.create({
- *   model: "claude-3-5-sonnet-20241022",
- *   max_tokens: 1024,
- *   tools,
- *   toolsContext: aiToolsContext(ctx, tools),
+ * const result = await generateText({
+ *   model: languageModel,
+ *   tools: { sendEmail: protectedEmail },
+ *   toolsContext: aiToolsContext(ctx, { sendEmail: protectedEmail }),
+ *   prompt: "Send a confirmation email",
  * });
  * ```
  *

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { DecisionDeny, RuleWithInput } from "@arcjet/guard";
+import type { Decision, DecisionDeny, RuleWithInput } from "@arcjet/guard";
 import { generateText, stepCountIs, tool, jsonSchema } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 
@@ -16,7 +16,7 @@ import {
 /**
  * Factory for stub guard clients with in-memory decision and capture tracking.
  */
-function stubClient(decision: any) {
+function stubClient(decision: Decision | Error) {
   const guardCalls: unknown[] = [];
   const captureCalls: unknown[] = [];
   return {
@@ -38,14 +38,14 @@ function stubClient(decision: any) {
 /**
  * Stub ALLOW decision.
  */
-function decisionAllow(): any {
+function decisionAllow(): Decision {
   return {
     conclusion: "ALLOW",
     id: "gdec_allow1",
     results: [],
     warnings: [],
     hasFailedOpen: () => false,
-  };
+  } as unknown as Decision;
 }
 
 /**
@@ -317,22 +317,29 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
   assert.ok(Array.isArray(firstStep.content), "first step should have content array");
 
   // Find the tool-result part in the first step
-  const toolResultPart = (firstStep.content as any[]).find(
-    (part: any) => part.type === "tool-result",
+  const toolResultPart = (firstStep.content as unknown[]).find(
+    (part: unknown) =>
+      typeof part === "object" &&
+      part !== null &&
+      (part as Record<string, unknown>).type === "tool-result",
   );
   assert.ok(toolResultPart, "first step should have a tool-result part");
 
-  const output = toolResultPart.output as ArcjetDenialResult;
+  const output = (toolResultPart as Record<string, unknown>).output as ArcjetDenialResult;
   assert.strictEqual(output.arcjetDenied, true, "output should be an ArcjetDenialResult");
   assert.equal(output.reason, "RATE_LIMIT", "denial reason should be RATE_LIMIT");
 
   // The model should have received the denial result in its second call
   // Check that the model was called twice (first with initial prompt, second with tool result)
-  assert.ok((mockModel as any).doGenerateCalls, "mock model should track doGenerateCalls");
-  const secondCall = (mockModel as any).doGenerateCalls[1];
+  assert.ok(
+    typeof mockModel === "object" && mockModel !== null && "doGenerateCalls" in mockModel,
+    "mock model should track doGenerateCalls",
+  );
+  const doGenerateCalls = (mockModel as Record<string, unknown>).doGenerateCalls as unknown[];
+  const secondCall = doGenerateCalls[1];
   assert.ok(secondCall, "mock model should have second call");
   assert.ok(
-    JSON.stringify(secondCall.prompt).includes("arcjetDenied"),
+    JSON.stringify((secondCall as Record<string, unknown>).prompt).includes("arcjetDenied"),
     "second model call should contain the denial result in prompt",
   );
 

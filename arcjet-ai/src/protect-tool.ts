@@ -61,6 +61,73 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
   },
 );
 
+/**
+ * Wraps an AI SDK tool with guard-gated execution and event capture.
+ *
+ * **Execution order:**
+ * 1. Extract context and policy configuration (including metadata merge)
+ * 2. Invoke `guard()` with rules if provided (or skip if rules are empty/omitted)
+ * 3. On DENY, return `ArcjetDenialResult` without executing the tool
+ * 4. On ALLOW or when rules are skipped, execute the tool and capture the outcome
+ * 5. Fire capture events throughout (on deny, on error, on success)
+ *
+ * **Capture-only mode:** When `policy.rules` is omitted or resolves to an empty array,
+ * the guard check is skipped entirely and the call proceeds to execution with
+ * capture-only instrumentation (no guard decision, no decision ID).
+ *
+ * **Fail-open posture:** When the guard API errors (transport failure, timeout),
+ * the tool still executes and the failure is observable via a warning (when
+ * `ARCJET_LOG_LEVEL` is set) and `decision.hasFailedOpen()`.
+ *
+ * **Pilot limitation:** The wrapped tool's `contextSchema` is injected to
+ * receive `ArcjetAiContext | undefined` for correlation and metadata propagation.
+ * Tools that declare their own `contextSchema` cannot be wrapped.
+ *
+ * @param client - Guard client with optional `experimental_capture()` method
+ * @param tool - The tool to wrap; must have an `execute` function and no `contextSchema`
+ * @param policy - Execution policy: `action` (required), `rules`, `metadata`, `correlationId` override, `onDeny` hook
+ * @returns A same-shaped tool with protected `execute` and injected `contextSchema`
+ *
+ * @example
+ * ```ts
+ * import { tokenBucket } from "@arcjet/guard";
+ * import { tool, jsonSchema } from "ai";
+ * import { protectTool, createAiContext, aiToolsContext } from "@arcjet/ai";
+ *
+ * const sendEmailTool = tool({
+ *   description: "Send an email",
+ *   parameters: jsonSchema({
+ *     type: "object",
+ *     properties: { to: { type: "string" }, subject: { type: "string" } },
+ *     required: ["to", "subject"],
+ *   }),
+ *   execute: async (input) => {
+ *     // Real email service call
+ *     return { success: true, messageId: "msg-123" };
+ *   },
+ * });
+ *
+ * const protectedEmail = protectTool(arcjetClient, sendEmailTool, {
+ *   action: "email.sent",
+ *   rules: [
+ *     tokenBucket({
+ *       mode: "LIVE",
+ *       refillRate: 5,
+ *       interval: 60,
+ *       capacity: 5,
+ *     }),
+ *   ],
+ * });
+ *
+ * const ctx = createAiContext({ correlationId: "req-123" });
+ * const result = await generateText({
+ *   model: client,
+ *   tools: { sendEmail: protectedEmail },
+ *   toolsContext: aiToolsContext(ctx, { sendEmail: protectedEmail }),
+ *   prompt: "Send a confirmation email",
+ * });
+ * ```
+ */
 export function protectTool<T extends Tool>(
   client: ArcjetAiClient,
   tool: T,
