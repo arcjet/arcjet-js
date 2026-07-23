@@ -128,16 +128,15 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
  *   },
  * });
  *
+ * const emailLimit = tokenBucket({
+ *   refillRate: 5,
+ *   intervalSeconds: 60,
+ *   maxTokens: 5,
+ * });
+ *
  * const protectedEmail = protectTool(arcjetClient, sendEmailTool, {
  *   action: "email.sent",
- *   rules: [
- *     tokenBucket({
- *       mode: "LIVE",
- *       refillRate: 5,
- *       intervalSeconds: 60,
- *       maxTokens: 5,
- *     }),
- *   ],
+ *   rules: () => [emailLimit({ key: userId, requested: 1 })],
  * });
  *
  * const ctx = createAiContext({ correlationId: "req-123" });

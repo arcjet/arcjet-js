@@ -57,6 +57,13 @@ const ctx = createAiContext({
 });
 
 // 3. Wrap a tool with rate limiting
+const emailLimit = tokenBucket({
+  bucket: "emails",
+  refillRate: 5,
+  intervalSeconds: 60,
+  maxTokens: 10,
+});
+
 const sendEmail = protectTool(
   arcjet,
   tool({
@@ -70,31 +77,33 @@ const sendEmail = protectTool(
   }),
   {
     action: "email.sent",
-    rules: [
-      tokenBucket({ bucket: "emails", refillRate: 5, intervalSeconds: 60, maxTokens: 10 }),
-    ],
+    rules: () => [emailLimit({ key: userId, requested: 1 })],
   },
 );
 
 // 4. Pass context to AI SDK tools
 const result = await generateText({
-  model: languageModel,
+  model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
   instructions:
     "If a tool is denied by Arcjet, explain to the user instead of retrying.",
   tools: { sendEmail },
   toolsContext: aiToolsContext(ctx, { sendEmail }),
-  prompt: userMessage,
+  prompt: userMessage, // User input or conversation context
 });
 
 // 5. Protect an app-invoked action (e.g., external API call)
+const commentLimit = tokenBucket({
+  refillRate: 10,
+  intervalSeconds: 60,
+  maxTokens: 20,
+});
+
 await protectAction(
   arcjet,
   ctx,
   {
     action: "github.pr_commented",
-    rules: [
-      tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 20 }),
-    ],
+    rules: [commentLimit({ key: userId })],
   },
   () => github.createComment({ body: result.text }),
 );
