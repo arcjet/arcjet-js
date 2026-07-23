@@ -30,7 +30,8 @@
     "directory": "arcjet-ai"
   },
   "files": [
-    "dist"
+    "dist",
+    "skills/"
   ],
   "type": "module",
   "main": "./dist/index.js",
