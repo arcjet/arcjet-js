@@ -98,7 +98,7 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
  *
  * const sendEmailTool = tool({
  *   description: "Send an email",
- *   parameters: jsonSchema({
+ *   inputSchema: jsonSchema<{ to: string; subject: string }>({
  *     type: "object",
  *     properties: { to: { type: "string" }, subject: { type: "string" } },
  *     required: ["to", "subject"],

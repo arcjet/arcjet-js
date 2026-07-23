@@ -19,7 +19,7 @@
  *
  * const sendEmailTool = tool({
  *   description: "Send an email",
- *   parameters: jsonSchema({
+ *   inputSchema: jsonSchema<{ to: string }>({
  *     type: "object",
  *     properties: { to: { type: "string" } },
  *     required: ["to"],
@@ -34,7 +34,7 @@
  *
  * const ctx = createAiContext({ correlationId: "req-123" });
  * const result = await generateText({
- *   model: languageModel,
+ *   model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
  *   tools: { sendEmail: protectedEmail },
  *   toolsContext: aiToolsContext(ctx, { sendEmail: protectedEmail }),
  *   prompt: "Send a confirmation email",
