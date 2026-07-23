@@ -64,4 +64,6 @@ export { securityMetadata } from "./metadata.js";
 export type { SecurityMetadataFields } from "./metadata.js";
 export { protectTool } from "./protect-tool.js";
 export type { ArcjetDenialResult, ProtectToolPolicy } from "./protect-tool.js";
+export { ArcjetDeniedError, captureAction, protectAction } from "./protect-action.js";
+export type { CaptureActionOptions, ProtectActionPolicy } from "./protect-action.js";
 export type { ArcjetAiClient, CaptureOptions } from "./client.js";
