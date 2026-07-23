@@ -151,6 +151,16 @@ When a guard check denies a tool call, `protectTool` returns an `ArcjetDenialRes
 }
 ```
 
+To reshape what the model sees on denial, pass `onDeny` in the tool policy — it receives the `DecisionDeny` and its return value replaces the default `ArcjetDenialResult`:
+
+```ts
+protectTool(arcjet, tool, {
+  action: "order.looked-up",
+  rules: () => [limit({ key: userId })],
+  onDeny: (decision) => ({ error: `blocked: ${decision.reason}` }),
+});
+```
+
 When a guard check denies an action, `protectAction` throws `ArcjetDeniedError` carrying the decision. Recommended system prompt line for tools:
 
 > If a tool call is denied by security policy, do not retry it; explain the denial to the user or try a different approach.
@@ -168,6 +178,8 @@ Use `securityMetadata()` keys consistently across your app:
 | `destination` | Where effects are sent | `"github"`, `"slack"`, `"email"` |
 | `reversibility` | Whether the action can be undone | `"reversible"`, `"compensable"`, `"irreversible"` |
 | `resource` | What's being acted on | `"order:12345"`, `"repo:owner/name"` |
+
+Guard caps metadata server-side (max 20 pairs, key ≤64 bytes, value ≤512 bytes). Merging `ctx.metadata` with per-call `securityMetadata()` can quietly exceed 20 pairs — the extras are dropped server-side, so keep maps small.
 
 ## Failure posture
 

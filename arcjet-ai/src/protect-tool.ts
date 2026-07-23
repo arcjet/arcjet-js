@@ -2,9 +2,10 @@ import type { DecisionDeny, RuleWithInput } from "@arcjet/guard";
 import { jsonSchema } from "ai";
 import type { InferToolInput, InferToolOutput, Tool } from "ai";
 
-import { captureEvent, shouldWarn } from "./client.js";
+import { shouldWarn } from "./client.js";
 import type { ArcjetAiClient } from "./client.js";
 import type { ArcjetAiContext } from "./context.js";
+import { runGuarded } from "./guarded.js";
 import { arcjetProtectedTool } from "./internal.js";
 
 /**
@@ -187,67 +188,15 @@ export function protectTool<T extends Tool>(
       };
       const rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
 
-      let decisionId: string | undefined;
-      if (rules !== undefined && rules.length > 0) {
-        let decision;
-        try {
-          decision = await client.guard({
-            label: policy.action,
-            rules,
-            ...(correlationId !== undefined && { correlationId }),
-            metadata,
-          });
-        } catch (error) {
-          // Defense in depth: the guard client itself converts transport
-          // failures into ALLOW decisions with hasFailedOpen() === true, so
-          // this path means something unexpected broke. Fail open.
-          if (shouldWarn()) {
-            console.warn(
-              `@arcjet/ai: guard check for "${policy.action}" errored; failing open:`,
-              error,
-            );
-          }
-          decision = undefined;
-        }
-        if (decision !== undefined) {
-          decisionId = decision.id;
-          if (decision.hasFailedOpen() && shouldWarn()) {
-            console.warn(`@arcjet/ai: guard check for "${policy.action}" failed open (API error).`);
-          }
-          if (decision.conclusion === "DENY") {
-            captureEvent(client, {
-              action: policy.action,
-              ...(correlationId !== undefined && { correlationId }),
-              ...(decisionId !== undefined && { decisionId }),
-              metadata: { ...metadata, outcome: "denied" },
-            });
-            if (policy.onDeny !== undefined) {
-              return policy.onDeny(decision);
-            }
-            return denialResult(decision);
-          }
-        }
-      }
-
-      let result;
-      try {
-        result = await originalExecute(input, options);
-      } catch (error) {
-        captureEvent(client, {
-          action: policy.action,
-          ...(correlationId !== undefined && { correlationId }),
-          ...(decisionId !== undefined && { decisionId }),
-          metadata: { ...metadata, outcome: "error" },
-        });
-        throw error;
-      }
-      captureEvent(client, {
+      return runGuarded(client, {
         action: policy.action,
-        ...(correlationId !== undefined && { correlationId }),
-        ...(decisionId !== undefined && { decisionId }),
-        metadata: { ...metadata, outcome: "success" },
+        rules,
+        correlationId,
+        metadata,
+        onDeny: (decision) =>
+          policy.onDeny !== undefined ? policy.onDeny(decision) : denialResult(decision),
+        execute: () => originalExecute(input, options),
       });
-      return result;
     },
   } as unknown as Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAiContext | undefined>;
 }

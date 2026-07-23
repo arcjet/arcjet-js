@@ -67,7 +67,7 @@ async function stepRunAgent(input: SupportAgentInput) {
     model: "anthropic/claude-haiku-4-5",
     instructions:
       "You are a support agent. Use the lookupOrder tool for order questions. " +
-      "If a tool call is denied by security policy, do not retry it; explain to the user instead.",
+      "If a tool call is denied by security policy, do not retry it; explain the denial to the user or try a different approach.",
     prompt: input.question,
     tools,
     toolsContext: aiToolsContext(input.arcjet, tools),
@@ -86,8 +86,7 @@ async function stepUpdateTicket(input: SupportAgentInput, answer: string) {
       rules: [ticketLimit({ key: "demo-user" })],
       metadata: {
         ...baseMetadata,
-        destination: "internal",
-        reversibility: "reversible",
+        ...securityMetadata({ destination: "internal", reversibility: "reversible" }),
       },
     },
     async () => {
@@ -98,7 +97,7 @@ async function stepUpdateTicket(input: SupportAgentInput, answer: string) {
 
   captureAction(arcjet, input.arcjet, {
     action: "notification.sent",
-    metadata: { ...baseMetadata, destination: "internal" },
+    metadata: { ...baseMetadata, ...securityMetadata({ destination: "internal" }) },
   });
 }
 

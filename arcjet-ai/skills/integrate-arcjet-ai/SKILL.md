@@ -35,12 +35,14 @@ Ask only what you cannot infer from the code; suggest defaults.
 
 ## Step 1: Install and find the guard client
 
+`@arcjet/ai` peer-depends on `@arcjet/guard` and `ai` (>= 7) — install all
+three:
+
 ```sh
-npm install @arcjet/ai
+npm install @arcjet/ai @arcjet/guard ai
 ```
 
-`@arcjet/ai` peer-depends on `@arcjet/guard` and `ai` (>= 7). If the app has
-no guard client yet, launch one **once at module scope**:
+If the app has no guard client yet, launch one **once at module scope**:
 
 ```ts
 import { launchArcjet } from "@arcjet/guard";
@@ -116,6 +118,13 @@ Works identically with `streamText`, `ToolLoopAgent`, and `WorkflowAgent` —
 the wrapper only changes the tool's own behavior. Always add the denial
 line to the system prompt (shown above).
 
+**The compiler will NOT catch a missing `toolsContext`.** The injected
+context type includes `undefined` (so uncorrelated calls still run, fail-open),
+which makes the `toolsContext` option optional at the type level. Forget it and
+guard checks run uncorrelated with only a `console.warn` (gated behind
+`ARCJET_LOG_LEVEL`) as the signal — so always run once with
+`ARCJET_LOG_LEVEL=warn` and confirm correlation before shipping.
+
 ## Step 6: Wrap app-invoked actions; capture side effects
 
 ```ts
@@ -150,6 +159,10 @@ ID), `agent` (which automated actor), `workflow` (logical workflow name),
 (`reversible`/`compensable`/`irreversible`), `resource` (what's acted on,
 e.g. `repo:owner/name#123`). The `action` is not metadata — it is the guard
 label / capture action.
+
+Guard caps metadata server-side (max 20 pairs, key ≤64 bytes, value ≤512
+bytes), so keep maps small — merging `ctx.metadata` with per-call
+`securityMetadata()` can quietly exceed 20 pairs and the extras are dropped.
 
 ## Verify the integration
 
