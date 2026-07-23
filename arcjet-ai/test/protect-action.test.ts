@@ -68,7 +68,7 @@ test("AC3.3: success path → one capture with metadata outcome: success and dec
   const { client, captureCalls } = stubClient(decisionAllow());
   const sentinel = { result: "success" };
 
-  const result = await protectAction(
+  await protectAction(
     client,
     createAiContext({ correlationId: "corr-1", metadata: { key: "value" } }),
     { action: "test.action", rules: [fakeRule] },

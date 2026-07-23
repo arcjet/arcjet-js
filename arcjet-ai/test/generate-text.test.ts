@@ -182,7 +182,7 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
 });
 
 test("AC2.9: DENY decision → generateText completes, loop continues with denial result in first step", async () => {
-  const { client, guardCalls } = stubClient(
+  const { client } = stubClient(
     decisionDenyRateLimit(Math.floor(Date.now() / 1000) + 30),
   );
   const executeCalls: unknown[] = [];
@@ -272,12 +272,7 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
 
   // The model should have received the denial result in its second call
   // Check that the model was called twice (first with initial prompt, second with tool result)
-  assert.ok(
-    typeof mockModel === "object" && mockModel !== null && "doGenerateCalls" in mockModel,
-    "mock model should track doGenerateCalls",
-  );
-  const doGenerateCalls = (mockModel as Record<string, unknown>).doGenerateCalls as unknown[];
-  const secondCall = doGenerateCalls[1];
+  const secondCall = mockModel.doGenerateCalls[1];
   assert.ok(secondCall, "mock model should have second call");
   assert.ok(
     JSON.stringify((secondCall as Record<string, unknown>).prompt).includes("arcjetDenied"),

@@ -63,7 +63,7 @@ function createTestTool() {
 }
 
 test("AC2.1: ALLOW decision → original execute called, result returned unchanged", async () => {
-  const { client, guardCalls, captureCalls } = stubClient(decisionAllow());
+  const { client, guardCalls } = stubClient(decisionAllow());
   const { tool: testTool, executeCalls, sentinel } = createTestTool();
 
   const wrapped = protectTool(client, testTool, {
@@ -201,7 +201,7 @@ test("AC2.5: DENY → capture called with denied outcome and decisionId", async 
 
 test("AC2.6: guard throws → execute runs, warning emitted", async () => {
   const guardError = new Error("guard API error");
-  const { client, guardCalls, captureCalls } = stubClient(guardError);
+  const { client } = stubClient(guardError);
   const { tool: testTool, executeCalls, sentinel } = createTestTool();
 
   const originalWarn = console.warn;
@@ -238,7 +238,7 @@ test("AC2.6: guard throws → execute runs, warning emitted", async () => {
 });
 
 test("AC2.6: guard resolves fail-open ALLOW → execute runs, fail-open warning", async () => {
-  const { client, captureCalls } = stubClient(decisionFailOpenAllow());
+  const { client } = stubClient(decisionFailOpenAllow());
   const { tool: testTool, executeCalls, sentinel } = createTestTool();
 
   const originalWarn = console.warn;
@@ -328,7 +328,7 @@ test("AC2.8: execute throws → error propagates, capture with error outcome", a
   assert.equal(metadata.outcome, "error");
 });
 
-test("Untested branch: non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterSeconds, correct message", async () => {
+test("non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterSeconds, do-not-retry message", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
   const { tool: testTool, executeCalls } = createTestTool();
 
@@ -357,7 +357,7 @@ test("Untested branch: non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=fals
   );
 });
 
-test("Untested branch: RATE_LIMIT DENY without resetAtUnixSeconds → retryable=true, no retryAfterSeconds, ' later.' message", async () => {
+test("RATE_LIMIT DENY without resetAtUnixSeconds → retryable=true, no retryAfterSeconds, ' later.' message", async () => {
   const { client } = stubClient(decisionDenyRateLimitNoReset());
   const { tool: testTool, executeCalls } = createTestTool();
 
