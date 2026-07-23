@@ -63,7 +63,6 @@ export async function supportAgentWorkflow(input: SupportAgentInput) {
 
 async function stepRunAgent(input: SupportAgentInput) {
   "use step";
-  const toolContext = aiToolsContext(input.arcjet, tools);
   const result = await generateText({
     model: "anthropic/claude-haiku-4-5",
     instructions:
@@ -71,7 +70,7 @@ async function stepRunAgent(input: SupportAgentInput) {
       "If a tool call is denied by security policy, do not retry it; explain to the user instead.",
     prompt: input.question,
     tools,
-    toolsContext: toolContext as any,
+    toolsContext: aiToolsContext(input.arcjet, tools),
     stopWhen: stepCountIs(3),
   });
   return result.text;

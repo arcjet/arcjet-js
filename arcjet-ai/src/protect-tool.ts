@@ -1,6 +1,6 @@
 import type { DecisionDeny, RuleWithInput } from "@arcjet/guard";
 import { jsonSchema } from "ai";
-import type { InferToolInput, Tool } from "ai";
+import type { InferToolInput, InferToolOutput, Tool } from "ai";
 
 import { captureEvent, shouldWarn } from "./client.js";
 import type { ArcjetAiClient } from "./client.js";
@@ -79,14 +79,14 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
  * the tool still executes and the failure is observable via a warning (when
  * `ARCJET_LOG_LEVEL` is set) and `decision.hasFailedOpen()`.
  *
- * **Pilot limitation:** The wrapped tool's `contextSchema` is injected to
+ * **Context schema injection:** The wrapped tool's `contextSchema` is injected to
  * receive `ArcjetAiContext | undefined` for correlation and metadata propagation.
  * Tools that declare their own `contextSchema` cannot be wrapped.
  *
  * @param client - Guard client with optional `experimental_capture()` method
  * @param tool - The tool to wrap; must have an `execute` function and no `contextSchema`
  * @param policy - Execution policy: `action` (required), `rules`, `metadata`, `correlationId` override, `onDeny` hook
- * @returns A same-shaped tool with protected `execute` and injected `contextSchema`
+ * @returns A tool with protected `execute`, injected `contextSchema`, and context type `ArcjetAiContext | undefined`
  *
  * @example
  * ```ts
@@ -134,7 +134,7 @@ export function protectTool<T extends Tool>(
   client: ArcjetAiClient,
   tool: T,
   policy: ProtectToolPolicy<T>,
-): T {
+): Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAiContext | undefined> {
   if (typeof tool.execute !== "function") {
     throw new Error("@arcjet/ai: protectTool() requires a tool with an execute function");
   }
@@ -231,7 +231,7 @@ export function protectTool<T extends Tool>(
       });
       return result;
     },
-  } as T;
+  } as unknown as Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAiContext | undefined>;
 }
 
 function denialResult(decision: DecisionDeny): ArcjetDenialResult {
