@@ -131,7 +131,7 @@ function createTestTool() {
   return {
     tool: tool({
       description: "Test tool",
-      parameters: jsonSchema({
+      inputSchema: jsonSchema<{ id: string }>({
         type: "object",
         properties: {
           id: { type: "string" },
@@ -388,7 +388,7 @@ test("AC2.8: execute throws → error propagates, capture with error outcome", a
 
   const throwingTool = tool({
     description: "Test tool that throws",
-    parameters: jsonSchema({
+    inputSchema: jsonSchema<{ id: string }>({
       type: "object",
       properties: { id: { type: "string" } },
       required: ["id"],
@@ -630,7 +630,7 @@ test("Wrap-time error: tool with contextSchema throws", async () => {
 
   const toolWithContextSchema = tool({
     description: "Test tool",
-    parameters: jsonSchema({
+    inputSchema: jsonSchema<{ id: string }>({
       type: "object",
       properties: { id: { type: "string" } },
       required: ["id"],

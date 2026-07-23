@@ -82,7 +82,7 @@ test("AC1.5: Context with correlationId flows through to guard call in generateT
 
   const sendEmailTool = tool({
     description: "Send an email",
-    parameters: jsonSchema({
+    inputSchema: jsonSchema<{ to: string }>({
       type: "object",
       properties: {
         to: { type: "string" },
@@ -157,7 +157,7 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
 
   const sendEmailTool = tool({
     description: "Send an email",
-    parameters: jsonSchema({
+    inputSchema: jsonSchema<{ to: string }>({
       type: "object",
       properties: {
         to: { type: "string" },
@@ -248,7 +248,7 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
 
   const sendEmailTool = tool({
     description: "Send an email",
-    parameters: jsonSchema({
+    inputSchema: jsonSchema<{ to: string }>({
       type: "object",
       properties: {
         to: { type: "string" },
