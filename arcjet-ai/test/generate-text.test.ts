@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { Decision, DecisionDeny, RuleWithInput } from "@arcjet/guard";
 import { generateText, stepCountIs, tool, jsonSchema } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 
@@ -9,72 +8,14 @@ import {
   protectTool,
   createAiContext,
   aiToolsContext,
-  type ArcjetAiClient,
   type ArcjetDenialResult,
 } from "../dist/index.js";
-
-/**
- * Factory for stub guard clients with in-memory decision and capture tracking.
- */
-function stubClient(decision: Decision | Error) {
-  const guardCalls: unknown[] = [];
-  const captureCalls: unknown[] = [];
-  return {
-    client: {
-      async guard(opts: unknown) {
-        guardCalls.push(opts);
-        if (decision instanceof Error) throw decision;
-        return decision;
-      },
-      experimental_capture(opts: unknown) {
-        captureCalls.push(opts);
-      },
-    } as unknown as ArcjetAiClient,
-    guardCalls,
-    captureCalls,
-  };
-}
-
-/**
- * Stub ALLOW decision.
- */
-function decisionAllow(): Decision {
-  return {
-    conclusion: "ALLOW",
-    id: "gdec_allow1",
-    results: [],
-    warnings: [],
-    hasFailedOpen: () => false,
-  } as unknown as Decision;
-}
-
-/**
- * Stub DENY decision (RATE_LIMIT).
- */
-function decisionDenyRateLimit(resetAtUnixSeconds: number): DecisionDeny {
-  return {
-    conclusion: "DENY",
-    reason: "RATE_LIMIT",
-    id: "gdec_deny1",
-    results: [
-      {
-        conclusion: "DENY",
-        reason: "RATE_LIMIT",
-        type: "TOKEN_BUCKET",
-        resetAtUnixSeconds,
-      },
-    ],
-    warnings: [],
-    hasFailedOpen: () => false,
-  } as unknown as DecisionDeny;
-}
-
-/**
- * Fake rule for testing
- */
-const fakeRule: RuleWithInput = {
-  type: "TEST" as never,
-} as RuleWithInput;
+import {
+  stubClient,
+  decisionAllow,
+  decisionDenyRateLimit,
+  fakeRule,
+} from "./_shared/stub-client.ts";
 
 test("AC1.5: Context with correlationId flows through to guard call in generateText loop", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());

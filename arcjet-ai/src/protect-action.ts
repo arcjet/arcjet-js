@@ -26,6 +26,7 @@ import type { ArcjetAiContext } from "./context.js";
  *       rules: [
  *         tokenBucket({
  *           mode: "LIVE",
+ *           refillRate: 5,
  *           intervalSeconds: 60,
  *           maxTokens: 5,
  *         }),
@@ -99,12 +100,18 @@ export interface ProtectActionPolicy {
  *
  * @example
  * ```ts
+ * import { fixedWindow } from "@arcjet/guard";
+ * import { protectAction, createAiContext } from "@arcjet/ai";
+ *
+ * const limit = fixedWindow({ maxRequests: 10, windowSeconds: 60 });
+ * const ctx = createAiContext({ correlationId: "workflow-456" });
+ *
  * const result = await protectAction(
- *   arcjetClient,
+ *   arcjet,
  *   ctx,
- *   { action: "database.updated", rules: [rateLimit] },
+ *   { action: "database.updated", rules: [limit({ key: userId })] },
  *   async () => {
- *     return await db.update({ ... });
+ *     return await db.update({ id: recordId, data });
  *   },
  * );
  * ```

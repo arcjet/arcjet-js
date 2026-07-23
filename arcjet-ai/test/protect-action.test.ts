@@ -1,90 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { RuleWithInput } from "@arcjet/guard";
-import type { Decision } from "@arcjet/guard";
-
+import { protectAction, captureAction, ArcjetDeniedError, createAiContext } from "../dist/index.js";
 import {
-  protectAction,
-  captureAction,
-  ArcjetDeniedError,
-  createAiContext,
-  type ArcjetAiClient,
-} from "../dist/index.js";
-
-/**
- * Factory for stub guard clients with in-memory decision and capture tracking.
- */
-function stubClient(decision: Decision | Error) {
-  const guardCalls: unknown[] = [];
-  const captureCalls: unknown[] = [];
-  return {
-    client: {
-      async guard(opts: unknown) {
-        guardCalls.push(opts);
-        if (decision instanceof Error) throw decision;
-        return decision;
-      },
-      experimental_capture(opts: unknown) {
-        captureCalls.push(opts);
-      },
-    } as unknown as ArcjetAiClient,
-    guardCalls,
-    captureCalls,
-  };
-}
-
-/**
- * Stub ALLOW decision.
- */
-function decisionAllow(): Decision {
-  return {
-    conclusion: "ALLOW",
-    id: "gdec_allow1",
-    results: [],
-    warnings: [],
-    hasFailedOpen: () => false,
-  } as unknown as Decision;
-}
-
-/**
- * Stub DENY decision (RATE_LIMIT).
- */
-function decisionDenyRateLimit(resetAtUnixSeconds: number) {
-  return {
-    conclusion: "DENY",
-    reason: "RATE_LIMIT",
-    id: "gdec_deny1",
-    results: [
-      {
-        conclusion: "DENY",
-        reason: "RATE_LIMIT",
-        type: "TOKEN_BUCKET",
-        resetAtUnixSeconds,
-      },
-    ],
-    warnings: [],
-    hasFailedOpen: () => false,
-  };
-}
-
-/**
- * Stub fail-open ALLOW decision.
- */
-function decisionFailOpenAllow(): Decision {
-  return {
-    conclusion: "ALLOW",
-    id: "gdec_allow_fo",
-    results: [],
-    warnings: [],
-    hasFailedOpen: () => true,
-  } as unknown as Decision;
-}
-
-// Fake rule for testing
-const fakeRule: RuleWithInput = {
-  type: "TEST" as never,
-} as RuleWithInput;
+  stubClient,
+  decisionAllow,
+  decisionDenyRateLimit,
+  decisionFailOpenAllow,
+  fakeRule,
+} from "./_shared/stub-client.ts";
 
 test("AC3.1: ALLOW decision → fn runs once, protectAction resolves with fn's return value", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
