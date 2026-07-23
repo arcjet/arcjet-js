@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.9.2](https://github.com/arcjet/arcjet-js/compare/v1.9.1...arcjet-v1.9.2) (2026-07-23)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.9.1 to 1.9.2
+    * @arcjet/cache bumped from 1.9.1 to 1.9.2
+    * @arcjet/duration bumped from 1.9.1 to 1.9.2
+    * @arcjet/headers bumped from 1.9.1 to 1.9.2
+    * @arcjet/protocol bumped from 1.9.1 to 1.9.2
+    * @arcjet/runtime bumped from 1.9.1 to 1.9.2
+    * @arcjet/stable-hash bumped from 1.9.1 to 1.9.2
+  * devDependencies
+    * @arcjet/transport bumped from 1.9.1 to 1.9.2
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...arcjet-v1.9.1) (2026-07-15)
 
 

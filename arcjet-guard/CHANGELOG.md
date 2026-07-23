@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.9.2](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/guard-v1.9.2) (2026-07-23)
+
+
+### 🧹 Miscellaneous Chores
+
+* **proto:** sync generated bindings with arcjet monorepo main ([#6163](https://github.com/arcjet/arcjet-js/issues/6163)) ([500a889](https://github.com/arcjet/arcjet-js/commit/500a8895253dc02d74cd3a4d98dc21247f1baf15))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.9.1 to 1.9.2
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/guard-v1.9.1) (2026-07-15)
 
 

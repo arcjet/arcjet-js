@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.2](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/stable-hash-v1.9.2) (2026-07-23)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/stable-hash:** Synchronize arcjet-js versions
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/stable-hash-v1.9.1) (2026-07-15)
 
 

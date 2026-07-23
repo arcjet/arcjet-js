@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/sprintf",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "Arcjet platform-independent replacement for util.format",
   "keywords": [
     "arcjet",

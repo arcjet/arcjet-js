@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.9.2](https://github.com/arcjet/arcjet-js/compare/v1.9.1...v1.9.2) (2026-07-23)
+
+
+### 🧹 Miscellaneous Chores
+
+* document publishing and fix sensitive-info-rampart peer deps ([#6146](https://github.com/arcjet/arcjet-js/issues/6146)) ([22d48de](https://github.com/arcjet/arcjet-js/commit/22d48de4760190651fb9fe536594c744a8b7565c))
+* pin npm to 12.0.1 in CI and remove unenforced Trunk config ([#6154](https://github.com/arcjet/arcjet-js/issues/6154)) ([ed08ede](https://github.com/arcjet/arcjet-js/commit/ed08ede30df343e1218d1535e78bb2df2ef8ec6a))
+* **proto:** sync generated bindings with arcjet monorepo main ([#6163](https://github.com/arcjet/arcjet-js/issues/6163)) ([500a889](https://github.com/arcjet/arcjet-js/commit/500a8895253dc02d74cd3a4d98dc21247f1baf15))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump astro from 7.0.9 to 7.1.0 ([#6152](https://github.com/arcjet/arcjet-js/issues/6152)) ([4e7e33c](https://github.com/arcjet/arcjet-js/commit/4e7e33c79a1e611b6aca3ff2eadf27aebbb72427))
+* **deps-dev:** bump fast-uri from 3.1.2 to 3.1.4 in /examples/nestjs ([#6161](https://github.com/arcjet/arcjet-js/issues/6161)) ([7752027](https://github.com/arcjet/arcjet-js/commit/7752027293d0ef5125c5c5ff8ac9cb41b39d18cb))
+* **deps:** bump body-parser from 1.20.4 to 1.20.6 in /examples/react-router-middleware ([#6153](https://github.com/arcjet/arcjet-js/issues/6153)) ([f8792c3](https://github.com/arcjet/arcjet-js/commit/f8792c394f5c0558635b13ce991d496ee55fb681))
+* **deps:** bump brace-expansion, @eslint/compat and eslint in /examples/sveltekit ([#6150](https://github.com/arcjet/arcjet-js/issues/6150)) ([529712b](https://github.com/arcjet/arcjet-js/commit/529712b5516ff89414dee57318a577afd9772c85))
+* **deps:** bump svgo from 4.0.1 to 4.0.2 in /examples/astro ([#6155](https://github.com/arcjet/arcjet-js/issues/6155)) ([1e1bc60](https://github.com/arcjet/arcjet-js/commit/1e1bc601f6f5d2fc1383856456ec1a0ef9e6a7ba))
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...v1.9.1) (2026-07-15)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/decorate",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "Arcjet utilities for decorating responses with information",
   "keywords": [
     "arcjet",
@@ -48,8 +48,8 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/protocol": "1.9.1",
-    "@arcjet/sprintf": "1.9.1"
+    "@arcjet/protocol": "1.9.2",
+    "@arcjet/sprintf": "1.9.2"
   },
   "devDependencies": {
     "@types/node": "22.20.1",
