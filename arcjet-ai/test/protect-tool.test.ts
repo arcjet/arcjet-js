@@ -1,104 +1,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { Decision, DecisionDeny, RuleWithInput } from "@arcjet/guard";
+import type { DecisionDeny } from "@arcjet/guard";
 import { tool, jsonSchema } from "ai";
 
+import { protectTool, createAiContext, type ArcjetDenialResult } from "../dist/index.js";
 import {
-  protectTool,
-  createAiContext,
-  type ArcjetAiClient,
-  type ArcjetDenialResult,
-} from "../dist/index.js";
-
-/**
- * Factory for stub guard clients with in-memory decision and capture tracking.
- */
-function stubClient(decision: Decision | Error) {
-  const guardCalls: unknown[] = [];
-  const captureCalls: unknown[] = [];
-  return {
-    client: {
-      async guard(opts: unknown) {
-        guardCalls.push(opts);
-        if (decision instanceof Error) throw decision;
-        return decision;
-      },
-      experimental_capture(opts: unknown) {
-        captureCalls.push(opts);
-      },
-    } as unknown as ArcjetAiClient,
-    guardCalls,
-    captureCalls,
-  };
-}
-
-/**
- * Stub ALLOW decision.
- */
-function decisionAllow(): Decision {
-  return {
-    conclusion: "ALLOW",
-    id: "gdec_allow1",
-    results: [],
-    warnings: [],
-    hasFailedOpen: () => false,
-  } as unknown as Decision;
-}
-
-/**
- * Stub DENY decision (RATE_LIMIT).
- */
-function decisionDenyRateLimit(resetAtUnixSeconds: number): DecisionDeny {
-  return {
-    conclusion: "DENY",
-    reason: "RATE_LIMIT",
-    id: "gdec_deny1",
-    results: [
-      {
-        conclusion: "DENY",
-        reason: "RATE_LIMIT",
-        type: "TOKEN_BUCKET",
-        resetAtUnixSeconds,
-      },
-    ],
-    warnings: [],
-    hasFailedOpen: () => false,
-  } as unknown as DecisionDeny;
-}
-
-/**
- * Stub fail-open ALLOW decision.
- */
-function decisionFailOpenAllow(): Decision {
-  return {
-    conclusion: "ALLOW",
-    id: "gdec_allow_fo",
-    results: [],
-    warnings: [],
-    hasFailedOpen: () => true,
-  } as unknown as Decision;
-}
-
-/**
- * Stub DENY decision (non-rate-limit, e.g., PROMPT_INJECTION).
- */
-function decisionDenyPromptInjection(): DecisionDeny {
-  return {
-    conclusion: "DENY",
-    reason: "PROMPT_INJECTION",
-    id: "gdec_deny_pi",
-    results: [
-      {
-        conclusion: "DENY",
-        reason: "PROMPT_INJECTION",
-        type: "PROMPT_INJECTION",
-      },
-    ],
-    warnings: [],
-    hasFailedOpen: () => false,
-  } as unknown as DecisionDeny;
-}
+  stubClient,
+  decisionAllow,
+  decisionDenyRateLimit,
+  decisionFailOpenAllow,
+  decisionDenyPromptInjection,
+  fakeRule,
+} from "./_shared/stub-client.ts";
 
 /**
  * Stub DENY decision (RATE_LIMIT without resetAtUnixSeconds).
@@ -147,11 +61,6 @@ function createTestTool() {
     sentinel,
   };
 }
-
-// Fake rule for testing
-const fakeRule: RuleWithInput = {
-  type: "TEST" as never,
-} as RuleWithInput;
 
 test("AC2.1: ALLOW decision → original execute called, result returned unchanged", async () => {
   const { client, guardCalls, captureCalls } = stubClient(decisionAllow());
