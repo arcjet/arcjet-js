@@ -90,9 +90,11 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
  *
  * @example
  * ```ts
- * import { tokenBucket } from "@arcjet/guard";
- * import { tool, jsonSchema } from "ai";
+ * import { launchArcjet, tokenBucket } from "@arcjet/guard";
+ * import { tool, jsonSchema, generateText } from "ai";
  * import { protectTool, createAiContext, aiToolsContext } from "@arcjet/ai";
+ *
+ * const arcjetClient = launchArcjet({ key: process.env.ARCJET_KEY! });
  *
  * const sendEmailTool = tool({
  *   description: "Send an email",
@@ -113,15 +115,15 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
  *     tokenBucket({
  *       mode: "LIVE",
  *       refillRate: 5,
- *       interval: 60,
- *       capacity: 5,
+ *       intervalSeconds: 60,
+ *       maxTokens: 5,
  *     }),
  *   ],
  * });
  *
  * const ctx = createAiContext({ correlationId: "req-123" });
  * const result = await generateText({
- *   model: client,
+ *   model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
  *   tools: { sendEmail: protectedEmail },
  *   toolsContext: aiToolsContext(ctx, { sendEmail: protectedEmail }),
  *   prompt: "Send a confirmation email",
