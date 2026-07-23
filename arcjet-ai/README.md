@@ -145,7 +145,7 @@ When a guard check denies a tool call, `protectTool` returns an `ArcjetDenialRes
 {
   arcjetDenied: true,
   reason: "RATE_LIMIT",
-  message: "Arcjet denied this tool call. It may be retried after 30 seconds.",
+  message: "Arcjet denied this tool call (RATE_LIMIT). It may be retried after 30 seconds.",
   retryable: true,
   retryAfterSeconds: 30,
 }
@@ -179,7 +179,7 @@ Use `securityMetadata()` keys consistently across your app:
 
 For integration help in Claude Code or other coding agents, install the skill:
 
-1. Copy or symlink `node_modules/@arcjet/ai/skills/integrate-arcjet-ai/` to `.claude/skills/`:
+1. Copy or symlink `node_modules/@arcjet/ai/skills/integrate-arcjet-ai/` to `~/.claude/skills/`:
 
 ```bash
 cp -r node_modules/@arcjet/ai/skills/integrate-arcjet-ai ~/.claude/skills/
