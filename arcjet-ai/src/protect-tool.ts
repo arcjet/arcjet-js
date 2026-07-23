@@ -7,7 +7,14 @@ import type { ArcjetAiClient } from "./client.js";
 import type { ArcjetAiContext } from "./context.js";
 import { arcjetProtectedTool } from "./internal.js";
 
-/** Structured tool result returned to the model when a call is denied. */
+/**
+ * Structured tool result returned to the model when a call is denied.
+ *
+ * The model receives this object as the tool's return value (not an error) when
+ * a guard check denies the call. The model can inspect `reason`, `message`, and
+ * `retryable` to decide whether to retry, explain the denial to the user, or try
+ * a different approach.
+ */
 export interface ArcjetDenialResult {
   arcjetDenied: true;
   /** Denial reason, e.g. `"RATE_LIMIT"` or `"PROMPT_INJECTION"`. */
@@ -20,7 +27,19 @@ export interface ArcjetDenialResult {
   retryAfterSeconds?: number;
 }
 
-/** Policy for `protectTool()`. */
+/**
+ * Policy for `protectTool()` — how to guard a tool's execution.
+ *
+ * Specifies the guard action name, optional rules to evaluate, metadata
+ * context, and optional denial handler. Rules can be static or computed
+ * from the tool's input.
+ *
+ * **Constraints:**
+ * - The tool must not declare its own `contextSchema` (pilot limitation).
+ * - The `action` is required and is the guard label and capture action.
+ * - `rules` may be omitted for capture-only wrapping (no guard, just audit).
+ * - Metadata is merged on top of the context's and can depend on input.
+ */
 export interface ProtectToolPolicy<T extends Tool> {
   /** Guard label and capture action: `"resource.verb"`, past tense. */
   action: string;

@@ -8,9 +8,13 @@
 /**
  * Security dimensions passed to guard evaluations.
  *
- * Values are suggestions where noted; at runtime, any string is accepted.
- * Arcjet's guard enforces server-side caps (max 20 pairs, key ≤64 bytes,
- * value ≤512 bytes) so large maps may be dropped server-side.
+ * Optional metadata fields (key-value pairs) attached to tool calls and actions
+ * for audit, policy decisions, and observability. Values are suggestions where
+ * noted; at runtime, any string is accepted. Arcjet's guard enforces server-side
+ * caps (max 20 pairs, key ≤64 bytes, value ≤512 bytes) so large maps may be
+ * dropped server-side.
+ *
+ * Thread via `securityMetadata()` or merge directly into `ArcjetAiContext.metadata`.
  */
 export interface SecurityMetadataFields {
   /**

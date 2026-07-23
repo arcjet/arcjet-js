@@ -3,6 +3,9 @@ import type { Decision, GuardOptions } from "@arcjet/guard";
 /**
  * Options for `experimental_capture()` on guard clients that provide it.
  * Mirrors the in-flight `@arcjet/guard` CaptureOptions shape.
+ *
+ * Used by `captureAction()` to record an observational fact (something the
+ * application did) without invoking the guard. Never throws; fire-and-forget.
  */
 export interface CaptureOptions {
   /** The fact itself, `"resource.verb"` past tense (e.g. `"review.submitted"`). */
@@ -19,6 +22,11 @@ export interface CaptureOptions {
 
 /**
  * The guard client surface `@arcjet/ai` needs, typed structurally.
+ *
+ * This is the interface that `launchArcjet()` from `@arcjet/guard` returns.
+ * `@arcjet/ai` calls `guard()` to run guard checks and optionally calls
+ * `experimental_capture()` to record events (when available). The client is
+ * passed to `protectTool()`, `protectAction()`, and `captureAction()`.
  *
  * `experimental_capture` is optional because it has not shipped in a
  * published `@arcjet/guard` release yet; when the launched client lacks it,

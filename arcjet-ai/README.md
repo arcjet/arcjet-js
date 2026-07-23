@@ -33,7 +33,156 @@ npm install @arcjet/ai @arcjet/guard ai
 
 ## Use
 
-Documentation lands alongside the API in subsequent releases.
+End-to-end example: launch a guard client, create a security context, protect a model-invoked tool and an app-invoked action.
+
+```ts
+import { launchArcjet, tokenBucket } from "@arcjet/guard";
+import { tool, jsonSchema, generateText } from "ai";
+import {
+  createAiContext,
+  aiToolsContext,
+  protectTool,
+  protectAction,
+  captureAction,
+  securityMetadata,
+} from "@arcjet/ai";
+
+// 1. Launch the guard client once (at module scope)
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+// 2. Create security context (at request entry point)
+const ctx = createAiContext({
+  correlationId: existingRunId, // omit to auto-generate
+  metadata: securityMetadata({ agent: "support", user: userId }),
+});
+
+// 3. Wrap a tool with rate limiting
+const sendEmail = protectTool(
+  arcjet,
+  tool({
+    description: "Send an email",
+    inputSchema: jsonSchema<{ to: string; subject: string }>({
+      type: "object",
+      properties: { to: { type: "string" }, subject: { type: "string" } },
+      required: ["to", "subject"],
+    }),
+    execute: async ({ to, subject }) => ({ sent: true }),
+  }),
+  {
+    action: "email.sent",
+    rules: [
+      tokenBucket({ bucket: "emails", refillRate: 5, intervalSeconds: 60, maxTokens: 10 }),
+    ],
+  },
+);
+
+// 4. Pass context to AI SDK tools
+const result = await generateText({
+  model: languageModel,
+  instructions:
+    "If a tool is denied by Arcjet, explain to the user instead of retrying.",
+  tools: { sendEmail },
+  toolsContext: aiToolsContext(ctx, { sendEmail }),
+  prompt: userMessage,
+});
+
+// 5. Protect an app-invoked action (e.g., external API call)
+await protectAction(
+  arcjet,
+  ctx,
+  {
+    action: "github.pr_commented",
+    rules: [
+      tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 20 }),
+    ],
+  },
+  () => github.createComment({ body: result.text }),
+);
+
+// 6. Capture observational events
+captureAction(arcjet, ctx, {
+  action: "notification.sent",
+  metadata: { destination: "slack" },
+});
+```
+
+## Which helper?
+
+| Scenario | Helper | Guard | Model Sees |
+|----------|--------|-------|-----------|
+| LLM decided to call a tool | `protectTool()` | Yes (if rules provided) | `ArcjetDenialResult` on DENY |
+| Your app invokes an action | `protectAction()` | Yes (if rules provided) | Throws `ArcjetDeniedError` on DENY |
+| Record that something happened | `captureAction()` | No | — (fire-and-forget) |
+
+## Correlation
+
+The context is a plain JSON-serializable object: thread it explicitly through function calls and workflow/queue inputs (never use module state or `AsyncLocalStorage`). Each correlation ID is 1–256 printable ASCII characters; auto-generated ones are ULIDs.
+
+```ts
+// Thread explicitly
+const ctx = createAiContext({ correlationId: requestId });
+await workflow({ question, arcjet: ctx });
+
+// Or use auto-generated ULID
+const ctx = createAiContext();
+console.log(ctx.correlationId); // "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+```
+
+## Denials
+
+When a guard check denies a tool call, `protectTool` returns an `ArcjetDenialResult` object:
+
+```ts
+{
+  arcjetDenied: true,
+  reason: "RATE_LIMIT",
+  message: "Arcjet denied this tool call. It may be retried after 30 seconds.",
+  retryable: true,
+  retryAfterSeconds: 30,
+}
+```
+
+When a guard check denies an action, `protectAction` throws `ArcjetDeniedError` carrying the decision. Recommended system prompt line for tools:
+
+> If a tool call is denied by security policy, do not retry it; explain the denial to the user or try a different approach.
+
+## Metadata vocabulary
+
+Use `securityMetadata()` keys consistently across your app:
+
+| Key | Meaning | Example |
+|-----|---------|---------|
+| `user` | Whose authority (opaque ID, not PII) | `"user_alice"`, `"org_123"` |
+| `agent` | Type or identity of the AI actor | `"support-agent"`, `"code-reviewer"` |
+| `workflow` | Process name this request belongs to | `"support-request"`, `"pr-review"` |
+| `dataClass` | Data sensitivity level | `"public"`, `"confidential"`, `"regulated"` |
+| `destination` | Where effects are sent | `"github"`, `"slack"`, `"email"` |
+| `reversibility` | Whether the action can be undone | `"reversible"`, `"compensable"`, `"irreversible"` |
+| `resource` | What's being acted on | `"order:12345"`, `"repo:owner/name"` |
+
+## Failure posture
+
+- **Guard errors** (API timeouts, network failures): Fail open — the tool or action still runs. A warning is logged when `ARCJET_LOG_LEVEL=warn`.
+- **Capture events**: Fire-and-forget; never throw. If the guard client lacks `experimental_capture()`, events silently skip with a gated warning.
+- **Missing correlation ID**: A warning is logged, but guard checks still run (uncorrelated).
+
+## Agent skill
+
+For integration help in Claude Code or other coding agents, install the skill:
+
+1. Copy or symlink `node_modules/@arcjet/ai/skills/integrate-arcjet-ai/` to `.claude/skills/`:
+
+```bash
+cp -r node_modules/@arcjet/ai/skills/integrate-arcjet-ai ~/.claude/skills/
+# or symlink instead
+ln -s /path/to/node_modules/@arcjet/ai/skills/integrate-arcjet-ai ~/.claude/skills/
+```
+
+2. In Claude Code, `/integrate-arcjet-ai` to start an integration session.
+
+## Example
+
+See [examples/nextjs-ai-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-ai-agent) for a working Next.js app with Arcjet-protected tools and actions.
 
 ## License
 
