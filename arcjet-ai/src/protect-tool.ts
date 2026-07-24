@@ -36,7 +36,7 @@ export interface ArcjetDenialResult {
  * from the tool's input.
  *
  * **Constraints:**
- * - The tool must not declare its own `contextSchema` (pilot limitation).
+ * - The tool must not declare its own `contextSchema` (that slot carries the `ArcjetAiContext`).
  * - The `action` is required and is the guard label and capture action.
  * - `rules` may be omitted for capture-only wrapping (no guard, just audit).
  * - Metadata is merged on top of the context's and can depend on input.
@@ -159,7 +159,7 @@ export function protectTool<T extends Tool>(
   }
   if (tool.contextSchema !== undefined) {
     throw new Error(
-      "@arcjet/ai: protectTool() cannot wrap a tool that declares its own contextSchema (pilot limitation)",
+      "@arcjet/ai: protectTool() cannot wrap a tool that declares its own contextSchema",
     );
   }
   const originalExecute = tool.execute.bind(tool);

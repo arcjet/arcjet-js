@@ -58,7 +58,8 @@ The example includes:
 
 ## Observing the run
 
-The API response returns a `runId` and `correlationId`. Use these to observe the workflow and
+The workflow runs durably in the background, so the route responds immediately with a `runId`
+and `correlationId` rather than the agent's answer. Use these to observe the workflow and
 guard decisions:
 
 - **Workflow execution:** Run `npx workflow inspect runs` to see the workflow steps, or

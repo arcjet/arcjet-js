@@ -28,9 +28,8 @@ export interface CaptureOptions {
  * `experimental_capture()` to record events (when available). The client is
  * passed to `protectTool()`, `protectAction()`, and `captureAction()`.
  *
- * `experimental_capture` is optional because it has not shipped in a
- * published `@arcjet/guard` release yet; when the launched client lacks it,
- * capture calls become no-ops (with a gated warning).
+ * `experimental_capture` is optional: when the client lacks it, capture calls
+ * become no-ops (with a gated warning).
  */
 export interface ArcjetAiClient {
   guard(opts: GuardOptions): Promise<Decision>;

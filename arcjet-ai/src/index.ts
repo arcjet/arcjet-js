@@ -53,11 +53,11 @@
  *   explicitly through function calls (no classes, no `AsyncLocalStorage`).
  * - **ULID correlation IDs**: Generated inline with 26-character Crockford
  *   base32 identifiers, sortable by creation time. Server-validated to fit
- *   within 256 bytes of printable ASCII.
+ *   within 256 characters of printable ASCII.
  * - **Metadata vocabulary**: `securityMetadata()` helper maps request context
  *   (user identity, agent type, workflow stage, data classification, etc.)
  *   to wire keys for audit and policy decisions.
- * - **Tool protection**: `protectTool` (Phase 3+) wraps tools with a
+ * - **Tool protection**: `protectTool` wraps tools with a
  *   `contextSchema` for guard evaluation; `aiToolsContext` fans context
  *   to protected tools only.
  *

@@ -62,7 +62,6 @@ export function createAiContext(init?: {
 }): ArcjetAiContext {
   let correlationId: string;
 
-  // Check if correlationId was explicitly provided
   if (init?.correlationId !== undefined) {
     correlationId = init.correlationId;
     // Validate caller-supplied IDs (generated ULIDs are correct by construction)
@@ -78,7 +77,6 @@ export function createAiContext(init?: {
       );
     }
   } else {
-    // No correlationId provided, generate one
     correlationId = ulid();
   }
 
@@ -86,7 +84,7 @@ export function createAiContext(init?: {
     correlationId,
   };
 
-  // Copy metadata into a fresh object if provided
+  // Copy metadata so the returned context owns a fresh, JSON-serializable object.
   if (init?.metadata) {
     context.metadata = { ...init.metadata };
   }

@@ -54,6 +54,20 @@ export interface SecurityMetadataFields {
 }
 
 /**
+ * Maps each field to its guard wire key. Every key is its own name except
+ * `dataClass`, which becomes the hyphenated `data-class`.
+ */
+const WIRE_KEYS = {
+  user: "user",
+  agent: "agent",
+  workflow: "workflow",
+  dataClass: "data-class",
+  destination: "destination",
+  reversibility: "reversibility",
+  resource: "resource",
+} as const satisfies Record<keyof SecurityMetadataFields, string>;
+
+/**
  * Map security metadata fields to their wire keys for Arcjet guard evaluation.
  *
  * Each field's value is passed through unchanged (type unions are suggestions,
@@ -73,20 +87,6 @@ export interface SecurityMetadataFields {
  * // → { user: "user_alice", "data-class": "confidential", destination: "audit_service" }
  * ```
  */
-/**
- * Maps each field to its guard wire key. Every key is its own name except
- * `dataClass`, which becomes the hyphenated `data-class`.
- */
-const WIRE_KEYS = {
-  user: "user",
-  agent: "agent",
-  workflow: "workflow",
-  dataClass: "data-class",
-  destination: "destination",
-  reversibility: "reversibility",
-  resource: "resource",
-} as const satisfies Record<keyof SecurityMetadataFields, string>;
-
 export function securityMetadata(fields: SecurityMetadataFields): Record<string, string> {
   const result: Record<string, string> = {};
 
