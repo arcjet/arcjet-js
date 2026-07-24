@@ -102,7 +102,7 @@ await protectAction(
   arcjet,
   ctx,
   {
-    action: "github.pr_commented",
+    action: "github.pr-commented",
     rules: [commentLimit({ key: userId })],
   },
   () => github.createComment({ body: result.text }),
@@ -114,6 +114,8 @@ captureAction(arcjet, ctx, {
   metadata: { destination: "slack" },
 });
 ```
+
+The `action` is the guard label: use `resource.verb` past tense (e.g. `order.looked-up`). Labels are validated server-side as slugs — lowercase letters, digits, dash, and dot only, starting and ending with a letter or digit. Underscores and uppercase are rejected.
 
 ## Which helper?
 
@@ -127,15 +129,23 @@ captureAction(arcjet, ctx, {
 
 The context is a plain JSON-serializable object: thread it explicitly through function calls and workflow/queue inputs (never use module state or `AsyncLocalStorage`). Each correlation ID is 1–256 printable ASCII characters; auto-generated ones are ULIDs.
 
+Thread an existing run identifier (request/job/review ID) so Arcjet data joins your own systems:
+
 ```ts
-// Thread explicitly
 const ctx = createAiContext({ correlationId: requestId });
 await workflow({ question, arcjet: ctx });
+```
 
-// Or use auto-generated ULID
+Or omit `correlationId` to auto-generate a ULID:
+
+```ts
 const ctx = createAiContext();
 console.log(ctx.correlationId); // "01ARZ3NDEKTSV4RRFFQ69G5FAV"
 ```
+
+`protectAction` and `captureAction` take the context directly. Tools can't — the model calls them, so their context arrives through the AI SDK's `toolsContext` channel instead: `aiToolsContext(ctx, tools)` builds that map, which is why `protectTool` itself never takes `ctx`.
+
+> **Don't forget `toolsContext`.** The injected context type includes `undefined`, so the compiler will not flag a missing `toolsContext: aiToolsContext(ctx, tools)` at the `generateText` call. Omit it and guard checks run uncorrelated, signalled only by a `console.warn` (gated on `ARCJET_LOG_LEVEL`). Run once with `ARCJET_LOG_LEVEL=warn` and confirm the correlation ID reaches the dashboard.
 
 ## Denials
 
@@ -183,7 +193,7 @@ Guard caps metadata server-side (max 20 pairs, key ≤64 bytes, value ≤512 byt
 
 ## Failure posture
 
-- **Guard errors** (API timeouts, network failures): Fail open — the tool or action still runs. A warning is logged when `ARCJET_LOG_LEVEL=warn`.
+- **Guard errors** (API timeouts, network failures): Fail open — the tool or action still runs. A warning is logged when `ARCJET_LOG_LEVEL` is `debug`, `info`, or `warn`.
 - **Capture events**: Fire-and-forget; never throw. If the guard client lacks `experimental_capture()`, events silently skip with a gated warning.
 - **Missing correlation ID**: A warning is logged, but guard checks still run (uncorrelated).
 

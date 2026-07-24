@@ -29,7 +29,7 @@ import { runGuarded } from "./guarded.js";
  *     arcjet,
  *     ctx,
  *     {
- *       action: "github.pr_commented",
+ *       action: "github.pr-commented",
  *       rules: [commentLimit({ key: userId })],
  *     },
  *     async () => {

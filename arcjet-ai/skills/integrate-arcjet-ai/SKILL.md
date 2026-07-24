@@ -158,7 +158,9 @@ ID), `agent` (which automated actor), `workflow` (logical workflow name),
 (where effects go: `github`, `slack`, `internal`), `reversibility`
 (`reversible`/`compensable`/`irreversible`), `resource` (what's acted on,
 e.g. `repo:owner/name#123`). The `action` is not metadata — it is the guard
-label / capture action.
+label / capture action: `resource.verb` past tense, validated server-side as
+a slug (lowercase letters, digits, dash, and dot only — no underscores or
+uppercase). Use `order.looked-up`, not `order.looked_up`.
 
 Guard caps metadata server-side (max 20 pairs, key ≤64 bytes, value ≤512
 bytes), so keep maps small — merging `ctx.metadata` with per-call
