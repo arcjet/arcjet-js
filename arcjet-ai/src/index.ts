@@ -39,10 +39,11 @@
  * });
  *
  * const ctx = createAiContext({ correlationId: "req-123" });
+ * const tools = { sendEmail: protectedEmail };
  * const result = await generateText({
  *   model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
- *   tools: { sendEmail: protectedEmail },
- *   toolsContext: aiToolsContext(ctx, { sendEmail: protectedEmail }),
+ *   tools,
+ *   toolsContext: aiToolsContext(ctx, tools),
  *   prompt: "Send a confirmation email",
  * });
  * ```

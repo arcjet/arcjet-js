@@ -11,6 +11,7 @@ import {
   decisionDenyRateLimit,
   decisionFailOpenAllow,
   decisionDenyPromptInjection,
+  decisionDenyPromptInjectionWithReset,
   fakeRule,
 } from "./_shared/stub-client.ts";
 
@@ -354,6 +355,32 @@ test("non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterS
   assert.ok(
     result.message.includes("Do not retry"),
     "non-retryable message should advise not retrying",
+  );
+});
+
+test("non-RATE_LIMIT DENY with a co-occurring rate-limit result → no retryAfterSeconds", async () => {
+  // PROMPT_INJECTION denies, but an allowed token bucket in the same decision
+  // still carries resetAtUnixSeconds; it must not leak into a non-retryable denial.
+  const { client } = stubClient(
+    decisionDenyPromptInjectionWithReset(Math.floor(Date.now() / 1000) + 30),
+  );
+  const { tool: testTool } = createTestTool();
+
+  const wrapped = protectTool(client, testTool, {
+    action: "test.action",
+    rules: [fakeRule],
+  });
+
+  const result = (await wrapped.execute({ id: "input1" }, {
+    toolCallId: "t1",
+    messages: [],
+  } as never)) as ArcjetDenialResult;
+
+  assert.strictEqual(result.retryable, false, "non-rate-limit denials are not retryable");
+  assert.strictEqual(
+    result.retryAfterSeconds,
+    undefined,
+    "co-occurring rate-limit reset must not attach to a non-retryable denial",
   );
 });
 

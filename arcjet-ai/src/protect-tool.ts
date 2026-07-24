@@ -84,24 +84,15 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
 /**
  * Wraps an AI SDK tool with guard-gated execution and event capture.
  *
- * **Execution order:**
- * 1. Extract context and policy configuration (including metadata merge)
- * 2. Invoke `guard()` with rules if provided (or skip if rules are empty/omitted)
- * 3. On DENY, return `ArcjetDenialResult` without executing the tool
- * 4. On ALLOW or when rules are skipped, execute the tool and capture the outcome
- * 5. Fire capture events throughout (on deny, on error, on success)
+ * Runs `guard()` before the tool when `policy.rules` are present; on DENY the
+ * tool never executes and the model receives an `ArcjetDenialResult` (or the
+ * result of `policy.onDeny`). On ALLOW — or when no rules are given
+ * (capture-only) — the tool runs and the outcome is captured. Guard API errors
+ * fail open: the tool still runs, with a warning gated on `ARCJET_LOG_LEVEL`.
  *
- * **Capture-only mode:** When `policy.rules` is omitted or resolves to an empty array,
- * the guard check is skipped entirely and the call proceeds to execution with
- * capture-only instrumentation (no guard decision, no decision ID).
- *
- * **Fail-open posture:** When the guard API errors (transport failure, timeout),
- * the tool still executes and the failure is observable via a warning (when
- * `ARCJET_LOG_LEVEL` is set) and `decision.hasFailedOpen()`.
- *
- * **Context schema injection:** The wrapped tool's `contextSchema` is injected to
- * receive `ArcjetAiContext | undefined` for correlation and metadata propagation.
- * Tools that declare their own `contextSchema` cannot be wrapped.
+ * The wrapper injects a `contextSchema` of `ArcjetAiContext | undefined` to
+ * carry correlation and metadata, so a tool that declares its own
+ * `contextSchema` cannot be wrapped.
  *
  * @param client - Guard client with optional `experimental_capture()` method
  * @param tool - The tool to wrap; must have an `execute` function and no `contextSchema`
@@ -141,10 +132,11 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
  * });
  *
  * const ctx = createAiContext({ correlationId: "req-123" });
+ * const tools = { sendEmail: protectedEmail };
  * const result = await generateText({
  *   model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
- *   tools: { sendEmail: protectedEmail },
- *   toolsContext: aiToolsContext(ctx, { sendEmail: protectedEmail }),
+ *   tools,
+ *   toolsContext: aiToolsContext(ctx, tools),
  *   prompt: "Send a confirmation email",
  * });
  * ```
@@ -204,10 +196,15 @@ export function protectTool<T extends Tool>(
 function denialResult(decision: DecisionDeny): ArcjetDenialResult {
   const retryable = decision.reason === "RATE_LIMIT";
   let retryAfterSeconds: number | undefined;
-  for (const result of decision.results) {
-    if ("resetAtUnixSeconds" in result && typeof result.resetAtUnixSeconds === "number") {
-      retryAfterSeconds = Math.max(0, Math.ceil(result.resetAtUnixSeconds - Date.now() / 1000));
-      break;
+  // Only rate-limit denials are retryable, so only they carry a retry-after.
+  // A co-occurring rule that allowed can still leave a resetAtUnixSeconds in
+  // decision.results; ignore it when the denying reason is not a rate limit.
+  if (retryable) {
+    for (const result of decision.results) {
+      if ("resetAtUnixSeconds" in result && typeof result.resetAtUnixSeconds === "number") {
+        retryAfterSeconds = Math.max(0, Math.ceil(result.resetAtUnixSeconds - Date.now() / 1000));
+        break;
+      }
     }
   }
   return {

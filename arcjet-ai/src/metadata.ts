@@ -71,8 +71,8 @@ const WIRE_KEYS = {
  * Map security metadata fields to their wire keys for Arcjet guard evaluation.
  *
  * Each field's value is passed through unchanged (type unions are suggestions,
- * not runtime validation). Undefined fields are omitted entirely — no empty
- * strings contribute to the map.
+ * not runtime validation). Undefined fields are omitted; empty strings you pass
+ * are kept.
  *
  * @param fields - Security metadata dimensions
  * @returns A record mapping wire keys to string values, ready for guard context

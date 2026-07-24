@@ -82,12 +82,13 @@ const sendEmail = protectTool(
 );
 
 // 4. Pass context to AI SDK tools
+const tools = { sendEmail };
 const result = await generateText({
   model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
   instructions:
     "If a tool is denied by Arcjet, explain to the user instead of retrying.",
-  tools: { sendEmail },
-  toolsContext: aiToolsContext(ctx, { sendEmail }),
+  tools,
+  toolsContext: aiToolsContext(ctx, tools),
   prompt: userMessage, // User input or conversation context
 });
 

@@ -31,9 +31,7 @@ export async function POST(request: Request) {
     }),
   });
 
-  const run = await start(supportAgentWorkflow, [
-    { question, arcjet: ctx },
-  ]);
+  const run = await start(supportAgentWorkflow, [{ question, ctx }]);
 
   return NextResponse.json({
     runId: run.runId,
