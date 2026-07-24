@@ -46,11 +46,6 @@ import { runGuarded } from "./guarded.js";
  *   throw error;
  * }
  * ```
- *
- * **Decision rule:**
- * - Model-invoked actions → `protectTool()` (AI SDK integration)
- * - App-invoked actions → `protectAction()` (non-AI code)
- * - Observe-only (no guard) → `captureAction()` (event capture only)
  */
 export class ArcjetDeniedError extends Error {
   readonly decision: DecisionDeny;
@@ -82,20 +77,10 @@ export interface ProtectActionPolicy {
 /**
  * Guard an action and run a callback, throwing `ArcjetDeniedError` on denial.
  *
- * **Execution order:**
- * 1. Extract context and policy configuration (including metadata merge)
- * 2. Invoke `guard()` with rules if provided (or skip if rules are empty/omitted)
- * 3. On DENY, throw `ArcjetDeniedError` without running `fn`
- * 4. On ALLOW or when rules are skipped, execute `fn` and capture the outcome
- * 5. Fire capture events throughout (on deny, on error, on success)
- *
- * **Capture-only mode:** When `policy.rules` is omitted or empty,
- * the guard check is skipped entirely and the call proceeds to execution with
- * capture-only instrumentation (no guard decision, no decision ID).
- *
- * **Fail-open posture:** When the guard API errors (transport failure, timeout),
- * `fn` still executes and the failure is observable via a warning (when
- * `ARCJET_LOG_LEVEL` is set).
+ * Runs `guard()` when `policy.rules` are present; on DENY it throws
+ * `ArcjetDeniedError` without running `fn`. On ALLOW — or when no rules are
+ * given (capture-only) — `fn` runs and the outcome is captured. Guard API
+ * errors fail open: `fn` still runs, with a warning gated on `ARCJET_LOG_LEVEL`.
  *
  * @param client - Guard client with optional `experimental_capture()` method
  * @param ctx - Security context with correlation ID and metadata

@@ -102,6 +102,25 @@ export function decisionDenyPromptInjection(): DecisionDeny {
 }
 
 /**
+ * Stub DENY decision whose reason is not RATE_LIMIT (PROMPT_INJECTION) but
+ * whose results include a co-occurring rate-limit rule that ALLOWed and still
+ * carries `resetAtUnixSeconds`. Exercises denialResult's non-retryable path.
+ */
+export function decisionDenyPromptInjectionWithReset(resetAtUnixSeconds: number): DecisionDeny {
+  return {
+    conclusion: "DENY",
+    reason: "PROMPT_INJECTION",
+    id: "gdec_deny_pi_rl",
+    results: [
+      { conclusion: "ALLOW", reason: "RATE_LIMIT", type: "TOKEN_BUCKET", resetAtUnixSeconds },
+      { conclusion: "DENY", reason: "PROMPT_INJECTION", type: "PROMPT_INJECTION" },
+    ],
+    warnings: [],
+    hasFailedOpen: () => false,
+  } as unknown as DecisionDeny;
+}
+
+/**
  * Stub fake rule for testing (when actual rule config is not needed).
  */
 export const fakeRule: RuleWithInput = {

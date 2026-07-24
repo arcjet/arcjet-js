@@ -13,7 +13,7 @@ import { arcjet } from "@/lib/arcjet";
 
 export interface SupportAgentInput {
   question: string;
-  arcjet: ArcjetAiContext;
+  ctx: ArcjetAiContext;
 }
 
 // Rule configs are created once at module scope; inputs per call.
@@ -70,7 +70,7 @@ async function stepRunAgent(input: SupportAgentInput) {
       "If a tool call is denied by security policy, do not retry it; explain the denial to the user or try a different approach.",
     prompt: input.question,
     tools,
-    toolsContext: aiToolsContext(input.arcjet, tools),
+    toolsContext: aiToolsContext(input.ctx, tools),
     stopWhen: stepCountIs(3),
   });
   return result.text;
@@ -80,7 +80,7 @@ async function stepUpdateTicket(input: SupportAgentInput, answer: string) {
   "use step";
   await protectAction(
     arcjet,
-    input.arcjet,
+    input.ctx,
     {
       action: "ticket.updated",
       rules: [ticketLimit({ key: "demo-user" })],
@@ -95,7 +95,7 @@ async function stepUpdateTicket(input: SupportAgentInput, answer: string) {
     },
   );
 
-  captureAction(arcjet, input.arcjet, {
+  captureAction(arcjet, input.ctx, {
     action: "notification.sent",
     metadata: { ...baseMetadata, ...securityMetadata({ destination: "internal" }) },
   });

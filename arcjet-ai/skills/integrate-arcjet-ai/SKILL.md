@@ -114,8 +114,9 @@ const result = await generateText({
 });
 ```
 
-Works identically with `streamText`, `ToolLoopAgent`, and `WorkflowAgent` —
-the wrapper only changes the tool's own behavior. Always add the denial
+Works identically with `streamText` and `ToolLoopAgent`, and inside a Vercel
+Workflow (`"use workflow"`) as the example shows — the wrapper only changes the
+tool's own behavior. Always add the denial
 line to the system prompt (shown above).
 
 **The compiler will NOT catch a missing `toolsContext`.** The injected
