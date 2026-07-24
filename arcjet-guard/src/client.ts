@@ -17,11 +17,14 @@ import {
 import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
 import {
   DecideService,
+  CaptureEventSchema,
+  CaptureRequestSchema,
   GuardRequestSchema,
   type GuardResponse,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
+  CaptureOptions,
   Decision,
   GuardOptions,
   InternalDecision,
@@ -41,13 +44,14 @@ export interface GuardClientOptions {
 }
 
 /**
- * Create a guard client that calls the Guard RPC.
+ * Create a guard client that calls the Guard and Capture RPCs.
  *
- * Returns an object with a single `guard()` method. The client is
+ * Returns an object with `guard()` and `capture()` methods. The client is
  * stateless — it can be shared across requests.
  */
 export function createGuardClient(options: GuardClientOptions): {
   guard(opts: GuardOptions): Promise<Decision>;
+  capture(opts: CaptureOptions): void;
 } {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
@@ -133,6 +137,48 @@ export function createGuardClient(options: GuardClientOptions): {
       } catch (cause: unknown) {
         const message = cause instanceof Error ? cause.message : "Failed to parse server response";
         return failOpen(message);
+      }
+    },
+
+    /** Record a fact about what the application did. */
+    capture(opts: CaptureOptions): void {
+      // Fire-and-forget, like report() in the request SDK: capture() never
+      // awaits or throws into caller code — a failure of any kind (bad
+      // input, transport error, server rejection) silently drops the event.
+      // Capture is best-effort by contract (the ack means "received", not
+      // "durably recorded" — see the capture ADR); while it is experimental
+      // the SDK has no logger to report drops through, so they are silent.
+      // Event IDs are authored by the server on receipt, not minted here.
+      try {
+        const sentAtUnixMs = BigInt(Date.now());
+        const occurredAtUnixMs = opts.occurredAt ? BigInt(opts.occurredAt.getTime()) : sentAtUnixMs;
+
+        const event = create(CaptureEventSchema, {
+          occurredAtUnixMs,
+          correlationId: opts.correlationId ?? "",
+          decisionId: opts.decisionId ?? "",
+          action: opts.action,
+          metadata: opts.metadata ?? {},
+        });
+
+        const captureRequest = create(CaptureRequestSchema, {
+          userAgent,
+          sentAtUnixMs,
+          events: [event],
+        });
+
+        client
+          .capture(captureRequest, {
+            headers: { Authorization: `Bearer ${key}` },
+            timeoutMs: 1000,
+          })
+          // oxlint-disable-next-line promise/always-return
+          .then(() => {})
+          .catch(() => {
+            // Dropped silently — see above.
+          });
+      } catch {
+        // Dropped silently — see above.
       }
     },
   };

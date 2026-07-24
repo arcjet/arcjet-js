@@ -93,6 +93,7 @@ export {
   type RuleWithInput,
   type RuleWithConfig,
   type GuardOptions,
+  type CaptureOptions,
   type LaunchOptions,
   type ArcjetGuard,
 
