@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { jsonSchema, tool } from "ai";
 
 import { protectTool } from "../dist/index.js";
+import { setLogLevel } from "./_shared/log-level.ts";
 import { decisionAllow, stubClient } from "./_shared/stub-client.ts";
 
 // A capture-only protected tool (no rules), so execute runs without a guard
@@ -30,7 +31,7 @@ function makeTool() {
 // deterministic. These tests must stay in this file for that isolation.
 
 test("first uncorrelated tool call warns even with ARCJET_LOG_LEVEL unset", async () => {
-  delete process.env.ARCJET_LOG_LEVEL;
+  const restoreLogLevel = setLogLevel(undefined);
   const originalWarn = console.warn;
   const warnCalls: unknown[] = [];
   console.warn = (...args: unknown[]) => {
@@ -45,11 +46,12 @@ test("first uncorrelated tool call warns even with ARCJET_LOG_LEVEL unset", asyn
     );
   } finally {
     console.warn = originalWarn;
+    restoreLogLevel();
   }
 });
 
 test("later uncorrelated calls stay silent with ARCJET_LOG_LEVEL unset", async () => {
-  delete process.env.ARCJET_LOG_LEVEL;
+  const restoreLogLevel = setLogLevel(undefined);
   const originalWarn = console.warn;
   const warnCalls: unknown[] = [];
   console.warn = (...args: unknown[]) => {
@@ -65,5 +67,6 @@ test("later uncorrelated calls stay silent with ARCJET_LOG_LEVEL unset", async (
     );
   } finally {
     console.warn = originalWarn;
+    restoreLogLevel();
   }
 });

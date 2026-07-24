@@ -65,13 +65,23 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
   },
   {
     validate(value) {
+      if (value === undefined) {
+        return { success: true, value: undefined };
+      }
       if (
-        value === undefined ||
-        (typeof value === "object" &&
-          value !== null &&
-          typeof (value as ArcjetAiContext).correlationId === "string")
+        typeof value === "object" &&
+        value !== null &&
+        typeof (value as ArcjetAiContext).correlationId === "string"
       ) {
-        return { success: true, value: value as ArcjetAiContext | undefined };
+        const metadata = (value as ArcjetAiContext).metadata;
+        if (
+          metadata === undefined ||
+          (typeof metadata === "object" &&
+            metadata !== null &&
+            Object.values(metadata).every((entry) => typeof entry === "string"))
+        ) {
+          return { success: true, value: value as ArcjetAiContext };
+        }
       }
       return {
         success: false,

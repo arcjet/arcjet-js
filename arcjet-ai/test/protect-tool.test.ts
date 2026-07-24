@@ -5,6 +5,7 @@ import type { DecisionDeny } from "@arcjet/guard";
 import { tool, jsonSchema } from "ai";
 
 import { protectTool, createAiContext, type ArcjetDenialResult } from "../dist/index.js";
+import { setLogLevel } from "./_shared/log-level.ts";
 import {
   stubClient,
   decisionAllow,
@@ -211,7 +212,7 @@ test("AC2.6: guard throws → execute runs, warning emitted", async () => {
     warnCalls.push(args);
   };
 
-  process.env.ARCJET_LOG_LEVEL = "warn";
+  const restoreLogLevel = setLogLevel("warn");
   try {
     const wrapped = protectTool(client, testTool, {
       action: "test.action",
@@ -234,7 +235,7 @@ test("AC2.6: guard throws → execute runs, warning emitted", async () => {
     );
   } finally {
     console.warn = originalWarn;
-    delete process.env.ARCJET_LOG_LEVEL;
+    restoreLogLevel();
   }
 });
 
@@ -248,7 +249,7 @@ test("AC2.6: guard resolves fail-open ALLOW → execute runs, fail-open warning"
     warnCalls.push(args);
   };
 
-  process.env.ARCJET_LOG_LEVEL = "warn";
+  const restoreLogLevel = setLogLevel("warn");
   try {
     const wrapped = protectTool(client, testTool, {
       action: "test.action",
@@ -268,7 +269,7 @@ test("AC2.6: guard resolves fail-open ALLOW → execute runs, fail-open warning"
     );
   } finally {
     console.warn = originalWarn;
-    delete process.env.ARCJET_LOG_LEVEL;
+    restoreLogLevel();
   }
 });
 
@@ -475,7 +476,7 @@ test("Capture-only mode: empty rules array → guard skipped", async () => {
 });
 
 test("Missing capture support: client without experimental_capture → warning only", async () => {
-  const { client, guardCalls } = stubClient(decisionAllow());
+  const { client } = stubClient(decisionAllow());
   // Remove experimental_capture to simulate an old client
   delete (client as Record<string, unknown>).experimental_capture;
 
@@ -487,7 +488,7 @@ test("Missing capture support: client without experimental_capture → warning o
     warnCalls.push(args);
   };
 
-  process.env.ARCJET_LOG_LEVEL = "warn";
+  const restoreLogLevel = setLogLevel("warn");
   try {
     const wrapped = protectTool(client, testTool, {
       action: "test.action",
@@ -507,7 +508,7 @@ test("Missing capture support: client without experimental_capture → warning o
     );
   } finally {
     console.warn = originalWarn;
-    delete process.env.ARCJET_LOG_LEVEL;
+    restoreLogLevel();
   }
 });
 
@@ -521,7 +522,7 @@ test("AC1.6: no context → warning, guard check runs uncorrelated", async () =>
     warnCalls.push(args);
   };
 
-  process.env.ARCJET_LOG_LEVEL = "warn";
+  const restoreLogLevel = setLogLevel("warn");
   try {
     const wrapped = protectTool(client, testTool, {
       action: "test.action",
@@ -540,7 +541,7 @@ test("AC1.6: no context → warning, guard check runs uncorrelated", async () =>
     );
   } finally {
     console.warn = originalWarn;
-    delete process.env.ARCJET_LOG_LEVEL;
+    restoreLogLevel();
   }
 });
 
@@ -581,6 +582,38 @@ test("Wrap-time error: tool with contextSchema throws", async () => {
       rules: [fakeRule],
     });
   }, /cannot wrap a tool that declares its own contextSchema/);
+});
+
+test("Injected contextSchema: validates correlationId and metadata shapes", async () => {
+  const { client } = stubClient(decisionAllow());
+  const { tool: testTool } = createTestTool();
+
+  const wrapped = protectTool(client, testTool, {
+    action: "test.action",
+    rules: [fakeRule],
+  });
+  const schema = wrapped.contextSchema as unknown as {
+    validate(value: unknown): { success: boolean };
+  };
+
+  assert.equal(schema.validate(undefined).success, true, "no context is valid");
+  assert.equal(schema.validate({ correlationId: "abc" }).success, true);
+  assert.equal(schema.validate({ correlationId: "abc", metadata: { k: "v" } }).success, true);
+  assert.equal(
+    schema.validate({ correlationId: 123 }).success,
+    false,
+    "non-string correlationId is rejected",
+  );
+  assert.equal(
+    schema.validate({ correlationId: "abc", metadata: { k: 123 } }).success,
+    false,
+    "non-string metadata value is rejected",
+  );
+  assert.equal(
+    schema.validate({ correlationId: "abc", metadata: "nope" }).success,
+    false,
+    "non-object metadata is rejected",
+  );
 });
 
 test("Policy rules as a function: applied per input", async () => {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { protectAction, captureAction, ArcjetDeniedError, createAiContext } from "../dist/index.js";
+import { setLogLevel } from "./_shared/log-level.ts";
 import {
   stubClient,
   decisionAllow,
@@ -171,7 +172,7 @@ test("AC3.5: guard throws → fn still runs, result passes through, fail-open wa
     warnCalls.push(args);
   };
 
-  process.env.ARCJET_LOG_LEVEL = "warn";
+  const restoreLogLevel = setLogLevel("warn");
   try {
     const result = await protectAction(
       client,
@@ -196,7 +197,7 @@ test("AC3.5: guard throws → fn still runs, result passes through, fail-open wa
     assert.equal(captureCalls.length, 1, "capture should still fire");
   } finally {
     console.warn = originalWarn;
-    delete process.env.ARCJET_LOG_LEVEL;
+    restoreLogLevel();
   }
 });
 
@@ -211,7 +212,7 @@ test("AC3.5: guard resolves fail-open ALLOW → fn runs, result passes through, 
     warnCalls.push(args);
   };
 
-  process.env.ARCJET_LOG_LEVEL = "warn";
+  const restoreLogLevel = setLogLevel("warn");
   try {
     const result = await protectAction(
       client,
@@ -232,7 +233,7 @@ test("AC3.5: guard resolves fail-open ALLOW → fn runs, result passes through, 
     assert.equal(captureCalls.length, 1, "capture should fire");
   } finally {
     console.warn = originalWarn;
-    delete process.env.ARCJET_LOG_LEVEL;
+    restoreLogLevel();
   }
 });
 

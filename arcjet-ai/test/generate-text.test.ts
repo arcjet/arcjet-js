@@ -10,6 +10,7 @@ import {
   aiToolsContext,
   type ArcjetDenialResult,
 } from "../dist/index.js";
+import { setLogLevel } from "./_shared/log-level.ts";
 import {
   stubClient,
   decisionAllow,
@@ -125,7 +126,7 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
     warnCalls.push(args);
   };
 
-  process.env.ARCJET_LOG_LEVEL = "warn";
+  const restoreLogLevel = setLogLevel("warn");
   try {
     const result = await generateText({
       model: new MockLanguageModelV4({
@@ -177,7 +178,7 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
     );
   } finally {
     console.warn = originalWarn;
-    delete process.env.ARCJET_LOG_LEVEL;
+    restoreLogLevel();
   }
 });
 

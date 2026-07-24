@@ -58,6 +58,7 @@ export default function Home() {
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
+          aria-label="Question for the support agent"
           placeholder="Ask about an order, e.g. what's the status of order 42?"
           style={{
             width: "100%",

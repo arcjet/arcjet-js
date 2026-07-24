@@ -57,6 +57,13 @@ test("AC1.3: rejects correlationId with non-ASCII character", async () => {
   );
 });
 
+test("AC1.3: rejects non-string correlationId at runtime", async () => {
+  assert.throws(
+    () => createAiContext({ correlationId: 123 as unknown as string }),
+    /correlationId.*printable ASCII.*type number.*rejected.*not truncated/,
+  );
+});
+
 test("AC1.3: rejects empty correlationId", async () => {
   assert.throws(
     () => createAiContext({ correlationId: "" }),

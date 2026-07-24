@@ -46,7 +46,9 @@ export async function runGuarded<T>(
       // into ALLOW decisions with hasFailedOpen() === true, so reaching here
       // means something unexpected broke. Fail open.
       if (shouldWarn()) {
-        console.warn(`@arcjet/ai: guard check for "${action}" errored; failing open:`, error);
+        // Constant format string: `action` must not be interpolated into the
+        // first argument, where console.warn would honor format specifiers.
+        console.warn('@arcjet/ai: guard check for "%s" errored; failing open:', action, error);
       }
       decision = undefined;
     }

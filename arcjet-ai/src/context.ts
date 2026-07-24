@@ -64,14 +64,18 @@ export function createAiContext(init?: {
 
   if (init?.correlationId !== undefined) {
     correlationId = init.correlationId;
-    // Validate caller-supplied IDs (generated ULIDs are correct by construction)
-    if (!CORRELATION_ID_RE.test(correlationId)) {
+    // Validate caller-supplied IDs (generated ULIDs are correct by construction).
+    // The typeof check matters for untyped callers: RegExp.test() coerces
+    // non-strings, so e.g. a number would otherwise pass the regex.
+    if (typeof correlationId !== "string" || !CORRELATION_ID_RE.test(correlationId)) {
       const problem =
-        correlationId.length === 0
-          ? "empty string"
-          : correlationId.length > 256
-            ? `length ${correlationId.length}`
-            : "non-printable characters";
+        typeof correlationId !== "string"
+          ? `type ${typeof correlationId}`
+          : correlationId.length === 0
+            ? "empty string"
+            : correlationId.length > 256
+              ? `length ${correlationId.length}`
+              : "non-printable characters";
       throw new Error(
         `@arcjet/ai: correlationId must be 1-256 characters of printable ASCII (got ${problem}); it was rejected, not truncated.`,
       );
