@@ -81,6 +81,24 @@ const contextSchema = jsonSchema<ArcjetAiContext | undefined>(
   },
 );
 
+// Emitted when a protected tool runs without an ArcjetAiContext. A forgotten
+// `toolsContext` silently runs guard checks uncorrelated and the compiler
+// cannot catch it (the injected context type is optional), so the first
+// occurrence always warns — even with logging off. Later occurrences respect
+// `ARCJET_LOG_LEVEL`.
+let warnedMissingToolsContext = false;
+
+function warnMissingToolsContext(action: string): void {
+  if (warnedMissingToolsContext && !shouldWarn()) {
+    return;
+  }
+  warnedMissingToolsContext = true;
+  console.warn(
+    `@arcjet/ai: tool call "${action}" has no ArcjetAiContext; ` +
+      "guard checks run uncorrelated. Pass toolsContext: aiToolsContext(ctx, tools).",
+  );
+}
+
 /**
  * Wraps an AI SDK tool with guard-gated execution and event capture.
  *
@@ -167,11 +185,8 @@ export function protectTool<T extends Tool>(
         [key: string]: unknown;
       };
       const ctx = opts.context;
-      if (ctx === undefined && shouldWarn()) {
-        console.warn(
-          `@arcjet/ai: tool call "${policy.action}" has no ArcjetAiContext; ` +
-            "guard checks run uncorrelated. Pass toolsContext: aiToolsContext(ctx, tools).",
-        );
+      if (ctx === undefined) {
+        warnMissingToolsContext(policy.action);
       }
       const correlationId = policy.correlationId ?? ctx?.correlationId;
       const metadata = {

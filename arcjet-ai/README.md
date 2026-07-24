@@ -146,7 +146,7 @@ console.log(ctx.correlationId); // "01ARZ3NDEKTSV4RRFFQ69G5FAV"
 
 `protectAction` and `captureAction` take the context directly. Tools can't — the model calls them, so their context arrives through the AI SDK's `toolsContext` channel instead: `aiToolsContext(ctx, tools)` builds that map, which is why `protectTool` itself never takes `ctx`.
 
-> **Don't forget `toolsContext`.** The injected context type includes `undefined`, so the compiler will not flag a missing `toolsContext: aiToolsContext(ctx, tools)` at the `generateText` call. Omit it and guard checks run uncorrelated, signalled only by a `console.warn` (gated on `ARCJET_LOG_LEVEL`). Run once with `ARCJET_LOG_LEVEL=warn` and confirm the correlation ID reaches the dashboard.
+> **Don't forget `toolsContext`.** The injected context type includes `undefined`, so the compiler will not flag a missing `toolsContext: aiToolsContext(ctx, tools)` at the `generateText` call. Omit it and guard checks run uncorrelated: the first uncorrelated call always warns, but further ones are silent unless `ARCJET_LOG_LEVEL` is set. Run once with `ARCJET_LOG_LEVEL=warn` and confirm the correlation ID reaches the dashboard.
 
 ## Denials
 
@@ -196,7 +196,7 @@ Guard caps metadata server-side (max 20 pairs, key ≤64 bytes, value ≤512 byt
 
 - **Guard errors** (API timeouts, network failures): Fail open — the tool or action still runs. A warning is logged when `ARCJET_LOG_LEVEL` is `debug`, `info`, or `warn`.
 - **Capture events**: Fire-and-forget; never throw. If the guard client lacks `experimental_capture()`, events silently skip with a gated warning.
-- **Missing correlation ID**: A warning is logged, but guard checks still run (uncorrelated).
+- **Missing correlation ID**: Guard checks still run (uncorrelated). The first uncorrelated tool call always warns; further ones respect `ARCJET_LOG_LEVEL`.
 
 ## Agent skill
 

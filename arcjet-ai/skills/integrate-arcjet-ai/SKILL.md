@@ -122,8 +122,8 @@ line to the system prompt (shown above).
 **The compiler will NOT catch a missing `toolsContext`.** The injected
 context type includes `undefined` (so uncorrelated calls still run, fail-open),
 which makes the `toolsContext` option optional at the type level. Forget it and
-guard checks run uncorrelated with only a `console.warn` (gated behind
-`ARCJET_LOG_LEVEL`) as the signal — so always run once with
+guard checks run uncorrelated: the first uncorrelated call always warns, but
+further ones are silent unless `ARCJET_LOG_LEVEL` is set — so run once with
 `ARCJET_LOG_LEVEL=warn` and confirm correlation before shipping.
 
 ## Step 6: Wrap app-invoked actions; capture side effects
