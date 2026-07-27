@@ -88,6 +88,7 @@ export {
   type RuleWithConfig,
   type CaptureOptions,
   type GuardOptions,
+  type ArcjetDiagnostic,
   type LaunchOptions,
   type ArcjetGuard,
 

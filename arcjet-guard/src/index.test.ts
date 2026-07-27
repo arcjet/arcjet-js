@@ -46,7 +46,7 @@ describe("re-exports", () => {
 });
 
 describe("launchArcjetWithTransport", () => {
-  test("creates a guard client with .guard() and .capture() methods", () => {
+  test("creates a guard client with guard, capture, and flush methods", () => {
     const transport = createRouterTransport(({ service }) => {
       service(DecideService, {
         guard: () => create(GuardResponseSchema, {}),
@@ -60,6 +60,7 @@ describe("launchArcjetWithTransport", () => {
 
     assert.equal(typeof arcjet.guard, "function");
     assert.equal(typeof arcjet.capture, "function");
+    assert.equal(typeof arcjet.flush, "function");
   });
 
   test("guard() calls through to transport and returns a decision", async () => {

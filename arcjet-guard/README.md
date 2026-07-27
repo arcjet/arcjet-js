@@ -330,6 +330,94 @@ const decision = await arcjet.guard({
 });
 ```
 
+## Capture
+
+Use `capture()` to record a fact about what your application did. Captures are
+visibility data, never security decisions:
+
+```ts
+arcjet.capture({
+  action: "refund.issued",
+  correlationId: runId,
+  decisionId: decision.id,
+  metadata: {
+    invoice: { id: "inv_123", amount: 4200 },
+    refunded: true,
+  },
+});
+```
+
+Capture is best-effort and never blocks or throws into application code. Without
+a platform `waitUntil` hook, the SDK keeps a bounded in-memory queue, sends
+batches on size or delay, drops the newest event when the queue is full, and
+never retries a failed batch. Given a `waitUntil`, it starts the send
+immediately and hands the promise over.
+
+### Serverless and edge runtimes
+
+A runtime that freezes between invocations can lose whatever is still batched,
+so hand the event's send to the platform. Pass `waitUntil` per call:
+
+```ts
+export default {
+  async fetch(request, env, ctx) {
+    arcjet.capture({
+      action: "refund.issued",
+      waitUntil: (promise) => ctx.waitUntil(promise),
+    });
+    return new Response("ok");
+  },
+};
+```
+
+Arcjet discovers Vercel's request context on its own, so `waitUntil` is not
+needed there. Every other per-invocation hook — Cloudflare's `ExecutionContext`
+included — has to be passed in, because a module-scoped client cannot reach it.
+
+Where `capture()` is called too deep to reach the platform context, `flush()` at
+the end of the handler instead:
+
+```ts
+export default {
+  async fetch(request, env, ctx) {
+    const response = await handle(request);
+    ctx.waitUntil(arcjet.flush());
+    return response;
+  },
+};
+```
+
+### Draining
+
+Call `flush()` during graceful shutdown to avoid losing the final batch:
+
+```ts
+await arcjet.flush(); // one-second deadline by default
+await arcjet.flush(250); // custom deadline in milliseconds
+```
+
+`flush()` is optional, repeatable, and does not close the client. If its deadline
+expires, remaining events are dropped and the client stays usable.
+
+Local failures use stable `AJxxxx` diagnostics. Pass a logger to receive every
+diagnostic; without one, Arcjet logs once per code:
+
+```ts
+const arcjet = launchArcjet({
+  key: process.env.ARCJET_KEY!,
+  logger: {
+    warn(message) {
+      applicationLogger.warn(message);
+    },
+  },
+});
+```
+
+Metadata has the same nested-JSON shape and limits as `guard()`. A key the SDK
+cannot encode is reported locally as `AJ1017` and also travels with that event in
+`local_warnings`. A queue-full event or failed batch never reaches the server, so
+those drops can only be reported locally.
+
 ## Metadata
 
 `guard()` and every rule accept `metadata`: an object of string keys mapped to
@@ -352,12 +440,12 @@ const decision = await arcjet.guard({
 Each top-level value is JSON-encoded by the SDK and stored verbatim.
 Server-enforced limits:
 
-| Limit                    | Value                            | Over the limit     |
-| ------------------------ | -------------------------------- | ------------------ |
-| Top-level keys           | 128                              | Extra keys dropped |
-| Serialized bytes / value | 4 KiB                            | That key dropped   |
-| Nesting depth / value    | 10                               | That key dropped   |
-| Key names                | letters, digits, `-`, `.`, `_`   | That key dropped   |
+| Limit                    | Value                          | Over the limit     |
+| ------------------------ | ------------------------------ | ------------------ |
+| Top-level keys           | 128                            | Extra keys dropped |
+| Serialized bytes / value | 4 KiB                          | That key dropped   |
+| Nesting depth / value    | 10                             | That key dropped   |
+| Key names                | letters, digits, `-`, `.`, `_` | That key dropped   |
 
 Nothing here can fail a call or change a decision — metadata is excluded from
 fingerprinting. Every dropped key is reported on `decision.warnings`: the server

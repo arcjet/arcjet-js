@@ -77,7 +77,9 @@
 import type { Transport } from "@connectrpc/connect";
 
 import { createGuardClient } from "./client.ts";
+import type { DiagnosticLogger } from "./diagnostics.ts";
 import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
+export type { ArcjetDiagnostic } from "./diagnostics.ts";
 export type {
   ArcjetMetadata,
   Conclusion,
@@ -188,6 +190,13 @@ export interface LaunchOptions {
    * @internal
    */
   baseUrl?: string;
+
+  /**
+   * Receives every local SDK diagnostic.
+   *
+   * Without a logger, Arcjet writes one console warning per diagnostic code.
+   */
+  logger?: DiagnosticLogger;
 }
 
 /** An Arcjet guard client. */
@@ -203,6 +212,14 @@ export interface ArcjetGuard {
    * the event was durably stored.
    */
   capture(opts: CaptureOptions): void;
+
+  /**
+   * Drain buffered capture events within a deadline.
+   *
+   * The default deadline is one second. Expiry drops and diagnoses the
+   * remainder. The client stays usable and repeated calls are safe.
+   */
+  flush(timeoutMs?: number): Promise<void>;
 }
 
 /**
@@ -216,6 +233,7 @@ export function launchArcjetWithTransport(
   const client = createGuardClient({
     key: options.key,
     transport: options.transport,
+    ...(options.logger === undefined ? {} : { logger: options.logger }),
   });
 
   return {
@@ -224,6 +242,9 @@ export function launchArcjetWithTransport(
     },
     capture(opts: CaptureOptions): void {
       client.capture(opts);
+    },
+    flush(timeoutMs?: number): Promise<void> {
+      return client.flush(timeoutMs);
     },
   };
 }
