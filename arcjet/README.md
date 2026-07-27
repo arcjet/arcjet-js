@@ -557,6 +557,50 @@ unregisterArcjet();
 Registration is first-writer-wins. Registering the same client again is
 idempotent, and `unregisterArcjet()` clears whichever client is registered.
 
+Application tests can register an in-memory client and inspect captures
+synchronously:
+
+```ts
+import { registerTestClient } from "arcjet/testing";
+import { refund } from "./refund.js";
+
+test("refund emits a capture", () => {
+  using client = registerTestClient();
+
+  refund();
+
+  assert.equal(client.captures[0].action, "refund.issued");
+});
+```
+
+`using` unregisters the client at the end of the test.
+
+It needs a toolchain that understands explicit resource management: Node 24 or
+later, or any build step that downlevels the syntax (`tsc`, `esbuild`, and
+similar). Node's built-in TypeScript support only erases types, so it cannot
+downlevel `using` — on Node 22 the declaration is a syntax error. Dispose
+explicitly there instead:
+
+```ts
+test("refund emits a capture", () => {
+  const client = registerTestClient();
+
+  try {
+    refund();
+
+    assert.equal(client.captures[0].action, "refund.issued");
+  } finally {
+    client[Symbol.dispose]();
+  }
+});
+```
+
+That is exactly what `using` desugars to, and `Symbol.dispose` is available on
+every Node version this package supports.
+
+The test helper throws if another client is already registered, which exposes
+registration leaks between tests.
+
 **Create a single client instance** and reuse it with `withRule()` for
 route-specific rules. The SDK caches decisions and configuration, so creating a
 new instance per request wastes that work.

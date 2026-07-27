@@ -114,6 +114,10 @@
       "types": "./dist/guard/*.d.ts",
       "import": "./dist/guard/*.js"
     },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "default": "./dist/testing.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -121,11 +125,11 @@
   },
   "scripts": {
     "build": "tsdown",
-    "lint": "oxlint --config ../arcjet-guard/.oxlintrc.json --tsconfig=tsconfig.json src/guard",
+    "lint": "oxlint --config ../arcjet-guard/.oxlintrc.json --tsconfig=tsconfig.json src/guard src/testing.ts",
     "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
     "test-runtime-cloudflare": "npm run build && node --test test/runtime/cloudflare/cloudflare.test.ts",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=95 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,arcjet-guard,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"dist/guard/**/*.{js,ts}\" --test-coverage-exclude \"dist/_virtual/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=95 -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=95 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,arcjet-guard,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"dist/guard/**/*.{js,ts}\" --test-coverage-exclude \"dist/testing.{js,ts}\" --test-coverage-exclude \"dist/_virtual/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=95 -- test/*.test.ts",
     "test-guard": "node --test --experimental-test-coverage --test-coverage-include=src/guard/** --test-coverage-exclude=src/guard/**/*.test.ts --test-coverage-exclude=src/guard/test/** src/guard/**/*.test.ts",
     "test": "npm run build && npm run test-coverage && npm run test-guard"
   },

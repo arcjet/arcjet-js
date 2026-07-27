@@ -62,6 +62,10 @@
     "./fetch": {
       "types": "./dist/fetch.d.ts",
       "import": "./dist/fetch.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js"
     }
   },
   "publishConfig": {

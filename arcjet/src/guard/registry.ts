@@ -46,6 +46,15 @@ export function unregisterArcjet(): void {
   delete globalWithArcjet[CLIENT_SLOT];
 }
 
+/** @internal Claim the empty slot or throw for deterministic test isolation. */
+export function registerArcjetForTesting(client: ArcjetClient): void {
+  const globalWithArcjet: GlobalWithArcjet = globalThis;
+  if (globalWithArcjet[CLIENT_SLOT] !== undefined) {
+    throw new Error("Cannot register an Arcjet test client while another client is registered");
+  }
+  globalWithArcjet[CLIENT_SLOT] = client;
+}
+
 /** Evaluate guard rules through the registered client. */
 export function guard(options: GuardOptions): Promise<Decision> {
   const client = registeredClient();

@@ -37,6 +37,7 @@ import {
   CaptureEventSchema,
   CaptureRequestSchema,
   GuardRequestSchema,
+  type CaptureEvent,
   type GuardResponse,
   WarningSchema,
 } from "./proto/proto/decide/v2/decide_pb.js";
@@ -234,60 +235,11 @@ export function createGuardClient(options: GuardClientOptions): {
 
     /** Record a fact about what the application did. */
     capture(opts: CaptureOptions): void {
-      // Capture is a never-throw, best-effort API. Plain JavaScript callers can
-      // bypass the TypeScript types, and proxies/getters can throw while values
-      // are inspected, so the entire normalization path stays inside this
-      // boundary.
-      try {
-        const normalized = normalizeCaptureOptions(opts);
-        if (normalized === undefined) {
-          diagnose({
-            code: "AJ3000",
-            message: "Capture input was invalid; the event was dropped",
-            count: 1,
-          });
-          return;
-        }
-
-        const occurredAtUnixMs =
-          normalized.occurredAt === undefined
-            ? BigInt(Date.now())
-            : BigInt(normalized.occurredAt.getTime());
-        const encoded = encodeMetadata(normalized.metadata);
-        const warnings = [
-          ...normalized.localWarnings,
-          ...encoded.localWarnings,
-          ...enforceMetadataBudget([encoded.metadataJson]),
-        ];
-        for (const warning of warnings) {
-          diagnose(warning);
-        }
-
-        const event = create(CaptureEventSchema, {
-          occurredAtUnixMs,
-          correlationId: normalized.correlationId ?? "",
-          decisionId: normalized.decisionId ?? "",
-          action: normalized.action,
-          metadataJson: encoded.metadataJson,
-          localWarnings: warnings.map((warning) => create(WarningSchema, warning)),
-          // Where the event came from. This method is the explicit-call path, so
-          // it is always "sdk"; a future span-conversion path sets "otlp". Not a
-          // caller option on purpose — the producer decides, not the caller.
-          //
-          // The server never defaults this, so sending nothing would leave the
-          // event's origin unknown rather than merely unstated.
-          source: CAPTURE_SOURCE_SDK,
-        });
-
-        // Read outside the normalization above so a throwing getter costs the
-        // delivery hint rather than the whole event.
+      const event = normalizeCaptureEvent(opts, diagnose);
+      if (event) {
+        // Read outside normalization so a throwing getter costs the delivery
+        // hint rather than the whole event.
         delivery.capture(event, readWaitUntil(opts));
-      } catch {
-        diagnose({
-          code: "AJ3000",
-          message: "Capture input was invalid; the event was dropped",
-          count: 1,
-        });
       }
     },
 
@@ -300,6 +252,65 @@ export function createGuardClient(options: GuardClientOptions): {
   };
 }
 
+/** @internal Normalize a capture call using the production validation path. */
+export function normalizeCaptureEvent(
+  opts: unknown,
+  diagnose: DiagnosticHandler,
+): CaptureEvent | undefined {
+  // Capture is a never-throw, best-effort API. Plain JavaScript callers can
+  // bypass the TypeScript types, and proxies/getters can throw while values
+  // are inspected, so the entire normalization path stays inside this
+  // boundary.
+  try {
+    const normalized = normalizeCaptureEnvelope(opts);
+    if (normalized === undefined) {
+      diagnose({
+        code: "AJ3000",
+        message: "Capture input was invalid; the event was dropped",
+        count: 1,
+      });
+      return;
+    }
+
+    const occurredAtUnixMs =
+      normalized.occurredAt === undefined
+        ? BigInt(Date.now())
+        : BigInt(normalized.occurredAt.getTime());
+    const encoded = encodeMetadata(normalized.metadata);
+    const warnings = [
+      ...normalized.localWarnings,
+      ...encoded.localWarnings,
+      ...enforceMetadataBudget([encoded.metadataJson]),
+    ];
+    for (const warning of warnings) {
+      diagnose(warning);
+    }
+
+    return create(CaptureEventSchema, {
+      occurredAtUnixMs,
+      correlationId: normalized.correlationId ?? "",
+      decisionId: normalized.decisionId ?? "",
+      action: normalized.action,
+      metadataJson: encoded.metadataJson,
+      localWarnings: warnings.map((warning) => create(WarningSchema, warning)),
+      // Where the event came from. This is the explicit-call path, so it is
+      // always "sdk"; a future span-conversion path sets "otlp". Deliberately not
+      // a caller option — the producer decides, not the caller.
+      //
+      // The server never substitutes a default, so sending nothing would leave
+      // the origin unknown rather than merely unstated.
+      source: CAPTURE_SOURCE_SDK,
+    });
+  } catch {
+    diagnose({
+      code: "AJ3000",
+      message: "Capture input was invalid; the event was dropped",
+      count: 1,
+    });
+    return undefined;
+  }
+}
+
 /**
  * Normalize a capture envelope without letting one invalid optional field drop
  * the whole event.
@@ -307,7 +318,7 @@ export function createGuardClient(options: GuardClientOptions): {
  * Metadata values are validated by `encodeMetadata`: a value that cannot be
  * represented as JSON drops only that key and becomes a per-event warning.
  */
-function normalizeCaptureOptions(value: unknown):
+function normalizeCaptureEnvelope(value: unknown):
   | {
       action: string;
       correlationId?: string;
