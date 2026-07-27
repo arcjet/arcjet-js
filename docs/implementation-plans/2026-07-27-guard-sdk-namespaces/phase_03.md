@@ -41,11 +41,11 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC4.1 Success:** Guard ALLOW → the wrapped tool executes once and an event is captured with `outcome: "success"`.
 - **guard-sdk-namespaces.AC4.2 Failure:** Guard DENY → the tool never executes and the model receives an `ArcjetDenialResult` carrying `reason` and `retryable`.
 - **guard-sdk-namespaces.AC4.3 Edge:** A `RATE_LIMIT` denial carries `retryAfterSeconds`; a non-rate-limit denial omits it even when a co-occurring rule result has a reset time.
-- **guard-sdk-namespaces.AC4.4 Failure:** With the default `onGuardError: "allow"`, the guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
+- **guard-sdk-namespaces.AC4.4 Failure:** With `onGuardError: "allow"` set explicitly (opting out of the default), either guard-unavailable signal → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
 - **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId`, and rejects `metadata` that is not a plain object. It **accepts** any plain-object metadata regardless of value types — nested objects, arrays, numbers, booleans, `null` — matching `ArcjetMetadata` (arcjet-js#6171).
-- **guard-sdk-namespaces.AC4.11 Failure:** With `onGuardError: "deny"`, the guard call throwing → the wrapped tool does NOT execute, the model receives an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`, and the outcome is captured as `denied`. (Phase 2 built the engine and the `guardAction` half; this phase covers `guardTool`.)
+- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **either** guard-unavailable signal (the guard call throwing, or a decision whose `hasFailedOpen()` is `true`) → the wrapped tool does NOT execute, the model receives an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`, and the outcome is captured as `denied`. (Phase 2 built the engine and the `guardAction` half; this phase covers `guardTool`.)
 
 ---
 
@@ -195,13 +195,17 @@ stale self-reference.
 `@arcjet/guard/vercel-ai/v7` and `createAgentContext`. Phase 5 Task 5
 compile-checks it.
 
-**New behaviour — `onGuardError`.** Add `onGuardError?: "allow" | "deny"` to
-`GuardToolPolicy` (default `"allow"`), and pass it through to `runGuarded`
-(Phase 2 Task 7 added the parameter and the `onUnavailable` callback).
+**New behaviour — `onGuardError`.** Add `onGuardError?: OnGuardError` to
+`GuardToolPolicy`, **defaulting to `"deny"`**, and pass it through to `runGuarded`
+(Phase 2 Task 7 added the parameter and the required `onUnavailable` callback).
 
-Supply `onUnavailable` so that on a guard outage with `"deny"` the model receives
-the **same** `ArcjetDenialResult` shape as a real denial, distinguished by its
-reason:
+Supply `onUnavailable` so that on **either** guard-unavailable signal — the
+`guard()` call throwing, or a decision whose `hasFailedOpen()` is `true` — the model
+receives the **same** `ArcjetDenialResult` shape as a real denial, distinguished by
+its reason. Ignore the `Unavailable` discriminant here: unlike `guardAction`, which
+surfaces the two signals separately on its error object, `guardTool` collapses them
+because its consumer is a language model reading a tool result, and a second result
+shape would be harder to prompt against:
 
 ```ts
 {
@@ -348,12 +352,18 @@ Preserve all existing assertions. They map to the ACs as follows:
   `null` or an array. The existing test asserting non-string metadata values are
   *rejected* must be **rewritten to assert they are accepted** — leaving it will
   fail, and "fixing" it by restoring the old validation reintroduces the defect.
-- `AC4.11` (new cases): guard throws with `onGuardError: "deny"` → `execute` is
-  never called, the returned result is
+- `AC4.11` (new cases): with `onGuardError` omitted (so the `"deny"` default
+  applies), **each** guard-unavailable signal — guard throws, and guard returns a
+  decision whose `hasFailedOpen()` is `true` — must independently show that
+  `execute` is never called, the returned result is
   `{ arcjetDenied: true, reason: "ERROR", retryable: true }` with no
-  `retryAfterSeconds`, and capture fires once with `outcome: "denied"`. Also assert
-  that a supplied `policy.onDeny` is **not** called on this path, and that with
-  `onGuardError` omitted the existing fail-open behaviour is unchanged.
+  `retryAfterSeconds`, and capture fires once with `outcome: "denied"`. Assert both
+  signals produce the *same* result shape (that collapsing is deliberate here).
+  Also assert that a supplied `policy.onDeny` is **not** called on either path, and
+  that `onGuardError: "allow"` restores fail-open execution for both.
+  **Any migrated test that asserts fail-open execution must now set
+  `onGuardError: "allow"` explicitly** — it would otherwise silently assert against
+  the opposite default.
 - plus: capture-only mode (absent/empty `rules` skips the guard), the
   missing-`experimental_capture` warning, both wrap-time throws, and
   rules/metadata supplied as functions of the input
@@ -553,8 +563,9 @@ Expected: all pass. Cumulative new tests for this phase: 1 + 22 + 2 + 3 + ~6.
 - [ ] `contextSchema.validate()` no longer checks metadata value types; the JSON
       Schema's `additionalProperties: { type: "string" }` removed to match
 - [ ] `GuardToolPolicy.metadata` widened to `ArcjetMetadata`
-- [ ] `onGuardError` threaded into `guardTool`; outage returns
-      `reason: "ERROR"` / `retryable: true`; `onDeny` not invoked on that path
+- [ ] `onGuardError` threaded into `guardTool`, **defaulting to `"deny"`**; **both**
+      guard-unavailable signals return `reason: "ERROR"` / `retryable: true` with no
+      `retryAfterSeconds`; `onDeny` not invoked on either path
 - [ ] the 4 runtime message strings in `guard-tool.ts` renamed to
       `@arcjet/guard:` / `ArcjetAgentContext`
 - [ ] all 3 coupled test assertions updated to `"no ArcjetAgentContext"`

@@ -35,7 +35,8 @@ AI SDK, which is only possible in Phase 6 Task 2.)
 - **guard-sdk-namespaces.AC4.8 Success:** `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
 - **guard-sdk-namespaces.AC4.9 Success:** `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key.
 - **guard-sdk-namespaces.AC4.10 Edge:** A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning.
-- **guard-sdk-namespaces.AC4.11 Failure:** With `onGuardError: "deny"`, the guard call throwing → the wrapped tool or action does NOT execute and the outcome is captured as `denied`. `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` — carrying the original error as `cause`. (This phase implements the engine and the `guardAction` half; Phase 3 covers the `guardTool` half.)
+- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **either** guard-unavailable signal (the guard call throwing, or a decision whose `hasFailedOpen()` is `true`) → the wrapped tool or action does NOT execute and the outcome is captured as `denied`. `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError`. (This phase implements the engine and the `guardAction` half; Phase 3 covers the `guardTool` half.)
+- **guard-sdk-namespaces.AC4.12 Failure:** The two signals stay distinguishable: `cause` is populated (and `decision` absent) when the guard call threw; `decision` is populated (and `cause` absent) when a decision failed open, and only that path captures a `decisionId`.
 
 ### guard-sdk-namespaces.AC5: The renames are complete
 - **guard-sdk-namespaces.AC5.1 Success:** `createAgentContext` and `ArcjetAgentContext` are the exported names.
@@ -153,8 +154,8 @@ otherwise.
    |---|---|---|
    | `context.ts` | 80 | `` `@arcjet/ai: correlationId must be 1-256 …` `` |
    | `client.ts` → `capture.ts` | 63 | `"@arcjet/ai: this @arcjet/guard client does not support experimental_capture(); …"` |
-   | `guarded.ts` | 51 | `'@arcjet/ai: guard check for "%s" errored; failing open:'` (Task 7 adds a second, "failing closed:", for `onGuardError: "deny"`) |
-   | `guarded.ts` | 58 | `` `@arcjet/ai: guard check for "${action}" failed open (API error).` `` |
+   | `guarded.ts` | 51 | `'@arcjet/ai: guard check for "%s" errored; failing open:'` (Task 7 adds two more for `onGuardError: "deny"` — see its four-string table) |
+   | `guarded.ts` | 58 | `` `@arcjet/ai: guard check for "${action}" failed open (API error).` `` (Task 7 converts this to a constant format string with `action` as a `%s` argument, since it is no longer a dead-end warning branch) |
    | `protect-tool.ts` | 88 | `"@arcjet/ai: toolsContext entry is not an ArcjetAiContext"` |
    | `protect-tool.ts` | 107 | `` `@arcjet/ai: tool call "${action}" has no ArcjetAiContext; ` `` |
    | `protect-tool.ts` | 178 | `"@arcjet/ai: protectTool() requires a tool with an execute function"` |
@@ -177,9 +178,11 @@ otherwise.
    Where a task says "preserve exactly", it means preserve the *control flow and
    semantics* — the constant-format-string **form** of the `console.warn` call, the
    "rejected, not truncated" phrasing, the two wrap-time throws. It does **not**
-   mean the catch block is untouchable: Task 7 deliberately makes the fail-open
-   branch conditional on `onGuardError`, and adds a second format string. Preserve
-   the *default* behaviour, not the literal shape of the branch. It does **not** license carrying `@arcjet/ai` into the new package.
+   mean the catch block is untouchable: Task 7 deliberately makes **both**
+   guard-unavailable branches conditional on `onGuardError` and adds two more format
+   strings. Preserve the *fail-open* behaviour as reachable via
+   `onGuardError: "allow"` — it is no longer the default, so "preserve the default"
+   would be the wrong reading here. It does **not** license carrying `@arcjet/ai` into the new package.
    Leaving these breaks AC5.2, whose sweep covers all source.
 
    **Three migrated tests assert the old string and must change in lockstep**
@@ -577,50 +580,85 @@ at `:1668`). Left pointing at the package name, it would resolve against
 `arcjet-guard`'s own `dist/` typings — a stale self-reference.
 
 **New behaviour — `onGuardError`.** `runGuarded` gains an `onGuardError:
-"allow" | "deny"` parameter, defaulting to `"allow"`. Review raised that a tool
+"allow" | "deny"` parameter, **defaulting to `"deny"`**. Review raised that a tool
 call which sends mail or updates a ticket carries different risk from a page view,
 and failing closed was impossible before because the error was swallowed
-internally with no hook.
+internally with no hook. davidmytton then asked for `"deny"` to be the default;
+these subpaths have never shipped, so there is no installed base to change under.
 
-Restructure the catch block so it no longer silently continues:
+**Read this before touching the code: there are two guard-unavailable signals, and
+`onGuardError` must govern both.** The current file handles them in two separate
+places, and only one of them is the path that matters:
 
-- `"allow"` (default): behave exactly as today — warn (gated) and fall through to
-  execute. This keeps the platform convention and AC4.4 unchanged.
-- `"deny"`: do **not** execute. Capture the outcome as `"denied"`, then return
-  `onUnavailable(error)` so each adapter decides its own surface.
+| Signal | Where it lands today | Frequency |
+|---|---|---|
+| (a) `client.guard()` **throws** | the `catch` block — warns, sets `decision = undefined`, falls through | rare |
+| (b) decision returned with `hasFailedOpen() === true` | the `if (decision.hasFailedOpen() && shouldWarn())` branch — warns, then falls through to the DENY check and on to execute | **this is the outage path** |
 
-  Signature — the exact parallel of the existing `onDeny`:
+(b) is the normal signal when Arcjet is unreachable: `arcjet-guard/src/client.ts`
+converts a transport failure into a synthesized ALLOW carrying a
+`TRANSPORT_ERROR` rule-error result, and `convert.ts` derives `hasFailedOpen: () =>
+conclusion === "ALLOW" && errored.length > 0`. The existing comment in the `catch`
+block says exactly this ("the guard client itself converts transport failures into
+ALLOW decisions with hasFailedOpen() === true, so reaching here means something
+unexpected broke") — keep that comment, it is still true and now explains why (a)
+alone would be the wrong trigger. Wiring fail-closed to (a) only would ship a
+default that never fires during the incident it exists for.
+
+Restructure so **neither** signal silently continues:
+
+- `"allow"`: behave exactly as today for both signals — warn (gated) and fall
+  through to execute. This is now the explicit opt-out and is what AC4.4 covers.
+- `"deny"` (default): do **not** execute. Capture the outcome as `"denied"`, then
+  return `onUnavailable(...)` so each adapter decides its own surface.
+
+  Signature — the exact parallel of the existing `onDeny`, with a discriminated
+  argument so the adapter can tell the signals apart:
 
   ```ts
-  onUnavailable: (error: unknown) => T;
+  type Unavailable =
+    | { kind: "threw"; error: unknown }
+    | { kind: "failed-open"; decision: DecisionAllow };
+
+  onUnavailable: (unavailable: Unavailable) => T;
   ```
+
+  `DecisionAllow` is a **new** import for this file — today it imports only
+  `Decision`, `DecisionDeny` and `RuleWithInput`. It is exported from
+  `arcjet-guard/src/types.ts`, so add it to the same retargeted `../types.ts`
+  import rather than reaching for the package name.
 
   Its return value **becomes `runGuarded`'s return value**, exactly as `onDeny`'s
   does. `guardTool` returns an `ArcjetDenialResult`; `guardAction` throws (so its
   callback's return type is `never`, which is assignable to `T`). `runGuarded` must
   stay ignorant of both adapter types.
 
-  Make `onUnavailable` **required whenever `onGuardError` is `"deny"`** — either by
-  typing the parameter pair as a discriminated union, or by requiring it
-  unconditionally and having the `"allow"` adapters pass a callback that is never
-  invoked. Do not make it optional-and-silently-ignored: that reintroduces the
-  original defect, where enabling fail-closed appears to work but proceeds anyway.
+  Make `onUnavailable` a **required** parameter, unconditionally. With `"deny"` as
+  the default, every adapter needs one anyway, so the discriminated-union parameter
+  typing the earlier draft called for is no longer worth its complexity. Do not
+  make it optional-and-silently-ignored: that reintroduces the original defect,
+  where enabling fail-closed appears to work but proceeds anyway.
 
-  `decisionId` needs no special handling on this path — it is never assigned when
-  the guard call throws, and the existing
-  `...(decisionId !== undefined && { decisionId })` spread drops it naturally.
+  `decisionId` differs by signal, and this is a real behavioural difference worth
+  getting right: on (a) it was never assigned and the existing
+  `...(decisionId !== undefined && { decisionId })` spread drops it naturally; on
+  (b) a decision **does** exist, so assign `decisionId = decision.id` before
+  capturing so the `denied` capture event correlates to the fail-open decision.
 
 Warn in both modes, but **with different text** — the existing constant format
-string says "failing open", which would be actively misleading on the path a user
-enabled precisely to avoid that. Use two constant format strings, both keeping
-`action` as a `%s` argument rather than interpolating it (the Semgrep constraint):
+string says "failing open", which would be actively misleading on the path that is
+now the default. Four constant format strings, all keeping `action` as a `%s`
+argument rather than interpolating it (the Semgrep constraint):
 
-- `"allow"`: `'@arcjet/guard: guard check for "%s" errored; failing open:'` —
-  unchanged from today.
-- `"deny"`: `'@arcjet/guard: guard check for "%s" errored; failing closed:'`.
+| Mode | Signal | String |
+|---|---|---|
+| `"allow"` | threw | `'@arcjet/guard: guard check for "%s" errored; failing open:'` |
+| `"allow"` | failed open | `'@arcjet/guard: guard check for "%s" failed open (API error).'` |
+| `"deny"` | threw | `'@arcjet/guard: guard check for "%s" errored; failing closed:'` |
+| `"deny"` | failed open | `'@arcjet/guard: guard check for "%s" was unavailable; failing closed.'` |
 
-Neither string is asserted by any AC, so nothing would catch a mix-up
-automatically; get it right here.
+The first two are today's strings, unchanged. No AC asserts any of them, so
+nothing would catch a mix-up automatically; get it right here.
 
 Preserve exactly:
 - the `correlation` spread trick that omits `correlationId` when undefined
@@ -629,8 +667,12 @@ Preserve exactly:
 - the constant `console.warn` format string with `action` passed as a `%s`
   argument, in the catch block — this was a Semgrep finding; do not
   re-interpolate the action into the format string
-- the separate fail-open warning when `decision.hasFailedOpen()`
 - capture-on-deny with `outcome: "denied"` before returning `onDeny(decision)`
+
+**Not** on the preserve list, despite looking like it belongs there: the
+`decision.hasFailedOpen()` branch. Today it warns and falls through; it is now one
+of the two `onGuardError` branches. Its *warning* is preserved (with the wording
+from the table above), but its control flow deliberately changes.
 
 Under `noUncheckedIndexedAccess`, re-check any array indexing introduced here.
 
@@ -671,25 +713,38 @@ references — it is public surface, used by both policies:
 export type OnGuardError = "allow" | "deny";
 ```
 
-Add `onGuardError?: OnGuardError` to `GuardActionPolicy` (default `"allow"`), and
-export a new error class:
+Add `onGuardError?: OnGuardError` to `GuardActionPolicy`, **defaulting to
+`"deny"`**, and export a new error class:
 
 ```ts
 export class ArcjetGuardUnavailableError extends Error {
   readonly action: string;
-  readonly cause: unknown;
+  readonly cause?: unknown;
+  readonly decision?: DecisionAllow;
 }
 ```
 
 Set `name = "ArcjetGuardUnavailableError"`; the message should name the action and
 make clear the policy could not be evaluated (not that a rule denied the call).
-Wire it as `runGuarded`'s `onUnavailable` when `onGuardError` is `"deny"`.
+Wire it as `runGuarded`'s `onUnavailable` — which, with `"deny"` as the default, is
+now the common path rather than an opt-in one.
+
+**Populate exactly one of `cause` / `decision`, per the `Unavailable` discriminant
+Task 7 defines** (AC4.12). On `kind: "threw"` set `cause` to the error by
+reference and leave `decision` absent; on `kind: "failed-open"` set `decision` to
+the `DecisionAllow` and leave `cause` absent. That is how an operator tells an SDK
+bug from an Arcjet outage: `decision.errorResults()` yields the `TRANSPORT_ERROR`
+result on the outage path, and there is no `Error` object to attach on it. Do not
+synthesize a fake `cause` to make the shape uniform — the absence is the signal.
 
 It is deliberately **not** `ArcjetDeniedError`: "a rule denied you" and "the policy
 could not be evaluated" are operationally different, and only the second usually
-warrants an alert. This also keeps `ArcjetDeniedError.decision` non-optional, which
-it could not be if one class covered both cases. Under `erasableSyntaxOnly` neither
-class may use parameter properties — declare fields and assign in the constructor.
+warrants an alert. davidmytton confirmed this split on the PR. This also keeps
+`ArcjetDeniedError.decision` non-optional, which it could not be if one class
+covered both cases — note that `ArcjetGuardUnavailableError.decision` being
+optional is fine precisely because it is a separate class. Under
+`erasableSyntaxOnly` neither class may use parameter properties — declare fields
+and assign in the constructor.
 
 Preserve exactly:
 - `ArcjetDeniedError` extending `Error`, with `name = "ArcjetDeniedError"`, a
@@ -744,30 +799,42 @@ Preserve the existing assertions:
 - capture outcomes on the success and error paths, and that the original error
   propagates by reference
 - both fail-open cases (guard throws; guard returns a decision with
-  `hasFailedOpen()`), each asserting the warning and that capture still fires
+  `hasFailedOpen()`), each asserting the warning and that capture still fires.
+  **These two migrated cases must now set `onGuardError: "allow"` explicitly** —
+  they assert fail-open behaviour, which is no longer the default. Migrating them
+  unchanged is the single most likely way to break this phase: they would still
+  compile and would now be asserting against the opposite default.
 
 Keep using `setLogLevel(...)` with restore in `finally` — do not go back to
 deleting `ARCJET_LOG_LEVEL` unconditionally, which clobbers ambient state.
 
-**New cases for `guard-sdk-namespaces.AC4.11`** (the `guardAction` half):
-- guard throws with `onGuardError: "deny"` → the function is **never called**,
-  `ArcjetGuardUnavailableError` is thrown, its `cause` is the original error by
-  reference, its `action` names the action, and one capture fires with
-  `outcome: "denied"`.
+**New cases for `guard-sdk-namespaces.AC4.11` and `AC4.12`** (the `guardAction`
+half). Cover **both** guard-unavailable signals — a suite that only exercises the
+throw path leaves the actual outage path untested:
+- guard **throws**, `onGuardError` omitted (so the `"deny"` default applies) → the
+  function is **never called**, `ArcjetGuardUnavailableError` is thrown, its `cause`
+  is the original error by reference, its `decision` is `undefined`, its `action`
+  names the action, and one capture fires with `outcome: "denied"`.
+- guard returns a decision whose **`hasFailedOpen()` is `true`**, `onGuardError`
+  omitted → same block-and-capture behaviour, but `decision` is that decision by
+  reference and `cause` is `undefined`. Assert the capture event carries the
+  `decisionId` — this is the one path where a decision exists to correlate to.
 - the thrown error is **not** an `instanceof ArcjetDeniedError` — assert this
   explicitly, since the whole point of the separate class is that callers can tell
   a policy denial from a policy outage.
-- guard throws with `onGuardError` omitted → unchanged fail-open behaviour (this is
-  AC4.4's existing case; assert the default explicitly so a future default flip
+- both signals with `onGuardError: "allow"` → fail-open behaviour, function runs
+  (these are AC4.4's cases; assert the opt-out explicitly so a future default flip
   cannot pass silently).
 - a real DENY decision with `onGuardError: "deny"` set still throws
   `ArcjetDeniedError`, not the unavailable error — the option must only affect the
-  error path.
+  unavailable paths.
+- `policy.onDeny` is **not** invoked on either unavailable signal (it takes a
+  `DecisionDeny`, and neither signal produces one).
 
 **Verification:**
 
 Run from `arcjet-guard/`: `npm run test-unit`
-Expected: ~14 guard-action tests pass (10 migrated + ~4 new AC4.11 cases).
+Expected: ~17 guard-action tests pass (10 migrated + ~7 new AC4.11/AC4.12 cases).
 
 **Commit:** `test(guard): move guardAction tests into src/agents`
 <!-- END_TASK_9 -->
@@ -890,7 +957,7 @@ requiring that clean-install probe.
 
 Run from `arcjet-guard/`: `npm run test-unit`
 Expected: all new tests pass. Cumulative for this phase: metadata 3, context 10,
-guard-action 10, capture ~3, barrel ~3.
+guard-action ~17, capture ~3, barrel ~3.
 
 Run from `arcjet-guard/`: `npm run typecheck && npm run lint && npm run build`
 Expected: all clean.
@@ -915,9 +982,18 @@ Expected: all clean.
       to `../types.ts`
 - [ ] JSDoc `@example` blocks rewritten in `metadata.ts` (1), `context.ts`, and
       `guard-action.ts` (3) — no `@arcjet/ai` or `createAiContext` left
-- [ ] `onGuardError` implemented in `runGuarded` + `guardAction`; the
-      `OnGuardError` type and `ArcjetGuardUnavailableError` both exported from the
-      agents barrel (the type checked at type level, not via `Object.keys`)
+- [ ] `onGuardError` implemented in `runGuarded` + `guardAction`, **defaulting to
+      `"deny"`**, and governing **both** guard-unavailable signals (the `guard()`
+      call throwing, and a decision whose `hasFailedOpen()` is `true`) — not the
+      throw alone
+- [ ] `onUnavailable` is a required `runGuarded` parameter taking the `Unavailable`
+      discriminant; `ArcjetGuardUnavailableError` populates exactly one of
+      `cause` / `decision`, and the failed-open path captures a `decisionId`
+- [ ] Migrated fail-open tests set `onGuardError: "allow"` explicitly rather than
+      relying on a default that has changed
+- [ ] The `OnGuardError` type and `ArcjetGuardUnavailableError` are both exported
+      from the agents barrel (the type checked at type level, not via
+      `Object.keys`)
 - [ ] every metadata type widened to `ArcjetMetadata`; no value-type validation
       added anywhere
 - [ ] `src/agents/vocabulary.ts` exists (NOT `metadata.ts` — that name is taken by

@@ -68,14 +68,15 @@ than carrying over `@arcjet/ai`'s looser ones.
 - **guard-sdk-namespaces.AC4.1 Success:** Guard ALLOW → the wrapped tool executes once and an event is captured with `outcome: "success"`.
 - **guard-sdk-namespaces.AC4.2 Failure:** Guard DENY → the tool never executes and the model receives an `ArcjetDenialResult` carrying `reason` and `retryable`.
 - **guard-sdk-namespaces.AC4.3 Edge:** A `RATE_LIMIT` denial carries `retryAfterSeconds`; a non-rate-limit denial omits it even when a co-occurring rule result has a reset time.
-- **guard-sdk-namespaces.AC4.4 Failure:** With the default `onGuardError: "allow"`, the guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
+- **guard-sdk-namespaces.AC4.4 Failure:** With `onGuardError: "allow"` set explicitly (opting out of the default), either guard-unavailable signal → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`. Both signals are covered: the guard call throwing, and a returned decision whose `hasFailedOpen()` is `true`.
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
 - **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId`, and rejects `metadata` that is not a plain object. It **accepts** any plain-object metadata regardless of value types — nested objects, arrays, numbers, booleans, `null` — matching `ArcjetMetadata` (arcjet-js#6171). Validating value types here would be stricter than `guard()` itself, which drops what it cannot encode with an `AJ1017` warning rather than failing.
 - **guard-sdk-namespaces.AC4.8 Success:** `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
 - **guard-sdk-namespaces.AC4.9 Success:** `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key.
 - **guard-sdk-namespaces.AC4.10 Edge:** A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning.
-- **guard-sdk-namespaces.AC4.11 Failure:** With `onGuardError: "deny"`, the guard call throwing → the wrapped tool or action does NOT execute and the outcome is captured as `denied`. `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true` (the model only ever sees tool results, so the shape stays uniform). `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` — carrying the original error as `cause`.
+- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **either** guard-unavailable signal → the wrapped tool or action does NOT execute and the outcome is captured as `denied`. `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`, and no `retryAfterSeconds` (the model only ever sees tool results, so the shape stays uniform). `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` (see AC4.12 for how the two signals are carried on it). `policy.onDeny` is not invoked on either signal.
+- **guard-sdk-namespaces.AC4.12 Failure:** The two guard-unavailable signals stay distinguishable to the caller. When the guard call **threw**, `ArcjetGuardUnavailableError.cause` is that error by reference and `.decision` is absent. When a decision **failed open**, `.decision` is that `DecisionAllow` (so `errorResults()` yields the `TRANSPORT_ERROR` result) and `.cause` is `undefined`. The failed-open signal also captures the `decisionId`, which the thrown signal cannot.
 
 ### guard-sdk-namespaces.AC5: The renames are complete
 - **guard-sdk-namespaces.AC5.1 Success:** `createAgentContext` and `ArcjetAgentContext` are the exported names.
@@ -142,9 +143,16 @@ than carrying over `@arcjet/ai`'s looser ones.
 - **`MockLanguageModelV4`**: A Vercel AI SDK test double for simulating model
   responses, used in this design's `generateText` integration tests for
   `guardTool`.
-- **Fail open**: The *default* behaviour when the guard call itself throws — the
-  wrapped tool still executes rather than being blocked, with a gated warning
-  logged instead. `onGuardError: "deny"` selects the opposite (fail closed).
+- **Guard unavailable**: Either of the two signals that a policy could not be
+  evaluated — (a) the `guard()` call throwing, or (b) `guard()` returning a
+  decision whose `hasFailedOpen()` is `true`. (b) is the *normal* signal during
+  an Arcjet outage: the guard client converts transport failures into a
+  synthesized ALLOW carrying a `TRANSPORT_ERROR` error result
+  (`arcjet-guard/src/client.ts`), so (a) means something unexpected broke.
+  `onGuardError` governs both.
+- **Fail open**: Executing the wrapped tool anyway when the guard is
+  unavailable, with a gated warning logged instead of blocking. Selected with
+  `onGuardError: "allow"`; the helpers default to `"deny"` (fail closed).
 - **`ARCJET_LOG_LEVEL` / warning gate**: An environment-controlled logging
   threshold used to suppress repeated or default-off warnings (e.g. missing
   context, fail-open, missing capture support), except for a one-time
@@ -239,18 +247,25 @@ class ArcjetDeniedError extends Error {
   readonly decision: DecisionDeny;
 }
 
-// Shared by both policies (GuardToolPolicy and GuardActionPolicy). Default
-// "allow" preserves Arcjet's fail-open convention; "deny" blocks the call when
-// the guard API itself errors.
+// Shared by both policies (GuardToolPolicy and GuardActionPolicy). Defaults to
+// "deny": these helpers wrap consequential effects, so an unevaluable policy
+// blocks the call. "allow" opts back into the platform's fail-open convention.
 type OnGuardError = "allow" | "deny";
 
-// Thrown by guardAction when onGuardError is "deny" and the guard call itself
-// failed. Deliberately NOT ArcjetDeniedError: "a rule denied you" and "the policy
+// Thrown by guardAction when the guard is unavailable and onGuardError is
+// "deny". Deliberately NOT ArcjetDeniedError: "a rule denied you" and "the policy
 // could not be evaluated" are operationally different, and only the latter is
 // usually worth alerting on. Keeps ArcjetDeniedError.decision non-optional.
+//
+// Exactly one of `cause` / `decision` is populated, which is how a caller tells
+// the two guard-unavailable signals apart.
 class ArcjetGuardUnavailableError extends Error {
   readonly action: string;
-  readonly cause: unknown;
+  // The thrown error, by reference. Absent when a decision failed open.
+  readonly cause?: unknown;
+  // The fail-open ALLOW decision; call errorResults() for the TRANSPORT_ERROR
+  // detail. Absent when the guard call threw.
+  readonly decision?: DecisionAllow;
 }
 ```
 
@@ -492,23 +507,53 @@ known, temporary oddity.
 by installing without them. Phase 2's static import-graph check is the practical
 substitute for a full clean-install matrix in CI.
 
-**Fail-open vs fail-closed.** `runGuarded` fails open when the guard API itself
-errors, matching the platform convention (the guard client already converts
-transport failures into ALLOW with `hasFailedOpen()`). Review raised that an agent
-tool call which sends mail or updates a ticket carries different risk from a page
-view. Both policies therefore take `onGuardError: "allow" | "deny"`, defaulting to
-`"allow"` so nothing changes for existing behaviour, and the example and skill set
-`"deny"` to show the safer choice for consequential actions. This is a helper-level
-lever, not a change to the platform default.
+**Fail-open vs fail-closed.** Both policies take `onGuardError: "allow" | "deny"`,
+**defaulting to `"deny"`**. Review (davidmytton) raised that an agent tool call
+which sends mail or updates a ticket carries different risk from a page view, and
+asked for the default to be fail-closed. It is safe to choose that here: these
+subpaths have never shipped, so there is no installed base to change under, and
+picking `"allow"` now would make `"deny"` a breaking change later. The risk
+asymmetry also favours it — a blocked tool call returns a *retryable*
+`reason: "ERROR"` result the model can back off on, whereas a blocked page view
+has no such recovery path.
+
+**`onGuardError` governs both guard-unavailable signals, which is what makes the
+default meaningful.** The distinction matters more than the default value:
+
+- (a) `guard()` **throws**. Rare — the client converts transport failures into
+  decisions rather than throwing, so this means something unexpected broke.
+- (b) `guard()` returns an ALLOW decision whose **`hasFailedOpen()` is `true`**.
+  This is the normal signal during an Arcjet outage
+  (`arcjet-guard/src/client.ts` synthesizes an ALLOW carrying a
+  `TRANSPORT_ERROR` error result; `convert.ts` derives
+  `hasFailedOpen: () => conclusion === "ALLOW" && errored.length > 0`).
+
+Scoping `onGuardError` to (a) alone — as the first draft of this design did —
+would have produced a fail-closed default that almost never fires during the
+incident it exists for. `@arcjet/guard` already documents the intended idiom on
+`hasFailedOpen()`: *"Gate a fail-closed policy on this: `if
+(decision.hasFailedOpen()) return deny()`"* (`arcjet-guard/src/types.ts`).
+
+Two costs are accepted deliberately. First, `@arcjet/guard` now carries opposite
+defaults at two layers: the client fails open by construction, its `/agents`
+helpers fail closed. The docs resolve this in one line — the client *reports* that
+it failed open, the helper *decides* what to do about it. Second,
+`guardAction`'s fail-closed surface is a throw, the harder of the two failure
+modes, and it is now the default: a background job wrapped in `guardAction` fails
+during an Arcjet incident instead of degrading. That is the trade-off being chosen,
+and it is documented loudly rather than left to be discovered.
 
 The fail-closed path deliberately does **not** reuse `ArcjetDeniedError`. Being
 denied by a rule and being unable to evaluate a rule are different operational
 events — the second usually warrants an alert — so `guardAction` throws
-`ArcjetGuardUnavailableError` with the underlying error as `cause`, and
-`ArcjetDeniedError.decision` stays non-optional. `guardTool` keeps the single
-`ArcjetDenialResult` shape with `reason: "ERROR"`, because a model only ever
-observes tool results and a second result type would just be harder to prompt
-against. This shape is worth confirming with reviewers on the PR.
+`ArcjetGuardUnavailableError`, and `ArcjetDeniedError.decision` stays
+non-optional. Confirmed by davidmytton on the PR: *"Agreed on splitting
+`ArcjetGuardUnavailableError` and `ArcjetDenialResult` because it gives visibility
+to decide what to do."* The error keeps the two signals apart — `cause` for (a),
+`decision` for (b) — so an operator can tell an SDK bug from an Arcjet outage.
+`guardTool` keeps the single `ArcjetDenialResult` shape with `reason: "ERROR"` for
+both, because a model only ever observes tool results and a second result type
+would just be harder to prompt against.
 
 **`runtimeContext` is not a substitute for `toolsContext`.** Verified against the
 installed typings (`@ai-sdk/provider-utils@5.0.12`): `ToolExecutionOptions`

@@ -22,8 +22,9 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC9.1 Success:** Build, `tsconfig.json` and `tsconfig.lint.json` typechecks, lint, and unit tests with coverage all pass.
 - **guard-sdk-namespaces.AC9.2 Success:** The node, fetch, bun, deno, and cloudflare runtime suites all pass.
 
-This phase does not introduce new behaviour; AC4.11 (`onGuardError`) is
-implemented in Phases 2 and 3 and is included in the count reconciliation below.
+This phase does not introduce new behaviour; AC4.11 and AC4.12 (`onGuardError`)
+are implemented in Phases 2 and 3 and are included in the count reconciliation
+below.
 
 It also owns or completes these, which no earlier phase can prove:
 
@@ -239,10 +240,11 @@ test is replaced rather than moved:
 
 Plus newly written tests: `src/agents/capture.test.ts` (~3),
 `src/agents/index.test.ts` (~3), `src/vercel-ai/v7/index.test.ts` (~6), and the
-`onGuardError` cases added for AC4.11 — ~4 in
-`src/agents/guard-action.test.ts` and ~2 in `src/vercel-ai/v7/guard-tool.test.ts`.
+`onGuardError` cases added for AC4.11 and AC4.12 — ~7 in
+`src/agents/guard-action.test.ts` and ~3 in `src/vercel-ai/v7/guard-tool.test.ts`
+(each covering **both** guard-unavailable signals, not the throw alone).
 
-So the expected total is roughly **guard's 350 baseline + 51 migrated + ~18 new ≈ 419**. Verify
+So the expected total is roughly **guard's 350 baseline + 51 migrated + ~22 new ≈ 423**. Verify
 with:
 
 ```bash
@@ -409,8 +411,8 @@ git push origin rei/feat/framework-helper
       with a module-resolution error; both work once the peers are installed
 - [ ] No peer warnings on a clean install
 - [ ] `build`, both typechecks, `lint` green
-- [ ] `test-unit` green **and the total count reconciles to ≈419** (baseline 350 +
-      51 migrated + ~18 new, including the AC4.11 `onGuardError` cases) — a low count means the glob fix is missing
+- [ ] `test-unit` green **and the total count reconciles to ≈423** (baseline 350 +
+      51 migrated + ~22 new, including the AC4.11/AC4.12 `onGuardError` cases) — a low count means the glob fix is missing
 - [ ] `test-unit` glob patterns still single-quoted in `package.json`
 - [ ] node, fetch, bun, cloudflare runtime suites green
 - [ ] deno leg confirmed locally **or** in CI, and which one is stated explicitly

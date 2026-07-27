@@ -124,18 +124,40 @@ Using the single proxied path here is deliberate: it exercises AC1.4 in a real
 consumer and demonstrates the intended ergonomics. Do **not** split these across
 two imports.
 
-**Set `onGuardError: "deny"` on the consequential calls.** Review (davidmytton)
-noted these are live enforcement events, unlike bot-checking a page view, so the
-example should demonstrate failing closed rather than silently proceeding when the
-guard API is unreachable. Add it to the `ticket.updated` `guardAction` policy and
-to the `lookupOrder` `guardTool` policy, with a short comment saying why — the
-default is `"allow"` and the example is deliberately choosing the stricter setting.
+**Do NOT set `onGuardError` on the consequential calls — that is now the default.**
+Review (davidmytton) noted these are live enforcement events, unlike bot-checking a
+page view, and asked for `"deny"` to be the default; it is. So the example gets a
+short comment on the `ticket.updated` `guardAction` and the `lookupOrder`
+`guardTool` policies noting that an unevaluable policy blocks the call by default,
+rather than an explicit option that would imply the opposite default. An earlier
+draft of this task said to add `onGuardError: "deny"` explicitly — that instruction
+is superseded; adding it would be harmless at runtime but would teach readers that
+fail-open is what they get for free.
+
+**Demonstrate the opt-out once, where it is the right call.** So the example shows
+both sides of the lever, set `onGuardError: "allow"` on the `captureAction`-adjacent
+read-only path — or, if no such call site exists, add a one-line comment at the
+`lookupOrder` policy naming `"allow"` as the opt-out for calls where availability
+matters more than enforcement. Do not leave the example silent on the option:
+`onGuardError` is the one setting whose *default* changed, and the example is where
+most readers will infer it from.
 
 **Also show rules derived from tool input.** qw-in had to guess from the README
 whether `rules: ({ orderNumber }) => [...]` was supported. The example's
 `lookupOrder` tool already uses a `rules` callback, so make the input-derived shape
 explicit in a comment, e.g. that the rate-limit key or a moderation rule can be
 computed from the tool's own arguments.
+
+**Show the explicit-call alternative.** qw-in noted a personal preference for
+wiring the guard call inside the `execute` block rather than wrapping the tool:
+"My (personal) preference for guards would be to wire an explicit call in the
+`execute` block but I know many people would prefer something like this." Both are
+supported — `guardAction` called directly inside a tool's `execute` is exactly that
+explicit form. Add a comment at the `lookupOrder` tool pointing this out, naming
+the trade-off: `guardTool` pulls the context out of the call automatically via the
+injected `contextSchema`, whereas an explicit `guardAction` inside `execute`
+requires threading the context in by hand but keeps the control flow visible. The
+README (Task 4) documents it properly; here it just needs to be discoverable.
 
 Leave the `"use workflow"` / `"use step"` directives alone — they are Workflow
 DevKit function-level directives consumed by `withWorkflow()` in
@@ -272,10 +294,16 @@ Content changes required throughout:
 1. **Explain what `correlationId` is *for*** (comment on `SKILL.md:1`): "Worth
    adding an explanation of what the `correlationId` is for, then the AI can decide
    which ID is best suited (or let us generate one)." Add a short paragraph: it
-   joins every guard decision and capture event from one logical run into a single
-   sequence in the Arcjet console, so the best value is an ID the app already has
-   and can be searched by (request ID, job ID, ticket ID, review ID); omit it and a
-   ULID is generated.
+   joins every guard decision and capture event from one logical run **or session**
+   into a single sequence in the Arcjet console, so the best value is an ID the app
+   already has and can be searched by (request ID, job ID, ticket ID, review ID);
+   omit it and a ULID is generated.
+
+   The wording "run **or session**" is davidmytton's explicit follow-up on the
+   draft text ("I suggest adding session as well"), so keep both nouns — a
+   long-lived chat session and a single background run are both valid scopes, and
+   naming only one narrows the guidance the agent reading this skill will follow.
+   Use the same phrasing in the README (Task 4).
 2. **The lone `octokit` reference** (`SKILL.md:142`): "This is the first and only
    time `octokit` appears. Worth commenting what it's representing, or use a generic
    example." Replace it with a generic external call, or add a one-line comment
@@ -311,9 +339,28 @@ Content changes required throughout:
    `securityMetadata()` "can quietly exceed 20 pairs": the limit is now 128
    top-level keys and drops surface as warnings rather than silently.
 4. **Fail-closed guidance** (`SKILL.md:94`): the current text says only that guard
-   API failures fail open. Document `onGuardError` and recommend `"deny"` for
-   consequential or irreversible actions, while stating that the default is
-   `"allow"` to match the rest of the platform.
+   API failures fail open. That is now **wrong**, not merely incomplete — the
+   default is `"deny"`. Replace it with:
+   - the default is `"deny"`: if the policy cannot be evaluated, the call is
+     blocked, because these helpers wrap consequential effects;
+   - `onGuardError: "allow"` is the opt-out, for call sites where availability
+     matters more than enforcement;
+   - what the agent reading this skill will actually see on that path —
+     `guardTool` returns `reason: "ERROR"` with `retryable: true` (so the model can
+     retry or explain, rather than treating it as a permanent refusal), and
+     `guardAction` throws `ArcjetGuardUnavailableError`, which is **not**
+     `ArcjetDeniedError` and should be caught separately if the app distinguishes
+     "blocked by policy" from "policy unavailable";
+   - one sentence on the layering, since it looks like an inconsistency otherwise:
+     the `@arcjet/guard` client still fails open by construction and *reports* it
+     via `hasFailedOpen()`; these helpers are what *decide* to block on it.
+
+5. **The explicit-call alternative** (qw-in): state that calling `guardAction`
+   directly inside a tool's `execute` is a supported alternative to wrapping with
+   `guardTool`, and when to prefer each — `guardTool` extracts the context from the
+   call automatically via the injected `contextSchema`; the explicit form keeps
+   control flow visible but requires threading the context in by hand. An agent
+   following this skill should not conclude that wrapping is the only option.
 
 `arcjet-guard/package.json` already lists `skills/` in `files` from Phase 1 — no
 packaging change needed here. Verify it is still there.
@@ -371,12 +418,31 @@ state, explicitly:
 6. **Why `/agents` exists separately** — one sentence: importing anything that
    re-exports `guardTool` loads `ai`, so non-AI callers need a path that never
    reaches an AI SDK.
-7. **`onGuardError`** — document the option, its `"allow"` default, and that
-   `"deny"` surfaces `reason: "ERROR"` / `retryable: true` to the model for
-   `guardTool` and throws `ArcjetGuardUnavailableError` for `guardAction`. Explain
-   when to choose it (consequential or irreversible actions) and note the error type
-   is deliberately distinct from `ArcjetDeniedError` so a policy outage can be
-   alerted on separately from a policy denial.
+7. **`onGuardError`** — document the option and its **`"deny"` default**, which is
+   the one place these helpers deliberately diverge from the platform's fail-open
+   convention. Cover:
+   - what "the guard is unavailable" means: **both** the `guard()` call throwing and
+     a decision whose `hasFailedOpen()` is `true`. Readers who know the platform
+     will assume only the first, and the second is the common one.
+   - the surfaces: `reason: "ERROR"` / `retryable: true` to the model for
+     `guardTool`; `ArcjetGuardUnavailableError` thrown for `guardAction`. Note the
+     error type is deliberately distinct from `ArcjetDeniedError` so a policy outage
+     can be alerted on separately from a policy denial, and that it carries `cause`
+     (the guard call threw) or `decision` (a decision failed open) so the two are
+     distinguishable in a handler.
+   - the layering, in one line: the client fails open and *reports* it; the helper
+     *decides* to block. Without this the two defaults read as a bug.
+   - `onGuardError: "allow"` as the opt-out, and its consequence — an Arcjet
+     incident no longer affects that call site, and no enforcement happens there
+     during one.
+   - the cost of the default, stated plainly: a `guardAction` wrapping a background
+     job will throw during an Arcjet incident rather than degrade. Users who prefer
+     the opposite for a given call site have `"allow"`.
+
+8. **The explicit-call alternative** — `guardAction` inside a tool's `execute` is a
+   supported alternative to `guardTool` wrapping (qw-in raised this preference on
+   the PR). Show both forms and name the trade-off: automatic context extraction
+   versus visible control flow.
 
 Also add a short "adding a new SDK namespace" note: new
 `src/<vendor-sdk>/v<major>/` directory, new `exports` entry, new optional peer if
@@ -400,6 +466,7 @@ for s in \
   "ERR_PACKAGE_PATH_NOT_EXPORTED" \
   "onGuardError" \
   "ArcjetGuardUnavailableError" \
+  "hasFailedOpen" \
   ; do
   grep -q -- "$s" README.md && echo "ok: $s" || echo "MISSING: $s"
 done
@@ -665,13 +732,21 @@ must report `clean` across the whole repo, with only `docs/design-plans/` and
 - [ ] `docs/test-plans/2026-07-23-pilot-framework-helper.md` rewritten for the
       subpath structure, with its bare `AC1.1`-style identifiers unchanged (the
       scoped `pilot-framework-helper.AC*` form does not appear in that file)
-- [ ] Example sets `onGuardError: "deny"` on its consequential calls, with a
-      comment explaining the deliberate departure from the default
-- [ ] Example shows rules derived from tool input (qw-in's question)
-- [ ] Skill explains what `correlationId` is for, fixes the bare `octokit`
-      reference, documents `onGuardError`, and either carries the confirmed
-      metadata-cap behaviour or drops the stale claim
-- [ ] README documents `onGuardError` and `ArcjetGuardUnavailableError`
+- [ ] Example does **not** set `onGuardError: "deny"` (it is the default) but
+      comments that an unevaluable policy blocks the call, and names `"allow"` as
+      the opt-out
+- [ ] Example shows rules derived from tool input, and points out that an explicit
+      `guardAction` inside `execute` is the alternative to wrapping (both qw-in)
+- [ ] Skill explains what `correlationId` is for using "one logical run **or
+      session**" (davidmytton's wording), fixes the bare `octokit` reference,
+      documents the `"deny"` default and the `"allow"` opt-out, and either carries
+      the confirmed metadata-cap behaviour or drops the stale claim
+- [ ] Skill no longer claims guard API failures fail open — that is now the
+      opt-out, not the default
+- [ ] README documents `onGuardError`'s `"deny"` default, both guard-unavailable
+      signals (`hasFailedOpen()` as well as a throw), `ArcjetGuardUnavailableError`
+      and its `cause` / `decision` split, and the client-reports/helper-decides
+      layering
 - [ ] Final repo-wide sweep finds no `createAiContext`, `ArcjetAiContext`, or
       `@arcjet/ai` anywhere except `docs/design-plans/` and
       `docs/implementation-plans/` (both deleted in Phase 6)
