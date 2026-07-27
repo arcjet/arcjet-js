@@ -97,7 +97,14 @@ otherwise.
      (`destination: "internal"`, `reversibility: "reversible"`). Widening the return
      is what lets it compose by spread with richer caller metadata.
    - `GuardActionPolicy.metadata` and `CaptureActionOptions.metadata`
-   - `runGuarded`'s `params.metadata: ArcjetMetadata`
+   - `runGuarded`'s `params.metadata: ArcjetMetadata` (`arcjet-ai/src/guarded.ts:28`)
+   - `CaptureOptions.metadata` (`arcjet-ai/src/client.ts:20`) — the *internal*
+     structural type, distinct from the public `CaptureActionOptions` above.
+     Task 4 owns this edit. Missing it is the one omission that blocks the
+     phase: once `GuardActionPolicy.metadata` widens, the merged
+     `Record<string, unknown>` is not assignable to either this or `runGuarded`'s
+     parameter, so Task 8, Task 4's own capture call, and Phase 3 Task 3 all fail
+     their stated `npm run typecheck` gate.
 
    Do **not** add value-type validation anywhere. `guard()` itself drops values it
    cannot encode with an `AJ1017` warning rather than failing, and ignores a
@@ -623,8 +630,10 @@ Restructure so **neither** signal silently continues:
 
 - `"allow"`: behave exactly as today for both signals — warn (gated) and fall
   through to execute. This is now the explicit opt-out and is what AC4.4 covers.
-- `"deny"` (default): do **not** execute. Capture the outcome as `"denied"`, then
-  return `onUnavailable(...)` so each adapter decides its own surface.
+- `"deny"` (default): do **not** execute. Capture the outcome as
+  `"unavailable"` — **not** `"denied"`, which is reserved for a real DENY
+  decision so the two stay distinguishable on the capture stream — then return
+  `onUnavailable(...)` so each adapter decides its own surface.
 
   Signature — the exact parallel of the existing `onDeny`, with a discriminated
   argument so the adapter can tell the signals apart:
@@ -902,7 +911,8 @@ throw path leaves the actual outage path untested:
 - guard **throws**, `onGuardError` omitted (so the `"deny"` default applies) → the
   function is **never called**, `ArcjetGuardUnavailableError` is thrown, its `cause`
   is the original error by reference, its `decision` is `undefined`, its `action`
-  names the action, and one capture fires with `outcome: "denied"`.
+  names the action, and one capture fires with `outcome: "unavailable"` (not
+  `"denied"`) carrying **no** `decisionId`, since no decision exists.
 - guard returns a decision whose **`hasFailedOpen()` is `true`**, `onGuardError`
   omitted → same block-and-capture behaviour, but `decision` is that decision by
   reference and `cause` is `undefined`. Assert the capture event carries the

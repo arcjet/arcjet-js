@@ -354,9 +354,11 @@ Preserve all existing assertions. They map to the ACs as follows:
   applies), **each** guard-unavailable signal — guard throws, and guard returns a
   decision whose `hasFailedOpen()` is `true` — must independently show that
   `execute` is never called, the returned result is
-  `{ arcjetDenied: true, reason: "ERROR", retryable: true }` with no
-  `retryAfterSeconds`, and capture fires once with `outcome: "denied"`. Assert both
-  signals produce the *same* result shape (that collapsing is deliberate here).
+  `{ arcjetDenied: true, reason: "ERROR", retryable: true }` **with** the fixed
+  `retryAfterSeconds` backoff hint (AC4.13 — assert the value, not merely its
+  presence), and capture fires once with `outcome: "unavailable"` (not
+  `"denied"`). Assert both signals produce the *same* result shape (that
+  collapsing is deliberate here).
   Also assert that a supplied `policy.onDeny` is **not** called on either path, and
   that `onGuardError: "allow"` restores fail-open execution for both.
   **Any migrated test that asserts fail-open execution must now set
