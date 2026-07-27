@@ -81,7 +81,27 @@ otherwise.
 5. **Lint must pass.** Guard runs `oxlint --tsconfig=tsconfig.lint.json`, which
    covers `src/**/*.ts` and `test/**/*.ts` (excluding `test/runtime/**`).
    `arcjet-ai` had no package-level lint script.
-6. **External type imports must be retargeted to source.** `arcjet-ai` imported
+6. **`metadata` is now `ArcjetMetadata`, not `Record<string, string>`.**
+   arcjet-js#6171 (merged, and in this branch's history after the rebase) widened
+   metadata to any JSON-serializable value and exports
+   `ArcjetMetadata = Record<string, unknown>` from `@arcjet/guard`. Import it from
+   source as `../types.ts` (it is re-exported there) or `../metadata.ts`.
+
+   Every metadata type in the moved code widens:
+   - `ArcjetAgentContext.metadata?: ArcjetMetadata`
+   - `createAgentContext(init?: { …; metadata?: ArcjetMetadata })`
+   - `securityMetadata(): ArcjetMetadata` — the **return** only. Its input fields
+     stay string-typed, because the vocabulary is a fixed set of enum-like strings
+     (`destination: "internal"`, `reversibility: "reversible"`). Widening the return
+     is what lets it compose by spread with richer caller metadata.
+   - `GuardActionPolicy.metadata` and `CaptureActionOptions.metadata`
+
+   Do **not** add value-type validation anywhere. `guard()` itself drops values it
+   cannot encode with an `AJ1017` warning rather than failing, and ignores a
+   non-object `metadata` entirely; being stricter than the platform would reject
+   metadata the server accepts.
+
+7. **External type imports must be retargeted to source.** `arcjet-ai` imported
    guard's types from the `@arcjet/guard` *package*. Inside `arcjet-guard` that
    becomes a self-reference resolving against the package's own possibly-stale
    `dist/` typings. Every such import changes to a relative source import.
@@ -89,17 +109,17 @@ otherwise.
 
    | Type | Line | Import from `src/agents/` |
    |---|---|---|
-   | `DecisionDeny` | 437 | `../types.ts` |
-   | `Decision` | 445 | `../types.ts` |
-   | `RuleWithInput` | 1652 | `../types.ts` |
-   | `GuardOptions` | 1662 | `../types.ts` |
+   | `DecisionDeny` | 441 | `../types.ts` |
+   | `Decision` | 449 | `../types.ts` |
+   | `RuleWithInput` | 1668 | `../types.ts` |
+   | `GuardOptions` | 1678 | `../types.ts` |
 
    Affected source files (pre-rename names, as they exist in `arcjet-ai/`):
    `guarded.ts` (line 1), `protect-action.ts` (line 1), `client.ts`, and
    `test/_shared/stub-client.ts`. Confirm the exported
    names at those lines before writing the import.
 
-7. **JSDoc must be rewritten, not carried over.** Several moved files contain
+8. **JSDoc must be rewritten, not carried over.** Several moved files contain
    `@example` blocks that import from `@arcjet/ai` and call `createAiContext`.
    Every moved file's JSDoc must be updated in the same task that moves it —
    `guard-action.ts` has 3 such examples and `metadata.ts` has 1. Leaving them
@@ -124,7 +144,7 @@ otherwise.
    file (Tasks 2, 4 and 7 respectively). A verbatim copy lands `protectTool` in the
    published `arcjet-guard/src/agents/internal.ts` and `guarded.ts`.
 
-8. **Runtime message strings must be renamed too — "preserve exactly" does NOT
+9. **Runtime message strings must be renamed too — "preserve exactly" does NOT
    mean preserving `@arcjet/ai`.** Every user-visible message is prefixed
    `@arcjet/ai:`, and two embed the old type name *inside the string literal*.
    These are the exact occurrences, verified:
@@ -175,7 +195,7 @@ otherwise.
    that never fired the intended branch only if the substring happened to match, so
    a stale assertion here is worse than a failing one.
 
-9. **Verification commands** (run from `arcjet-guard/`):
+10. **Verification commands** (run from `arcjet-guard/`):
    - `npm run test-unit` — unit tests + coverage, no build needed
    - `npm run typecheck` — runs BOTH `tsc --noEmit` and
      `tsc --project tsconfig.lint.json --noEmit`
@@ -204,7 +224,7 @@ cases" a bold bullet at line 97).
 |---|---|---|
 | `src/ulid.ts` | `src/agents/ulid.ts` | straight move |
 | `src/internal.ts` | `src/agents/internal.ts` | straight move (`arcjetProtectedTool` symbol) |
-| `src/metadata.ts` | `src/agents/metadata.ts` | straight move |
+| `src/metadata.ts` | `src/agents/vocabulary.ts` | straight move |
 | `src/client.ts` | `src/agents/capture.ts` | renamed file; `ArcjetAiClient` → `ArcjetAgentClient` |
 | `src/guarded.ts` | `src/agents/guarded.ts` | straight move |
 | `src/protect-action.ts` | `src/agents/guard-action.ts` | renamed file; `protectAction` → `guardAction` |
@@ -212,7 +232,7 @@ cases" a bold bullet at line 97).
 | `src/index.ts` | `src/agents/index.ts` | rewritten barrel; AI-coupled exports dropped |
 | `test/_shared/log-level.ts` | `test/_shared/log-level.ts` | straight move (Task 1) |
 | `test/_shared/stub-client.ts` | `test/_shared/stub-client.ts` | retarget imports at source; created in Task 4, after its `capture.ts` dependency exists |
-| `test/metadata.test.ts` | `src/agents/metadata.test.ts` | |
+| `test/metadata.test.ts` | `src/agents/vocabulary.test.ts` | |
 | `test/protect-action.test.ts` | `src/agents/guard-action.test.ts` | |
 | `test/context.test.ts` | `src/agents/context.test.ts` | **SPLIT** — the `aiToolsContext` test goes to Phase 3 |
 | `test/index.test.ts` | `src/agents/index.test.ts` | assert the agents barrel surface |
@@ -273,7 +293,7 @@ behaviour is covered by Task 3's tests.
 **Files:**
 - Create: `arcjet-guard/src/agents/ulid.ts`
 - Create: `arcjet-guard/src/agents/internal.ts`
-- Create: `arcjet-guard/src/agents/metadata.ts`
+- Create: `arcjet-guard/src/agents/vocabulary.ts`
 
 **Implementation:**
 
@@ -281,7 +301,13 @@ Copy each from `arcjet-ai/src/`. These three import nothing from siblings and
 nothing external, so the only code changes are those needed for guard's stricter
 compiler.
 
-**`metadata.ts` also needs its JSDoc rewritten** — it carries one `@example`
+**This file is renamed:** `arcjet-ai/src/metadata.ts` → `src/agents/vocabulary.ts`,
+because arcjet-js#6171 added `arcjet-guard/src/metadata.ts` for the JSON-encoding
+machinery and two same-named files in one package invites the wrong import. Widen
+its return type to `ArcjetMetadata` (see convention 6); leave `SecurityMetadataFields`
+string-typed.
+
+**`vocabulary.ts` also needs its JSDoc rewritten** — it carries one `@example`
 block that must reference `@arcjet/guard/agents` rather than `@arcjet/ai`.
 
 **`internal.ts` needs a JSDoc verb rename** — line 2 reads "Brand stamped on tools
@@ -327,7 +353,7 @@ covers `securityMetadata` directly; its correctness is a precondition for
 AC4.9's merged-metadata assertion.)
 
 **Files:**
-- Create: `arcjet-guard/src/agents/metadata.test.ts` (unit)
+- Create: `arcjet-guard/src/agents/vocabulary.test.ts` (unit)
 
 **Implementation:**
 
@@ -372,8 +398,8 @@ Rename the exported interface `ArcjetAiClient` → `ArcjetAgentClient`. Keep
 and `guardAction()`.
 
 Its `Decision` / `GuardOptions` type imports came from the `@arcjet/guard`
-package; change them to `../types.ts` (`Decision` at `src/types.ts:445`,
-`GuardOptions` at `:1662` — confirm the exported names first).
+package; change them to `../types.ts` (`Decision` at `src/types.ts:449`,
+`GuardOptions` at `:1678` — confirm the exported names first).
 
 **Then create `arcjet-guard/test/_shared/stub-client.ts`**, copied from
 `arcjet-ai/test/_shared/stub-client.ts`, now that its dependency exists. Two
@@ -386,8 +412,8 @@ import type { Decision, DecisionDeny, RuleWithInput } from "../../src/types.ts";
 
 The first replaces `import type { ArcjetAiClient } from "../../dist/index.js";`
 (renamed, and pointed at source rather than built output). The second replaces the
-`@arcjet/guard` package import — `Decision` is at `src/types.ts:445`,
-`DecisionDeny` at `:437`, `RuleWithInput` at `:1652`.
+`@arcjet/guard` package import — `Decision` is at `src/types.ts:449`,
+`DecisionDeny` at `:441`, `RuleWithInput` at `:1668`.
 
 Keep the existing factory shape: `stubClient(decision)` returning
 `{ client, guardCalls, captureCalls }`, plus the decision builders
@@ -453,6 +479,12 @@ Take `arcjet-ai/src/context.ts` and keep **only** the agnostic half:
 line. That import is the only runtime AI-SDK dependency in this file, and
 removing it is what makes AC2.1 achievable. `aiToolsContext` is recreated in
 Phase 3 at `src/vercel-ai/v7/tools-context.ts`.
+
+Widen `metadata` to `ArcjetMetadata` on both the interface and `createAgentContext`'s
+`init` (convention 6). The metadata **copy** stays a shallow spread
+(`{ ...init.metadata }`) — that is still correct: it gives the context its own
+top-level object, and nested values are shared by reference, which matches
+`guard()`'s own shallow merge semantics.
 
 Preserve the existing validation logic exactly: the `typeof` check before the
 regex (non-strings must not be coerced by `RegExp.test`), the problem-naming
@@ -540,8 +572,8 @@ contract, which Task 7 extends with `onUnavailable` — update that prose to men
 both callbacks.
 
 Its line-1 import of `Decision` / `RuleWithInput` from the `@arcjet/guard`
-package becomes `../types.ts` (`Decision` at `src/types.ts:445`, `RuleWithInput`
-at `:1652`). Left pointing at the package name, it would resolve against
+package becomes `../types.ts` (`Decision` at `src/types.ts:449`, `RuleWithInput`
+at `:1668`). Left pointing at the package name, it would resolve against
 `arcjet-guard`'s own `dist/` typings — a stale self-reference.
 
 **New behaviour — `onGuardError`.** `runGuarded` gains an `onGuardError:
@@ -625,7 +657,7 @@ specifiers. Rename the context type to `ArcjetAgentContext` and the client type
 to `ArcjetAgentClient`.
 
 Its line-1 import of `Decision` / `DecisionDeny` from the `@arcjet/guard` package
-becomes `../types.ts` (`DecisionDeny` at `src/types.ts:437`, `Decision` at `:445`).
+becomes `../types.ts` (`DecisionDeny` at `src/types.ts:441`, `Decision` at `:449`).
 
 **Rewrite its JSDoc.** This file has **three** `@example` blocks, and they import
 from `@arcjet/ai` and call `createAiContext`. All three must be rewritten for
@@ -760,8 +792,8 @@ Export:
 ```ts
 export { createAgentContext } from "./context.ts";
 export type { ArcjetAgentContext } from "./context.ts";
-export { securityMetadata } from "./metadata.ts";
-export type { SecurityMetadataFields } from "./metadata.ts";
+export { securityMetadata } from "./vocabulary.ts";
+export type { SecurityMetadataFields } from "./vocabulary.ts";
 export {
   ArcjetDeniedError,
   ArcjetGuardUnavailableError,
@@ -777,7 +809,9 @@ export type { ArcjetAgentClient, CaptureOptions } from "./capture.ts";
 ```
 
 Do **not** export `runGuarded`, `ulid`, `shouldWarn`, `captureEvent`, or
-`arcjetProtectedTool` — they are internal. Phase 3's namespace imports the
+`arcjetProtectedTool` — they are internal. Do **not** re-export `ArcjetMetadata`
+either: it is already public from the package root (`@arcjet/guard`), and
+re-exporting it from `/agents` would give the same type two import paths. Phase 3's namespace imports the
 internals it needs by relative path, not through this barrel.
 
 Write a `@packageDocumentation` block describing the layer: framework-agnostic
@@ -884,6 +918,10 @@ Expected: all clean.
 - [ ] `onGuardError` implemented in `runGuarded` + `guardAction`; the
       `OnGuardError` type and `ArcjetGuardUnavailableError` both exported from the
       agents barrel (the type checked at type level, not via `Object.keys`)
+- [ ] every metadata type widened to `ArcjetMetadata`; no value-type validation
+      added anywhere
+- [ ] `src/agents/vocabulary.ts` exists (NOT `metadata.ts` — that name is taken by
+      guard's own encoding module)
 - [ ] JSDoc verb renames done in `internal.ts` (1), `capture.ts` (1) and
       `guarded.ts` (4) — 6 occurrences total
 - [ ] AC4.11 tests pass, including that the unavailable error is NOT an

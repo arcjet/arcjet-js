@@ -71,7 +71,7 @@ than carrying over `@arcjet/ai`'s looser ones.
 - **guard-sdk-namespaces.AC4.4 Failure:** With the default `onGuardError: "allow"`, the guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
-- **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId` and rejects `metadata` that is not a string-to-string record.
+- **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId`, and rejects `metadata` that is not a plain object. It **accepts** any plain-object metadata regardless of value types — nested objects, arrays, numbers, booleans, `null` — matching `ArcjetMetadata` (arcjet-js#6171). Validating value types here would be stricter than `guard()` itself, which drops what it cannot encode with an `AJ1017` warning rather than failing.
 - **guard-sdk-namespaces.AC4.8 Success:** `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
 - **guard-sdk-namespaces.AC4.9 Success:** `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key.
 - **guard-sdk-namespaces.AC4.10 Edge:** A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning.
@@ -207,15 +207,20 @@ meaning must not change when a new SDK major is supported.
 ```typescript
 interface ArcjetAgentContext {
   correlationId: string;
-  metadata?: Record<string, string>;
+  // ArcjetMetadata = Record<string, unknown> — any JSON-serializable value,
+  // nested objects and arrays included (arcjet-js#6171).
+  metadata?: ArcjetMetadata;
 }
 
 function createAgentContext(init?: {
   correlationId?: string;
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }): ArcjetAgentContext;
 
-function securityMetadata(fields: SecurityMetadataFields): Record<string, string>;
+// Field values stay string-typed — the vocabulary is a fixed set of
+// enum-like strings. Only the RETURN widens, so it composes by spread with
+// richer caller metadata.
+function securityMetadata(fields: SecurityMetadataFields): ArcjetMetadata;
 
 function guardAction<T>(
   client: ArcjetAgentClient,
@@ -303,6 +308,12 @@ This design adopts `@arcjet/guard`'s conventions rather than carrying
   code must satisfy all of them, and also `tsconfig.lint.json`.
 - **Lint.** Guard runs `oxlint --tsconfig=tsconfig.lint.json`; `arcjet-ai` had
   no package-level lint script.
+
+`securityMetadata()` lands at `arcjet-guard/src/agents/vocabulary.ts`, **not**
+`metadata.ts`: arcjet-js#6171 added `arcjet-guard/src/metadata.ts` (356 lines of
+JSON encoding, budget enforcement and `AJ1017` handling), and two same-named files
+doing unrelated jobs in one package invites the wrong import. Same reasoning as
+`client.ts` → `capture.ts`.
 
 Build configuration needs no change: `arcjet-guard/tsdown.config.ts` already
 globs `entry: ["src/**/*.ts", "!src/**/*.test.ts"]` with `unbundle: true`, so
@@ -508,6 +519,19 @@ but **not** to a tool's `execute`. Correlation must therefore ride on
 `toolsContext` + the injected `contextSchema`; `aiToolsContext` is necessary rather
 than redundant. `runtimeContext` remains the right carrier if capture later moves
 onto AI SDK telemetry, which is tracked separately.
+
+**Depends on arcjet-js#6171 (merged 2026-07-27).** That PR widened `metadata` from
+flat strings to any JSON-serializable value and exported
+`ArcjetMetadata = Record<string, unknown>` from `@arcjet/guard`. The branch is
+rebased onto it. Three consequences: the helpers' metadata types widen to
+`ArcjetMetadata`; the injected `contextSchema` must stop validating value types
+(see AC4.7); and the skill's metadata-caps guidance is replaced by #6171's
+server-enforced limits — 128 top-level keys, 4 KiB per serialized value, depth 10,
+key names limited to letters/digits/`-`/`.`/`_`, with every dropped key reported on
+`decision.warnings`. Nothing about metadata can fail a call or change a decision,
+and metadata is excluded from fingerprinting. This resolves the "no longer
+accurate" review comment on the skill without needing to ask — #6171's
+`arcjet-guard/README.md` section is the authoritative source.
 
 **Extensibility.** Adding a namespace means a new `src/<vendor-sdk>/v<major>/`
 directory, a new `exports` entry, and any new optional peer — no changes to the

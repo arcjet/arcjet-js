@@ -83,7 +83,7 @@ All of AC4 is behaviour **preservation** of an existing, passing suite. Do not r
 | `guard-sdk-namespaces.AC4.4` | With the default `onGuardError: "allow"`, the guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`. | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` — both fail-open paths (guard throws; guard returns a decision whose `hasFailedOpen()` is true), each with its own warning | Phase 3 Task 4 (engine: Phase 2 Task 7) |
 | `guard-sdk-namespaces.AC4.5` | A context's `correlationId` reaches both the guard call and the capture call. | unit **+** integration | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (explicit `policy.correlationId` overrides the context's; the context's is used otherwise; metadata merges context-then-policy) **and** `arcjet-guard/src/vercel-ai/v7/generate-text.test.ts` (real `generateText` loop with `MockLanguageModelV4` from `ai/test`) | Phase 3 Tasks 4 and 5 |
 | `guard-sdk-namespaces.AC4.6` | A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set. | unit **+** integration | `arcjet-guard/src/vercel-ai/v7/warn-missing-context.test.ts` (2 tests) — **must stay its own file**: it asserts first-occurrence-versus-later behaviour of the module-level `warnedMissingToolsContext` flag, which is only deterministic because `node --test` runs each file in its own process. Second leg: the no-`toolsContext` case in `generate-text.test.ts` | Phase 3 Task 5 |
-| `guard-sdk-namespaces.AC4.7` | The injected `contextSchema` rejects a non-string `correlationId` and rejects `metadata` that is not a string-to-string record. | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` — `contextSchema.validate()` accepts `undefined`, a well-formed context and string metadata; rejects a numeric `correlationId`, non-string metadata values, and non-object metadata | Phase 3 Tasks 3 and 4 |
+| `guard-sdk-namespaces.AC4.7` | The injected `contextSchema` rejects a non-string `correlationId` and a non-plain-object `metadata`, and **accepts** any plain-object metadata regardless of value types (`ArcjetMetadata`, arcjet-js#6171). | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` — `contextSchema.validate()` accepts `undefined`, a well-formed context, and metadata with string / nested-object / array / numeric / boolean / `null` values; rejects a numeric `correlationId`, a non-object `metadata`, and `metadata` that is `null` or an array. **The pre-#6171 assertion that non-string values are rejected is inverted, not deleted** | Phase 3 Tasks 3 and 4 |
 | `guard-sdk-namespaces.AC4.8` | `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function. | unit | `arcjet-guard/src/agents/guard-action.test.ts` — ALLOW runs the function once and resolves with the same reference; DENY throws with `reason === "RATE_LIMIT"`, a message naming action and reason, and the function never called | Phase 2 Task 9 |
 | `guard-sdk-namespaces.AC4.9` | `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key. | unit | `arcjet-guard/src/agents/guard-action.test.ts` — one event, metadata merged context-then-options, `decisionId` undefined, **no** `outcome` key | Phase 2 Task 9 |
 | `guard-sdk-namespaces.AC4.10` | A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning. | unit | `arcjet-guard/src/agents/capture.test.ts` (new file, ~3 tests) — missing method: no throw, warning when `ARCJET_LOG_LEVEL` permits; inverse: present method called once with the passed options and no warning; plus a throwing `experimental_capture` is swallowed | Phase 2 Task 4 |
@@ -93,7 +93,8 @@ Cross-cutting requirements for the whole AC4 block:
 
 - **Log-level handling:** every test that manipulates `ARCJET_LOG_LEVEL` must use `setLogLevel(...)` from `arcjet-guard/test/_shared/log-level.ts` with the restore call in `finally`. Do not delete the variable unconditionally — that clobbers ambient state.
 - **Fixtures live outside `src/`:** `arcjet-guard/test/_shared/stub-client.ts` and `.../log-level.ts`. Anything non-test under `src/` is published in `dist/` (tsdown entry is `["src/**/*.ts", "!src/**/*.test.ts", "!src/**/*.d.ts"]`), so a stub client under `src/` would ship to users.
-- **Type imports resolve to source, never the package name.** `Decision` (`src/types.ts:445`), `DecisionDeny` (`:437`), `RuleWithInput` (`:1652`), `GuardOptions` (`:1662`) come from `../types.ts` / `../../types.ts`. A `from "@arcjet/guard"` import inside `arcjet-guard` is a stale self-reference against its own possibly-outdated `dist/` typings — this applies to `guard-tool.test.ts`'s line-4 `DecisionDeny` import too.
+- **Type imports resolve to source, never the package name.** `Decision` (`src/types.ts:449`), `DecisionDeny` (`:441`), `RuleWithInput` (`:1668`), `GuardOptions` (`:1678`) come from `../types.ts` / `../../types.ts`. A `from "@arcjet/guard"` import inside `arcjet-guard` is a stale self-reference against its own possibly-outdated `dist/` typings — this applies to `guard-tool.test.ts`'s line-4 `DecisionDeny` import too.
+- **Metadata is `ArcjetMetadata`, not `Record<string, string>`.** arcjet-js#6171 widened it to any JSON-serializable value. No helper may validate metadata value types: `guard()` drops what it cannot encode with an `AJ1017` warning and ignores non-object metadata, so a stricter check rejects what the platform accepts. `securityMetadata()`'s *return* widens; its input fields stay string-typed. The vocabulary helper lives at `src/agents/vocabulary.ts`, not `metadata.ts`, because #6171 added `arcjet-guard/src/metadata.ts` for the encoding machinery.
 - **Type-only exports need type-level checks.** `OnGuardError` is public surface but invisible to `Object.keys` on a namespace import. Phase 2 Task 11 asserts it via `import type` + a trivial assignment so a missing export fails `npm run typecheck`.
 - **`Symbol.for("arcjet:ai:protected-tool")` is deliberately unchanged.** `tools-context.test.ts` hardcodes it via `Symbol.for(...)`, which is the actual cross-module contract. AC5.2 does not cover it. A mismatch between the symbol `guardTool` writes and the one `aiToolsContext` reads silently drops context for every tool.
 
@@ -156,7 +157,7 @@ Note: the AC8.3 grep must use those **distinctive** strings. Greping for `option
 
 | ID | Criterion | Type | Test file / location | Produced by |
 |---|---|---|---|---|
-| `guard-sdk-namespaces.AC9.1` | Build, `tsconfig.json` and `tsconfig.lint.json` typechecks, lint, and unit tests with coverage all pass. | shell-check (suite gate) | From `arcjet-guard/`: `npm run build`; `npm run typecheck` (runs **both** `tsc --noEmit` and `tsc --project tsconfig.lint.json --noEmit`); `npm run lint` (`oxlint --tsconfig=tsconfig.lint.json`); `npm run test-unit` (unit + coverage). **Plus the mandatory count reconciliation to ≈390** — see trap **T1** in §5 | Phase 6 Task 3 Step 1 (incrementally gated in every earlier phase) |
+| `guard-sdk-namespaces.AC9.1` | Build, `tsconfig.json` and `tsconfig.lint.json` typechecks, lint, and unit tests with coverage all pass. | shell-check (suite gate) | From `arcjet-guard/`: `npm run build`; `npm run typecheck` (runs **both** `tsc --noEmit` and `tsc --project tsconfig.lint.json --noEmit`); `npm run lint` (`oxlint --tsconfig=tsconfig.lint.json`); `npm run test-unit` (unit + coverage). **Plus the mandatory count reconciliation to ≈419** — see trap **T1** in §5 | Phase 6 Task 3 Step 1 (incrementally gated in every earlier phase) |
 
 `guard-sdk-namespaces.AC9.2` is **not** fully verifiable on this machine → see §2 and §4.
 
@@ -183,7 +184,7 @@ Two criteria cannot be automated as an in-repo regression gate.
    | `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` | all TS code blocks |
    | `arcjet-guard/src/agents/index.ts` | `@packageDocumentation` + `@example` |
    | `arcjet-guard/src/agents/context.ts` | `@example` |
-   | `arcjet-guard/src/agents/metadata.ts` | 1 `@example` |
+   | `arcjet-guard/src/agents/vocabulary.ts` | 1 `@example` |
    | `arcjet-guard/src/agents/guard-action.ts` | **3** `@example` blocks |
    | `arcjet-guard/src/vercel-ai/v7/index.ts` | `@packageDocumentation` + `@example` |
    | `arcjet-guard/src/vercel-ai/v7/tools-context.ts` | `@example` |
@@ -271,9 +272,9 @@ Each of these produces a green result that means nothing. They are ordered by bl
 
 | State | What `sh` passes to `node` | Tests run |
 |---|---|---|
-| today (no nested tests) | the literal pattern `src/**/*.test.ts` | 321 |
+| today (no nested tests) | the literal pattern `src/**/*.test.ts` | 350 |
 | with `src/agents/x.test.ts` present, unquoted | **only** `src/agents/x.test.ts` | **1** |
-| with the pattern **quoted** | the literal pattern | **323** |
+| with the pattern **quoted** | the literal pattern | **352** |
 
 Without globstar, `sh` expands `src/**/*.test.ts` as `src/*/*.test.ts` — exactly one directory deep. The moment Phase 2 adds `src/agents/*.test.ts`, the shell resolves the pattern to those files alone, **all 17 existing top-level suites are silently dropped, and the run still exits 0 reporting green.** Phase 3's `src/vercel-ai/v7/*.test.ts` (two deep) would never be matched at all.
 
@@ -284,12 +285,12 @@ Without globstar, `sh` expands `src/**/*.test.ts` as `src/*/*.test.ts` — exact
 
   | Component | Tests |
   |---|---|
-  | guard baseline (`main`) | 321 |
+  | guard baseline (`main`) | 350 |
   | migrated from `arcjet-ai/test/` | 51 |
   | newly written (`agents/capture` ~3, `agents/index` ~3, `vercel-ai/v7/index` ~6, AC4.11 `onGuardError` cases ~6) | ~18 |
-  | **expected total** | **≈390** |
+  | **expected total** | **≈419** |
 
-  The 51 migrated: `agents/context` 10, `vercel-ai/v7/tools-context` 1, `agents/metadata` 3, `agents/guard-action` 10, `vercel-ai/v7/guard-tool` 22, `vercel-ai/v7/warn-missing-context` 2, `vercel-ai/v7/generate-text` 3. (`arcjet-ai` had 52; only `index.test.ts`'s single test is *replaced* rather than moved.)
+  The 51 migrated: `agents/context` 10, `vercel-ai/v7/tools-context` 1, `agents/vocabulary` 3, `agents/guard-action` 10, `vercel-ai/v7/guard-tool` 22, `vercel-ai/v7/warn-missing-context` 2, `vercel-ai/v7/generate-text` 3. (`arcjet-ai` had 52; only `index.test.ts`'s single test is *replaced* rather than moved.)
 - **A total anywhere near 1–20 means the glob is collapsing, not that tests were removed.** Before believing any green result, run `grep "test-unit" package.json` and confirm the single quotes. This applies at Phase 2, 3, 4, 5 and 6 — the quoting can be reverted by any later `package.json` edit.
 - Verify with `npm run test-unit 2>&1 | grep -E "^ℹ (tests|pass|fail)"`.
 

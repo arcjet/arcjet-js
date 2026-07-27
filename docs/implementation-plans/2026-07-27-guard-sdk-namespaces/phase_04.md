@@ -91,13 +91,13 @@ MISSING=0
 for f in \
   arcjet-guard/src/agents/ulid.ts \
   arcjet-guard/src/agents/internal.ts \
-  arcjet-guard/src/agents/metadata.ts \
+  arcjet-guard/src/agents/vocabulary.ts \
   arcjet-guard/src/agents/capture.ts \
   arcjet-guard/src/agents/guarded.ts \
   arcjet-guard/src/agents/context.ts \
   arcjet-guard/src/agents/guard-action.ts \
   arcjet-guard/src/agents/index.ts \
-  arcjet-guard/src/agents/metadata.test.ts \
+  arcjet-guard/src/agents/vocabulary.test.ts \
   arcjet-guard/src/agents/capture.test.ts \
   arcjet-guard/src/agents/context.test.ts \
   arcjet-guard/src/agents/guard-action.test.ts \

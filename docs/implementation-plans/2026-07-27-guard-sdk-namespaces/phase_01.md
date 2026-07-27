@@ -58,14 +58,14 @@ Established by investigation and by direct experiment — do not re-litigate the
 
    | State | What `sh` passes to `node` | Tests run |
    |---|---|---|
-   | today (no nested tests) | the literal pattern `src/**/*.test.ts` | 321 |
+   | today (no nested tests) | the literal pattern `src/**/*.test.ts` | 350 |
    | with `src/agents/x.test.ts` present, unquoted | **only** `src/agents/x.test.ts` | **1** |
-   | with the pattern **quoted** | the literal pattern | **323** |
+   | with the pattern **quoted** | the literal pattern | **352** |
 
    Without globstar, `sh` expands `src/**/*.test.ts` as `src/*/*.test.ts`, which
    matches exactly one directory deep. The moment Phase 2 adds
    `src/agents/*.test.ts`, the shell resolves the pattern to those files alone and
-   **all 17 existing top-level suites are silently dropped** while the run still
+   **all 18 existing top-level suites are silently dropped** while the run still
    reports green. Phase 3's `src/vercel-ai/v7/*.test.ts` (two deep) would never be
    matched at all. Task 1 fixes this by quoting the pattern.
 6. **Installed versions per the root lockfile:** `ai@7.0.36`,

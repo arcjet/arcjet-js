@@ -230,7 +230,7 @@ test is replaced rather than moved:
 |---|---|
 | `src/agents/context.test.ts` | 10 (11 minus the `aiToolsContext` one) |
 | `src/vercel-ai/v7/tools-context.test.ts` | 1 (the split-out one) |
-| `src/agents/metadata.test.ts` | 3 |
+| `src/agents/vocabulary.test.ts` | 3 |
 | `src/agents/guard-action.test.ts` | 10 |
 | `src/vercel-ai/v7/guard-tool.test.ts` | 22 |
 | `src/vercel-ai/v7/warn-missing-context.test.ts` | 2 |
@@ -242,7 +242,7 @@ Plus newly written tests: `src/agents/capture.test.ts` (~3),
 `onGuardError` cases added for AC4.11 — ~4 in
 `src/agents/guard-action.test.ts` and ~2 in `src/vercel-ai/v7/guard-tool.test.ts`.
 
-So the expected total is roughly **guard's 321 baseline + 51 migrated + ~18 new ≈ 390**. Verify
+So the expected total is roughly **guard's 350 baseline + 51 migrated + ~18 new ≈ 419**. Verify
 with:
 
 ```bash
@@ -409,7 +409,7 @@ git push origin rei/feat/framework-helper
       with a module-resolution error; both work once the peers are installed
 - [ ] No peer warnings on a clean install
 - [ ] `build`, both typechecks, `lint` green
-- [ ] `test-unit` green **and the total count reconciles to ≈390** (baseline 321 +
+- [ ] `test-unit` green **and the total count reconciles to ≈419** (baseline 350 +
       51 migrated + ~18 new, including the AC4.11 `onGuardError` cases) — a low count means the glob fix is missing
 - [ ] `test-unit` glob patterns still single-quoted in `package.json`
 - [ ] node, fetch, bun, cloudflare runtime suites green

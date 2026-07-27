@@ -263,6 +263,8 @@ Content changes required throughout:
   exports which do not exist
 - keep the existing warning that the compiler will not catch a missing
   `toolsContext`
+- show metadata carrying a **nested** value somewhere, since flat strings are no
+  longer the only option and the previous docs implied they were
 - state that the version segment is explicit and there is no unversioned alias
 
 **Review feedback to incorporate (davidmytton, 2026-07-27):**
@@ -278,13 +280,36 @@ Content changes required throughout:
    time `octokit` appears. Worth commenting what it's representing, or use a generic
    example." Replace it with a generic external call, or add a one-line comment
    naming it as an example GitHub API client.
-3. **The metadata-caps paragraph is stale** (`SKILL.md:168`): davidmytton says
-   "This is no longer accurate" about the claim that exceeding 20 pairs means "the
-   extras are dropped". **Do not guess the replacement.** There is no client-side
-   cap validation in `arcjet-guard/src` and nothing in its README or CHANGELOG, so
-   the current behaviour is not derivable from this repo. Ask davidmytton or qw-in
-   for the actual behaviour and write that; if no answer is available, remove the
-   specific claim rather than restate an unverified number.
+3. **The metadata-caps paragraph is stale** (`SKILL.md:168`): davidmytton flagged
+   "This is no longer accurate". **Resolved — no need to ask.** arcjet-js#6171
+   (merged 2026-07-27, in this branch's history after the rebase) rewrote metadata
+   entirely, and its `arcjet-guard/README.md` "Metadata" section is authoritative.
+   Replace "max 20 pairs, key <=64 bytes, value <=512 bytes, extras dropped" with
+   the current server-enforced behaviour:
+
+   | Limit | Value | Over the limit |
+   |---|---|---|
+   | Top-level keys | 128 | extra keys dropped |
+   | Serialized bytes per value | 4 KiB | that key dropped |
+   | Nesting depth per value | 10 | that key dropped |
+   | Key names | letters, digits, `-`, `.`, `_` | that key dropped |
+
+   Plus the points that change the guidance materially:
+   - metadata accepts **any JSON-serializable value** — nested objects and arrays
+     included, not flat strings
+   - nothing about metadata can fail a call or change a decision; it is excluded
+     from fingerprinting
+   - every dropped key is reported on `decision.warnings`, and the SDK adds one
+     `AJ1017` warning naming values it could not encode (`undefined`, a function, a
+     `BigInt`, a circular reference)
+   - a `metadata` that is not a plain object is ignored entirely
+   - metadata is untrusted and **not redacted** — no secrets or PII
+   - numbers are float64, so integers above `Number.MAX_SAFE_INTEGER` should be
+     passed as strings
+
+   Delete the old warning that merging `ctx.metadata` with per-call
+   `securityMetadata()` "can quietly exceed 20 pairs": the limit is now 128
+   top-level keys and drops surface as warnings rather than silently.
 4. **Fail-closed guidance** (`SKILL.md:94`): the current text says only that guard
    API failures fail open. Document `onGuardError` and recommend `"deny"` for
    consequential or irreversible actions, while stating that the default is
@@ -420,7 +445,7 @@ The complete list of sources — **all** of these, not a subset:
 | `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` | all TS code blocks |
 | `arcjet-guard/src/agents/index.ts` | `@packageDocumentation` + `@example` |
 | `arcjet-guard/src/agents/context.ts` | `@example` |
-| `arcjet-guard/src/agents/metadata.ts` | 1 `@example` |
+| `arcjet-guard/src/agents/vocabulary.ts` | 1 `@example` |
 | `arcjet-guard/src/agents/guard-action.ts` | **3** `@example` blocks |
 | `arcjet-guard/src/vercel-ai/v7/index.ts` | `@packageDocumentation` + `@example` |
 | `arcjet-guard/src/vercel-ai/v7/tools-context.ts` | `@example` |

@@ -44,7 +44,7 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC4.4 Failure:** With the default `onGuardError: "allow"`, the guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
-- **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId` and rejects `metadata` that is not a string-to-string record.
+- **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId`, and rejects `metadata` that is not a plain object. It **accepts** any plain-object metadata regardless of value types — nested objects, arrays, numbers, booleans, `null` — matching `ArcjetMetadata` (arcjet-js#6171).
 - **guard-sdk-namespaces.AC4.11 Failure:** With `onGuardError: "deny"`, the guard call throwing → the wrapped tool does NOT execute, the model receives an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`, and the outcome is captured as `denied`. (Phase 2 built the engine and the `guardAction` half; this phase covers `guardTool`.)
 
 ---
@@ -185,8 +185,8 @@ import type { ArcjetAgentContext } from "../../agents/context.ts";
 ```
 
 `DecisionDeny` and `RuleWithInput` came from the `@arcjet/guard` package; import
-them from source: `../../types.ts` (`DecisionDeny` at `src/types.ts:437`,
-`RuleWithInput` at `:1652` — confirm the exported names first). Left as a package
+them from source: `../../types.ts` (`DecisionDeny` at `src/types.ts:441`,
+`RuleWithInput` at `:1668` — confirm the exported names first). Left as a package
 import, these resolve against `arcjet-guard`'s own `dist/` typings, which is a
 stale self-reference.
 
@@ -249,10 +249,32 @@ two-sided edit — the value written by `guardTool` and the value read by
 `aiToolsContext` must change in the same commit — and it would break any consumer
 that had come to rely on the registered symbol. No AC covers it deliberately.
 
+**BREAKING CHANGE to `contextSchema.validate()` — do not preserve it as-is.**
+arcjet-js#6171 widened metadata to `ArcjetMetadata = Record<string, unknown>`. The
+current `validate()` walks `Object.values(metadata)` and rejects anything that is
+not a string. That check is now **wrong**: it would refuse metadata the platform
+accepts, and it is stricter than `guard()` itself, which ignores a non-object
+`metadata` entirely and drops individual values it cannot encode with an `AJ1017`
+warning rather than failing.
+
+Replace the metadata branch with a plain-object check only:
+
+- accept `undefined`
+- accept an object whose `correlationId` is a `string` and whose `metadata` is
+  either absent or a **plain object** (reject arrays and `null`)
+- reject everything else
+
+Delete the `Object.values(...).every(v => typeof v === "string")` test. Update the
+JSON Schema shape alongside it: `metadata` was
+`{ type: "object", additionalProperties: { type: "string" } }` and must become
+`{ type: "object" }`, so the declared schema and the custom `validate()` agree.
+
+Widen `GuardToolPolicy.metadata` (both the object form and the function-of-input
+form) to `ArcjetMetadata`.
+
 Preserve exactly, as all of these are tested:
-- the injected `contextSchema` with its `validate()` — including the Phase-earlier
-  hardening that rejects a non-string `correlationId` and rejects `metadata`
-  whose values are not all strings (AC4.7)
+- the injected `contextSchema` with its `validate()` — now accepting any
+  plain-object metadata and rejecting only non-objects (AC4.7)
 - the module-level `warnedMissingToolsContext` flag and `warnMissingToolsContext`,
   which warns on the **first** occurrence even when logging is off and respects
   `ARCJET_LOG_LEVEL` afterwards (AC4.6)
@@ -294,7 +316,7 @@ and `../../../test/_shared/log-level.ts`. Rename `createAiContext` →
 `createAgentContext`.
 
 Its line-4 `import type { DecisionDeny } from "@arcjet/guard"` must also become
-`../../types.ts` (`DecisionDeny` at `src/types.ts:437`) — same stale
+`../../types.ts` (`DecisionDeny` at `src/types.ts:441`) — same stale
 self-reference problem as the source files.
 
 **Update the message assertion at line 539.** It reads
@@ -319,9 +341,13 @@ Preserve all existing assertions. They map to the ACs as follows:
   `execute`, each with its own warning
 - `AC4.5`: an explicit `policy.correlationId` overrides the context's; the
   context's is used otherwise; metadata merges context-then-policy
-- `AC4.7`: the injected `contextSchema.validate()` accepts `undefined`, a
-  well-formed context, and string metadata; rejects a numeric `correlationId`,
-  non-string metadata values, and non-object metadata
+- `AC4.7` (**assertions inverted from the pre-#6171 suite**): `validate()` accepts
+  `undefined`, a well-formed context, string metadata, **and now also** nested-object,
+  array-valued, numeric, boolean and `null` metadata *values*; it rejects a numeric
+  `correlationId`, a non-object `metadata` (string, number), and `metadata` that is
+  `null` or an array. The existing test asserting non-string metadata values are
+  *rejected* must be **rewritten to assert they are accepted** — leaving it will
+  fail, and "fixing" it by restoring the old validation reintroduces the defect.
 - `AC4.11` (new cases): guard throws with `onGuardError: "deny"` → `execute` is
   never called, the returned result is
   `{ arcjetDenied: true, reason: "ERROR", retryable: true }` with no
@@ -524,6 +550,9 @@ Expected: all pass. Cumulative new tests for this phase: 1 + 22 + 2 + 3 + ~6.
       all retargeted to `../../types.ts`
 - [ ] `guard-tool.ts`'s JSDoc `@example` rewritten; no `@arcjet/ai` or
       `createAiContext` left
+- [ ] `contextSchema.validate()` no longer checks metadata value types; the JSON
+      Schema's `additionalProperties: { type: "string" }` removed to match
+- [ ] `GuardToolPolicy.metadata` widened to `ArcjetMetadata`
 - [ ] `onGuardError` threaded into `guardTool`; outage returns
       `reason: "ERROR"` / `retryable: true`; `onDeny` not invoked on that path
 - [ ] the 4 runtime message strings in `guard-tool.ts` renamed to
