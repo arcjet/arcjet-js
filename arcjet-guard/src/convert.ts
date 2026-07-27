@@ -35,6 +35,7 @@ import {
   GuardReason,
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
+import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metadata.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
   Conclusion,
@@ -407,15 +408,31 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
 export async function ruleToProto(
   rule: RuleWithInput,
   signal?: AbortSignal,
+  options?: {
+    /** Index of this rule in the submission, used to prefix warning messages. */
+    ruleIndex?: number;
+    /**
+     * Sink for metadata keys the SDK could not encode. `GuardRuleSubmission` has
+     * no `local_warnings` field of its own, so per-rule client-side diagnostics
+     * ride on the request envelope.
+     */
+    warningsOut?: LocalWarning[];
+  },
 ): Promise<GuardRuleSubmission> {
   const mode = rule.config.mode === "DRY_RUN" ? GuardRuleMode.DRY_RUN : GuardRuleMode.LIVE;
 
   const guardRule = await ruleBodyToProto(rule, signal);
 
+  const { metadataJson, localWarnings } = encodeMetadata(
+    ruleMetadata(rule),
+    `rules[${options?.ruleIndex ?? 0}].`,
+  );
+  options?.warningsOut?.push(...localWarnings);
+
   const submission: Parameters<typeof create<typeof GuardRuleSubmissionSchema>>[1] = {
     configId: rule[symbolArcjetInternal].configId,
     inputId: rule[symbolArcjetInternal].inputId,
-    metadata: ruleMetadataToProto(rule),
+    metadataJson,
     rule: guardRule,
     mode,
   };
@@ -427,12 +444,14 @@ export async function ruleToProto(
 
 /**
  * Merge config-level and input-level metadata for a rule submission.
- * Input-level values take priority on key conflict. Every rule's `input`
- * is an object carrying optional per-request `metadata`.
+ *
+ * The merge is shallow and top-level only: an input key replaces the config
+ * key's whole value, never deep-merging it. Every rule's `input` is an object
+ * carrying optional per-request `metadata`.
  *
  * @internal
  */
-function ruleMetadataToProto(rule: RuleWithInput): Record<string, string> {
+function ruleMetadata(rule: RuleWithInput): ArcjetMetadata {
   return {
     ...rule.config.metadata,
     ...rule.input.metadata,
@@ -698,10 +717,13 @@ export function decisionMembers(
 export function decisionFromProto(
   response: ProtoGuardResponse,
   _rules: readonly RuleWithInput[],
+  localWarnings: readonly Warning[] = [],
 ): Decision {
   // Top-level diagnostics are decision-level warnings; present whether or not a
-  // decision came back.
-  const warnings = warningsFromProto(response.errors);
+  // decision came back. The server persists `local_warnings` but never echoes
+  // them, so the SDK appends its own drops here — a dropped metadata key is
+  // never silent.
+  const warnings = [...warningsFromProto(response.errors), ...localWarnings];
   const proto = response.decision;
   if (!proto) {
     // No usable decision — synthesize a fail-open ALLOW carrying an error

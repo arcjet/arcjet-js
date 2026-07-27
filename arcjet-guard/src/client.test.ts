@@ -21,6 +21,8 @@ import { launchArcjetWithTransport } from "./index.ts";
 import type { ArcjetGuard } from "./index.ts";
 import {
   DecideService,
+  type GuardRequest,
+  type GuardResponse,
   GuardResponseSchema,
   GuardDecisionSchema,
   GuardRuleResultSchema,
@@ -55,6 +57,36 @@ function mockTransport(
     service(DecideService, {
       guard: handler,
     });
+  });
+}
+
+/** Build a minimal ALLOW token-bucket response for the request's first rule. */
+function tokenBucketAllowResponse(req: GuardRequest): GuardResponse {
+  const sub = req.ruleSubmissions[0];
+  return create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      id: "gdec_meta",
+      conclusion: GuardConclusion.ALLOW,
+      ruleResults: [
+        create(GuardRuleResultSchema, {
+          resultId: "gres_1",
+          configId: sub.configId,
+          inputId: sub.inputId,
+          type: GuardRuleType.TOKEN_BUCKET,
+          result: {
+            case: "tokenBucket",
+            value: create(ResultTokenBucketSchema, {
+              conclusion: GuardConclusion.ALLOW,
+              remainingTokens: 99,
+              maxTokens: 100,
+              resetAtUnixSeconds: 60,
+              refillRate: 10,
+              refillIntervalSeconds: 60,
+            }),
+          },
+        }),
+      ],
+    }),
   });
 }
 
@@ -1047,7 +1079,7 @@ describe("In-memory server: request metadata", () => {
 
     const arcjet = guardWithMock((req) => {
       receivedLabel = req.label;
-      receivedMetadata = { ...req.metadata };
+      receivedMetadata = { ...req.metadataJson };
       receivedCorrelationId = req.correlationId;
 
       const sub = req.ruleSubmissions[0];
@@ -1086,8 +1118,151 @@ describe("In-memory server: request metadata", () => {
     });
 
     assert.equal(receivedLabel, "tools.weather");
-    assert.deepEqual(receivedMetadata, { region: "us-east-1", user_id: "u_abc" });
+    assert.deepEqual(receivedMetadata, { region: '"us-east-1"', user_id: '"u_abc"' });
     assert.equal(receivedCorrelationId, "wf_abcdef");
+  });
+
+  test("nested metadata is JSON-encoded per top-level key", async () => {
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+      metadata: { ruleScope: { kind: "per-user" } },
+    });
+    const input = rule({ key: "user_1" });
+
+    let request: GuardRequest | undefined;
+    const arcjet = guardWithMock((req) => {
+      request = req;
+      return tokenBucketAllowResponse(req);
+    });
+
+    const decision = await arcjet.guard({
+      label: "tools.weather",
+      rules: [input],
+      metadata: { user: { id: "u_1", roles: ["admin"] }, durationMs: 160 },
+    });
+
+    assert.ok(request);
+    assert.deepEqual({ ...request.metadataJson }, {
+      user: '{"id":"u_1","roles":["admin"]}',
+      durationMs: "160",
+    });
+    assert.deepEqual({ ...request.ruleSubmissions[0].metadataJson }, {
+      ruleScope: '{"kind":"per-user"}',
+    });
+    // The legacy plain-string map is not dual-written: the server prefers
+    // `metadata_json` and only falls back to `metadata` for older SDKs.
+    // oxlint-disable-next-line typescript/no-deprecated -- asserting the deprecated field stays empty
+    assert.deepEqual({ ...request.metadata }, {});
+    assert.deepEqual(request.localWarnings, []);
+    assert.deepEqual(decision.warnings, []);
+  });
+
+  test("metadata the SDK cannot encode is dropped, reported, and surfaced", async () => {
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+      metadata: { ruleBad: undefined },
+    });
+    const input = rule({ key: "user_1" });
+
+    let request: GuardRequest | undefined;
+    const arcjet = guardWithMock((req) => {
+      request = req;
+      return tokenBucketAllowResponse(req);
+    });
+
+    const decision = await arcjet.guard({
+      label: "tools.weather",
+      rules: [input],
+      metadata: { ok: "yes", bad: () => "nope" },
+    });
+
+    // Fails open: a bad key costs you that key, not the call.
+    assert.equal(decision.conclusion, "ALLOW");
+    assert.ok(request);
+    assert.deepEqual({ ...request.metadataJson }, { ok: '"yes"' });
+    assert.deepEqual({ ...request.ruleSubmissions[0].metadataJson }, {});
+
+    // Reported to the server as untrusted, SDK-sourced warnings: one per encode
+    // call, so one for the rule (prefixed with its index, and ordered by rule
+    // rather than by whichever conversion finished first) and one for the
+    // request envelope.
+    const codes = request.localWarnings.map((warning) => warning.code);
+    assert.deepEqual(codes, ["AJ1017", "AJ1017"]);
+    assert.match(request.localWarnings[0].message, /^rules\[0\]\.metadata: /);
+    assert.match(request.localWarnings[1].message, /"bad"/);
+
+    // The server never echoes local_warnings back, so the SDK surfaces them on
+    // the decision itself — a dropped key is never silent.
+    assert.deepEqual(
+      decision.warnings.map((warning) => warning.code),
+      ["AJ1017", "AJ1017"],
+    );
+  });
+
+  test("per-rule metadata warnings are ordered by rule, not by completion", async () => {
+    // Rule conversion runs concurrently; the warning order must still follow the
+    // submission order so it is reproducible.
+    const rules = [0, 1, 2].map((index) =>
+      tokenBucket({
+        bucket: `test-${index}`,
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+        metadata: { [`bad${index}`]: undefined },
+      }),
+    );
+    const inputs = rules.map((rule, index) => rule({ key: `user_${index}` }));
+
+    let request: GuardRequest | undefined;
+    const arcjet = guardWithMock((req) => {
+      request = req;
+      return tokenBucketAllowResponse(req);
+    });
+
+    await arcjet.guard({ label: "tools.weather", rules: inputs });
+
+    assert.ok(request);
+    assert.deepEqual(
+      request.localWarnings.map((warning) => warning.message),
+      [
+        'rules[0].metadata: 1 key(s) could not be JSON-encoded and were dropped: "bad0"',
+        'rules[1].metadata: 1 key(s) could not be JSON-encoded and were dropped: "bad1"',
+        'rules[2].metadata: 1 key(s) could not be JSON-encoded and were dropped: "bad2"',
+      ],
+    );
+  });
+
+  test("metadata drops are surfaced even when the call fails", async () => {
+    const rule = tokenBucket({
+      bucket: "test",
+      refillRate: 10,
+      intervalSeconds: 60,
+      maxTokens: 100,
+    });
+    const input = rule({ key: "user_1" });
+
+    const arcjet = guardWithMock(() => {
+      throw new Error("boom");
+    });
+
+    const decision = await arcjet.guard({
+      label: "tools.weather",
+      rules: [input],
+      metadata: { bad: undefined },
+    });
+
+    assert.equal(decision.conclusion, "ALLOW");
+    assert.equal(decision.errorResults().length, 1);
+    assert.deepEqual(
+      decision.warnings.map((warning) => warning.code),
+      ["AJ1017"],
+    );
   });
 
   test("user-agent is sent in the request body", async () => {

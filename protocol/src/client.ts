@@ -11,15 +11,59 @@ import {
   type ArcjetContext,
   type ArcjetRequestDetails,
   type ArcjetRule,
+  type ArcjetLogger,
   type ArcjetStack,
   ArcjetDecision,
 } from "./index.js";
+import { type LocalWarning, encodeMetadata, enforceMetadataBudget } from "./metadata.js";
 import {
   type Rule,
   DecideService,
   DecideRequestSchema,
   ReportRequestSchema,
+  WarningSchema,
 } from "./proto/decide/v1alpha1/decide_pb.js";
+
+/**
+ * Build the metadata and warning fields shared by the Decide and Report
+ * requests, so a decision and its report describe the same metadata.
+ *
+ * The server enforces the count, size, depth, and key-name limits on what
+ * survives. Neither the metadata nor the warnings can affect the decision.
+ */
+function requestFields(
+  details: ArcjetRequestDetails,
+  log: ArcjetLogger,
+): {
+  metadataJson: Record<string, string>;
+  localWarnings: ReturnType<typeof create<typeof WarningSchema>>[];
+} {
+  const encoded = encodeMetadata(details.metadata);
+
+  // `local_warnings` is a general channel for anything the SDK had to drop
+  // before sending, not a metadata-specific one. Metadata is the only source
+  // today; future sources append to this list.
+  const warnings: LocalWarning[] = [...encoded.localWarnings];
+
+  // Trim to the SDK ceiling so an oversized blob cannot push the request past the
+  // 1 MiB protocol limit and get it rejected — a rejected request is a fail open.
+  warnings.push(...enforceMetadataBudget([encoded.metadataJson]));
+
+  for (const warning of warnings) {
+    // `protect()` has no warning channel on its decision, so surface these
+    // locally too. The message names only the offending keys, escaped and
+    // length-bounded by `encodeMetadata`, so a key containing control
+    // characters cannot forge a log entry.
+    log.warn("%s", warning.message);
+  }
+
+  return {
+    metadataJson: encoded.metadataJson,
+    localWarnings: warnings.map(function (warning) {
+      return create(WarningSchema, warning);
+    }),
+  };
+}
 
 // TODO: Dedupe with `errorMessage` in core
 function errorMessage(err: unknown): string {
@@ -135,6 +179,7 @@ export function createClient(options: ClientOptions): Client {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
+        ...requestFields(details, log),
         // `email` is an optional field but not allowed to be `undefined`.
         details:
           typeof details.email === "string"
@@ -195,6 +240,7 @@ export function createClient(options: ClientOptions): Client {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
+        ...requestFields(details, log),
         // `email` is an optional field but not allowed to be `undefined`.
         details:
           typeof details.email === "string"

@@ -8,6 +8,7 @@ import { createTransport } from "@arcjet/transport";
 import arcjetCore, {
   type ArcjetAdapterContext,
   type ArcjetDecision,
+  type ArcjetMetadata,
   type ArcjetLogger,
   type ArcjetOptions as CoreOptions,
   type ArcjetRequest,
@@ -28,21 +29,15 @@ export type { ProxyService } from "@arcjet/ip";
 
 let warnedForAutomaticBodyRead = false;
 
-declare const emptyObjectSymbol: unique symbol;
-
 /**
  * Dynamically generate whether zero or one `properties` object must or can be passed.
  */
 type MaybeProperties<T> =
   // If all properties of `T` are optional:
   { [P in keyof T]?: T[P] } extends T
-    ? // If `T` has no properties at all:
-      T extends { [emptyObjectSymbol]?: never }
-      ? // Then it is assumed that nothing can be passed.
-        []
-      : // Then it is assumed that the object can be omitted.
-        [properties?: T]
-    : // Then it is assumed the object must be passed.
+    ? // Then the object can be omitted.
+      [properties?: T]
+    : // Otherwise the object must be passed.
       [properties: T];
 
 /**
@@ -109,14 +104,15 @@ export interface ArcjetReactRouter<Properties extends Record<PropertyKey, unknow
    *   Details about the {@linkcode ArcjetReactRouterRequest} that Arcjet needs to make a
    *   decision.
    * @param rest
-   *   Additional properties required for running rules against a request.
+   *   Additional properties required for running rules against a request,
+   *   plus request-independent options such as `metadata`.
    * @returns
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
    *   Arcjet’s decision about the request.
    */
   protect(
     details: ArcjetReactRouterRequest,
-    ...rest: MaybeProperties<Properties & { correlationId?: string }>
+    ...rest: MaybeProperties<Properties & { correlationId?: string; metadata?: ArcjetMetadata }>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -223,9 +219,10 @@ export default function arcjet<
         const context: ArcjetAdapterContext = {
           getBody: createGetBody(state, details),
         };
-        // `correlationId` is a request-independent option, not a rule prop, so
-        // pull it out before building the request from the rule properties.
-        const { correlationId, ...ruleProps } = properties ?? {};
+        // `correlationId` and `metadata` are request-independent options, not rule
+        // props, so pull them out before building the request from the rule
+        // properties.
+        const { correlationId, metadata, ...ruleProps } = properties ?? {};
         const request = toArcjetRequest(
           state,
           details,
@@ -233,7 +230,7 @@ export default function arcjet<
           ruleProps as Properties,
         );
 
-        return baseClient.protect(context, { ...request, correlationId });
+        return baseClient.protect(context, { ...request, correlationId, metadata });
       },
       withRule(rule) {
         return withClient(baseClient.withRule(rule));

@@ -329,6 +329,64 @@ const decision = await arcjet.guard({
 });
 ```
 
+## Metadata
+
+`guard()` and every rule accept `metadata`: an object of string keys mapped to
+**any JSON-serializable value**, including nested objects and arrays. It is
+attached to the decision for correlation and analytics.
+
+```ts
+const decision = await arcjet.guard({
+  label: "tools.weather",
+  rules: [limitRule({ key: userId })],
+  metadata: {
+    user: { id: userId, plan: "pro" },
+    toolName: "get_weather",
+    durationMs: 160,
+    success: true,
+  },
+});
+```
+
+Each top-level value is JSON-encoded by the SDK and stored verbatim.
+Server-enforced limits:
+
+| Limit                    | Value                            | Over the limit     |
+| ------------------------ | -------------------------------- | ------------------ |
+| Top-level keys           | 128                              | Extra keys dropped |
+| Serialized bytes / value | 4 KiB                            | That key dropped   |
+| Nesting depth / value    | 10                               | That key dropped   |
+| Key names                | letters, digits, `-`, `.`, `_`   | That key dropped   |
+
+Nothing here can fail a call or change a decision — metadata is excluded from
+fingerprinting. Every dropped key is reported on `decision.warnings`: the server
+warns once per key it drops, and the SDK adds a single warning naming every key
+it could not encode (`undefined`, a function, a `BigInt`, a circular reference). A
+`metadata` that is not a plain object is ignored entirely.
+
+Metadata is untrusted and is not redacted — do not put secrets or PII in it.
+
+Two JavaScript-specific notes:
+
+- Numbers are IEEE-754 doubles, so an integer above `Number.MAX_SAFE_INTEGER`
+  loses precision before it reaches the wire. Pass such values as strings.
+- `BigInt` cannot be JSON-encoded, so it is dropped with a warning. Convert it
+  yourself.
+
+Rule-level metadata is merged with `guard()`-level metadata shallowly: a
+duplicate key's whole value is replaced, never deep-merged.
+
+Some limits are the SDK's own, not the server's. The SDK drops keys once one
+request's metadata exceeds 768 KiB in total (keys plus JSON-encoded values,
+counted before compression). That ceiling sits well above anything the server
+would accept — its own caps allow roughly 512 KiB in a single map — and exists
+only so oversized metadata cannot push a request past the 1 MiB protocol limit,
+where it would be rejected outright and fail open.
+
+Objects with a `toJSON()` method, including `Date`, are serialized by their
+`toJSON()` result. The Python SDK has no equivalent protocol and drops such values
+with a warning, so convert explicitly if both SDKs must agree on a value.
+
 ## Decision inspection
 
 Every `.guard()` call returns a `Decision` object. You can inspect it at

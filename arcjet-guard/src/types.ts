@@ -14,6 +14,10 @@ import type {
   SensitiveInfoResult,
 } from "@arcjet/analyze";
 
+import type { ArcjetMetadata } from "./metadata.ts";
+
+export type { ArcjetMetadata } from "./metadata.ts";
+
 /** The outcome of a guard decision — only `"ALLOW"` or `"DENY"`. */
 export type Conclusion = "ALLOW" | "DENY";
 
@@ -489,11 +493,12 @@ export interface TokenBucketConfig {
    * Can also be passed at call time via {@link TokenBucketInput.metadata}.
    * If both are provided, input-level values take priority on key conflict.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -505,7 +510,7 @@ export interface TokenBucketConfig {
    * })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
   /**
    * Number of tokens added to the bucket each interval.
    *
@@ -582,11 +587,12 @@ export interface TokenBucketInput {
    * on key conflict). This is sent per-rule, separate from
    * {@link GuardOptions.metadata} which is sent at the request level.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -594,7 +600,7 @@ export interface TokenBucketInput {
    * limit({ key: userId, requested: tokenCount, metadata: { model: "gpt-4o" } })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }
 
 /** Fixed window rate limiting config. */
@@ -625,11 +631,12 @@ export interface FixedWindowConfig {
    * Can also be passed at call time via {@link FixedWindowInput.metadata}.
    * If both are provided, input-level values take priority on key conflict.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -640,7 +647,7 @@ export interface FixedWindowConfig {
    * })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
   /**
    * Maximum number of requests allowed per window.
    *
@@ -706,11 +713,12 @@ export interface FixedWindowInput {
    * on key conflict). This is sent per-rule, separate from
    * {@link GuardOptions.metadata} which is sent at the request level.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -718,7 +726,7 @@ export interface FixedWindowInput {
    * limit({ key: apiKey, metadata: { client_ip: ip } })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }
 
 /** Sliding window rate limiting config. */
@@ -749,11 +757,12 @@ export interface SlidingWindowConfig {
    * Can also be passed at call time via {@link SlidingWindowInput.metadata}.
    * If both are provided, input-level values take priority on key conflict.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -764,7 +773,7 @@ export interface SlidingWindowConfig {
    * })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
   /**
    * Maximum number of requests allowed per sliding interval.
    *
@@ -830,11 +839,12 @@ export interface SlidingWindowInput {
    * on key conflict). This is sent per-rule, separate from
    * {@link GuardOptions.metadata} which is sent at the request level.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -842,7 +852,7 @@ export interface SlidingWindowInput {
    * limit({ key: userId, metadata: { path: "/api/list" } })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }
 
 /** Prompt injection detection config. */
@@ -867,11 +877,12 @@ export interface DetectPromptInjectionConfig {
   /**
    * Key-value metadata attached to this rule for analytics.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -880,7 +891,7 @@ export interface DetectPromptInjectionConfig {
    * })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }
 
 /**
@@ -908,13 +919,14 @@ export interface ExperimentalModerateContentConfig {
   /**
    * Key-value metadata attached to this rule for analytics.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }
 
 /**
@@ -942,7 +954,7 @@ export interface DetectPromptInjectionInput {
    * pi({ inputText: userPrompt, metadata: { source: "tool_result" } })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }
 
 /**
@@ -970,7 +982,7 @@ export interface ExperimentalModerateContentInput {
    * moderate({ inputText: userMessage, metadata: { expectedResponse: "pass" } })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }
 
 /**
@@ -998,7 +1010,7 @@ export interface LocalDetectSensitiveInfoInput {
    * si({ inputText: text, metadata: { destination: "openai" } })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }
 
 /**
@@ -1034,11 +1046,12 @@ export interface LocalDetectSensitiveInfoConfigAllow {
   /**
    * Key-value metadata attached to this rule for analytics.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -1048,7 +1061,7 @@ export interface LocalDetectSensitiveInfoConfigAllow {
    * })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
   /**
    * Entity types to allow through even when detected (allowlist).
    * When set, everything **except** these types triggers a denial.
@@ -1105,11 +1118,12 @@ export interface LocalDetectSensitiveInfoConfigDeny {
   /**
    * Key-value metadata attached to this rule for analytics.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -1119,7 +1133,7 @@ export interface LocalDetectSensitiveInfoConfigDeny {
    * })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
   allow?: never;
   /**
    * Entity types to explicitly deny when detected (denylist).
@@ -1168,7 +1182,7 @@ export type LocalDetectSensitiveInfoConfig =
   | {
       mode?: Mode;
       label?: string;
-      metadata?: Record<string, string>;
+      metadata?: ArcjetMetadata;
       allow?: never;
       deny?: never;
       /**
@@ -1233,11 +1247,12 @@ export interface LocalCustomConfig {
    * Can also be passed at call time via {@link LocalCustomInput.metadata}.
    * If both are provided, input-level values take priority on key conflict.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -1246,7 +1261,7 @@ export interface LocalCustomConfig {
    * })({ data: { ... }, metadata: { ruleVersion: "2", team: "trust-safety" } })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
   /** Static key-value data passed to the server alongside the rule. */
   data?: Record<string, string>;
   /** Optional local evaluation function. When provided, the SDK runs it locally and sends the result to the server. */
@@ -1262,11 +1277,12 @@ export interface LocalCustomInput {
    * on key conflict). This is sent per-rule, separate from
    * {@link GuardOptions.metadata} which is sent at the request level.
    *
-   * Constraints:
-   * - Max 20 key-value pairs per rule submission (combined config + input).
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits, per rule submission (combined config +
+   * input): 128 top-level keys, 4 KiB per serialized value, 10 levels of
+   * nesting, and keys of 1–64 bytes of ASCII letters/digits/dash/dot/underscore
+   * starting with a letter or digit. Anything over a limit drops that one key
+   * and reports it on `decision.warnings`.
    *
    * @example
    * ```ts
@@ -1274,7 +1290,7 @@ export interface LocalCustomInput {
    * rule({ data: { userInput: text }, metadata: { traceId: traceId } })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }
 
 /** A configured token bucket rule. */
@@ -1675,11 +1691,12 @@ export interface GuardOptions {
    * separate field from per-rule metadata — there is no merging or
    * conflict between the two.
    *
-   * Constraints:
-   * - Max 20 key-value pairs.
-   * - Keys: 1–64 bytes, ASCII letters/digits/dash/dot/underscore,
-   *   must start with a letter or digit.
-   * - Values: max 512 bytes.
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. Server-enforced limits: 128 top-level keys, 4 KiB per serialized
+   * value, 10 levels of nesting, and keys of 1–64 bytes of ASCII
+   * letters/digits/dash/dot/underscore starting with a letter or digit.
+   * Anything over a limit drops that one key and reports it on
+   * `decision.warnings`.
    *
    * @example
    * ```ts
@@ -1690,7 +1707,7 @@ export interface GuardOptions {
    * })
    * ```
    */
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
   /**
    * Optional, caller-supplied opaque identifier used to correlate this guard
    * call with other `guard()` and `protect()` calls that belong to the same

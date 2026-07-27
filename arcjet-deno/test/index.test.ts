@@ -292,6 +292,7 @@ test("`arcjetDeno`", async function (t) {
         correlationId: undefined,
         email: undefined,
         extra: {},
+        metadata: undefined,
         headers: {
           "accept-encoding": "gzip,br",
           "accept-language": "*",

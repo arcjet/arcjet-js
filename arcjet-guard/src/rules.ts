@@ -11,6 +11,7 @@
 import { nativeEntityTypes } from "./convert.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
+  ArcjetMetadata,
   Decision,
   InternalDecision,
   InternalResult,
@@ -687,7 +688,7 @@ export function defineCustomRule<
   data: TConfig;
   mode?: "LIVE" | "DRY_RUN";
   label?: string;
-  metadata?: Record<string, string>;
+  metadata?: ArcjetMetadata;
 }) => RuleWithConfigCustom<TData, TInput> {
   return (config) => {
     const { data, mode, label, metadata } = config;
@@ -703,7 +704,7 @@ export function defineCustomRule<
     } satisfies LocalCustomConfig;
 
     const rule = Object.assign(
-      (input: { data: TInput; metadata?: Record<string, string> }): RuleWithInputCustom<TData> => {
+      (input: { data: TInput; metadata?: ArcjetMetadata }): RuleWithInputCustom<TData> => {
         const { data: inputData, metadata: inputMetadata } = input;
         const inputId = randomId();
         const inputObj: LocalCustomInput = {

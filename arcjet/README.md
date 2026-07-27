@@ -333,6 +333,52 @@ const decision = await aj.protect(context, {
 });
 ```
 
+## Metadata
+
+`protect()` accepts `metadata`: an object of string keys mapped to **any
+JSON-serializable value**, including nested objects and arrays. It is attached to
+the decision for correlation and analytics.
+
+```ts
+const decision = await aj.protect(request, {
+  metadata: {
+    requestId,
+    user: { id: userId, plan: "pro" },
+    flags: { beta: true },
+  },
+});
+```
+
+Each top-level value is JSON-encoded by the SDK and stored verbatim.
+Server-enforced limits: 128 top-level keys, 4 KiB per serialized value, 10 levels
+of nesting, and key names limited to letters, digits, `-`, `.`, and `_`. Anything
+over a limit drops that one key.
+
+Nothing here can fail a call or change a decision — metadata is excluded from
+fingerprinting and from the decision cache key. Values the SDK cannot encode
+(`undefined`, a function, a `BigInt`, a circular reference) are dropped and
+reported to Arcjet rather than throwing, as a single warning naming every key it
+had to drop. A `metadata` that is not a plain object is ignored entirely.
+
+Metadata is untrusted and is not redacted — do not put secrets or PII in it.
+Prefer it over `extra`, which stays a flat string map of SDK-derived request
+context.
+
+Note that JavaScript numbers are IEEE-754 doubles, so an integer above
+`Number.MAX_SAFE_INTEGER` loses precision before it reaches the wire; pass such
+values as strings.
+
+Some limits are the SDK's own, not the server's. The SDK drops keys once one
+request's metadata exceeds 768 KiB in total (keys plus JSON-encoded values,
+counted before compression). That ceiling sits well above anything the server
+would accept — its own caps allow roughly 512 KiB in a single map — and exists
+only so oversized metadata cannot push a request past the 1 MiB protocol limit,
+where it would be rejected outright and fail open.
+
+Objects with a `toJSON()` method, including `Date`, are serialized by their
+`toJSON()` result. The Python SDK has no equivalent protocol and drops such values
+with a warning, so convert explicitly if both SDKs must agree on a value.
+
 ## Inspecting decisions
 
 The `decision` object returned by `aj.protect()` provides information about

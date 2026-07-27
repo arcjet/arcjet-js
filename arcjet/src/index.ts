@@ -20,6 +20,7 @@ import type {
   ArcjetFilterRule,
   ArcjetPromptInjectionDetectionRule,
   ArcjetRule,
+  ArcjetMetadata,
   ArcjetMode,
   ArcjetRequestDetails,
   ArcjetTokenBucketRateLimitRule,
@@ -142,6 +143,7 @@ const knownFields = [
   "cookies",
   "query",
   "correlationId",
+  "metadata",
 ];
 
 /**
@@ -322,11 +324,12 @@ function toAnalyzeRequest(request: ArcjetRequestDetails): AnalyzeRequest {
     }
   }
 
-  // The correlation ID is deliberately excluded from the analyze request so it
-  // never feeds the fingerprint (and therefore the decision cache key). Two
-  // requests that differ only by correlation ID must share state.
-  const { correlationId, ...rest } = request;
+  // Correlation ID and metadata are deliberately excluded from the analyze
+  // request so they never feed the fingerprint (and therefore the decision cache
+  // key). Two requests that differ only by either must share state.
+  const { correlationId, metadata, ...rest } = request;
   void correlationId;
+  void metadata;
 
   return {
     ...rest,
@@ -527,8 +530,14 @@ function validateDetails(value: unknown): asserts value is ArcjetRequestDetails 
       ...knownFields.map(function (key) {
         return {
           key,
-          required: key !== "body" && key !== "email" && key !== "correlationId",
-          validate: key === "headers" ? validateHeaders : validateString,
+          required:
+            key !== "body" && key !== "email" && key !== "correlationId" && key !== "metadata",
+          validate:
+            key === "headers"
+              ? validateHeaders
+              : key === "metadata"
+                ? validateMetadata
+                : validateString,
         };
       }),
       {
@@ -648,6 +657,54 @@ function validateStringRecord(
 
   for (const [field, subvalue] of Object.entries(value)) {
     validateString(path + "." + field, subvalue);
+  }
+}
+
+/**
+ * Validate nested-JSON metadata: a plain object.
+ *
+ * Values are deliberately not validated here. `metadata` accepts arbitrary
+ * JSON-serializable values, and a value that cannot be encoded is dropped with a
+ * warning at send time rather than throwing — metadata must never fail a call.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not a plain object.
+ */
+function validateMetadata(path: string, value: unknown): asserts value is ArcjetMetadata {
+  if (!isMetadata(value)) {
+    throw new Error(`invalid value for \`${path}\` - expected plain object`);
+  }
+}
+
+/**
+ * Check whether a value can be used as nested-JSON metadata.
+ *
+ * Requires a genuine plain object. Arrays would encode as numeric string keys,
+ * and exotic objects (`Map`, `Date`, class instances) have no own enumerable
+ * entries, so accepting them would silently send nothing.
+ *
+ * @param value
+ *   Value to check.
+ * @returns
+ *   Whether the value is a plain object.
+ */
+function isMetadata(value: unknown): value is ArcjetMetadata {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  try {
+    // A proxy can install a throwing `getPrototypeOf` trap. Metadata must never
+    // fail a call, so treat that as "not metadata".
+    const prototype: unknown = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  } catch {
+    return false;
   }
 }
 
@@ -3656,6 +3713,7 @@ export default function arcjet<
       extra: extraProps(request),
       email: typeof request.email === "string" ? request.email : undefined,
       correlationId: typeof request.correlationId === "string" ? request.correlationId : undefined,
+      metadata: isMetadata(request.metadata) ? request.metadata : undefined,
     });
 
     // Copy of the request details for remote use, which redacts sensitive fields.

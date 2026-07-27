@@ -532,11 +532,22 @@ export declare type GuardRuleSubmission = Message<"proto.decide.v2.GuardRuleSubm
   label?: string;
 
   /**
-   * Arbitrary key-value metadata attached to this rule submission.
+   * Legacy (migration): superseded by `metadata_json` (field 12), which carries
+   * typed, nested values. New SDKs send `metadata_json`; the server prefers it
+   * and falls back to this plain-string map. Retained for older SDKs.
    *
-   * @generated from field: map<string, string> metadata = 11;
+   * @generated from field: map<string, string> metadata = 11 [deprecated = true];
+   * @deprecated
    */
   metadata: { [key: string]: string };
+
+  /**
+   * Nested-JSON metadata: key -> JSON-encoded value (typed counterpart to the
+   * legacy `metadata` map).
+   *
+   * @generated from field: map<string, string> metadata_json = 12;
+   */
+  metadataJson: { [key: string]: string };
 
   /**
    * The rule to evaluate.
@@ -885,6 +896,35 @@ export declare type ResultError = Message<"proto.decide.v2.ResultError"> & {
 export declare const ResultErrorSchema: GenMessage<ResultError>;
 
 /**
+ * Warning is a non-fatal validation warning. Same shape as ResultError; used
+ * for client-reported local_warnings (e.g. metadata keys the SDK dropped before
+ * sending).
+ *
+ * @generated from message proto.decide.v2.Warning
+ */
+export declare type Warning = Message<"proto.decide.v2.Warning"> & {
+  /**
+   * Machine-readable code ("AJ" + 4 digits), same registry as ResultError.code.
+   *
+   * @generated from field: string code = 1;
+   */
+  code: string;
+
+  /**
+   * Human-readable message.
+   *
+   * @generated from field: string message = 2;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message proto.decide.v2.Warning.
+ * Use `create(WarningSchema)` to create a new message.
+ */
+export declare const WarningSchema: GenMessage<Warning>;
+
+/**
  * GuardRuleResult contains the result of evaluating a single guard rule.
  *
  * Identity fields (1–9)
@@ -1105,10 +1145,13 @@ export declare type GuardRequest = Message<"proto.decide.v2.GuardRequest"> & {
   label: string;
 
   /**
-   * Arbitrary key-value metadata for customer correlation and analytics.
-   * Passed through to the decision and available in logs/events.
+   * Legacy (migration): superseded by `metadata_json` (field 14), which carries
+   * typed, nested values (key -> JSON-encoded value). New SDKs send
+   * `metadata_json`; the server prefers it and falls back to this plain-string
+   * map. Retained for older SDKs until they all emit `metadata_json`.
    *
-   * @generated from field: map<string, string> metadata = 11;
+   * @generated from field: map<string, string> metadata = 11 [deprecated = true];
+   * @deprecated
    */
   metadata: { [key: string]: string };
 
@@ -1131,6 +1174,24 @@ export declare type GuardRequest = Message<"proto.decide.v2.GuardRequest"> & {
    * @generated from field: string correlation_id = 13;
    */
   correlationId: string;
+
+  /**
+   * Nested-JSON metadata: key -> JSON-encoded value (the typed counterpart to
+   * the legacy `metadata` map of plain strings). Validated per-key by the
+   * server (count/size/depth) and stored verbatim.
+   *
+   * @generated from field: map<string, string> metadata_json = 14;
+   */
+  metadataJson: { [key: string]: string };
+
+  /**
+   * Client-side validation warnings the SDK reports to the server (e.g.
+   * metadata keys it dropped before sending). Untrusted; the server bounds
+   * count/length and persists them alongside its own warnings.
+   *
+   * @generated from field: repeated proto.decide.v2.Warning local_warnings = 15;
+   */
+  localWarnings: Warning[];
 };
 
 /**
@@ -1217,12 +1278,31 @@ export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
   action: string;
 
   /**
-   * Arbitrary key-value metadata. Customer-supplied and untrusted, same
-   * size caps as GuardRequest.metadata.
+   * Legacy (migration): superseded by `metadata_json` (field 22), which carries
+   * typed, nested values. New SDKs send `metadata_json`; the server prefers it
+   * and falls back to this plain-string map. Customer-supplied and untrusted.
    *
-   * @generated from field: map<string, string> metadata = 21;
+   * @generated from field: map<string, string> metadata = 21 [deprecated = true];
+   * @deprecated
    */
   metadata: { [key: string]: string };
+
+  /**
+   * Nested-JSON metadata: key -> JSON-encoded value (typed counterpart to the
+   * legacy `metadata` map).
+   *
+   * @generated from field: map<string, string> metadata_json = 22;
+   */
+  metadataJson: { [key: string]: string };
+
+  /**
+   * Client-side validation warnings for this event's metadata (e.g. keys the
+   * SDK dropped before sending). Per-event so batched events keep their own.
+   * Untrusted; the server bounds count/length and persists them.
+   *
+   * @generated from field: repeated proto.decide.v2.Warning local_warnings = 23;
+   */
+  localWarnings: Warning[];
 };
 
 /**

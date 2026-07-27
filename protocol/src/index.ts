@@ -1,8 +1,13 @@
 import type { Cache } from "@arcjet/cache";
 import { isMessage } from "@bufbuild/protobuf";
 
+import type { ArcjetMetadata } from "./metadata.js";
 import { ReasonSchema } from "./proto/decide/v1alpha1/decide_pb.js";
 import { typeid } from "./typeid.js";
+
+// Re-export the nested-JSON metadata type so adapters can annotate the
+// `metadata` request property without depending on the module path.
+export type { ArcjetMetadata } from "./metadata.js";
 
 // Re-export the Well Known Bots from the generated file
 export type * from "./well-known-bots.js";
@@ -1504,6 +1509,17 @@ export interface ArcjetRequestDetails {
    * decision so a chain of actions can be reconstructed.
    */
   correlationId?: string | undefined;
+
+  /**
+   * Structured metadata for correlation and analytics: string keys mapped to
+   * any JSON-serializable value, including nested objects and arrays.
+   *
+   * Each top-level value is JSON-encoded by the SDK and stored verbatim. It
+   * does not affect the decision and is excluded from the fingerprint (and
+   * therefore the decision cache key). Untrusted and never redacted — do not
+   * put secrets or PII in it.
+   */
+  metadata?: ArcjetMetadata | undefined;
 }
 
 /**

@@ -8,6 +8,7 @@ import { createTransport } from "@arcjet/transport";
 import arcjetCore, {
   type ArcjetAdapterContext,
   type ArcjetDecision,
+  type ArcjetMetadata,
   type ArcjetLogger,
   type ArcjetOptions as CoreOptions,
   type ArcjetRule,
@@ -30,21 +31,15 @@ export type { ProxyService } from "@arcjet/ip";
 
 let warnedForAutomaticBodyRead = false;
 
-declare const emptyObjectSymbol: unique symbol;
-
 /**
  * Dynamically generate whether zero or one `properties` object must or can be passed.
  */
 type MaybeProperties<T> =
   // If all properties of `T` are optional:
   { [P in keyof T]?: T[P] } extends T
-    ? // If `T` has no properties at all:
-      T extends { [emptyObjectSymbol]?: never }
-      ? // Then it is assumed that nothing can be passed.
-        []
-      : // Then it is assumed that the object can be omitted.
-        [properties?: T]
-    : // Then it is assumed the object must be passed.
+    ? // Then the object can be omitted.
+      [properties?: T]
+    : // Otherwise the object must be passed.
       [properties: T];
 
 /**
@@ -152,12 +147,16 @@ export interface ArcjetNuxt<Properties extends Record<PropertyKey, unknown>> {
    * @param event
    *   H3 event that Arcjet needs to make a decision.
    * @param rest
-   *   Additional properties required for running rules against an event.
+   *   Additional properties required for running rules against an event,
+   *   plus request-independent options such as `metadata`.
    * @returns
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
    *   Arcjet’s decision about the event.
    */
-  protect(event: ArcjetH3Event, ...props: MaybeProperties<Properties>): Promise<ArcjetDecision>;
+  protect(
+    event: ArcjetH3Event,
+    ...props: MaybeProperties<Properties & { metadata?: ArcjetMetadata }>
+  ): Promise<ArcjetDecision>;
 
   /**
    * Augment the client with another rule.

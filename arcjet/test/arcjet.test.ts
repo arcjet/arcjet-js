@@ -623,8 +623,9 @@ test("`arcjet`", async function (t) {
         path: "/bot-protection/quick-start",
         protocol: "http:",
         query: "",
-        // Known field: must stay top-level, not be moved onto `extra`.
+        // Known fields: must stay top-level, not be moved onto `extra`.
         correlationId: "wf_abcdef",
+        metadata: { user: { id: "u_1" } },
       });
 
       assert.deepEqual(requestAsJson(validateDetails), {
@@ -643,6 +644,7 @@ test("`arcjet`", async function (t) {
         protocol: "http:",
         query: "",
         correlationId: "wf_abcdef",
+        metadata: { user: { id: "u_1" } },
       });
       assert.equal(protectDetails, validateDetails);
     });
@@ -676,6 +678,122 @@ test("`arcjet`", async function (t) {
         "expected `client.decide` to be called with details",
       );
       assert.equal((decideDetails as { correlationId?: string }).correlationId, "wf_abcdef");
+    });
+
+    await t.test("should forward `metadata` to the client `decide` call", async function () {
+      let decideDetails: unknown;
+      const instance = arcjet({
+        client: {
+          async decide(_context, details) {
+            decideDetails = details;
+            return new ArcjetAllowDecision({
+              reason: new ArcjetReason(),
+              results: [],
+              ttl: 0,
+            });
+          },
+          report() {},
+        },
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [],
+      });
+
+      await instance.protect(createContext(), {
+        ...createRequest(),
+        metadata: { user: { id: "u_1" }, durationMs: 160 },
+      });
+
+      assert.ok(
+        decideDetails && typeof decideDetails === "object",
+        "expected `client.decide` to be called with details",
+      );
+      assert.deepEqual((decideDetails as { metadata?: unknown }).metadata, {
+        user: { id: "u_1" },
+        durationMs: 160,
+      });
+    });
+
+    await t.test("should ignore `metadata` whose prototype cannot be read", async function () {
+      let metadata: unknown = "unset";
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect(_context, details) {
+          metadata = details.metadata;
+          return new ArcjetRuleResult({
+            conclusion: "ALLOW",
+            fingerprint: "",
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          });
+        },
+        type: "",
+        validate() {},
+        version: 0,
+      };
+
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [[rule]],
+      });
+
+      await instance.protect(createContext(), {
+        ...createRequest(),
+        // A proxy with a throwing `getPrototypeOf` trap must not fail the call.
+        metadata: new Proxy(
+          {},
+          {
+            getPrototypeOf(): never {
+              throw new Error("nope");
+            },
+          },
+        ),
+      });
+
+      assert.equal(metadata, undefined);
+    });
+
+    await t.test("should ignore non-object `metadata` request fields", async function () {
+      let metadata: unknown = "unset";
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect(_context, details) {
+          metadata = details.metadata;
+          return new ArcjetRuleResult({
+            conclusion: "ALLOW",
+            fingerprint: "",
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          });
+        },
+        type: "",
+        validate() {},
+        version: 0,
+      };
+
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [[rule]],
+      });
+
+      await instance.protect(createContext(), {
+        ...createRequest(),
+        // A non-object is dropped rather than throwing: metadata must never fail
+        // a call.
+        metadata: "nope" as unknown as Record<string, unknown>,
+      });
+
+      assert.equal(metadata, undefined);
     });
 
     await t.test("should ignore non-string `email` request fields", async function () {

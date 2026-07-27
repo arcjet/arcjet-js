@@ -16,9 +16,15 @@ import {
 
 import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
 import {
+  type LocalWarning,
+  encodeMetadata,
+  enforceMetadataBudget,
+} from "./metadata.ts";
+import {
   DecideService,
   GuardRequestSchema,
   type GuardResponse,
+  WarningSchema,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
@@ -27,6 +33,7 @@ import type {
   InternalDecision,
   InternalResult,
   RuleWithInput,
+  Warning,
 } from "./types.ts";
 import { userAgent as defaultUserAgent } from "./version.ts";
 
@@ -65,17 +72,42 @@ export function createGuardClient(options: GuardClientOptions): {
 
       opts.signal?.throwIfAborted();
 
+      // Metadata keys the SDK could not encode. These are reported to the server
+      // as untrusted `local_warnings` and surfaced on `decision.warnings`. The
+      // envelope is encoded up front so its warnings survive a local rule
+      // failure; rule conversion contributes the rest below.
+      const requestMetadata = encodeMetadata(opts.metadata);
+      const warnings: LocalWarning[] = [];
+
       const startMs = performance.now();
 
       let protoRules;
       try {
-        protoRules = await Promise.all(
-          opts.rules.map((rule: RuleWithInput) => ruleToProto(rule, opts.signal)),
+        // Rules convert concurrently, so each one collects into its own array and
+        // they are flattened in rule order afterwards. Pushing into one shared
+        // array would order warnings by whichever conversion finished first.
+        const converted = await Promise.all(
+          opts.rules.map(async function (rule: RuleWithInput, ruleIndex: number) {
+            const ruleWarnings: LocalWarning[] = [];
+            const submission = await ruleToProto(rule, opts.signal, {
+              ruleIndex,
+              warningsOut: ruleWarnings,
+            });
+            return { submission, warnings: ruleWarnings };
+          }),
+        );
+        protoRules = converted.map(function (entry) {
+          return entry.submission;
+        });
+        warnings.push(
+          ...converted.flatMap(function (entry) {
+            return entry.warnings;
+          }),
         );
       } catch (cause: unknown) {
         opts.signal?.throwIfAborted();
         const message = cause instanceof Error ? cause.message : "Local rule evaluation failed";
-        return failOpen(message);
+        return failOpen(message, toWarnings(requestMetadata.localWarnings));
       }
 
       opts.signal?.throwIfAborted();
@@ -83,12 +115,27 @@ export function createGuardClient(options: GuardClientOptions): {
       const localEvalDurationMs = BigInt(Math.round(performance.now() - startMs));
       const sentAtUnixMs = BigInt(Date.now());
 
+      // Trim to the SDK ceiling across every metadata map on the request — the
+      // envelope plus one per rule — so an oversized blob cannot push the request
+      // past the 1 MiB protocol limit and get it rejected. A rejected request is
+      // a fail open, which would let metadata affect the decision.
+      warnings.push(
+        ...requestMetadata.localWarnings,
+        ...enforceMetadataBudget([
+          requestMetadata.metadataJson,
+          ...protoRules.map(function (rule) {
+            return rule.metadataJson;
+          }),
+        ]),
+      );
+
       const guardRequest = create(GuardRequestSchema, {
         userAgent,
         localEvalDurationMs,
         sentAtUnixMs,
         label: opts.label,
-        metadata: opts.metadata ?? {},
+        metadataJson: requestMetadata.metadataJson,
+        localWarnings: warnings.map((warning) => create(WarningSchema, warning)),
         ruleSubmissions: protoRules,
         correlationId: opts.correlationId ?? "",
       });
@@ -123,16 +170,16 @@ export function createGuardClient(options: GuardClientOptions): {
             : cause instanceof Error
               ? cause.message
               : "Unknown error";
-        return failOpen(message);
+        return failOpen(message, toWarnings(warnings));
       }
 
       opts.signal?.throwIfAborted();
 
       try {
-        return decisionFromProto(response, opts.rules);
+        return decisionFromProto(response, opts.rules, toWarnings(warnings));
       } catch (cause: unknown) {
         const message = cause instanceof Error ? cause.message : "Failed to parse server response";
-        return failOpen(message);
+        return failOpen(message, toWarnings(warnings));
       }
     },
   };
@@ -143,9 +190,17 @@ export function createGuardClient(options: GuardClientOptions): {
  *
  * Used when the server returns a `ConnectError` (e.g. validation failure,
  * timeout, network error). The decision is ALLOW (fail-open) with a single
- * error result carrying the message.
+ * error result carrying the message, plus any client-side metadata warnings so
+ * a dropped key is still reported when the call itself failed.
  */
-function failOpen(message: string): Decision {
+function toWarnings(localWarnings: readonly LocalWarning[]): readonly Warning[] {
+  return localWarnings.map((warning) => ({
+    code: warning.code,
+    message: warning.message,
+  }));
+}
+
+function failOpen(message: string, warnings: readonly Warning[] = []): Decision {
   const errorResult: InternalResult = {
     conclusion: "ALLOW",
     reason: "ERROR",
@@ -160,9 +215,10 @@ function failOpen(message: string): Decision {
     conclusion: "ALLOW" as const,
     id: "",
     results,
-    // A transport failure is an error (the request could not be processed),
-    // carried as the error result above — not a warning.
-    ...decisionMembers("ALLOW", results, []),
+    // A transport failure is an error (the request could not be processed) and
+    // is carried as the error result above, not a warning. `warnings` holds only
+    // client-side metadata drops, which are independent of the failure.
+    ...decisionMembers("ALLOW", results, warnings),
     [symbolArcjetInternal]: { results },
   };
   return d;
