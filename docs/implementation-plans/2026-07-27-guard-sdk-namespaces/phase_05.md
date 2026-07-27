@@ -28,7 +28,7 @@ Completed by Task 7's final sweep, after Task 6 ports the README and Task 7
 rewrites the test plan. Tasks 1–5 get most of the way there; the sweep is only
 authoritative once those two content changes have landed.
 
-- **guard-sdk-namespaces.AC5.4 Success:** The enforcing helpers are exported as `guardTool` and `guardAction`; no `protectTool` / `protectAction` / `ProtectToolPolicy` / `ProtectActionPolicy` identifier remains anywhere in source, tests, docs, the skill, or the example. Completed by Task 7's final sweep.
+- **guard-sdk-namespaces.AC5.4 Success:** The enforcing helpers are exported as `guardTool` and `guardAction` (with `GuardToolPolicy` / `GuardActionPolicy`); no `protectTool`, `protectAction`, `ProtectToolPolicy` or `ProtectActionPolicy` identifier remains anywhere in source, tests, docs, the skill, or the example.
 
 ### guard-sdk-namespaces.AC7: The example runs on the new paths
 - **guard-sdk-namespaces.AC7.1 Success:** The example imports only from `@arcjet/guard`, `@arcjet/guard/agents`, and `@arcjet/guard/vercel-ai/v7`, and its `package.json` has no `@arcjet/ai` dependency.

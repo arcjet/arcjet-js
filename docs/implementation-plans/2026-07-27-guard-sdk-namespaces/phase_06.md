@@ -28,9 +28,9 @@ included in the count reconciliation below.
 
 It also owns or completes these, which no earlier phase can prove:
 
-- **guard-sdk-namespaces.AC2.2 Success:** `@arcjet/guard/agents` imports successfully with `ai` and `@ai-sdk/provider-utils` absent from `node_modules`. (Claimed by this phase ONLY — Phase 2 explicitly disclaims it.)
-- **guard-sdk-namespaces.AC2.3 Failure:** `@arcjet/guard/vercel-ai/v7` fails to import when `ai` is absent.
-- **guard-sdk-namespaces.AC3.2 Success:** Installing a project that depends on `@arcjet/guard` without any AI SDK produces no peer-dependency warning or error. (Live proof; Phase 1 only checks the declaration.)
+- **guard-sdk-namespaces.AC2.2 Success:** `@arcjet/guard/agents` imports successfully with `ai` and `@ai-sdk/provider-utils` absent from `node_modules`.
+- **guard-sdk-namespaces.AC2.3 Failure:** `@arcjet/guard/vercel-ai/v7` fails to import when `ai` is absent — documenting the peer requirement rather than failing silently.
+- **guard-sdk-namespaces.AC3.2 Success:** Installing a project that depends on `@arcjet/guard` without any AI SDK produces no peer-dependency warning or error.
 - **guard-sdk-namespaces.AC1.3, AC1.5, AC1.6:** live resolution through the package name, including that unexported paths throw `ERR_PACKAGE_PATH_NOT_EXPORTED`.
 
 ---

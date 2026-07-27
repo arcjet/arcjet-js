@@ -42,7 +42,7 @@ AI SDK, which is only possible in Phase 6 Task 2.)
 ### guard-sdk-namespaces.AC5: The renames are complete
 - **guard-sdk-namespaces.AC5.1 Success:** `createAgentContext` and `ArcjetAgentContext` are the exported names.
 - **guard-sdk-namespaces.AC5.2 Success:** No `createAiContext` or `ArcjetAiContext` identifier remains anywhere in source, tests, docs, the skill, or the example.
-- **guard-sdk-namespaces.AC5.4 Success:** The enforcing helpers are exported as `guardTool` and `guardAction` (with `GuardToolPolicy` / `GuardActionPolicy`); no `protectTool`, `protectAction`, `ProtectToolPolicy` or `ProtectActionPolicy` identifier remains anywhere. (Phase 2 renames `guardAction`; Phase 3 renames `guardTool`; Phase 5 finishes docs/example.)
+- **guard-sdk-namespaces.AC5.4 Success:** The enforcing helpers are exported as `guardTool` and `guardAction` (with `GuardToolPolicy` / `GuardActionPolicy`); no `protectTool`, `protectAction`, `ProtectToolPolicy` or `ProtectActionPolicy` identifier remains anywhere in source, tests, docs, the skill, or the example.
 - **guard-sdk-namespaces.AC5.3 Failure:** `createAgentContext` rejects a caller-supplied `correlationId` that is not a string, is empty, exceeds 256 characters, or contains non-printable characters — naming the offending problem in the error and never truncating.
 
 **Note on AC5.2:** this phase moves the source and its own tests. The identifier
@@ -141,7 +141,7 @@ otherwise.
    `client.ts` lines 24, 27; `metadata.ts` line 17; `context.ts` lines 37, 56;
    `index.ts` line 53; `protect-tool.ts` line 39.
 
-   **The old verb names also appear in JSDoc prose** — 7 occurrences across three
+   **The old verb names also appear in JSDoc prose** — 10 occurrences across four
    files this phase moves, none of them in an `@example` block (the prose in the files
    Phase 2 moves does not cover the `@example` blocks in Phase 3), so the `@example`
    sweep above misses them entirely:
@@ -151,6 +151,7 @@ otherwise.
    | `internal.ts` | 2 | 1 (`protectTool()`) |
    | `client.ts` → `capture.ts` | 29 | 2 (`protectTool()`, `protectAction()` on same line) |
    | `guarded.ts` | 7, 8, 18, 19 | 4 (`protectTool` / `protectAction`) |
+   | `protect-action.ts` → `guard-action.ts` | 9, 61, 143 | 3 (`protectAction()`; all **outside** `@example`, so the example rewrite misses them — **Task 8 owns these**) |
 
    Rename these to `guardTool` / `guardAction` in the same task that moves each
    file (Tasks 2, 4 and 7 respectively). A verbatim copy lands `protectTool` in the
@@ -374,6 +375,16 @@ AC4.9's merged-metadata assertion.)
 Move `arcjet-ai/test/metadata.test.ts` (3 tests). Change its import from
 `../dist/index.js` to `./vocabulary.ts`.
 
+**Replace the stale metadata caps in the header JSDoc.** `arcjet-ai/src/metadata.ts:14-15`
+reads "caps (max 20 pairs, key <=64 bytes, value <=512 bytes) so large maps may be
+dropped server-side." arcjet-js#6171 replaced those limits, so this ships wrong
+numbers in `dist/agents/vocabulary.d.ts` — in the very package whose README states
+the current ones. Phase 5 fixes the identical claim in `SKILL.md` and the README
+but scopes nothing to this file. Replace it with #6171's behaviour — 128 top-level
+keys, 4 KiB serialized per value, nesting depth 10, drops reported on
+`decision.warnings` — or drop the numbers and point at `arcjet-guard/README.md`'s
+"Metadata" section. Do not leave a third, different set of numbers in the package.
+
 **Testing:**
 
 Preserve the existing assertions exactly — they cover the field-to-wire-key
@@ -508,10 +519,15 @@ characters`), and the "rejected, not truncated" wording in the thrown message.
 Preserve the metadata copy (`{ ...init.metadata }`) so the returned context owns
 a fresh object.
 
-Update the JSDoc: it currently shows `@example` blocks importing from
-`@arcjet/ai` and calling `generateText`. Rewrite them for
-`@arcjet/guard/agents` and the new function name. Do not leave `@arcjet/ai` or
-`createAiContext` anywhere in the prose.
+Update the JSDoc: it currently shows an `@example` importing from `@arcjet/ai`
+and calling `generateText` (`arcjet-ai/src/context.ts:43-53`, which also uses
+`aiToolsContext` and a `protectedTools` map). Rewrite it for
+`@arcjet/guard/agents` and the new function name. **Make the retained example
+AI-SDK-free**: it lands in the deliberately AI-free layer, so a `generateText`
+body there would either fail to compile from that layer or drag the AI SDK into
+its example. Show `createAgentContext` composing with `guardAction` instead, and
+leave the AI-SDK-shaped example to Phase 3's `vercel-ai/v7` files. Do not leave
+`@arcjet/ai` or `createAiContext` anywhere in the prose.
 
 **Testing:** covered by Task 6.
 
@@ -682,7 +698,7 @@ argument rather than interpolating it (the Semgrep constraint):
 | `"deny"` | threw | `'@arcjet/guard: guard check for "%s" errored; failing closed:'` |
 | `"deny"` | failed open | `'@arcjet/guard: guard check for "%s" was unavailable; failing closed.'` |
 
-Per-row status: Row 1 = today's string, prefix changed only; Row 2 = today's string with prefix changed **and** `${action}` converted from template interpolation to a `%s` argument per convention 9; rows 3–4 are new. Several migrated tests assert substrings of the `"allow"` strings; Task 9 and Phase 3 Task 4 update them in lockstep. **Preserve exactly** these strings in the catch block and both fail-open paths — do not re-interpolate action into the format string.
+Per-row status: Row 1 = today's string, prefix changed only; Row 2 = today's string with prefix changed **and** `${action}` converted from template interpolation to a `%s` argument per convention 9; rows 3–4 are new. The migrated tests assert only `includes("guard check") && includes("errored")` (`protect-action.test.ts:232`, `protect-tool.test.ts:232`) or `includes("failed open")` — all of which still match the prefix-renamed `"allow"` strings, so they do **not** distinguish the two modes and nothing updates them "in lockstep". AC4.14 closes this: Task 9 and Phase 3 Task 4 must tighten the migrated assertions to include `"failing open"` / `"failed open"`, and the new deny-mode cases must assert `"failing closed"` / `"was unavailable"`. **Preserve exactly** these strings in the catch block and both fail-open paths — do not re-interpolate action into the format string.
 
 Here is the restructured `runGuarded` body. **This shape was validated against
 both gates**, which matters because an earlier draft passed `typecheck` and failed
@@ -886,10 +902,15 @@ to `ArcjetAgentClient`.
 Its line-1 import of `DecisionDeny`, `RuleWithInput` from the `@arcjet/guard` package
 becomes `../types.ts` (`DecisionDeny` at `src/types.ts:441`, `RuleWithInput` at `:1668`); add `DecisionAllow` from the same import (`src/types.ts:430`).
 
-**Rewrite its JSDoc.** This file has **three** `@example` blocks, and they import
-from `@arcjet/ai` and call `createAiContext`. All three must be rewritten for
-`@arcjet/guard/agents` and `createAgentContext`. Phase 5 Task 5 compile-checks
-them, so a mistake here fails later rather than silently shipping.
+**Rewrite its JSDoc.** This file has three `@example` blocks (`:13`, `:93`,
+`:151`); the **first two** import from `@arcjet/ai` and call `createAiContext` and
+must be rewritten for `@arcjet/guard/agents` and `createAgentContext`. The third
+(`:151`, `captureAction`) contains neither an import nor `createAiContext` — leave
+its body alone; it needs only Phase 5 Task 5's compile-check. This matches
+convention 8's "first two blocks"; an earlier draft said "all three", which would
+have had the implementer inject an import into a block that deliberately has none.
+Phase 5 Task 5 compile-checks them, so a mistake here fails later rather than
+silently shipping.
 
 **New behaviour.** Declare and export the named type the design contract
 references — it is public surface, used by both policies:
@@ -958,6 +979,16 @@ Note `erasableSyntaxOnly` is enabled: the error class must not use TypeScript
 parameter properties (`constructor(public decision: ...)`). Declare the field and
 assign it in the constructor body.
 
+**Also correct the JSDoc prose that documents the old default.** It ships in
+`dist/agents/*.d.ts` and is what an IDE shows, and AC5.2's sweep matches
+`@arcjet/ai` and the old verbs — not the words "fail open" — so nothing else
+catches it:
+- `arcjet-ai/src/protect-action.ts:82-83` — "Guard API errors fail open: `fn`
+  still runs…" is now false by default. Rewrite for the `"deny"` default and the
+  `"allow"` opt-out.
+- `:90` names only `ArcjetDeniedError`; add `ArcjetGuardUnavailableError`.
+- `GuardActionPolicy`'s doc block (`:61`) has no prose for `onGuardError` at all.
+
 **Testing:** covered by Task 9.
 
 **Verification:**
@@ -1023,7 +1054,7 @@ throw path leaves the actual outage path untested:
   carries a `decisionId`: every decision the client synthesizes on a fail-open
   path has `id: ""` (`client.ts:216`, `convert.ts:743`), so the engine's non-empty
   check suppresses it and no correlatable id exists on this path. An earlier draft
-  asserted one, which passed only because `test/_shared/stub-client.ts:74` returns
+  asserted one, which passed only because `test/_shared/stub-client.ts:77` returns
   `id: "gdec_allow_fo"` — a fixture value that cannot occur in production. If that
   builder is reused here, change it to `id: ""` so the fixture matches reality.
   Assert instead that the capture event carries **no** `decisionId` on either
@@ -1192,6 +1223,9 @@ Expected: all clean.
       to `../types.ts`
 - [ ] JSDoc `@example` blocks rewritten in `vocabulary.ts` (1), `context.ts`, and
       `guard-action.ts` (3) — no `@arcjet/ai` or `createAiContext` left
+- [ ] No JSDoc under `src/agents/` states that guard API errors fail open, and
+      `vocabulary.ts`'s header carries #6171's metadata limits rather than the
+      pre-#6171 "max 20 pairs" claim
 - [ ] `onGuardError` implemented in `runGuarded` + `guardAction`, **defaulting to
       `"deny"`**, and governing **both** guard-unavailable signals (the `guard()`
       call throwing, and a decision whose `hasFailedOpen()` is `true`) — not the
@@ -1209,7 +1243,7 @@ Expected: all clean.
 - [ ] `src/agents/vocabulary.ts` exists (NOT `metadata.ts` — that name is taken by
       guard's own encoding module; Task 2's file creation confirms it and uses the correct name)
 - [ ] JSDoc verb renames done in `internal.ts` (1), `capture.ts` (2) and
-      `guarded.ts` (4) — 7 occurrences total
+      `guarded.ts` (4), `protect-action.ts` (3) — 10 occurrences total across four files
 - [ ] AC4.11 tests pass, including that the unavailable error is NOT an
       `instanceof ArcjetDeniedError`
 - [ ] `npm run test-unit` passes with the migrated tests included, **and the total

@@ -32,7 +32,7 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC1.6 Failure:** `@arcjet/guard/vercel-ai/v6` (unsupported major) does not resolve.
 
 ### guard-sdk-namespaces.AC5: The renames are complete
-- **guard-sdk-namespaces.AC5.4 Success (partial):** `guardTool` and `GuardToolPolicy` are the exported names in this namespace; no `protectTool` / `ProtectToolPolicy` identifier remains under `src/vercel-ai/`. Phase 5 completes the repo-wide sweep.
+- **guard-sdk-namespaces.AC5.4 Success:** The enforcing helpers are exported as `guardTool` and `guardAction` (with `GuardToolPolicy` / `GuardActionPolicy`); no `protectTool`, `protectAction`, `ProtectToolPolicy` or `ProtectActionPolicy` identifier remains anywhere in source, tests, docs, the skill, or the example.
 
 ### guard-sdk-namespaces.AC2: The shared layer has no AI SDK coupling
 - **guard-sdk-namespaces.AC2.3 Failure:** `@arcjet/guard/vercel-ai/v7` fails to import when `ai` is absent — documenting the peer requirement rather than failing silently.
@@ -40,11 +40,11 @@ This phase implements and tests:
 ### guard-sdk-namespaces.AC4: Migrated behaviour is preserved
 - **guard-sdk-namespaces.AC4.1 Success:** Guard ALLOW → the wrapped tool executes once and an event is captured with `outcome: "success"`.
 - **guard-sdk-namespaces.AC4.2 Failure:** Guard DENY → the tool never executes and the model receives an `ArcjetDenialResult` carrying `reason` and `retryable`.
-- **guard-sdk-namespaces.AC4.3 Edge:** A `RATE_LIMIT` denial carries `retryAfterSeconds`; a non-rate-limit denial omits it even when a co-occurring rule result has a reset time.
+- **guard-sdk-namespaces.AC4.3 Edge:** For a real `DecisionDeny`, a `RATE_LIMIT` denial carries `retryAfterSeconds` and a non-rate-limit denial omits it, even when a co-occurring rule result has a reset time. This criterion is scoped to **actual denials**: the guard-unavailable result also has a non-rate-limit `reason` yet deliberately does carry `retryAfterSeconds` per AC4.13, so an implementation written as "omit whenever `reason !== "RATE_LIMIT"`" satisfies this criterion while breaking that one.
 - **guard-sdk-namespaces.AC4.4 Failure:** With `onGuardError: "allow"` set explicitly (opting out of the default), either guard-unavailable signal → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`. Both signals are covered: the guard call throwing, and a returned decision whose `hasFailedOpen()` is `true`.
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
-- **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId`, and rejects `metadata` that is not a plain object. It **accepts** any plain-object metadata regardless of value types — nested objects, arrays, numbers, booleans, `null` — matching `ArcjetMetadata` (arcjet-js#6171).
+- **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId`, and rejects `metadata` that is not a plain object. It **accepts** any plain-object metadata regardless of value types — nested objects, arrays, numbers, booleans, `null` — matching `ArcjetMetadata` (arcjet-js#6171). Validating value **types** here would be stricter than `guard()` itself, which drops what it cannot encode with an `AJ1017` warning rather than failing. Rejecting a non-plain-object `metadata` is a separate, deliberate choice and is **not** justified by that argument — `guard()` drops such metadata entirely and silently, with no warning at all (`arcjet-guard/src/metadata.ts`), so this criterion really is stricter on that one input. It is stricter on purpose: `contextSchema` validates data arriving through a model-driven tool call, where failing fast on a malformed shape beats silently discarding the whole map.
 - **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **any** guard-unavailable signal → the wrapped tool or action does NOT execute and the outcome is captured as `unavailable` (**not** `denied` — a policy outage and a policy denial must stay distinguishable on the capture stream, which is the surface operators actually query). `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"`, `retryable: true`, and the fixed `retryAfterSeconds` of AC4.13. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` (see AC4.12 for how the signals are carried on it). `policy.onDeny` is not invoked on any signal.
 - **guard-sdk-namespaces.AC4.13 Edge:** The fail-closed tool result carries `retryAfterSeconds: 5`. Omitting a hint entirely invites an immediate model retry, and every retry issues another `guard()` call that also fails — amplifying load against an already-degraded Arcjet at every consequential call site at once. The value is a fixed backoff hint, **not** a prediction of when the policy becomes evaluable. 5 is a deliberate constant chosen to pace a model's retry loop — long enough that a retry is not effectively immediate, short enough that the agent does not appear hung. It is deliberately **not** derived from the client's request timeout: that is configurable per call site (`timeoutSeconds`), and this design recommends raising it at latency-sensitive sites, so a hint derived from it would have to change with it. It is asserted as an exact value, not merely as present.
 - **guard-sdk-namespaces.AC4.14 Failure:** The warning emitted on a guard-unavailable path names the mode it actually took. On the `"deny"` default the emitted string does **not** contain `"failing open"` and does identify the signal; on `onGuardError: "allow"` it does. Both modes emit for both signals, gated on `ARCJET_LOG_LEVEL`. Today's two strings both say "failing open", so a copy-paste migration silently keeps the misleading text — this criterion is what catches that.
@@ -109,7 +109,18 @@ import type { ArcjetAgentContext } from "../../agents/context.ts";
 
 Preserve the behaviour exactly: iterate `Object.entries(tools)`, include an entry
 only when `arcjetProtectedTool in tool`, and return the map cast through
-`unknown` to `InferToolSetContext<TOOLS>`. Rename the context type to
+`unknown` to `InferToolSetContext<TOOLS>`.
+
+**That double cast trips guard's lint**, which `arcjet-ai` never ran. Verified:
+`typescript(no-unsafe-type-assertion)` fires at error under `tsconfig.lint.json`
+("Unsafe type assertion: type … is more narrow than the original type").
+`npm run typecheck` passes, so left alone this surfaces at Task 3 or Task 7 with
+no guidance — while this task has explicitly told the implementer to keep the
+construct. Resolve it here: either build the accumulator as
+`InferToolSetContext<TOOLS>` from the start, or keep the cast with a narrowly
+scoped `// oxlint-disable-next-line typescript/no-unsafe-type-assertion` and a
+one-line justification. **Add `npm run lint` to this task's verification** —
+`typecheck` alone cannot see it. Rename the context type to
 `ArcjetAgentContext`.
 
 Update its JSDoc `@example` to import from `@arcjet/guard/vercel-ai/v7` and to
@@ -192,6 +203,17 @@ them from source: `../../types.ts` (`DecisionDeny` at `src/types.ts:441`,
 `RuleWithInput` at `:1668` — confirm the exported names first). Left as a package
 import, these resolve against `arcjet-guard`'s own `dist/` typings, which is a
 stale self-reference.
+
+**Correct the JSDoc prose, not only the `@example`.** Three sites name
+`ArcjetAiContext` in prose and none is inside an `@example`, so the example
+rewrite misses all three: `arcjet-ai/src/protect-tool.ts:39`, `:121` and `:128`.
+They become `ArcjetAgentContext`. Two more state the superseded default —
+`:118-119` ("Guard API errors fail open: the tool still runs …") and `:127`'s
+`@param policy`, which lists the policy fields without `onGuardError`. Rewrite
+both for the `"deny"` default, the `"allow"` opt-out, the `retryAfterSeconds: 5`
+hint and `outcome: "unavailable"`. **Add `ArcjetAiContext` to this phase's
+exit-checklist sweep** — it currently sweeps only `@arcjet/ai` and
+`createAiContext`, so these three would survive to Phase 5.
 
 **Rewrite its JSDoc.** This file carries one `@example` block that imports from
 `@arcjet/ai` and calls `createAiContext`; rewrite it for
