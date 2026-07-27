@@ -2,12 +2,12 @@
 
 **Design plan:** `docs/design-plans/2026-07-27-guard-sdk-namespaces.md`
 **Implementation plan:** `docs/implementation-plans/2026-07-27-guard-sdk-namespaces/phase_01.md` … `phase_06.md`
-**Criterion namespace:** `guard-sdk-namespaces.ACn.m` (36 criteria: AC1.1–AC1.6, AC2.1–AC2.3, AC3.1–AC3.2, AC4.1–AC4.11, AC5.1–AC5.4, AC6.1–AC6.3, AC7.1–AC7.2, AC8.1–AC8.3, AC9.1–AC9.2)
+**Criterion namespace:** `guard-sdk-namespaces.ACn.m` (38 criteria: AC1.1–AC1.6, AC2.1–AC2.3, AC3.1–AC3.2, AC4.1–AC4.13, AC5.1–AC5.4, AC6.1–AC6.3, AC7.1–AC7.2, AC8.1–AC8.3, AC9.1–AC9.2)
 **Environment verified:** 2026-07-27 — node v24.18.0, bun 1.3.12, miniflare 4.20260708.1 (devDependency), **deno NOT installed**
 
 ## How to read this document
 
-Every one of the 36 acceptance criteria appears **exactly once** in the mapping below — either in §1 (automated) or in §2 (human/CI). §3 lists the gates that are shell commands rather than tests; §4 states the hard requirement around `guard-sdk-namespaces.AC9.2`; §5 records the false-confidence traps that make a green run untrustworthy.
+Every one of the 38 acceptance criteria appears **exactly once** in the mapping below — either in §1 (automated) or in §2 (human/CI). §3 lists the gates that are shell commands rather than tests; §4 states the hard requirement around `guard-sdk-namespaces.AC9.2`; §5 records the false-confidence traps that make a green run untrustworthy.
 
 Test types used:
 
@@ -87,8 +87,9 @@ All of AC4 is behaviour **preservation** of an existing, passing suite. Do not r
 | `guard-sdk-namespaces.AC4.8` | `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function. | unit | `arcjet-guard/src/agents/guard-action.test.ts` — ALLOW runs the function once and resolves with the same reference; DENY throws with `reason === "RATE_LIMIT"`, a message naming action and reason, and the function never called | Phase 2 Task 9 |
 | `guard-sdk-namespaces.AC4.9` | `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key. | unit | `arcjet-guard/src/agents/guard-action.test.ts` — one event, metadata merged context-then-options, `decisionId` undefined, **no** `outcome` key | Phase 2 Task 9 |
 | `guard-sdk-namespaces.AC4.10` | A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning. | unit | `arcjet-guard/src/agents/capture.test.ts` (new file, ~3 tests) — missing method: no throw, warning when `ARCJET_LOG_LEVEL` permits; inverse: present method called once with the passed options and no warning; plus a throwing `experimental_capture` is swallowed | Phase 2 Task 4 |
-| `guard-sdk-namespaces.AC4.11` | With the default `onGuardError: "deny"`, **either** guard-unavailable signal — the `guard()` call throwing, or a returned decision whose `hasFailedOpen()` is `true` — blocks execution; `guardTool` returns `ArcjetDenialResult` with `reason: "ERROR"` / `retryable: true`, `guardAction` throws `ArcjetGuardUnavailableError`; outcome captured as `denied`. | unit | `arcjet-guard/src/agents/guard-action.test.ts` (~7 cases: **each signal separately** — function never called, capture `denied`; **not** `instanceof ArcjetDeniedError`; a real DENY still throws `ArcjetDeniedError`; `onDeny` not invoked on either signal; `onGuardError: "allow"` restores fail-open for both) and `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (~3 cases: identical denial-result shape for both signals, with no `retryAfterSeconds`; `policy.onDeny` NOT invoked on either) | Phase 2 Tasks 7-9; Phase 3 Tasks 3-4 |
-| `guard-sdk-namespaces.AC4.12` | The two guard-unavailable signals stay distinguishable on `ArcjetGuardUnavailableError`: `cause` is the thrown error by reference with `decision` absent; or `decision` is the fail-open `DecisionAllow` with `cause` absent. Only the failed-open signal captures a `decisionId`. | unit | `arcjet-guard/src/agents/guard-action.test.ts` — one case per signal asserting which field is populated *and* which is `undefined` (asserting only the populated one would pass against a shape that always sets both), plus that the failed-open capture event carries the decision's `id` and the thrown-signal event does not | Phase 2 Tasks 7-9 |
+| `guard-sdk-namespaces.AC4.11` | With the default `onGuardError: "deny"`, **any** guard-unavailable signal → the wrapped tool or action does NOT execute and the outcome is captured as `unavailable` (**not** `denied` — a policy outage and a policy denial must be distinguishable on the capture stream, which is the surface operators actually query). `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"`, `retryable: true`, and a fixed `retryAfterSeconds` backoff hint. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError`. `policy.onDeny` is not invoked on any signal. | unit | `arcjet-guard/src/agents/guard-action.test.ts` (~7 cases: **each signal separately** — function never called, capture `unavailable`; **not** `instanceof ArcjetDeniedError`; a real DENY still throws `ArcjetDeniedError`; `onDeny` not invoked on either signal; `onGuardError: "allow"` restores fail-open for both) and `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (~3 cases: identical denial-result shape for both signals, with `reason: "ERROR"` and `retryable: true`, and fixed `retryAfterSeconds`; `policy.onDeny` NOT invoked on either) | Phase 2 Tasks 7-9; Phase 3 Tasks 3-4 |
+| `guard-sdk-namespaces.AC4.12` | The guard-unavailable signals stay distinguishable on `ArcjetGuardUnavailableError`. When the guard call **threw**, `.cause` is that error by reference and `.decision` is `undefined`. When a decision **failed open**, `.decision` is that `DecisionAllow` and `.cause` is `undefined`. Both legs must assert the populated field **and** that the other reads `undefined` — asserting only the populated one passes against an implementation that always sets both. Test with `=== undefined`, **not** `in`: `decision` is a declared optional field, so it is an own property whose value is `undefined` on the thrown path. | unit | `arcjet-guard/src/agents/guard-action.test.ts` — one case per signal asserting which field is populated *and* which is `undefined` (asserting only the populated one would pass against a shape that always sets both), plus that the failed-open capture event carries the decision's `id` and the thrown-signal event does not | Phase 2 Tasks 7-9 |
+| `guard-sdk-namespaces.AC4.13` | The fail-closed tool result carries a **fixed** `retryAfterSeconds` backoff hint. Omitting it entirely invites an immediate model retry, and every retry issues another `guard()` call that also fails — amplifying load against an already-degraded Arcjet, at every consequential call site at once. The value is a backoff hint, not a claim about when the policy will be evaluable again. | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (~1 case: deny result includes fixed `retryAfterSeconds` value) | Phase 3 Task 4 |
 
 Cross-cutting requirements for the whole AC4 block:
 
@@ -277,7 +278,7 @@ Each of these produces a green result that means nothing. They are ordered by bl
 | with `src/agents/x.test.ts` present, unquoted | **only** `src/agents/x.test.ts` | **1** |
 | with the pattern **quoted** | the literal pattern | **352** |
 
-Without globstar, `sh` expands `src/**/*.test.ts` as `src/*/*.test.ts` — exactly one directory deep. The moment Phase 2 adds `src/agents/*.test.ts`, the shell resolves the pattern to those files alone, **all 17 existing top-level suites are silently dropped, and the run still exits 0 reporting green.** Phase 3's `src/vercel-ai/v7/*.test.ts` (two deep) would never be matched at all.
+Without globstar, `sh` expands `src/**/*.test.ts` as `src/*/*.test.ts` — exactly one directory deep. The moment Phase 2 adds `src/agents/*.test.ts`, the shell resolves the pattern to those files alone, **all 18 existing top-level suites are silently dropped, and the run still exits 0 reporting green.** Phase 3's `src/vercel-ai/v7/*.test.ts` (two deep) would never be matched at all.
 
 **Requirements:**
 
@@ -292,7 +293,7 @@ Without globstar, `sh` expands `src/**/*.test.ts` as `src/*/*.test.ts` — exact
   | **expected total** | **≈423** |
 
   The 51 migrated: `agents/context` 10, `vercel-ai/v7/tools-context` 1, `agents/vocabulary` 3, `agents/guard-action` 10, `vercel-ai/v7/guard-tool` 22, `vercel-ai/v7/warn-missing-context` 2, `vercel-ai/v7/generate-text` 3. (`arcjet-ai` had 52; only `index.test.ts`'s single test is *replaced* rather than moved.)
-- **A total anywhere near 1–20 means the glob is collapsing, not that tests were removed.** Before believing any green result, run `grep "test-unit" package.json` and confirm the single quotes. This applies at Phase 2, 3, 4, 5 and 6 — the quoting can be reverted by any later `package.json` edit.
+- **A total anywhere near 1–20 means the glob is collapsing, not that tests were removed.** Before believing any green result, run `grep "test-unit" package.json` and confirm the single quotes. This applies at Phase 2, 3, 4, 5 and 6 — the quoting can be reverted by any later `package.json` edit. Post-migration, an unquoted glob will collapse to `src/agents/*.test.ts` alone (approximately 36 tests), which is itself a signature of collapse — much smaller than ≈423 but not 1–20. State explicitly in your reconciliation that any total materially below the expected ≈423, and ≈36 in particular, means the glob collapsed.
 - Verify with `npm run test-unit 2>&1 | grep -E "^ℹ (tests|pass|fail)"`.
 
 ### T2 — `grep` prints paths without a leading `./`, so `^./dir/` exclusions are no-ops
@@ -328,12 +329,12 @@ change in every case. The message string and all three assertions **must change 
 | AC1 — subpath resolution | 6 | 6 | 0 |
 | AC2 — no AI SDK coupling | 3 | 3 (2 packaging-only) | 0 |
 | AC3 — optional peers | 2 | 2 (1 packaging-only) | 0 |
-| AC4 — behaviour preserved | 11 | 11 | 0 |
+| AC4 — behaviour preserved | 13 | 13 | 0 |
 | AC5 — renames complete | 4 | 4 | 0 |
 | AC6 — package removed | 3 | 3 | 0 |
 | AC7 — example migrated | 2 | 2 | 0 |
 | AC8 — documentation | 3 | 2 | 1 (AC8.2) |
 | AC9 — verification green | 2 | 1 | 1 (AC9.2) |
-| **Total** | **36** | **34** | **2** |
+| **Total** | **38** | **36** | **2** |
 
-Of the 34 automated: 12 unit-test-anchored, 2 with an additional integration leg, 3 packaging-only (AC2.2, AC2.3, AC3.2 — Phase 6 Task 2), 1 integration-only (AC7.2), and the remainder shell-check gates per §3.
+Of the 36 automated: 13 unit-test-anchored, 2 with an additional integration leg, 3 packaging-only (AC2.2, AC2.3, AC3.2 — Phase 6 Task 2), 1 integration-only (AC7.2), and the remainder shell-check gates per §3.

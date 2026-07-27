@@ -45,7 +45,7 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
 - **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId`, and rejects `metadata` that is not a plain object. It **accepts** any plain-object metadata regardless of value types — nested objects, arrays, numbers, booleans, `null` — matching `ArcjetMetadata` (arcjet-js#6171).
-- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **either** guard-unavailable signal (the guard call throwing, or a decision whose `hasFailedOpen()` is `true`) → the wrapped tool does NOT execute, the model receives an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`, and the outcome is captured as `denied`. (Phase 2 built the engine and the `guardAction` half; this phase covers `guardTool`.)
+- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **any** guard-unavailable signal → the wrapped tool does NOT execute, the model receives an `ArcjetDenialResult` with `reason: "ERROR"`, `retryable: true`, and a fixed `retryAfterSeconds` backoff hint, and the outcome is captured as `unavailable` (**not** `denied` — a policy outage and a policy denial must be distinguishable on the capture stream, which is the surface operators actually query). `policy.onDeny` is not invoked on any signal. (Phase 2 built the engine and the `guardAction` half; this phase covers `guardTool`.)
 
 ---
 
@@ -111,7 +111,8 @@ only when `arcjetProtectedTool in tool`, and return the map cast through
 `ArcjetAgentContext`.
 
 Update its JSDoc `@example` to import from `@arcjet/guard/vercel-ai/v7` and to
-use `createAgentContext`. Note the existing example uses `const protected = ...`
+use `createAgentContext`. Also rename `protectTool()` to `guardTool()` in the
+example (`arcjet-ai/src/context.ts:113` and `:117`). Note the existing example uses `const protected = ...`
 — `protected` is a reserved word in strict-mode TypeScript and this must not be
 copied verbatim into a compiled example; rename it (e.g. `protectedTools`).
 
@@ -213,14 +214,11 @@ shape would be harder to prompt against:
   reason: "ERROR",
   message: "<explains the security check could not be completed; retry later>",
   retryable: true,
+  retryAfterSeconds: <fixed backoff hint>,
 }
 ```
 
-No `retryAfterSeconds` — there is no reset time for an outage. Keeping one result
-type is deliberate: a model only ever observes tool results, and a second shape
-would be harder to prompt against. `policy.onDeny`, if supplied, must **not** be
-invoked for the outage path — it receives a `DecisionDeny`, and there is no
-decision here. Document that explicitly in the JSDoc.
+The fixed `retryAfterSeconds` is a backoff hint (see AC4.13): omitting it entirely would invite an immediate model retry, and every retry issues another `guard()` call that also fails — amplifying load against an already-degraded Arcjet. The value is not a claim about when the policy will be evaluable again. Keeping one result type is deliberate: a model only ever observes tool results, and a second shape would be harder to prompt against. `policy.onDeny`, if supplied, must **not** be invoked for the outage path — it receives a `DecisionDeny`, and there is no decision here. Document that explicitly in the JSDoc.
 
 **Rename the four runtime message strings** (see phase_02 convention 8 for the
 full table and rationale). In this file:
@@ -375,7 +373,7 @@ Keep `setLogLevel(...)` with restore in `finally` throughout.
 ```bash
 cd arcjet-guard && npm run test-unit
 ```
-Expected: ~24 guard-tool tests pass (22 migrated + ~2 new AC4.11 cases).
+Expected: ~25 guard-tool tests pass (22 migrated + ~3 new, covering AC4.11 including the fixed `retryAfterSeconds` backoff hint per AC4.13).
 
 **Commit:** `test(guard): move guardTool tests into vercel-ai/v7`
 <!-- END_TASK_4 -->
@@ -542,7 +540,7 @@ Phase 6 Task 2 Step 3, against a packed tarball in a project with no AI SDK.
 ```bash
 cd arcjet-guard && npm run test-unit && npm run typecheck && npm run lint && npm run build
 ```
-Expected: all pass. Cumulative new tests for this phase: 1 + 22 + 2 + 3 + ~6.
+Expected: all pass. Cumulative new tests for this phase: 1 (tools-context) + 25 (guard-tool: 22 migrated + ~3 AC4.11/AC4.13) + 2 (warn-missing-context) + 3 (generate-text) + ~6 (index) = ~37.
 
 **Commit:** `test(guard): verify the vercel-ai/v7 surface, proxy identity, and export map`
 <!-- END_TASK_7 -->
@@ -564,8 +562,8 @@ Expected: all pass. Cumulative new tests for this phase: 1 + 22 + 2 + 3 + ~6.
       Schema's `additionalProperties: { type: "string" }` removed to match
 - [ ] `GuardToolPolicy.metadata` widened to `ArcjetMetadata`
 - [ ] `onGuardError` threaded into `guardTool`, **defaulting to `"deny"`**; **both**
-      guard-unavailable signals return `reason: "ERROR"` / `retryable: true` with no
-      `retryAfterSeconds`; `onDeny` not invoked on either path
+      guard-unavailable signals return `reason: "ERROR"` / `retryable: true` with a
+      fixed `retryAfterSeconds` backoff hint (AC4.13); `onDeny` not invoked on either path
 - [ ] the 4 runtime message strings in `guard-tool.ts` renamed to
       `@arcjet/guard:` / `ArcjetAgentContext`
 - [ ] all 3 coupled test assertions updated to `"no ArcjetAgentContext"`

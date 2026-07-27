@@ -35,8 +35,9 @@ AI SDK, which is only possible in Phase 6 Task 2.)
 - **guard-sdk-namespaces.AC4.8 Success:** `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
 - **guard-sdk-namespaces.AC4.9 Success:** `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key.
 - **guard-sdk-namespaces.AC4.10 Edge:** A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning.
-- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **either** guard-unavailable signal (the guard call throwing, or a decision whose `hasFailedOpen()` is `true`) → the wrapped tool or action does NOT execute and the outcome is captured as `denied`. `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError`. (This phase implements the engine and the `guardAction` half; Phase 3 covers the `guardTool` half.)
-- **guard-sdk-namespaces.AC4.12 Failure:** The two signals stay distinguishable: `cause` is populated (and `decision` absent) when the guard call threw; `decision` is populated (and `cause` absent) when a decision failed open, and only that path captures a `decisionId`.
+- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **any** guard-unavailable signal → the wrapped tool or action does NOT execute and the outcome is captured as `unavailable` (**not** `denied` — a policy outage and a policy denial must be distinguishable on the capture stream, which is the surface operators actually query). `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"`, `retryable: true`, and a fixed `retryAfterSeconds` backoff hint. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` (see AC4.12 for how the signals are carried on it). `policy.onDeny` is not invoked on any signal.
+- **guard-sdk-namespaces.AC4.12 Failure:** The guard-unavailable signals stay distinguishable on `ArcjetGuardUnavailableError`. When the guard call **threw**, `.cause` is that error by reference and `.decision` is `undefined`. When a decision **failed open**, `.decision` is that `DecisionAllow` and `.cause` is `undefined`. Both legs must assert the populated field **and** that the other reads `undefined` — asserting only the populated one passes against an implementation that always sets both. Test with `=== undefined`, **not** `in`: `decision` is a declared optional field, so it is an own property whose value is `undefined` on the thrown path.
+- **guard-sdk-namespaces.AC4.13 Edge:** The fail-closed tool result carries a **fixed** `retryAfterSeconds` backoff hint. Omitting it entirely invites an immediate model retry, and every retry issues another `guard()` call that also fails — amplifying load against an already-degraded Arcjet, at every consequential call site at once. The value is a backoff hint, not a claim about when the policy will be evaluable again.
 
 ### guard-sdk-namespaces.AC5: The renames are complete
 - **guard-sdk-namespaces.AC5.1 Success:** `createAgentContext` and `ArcjetAgentContext` are the exported names.
@@ -96,6 +97,7 @@ otherwise.
      (`destination: "internal"`, `reversibility: "reversible"`). Widening the return
      is what lets it compose by spread with richer caller metadata.
    - `GuardActionPolicy.metadata` and `CaptureActionOptions.metadata`
+   - `runGuarded`'s `params.metadata: ArcjetMetadata`
 
    Do **not** add value-type validation anywhere. `guard()` itself drops values it
    cannot encode with an `AJ1017` warning rather than failing, and ignores a
@@ -123,22 +125,23 @@ otherwise.
 8. **JSDoc must be rewritten, not carried over.** Several moved files contain
    `@example` blocks that import from `@arcjet/ai` and call `createAiContext`.
    Every moved file's JSDoc must be updated in the same task that moves it —
-   `guard-action.ts` has 3 such examples and `metadata.ts` has 1. Leaving them
+   Phase 2 must rewrite 2 such examples (`context.ts` and `guard-action.ts`'s first two blocks) plus `metadata.ts`'s 1; Phase 3 will handle `guard-tool.ts`'s one block. Leaving them
    breaks AC5.2 and AC8.2.
 
    JSDoc **prose** (not just `@example` blocks) also names the old identifiers and
    must be updated in the same pass. Source-side names and lines:
-   `client.ts` lines 24, 27; `metadata.ts` line 17; `context.ts` line 102;
+   `client.ts` lines 24, 27; `metadata.ts` line 17; `context.ts` lines 37, 56;
    `index.ts` line 53; `protect-tool.ts` line 39.
 
-   **The old verb names also appear in JSDoc prose** — 6 occurrences across three
-   files this phase moves, none of them in an `@example` block, so the `@example`
+   **The old verb names also appear in JSDoc prose** — 7 occurrences across three
+   files this phase moves, none of them in an `@example` block (the prose in the files
+   Phase 2 moves does not cover the `@example` blocks in Phase 3), so the `@example`
    sweep above misses them entirely:
 
    | Source file | Lines | Occurrences |
    |---|---|---|
    | `internal.ts` | 2 | 1 (`protectTool()`) |
-   | `client.ts` → `capture.ts` | 29 | 1 (`protectTool()`, `protectAction()`) |
+   | `client.ts` → `capture.ts` | 29 | 2 (`protectTool()`, `protectAction()` on same line) |
    | `guarded.ts` | 7, 8, 18, 19 | 4 (`protectTool` / `protectAction`) |
 
    Rename these to `guardTool` / `guardAction` in the same task that moves each
@@ -394,7 +397,8 @@ because `arcjet-guard/src/client.ts` already exists and exports
 but two files named `client.ts` in one package would be confusing.
 
 Rename the exported interface `ArcjetAiClient` → `ArcjetAgentClient`. Keep
-`CaptureOptions`, `shouldWarn()`, and `captureEvent()` as they are.
+`shouldWarn()` and `captureEvent()` behaviour as they are; widen `CaptureOptions.metadata`
+to `ArcjetMetadata` per convention 6.
 
 **JSDoc verb rename:** line 29 reads "passed to `protectTool()`,
 `protectAction()`, and `captureAction()`" — change the first two to `guardTool()`
@@ -605,6 +609,16 @@ unexpected broke") — keep that comment, it is still true and now explains why 
 alone would be the wrong trigger. Wiring fail-closed to (a) only would ship a
 default that never fires during the incident it exists for.
 
+The control flow requires precise typing. Since `decision` is typed `Decision | undefined` (`guarded.ts:41`), a test like `decision.hasFailedOpen() === true` does NOT narrow `Decision` to `DecisionAllow` — TypeScript cannot narrow on a method return. Instead, narrow explicitly with:
+
+```ts
+if (decision.conclusion === "ALLOW" && decision.hasFailedOpen()) {
+  // decision is narrowed to DecisionAllow here
+}
+```
+
+This is not a cast. Because `hasFailedOpen()` is `conclusion === "ALLOW" && errored.length > 0`, a DENY decision can **never** report it — the failed-open and DENY branches are mutually exclusive, and the engine's existing branch order is safe to keep.
+
 Restructure so **neither** signal silently continues:
 
 - `"allow"`: behave exactly as today for both signals — warn (gated) and fall
@@ -657,8 +671,67 @@ argument rather than interpolating it (the Semgrep constraint):
 | `"deny"` | threw | `'@arcjet/guard: guard check for "%s" errored; failing closed:'` |
 | `"deny"` | failed open | `'@arcjet/guard: guard check for "%s" was unavailable; failing closed.'` |
 
-The first two are today's strings, unchanged. No AC asserts any of them, so
-nothing would catch a mix-up automatically; get it right here.
+Per-row status: Row 1 = today's string, prefix changed only; Row 2 = today's string with prefix changed **and** `${action}` converted from template interpolation to a `%s` argument per convention 9; rows 3–4 are new. Several migrated tests assert substrings of the `"allow"` strings; Task 9 and Phase 3 Task 4 update them in lockstep. **Preserve exactly** these strings in the catch block and both fail-open paths — do not re-interpolate action into the format string.
+
+Here is a restructured code skeleton of the `if (rules …)` block showing the two signals, both modes, narrowing, the non-empty-decisionId check, and the capture-then-return ordering:
+
+```ts
+async function runGuarded<T>(...): Promise<T> {
+  // ... guard call setup ...
+  
+  if (!rules || rules.length === 0) {
+    // skip guard, execute directly
+  }
+  
+  let decision: Decision | undefined;
+  let decisionId: string | undefined;
+  
+  try {
+    decision = await client.guard(...);
+  } catch (error) {
+    // Signal (a): guard call threw
+    if (onGuardError === "allow") {
+      // fail-open mode
+      shouldWarn(...) && console.warn('… errored; failing open:');
+      return await fn();
+    } else {
+      // fail-closed mode (default)
+      shouldWarn(...) && console.warn('… errored; failing closed:');
+      captureEvent(..., { outcome: "unavailable" });
+      return onUnavailable({ kind: "threw", error });
+    }
+  }
+  
+  if (decision.conclusion === "DENY") {
+    // real denial
+    captureEvent(..., { outcome: "denied", decisionId: decision.id });
+    return onDeny(decision);
+  }
+  
+  if (decision.conclusion === "ALLOW" && decision.hasFailedOpen()) {
+    // Signal (b): decision failed open
+    if (onGuardError === "allow") {
+      // fail-open mode
+      shouldWarn(...) && console.warn('… failed open (API error).');
+      return await fn();
+    } else {
+      // fail-closed mode (default)
+      shouldWarn(...) && console.warn('… was unavailable; failing closed.');
+      // Check for non-empty decisionId before spreading
+      if (decision.id !== "") {
+        decisionId = decision.id;
+      }
+      captureEvent(..., { outcome: "unavailable", ...(decisionId !== undefined && { decisionId }) });
+      return onUnavailable({ kind: "failed-open", decision });
+    }
+  }
+  
+  // ALLOW path (not failed open)
+  const result = await fn();
+  captureEvent(..., { outcome: "success", decisionId: decision.id });
+  return result;
+}
+```
 
 Preserve exactly:
 - the `correlation` spread trick that omits `correlationId` when undefined
@@ -698,8 +771,8 @@ Move `arcjet-ai/src/protect-action.ts` → `src/agents/guard-action.ts`. Change 
 specifiers. Rename the context type to `ArcjetAgentContext` and the client type
 to `ArcjetAgentClient`.
 
-Its line-1 import of `Decision` / `DecisionDeny` from the `@arcjet/guard` package
-becomes `../types.ts` (`DecisionDeny` at `src/types.ts:441`, `Decision` at `:449`).
+Its line-1 import of `DecisionDeny`, `RuleWithInput` from the `@arcjet/guard` package
+becomes `../types.ts` (`DecisionDeny` at `src/types.ts:441`, `RuleWithInput` at `:1668`); add `DecisionAllow` from the same import (`src/types.ts:430`).
 
 **Rewrite its JSDoc.** This file has **three** `@example` blocks, and they import
 from `@arcjet/ai` and call `createAiContext`. All three must be rewritten for
@@ -719,15 +792,30 @@ Add `onGuardError?: OnGuardError` to `GuardActionPolicy`, **defaulting to
 ```ts
 export class ArcjetGuardUnavailableError extends Error {
   readonly action: string;
-  readonly cause?: unknown;
   readonly decision?: DecisionAllow;
+
+  constructor(
+    action: string,
+    init: { cause: unknown } | { decision: DecisionAllow },
+  ) {
+    super(
+      `policy for "${action}" could not be evaluated`,
+      "cause" in init ? { cause: init.cause } : {},
+    );
+    this.name = "ArcjetGuardUnavailableError";
+    this.action = action;
+    if ("decision" in init) {
+      this.decision = init.decision;
+    }
+  }
 }
 ```
 
-Set `name = "ArcjetGuardUnavailableError"`; the message should name the action and
-make clear the policy could not be evaluated (not that a rule denied the call).
+The message should name the action and make clear the policy could not be evaluated (not that a rule denied the call).
 Wire it as `runGuarded`'s `onUnavailable` — which, with `"deny"` as the default, is
 now the common path rather than an opt-in one.
+
+Note alongside it: `cause` must NOT be declared as a field (it is inherited from `Error` and passed through the options bag); `decision` IS declared, so on the thrown path it reads `undefined` but is still an own property — tests must use `=== undefined`, **never** `in`.
 
 **Populate exactly one of `cause` / `decision`, per the `Unavailable` discriminant
 Task 7 defines** (AC4.12). On `kind: "threw"` set `cause` to the error by
@@ -744,7 +832,7 @@ warrants an alert. davidmytton confirmed this split on the PR. This also keeps
 covered both cases — note that `ArcjetGuardUnavailableError.decision` being
 optional is fine precisely because it is a separate class. Under
 `erasableSyntaxOnly` neither class may use parameter properties — declare fields
-and assign in the constructor.
+and assign in the constructor body.
 
 Preserve exactly:
 - `ArcjetDeniedError` extending `Error`, with `name = "ArcjetDeniedError"`, a
@@ -997,9 +1085,9 @@ Expected: all clean.
 - [ ] every metadata type widened to `ArcjetMetadata`; no value-type validation
       added anywhere
 - [ ] `src/agents/vocabulary.ts` exists (NOT `metadata.ts` — that name is taken by
-      guard's own encoding module)
-- [ ] JSDoc verb renames done in `internal.ts` (1), `capture.ts` (1) and
-      `guarded.ts` (4) — 6 occurrences total
+      guard's own encoding module; Task 2's file creation confirms it and uses the correct name)
+- [ ] JSDoc verb renames done in `internal.ts` (1), `capture.ts` (2) and
+      `guarded.ts` (4) — 7 occurrences total
 - [ ] AC4.11 tests pass, including that the unavailable error is NOT an
       `instanceof ArcjetDeniedError`
 - [ ] `npm run test-unit` passes with the migrated tests included, **and the total
