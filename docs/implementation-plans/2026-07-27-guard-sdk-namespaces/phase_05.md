@@ -135,12 +135,11 @@ is superseded; adding it would be harmless at runtime but would teach readers th
 fail-open is what they get for free.
 
 **Demonstrate the opt-out once, where it is the right call.** So the example shows
-both sides of the lever, set `onGuardError: "allow"` on the `captureAction`-adjacent
-read-only path — or, if no such call site exists, add a one-line comment at the
-`lookupOrder` policy naming `"allow"` as the opt-out for calls where availability
-matters more than enforcement. Do not leave the example silent on the option:
-`onGuardError` is the one setting whose *default* changed, and the example is where
-most readers will infer it from.
+both sides of the lever: set `onGuardError: "allow"` on the `lookupOrder` `guardTool`
+policy, with a comment that an order lookup is read-only, so availability beats
+enforcement. This demonstrates that the option exists and where to use it. Do not
+leave the example silent on the option: `onGuardError` is the one setting whose
+*default* changed, and the example is where most readers will infer it from.
 
 **Also show rules derived from tool input.** qw-in had to guess from the README
 whether `rules: ({ orderNumber }) => [...]` was supported. The example's
@@ -182,7 +181,8 @@ Expected: the example's own lockfile shows as modified and no longer references
 `arcjet-ai`. Confirm with:
 
 ```bash
-grep -c "arcjet-ai" package-lock.json || echo "0 references — good"
+grep -c "arcjet-ai" package-lock.json && echo "residual arcjet-ai reference — fix required" && exit 1 || true
+echo "0 references — good"
 ```
 
 **Step 3: Verify no `@arcjet/ai` reference survives in the example (AC7.1)**
@@ -291,7 +291,7 @@ Content changes required throughout:
 
 **Review feedback to incorporate (davidmytton, 2026-07-27):**
 
-1. **Explain what `correlationId` is *for*** (comment on `SKILL.md:1`): "Worth
+1. **Explain what `correlationId` is *for*** (comment on `SKILL.md:60`): "Worth
    adding an explanation of what the `correlationId` is for, then the AI can decide
    which ID is best suited (or let us generate one)." Add a short paragraph: it
    joins every guard decision and capture event from one logical run **or session**
@@ -308,11 +308,11 @@ Content changes required throughout:
    time `octokit` appears. Worth commenting what it's representing, or use a generic
    example." Replace it with a generic external call, or add a one-line comment
    naming it as an example GitHub API client.
-3. **The metadata-caps paragraph is stale** (`SKILL.md:168`): davidmytton flagged
+3. **The metadata-caps paragraph is stale** (`SKILL.md:166-168`): davidmytton flagged
    "This is no longer accurate". **Resolved — no need to ask.** arcjet-js#6171
    (merged 2026-07-27, in this branch's history after the rebase) rewrote metadata
    entirely, and its `arcjet-guard/README.md` "Metadata" section is authoritative.
-   Replace "max 20 pairs, key <=64 bytes, value <=512 bytes, extras dropped" with
+   Replace the "max 20 pairs, key <=64 bytes, value <=512 bytes, extras dropped" paragraph with
    the current server-enforced behaviour:
 
    | Limit | Value | Over the limit |
@@ -338,7 +338,7 @@ Content changes required throughout:
    Delete the old warning that merging `ctx.metadata` with per-call
    `securityMetadata()` "can quietly exceed 20 pairs": the limit is now 128
    top-level keys and drops surface as warnings rather than silently.
-4. **Fail-closed guidance** (`SKILL.md:94`): the current text says only that guard
+4. **Fail-closed guidance** (`SKILL.md:95`): the current text says only that guard
    API failures fail open. That is now **wrong**, not merely incomplete — the
    default is `"deny"`. Replace it with:
    - the default is `"deny"`: if the policy cannot be evaluated, the call is
@@ -518,7 +518,7 @@ The complete list of sources — **all** of these, not a subset:
 | `arcjet-guard/src/vercel-ai/v7/tools-context.ts` | `@example` |
 | `arcjet-guard/src/vercel-ai/v7/guard-tool.ts` | 1 `@example` |
 
-The three files in bold-adjacent rows (`metadata.ts`, `guard-action.ts`,
+The three files in bold-adjacent rows (`agents/vocabulary.ts`, `guard-action.ts`,
 `guard-tool.ts`) are the ones most likely to be missed: their examples were
 written against `@arcjet/ai` and `createAiContext`, and Phases 2 and 3 instruct
 rewriting them. This sweep is the check that the rewrite actually happened.
@@ -617,8 +617,8 @@ Rewrite every import to the correct layer, and rename **both** sets of
 identifiers: `createAiContext` → `createAgentContext`, `ArcjetAiContext` →
 `ArcjetAgentContext`, **`protectTool` → `guardTool`, `protectAction` →
 `guardAction`**, `ProtectToolPolicy` → `GuardToolPolicy`, `ProtectActionPolicy` →
-`GuardActionPolicy`. There are **10** verb occurrences in the source
-`arcjet-ai/README.md`. Drop anything describing `@arcjet/ai` as a separately
+`GuardActionPolicy`. There are **11** verb occurrences in the source
+`arcjet-ai/README.md` (`protectTool` ×6, `protectAction` ×5). Drop anything describing `@arcjet/ai` as a separately
 installable package.
 
 This file is **published**, so a missed verb rename ships a README documenting an
@@ -671,11 +671,12 @@ Exact edits required — verified counts, so there is nothing to go hunting for:
 | What | Occurrences | Change to |
 |---|---|---|
 | `@arcjet/ai` | 2 — the title on line 1, and line 22's "Installs cleanly against built `@arcjet/ai`" | `@arcjet/guard` |
-| `arcjet-ai/` paths | 9 — line 5 (`arcjet-ai/test/*.test.ts`), line 15 (the SKILL.md path), and the AC-to-test coverage table around lines 84–89 | the new homes: `arcjet-guard/src/agents/*.test.ts`, `arcjet-guard/src/vercel-ai/v7/*.test.ts`, and `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` |
+| `arcjet-ai/` paths | 10 — line 5 (`arcjet-ai/test/*.test.ts`), line 12 (the `cd arcjet-ai && npm run test` command), line 15 (the SKILL.md path), and the AC-to-test coverage table around lines 84–90 | the new homes: `arcjet-guard/src/agents/*.test.ts`, `arcjet-guard/src/vercel-ai/v7/*.test.ts`, and `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` |
 | `createAiContext` / `ArcjetAiContext` | **0** — neither appears | nothing to do |
-| `protectTool` / `protectAction` | **1** — line 43 | `guardTool` / `guardAction` |
+| `protectTool` / `protectAction` | **2** — line 43 | `guardTool` / `guardAction` |
 
-Also update line 5's test count: it says 47 tests in `arcjet-ai/test/*.test.ts`;
+Also update line 5's test count (says 47 tests in `arcjet-ai/test/*.test.ts`) and
+line 12's stale command and count (says `cd arcjet-ai && npm run test` with 47 pass):
 the migrated suites total 51 across the two new directories (see the Phase 6
 reconciliation table).
 

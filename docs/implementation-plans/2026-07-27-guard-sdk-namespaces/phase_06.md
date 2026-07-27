@@ -22,9 +22,9 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC9.1 Success:** Build, `tsconfig.json` and `tsconfig.lint.json` typechecks, lint, and unit tests with coverage all pass.
 - **guard-sdk-namespaces.AC9.2 Success:** The node, fetch, bun, deno, and cloudflare runtime suites all pass.
 
-This phase does not introduce new behaviour; AC4.11 and AC4.12 (`onGuardError`)
-are implemented in Phases 2 and 3 and are included in the count reconciliation
-below.
+This phase does not introduce new behaviour; AC4.11 (`onGuardError`) is
+implemented in Phases 2 and 3, and AC4.12 is implemented in Phase 2. Both are
+included in the count reconciliation below.
 
 It also owns or completes these, which no earlier phase can prove:
 
@@ -138,7 +138,7 @@ cd "$SCRATCH"
 npm init -y >/dev/null
 npm pkg set type=module >/dev/null
 npm install "$TARBALL_ABS" 2>&1 | tee install.log
-grep -iE "peer dep|ERESOLVE|npm warn" install.log || echo "AC3.2 OK: no peer warnings"
+grep -iE "ERESOLVE|EPEERINVALID|peer dep" install.log && echo "peer warnings detected — AC3.2 failed" && exit 1 || echo "AC3.2 OK: no peer warnings"
 ```
 
 Expected: install succeeds with no peer warnings — `ai` is optional, so its
@@ -252,10 +252,16 @@ cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js/arcjet-gua
 npm run test-unit 2>&1 | grep -E "^ℹ (tests|pass|fail)"
 ```
 
-If the number is anywhere near 1–20, the `test-unit` glob is expanding in the
-shell and only one directory ran — Phase 1 Task 1's quoting fix is missing or was
-reverted. Check `grep "test-unit" package.json` for the single quotes before
-believing any green result.
+The total should be ≈423 (baseline 350 + 51 migrated + ~22 new). Any materially
+lower count suggests the glob collapsed: an unquoted `src/**/*.test.ts` expands to
+`src/*/*.test.ts` in the shell, matching only `src/agents/*.test.ts` (~36 tests).
+The `~36` signature is the telltale sign of glob collapse. Verify the fix:
+
+```bash
+grep "test-unit" package.json
+```
+
+Expected: both `test-unit` entries use single quotes.
 
 **Step 2: The runtime suites (AC9.2)**
 

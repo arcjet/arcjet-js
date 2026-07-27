@@ -153,15 +153,15 @@ Phase 5 needs two files from this directory. Copy them **now**, before deleting:
 
 ```bash
 cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js
-mkdir -p /tmp/arcjet-ai-salvage
-cp arcjet-ai/skills/integrate-arcjet-ai/SKILL.md /tmp/arcjet-ai-salvage/
-cp arcjet-ai/README.md /tmp/arcjet-ai-salvage/
-ls -la /tmp/arcjet-ai-salvage/
+SALVAGE_DIR=$(mktemp -d)
+cp arcjet-ai/skills/integrate-arcjet-ai/SKILL.md "$SALVAGE_DIR"/
+cp arcjet-ai/README.md "$SALVAGE_DIR"/
+ls -la "$SALVAGE_DIR"/
 ```
 
-Both are inputs to Phase 5 (the skill relocation and the README port). They are
-also recoverable afterwards with
-`git show <pre-deletion-sha>:arcjet-ai/README.md`, but copying is simpler.
+Both are inputs to Phase 5 (the skill relocation and the README port). Set the
+`SALVAGE_DIR` variable for Phase 5 to use. They are also recoverable afterwards
+with `git show <pre-deletion-sha>:arcjet-ai/README.md`, but copying is simpler.
 
 **Step 5: Delete**
 
@@ -207,7 +207,9 @@ the manifest entry sits mid-object and the linked-versions entry sits mid-array.
 While editing `release-please-config.json`, note that this branch also reordered
 the linked-versions list (it moved `@arcjet/analyze-wasm` to restore alphabetical
 order alongside inserting `@arcjet/ai`). AC6.2 requires an **empty** diff against
-`main`, so that reordering must be reverted too, not just the insertion.
+`main`, so that reordering must be reverted too, not just the insertion. Restore
+main's pre-existing order: `"root", "@arcjet/analyze-wasm", "@arcjet/analyze",
+"@arcjet/astro"`.
 
 **Step 1: Make the edits.**
 

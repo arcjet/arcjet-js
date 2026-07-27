@@ -229,8 +229,10 @@ first, Phase 3 the second. `export {}` is a legitimate empty module under
 Run from the repo root:
 
 ```bash
-npm install 2>&1 | tee /tmp/guard-install.log
-grep -iE "peer dep|ERESOLVE|npm warn" /tmp/guard-install.log || echo "no peer warnings"
+INSTALL_LOG=$(mktemp)
+npm install 2>&1 | tee "$INSTALL_LOG"
+grep -iE "ERESOLVE|EPEERINVALID|peer dep" "$INSTALL_LOG" && echo "peer warnings detected — fix required" && exit 1 || true
+echo "no peer warnings"
 ```
 
 Expected: `no peer warnings`. `ai` and `@ai-sdk/provider-utils` resolve here
@@ -369,7 +371,8 @@ for this task beyond Task 1's already-committed `package.json` fix.
       `@ai-sdk/provider-utils` optional
 - [ ] both are in `devDependencies` at `7.0.36` / `5.0.12`
 - [ ] `files` includes `skills/`
-- [ ] `npm install` from the root succeeds with no peer warnings
+- [ ] `npm install` from the root succeeds with no **peer** warnings (the grep
+      omits unrelated engine warnings and asserts-exit on actual peer issues)
 - [ ] `npm run build` emits all four nested `dist/` files
 - [ ] **the `test-unit` glob patterns are single-quoted in `package.json`**
 - [ ] **nested discovery proven at one AND two directories deep, with the total
