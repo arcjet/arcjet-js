@@ -143,9 +143,21 @@ leave the example silent on the option: `onGuardError` is the one setting whose
 
 **Also show rules derived from tool input.** qw-in had to guess from the README
 whether `rules: ({ orderNumber }) => [...]` was supported. The example's
-`lookupOrder` tool already uses a `rules` callback, so make the input-derived shape
-explicit in a comment, e.g. that the rate-limit key or a moderation rule can be
-computed from the tool's own arguments.
+`lookupOrder` tool already uses a `rules` callback — but
+`support-agent.ts:50` is currently `rules: () => [lookupLimit({ key:
+"demo-user", requested: 1 })]`, which **discards its argument**. A comment alone
+would assert the shape without demonstrating it. Change that line to a genuinely
+input-derived callback, keying the rate limit on the tool's own `orderNumber`:
+
+```ts
+rules: ({ orderNumber }) => [
+  lookupLimit({ key: `order:${orderNumber}`, requested: 1 }),
+],
+```
+
+Keep a short comment noting a moderation rule could be computed the same way. The
+README states it too (Task 4 item 10) — the example shows it, the README
+documents it.
 
 **Show the explicit-call alternative.** qw-in noted a personal preference for
 wiring the guard call inside the `execute` block rather than wrapping the tool:
@@ -444,6 +456,17 @@ state, explicitly:
    the PR). Show both forms and name the trade-off: automatic context extraction
    versus visible control flow.
 
+9. **What `correlationId` is for** — davidmytton asked for this on the skill and
+   it belongs in the README too, in the same words: it joins every guard decision
+   and capture event from one logical **run or session** into a single sequence in
+   the Arcjet console, so the best value is an ID the app already has and can
+   search by (request ID, job ID, ticket ID, review ID); omit it and a ULID is
+   generated. Task 3 item 1 carries the identical paragraph for the skill — port
+   it, do not re-word it.
+10. **`rules` may be a callback over the tool's parsed input** — one line, with a
+   signature example. qw-in had to guess this *from the README*, so answering it
+   only in an example comment leaves the original gap open.
+
 Also add a short "adding a new SDK namespace" note: new
 `src/<vendor-sdk>/v<major>/` directory, new `exports` entry, new optional peer if
 required; no changes to the shared layer or the build config.
@@ -467,6 +490,10 @@ for s in \
   "onGuardError" \
   "ArcjetGuardUnavailableError" \
   "hasFailedOpen" \
+  "correlationId" \
+  "or session" \
+  "contextSchema" \
+  "adding a new SDK namespace" \
   ; do
   grep -q -- "$s" README.md && echo "ok: $s" || echo "MISSING: $s"
 done
@@ -608,10 +635,15 @@ Port the content across, rewritten for the new structure. It covers:
 - `securityMetadata` and the metadata vocabulary
 - threading context through agent, tool, queue, and workflow boundaries
 - the `onDeny` escape hatch
-- the server-side metadata caps — **but apply the same confirm-or-drop rule as
-  Task 3 item 3**: davidmytton flagged this exact claim ("max 20 pairs … the extras
-  are dropped") as no longer accurate. Do not port it as written. Carry the
-  behaviour he confirms, or omit the specific numbers.
+- the server-side metadata caps — **port Task 3 item 3's table verbatim**, do
+  **not** port the current text. davidmytton flagged the existing claim ("max 20
+  pairs … the extras are dropped") as no longer accurate, and arcjet-js#6171
+  settled what replaces it: 128 top-level keys, 4 KiB serialized per value,
+  nesting depth 10, drops reported on `decision.warnings`. There is nothing left
+  to confirm here — an earlier draft of this task said to "carry the behaviour he
+  confirms, or omit the specific numbers", which would leave the README silent
+  while the packaged skill carries the numbers. Two documents disagreeing about
+  the same server behaviour is worse than either alone.
 
 Rewrite every import to the correct layer, and rename **both** sets of
 identifiers: `createAiContext` → `createAgentContext`, `ArcjetAiContext` →
@@ -740,8 +772,11 @@ must report `clean` across the whole repo, with only `docs/design-plans/` and
       `guardAction` inside `execute` is the alternative to wrapping (both qw-in)
 - [ ] Skill explains what `correlationId` is for using "one logical run **or
       session**" (davidmytton's wording), fixes the bare `octokit` reference,
-      documents the `"deny"` default and the `"allow"` opt-out, and either carries
-      the confirmed metadata-cap behaviour or drops the stale claim
+      documents the `"deny"` default and the `"allow"` opt-out, and carries
+      arcjet-js#6171's metadata-cap table (128 keys / 4 KiB / depth 10) rather
+      than the stale "max 20 pairs" claim
+- [ ] README and skill state the **same** metadata-cap numbers — they are ported
+      from one table (Task 3 item 3), not written twice
 - [ ] Skill no longer claims guard API failures fail open — that is now the
       opt-out, not the default
 - [ ] README documents `onGuardError`'s `"deny"` default, both guard-unavailable
