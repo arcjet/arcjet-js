@@ -142,9 +142,9 @@ than carrying over `@arcjet/ai`'s looser ones.
 - **`MockLanguageModelV4`**: A Vercel AI SDK test double for simulating model
   responses, used in this design's `generateText` integration tests for
   `guardTool`.
-- **Fail open**: The design's behaviour when the guard call itself throws — the
+- **Fail open**: The *default* behaviour when the guard call itself throws — the
   wrapped tool still executes rather than being blocked, with a gated warning
-  logged instead.
+  logged instead. `onGuardError: "deny"` selects the opposite (fail closed).
 - **`ARCJET_LOG_LEVEL` / warning gate**: An environment-controlled logging
   threshold used to suppress repeated or default-off warnings (e.g. missing
   context, fail-open, missing capture support), except for a one-time
@@ -220,7 +220,7 @@ function securityMetadata(fields: SecurityMetadataFields): Record<string, string
 function guardAction<T>(
   client: ArcjetAgentClient,
   ctx: ArcjetAgentContext,
-  policy: GuardActionPolicy,
+  policy: GuardActionPolicy,   // includes onGuardError?: OnGuardError
   fn: () => Promise<T>,
 ): Promise<T>;
 
@@ -233,6 +233,20 @@ function captureAction(
 class ArcjetDeniedError extends Error {
   readonly decision: DecisionDeny;
 }
+
+// Shared by both policies (GuardToolPolicy and GuardActionPolicy). Default
+// "allow" preserves Arcjet's fail-open convention; "deny" blocks the call when
+// the guard API itself errors.
+type OnGuardError = "allow" | "deny";
+
+// Thrown by guardAction when onGuardError is "deny" and the guard call itself
+// failed. Deliberately NOT ArcjetDeniedError: "a rule denied you" and "the policy
+// could not be evaluated" are operationally different, and only the latter is
+// usually worth alerting on. Keeps ArcjetDeniedError.decision non-optional.
+class ArcjetGuardUnavailableError extends Error {
+  readonly action: string;
+  readonly cause: unknown;
+}
 ```
 
 ### Contract: `@arcjet/guard/vercel-ai/v7`
@@ -241,21 +255,9 @@ class ArcjetDeniedError extends Error {
 function guardTool<T extends Tool>(
   client: ArcjetAgentClient,
   tool: T,
-  policy: GuardToolPolicy<T>,
+  policy: GuardToolPolicy<T>,  // includes onGuardError?: OnGuardError
 ): Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAgentContext | undefined>;
 
-// Shared by both policies. Default "allow" preserves Arcjet's fail-open
-// convention; "deny" blocks the call when the guard API itself errors.
-type OnGuardError = "allow" | "deny";
-
-// Thrown by guardAction when onGuardError is "deny" and the guard call itself
-// failed. Deliberately NOT ArcjetDeniedError: "a rule denied you" and "the policy
-// could not be evaluated" are operationally different, and only the latter is
-// worth alerting on. Keeps ArcjetDeniedError.decision non-optional.
-class ArcjetGuardUnavailableError extends Error {
-  readonly action: string;
-  readonly cause: unknown;
-}
 
 function aiToolsContext<TOOLS extends ToolSet>(
   ctx: ArcjetAgentContext,

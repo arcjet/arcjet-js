@@ -222,7 +222,7 @@ Expected: all four clean.
 
 **Reconcile the test count — this is the check that catches a silently skipped
 test directory.** `arcjet-ai` had 52 tests across 7 files: context 11,
-generate-text 3, index 1, metadata 3, guard-action 10, guard-tool 22,
+generate-text 3, index 1, metadata 3, protect-action 10, protect-tool 22,
 warn-missing-context 2. Of those, **51 migrate** — only `index.test.ts`'s single
 test is replaced rather than moved:
 
@@ -242,7 +242,7 @@ Plus newly written tests: `src/agents/capture.test.ts` (~3),
 `onGuardError` cases added for AC4.11 — ~4 in
 `src/agents/guard-action.test.ts` and ~2 in `src/vercel-ai/v7/guard-tool.test.ts`.
 
-So the expected total is roughly **guard's 321 baseline + 51 migrated + ~18 new ≈ 390**. Verify
+So the expected total is roughly **guard's 321 baseline + 51 migrated + ~18 new ≈ **390**. Verify
 with:
 
 ```bash

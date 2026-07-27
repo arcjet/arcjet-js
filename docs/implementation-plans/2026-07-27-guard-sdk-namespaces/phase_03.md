@@ -41,7 +41,7 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC4.1 Success:** Guard ALLOW → the wrapped tool executes once and an event is captured with `outcome: "success"`.
 - **guard-sdk-namespaces.AC4.2 Failure:** Guard DENY → the tool never executes and the model receives an `ArcjetDenialResult` carrying `reason` and `retryable`.
 - **guard-sdk-namespaces.AC4.3 Edge:** A `RATE_LIMIT` denial carries `retryAfterSeconds`; a non-rate-limit denial omits it even when a co-occurring rule result has a reset time.
-- **guard-sdk-namespaces.AC4.4 Failure:** The guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
+- **guard-sdk-namespaces.AC4.4 Failure:** With the default `onGuardError: "allow"`, the guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
 - **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId` and rejects `metadata` that is not a string-to-string record.
@@ -70,10 +70,10 @@ retarget them, do not rewrite or expand them beyond the ACs listed.
 
 | From (`arcjet-ai/`) | To (`arcjet-guard/`) | Notes |
 |---|---|---|
-| `src/guard-tool.ts` | `src/vercel-ai/v7/guard-tool.ts` | straight move + import/type renames |
+| `src/protect-tool.ts` | `src/vercel-ai/v7/guard-tool.ts` | renamed file; `protectTool` → `guardTool` |
 | `src/context.ts` (the `aiToolsContext` half) | `src/vercel-ai/v7/tools-context.ts` | the other half of the Phase 2 split |
 | — | `src/vercel-ai/v7/index.ts` | replaces the Phase 1 `export {}` placeholder |
-| `test/guard-tool.test.ts` | `src/vercel-ai/v7/guard-tool.test.ts` | 22 tests |
+| `test/protect-tool.test.ts` | `src/vercel-ai/v7/guard-tool.test.ts` | 22 tests |
 | `test/generate-text.test.ts` | `src/vercel-ai/v7/generate-text.test.ts` | 3 tests |
 | `test/warn-missing-context.test.ts` | `src/vercel-ai/v7/warn-missing-context.test.ts` | 2 tests; must stay its own file |
 | `test/context.test.ts` (the `aiToolsContext` test) | `src/vercel-ai/v7/tools-context.test.ts` | 1 test split out in Phase 2 |
@@ -172,7 +172,7 @@ Expected: the tools-context test passes.
 
 **Implementation:**
 
-Move `arcjet-ai/src/guard-tool.ts`. It keeps its AI SDK imports
+Move `arcjet-ai/src/protect-tool.ts` → `src/vercel-ai/v7/guard-tool.ts`. It keeps its AI SDK imports
 (`jsonSchema` value import from `ai`; `InferToolInput`, `InferToolOutput`, `Tool`
 type imports). Change everything else to source-relative:
 
@@ -270,14 +270,15 @@ Expected: no errors.
 <!-- START_TASK_4 -->
 ### Task 4: `guardTool` tests
 
-**Verifies:** `guard-sdk-namespaces.AC4.1`, `AC4.2`, `AC4.3`, `AC4.4`, `AC4.5`, `AC4.7`
+**Verifies:** `guard-sdk-namespaces.AC4.1`, `AC4.2`, `AC4.3`, `AC4.4`, `AC4.5`,
+`AC4.7`, `AC4.11` (the `guardTool` half)
 
 **Files:**
 - Create: `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (unit)
 
 **Implementation:**
 
-Move `arcjet-ai/test/guard-tool.test.ts` (22 tests). Retarget imports:
+Move `arcjet-ai/test/protect-tool.test.ts` → `src/vercel-ai/v7/guard-tool.test.ts` (22 tests). Retarget imports:
 subjects from `./guard-tool.ts`, `createAgentContext` from
 `../../agents/context.ts`, fixtures from `../../../test/_shared/stub-client.ts`
 and `../../../test/_shared/log-level.ts`. Rename `createAiContext` →
@@ -329,7 +330,7 @@ Keep `setLogLevel(...)` with restore in `finally` throughout.
 ```bash
 cd arcjet-guard && npm run test-unit
 ```
-Expected: 22 guard-tool tests pass.
+Expected: ~24 guard-tool tests pass (22 migrated + ~2 new AC4.11 cases).
 
 **Commit:** `test(guard): move guardTool tests into vercel-ai/v7`
 <!-- END_TASK_4 -->
@@ -429,7 +430,9 @@ Expected: builds clean, both files present.
 <!-- START_TASK_7 -->
 ### Task 7: Namespace surface, proxy identity, and export-map tests
 
-**Verifies:** `guard-sdk-namespaces.AC1.1`, `AC1.2`, `AC1.3`, `AC1.4`, `AC1.5`, `AC1.6`, `AC2.3`
+**Verifies:** `guard-sdk-namespaces.AC1.1`, `AC1.2`, `AC1.3`, `AC1.4`, `AC1.5`,
+`AC1.6`, `AC2.3`, `AC5.4` (partial — `guardTool` / `GuardToolPolicy` exported, no
+`protectTool` identifier under `src/vercel-ai/`)
 
 **Files:**
 - Create: `arcjet-guard/src/vercel-ai/v7/index.test.ts` (unit)

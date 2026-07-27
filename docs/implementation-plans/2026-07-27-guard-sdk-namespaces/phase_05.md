@@ -21,7 +21,7 @@ bug.
 
 This phase implements and tests:
 
-### guard-sdk-namespaces.AC5: The context rename is complete
+### guard-sdk-namespaces.AC5: The renames are complete
 - **guard-sdk-namespaces.AC5.2 Success:** No `createAiContext` or `ArcjetAiContext` identifier remains anywhere in source, tests, docs, the skill, or the example.
 
 Completed by Task 7's final sweep, after Task 6 ports the README and Task 7
@@ -49,7 +49,7 @@ The example's four relevant files and their exact imports:
 |---|---|---|
 | `examples/nextjs-ai-agent/lib/arcjet.ts` | 1 | `import { launchArcjet } from "@arcjet/guard";` |
 | `examples/nextjs-ai-agent/app/api/agent/route.ts` | 1 | `import { createAiContext, securityMetadata } from "@arcjet/ai";` |
-| `examples/nextjs-ai-agent/workflows/support-agent.ts` | 1–7 | `import { aiToolsContext, captureAction, guardAction, guardTool, securityMetadata } from "@arcjet/ai";` |
+| `examples/nextjs-ai-agent/workflows/support-agent.ts` | 1–7 | `import { aiToolsContext, captureAction, protectAction, protectTool, securityMetadata } from "@arcjet/ai";` — note the **old** verb names, which Task 1 must rename |
 | `examples/nextjs-ai-agent/workflows/support-agent.ts` | 8 | `import type { ArcjetAiContext } from "@arcjet/ai";` |
 | `examples/nextjs-ai-agent/workflows/support-agent.ts` | 9 | `import { slidingWindow, tokenBucket } from "@arcjet/guard";` |
 
@@ -114,6 +114,11 @@ import { slidingWindow, tokenBucket } from "@arcjet/guard";
 
 Rename the `ArcjetAiContext` type reference in `SupportAgentInput` to
 `ArcjetAgentContext`.
+
+**Also rename the call sites.** This file calls `protectTool(` once and
+`protectAction(` once, and names them in the import list — **4 occurrences total**.
+Change them to `guardTool(` / `guardAction(`. The import block above already shows
+the new names; the call sites are separate edits and are easy to miss.
 
 Using the single proxied path here is deliberate: it exercises AC1.4 in a real
 consumer and demonstrates the intended ergonomics. Do **not** split these across
@@ -251,6 +256,11 @@ Content changes required throughout:
   from `@arcjet/guard/vercel-ai/v7`
 - `createAiContext` → `createAgentContext`, `ArcjetAiContext` →
   `ArcjetAgentContext`
+- **`protectTool` → `guardTool` and `protectAction` → `guardAction`** (plus
+  `ProtectToolPolicy` → `GuardToolPolicy`, `ProtectActionPolicy` →
+  `GuardActionPolicy`). There are **8** such occurrences in the current
+  `SKILL.md`. Missing these ships a packaged skill that instructs agents to call
+  exports which do not exist
 - keep the existing warning that the compiler will not catch a missing
   `toolsContext`
 - state that the version segment is explicit and there is no unversioned alias
@@ -506,11 +516,22 @@ Port the content across, rewritten for the new structure. It covers:
 - `securityMetadata` and the metadata vocabulary
 - threading context through agent, tool, queue, and workflow boundaries
 - the `onDeny` escape hatch
-- the server-side metadata caps
+- the server-side metadata caps — **but apply the same confirm-or-drop rule as
+  Task 3 item 3**: davidmytton flagged this exact claim ("max 20 pairs … the extras
+  are dropped") as no longer accurate. Do not port it as written. Carry the
+  behaviour he confirms, or omit the specific numbers.
 
-Rewrite every import to the correct layer, rename `createAiContext` →
-`createAgentContext` and `ArcjetAiContext` → `ArcjetAgentContext`, and drop
-anything describing `@arcjet/ai` as a separately installable package.
+Rewrite every import to the correct layer, and rename **both** sets of
+identifiers: `createAiContext` → `createAgentContext`, `ArcjetAiContext` →
+`ArcjetAgentContext`, **`protectTool` → `guardTool`, `protectAction` →
+`guardAction`**, `ProtectToolPolicy` → `GuardToolPolicy`, `ProtectActionPolicy` →
+`GuardActionPolicy`. There are **10** verb occurrences in the source
+`arcjet-ai/README.md`. Drop anything describing `@arcjet/ai` as a separately
+installable package.
+
+This file is **published**, so a missed verb rename ships a README documenting an
+export that does not exist — the single highest-visibility failure mode in this
+phase.
 
 Integrate with Task 4's convention section rather than appending a disconnected
 block: the convention explains *where* things live, this explains *how* to use
@@ -538,7 +559,8 @@ blocks that must compile against installed typings.
 <!-- START_TASK_7 -->
 ### Task 7: Rewrite the pilot test plan, then run the final sweep
 
-**Verifies:** `guard-sdk-namespaces.AC5.2` (completes it)
+**Verifies:** `guard-sdk-namespaces.AC5.2` and `guard-sdk-namespaces.AC5.4`
+(the final sweep completes both)
 
 **Files:**
 - Modify: `docs/test-plans/2026-07-23-pilot-framework-helper.md`
@@ -559,6 +581,7 @@ Exact edits required — verified counts, so there is nothing to go hunting for:
 | `@arcjet/ai` | 2 — the title on line 1, and line 22's "Installs cleanly against built `@arcjet/ai`" | `@arcjet/guard` |
 | `arcjet-ai/` paths | 9 — line 5 (`arcjet-ai/test/*.test.ts`), line 15 (the SKILL.md path), and the AC-to-test coverage table around lines 84–89 | the new homes: `arcjet-guard/src/agents/*.test.ts`, `arcjet-guard/src/vercel-ai/v7/*.test.ts`, and `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` |
 | `createAiContext` / `ArcjetAiContext` | **0** — neither appears | nothing to do |
+| `protectTool` / `protectAction` | **1** — line 43 | `guardTool` / `guardAction` |
 
 Also update line 5's test count: it says 47 tests in `arcjet-ai/test/*.test.ts`;
 the migrated suites total 51 across the two new directories (see the Phase 6
@@ -582,7 +605,7 @@ here would orphan that citation.
 
 ```bash
 cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js
-grep -c "@arcjet/ai" docs/test-plans/2026-07-23-pilot-framework-helper.md || echo "0 — clean"
+grep -cE "@arcjet/ai|protectTool|protectAction" docs/test-plans/2026-07-23-pilot-framework-helper.md || echo "0 — clean"
 ```
 
 Expected: `0 — clean`.

@@ -80,14 +80,14 @@ All of AC4 is behaviour **preservation** of an existing, passing suite. Do not r
 | `guard-sdk-namespaces.AC4.1` | Guard ALLOW → the wrapped tool executes once and an event is captured with `outcome: "success"`. | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (returns the sentinel by reference; capture carries the guard `decisionId`) | Phase 3 Task 4 |
 | `guard-sdk-namespaces.AC4.2` | Guard DENY → the tool never executes and the model receives an `ArcjetDenialResult` carrying `reason` and `retryable`. | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (`{ arcjetDenied: true, reason, message, retryable }`; the `onDeny` hook can reshape the payload) | Phase 3 Task 4 |
 | `guard-sdk-namespaces.AC4.3` | A `RATE_LIMIT` denial carries `retryAfterSeconds`; a non-rate-limit denial omits it even when a co-occurring rule result has a reset time. | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` — three cases: rate-limit-with-reset includes it; prompt-injection-with-reset must **not** include it; rate-limit-without-reset falls back to the "later" wording | Phase 3 Task 4 |
-| `guard-sdk-namespaces.AC4.4` | The guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`. | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` — both fail-open paths (guard throws; guard returns a decision whose `hasFailedOpen()` is true), each with its own warning | Phase 3 Task 4 (engine: Phase 2 Task 7) |
+| `guard-sdk-namespaces.AC4.4` | With the default `onGuardError: "allow"`, the guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`. | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` — both fail-open paths (guard throws; guard returns a decision whose `hasFailedOpen()` is true), each with its own warning | Phase 3 Task 4 (engine: Phase 2 Task 7) |
 | `guard-sdk-namespaces.AC4.5` | A context's `correlationId` reaches both the guard call and the capture call. | unit **+** integration | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (explicit `policy.correlationId` overrides the context's; the context's is used otherwise; metadata merges context-then-policy) **and** `arcjet-guard/src/vercel-ai/v7/generate-text.test.ts` (real `generateText` loop with `MockLanguageModelV4` from `ai/test`) | Phase 3 Tasks 4 and 5 |
 | `guard-sdk-namespaces.AC4.6` | A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set. | unit **+** integration | `arcjet-guard/src/vercel-ai/v7/warn-missing-context.test.ts` (2 tests) — **must stay its own file**: it asserts first-occurrence-versus-later behaviour of the module-level `warnedMissingToolsContext` flag, which is only deterministic because `node --test` runs each file in its own process. Second leg: the no-`toolsContext` case in `generate-text.test.ts` | Phase 3 Task 5 |
 | `guard-sdk-namespaces.AC4.7` | The injected `contextSchema` rejects a non-string `correlationId` and rejects `metadata` that is not a string-to-string record. | unit | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` — `contextSchema.validate()` accepts `undefined`, a well-formed context and string metadata; rejects a numeric `correlationId`, non-string metadata values, and non-object metadata | Phase 3 Tasks 3 and 4 |
 | `guard-sdk-namespaces.AC4.8` | `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function. | unit | `arcjet-guard/src/agents/guard-action.test.ts` — ALLOW runs the function once and resolves with the same reference; DENY throws with `reason === "RATE_LIMIT"`, a message naming action and reason, and the function never called | Phase 2 Task 9 |
 | `guard-sdk-namespaces.AC4.9` | `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key. | unit | `arcjet-guard/src/agents/guard-action.test.ts` — one event, metadata merged context-then-options, `decisionId` undefined, **no** `outcome` key | Phase 2 Task 9 |
-| `guard-sdk-namespaces.AC4.11` | With `onGuardError: "deny"`, a guard-API error blocks execution; `guardTool` returns `ArcjetDenialResult` with `reason: "ERROR"` / `retryable: true`, `guardAction` throws `ArcjetGuardUnavailableError` with the original error as `cause`; outcome captured as `denied`. | unit | `arcjet-guard/src/agents/guard-action.test.ts` (~4 cases: function never called; error `cause` by reference; **not** `instanceof ArcjetDeniedError`; a real DENY still throws `ArcjetDeniedError`) and `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (~2 cases: denial result shape with no `retryAfterSeconds`; `policy.onDeny` NOT invoked on the outage path) | Phase 2 Tasks 7-9; Phase 3 Tasks 3-4 |
 | `guard-sdk-namespaces.AC4.10` | A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning. | unit | `arcjet-guard/src/agents/capture.test.ts` (new file, ~3 tests) — missing method: no throw, warning when `ARCJET_LOG_LEVEL` permits; inverse: present method called once with the passed options and no warning; plus a throwing `experimental_capture` is swallowed | Phase 2 Task 4 |
+| `guard-sdk-namespaces.AC4.11` | With `onGuardError: "deny"`, a guard-API error blocks execution; `guardTool` returns `ArcjetDenialResult` with `reason: "ERROR"` / `retryable: true`, `guardAction` throws `ArcjetGuardUnavailableError` with the original error as `cause`; outcome captured as `denied`. | unit | `arcjet-guard/src/agents/guard-action.test.ts` (~4 cases: function never called; error `cause` by reference; **not** `instanceof ArcjetDeniedError`; a real DENY still throws `ArcjetDeniedError`) and `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (~2 cases: denial result shape with no `retryAfterSeconds`; `policy.onDeny` NOT invoked on the outage path) | Phase 2 Tasks 7-9; Phase 3 Tasks 3-4 |
 
 Cross-cutting requirements for the whole AC4 block:
 
@@ -96,14 +96,14 @@ Cross-cutting requirements for the whole AC4 block:
 - **Type imports resolve to source, never the package name.** `Decision` (`src/types.ts:445`), `DecisionDeny` (`:437`), `RuleWithInput` (`:1652`), `GuardOptions` (`:1662`) come from `../types.ts` / `../../types.ts`. A `from "@arcjet/guard"` import inside `arcjet-guard` is a stale self-reference against its own possibly-outdated `dist/` typings — this applies to `guard-tool.test.ts`'s line-4 `DecisionDeny` import too.
 - **`Symbol.for("arcjet:ai:protected-tool")` is deliberately unchanged.** `tools-context.test.ts` hardcodes it via `Symbol.for(...)`, which is the actual cross-module contract. AC5.2 does not cover it. A mismatch between the symbol `guardTool` writes and the one `aiToolsContext` reads silently drops context for every tool.
 
-### guard-sdk-namespaces.AC5 — The context rename is complete
+### guard-sdk-namespaces.AC5 — The renames are complete
 
 | ID | Criterion | Type | Test file / location | Produced by |
 |---|---|---|---|---|
 | `guard-sdk-namespaces.AC5.1` | `createAgentContext` and `ArcjetAgentContext` are the exported names. | unit | `arcjet-guard/src/agents/index.test.ts` — compares sorted `Object.keys` of a namespace import against a literal list, so an accidental addition *or* removal fails loudly. Reinforced structurally by `arcjet-guard/src/agents/context.test.ts` importing both names and compiling | Phase 2 Tasks 5, 6, 10, 11 |
 | `guard-sdk-namespaces.AC5.2` | No `createAiContext` or `ArcjetAiContext` identifier remains anywhere in source, tests, docs, the skill, or the example. | shell-check (authoritative) **+** unit (partial) | **Authoritative gate:** repo-wide `grep` sweep excluding only `node_modules`, `package-lock`, `docs/design-plans/`, `docs/implementation-plans/` (§3, gate SG-6). **Partial:** `arcjet-guard/src/agents/index.test.ts` asserts no file under `src/agents/` or `test/_shared/` contains either identifier | Partial: Phase 2 Task 11. **Authoritative: Phase 5 Task 7 Step 3** |
-| `guard-sdk-namespaces.AC5.4` | The enforcing helpers are exported as `guardTool` / `guardAction` (with `GuardToolPolicy` / `GuardActionPolicy`); no `protectTool`, `protectAction`, `ProtectToolPolicy` or `ProtectActionPolicy` identifier remains. | unit **+** shell-check | Barrel surface assertions in `src/agents/index.test.ts` and `src/vercel-ai/v7/index.test.ts`; authoritative repo-wide sweep at Phase 5 Task 7 Step 3 (§3, gate SG-6, whose pattern now also matches the four old verb identifiers) | Phase 2 (guardAction), Phase 3 (guardTool), Phase 5 Task 7 (sweep) |
 | `guard-sdk-namespaces.AC5.3` | `createAgentContext` rejects a caller-supplied `correlationId` that is not a string, is empty, exceeds 256 characters, or contains non-printable characters — naming the offending problem in the error and never truncating. | unit | `arcjet-guard/src/agents/context.test.ts` (10 tests after the split) — ULID shape (26 Crockford base32 chars) and uniqueness; supplied id preserved verbatim; `correlationId: undefined` generates rather than throws; rejection of 257 chars, embedded newline, non-ASCII, empty string, and a non-string value with the offending type named; JSON round-trip fidelity | Phase 2 Tasks 5 and 6 |
+| `guard-sdk-namespaces.AC5.4` | The enforcing helpers are exported as `guardTool` / `guardAction` (with `GuardToolPolicy` / `GuardActionPolicy`); no `protectTool`, `protectAction`, `ProtectToolPolicy` or `ProtectActionPolicy` identifier remains. | unit **+** shell-check | Barrel surface assertions in `src/agents/index.test.ts` and `src/vercel-ai/v7/index.test.ts`; authoritative repo-wide sweep at Phase 5 Task 7 Step 3 (§3, gate SG-6, whose pattern now also matches the four old verb identifiers) | Phase 2 (guardAction), Phase 3 (guardTool), Phase 5 Task 7 (sweep) |
 
 Notes:
 
@@ -155,7 +155,7 @@ Note: the AC8.3 grep must use those **distinctive** strings. Greping for `option
 
 | ID | Criterion | Type | Test file / location | Produced by |
 |---|---|---|---|---|
-| `guard-sdk-namespaces.AC9.1` | Build, `tsconfig.json` and `tsconfig.lint.json` typechecks, lint, and unit tests with coverage all pass. | shell-check (suite gate) | From `arcjet-guard/`: `npm run build`; `npm run typecheck` (runs **both** `tsc --noEmit` and `tsc --project tsconfig.lint.json --noEmit`); `npm run lint` (`oxlint --tsconfig=tsconfig.lint.json`); `npm run test-unit` (unit + coverage). **Plus the mandatory count reconciliation to ≈384** — see trap **T1** in §5 | Phase 6 Task 3 Step 1 (incrementally gated in every earlier phase) |
+| `guard-sdk-namespaces.AC9.1` | Build, `tsconfig.json` and `tsconfig.lint.json` typechecks, lint, and unit tests with coverage all pass. | shell-check (suite gate) | From `arcjet-guard/`: `npm run build`; `npm run typecheck` (runs **both** `tsc --noEmit` and `tsc --project tsconfig.lint.json --noEmit`); `npm run lint` (`oxlint --tsconfig=tsconfig.lint.json`); `npm run test-unit` (unit + coverage). **Plus the mandatory count reconciliation to ≈390** — see trap **T1** in §5 | Phase 6 Task 3 Step 1 (incrementally gated in every earlier phase) |
 
 `guard-sdk-namespaces.AC9.2` is **not** fully verifiable on this machine → see §2 and §4.
 
@@ -234,7 +234,7 @@ These are asserting commands rather than test files. They are gates: a failure b
 | **SG-3** | Release automation unwound to zero diff | `git diff main -- .github/.release-please-manifest.json .github/release-please-config.json .github/workflows/publish.yml` → **no output**; then `git diff main --name-only -- .github/ \| grep -v reusable-examples.yml` → no output. Supporting: `json.load` both JSON files (`valid`); `grep -c "workspace @arcjet" publish.yml` matches `git show main:.github/workflows/publish.yml \| grep -c "workspace @arcjet"` (both 31). The former "empty continuation lines" check was removed — it was vacuous, and a dangling continuation would appear as a diff anyway | AC6.2 | Phase 4 Task 2 Step 2, Task 3 Steps 2, 4, 5; re-confirmed Phase 6 Task 3 Step 5 |
 | **SG-4** | Workspace gone | `npm install` succeeds, then `npm ls --workspaces --depth=0 2>&1 \| grep "@arcjet/ai"` finds nothing. **Pre-delete safety gate:** the 23-path `[ -f "$f" ] \|\| MISSING=1` loop over every Phase 2/3 destination must print `all destinations present` and exit 0 before `git rm -r arcjet-ai` | AC6.1 | Phase 4 Task 1 Steps 1, 6 |
 | **SG-5** | Example CI entry survives | `grep -n "nextjs-ai-agent" .github/workflows/reusable-examples.yml` → exactly one match | AC6.3 | Phase 4 Task 3 Step 3 |
-| **SG-6** | Repo-wide identifier sweep | `grep -rn "createAiContext\|ArcjetAiContext\|@arcjet/ai" --include=*.ts --include=*.tsx --include=*.md --include=*.json . \| grep -v -e node_modules -e package-lock -e 'docs/design-plans/' -e 'docs/implementation-plans/' \|\| echo "clean"`. `clean` required **only** at Phase 5 Task 7 Step 3 | AC5.2 (authoritative) | Phase 5 Task 7 Step 3 (dry run at Task 5 Step 2) |
+| **SG-6** | Repo-wide identifier sweep | `grep -rn "createAiContext\|ArcjetAiContext\|@arcjet/ai\|protectTool\|protectAction\|ProtectToolPolicy\|ProtectActionPolicy" --include=*.ts --include=*.tsx --include=*.md --include=*.json . \| grep -v -e node_modules -e package-lock -e 'docs/design-plans/' -e 'docs/implementation-plans/' \|\| echo "clean"`. `clean` required **only** at Phase 5 Task 7 Step 3 | AC5.2 **and** AC5.4 (authoritative for both) | Phase 5 Task 7 Step 3 (dry run at Task 5 Step 2) |
 | **SG-7** | Example is free of `@arcjet/ai` | `grep -rn "@arcjet/ai" examples/nextjs-ai-agent --include=*.ts --include=*.tsx --include=*.json --include=*.md \| grep -v package-lock \|\| echo "clean"`. Also `grep -c "arcjet-ai" examples/nextjs-ai-agent/package-lock.json` → 0, after `npm install` **inside the example directory** (it carries its own lockfile; a root install will not remove the dependency) | AC7.1 | Phase 5 Task 1 Steps 2, 3 |
 | **SG-8** | `npm pack --dry-run` skills check | `python3 -c "import json; print('skills/' in json.load(open('package.json'))['files'])"` → `True`; `npm pack --dry-run 2>&1 \| grep -c "skills/"` → non-zero | AC8.1 | Phase 5 Task 3 Step 2 |
 | **SG-9** | README convention content | distinctive-string greps for `@arcjet/guard/agents`, `@arcjet/guard/vercel-ai/v7`, `vercel-eve/v1`, `peerDependenciesMeta`, `ERR_PACKAGE_PATH_NOT_EXPORTED`; plus the no-alias rule and the pnpm caveat. Also the Task 6 port check: `guardTool`, `guardAction`, `captureAction`, `securityMetadata`, `onDeny` all present | AC8.3, AC8.2 input | Phase 5 Task 4 Step 2, Task 6 Step 2 |
@@ -285,8 +285,8 @@ Without globstar, `sh` expands `src/**/*.test.ts` as `src/*/*.test.ts` — exact
   |---|---|
   | guard baseline (`main`) | 321 |
   | migrated from `arcjet-ai/test/` | 51 |
-  | newly written (`agents/capture` ~3, `agents/index` ~3, `vercel-ai/v7/index` ~6) | ~12 |
-  | **expected total** | **≈384** |
+  | newly written (`agents/capture` ~3, `agents/index` ~3, `vercel-ai/v7/index` ~6, AC4.11 `onGuardError` cases ~6) | ~18 |
+  | **expected total** | **≈390** |
 
   The 51 migrated: `agents/context` 10, `vercel-ai/v7/tools-context` 1, `agents/metadata` 3, `agents/guard-action` 10, `vercel-ai/v7/guard-tool` 22, `vercel-ai/v7/warn-missing-context` 2, `vercel-ai/v7/generate-text` 3. (`arcjet-ai` had 52; only `index.test.ts`'s single test is *replaced* rather than moved.)
 - **A total anywhere near 1–20 means the glob is collapsing, not that tests were removed.** Before believing any green result, run `grep "test-unit" package.json` and confirm the single quotes. This applies at Phase 2, 3, 4, 5 and 6 — the quoting can be reverted by any later `package.json` edit.
@@ -304,7 +304,7 @@ In this environment `grep -rn … .` emits paths as `docs/design-plans/foo.md`, 
 
 | Test file | Original line | Assertion |
 |---|---|---|
-| `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` | was `test/guard-tool.test.ts:539` | `JSON.stringify(call).includes("no ArcjetAgentContext")` |
+| `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` | was `test/protect-tool.test.ts:539` | `JSON.stringify(call).includes("no ArcjetAgentContext")` |
 | `arcjet-guard/src/vercel-ai/v7/generate-text.test.ts` | was `test/generate-text.test.ts:176` | same substring |
 | `arcjet-guard/src/vercel-ai/v7/warn-missing-context.test.ts` | was `test/warn-missing-context.test.ts:44` | same substring |
 
@@ -325,12 +325,12 @@ change in every case. The message string and all three assertions **must change 
 | AC1 — subpath resolution | 6 | 6 | 0 |
 | AC2 — no AI SDK coupling | 3 | 3 (2 packaging-only) | 0 |
 | AC3 — optional peers | 2 | 2 (1 packaging-only) | 0 |
-| AC4 — behaviour preserved | 10 | 10 | 0 |
-| AC5 — rename complete | 3 | 3 | 0 |
+| AC4 — behaviour preserved | 11 | 11 | 0 |
+| AC5 — renames complete | 4 | 4 | 0 |
 | AC6 — package removed | 3 | 3 | 0 |
 | AC7 — example migrated | 2 | 2 | 0 |
 | AC8 — documentation | 3 | 2 | 1 (AC8.2) |
 | AC9 — verification green | 2 | 1 | 1 (AC9.2) |
-| **Total** | **34** | **32** | **2** |
+| **Total** | **36** | **34** | **2** |
 
-Of the 32 automated: 12 unit-test-anchored, 2 with an additional integration leg, 3 packaging-only (AC2.2, AC2.3, AC3.2 — Phase 6 Task 2), 1 integration-only (AC7.2), and the remainder shell-check gates per §3.
+Of the 34 automated: 12 unit-test-anchored, 2 with an additional integration leg, 3 packaging-only (AC2.2, AC2.3, AC3.2 — Phase 6 Task 2), 1 integration-only (AC7.2), and the remainder shell-check gates per §3.
