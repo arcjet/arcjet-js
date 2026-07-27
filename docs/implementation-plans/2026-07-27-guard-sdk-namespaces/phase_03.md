@@ -41,11 +41,12 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC4.1 Success:** Guard ALLOW → the wrapped tool executes once and an event is captured with `outcome: "success"`.
 - **guard-sdk-namespaces.AC4.2 Failure:** Guard DENY → the tool never executes and the model receives an `ArcjetDenialResult` carrying `reason` and `retryable`.
 - **guard-sdk-namespaces.AC4.3 Edge:** A `RATE_LIMIT` denial carries `retryAfterSeconds`; a non-rate-limit denial omits it even when a co-occurring rule result has a reset time.
-- **guard-sdk-namespaces.AC4.4 Failure:** With `onGuardError: "allow"` set explicitly (opting out of the default), either guard-unavailable signal → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
+- **guard-sdk-namespaces.AC4.4 Failure:** With `onGuardError: "allow"` set explicitly (opting out of the default), either guard-unavailable signal → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`. Both signals are covered: the guard call throwing, and a returned decision whose `hasFailedOpen()` is `true`.
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
 - **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId`, and rejects `metadata` that is not a plain object. It **accepts** any plain-object metadata regardless of value types — nested objects, arrays, numbers, booleans, `null` — matching `ArcjetMetadata` (arcjet-js#6171).
-- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **any** guard-unavailable signal → the wrapped tool does NOT execute, the model receives an `ArcjetDenialResult` with `reason: "ERROR"`, `retryable: true`, and a fixed `retryAfterSeconds` backoff hint, and the outcome is captured as `unavailable` (**not** `denied` — a policy outage and a policy denial must be distinguishable on the capture stream, which is the surface operators actually query). `policy.onDeny` is not invoked on any signal. (Phase 2 built the engine and the `guardAction` half; this phase covers `guardTool`.)
+- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **any** guard-unavailable signal → the wrapped tool or action does NOT execute and the outcome is captured as `unavailable` (**not** `denied` — a policy outage and a policy denial must stay distinguishable on the capture stream, which is the surface operators actually query). `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"`, `retryable: true`, and the fixed `retryAfterSeconds` of AC4.13. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` (see AC4.12 for how the signals are carried on it). `policy.onDeny` is not invoked on any signal.
+- **guard-sdk-namespaces.AC4.13 Edge:** The fail-closed tool result carries `retryAfterSeconds: 5`. Omitting a hint entirely invites an immediate model retry, and every retry issues another `guard()` call that also fails — amplifying load against an already-degraded Arcjet at every consequential call site at once. The value is a fixed backoff hint, **not** a prediction of when the policy becomes evaluable; 5 seconds is chosen as comfortably longer than the client's 1-second default request timeout, so a retry cannot land inside the same timeout window. It is asserted as an exact value, not merely as present.
 
 ---
 
@@ -214,11 +215,11 @@ shape would be harder to prompt against:
   reason: "ERROR",
   message: "<explains the security check could not be completed; retry later>",
   retryable: true,
-  retryAfterSeconds: <fixed backoff hint>,
+  retryAfterSeconds: 5,
 }
 ```
 
-The fixed `retryAfterSeconds` is a backoff hint (see AC4.13): omitting it entirely would invite an immediate model retry, and every retry issues another `guard()` call that also fails — amplifying load against an already-degraded Arcjet. The value is not a claim about when the policy will be evaluable again. Keeping one result type is deliberate: a model only ever observes tool results, and a second shape would be harder to prompt against. `policy.onDeny`, if supplied, must **not** be invoked for the outage path — it receives a `DecisionDeny`, and there is no decision here. Document that explicitly in the JSDoc.
+`retryAfterSeconds` is **exactly `5`** (see AC4.13) — a fixed backoff hint, not a prediction of when the policy becomes evaluable. 5 seconds comfortably exceeds the client's 1-second default request timeout, so a retry cannot land inside the same timeout window. Omitting it entirely would invite an immediate model retry, and every retry issues another `guard()` call that also fails — amplifying load against an already-degraded Arcjet. Note this is the one place a non-`RATE_LIMIT` result deliberately carries the field, which is why AC4.3 is scoped to real `DecisionDeny` results: an implementation written as "omit whenever `reason !== "RATE_LIMIT"`" satisfies AC4.3 and breaks AC4.13. Keeping one result type is deliberate: a model only ever observes tool results, and a second shape would be harder to prompt against. `policy.onDeny`, if supplied, must **not** be invoked for the outage path — it receives a `DecisionDeny`, and there is no decision here. Document that explicitly in the JSDoc.
 
 **Rename the four runtime message strings** (see phase_02 convention 8 for the
 full table and rationale). In this file:

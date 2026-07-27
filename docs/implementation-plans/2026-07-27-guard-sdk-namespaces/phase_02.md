@@ -35,9 +35,9 @@ AI SDK, which is only possible in Phase 6 Task 2.)
 - **guard-sdk-namespaces.AC4.8 Success:** `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
 - **guard-sdk-namespaces.AC4.9 Success:** `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key.
 - **guard-sdk-namespaces.AC4.10 Edge:** A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning.
-- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **any** guard-unavailable signal → the wrapped tool or action does NOT execute and the outcome is captured as `unavailable` (**not** `denied` — a policy outage and a policy denial must be distinguishable on the capture stream, which is the surface operators actually query). `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"`, `retryable: true`, and a fixed `retryAfterSeconds` backoff hint. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` (see AC4.12 for how the signals are carried on it). `policy.onDeny` is not invoked on any signal.
-- **guard-sdk-namespaces.AC4.12 Failure:** The guard-unavailable signals stay distinguishable on `ArcjetGuardUnavailableError`. When the guard call **threw**, `.cause` is that error by reference and `.decision` is `undefined`. When a decision **failed open**, `.decision` is that `DecisionAllow` and `.cause` is `undefined`. Both legs must assert the populated field **and** that the other reads `undefined` — asserting only the populated one passes against an implementation that always sets both. Test with `=== undefined`, **not** `in`: `decision` is a declared optional field, so it is an own property whose value is `undefined` on the thrown path.
-- **guard-sdk-namespaces.AC4.13 Edge:** The fail-closed tool result carries a **fixed** `retryAfterSeconds` backoff hint. Omitting it entirely invites an immediate model retry, and every retry issues another `guard()` call that also fails — amplifying load against an already-degraded Arcjet, at every consequential call site at once. The value is a backoff hint, not a claim about when the policy will be evaluable again.
+- **guard-sdk-namespaces.AC4.4 Failure:** With `onGuardError: "allow"` set explicitly (opting out of the default), either guard-unavailable signal → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`. Both signals are covered: the guard call throwing, and a returned decision whose `hasFailedOpen()` is `true`.
+- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **any** guard-unavailable signal → the wrapped tool or action does NOT execute and the outcome is captured as `unavailable` (**not** `denied` — a policy outage and a policy denial must stay distinguishable on the capture stream, which is the surface operators actually query). `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"`, `retryable: true`, and the fixed `retryAfterSeconds` of AC4.13. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` (see AC4.12 for how the signals are carried on it). `policy.onDeny` is not invoked on any signal.
+- **guard-sdk-namespaces.AC4.12 Failure:** The guard-unavailable signals stay distinguishable on `ArcjetGuardUnavailableError`. When the guard call **threw**, `.cause` is that error by reference and `.decision` is `undefined`. When a decision **failed open**, `.decision` is that `DecisionAllow` (so `errorResults()` yields the error detail) and `.cause` is `undefined`. Both legs assert the populated field **and** that the other reads `undefined` — asserting only the populated one passes against an implementation that always sets both. Test with `=== undefined`, **not** `in`: `decision` is a declared optional field, so it is an own property whose value is `undefined` on the thrown path.
 
 ### guard-sdk-namespaces.AC5: The renames are complete
 - **guard-sdk-namespaces.AC5.1 Success:** `createAgentContext` and `ArcjetAgentContext` are the exported names.
@@ -76,6 +76,7 @@ otherwise.
 4. **Stricter compiler.** `arcjet-guard/tsconfig.json` is standalone and adds,
    over the `tsconfig.base.json` that `arcjet-ai` extended:
    `noUncheckedIndexedAccess`, `noPropertyAccessFromIndexSignature`,
+   `noUncheckedSideEffectImports`,
    `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`,
    `noImplicitOverride`, `noFallthroughCasesInSwitch`, `erasableSyntaxOnly`,
    `isolatedModules`, `moduleDetection: "force"`. Expect real fixes, especially
@@ -103,7 +104,7 @@ otherwise.
      Task 4 owns this edit. Missing it is the one omission that blocks the
      phase: once `GuardActionPolicy.metadata` widens, the merged
      `Record<string, unknown>` is not assignable to either this or `runGuarded`'s
-     parameter, so Task 8, Task 4's own capture call, and Phase 3 Task 3 all fail
+     parameter, so Task 8, `captureAction`'s own call, and Phase 3 Task 3 all fail
      their stated `npm run typecheck` gate.
 
    Do **not** add value-type validation anywhere. `guard()` itself drops values it
@@ -371,7 +372,7 @@ AC4.9's merged-metadata assertion.)
 **Implementation:**
 
 Move `arcjet-ai/test/metadata.test.ts` (3 tests). Change its import from
-`../dist/index.js` to `./metadata.ts`.
+`../dist/index.js` to `./vocabulary.ts`.
 
 **Testing:**
 
@@ -666,7 +667,8 @@ Restructure so **neither** signal silently continues:
   getting right: on (a) it was never assigned and the existing
   `...(decisionId !== undefined && { decisionId })` spread drops it naturally; on
   (b) a decision **does** exist, so assign `decisionId = decision.id` before
-  capturing so the `denied` capture event correlates to the fail-open decision.
+  capturing so the `unavailable` capture event correlates to the fail-open
+  decision when — and only when — the decision carries a non-empty id.
 
 Warn in both modes, but **with different text** — the existing constant format
 string says "failing open", which would be actively misleading on the path that is
@@ -682,65 +684,118 @@ argument rather than interpolating it (the Semgrep constraint):
 
 Per-row status: Row 1 = today's string, prefix changed only; Row 2 = today's string with prefix changed **and** `${action}` converted from template interpolation to a `%s` argument per convention 9; rows 3–4 are new. Several migrated tests assert substrings of the `"allow"` strings; Task 9 and Phase 3 Task 4 update them in lockstep. **Preserve exactly** these strings in the catch block and both fail-open paths — do not re-interpolate action into the format string.
 
-Here is a restructured code skeleton of the `if (rules …)` block showing the two signals, both modes, narrowing, the non-empty-decisionId check, and the capture-then-return ordering:
+Here is the restructured `runGuarded` body. **This shape was validated**: it was
+applied to the real `arcjet-ai/src/guarded.ts` and typechecked, and the only errors
+were the two adapters not yet passing `onUnavailable` (Task 8 and Phase 3 Task 3)
+plus the `metadata` widening of convention 6 — i.e. exactly the work this phase
+sequences next. Copy the structure, not just the branches:
 
 ```ts
-async function runGuarded<T>(...): Promise<T> {
-  // ... guard call setup ...
-  
-  if (!rules || rules.length === 0) {
-    // skip guard, execute directly
-  }
-  
+let decisionId: string | undefined;
+if (rules !== undefined && rules.length > 0) {
   let decision: Decision | undefined;
-  let decisionId: string | undefined;
-  
   try {
-    decision = await client.guard(...);
+    decision = await client.guard({ label: action, rules, ...correlation, metadata });
   } catch (error) {
-    // Signal (a): guard call threw
-    if (onGuardError === "allow") {
-      // fail-open mode
-      shouldWarn(...) && console.warn('… errored; failing open:');
-      return await fn();
-    } else {
-      // fail-closed mode (default)
-      shouldWarn(...) && console.warn('… errored; failing closed:');
-      captureEvent(..., { outcome: "unavailable" });
+    // Signal (a): the guard call itself threw. Rare — the client converts
+    // transport failures into decisions rather than throwing.
+    if (onGuardError === "deny") {
+      if (shouldWarn()) {
+        console.warn('@arcjet/guard: guard check for "%s" errored; failing closed:', action, error);
+      }
+      captureEvent(client, {
+        action,
+        ...correlation,
+        metadata: { ...metadata, outcome: "unavailable" },
+      });
       return onUnavailable({ kind: "threw", error });
     }
+    if (shouldWarn()) {
+      console.warn('@arcjet/guard: guard check for "%s" errored; failing open:', action, error);
+    }
+    decision = undefined; // fall through to execute, exactly as today
   }
-  
-  if (decision.conclusion === "DENY") {
-    // real denial
-    captureEvent(..., { outcome: "denied", decisionId: decision.id });
-    return onDeny(decision);
-  }
-  
-  if (decision.conclusion === "ALLOW" && decision.hasFailedOpen()) {
-    // Signal (b): decision failed open
-    if (onGuardError === "allow") {
-      // fail-open mode
-      shouldWarn(...) && console.warn('… failed open (API error).');
-      return await fn();
-    } else {
-      // fail-closed mode (default)
-      shouldWarn(...) && console.warn('… was unavailable; failing closed.');
-      // Check for non-empty decisionId before spreading
-      if (decision.id !== "") {
-        decisionId = decision.id;
+  if (decision !== undefined) {
+    // Suppress an empty id. Every decision the client synthesizes on a
+    // fail-open path carries `id: ""` (client.ts:216, convert.ts:743), and ""
+    // is not a correlatable id — spreading it would put junk on the event.
+    if (decision.id !== "") {
+      decisionId = decision.id;
+    }
+    if (decision.conclusion === "ALLOW" && decision.hasFailedOpen()) {
+      // Signal (b). Narrowing on `conclusion` first is required: TypeScript
+      // cannot narrow on a method return, so `hasFailedOpen()` alone leaves
+      // `decision` as `Decision` and the `onUnavailable` call will not compile.
+      // Never reach for a cast here.
+      if (onGuardError === "deny") {
+        if (shouldWarn()) {
+          console.warn('@arcjet/guard: guard check for "%s" was unavailable; failing closed.', action);
+        }
+        captureEvent(client, {
+          action,
+          ...correlation,
+          ...(decisionId !== undefined && { decisionId }),
+          metadata: { ...metadata, outcome: "unavailable" },
+        });
+        return onUnavailable({ kind: "failed-open", decision });
       }
-      captureEvent(..., { outcome: "unavailable", ...(decisionId !== undefined && { decisionId }) });
-      return onUnavailable({ kind: "failed-open", decision });
+      if (shouldWarn()) {
+        console.warn('@arcjet/guard: guard check for "%s" failed open (API error).', action);
+      }
+      // fall through to execute
+    }
+    if (decision.conclusion === "DENY") {
+      captureEvent(client, {
+        action,
+        ...correlation,
+        ...(decisionId !== undefined && { decisionId }),
+        metadata: { ...metadata, outcome: "denied" },
+      });
+      return onDeny(decision);
     }
   }
-  
-  // ALLOW path (not failed open)
-  const result = await fn();
-  captureEvent(..., { outcome: "success", decisionId: decision.id });
-  return result;
 }
+
+// Shared tail — UNCHANGED from today. Both `"allow"` paths must reach it.
+let result: T;
+try {
+  result = await execute();
+} catch (error) {
+  captureEvent(client, {
+    action,
+    ...correlation,
+    ...(decisionId !== undefined && { decisionId }),
+    metadata: { ...metadata, outcome: "error" },
+  });
+  throw error;
+}
+captureEvent(client, {
+  action,
+  ...correlation,
+  ...(decisionId !== undefined && { decisionId }),
+  metadata: { ...metadata, outcome: "success" },
+});
+return result;
 ```
+
+Five things in that skeleton are easy to get wrong and each breaks a migrated test
+or the typecheck:
+
+1. **The `"allow"` branches fall through — they must NOT return.** An earlier draft
+   of this skeleton had `return await fn()` in both, which skips the shared tail
+   and emits no capture event at all. Four migrated tests assert the opposite:
+   `protect-action.test.ts:197` and `:232`, `protect-tool.test.ts:232` and `:267`
+   each assert `captureCalls.length === 1` on a fail-open path.
+2. **`outcome` lives *inside* `metadata`**, as `metadata: { ...metadata, outcome }`
+   — it is not a top-level field. `CaptureOptions` has no `outcome` property
+   (`arcjet-ai/src/client.ts:10-21`), so a top-level one fails the typecheck, and
+   eight migrated assertions read `metadata.outcome`.
+3. **`decisionId` is a conditional spread**, never `decisionId: decision.id` —
+   `exactOptionalPropertyTypes` rejects assigning a possibly-undefined value.
+4. **The parameter is `execute`, not `fn`.** `fn` is `guardAction`'s own
+   parameter name; `runGuarded` destructures `execute` (`guarded.ts:30`).
+5. **`shouldWarn()` takes no arguments** (`client.ts:43`), and the existing code
+   uses a statement `if`, not `&&`.
 
 Preserve exactly:
 - the `correlation` spread trick that omits `correlationId` when undefined
@@ -868,7 +923,8 @@ Expected: no errors.
 <!-- START_TASK_9 -->
 ### Task 9: `guardAction` / `captureAction` tests
 
-**Verifies:** `guard-sdk-namespaces.AC4.8`, `guard-sdk-namespaces.AC4.9`,
+**Verifies:** `guard-sdk-namespaces.AC4.4` (the `guardAction` half),
+`guard-sdk-namespaces.AC4.8`, `guard-sdk-namespaces.AC4.9`,
 `guard-sdk-namespaces.AC4.11` (the `guardAction` half)
 
 **Files:**
@@ -915,7 +971,14 @@ throw path leaves the actual outage path untested:
   `"denied"`) carrying **no** `decisionId`, since no decision exists.
 - guard returns a decision whose **`hasFailedOpen()` is `true`**, `onGuardError`
   omitted → same block-and-capture behaviour, but `decision` is that decision by
-  reference and `cause` is `undefined`. Assert the capture event carries the
+  reference and `cause` is `undefined`. Do **not** assert that the capture event
+  carries a `decisionId`: every decision the client synthesizes on a fail-open
+  path has `id: ""` (`client.ts:216`, `convert.ts:743`), so the engine's non-empty
+  check suppresses it and no correlatable id exists on this path. An earlier draft
+  asserted one, which passed only because `test/_shared/stub-client.ts:74` returns
+  `id: "gdec_allow_fo"` — a fixture value that cannot occur in production. If that
+  builder is reused here, change it to `id: ""` so the fixture matches reality.
+  Assert instead that the capture event carries the
   `decisionId` — this is the one path where a decision exists to correlate to.
 - the thrown error is **not** an `instanceof ArcjetDeniedError` — assert this
   explicitly, since the whole point of the separate class is that callers can tell
@@ -1069,7 +1132,7 @@ Expected: all clean.
 ## Phase 2 exit checklist
 
 - [ ] `arcjet-guard/src/agents/` contains: `ulid.ts`, `internal.ts`,
-      `metadata.ts`, `capture.ts`, `guarded.ts`, `context.ts`,
+      `vocabulary.ts`, `capture.ts`, `guarded.ts`, `context.ts`,
       `guard-action.ts`, `index.ts` plus their `.test.ts` files
 - [ ] `arcjet-guard/test/_shared/` contains `stub-client.ts` and `log-level.ts`
 - [ ] Nothing in the transitive import graph from `src/agents/index.ts` imports
@@ -1078,7 +1141,7 @@ Expected: all clean.
       `test/_shared/`
 - [ ] No remaining `from "@arcjet/guard"` imports in moved files — all retargeted
       to `../types.ts`
-- [ ] JSDoc `@example` blocks rewritten in `metadata.ts` (1), `context.ts`, and
+- [ ] JSDoc `@example` blocks rewritten in `vocabulary.ts` (1), `context.ts`, and
       `guard-action.ts` (3) — no `@arcjet/ai` or `createAiContext` left
 - [ ] `onGuardError` implemented in `runGuarded` + `guardAction`, **defaulting to
       `"deny"`**, and governing **both** guard-unavailable signals (the `guard()`

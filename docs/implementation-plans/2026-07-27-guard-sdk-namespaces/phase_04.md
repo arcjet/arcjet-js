@@ -147,21 +147,35 @@ Note the exclusions use `-e 'docs/design-plans/'` rather than `-e '^./docs/...'`
 Expected: only `examples/nextjs-ai-agent/` hits, which Phase 5 handles. Any hit
 under `arcjet-guard/` means the migration is not finished — stop and fix it.
 
-**Step 4: Copy out anything still needed elsewhere**
+**Step 4: Record the pre-deletion SHA that Phase 5 reads these files from**
 
-Phase 5 needs two files from this directory. Copy them **now**, before deleting:
+Phase 5 needs two files from this directory — `SKILL.md` (the skill relocation)
+and `README.md` (the README port). Do **not** hand them over by copying to a temp
+directory: a `mktemp -d` path cannot survive into Phase 5, which is a separate
+shell session, and an earlier draft of this step tried to pass a `SALVAGE_DIR`
+variable across that boundary. It cannot work, and this task deletes the
+directory, so a broken handoff is unrecoverable except through git anyway.
+
+Use git as the handoff. Record the SHA **now**, before deleting, into a file
+Phase 5 can read:
 
 ```bash
 cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js
-SALVAGE_DIR=$(mktemp -d)
-cp arcjet-ai/skills/integrate-arcjet-ai/SKILL.md "$SALVAGE_DIR"/
-cp arcjet-ai/README.md "$SALVAGE_DIR"/
-ls -la "$SALVAGE_DIR"/
+git rev-parse HEAD > docs/implementation-plans/2026-07-27-guard-sdk-namespaces/.pre-deletion-sha
+cat docs/implementation-plans/2026-07-27-guard-sdk-namespaces/.pre-deletion-sha
 ```
 
-Both are inputs to Phase 5 (the skill relocation and the README port). Set the
-`SALVAGE_DIR` variable for Phase 5 to use. They are also recoverable afterwards
-with `git show <pre-deletion-sha>:arcjet-ai/README.md`, but copying is simpler.
+Confirm both files are readable at that SHA before proceeding:
+
+```bash
+SHA=$(cat docs/implementation-plans/2026-07-27-guard-sdk-namespaces/.pre-deletion-sha)
+git show "$SHA:arcjet-ai/skills/integrate-arcjet-ai/SKILL.md" | head -3
+git show "$SHA:arcjet-ai/README.md" | head -3
+```
+
+Expected: the first lines of each file. If either errors, STOP — do not delete.
+Phase 5 Tasks 3 and 6 read them the same way. The `.pre-deletion-sha` file is
+deleted along with the plan directory in Phase 6.
 
 **Step 5: Delete**
 
@@ -314,8 +328,9 @@ git commit -m "chore: drop @arcjet/ai from the publish workflow"
 - [ ] `.github/workflows/reusable-examples.yml` still lists `nextjs-ai-agent`
 - [ ] Root `package-lock.json` no longer contains an `arcjet-ai` workspace entry
 - [ ] `arcjet-guard` still builds and tests green after the deletion
-- [ ] `SKILL.md` and `arcjet-ai/README.md` were copied out before deletion (Phase 5
-      inputs)
+- [ ] `.pre-deletion-sha` is written and both `SKILL.md` and `arcjet-ai/README.md`
+      are readable at that SHA via `git show` (the Phase 5 inputs) — no temp-dir
+      copy is used, and no shell variable is expected to cross the phase boundary
 
 **Known transient state at Phase 4 end:** `examples/nextjs-ai-agent` cannot
 install, because its `package.json` and its own `package-lock.json` still point at

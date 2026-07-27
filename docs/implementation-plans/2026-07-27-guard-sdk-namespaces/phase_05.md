@@ -127,9 +127,11 @@ two imports.
 **Do NOT set `onGuardError` on the consequential calls — that is now the default.**
 Review (davidmytton) noted these are live enforcement events, unlike bot-checking a
 page view, and asked for `"deny"` to be the default; it is. So the example gets a
-short comment on the `ticket.updated` `guardAction` and the `lookupOrder`
-`guardTool` policies noting that an unevaluable policy blocks the call by default,
-rather than an explicit option that would imply the opposite default. An earlier
+short comment on the `ticket.updated` `guardAction` policy **only** — the write —
+noting that an unevaluable policy blocks the call by default, rather than an
+explicit option that would imply the opposite default. Do **not** put that comment
+on `lookupOrder`: the next paragraph sets `onGuardError: "allow"` there, so a
+"blocks by default" comment would be false at that very call site. An earlier
 draft of this task said to add `onGuardError: "deny"` explicitly — that instruction
 is superseded; adding it would be harmless at runtime but would teach readers that
 fail-open is what they get for free.
@@ -619,8 +621,9 @@ git commit -m "docs(guard): compile-check examples and finish the rename sweep"
 
 **Files:**
 - Modify: `arcjet-guard/README.md`
-- Input: `/tmp/arcjet-ai-salvage/README.md` (copied out in Phase 4 Task 1 Step 4),
-  or `git show <pre-deletion-sha>:arcjet-ai/README.md`
+- Input: `git show "$(cat docs/implementation-plans/2026-07-27-guard-sdk-namespaces/.pre-deletion-sha):arcjet-ai/README.md"`
+  (the SHA was recorded in Phase 4 Task 1 Step 4; there is deliberately no
+  temp-directory copy to depend on)
 
 **Implementation:**
 
@@ -758,7 +761,7 @@ must report `clean` across the whole repo, with only `docs/design-plans/` and
 - [ ] README documents the three layers, the `<vendor-sdk>/v<major>` convention,
       `vercel-eve/v1` as next, no-alias rule, optional peers + pnpm caveat
 - [ ] Every doc/JSDoc/skill example compiles against installed typings, including
-      the 5 previously-missed `@example` blocks in `metadata.ts`,
+      the 5 previously-missed `@example` blocks in `agents/vocabulary.ts`,
       `guard-action.ts` (3), and `guard-tool.ts`
 - [ ] `arcjet-ai/README.md`'s usage documentation is ported into
       `arcjet-guard/README.md` (Task 6)
