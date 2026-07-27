@@ -7,7 +7,7 @@ import {
   METADATA_ENCODE_FAILED_CODE,
   encodeMetadata,
   enforceMetadataBudget,
-} from "../src/metadata.ts";
+} from "../dist/metadata.js";
 
 test("@arcjet/protocol metadata", async function (t) {
   await t.test("should return empty fields for missing metadata", function () {
@@ -130,6 +130,19 @@ test("@arcjet/protocol metadata", async function (t) {
     assert.deepEqual(metadataJson, { ok: "1" });
     assert.equal(localWarnings.length, 1);
     assert.match(localWarnings[0].message, /2 key\(s\)/);
+  });
+
+  await t.test("should not let quotes or backslashes forge extra keys", function () {
+    // The key list wraps each name in double quotes, so a key containing one
+    // could otherwise look like several keys.
+    const { localWarnings } = encodeMetadata({ 'ev"il", "other': undefined });
+    assert.match(localWarnings[0].message, /1 key\(s\)/);
+    // Only the two quotes the formatter itself added remain.
+    assert.equal(localWarnings[0].message.split('"').length - 1, 2);
+    assert.match(localWarnings[0].message, /ev\\x22il\\x22, \\x22other/);
+
+    const backslash = encodeMetadata({ "back\\slash": undefined });
+    assert.match(backslash.localWarnings[0].message, /back\\x5cslash/);
   });
 
   await t.test("should escape separators and C1 controls, not plain non-ASCII", function () {

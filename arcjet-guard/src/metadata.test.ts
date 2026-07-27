@@ -132,6 +132,19 @@ describe("encodeMetadata", () => {
     assert.match(localWarnings[0].message, /2 key\(s\)/);
   });
 
+  test("not let quotes or backslashes forge extra keys", () => {
+    // The key list wraps each name in double quotes, so a key containing one
+    // could otherwise look like several keys.
+    const { localWarnings } = encodeMetadata({ 'ev"il", "other': undefined });
+    assert.match(localWarnings[0].message, /1 key\(s\)/);
+    // Only the two quotes the formatter itself added remain.
+    assert.equal(localWarnings[0].message.split('"').length - 1, 2);
+    assert.match(localWarnings[0].message, /ev\\x22il\\x22, \\x22other/);
+
+    const backslash = encodeMetadata({ "back\\slash": undefined });
+    assert.match(backslash.localWarnings[0].message, /back\\x5cslash/);
+  });
+
   test("escape separators and C1 controls, not plain non-ASCII", () => {
     const { localWarnings } = encodeMetadata({
       "a\u2028b\u0085c\u00FCd": undefined,

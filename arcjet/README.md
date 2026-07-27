@@ -340,7 +340,7 @@ JSON-serializable value**, including nested objects and arrays. It is attached t
 the decision for correlation and analytics.
 
 ```ts
-const decision = await aj.protect(request, {
+const decision = await aj.protect(context, {
   metadata: {
     requestId,
     user: { id: userId, plan: "pro" },

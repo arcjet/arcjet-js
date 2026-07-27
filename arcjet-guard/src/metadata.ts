@@ -123,6 +123,10 @@ function needsEscape(code: number): boolean {
     code < 0x20 ||
     (code >= 0x7f && code <= 0x9f) ||
     (code >= 0xd800 && code <= 0xdfff) ||
+    // The key list wraps each name in double quotes, so an unescaped quote or
+    // backslash could forge the appearance of extra keys.
+    code === 0x22 ||
+    code === 0x5c ||
     code === 0x2028 ||
     code === 0x2029
   );
