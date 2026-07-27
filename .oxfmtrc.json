@@ -5,6 +5,7 @@
     "examples/**",
     "**/src/wasm/**",
     "protocol/src/proto/**",
+    "arcjet/src/guard/proto/**",
     "arcjet-guard/**",
     "**/*.md"
   ],

@@ -4,7 +4,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 // The proxy-resolution logic is intentionally duplicated between
-// `@arcjet/transport` and `@arcjet/guard` (the guard copy stays edge-safe with
+// `@arcjet/transport` and `arcjet/guard` (the guard copy stays edge-safe with
 // no imports). The two are allowed to differ only in their `detectProxy` entry
 // point and in formatting; the shared helpers (`proxyForUrl`, `isNoProxy`,
 // `firstValue`) must stay logically identical, per the "keep in sync" comments
@@ -30,12 +30,12 @@ function read(relativePath: string): string {
 
 test("proxy-resolution helpers stay in sync across packages", function () {
   const transport = sharedHelpers(read("../src/detect-proxy.ts"));
-  const guard = sharedHelpers(read("../../arcjet-guard/src/detect-proxy.ts"));
+  const guard = sharedHelpers(read("../../arcjet/src/guard/detect-proxy.ts"));
 
   assert.equal(
     guard,
     transport,
     "The shared proxy helpers in transport/detect-proxy.ts and " +
-      "arcjet-guard/src/detect-proxy.ts have drifted. Apply the change to both.",
+      "arcjet/src/guard/detect-proxy.ts have drifted. Apply the change to both.",
   );
 });

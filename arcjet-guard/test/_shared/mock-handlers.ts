@@ -29,7 +29,7 @@ import {
   GuardRuleType,
   type GuardRequest,
   type GuardResponse,
-} from "../../src/proto/proto/decide/v2/decide_pb.js";
+} from "arcjet/guard/internal/proto/proto/decide/v2/decide_pb";
 
 export {
   create,

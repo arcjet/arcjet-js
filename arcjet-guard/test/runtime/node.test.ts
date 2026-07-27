@@ -26,8 +26,10 @@ import {
 } from "@arcjet/guard";
 import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
 
-import { createHttp2Transport } from "../../src/transport-http2.ts";
-import type { Http2TransportHandle } from "../../src/transport-http2.ts";
+import {
+  createHttp2Transport,
+  type Http2TransportHandle,
+} from "arcjet/guard/internal/transport-http2";
 import { cases } from "../_shared/cases.ts";
 import type { GuardSurface } from "../_shared/cases.ts";
 import {

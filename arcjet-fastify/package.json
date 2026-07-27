@@ -59,7 +59,7 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "test-api": "node --test -- test/*.test.ts",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=80 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=90 -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=80 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,arcjet-guard,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=90 -- test/*.test.ts",
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {

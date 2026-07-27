@@ -11,7 +11,7 @@
 
 import assert from "node:assert/strict";
 
-import type { ArcjetGuard, launchArcjetWithTransport } from "../../src/index.ts";
+import type { ArcjetGuard, launchArcjetWithTransport } from "@arcjet/guard";
 import type {
   tokenBucket,
   fixedWindow,
@@ -19,7 +19,7 @@ import type {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
-} from "../../src/rules.ts";
+} from "@arcjet/guard";
 import {
   createMockTransport,
   tokenBucketAllow,

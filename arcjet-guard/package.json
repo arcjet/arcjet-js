@@ -82,12 +82,7 @@
     "test-runtime-cloudflare": "npm run build && node --test test/runtime/cloudflare/cloudflare.test.ts"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.9.1",
-    "@arcjet/logger": "1.9.1",
-    "@bufbuild/protobuf": "2.12.1",
-    "@connectrpc/connect": "2.1.2",
-    "@connectrpc/connect-node": "2.1.2",
-    "@connectrpc/connect-web": "2.1.2"
+    "arcjet": "1.9.1"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

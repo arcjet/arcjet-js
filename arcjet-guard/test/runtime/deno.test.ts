@@ -21,8 +21,8 @@ import {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
-} from "../../src/index.ts";
-import { userAgent } from "../../src/version.ts";
+} from "@arcjet/guard";
+import { userAgent } from "arcjet/guard/internal/version";
 import { cases } from "../_shared/cases.ts";
 import type { GuardSurface } from "../_shared/cases.ts";
 

@@ -530,6 +530,33 @@ server.listen(8000);
 See the [Arcjet best practices][best-practices] for detailed guidance. Key
 recommendations:
 
+### Optional client registration
+
+The Guard and Capture APIs can use an explicitly registered client when passing
+the client through application code is impractical. Launching a client does not
+register it:
+
+```ts
+import {
+  capture,
+  flush,
+  launchArcjet,
+  registerArcjet,
+  unregisterArcjet,
+} from "arcjet";
+
+const client = launchArcjet({ key: process.env.ARCJET_KEY! });
+registerArcjet(client);
+
+capture({ action: "refund.issued", correlationId: "workflow_123" });
+await flush();
+
+unregisterArcjet();
+```
+
+Registration is first-writer-wins. Registering the same client again is
+idempotent, and `unregisterArcjet()` clears whichever client is registered.
+
 **Create a single client instance** and reuse it with `withRule()` for
 route-specific rules. The SDK caches decisions and configuration, so creating a
 new instance per request wastes that work.

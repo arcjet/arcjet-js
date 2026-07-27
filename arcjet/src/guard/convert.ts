@@ -11,6 +11,7 @@
 import { detectSensitiveInfo, type SensitiveInfoEntity } from "@arcjet/analyze";
 import { create } from "@bufbuild/protobuf";
 
+import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metadata.ts";
 import {
   type GuardRule,
   type GuardRuleResult as ProtoGuardRuleResult,
@@ -35,7 +36,6 @@ import {
   GuardReason,
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
-import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metadata.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
   Conclusion,

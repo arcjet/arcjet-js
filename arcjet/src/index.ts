@@ -1,3 +1,7 @@
+// The Guard and Capture surface is re-exported by the per-runtime entrypoints
+// (`entry-node.ts`, `entry-bun.ts`, `entry-fetch.ts`) rather than here, because
+// `launchArcjet` has to bind the transport its runtime can actually use. This
+// module holds everything that is transport-independent.
 import * as analyze from "@arcjet/analyze";
 import type {
   AnalyzeRequest,

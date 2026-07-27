@@ -15,7 +15,7 @@ import {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
-} from "../../../src/fetch.ts";
+} from "@arcjet/guard/fetch";
 import { cases } from "../../_shared/cases.ts";
 import type { GuardSurface } from "../../_shared/cases.ts";
 

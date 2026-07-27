@@ -1145,13 +1145,19 @@ describe("In-memory server: request metadata", () => {
     });
 
     assert.ok(request);
-    assert.deepEqual({ ...request.metadataJson }, {
-      user: '{"id":"u_1","roles":["admin"]}',
-      durationMs: "160",
-    });
-    assert.deepEqual({ ...request.ruleSubmissions[0].metadataJson }, {
-      ruleScope: '{"kind":"per-user"}',
-    });
+    assert.deepEqual(
+      { ...request.metadataJson },
+      {
+        user: '{"id":"u_1","roles":["admin"]}',
+        durationMs: "160",
+      },
+    );
+    assert.deepEqual(
+      { ...request.ruleSubmissions[0].metadataJson },
+      {
+        ruleScope: '{"kind":"per-user"}',
+      },
+    );
     // The legacy plain-string map is not dual-written: the server prefers
     // `metadata_json` and only falls back to `metadata` for older SDKs.
     // oxlint-disable-next-line typescript/no-deprecated -- asserting the deprecated field stays empty

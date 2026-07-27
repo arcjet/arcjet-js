@@ -128,7 +128,7 @@ export function detectProxy(url: URL, options?: TransportOptions): string | unde
 
 // ---------------------------------------------------------------------------
 // Keep the proxy-resolution logic below in sync with the copy in
-// `@arcjet/guard` (`arcjet-guard/src/detect-proxy.ts`). The two packages
+// `arcjet/guard` (`arcjet/src/guard/detect-proxy.ts`). The two packages
 // intentionally duplicate it rather than share a module: `@arcjet/guard`
 // bundles a fetch transport that runs on edge runtimes without `process` or
 // these dependencies, so it keeps an edge-safe copy with no imports. Only the

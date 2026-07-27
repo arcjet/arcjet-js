@@ -20,7 +20,12 @@ import {
   type WaitUntil,
 } from "./capture-delivery.ts";
 import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
-import { createDiagnosticHandler, type DiagnosticLogger } from "./diagnostics.ts";
+import {
+  createDiagnosticHandler,
+  symbolArcjetDiagnostics,
+  type DiagnosticHandler,
+  type DiagnosticLogger,
+} from "./diagnostics.ts";
 import {
   type ArcjetMetadata,
   type LocalWarning,
@@ -81,6 +86,7 @@ export function createGuardClient(options: GuardClientOptions): {
   guard(opts: GuardOptions): Promise<Decision>;
   capture(opts: CaptureOptions): void;
   flush(timeoutMs?: number): Promise<void>;
+  [symbolArcjetDiagnostics]: DiagnosticHandler;
 } {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
@@ -110,7 +116,7 @@ export function createGuardClient(options: GuardClientOptions): {
      */
     async guard(opts: GuardOptions): Promise<Decision> {
       if (opts.rules.length === 0) {
-        return failOpen("guard() requires at least one rule");
+        return createFailOpenDecision("guard() requires at least one rule");
       }
 
       opts.signal?.throwIfAborted();
@@ -150,7 +156,7 @@ export function createGuardClient(options: GuardClientOptions): {
       } catch (cause: unknown) {
         opts.signal?.throwIfAborted();
         const message = cause instanceof Error ? cause.message : "Local rule evaluation failed";
-        return failOpen(message, toWarnings(requestMetadata.localWarnings));
+        return createFailOpenDecision(message, toWarnings(requestMetadata.localWarnings));
       }
 
       opts.signal?.throwIfAborted();
@@ -213,7 +219,7 @@ export function createGuardClient(options: GuardClientOptions): {
             : cause instanceof Error
               ? cause.message
               : "Unknown error";
-        return failOpen(message, toWarnings(warnings));
+        return createFailOpenDecision(message, toWarnings(warnings));
       }
 
       opts.signal?.throwIfAborted();
@@ -222,7 +228,7 @@ export function createGuardClient(options: GuardClientOptions): {
         return decisionFromProto(response, opts.rules, toWarnings(warnings));
       } catch (cause: unknown) {
         const message = cause instanceof Error ? cause.message : "Failed to parse server response";
-        return failOpen(message, toWarnings(warnings));
+        return createFailOpenDecision(message, toWarnings(warnings));
       }
     },
 
@@ -289,6 +295,8 @@ export function createGuardClient(options: GuardClientOptions): {
     flush(timeoutMs?: number): Promise<void> {
       return delivery.flush(timeoutMs);
     },
+
+    [symbolArcjetDiagnostics]: diagnose,
   };
 }
 
@@ -446,7 +454,11 @@ function toWarnings(localWarnings: readonly LocalWarning[]): readonly Warning[] 
   }));
 }
 
-function failOpen(message: string, warnings: readonly Warning[] = []): Decision {
+/** @internal Build the standard inspectable fail-open guard decision. */
+export function createFailOpenDecision(
+  message: string,
+  warnings: readonly Warning[] = [],
+): Decision {
   const errorResult: InternalResult = {
     conclusion: "ALLOW",
     reason: "ERROR",

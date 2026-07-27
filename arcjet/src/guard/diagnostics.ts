@@ -9,7 +9,7 @@ import type { Logger } from "@arcjet/logger";
  */
 export type ArcjetDiagnostic = {
   /** Stable machine-readable code. */
-  code: "AJ1001" | "AJ1017" | "AJ3000" | "AJ3001" | "AJ3002" | "AJ3003";
+  code: "AJ1001" | "AJ1017" | "AJ3000" | "AJ3001" | "AJ3002" | "AJ3003" | "AJ3004" | "AJ3005";
   /** Static human-readable description. */
   message: string;
   /** Number of events affected, when relevant. */
@@ -19,7 +19,13 @@ export type ArcjetDiagnostic = {
 /** Logger methods used for local SDK diagnostics. */
 export type DiagnosticLogger = Pick<Logger, "warn">;
 
+/** @deprecated Pass an `@arcjet/logger` compatible logger instead. */
+export type ArcjetDiagnosticLogger = DiagnosticLogger;
+
 export type DiagnosticHandler = (diagnostic: ArcjetDiagnostic) => void;
+
+/** @internal Diagnostic channel carried by a client across package copies. */
+export const symbolArcjetDiagnostics: unique symbol = Symbol.for("arcjet.client.diagnostics");
 
 /**
  * Build the diagnostics channel for one client.

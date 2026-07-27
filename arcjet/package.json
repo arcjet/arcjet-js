@@ -39,12 +39,80 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/entry-node.js",
+  "types": "./dist/entry-node.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "bun": {
+        "types": "./dist/entry-bun.d.ts",
+        "default": "./dist/entry-bun.js"
+      },
+      "edge-light": {
+        "types": "./dist/entry-fetch.d.ts",
+        "default": "./dist/entry-fetch.js"
+      },
+      "workerd": {
+        "types": "./dist/entry-fetch.d.ts",
+        "default": "./dist/entry-fetch.js"
+      },
+      "deno": {
+        "types": "./dist/entry-fetch.d.ts",
+        "default": "./dist/entry-fetch.js"
+      },
+      "node": {
+        "types": "./dist/entry-node.d.ts",
+        "default": "./dist/entry-node.js"
+      },
+      "default": {
+        "types": "./dist/entry-fetch.d.ts",
+        "default": "./dist/entry-fetch.js"
+      }
+    },
+    "./guard": {
+      "bun": {
+        "types": "./dist/guard/bun.d.ts",
+        "import": "./dist/guard/bun.js"
+      },
+      "edge-light": {
+        "types": "./dist/guard/fetch.d.ts",
+        "import": "./dist/guard/fetch.js"
+      },
+      "workerd": {
+        "types": "./dist/guard/fetch.d.ts",
+        "import": "./dist/guard/fetch.js"
+      },
+      "deno": {
+        "types": "./dist/guard/fetch.d.ts",
+        "import": "./dist/guard/fetch.js"
+      },
+      "node": {
+        "types": "./dist/guard/node.d.ts",
+        "import": "./dist/guard/node.js"
+      },
+      "default": {
+        "types": "./dist/guard/fetch.d.ts",
+        "import": "./dist/guard/fetch.js"
+      }
+    },
+    "./guard/node": {
+      "types": "./dist/guard/node.d.ts",
+      "import": "./dist/guard/node.js"
+    },
+    "./guard/bun": {
+      "types": "./dist/guard/bun.d.ts",
+      "import": "./dist/guard/bun.js"
+    },
+    "./guard/fetch": {
+      "types": "./dist/guard/fetch.d.ts",
+      "import": "./dist/guard/fetch.js"
+    },
+    "./guard/internal/proto/*": {
+      "types": "./dist/guard/proto/*.d.ts",
+      "import": "./dist/guard/proto/*.js"
+    },
+    "./guard/internal/*": {
+      "types": "./dist/guard/*.d.ts",
+      "import": "./dist/guard/*.js"
     },
     "./package.json": "./package.json"
   },
@@ -53,26 +121,30 @@
   },
   "scripts": {
     "build": "tsdown",
+    "lint": "oxlint --config ../arcjet-guard/.oxlintrc.json --tsconfig=tsconfig.json src/guard",
     "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
     "test-runtime-cloudflare": "npm run build && node --test test/runtime/cloudflare/cloudflare.test.ts",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=95 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=95 -- test/*.test.ts",
-    "test": "npm run build && npm run test-coverage"
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=95 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,arcjet-guard,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"dist/guard/**/*.{js,ts}\" --test-coverage-exclude \"dist/_virtual/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,ts}\" --test-coverage-functions=100 --test-coverage-lines=95 -- test/*.test.ts",
+    "test-guard": "node --test --experimental-test-coverage --test-coverage-include=src/guard/** --test-coverage-exclude=src/guard/**/*.test.ts --test-coverage-exclude=src/guard/test/** src/guard/**/*.test.ts",
+    "test": "npm run build && npm run test-coverage && npm run test-guard"
   },
   "dependencies": {
     "@arcjet/analyze": "1.9.1",
     "@arcjet/cache": "1.9.1",
     "@arcjet/duration": "1.9.1",
     "@arcjet/headers": "1.9.1",
+    "@arcjet/logger": "1.9.1",
     "@arcjet/protocol": "1.9.1",
     "@arcjet/runtime": "1.9.1",
-    "@arcjet/stable-hash": "1.9.1"
-  },
-  "devDependencies": {
-    "@arcjet/transport": "1.9.1",
+    "@arcjet/stable-hash": "1.9.1",
     "@bufbuild/protobuf": "2.12.1",
     "@connectrpc/connect": "2.1.2",
     "@connectrpc/connect-node": "2.1.2",
+    "@connectrpc/connect-web": "2.1.2"
+  },
+  "devDependencies": {
+    "@arcjet/transport": "1.9.1",
     "@types/node": "22.20.1",
     "miniflare": "4.20260708.1",
     "rolldown": "1.1.5",

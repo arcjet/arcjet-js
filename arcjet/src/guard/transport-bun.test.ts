@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { isolateProxyEnvironment } from "../test/_shared/proxy-env.ts";
+import { isolateProxyEnvironment } from "./test/proxy-env.ts";
 import { createTransport } from "./transport-bun.ts";
 
 describe("createTransport (bun)", () => {

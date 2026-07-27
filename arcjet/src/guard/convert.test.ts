@@ -41,10 +41,7 @@ import {
   defineCustomRule,
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
-import type {
-  SensitiveInfoBackend,
-  SensitiveInfoBackendOptions,
-} from "./types.ts";
+import type { SensitiveInfoBackend, SensitiveInfoBackendOptions } from "./types.ts";
 
 describe("conclusionFromProto", () => {
   test("ALLOW maps to 'ALLOW'", () => {
@@ -718,7 +715,11 @@ describe("ruleToProto", () => {
             // A valid declared type is kept...
             { start: 0, end: 4, identifiedType: { tag: "custom" as const, val: "GIVEN_NAME" } },
             // ...but an arbitrary string from a misbehaving backend is dropped.
-            { start: 5, end: 9, identifiedType: { tag: "custom" as const, val: "NOT_A_REAL_TYPE" } },
+            {
+              start: 5,
+              end: 9,
+              identifiedType: { tag: "custom" as const, val: "NOT_A_REAL_TYPE" },
+            },
           ],
         });
       },
