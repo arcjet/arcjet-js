@@ -1236,6 +1236,35 @@ export declare type RuleResult = Message<"proto.decide.v1alpha1.RuleResult"> & {
 export declare const RuleResultSchema: GenMessage<RuleResult>;
 
 /**
+ * Warning is a non-fatal validation warning ({code, message}). Used for
+ * client-reported local_warnings (e.g. metadata keys the SDK dropped before
+ * sending).
+ *
+ * @generated from message proto.decide.v1alpha1.Warning
+ */
+export declare type Warning = Message<"proto.decide.v1alpha1.Warning"> & {
+  /**
+   * Machine-readable code ("AJ" + 4 digits).
+   *
+   * @generated from field: string code = 1;
+   */
+  code: string;
+
+  /**
+   * Human-readable message.
+   *
+   * @generated from field: string message = 2;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message proto.decide.v1alpha1.Warning.
+ * Use `create(WarningSchema)` to create a new message.
+ */
+export declare const WarningSchema: GenMessage<Warning>;
+
+/**
  * Details about a request under investigation.
  *
  * @generated from message proto.decide.v1alpha1.RequestDetails
@@ -1413,6 +1442,24 @@ export declare type DecideRequest = Message<"proto.decide.v1alpha1.DecideRequest
    * @generated from field: repeated string characteristics = 6;
    */
   characteristics: string[];
+
+  /**
+   * Nested-JSON metadata for protect(): key -> JSON-encoded value. Carried on
+   * the request so both Decide and Report receive it. protect had no metadata
+   * field before.
+   *
+   * @generated from field: map<string, string> metadata_json = 7;
+   */
+  metadataJson: { [key: string]: string };
+
+  /**
+   * Client-side validation warnings the SDK reports (e.g. metadata keys it
+   * dropped before sending). Untrusted; the server bounds count/length and
+   * persists them alongside its own warnings.
+   *
+   * @generated from field: repeated proto.decide.v1alpha1.Warning local_warnings = 8;
+   */
+  localWarnings: Warning[];
 };
 
 /**
@@ -1491,6 +1538,22 @@ export declare type ReportRequest = Message<"proto.decide.v1alpha1.ReportRequest
    * @generated from field: repeated string characteristics = 8;
    */
   characteristics: string[];
+
+  /**
+   * Nested-JSON metadata for protect(): key -> JSON-encoded value. Carried on
+   * the request so both Decide and Report receive it.
+   *
+   * @generated from field: map<string, string> metadata_json = 9;
+   */
+  metadataJson: { [key: string]: string };
+
+  /**
+   * Client-side validation warnings the SDK reports. Untrusted; the server
+   * bounds count/length and persists them alongside its own warnings.
+   *
+   * @generated from field: repeated proto.decide.v1alpha1.Warning local_warnings = 10;
+   */
+  localWarnings: Warning[];
 };
 
 /**

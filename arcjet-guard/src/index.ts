@@ -79,6 +79,7 @@ import type { Transport } from "@connectrpc/connect";
 import { createGuardClient } from "./client.ts";
 import type { Decision, GuardOptions } from "./types.ts";
 export type {
+  ArcjetMetadata,
   Conclusion,
   Reason,
   Mode,

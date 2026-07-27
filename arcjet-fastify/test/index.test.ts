@@ -275,6 +275,7 @@ test("`arcjetFastify`", async function (t) {
         correlationId: undefined,
         email: undefined,
         extra: {},
+        metadata: undefined,
         headers: {
           "accept-encoding": "gzip, deflate",
           "accept-language": "*",

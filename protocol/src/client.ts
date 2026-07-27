@@ -14,12 +14,33 @@ import {
   type ArcjetStack,
   ArcjetDecision,
 } from "./index.js";
+import { encodeMetadata } from "./metadata.js";
 import {
   type Rule,
   DecideService,
   DecideRequestSchema,
   ReportRequestSchema,
+  WarningSchema,
 } from "./proto/decide/v1alpha1/decide_pb.js";
+
+/**
+ * Build the `metadata_json` and `local_warnings` fields shared by the Decide and
+ * Report requests, so a decision and its report describe the same metadata.
+ *
+ * Keys the SDK could not JSON-encode are dropped and reported as untrusted
+ * client-side warnings; the server enforces the count, size, depth, and
+ * key-name limits on what survives. Neither can affect the decision.
+ */
+function metadataFields(details: ArcjetRequestDetails): {
+  metadataJson: Record<string, string>;
+  localWarnings: ReturnType<typeof create<typeof WarningSchema>>[];
+} {
+  const { metadataJson, localWarnings } = encodeMetadata(details.metadata);
+  return {
+    metadataJson,
+    localWarnings: localWarnings.map((warning) => create(WarningSchema, warning)),
+  };
+}
 
 // TODO: Dedupe with `errorMessage` in core
 function errorMessage(err: unknown): string {
@@ -135,6 +156,7 @@ export function createClient(options: ClientOptions): Client {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
+        ...metadataFields(details),
         // `email` is an optional field but not allowed to be `undefined`.
         details:
           typeof details.email === "string"
@@ -195,6 +217,7 @@ export function createClient(options: ClientOptions): Client {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
+        ...metadataFields(details),
         // `email` is an optional field but not allowed to be `undefined`.
         details:
           typeof details.email === "string"

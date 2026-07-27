@@ -329,6 +329,53 @@ const decision = await arcjet.guard({
 });
 ```
 
+## Metadata
+
+`guard()` and every rule accept `metadata`: an object of string keys mapped to
+**any JSON-serializable value**, including nested objects and arrays. It is
+attached to the decision for correlation and analytics, and is queryable in the
+Arcjet dashboard.
+
+```ts
+const decision = await arcjet.guard({
+  label: "tools.weather",
+  rules: [limitRule({ key: userId })],
+  metadata: {
+    user: { id: userId, plan: "pro" },
+    toolName: "get_weather",
+    durationMs: 160,
+    success: true,
+  },
+});
+```
+
+Each top-level value is JSON-encoded by the SDK and stored verbatim.
+Server-enforced limits:
+
+| Limit                    | Value                            | Over the limit     |
+| ------------------------ | -------------------------------- | ------------------ |
+| Top-level keys           | 128                              | Extra keys dropped |
+| Serialized bytes / value | 4 KiB                            | That key dropped   |
+| Nesting depth / value    | 10                               | That key dropped   |
+| Key names                | letters, digits, `-`, `.`, `_`   | That key dropped   |
+
+Nothing here can fail a call or change a decision — metadata is excluded from
+fingerprinting. Every dropped key is reported on `decision.warnings`, whether the
+server dropped it or the SDK could not encode it (`undefined`, a function, a
+`BigInt`, a circular reference).
+
+Metadata is untrusted and is not redacted — do not put secrets or PII in it.
+
+Two JavaScript-specific notes:
+
+- Numbers are IEEE-754 doubles, so an integer above `Number.MAX_SAFE_INTEGER`
+  loses precision before it reaches the wire. Pass such values as strings.
+- `BigInt` cannot be JSON-encoded, so it is dropped with a warning. Convert it
+  yourself.
+
+Rule-level metadata is merged with `guard()`-level metadata shallowly: a
+duplicate key's whole value is replaced, never deep-merged.
+
 ## Decision inspection
 
 Every `.guard()` call returns a `Decision` object. You can inspect it at

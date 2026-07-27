@@ -3,6 +3,7 @@ import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import core from "arcjet";
 import type {
   ArcjetDecision,
+  ArcjetMetadata,
   ArcjetOptions as CoreOptions,
   ArcjetRule,
   Primitive,
@@ -34,8 +35,6 @@ let warnedForAutomaticBodyRead = false;
 //
 // Simplify:
 // https://github.com/sindresorhus/type-fest/blob/964466c9d59c711da57a5297ad954c13132a0001/source/simplify.d.ts
-// EmptyObject:
-// https://github.com/sindresorhus/type-fest/blob/b9723d4785f01f8d2487c09ee5871a1f615781aa/source/empty-object.d.ts
 //
 // Licensed: MIT License Copyright (c) Sindre Sorhus <sindresorhus@gmail.com>
 // (https://sindresorhus.com)
@@ -57,7 +56,6 @@ let warnedForAutomaticBodyRead = false;
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
-declare const emptyObjectSymbol: unique symbol;
 
 type PlainObject = {
   [key: string]: unknown;
@@ -69,13 +67,9 @@ type PlainObject = {
 type MaybeProperties<T> =
   // If all properties of `T` are optional:
   { [P in keyof T]?: T[P] } extends T
-    ? // If `T` has no properties at all:
-      T extends { [emptyObjectSymbol]?: never }
-      ? // Then it is assumed that nothing can be passed.
-        []
-      : // Then it is assumed that the object can be omitted.
-        [properties?: T]
-    : // Then it is assumed the object must be passed.
+    ? // Then the object can be omitted.
+      [properties?: T]
+    : // Otherwise the object must be passed.
       [properties: T];
 
 /**
@@ -186,14 +180,15 @@ export interface ArcjetRemix<Props extends PlainObject> {
    *   Details about the {@linkcode ArcjetRemixRequest} that Arcjet needs to make a
    *   decision.
    * @param props
-   *   Additional properties required for running rules against a request.
+   *   Additional properties required for running rules against a request,
+   *   plus request-independent options such as `metadata`.
    * @returns
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
    *   Arcjet’s decision about the request.
    */
   protect(
     request: ArcjetRemixRequest,
-    ...props: MaybeProperties<Props & { correlationId?: string }>
+    ...props: MaybeProperties<Props & { correlationId?: string; metadata?: ArcjetMetadata }>
   ): Promise<ArcjetDecision>;
 
   /**
@@ -307,9 +302,10 @@ export default function arcjet<
         return withClient(client);
       },
       async protect(details, props?) {
-        // `correlationId` is a request-independent option, not a rule prop, so
-        // pull it out before building the request from the rule properties.
-        const { correlationId, ...properties } = props ?? {};
+        // `correlationId` and `metadata` are request-independent options, not rule
+        // props, so pull them out before building the request from the rule
+        // properties.
+        const { correlationId, metadata, ...properties } = props ?? {};
         // Cast of `{}` because here we switch from `undefined` to `Properties`.
         const req = toArcjetRequest(details, (properties || {}) as Properties);
 
@@ -336,7 +332,7 @@ export default function arcjet<
           return readBodyWeb(clonedRequest.body, { expectedLength });
         };
 
-        return aj.protect({ getBody }, { ...req, correlationId });
+        return aj.protect({ getBody }, { ...req, correlationId, metadata });
       },
     };
 

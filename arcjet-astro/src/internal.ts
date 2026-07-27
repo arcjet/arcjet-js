@@ -8,6 +8,7 @@ import { createTransport } from "@arcjet/transport";
 import core from "arcjet";
 import type {
   ArcjetDecision,
+  ArcjetMetadata,
   ArcjetOptions as CoreOptions,
   ArcjetRule,
   Primitive,
@@ -59,8 +60,6 @@ export * from "arcjet";
 //
 // Simplify:
 // https://github.com/sindresorhus/type-fest/blob/964466c9d59c711da57a5297ad954c13132a0001/source/simplify.d.ts
-// EmptyObject:
-// https://github.com/sindresorhus/type-fest/blob/b9723d4785f01f8d2487c09ee5871a1f615781aa/source/empty-object.d.ts
 //
 // Licensed: MIT License Copyright (c) Sindre Sorhus <sindresorhus@gmail.com>
 // (https://sindresorhus.com)
@@ -82,7 +81,6 @@ export * from "arcjet";
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
-declare const emptyObjectSymbol: unique symbol;
 
 type PlainObject = {
   [key: string]: unknown;
@@ -94,13 +92,9 @@ type PlainObject = {
 type MaybeProperties<T> =
   // If all properties of `T` are optional:
   { [P in keyof T]?: T[P] } extends T
-    ? // If `T` has no properties at all:
-      T extends { [emptyObjectSymbol]?: never }
-      ? // Then it is assumed that nothing can be passed.
-        []
-      : // Then it is assumed that the object can be omitted.
-        [properties?: T]
-    : // Then it is assumed the object must be passed.
+    ? // Then the object can be omitted.
+      [properties?: T]
+    : // Otherwise the object must be passed.
       [properties: T];
 
 /**
@@ -200,7 +194,10 @@ export interface ArcjetAstro<Props extends PlainObject> {
    *   Promise that resolves to an {@linkcode ArcjetDecision} indicating
    *   Arcjet’s decision about the request.
    */
-  protect(request: Request, ...props: MaybeProperties<Props>): Promise<ArcjetDecision>;
+  protect(
+    request: Request,
+    ...props: MaybeProperties<Props & { metadata?: ArcjetMetadata }>
+  ): Promise<ArcjetDecision>;
 
   /**
    * Augment the client with another rule.

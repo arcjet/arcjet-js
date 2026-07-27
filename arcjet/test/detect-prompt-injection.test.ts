@@ -122,6 +122,31 @@ test("detectPromptInjection", async function (t) {
     }, /detectPromptInjection rule requires `detectPromptInjectionMessage` to be non-empty/);
   });
 
+  await t.test("should throw if `metadata` is not a plain object", async function () {
+    const rule: ArcjetPromptInjectionDetectionRule = detectPromptInjection()[0];
+    const context = createContext();
+    const details = createRequest();
+    details.extra.detectPromptInjectionMessage = "This is a valid prompt";
+    // @ts-expect-error: testing runtime behavior
+    details.metadata = "nope";
+
+    assert.throws(function () {
+      const _ = rule.validate(context, details);
+    }, /invalid value for `metadata` - expected plain object/);
+  });
+
+  await t.test("should accept plain-object `metadata`", async function () {
+    const rule: ArcjetPromptInjectionDetectionRule = detectPromptInjection()[0];
+    const context = createContext();
+    const details = createRequest();
+    details.extra.detectPromptInjectionMessage = "This is a valid prompt";
+    details.metadata = { user: { id: "u_1" } };
+
+    assert.doesNotThrow(function () {
+      const _ = rule.validate(context, details);
+    });
+  });
+
   await t.test("should accept valid detectPromptInjectionMessage", async function () {
     const rule: ArcjetPromptInjectionDetectionRule = detectPromptInjection()[0];
     const context = createContext();

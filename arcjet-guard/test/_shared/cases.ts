@@ -353,7 +353,7 @@ export const cases: TestCase[] = [
       let capturedMeta: Record<string, string> = {};
       const arcjet = guard(s, (req) => {
         capturedLabel = req.label;
-        capturedMeta = { ...req.metadata };
+        capturedMeta = { ...req.metadataJson };
         return tokenBucketAllow(req);
       });
 
@@ -364,7 +364,8 @@ export const cases: TestCase[] = [
       });
 
       assert.equal(capturedLabel, "test.label");
-      assert.equal(capturedMeta["foo"], "bar");
+      // Values go on the wire JSON-encoded per top-level key.
+      assert.equal(capturedMeta["foo"], '"bar"');
     },
   },
 

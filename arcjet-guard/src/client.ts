@@ -15,10 +15,12 @@ import {
 } from "@connectrpc/connect";
 
 import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
+import { type LocalWarning, encodeMetadata } from "./metadata.ts";
 import {
   DecideService,
   GuardRequestSchema,
   type GuardResponse,
+  WarningSchema,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
@@ -27,6 +29,7 @@ import type {
   InternalDecision,
   InternalResult,
   RuleWithInput,
+  Warning,
 } from "./types.ts";
 import { userAgent as defaultUserAgent } from "./version.ts";
 
@@ -67,15 +70,22 @@ export function createGuardClient(options: GuardClientOptions): {
 
       const startMs = performance.now();
 
+      // Metadata keys the SDK could not encode, gathered from the request
+      // envelope and every rule, then reported to the server as untrusted
+      // `local_warnings` and surfaced on `decision.warnings`.
+      const droppedKeys: LocalWarning[] = [];
+
       let protoRules;
       try {
         protoRules = await Promise.all(
-          opts.rules.map((rule: RuleWithInput) => ruleToProto(rule, opts.signal)),
+          opts.rules.map((rule: RuleWithInput, ruleIndex: number) =>
+            ruleToProto(rule, opts.signal, { ruleIndex, warningsOut: droppedKeys }),
+          ),
         );
       } catch (cause: unknown) {
         opts.signal?.throwIfAborted();
         const message = cause instanceof Error ? cause.message : "Local rule evaluation failed";
-        return failOpen(message);
+        return failOpen(message, toWarnings(droppedKeys));
       }
 
       opts.signal?.throwIfAborted();
@@ -83,12 +93,16 @@ export function createGuardClient(options: GuardClientOptions): {
       const localEvalDurationMs = BigInt(Math.round(performance.now() - startMs));
       const sentAtUnixMs = BigInt(Date.now());
 
+      const requestMetadata = encodeMetadata(opts.metadata);
+      droppedKeys.push(...requestMetadata.localWarnings);
+
       const guardRequest = create(GuardRequestSchema, {
         userAgent,
         localEvalDurationMs,
         sentAtUnixMs,
         label: opts.label,
-        metadata: opts.metadata ?? {},
+        metadataJson: requestMetadata.metadataJson,
+        localWarnings: droppedKeys.map((warning) => create(WarningSchema, warning)),
         ruleSubmissions: protoRules,
         correlationId: opts.correlationId ?? "",
       });
@@ -123,16 +137,16 @@ export function createGuardClient(options: GuardClientOptions): {
             : cause instanceof Error
               ? cause.message
               : "Unknown error";
-        return failOpen(message);
+        return failOpen(message, toWarnings(droppedKeys));
       }
 
       opts.signal?.throwIfAborted();
 
       try {
-        return decisionFromProto(response, opts.rules);
+        return decisionFromProto(response, opts.rules, toWarnings(droppedKeys));
       } catch (cause: unknown) {
         const message = cause instanceof Error ? cause.message : "Failed to parse server response";
-        return failOpen(message);
+        return failOpen(message, toWarnings(droppedKeys));
       }
     },
   };
@@ -143,9 +157,17 @@ export function createGuardClient(options: GuardClientOptions): {
  *
  * Used when the server returns a `ConnectError` (e.g. validation failure,
  * timeout, network error). The decision is ALLOW (fail-open) with a single
- * error result carrying the message.
+ * error result carrying the message, plus any client-side metadata warnings so
+ * a dropped key is still reported when the call itself failed.
  */
-function failOpen(message: string): Decision {
+function toWarnings(localWarnings: readonly LocalWarning[]): readonly Warning[] {
+  return localWarnings.map((warning) => ({
+    code: warning.code,
+    message: warning.message,
+  }));
+}
+
+function failOpen(message: string, warnings: readonly Warning[] = []): Decision {
   const errorResult: InternalResult = {
     conclusion: "ALLOW",
     reason: "ERROR",
@@ -160,9 +182,10 @@ function failOpen(message: string): Decision {
     conclusion: "ALLOW" as const,
     id: "",
     results,
-    // A transport failure is an error (the request could not be processed),
-    // carried as the error result above — not a warning.
-    ...decisionMembers("ALLOW", results, []),
+    // A transport failure is an error (the request could not be processed) and
+    // is carried as the error result above, not a warning. `warnings` holds only
+    // client-side metadata drops, which are independent of the failure.
+    ...decisionMembers("ALLOW", results, warnings),
     [symbolArcjetInternal]: { results },
   };
   return d;
