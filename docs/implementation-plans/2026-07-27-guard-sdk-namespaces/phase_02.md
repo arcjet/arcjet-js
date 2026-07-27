@@ -106,9 +106,23 @@ otherwise.
    breaks AC5.2 and AC8.2.
 
    JSDoc **prose** (not just `@example` blocks) also names the old identifiers and
-   must be updated in the same pass: `client.ts` lines 5, 24, 26, 27;
-   `metadata.ts` line 17; `context.ts` line 102; `index.ts` line 53;
-   `guard-tool.ts` line 39.
+   must be updated in the same pass. Source-side names and lines:
+   `client.ts` lines 24, 27; `metadata.ts` line 17; `context.ts` line 102;
+   `index.ts` line 53; `protect-tool.ts` line 39.
+
+   **The old verb names also appear in JSDoc prose** — 6 occurrences across three
+   files this phase moves, none of them in an `@example` block, so the `@example`
+   sweep above misses them entirely:
+
+   | Source file | Lines | Occurrences |
+   |---|---|---|
+   | `internal.ts` | 2 | 1 (`protectTool()`) |
+   | `client.ts` → `capture.ts` | 29 | 1 (`protectTool()`, `protectAction()`) |
+   | `guarded.ts` | 7, 8, 18, 19 | 4 (`protectTool` / `protectAction`) |
+
+   Rename these to `guardTool` / `guardAction` in the same task that moves each
+   file (Tasks 2, 4 and 7 respectively). A verbatim copy lands `protectTool` in the
+   published `arcjet-guard/src/agents/internal.ts` and `guarded.ts`.
 
 8. **Runtime message strings must be renamed too — "preserve exactly" does NOT
    mean preserving `@arcjet/ai`.** Every user-visible message is prefixed
@@ -203,8 +217,9 @@ cases" a bold bullet at line 97).
 | `test/context.test.ts` | `src/agents/context.test.ts` | **SPLIT** — the `aiToolsContext` test goes to Phase 3 |
 | `test/index.test.ts` | `src/agents/index.test.ts` | assert the agents barrel surface |
 
-Left for Phase 3: `src/guard-tool.ts`, the `aiToolsContext` half of
-`context.ts`, `test/guard-tool.test.ts`, `test/generate-text.test.ts`,
+Left for Phase 3 (source-side names, as they exist in `arcjet-ai/` today):
+`src/protect-tool.ts`, the `aiToolsContext` half of `context.ts`,
+`test/protect-tool.test.ts`, `test/generate-text.test.ts`,
 `test/warn-missing-context.test.ts`.
 
 **Do not delete `arcjet-ai/` in this phase.** Phase 3 still reads from it;
@@ -268,6 +283,11 @@ compiler.
 
 **`metadata.ts` also needs its JSDoc rewritten** — it carries one `@example`
 block that must reference `@arcjet/guard/agents` rather than `@arcjet/ai`.
+
+**`internal.ts` needs a JSDoc verb rename** — line 2 reads "Brand stamped on tools
+wrapped by `protectTool()`"; change to `guardTool()`. (The symbol *key* itself,
+`Symbol.for("arcjet:ai:protected-tool")`, is deliberately unchanged — see Phase 3
+Task 3.)
 
 Watch specifically for:
 
@@ -346,6 +366,10 @@ but two files named `client.ts` in one package would be confusing.
 
 Rename the exported interface `ArcjetAiClient` → `ArcjetAgentClient`. Keep
 `CaptureOptions`, `shouldWarn()`, and `captureEvent()` as they are.
+
+**JSDoc verb rename:** line 29 reads "passed to `protectTool()`,
+`protectAction()`, and `captureAction()`" — change the first two to `guardTool()`
+and `guardAction()`.
 
 Its `Decision` / `GuardOptions` type imports came from the `@arcjet/guard`
 package; change them to `../types.ts` (`Decision` at `src/types.ts:445`,
@@ -508,6 +532,13 @@ Move `arcjet-ai/src/guarded.ts`. Change sibling imports to `.ts` specifiers
 (`./capture.ts` for the client type and `captureEvent`/`shouldWarn`). Rename the
 client type reference to `ArcjetAgentClient`.
 
+**JSDoc verb rename:** this file has **4** verb occurrences in its prose —
+lines 7, 8 ("shared by `protectTool()` and `protectAction()`") and 18, 19
+("`protectTool` returns an `ArcjetDenialResult`; `protectAction` throws"). Rename
+all four to `guardTool` / `guardAction`. Lines 18-19 also describe `onDeny`'s
+contract, which Task 7 extends with `onUnavailable` — update that prose to mention
+both callbacks.
+
 Its line-1 import of `Decision` / `RuleWithInput` from the `@arcjet/guard`
 package becomes `../types.ts` (`Decision` at `src/types.ts:445`, `RuleWithInput`
 at `:1652`). Left pointing at the package name, it would resolve against
@@ -601,8 +632,15 @@ from `@arcjet/ai` and call `createAiContext`. All three must be rewritten for
 `@arcjet/guard/agents` and `createAgentContext`. Phase 5 Task 5 compile-checks
 them, so a mistake here fails later rather than silently shipping.
 
-**New behaviour.** Add `onGuardError?: "allow" | "deny"` to `GuardActionPolicy`
-(default `"allow"`), and export a new error class:
+**New behaviour.** Declare and export the named type the design contract
+references — it is public surface, used by both policies:
+
+```ts
+export type OnGuardError = "allow" | "deny";
+```
+
+Add `onGuardError?: OnGuardError` to `GuardActionPolicy` (default `"allow"`), and
+export a new error class:
 
 ```ts
 export class ArcjetGuardUnavailableError extends Error {
@@ -730,7 +768,11 @@ export {
   captureAction,
   guardAction,
 } from "./guard-action.ts";
-export type { CaptureActionOptions, GuardActionPolicy } from "./guard-action.ts";
+export type {
+  CaptureActionOptions,
+  GuardActionPolicy,
+  OnGuardError,
+} from "./guard-action.ts";
 export type { ArcjetAgentClient, CaptureOptions } from "./capture.ts";
 ```
 
@@ -789,6 +831,18 @@ Replace `arcjet-ai/test/index.test.ts` with a test of the agents barrel.
 
 - `guard-sdk-namespaces.AC5.2` (partial): assert no file under `src/agents/` or
   `test/_shared/` contains the identifiers `createAiContext` or `ArcjetAiContext`.
+- `guard-sdk-namespaces.AC5.4` (partial): assert no file under `src/agents/` or
+  `test/_shared/` contains **any** of `protectTool`, `protectAction`,
+  `ProtectToolPolicy`, `ProtectActionPolicy`. Check all four, not just the
+  `guardAction` ones — `protectTool` legitimately appears in this layer's JSDoc
+  prose (`internal.ts`, `guarded.ts`, `capture.ts`), so a narrower assertion would
+  let it survive Phase 2 *and* Phase 3 and only fail during Phase 5.
+- **Type-only exports:** `Object.keys` on a namespace import never contains
+  type-only exports, so add a type-level check that fails `npm run typecheck` if
+  `OnGuardError` is missing from the barrel — e.g. a top-level
+  `import type { OnGuardError } from "./index.ts";` plus a trivial
+  `const _check: OnGuardError = "allow";`. Without this, a type named in the public
+  contract could silently not exist.
 
 **AC2.2 is NOT claimed by this task.** Importing cleanly with `ai` absent cannot
 be proven from inside this workspace, where `ai` is a devDependency and always
@@ -827,8 +881,11 @@ Expected: all clean.
       to `../types.ts`
 - [ ] JSDoc `@example` blocks rewritten in `metadata.ts` (1), `context.ts`, and
       `guard-action.ts` (3) — no `@arcjet/ai` or `createAiContext` left
-- [ ] `onGuardError` implemented in `runGuarded` + `guardAction`;
-      `ArcjetGuardUnavailableError` exported from the agents barrel
+- [ ] `onGuardError` implemented in `runGuarded` + `guardAction`; the
+      `OnGuardError` type and `ArcjetGuardUnavailableError` both exported from the
+      agents barrel (the type checked at type level, not via `Object.keys`)
+- [ ] JSDoc verb renames done in `internal.ts` (1), `capture.ts` (1) and
+      `guarded.ts` (4) — 6 occurrences total
 - [ ] AC4.11 tests pass, including that the unavailable error is NOT an
       `instanceof ArcjetDeniedError`
 - [ ] `npm run test-unit` passes with the migrated tests included, **and the total

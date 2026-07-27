@@ -242,7 +242,7 @@ Plus newly written tests: `src/agents/capture.test.ts` (~3),
 `onGuardError` cases added for AC4.11 — ~4 in
 `src/agents/guard-action.test.ts` and ~2 in `src/vercel-ai/v7/guard-tool.test.ts`.
 
-So the expected total is roughly **guard's 321 baseline + 51 migrated + ~18 new ≈ **390**. Verify
+So the expected total is roughly **guard's 321 baseline + 51 migrated + ~18 new ≈ 390**. Verify
 with:
 
 ```bash

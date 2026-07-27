@@ -285,7 +285,7 @@ Content changes required throughout:
    the current behaviour is not derivable from this repo. Ask davidmytton or qw-in
    for the actual behaviour and write that; if no answer is available, remove the
    specific claim rather than restate an unverified number.
-4. **Fail-closed guidance** (`SKILL.md:96`): the current text says only that guard
+4. **Fail-closed guidance** (`SKILL.md:94`): the current text says only that guard
    API failures fail open. Document `onGuardError` and recommend `"deny"` for
    consequential or irreversible actions, while stating that the default is
    `"allow"` to match the rest of the platform.

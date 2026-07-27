@@ -225,11 +225,14 @@ full table and rationale). In this file:
 |---|---|---|
 | 88 | `"@arcjet/ai: toolsContext entry is not an ArcjetAiContext"` | `"@arcjet/guard: toolsContext entry is not an ArcjetAgentContext"` |
 | 107 | `` `@arcjet/ai: tool call "${action}" has no ArcjetAiContext; ` `` | `` `@arcjet/guard: tool call "${action}" has no ArcjetAgentContext; ` `` |
-| 178 | `"@arcjet/ai: guardTool() requires …"` | `"@arcjet/guard: guardTool() requires …"` |
-| 182 | `"@arcjet/ai: guardTool() cannot wrap …"` | `"@arcjet/guard: guardTool() cannot wrap …"` |
+| 178 | `"@arcjet/ai: protectTool() requires …"` | `"@arcjet/guard: guardTool() requires …"` |
+| 182 | `"@arcjet/ai: protectTool() cannot wrap …"` | `"@arcjet/guard: guardTool() cannot wrap …"` |
 
-Lines 88 and 107 change **two** things each — the prefix and the embedded type
-name. Three migrated tests assert the line-107 substring; Tasks 4 and 5 update
+**All four rows change two things each.** Lines 88 and 107: the prefix and the
+embedded type name (`ArcjetAiContext` → `ArcjetAgentContext`). Lines 178 and 182:
+the prefix **and the function name** — the current source says `protectTool()`, so a
+literal find/replace on the "To" strings will not match anything and it is easy to
+conclude those two lines are already done. Three migrated tests assert the line-107 substring; Tasks 4 and 5 update
 them in lockstep. Renaming the message without updating those assertions leaves
 tests that pass for the wrong reason.
 
@@ -239,6 +242,12 @@ contract shared across module boundaries, AC5.2 does not cover it, and it
 legitimately describes AI-SDK tool protection. Do not "tidy" it — a mismatch
 between the symbol written by `guardTool` and the one read by `aiToolsContext`
 would silently drop context for every tool.
+
+Forward note for whoever revisits this: the key string names a package that will no
+longer exist, which is cosmetically odd but harmless. Changing it is a coordinated
+two-sided edit — the value written by `guardTool` and the value read by
+`aiToolsContext` must change in the same commit — and it would break any consumer
+that had come to rely on the registered symbol. No AC covers it deliberately.
 
 Preserve exactly, as all of these are tested:
 - the injected `contextSchema` with its `validate()` — including the Phase-earlier
@@ -452,6 +461,9 @@ Expected: builds clean, both files present.
   beginning `"./vercel-ai/"` other than the v7 literal are absent. This runs
   without a build, matching guard's unit-test convention.
 - `AC1.2`: assert the agents barrel exports the five documented symbols.
+- `AC5.4` (partial): assert this namespace exports `guardTool` (and that
+  `GuardToolPolicy` type-checks), and that no file under `src/vercel-ai/` contains
+  `protectTool` or `ProtectToolPolicy`.
 - `AC1.1` needs **three** checks, because asserting export-map keys alone does not
   prove the root *symbol* surface is unchanged:
   1. assert the root export map has exactly the keys `.`, `./node`, `./bun`,
