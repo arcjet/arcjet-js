@@ -39,7 +39,10 @@ than carrying over `@arcjet/ai`'s looser ones.
 - `ai` and `@ai-sdk/provider-utils` are optional peer dependencies, so users who
   never touch an AI SDK are unaffected.
 - Every behaviour the `@arcjet/ai` test suite covered still passes, under
-  `@arcjet/guard`'s stricter compiler and test conventions.
+  `@arcjet/guard`'s stricter compiler and test conventions — **except the four
+  cases that assert fail-open execution by default** (`protect-tool.test.ts:204`
+  and `:242`, `protect-action.test.ts:163` and `:204`), which migrate to an
+  explicit `onGuardError: "allow"` because the default is now `"deny"`.
 - `examples/nextjs-ai-agent` runs on the new import paths with no `@arcjet/ai`
   dependency.
 - The subpath convention is documented well enough that
@@ -67,7 +70,7 @@ than carrying over `@arcjet/ai`'s looser ones.
 ### guard-sdk-namespaces.AC4: Migrated behaviour is preserved
 - **guard-sdk-namespaces.AC4.1 Success:** Guard ALLOW → the wrapped tool executes once and an event is captured with `outcome: "success"`.
 - **guard-sdk-namespaces.AC4.2 Failure:** Guard DENY → the tool never executes and the model receives an `ArcjetDenialResult` carrying `reason` and `retryable`.
-- **guard-sdk-namespaces.AC4.3 Edge:** A `RATE_LIMIT` denial carries `retryAfterSeconds`; a non-rate-limit denial omits it even when a co-occurring rule result has a reset time.
+- **guard-sdk-namespaces.AC4.3 Edge:** For a real `DecisionDeny`, a `RATE_LIMIT` denial carries `retryAfterSeconds` and a non-rate-limit denial omits it, even when a co-occurring rule result has a reset time. This criterion is scoped to **actual denials**: the guard-unavailable result also has a non-rate-limit `reason` yet deliberately does carry `retryAfterSeconds` per AC4.13, so an implementation written as "omit whenever `reason !== "RATE_LIMIT"`" satisfies this criterion while breaking that one.
 - **guard-sdk-namespaces.AC4.4 Failure:** With `onGuardError: "allow"` set explicitly (opting out of the default), either guard-unavailable signal → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`. Both signals are covered: the guard call throwing, and a returned decision whose `hasFailedOpen()` is `true`.
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
@@ -75,8 +78,9 @@ than carrying over `@arcjet/ai`'s looser ones.
 - **guard-sdk-namespaces.AC4.8 Success:** `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
 - **guard-sdk-namespaces.AC4.9 Success:** `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key.
 - **guard-sdk-namespaces.AC4.10 Edge:** A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning.
-- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **either** guard-unavailable signal → the wrapped tool or action does NOT execute and the outcome is captured as `denied`. `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`, and no `retryAfterSeconds` (the model only ever sees tool results, so the shape stays uniform). `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` (see AC4.12 for how the two signals are carried on it). `policy.onDeny` is not invoked on either signal.
-- **guard-sdk-namespaces.AC4.12 Failure:** The two guard-unavailable signals stay distinguishable to the caller. When the guard call **threw**, `ArcjetGuardUnavailableError.cause` is that error by reference and `.decision` is absent. When a decision **failed open**, `.decision` is that `DecisionAllow` (so `errorResults()` yields the `TRANSPORT_ERROR` result) and `.cause` is `undefined`. The failed-open signal also captures the `decisionId`, which the thrown signal cannot.
+- **guard-sdk-namespaces.AC4.11 Failure:** With the default `onGuardError: "deny"`, **any** guard-unavailable signal → the wrapped tool or action does NOT execute and the outcome is captured as `unavailable` (**not** `denied` — a policy outage and a policy denial must stay distinguishable on the capture stream, which is the surface operators actually query). `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"`, `retryable: true`, and the fixed `retryAfterSeconds` of AC4.13. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` (see AC4.12 for how the signals are carried on it). `policy.onDeny` is not invoked on any signal.
+- **guard-sdk-namespaces.AC4.12 Failure:** The guard-unavailable signals stay distinguishable on `ArcjetGuardUnavailableError`. When the guard call **threw**, `.cause` is that error by reference and `.decision` is `undefined`. When a decision **failed open**, `.decision` is that `DecisionAllow` (so `errorResults()` yields the error detail) and `.cause` is `undefined`. Both legs assert the populated field **and** that the other reads `undefined` — asserting only the populated one passes against an implementation that always sets both. Test with `=== undefined`, **not** `in`: `decision` is a declared optional field, so it is an own property whose value is `undefined` on the thrown path.
+- **guard-sdk-namespaces.AC4.13 Edge:** The fail-closed tool result carries `retryAfterSeconds: 5`. Omitting a hint entirely invites an immediate model retry, and every retry issues another `guard()` call that also fails — amplifying load against an already-degraded Arcjet at every consequential call site at once. The value is a fixed backoff hint, **not** a prediction of when the policy becomes evaluable; 5 seconds is chosen as comfortably longer than the client's 1-second default request timeout, so a retry cannot land inside the same timeout window. It is asserted as an exact value, not merely as present.
 
 ### guard-sdk-namespaces.AC5: The renames are complete
 - **guard-sdk-namespaces.AC5.1 Success:** `createAgentContext` and `ArcjetAgentContext` are the exported names.
@@ -145,11 +149,40 @@ than carrying over `@arcjet/ai`'s looser ones.
   `guardTool`.
 - **Guard unavailable**: Either of the two signals that a policy could not be
   evaluated — (a) the `guard()` call throwing, or (b) `guard()` returning a
-  decision whose `hasFailedOpen()` is `true`. (b) is the *normal* signal during
-  an Arcjet outage: the guard client converts transport failures into a
-  synthesized ALLOW carrying a `TRANSPORT_ERROR` error result
-  (`arcjet-guard/src/client.ts`), so (a) means something unexpected broke.
-  `onGuardError` governs both.
+  decision whose `hasFailedOpen()` is `true`. (b) is the reachable signal in
+  practice: the guard client converts transport failures into a synthesized
+  ALLOW carrying an error result (`arcjet-guard/src/client.ts`), so (a) means
+  something unexpected broke. `onGuardError` governs both.
+
+  **"Unavailable" is broader than "Arcjet is down."** `hasFailedOpen()` is
+  `conclusion === "ALLOW" && errored.length > 0` (`convert.ts:706`, over results
+  whose `type === "RULE_ERROR"`), which has five reachable producers:
+
+  | # | Producer | Code | Arcjet actually down? |
+  |---|---|---|---|
+  | 1 | transport failure (`client.ts:164-174`) | `TRANSPORT_ERROR` | yes |
+  | 2 | request deadline — `timeoutMs` defaults to 1000 (`client.ts:143`) | `TRANSPORT_ERROR` | **no** — merely slow |
+  | 3 | response parse failure (`client.ts:178-183`) | `TRANSPORT_ERROR` | **no** — an SDK/protocol defect |
+  | 4 | local rule evaluation threw (`client.ts:107-111`) | `TRANSPORT_ERROR` | **no** — the caller's own rule or callback faulted |
+  | 5 | no decision in the response (`convert.ts:728-748`) | `NO_DECISION` | ambiguous |
+  | 6 | server-returned per-rule error on an otherwise-ALLOW decision (`convert.ts:372-382`) | server-supplied | **no** — Arcjet healthy, every other rule evaluated |
+
+  All of them deny under the default. That is deliberate: the condition a
+  fail-closed policy exists for is "this policy was not evaluated", and if the
+  prompt-injection rule errored server-side you do not want to send the mail.
+  But it means a single broken rule, a caller's own throwing rule callback, or a
+  p99 latency blip blocks a consequential call while Arcjet is healthy. A call
+  site that must tolerate latency should raise `timeoutSeconds` there rather than
+  switch to `"allow"` — the first trades latency for enforcement, the second
+  gives up enforcement entirely.
+
+  Only producer 6 carries a real, non-empty decision `id`; producers 1-5
+  synthesize a decision with `id: ""` (`client.ts:216`, `convert.ts:743`), which
+  is why no acceptance criterion claims a correlatable `decisionId` on this path.
+
+  Note `client.ts:70` ("`guard()` requires at least one rule") is also a
+  fail-open producer but is unreachable from this engine, which skips the guard
+  call entirely when `rules` is absent or empty.
 - **Fail open**: Executing the wrapped tool anyway when the guard is
   unavailable, with a gated warning logged instead of blocking. Selected with
   `onGuardError: "allow"`; the helpers default to `"deny"` (fail closed).
@@ -259,13 +292,36 @@ type OnGuardError = "allow" | "deny";
 //
 // Exactly one of `cause` / `decision` is populated, which is how a caller tells
 // the two guard-unavailable signals apart.
+//
+// `cause` is deliberately NOT declared as a class field. Under `target: es2023`
+// a declared-but-unassigned field is defined-as-undefined after `super()`
+// returns, which erases the `cause` passed through the options bag — measured:
+// with `cause` declared, `err.cause === thrown` is FALSE; inherited from Error,
+// TRUE. `decision` IS declared, so on the thrown path it reads `undefined` but
+// is still an own property: test it with `=== undefined`, never with `in`.
+//
+// This exact shape typechecks and lints clean under arcjet-guard's own config
+// (erasableSyntaxOnly, exactOptionalPropertyTypes, noImplicitOverride).
 class ArcjetGuardUnavailableError extends Error {
   readonly action: string;
-  // The thrown error, by reference. Absent when a decision failed open.
-  readonly cause?: unknown;
-  // The fail-open ALLOW decision; call errorResults() for the TRANSPORT_ERROR
-  // detail. Absent when the guard call threw.
+  // The fail-open ALLOW decision; call errorResults() for the error detail.
+  // `undefined` when the guard call threw.
   readonly decision?: DecisionAllow;
+
+  constructor(
+    action: string,
+    init: { cause: unknown } | { decision: DecisionAllow },
+  ) {
+    super(
+      `policy for "${action}" could not be evaluated`,
+      "cause" in init ? { cause: init.cause } : {},
+    );
+    this.name = "ArcjetGuardUnavailableError";
+    this.action = action;
+    if ("decision" in init) {
+      this.decision = init.decision;
+    }
+  }
 }
 ```
 
@@ -362,8 +418,12 @@ moves.
 
 **Done when:** `npm install` succeeds; `npm run build --workspace @arcjet/guard`
 emits `dist/agents/index.js` and `dist/vercel-ai/v7/index.js`; both typechecks
-and lint pass; a nested `src/**/*.test.ts` file is confirmed to be picked up by
-the existing `test-unit` script glob.
+and lint pass; the `test-unit` glob patterns are **single-quoted** in
+`package.json` (they are not today, which is the defect Phase 1 fixes), and with
+nested test files present at one *and* two directories deep the total test count
+equals baseline + 2 with no pre-existing top-level suite missing. Do not restate
+this as "a nested file is confirmed to be picked up" — that is true in the broken
+state too.
 <!-- END_PHASE_1 -->
 
 <!-- START_PHASE_2 -->
@@ -375,8 +435,12 @@ with no AI SDK in their import graph.
 **Components:**
 - `arcjet-guard/src/agents/context.ts` — `createAgentContext`,
   `ArcjetAgentContext` (renamed from `createAiContext`/`ArcjetAiContext`).
-- `arcjet-guard/src/agents/metadata.ts` — `securityMetadata`.
-- `arcjet-guard/src/agents/capture.ts` — `CaptureOptions`, the structural
+- `arcjet-guard/src/agents/vocabulary.ts` — `securityMetadata`. Not
+  `metadata.ts`: that name is taken by guard's own encoding module
+  (`arcjet-guard/src/metadata.ts`, added by arcjet-js#6171).
+- `arcjet-guard/src/agents/capture.ts` — `CaptureOptions` (the *internal*
+  structural type, distinct from the public `CaptureActionOptions` above; both
+  exist deliberately and both widen to `ArcjetMetadata`), the structural
   `ArcjetAgentClient` type, capture feature detection, warning gate.
 - `arcjet-guard/src/agents/guarded.ts` — internal `runGuarded` engine.
 - `arcjet-guard/src/agents/guard-action.ts` — `guardAction`,
@@ -390,7 +454,8 @@ with no AI SDK in their import graph.
 **Dependencies:** Phase 1.
 
 **Covers:** `guard-sdk-namespaces.AC2.1`, `.AC2.2`, `.AC4.8`, `.AC4.9`,
-`.AC4.10`, `.AC5.1`, `.AC5.2`, `.AC5.3`.
+`.AC4.10`, `.AC4.11` (engine + the `guardAction` half), `.AC4.12`, `.AC5.1`,
+`.AC5.2`, `.AC5.3`, `.AC5.4` (the `guardAction` rename).
 
 **Done when:** Tests for the above ACs pass; a static check confirms nothing
 reachable from `dist/agents/` imports `ai` or `@ai-sdk/*`; guard's build,
@@ -415,7 +480,8 @@ the shared layer.
 
 **Dependencies:** Phase 2.
 
-**Covers:** `guard-sdk-namespaces.AC1.1`–`.AC1.6`, `.AC2.3`, `.AC4.1`–`.AC4.7`.
+**Covers:** `guard-sdk-namespaces.AC1.1`–`.AC1.6`, `.AC2.3`, `.AC4.1`–`.AC4.7`,
+`.AC4.11` (the `guardTool` half), `.AC4.13`, `.AC5.4` (the `guardTool` rename).
 
 **Done when:** Tests for the above ACs pass, including that the proxied shared
 exports are the same function identities as those from `@arcjet/guard/agents`,
