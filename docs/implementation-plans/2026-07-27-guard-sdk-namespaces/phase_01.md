@@ -228,12 +228,37 @@ first, Phase 3 the second. `export {}` is a legitimate empty module under
 
 Run from the repo root:
 
+This repo emits `npm warn EBADENGINE` on every install (npm 11.x against the
+root package's `npm: ^12.0.0` engine). That is expected and unrelated to peers —
+the grep below deliberately does not match it. Do not "fix" it here.
+
+Run this as a **script**, not pasted into an interactive shell — the `return 1`
+form is used so a paste cannot kill your shell:
+
 ```bash
-INSTALL_LOG=$(mktemp)
-npm install 2>&1 | tee "$INSTALL_LOG"
-grep -iE "ERESOLVE|EPEERINVALID|peer dep" "$INSTALL_LOG" && echo "peer warnings detected — fix required" && exit 1 || true
-echo "no peer warnings"
+run_peer_check() {
+  local log status
+  log=$(mktemp)
+  npm install >"$log" 2>&1
+  status=$?
+  cat "$log"
+  if [ "$status" -ne 0 ]; then
+    echo "FAIL: npm install exited $status (not a peer problem, but AC3.2 covers errors too)"
+    return 1
+  fi
+  if grep -iE "ERESOLVE|EPEERINVALID|peer dep" "$log"; then
+    echo "FAIL: peer warnings detected"
+    return 1
+  fi
+  echo "no peer warnings"
+}
+run_peer_check
 ```
+
+Piping `npm install` into `tee` would discard npm's exit status, so a hard
+failure such as `ETARGET` would still print the success line — AC3.2's text is
+"no peer-dependency warning **or error**", so the status must be checked
+separately from the grep.
 
 Expected: `no peer warnings`. `ai` and `@ai-sdk/provider-utils` resolve here
 because they are also devDependencies; the optional-peer declaration is what

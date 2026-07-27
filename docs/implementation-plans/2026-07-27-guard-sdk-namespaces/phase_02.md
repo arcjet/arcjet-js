@@ -684,13 +684,24 @@ argument rather than interpolating it (the Semgrep constraint):
 
 Per-row status: Row 1 = today's string, prefix changed only; Row 2 = today's string with prefix changed **and** `${action}` converted from template interpolation to a `%s` argument per convention 9; rows 3–4 are new. Several migrated tests assert substrings of the `"allow"` strings; Task 9 and Phase 3 Task 4 update them in lockstep. **Preserve exactly** these strings in the catch block and both fail-open paths — do not re-interpolate action into the format string.
 
-Here is the restructured `runGuarded` body. **This shape was validated**: it was
-applied to the real `arcjet-ai/src/guarded.ts` and typechecked, and the only errors
-were the two adapters not yet passing `onUnavailable` (Task 8 and Phase 3 Task 3)
-plus the `metadata` widening of convention 6 — i.e. exactly the work this phase
-sequences next. Copy the structure, not just the branches:
+Here is the restructured `runGuarded` body. **This shape was validated against
+both gates**, which matters because an earlier draft passed `typecheck` and failed
+`lint`:
+
+- applied to the real `arcjet-ai/src/guarded.ts` and typechecked → **exactly two
+  errors**, both `Property 'onUnavailable' is missing` at `protect-action.ts:118`
+  and `protect-tool.ts:208` — the two adapters Task 8 and Phase 3 Task 3 update
+  next. There is no third error; the `metadata` mismatch of convention 6 appears
+  only once `GuardActionPolicy.metadata` widens, which is Task 8's edit, not this
+  one.
+- transplanted into `arcjet-guard/src/agents/` and run under guard's own configs →
+  `npm run typecheck` exit 0 **and** `oxlint --tsconfig=tsconfig.lint.json` exit 0.
+
+Copy the structure, not just the branches:
 
 ```ts
+const failClosed = onGuardError === "deny";
+
 let decisionId: string | undefined;
 if (rules !== undefined && rules.length > 0) {
   let decision: Decision | undefined;
@@ -699,10 +710,8 @@ if (rules !== undefined && rules.length > 0) {
   } catch (error) {
     // Signal (a): the guard call itself threw. Rare — the client converts
     // transport failures into decisions rather than throwing.
-    if (onGuardError === "deny") {
-      if (shouldWarn()) {
-        console.warn('@arcjet/guard: guard check for "%s" errored; failing closed:', action, error);
-      }
+    if (failClosed) {
+      warnUnavailable(action, "threw", true, error);
       captureEvent(client, {
         action,
         ...correlation,
@@ -710,9 +719,7 @@ if (rules !== undefined && rules.length > 0) {
       });
       return onUnavailable({ kind: "threw", error });
     }
-    if (shouldWarn()) {
-      console.warn('@arcjet/guard: guard check for "%s" errored; failing open:', action, error);
-    }
+    warnUnavailable(action, "threw", false, error);
     decision = undefined; // fall through to execute, exactly as today
   }
   if (decision !== undefined) {
@@ -722,26 +729,28 @@ if (rules !== undefined && rules.length > 0) {
     if (decision.id !== "") {
       decisionId = decision.id;
     }
+    // Signal (b). The `conclusion === "ALLOW"` conjunct must stay INSIDE the
+    // `if` for the narrowing to reach `onUnavailable`: TypeScript cannot narrow
+    // on a method return, and hoisting the test into a `const failedOpen` makes
+    // the `onUnavailable` call fail with "Type 'Decision' is not assignable to
+    // type 'DecisionAllow'" (measured). Never reach for a cast here.
+    //
+    // The mode check is folded into the same condition, and the warnings are
+    // extracted into `warnUnavailable` below, to stay within oxlint's
+    // `max-depth` of 4 — the nested form trips
+    // `eslint(max-depth): Blocks are nested too deeply (5)`.
+    if (decision.conclusion === "ALLOW" && decision.hasFailedOpen() && failClosed) {
+      warnUnavailable(action, "failed-open", true);
+      captureEvent(client, {
+        action,
+        ...correlation,
+        ...(decisionId !== undefined && { decisionId }),
+        metadata: { ...metadata, outcome: "unavailable" },
+      });
+      return onUnavailable({ kind: "failed-open", decision });
+    }
     if (decision.conclusion === "ALLOW" && decision.hasFailedOpen()) {
-      // Signal (b). Narrowing on `conclusion` first is required: TypeScript
-      // cannot narrow on a method return, so `hasFailedOpen()` alone leaves
-      // `decision` as `Decision` and the `onUnavailable` call will not compile.
-      // Never reach for a cast here.
-      if (onGuardError === "deny") {
-        if (shouldWarn()) {
-          console.warn('@arcjet/guard: guard check for "%s" was unavailable; failing closed.', action);
-        }
-        captureEvent(client, {
-          action,
-          ...correlation,
-          ...(decisionId !== undefined && { decisionId }),
-          metadata: { ...metadata, outcome: "unavailable" },
-        });
-        return onUnavailable({ kind: "failed-open", decision });
-      }
-      if (shouldWarn()) {
-        console.warn('@arcjet/guard: guard check for "%s" failed open (API error).', action);
-      }
+      warnUnavailable(action, "failed-open", false);
       // fall through to execute
     }
     if (decision.conclusion === "DENY") {
@@ -778,14 +787,47 @@ captureEvent(client, {
 return result;
 ```
 
-Five things in that skeleton are easy to get wrong and each breaks a migrated test
+…plus the extracted warning helper, which is what keeps the branches inside
+`max-depth`. All four format strings are constant, with `action` passed as a `%s`
+argument (the Semgrep constraint):
+
+```ts
+function warnUnavailable(
+  action: string,
+  signal: "threw" | "failed-open",
+  failClosed: boolean,
+  error?: unknown,
+): void {
+  if (!shouldWarn()) {
+    return;
+  }
+  if (signal === "threw") {
+    if (failClosed) {
+      console.warn('@arcjet/guard: guard check for "%s" errored; failing closed:', action, error);
+    } else {
+      console.warn('@arcjet/guard: guard check for "%s" errored; failing open:', action, error);
+    }
+    return;
+  }
+  if (failClosed) {
+    console.warn('@arcjet/guard: guard check for "%s" was unavailable; failing closed.', action);
+  } else {
+    console.warn('@arcjet/guard: guard check for "%s" failed open (API error).', action);
+  }
+}
+```
+
+Six things in that skeleton are easy to get wrong and each breaks a migrated test
 or the typecheck:
 
 1. **The `"allow"` branches fall through — they must NOT return.** An earlier draft
    of this skeleton had `return await fn()` in both, which skips the shared tail
-   and emits no capture event at all. Four migrated tests assert the opposite:
-   `protect-action.test.ts:197` and `:232`, `protect-tool.test.ts:232` and `:267`
-   each assert `captureCalls.length === 1` on a fail-open path.
+   and emits no capture event at all. **Two** migrated tests catch that:
+   `protect-action.test.ts:197` and `:233` assert `captureCalls.length === 1` on a
+   fail-open path. `protect-tool.test.ts`'s two fail-open tests assert only
+   `executeCalls` and the warning — they do **not** destructure `captureCalls`, so
+   they would sail past an early return. Phase 3 Task 4 must add a
+   `captureCalls.length === 1` assertion to both.
 2. **`outcome` lives *inside* `metadata`**, as `metadata: { ...metadata, outcome }`
    — it is not a top-level field. `CaptureOptions` has no `outcome` property
    (`arcjet-ai/src/client.ts:10-21`), so a top-level one fails the typecheck, and
@@ -796,6 +838,12 @@ or the typecheck:
    parameter name; `runGuarded` destructures `execute` (`guarded.ts:30`).
 5. **`shouldWarn()` takes no arguments** (`client.ts:43`), and the existing code
    uses a statement `if`, not `&&`.
+6. **Nesting must stay within `max-depth: 4`.** `oxlint` runs `eslint/max-depth`
+   at error via the `pedantic` category in `.oxlintrc.json`. The obvious
+   structure — `if (rules)` → `if (decision)` → `if (failedOpen)` →
+   `if (mode)` → `if (shouldWarn())` — is depth 5 and fails `npm run lint` while
+   typechecking cleanly. That is why the mode check is folded into the
+   failed-open condition and the warnings live in a helper.
 
 Preserve exactly:
 - the `correlation` spread trick that omits `correlationId` when undefined
@@ -978,14 +1026,15 @@ throw path leaves the actual outage path untested:
   asserted one, which passed only because `test/_shared/stub-client.ts:74` returns
   `id: "gdec_allow_fo"` — a fixture value that cannot occur in production. If that
   builder is reused here, change it to `id: ""` so the fixture matches reality.
-  Assert instead that the capture event carries the
-  `decisionId` — this is the one path where a decision exists to correlate to.
+  Assert instead that the capture event carries **no** `decisionId` on either
+  signal.
 - the thrown error is **not** an `instanceof ArcjetDeniedError` — assert this
   explicitly, since the whole point of the separate class is that callers can tell
   a policy denial from a policy outage.
-- both signals with `onGuardError: "allow"` → fail-open behaviour, function runs
-  (these are AC4.4's cases; assert the opt-out explicitly so a future default flip
-  cannot pass silently).
+- both signals with `onGuardError: "allow"` → fail-open behaviour, function runs.
+  **These are the two migrated cases listed under "preserve" above, not new ones** —
+  they are AC4.4's cases and are already inside the 10 migrated guard-action tests.
+  Do not count them twice when reconciling; the net-new figure for this file is ~5.
 - a real DENY decision with `onGuardError: "deny"` set still throws
   `ArcjetDeniedError`, not the unavailable error — the option must only affect the
   unavailable paths.
@@ -995,7 +1044,7 @@ throw path leaves the actual outage path untested:
 **Verification:**
 
 Run from `arcjet-guard/`: `npm run test-unit`
-Expected: ~17 guard-action tests pass (10 migrated + ~7 new AC4.11/AC4.12 cases).
+Expected: ~15 guard-action tests pass (10 migrated + ~5 net-new AC4.11/AC4.12 cases).
 
 **Commit:** `test(guard): move guardAction tests into src/agents`
 <!-- END_TASK_9 -->
@@ -1118,7 +1167,7 @@ requiring that clean-install probe.
 
 Run from `arcjet-guard/`: `npm run test-unit`
 Expected: all new tests pass. Cumulative for this phase: metadata 3, context 10,
-guard-action ~17, capture ~3, barrel ~3.
+guard-action ~15, capture ~3, barrel ~3.
 
 Run from `arcjet-guard/`: `npm run typecheck && npm run lint && npm run build`
 Expected: all clean.
@@ -1149,7 +1198,7 @@ Expected: all clean.
       throw alone
 - [ ] `onUnavailable` is a required `runGuarded` parameter taking the `Unavailable`
       discriminant; `ArcjetGuardUnavailableError` populates exactly one of
-      `cause` / `decision`, and the failed-open path captures a `decisionId`
+      `cause` / `decision`, and **neither** unavailable path captures a `decisionId` while the decision's `id` is empty
 - [ ] Migrated fail-open tests set `onGuardError: "allow"` explicitly rather than
       relying on a default that has changed
 - [ ] The `OnGuardError` type and `ArcjetGuardUnavailableError` are both exported

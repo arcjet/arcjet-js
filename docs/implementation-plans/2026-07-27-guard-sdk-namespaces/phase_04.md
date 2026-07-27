@@ -74,6 +74,9 @@ package.
 
 **Files:**
 - Delete: `arcjet-ai/` (entire directory, 24 tracked files)
+- Create: `docs/implementation-plans/2026-07-27-guard-sdk-namespaces/.pre-deletion-sha`
+  (tracked, committed by Step 7; carries the SHA Phase 5 Tasks 3 and 6 read the
+  deleted files back from, and is removed with the plan directory in Phase 6)
 
 **Implementation:**
 
@@ -169,12 +172,25 @@ Confirm both files are readable at that SHA before proceeding:
 
 ```bash
 SHA=$(cat docs/implementation-plans/2026-07-27-guard-sdk-namespaces/.pre-deletion-sha)
-git show "$SHA:arcjet-ai/skills/integrate-arcjet-ai/SKILL.md" | head -3
-git show "$SHA:arcjet-ai/README.md" | head -3
+for path in \
+  "arcjet-ai/skills/integrate-arcjet-ai/SKILL.md" \
+  "arcjet-ai/README.md" \
+  ; do
+  git show "$SHA:$path" >/dev/null 2>&1 \
+    || { echo "ABORT: $path is not readable at $SHA — do NOT delete"; return 1; }
+done
+echo "OK: both Phase 5 inputs are recoverable at $SHA"
 ```
 
-Expected: the first lines of each file. If either errors, STOP — do not delete.
-Phase 5 Tasks 3 and 6 read them the same way. The `.pre-deletion-sha` file is
+Do **not** write this as `git show … | head -3`: piping to `head` returns
+`head`'s status, so a failed `git show` exits 0 and this gate — the last one
+before an irreversible delete — would pass on a broken SHA. Verified: with a bad
+SHA, `git show BAD:path | head -3` exits 0 while `git show BAD:path >/dev/null`
+exits 128.
+
+Expected: `OK: both Phase 5 inputs are recoverable at <sha>`.
+Phase 5 Task 3 reads `SKILL.md` and Task 6 reads `README.md` the same way, each
+with its own `Input:` line naming this file. The `.pre-deletion-sha` file is
 deleted along with the plan directory in Phase 6.
 
 **Step 5: Delete**

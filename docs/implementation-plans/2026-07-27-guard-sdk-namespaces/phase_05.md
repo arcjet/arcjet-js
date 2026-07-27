@@ -61,9 +61,13 @@ The skill is a single file: `arcjet-ai/skills/integrate-arcjet-ai/SKILL.md`
 (7101 bytes). `arcjet-guard` has `README.md`, `CONTRIBUTING.md`, and
 `CHANGELOG.md`.
 
-**Ordering note:** Phase 4 deletes `arcjet-ai/`. Copy `SKILL.md` out **before**
-running Phase 4, or recover it with
-`git show <pre-deletion-sha>:arcjet-ai/skills/integrate-arcjet-ai/SKILL.md`.
+**Ordering note:** Phase 4 deletes `arcjet-ai/`, so by the time this phase runs
+neither `SKILL.md` nor `arcjet-ai/README.md` exists on disk. Do **not** try to
+copy them out first — Phase 4 Task 1 Step 4 records the pre-deletion SHA in
+`docs/implementation-plans/2026-07-27-guard-sdk-namespaces/.pre-deletion-sha`
+and verifies both are readable at it. Every reference to their *content* in this
+phase (Task 3's four `SKILL.md` line anchors, Task 6's README port) is read back
+with `git show "$(cat …/.pre-deletion-sha):<path>"`.
 
 ---
 
@@ -195,7 +199,9 @@ Expected: the example's own lockfile shows as modified and no longer references
 `arcjet-ai`. Confirm with:
 
 ```bash
-grep -c "arcjet-ai" package-lock.json && echo "residual arcjet-ai reference — fix required" && exit 1 || true
+if grep -q "arcjet-ai" package-lock.json; then
+  echo "FAIL: residual arcjet-ai reference in the example lockfile"; return 1
+fi
 echo "0 references — good"
 ```
 
@@ -277,6 +283,10 @@ the README's caveats section (Task 4) so consumers are not surprised.
 
 **Files:**
 - Create: `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md`
+- Input: `git show "$(cat docs/implementation-plans/2026-07-27-guard-sdk-namespaces/.pre-deletion-sha):arcjet-ai/skills/integrate-arcjet-ai/SKILL.md"`
+  — the file was deleted in Phase 4 and this is the only way to read it. The line
+  anchors below (`SKILL.md:60`, `:95`, `:142`, `:166-168`) refer to that content.
+  Write it to a scratch path first if you prefer to read it repeatedly.
 - Delete: `arcjet-ai/skills/integrate-arcjet-ai/SKILL.md` (via Phase 4's directory removal)
 
 **Implementation:**
@@ -365,6 +375,13 @@ Content changes required throughout:
      `guardAction` throws `ArcjetGuardUnavailableError`, which is **not**
      `ArcjetDeniedError` and should be caught separately if the app distinguishes
      "blocked by policy" from "policy unavailable";
+   - the fail-closed tool result carries **`retryAfterSeconds: 5`** (AC4.13) — a
+     fixed backoff hint, not a prediction of when the policy becomes evaluable.
+     An agent reading this skill writes the retry/backoff handling, so this is
+     the number it needs.
+   - the capture event records **`outcome: "unavailable"`**, deliberately not
+     `"denied"`, so an operator can query a policy outage separately from a
+     policy denial.
    - one sentence on the layering, since it looks like an inconsistency otherwise:
      the `@arcjet/guard` client still fails open by construction and *reports* it
      via `hasFailedOpen()`; these helpers are what *decide* to block on it.
@@ -444,6 +461,10 @@ state, explicitly:
      can be alerted on separately from a policy denial, and that it carries `cause`
      (the guard call threw) or `decision` (a decision failed open) so the two are
      distinguishable in a handler.
+   - the fixed **`retryAfterSeconds: 5`** on the unavailable result (AC4.13), and
+     that it is a backoff hint rather than a reset time.
+   - the capture `outcome` on that path is **`"unavailable"`**, not `"denied"` —
+     name the field, since it is what an operator alerts on.
    - the layering, in one line: the client fails open and *reports* it; the helper
      *decides* to block. Without this the two defaults read as a bug.
    - `onGuardError: "allow"` as the opt-out, and its consequence — an Arcjet
@@ -492,10 +513,21 @@ for s in \
   "onGuardError" \
   "ArcjetGuardUnavailableError" \
   "hasFailedOpen" \
+  "retryAfterSeconds" \
+  "unavailable" \
+  "never reaches an AI SDK" \
+  "rules: ({" \
   "correlationId" \
   "or session" \
   "contextSchema" \
   "adding a new SDK namespace" \
+  ; do
+# NOTE: do NOT add "contextSchema" here. Item 8 requires showing both call forms
+# and naming the trade-off; it does not mandate that word, so grepping for it
+# fails against a README that fully satisfies item 8. The term above for item 6
+# ("never reaches an AI SDK") and item 10 ("rules: ({") are wordings those items
+# do require.
+for _unused in \
   ; do
   grep -q -- "$s" README.md && echo "ok: $s" || echo "MISSING: $s"
 done
@@ -521,7 +553,9 @@ git commit -m "docs(guard): document the SDK namespace convention"
 
 **Files:**
 - Modify: any README / JSDoc / SKILL.md example found not to compile
-- Create: `/tmp/doc-example-check/` (throwaway, not committed)
+- Create: a throwaway extraction directory from `mktemp -d` (not committed; do
+  not hardcode `/tmp/doc-example-check/`, which collides if phases run in
+  parallel)
 
 **Implementation:**
 
@@ -733,10 +767,20 @@ here would orphan that citation.
 
 ```bash
 cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js
-grep -cE "@arcjet/ai|protectTool|protectAction" docs/test-plans/2026-07-23-pilot-framework-helper.md || echo "0 — clean"
+if grep -nE "@arcjet/ai|arcjet-ai/|protectTool|protectAction|\b47\b" \
+     docs/test-plans/2026-07-23-pilot-framework-helper.md; then
+  echo "FAIL: stale references remain (see above)"; return 1
+fi
+echo "clean"
 ```
 
-Expected: `0 — clean`.
+The pattern must include `arcjet-ai/` and `47`, not just `@arcjet/ai` and the
+verbs: `@arcjet/ai` does not match `arcjet-ai/test/context.test.ts`, so the 10
+directory paths and both stale `47`s would survive a partial rewrite and the gate
+would still report clean. It must also **assert** — `grep -c … || echo` prints a
+count and exits 0 when matches remain.
+
+Expected: `clean`.
 
 **Step 3: Run the FINAL authoritative sweep (AC5.2)**
 
@@ -773,6 +817,10 @@ must report `clean` across the whole repo, with only `docs/design-plans/` and
       the opt-out
 - [ ] Example shows rules derived from tool input, and points out that an explicit
       `guardAction` inside `execute` is the alternative to wrapping (both qw-in)
+- [ ] README carries the **same** `correlationId` paragraph as the skill —
+      "one logical run **or session**" — ported from Task 3 item 1, not rewritten
+- [ ] README and skill both state `retryAfterSeconds: 5` and
+      `outcome: "unavailable"` for the guard-unavailable path
 - [ ] Skill explains what `correlationId` is for using "one logical run **or
       session**" (davidmytton's wording), fixes the bare `octokit` reference,
       documents the `"deny"` default and the `"allow"` opt-out, and carries

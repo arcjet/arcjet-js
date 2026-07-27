@@ -137,9 +137,21 @@ SCRATCH=$(mktemp -d)
 cd "$SCRATCH"
 npm init -y >/dev/null
 npm pkg set type=module >/dev/null
-npm install "$TARBALL_ABS" 2>&1 | tee install.log
-grep -iE "ERESOLVE|EPEERINVALID|peer dep" install.log && echo "peer warnings detected — AC3.2 failed" && exit 1 || echo "AC3.2 OK: no peer warnings"
+npm install "$TARBALL_ABS" >install.log 2>&1
+INSTALL_STATUS=$?
+cat install.log
+if [ "$INSTALL_STATUS" -ne 0 ]; then
+  echo "FAIL: npm install exited $INSTALL_STATUS — AC3.2 covers errors, not just warnings"; return 1
+fi
+if grep -iE "ERESOLVE|EPEERINVALID|peer dep" install.log; then
+  echo "FAIL: peer warnings detected — AC3.2 failed"; return 1
+fi
+echo "AC3.2 OK: no peer warnings"
 ```
+
+Do not pipe into `tee`: that returns `tee`'s status, so an `ETARGET` or similar
+hard failure would still print the OK line. `npm warn EBADENGINE` is expected in
+this repo and is deliberately not matched by the grep.
 
 Expected: install succeeds with no peer warnings — `ai` is optional, so its
 absence is silent.
@@ -244,7 +256,7 @@ Plus newly written tests: `src/agents/capture.test.ts` (~3),
 `src/agents/guard-action.test.ts` and ~3 in `src/vercel-ai/v7/guard-tool.test.ts`
 (each covering **both** guard-unavailable signals, not the throw alone).
 
-So the expected total is roughly **guard's 350 baseline + 51 migrated + ~22 new ≈ 423**. Verify
+So the expected total is roughly **guard's 350 baseline + 51 migrated + ~20 net-new ≈ 421**. Verify
 with:
 
 ```bash
@@ -252,7 +264,7 @@ cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js/arcjet-gua
 npm run test-unit 2>&1 | grep -E "^ℹ (tests|pass|fail)"
 ```
 
-The total should be ≈423 (baseline 350 + 51 migrated + ~22 new). Any materially
+The total should be ≈421 (baseline 350 + 51 migrated + ~20 net-new). Any materially
 lower count suggests the glob collapsed: an unquoted `src/**/*.test.ts` expands to
 `src/*/*.test.ts` in the shell, matching only `src/agents/*.test.ts` (~36 tests).
 The `~36` signature is the telltale sign of glob collapse. Verify the fix:
@@ -261,7 +273,24 @@ The `~36` signature is the telltale sign of glob collapse. Verify the fix:
 grep "test-unit" package.json
 ```
 
-Expected: both `test-unit` entries use single quotes.
+Expected: `QUOTED OK`. Do not eyeball this — `grep "test-unit"` matches two
+lines and only the `test-unit` script itself carries globs, so "both entries"
+is unmeetable as stated. The three patterns that must be single-quoted are
+`--test-coverage-include=src/**`, `--test-coverage-exclude=src/**/*.test.ts`,
+and the positional `src/**/*.test.ts`. Assert it:
+
+```bash
+cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js/arcjet-guard
+python3 - <<'EOF'
+import json, sys
+s = json.load(open("package.json"))["scripts"]["test-unit"]
+missing = [p for p in ("'--test-coverage-include=src/**'",
+                       "'--test-coverage-exclude=src/**/*.test.ts'",
+                       "'src/**/*.test.ts'") if p not in s]
+print("QUOTED OK" if not missing else f"FAIL: unquoted/missing: {missing}")
+sys.exit(1 if missing else 0)
+EOF
+```
 
 **Step 2: The runtime suites (AC9.2)**
 
@@ -417,8 +446,8 @@ git push origin rei/feat/framework-helper
       with a module-resolution error; both work once the peers are installed
 - [ ] No peer warnings on a clean install
 - [ ] `build`, both typechecks, `lint` green
-- [ ] `test-unit` green **and the total count reconciles to ≈423** (baseline 350 +
-      51 migrated + ~22 new, including the AC4.11/AC4.12 `onGuardError` cases) — a low count means the glob fix is missing
+- [ ] `test-unit` green **and the total count reconciles to ≈421** (baseline 350 +
+      51 migrated + ~20 net-new, including the AC4.11/AC4.12/AC4.14 `onGuardError` cases; the two `onGuardError: "allow"` cases are the migrated AC4.4 pair, not additions) — a low count means the glob fix is missing
 - [ ] `test-unit` glob patterns still single-quoted in `package.json`
 - [ ] node, fetch, bun, cloudflare runtime suites green
 - [ ] deno leg confirmed locally **or** in CI, and which one is stated explicitly
