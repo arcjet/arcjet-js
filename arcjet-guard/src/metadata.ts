@@ -69,6 +69,24 @@ const MAX_REPORTED_KEY_LENGTH = 64;
 const MAX_REPORTED_KEYS = 10;
 
 /**
+ * SDK-side ceiling on the total metadata bytes in one request.
+ *
+ * This is a **protocol** backstop, not a copy of the server's policy limits, and
+ * it is deliberately well above them: the server caps a metadata map at 128 keys
+ * of 4 KiB (~512 KiB) and those caps are per-account and can be raised, so the
+ * SDK must never pre-empt them.
+ *
+ * What it protects against is the one immutable limit: a request over 1 MiB is
+ * rejected outright, before any per-key validation runs. A rejected request means
+ * no decision, which means a fail open — so without this ceiling, oversized
+ * attacker-derived metadata could change the security outcome, contrary to the
+ * guarantee that metadata never affects a decision. Counted as UTF-8 bytes of
+ * keys plus JSON-encoded values before compression, so the estimate is
+ * conservative.
+ */
+export const MAX_METADATA_BYTES: number = 768 * 1024;
+
+/**
  * Whether `value` is a plain object usable as metadata.
  *
  * Arrays would encode as numeric string keys, and exotic objects (`Map`, `Date`,
@@ -80,8 +98,14 @@ function isPlainObject(value: unknown): value is ArcjetMetadata {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     return false;
   }
-  const prototype: unknown = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
+  try {
+    // A proxy can install a throwing `getPrototypeOf` trap, and this runs before
+    // any other guard. Metadata must never fail a call.
+    const prototype: unknown = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -95,7 +119,13 @@ function isPlainObject(value: unknown): value is ArcjetMetadata {
  * warning for the same key.
  */
 function needsEscape(code: number): boolean {
-  return code < 0x20 || (code >= 0x7f && code <= 0x9f) || code === 0x2028 || code === 0x2029;
+  return (
+    code < 0x20 ||
+    (code >= 0x7f && code <= 0x9f) ||
+    (code >= 0xd800 && code <= 0xdfff) ||
+    code === 0x2028 ||
+    code === 0x2029
+  );
 }
 
 /**
@@ -107,36 +137,64 @@ function needsEscape(code: number): boolean {
  */
 function sanitizeKey(key: string): string {
   let escaped = "";
+  // Length is counted in code points, not UTF-16 units, so an astral character
+  // costs 1 — matching how arcjet-py measures it.
+  let length = 0;
+  // Iterating a string yields whole code points, so an astral character is one
+  // token and cannot be split by the length check below.
   for (const character of key) {
     const code = character.codePointAt(0) ?? 0;
+    let token: string;
     if (!needsEscape(code)) {
-      escaped += character;
+      token = character;
     } else if (code <= 0xff) {
-      escaped += `\\x${code.toString(16).padStart(2, "0")}`;
+      token = `\\x${code.toString(16).padStart(2, "0")}`;
     } else {
-      escaped += `\\u${code.toString(16).padStart(4, "0")}`;
+      token = `\\u${code.toString(16).padStart(4, "0")}`;
     }
+    // An escape token is ASCII, so its own length is its cost; a raw character
+    // is one code point.
+    const cost = needsEscape(code) ? token.length : 1;
+    // Truncate on a whole token so the result is never a half escape sequence
+    // or a split surrogate pair.
+    if (length + cost > MAX_REPORTED_KEY_LENGTH) {
+      return `${escaped}...`;
+    }
+    escaped += token;
+    length += cost;
   }
-  return escaped.length > MAX_REPORTED_KEY_LENGTH
-    ? `${escaped.slice(0, MAX_REPORTED_KEY_LENGTH)}...`
-    : escaped;
+  return escaped;
 }
 
 /**
- * `JSON.stringify` replacer that refuses non-finite numbers.
+ * `JSON.stringify` replacer that refuses values arcjet-py would refuse.
  *
- * `JSON.stringify` turns `NaN` and `Infinity` into `null`, which would silently
- * change the value. Throwing instead drops the key with a warning, matching
- * arcjet-py (whose `json.dumps(allow_nan=False)` raises). The replacer runs
- * inside the serialization `JSON.stringify` already performs, so this costs no
- * extra traversal.
+ * - Non-finite numbers: `JSON.stringify` turns `NaN` and `Infinity` into `null`,
+ *   silently changing the value. Throwing drops the key instead, matching
+ *   arcjet-py's `json.dumps(allow_nan=False)`.
+ * - Lone surrogates: not encodable as UTF-8, so arcjet-py drops the key rather
+ *   than let protobuf raise. `\p{Surrogate}` with the `u` flag matches only lone
+ *   surrogates, since a valid pair is a single code point.
+ *
+ * The replacer runs inside the serialization `JSON.stringify` already performs,
+ * so this costs no extra traversal. It sees every key and value, including
+ * nested ones.
  */
-function rejectNonFinite(_key: string, value: unknown): unknown {
+function rejectUnencodable(key: string, value: unknown): unknown {
   if (typeof value === "number" && !Number.isFinite(value)) {
     throw new TypeError("non-finite number");
   }
+  if (typeof value === "string" && loneSurrogate.test(value)) {
+    throw new TypeError("lone surrogate in value");
+  }
+  if (loneSurrogate.test(key)) {
+    throw new TypeError("lone surrogate in key");
+  }
   return value;
 }
+
+/** Matches a surrogate not part of a valid pair (the `u` flag pairs them up). */
+const loneSurrogate: RegExp = /\p{Surrogate}/u;
 
 /**
  * JSON-encode each top-level value of `metadata` for the wire.
@@ -157,10 +215,13 @@ export function encodeMetadata(
   metadata: ArcjetMetadata | undefined,
   messagePrefix = "",
 ): { metadataJson: Record<string, string>; localWarnings: LocalWarning[] } {
-  const metadataJson: Record<string, string> = {};
+  // Accumulate in a Map and convert with `Object.fromEntries`, which defines own
+  // properties. Plain assignment would route `__proto__` to the inherited setter,
+  // silently losing that key with no warning.
+  const encodedEntries = new Map<string, string>();
 
   if (!isPlainObject(metadata)) {
-    return { metadataJson, localWarnings: [] };
+    return { metadataJson: {}, localWarnings: [] };
   }
 
   const dropped: string[] = [];
@@ -170,39 +231,38 @@ export function encodeMetadata(
     // per-value `JSON.stringify`. Metadata must never fail a call.
     entries = Object.entries(metadata);
   } catch {
-    return { metadataJson, localWarnings: [] };
+    return { metadataJson: {}, localWarnings: [] };
   }
 
   for (const [key, value] of entries) {
+    // The replacer sees keys nested inside the value, but this top-level key is
+    // ours to check: a lone surrogate here is not encodable as UTF-8 either.
+    if (loneSurrogate.test(key)) {
+      dropped.push(sanitizeKey(key));
+      continue;
+    }
+
     let encoded: string | undefined;
     try {
-      encoded = JSON.stringify(value, rejectNonFinite);
+      encoded = JSON.stringify(value, rejectUnencodable);
     } catch {
-      // Circular references, BigInt, and non-finite numbers all throw TypeError.
+      // Circular refs, BigInt, non-finite numbers, and lone surrogates all throw.
       encoded = undefined;
     }
 
     // `JSON.stringify` returns `undefined` — not the string "undefined" — for
     // `undefined`, functions, and symbols.
     if (typeof encoded === "string") {
-      metadataJson[key] = encoded;
+      encodedEntries.set(key, encoded);
     } else {
       dropped.push(sanitizeKey(key));
     }
   }
 
+  const metadataJson = Object.fromEntries(encodedEntries);
+
   if (dropped.length === 0) {
     return { metadataJson, localWarnings: [] };
-  }
-
-  let listed = dropped
-    .slice(0, MAX_REPORTED_KEYS)
-    .map(function (key) {
-      return `"${key}"`;
-    })
-    .join(", ");
-  if (dropped.length > MAX_REPORTED_KEYS) {
-    listed += ", ...";
   }
 
   return {
@@ -210,8 +270,87 @@ export function encodeMetadata(
     localWarnings: [
       {
         code: METADATA_ENCODE_FAILED_CODE,
-        message: `${messagePrefix}metadata: ${dropped.length} key(s) could not be JSON-encoded and were dropped: ${listed}`,
+        message: formatDropped(
+          messagePrefix,
+          "could not be JSON-encoded and were dropped",
+          dropped,
+        ),
       },
     ],
   };
+}
+
+/** Render the key list for a warning, eliding once it gets long. */
+function formatDropped(prefix: string, reason: string, keys: readonly string[]): string {
+  let listed = keys
+    .slice(0, MAX_REPORTED_KEYS)
+    .map(function (key) {
+      return `"${key}"`;
+    })
+    .join(", ");
+  if (keys.length > MAX_REPORTED_KEYS) {
+    listed += ", ...";
+  }
+  return `${prefix}metadata: ${keys.length} key(s) ${reason}: ${listed}`;
+}
+
+/**
+ * Trim already-encoded metadata maps to {@linkcode MAX_METADATA_BYTES} in total.
+ *
+ * The maps are trimmed **in place**, in the order given, and within each map in
+ * insertion order: keys are kept until the running total would exceed the budget,
+ * and every key after that is dropped. Pass the request envelope's map first and
+ * each rule's map after it, so the order is stable across calls.
+ *
+ * One request can carry several metadata maps (a guard request has one per rule
+ * plus the envelope), so the ceiling has to be enforced across all of them rather
+ * than per map. See {@linkcode MAX_METADATA_BYTES} for why this exists at all.
+ *
+ * @param maps
+ *   Encoded metadata maps, in request order.
+ * @returns
+ *   At most one warning, naming the keys that were dropped.
+ */
+export function enforceMetadataBudget(maps: ReadonlyArray<Record<string, string>>): LocalWarning[] {
+  const encoder = new TextEncoder();
+  const dropped: string[] = [];
+  let total = 0;
+
+  for (const map of maps) {
+    const over: string[] = [];
+    for (const [key, value] of Object.entries(map)) {
+      if (total > MAX_METADATA_BYTES) {
+        over.push(key);
+        continue;
+      }
+      const size = encoder.encode(key).length + encoder.encode(value).length;
+      if (total + size > MAX_METADATA_BYTES) {
+        over.push(key);
+        // Nothing further fits either; keep scanning so every dropped key is
+        // reported.
+        total = MAX_METADATA_BYTES + 1;
+        continue;
+      }
+      total += size;
+    }
+    for (const key of over) {
+      // oxlint-disable-next-line typescript/no-dynamic-delete -- trimming a caller-keyed map
+      delete map[key];
+      dropped.push(sanitizeKey(key));
+    }
+  }
+
+  if (dropped.length === 0) {
+    return [];
+  }
+  return [
+    {
+      code: METADATA_ENCODE_FAILED_CODE,
+      message: formatDropped(
+        "",
+        `exceeded the ${MAX_METADATA_BYTES}-byte request metadata budget and were dropped`,
+        dropped,
+      ),
+    },
+  ];
 }

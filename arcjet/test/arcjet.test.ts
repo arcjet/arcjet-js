@@ -714,6 +714,50 @@ test("`arcjet`", async function (t) {
       });
     });
 
+    await t.test("should ignore `metadata` whose prototype cannot be read", async function () {
+      let metadata: unknown = "unset";
+      const rule: ArcjetRule<{}> = {
+        mode: "LIVE",
+        priority: 1,
+        async protect(_context, details) {
+          metadata = details.metadata;
+          return new ArcjetRuleResult({
+            conclusion: "ALLOW",
+            fingerprint: "",
+            reason: new ArcjetReason(),
+            ruleId: "",
+            state: "RUN",
+            ttl: 0,
+          });
+        },
+        type: "",
+        validate() {},
+        version: 0,
+      };
+
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [[rule]],
+      });
+
+      await instance.protect(createContext(), {
+        ...createRequest(),
+        // A proxy with a throwing `getPrototypeOf` trap must not fail the call.
+        metadata: new Proxy(
+          {},
+          {
+            getPrototypeOf(): never {
+              throw new Error("nope");
+            },
+          },
+        ),
+      });
+
+      assert.equal(metadata, undefined);
+    });
+
     await t.test("should ignore non-object `metadata` request fields", async function () {
       let metadata: unknown = "unset";
       const rule: ArcjetRule<{}> = {

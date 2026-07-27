@@ -15,7 +15,11 @@ import {
 } from "@connectrpc/connect";
 
 import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
-import { type LocalWarning, encodeMetadata } from "./metadata.ts";
+import {
+  type LocalWarning,
+  encodeMetadata,
+  enforceMetadataBudget,
+} from "./metadata.ts";
 import {
   DecideService,
   GuardRequestSchema,
@@ -111,7 +115,19 @@ export function createGuardClient(options: GuardClientOptions): {
       const localEvalDurationMs = BigInt(Math.round(performance.now() - startMs));
       const sentAtUnixMs = BigInt(Date.now());
 
-      warnings.push(...requestMetadata.localWarnings);
+      // Trim to the SDK ceiling across every metadata map on the request — the
+      // envelope plus one per rule — so an oversized blob cannot push the request
+      // past the 1 MiB protocol limit and get it rejected. A rejected request is
+      // a fail open, which would let metadata affect the decision.
+      warnings.push(
+        ...requestMetadata.localWarnings,
+        ...enforceMetadataBudget([
+          requestMetadata.metadataJson,
+          ...protoRules.map(function (rule) {
+            return rule.metadataJson;
+          }),
+        ]),
+      );
 
       const guardRequest = create(GuardRequestSchema, {
         userAgent,

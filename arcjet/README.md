@@ -368,6 +368,25 @@ Note that JavaScript numbers are IEEE-754 doubles, so an integer above
 `Number.MAX_SAFE_INTEGER` loses precision before it reaches the wire; pass such
 values as strings.
 
+Some limits are the SDK's own, not the server's. The SDK drops keys once one
+request's metadata exceeds 768 KiB in total (keys plus JSON-encoded values,
+counted before compression). That ceiling sits well above anything the server
+would accept — its own caps allow roughly 512 KiB in a single map — and exists
+only so oversized metadata cannot push a request past the 1 MiB protocol limit,
+where it would be rejected outright and fail open.
+
+Two behaviours differ between the JavaScript and Python SDKs and are not worth
+relying on:
+
+- **Number formatting.** Values are stored as verbatim JSON, and the two runtimes
+  format some finite numbers differently (`1.0` vs `1`, `1e-6` vs `0.000001`,
+  `-0` vs `-0.0`). Integers within the safe range are identical. Do not rely on
+  byte-equality when matching numeric metadata across SDKs — compare parsed
+  values, or send the value as a string.
+- **Objects with a `toJSON()` method**, including `Date`, are serialized by their
+  `toJSON()` result here; the Python SDK has no equivalent protocol and drops such
+  values with a warning. Convert explicitly if both SDKs must agree.
+
 ## Inspecting decisions
 
 The `decision` object returned by `aj.protect()` provides information about

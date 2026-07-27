@@ -15,7 +15,7 @@ import {
   type ArcjetStack,
   ArcjetDecision,
 } from "./index.js";
-import { type LocalWarning, encodeMetadata } from "./metadata.js";
+import { type LocalWarning, encodeMetadata, enforceMetadataBudget } from "./metadata.js";
 import {
   type Rule,
   DecideService,
@@ -44,6 +44,10 @@ function requestFields(
   // before sending, not a metadata-specific one. Metadata is the only source
   // today; future sources append to this list.
   const warnings: LocalWarning[] = [...encoded.localWarnings];
+
+  // Trim to the SDK ceiling so an oversized blob cannot push the request past the
+  // 1 MiB protocol limit and get it rejected — a rejected request is a fail open.
+  warnings.push(...enforceMetadataBudget([encoded.metadataJson]));
 
   for (const warning of warnings) {
     // `protect()` has no warning channel on its decision, so surface these

@@ -698,8 +698,14 @@ function isMetadata(value: unknown): value is ArcjetMetadata {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     return false;
   }
-  const prototype: unknown = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
+  try {
+    // A proxy can install a throwing `getPrototypeOf` trap. Metadata must never
+    // fail a call, so treat that as "not metadata".
+    const prototype: unknown = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  } catch {
+    return false;
+  }
 }
 
 /**
