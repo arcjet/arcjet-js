@@ -14,7 +14,13 @@ import {
   createClient as createConnectClient,
 } from "@connectrpc/connect";
 
+import {
+  createCaptureDelivery,
+  type CaptureDeliveryOptions,
+  type WaitUntil,
+} from "./capture-delivery.ts";
 import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
+import { createDiagnosticHandler, type DiagnosticLogger } from "./diagnostics.ts";
 import {
   type ArcjetMetadata,
   type LocalWarning,
@@ -60,6 +66,10 @@ export interface GuardClientOptions {
   transport: Transport;
   /** User-agent product token (e.g. `"arcjet-guard-js/0.1.0"`). */
   userAgent?: string;
+  /** Local diagnostics sink. */
+  logger?: DiagnosticLogger;
+  /** @internal Capture delivery controls used by deterministic tests. */
+  captureDelivery?: Omit<CaptureDeliveryOptions, "send" | "diagnose">;
 }
 
 /**
@@ -70,10 +80,28 @@ export interface GuardClientOptions {
 export function createGuardClient(options: GuardClientOptions): {
   guard(opts: GuardOptions): Promise<Decision>;
   capture(opts: CaptureOptions): void;
+  flush(timeoutMs?: number): Promise<void>;
 } {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
   const client = createConnectClient(DecideService, transport);
+  const diagnose = createDiagnosticHandler(options.logger);
+  const delivery = createCaptureDelivery({
+    ...options.captureDelivery,
+    diagnose,
+    async send(events, signal): Promise<void> {
+      const captureRequest = create(CaptureRequestSchema, {
+        userAgent,
+        sentAtUnixMs: BigInt(Date.now()),
+        events: [...events],
+      });
+      await client.capture(captureRequest, {
+        headers: { Authorization: `Bearer ${key}` },
+        timeoutMs: 1000,
+        signal,
+      });
+    },
+  });
 
   return {
     /**
@@ -207,13 +235,17 @@ export function createGuardClient(options: GuardClientOptions): {
       try {
         const normalized = normalizeCaptureOptions(opts);
         if (normalized === undefined) {
+          diagnose({
+            code: "AJ3000",
+            message: "Capture input was invalid; the event was dropped",
+            count: 1,
+          });
           return;
         }
 
-        const sentAtUnixMs = BigInt(Date.now());
         const occurredAtUnixMs =
           normalized.occurredAt === undefined
-            ? sentAtUnixMs
+            ? BigInt(Date.now())
             : BigInt(normalized.occurredAt.getTime());
         const encoded = encodeMetadata(normalized.metadata);
         const warnings = [
@@ -221,6 +253,9 @@ export function createGuardClient(options: GuardClientOptions): {
           ...encoded.localWarnings,
           ...enforceMetadataBudget([encoded.metadataJson]),
         ];
+        for (const warning of warnings) {
+          diagnose(warning);
+        }
 
         const event = create(CaptureEventSchema, {
           occurredAtUnixMs,
@@ -238,27 +273,21 @@ export function createGuardClient(options: GuardClientOptions): {
           source: CAPTURE_SOURCE_SDK,
         });
 
-        const captureRequest = create(CaptureRequestSchema, {
-          userAgent,
-          sentAtUnixMs,
-          events: [event],
-        });
-
-        client
-          .capture(captureRequest, {
-            headers: { Authorization: `Bearer ${key}` },
-            timeoutMs: 1000,
-          })
-          // oxlint-disable-next-line promise/always-return -- best-effort background send
-          .then(() => {})
-          .catch(() => {
-            // Delivery diagnostics and batching are added by the next stack
-            // layer. Until then, a failed best-effort send is dropped.
-          });
+        // Read outside the normalization above so a throwing getter costs the
+        // delivery hint rather than the whole event.
+        delivery.capture(event, readWaitUntil(opts));
       } catch {
-        // Invalid or adversarial input is dropped and never reaches application
-        // control flow.
+        diagnose({
+          code: "AJ3000",
+          message: "Capture input was invalid; the event was dropped",
+          count: 1,
+        });
       }
+    },
+
+    /** Drain buffered capture events within a deadline. */
+    flush(timeoutMs?: number): Promise<void> {
+      return delivery.flush(timeoutMs);
     },
   };
 }
@@ -350,6 +379,35 @@ function readProperty(
   } catch {
     return { ok: false };
   }
+}
+
+/**
+ * Read a caller-supplied `waitUntil` without trusting the input.
+ *
+ * A missing or non-callable value is treated as absent rather than warned
+ * about. Unlike the fields that reach the server, this one only selects a
+ * delivery path, and falling back to batching is what omitting it does anyway.
+ */
+function readWaitUntil(opts: unknown): WaitUntil | undefined {
+  if (!isPlainObject(opts)) {
+    return undefined;
+  }
+  const waitUntil = readProperty(opts, "waitUntil");
+  if (waitUntil.ok && isWaitUntil(waitUntil.value)) {
+    return waitUntil.value;
+  }
+  return undefined;
+}
+
+/**
+ * Whether a value can be called as a `waitUntil` hook.
+ *
+ * A predicate rather than an assertion: narrowing `unknown` to a function type
+ * is all we can check at runtime, and writing it as a guard keeps the claim
+ * where the check is instead of asserting past it at the call site.
+ */
+function isWaitUntil(value: unknown): value is WaitUntil {
+  return typeof value === "function";
 }
 
 /** Describe an optional capture field dropped by client-side normalization. */
