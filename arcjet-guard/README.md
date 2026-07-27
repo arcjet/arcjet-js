@@ -333,8 +333,7 @@ const decision = await arcjet.guard({
 
 `guard()` and every rule accept `metadata`: an object of string keys mapped to
 **any JSON-serializable value**, including nested objects and arrays. It is
-attached to the decision for correlation and analytics, and is queryable in the
-Arcjet dashboard.
+attached to the decision for correlation and analytics.
 
 ```ts
 const decision = await arcjet.guard({
@@ -360,9 +359,10 @@ Server-enforced limits:
 | Key names                | letters, digits, `-`, `.`, `_`   | That key dropped   |
 
 Nothing here can fail a call or change a decision — metadata is excluded from
-fingerprinting. Every dropped key is reported on `decision.warnings`, whether the
-server dropped it or the SDK could not encode it (`undefined`, a function, a
-`BigInt`, a circular reference).
+fingerprinting. Every dropped key is reported on `decision.warnings`: the server
+warns once per key it drops, and the SDK adds a single warning naming every key
+it could not encode (`undefined`, a function, a `BigInt`, a circular reference). A
+`metadata` that is not a plain object is ignored entirely.
 
 Metadata is untrusted and is not redacted — do not put secrets or PII in it.
 

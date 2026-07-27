@@ -1,12 +1,50 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { METADATA_ENCODE_FAILED_CODE, encodeMetadata } from "../dist/metadata.js";
+import {
+  type ArcjetMetadata,
+  METADATA_ENCODE_FAILED_CODE,
+  encodeMetadata,
+} from "../src/metadata.ts";
 
 test("@arcjet/protocol metadata", async function (t) {
   await t.test("should return empty fields for missing metadata", function () {
-    assert.deepEqual(encodeMetadata(undefined), { metadataJson: {}, localWarnings: [] });
+    const none: ArcjetMetadata | undefined = undefined;
+    assert.deepEqual(encodeMetadata(none), { metadataJson: {}, localWarnings: [] });
     assert.deepEqual(encodeMetadata({}), { metadataJson: {}, localWarnings: [] });
+  });
+
+  await t.test("should ignore metadata that is not a plain object", function () {
+    // Arrays would encode as numeric string keys, and exotic objects have no own
+    // enumerable entries, so both would silently send nothing.
+    const notPlainObjects: unknown[] = [[1, 2], new Map([["a", 1]]), new Date(), "nope", 7];
+    for (const value of notPlainObjects) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- testing runtime behavior on wrong types
+      assert.deepEqual(encodeMetadata(value as ArcjetMetadata), {
+        metadataJson: {},
+        localWarnings: [],
+      });
+    }
+  });
+
+  await t.test("should not throw when reading the object throws", function () {
+    // A getter or proxy trap runs during iteration, before any JSON.stringify.
+    const withGetter = {
+      get boom(): never {
+        throw new Error("nope");
+      },
+    };
+    assert.deepEqual(encodeMetadata(withGetter), { metadataJson: {}, localWarnings: [] });
+
+    const proxy = new Proxy(
+      {},
+      {
+        ownKeys(): never {
+          throw new Error("nope");
+        },
+      },
+    );
+    assert.deepEqual(encodeMetadata(proxy), { metadataJson: {}, localWarnings: [] });
   });
 
   await t.test("should JSON-encode string values", function () {
@@ -38,10 +76,9 @@ test("@arcjet/protocol metadata", async function (t) {
       toolName: "Bash",
     });
     assert.deepEqual(localWarnings, []);
-    assert.deepEqual(Object.keys(metadataJson).sort(), ["toolName", "user"]);
-    assert.deepEqual(JSON.parse(metadataJson["user"]!), {
-      id: "u_1",
-      roles: ["admin", "ops"],
+    assert.deepEqual(metadataJson, {
+      user: '{"id":"u_1","roles":["admin","ops"]}',
+      toolName: '"Bash"',
     });
   });
 
@@ -50,30 +87,34 @@ test("@arcjet/protocol metadata", async function (t) {
     const { metadataJson, localWarnings } = encodeMetadata({ ok: 1, missing: undefined });
     assert.deepEqual(metadataJson, { ok: "1" });
     assert.equal(localWarnings.length, 1);
-    assert.equal(localWarnings[0]!.code, METADATA_ENCODE_FAILED_CODE);
-    assert.match(localWarnings[0]!.message, /"missing"/);
-    assert.match(localWarnings[0]!.message, /key dropped/);
+    assert.equal(localWarnings[0].code, METADATA_ENCODE_FAILED_CODE);
+    assert.match(localWarnings[0].message, /1 key\(s\) could not be JSON-encoded/);
+    assert.match(localWarnings[0].message, /"missing"/);
   });
 
-  await t.test("should drop functions and symbols with a warning", function () {
+  await t.test("should report every dropped key in a single warning", function () {
+    // One encode call must never flood the warning channel, which the server
+    // bounds and persists.
     const { metadataJson, localWarnings } = encodeMetadata({
       fn() {},
       sym: Symbol("s"),
+      big: 1n,
       ok: "yes",
     });
     assert.deepEqual(metadataJson, { ok: '"yes"' });
-    assert.deepEqual(
-      localWarnings.map((warning) => warning.code),
-      [METADATA_ENCODE_FAILED_CODE, METADATA_ENCODE_FAILED_CODE],
-    );
+    assert.equal(localWarnings.length, 1);
+    assert.match(localWarnings[0].message, /3 key\(s\)/);
   });
 
-  await t.test("should drop a `BigInt` with a warning", function () {
-    // `JSON.stringify` throws on BigInt; callers must convert it themselves.
-    const { metadataJson, localWarnings } = encodeMetadata({ big: 1n });
-    assert.deepEqual(metadataJson, {});
+  await t.test("should elide the key list once it gets long", function () {
+    const many: ArcjetMetadata = {};
+    for (let index = 0; index < 15; index++) {
+      many[`k${index}`] = undefined;
+    }
+    const { localWarnings } = encodeMetadata(many);
     assert.equal(localWarnings.length, 1);
-    assert.equal(localWarnings[0]!.code, METADATA_ENCODE_FAILED_CODE);
+    assert.match(localWarnings[0].message, /15 key\(s\)/);
+    assert.ok(localWarnings[0].message.endsWith('"k9", ...'));
   });
 
   await t.test("should drop a circular reference with a warning", function () {
@@ -82,20 +123,31 @@ test("@arcjet/protocol metadata", async function (t) {
     const { metadataJson, localWarnings } = encodeMetadata({ loop: cycle });
     assert.deepEqual(metadataJson, {});
     assert.equal(localWarnings.length, 1);
-    assert.equal(localWarnings[0]!.code, METADATA_ENCODE_FAILED_CODE);
+  });
+
+  await t.test("should escape control characters in dropped key names", function () {
+    // Keys are user-controlled and warnings reach logs and server storage, so a
+    // newline must not be able to forge a log entry.
+    const { localWarnings } = encodeMetadata({ "ev\nil INFO forged": undefined });
+    assert.ok(!localWarnings[0].message.includes("\n"));
+    assert.match(localWarnings[0].message, /ev\\x0ail INFO forged/);
+  });
+
+  await t.test("should truncate long dropped key names", function () {
+    const { localWarnings } = encodeMetadata({ ["x".repeat(200)]: undefined });
+    assert.ok(localWarnings[0].message.length < 160);
   });
 
   await t.test("should never put a value in a warning message", function () {
     // Warnings are persisted server-side and are a potential PII sink, so they
     // must reference only the key name.
     const { localWarnings } = encodeMetadata({ secret: () => "hunter2" });
-    assert.equal(localWarnings.length, 1);
-    assert.ok(!localWarnings[0]!.message.includes("hunter2"));
+    assert.ok(!localWarnings[0].message.includes("hunter2"));
   });
 
-  await t.test("should prefix warning messages with the given source", function () {
+  await t.test("should prefix the warning message with the given source", function () {
     const { localWarnings } = encodeMetadata({ bad: undefined }, "rules[2].");
-    assert.match(localWarnings[0]!.message, /^rules\[2\]\.metadata value/);
+    assert.match(localWarnings[0].message, /^rules\[2\]\.metadata: /);
   });
 
   await t.test("should leave the server's limits to the server", function () {
@@ -105,7 +157,7 @@ test("@arcjet/protocol metadata", async function (t) {
     for (let index = 0; index < 30; index++) {
       deep = { nested: deep };
     }
-    const wide: Record<string, unknown> = {};
+    const wide: ArcjetMetadata = {};
     for (let index = 0; index < 200; index++) {
       wide[`k${index}`] = index;
     }

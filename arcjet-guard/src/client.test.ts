@@ -1188,11 +1188,13 @@ describe("In-memory server: request metadata", () => {
     assert.deepEqual({ ...request.metadataJson }, { ok: '"yes"' });
     assert.deepEqual({ ...request.ruleSubmissions[0].metadataJson }, {});
 
-    // Reported to the server as untrusted, SDK-sourced warnings. The per-rule
-    // drop rides on the envelope, prefixed with the rule index.
+    // Reported to the server as untrusted, SDK-sourced warnings: one per encode
+    // call, so one for the rule (prefixed with its index, and ordered by rule
+    // rather than by whichever conversion finished first) and one for the
+    // request envelope.
     const codes = request.localWarnings.map((warning) => warning.code);
     assert.deepEqual(codes, ["AJ1017", "AJ1017"]);
-    assert.match(request.localWarnings[0].message, /^rules\[0\]\./);
+    assert.match(request.localWarnings[0].message, /^rules\[0\]\.metadata: /);
     assert.match(request.localWarnings[1].message, /"bad"/);
 
     // The server never echoes local_warnings back, so the SDK surfaces them on
@@ -1200,6 +1202,39 @@ describe("In-memory server: request metadata", () => {
     assert.deepEqual(
       decision.warnings.map((warning) => warning.code),
       ["AJ1017", "AJ1017"],
+    );
+  });
+
+  test("per-rule metadata warnings are ordered by rule, not by completion", async () => {
+    // Rule conversion runs concurrently; the warning order must still follow the
+    // submission order so it is reproducible.
+    const rules = [0, 1, 2].map((index) =>
+      tokenBucket({
+        bucket: `test-${index}`,
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+        metadata: { [`bad${index}`]: undefined },
+      }),
+    );
+    const inputs = rules.map((rule, index) => rule({ key: `user_${index}` }));
+
+    let request: GuardRequest | undefined;
+    const arcjet = guardWithMock((req) => {
+      request = req;
+      return tokenBucketAllowResponse(req);
+    });
+
+    await arcjet.guard({ label: "tools.weather", rules: inputs });
+
+    assert.ok(request);
+    assert.deepEqual(
+      request.localWarnings.map((warning) => warning.message),
+      [
+        'rules[0].metadata: 1 key(s) could not be JSON-encoded and were dropped: "bad0"',
+        'rules[1].metadata: 1 key(s) could not be JSON-encoded and were dropped: "bad1"',
+        'rules[2].metadata: 1 key(s) could not be JSON-encoded and were dropped: "bad2"',
+      ],
     );
   });
 

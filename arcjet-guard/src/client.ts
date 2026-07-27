@@ -68,24 +68,42 @@ export function createGuardClient(options: GuardClientOptions): {
 
       opts.signal?.throwIfAborted();
 
-      const startMs = performance.now();
+      // Metadata keys the SDK could not encode. These are reported to the server
+      // as untrusted `local_warnings` and surfaced on `decision.warnings`. The
+      // envelope is encoded up front so its warnings survive a local rule
+      // failure; rule conversion contributes the rest below.
+      const requestMetadata = encodeMetadata(opts.metadata);
+      const warnings: LocalWarning[] = [];
 
-      // Metadata keys the SDK could not encode, gathered from the request
-      // envelope and every rule, then reported to the server as untrusted
-      // `local_warnings` and surfaced on `decision.warnings`.
-      const droppedKeys: LocalWarning[] = [];
+      const startMs = performance.now();
 
       let protoRules;
       try {
-        protoRules = await Promise.all(
-          opts.rules.map((rule: RuleWithInput, ruleIndex: number) =>
-            ruleToProto(rule, opts.signal, { ruleIndex, warningsOut: droppedKeys }),
-          ),
+        // Rules convert concurrently, so each one collects into its own array and
+        // they are flattened in rule order afterwards. Pushing into one shared
+        // array would order warnings by whichever conversion finished first.
+        const converted = await Promise.all(
+          opts.rules.map(async function (rule: RuleWithInput, ruleIndex: number) {
+            const ruleWarnings: LocalWarning[] = [];
+            const submission = await ruleToProto(rule, opts.signal, {
+              ruleIndex,
+              warningsOut: ruleWarnings,
+            });
+            return { submission, warnings: ruleWarnings };
+          }),
+        );
+        protoRules = converted.map(function (entry) {
+          return entry.submission;
+        });
+        warnings.push(
+          ...converted.flatMap(function (entry) {
+            return entry.warnings;
+          }),
         );
       } catch (cause: unknown) {
         opts.signal?.throwIfAborted();
         const message = cause instanceof Error ? cause.message : "Local rule evaluation failed";
-        return failOpen(message, toWarnings(droppedKeys));
+        return failOpen(message, toWarnings(requestMetadata.localWarnings));
       }
 
       opts.signal?.throwIfAborted();
@@ -93,8 +111,7 @@ export function createGuardClient(options: GuardClientOptions): {
       const localEvalDurationMs = BigInt(Math.round(performance.now() - startMs));
       const sentAtUnixMs = BigInt(Date.now());
 
-      const requestMetadata = encodeMetadata(opts.metadata);
-      droppedKeys.push(...requestMetadata.localWarnings);
+      warnings.push(...requestMetadata.localWarnings);
 
       const guardRequest = create(GuardRequestSchema, {
         userAgent,
@@ -102,7 +119,7 @@ export function createGuardClient(options: GuardClientOptions): {
         sentAtUnixMs,
         label: opts.label,
         metadataJson: requestMetadata.metadataJson,
-        localWarnings: droppedKeys.map((warning) => create(WarningSchema, warning)),
+        localWarnings: warnings.map((warning) => create(WarningSchema, warning)),
         ruleSubmissions: protoRules,
         correlationId: opts.correlationId ?? "",
       });
@@ -137,16 +154,16 @@ export function createGuardClient(options: GuardClientOptions): {
             : cause instanceof Error
               ? cause.message
               : "Unknown error";
-        return failOpen(message, toWarnings(droppedKeys));
+        return failOpen(message, toWarnings(warnings));
       }
 
       opts.signal?.throwIfAborted();
 
       try {
-        return decisionFromProto(response, opts.rules, toWarnings(droppedKeys));
+        return decisionFromProto(response, opts.rules, toWarnings(warnings));
       } catch (cause: unknown) {
         const message = cause instanceof Error ? cause.message : "Failed to parse server response";
-        return failOpen(message, toWarnings(droppedKeys));
+        return failOpen(message, toWarnings(warnings));
       }
     },
   };

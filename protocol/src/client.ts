@@ -14,7 +14,7 @@ import {
   type ArcjetStack,
   ArcjetDecision,
 } from "./index.js";
-import { encodeMetadata } from "./metadata.js";
+import { type LocalWarning, encodeMetadata } from "./metadata.js";
 import {
   type Rule,
   DecideService,
@@ -24,21 +24,28 @@ import {
 } from "./proto/decide/v1alpha1/decide_pb.js";
 
 /**
- * Build the `metadata_json` and `local_warnings` fields shared by the Decide and
- * Report requests, so a decision and its report describe the same metadata.
+ * Build the metadata and warning fields shared by the Decide and Report
+ * requests, so a decision and its report describe the same metadata.
  *
- * Keys the SDK could not JSON-encode are dropped and reported as untrusted
- * client-side warnings; the server enforces the count, size, depth, and
- * key-name limits on what survives. Neither can affect the decision.
+ * The server enforces the count, size, depth, and key-name limits on what
+ * survives. Neither the metadata nor the warnings can affect the decision.
  */
-function metadataFields(details: ArcjetRequestDetails): {
+function requestFields(details: ArcjetRequestDetails): {
   metadataJson: Record<string, string>;
   localWarnings: ReturnType<typeof create<typeof WarningSchema>>[];
 } {
-  const { metadataJson, localWarnings } = encodeMetadata(details.metadata);
+  const encoded = encodeMetadata(details.metadata);
+
+  // `local_warnings` is a general channel for anything the SDK had to drop
+  // before sending, not a metadata-specific one. Metadata is the only source
+  // today; future sources append to this list.
+  const warnings: LocalWarning[] = [...encoded.localWarnings];
+
   return {
-    metadataJson,
-    localWarnings: localWarnings.map((warning) => create(WarningSchema, warning)),
+    metadataJson: encoded.metadataJson,
+    localWarnings: warnings.map(function (warning) {
+      return create(WarningSchema, warning);
+    }),
   };
 }
 
@@ -156,7 +163,7 @@ export function createClient(options: ClientOptions): Client {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
-        ...metadataFields(details),
+        ...requestFields(details),
         // `email` is an optional field but not allowed to be `undefined`.
         details:
           typeof details.email === "string"
@@ -217,7 +224,7 @@ export function createClient(options: ClientOptions): Client {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
-        ...metadataFields(details),
+        ...requestFields(details),
         // `email` is an optional field but not allowed to be `undefined`.
         details:
           typeof details.email === "string"

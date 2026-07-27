@@ -337,8 +337,7 @@ const decision = await aj.protect(context, {
 
 `protect()` accepts `metadata`: an object of string keys mapped to **any
 JSON-serializable value**, including nested objects and arrays. It is attached to
-the decision for correlation and analytics, and is queryable in the Arcjet
-dashboard.
+the decision for correlation and analytics.
 
 ```ts
 const decision = await aj.protect(request, {
@@ -358,7 +357,8 @@ over a limit drops that one key.
 Nothing here can fail a call or change a decision — metadata is excluded from
 fingerprinting and from the decision cache key. Values the SDK cannot encode
 (`undefined`, a function, a `BigInt`, a circular reference) are dropped and
-reported to Arcjet rather than throwing.
+reported to Arcjet rather than throwing, as a single warning naming every key it
+had to drop. A `metadata` that is not a plain object is ignored entirely.
 
 Metadata is untrusted and is not redacted — do not put secrets or PII in it.
 Prefer it over `extra`, which stays a flat string map of SDK-derived request

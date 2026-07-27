@@ -685,13 +685,21 @@ function validateMetadata(path: string, value: unknown): asserts value is Arcjet
 /**
  * Check whether a value can be used as nested-JSON metadata.
  *
+ * Requires a genuine plain object. Arrays would encode as numeric string keys,
+ * and exotic objects (`Map`, `Date`, class instances) have no own enumerable
+ * entries, so accepting them would silently send nothing.
+ *
  * @param value
  *   Value to check.
  * @returns
  *   Whether the value is a plain object.
  */
 function isMetadata(value: unknown): value is ArcjetMetadata {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  const prototype: unknown = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
 }
 
 /**
