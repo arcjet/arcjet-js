@@ -24,7 +24,7 @@ This phase implements and tests:
 
 ### guard-sdk-namespaces.AC3: AI SDK peers are optional
 - **guard-sdk-namespaces.AC3.1 Success:** `ai` and `@ai-sdk/provider-utils` appear in `peerDependencies` and are marked optional in `peerDependenciesMeta`.
-- **guard-sdk-namespaces.AC3.2 Success:** Installing a project that depends on `@arcjet/guard` without any AI SDK produces no peer-dependency warning or error.
+- **guard-sdk-namespaces.AC3.2** (partial — declaration only): the optional-peer declaration is asserted here. The **live** proof, installing without any AI SDK, is Phase 6 Task 2 Step 1; inside this workspace both packages are devDependencies so the declaration is never exercised.
 
 ---
 
@@ -196,7 +196,8 @@ git commit -m "build(guard): declare agents and vercel-ai/v7 subpath exports"
 <!-- START_TASK_2 -->
 ### Task 2: Create the placeholder barrels and install
 
-**Verifies:** `guard-sdk-namespaces.AC3.2`
+**Verifies:** `guard-sdk-namespaces.AC3.2` (partial — declaration only; the live
+clean-install proof is Phase 6 Task 2 Step 1)
 
 **Files:**
 - Create: `arcjet-guard/src/agents/index.ts`

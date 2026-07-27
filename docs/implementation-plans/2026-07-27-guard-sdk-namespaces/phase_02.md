@@ -6,7 +6,7 @@ graph.
 
 **Architecture:** `@arcjet/guard/agents` becomes the public home for everything
 that does not depend on an AI SDK: correlation context, the security metadata
-vocabulary, `protectAction`/`captureAction`, and the internal `runGuarded`
+vocabulary, `guardAction`/`captureAction`, and the internal `runGuarded`
 engine. Two source files must be **split**, not moved: `context.ts` currently
 holds both the agnostic `createAiContext` and the AI-SDK-coupled
 `aiToolsContext`, and `context.test.ts` likewise mixes both. The coupled halves
@@ -32,13 +32,15 @@ This phase implements and tests:
 AI SDK, which is only possible in Phase 6 Task 2.)
 
 ### guard-sdk-namespaces.AC4: Migrated behaviour is preserved
-- **guard-sdk-namespaces.AC4.8 Success:** `protectAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
+- **guard-sdk-namespaces.AC4.8 Success:** `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
 - **guard-sdk-namespaces.AC4.9 Success:** `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key.
 - **guard-sdk-namespaces.AC4.10 Edge:** A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning.
+- **guard-sdk-namespaces.AC4.11 Failure:** With `onGuardError: "deny"`, the guard call throwing → the wrapped tool or action does NOT execute and the outcome is captured as `denied`. `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`. `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` — carrying the original error as `cause`. (This phase implements the engine and the `guardAction` half; Phase 3 covers the `guardTool` half.)
 
 ### guard-sdk-namespaces.AC5: The context rename is complete
 - **guard-sdk-namespaces.AC5.1 Success:** `createAgentContext` and `ArcjetAgentContext` are the exported names.
 - **guard-sdk-namespaces.AC5.2 Success:** No `createAiContext` or `ArcjetAiContext` identifier remains anywhere in source, tests, docs, the skill, or the example.
+- **guard-sdk-namespaces.AC5.4 Success:** The enforcing helpers are exported as `guardTool` and `guardAction` (with `GuardToolPolicy` / `GuardActionPolicy`); no `protectTool`, `protectAction`, `ProtectToolPolicy` or `ProtectActionPolicy` identifier remains anywhere. (Phase 2 renames `guardAction`; Phase 3 renames `guardTool`; Phase 5 finishes docs/example.)
 - **guard-sdk-namespaces.AC5.3 Failure:** `createAgentContext` rejects a caller-supplied `correlationId` that is not a string, is empty, exceeds 256 characters, or contains non-printable characters — naming the offending problem in the error and never truncating.
 
 **Note on AC5.2:** this phase moves the source and its own tests. The identifier
@@ -92,20 +94,20 @@ otherwise.
    | `RuleWithInput` | 1652 | `../types.ts` |
    | `GuardOptions` | 1662 | `../types.ts` |
 
-   Affected files in this phase: `guarded.ts` (line 1), `protect-action.ts`
+   Affected files in this phase: `guarded.ts` (line 1), `guard-action.ts`
    (line 1), `capture.ts`, and `test/_shared/stub-client.ts`. Confirm the exported
    names at those lines before writing the import.
 
 7. **JSDoc must be rewritten, not carried over.** Several moved files contain
    `@example` blocks that import from `@arcjet/ai` and call `createAiContext`.
    Every moved file's JSDoc must be updated in the same task that moves it —
-   `protect-action.ts` has 3 such examples and `metadata.ts` has 1. Leaving them
+   `guard-action.ts` has 3 such examples and `metadata.ts` has 1. Leaving them
    breaks AC5.2 and AC8.2.
 
    JSDoc **prose** (not just `@example` blocks) also names the old identifiers and
    must be updated in the same pass: `client.ts` lines 5, 24, 26, 27;
    `metadata.ts` line 17; `context.ts` line 102; `index.ts` line 53;
-   `protect-tool.ts` line 39.
+   `guard-tool.ts` line 39.
 
 8. **Runtime message strings must be renamed too — "preserve exactly" does NOT
    mean preserving `@arcjet/ai`.** Every user-visible message is prefixed
@@ -118,18 +120,24 @@ otherwise.
    | `client.ts` → `capture.ts` | 63 | `"@arcjet/ai: this @arcjet/guard client does not support experimental_capture(); …"` |
    | `guarded.ts` | 51 | `'@arcjet/ai: guard check for "%s" errored; failing open:'` |
    | `guarded.ts` | 58 | `` `@arcjet/ai: guard check for "${action}" failed open (API error).` `` |
-   | `protect-tool.ts` | 88 | `"@arcjet/ai: toolsContext entry is not an ArcjetAiContext"` |
-   | `protect-tool.ts` | 107 | `` `@arcjet/ai: tool call "${action}" has no ArcjetAiContext; ` `` |
-   | `protect-tool.ts` | 178 | `"@arcjet/ai: protectTool() requires a tool with an execute function"` |
-   | `protect-tool.ts` | 182 | `"@arcjet/ai: protectTool() cannot wrap a tool that declares its own contextSchema"` |
+   | `guard-tool.ts` | 88 | `"@arcjet/ai: toolsContext entry is not an ArcjetAiContext"` |
+   | `guard-tool.ts` | 107 | `` `@arcjet/ai: tool call "${action}" has no ArcjetAiContext; ` `` |
+   | `guard-tool.ts` | 178 | `"@arcjet/ai: guardTool() requires a tool with an execute function"` |
+   | `guard-tool.ts` | 182 | `"@arcjet/ai: guardTool() cannot wrap a tool that declares its own contextSchema"` |
 
    Rules:
    - the prefix becomes `@arcjet/guard:` everywhere;
    - `ArcjetAiContext` inside a message becomes `ArcjetAgentContext`;
    - `capture.ts` line 63 needs rewording, not just a prefix swap — after the
      rename it would read "@arcjet/guard: this @arcjet/guard client does not
-     support…". Drop the redundant second mention, e.g. "@arcjet/guard: this guard
-     client does not support experimental_capture(); event not recorded:".
+     support…". Drop the redundant second mention. **The rewrite MUST retain the
+     literal substring `does not support experimental_capture`**, because
+     `arcjet-ai/test/protect-tool.test.ts:505` (→
+     `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts`) asserts exactly that
+     substring. Use precisely: `"@arcjet/guard: this guard client does not support
+     experimental_capture(); event not recorded:"` — this is a required string, not
+     an example. A shorter rewrite such as "client lacks experimental_capture()"
+     compiles and reads fine but silently breaks that assertion.
 
    Where a task says "preserve exactly", it means preserve the *control flow and
    semantics* — the fail-open branches, the constant-format-string form of the
@@ -139,11 +147,14 @@ otherwise.
 
    **Three migrated tests assert the old string and must change in lockstep**
    (Phase 3 owns these files, but the coupling is recorded here so it is not
-   missed): `test/protect-tool.test.ts:539`, `test/generate-text.test.ts:176`, and
+   missed): `test/guard-tool.test.ts:539`, `test/generate-text.test.ts:176`, and
    `test/warn-missing-context.test.ts:44` each assert
    `JSON.stringify(call).includes("no ArcjetAiContext")`. Each becomes
-   `"no ArcjetAgentContext"`. Renaming the message without updating these three
-   turns them into false negatives — they would still pass on a `console.warn`
+   `"no ArcjetAgentContext"`. A **fourth** assertion is coupled to a different
+   message: `test/protect-tool.test.ts:505` asserts `does not support
+   experimental_capture`, which is why the `capture.ts` rewording above is
+   constrained rather than free-form. Renaming a message without updating its
+   assertion turns it into a false negative — they would still pass on a `console.warn`
    that never fired the intended branch only if the substring happened to match, so
    a stale assertion here is worse than a failing one.
 
@@ -179,18 +190,18 @@ cases" a bold bullet at line 97).
 | `src/metadata.ts` | `src/agents/metadata.ts` | straight move |
 | `src/client.ts` | `src/agents/capture.ts` | renamed file; `ArcjetAiClient` → `ArcjetAgentClient` |
 | `src/guarded.ts` | `src/agents/guarded.ts` | straight move |
-| `src/protect-action.ts` | `src/agents/protect-action.ts` | straight move |
+| `src/guard-action.ts` | `src/agents/guard-action.ts` | straight move |
 | `src/context.ts` | `src/agents/context.ts` | **SPLIT** — keep `createAgentContext` + `ArcjetAgentContext`; `aiToolsContext` goes to Phase 3 |
 | `src/index.ts` | `src/agents/index.ts` | rewritten barrel; AI-coupled exports dropped |
 | `test/_shared/log-level.ts` | `test/_shared/log-level.ts` | straight move (Task 1) |
 | `test/_shared/stub-client.ts` | `test/_shared/stub-client.ts` | retarget imports at source; created in Task 4, after its `capture.ts` dependency exists |
 | `test/metadata.test.ts` | `src/agents/metadata.test.ts` | |
-| `test/protect-action.test.ts` | `src/agents/protect-action.test.ts` | |
+| `test/guard-action.test.ts` | `src/agents/guard-action.test.ts` | |
 | `test/context.test.ts` | `src/agents/context.test.ts` | **SPLIT** — the `aiToolsContext` test goes to Phase 3 |
 | `test/index.test.ts` | `src/agents/index.test.ts` | assert the agents barrel surface |
 
-Left for Phase 3: `src/protect-tool.ts`, the `aiToolsContext` half of
-`context.ts`, `test/protect-tool.test.ts`, `test/generate-text.test.ts`,
+Left for Phase 3: `src/guard-tool.ts`, the `aiToolsContext` half of
+`context.ts`, `test/guard-tool.test.ts`, `test/generate-text.test.ts`,
 `test/warn-missing-context.test.ts`.
 
 **Do not delete `arcjet-ai/` in this phase.** Phase 3 still reads from it;
@@ -368,7 +379,7 @@ deliberate and temporary.
 **Testing:**
 
 `arcjet-ai` had no dedicated test file for this module; its behaviour was covered
-incidentally through the protect-tool suite. Add a small focused file covering
+incidentally through the guard-tool suite. Add a small focused file covering
 AC4.10:
 
 - `guard-sdk-namespaces.AC4.10`: calling `captureEvent` with a client object that
@@ -483,7 +494,7 @@ Expected: 10 context tests pass.
 ### Task 7: The `runGuarded` engine
 
 **Verifies:** None directly — it is internal. Its behaviour is verified through
-`protectAction` (Task 9) in this phase and `protectTool` in Phase 3.
+`guardAction` (Task 9) in this phase and `guardTool` in Phase 3.
 
 **Files:**
 - Create: `arcjet-guard/src/agents/guarded.ts`
@@ -498,6 +509,25 @@ Its line-1 import of `Decision` / `RuleWithInput` from the `@arcjet/guard`
 package becomes `../types.ts` (`Decision` at `src/types.ts:445`, `RuleWithInput`
 at `:1652`). Left pointing at the package name, it would resolve against
 `arcjet-guard`'s own `dist/` typings — a stale self-reference.
+
+**New behaviour — `onGuardError`.** `runGuarded` gains an `onGuardError:
+"allow" | "deny"` parameter, defaulting to `"allow"`. Review raised that a tool
+call which sends mail or updates a ticket carries different risk from a page view,
+and failing closed was impossible before because the error was swallowed
+internally with no hook.
+
+Restructure the catch block so it no longer silently continues:
+
+- `"allow"` (default): behave exactly as today — warn (gated) and fall through to
+  execute. This keeps the platform convention and AC4.4 unchanged.
+- `"deny"`: do **not** execute. Capture the outcome as `"denied"`, then hand
+  control to a new caller-supplied `onUnavailable(error)` callback so each adapter
+  decides its own surface — `guardTool` returns an `ArcjetDenialResult`,
+  `guardAction` throws `ArcjetGuardUnavailableError`. `runGuarded` itself must not
+  know about either type.
+
+Warn in both modes: a guard outage that changes behaviour is worth logging even
+when it fails closed.
 
 Preserve exactly:
 - the `correlation` spread trick that omits `correlationId` when undefined
@@ -520,16 +550,16 @@ Expected: no errors.
 <!-- END_TASK_7 -->
 
 <!-- START_TASK_8 -->
-### Task 8: `protectAction` and `captureAction`
+### Task 8: `guardAction` and `captureAction`
 
 **Verifies:** `guard-sdk-namespaces.AC4.8`, `guard-sdk-namespaces.AC4.9`
 
 **Files:**
-- Create: `arcjet-guard/src/agents/protect-action.ts`
+- Create: `arcjet-guard/src/agents/guard-action.ts`
 
 **Implementation:**
 
-Move `arcjet-ai/src/protect-action.ts`. Change sibling imports to `.ts`
+Move `arcjet-ai/src/guard-action.ts`. Change sibling imports to `.ts`
 specifiers. Rename the context type to `ArcjetAgentContext` and the client type
 to `ArcjetAgentClient`.
 
@@ -541,10 +571,30 @@ from `@arcjet/ai` and call `createAiContext`. All three must be rewritten for
 `@arcjet/guard/agents` and `createAgentContext`. Phase 5 Task 5 compile-checks
 them, so a mistake here fails later rather than silently shipping.
 
+**New behaviour.** Add `onGuardError?: "allow" | "deny"` to `GuardActionPolicy`
+(default `"allow"`), and export a new error class:
+
+```ts
+export class ArcjetGuardUnavailableError extends Error {
+  readonly action: string;
+  readonly cause: unknown;
+}
+```
+
+Set `name = "ArcjetGuardUnavailableError"`; the message should name the action and
+make clear the policy could not be evaluated (not that a rule denied the call).
+Wire it as `runGuarded`'s `onUnavailable` when `onGuardError` is `"deny"`.
+
+It is deliberately **not** `ArcjetDeniedError`: "a rule denied you" and "the policy
+could not be evaluated" are operationally different, and only the second usually
+warrants an alert. This also keeps `ArcjetDeniedError.decision` non-optional, which
+it could not be if one class covered both cases. Under `erasableSyntaxOnly` neither
+class may use parameter properties — declare fields and assign in the constructor.
+
 Preserve exactly:
 - `ArcjetDeniedError` extending `Error`, with `name = "ArcjetDeniedError"`, a
   `decision` property, and a message naming both the action and the denial reason
-- `protectAction` delegating to `runGuarded` with an `onDeny` that throws
+- `guardAction` delegating to `runGuarded` with an `onDeny` that throws
 - the success/error capture outcomes (`outcome: "success"` / `"error"`), with the
   original error rethrown unchanged
 - `captureAction` NOT adding an `outcome` key and NOT setting `decisionId`
@@ -560,21 +610,21 @@ assign it in the constructor body.
 Run from `arcjet-guard/`: `npm run typecheck && npm run lint`
 Expected: no errors.
 
-**Commit:** `refactor(guard): move protectAction and captureAction into src/agents`
+**Commit:** `refactor(guard): move guardAction and captureAction into src/agents`
 <!-- END_TASK_8 -->
 
 <!-- START_TASK_9 -->
-### Task 9: `protectAction` / `captureAction` tests
+### Task 9: `guardAction` / `captureAction` tests
 
 **Verifies:** `guard-sdk-namespaces.AC4.8`, `guard-sdk-namespaces.AC4.9`
 
 **Files:**
-- Create: `arcjet-guard/src/agents/protect-action.test.ts` (unit)
+- Create: `arcjet-guard/src/agents/guard-action.test.ts` (unit)
 
 **Implementation:**
 
-Move `arcjet-ai/test/protect-action.test.ts` (10 tests). Changes:
-- import the subjects from `./protect-action.ts` and `./context.ts` instead of
+Move `arcjet-ai/test/guard-action.test.ts` (10 tests). Changes:
+- import the subjects from `./guard-action.ts` and `./context.ts` instead of
   `../dist/index.js`
 - import fixtures from `../../test/_shared/stub-client.ts` and
   `../../test/_shared/log-level.ts` (two levels up from `src/agents/`)
@@ -598,12 +648,27 @@ Preserve the existing assertions:
 Keep using `setLogLevel(...)` with restore in `finally` — do not go back to
 deleting `ARCJET_LOG_LEVEL` unconditionally, which clobbers ambient state.
 
+**New cases for `guard-sdk-namespaces.AC4.11`** (the `guardAction` half):
+- guard throws with `onGuardError: "deny"` → the function is **never called**,
+  `ArcjetGuardUnavailableError` is thrown, its `cause` is the original error by
+  reference, its `action` names the action, and one capture fires with
+  `outcome: "denied"`.
+- the thrown error is **not** an `instanceof ArcjetDeniedError` — assert this
+  explicitly, since the whole point of the separate class is that callers can tell
+  a policy denial from a policy outage.
+- guard throws with `onGuardError` omitted → unchanged fail-open behaviour (this is
+  AC4.4's existing case; assert the default explicitly so a future default flip
+  cannot pass silently).
+- a real DENY decision with `onGuardError: "deny"` set still throws
+  `ArcjetDeniedError`, not the unavailable error — the option must only affect the
+  error path.
+
 **Verification:**
 
 Run from `arcjet-guard/`: `npm run test-unit`
-Expected: 10 protect-action tests pass.
+Expected: 10 guard-action tests pass.
 
-**Commit:** `test(guard): move protectAction tests into src/agents`
+**Commit:** `test(guard): move guardAction tests into src/agents`
 <!-- END_TASK_9 -->
 <!-- END_SUBCOMPONENT_D -->
 
@@ -628,8 +693,13 @@ export { createAgentContext } from "./context.ts";
 export type { ArcjetAgentContext } from "./context.ts";
 export { securityMetadata } from "./metadata.ts";
 export type { SecurityMetadataFields } from "./metadata.ts";
-export { ArcjetDeniedError, captureAction, protectAction } from "./protect-action.ts";
-export type { CaptureActionOptions, ProtectActionPolicy } from "./protect-action.ts";
+export {
+  ArcjetDeniedError,
+  ArcjetGuardUnavailableError,
+  captureAction,
+  guardAction,
+} from "./guard-action.ts";
+export type { CaptureActionOptions, GuardActionPolicy } from "./guard-action.ts";
 export type { ArcjetAgentClient, CaptureOptions } from "./capture.ts";
 ```
 
@@ -698,7 +768,7 @@ requiring that clean-install probe.
 
 Run from `arcjet-guard/`: `npm run test-unit`
 Expected: all new tests pass. Cumulative for this phase: metadata 3, context 10,
-protect-action 10, capture ~3, barrel ~3.
+guard-action 10, capture ~3, barrel ~3.
 
 Run from `arcjet-guard/`: `npm run typecheck && npm run lint && npm run build`
 Expected: all clean.
@@ -713,7 +783,7 @@ Expected: all clean.
 
 - [ ] `arcjet-guard/src/agents/` contains: `ulid.ts`, `internal.ts`,
       `metadata.ts`, `capture.ts`, `guarded.ts`, `context.ts`,
-      `protect-action.ts`, `index.ts` plus their `.test.ts` files
+      `guard-action.ts`, `index.ts` plus their `.test.ts` files
 - [ ] `arcjet-guard/test/_shared/` contains `stub-client.ts` and `log-level.ts`
 - [ ] Nothing in the transitive import graph from `src/agents/index.ts` imports
       `ai` or `@ai-sdk/*`
@@ -722,7 +792,11 @@ Expected: all clean.
 - [ ] No remaining `from "@arcjet/guard"` imports in moved files — all retargeted
       to `../types.ts`
 - [ ] JSDoc `@example` blocks rewritten in `metadata.ts` (1), `context.ts`, and
-      `protect-action.ts` (3) — no `@arcjet/ai` or `createAiContext` left
+      `guard-action.ts` (3) — no `@arcjet/ai` or `createAiContext` left
+- [ ] `onGuardError` implemented in `runGuarded` + `guardAction`;
+      `ArcjetGuardUnavailableError` exported from the agents barrel
+- [ ] AC4.11 tests pass, including that the unavailable error is NOT an
+      `instanceof ArcjetDeniedError`
 - [ ] `npm run test-unit` passes with the migrated tests included, **and the total
       test count is the pre-phase baseline plus the migrated/new tests** (a count
       near zero means Phase 1's glob fix is missing)

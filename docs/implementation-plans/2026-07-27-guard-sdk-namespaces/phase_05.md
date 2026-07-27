@@ -28,6 +28,8 @@ Completed by Task 7's final sweep, after Task 6 ports the README and Task 7
 rewrites the test plan. Tasks 1–5 get most of the way there; the sweep is only
 authoritative once those two content changes have landed.
 
+- **guard-sdk-namespaces.AC5.4 Success:** The enforcing helpers are exported as `guardTool` and `guardAction`; no `protectTool` / `protectAction` / `ProtectToolPolicy` / `ProtectActionPolicy` identifier remains anywhere in source, tests, docs, the skill, or the example. Completed by Task 7's final sweep.
+
 ### guard-sdk-namespaces.AC7: The example runs on the new paths
 - **guard-sdk-namespaces.AC7.1 Success:** The example imports only from `@arcjet/guard`, `@arcjet/guard/agents`, and `@arcjet/guard/vercel-ai/v7`, and its `package.json` has no `@arcjet/ai` dependency.
 - **guard-sdk-namespaces.AC7.2 Success:** The example builds.
@@ -47,7 +49,7 @@ The example's four relevant files and their exact imports:
 |---|---|---|
 | `examples/nextjs-ai-agent/lib/arcjet.ts` | 1 | `import { launchArcjet } from "@arcjet/guard";` |
 | `examples/nextjs-ai-agent/app/api/agent/route.ts` | 1 | `import { createAiContext, securityMetadata } from "@arcjet/ai";` |
-| `examples/nextjs-ai-agent/workflows/support-agent.ts` | 1–7 | `import { aiToolsContext, captureAction, protectAction, protectTool, securityMetadata } from "@arcjet/ai";` |
+| `examples/nextjs-ai-agent/workflows/support-agent.ts` | 1–7 | `import { aiToolsContext, captureAction, guardAction, guardTool, securityMetadata } from "@arcjet/ai";` |
 | `examples/nextjs-ai-agent/workflows/support-agent.ts` | 8 | `import type { ArcjetAiContext } from "@arcjet/ai";` |
 | `examples/nextjs-ai-agent/workflows/support-agent.ts` | 9 | `import { slidingWindow, tokenBucket } from "@arcjet/guard";` |
 
@@ -102,8 +104,8 @@ come from one path:
 import {
   aiToolsContext,
   captureAction,
-  protectAction,
-  protectTool,
+  guardAction,
+  guardTool,
   securityMetadata,
 } from "@arcjet/guard/vercel-ai/v7";
 import type { ArcjetAgentContext } from "@arcjet/guard/vercel-ai/v7";
@@ -116,6 +118,19 @@ Rename the `ArcjetAiContext` type reference in `SupportAgentInput` to
 Using the single proxied path here is deliberate: it exercises AC1.4 in a real
 consumer and demonstrates the intended ergonomics. Do **not** split these across
 two imports.
+
+**Set `onGuardError: "deny"` on the consequential calls.** Review (davidmytton)
+noted these are live enforcement events, unlike bot-checking a page view, so the
+example should demonstrate failing closed rather than silently proceeding when the
+guard API is unreachable. Add it to the `ticket.updated` `guardAction` policy and
+to the `lookupOrder` `guardTool` policy, with a short comment saying why — the
+default is `"allow"` and the example is deliberately choosing the stricter setting.
+
+**Also show rules derived from tool input.** qw-in had to guess from the README
+whether `rules: ({ orderNumber }) => [...]` was supported. The example's
+`lookupOrder` tool already uses a `rules` callback, so make the input-derived shape
+explicit in a comment, e.g. that the rate-limit key or a moderation rule can be
+computed from the tool's own arguments.
 
 Leave the `"use workflow"` / `"use step"` directives alone — they are Workflow
 DevKit function-level directives consumed by `withWorkflow()` in
@@ -232,13 +247,38 @@ Content changes required throughout:
 - install instructions: `@arcjet/guard` plus `ai` (the AI SDK is now an optional
   peer, so say so explicitly rather than implying it comes along)
 - every import rewritten to the correct layer — core from `@arcjet/guard`,
-  agnostic helpers from `@arcjet/guard/agents`, `protectTool`/`aiToolsContext`
+  agnostic helpers from `@arcjet/guard/agents`, `guardTool`/`aiToolsContext`
   from `@arcjet/guard/vercel-ai/v7`
 - `createAiContext` → `createAgentContext`, `ArcjetAiContext` →
   `ArcjetAgentContext`
 - keep the existing warning that the compiler will not catch a missing
-  `toolsContext`, and the note about server-side metadata caps
+  `toolsContext`
 - state that the version segment is explicit and there is no unversioned alias
+
+**Review feedback to incorporate (davidmytton, 2026-07-27):**
+
+1. **Explain what `correlationId` is *for*** (comment on `SKILL.md:1`): "Worth
+   adding an explanation of what the `correlationId` is for, then the AI can decide
+   which ID is best suited (or let us generate one)." Add a short paragraph: it
+   joins every guard decision and capture event from one logical run into a single
+   sequence in the Arcjet console, so the best value is an ID the app already has
+   and can be searched by (request ID, job ID, ticket ID, review ID); omit it and a
+   ULID is generated.
+2. **The lone `octokit` reference** (`SKILL.md:142`): "This is the first and only
+   time `octokit` appears. Worth commenting what it's representing, or use a generic
+   example." Replace it with a generic external call, or add a one-line comment
+   naming it as an example GitHub API client.
+3. **The metadata-caps paragraph is stale** (`SKILL.md:168`): davidmytton says
+   "This is no longer accurate" about the claim that exceeding 20 pairs means "the
+   extras are dropped". **Do not guess the replacement.** There is no client-side
+   cap validation in `arcjet-guard/src` and nothing in its README or CHANGELOG, so
+   the current behaviour is not derivable from this repo. Ask davidmytton or qw-in
+   for the actual behaviour and write that; if no answer is available, remove the
+   specific claim rather than restate an unverified number.
+4. **Fail-closed guidance** (`SKILL.md:96`): the current text says only that guard
+   API failures fail open. Document `onGuardError` and recommend `"deny"` for
+   consequential or irreversible actions, while stating that the default is
+   `"allow"` to match the rest of the platform.
 
 `arcjet-guard/package.json` already lists `skills/` in `files` from Phase 1 — no
 packaging change needed here. Verify it is still there.
@@ -294,8 +334,14 @@ state, explicitly:
    explicitly or relax strict peer checking.
 5. **Turbopack caveat**, if Task 2 found one.
 6. **Why `/agents` exists separately** — one sentence: importing anything that
-   re-exports `protectTool` loads `ai`, so non-AI callers need a path that never
+   re-exports `guardTool` loads `ai`, so non-AI callers need a path that never
    reaches an AI SDK.
+7. **`onGuardError`** — document the option, its `"allow"` default, and that
+   `"deny"` surfaces `reason: "ERROR"` / `retryable: true` to the model for
+   `guardTool` and throws `ArcjetGuardUnavailableError` for `guardAction`. Explain
+   when to choose it (consequential or irreversible actions) and note the error type
+   is deliberately distinct from `ArcjetDeniedError` so a policy outage can be
+   alerted on separately from a policy denial.
 
 Also add a short "adding a new SDK namespace" note: new
 `src/<vendor-sdk>/v<major>/` directory, new `exports` entry, new optional peer if
@@ -317,6 +363,8 @@ for s in \
   "vercel-eve/v1" \
   "peerDependenciesMeta" \
   "ERR_PACKAGE_PATH_NOT_EXPORTED" \
+  "onGuardError" \
+  "ArcjetGuardUnavailableError" \
   ; do
   grep -q -- "$s" README.md && echo "ok: $s" || echo "MISSING: $s"
 done
@@ -363,13 +411,13 @@ The complete list of sources — **all** of these, not a subset:
 | `arcjet-guard/src/agents/index.ts` | `@packageDocumentation` + `@example` |
 | `arcjet-guard/src/agents/context.ts` | `@example` |
 | `arcjet-guard/src/agents/metadata.ts` | 1 `@example` |
-| `arcjet-guard/src/agents/protect-action.ts` | **3** `@example` blocks |
+| `arcjet-guard/src/agents/guard-action.ts` | **3** `@example` blocks |
 | `arcjet-guard/src/vercel-ai/v7/index.ts` | `@packageDocumentation` + `@example` |
 | `arcjet-guard/src/vercel-ai/v7/tools-context.ts` | `@example` |
-| `arcjet-guard/src/vercel-ai/v7/protect-tool.ts` | 1 `@example` |
+| `arcjet-guard/src/vercel-ai/v7/guard-tool.ts` | 1 `@example` |
 
-The three files in bold-adjacent rows (`metadata.ts`, `protect-action.ts`,
-`protect-tool.ts`) are the ones most likely to be missed: their examples were
+The three files in bold-adjacent rows (`metadata.ts`, `guard-action.ts`,
+`guard-tool.ts`) are the ones most likely to be missed: their examples were
 written against `@arcjet/ai` and `createAiContext`, and Phases 2 and 3 instruct
 rewriting them. This sweep is the check that the rewrite actually happened.
 
@@ -391,7 +439,7 @@ apart from the two planning directories Phase 6 deletes:
 
 ```bash
 cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js
-grep -rn "createAiContext\|ArcjetAiContext\|@arcjet/ai" \
+grep -rn "createAiContext\|ArcjetAiContext\|@arcjet/ai\|protectTool\|protectAction\|ProtectToolPolicy\|ProtectActionPolicy" \
   --include=*.ts --include=*.tsx --include=*.md --include=*.json . \
   | grep -v -e node_modules -e package-lock \
              -e 'docs/design-plans/' -e 'docs/implementation-plans/' \
@@ -453,8 +501,8 @@ section to guard's README; without this task that reference material is simply
 lost, and no acceptance criterion would have caught it.
 
 Port the content across, rewritten for the new structure. It covers:
-- `protectTool` usage and the shape of `ArcjetDenialResult`
-- `protectAction` / `captureAction` for non-tool code paths
+- `guardTool` usage and the shape of `ArcjetDenialResult`
+- `guardAction` / `captureAction` for non-tool code paths
 - `securityMetadata` and the metadata vocabulary
 - threading context through agent, tool, queue, and workflow boundaries
 - the `onDeny` escape hatch
@@ -474,7 +522,7 @@ them, so the convention section comes first.
 
 ```bash
 cd arcjet-guard
-for s in protectTool protectAction captureAction securityMetadata onDeny; do
+for s in guardTool guardAction captureAction securityMetadata onDeny; do
   grep -q "$s" README.md && echo "ok: $s" || echo "MISSING: $s"
 done
 ```
@@ -563,11 +611,19 @@ must report `clean` across the whole repo, with only `docs/design-plans/` and
       `vercel-eve/v1` as next, no-alias rule, optional peers + pnpm caveat
 - [ ] Every doc/JSDoc/skill example compiles against installed typings, including
       the 5 previously-missed `@example` blocks in `metadata.ts`,
-      `protect-action.ts` (3), and `protect-tool.ts`
+      `guard-action.ts` (3), and `guard-tool.ts`
 - [ ] `arcjet-ai/README.md`'s usage documentation is ported into
       `arcjet-guard/README.md` (Task 6)
 - [ ] `docs/test-plans/2026-07-23-pilot-framework-helper.md` rewritten for the
-      subpath structure, with its `pilot-framework-helper.AC*` identifiers intact
+      subpath structure, with its bare `AC1.1`-style identifiers unchanged (the
+      scoped `pilot-framework-helper.AC*` form does not appear in that file)
+- [ ] Example sets `onGuardError: "deny"` on its consequential calls, with a
+      comment explaining the deliberate departure from the default
+- [ ] Example shows rules derived from tool input (qw-in's question)
+- [ ] Skill explains what `correlationId` is for, fixes the bare `octokit`
+      reference, documents `onGuardError`, and either carries the confirmed
+      metadata-cap behaviour or drops the stale claim
+- [ ] README documents `onGuardError` and `ArcjetGuardUnavailableError`
 - [ ] Final repo-wide sweep finds no `createAiContext`, `ArcjetAiContext`, or
       `@arcjet/ai` anywhere except `docs/design-plans/` and
       `docs/implementation-plans/` (both deleted in Phase 6)

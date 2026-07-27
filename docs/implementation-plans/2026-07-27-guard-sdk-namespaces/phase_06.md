@@ -22,6 +22,9 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC9.1 Success:** Build, `tsconfig.json` and `tsconfig.lint.json` typechecks, lint, and unit tests with coverage all pass.
 - **guard-sdk-namespaces.AC9.2 Success:** The node, fetch, bun, deno, and cloudflare runtime suites all pass.
 
+This phase does not introduce new behaviour; AC4.11 (`onGuardError`) is
+implemented in Phases 2 and 3 and is included in the count reconciliation below.
+
 It also owns or completes these, which no earlier phase can prove:
 
 - **guard-sdk-namespaces.AC2.2 Success:** `@arcjet/guard/agents` imports successfully with `ai` and `@ai-sdk/provider-utils` absent from `node_modules`. (Claimed by this phase ONLY — Phase 2 explicitly disclaims it.)
@@ -43,13 +46,20 @@ Checked on this machine:
 | **deno** | **NOT INSTALLED** |
 
 **`npm run test-runtime-deno` cannot run locally.** AC9.2 therefore cannot be
-fully satisfied on this machine. Do not claim it passed. Either install deno and
-run it, or verify it in CI and record that the deno leg was verified there.
-Reporting AC9.2 as green without the deno leg would be a false completion claim.
+fully satisfied on this machine. Do not claim it passed.
 
-`arcjet-guard`'s CI (`.github/workflows/guard.yml`) runs `build`, `test-unit`,
-`lint`, and `typecheck`. Confirm where the runtime suites run in CI before relying
-on them.
+**CI does cover it — verified, so this is not a judgement call.**
+`.github/workflows/guard.yml` has a dedicated `runtime:` job (line 113) whose
+matrix runs `test-runtime-node` (3 node versions), `test-runtime-fetch` (x3),
+`test-runtime-cloudflare`, `test-runtime-bun` (x2) and **`test-runtime-deno` twice
+— `deno-version: lts` and `latest`** (lines 147-152), with a `Setup Deno` step at
+lines 181-185. The same workflow also runs `build`, `test-unit`, `lint` and
+`typecheck`.
+
+So the deno leg is satisfied by pushing the branch and citing the
+`Runtime (deno lts)` / `Runtime (deno latest)` jobs from that run. Record the run
+URL. Reporting AC9.2 as green without pointing at those jobs (or a local deno run)
+would be a false completion claim.
 
 ---
 
@@ -139,7 +149,7 @@ absence is silent.
 cd "$SCRATCH"
 node --input-type=module -e '
 const m = await import("@arcjet/guard/agents");
-const need = ["createAgentContext","securityMetadata","protectAction","captureAction","ArcjetDeniedError"];
+const need = ["createAgentContext","securityMetadata","guardAction","captureAction","ArcjetDeniedError"];
 const missing = need.filter(n => typeof m[n] === "undefined");
 if (missing.length) { console.log("FAIL missing:", missing); process.exit(1); }
 const ctx = m.createAgentContext({ correlationId: "probe-1" });
@@ -171,8 +181,8 @@ cd "$SCRATCH"
 npm install ai@7.0.36 @ai-sdk/provider-utils@5.0.12 >/dev/null 2>&1
 node --input-type=module -e '
 const m = await import("@arcjet/guard/vercel-ai/v7");
-console.log("v7 OK:", typeof m.protectTool === "function", typeof m.aiToolsContext === "function");
-console.log("proxy OK:", typeof m.protectAction === "function");
+console.log("v7 OK:", typeof m.guardTool === "function", typeof m.aiToolsContext === "function");
+console.log("proxy OK:", typeof m.guardAction === "function");
 '
 ```
 
@@ -212,7 +222,7 @@ Expected: all four clean.
 
 **Reconcile the test count — this is the check that catches a silently skipped
 test directory.** `arcjet-ai` had 52 tests across 7 files: context 11,
-generate-text 3, index 1, metadata 3, protect-action 10, protect-tool 22,
+generate-text 3, index 1, metadata 3, guard-action 10, guard-tool 22,
 warn-missing-context 2. Of those, **51 migrate** — only `index.test.ts`'s single
 test is replaced rather than moved:
 
@@ -221,16 +231,18 @@ test is replaced rather than moved:
 | `src/agents/context.test.ts` | 10 (11 minus the `aiToolsContext` one) |
 | `src/vercel-ai/v7/tools-context.test.ts` | 1 (the split-out one) |
 | `src/agents/metadata.test.ts` | 3 |
-| `src/agents/protect-action.test.ts` | 10 |
-| `src/vercel-ai/v7/protect-tool.test.ts` | 22 |
+| `src/agents/guard-action.test.ts` | 10 |
+| `src/vercel-ai/v7/guard-tool.test.ts` | 22 |
 | `src/vercel-ai/v7/warn-missing-context.test.ts` | 2 |
 | `src/vercel-ai/v7/generate-text.test.ts` | 3 |
 | **migrated subtotal** | **51** |
 
 Plus newly written tests: `src/agents/capture.test.ts` (~3),
-`src/agents/index.test.ts` (~3), `src/vercel-ai/v7/index.test.ts` (~6).
+`src/agents/index.test.ts` (~3), `src/vercel-ai/v7/index.test.ts` (~6), and the
+`onGuardError` cases added for AC4.11 — ~4 in
+`src/agents/guard-action.test.ts` and ~2 in `src/vercel-ai/v7/guard-tool.test.ts`.
 
-So the expected total is roughly **guard's 321 baseline + 51 + ~12 ≈ 384**. Verify
+So the expected total is roughly **guard's 321 baseline + 51 migrated + ~18 new ≈ 390**. Verify
 with:
 
 ```bash
@@ -256,18 +268,24 @@ npm run test-runtime-cloudflare
 Expected: all four pass. These import from `dist/` through the package exports, so
 they are also an integration check on the export map.
 
-**Step 3: The deno leg**
+**Step 3: The deno leg — via CI**
 
-`deno` is not installed on this machine. Either:
+`deno` is not installed locally, and `guard.yml`'s `runtime:` job already runs it
+on both `lts` and `latest`. Push the branch, then confirm both deno jobs succeeded:
 
 ```bash
-cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js/arcjet-guard
-npm run test-runtime-deno
+cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js
+gh run list --workflow guard.yml --branch rei/feat/framework-helper --limit 1
+gh run view <run-id> --json jobs \
+  --jq '.jobs[] | select(.name | startswith("Runtime (deno")) | {name, conclusion}'
 ```
 
-or verify it in CI and record which run confirmed it. **Do not report AC9.2 as
-fully passing until the deno leg is confirmed somewhere.** State plainly which
-legs ran locally and which ran in CI.
+Expected: both deno jobs report `success`. Record the run URL in the completion
+report.
+
+If deno is installed locally instead, `npm run test-runtime-deno` from
+`arcjet-guard/` is equivalent. **Either way, state per-leg which ran locally and
+which ran in CI** — see the AC9.2 discipline in `test-requirements.md` §4.
 
 **Step 4: Example build**
 
@@ -391,8 +409,8 @@ git push origin rei/feat/framework-helper
       with a module-resolution error; both work once the peers are installed
 - [ ] No peer warnings on a clean install
 - [ ] `build`, both typechecks, `lint` green
-- [ ] `test-unit` green **and the total count reconciles to ≈384** (baseline 321 +
-      51 migrated + ~12 new) — a low count means the glob fix is missing
+- [ ] `test-unit` green **and the total count reconciles to ≈390** (baseline 321 +
+      51 migrated + ~18 new, including the AC4.11 `onGuardError` cases) — a low count means the glob fix is missing
 - [ ] `test-unit` glob patterns still single-quoted in `package.json`
 - [ ] node, fetch, bun, cloudflare runtime suites green
 - [ ] deno leg confirmed locally **or** in CI, and which one is stated explicitly

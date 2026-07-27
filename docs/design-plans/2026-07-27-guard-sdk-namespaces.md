@@ -9,8 +9,8 @@ framework-agnostic layer (`@arcjet/guard/agents`) with zero AI SDK imports, and
 an SDK-coupled layer (`@arcjet/guard/vercel-ai/v7`) that proxies the agnostic
 layer's exports so a consumer needs only one import path. The split exists
 because ESM resolves a module's entire import graph eagerly — anything that
-re-exports `protectTool` also pulls in the `ai` package — so a code path that
-only needs `protectAction` (e.g. a queue worker) must have an import route that
+re-exports `guardTool` also pulls in the `ai` package — so a code path that
+only needs `guardAction` (e.g. a queue worker) must have an import route that
 never touches an AI SDK at all. Subpaths are versioned per vendor SDK major
 (`<vendor-sdk>/v<major>`, no unversioned alias) so future SDKs, such as the
 planned Vercel Eve integration, can get their own namespace without forcing
@@ -49,8 +49,8 @@ than carrying over `@arcjet/ai`'s looser ones.
 
 ### guard-sdk-namespaces.AC1: Subpaths resolve as specified
 - **guard-sdk-namespaces.AC1.1 Success:** `import { launchArcjet, tokenBucket } from "@arcjet/guard"` resolves, and the root export surface is unchanged from `main` (no additions, no removals).
-- **guard-sdk-namespaces.AC1.2 Success:** `import { createAgentContext, securityMetadata, protectAction, captureAction, ArcjetDeniedError } from "@arcjet/guard/agents"` resolves.
-- **guard-sdk-namespaces.AC1.3 Success:** `import { protectTool, aiToolsContext } from "@arcjet/guard/vercel-ai/v7"` resolves.
+- **guard-sdk-namespaces.AC1.2 Success:** `import { createAgentContext, securityMetadata, guardAction, captureAction, ArcjetDeniedError } from "@arcjet/guard/agents"` resolves.
+- **guard-sdk-namespaces.AC1.3 Success:** `import { guardTool, aiToolsContext } from "@arcjet/guard/vercel-ai/v7"` resolves.
 - **guard-sdk-namespaces.AC1.4 Success:** The v7 namespace re-exports the shared layer, and each proxied export is the *same function identity* as the one from `@arcjet/guard/agents`.
 - **guard-sdk-namespaces.AC1.5 Failure:** `@arcjet/guard/vercel-ai` (unversioned) does not resolve.
 - **guard-sdk-namespaces.AC1.6 Failure:** `@arcjet/guard/vercel-ai/v6` (unsupported major) does not resolve.
@@ -68,18 +68,20 @@ than carrying over `@arcjet/ai`'s looser ones.
 - **guard-sdk-namespaces.AC4.1 Success:** Guard ALLOW → the wrapped tool executes once and an event is captured with `outcome: "success"`.
 - **guard-sdk-namespaces.AC4.2 Failure:** Guard DENY → the tool never executes and the model receives an `ArcjetDenialResult` carrying `reason` and `retryable`.
 - **guard-sdk-namespaces.AC4.3 Edge:** A `RATE_LIMIT` denial carries `retryAfterSeconds`; a non-rate-limit denial omits it even when a co-occurring rule result has a reset time.
-- **guard-sdk-namespaces.AC4.4 Failure:** The guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
+- **guard-sdk-namespaces.AC4.4 Failure:** With the default `onGuardError: "allow"`, the guard call throwing → the tool still executes (fail open) and a warning is emitted, gated on `ARCJET_LOG_LEVEL`.
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
 - **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId` and rejects `metadata` that is not a string-to-string record.
-- **guard-sdk-namespaces.AC4.8 Success:** `protectAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
+- **guard-sdk-namespaces.AC4.8 Success:** `guardAction` returns the function's value on ALLOW; on DENY it throws `ArcjetDeniedError` carrying the decision and never runs the function.
 - **guard-sdk-namespaces.AC4.9 Success:** `captureAction` emits an event with the context's correlation id and merged metadata, with no `decisionId` and no `outcome` key.
 - **guard-sdk-namespaces.AC4.10 Edge:** A client lacking `experimental_capture()` causes no throw; capture no-ops with a gated warning.
+- **guard-sdk-namespaces.AC4.11 Failure:** With `onGuardError: "deny"`, the guard call throwing → the wrapped tool or action does NOT execute and the outcome is captured as `denied`. `guardTool` returns an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true` (the model only ever sees tool results, so the shape stays uniform). `guardAction` throws `ArcjetGuardUnavailableError` — distinct from `ArcjetDeniedError` — carrying the original error as `cause`.
 
-### guard-sdk-namespaces.AC5: The context rename is complete
+### guard-sdk-namespaces.AC5: The renames are complete
 - **guard-sdk-namespaces.AC5.1 Success:** `createAgentContext` and `ArcjetAgentContext` are the exported names.
 - **guard-sdk-namespaces.AC5.2 Success:** No `createAiContext` or `ArcjetAiContext` identifier remains anywhere in source, tests, docs, the skill, or the example.
 - **guard-sdk-namespaces.AC5.3 Failure:** `createAgentContext` rejects a caller-supplied `correlationId` that is not a string, is empty, exceeds 256 characters, or contains non-printable characters — naming the offending problem in the error and never truncating.
+- **guard-sdk-namespaces.AC5.4 Success:** The enforcing helpers are exported as `guardTool` and `guardAction` (with `GuardToolPolicy` / `GuardActionPolicy`); no `protectTool`, `protectAction`, `ProtectToolPolicy` or `ProtectActionPolicy` identifier remains anywhere in source, tests, docs, the skill, or the example.
 
 ### guard-sdk-namespaces.AC6: The separate package is gone
 - **guard-sdk-namespaces.AC6.1 Success:** `arcjet-ai/` does not exist and no workspace named `@arcjet/ai` resolves.
@@ -126,12 +128,12 @@ than carrying over `@arcjet/ai`'s looser ones.
   and its corresponding capture call to associate them; renamed from
   `ArcjetAiContext`.
 - **`runGuarded` engine**: The internal sequencing logic (guard → deny → execute
-  → capture) that both `protectAction` and `protectTool` build on.
-- **`protectAction` / `captureAction`**: Framework-agnostic helpers for non-tool
-  code paths — `protectAction` runs a guarded function and throws on deny;
+  → capture) that both `guardAction` and `guardTool` build on.
+- **`guardAction` / `captureAction`**: Framework-agnostic helpers for non-tool
+  code paths — `guardAction` runs a guarded function and throws on deny;
   `captureAction` emits a post-hoc event without a guard decision.
-- **`protectTool` / `aiToolsContext`**: Vercel-AI-SDK-specific helpers —
-  `protectTool` wraps a `Tool` with guard enforcement; `aiToolsContext` fans a
+- **`guardTool` / `aiToolsContext`**: Vercel-AI-SDK-specific helpers —
+  `guardTool` wraps a `Tool` with guard enforcement; `aiToolsContext` fans a
   single context out across a `ToolSet` so each tool call carries it.
 - **`ArcjetDeniedError` / `ArcjetDenialResult`**: The two ways a denial surfaces
   — a thrown error (agnostic layer, for direct function calls) versus a
@@ -139,7 +141,7 @@ than carrying over `@arcjet/ai`'s looser ones.
   can't simply throw into the model's control flow).
 - **`MockLanguageModelV4`**: A Vercel AI SDK test double for simulating model
   responses, used in this design's `generateText` integration tests for
-  `protectTool`.
+  `guardTool`.
 - **Fail open**: The design's behaviour when the guard call itself throws — the
   wrapped tool still executes rather than being blocked, with a gated warning
   logged instead.
@@ -172,16 +174,16 @@ existing runtime-conditional exports (`node`/`bun`/`fetch`). No new exports.
 
 **Shared agent layer — `@arcjet/guard/agents`.** Everything that does not depend
 on an AI SDK: correlation context creation, the security metadata vocabulary,
-`protectAction`/`captureAction` for non-tool code paths, and the internal
+`guardAction`/`captureAction` for non-tool code paths, and the internal
 `runGuarded` engine that sequences guard → deny → execute → capture.
 
 **SDK-coupled layer — `@arcjet/guard/vercel-ai/v7`.** Only what touches the
-Vercel AI SDK's types: `protectTool` and `aiToolsContext`. It also re-exports the
+Vercel AI SDK's types: `guardTool` and `aiToolsContext`. It also re-exports the
 shared layer, so an AI SDK application can use one import path.
 
 The layering is forced by module resolution, not preference. ESM eagerly
 resolves a module's whole import graph, so any entry point that re-exports
-`protectTool` also loads `ai`. A queue worker that only wants `protectAction`
+`guardTool` also loads `ai`. A queue worker that only wants `guardAction`
 must therefore have a path that never reaches an AI SDK import — hence
 `/agents` existing separately, and hence the peers being optional.
 
@@ -215,10 +217,10 @@ function createAgentContext(init?: {
 
 function securityMetadata(fields: SecurityMetadataFields): Record<string, string>;
 
-function protectAction<T>(
+function guardAction<T>(
   client: ArcjetAgentClient,
   ctx: ArcjetAgentContext,
-  policy: ProtectActionPolicy,
+  policy: GuardActionPolicy,
   fn: () => Promise<T>,
 ): Promise<T>;
 
@@ -236,11 +238,24 @@ class ArcjetDeniedError extends Error {
 ### Contract: `@arcjet/guard/vercel-ai/v7`
 
 ```typescript
-function protectTool<T extends Tool>(
+function guardTool<T extends Tool>(
   client: ArcjetAgentClient,
   tool: T,
-  policy: ProtectToolPolicy<T>,
+  policy: GuardToolPolicy<T>,
 ): Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAgentContext | undefined>;
+
+// Shared by both policies. Default "allow" preserves Arcjet's fail-open
+// convention; "deny" blocks the call when the guard API itself errors.
+type OnGuardError = "allow" | "deny";
+
+// Thrown by guardAction when onGuardError is "deny" and the guard call itself
+// failed. Deliberately NOT ArcjetDeniedError: "a rule denied you" and "the policy
+// could not be evaluated" are operationally different, and only the latter is
+// worth alerting on. Keeps ArcjetDeniedError.decision non-optional.
+class ArcjetGuardUnavailableError extends Error {
+  readonly action: string;
+  readonly cause: unknown;
+}
 
 function aiToolsContext<TOOLS extends ToolSet>(
   ctx: ArcjetAgentContext,
@@ -336,7 +351,7 @@ with no AI SDK in their import graph.
 - `arcjet-guard/src/agents/capture.ts` — `CaptureOptions`, the structural
   `ArcjetAgentClient` type, capture feature detection, warning gate.
 - `arcjet-guard/src/agents/guarded.ts` — internal `runGuarded` engine.
-- `arcjet-guard/src/agents/protect-action.ts` — `protectAction`,
+- `arcjet-guard/src/agents/guard-action.ts` — `guardAction`,
   `captureAction`, `ArcjetDeniedError`.
 - `arcjet-guard/src/agents/ulid.ts`, `arcjet-guard/src/agents/internal.ts` —
   correlation id generation and the protected-tool brand symbol.
@@ -361,8 +376,8 @@ typechecks, and lint pass.
 the shared layer.
 
 **Components:**
-- `arcjet-guard/src/vercel-ai/v7/protect-tool.ts` — `protectTool`,
-  `ArcjetDenialResult`, `ProtectToolPolicy`, the injected `contextSchema` and its
+- `arcjet-guard/src/vercel-ai/v7/guard-tool.ts` — `guardTool`,
+  `ArcjetDenialResult`, `GuardToolPolicy`, the injected `contextSchema` and its
   validation.
 - `arcjet-guard/src/vercel-ai/v7/tools-context.ts` — `aiToolsContext`.
 - `arcjet-guard/src/vercel-ai/v7/index.ts` — own exports plus
@@ -413,7 +428,7 @@ workflow still lists `nextjs-ai-agent`.
   `examples/nextjs-ai-agent/app/api/agent/route.ts`,
   `examples/nextjs-ai-agent/workflows/support-agent.ts` — import core from
   `@arcjet/guard`, agnostic helpers from `@arcjet/guard/agents`, and
-  `protectTool`/`aiToolsContext` from `@arcjet/guard/vercel-ai/v7`.
+  `guardTool`/`aiToolsContext` from `@arcjet/guard/vercel-ai/v7`.
 - `arcjet-guard/skills/` — the integration skill moved from
   `arcjet-ai/skills/integrate-arcjet-ai/`, renamed and rewritten for the new
   paths.
@@ -463,6 +478,34 @@ known, temporary oddity.
 **Peer-dependency verification.** Optional peers are only meaningfully verified
 by installing without them. Phase 2's static import-graph check is the practical
 substitute for a full clean-install matrix in CI.
+
+**Fail-open vs fail-closed.** `runGuarded` fails open when the guard API itself
+errors, matching the platform convention (the guard client already converts
+transport failures into ALLOW with `hasFailedOpen()`). Review raised that an agent
+tool call which sends mail or updates a ticket carries different risk from a page
+view. Both policies therefore take `onGuardError: "allow" | "deny"`, defaulting to
+`"allow"` so nothing changes for existing behaviour, and the example and skill set
+`"deny"` to show the safer choice for consequential actions. This is a helper-level
+lever, not a change to the platform default.
+
+The fail-closed path deliberately does **not** reuse `ArcjetDeniedError`. Being
+denied by a rule and being unable to evaluate a rule are different operational
+events — the second usually warrants an alert — so `guardAction` throws
+`ArcjetGuardUnavailableError` with the underlying error as `cause`, and
+`ArcjetDeniedError.decision` stays non-optional. `guardTool` keeps the single
+`ArcjetDenialResult` shape with `reason: "ERROR"`, because a model only ever
+observes tool results and a second result type would just be harder to prompt
+against. This shape is worth confirming with reviewers on the PR.
+
+**`runtimeContext` is not a substitute for `toolsContext`.** Verified against the
+installed typings (`@ai-sdk/provider-utils@5.0.12`): `ToolExecutionOptions`
+contains only `toolCallId`, `messages`, `abortSignal?`, `context` and
+`experimental_sandbox?`. `runtimeContext` is exposed to orchestration hooks
+(`prepareStep`, step/result objects, approval functions, telemetry's `enrichSpan`)
+but **not** to a tool's `execute`. Correlation must therefore ride on
+`toolsContext` + the injected `contextSchema`; `aiToolsContext` is necessary rather
+than redundant. `runtimeContext` remains the right carrier if capture later moves
+onto AI SDK telemetry, which is tracked separately.
 
 **Extensibility.** Adding a namespace means a new `src/<vendor-sdk>/v<major>/`
 directory, a new `exports` entry, and any new optional peer — no changes to the

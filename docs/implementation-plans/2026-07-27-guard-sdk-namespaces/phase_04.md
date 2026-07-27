@@ -95,17 +95,17 @@ for f in \
   arcjet-guard/src/agents/capture.ts \
   arcjet-guard/src/agents/guarded.ts \
   arcjet-guard/src/agents/context.ts \
-  arcjet-guard/src/agents/protect-action.ts \
+  arcjet-guard/src/agents/guard-action.ts \
   arcjet-guard/src/agents/index.ts \
   arcjet-guard/src/agents/metadata.test.ts \
   arcjet-guard/src/agents/capture.test.ts \
   arcjet-guard/src/agents/context.test.ts \
-  arcjet-guard/src/agents/protect-action.test.ts \
+  arcjet-guard/src/agents/guard-action.test.ts \
   arcjet-guard/src/agents/index.test.ts \
-  arcjet-guard/src/vercel-ai/v7/protect-tool.ts \
+  arcjet-guard/src/vercel-ai/v7/guard-tool.ts \
   arcjet-guard/src/vercel-ai/v7/tools-context.ts \
   arcjet-guard/src/vercel-ai/v7/index.ts \
-  arcjet-guard/src/vercel-ai/v7/protect-tool.test.ts \
+  arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts \
   arcjet-guard/src/vercel-ai/v7/tools-context.test.ts \
   arcjet-guard/src/vercel-ai/v7/generate-text.test.ts \
   arcjet-guard/src/vercel-ai/v7/warn-missing-context.test.ts \
@@ -279,20 +279,18 @@ git diff main --name-only -- .github/ | grep -v reusable-examples.yml
 Expected: no output — `reusable-examples.yml` should be the *only* file under
 `.github/` that this branch still changes.
 
-**Step 5: Confirm the shell block is still well-formed**
+**Step 5: Confirm the workspace count matches `main`**
 
 ```bash
-python3 -c "
-import re
-src = open('.github/workflows/publish.yml').read()
-bad = [l for l in src.splitlines() if l.rstrip().endswith('\\\\\\\\') and not l.strip()]
-print('empty continuation lines:', len(bad))
-"
-grep -c "workspace @arcjet" .github/workflows/publish.yml
+cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js
+echo -n "branch: "; grep -c "workspace @arcjet" .github/workflows/publish.yml
+echo -n "main:   "; git show main:.github/workflows/publish.yml | grep -c "workspace @arcjet"
 ```
 
-Expected: no empty continuation lines; the workspace count matches `main`
-(compare with `git show main:.github/workflows/publish.yml | grep -c "workspace @arcjet"`).
+Expected: both print the same number (31). Step 2's `git diff main` is the
+authoritative proof that this file matches `main` byte-for-byte; this count is a
+quick human-readable confirmation. No separate line-continuation check is needed —
+an empty or dangling continuation would show up as a diff.
 
 **Step 6: Commit**
 

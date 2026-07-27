@@ -4,10 +4,10 @@
 `arcjet-guard/src/vercel-ai/v7/` and have that namespace proxy the shared agent
 layer, so an AI SDK app needs only one import path.
 
-**Architecture:** `protectTool` moves wholesale; `aiToolsContext` arrives as the
+**Architecture:** `guardTool` moves wholesale; `aiToolsContext` arrives as the
 other half of the `context.ts` split started in Phase 2. The barrel re-exports
 its own two symbols plus `export * from "../../agents/index.ts"`, which must
-preserve *function identity* — the proxied `protectAction` has to be the very same
+preserve *function identity* — the proxied `guardAction` has to be the very same
 function object as the one from `@arcjet/guard/agents`, not a wrapper.
 
 **Tech Stack:** TypeScript, Vercel AI SDK v7 (`ai@7.0.36`,
@@ -25,11 +25,14 @@ This phase implements and tests:
 
 ### guard-sdk-namespaces.AC1: Subpaths resolve as specified
 - **guard-sdk-namespaces.AC1.1 Success:** `import { launchArcjet, tokenBucket } from "@arcjet/guard"` resolves, and the root export surface is unchanged from `main` (no additions, no removals).
-- **guard-sdk-namespaces.AC1.2 Success:** `import { createAgentContext, securityMetadata, protectAction, captureAction, ArcjetDeniedError } from "@arcjet/guard/agents"` resolves.
-- **guard-sdk-namespaces.AC1.3 Success:** `import { protectTool, aiToolsContext } from "@arcjet/guard/vercel-ai/v7"` resolves.
+- **guard-sdk-namespaces.AC1.2 Success:** `import { createAgentContext, securityMetadata, guardAction, captureAction, ArcjetDeniedError } from "@arcjet/guard/agents"` resolves.
+- **guard-sdk-namespaces.AC1.3 Success:** `import { guardTool, aiToolsContext } from "@arcjet/guard/vercel-ai/v7"` resolves.
 - **guard-sdk-namespaces.AC1.4 Success:** The v7 namespace re-exports the shared layer, and each proxied export is the *same function identity* as the one from `@arcjet/guard/agents`.
 - **guard-sdk-namespaces.AC1.5 Failure:** `@arcjet/guard/vercel-ai` (unversioned) does not resolve.
 - **guard-sdk-namespaces.AC1.6 Failure:** `@arcjet/guard/vercel-ai/v6` (unsupported major) does not resolve.
+
+### guard-sdk-namespaces.AC5: The renames are complete
+- **guard-sdk-namespaces.AC5.4 Success (partial):** `guardTool` and `GuardToolPolicy` are the exported names in this namespace; no `protectTool` / `ProtectToolPolicy` identifier remains under `src/vercel-ai/`. Phase 5 completes the repo-wide sweep.
 
 ### guard-sdk-namespaces.AC2: The shared layer has no AI SDK coupling
 - **guard-sdk-namespaces.AC2.3 Failure:** `@arcjet/guard/vercel-ai/v7` fails to import when `ai` is absent — documenting the peer requirement rather than failing silently.
@@ -42,6 +45,7 @@ This phase implements and tests:
 - **guard-sdk-namespaces.AC4.5 Success:** A context's `correlationId` reaches both the guard call and the capture call.
 - **guard-sdk-namespaces.AC4.6 Edge:** A protected tool invoked with no context warns on the first occurrence even with logging off, and stays silent afterwards unless `ARCJET_LOG_LEVEL` is set.
 - **guard-sdk-namespaces.AC4.7 Failure:** The injected `contextSchema` rejects a non-string `correlationId` and rejects `metadata` that is not a string-to-string record.
+- **guard-sdk-namespaces.AC4.11 Failure:** With `onGuardError: "deny"`, the guard call throwing → the wrapped tool does NOT execute, the model receives an `ArcjetDenialResult` with `reason: "ERROR"` and `retryable: true`, and the outcome is captured as `denied`. (Phase 2 built the engine and the `guardAction` half; this phase covers `guardTool`.)
 
 ---
 
@@ -66,10 +70,10 @@ retarget them, do not rewrite or expand them beyond the ACs listed.
 
 | From (`arcjet-ai/`) | To (`arcjet-guard/`) | Notes |
 |---|---|---|
-| `src/protect-tool.ts` | `src/vercel-ai/v7/protect-tool.ts` | straight move + import/type renames |
+| `src/guard-tool.ts` | `src/vercel-ai/v7/guard-tool.ts` | straight move + import/type renames |
 | `src/context.ts` (the `aiToolsContext` half) | `src/vercel-ai/v7/tools-context.ts` | the other half of the Phase 2 split |
 | — | `src/vercel-ai/v7/index.ts` | replaces the Phase 1 `export {}` placeholder |
-| `test/protect-tool.test.ts` | `src/vercel-ai/v7/protect-tool.test.ts` | 22 tests |
+| `test/guard-tool.test.ts` | `src/vercel-ai/v7/guard-tool.test.ts` | 22 tests |
 | `test/generate-text.test.ts` | `src/vercel-ai/v7/generate-text.test.ts` | 3 tests |
 | `test/warn-missing-context.test.ts` | `src/vercel-ai/v7/warn-missing-context.test.ts` | 2 tests; must stay its own file |
 | `test/context.test.ts` (the `aiToolsContext` test) | `src/vercel-ai/v7/tools-context.test.ts` | 1 test split out in Phase 2 |
@@ -159,16 +163,16 @@ Expected: the tools-context test passes.
 
 <!-- START_SUBCOMPONENT_B (tasks 3-5) -->
 <!-- START_TASK_3 -->
-### Task 3: `protectTool`
+### Task 3: `guardTool`
 
 **Verifies:** `guard-sdk-namespaces.AC4.1`–`AC4.7` (implementation; tests follow)
 
 **Files:**
-- Create: `arcjet-guard/src/vercel-ai/v7/protect-tool.ts`
+- Create: `arcjet-guard/src/vercel-ai/v7/guard-tool.ts`
 
 **Implementation:**
 
-Move `arcjet-ai/src/protect-tool.ts`. It keeps its AI SDK imports
+Move `arcjet-ai/src/guard-tool.ts`. It keeps its AI SDK imports
 (`jsonSchema` value import from `ai`; `InferToolInput`, `InferToolOutput`, `Tool`
 type imports). Change everything else to source-relative:
 
@@ -191,6 +195,29 @@ stale self-reference.
 `@arcjet/guard/vercel-ai/v7` and `createAgentContext`. Phase 5 Task 5
 compile-checks it.
 
+**New behaviour — `onGuardError`.** Add `onGuardError?: "allow" | "deny"` to
+`GuardToolPolicy` (default `"allow"`), and pass it through to `runGuarded`
+(Phase 2 Task 7 added the parameter and the `onUnavailable` callback).
+
+Supply `onUnavailable` so that on a guard outage with `"deny"` the model receives
+the **same** `ArcjetDenialResult` shape as a real denial, distinguished by its
+reason:
+
+```ts
+{
+  arcjetDenied: true,
+  reason: "ERROR",
+  message: "<explains the security check could not be completed; retry later>",
+  retryable: true,
+}
+```
+
+No `retryAfterSeconds` — there is no reset time for an outage. Keeping one result
+type is deliberate: a model only ever observes tool results, and a second shape
+would be harder to prompt against. `policy.onDeny`, if supplied, must **not** be
+invoked for the outage path — it receives a `DecisionDeny`, and there is no
+decision here. Document that explicitly in the JSDoc.
+
 **Rename the four runtime message strings** (see phase_02 convention 8 for the
 full table and rationale). In this file:
 
@@ -198,8 +225,8 @@ full table and rationale). In this file:
 |---|---|---|
 | 88 | `"@arcjet/ai: toolsContext entry is not an ArcjetAiContext"` | `"@arcjet/guard: toolsContext entry is not an ArcjetAgentContext"` |
 | 107 | `` `@arcjet/ai: tool call "${action}" has no ArcjetAiContext; ` `` | `` `@arcjet/guard: tool call "${action}" has no ArcjetAgentContext; ` `` |
-| 178 | `"@arcjet/ai: protectTool() requires …"` | `"@arcjet/guard: protectTool() requires …"` |
-| 182 | `"@arcjet/ai: protectTool() cannot wrap …"` | `"@arcjet/guard: protectTool() cannot wrap …"` |
+| 178 | `"@arcjet/ai: guardTool() requires …"` | `"@arcjet/guard: guardTool() requires …"` |
+| 182 | `"@arcjet/ai: guardTool() cannot wrap …"` | `"@arcjet/guard: guardTool() cannot wrap …"` |
 
 Lines 88 and 107 change **two** things each — the prefix and the embedded type
 name. Three migrated tests assert the line-107 substring; Tasks 4 and 5 update
@@ -210,7 +237,7 @@ The `Symbol.for("arcjet:ai:protected-tool")` brand key in
 `agents/internal.ts` is **deliberately unchanged.** It is a registered-symbol
 contract shared across module boundaries, AC5.2 does not cover it, and it
 legitimately describes AI-SDK tool protection. Do not "tidy" it — a mismatch
-between the symbol written by `protectTool` and the one read by `aiToolsContext`
+between the symbol written by `guardTool` and the one read by `aiToolsContext`
 would silently drop context for every tool.
 
 Preserve exactly, as all of these are tested:
@@ -237,21 +264,21 @@ cd arcjet-guard && npm run typecheck && npm run lint
 ```
 Expected: no errors.
 
-**Commit:** `refactor(guard): move protectTool into the vercel-ai/v7 namespace`
+**Commit:** `refactor(guard): move guardTool into the vercel-ai/v7 namespace`
 <!-- END_TASK_3 -->
 
 <!-- START_TASK_4 -->
-### Task 4: `protectTool` tests
+### Task 4: `guardTool` tests
 
 **Verifies:** `guard-sdk-namespaces.AC4.1`, `AC4.2`, `AC4.3`, `AC4.4`, `AC4.5`, `AC4.7`
 
 **Files:**
-- Create: `arcjet-guard/src/vercel-ai/v7/protect-tool.test.ts` (unit)
+- Create: `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` (unit)
 
 **Implementation:**
 
-Move `arcjet-ai/test/protect-tool.test.ts` (22 tests). Retarget imports:
-subjects from `./protect-tool.ts`, `createAgentContext` from
+Move `arcjet-ai/test/guard-tool.test.ts` (22 tests). Retarget imports:
+subjects from `./guard-tool.ts`, `createAgentContext` from
 `../../agents/context.ts`, fixtures from `../../../test/_shared/stub-client.ts`
 and `../../../test/_shared/log-level.ts`. Rename `createAiContext` →
 `createAgentContext`.
@@ -285,6 +312,12 @@ Preserve all existing assertions. They map to the ACs as follows:
 - `AC4.7`: the injected `contextSchema.validate()` accepts `undefined`, a
   well-formed context, and string metadata; rejects a numeric `correlationId`,
   non-string metadata values, and non-object metadata
+- `AC4.11` (new cases): guard throws with `onGuardError: "deny"` → `execute` is
+  never called, the returned result is
+  `{ arcjetDenied: true, reason: "ERROR", retryable: true }` with no
+  `retryAfterSeconds`, and capture fires once with `outcome: "denied"`. Also assert
+  that a supplied `policy.onDeny` is **not** called on this path, and that with
+  `onGuardError` omitted the existing fail-open behaviour is unchanged.
 - plus: capture-only mode (absent/empty `rules` skips the guard), the
   missing-`experimental_capture` warning, both wrap-time throws, and
   rules/metadata supplied as functions of the input
@@ -296,9 +329,9 @@ Keep `setLogLevel(...)` with restore in `finally` throughout.
 ```bash
 cd arcjet-guard && npm run test-unit
 ```
-Expected: 22 protect-tool tests pass.
+Expected: 22 guard-tool tests pass.
 
-**Commit:** `test(guard): move protectTool tests into vercel-ai/v7`
+**Commit:** `test(guard): move guardTool tests into vercel-ai/v7`
 <!-- END_TASK_4 -->
 
 <!-- START_TASK_5 -->
@@ -318,7 +351,7 @@ Move both files with the same import retargeting as Task 4.
 first-occurrence-versus-later behaviour of the module-level
 `warnedMissingToolsContext` flag, which is only deterministic because
 `node --test` runs each file in its own process. Merging it into
-`protect-tool.test.ts` would make the ordering depend on unrelated tests. The
+`guard-tool.test.ts` would make the ordering depend on unrelated tests. The
 existing file carries a comment saying exactly this — preserve it.
 
 `generate-text.test.ts` drives the real `generateText` loop with
@@ -330,7 +363,7 @@ paths.
 **Update the message assertions in both files** to match Task 3's rename:
 `generate-text.test.ts:176` and `warn-missing-context.test.ts:44` each assert
 `JSON.stringify(...).includes("no ArcjetAiContext")` and become
-`"no ArcjetAgentContext"`. Together with `protect-tool.test.ts:539` (Task 4) these
+`"no ArcjetAgentContext"`. Together with `guard-tool.test.ts:539` (Task 4) these
 are the complete set of three assertions coupled to that message.
 
 - `AC4.6` (warn-missing-context, 2 tests): with `ARCJET_LOG_LEVEL` unset, the
@@ -365,8 +398,8 @@ Expected: 2 + 3 tests pass.
 **Implementation:**
 
 ```ts
-export { protectTool } from "./protect-tool.ts";
-export type { ArcjetDenialResult, ProtectToolPolicy } from "./protect-tool.ts";
+export { guardTool } from "./guard-tool.ts";
+export type { ArcjetDenialResult, GuardToolPolicy } from "./guard-tool.ts";
 export { aiToolsContext } from "./tools-context.ts";
 export * from "../../agents/index.ts";
 ```
@@ -403,11 +436,11 @@ Expected: builds clean, both files present.
 
 **Implementation and testing:**
 
-- `AC1.3`: assert the namespace exports `protectTool` and `aiToolsContext` as
+- `AC1.3`: assert the namespace exports `guardTool` and `aiToolsContext` as
   functions.
 - `AC1.4`: import the namespace and `../../agents/index.ts` and assert
   `assert.strictEqual` between each shared export from both paths —
-  `protectAction`, `captureAction`, `securityMetadata`, `createAgentContext`,
+  `guardAction`, `captureAction`, `securityMetadata`, `createAgentContext`,
   `ArcjetDeniedError`. Same object identity, not merely same behaviour. Also
   assert the namespace's key set is a strict superset of the agents barrel's.
 - `AC1.5` / `AC1.6`: assert against the **export map**, statically. Read
@@ -448,7 +481,7 @@ records this deferral.
 
 **`AC2.3`** (v7 import fails when `ai` is absent) likewise cannot be proven in a
 workspace where `ai` is a devDependency. Assert the *static* precondition here —
-that `protect-tool.ts` and `tools-context.ts` do import from `ai` /
+that `guard-tool.ts` and `tools-context.ts` do import from `ai` /
 `@ai-sdk/provider-utils`, so the failure would be a genuine module-resolution
 error (`ERR_MODULE_NOT_FOUND`) rather than a silent no-op. The live proof is
 Phase 6 Task 2 Step 3, against a packed tarball in a project with no AI SDK.
@@ -468,18 +501,20 @@ Expected: all pass. Cumulative new tests for this phase: 1 + 22 + 2 + 3 + ~6.
 
 ## Phase 3 exit checklist
 
-- [ ] `src/vercel-ai/v7/` contains `protect-tool.ts`, `tools-context.ts`,
+- [ ] `src/vercel-ai/v7/` contains `guard-tool.ts`, `tools-context.ts`,
       `index.ts` and their `.test.ts` files
 - [ ] `index.ts` uses `export *` from the agents barrel (identity preserved)
 - [ ] `package.json` still has no `./vercel-ai` key and no wildcard
 - [ ] no remaining `from "@arcjet/guard"` imports in moved files or their tests —
       all retargeted to `../../types.ts`
-- [ ] `protect-tool.ts`'s JSDoc `@example` rewritten; no `@arcjet/ai` or
+- [ ] `guard-tool.ts`'s JSDoc `@example` rewritten; no `@arcjet/ai` or
       `createAiContext` left
-- [ ] the 4 runtime message strings in `protect-tool.ts` renamed to
+- [ ] `onGuardError` threaded into `guardTool`; outage returns
+      `reason: "ERROR"` / `retryable: true`; `onDeny` not invoked on that path
+- [ ] the 4 runtime message strings in `guard-tool.ts` renamed to
       `@arcjet/guard:` / `ArcjetAgentContext`
 - [ ] all 3 coupled test assertions updated to `"no ArcjetAgentContext"`
-      (`protect-tool.test.ts`, `generate-text.test.ts`, `warn-missing-context.test.ts`)
+      (`guard-tool.test.ts`, `generate-text.test.ts`, `warn-missing-context.test.ts`)
 - [ ] `Symbol.for("arcjet:ai:protected-tool")` left unchanged (deliberate)
 - [ ] all four root entry files are byte-identical to `main` (AC1.1) — every
       pathspec must be repo-root-relative or it silently matches nothing:
