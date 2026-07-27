@@ -1674,6 +1674,53 @@ export type RuleWithInput =
   | RuleWithInputSensitiveInfo
   | RuleWithInputCustom;
 
+/** Options for a `.capture()` call. */
+export interface CaptureOptions {
+  /**
+   * The fact itself: what the application did, in customer vocabulary.
+   *
+   * Convention: `"resource.verb"`, past tense (for example
+   * `"refund.issued"`).
+   */
+  action: string;
+  /**
+   * Optional, caller-supplied opaque identifier used to correlate this event
+   * with other `guard()`, `protect()`, and `capture()` calls in the same
+   * workflow.
+   *
+   * This is never inherited from ambient context.
+   */
+  correlationId?: string;
+  /**
+   * Optional join key referencing the decision this action relates to.
+   */
+  decisionId?: string;
+  /**
+   * When the action occurred. Defaults to the time of the `capture()` call.
+   *
+   * This timestamp is informational and untrusted; the server records its own
+   * authoritative receive time.
+   *
+   * Must be at or after the Unix epoch. The wire field is unsigned, so a
+   * pre-1970 date cannot be represented — it is dropped and reported as a
+   * warning on the event rather than sent as a negative or wrapped value.
+   */
+  occurredAt?: Date;
+  /**
+   * Metadata for correlation and analytics.
+   *
+   * Values may be any JSON-serializable value, including nested objects and
+   * arrays. The same limits and warning behavior as
+   * {@link GuardOptions.metadata} apply.
+   *
+   * This must be a plain object. A class instance is dropped and reported as a
+   * warning even when it would serialize cleanly, because accepting arbitrary
+   * prototypes means running getters we don't control while reading it. Spread
+   * it first (`{ ...instance }`) or convert it yourself.
+   */
+  metadata?: ArcjetMetadata;
+}
+
 /** Options for a `.guard()` call. */
 export interface GuardOptions {
   /**

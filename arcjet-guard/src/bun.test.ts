@@ -35,9 +35,10 @@ describe("bun entrypoint", () => {
     assert.equal(typeof launchArcjetWithTransport, "function");
   });
 
-  test("launchArcjet returns an object with .guard()", () => {
+  test("launchArcjet returns an object with .guard() and .capture()", () => {
     const arcjet = launchArcjet({ key: "ajkey_test" });
 
     assert.equal(typeof arcjet.guard, "function");
+    assert.equal(typeof arcjet.capture, "function");
   });
 });

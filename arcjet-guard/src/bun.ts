@@ -86,6 +86,7 @@ export {
   type DecisionBase,
   type RuleWithInput,
   type RuleWithConfig,
+  type CaptureOptions,
   type GuardOptions,
   type LaunchOptions,
   type ArcjetGuard,

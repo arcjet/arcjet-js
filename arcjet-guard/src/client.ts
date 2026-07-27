@@ -16,18 +16,22 @@ import {
 
 import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
 import {
+  type ArcjetMetadata,
   type LocalWarning,
   encodeMetadata,
   enforceMetadataBudget,
 } from "./metadata.ts";
 import {
   DecideService,
+  CaptureEventSchema,
+  CaptureRequestSchema,
   GuardRequestSchema,
   type GuardResponse,
   WarningSchema,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
+  CaptureOptions,
   Decision,
   GuardOptions,
   InternalDecision,
@@ -36,6 +40,17 @@ import type {
   Warning,
 } from "./types.ts";
 import { userAgent as defaultUserAgent } from "./version.ts";
+
+/**
+ * The `source` set on every event this SDK produces from an explicit
+ * `capture()` call, recording where the event came from.
+ *
+ * An open string on the wire rather than an enum, because the set of producers
+ * isn't fixed — a future span-conversion path sends `"otlp"`. The server never
+ * substitutes a default, so an SDK that sends nothing leaves the origin
+ * unknown, which is deliberately distinct from `"sdk"`.
+ */
+const CAPTURE_SOURCE_SDK = "sdk";
 
 /** Options for creating a guard client. */
 export interface GuardClientOptions {
@@ -48,13 +63,13 @@ export interface GuardClientOptions {
 }
 
 /**
- * Create a guard client that calls the Guard RPC.
+ * Create a guard client that calls the Guard and Capture RPCs.
  *
- * Returns an object with a single `guard()` method. The client is
- * stateless — it can be shared across requests.
+ * The client can be shared across requests.
  */
 export function createGuardClient(options: GuardClientOptions): {
   guard(opts: GuardOptions): Promise<Decision>;
+  capture(opts: CaptureOptions): void;
 } {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
@@ -182,7 +197,180 @@ export function createGuardClient(options: GuardClientOptions): {
         return failOpen(message, toWarnings(warnings));
       }
     },
+
+    /** Record a fact about what the application did. */
+    capture(opts: CaptureOptions): void {
+      // Capture is a never-throw, best-effort API. Plain JavaScript callers can
+      // bypass the TypeScript types, and proxies/getters can throw while values
+      // are inspected, so the entire normalization path stays inside this
+      // boundary.
+      try {
+        const normalized = normalizeCaptureOptions(opts);
+        if (normalized === undefined) {
+          return;
+        }
+
+        const sentAtUnixMs = BigInt(Date.now());
+        const occurredAtUnixMs =
+          normalized.occurredAt === undefined
+            ? sentAtUnixMs
+            : BigInt(normalized.occurredAt.getTime());
+        const encoded = encodeMetadata(normalized.metadata);
+        const warnings = [
+          ...normalized.localWarnings,
+          ...encoded.localWarnings,
+          ...enforceMetadataBudget([encoded.metadataJson]),
+        ];
+
+        const event = create(CaptureEventSchema, {
+          occurredAtUnixMs,
+          correlationId: normalized.correlationId ?? "",
+          decisionId: normalized.decisionId ?? "",
+          action: normalized.action,
+          metadataJson: encoded.metadataJson,
+          localWarnings: warnings.map((warning) => create(WarningSchema, warning)),
+          // Where the event came from. This method is the explicit-call path, so
+          // it is always "sdk"; a future span-conversion path sets "otlp". Not a
+          // caller option on purpose — the producer decides, not the caller.
+          //
+          // The server never defaults this, so sending nothing would leave the
+          // event's origin unknown rather than merely unstated.
+          source: CAPTURE_SOURCE_SDK,
+        });
+
+        const captureRequest = create(CaptureRequestSchema, {
+          userAgent,
+          sentAtUnixMs,
+          events: [event],
+        });
+
+        client
+          .capture(captureRequest, {
+            headers: { Authorization: `Bearer ${key}` },
+            timeoutMs: 1000,
+          })
+          // oxlint-disable-next-line promise/always-return -- best-effort background send
+          .then(() => {})
+          .catch(() => {
+            // Delivery diagnostics and batching are added by the next stack
+            // layer. Until then, a failed best-effort send is dropped.
+          });
+      } catch {
+        // Invalid or adversarial input is dropped and never reaches application
+        // control flow.
+      }
+    },
   };
+}
+
+/**
+ * Normalize a capture envelope without letting one invalid optional field drop
+ * the whole event.
+ *
+ * Metadata values are validated by `encodeMetadata`: a value that cannot be
+ * represented as JSON drops only that key and becomes a per-event warning.
+ */
+function normalizeCaptureOptions(value: unknown):
+  | {
+      action: string;
+      correlationId?: string;
+      decisionId?: string;
+      occurredAt?: Date;
+      metadata?: ArcjetMetadata;
+      localWarnings: LocalWarning[];
+    }
+  | undefined {
+  if (!isPlainObject(value)) {
+    return;
+  }
+
+  const action = readProperty(value, "action");
+  if (!action.ok || typeof action.value !== "string" || action.value.length === 0) {
+    return;
+  }
+
+  const normalized: {
+    action: string;
+    correlationId?: string;
+    decisionId?: string;
+    occurredAt?: Date;
+    metadata?: ArcjetMetadata;
+    localWarnings: LocalWarning[];
+  } = {
+    action: action.value,
+    localWarnings: [],
+  };
+
+  const correlationId = readProperty(value, "correlationId");
+  if (correlationId.ok && typeof correlationId.value === "string") {
+    normalized.correlationId = correlationId.value;
+  } else if (!correlationId.ok || correlationId.value !== undefined) {
+    normalized.localWarnings.push(captureOptionDropped("correlationId"));
+  }
+
+  const decisionId = readProperty(value, "decisionId");
+  if (decisionId.ok && typeof decisionId.value === "string") {
+    normalized.decisionId = decisionId.value;
+  } else if (!decisionId.ok || decisionId.value !== undefined) {
+    normalized.localWarnings.push(captureOptionDropped("decisionId"));
+  }
+
+  const occurredAt = readProperty(value, "occurredAt");
+  // Pre-epoch dates are rejected because the wire field is unsigned: a negative
+  // millisecond value can't be represented and would wrap to an enormous
+  // timestamp. Dropping the field and warning beats sending a wrong one.
+  if (
+    occurredAt.ok &&
+    occurredAt.value instanceof Date &&
+    Number.isFinite(occurredAt.value.getTime()) &&
+    occurredAt.value.getTime() >= 0
+  ) {
+    normalized.occurredAt = occurredAt.value;
+  } else if (!occurredAt.ok || occurredAt.value !== undefined) {
+    normalized.localWarnings.push(captureOptionDropped("occurredAt"));
+  }
+
+  const metadata = readProperty(value, "metadata");
+  if (metadata.ok && isPlainObject(metadata.value)) {
+    normalized.metadata = metadata.value;
+  } else if (!metadata.ok || metadata.value !== undefined) {
+    normalized.localWarnings.push(captureOptionDropped("metadata"));
+  }
+
+  return normalized;
+}
+
+/** Read one capture option without allowing a throwing getter to hide siblings. */
+function readProperty(
+  value: Record<string, unknown>,
+  property: string,
+): { ok: true; value: unknown } | { ok: false } {
+  try {
+    return { ok: true, value: value[property] };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/** Describe an optional capture field dropped by client-side normalization. */
+function captureOptionDropped(property: string): LocalWarning {
+  return {
+    code: "AJ1001",
+    message: `capture.${property} was invalid and was dropped by the SDK`,
+  };
+}
+
+/** Whether a value is a plain object whose properties can be inspected. */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  try {
+    const prototype: unknown = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  } catch {
+    return false;
+  }
 }
 
 /**
