@@ -117,6 +117,26 @@ describe("encodeMetadata", () => {
     assert.ok(localWarnings[0].message.endsWith('"k9", ...'));
   });
 
+  test("drop non-finite numbers, nested or not", () => {
+    // `JSON.stringify` would turn these into `null`, silently changing the value.
+    // Dropping matches arcjet-py, whose `json.dumps(allow_nan=False)` raises.
+    const { metadataJson, localWarnings } = encodeMetadata({
+      nan: Number.NaN,
+      deep: { inner: Number.POSITIVE_INFINITY },
+      ok: 1,
+    });
+    assert.deepEqual(metadataJson, { ok: "1" });
+    assert.equal(localWarnings.length, 1);
+    assert.match(localWarnings[0].message, /2 key\(s\)/);
+  });
+
+  test("escape separators and C1 controls, not plain non-ASCII", () => {
+    const { localWarnings } = encodeMetadata({
+      "a\u2028b\u0085c\u00FCd": undefined,
+    });
+    assert.match(localWarnings[0].message, /"a\\u2028b\\x85c\u00FCd"/);
+  });
+
   test("drop a circular reference with a warning", () => {
     const cycle: Record<string, unknown> = {};
     cycle["self"] = cycle;

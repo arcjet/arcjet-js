@@ -12,8 +12,9 @@
  * key-name validity — are enforced server-side (they are configurable per
  * account and can be raised), and every key the server drops is recorded with
  * the decision. The one drop the SDK must make itself is a value
- * `JSON.stringify` cannot represent: `undefined`, a function, a symbol, a
- * `BigInt`, or a circular reference. Those are dropped with an `AJ1017` warning
+ * `JSON.stringify` cannot represent faithfully: `undefined`, a function, a
+ * symbol, a `BigInt`, a circular reference, or a non-finite number (`NaN`,
+ * `Infinity`). Those are dropped with an `AJ1017` warning
  * reported to the server in `local_warnings` so the drop is never silent.
  *
  * Encoding never throws and never affects a decision: a bad value costs you
@@ -84,6 +85,20 @@ function isPlainObject(value: unknown): value is ArcjetMetadata {
 }
 
 /**
+ * Whether a code point must be escaped before it goes in a warning message.
+ *
+ * C0 controls, DEL, the C1 range, and the Unicode line/paragraph separators are
+ * the characters that can break a log line or a JSON-ish log record. Everything
+ * else, including ordinary non-ASCII text, is echoed as-is.
+ *
+ * Kept identical to `_needs_escape` in arcjet-py so both SDKs render the same
+ * warning for the same key.
+ */
+function needsEscape(code: number): boolean {
+  return code < 0x20 || (code >= 0x7f && code <= 0x9f) || code === 0x2028 || code === 0x2029;
+}
+
+/**
  * Render a metadata key for inclusion in a warning message.
  *
  * Keys are user-controlled, and warnings end up in application logs and in
@@ -94,14 +109,33 @@ function sanitizeKey(key: string): string {
   let escaped = "";
   for (const character of key) {
     const code = character.codePointAt(0) ?? 0;
-    // Control characters (C0 plus DEL) are the log-forging risk; everything else,
-    // including non-ASCII, is fine to echo back.
-    escaped +=
-      code < 0x20 || code === 0x7f ? `\\x${code.toString(16).padStart(2, "0")}` : character;
+    if (!needsEscape(code)) {
+      escaped += character;
+    } else if (code <= 0xff) {
+      escaped += `\\x${code.toString(16).padStart(2, "0")}`;
+    } else {
+      escaped += `\\u${code.toString(16).padStart(4, "0")}`;
+    }
   }
   return escaped.length > MAX_REPORTED_KEY_LENGTH
     ? `${escaped.slice(0, MAX_REPORTED_KEY_LENGTH)}...`
     : escaped;
+}
+
+/**
+ * `JSON.stringify` replacer that refuses non-finite numbers.
+ *
+ * `JSON.stringify` turns `NaN` and `Infinity` into `null`, which would silently
+ * change the value. Throwing instead drops the key with a warning, matching
+ * arcjet-py (whose `json.dumps(allow_nan=False)` raises). The replacer runs
+ * inside the serialization `JSON.stringify` already performs, so this costs no
+ * extra traversal.
+ */
+function rejectNonFinite(_key: string, value: unknown): unknown {
+  if (typeof value === "number" && !Number.isFinite(value)) {
+    throw new TypeError("non-finite number");
+  }
+  return value;
 }
 
 /**
@@ -142,9 +176,9 @@ export function encodeMetadata(
   for (const [key, value] of entries) {
     let encoded: string | undefined;
     try {
-      encoded = JSON.stringify(value);
+      encoded = JSON.stringify(value, rejectNonFinite);
     } catch {
-      // Circular references and BigInt both throw TypeError.
+      // Circular references, BigInt, and non-finite numbers all throw TypeError.
       encoded = undefined;
     }
 

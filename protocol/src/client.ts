@@ -11,6 +11,7 @@ import {
   type ArcjetContext,
   type ArcjetRequestDetails,
   type ArcjetRule,
+  type ArcjetLogger,
   type ArcjetStack,
   ArcjetDecision,
 } from "./index.js";
@@ -30,7 +31,10 @@ import {
  * The server enforces the count, size, depth, and key-name limits on what
  * survives. Neither the metadata nor the warnings can affect the decision.
  */
-function requestFields(details: ArcjetRequestDetails): {
+function requestFields(
+  details: ArcjetRequestDetails,
+  log: ArcjetLogger,
+): {
   metadataJson: Record<string, string>;
   localWarnings: ReturnType<typeof create<typeof WarningSchema>>[];
 } {
@@ -40,6 +44,14 @@ function requestFields(details: ArcjetRequestDetails): {
   // before sending, not a metadata-specific one. Metadata is the only source
   // today; future sources append to this list.
   const warnings: LocalWarning[] = [...encoded.localWarnings];
+
+  for (const warning of warnings) {
+    // `protect()` has no warning channel on its decision, so surface these
+    // locally too. The message names only the offending keys, escaped and
+    // length-bounded by `encodeMetadata`, so a key containing control
+    // characters cannot forge a log entry.
+    log.warn("%s", warning.message);
+  }
 
   return {
     metadataJson: encoded.metadataJson,
@@ -163,7 +175,7 @@ export function createClient(options: ClientOptions): Client {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
-        ...requestFields(details),
+        ...requestFields(details, log),
         // `email` is an optional field but not allowed to be `undefined`.
         details:
           typeof details.email === "string"
@@ -224,7 +236,7 @@ export function createClient(options: ClientOptions): Client {
         sdkStack,
         sdkVersion,
         characteristics: context.characteristics,
-        ...requestFields(details),
+        ...requestFields(details, log),
         // `email` is an optional field but not allowed to be `undefined`.
         details:
           typeof details.email === "string"
