@@ -4,8 +4,8 @@
  * These are shared across `@arcjet/guard` test suites for consistent,
  * properly typed stub decisions and capture tracking.
  *
- * Every factory below asserts through `unknown` because it deliberately builds
- * only the fields its suites read; the real `Decision` and `RuleWithInput`
+ * The decision builders below assert through `unknown` because they deliberately
+ * build only the fields their suites read; the real `Decision` and `RuleWithInput`
  * carry many more.
  */
 

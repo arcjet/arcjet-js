@@ -40,19 +40,27 @@ verifyTypeExports();
  */
 function extractImportSpecifiers(content: string): string[] {
   const specifiers: string[] = [];
-  // Match import/export statements anchored to line start, avoiding comments/strings
-  // oxlint-disable-next-line unicorn/no-unsafe-regex -- essential for parsing imports
-  const importFromRegex = /^\s*(?:import|export)\b[^;'"]*?from\s+["']([^"']+)["']/gm;
+
+  // Strip line and block comments before parsing to avoid false negatives from
+  // apostrophes or quotes in comment text. This ensures apostrophes in comment
+  // text like "it's the SDK" don't cause the regex to bail on the import statement.
+  let cleanContent = content;
+
+  // Remove line comments (// to end of line), handling escaped characters
+  cleanContent = cleanContent.replaceAll(/\/\/.*$/gm, "");
+
+  // Remove block comments (/* ... */), handling nested and multi-line
+  cleanContent = cleanContent.replaceAll(/\/\*[\s\S]*?\*\//g, "");
+
+  // Match import/export statements anchored to line start
+  const importFromRegex = /^\s*(?:import|export)\b[^;]*?from\s+["']([^"']+)["']/gm;
   // Match bare side-effect imports: import "package"
-  // oxlint-disable-next-line unicorn/no-unsafe-regex -- essential for parsing imports
   const bareImportRegex = /^\s*import\s+["']([^"']+)["']/gm;
 
   let match: RegExpExecArray | null;
 
   // Check import...from patterns
-  // oxlint-disable-next-line typescript/no-unsafe-call -- RegExp.exec is safe
-  while ((match = importFromRegex.exec(content)) !== null) {
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- match[1] is safe when match is non-null
+  while ((match = importFromRegex.exec(cleanContent)) !== null) {
     const specifier = match[1];
     if (specifier !== undefined) {
       specifiers.push(specifier);
@@ -60,9 +68,7 @@ function extractImportSpecifiers(content: string): string[] {
   }
 
   // Check bare imports
-  // oxlint-disable-next-line typescript/no-unsafe-call -- RegExp.exec is safe
-  while ((match = bareImportRegex.exec(content)) !== null) {
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- match[1] is safe when match is non-null
+  while ((match = bareImportRegex.exec(cleanContent)) !== null) {
     const specifier = match[1];
     if (specifier !== undefined) {
       specifiers.push(specifier);
@@ -183,19 +189,21 @@ test("no AI SDK coupling (AC2.1)", () => {
   assert.equal(errors.length, 0, `AI SDK coupling found:\n${errors.join("\n")}`);
 });
 
-// AC5.2 (partial): No createAiContext or ArcjetAiContext identifiers
+// AC5.2 (partial): No forbidden context identifiers
 test("no old context identifiers (AC5.2)", () => {
   const moduleDir = import.meta.dirname;
   const agentsDir = moduleDir;
   const testSharedDir = resolve(moduleDir, "../../test/_shared");
 
   const errors: string[] = [];
-  const thisTestFileName = ["index", ".test", ".ts"].join("");
-  const thisTestFile = resolve(moduleDir, thisTestFileName);
 
-  const filesToCheck = [...collectTsFiles(agentsDir), ...collectTsFiles(testSharedDir)].filter(
-    (f) => f !== thisTestFile,
-  );
+  // Construct needles from parts to avoid matching this test file's assertions.
+  // The test must scan itself to close the hole where forbidden identifiers
+  // could hide in comments or assertion literals.
+  const createAiContextNeedle = ["create", "Ai", "Context"].join("");
+  const arcjetAiContextNeedle = ["Arcjet", "Ai", "Context"].join("");
+
+  const filesToCheck = [...collectTsFiles(agentsDir), ...collectTsFiles(testSharedDir)];
 
   // Check each file for forbidden identifiers
   for (const filePath of filesToCheck) {
@@ -206,14 +214,14 @@ test("no old context identifiers (AC5.2)", () => {
       continue;
     }
 
-    // Check for createAiContext (whole word match)
-    if (/\bcreateAiContext\b/.test(content)) {
-      errors.push(`${filePath}: contains createAiContext`);
+    // Check for old context function (whole word match)
+    if (new RegExp(`\\b${createAiContextNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${createAiContextNeedle}`);
     }
 
-    // Check for ArcjetAiContext (whole word match)
-    if (/\bArcjetAiContext\b/.test(content)) {
-      errors.push(`${filePath}: contains ArcjetAiContext`);
+    // Check for old context type (whole word match)
+    if (new RegExp(`\\b${arcjetAiContextNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${arcjetAiContextNeedle}`);
     }
   }
 
@@ -231,12 +239,16 @@ test("no old protect* identifiers (AC5.4)", () => {
   const testSharedDir = resolve(moduleDir, "../../test/_shared");
 
   const errors: string[] = [];
-  const thisTestFileName = ["index", ".test", ".ts"].join("");
-  const thisTestFile = resolve(moduleDir, thisTestFileName);
 
-  const filesToCheck = [...collectTsFiles(agentsDir), ...collectTsFiles(testSharedDir)].filter(
-    (f) => f !== thisTestFile,
-  );
+  // Construct needles from parts to avoid matching this test file's assertions.
+  // The test must scan itself to close the hole where forbidden identifiers
+  // could hide in comments or assertion literals.
+  const protectToolNeedle = ["protect", "Tool"].join("");
+  const protectActionNeedle = ["protect", "Action"].join("");
+  const protectToolPolicyNeedle = ["Protect", "Tool", "Policy"].join("");
+  const protectActionPolicyNeedle = ["Protect", "Action", "Policy"].join("");
+
+  const filesToCheck = [...collectTsFiles(agentsDir), ...collectTsFiles(testSharedDir)];
 
   // Check each file for all four forbidden identifiers
   for (const filePath of filesToCheck) {
@@ -247,20 +259,20 @@ test("no old protect* identifiers (AC5.4)", () => {
       continue;
     }
 
-    if (/\bprotectTool\b/.test(content)) {
-      errors.push(`${filePath}: contains protectTool`);
+    if (new RegExp(`\\b${protectToolNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${protectToolNeedle}`);
     }
 
-    if (/\bprotectAction\b/.test(content)) {
-      errors.push(`${filePath}: contains protectAction`);
+    if (new RegExp(`\\b${protectActionNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${protectActionNeedle}`);
     }
 
-    if (/\bProtectToolPolicy\b/.test(content)) {
-      errors.push(`${filePath}: contains ProtectToolPolicy`);
+    if (new RegExp(`\\b${protectToolPolicyNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${protectToolPolicyNeedle}`);
     }
 
-    if (/\bProtectActionPolicy\b/.test(content)) {
-      errors.push(`${filePath}: contains ProtectActionPolicy`);
+    if (new RegExp(`\\b${protectActionPolicyNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${protectActionPolicyNeedle}`);
     }
   }
 

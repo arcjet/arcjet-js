@@ -47,7 +47,6 @@ import { runGuarded } from "./guarded.ts";
  * }
  * ```
  */
-// oxlint-disable-next-line eslint/max-classes-per-file -- Both errors and exceptions must be exported from this module
 export class ArcjetDeniedError extends Error {
   readonly decision: DecisionDeny;
 

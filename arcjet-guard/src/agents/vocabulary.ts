@@ -59,16 +59,36 @@ export interface SecurityMetadataFields {
 /**
  * Maps each field to its guard wire key. Every key is its own name except
  * `dataClass`, which becomes the hyphenated `data-class`.
+ *
+ * The `satisfies` constraint ensures that every field of SecurityMetadataFields
+ * has a corresponding wire key: omitting any field is a compile error, not a
+ * runtime test failure.
  */
-const WIRE_KEYS = new Map<keyof SecurityMetadataFields, string>([
-  ["user", "user"],
-  ["agent", "agent"],
-  ["workflow", "workflow"],
-  ["dataClass", "data-class"],
-  ["destination", "destination"],
-  ["reversibility", "reversibility"],
-  ["resource", "resource"],
-]);
+const WIRE_KEYS = {
+  user: "user",
+  agent: "agent",
+  workflow: "workflow",
+  dataClass: "data-class",
+  destination: "destination",
+  reversibility: "reversibility",
+  resource: "resource",
+} as const satisfies Record<keyof SecurityMetadataFields, string>;
+
+/**
+ * Iterate wire keys with proper typing. The `satisfies` constraint on WIRE_KEYS
+ * ensures exhaustiveness; this helper preserves that constraint without requiring
+ * assertions at the call site.
+ */
+function* wireKeyEntries(): Generator<
+  [keyof SecurityMetadataFields, string]
+> {
+  for (const [field, wireKey] of Object.entries(WIRE_KEYS)) {
+    // The satisfies constraint guarantees that all keys in WIRE_KEYS match the
+    // fields of SecurityMetadataFields, so this cast is safe.
+    // eslint-disable-next-line typescript/no-unsafe-type-assertion
+    yield [field as keyof SecurityMetadataFields, wireKey];
+  }
+}
 
 /**
  * Map security metadata fields to their wire keys for Arcjet guard evaluation.
@@ -100,7 +120,9 @@ export function securityMetadata(
 ): ArcjetMetadata {
   const result: Record<string, string> = {};
 
-  for (const [field, wireKey] of WIRE_KEYS) {
+  // Iterate the wire keys mapping using the helper, which is compile-time
+  // verified to be exhaustive by the `satisfies` constraint on WIRE_KEYS.
+  for (const [field, wireKey] of wireKeyEntries()) {
     const value = fields[field];
     if (value !== undefined) {
       result[wireKey] = value;

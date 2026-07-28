@@ -64,16 +64,18 @@ export interface ArcjetAgentContext {
  *
  * @example
  * ```ts
- * import { createAgentContext, guardAction } from "@arcjet/guard/agents";
+ * import { launchArcjet, tokenBucket } from "@arcjet/guard";
+ * import { createAgentContext } from "@arcjet/guard/agents";
  *
  * // In a request handler with a request-scoped context:
- * const ctx = createAgentContext();
- * const result = await guardAction(
- *   client,
- *   ctx,
- *   { action: "comment.posted", rules: [limit({ key: userId })] },
- *   async () => postComment(body),
- * );
+ * const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+ * const limit = tokenBucket({
+ *   refillRate: 5,
+ *   intervalSeconds: 60,
+ *   maxTokens: 5,
+ * });
+ *
+ * const ctx = createAgentContext({ correlationId: "workflow-123" });
  * ```
  *
  * @param init - Optional initialization object with `correlationId` and `metadata`
