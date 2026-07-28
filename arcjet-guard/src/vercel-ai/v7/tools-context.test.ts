@@ -4,7 +4,6 @@ import { test } from "node:test";
 import { aiToolsContext } from "./tools-context.ts";
 import { createAgentContext } from "../../agents/context.ts";
 
-// oxlint-disable-next-line eslint/require-await -- Test function has no async operations
 test("aiToolsContext: includes only branded tools", () => {
   const ctx = createAgentContext({ correlationId: "test_123" });
   const brandSymbol = Symbol.for("arcjet:ai:protected-tool");
