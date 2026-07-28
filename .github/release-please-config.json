@@ -36,10 +36,6 @@
       "component": "@arcjet/analyze",
       "skip-github-release": true
     },
-    "arcjet-ai": {
-      "component": "@arcjet/ai",
-      "skip-github-release": true
-    },
     "arcjet-astro": {
       "component": "@arcjet/astro",
       "skip-github-release": true,
@@ -273,9 +269,8 @@
       "groupName": "arcjet-js",
       "components": [
         "root",
-        "@arcjet/ai",
-        "@arcjet/analyze",
         "@arcjet/analyze-wasm",
+        "@arcjet/analyze",
         "@arcjet/astro",
         "@arcjet/body",
         "@arcjet/bun",
