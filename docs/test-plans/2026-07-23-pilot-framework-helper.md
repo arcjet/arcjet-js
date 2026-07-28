@@ -1,25 +1,25 @@
-# Human Test Plan — Pilot Framework Helper (`@arcjet/ai`)
+# Human Test Plan — Pilot Framework Helper (`@arcjet/guard`)
 
 Generated from the 2026-07-23 pilot-framework-helper implementation.
 Automated coverage: 25/25 acceptance criteria covered by
-`arcjet-ai/test/*.test.ts` (47 tests) and the `nextjs-ai-agent` CI build.
+`arcjet-guard/src/agents/*.test.ts` and `arcjet-guard/src/vercel-ai/v7/*.test.ts` (51 tests) and the `nextjs-ai-agent` CI build.
 This plan covers the two human-verification criteria and live E2E
 confirmations of behavior the automated tests exercise against stubs.
 
 ## Prerequisites
 
 - Node 22, repo installed and built: from repo root `npm ci && npm run build`.
-- `arcjet-ai` automated gate green: `cd arcjet-ai && npm run test` → 47 pass, 0 fail.
+- `arcjet-guard` automated gate green: `cd arcjet-guard && npm run test-unit` → 51 pass, 0 fail.
 - For AC5.2: a **dev Arcjet site** (`ARCJET_KEY` from app.arcjet.com) and an
   `AI_GATEWAY_API_KEY` (Vercel AI Gateway).
-- For AC6.1: a copy of `arcjet-ai/skills/integrate-arcjet-ai/SKILL.md` and a
+- For AC6.1: a copy of `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` and a
   sample AI SDK v7 app prepared **outside** this repo.
 
 ## Phase 5: Example App — Live Run (AC5.2)
 
 | Step | Action | Expected |
 |------|--------|----------|
-| 1 | `cd examples/nextjs-ai-agent && npm ci` | Installs cleanly against built `@arcjet/ai` |
+| 1 | `cd examples/nextjs-ai-agent && npm ci` | Installs cleanly against built `@arcjet/guard` |
 | 2 | `cp .env.local.example .env.local`; set real `ARCJET_KEY` (dev site) + `AI_GATEWAY_API_KEY` | File present with live values |
 | 3 | `ARCJET_LOG_LEVEL=warn npm run dev` | Dev server on `http://localhost:3000`, no startup errors |
 | 4 | Open `http://localhost:3000`, ask "What's the status of order 42?" | Agent responds with an order status; API response includes `runId` and `correlationId` — record both |
@@ -40,7 +40,7 @@ confirmations of behavior the automated tests exercise against stubs.
 |------|--------|----------|
 | 1 | Prepare a sample AI SDK v7 app outside this repo: a `generateText` call with one or two real-`execute` tools plus one app-invoked side-effect function, no Arcjet | Baseline app runs |
 | 2 | Start a fresh coding-agent session with exactly two inputs: `SKILL.md` and the prompt "Using this skill, integrate Arcjet security into this app" | Session starts with no other context |
-| 3 | Observe the agent integrate: launch client, context at entry point, `protectTool` + `toolsContext`, `protectAction`/`captureAction`, denial line in the system prompt | Completes asking only clarifying questions; any correction of wrong API usage is a failure requiring a skill fix + re-run |
+| 3 | Observe the agent integrate: launch client, context at entry point, `guardTool` + `toolsContext`, `guardAction`/`captureAction`, denial line in the system prompt | Completes asking only clarifying questions; any correction of wrong API usage is a failure requiring a skill fix + re-run |
 | 4 | Export the transcript, reference it in the PR with a one-line verdict | Clean recorded transcript exists before merge |
 
 **Status:** AC6.1 fresh-agent run passed on 2026-07-23 — verdict "completed
@@ -81,13 +81,13 @@ the dashboard shows a DENY `RATE_LIMIT` decision under the run's
 
 | Acceptance Criterion | Automated Test | Manual Step |
 |----------------------|----------------|-------------|
-| AC1.1–AC1.4 | `arcjet-ai/test/context.test.ts` | — |
-| AC1.5, AC1.6 | `arcjet-ai/test/generate-text.test.ts` | E2E "single-run correlation" (live confirmation) |
-| AC1.7 | `arcjet-ai/test/protect-tool.test.ts` | — |
-| AC2.1–AC2.8 | `arcjet-ai/test/protect-tool.test.ts` | — |
-| AC2.9 | `arcjet-ai/test/generate-text.test.ts` | E2E "rate-limit denial" (live confirmation) |
-| AC3.1–AC3.5 | `arcjet-ai/test/protect-action.test.ts` | — |
-| AC4.1–AC4.3 | `arcjet-ai/test/metadata.test.ts` | — |
+| AC1.1–AC1.4 | `arcjet-guard/src/agents/context.test.ts` | — |
+| AC1.5, AC1.6 | `arcjet-guard/src/vercel-ai/v7/generate-text.test.ts` | E2E "single-run correlation" (live confirmation) |
+| AC1.7 | `arcjet-guard/src/agents/guard-tool.test.ts` | — |
+| AC2.1–AC2.8 | `arcjet-guard/src/agents/guard-tool.test.ts` | — |
+| AC2.9 | `arcjet-guard/src/vercel-ai/v7/generate-text.test.ts` | E2E "rate-limit denial" (live confirmation) |
+| AC3.1–AC3.5 | `arcjet-guard/src/agents/guard-action.test.ts` | — |
+| AC4.1–AC4.3 | `arcjet-guard/src/agents/metadata.test.ts` | — |
 | AC5.1 | `reusable-examples.yml` CI matrix (`nextjs-ai-agent`) | — |
 | AC5.2 | — | Phase 5, steps 1–9 |
 | AC6.1 | — | Phase 6, steps 1–4 |

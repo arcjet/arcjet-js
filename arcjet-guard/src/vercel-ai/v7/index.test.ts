@@ -261,11 +261,11 @@ test("AC5.4: no old identifiers in src/vercel-ai/", () => {
   const errors: string[] = [];
 
   // Construct needles from parts to avoid matching this test file's assertions
-  const protectToolNeedle = ["protect", "Tool"].join("");
-  const protectToolPolicyNeedle = ["Protect", "Tool", "Policy"].join("");
+  const oldToolWrapperNeedle = ["protect", "Tool"].join("");
+  const oldToolPolicyNeedle = ["Protect", "Tool", "Policy"].join("");
   const arcjetAiNeedle = ["@arcjet", "ai"].join("/");
-  const createAiContextNeedle = ["create", "Ai", "Context"].join("");
-  const arcjetAiContextNeedle = ["Arcjet", "Ai", "Context"].join("");
+  const oldContextFactoryNeedle = ["create", "Ai", "Context"].join("");
+  const oldContextTypeNeedle = ["Arcjet", "Ai", "Context"].join("");
 
   // Scan every file, this one included: the needles above are built from parts
   // so nothing here matches itself, which closes the hole where a forbidden
@@ -281,12 +281,12 @@ test("AC5.4: no old identifiers in src/vercel-ai/", () => {
     }
 
     // Check for the old protect-tool naming
-    if (new RegExp(`\\b${protectToolNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${protectToolNeedle}`);
+    if (new RegExp(`\\b${oldToolWrapperNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldToolWrapperNeedle}`);
     }
 
-    if (new RegExp(`\\b${protectToolPolicyNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${protectToolPolicyNeedle}`);
+    if (new RegExp(`\\b${oldToolPolicyNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldToolPolicyNeedle}`);
     }
 
     // Check for a dependency on the old package name
@@ -294,12 +294,12 @@ test("AC5.4: no old identifiers in src/vercel-ai/", () => {
       errors.push(`${filePath}: contains ${arcjetAiNeedle}`);
     }
 
-    if (new RegExp(`\\b${createAiContextNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${createAiContextNeedle}`);
+    if (new RegExp(`\\b${oldContextFactoryNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldContextFactoryNeedle}`);
     }
 
-    if (new RegExp(`\\b${arcjetAiContextNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${arcjetAiContextNeedle}`);
+    if (new RegExp(`\\b${oldContextTypeNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldContextTypeNeedle}`);
     }
   }
 

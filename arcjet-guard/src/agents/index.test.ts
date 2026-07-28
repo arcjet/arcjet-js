@@ -125,8 +125,8 @@ test("no old context identifiers (AC5.2)", () => {
   // Construct needles from parts to avoid matching this test file's assertions.
   // The test must scan itself to close the hole where forbidden identifiers
   // could hide in comments or assertion literals.
-  const createAiContextNeedle = ["create", "Ai", "Context"].join("");
-  const arcjetAiContextNeedle = ["Arcjet", "Ai", "Context"].join("");
+  const oldContextFactoryNeedle = ["create", "Ai", "Context"].join("");
+  const oldContextTypeNeedle = ["Arcjet", "Ai", "Context"].join("");
 
   const filesToCheck = [...collectTsFiles(agentsDir), ...collectTsFiles(testSharedDir)];
 
@@ -140,13 +140,13 @@ test("no old context identifiers (AC5.2)", () => {
     }
 
     // Check for old context function (whole word match)
-    if (new RegExp(`\\b${createAiContextNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${createAiContextNeedle}`);
+    if (new RegExp(`\\b${oldContextFactoryNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldContextFactoryNeedle}`);
     }
 
     // Check for old context type (whole word match)
-    if (new RegExp(`\\b${arcjetAiContextNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${arcjetAiContextNeedle}`);
+    if (new RegExp(`\\b${oldContextTypeNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldContextTypeNeedle}`);
     }
   }
 
@@ -168,10 +168,10 @@ test("no old protect* identifiers (AC5.4)", () => {
   // Construct needles from parts to avoid matching this test file's assertions.
   // The test must scan itself to close the hole where forbidden identifiers
   // could hide in comments or assertion literals.
-  const protectToolNeedle = ["protect", "Tool"].join("");
-  const protectActionNeedle = ["protect", "Action"].join("");
-  const protectToolPolicyNeedle = ["Protect", "Tool", "Policy"].join("");
-  const protectActionPolicyNeedle = ["Protect", "Action", "Policy"].join("");
+  const oldToolWrapperNeedle = ["protect", "Tool"].join("");
+  const oldActionWrapperNeedle = ["protect", "Action"].join("");
+  const oldToolPolicyNeedle = ["Protect", "Tool", "Policy"].join("");
+  const oldActionPolicyNeedle = ["Protect", "Action", "Policy"].join("");
 
   const filesToCheck = [...collectTsFiles(agentsDir), ...collectTsFiles(testSharedDir)];
 
@@ -184,20 +184,20 @@ test("no old protect* identifiers (AC5.4)", () => {
       continue;
     }
 
-    if (new RegExp(`\\b${protectToolNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${protectToolNeedle}`);
+    if (new RegExp(`\\b${oldToolWrapperNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldToolWrapperNeedle}`);
     }
 
-    if (new RegExp(`\\b${protectActionNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${protectActionNeedle}`);
+    if (new RegExp(`\\b${oldActionWrapperNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldActionWrapperNeedle}`);
     }
 
-    if (new RegExp(`\\b${protectToolPolicyNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${protectToolPolicyNeedle}`);
+    if (new RegExp(`\\b${oldToolPolicyNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldToolPolicyNeedle}`);
     }
 
-    if (new RegExp(`\\b${protectActionPolicyNeedle}\\b`).test(content)) {
-      errors.push(`${filePath}: contains ${protectActionPolicyNeedle}`);
+    if (new RegExp(`\\b${oldActionPolicyNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${oldActionPolicyNeedle}`);
     }
   }
 
