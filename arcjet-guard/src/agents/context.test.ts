@@ -26,12 +26,15 @@ test("AC1.2: caller-supplied correlationId is preserved verbatim", () => {
   assert.equal(ctx.correlationId, supplied);
 });
 
-test("AC1.2: omitted correlationId generates a ULID instead of throwing", () => {
-  const ctx = createAgentContext({});
+test("AC1.2: undefined correlationId generates a ULID instead of throwing", () => {
+  const ctx = createAgentContext({
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- an untyped caller can pass undefined explicitly
+    correlationId: undefined as unknown as string,
+  });
   assert.match(
     ctx.correlationId,
     /^[0-9ABCDEFGHJKMNPQRSTVWXYZ]{26}$/,
-    "omitted correlationId should generate a ULID, not throw",
+    "undefined correlationId should generate a ULID, not throw",
   );
 });
 
@@ -58,8 +61,6 @@ test("AC1.3: rejects correlationId with non-ASCII character", () => {
 });
 
 test("AC1.3: rejects non-string correlationId at runtime", () => {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentional: test that runtime rejects non-strings
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentional: testing runtime validation of bad input
   assert.throws(
     () =>
       createAgentContext({

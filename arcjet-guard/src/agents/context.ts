@@ -1,4 +1,3 @@
-/* oxlint-disable eslint/no-negated-condition,unicorn/no-negated-condition -- validation logic requires negation */
 import type { ArcjetMetadata } from "../types.ts";
 
 import { ulid } from "./ulid.ts";
@@ -7,6 +6,29 @@ import { ulid } from "./ulid.ts";
  * Validation regex for correlation IDs: 1–256 characters of printable ASCII.
  */
 const CORRELATION_ID_RE: RegExp = /^[ -~]{1,256}$/;
+
+/**
+ * Name what is wrong with a caller-supplied correlation ID, or `undefined` if
+ * it is valid.
+ *
+ * The `typeof` check comes first because `RegExp.test()` coerces its argument,
+ * so a number would otherwise satisfy the pattern.
+ */
+function correlationIdProblem(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    if (CORRELATION_ID_RE.test(value)) {
+      return undefined;
+    }
+    if (value.length === 0) {
+      return "empty string";
+    }
+    if (value.length > 256) {
+      return `length ${value.length}`;
+    }
+    return "non-printable characters";
+  }
+  return `type ${typeof value}`;
+}
 
 /**
  * Security context threaded through guard evaluations.
@@ -69,28 +91,18 @@ export function createAgentContext(init?: {
 }): ArcjetAgentContext {
   let correlationId: string;
 
-  if (init?.correlationId !== undefined) {
+  if (init?.correlationId === undefined) {
+    correlationId = ulid();
+  } else {
     correlationId = init.correlationId;
-    // Validate caller-supplied IDs (generated ULIDs are correct by construction).
-    // The typeof check matters for untyped callers: RegExp.test() coerces
-    // non-strings, so e.g. a number would otherwise pass the regex.
-    if (typeof correlationId === "string" && CORRELATION_ID_RE.test(correlationId)) {
-      // valid - continue below
-    } else {
-      const problem =
-        typeof correlationId !== "string"
-          ? `type ${typeof correlationId}`
-          : correlationId.length === 0
-            ? "empty string"
-            : correlationId.length > 256
-              ? `length ${correlationId.length}`
-              : "non-printable characters";
+    // Only caller-supplied IDs need validating; generated ULIDs are correct by
+    // construction.
+    const problem = correlationIdProblem(correlationId);
+    if (problem !== undefined) {
       throw new Error(
         `@arcjet/guard: correlationId must be 1-256 characters of printable ASCII (got ${problem}); it was rejected, not truncated.`,
       );
     }
-  } else {
-    correlationId = ulid();
   }
 
   const context: ArcjetAgentContext = {
@@ -104,5 +116,3 @@ export function createAgentContext(init?: {
 
   return context;
 }
-
-export { CORRELATION_ID_RE };
