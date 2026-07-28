@@ -116,12 +116,13 @@ Do **not** add a `"./vercel-ai"` key and do **not** use a wildcard such as
 unsupported majors fail — a deliberate, tested behaviour (AC1.5, AC1.6).
 
 **2. Add `peerDependencies`** (guard has none today, so this is a new block).
-Both this block and `peerDependenciesMeta` from step 3 go after `devDependencies`
+Both this block and `peerDependenciesMeta` from item 3 go after `devDependencies`
 and before `engines`, in that order — the placement `oxfmt` produces and the one
 `sensitive-info-rampart` already uses. Getting this wrong leaves the file
-formatter-dirty without failing any CI gate, because `arcjet-guard/**` is in the
-root `.oxfmtrc.json` `ignorePatterns` and `guard.yml` runs only `lint` and
-`typecheck`; step 2 of the verification below is what catches it.
+formatter-dirty without failing any CI gate: `arcjet-guard/**` is in the root
+`.oxfmtrc.json` `ignorePatterns`, so the repo-wide `format:check` in
+`reusable-lint.yml` never sees the file, and `guard.yml` has no format step of its
+own. **Step 2: Verify** below is the only thing that catches it.
 
 ```json
 "peerDependencies": {
@@ -132,7 +133,7 @@ root `.oxfmtrc.json` `ignorePatterns` and `guard.yml` runs only `lint` and
 
 **3. Add `peerDependenciesMeta`** marking both optional, so consumers who never
 touch an AI SDK see no warning or error. Use the expanded multi-line form, placed
-as described in step 2:
+as described in item 2:
 
 ```json
 "peerDependenciesMeta": {
@@ -194,14 +195,28 @@ keys = list(d)
 assert keys.index('devDependencies') < keys.index('peerDependencies') < keys.index('peerDependenciesMeta') < keys.index('engines'), \
     'peer blocks must sit between devDependencies and engines'
 print('ok')
-"
-../node_modules/.bin/oxfmt --check package.json
+" && ../node_modules/.bin/oxfmt --check package.json
 ```
 
-Expected: `ok`, then `All matched files use the correct format.` with exit 0.
-The presence assertions above cannot see key order or formatting, so without the
-`oxfmt --check` line a misplaced or inline-formatted block passes this step and
-gets committed — no CI gate covers `arcjet-guard` formatting.
+Expected: `ok`, then `All matched files use the correct format.` on `1 files`,
+exit 0. Check the exit status, not just the output.
+
+Two things about the shape of this block are load-bearing:
+
+- **The `&&` is required.** Chained, a failed assertion short-circuits and the
+  block exits non-zero. On separate lines `oxfmt` runs regardless and *its* status
+  becomes the block's, so a leaked `./vercel-ai`, a missing `skills/`, an unquoted
+  glob, or a misplaced peer block all report exit 0 — the presence assertions
+  become a console message nobody reads.
+- **The `cd arcjet-guard` is required.** `oxfmt` only inspects this file because
+  the nested `arcjet-guard/.oxfmtrc.json` is picked up from that directory,
+  overriding the root config's `arcjet-guard/**` ignore. Run the same command from
+  the repo root, or add `--disable-nested-config`, and it exits 2 with "All
+  matched files may have been excluded by ignore rules" — a vacuous pass. The
+  `on 1 files` in the output is the proof it looked at something.
+
+The presence assertions cannot see key order or formatting, which is why the
+`oxfmt --check` is here at all: no CI gate covers `arcjet-guard` formatting.
 
 **Step 3: Commit**
 
@@ -412,6 +427,8 @@ for this task beyond Task 1's already-committed `package.json` fix.
       does NOT declare `./vercel-ai` or a wildcard
 - [ ] `peerDependencies` + `peerDependenciesMeta` mark `ai` and
       `@ai-sdk/provider-utils` optional
+- [ ] both peer blocks sit between `devDependencies` and `engines`, and
+      `oxfmt --check package.json` run from `arcjet-guard/` is clean
 - [ ] both are in `devDependencies` at `7.0.36` / `5.0.12`
 - [ ] `files` includes `skills/`
 - [ ] `npm install` from the root succeeds with no **peer** warnings (the grep
