@@ -75,20 +75,14 @@ const WIRE_KEYS = {
 } as const satisfies Record<keyof SecurityMetadataFields, string>;
 
 /**
- * Iterate wire keys with proper typing. The `satisfies` constraint on WIRE_KEYS
- * ensures exhaustiveness; this helper preserves that constraint without requiring
- * assertions at the call site.
+ * The same pairs, typed for iteration. `Object.entries` widens the key back to
+ * `string`; the narrowing is sound because the `satisfies` constraint above makes
+ * every key a field of `SecurityMetadataFields`. Built once at module load.
  */
-function* wireKeyEntries(): Generator<
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- keys are constrained by the satisfies above
+const WIRE_KEY_ENTRIES = Object.entries(WIRE_KEYS) as ReadonlyArray<
   [keyof SecurityMetadataFields, string]
-> {
-  for (const [field, wireKey] of Object.entries(WIRE_KEYS)) {
-    // The satisfies constraint guarantees that all keys in WIRE_KEYS match the
-    // fields of SecurityMetadataFields, so this cast is safe.
-    // eslint-disable-next-line typescript/no-unsafe-type-assertion
-    yield [field as keyof SecurityMetadataFields, wireKey];
-  }
-}
+>;
 
 /**
  * Map security metadata fields to their wire keys for Arcjet guard evaluation.
@@ -122,7 +116,7 @@ export function securityMetadata(
 
   // Iterate the wire keys mapping using the helper, which is compile-time
   // verified to be exhaustive by the `satisfies` constraint on WIRE_KEYS.
-  for (const [field, wireKey] of wireKeyEntries()) {
+  for (const [field, wireKey] of WIRE_KEY_ENTRIES) {
     const value = fields[field];
     if (value !== undefined) {
       result[wireKey] = value;

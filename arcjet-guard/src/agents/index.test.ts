@@ -38,24 +38,47 @@ verifyTypeExports();
  * - export type { T } from "./baz.ts"
  * - import "ai" (bare side-effect import)
  */
+/**
+ * Comments, template literals and ordinary string literals, in one alternation.
+ * Order matters: whichever construct opens first at a given position consumes the
+ * rest of itself, so a `/*` inside a string is not read as a comment and a quote
+ * inside a comment is not read as a string.
+ */
+const COMMENT_OR_STRING =
+  /\/\/[^\n]*|\/\*[\s\S]*?\*\/|`(?:\\[\s\S]|[^\\`])*`|"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*'/g;
+
+/**
+ * Blank out anything that can masquerade as an import.
+ *
+ * Comments become equivalent runs of spaces, preserving newlines so the
+ * line-anchored patterns below still see the real line structure. Template
+ * literals are emptied, because an import specifier is never written with
+ * backticks but a template can contain the text of a whole import statement.
+ * Ordinary string literals are left intact — they carry the specifiers we want.
+ */
+function stripCommentsAndTemplates(source: string): string {
+  return source.replaceAll(COMMENT_OR_STRING, (token) => {
+    if (token.startsWith("//") || token.startsWith("/*")) {
+      return token.replaceAll(/[^\n]/g, " ");
+    }
+    if (token.startsWith("`")) {
+      return "``";
+    }
+    return token;
+  });
+}
+
 function extractImportSpecifiers(content: string): string[] {
   const specifiers: string[] = [];
 
-  // Strip line and block comments before parsing to avoid false negatives from
-  // apostrophes or quotes in comment text. This ensures apostrophes in comment
-  // text like "it's the SDK" don't cause the regex to bail on the import statement.
-  let cleanContent = content;
+  const cleanContent = stripCommentsAndTemplates(content);
 
-  // Remove line comments (// to end of line), handling escaped characters
-  cleanContent = cleanContent.replaceAll(/\/\/.*$/gm, "");
-
-  // Remove block comments (/* ... */), handling nested and multi-line
-  cleanContent = cleanContent.replaceAll(/\/\*[\s\S]*?\*\//g, "");
-
-  // Match import/export statements anchored to line start
-  const importFromRegex = /^\s*(?:import|export)\b[^;]*?from\s+["']([^"']+)["']/gm;
+  // Match import/export statements anchored to line start. `=` is excluded along
+  // with `;` so a declaration such as `export const NOTE = "... from 'ai'"` cannot
+  // be read as an import of `ai`.
+  const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
   // Match bare side-effect imports: import "package"
-  const bareImportRegex = /^\s*import\s+["']([^"']+)["']/gm;
+  const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
 
   let match: RegExpExecArray | null;
 
