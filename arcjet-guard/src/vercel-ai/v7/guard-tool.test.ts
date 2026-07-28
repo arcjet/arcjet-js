@@ -41,11 +41,7 @@ function decisionDenyRateLimitNoReset(): DecisionDeny {
 /**
  * Create a simple test tool for wrapping.
  */
-function createTestTool(): {
-  tool: ReturnType<typeof tool>;
-  executeCalls: unknown[];
-  sentinel: { result: string };
-} {
+function createTestTool() {
   const executeCalls: unknown[] = [];
   const sentinel = { result: "success" };
 
@@ -107,7 +103,8 @@ test("AC2.2: DENY decision → execute never called, ArcjetDenialResult returned
   const result = (await wrapped.execute(input, {
     toolCallId: "t1",
     messages: [],
-  })) as ArcjetDenialResult;
+    context: undefined,
+  } as never)) as unknown as ArcjetDenialResult;
 
   assert.equal(executeCalls.length, 0, "original execute should not be called");
   assert.strictEqual(result.arcjetDenied, true);
@@ -369,7 +366,8 @@ test("non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterS
   const result = (await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
-  })) as ArcjetDenialResult;
+    context: undefined,
+  } as never)) as unknown as ArcjetDenialResult;
 
   assert.equal(executeCalls.length, 0, "execute should not be called on DENY");
   assert.strictEqual(result.arcjetDenied, true);
@@ -404,7 +402,8 @@ test("non-RATE_LIMIT DENY with a co-occurring rate-limit result → no retryAfte
   const result = (await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
-  })) as ArcjetDenialResult;
+    context: undefined,
+  } as never)) as unknown as ArcjetDenialResult;
 
   assert.strictEqual(result.retryable, false, "non-rate-limit denials are not retryable");
   assert.strictEqual(
@@ -428,7 +427,8 @@ test("RATE_LIMIT DENY without resetAtUnixSeconds → retryable=true, no retryAft
   const result = (await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
-  })) as ArcjetDenialResult;
+    context: undefined,
+  } as never)) as unknown as ArcjetDenialResult;
 
   assert.equal(executeCalls.length, 0, "execute should not be called on DENY");
   assert.strictEqual(result.arcjetDenied, true);
@@ -759,7 +759,8 @@ test("AC4.11: guard throws with default onGuardError: 'deny' → execute not cal
   const result = (await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
-  })) as ArcjetDenialResult;
+    context: undefined,
+  } as never)) as unknown as ArcjetDenialResult;
 
   assert.equal(executeCalls.length, 0, "execute should not be called when guard throws with deny mode");
   assert.equal(onDenyCalls.length, 0, "onDeny should not be called for unavailable signal");
@@ -783,7 +784,8 @@ test("AC4.11: guard fails open with default onGuardError: 'deny' → execute not
   const result = (await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
-  })) as ArcjetDenialResult;
+    context: undefined,
+  } as never)) as unknown as ArcjetDenialResult;
 
   assert.equal(executeCalls.length, 0, "execute should not be called when decision fails open with deny mode");
   assert.strictEqual(result.arcjetDenied, true);
