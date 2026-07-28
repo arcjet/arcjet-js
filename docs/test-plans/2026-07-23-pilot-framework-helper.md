@@ -2,14 +2,14 @@
 
 Generated from the 2026-07-23 pilot-framework-helper implementation.
 Automated coverage: 25/25 acceptance criteria covered by
-`arcjet-guard/src/agents/*.test.ts` and `arcjet-guard/src/vercel-ai/v7/*.test.ts` (51 tests) and the `nextjs-ai-agent` CI build.
+`arcjet-guard/src/agents/*.test.ts` and `arcjet-guard/src/vercel-ai/v7/*.test.ts` (76 tests: 51 migrated + 25 net-new) and the `nextjs-ai-agent` CI build.
 This plan covers the two human-verification criteria and live E2E
 confirmations of behavior the automated tests exercise against stubs.
 
 ## Prerequisites
 
 - Node 22, repo installed and built: from repo root `npm ci && npm run build`.
-- `arcjet-guard` automated gate green: `cd arcjet-guard && npm run test-unit` → 51 pass, 0 fail.
+- `arcjet-guard` automated gate green: `cd arcjet-guard && npm run test-unit` → 426 pass, 0 fail.
 - For AC5.2: a **dev Arcjet site** (`ARCJET_KEY` from app.arcjet.com) and an
   `AI_GATEWAY_API_KEY` (Vercel AI Gateway).
 - For AC6.1: a copy of `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` and a
@@ -83,11 +83,11 @@ the dashboard shows a DENY `RATE_LIMIT` decision under the run's
 |----------------------|----------------|-------------|
 | AC1.1–AC1.4 | `arcjet-guard/src/agents/context.test.ts` | — |
 | AC1.5, AC1.6 | `arcjet-guard/src/vercel-ai/v7/generate-text.test.ts` | E2E "single-run correlation" (live confirmation) |
-| AC1.7 | `arcjet-guard/src/agents/guard-tool.test.ts` | — |
-| AC2.1–AC2.8 | `arcjet-guard/src/agents/guard-tool.test.ts` | — |
+| AC1.7 | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` | — |
+| AC2.1–AC2.8 | `arcjet-guard/src/vercel-ai/v7/guard-tool.test.ts` | — |
 | AC2.9 | `arcjet-guard/src/vercel-ai/v7/generate-text.test.ts` | E2E "rate-limit denial" (live confirmation) |
 | AC3.1–AC3.5 | `arcjet-guard/src/agents/guard-action.test.ts` | — |
-| AC4.1–AC4.3 | `arcjet-guard/src/agents/metadata.test.ts` | — |
+| AC4.1–AC4.3 | `arcjet-guard/src/agents/vocabulary.test.ts` | — |
 | AC5.1 | `reusable-examples.yml` CI matrix (`nextjs-ai-agent`) | — |
 | AC5.2 | — | Phase 5, steps 1–9 |
 | AC6.1 | — | Phase 6, steps 1–4 |
