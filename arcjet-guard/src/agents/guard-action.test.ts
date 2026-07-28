@@ -315,29 +315,50 @@ test("AC4.11: guard throws, onGuardError omitted (default deny) → ArcjetGuardU
   const { client, guardCalls, captureCalls } = stubClient(guardError);
   let fnCallCount = 0;
 
+  const originalWarn = console.warn;
+  const warnCalls: unknown[] = [];
+  console.warn = (...args: unknown[]): void => {
+    warnCalls.push(args);
+  };
+  const restoreLogLevel = setLogLevel("warn");
+
+  let caught: unknown;
   try {
     await guardAction(
       client,
       createAgentContext(),
       { action: "test.action", rules: [fakeRule] },
-      // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-      async () => {
-        fnCallCount++;
-        return { should: "not happen" };
-      },
+      () => Promise.resolve(++fnCallCount),
     );
-    assert.fail("should have thrown ArcjetGuardUnavailableError");
   } catch (err) {
-    assert.ok(
-      err instanceof ArcjetGuardUnavailableError,
-      "should throw ArcjetGuardUnavailableError",
-    );
-    assert.equal(err.name, "ArcjetGuardUnavailableError");
-    assert.equal(err.action, "test.action");
-    assert.strictEqual(err.decision, undefined, "decision should be undefined on threw path");
-    assert.ok(err.cause instanceof Error, "cause should be the original error");
-    assert.ok(!(err instanceof ArcjetDeniedError), "should NOT be an instance of ArcjetDeniedError");
+    caught = err;
+  } finally {
+    console.warn = originalWarn;
+    restoreLogLevel();
   }
+
+  assert.ok(
+    caught instanceof ArcjetGuardUnavailableError,
+    "should throw ArcjetGuardUnavailableError",
+  );
+  assert.equal(caught.name, "ArcjetGuardUnavailableError");
+  assert.equal(caught.action, "test.action");
+  assert.strictEqual(caught.decision, undefined, "decision should be undefined on threw path");
+  assert.strictEqual(caught.cause, guardError, "cause should be the original error by reference");
+  assert.ok(
+    !(caught instanceof ArcjetDeniedError),
+    "should NOT be an instance of ArcjetDeniedError",
+  );
+
+  assert.ok(
+    warnCalls.some(
+      (call) =>
+        JSON.stringify(call).includes("guard check") &&
+        JSON.stringify(call).includes("errored") &&
+        JSON.stringify(call).includes("failing closed"),
+    ),
+    "warning should mention guard error and failing closed, not failing open",
+  );
 
   assert.equal(fnCallCount, 0, "fn should never be called");
   assert.equal(guardCalls.length, 1, "guard should be called once");
@@ -351,36 +372,58 @@ test("AC4.11: guard throws, onGuardError omitted (default deny) → ArcjetGuardU
 });
 
 test("AC4.12: guard returns fail-open ALLOW, onGuardError omitted (default deny) → ArcjetGuardUnavailableError, fn never called", async () => {
-  const { client, guardCalls, captureCalls } = stubClient(decisionFailOpenAllow());
+  const failedOpen = decisionFailOpenAllow();
+  const { client, guardCalls, captureCalls } = stubClient(failedOpen);
   let fnCallCount = 0;
 
+  const originalWarn = console.warn;
+  const warnCalls: unknown[] = [];
+  console.warn = (...args: unknown[]): void => {
+    warnCalls.push(args);
+  };
+  const restoreLogLevel = setLogLevel("warn");
+
+  let caught: unknown;
   try {
     await guardAction(
       client,
       createAgentContext(),
       { action: "test.action", rules: [fakeRule] },
-      // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-      async () => {
-        fnCallCount++;
-        return { should: "not happen" };
-      },
+      () => Promise.resolve(++fnCallCount),
     );
-    assert.fail("should have thrown ArcjetGuardUnavailableError");
   } catch (err) {
-    assert.ok(
-      err instanceof ArcjetGuardUnavailableError,
-      "should throw ArcjetGuardUnavailableError",
-    );
-    assert.equal(err.name, "ArcjetGuardUnavailableError");
-    assert.equal(err.action, "test.action");
-    assert.strictEqual(
-      err.cause === undefined,
-      true,
-      "cause should be undefined on failed-open path (use === undefined, not in)",
-    );
-    assert.ok(err.decision !== undefined, "decision should be the DecisionAllow");
-    assert.ok(!(err instanceof ArcjetDeniedError), "should NOT be an instance of ArcjetDeniedError");
+    caught = err;
+  } finally {
+    console.warn = originalWarn;
+    restoreLogLevel();
   }
+
+  assert.ok(
+    caught instanceof ArcjetGuardUnavailableError,
+    "should throw ArcjetGuardUnavailableError",
+  );
+  assert.equal(caught.name, "ArcjetGuardUnavailableError");
+  assert.equal(caught.action, "test.action");
+  assert.strictEqual(
+    caught.cause,
+    undefined,
+    "cause should be undefined on failed-open path (use === undefined, not in)",
+  );
+  assert.strictEqual(caught.decision, failedOpen, "decision should be the DecisionAllow by reference");
+  assert.ok(
+    !(caught instanceof ArcjetDeniedError),
+    "should NOT be an instance of ArcjetDeniedError",
+  );
+
+  assert.ok(
+    warnCalls.some(
+      (call) =>
+        JSON.stringify(call).includes("guard check") &&
+        JSON.stringify(call).includes("was unavailable") &&
+        JSON.stringify(call).includes("failing closed"),
+    ),
+    "warning should say the check was unavailable and is failing closed, not failed open",
+  );
 
   assert.equal(fnCallCount, 0, "fn should never be called");
   assert.equal(guardCalls.length, 1, "guard should be called once");
