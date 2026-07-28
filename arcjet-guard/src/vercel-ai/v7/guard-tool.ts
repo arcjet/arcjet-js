@@ -200,7 +200,6 @@ export function guardTool<T extends Tool>(
     throw new Error("@arcjet/guard: guardTool() requires a tool with an execute function");
   }
   if (tool.contextSchema !== undefined) {
-    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility; changing to TypeError is an observable API change
     throw new Error(
       "@arcjet/guard: guardTool() cannot wrap a tool that declares its own contextSchema",
     );

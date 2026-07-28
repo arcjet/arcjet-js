@@ -123,10 +123,11 @@ export function recorded(call: unknown): Record<string, unknown> {
 /**
  * Read a wrapped tool's result as a denial payload. The SDK types the result as
  * the tool's own output, so narrowing to the denial shape is the test's job.
+ *
+ * The type parameter has no default on purpose: defaulting it to an index
+ * signature would let a misspelled field compile and silently pass.
  */
-export function asDenial<TResult extends Record<string, unknown> = Record<string, unknown>>(
-  value: unknown,
-): TResult {
+export function asDenial<TResult>(value: unknown): TResult {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the SDK types results as the tool's output union
   return value as TResult;
 }

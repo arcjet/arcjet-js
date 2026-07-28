@@ -253,7 +253,9 @@ test("AC2.3: guard-tool and tools-context have ai SDK dependencies (static check
   );
 });
 
-// AC5.4: No old identifiers under src/vercel-ai/ — both protectTool renames and @arcjet/ai coupling
+// AC5.4: no pre-rename identifiers and no dependency on the old package name
+// anywhere under src/vercel-ai/. Needles are built from parts so this file does
+// not match itself and can be swept along with everything else.
 test("AC5.4: no old identifiers in src/vercel-ai/", () => {
   const vercelAiDir = resolve(import.meta.dirname, "..");
   const errors: string[] = [];
@@ -261,13 +263,14 @@ test("AC5.4: no old identifiers in src/vercel-ai/", () => {
   // Construct needles from parts to avoid matching this test file's assertions
   const protectToolNeedle = ["protect", "Tool"].join("");
   const protectToolPolicyNeedle = ["Protect", "Tool", "Policy"].join("");
-  const arcjetAiNeedle = "@arcjet/ai";
+  const arcjetAiNeedle = ["@arcjet", "ai"].join("/");
   const createAiContextNeedle = ["create", "Ai", "Context"].join("");
   const arcjetAiContextNeedle = ["Arcjet", "Ai", "Context"].join("");
 
-  const allFiles = collectTsFiles(vercelAiDir);
-  // Exclude test files from the check (they necessarily contain test data with these strings)
-  const filesToCheck = allFiles.filter((f) => !f.endsWith(".test.ts"));
+  // Scan every file, this one included: the needles above are built from parts
+  // so nothing here matches itself, which closes the hole where a forbidden
+  // identifier could hide in a comment or an assertion literal.
+  const filesToCheck = collectTsFiles(vercelAiDir);
   for (const filePath of filesToCheck) {
     let content: string;
     try {
@@ -277,7 +280,7 @@ test("AC5.4: no old identifiers in src/vercel-ai/", () => {
       continue;
     }
 
-    // Check for old protectTool naming
+    // Check for the old protect-tool naming
     if (new RegExp(`\\b${protectToolNeedle}\\b`).test(content)) {
       errors.push(`${filePath}: contains ${protectToolNeedle}`);
     }
@@ -286,7 +289,7 @@ test("AC5.4: no old identifiers in src/vercel-ai/", () => {
       errors.push(`${filePath}: contains ${protectToolPolicyNeedle}`);
     }
 
-    // Check for @arcjet/ai coupling
+    // Check for a dependency on the old package name
     if (content.includes(arcjetAiNeedle)) {
       errors.push(`${filePath}: contains ${arcjetAiNeedle}`);
     }

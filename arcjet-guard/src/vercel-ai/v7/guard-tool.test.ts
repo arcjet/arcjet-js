@@ -6,6 +6,7 @@ import type { Tool } from "ai";
 import { tool, jsonSchema } from "ai";
 
 import { guardTool } from "./guard-tool.ts";
+import type { ArcjetDenialResult } from "./guard-tool.ts";
 import { createAgentContext } from "../../agents/context.ts";
 import { setLogLevel } from "../../../test/_shared/log-level.ts";
 import { recorded, asDenial } from "../../../test/_shared/source-scan.ts";
@@ -109,7 +110,7 @@ test("AC2.2: DENY decision → execute never called, ArcjetDenialResult returned
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
   const input = { id: "input1" };
-  const result = asDenial(
+  const result = asDenial<ArcjetDenialResult>(
     await wrapped.execute(input, {
       toolCallId: "t1",
       messages: [],
@@ -121,8 +122,7 @@ test("AC2.2: DENY decision → execute never called, ArcjetDenialResult returned
   assert.strictEqual(result.arcjetDenied, true);
   assert.equal(result.reason, "RATE_LIMIT");
   assert.ok(
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test narrows message to string to check length
-    (result.message as string).length > 0,
+    result.message.length > 0,
     "message should be non-empty",
   );
   assert.strictEqual(result.retryable, true);
@@ -383,7 +383,7 @@ test("non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterS
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = asDenial(
+  const result = asDenial<ArcjetDenialResult>(
     await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
@@ -401,8 +401,7 @@ test("non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterS
     "no retryAfterSeconds for non-rate-limit",
   );
   assert.ok(
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test narrows message to string to check includes
-    (result.message as string).includes("Do not retry"),
+    result.message.includes("Do not retry"),
     "non-retryable message should advise not retrying",
   );
 });
@@ -422,7 +421,7 @@ test("non-RATE_LIMIT DENY with a co-occurring rate-limit result → no retryAfte
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = asDenial(
+  const result = asDenial<ArcjetDenialResult>(
     await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
@@ -449,7 +448,7 @@ test("RATE_LIMIT DENY without resetAtUnixSeconds → retryable=true, no retryAft
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = asDenial(
+  const result = asDenial<ArcjetDenialResult>(
     await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
@@ -463,8 +462,7 @@ test("RATE_LIMIT DENY without resetAtUnixSeconds → retryable=true, no retryAft
   assert.strictEqual(result.retryable, true, "rate-limit denials are retryable");
   assert.strictEqual(result.retryAfterSeconds, undefined, "no reset time available");
   assert.ok(
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test narrows message to string to check includes
-    (result.message as string).includes(" later."),
+    result.message.includes(" later."),
     "message should say 'may be retried later' when no reset time",
   );
 });
@@ -804,7 +802,7 @@ test("AC4.11: guard throws with default onGuardError: 'deny' → execute not cal
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = asDenial(
+  const result = asDenial<ArcjetDenialResult>(
     await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
@@ -837,7 +835,7 @@ test("AC4.3: a real DENY carrying reason ERROR is not retryable and has no backo
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = asDenial(
+  const result = asDenial<ArcjetDenialResult>(
     await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
@@ -874,7 +872,7 @@ test("AC4.11: guard fails open with default onGuardError: 'deny' → execute not
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = asDenial(
+  const result = asDenial<ArcjetDenialResult>(
     await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],

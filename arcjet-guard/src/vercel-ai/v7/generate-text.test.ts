@@ -5,6 +5,7 @@ import { generateText, stepCountIs, tool, jsonSchema } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 
 import { guardTool } from "./guard-tool.ts";
+import type { ArcjetDenialResult } from "./guard-tool.ts";
 import { aiToolsContext } from "./tools-context.ts";
 import { createAgentContext } from "../../agents/context.ts";
 import { setLogLevel } from "../../../test/_shared/log-level.ts";
@@ -263,7 +264,7 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
   );
   assert.ok(toolResultPart !== undefined, "first step should have a tool-result part");
 
-  const output = asDenial(recorded(toolResultPart).output);
+  const output = asDenial<ArcjetDenialResult>(recorded(toolResultPart).output);
   assert.strictEqual(output.arcjetDenied, true, "output should be an ArcjetDenialResult");
   assert.equal(output.reason, "RATE_LIMIT", "denial reason should be RATE_LIMIT");
 
