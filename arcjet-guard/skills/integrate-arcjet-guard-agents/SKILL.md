@@ -94,9 +94,11 @@ const tools = {
   lookupOrder: guardTool(arcjet, lookupOrderTool, {
     action: "order.looked-up", // "resource.verb", past tense
     rules: ({ orderNumber }) => [lookupLimit({ key: `order:${orderNumber}`, requested: 1 })],
-    metadata: (input) => securityMetadata({
-      resource: `order:${input.orderNumber}`,
-      user: { id: userId, role: "customer" },
+    // securityMetadata() maps the flat vocabulary to wire keys, so its fields
+    // are strings. Nested values go alongside it in the raw metadata object.
+    metadata: (input) => ({
+      ...securityMetadata({ resource: `order:${input.orderNumber}`, user: userId }),
+      caller: { id: userId, role: "customer" },
     }),
   }),
 };
@@ -107,8 +109,11 @@ const tools = {
   data being acted on — here, keying the rate limit on the specific order
   being looked up.
 - On DENY the tool's `execute` never runs; the model receives a structured
-  denial result (`reason: "DENIED"`, `retryable: false`) it can read and adapt
-  to. Reshape it with `onDeny`.
+  denial result carrying the deciding rule's own `reason` — for the
+  `tokenBucket` above that is `reason: "RATE_LIMIT"`, `retryable: true`, and a
+  computed `retryAfterSeconds`. Only rate-limit denials are retryable; every
+  other reason reports `retryable: false` and no backoff hint. Reshape it with
+  `onDeny`.
 - Guard policy unavailability: if the guard cannot be evaluated (e.g. Arcjet
   API unreachable), the default is `onGuardError: "deny"` — the tool is blocked
   and the model receives `reason: "ERROR"` with `retryable: true` and a fixed

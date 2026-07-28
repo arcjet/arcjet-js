@@ -41,9 +41,9 @@ import { runGuarded } from "./guarded.ts";
  *   if (error instanceof ArcjetDeniedError) {
  *     // Handle denial: log, notify, skip this step
  *     console.log(`Rate limited: ${error.decision.reason}`);
- *     return;
+ *   } else {
+ *     throw error;
  *   }
- *   throw error;
  * }
  * ```
  */

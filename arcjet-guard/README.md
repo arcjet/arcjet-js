@@ -768,7 +768,7 @@ directly inside the tool's `execute` block:
 const tools = {
   getData: {
     description: "Fetch data",
-    parameters: z.object({ id: z.string() }),
+    inputSchema: z.object({ id: z.string() }),
     execute: async ({ id }) => {
       await guardAction(arcjet, ctx, { action: "data.fetched", rules: [dataLimit({ key: `user:${userId}`, requested: 1 })] }, () => fetchData(id));
       return data;
@@ -905,7 +905,7 @@ The `action` is the guard label: use `resource.verb` past tense (e.g. `order.loo
 
 ### Failure posture
 
-- **Guard errors** (API timeouts, network failures): Fail open — the tool or action still runs. A warning is logged when `ARCJET_LOG_LEVEL` is `debug`, `info`, or `warn`.
+- **Guard errors** (API timeouts, network failures): Fail **closed** by default. Both unavailability signals — the `guard()` call throwing, and a decision whose `hasFailedOpen()` is true — block the call: `guardTool` returns `reason: "ERROR"` with `retryable: true` and `retryAfterSeconds: 5`, and `guardAction` throws `ArcjetGuardUnavailableError`. Set `onGuardError: "allow"` to opt back into fail-open, where the tool or action still runs. A warning is logged either way when `ARCJET_LOG_LEVEL` is `debug`, `info`, or `warn`.
 - **Capture events**: Fire-and-forget; never throw. If the guard client lacks `experimental_capture()`, events silently skip with a gated warning. (Current limitation: `@arcjet/guard` does not yet ship `experimental_capture()`, so `captureAction()` calls are deferred until that capability is available. The example app documents this deferral.)
 - **Missing correlation ID**: Guard checks still run (uncorrelated). The first uncorrelated tool call always warns; further ones respect `ARCJET_LOG_LEVEL`.
 
