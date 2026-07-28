@@ -3,7 +3,7 @@ import { test } from "node:test";
 
 import { securityMetadata } from "./vocabulary.ts";
 
-test("AC4.1: securityMetadata maps all seven fields to documented wire keys", async () => {
+test("AC4.1: securityMetadata maps all seven fields to documented wire keys", () => {
   const result = securityMetadata({
     user: "user_alice",
     agent: "agent_review_bot",
@@ -25,7 +25,7 @@ test("AC4.1: securityMetadata maps all seven fields to documented wire keys", as
   });
 });
 
-test("AC4.2: securityMetadata passes custom string values through unchanged", async () => {
+test("AC4.2: securityMetadata passes custom string values through unchanged", () => {
   const result = securityMetadata({
     dataClass: "customer-pii",
     destination: "our-internal-billing-thing",
@@ -37,7 +37,7 @@ test("AC4.2: securityMetadata passes custom string values through unchanged", as
   });
 });
 
-test("AC4.3: securityMetadata omits undefined fields entirely", async () => {
+test("AC4.3: securityMetadata omits undefined fields entirely", () => {
   const result1 = securityMetadata({ user: "user_123" });
   assert.deepEqual(result1, { user: "user_123" });
 

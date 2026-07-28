@@ -3,6 +3,10 @@
  *
  * These are shared across `@arcjet/guard` test suites for consistent,
  * properly typed stub decisions and capture tracking.
+ *
+ * Every factory below asserts through `unknown` because it deliberately builds
+ * only the fields its suites read; the real `Decision` and `RuleWithInput`
+ * carry many more.
  */
 
 import type { Decision, DecisionDeny, RuleWithInput } from "../../src/types.ts";
@@ -22,25 +26,23 @@ export function stubClient(decision: Decision | Error): {
 } {
   const guardCalls: unknown[] = [];
   const captureCalls: unknown[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-unnecessary-type-assertion
   return {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-unnecessary-type-assertion
+    // oxlint-disable-next-line typescript/no-unnecessary-type-assertion, typescript/no-unsafe-type-assertion -- partial stub of the client surface
     client: {
       guard(opts: unknown): Promise<Decision> {
         guardCalls.push(opts);
         if (decision instanceof Error) return Promise.reject(decision);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion, @typescript-eslint/no-unnecessary-type-assertion
-        return Promise.resolve(decision as Decision);
+        return Promise.resolve(decision);
       },
-      // Stub for experimental_capture. The guard client currently lacks this method,
-      // so this structural typing with runtime feature detection is temporary.
-      // This collapses into the real ArcjetAgentClient type once capture lands.
+      // `experimental_capture` is not on guard's client type yet, so the stub is
+      // typed structurally and `captureEvent` feature-detects it at runtime. Both
+      // collapse into the real client type once capture lands.
       experimental_capture(opts: unknown): void {
         captureCalls.push(opts);
       },
     } as unknown as ArcjetAgentClient,
-    guardCalls: guardCalls,
-    captureCalls: captureCalls,
+    guardCalls,
+    captureCalls,
   };
 }
 
@@ -48,7 +50,7 @@ export function stubClient(decision: Decision | Error): {
  * Stub ALLOW decision.
  */
 export function decisionAllow(): Decision {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of Decision
   return {
     conclusion: "ALLOW",
     id: "gdec_allow1",
@@ -62,7 +64,7 @@ export function decisionAllow(): Decision {
  * Stub DENY decision (RATE_LIMIT).
  */
 export function decisionDenyRateLimit(resetAtUnixSeconds: number): DecisionDeny {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of DecisionDeny
   return {
     conclusion: "DENY",
     reason: "RATE_LIMIT",
@@ -82,9 +84,12 @@ export function decisionDenyRateLimit(resetAtUnixSeconds: number): DecisionDeny 
 
 /**
  * Stub fail-open ALLOW decision.
+ *
+ * `id` is empty because that is what the client synthesizes on a fail-open
+ * path; a correlatable id cannot occur here.
  */
 export function decisionFailOpenAllow(): Decision {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of Decision
   return {
     conclusion: "ALLOW",
     id: "",
@@ -98,7 +103,7 @@ export function decisionFailOpenAllow(): Decision {
  * Stub DENY decision (non-rate-limit, e.g., PROMPT_INJECTION).
  */
 export function decisionDenyPromptInjection(): DecisionDeny {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of DecisionDeny
   return {
     conclusion: "DENY",
     reason: "PROMPT_INJECTION",
@@ -121,7 +126,7 @@ export function decisionDenyPromptInjection(): DecisionDeny {
  * carries `resetAtUnixSeconds`. Exercises denialResult's non-retryable path.
  */
 export function decisionDenyPromptInjectionWithReset(resetAtUnixSeconds: number): DecisionDeny {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of DecisionDeny
   return {
     conclusion: "DENY",
     reason: "PROMPT_INJECTION",
@@ -138,8 +143,7 @@ export function decisionDenyPromptInjectionWithReset(resetAtUnixSeconds: number)
 /**
  * Stub fake rule for testing (when actual rule config is not needed).
  */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of RuleWithInput
 export const fakeRule: RuleWithInput = {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-  type: "TEST" as never,
+  type: "TEST",
 } as unknown as RuleWithInput;
