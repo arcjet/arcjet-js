@@ -114,8 +114,6 @@ export function securityMetadata(
 ): ArcjetMetadata {
   const result: Record<string, string> = {};
 
-  // Iterate the wire keys mapping using the helper, which is compile-time
-  // verified to be exhaustive by the `satisfies` constraint on WIRE_KEYS.
   for (const [field, wireKey] of WIRE_KEY_ENTRIES) {
     const value = fields[field];
     if (value !== undefined) {

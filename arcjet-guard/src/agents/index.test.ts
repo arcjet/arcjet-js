@@ -31,14 +31,6 @@ function verifyTypeExports(): void {
 verifyTypeExports();
 
 /**
- * Parse import/export statements from a file and extract specifiers.
- * Matches patterns like:
- * - import { x } from "./foo.ts"
- * - export { x } from "./bar.ts"
- * - export type { T } from "./baz.ts"
- * - import "ai" (bare side-effect import)
- */
-/**
  * Comments, template literals and ordinary string literals, in one alternation.
  * Order matters: whichever construct opens first at a given position consumes the
  * rest of itself, so a `/*` inside a string is not read as a comment and a quote
@@ -68,6 +60,14 @@ function stripCommentsAndTemplates(source: string): string {
   });
 }
 
+/**
+ * Parse import/export statements from a file and extract specifiers.
+ * Matches patterns like:
+ * - import { x } from "./foo.ts"
+ * - export { x } from "./bar.ts"
+ * - export type { T } from "./baz.ts"
+ * - import "ai" (bare side-effect import)
+ */
 function extractImportSpecifiers(content: string): string[] {
   const specifiers: string[] = [];
 
