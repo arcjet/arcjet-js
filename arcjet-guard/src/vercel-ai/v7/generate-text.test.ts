@@ -15,6 +15,24 @@ import {
   fakeRule,
 } from "../../../test/_shared/stub-client.ts";
 
+/**
+ * Read back a call the stub client recorded. The stub stores them as `unknown`
+ * because it accepts whatever the caller passed.
+ */
+function recorded(call: unknown): Record<string, unknown> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- recorded calls are untyped by construction
+  return call as Record<string, unknown>;
+}
+
+/**
+ * Read a wrapped tool's result as a denial payload. The SDK types the result as
+ * the tool's own output, so narrowing to the denial shape is the test's job.
+ */
+function asDenial(value: unknown): ArcjetDenialResult {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the SDK types results as the tool's output union
+  return value as ArcjetDenialResult;
+}
+
 test("AC1.5: Context with correlationId flows through to guard call in generateText loop", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const executeCalls: unknown[] = [];
@@ -81,7 +99,7 @@ test("AC1.5: Context with correlationId flows through to guard call in generateT
 
   assert.ok(result !== undefined, "generateText should complete");
   assert.equal(guardCalls.length, 1, "guard should be called once");
-  const guardCall = guardCalls[0] as Record<string, unknown>;
+  const guardCall = recorded(guardCalls[0]);
   assert.equal(
     guardCall.correlationId,
     "corr-e2e-1",
@@ -119,7 +137,7 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
   // Note: we do NOT pass toolsContext here
   const originalWarn = console.warn;
   const warnCalls: unknown[] = [];
-  console.warn = (...args: unknown[]) => {
+  console.warn = (...args: unknown[]): void => {
     warnCalls.push(args);
   };
 
@@ -162,7 +180,7 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
 
     assert.ok(result !== undefined, "generateText should complete");
     assert.equal(guardCalls.length, 1, "guard should be called once");
-    const guardCall = guardCalls[0] as Record<string, unknown>;
+    const guardCall = recorded(guardCalls[0]);
     assert.strictEqual(
       guardCall.correlationId,
       undefined,
@@ -258,11 +276,11 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
     (part: unknown) =>
       typeof part === "object" &&
       part !== null &&
-      (part as Record<string, unknown>).type === "tool-result",
+      recorded(part).type === "tool-result",
   );
   assert.ok(toolResultPart !== undefined, "first step should have a tool-result part");
 
-  const output = (toolResultPart as Record<string, unknown>).output as ArcjetDenialResult;
+  const output = asDenial(recorded(toolResultPart).output);
   assert.strictEqual(output.arcjetDenied, true, "output should be an ArcjetDenialResult");
   assert.equal(output.reason, "RATE_LIMIT", "denial reason should be RATE_LIMIT");
 

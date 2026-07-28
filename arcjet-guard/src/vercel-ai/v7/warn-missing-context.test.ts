@@ -40,7 +40,7 @@ test("first uncorrelated tool call warns even with ARCJET_LOG_LEVEL unset", asyn
   try {
     const wrapped = makeTool();
     assert.ok(wrapped.execute, "wrapped tool must have an execute function");
-    await wrapped.execute({ x: "a" }, { toolCallId: "t1", messages: [] } as never);
+    await wrapped.execute({ x: "a" }, { toolCallId: "t1", messages: [], context: undefined });
     assert.ok(
       warnCalls.some((c) => JSON.stringify(c).includes("no ArcjetAgentContext")),
       "the first uncorrelated call should warn even with logging off",
@@ -61,7 +61,7 @@ test("later uncorrelated calls stay silent with ARCJET_LOG_LEVEL unset", async (
   try {
     const wrapped = makeTool();
     assert.ok(wrapped.execute, "wrapped tool must have an execute function");
-    await wrapped.execute({ x: "a" }, { toolCallId: "t2", messages: [] } as never);
+    await wrapped.execute({ x: "a" }, { toolCallId: "t2", messages: [], context: undefined });
     assert.equal(
       warnCalls.length,
       0,

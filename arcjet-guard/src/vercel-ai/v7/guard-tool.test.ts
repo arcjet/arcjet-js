@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { DecisionDeny } from "../../types.ts";
+import type { Tool } from "ai";
 import { tool, jsonSchema } from "ai";
 
 import { guardTool, type ArcjetDenialResult } from "./guard-tool.ts";
@@ -18,9 +19,28 @@ import {
 } from "../../../test/_shared/stub-client.ts";
 
 /**
+ * Read back a call the stub client recorded. The stub stores them as `unknown`
+ * because it accepts whatever the caller passed.
+ */
+function recorded(call: unknown): Record<string, unknown> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- recorded calls are untyped by construction
+  return call as Record<string, unknown>;
+}
+
+/**
+ * Read a wrapped tool's result as a denial payload. The SDK types the result as
+ * the tool's own output, so narrowing to the denial shape is the test's job.
+ */
+function asDenial(value: unknown): ArcjetDenialResult {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the SDK types results as the tool's output union
+  return value as ArcjetDenialResult;
+}
+
+/**
  * Stub DENY decision (RATE_LIMIT without resetAtUnixSeconds).
  */
 function decisionDenyRateLimitNoReset(): DecisionDeny {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture that doesn't match DecisionDeny exactly
   return {
     conclusion: "DENY",
     reason: "RATE_LIMIT",
@@ -41,7 +61,11 @@ function decisionDenyRateLimitNoReset(): DecisionDeny {
 /**
  * Create a simple test tool for wrapping.
  */
-function createTestTool() {
+function createTestTool(): {
+  tool: Tool<{ id: string }, { result: string }>;
+  executeCalls: unknown[];
+  sentinel: { result: string };
+} {
   const executeCalls: unknown[] = [];
   const sentinel = { result: "success" };
 
@@ -80,6 +104,7 @@ test("AC2.1: ALLOW decision → original execute called, result returned unchang
   const result = await wrapped.execute(input, {
     toolCallId: "t1",
     messages: [],
+    context: undefined,
   });
 
   assert.deepEqual(executeCalls, [input], "original execute should be called with same input");
@@ -100,11 +125,13 @@ test("AC2.2: DENY decision → execute never called, ArcjetDenialResult returned
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
   const input = { id: "input1" };
-  const result = (await wrapped.execute(input, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  } as never)) as unknown as ArcjetDenialResult;
+  const result = asDenial(
+    await wrapped.execute(input, {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    }),
+  );
 
   assert.equal(executeCalls.length, 0, "original execute should not be called");
   assert.strictEqual(result.arcjetDenied, true);
@@ -148,7 +175,7 @@ test("AC2.3: metadata merge — context ← policy (later wins)", async () => {
   });
 
   assert.equal(guardCalls.length, 1);
-  const guardCall = guardCalls[0] as Record<string, unknown>;
+  const guardCall = recorded(guardCalls[0]);
   assert.deepEqual(guardCall.metadata, {
     user: "u1",
     workflow: "override",
@@ -179,11 +206,11 @@ test("AC2.4: ALLOW + successful execute → capture called with success outcome"
   });
 
   assert.equal(captureCalls.length, 1, "capture should be called once");
-  const captureCall = captureCalls[0] as Record<string, unknown>;
+  const captureCall = recorded(captureCalls[0]);
   assert.equal(captureCall.action, "test.action");
   assert.equal(captureCall.correlationId, "corr-1");
   assert.equal(captureCall.decisionId, "gdec_allow1");
-  const metadata = captureCall.metadata as Record<string, string>;
+  const metadata = recorded(captureCall.metadata);
   assert.equal(metadata.outcome, "success");
   assert.equal(metadata.key, "value");
 });
@@ -204,12 +231,13 @@ test("AC2.5: DENY → capture called with denied outcome and decisionId", async 
   await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
+    context: undefined,
   });
 
   assert.equal(captureCalls.length, 1, "capture should be called once on denial");
-  const captureCall = captureCalls[0] as Record<string, unknown>;
+  const captureCall = recorded(captureCalls[0]);
   assert.equal(captureCall.decisionId, "gdec_deny1");
-  const metadata = captureCall.metadata as Record<string, string>;
+  const metadata = recorded(captureCall.metadata);
   assert.equal(metadata.outcome, "denied");
 });
 
@@ -237,6 +265,7 @@ test("AC2.6: guard throws → execute runs, warning emitted", async () => {
     const result = await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
+      context: undefined,
     });
 
     assert.equal(executeCalls.length, 1, "execute should run on guard error");
@@ -277,6 +306,7 @@ test("AC2.6: guard resolves fail-open ALLOW → execute runs, fail-open warning"
     const result = await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
+      context: undefined,
     });
 
     assert.equal(executeCalls.length, 1, "execute should run on fail-open");
@@ -308,6 +338,7 @@ test("AC2.7: DENY + onDeny hook → denial reshaped", async () => {
   const result = await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
+    context: undefined,
   });
 
   assert.deepEqual(result, { blocked: "RATE_LIMIT" }, "onDeny should reshape the denial");
@@ -340,6 +371,7 @@ test("AC2.8: execute throws → error propagates, capture with error outcome", a
     await wrappedThrowingTool.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
+      context: undefined,
     });
     assert.fail("should have thrown");
   } catch (e) {
@@ -347,8 +379,8 @@ test("AC2.8: execute throws → error propagates, capture with error outcome", a
   }
 
   assert.equal(captureCalls.length, 1, "capture should fire once with error");
-  const captureCall = captureCalls[0] as Record<string, unknown>;
-  const metadata = captureCall.metadata as Record<string, string>;
+  const captureCall = recorded(captureCalls[0]);
+  const metadata = recorded(captureCall.metadata);
   assert.equal(metadata.outcome, "error");
 });
 
@@ -363,11 +395,13 @@ test("non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterS
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = (await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  } as never)) as unknown as ArcjetDenialResult;
+  const result = asDenial(
+    await wrapped.execute({ id: "input1" }, {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    }),
+  );
 
   assert.equal(executeCalls.length, 0, "execute should not be called on DENY");
   assert.strictEqual(result.arcjetDenied, true);
@@ -399,11 +433,13 @@ test("non-RATE_LIMIT DENY with a co-occurring rate-limit result → no retryAfte
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = (await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  } as never)) as unknown as ArcjetDenialResult;
+  const result = asDenial(
+    await wrapped.execute({ id: "input1" }, {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    }),
+  );
 
   assert.strictEqual(result.retryable, false, "non-rate-limit denials are not retryable");
   assert.strictEqual(
@@ -424,11 +460,13 @@ test("RATE_LIMIT DENY without resetAtUnixSeconds → retryable=true, no retryAft
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = (await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  } as never)) as unknown as ArcjetDenialResult;
+  const result = asDenial(
+    await wrapped.execute({ id: "input1" }, {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    }),
+  );
 
   assert.equal(executeCalls.length, 0, "execute should not be called on DENY");
   assert.strictEqual(result.arcjetDenied, true);
@@ -461,8 +499,8 @@ test("AC1.7: explicit correlationId override", async () => {
     context: ctx,
   });
 
-  assert.equal((guardCalls[0] as Record<string, unknown>).correlationId, "explicit-1");
-  assert.equal((captureCalls[0] as Record<string, unknown>).correlationId, "explicit-1");
+  assert.equal(recorded(guardCalls[0]).correlationId, "explicit-1");
+  assert.equal(recorded(captureCalls[0]).correlationId, "explicit-1");
 });
 
 test("Capture-only mode: no rules → guard skipped, execute runs, capture fires", async () => {
@@ -479,15 +517,16 @@ test("Capture-only mode: no rules → guard skipped, execute runs, capture fires
   const result = await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
+    context: undefined,
   });
 
   assert.equal(guardCalls.length, 0, "guard should not be called in capture-only mode");
   assert.equal(executeCalls.length, 1, "execute should run");
   assert.strictEqual(result, sentinel);
   assert.equal(captureCalls.length, 1, "capture should fire");
-  const captureCall = captureCalls[0] as Record<string, unknown>;
+  const captureCall = recorded(captureCalls[0]);
   assert.strictEqual(captureCall.decisionId, undefined, "no decisionId in capture-only");
-  const metadata = captureCall.metadata as Record<string, string>;
+  const metadata = recorded(captureCall.metadata);
   assert.equal(metadata.outcome, "success");
 });
 
@@ -505,6 +544,7 @@ test("Capture-only mode: empty rules array → guard skipped", async () => {
   const result = await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
+    context: undefined,
   });
 
   assert.equal(guardCalls.length, 0, "guard should not be called with empty rules");
@@ -515,6 +555,7 @@ test("Capture-only mode: empty rules array → guard skipped", async () => {
 test("Missing capture support: client without experimental_capture → warning only", async () => {
   const { client } = stubClient(decisionAllow());
   // Remove experimental_capture to simulate an old client
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- deleting test fixture property by dynamic key
   delete (client as unknown as Record<string, unknown>).experimental_capture;
 
   const { tool: testTool } = createTestTool();
@@ -537,6 +578,7 @@ test("Missing capture support: client without experimental_capture → warning o
     await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
+      context: undefined,
     });
 
     assert.ok(
@@ -573,9 +615,10 @@ test("AC1.6: no context → warning, guard check runs uncorrelated", async () =>
     await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
+      context: undefined,
     });
 
-    assert.strictEqual((guardCalls[0] as Record<string, unknown>).correlationId, undefined);
+    assert.strictEqual(recorded(guardCalls[0]).correlationId, undefined);
     assert.ok(
       warnCalls.some((call) => JSON.stringify(call).includes("no ArcjetAgentContext")),
       "warning should mention missing context",
@@ -589,11 +632,12 @@ test("AC1.6: no context → warning, guard check runs uncorrelated", async () =>
 test("Wrap-time error: tool without execute function throws", () => {
   const { client } = stubClient(decisionAllow());
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally create invalid tool fixture
   const toolWithoutExecute = {
     name: "bad_tool",
     description: "Tool without execute",
     parameters: {},
-  } as any;
+  } as unknown as Tool<unknown, unknown>;
 
   assert.throws(() => {
     guardTool(client, toolWithoutExecute, {
@@ -606,6 +650,7 @@ test("Wrap-time error: tool without execute function throws", () => {
 test("Wrap-time error: tool with contextSchema throws", () => {
   const { client } = stubClient(decisionAllow());
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally pass tool with contextSchema to test error
   const toolWithContextSchema = tool({
     description: "Test tool",
     inputSchema: jsonSchema<{ id: string }>({
@@ -615,7 +660,7 @@ test("Wrap-time error: tool with contextSchema throws", () => {
     }),
     execute: (): Promise<Record<string, unknown>> => Promise.resolve({}),
     contextSchema: jsonSchema({ type: "object" }),
-  } as any);
+  } as unknown as Tool<{ id: string }, Record<string, unknown>>);
 
   assert.throws(() => {
     guardTool(client, toolWithContextSchema, {
@@ -633,6 +678,7 @@ test("Injected contextSchema: validates correlationId and metadata shapes", () =
     action: "test.action",
     rules: [fakeRule],
   });
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- contextSchema is typed as opaque; test needs the validate method
   const schema = wrapped.contextSchema as unknown as {
     validate(value: unknown): { success: boolean };
   };
@@ -692,6 +738,7 @@ test("Policy rules as a function: applied per input", async () => {
   await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
+    context: undefined,
   });
   assert.equal(guardCalls.length, 1, "first call should invoke guard");
 
@@ -699,6 +746,7 @@ test("Policy rules as a function: applied per input", async () => {
   await wrapped.execute({ id: "skip" }, {
     toolCallId: "t2",
     messages: [],
+    context: undefined,
   });
   assert.equal(guardCalls.length, 1, "second call should not invoke guard (empty rules)");
 });
@@ -731,7 +779,7 @@ test("Policy metadata as a function: applied per input, merged after context", a
   });
 
   assert.equal(metadataCalls.length, 1);
-  const guardCall = guardCalls[0] as Record<string, unknown>;
+  const guardCall = recorded(guardCalls[0]);
   assert.deepEqual(guardCall.metadata, {
     context_key: "context_val",
     input_id: "input1",
@@ -756,11 +804,13 @@ test("AC4.11: guard throws with default onGuardError: 'deny' → execute not cal
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = (await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  } as never)) as unknown as ArcjetDenialResult;
+  const result = asDenial(
+    await wrapped.execute({ id: "input1" }, {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    }),
+  );
 
   assert.equal(executeCalls.length, 0, "execute should not be called when guard throws with deny mode");
   assert.equal(onDenyCalls.length, 0, "onDeny should not be called for unavailable signal");
@@ -781,11 +831,13 @@ test("AC4.11: guard fails open with default onGuardError: 'deny' → execute not
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = (await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  } as never)) as unknown as ArcjetDenialResult;
+  const result = asDenial(
+    await wrapped.execute({ id: "input1" }, {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    }),
+  );
 
   assert.equal(executeCalls.length, 0, "execute should not be called when decision fails open with deny mode");
   assert.strictEqual(result.arcjetDenied, true);
@@ -818,6 +870,7 @@ test("AC4.11: guard throws with onGuardError: 'allow' → execute runs, warning 
     const result = await wrapped.execute({ id: "input1" }, {
       toolCallId: "t1",
       messages: [],
+      context: undefined,
     });
 
     assert.equal(executeCalls.length, 1, "execute should run with allow mode");
