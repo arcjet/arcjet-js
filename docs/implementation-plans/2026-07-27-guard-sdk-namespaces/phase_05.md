@@ -573,7 +573,7 @@ The complete list of sources — **all** of these, not a subset:
 |---|---|
 | `arcjet-guard/README.md` | all TS code blocks, incl. the ported usage docs from Task 6 |
 | `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` | all TS code blocks |
-| `arcjet-guard/src/agents/index.ts` | `@packageDocumentation` + `@example` |
+| `arcjet-guard/src/agents/index.ts` | `@packageDocumentation` (no separate `@example`) |
 | `arcjet-guard/src/agents/context.ts` | `@example` |
 | `arcjet-guard/src/agents/vocabulary.ts` | 1 `@example` |
 | `arcjet-guard/src/agents/guard-action.ts` | **3** `@example` blocks |

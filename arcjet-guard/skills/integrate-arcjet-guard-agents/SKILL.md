@@ -154,26 +154,44 @@ further ones are silent unless `ARCJET_LOG_LEVEL` is set — so run once with
 ## Step 6: Wrap app-invoked actions; capture side effects
 
 ```ts
-import { ArcjetGuardUnavailableError, captureAction, guardAction } from "@arcjet/guard/agents";
+import {
+  ArcjetDeniedError,
+  ArcjetGuardUnavailableError,
+  captureAction,
+  guardAction,
+} from "@arcjet/guard/agents";
 
-await guardAction(
-  arcjet,
-  ctx,
-  {
-    action: "review.submitted",
-    rules: [submitLimit({ key: repoId })],
-    metadata: securityMetadata({ destination: "github", reversibility: "compensable" }),
-  },
-  async () => {
-    // Example: calling an external service (e.g. GitHub API client)
-    return await externalServiceClient.pulls.createReview({
-      owner: repoOwner,
-      repo: repoName,
-      pull_number: prNumber,
-      body: reviewText,
-    });
-  },
-);
+try {
+  await guardAction(
+    arcjet,
+    ctx,
+    {
+      action: "review.submitted",
+      rules: [submitLimit({ key: repoId })],
+      metadata: securityMetadata({ destination: "github", reversibility: "compensable" }),
+    },
+    async () => {
+      // Example: calling an external service (e.g. GitHub API client)
+      return await externalServiceClient.pulls.createReview({
+        owner: repoOwner,
+        repo: repoName,
+        pull_number: prNumber,
+        body: reviewText,
+      });
+    },
+  );
+} catch (error) {
+  if (error instanceof ArcjetDeniedError) {
+    // A rule denied the call. Tell the user why; do not retry.
+    console.warn("denied:", error.decision.reason);
+  } else if (error instanceof ArcjetGuardUnavailableError) {
+    // The policy could not be evaluated. Distinct from a denial, and usually
+    // the one worth alerting on.
+    console.warn("policy unavailable for:", error.action);
+  } else {
+    throw error;
+  }
+}
 
 captureAction(arcjet, ctx, {
   action: "notification.sent",
