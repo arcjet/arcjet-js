@@ -9,7 +9,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@arcjet/ai": "file:../../arcjet-ai",
     "@arcjet/guard": "file:../../arcjet-guard",
     "ai": "^7.0.36",
     "next": "16.2.6",

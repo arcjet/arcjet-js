@@ -1,4 +1,4 @@
-import { createAiContext, securityMetadata } from "@arcjet/ai";
+import { createAgentContext, securityMetadata } from "@arcjet/guard/agents";
 import { start } from "workflow/api";
 import { NextResponse } from "next/server";
 import { supportAgentWorkflow } from "@/workflows/support-agent";
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   // One context per run; its correlation ID joins every guard decision and
   // capture event this run produces. Pass an existing ID (e.g. a ticket or
   // request ID) instead to join Arcjet data to your own systems.
-  const ctx = createAiContext({
+  const ctx = createAgentContext({
     metadata: securityMetadata({
       agent: "support-agent",
       workflow: "support-request",

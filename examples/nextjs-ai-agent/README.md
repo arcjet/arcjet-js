@@ -76,7 +76,7 @@ receive a structured denial and apologize instead of retrying.
 This example calls `captureAction()` and guarded tools/actions to record capture events
 (`order.looked-up`, `ticket.updated`, `notification.sent`), but this requires
 a version of `@arcjet/guard` that ships `experimental_capture()`. Until that version is
-published, only guard decisions appear in the dashboard, and `@arcjet/ai` logs a warning at the
+published, only guard decisions appear in the dashboard, and `@arcjet/guard` logs a warning at the
 `warn` level (set `ARCJET_LOG_LEVEL=warn` to see it).
 
 Once `@arcjet/guard` ships `experimental_capture()`, re-run this example to see capture events

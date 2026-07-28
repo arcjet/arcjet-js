@@ -1,11 +1,11 @@
 import {
   aiToolsContext,
   captureAction,
-  protectAction,
-  protectTool,
+  guardAction,
+  guardTool,
   securityMetadata,
-} from "@arcjet/ai";
-import type { ArcjetAiContext } from "@arcjet/ai";
+} from "@arcjet/guard/vercel-ai/v7";
+import type { ArcjetAgentContext } from "@arcjet/guard/vercel-ai/v7";
 import { slidingWindow, tokenBucket } from "@arcjet/guard";
 import { generateText, stepCountIs, tool } from "ai";
 import { z } from "zod";
@@ -13,7 +13,7 @@ import { arcjet } from "@/lib/arcjet";
 
 export interface SupportAgentInput {
   question: string;
-  ctx: ArcjetAiContext;
+  ctx: ArcjetAgentContext;
 }
 
 // Rule configs are created once at module scope; inputs per call.
@@ -36,7 +36,10 @@ const baseMetadata = securityMetadata({
 });
 
 const tools = {
-  lookupOrder: protectTool(
+  // Tool rules can be derived from the parsed input (orderNumber here).
+  // Moderation rules could be computed the same way. An explicit guardAction()
+  // inside execute() is also supported if you prefer visible control flow.
+  lookupOrder: guardTool(
     arcjet,
     tool({
       description: "Look up an order by its number.",
@@ -47,7 +50,11 @@ const tools = {
     }),
     {
       action: "order.looked-up",
-      rules: () => [lookupLimit({ key: "demo-user", requested: 1 })],
+      // Order lookup is read-only; allow it even if policy evaluation fails.
+      onGuardError: "allow",
+      rules: ({ orderNumber }) => [
+        lookupLimit({ key: `order:${orderNumber}`, requested: 1 }),
+      ],
       metadata: ({ orderNumber }) =>
         securityMetadata({ resource: `order:${orderNumber}` }),
     },
@@ -78,7 +85,12 @@ async function stepRunAgent(input: SupportAgentInput) {
 
 async function stepUpdateTicket(input: SupportAgentInput, answer: string) {
   "use step";
-  await protectAction(
+  // An unevaluable policy blocks the call by default (onGuardError: "deny").
+  // This is appropriate for a write that creates a ticket; see the lookupOrder
+  // tool for an example of onGuardError: "allow" (read-only availability-first).
+  // An explicit guardAction() call inside the execute block is also supported
+  // if you prefer visible control flow over automatic context injection.
+  await guardAction(
     arcjet,
     input.ctx,
     {
