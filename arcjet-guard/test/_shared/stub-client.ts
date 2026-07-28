@@ -141,6 +141,26 @@ export function decisionDenyPromptInjectionWithReset(resetAtUnixSeconds: number)
 }
 
 /**
+ * Stub DENY decision whose reason is `ERROR`.
+ *
+ * The server can issue this: `Reason` includes `"ERROR"`, and a decision's
+ * reason is carried through onto a `DENY` conclusion. It is a real denial and
+ * must not be mistaken for the guard-unavailable path, which reports the same
+ * reason but is reached without a decision at all.
+ */
+export function decisionDenyError(): DecisionDeny {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of DecisionDeny
+  return {
+    conclusion: "DENY",
+    reason: "ERROR",
+    id: "gdec_deny_error",
+    results: [{ conclusion: "DENY", reason: "ERROR", type: "ERROR" }],
+    warnings: [],
+    hasFailedOpen: () => false,
+  } as unknown as DecisionDeny;
+}
+
+/**
  * Stub fake rule for testing (when actual rule config is not needed).
  */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of RuleWithInput

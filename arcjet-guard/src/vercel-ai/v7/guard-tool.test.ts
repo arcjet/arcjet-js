@@ -13,6 +13,7 @@ import {
   stubClient,
   decisionAllow,
   decisionDenyRateLimit,
+  decisionDenyError,
   decisionFailOpenAllow,
   decisionDenyPromptInjection,
   decisionDenyPromptInjectionWithReset,
@@ -787,7 +788,7 @@ test("Policy metadata as a function: applied per input, merged after context", a
 
 test("AC4.11: guard throws with default onGuardError: 'deny' → execute not called, ERROR result, no onDeny call", async () => {
   const guardError = new Error("guard API error");
-  const { client } = stubClient(guardError);
+  const { client, captureCalls } = stubClient(guardError);
   const { tool: testTool, executeCalls } = createTestTool();
 
   const onDenyCalls: unknown[] = [];
@@ -817,6 +818,44 @@ test("AC4.11: guard throws with default onGuardError: 'deny' → execute not cal
   assert.strictEqual(result.reason, "ERROR");
   assert.strictEqual(result.retryable, true);
   assert.strictEqual(result.retryAfterSeconds, 5, "must have fixed 5-second backoff");
+  assert.equal(captureCalls.length, 1, "capture should fire once");
+  assert.equal(
+    recorded(recorded(captureCalls[0]).metadata).outcome,
+    "unavailable",
+    "capture outcome must be unavailable, not denied",
+  );
+});
+
+test("AC4.3: a real DENY carrying reason ERROR is not retryable and has no backoff hint", async () => {
+  const { client } = stubClient(decisionDenyError());
+  const { tool: testTool, executeCalls } = createTestTool();
+
+  const wrapped = guardTool(client, testTool, {
+    action: "test.action",
+    rules: [fakeRule],
+  });
+
+  assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
+
+  const result = asDenial(
+    await wrapped.execute({ id: "input1" }, {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    }),
+  );
+
+  // A server-issued DENY can carry reason "ERROR". It is a real denial, so it
+  // must not pick up the guard-unavailable path's retry affordances.
+  assert.equal(executeCalls.length, 0, "execute should not be called on DENY");
+  assert.strictEqual(result.arcjetDenied, true);
+  assert.strictEqual(result.reason, "ERROR");
+  assert.strictEqual(result.retryable, false, "a real denial is not retryable");
+  assert.strictEqual(
+    result.retryAfterSeconds,
+    undefined,
+    "a real denial carries no backoff hint, even when its reason is ERROR",
+  );
 });
 
 test("AC4.11: guard fails open with default onGuardError: 'deny' → execute not called, ERROR result", async () => {
