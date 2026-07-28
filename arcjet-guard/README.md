@@ -769,6 +769,7 @@ directly inside the tool's `execute` block:
 
 ```ts
 import { tool } from "ai";
+import { z } from "zod";
 
 const tools = {
   getData: tool({
@@ -1004,7 +1005,7 @@ No changes to the shared layer, the build config, or the root export are require
 
 ## Example
 
-For a complete working example integrating `@arcjet/guard` with the Vercel AI SDK, see [examples/nextjs-ai-agent](../../examples/nextjs-ai-agent/), which demonstrates wrapping agent tools with guard checks, enforcing rules on application-invoked actions, and emitting audit events joined by correlation ID.
+For a complete working example integrating `@arcjet/guard` with the Vercel AI SDK, see [examples/nextjs-ai-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-ai-agent), which demonstrates wrapping agent tools with guard checks, enforcing rules on application-invoked actions, and emitting audit events joined by correlation ID.
 
 ## Agent skill
 

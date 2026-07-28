@@ -71,6 +71,10 @@ To see the rate limit in action, ask the agent several questions quickly. After 
 requests (spread across 60 seconds), the `lookupOrder` tool will be denied, and the model will
 receive a structured denial and apologize instead of retrying.
 
+## Configuration note
+
+The `tsconfig.json` sets `"jsx": "react-jsx"` because Next.js automatically rewrites this to `react-jsx` on every build using the React automatic JSX runtime. The file is kept at `react-jsx` rather than `preserve` to keep builds idempotent and avoid unnecessary git diffs.
+
 ## Capture events note
 
 This example calls `captureAction()` and guarded tools/actions to record capture events
