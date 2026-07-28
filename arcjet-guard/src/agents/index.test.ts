@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -13,6 +13,7 @@ import type {
   OnGuardError,
   SecurityMetadataFields,
 } from "./index.ts";
+import { extractImportSpecifiers, collectTsFiles, sortedKeys } from "../../test/_shared/source-scan.ts";
 
 // Verify type exports exist - test will fail at typecheck if these types don't exist
 function verifyTypeExports(): void {
@@ -30,109 +31,10 @@ function verifyTypeExports(): void {
 // Ensure the verification function is called
 verifyTypeExports();
 
-/**
- * Comments, template literals and ordinary string literals, in one alternation.
- * Order matters: whichever construct opens first at a given position consumes the
- * rest of itself, so a `/*` inside a string is not read as a comment and a quote
- * inside a comment is not read as a string.
- */
-const COMMENT_OR_STRING =
-  /\/\/[^\n]*|\/\*[\s\S]*?\*\/|`(?:\\[\s\S]|[^\\`])*`|"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*'/g;
-
-/**
- * Blank out anything that can masquerade as an import.
- *
- * Comments become equivalent runs of spaces, preserving newlines so the
- * line-anchored patterns below still see the real line structure. Template
- * literals are emptied, because an import specifier is never written with
- * backticks but a template can contain the text of a whole import statement.
- * Ordinary string literals are left intact — they carry the specifiers we want.
- */
-function stripCommentsAndTemplates(source: string): string {
-  return source.replaceAll(COMMENT_OR_STRING, (token) => {
-    if (token.startsWith("//") || token.startsWith("/*")) {
-      return token.replaceAll(/[^\n]/g, " ");
-    }
-    if (token.startsWith("`")) {
-      return "``";
-    }
-    return token;
-  });
-}
-
-/**
- * Parse import/export statements from a file and extract specifiers.
- * Matches patterns like:
- * - import { x } from "./foo.ts"
- * - export { x } from "./bar.ts"
- * - export type { T } from "./baz.ts"
- * - import "ai" (bare side-effect import)
- */
-function extractImportSpecifiers(content: string): string[] {
-  const specifiers: string[] = [];
-
-  const cleanContent = stripCommentsAndTemplates(content);
-
-  // Match import/export statements anchored to line start. `=` is excluded along
-  // with `;` so a declaration such as `export const NOTE = "... from 'ai'"` cannot
-  // be read as an import of `ai`.
-  const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
-  // Match bare side-effect imports: import "package"
-  const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
-
-  let match: RegExpExecArray | null;
-
-  // Check import...from patterns
-  while ((match = importFromRegex.exec(cleanContent)) !== null) {
-    const specifier = match[1];
-    if (specifier !== undefined) {
-      specifiers.push(specifier);
-    }
-  }
-
-  // Check bare imports
-  while ((match = bareImportRegex.exec(cleanContent)) !== null) {
-    const specifier = match[1];
-    if (specifier !== undefined) {
-      specifiers.push(specifier);
-    }
-  }
-
-  return specifiers;
-}
-
-/**
- * Recursively collect all .ts files from a directory.
- */
-function collectTsFiles(dir: string): string[] {
-  const filesToCheck: string[] = [];
-
-  function walk(dirPath: string): void {
-    try {
-      const entries = readdirSync(dirPath, { withFileTypes: true });
-      for (const entry of entries) {
-        const entryName = entry.name;
-        if (entry.isFile() && entryName.endsWith(".ts")) {
-          filesToCheck.push(resolve(dirPath, entryName));
-        } else if (entry.isDirectory() && !entryName.startsWith(".")) {
-          walk(resolve(dirPath, entryName));
-        }
-      }
-    } catch {
-      // Ignore missing directories
-    }
-  }
-
-  walk(dir);
-  return filesToCheck;
-}
-
 // AC5.1: Verify the barrel exports exactly the expected runtime values
 // Type-only exports (ArcjetAgentContext, etc.) are verified separately via imports
 test("exports the correct runtime values (AC5.1)", () => {
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- Object.keys with namespace imports, then toSorted
-  const exportedNames = Object.keys(agents).toSorted();
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- Array literal is safe, then toSorted
+  const exportedNames = sortedKeys(agents);
   const expectedRuntimeNames = [
     "ArcjetDeniedError",
     "ArcjetGuardUnavailableError",
@@ -140,7 +42,7 @@ test("exports the correct runtime values (AC5.1)", () => {
     "createAgentContext",
     "guardAction",
     "securityMetadata",
-  ].toSorted();
+  ];
 
   assert.deepEqual(exportedNames, expectedRuntimeNames, "runtime exports must match expected list exactly");
 });

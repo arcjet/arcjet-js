@@ -21,34 +21,45 @@
  *
  * @example
  * ```ts
- * import { guardTool, createAgentContext } from "@arcjet/guard/vercel-ai/v7";
+ * import { launchArcjet, tokenBucket } from "@arcjet/guard";
+ * import { guardTool, createAgentContext, aiToolsContext } from "@arcjet/guard/vercel-ai/v7";
  * import { openai } from "@ai-sdk/openai";
- * import { generateText } from "ai";
+ * import { tool, jsonSchema, generateText } from "ai";
  *
- * const client = openai("gpt-4");
- * const context = createAgentContext();
+ * const arcjetClient = launchArcjet({ key: process.env.ARCJET_KEY! });
+ * const languageModel = openai("gpt-4");
  *
- * const tools = {
- *   searchWeb: guardTool(
- *     {
- *       description: "Search the web",
- *       execute: async (query: string) => {
- *         return await fetch(`https://search.example/?q=${query}`);
- *       },
- *     },
- *     {
- *       action: "search.web",
- *       rules: [
- *         // Define rate limits or detection rules here
- *       ],
- *     },
- *   ),
+ * const searchWebTool = tool({
+ *   description: "Search the web",
+ *   inputSchema: jsonSchema<{ query: string }>({
+ *     type: "object",
+ *     properties: { query: { type: "string" } },
+ *     required: ["query"],
+ *   }),
+ *   execute: async (input) => {
+ *     const response = await fetch(`https://search.example/?q=${input.query}`);
+ *     return await response.text();
+ *   },
+ * });
+ *
+ * const searchLimit = tokenBucket({
+ *   refillRate: 10,
+ *   intervalSeconds: 60,
+ *   maxTokens: 10,
+ * });
+ *
+ * const protectedTools = {
+ *   searchWeb: guardTool(arcjetClient, searchWebTool, {
+ *     action: "search.web",
+ *     rules: () => [searchLimit({ key: "user-123", requested: 1 })],
+ *   }),
  * };
  *
+ * const ctx = createAgentContext({ correlationId: "req-456" });
  * const result = await generateText({
- *   model: client,
- *   tools,
- *   toolsContext: { search: context },
+ *   model: languageModel,
+ *   tools: protectedTools,
+ *   toolsContext: aiToolsContext(ctx, protectedTools),
  *   messages: [{ role: "user", content: "Search for arcjet" }],
  * });
  * ```

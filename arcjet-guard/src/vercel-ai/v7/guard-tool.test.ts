@@ -5,9 +5,10 @@ import type { DecisionDeny } from "../../types.ts";
 import type { Tool } from "ai";
 import { tool, jsonSchema } from "ai";
 
-import { guardTool, type ArcjetDenialResult } from "./guard-tool.ts";
+import { guardTool } from "./guard-tool.ts";
 import { createAgentContext } from "../../agents/context.ts";
 import { setLogLevel } from "../../../test/_shared/log-level.ts";
+import { recorded, asDenial } from "../../../test/_shared/source-scan.ts";
 import {
   stubClient,
   decisionAllow,
@@ -17,24 +18,6 @@ import {
   decisionDenyPromptInjectionWithReset,
   fakeRule,
 } from "../../../test/_shared/stub-client.ts";
-
-/**
- * Read back a call the stub client recorded. The stub stores them as `unknown`
- * because it accepts whatever the caller passed.
- */
-function recorded(call: unknown): Record<string, unknown> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- recorded calls are untyped by construction
-  return call as Record<string, unknown>;
-}
-
-/**
- * Read a wrapped tool's result as a denial payload. The SDK types the result as
- * the tool's own output, so narrowing to the denial shape is the test's job.
- */
-function asDenial(value: unknown): ArcjetDenialResult {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the SDK types results as the tool's output union
-  return value as ArcjetDenialResult;
-}
 
 /**
  * Stub DENY decision (RATE_LIMIT without resetAtUnixSeconds).
@@ -136,7 +119,11 @@ test("AC2.2: DENY decision → execute never called, ArcjetDenialResult returned
   assert.equal(executeCalls.length, 0, "original execute should not be called");
   assert.strictEqual(result.arcjetDenied, true);
   assert.equal(result.reason, "RATE_LIMIT");
-  assert.ok(result.message.length > 0, "message should be non-empty");
+  assert.ok(
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test narrows message to string to check length
+    (result.message as string).length > 0,
+    "message should be non-empty",
+  );
   assert.strictEqual(result.retryable, true);
   assert.ok(
     typeof result.retryAfterSeconds === "number" &&
@@ -413,7 +400,8 @@ test("non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterS
     "no retryAfterSeconds for non-rate-limit",
   );
   assert.ok(
-    result.message.includes("Do not retry"),
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test narrows message to string to check includes
+    (result.message as string).includes("Do not retry"),
     "non-retryable message should advise not retrying",
   );
 });
@@ -474,7 +462,8 @@ test("RATE_LIMIT DENY without resetAtUnixSeconds → retryable=true, no retryAft
   assert.strictEqual(result.retryable, true, "rate-limit denials are retryable");
   assert.strictEqual(result.retryAfterSeconds, undefined, "no reset time available");
   assert.ok(
-    result.message.includes(" later."),
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test narrows message to string to check includes
+    (result.message as string).includes(" later."),
     "message should say 'may be retried later' when no reset time",
   );
 });
@@ -717,6 +706,16 @@ test("Injected contextSchema: validates correlationId and metadata shapes", () =
     false,
     "non-object metadata is rejected",
   );
+  assert.equal(
+    schema.validate("nope").success,
+    false,
+    "non-object value is rejected",
+  );
+  assert.equal(
+    schema.validate(null).success,
+    false,
+    "null value is rejected",
+  );
 });
 
 test("Policy rules as a function: applied per input", async () => {
@@ -821,12 +820,17 @@ test("AC4.11: guard throws with default onGuardError: 'deny' → execute not cal
 });
 
 test("AC4.11: guard fails open with default onGuardError: 'deny' → execute not called, ERROR result", async () => {
-  const { client } = stubClient(decisionFailOpenAllow());
+  const { client, captureCalls } = stubClient(decisionFailOpenAllow());
   const { tool: testTool, executeCalls } = createTestTool();
 
+  const onDenyCalls: unknown[] = [];
   const wrapped = guardTool(client, testTool, {
     action: "test.action",
     rules: [fakeRule],
+    onDeny: (decision: DecisionDeny) => {
+      onDenyCalls.push(decision);
+      return { blocked: decision.reason };
+    },
   });
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
@@ -840,6 +844,16 @@ test("AC4.11: guard fails open with default onGuardError: 'deny' → execute not
   );
 
   assert.equal(executeCalls.length, 0, "execute should not be called when decision fails open with deny mode");
+  assert.equal(onDenyCalls.length, 0, "onDeny should not be called for unavailable signal");
+  assert.equal(captureCalls.length, 1, "capture should fire once with unavailable");
+  const captureCall = recorded(captureCalls[0]);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test narrows metadata to object for property access
+  const metadata = captureCall.metadata as Record<string, unknown>;
+  assert.strictEqual(
+    metadata?.outcome,
+    "unavailable",
+    "capture outcome must be unavailable, not denied",
+  );
   assert.strictEqual(result.arcjetDenied, true);
   assert.strictEqual(result.reason, "ERROR");
   assert.strictEqual(result.retryable, true);

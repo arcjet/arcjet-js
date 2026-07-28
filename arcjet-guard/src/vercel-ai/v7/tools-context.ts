@@ -18,17 +18,22 @@ import type { ArcjetAgentContext } from "../../agents/context.ts";
  * @example
  * ```ts
  * import { launchArcjet, tokenBucket } from "@arcjet/guard";
- * import { createAgentContext, guardTool } from "@arcjet/guard/vercel-ai/v7";
- * import { generateText } from "ai";
+ * import { createAgentContext, guardTool, aiToolsContext } from "@arcjet/guard/vercel-ai/v7";
+ * import { tool, generateText } from "ai";
  *
- * const client = launchArcjet({ key: process.env.ARCJET_KEY! });
+ * const arcjetClient = launchArcjet({ key: process.env.ARCJET_KEY! });
  * const ctx = createAgentContext();
- * const protectedTools = { sendEmail: guardTool(client, sendEmailTool, {...}) };
+ * const protectedTools = {
+ *   sendEmail: guardTool(arcjetClient, sendEmailTool, {
+ *     action: "email.sent",
+ *     rules: [tokenBucket({ refillRate: 5, intervalSeconds: 60, maxTokens: 5 })],
+ *   }),
+ * };
  * const result = await generateText({
- *   model,
+ *   model: languageModel,
  *   tools: protectedTools,
  *   toolsContext: aiToolsContext(ctx, protectedTools),
- *   prompt: "Send confirmation",
+ *   messages: [{ role: "user", content: "Send confirmation" }],
  * });
  * ```
  */

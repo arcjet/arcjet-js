@@ -4,34 +4,17 @@ import { test } from "node:test";
 import { generateText, stepCountIs, tool, jsonSchema } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 
-import { guardTool, type ArcjetDenialResult } from "./guard-tool.ts";
+import { guardTool } from "./guard-tool.ts";
 import { aiToolsContext } from "./tools-context.ts";
 import { createAgentContext } from "../../agents/context.ts";
 import { setLogLevel } from "../../../test/_shared/log-level.ts";
+import { recorded, asDenial } from "../../../test/_shared/source-scan.ts";
 import {
   stubClient,
   decisionAllow,
   decisionDenyRateLimit,
   fakeRule,
 } from "../../../test/_shared/stub-client.ts";
-
-/**
- * Read back a call the stub client recorded. The stub stores them as `unknown`
- * because it accepts whatever the caller passed.
- */
-function recorded(call: unknown): Record<string, unknown> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- recorded calls are untyped by construction
-  return call as Record<string, unknown>;
-}
-
-/**
- * Read a wrapped tool's result as a denial payload. The SDK types the result as
- * the tool's own output, so narrowing to the denial shape is the test's job.
- */
-function asDenial(value: unknown): ArcjetDenialResult {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the SDK types results as the tool's output union
-  return value as ArcjetDenialResult;
-}
 
 test("AC1.5: Context with correlationId flows through to guard call in generateText loop", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());

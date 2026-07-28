@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -8,6 +8,11 @@ import * as agentsBarrel from "../../agents/index.ts";
 import type { Tool } from "ai";
 
 import type { ArcjetDenialResult, GuardToolPolicy } from "./index.ts";
+import {
+  collectTsFiles,
+  extractImportSpecifiers,
+  sortedKeys,
+} from "../../../test/_shared/source-scan.ts";
 
 // `Object.keys` on a namespace import never lists type-only exports, so assert
 // them at type level instead: this stops compiling if the barrel drops one.
@@ -18,76 +23,6 @@ function verifyTypeExports(): void {
 }
 
 verifyTypeExports();
-
-/**
- * Comments, template literals and ordinary string literals, in one alternation.
- * Order matters: whichever construct opens first at a given position consumes the
- * rest of itself, so a `/*` inside a string is not read as a comment and a quote
- * inside a comment is not read as a string.
- */
-const COMMENT_OR_STRING =
-  /\/\/[^\n]*|\/\*[\s\S]*?\*\/|`(?:\\[\s\S]|[^\\`])*`|"(?:\\[\s\S]|[^\\"])*"|'(?:\\[\s\S]|[^\\'])*'/g;
-
-/**
- * Blank out anything that can masquerade as an import.
- *
- * Comments become equivalent runs of spaces, preserving newlines so the
- * line-anchored patterns below still see the real line structure. Template
- * literals are emptied, because an import specifier is never written with
- * backticks but a template can contain the text of a whole import statement.
- * Ordinary string literals are left intact — they carry the specifiers we want.
- */
-function stripCommentsAndTemplates(source: string): string {
-  return source.replaceAll(COMMENT_OR_STRING, (token) => {
-    if (token.startsWith("//") || token.startsWith("/*")) {
-      return token.replaceAll(/[^\n]/g, " ");
-    }
-    if (token.startsWith("`")) {
-      return "``";
-    }
-    return token;
-  });
-}
-
-/**
- * Parse import/export statements from a file and extract specifiers.
- * Matches patterns like:
- * - import { x } from "./foo.ts"
- * - export { x } from "./bar.ts"
- * - import "ai" (bare side-effect import)
- */
-function extractImportSpecifiers(content: string): string[] {
-  const specifiers: string[] = [];
-
-  const cleanContent = stripCommentsAndTemplates(content);
-
-  // Match import/export statements anchored to line start. `=` is excluded along
-  // with `;` so a declaration such as `export const NOTE = "... from 'ai'"` cannot
-  // be read as an import of `ai`.
-  const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
-  // Match bare side-effect imports: import "package"
-  const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
-
-  let match: RegExpExecArray | null;
-
-  // Check import...from patterns
-  while ((match = importFromRegex.exec(cleanContent)) !== null) {
-    const specifier = match[1];
-    if (specifier !== undefined) {
-      specifiers.push(specifier);
-    }
-  }
-
-  // Check bare imports
-  while ((match = bareImportRegex.exec(cleanContent)) !== null) {
-    const specifier = match[1];
-    if (specifier !== undefined) {
-      specifiers.push(specifier);
-    }
-  }
-
-  return specifiers;
-}
 
 // AC1.3: Namespace exports guardTool and aiToolsContext as functions
 test("AC1.3: exports guardTool and aiToolsContext", () => {
@@ -116,10 +51,8 @@ test("AC1.4: shared exports have same function identity", () => {
   }
 
   // Verify namespace is a strict superset of agents barrel
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
-  const v7Keys: string[] = Object.keys(v7Namespace).toSorted();
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
-  const agentKeys: string[] = Object.keys(agentsBarrel).toSorted();
+  const v7Keys = Object.keys(v7Namespace);
+  const agentKeys = Object.keys(agentsBarrel);
 
   for (const key of agentKeys) {
     assert.ok(
@@ -128,10 +61,11 @@ test("AC1.4: shared exports have same function identity", () => {
     );
   }
 
-  // v7 has at least the agents keys plus guardTool
-  assert.ok(
-    v7Keys.length >= agentKeys.length,
-    `v7 namespace must be a superset of agents barrel (v7 has ${v7Keys.length}, agents has ${agentKeys.length})`,
+  // v7 has exactly the agents keys plus guardTool and aiToolsContext (2 additions)
+  assert.equal(
+    v7Keys.length,
+    agentKeys.length + 2,
+    `v7 namespace must have agents barrel exports plus guardTool and aiToolsContext (v7 has ${v7Keys.length}, agents has ${agentKeys.length}, expected ${agentKeys.length + 2})`,
   );
 });
 
@@ -185,26 +119,22 @@ test("AC1.5 and AC1.6: export map has correct subpaths", () => {
   const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
 
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
-  const exportKeys = Object.keys(exportsMap).toSorted();
+  const exportKeys = Object.keys(exportsMap);
 
   // AC1.5: ./vercel-ai (unversioned) must NOT exist
   assert.ok(
-    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     !exportKeys.includes("./vercel-ai"),
     'export map must not have "./vercel-ai" (unversioned alias prohibited)',
   );
 
   // AC1.6: ./vercel-ai/v6 must NOT exist
   assert.ok(
-    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     !exportKeys.includes("./vercel-ai/v6"),
     'export map must not have "./vercel-ai/v6" (unsupported major version)',
   );
 
   // AC1.6: No wildcard keys starting with ./vercel-ai/ except v7 literal
   for (const key of exportKeys) {
-    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     if (key.startsWith("./vercel-ai/")) {
       assert.equal(
         key,
@@ -216,14 +146,12 @@ test("AC1.5 and AC1.6: export map has correct subpaths", () => {
 
   // Must have ./vercel-ai/v7
   assert.ok(
-    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     exportKeys.includes("./vercel-ai/v7"),
     'export map must have "./vercel-ai/v7"',
   );
 
   // Must have ./agents
   assert.ok(
-    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     exportKeys.includes("./agents"),
     'export map must have "./agents"',
   );
@@ -235,10 +163,8 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
   const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
 
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
-  const exportKeys = Object.keys(exportsMap).toSorted();
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
-  const expectedRootKeys = [".", "./agents", "./bun", "./fetch", "./node", "./vercel-ai/v7"].toSorted();
+  const exportKeys = sortedKeys(exportsMap);
+  const expectedRootKeys = [".", "./agents", "./bun", "./fetch", "./node", "./vercel-ai/v7"];
 
   assert.deepEqual(
     exportKeys,
@@ -250,10 +176,8 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
   const rootEntry = objectField(exportsMap, ".");
   assert.ok(rootEntry, 'export map must have "." entry');
 
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
-  const runtimeConditions = Object.keys(rootEntry).toSorted();
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
-  const expectedConditions = ["bun", "default", "deno", "edge-light", "node", "workerd"].toSorted();
+  const runtimeConditions = sortedKeys(rootEntry);
+  const expectedConditions = ["bun", "default", "deno", "edge-light", "node", "workerd"];
 
   assert.deepEqual(
     runtimeConditions,
@@ -263,13 +187,18 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
 });
 
 // AC1.1: Root barrel named exports are importable and are functions
-test("AC1.1: root barrel exports rule builders", async () => {
-  // Use dynamic import to load the root barrel
-  const rootBarrel = await import("../../index.ts");
+test("AC1.1: root barrel exports launchArcjet and rule builders", async () => {
+  // launchArcjet is exported from the conditional exports (node.ts, fetch.ts, bun.ts)
+  // which resolve via the root export condition
+  const nodeRuntime = await import("../../node.ts");
+  assert.equal(
+    typeof nodeRuntime.launchArcjet,
+    "function",
+    "root entry (@arcjet/guard) must export launchArcjet as a function",
+  );
 
   // The rule builders are exported directly from src/index.ts.
-  // launchArcjet is not exported from index.ts (it's in the conditional exports node.ts/fetch.ts),
-  // so we test the rule builders which ARE in the root barrel.
+  const rootBarrel = await import("../../index.ts");
   const requiredFunctions = ["tokenBucket", "fixedWindow", "slidingWindow"] as const;
 
   for (const funcName of requiredFunctions) {
@@ -324,50 +253,56 @@ test("AC2.3: guard-tool and tools-context have ai SDK dependencies (static check
   );
 });
 
-// AC5.4: No protectTool or ProtectToolPolicy identifiers under src/vercel-ai/
-test("AC5.4: no old protectTool identifiers in src/vercel-ai/", () => {
+// AC5.4: No old identifiers under src/vercel-ai/ — both protectTool renames and @arcjet/ai coupling
+test("AC5.4: no old identifiers in src/vercel-ai/", () => {
   const vercelAiDir = resolve(import.meta.dirname, "..");
   const errors: string[] = [];
 
   // Construct needles from parts to avoid matching this test file's assertions
   const protectToolNeedle = ["protect", "Tool"].join("");
   const protectToolPolicyNeedle = ["Protect", "Tool", "Policy"].join("");
+  const arcjetAiNeedle = "@arcjet/ai";
+  const createAiContextNeedle = ["create", "Ai", "Context"].join("");
+  const arcjetAiContextNeedle = ["Arcjet", "Ai", "Context"].join("");
 
-  // Walk src/vercel-ai/ looking for .ts files (excluding test files to focus on source)
-  function walkDir(dirPath: string): void {
+  const allFiles = collectTsFiles(vercelAiDir);
+  // Exclude test files from the check (they necessarily contain test data with these strings)
+  const filesToCheck = allFiles.filter((f) => !f.endsWith(".test.ts"));
+  for (const filePath of filesToCheck) {
+    let content: string;
     try {
-      const entries = readdirSync(dirPath, { withFileTypes: true });
-      for (const entry of entries) {
-        const entryName = entry.name;
-        if (entry.isFile() && entryName.endsWith(".ts") && !entryName.endsWith(".test.ts")) {
-          const filePath = resolve(dirPath, entryName);
-          let content: string;
-          try {
-            content = readFileSync(filePath, "utf-8");
-          } catch {
-            // Ignore files that can't be read
-            continue;
-          }
-
-          if (new RegExp(`\\b${protectToolNeedle}\\b`).test(content)) {
-            errors.push(`${filePath}: contains ${protectToolNeedle}`);
-          }
-
-          if (new RegExp(`\\b${protectToolPolicyNeedle}\\b`).test(content)) {
-            errors.push(`${filePath}: contains ${protectToolPolicyNeedle}`);
-          }
-        }
-      }
+      content = readFileSync(filePath, "utf-8");
     } catch {
-      // Ignore missing directories
+      // Ignore files that can't be read
+      continue;
+    }
+
+    // Check for old protectTool naming
+    if (new RegExp(`\\b${protectToolNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${protectToolNeedle}`);
+    }
+
+    if (new RegExp(`\\b${protectToolPolicyNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${protectToolPolicyNeedle}`);
+    }
+
+    // Check for @arcjet/ai coupling
+    if (content.includes(arcjetAiNeedle)) {
+      errors.push(`${filePath}: contains ${arcjetAiNeedle}`);
+    }
+
+    if (new RegExp(`\\b${createAiContextNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${createAiContextNeedle}`);
+    }
+
+    if (new RegExp(`\\b${arcjetAiContextNeedle}\\b`).test(content)) {
+      errors.push(`${filePath}: contains ${arcjetAiContextNeedle}`);
     }
   }
-
-  walkDir(vercelAiDir);
 
   assert.equal(
     errors.length,
     0,
-    `protectTool identifiers found in src/vercel-ai/:\n${errors.join("\n")}`,
+    `forbidden identifiers found in src/vercel-ai/:\n${errors.join("\n")}`,
   );
 });

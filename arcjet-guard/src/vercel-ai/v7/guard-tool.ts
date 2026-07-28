@@ -79,7 +79,7 @@ const contextSchema = jsonSchema<ArcjetAgentContext | undefined>(
       if (typeof value !== "object" || value === null) {
         return {
           success: false,
-          error: new TypeError("@arcjet/guard: toolsContext entry is not an ArcjetAgentContext"),
+          error: new Error("@arcjet/guard: toolsContext entry is not an ArcjetAgentContext"),
         };
       }
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- object guard enables field access
@@ -87,7 +87,7 @@ const contextSchema = jsonSchema<ArcjetAgentContext | undefined>(
       if (typeof correlationId !== "string") {
         return {
           success: false,
-          error: new TypeError("@arcjet/guard: toolsContext entry is not an ArcjetAgentContext"),
+          error: new Error("@arcjet/guard: toolsContext entry is not an ArcjetAgentContext"),
         };
       }
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- object guard enables field access
@@ -99,7 +99,7 @@ const contextSchema = jsonSchema<ArcjetAgentContext | undefined>(
       ) {
         return {
           success: false,
-          error: new TypeError("@arcjet/guard: toolsContext entry is not an ArcjetAgentContext"),
+          error: new Error("@arcjet/guard: toolsContext entry is not an ArcjetAgentContext"),
         };
       }
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- schema validation narrows object to ArcjetAgentContext
@@ -196,10 +196,12 @@ export function guardTool<T extends Tool>(
   policy: GuardToolPolicy<T>,
 ): Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAgentContext | undefined> {
   if (typeof tool.execute !== "function") {
-    throw new TypeError("@arcjet/guard: guardTool() requires a tool with an execute function");
+    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility; changing to TypeError is an observable API change
+    throw new Error("@arcjet/guard: guardTool() requires a tool with an execute function");
   }
   if (tool.contextSchema !== undefined) {
-    throw new TypeError(
+    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility; changing to TypeError is an observable API change
+    throw new Error(
       "@arcjet/guard: guardTool() cannot wrap a tool that declares its own contextSchema",
     );
   }
@@ -210,7 +212,8 @@ export function guardTool<T extends Tool>(
     ...tool,
     [arcjetProtectedTool]: true,
     contextSchema,
-    execute(input: InferToolInput<T>, options: never) {
+    // oxlint-disable-next-line eslint/require-await -- runGuarded returns immediately when there are no rules (capture-only mode); this wrapping layer is always async to match the tool interface contract and simplify error handling
+    async execute(input: InferToolInput<T>, options: never) {
       // `options.context` was validated by contextSchema above.
       const opts = options as {
         context?: ArcjetAgentContext;
@@ -235,16 +238,13 @@ export function guardTool<T extends Tool>(
         ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),
         onDeny: (decision) =>
           policy.onDeny === undefined ? denialResult(decision) : policy.onDeny(decision),
-        onUnavailable: () => {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- unavailable path creates synthetic decision
-          const fakeDecision = {
-            conclusion: "DENY",
-            reason: "ERROR",
-            id: "",
-            results: [],
-          } as unknown as DecisionDeny;
-          return denialResult(fakeDecision);
-        },
+        onUnavailable: () => ({
+          arcjetDenied: true,
+          reason: "ERROR",
+          message: "Arcjet security check could not be completed; please retry later.",
+          retryable: true,
+          retryAfterSeconds: 5,
+        }),
         // oxlint-disable-next-line typescript/no-unsafe-return -- tool output type inferred dynamically
         execute: () => originalExecute(input, options),
       });
@@ -254,9 +254,7 @@ export function guardTool<T extends Tool>(
 }
 
 function denialResult(decision: DecisionDeny): ArcjetDenialResult {
-  const isError = decision.reason === "ERROR";
   const isRateLimit = decision.reason === "RATE_LIMIT";
-  const retryable = isError || isRateLimit;
   let retryAfterSeconds: number | undefined;
 
   // Only rate-limit denials are retryable, so only they carry a retry-after.
@@ -272,9 +270,7 @@ function denialResult(decision: DecisionDeny): ArcjetDenialResult {
   }
 
   let message: string;
-  if (isError) {
-    message = "Arcjet security check could not be completed; please retry later.";
-  } else if (isRateLimit) {
+  if (isRateLimit) {
     message =
       `Arcjet denied this tool call (${decision.reason}). It may be retried` +
       (retryAfterSeconds === undefined ? " later." : ` after ${retryAfterSeconds} seconds.`);
@@ -286,13 +282,9 @@ function denialResult(decision: DecisionDeny): ArcjetDenialResult {
     arcjetDenied: true,
     reason: decision.reason,
     message,
-    retryable,
+    retryable: isRateLimit,
   };
 
-  // For ERROR (unavailable), always return the fixed 5-second backoff hint.
-  if (isError) {
-    result.retryAfterSeconds = 5;
-  }
   // For RATE_LIMIT, include the computed retry-after if available.
   if (isRateLimit && retryAfterSeconds !== undefined) {
     result.retryAfterSeconds = retryAfterSeconds;
