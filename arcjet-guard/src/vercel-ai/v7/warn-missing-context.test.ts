@@ -9,7 +9,7 @@ import { decisionAllow, stubClient } from "../../../test/_shared/stub-client.ts"
 
 // A capture-only protected tool (no rules), so execute runs without a guard
 // call and the only thing under test is the missing-context warning.
-function makeTool() {
+function makeTool(): ReturnType<typeof guardTool> {
   const { client } = stubClient(decisionAllow());
   return guardTool(
     client,
@@ -20,7 +20,7 @@ function makeTool() {
         properties: { x: { type: "string" } },
         required: ["x"],
       }),
-      execute: async () => ({ ok: true }),
+      execute: () => Promise.resolve({ ok: true }),
     }),
     { action: "test.noop" },
   );
@@ -34,11 +34,12 @@ test("first uncorrelated tool call warns even with ARCJET_LOG_LEVEL unset", asyn
   const restoreLogLevel = setLogLevel(undefined);
   const originalWarn = console.warn;
   const warnCalls: unknown[] = [];
-  console.warn = (...args: unknown[]) => {
+  console.warn = (...args: unknown[]): void => {
     warnCalls.push(args);
   };
   try {
     const wrapped = makeTool();
+    assert.ok(wrapped.execute, "wrapped tool must have an execute function");
     await wrapped.execute({ x: "a" }, { toolCallId: "t1", messages: [] } as never);
     assert.ok(
       warnCalls.some((c) => JSON.stringify(c).includes("no ArcjetAgentContext")),
@@ -54,11 +55,12 @@ test("later uncorrelated calls stay silent with ARCJET_LOG_LEVEL unset", async (
   const restoreLogLevel = setLogLevel(undefined);
   const originalWarn = console.warn;
   const warnCalls: unknown[] = [];
-  console.warn = (...args: unknown[]) => {
+  console.warn = (...args: unknown[]): void => {
     warnCalls.push(args);
   };
   try {
     const wrapped = makeTool();
+    assert.ok(wrapped.execute, "wrapped tool must have an execute function");
     await wrapped.execute({ x: "a" }, { toolCallId: "t2", messages: [] } as never);
     assert.equal(
       warnCalls.length,

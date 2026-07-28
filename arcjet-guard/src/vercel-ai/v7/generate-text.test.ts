@@ -28,9 +28,9 @@ test("AC1.5: Context with correlationId flows through to guard call in generateT
       },
       required: ["to"],
     }),
-    execute: async (input: { to: string }) => {
+    execute: (input: { to: string }) => {
       executeCalls.push(input);
-      return { success: true, messageId: "msg-123" };
+      return Promise.resolve({ success: true, messageId: "msg-123" });
     },
   });
 
@@ -57,8 +57,8 @@ test("AC1.5: Context with correlationId flows through to guard call in generateT
           ],
           finishReason: { unified: "tool-calls", raw: undefined },
           usage: {
-            inputTokens: { total: 10, noCache: undefined, cached: undefined },
-            outputTokens: { total: 10 },
+            inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+            outputTokens: { total: 10, text: undefined, reasoning: undefined },
           },
           warnings: [],
         },
@@ -66,8 +66,8 @@ test("AC1.5: Context with correlationId flows through to guard call in generateT
           content: [{ type: "text", text: "done" }],
           finishReason: { unified: "stop", raw: undefined },
           usage: {
-            inputTokens: { total: 10, noCache: undefined, cached: undefined },
-            outputTokens: { total: 10 },
+            inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+            outputTokens: { total: 10, text: undefined, reasoning: undefined },
           },
           warnings: [],
         },
@@ -79,7 +79,7 @@ test("AC1.5: Context with correlationId flows through to guard call in generateT
     prompt: "Send an email and then respond",
   });
 
-  assert.ok(result, "generateText should complete");
+  assert.ok(result !== undefined, "generateText should complete");
   assert.equal(guardCalls.length, 1, "guard should be called once");
   const guardCall = guardCalls[0] as Record<string, unknown>;
   assert.equal(
@@ -103,9 +103,9 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
       },
       required: ["to"],
     }),
-    execute: async (input: { to: string }) => {
+    execute: (input: { to: string }) => {
       executeCalls.push(input);
-      return { success: true, messageId: "msg-456" };
+      return Promise.resolve({ success: true, messageId: "msg-456" });
     },
   });
 
@@ -139,8 +139,8 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
             ],
             finishReason: { unified: "tool-calls", raw: undefined },
             usage: {
-              inputTokens: { total: 10, noCache: undefined, cached: undefined },
-              outputTokens: { total: 10 },
+              inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+              outputTokens: { total: 10, text: undefined, reasoning: undefined },
             },
             warnings: [],
           },
@@ -148,8 +148,8 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
             content: [{ type: "text", text: "done" }],
             finishReason: { unified: "stop", raw: undefined },
             usage: {
-              inputTokens: { total: 10, noCache: undefined, cached: undefined },
-              outputTokens: { total: 10 },
+              inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+              outputTokens: { total: 10, text: undefined, reasoning: undefined },
             },
             warnings: [],
           },
@@ -160,7 +160,7 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
       prompt: "Send an email and then respond",
     });
 
-    assert.ok(result, "generateText should complete");
+    assert.ok(result !== undefined, "generateText should complete");
     assert.equal(guardCalls.length, 1, "guard should be called once");
     const guardCall = guardCalls[0] as Record<string, unknown>;
     assert.strictEqual(
@@ -192,9 +192,9 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
       },
       required: ["to"],
     }),
-    execute: async (input: { to: string }) => {
+    execute: (input: { to: string }) => {
       executeCalls.push(input);
-      return { success: true, messageId: "msg-789" };
+      return Promise.resolve({ success: true, messageId: "msg-789" });
     },
   });
 
@@ -218,8 +218,8 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
         ],
         finishReason: { unified: "tool-calls", raw: undefined },
         usage: {
-          inputTokens: { total: 10, noCache: undefined, cached: undefined },
-          outputTokens: { total: 10 },
+          inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+          outputTokens: { total: 10, text: undefined, reasoning: undefined },
         },
         warnings: [],
       },
@@ -227,8 +227,8 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
         content: [{ type: "text", text: "unable to send" }],
         finishReason: { unified: "stop", raw: undefined },
         usage: {
-          inputTokens: { total: 10, noCache: undefined, cached: undefined },
-          outputTokens: { total: 10 },
+          inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+          outputTokens: { total: 10, text: undefined, reasoning: undefined },
         },
         warnings: [],
       },
@@ -245,12 +245,12 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
     prompt: "Try to send an email",
   });
 
-  assert.ok(result, "generateText should complete without throwing");
+  assert.ok(result !== undefined, "generateText should complete without throwing");
   assert.equal(result.steps.length, 2, "should have 2 steps: tool-call then response");
 
   // First step should contain the tool-call
   const firstStep = result.steps[0];
-  assert.ok(firstStep, "first step should exist");
+  assert.ok(firstStep !== undefined, "first step should exist");
   assert.ok(Array.isArray(firstStep.content), "first step should have content array");
 
   // Find the tool-result part in the first step
@@ -260,7 +260,7 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
       part !== null &&
       (part as Record<string, unknown>).type === "tool-result",
   );
-  assert.ok(toolResultPart, "first step should have a tool-result part");
+  assert.ok(toolResultPart !== undefined, "first step should have a tool-result part");
 
   const output = (toolResultPart as Record<string, unknown>).output as ArcjetDenialResult;
   assert.strictEqual(output.arcjetDenied, true, "output should be an ArcjetDenialResult");
@@ -269,7 +269,7 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
   // The model should have received the denial result in its second call
   // Check that the model was called twice (first with initial prompt, second with tool result)
   const secondCall = mockModel.doGenerateCalls[1];
-  assert.ok(secondCall, "mock model should have second call");
+  assert.ok(secondCall !== undefined, "mock model should have second call");
   assert.ok(
     JSON.stringify((secondCall as Record<string, unknown>).prompt).includes("arcjetDenied"),
     "second model call should contain the denial result in prompt",

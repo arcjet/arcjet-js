@@ -248,7 +248,6 @@ export function guardTool<T extends Tool>(
         // oxlint-disable-next-line typescript/no-unsafe-return -- tool output type inferred dynamically
         execute: () => originalExecute(input, options),
       });
-      // oxlint-disable-next-line eslint/no-unsafe-return -- return type unified through schema validation
       return result as unknown;
     },
   } as unknown as Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAgentContext | undefined>;
