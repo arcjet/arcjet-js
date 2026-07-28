@@ -1,7 +1,7 @@
-import { readFileSync, readdirSync } from "fs";
-import { resolve } from "path";
+import { readFileSync, readdirSync } from "node:fs";
+import { resolve } from "node:path";
 import { test } from "node:test";
-import { strict as assert } from "node:assert";
+import assert from "node:assert/strict";
 
 import * as agents from "./index.ts";
 import type {
@@ -36,22 +36,39 @@ verifyTypeExports();
  * - import { x } from "./foo.ts"
  * - export { x } from "./bar.ts"
  * - export type { T } from "./baz.ts"
+ * - import "ai" (bare side-effect import)
  */
 function extractImportSpecifiers(content: string): string[] {
   const specifiers: string[] = [];
-  // Match any import or export statement followed by 'from "..."'
-  // This simpler pattern catches both import and export statements reliably
+  // Match import/export statements anchored to line start, avoiding comments/strings
   // oxlint-disable-next-line unicorn/no-unsafe-regex -- essential for parsing imports
-  const importRegex = /from\s+["']([^"']+)["']/g;
+  const importFromRegex = /^\s*(?:import|export)\b[^;'"]*?from\s+["']([^"']+)["']/gm;
+  // Match bare side-effect imports: import "package"
+  // oxlint-disable-next-line unicorn/no-unsafe-regex -- essential for parsing imports
+  const bareImportRegex = /^\s*import\s+["']([^"']+)["']/gm;
+
   let match: RegExpExecArray | null;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- RegExp.exec is safe
-  while ((match = importRegex.exec(content)) !== null) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- match[1] is safe when match is non-null
+
+  // Check import...from patterns
+  // oxlint-disable-next-line typescript/no-unsafe-call -- RegExp.exec is safe
+  while ((match = importFromRegex.exec(content)) !== null) {
+    // oxlint-disable-next-line typescript/no-unsafe-member-access -- match[1] is safe when match is non-null
     const specifier = match[1];
     if (specifier !== undefined) {
       specifiers.push(specifier);
     }
   }
+
+  // Check bare imports
+  // oxlint-disable-next-line typescript/no-unsafe-call -- RegExp.exec is safe
+  while ((match = bareImportRegex.exec(content)) !== null) {
+    // oxlint-disable-next-line typescript/no-unsafe-member-access -- match[1] is safe when match is non-null
+    const specifier = match[1];
+    if (specifier !== undefined) {
+      specifiers.push(specifier);
+    }
+  }
+
   return specifiers;
 }
 
@@ -84,9 +101,9 @@ function collectTsFiles(dir: string): string[] {
 // AC5.1: Verify the barrel exports exactly the expected runtime values
 // Type-only exports (ArcjetAgentContext, etc.) are verified separately via imports
 test("exports the correct runtime values (AC5.1)", () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- Object.keys with namespace imports
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- Object.keys with namespace imports, then toSorted
   const exportedNames = Object.keys(agents).toSorted();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- Array literal is safe
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- Array literal is safe, then toSorted
   const expectedRuntimeNames = [
     "ArcjetDeniedError",
     "ArcjetGuardUnavailableError",
@@ -102,7 +119,6 @@ test("exports the correct runtime values (AC5.1)", () => {
 // AC2.1: Walk the transitive import graph from src/agents/index.ts
 // to verify no module imports 'ai' or '@ai-sdk/*'
 test("no AI SDK coupling (AC2.1)", () => {
-  // eslint-disable-next-line unicorn/prefer-import-meta-properties -- __dirname-equivalent needed
   const moduleDir = import.meta.dirname;
 
   // Map of visited files to prevent cycles
@@ -169,13 +185,13 @@ test("no AI SDK coupling (AC2.1)", () => {
 
 // AC5.2 (partial): No createAiContext or ArcjetAiContext identifiers
 test("no old context identifiers (AC5.2)", () => {
-  // eslint-disable-next-line unicorn/prefer-import-meta-properties -- __dirname-equivalent needed
   const moduleDir = import.meta.dirname;
   const agentsDir = moduleDir;
   const testSharedDir = resolve(moduleDir, "../../test/_shared");
 
   const errors: string[] = [];
-  const thisTestFile = resolve(moduleDir, "index.test.ts");
+  const thisTestFileName = ["index", ".test", ".ts"].join("");
+  const thisTestFile = resolve(moduleDir, thisTestFileName);
 
   const filesToCheck = [...collectTsFiles(agentsDir), ...collectTsFiles(testSharedDir)].filter(
     (f) => f !== thisTestFile,
@@ -210,13 +226,13 @@ test("no old context identifiers (AC5.2)", () => {
 
 // AC5.4 (partial): No protect* identifiers (all four variants)
 test("no old protect* identifiers (AC5.4)", () => {
-  // eslint-disable-next-line unicorn/prefer-import-meta-properties -- __dirname-equivalent needed
   const moduleDir = import.meta.dirname;
   const agentsDir = moduleDir;
   const testSharedDir = resolve(moduleDir, "../../test/_shared");
 
   const errors: string[] = [];
-  const thisTestFile = resolve(moduleDir, "index.test.ts");
+  const thisTestFileName = ["index", ".test", ".ts"].join("");
+  const thisTestFile = resolve(moduleDir, thisTestFileName);
 
   const filesToCheck = [...collectTsFiles(agentsDir), ...collectTsFiles(testSharedDir)].filter(
     (f) => f !== thisTestFile,

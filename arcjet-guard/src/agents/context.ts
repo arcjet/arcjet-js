@@ -68,17 +68,12 @@ export interface ArcjetAgentContext {
  *
  * // In a request handler with a request-scoped context:
  * const ctx = createAgentContext();
- * const decision = await guardAction({
+ * const result = await guardAction(
  *   client,
- *   action: "post_comment",
- *   rules,
- *   correlationId: ctx.correlationId,
- *   metadata: ctx.metadata,
- *   async execute() {
- *     // Your protected operation here
- *     return await postComment(...);
- *   },
- * });
+ *   ctx,
+ *   { action: "comment.posted", rules: [limit({ key: userId })] },
+ *   async () => postComment(body),
+ * );
  * ```
  *
  * @param init - Optional initialization object with `correlationId` and `metadata`

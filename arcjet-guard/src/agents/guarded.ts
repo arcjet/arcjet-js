@@ -1,4 +1,4 @@
-import type { Decision, DecisionAllow, DecisionDeny, RuleWithInput } from "../types.ts";
+import type { ArcjetMetadata, Decision, DecisionAllow, DecisionDeny, RuleWithInput } from "../types.ts";
 
 import { captureEvent, shouldWarn } from "./capture.ts";
 import type { ArcjetAgentClient } from "./capture.ts";
@@ -9,8 +9,10 @@ import type { ArcjetAgentClient } from "./capture.ts";
  * (including any per-input functions and overrides) and pass the final values;
  * this runs the common flow:
  *
- * 1. When `rules` are present, call `guard()` — failing open on error and
- *    warning when the decision itself failed open.
+ * 1. When `rules` are present, call `guard()`. Both guard-unavailable signals
+ *    (threw and failed-open) are governed by `onGuardError`: with `"deny"`
+ *    (the default), both trigger `onUnavailable` without executing; with
+ *    `"allow"`, both fail open and proceed to execute.
  * 2. On DENY, capture `outcome: "denied"` and return `onDeny(decision)`.
  * 3. Otherwise run `execute()`, capturing `outcome: "success"` — or, if it
  *    throws, `outcome: "error"` before rethrowing.
@@ -18,10 +20,6 @@ import type { ArcjetAgentClient } from "./capture.ts";
  * `onDeny` returns the value the caller hands back on denial (`guardTool`
  * returns an `ArcjetDenialResult`; `guardAction` throws, and its `never`
  * return type is assignable to `T`).
- *
- * Both guard-unavailable signals are governed by `onGuardError`. When the
- * `"deny"` mode is active (the default), both signals trigger `onUnavailable`
- * rather than executing the wrapped action.
  */
 export async function runGuarded<T>(
   client: ArcjetAgentClient,
@@ -29,7 +27,7 @@ export async function runGuarded<T>(
     action: string;
     rules: RuleWithInput[] | undefined;
     correlationId: string | undefined;
-    metadata: Record<string, unknown>;
+    metadata: ArcjetMetadata;
     onDeny: (decision: DecisionDeny) => T;
     onUnavailable: (
       unavailable:
@@ -151,6 +149,8 @@ function warnUnavailable(
   if (!shouldWarn()) {
     return;
   }
+  // Constant format string: `action` must not be interpolated into the first argument
+  // (Semgrep requirement for actionable log messages).
   if (signal === "threw") {
     if (failClosed) {
       console.warn('@arcjet/guard: guard check for "%s" errored; failing closed:', action, error);

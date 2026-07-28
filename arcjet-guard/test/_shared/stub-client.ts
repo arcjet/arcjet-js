@@ -26,21 +26,21 @@ export function stubClient(decision: Decision | Error): {
 } {
   const guardCalls: unknown[] = [];
   const captureCalls: unknown[] = [];
+  const client: ArcjetAgentClient = {
+    guard(opts: unknown): Promise<Decision> {
+      guardCalls.push(opts);
+      if (decision instanceof Error) return Promise.reject(decision);
+      return Promise.resolve(decision);
+    },
+    // `experimental_capture` is not on guard's client type yet, so the stub is
+    // typed structurally and `captureEvent` feature-detects it at runtime. Both
+    // collapse into the real client type once capture lands.
+    experimental_capture(opts: unknown): void {
+      captureCalls.push(opts);
+    },
+  };
   return {
-    // oxlint-disable-next-line typescript/no-unnecessary-type-assertion, typescript/no-unsafe-type-assertion -- partial stub of the client surface
-    client: {
-      guard(opts: unknown): Promise<Decision> {
-        guardCalls.push(opts);
-        if (decision instanceof Error) return Promise.reject(decision);
-        return Promise.resolve(decision);
-      },
-      // `experimental_capture` is not on guard's client type yet, so the stub is
-      // typed structurally and `captureEvent` feature-detects it at runtime. Both
-      // collapse into the real client type once capture lands.
-      experimental_capture(opts: unknown): void {
-        captureCalls.push(opts);
-      },
-    } as unknown as ArcjetAgentClient,
+    client,
     guardCalls,
     captureCalls,
   };

@@ -26,10 +26,9 @@ test("AC4.8: ALLOW decision → fn runs once, guardAction resolves with fn's ret
     client,
     createAgentContext(),
     { action: "test.action", rules: [fakeRule] },
-    // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-    async () => {
+    () => {
       fnCallCount++;
-      return sentinel;
+      return Promise.resolve(sentinel);
     },
   );
 
@@ -48,10 +47,9 @@ test("AC4.8: DENY decision → ArcjetDeniedError thrown, fn never called", async
       client,
       createAgentContext(),
       { action: "test.action", rules: [fakeRule] },
-      // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-      async () => {
+      () => {
         fnCallCount++;
-        return { should: "not happen" };
+        return Promise.resolve({ should: "not happen" });
       },
     );
     assert.fail("should have thrown ArcjetDeniedError");
@@ -75,8 +73,7 @@ test("AC4.9: success path → one capture with metadata outcome: success and dec
     client,
     createAgentContext({ correlationId: "corr-1", metadata: { key: "value" } }),
     { action: "test.action", rules: [fakeRule] },
-    // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-    async () => sentinel,
+    () => Promise.resolve(sentinel),
   );
 
   assert.equal(captureCalls.length, 1, "capture should be called once");
@@ -100,8 +97,7 @@ test("AC4.9: denied path → one capture with outcome: denied and decisionId", a
       client,
       createAgentContext({ correlationId: "corr-1" }),
       { action: "test.action", rules: [fakeRule] },
-      // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-      async () => ({ should: "not happen" }),
+      () => Promise.resolve({ should: "not happen" }),
     );
     assert.fail("should have thrown");
   } catch {
@@ -126,10 +122,7 @@ test("AC4.9: error path → fn rejects, sentinel propagates, one capture with ou
       client,
       createAgentContext({ correlationId: "corr-1" }),
       { action: "test.action", rules: [fakeRule] },
-      // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-      async () => {
-        throw testError;
-      },
+      () => Promise.reject(testError),
     );
     assert.fail("should have thrown");
   } catch (err) {
@@ -170,8 +163,6 @@ test("AC4.9: captureAction emits capture with context's correlation ID and merge
     { agent: "review-bot", destination: "slack" },
     "metadata should merge context then options (no outcome key)",
   );
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- metadata is narrowed by deepEqual assertion
-  assert.strictEqual((metadata as Record<string, unknown>).outcome, undefined, "captureAction should NOT add outcome");
 });
 
 test("AC4.4: guard throws, onGuardError: 'allow' → fn runs, result passes through, fail-open warning", async () => {
@@ -182,7 +173,6 @@ test("AC4.4: guard throws, onGuardError: 'allow' → fn runs, result passes thro
 
   const originalWarn = console.warn;
   const warnCalls: unknown[] = [];
-  // oxlint-disable-next-line typescript/explicit-function-return-type -- test mock function
   console.warn = (...args: unknown[]): void => {
     warnCalls.push(args);
   };
@@ -193,10 +183,9 @@ test("AC4.4: guard throws, onGuardError: 'allow' → fn runs, result passes thro
       client,
       createAgentContext(),
       { action: "test.action", rules: [fakeRule], onGuardError: "allow" },
-      // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-      async () => {
+      () => {
         fnCallCount++;
-        return sentinel;
+        return Promise.resolve(sentinel);
       },
     );
 
@@ -226,7 +215,6 @@ test("AC4.4: guard resolves fail-open ALLOW, onGuardError: 'allow' → fn runs, 
 
   const originalWarn = console.warn;
   const warnCalls: unknown[] = [];
-  // oxlint-disable-next-line typescript/explicit-function-return-type -- test mock function
   console.warn = (...args: unknown[]): void => {
     warnCalls.push(args);
   };
@@ -237,10 +225,9 @@ test("AC4.4: guard resolves fail-open ALLOW, onGuardError: 'allow' → fn runs, 
       client,
       createAgentContext(),
       { action: "test.action", rules: [fakeRule], onGuardError: "allow" },
-      // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-      async () => {
+      () => {
         fnCallCount++;
-        return sentinel;
+        return Promise.resolve(sentinel);
       },
     );
 
@@ -270,10 +257,9 @@ test("Capture-only mode: no rules → guard never called, fn runs, capture fires
     client,
     createAgentContext({ correlationId: "corr-1" }),
     { action: "test.action" }, // No rules
-    // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-    async () => {
+    () => {
       fnCallCount++;
-      return sentinel;
+      return Promise.resolve(sentinel);
     },
   );
 
@@ -298,10 +284,9 @@ test("Capture-only mode: empty rules array → guard never called", async () => 
     client,
     createAgentContext(),
     { action: "test.action", rules: [] }, // Empty rules array
-    // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-    async () => {
+    () => {
       fnCallCount++;
-      return sentinel;
+      return Promise.resolve(sentinel);
     },
   );
 
@@ -347,7 +332,7 @@ test("AC4.11: guard throws, onGuardError omitted (default deny) → ArcjetGuardU
   assert.strictEqual(caught.cause, guardError, "cause should be the original error by reference");
   assert.ok(
     !(caught instanceof ArcjetDeniedError),
-    "should NOT be an instance of ArcjetDeniedError",
+    "should NOT be an instance of ArcjetDeniedError; proves policy.onDeny is never invoked on threw signal",
   );
 
   assert.ok(
@@ -365,7 +350,7 @@ test("AC4.11: guard throws, onGuardError omitted (default deny) → ArcjetGuardU
   assert.equal(captureCalls.length, 1, "capture should fire with unavailable outcome");
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured values
   const captureCall = captureCalls[0] as Record<string, unknown>;
-  assert.strictEqual(captureCall.decisionId, undefined, "no decisionId on threw path");
+  assert.ok(!("decisionId" in captureCall), "decisionId should be absent on threw path");
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured metadata
   const metadata = captureCall.metadata as Record<string, unknown>;
   assert.equal(metadata.outcome, "unavailable");
@@ -412,7 +397,7 @@ test("AC4.12: guard returns fail-open ALLOW, onGuardError omitted (default deny)
   assert.strictEqual(caught.decision, failedOpen, "decision should be the DecisionAllow by reference");
   assert.ok(
     !(caught instanceof ArcjetDeniedError),
-    "should NOT be an instance of ArcjetDeniedError",
+    "should NOT be an instance of ArcjetDeniedError; proves policy.onDeny is never invoked on failed-open signal",
   );
 
   assert.ok(
@@ -431,11 +416,8 @@ test("AC4.12: guard returns fail-open ALLOW, onGuardError omitted (default deny)
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured values
   const captureCall = captureCalls[0] as Record<string, unknown>;
   // Synthesized decisions carry id: "", so no decisionId in capture
-  assert.strictEqual(
-    captureCall.decisionId,
-    undefined,
-    "no decisionId on fail-open path (synthesized decision has id: '')",
-  );
+  assert.ok(!("decisionId" in captureCall), "decisionId should be absent on fail-open path (synthesized decision has id: '')");
+
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured metadata
   const metadata = captureCall.metadata as Record<string, unknown>;
   assert.equal(metadata.outcome, "unavailable");
@@ -450,40 +432,11 @@ test("AC4.11: real DENY with onGuardError: 'deny' still throws ArcjetDeniedError
       client,
       createAgentContext(),
       { action: "test.action", rules: [fakeRule], onGuardError: "deny" },
-      // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-      async () => ({ should: "not happen" }),
+      () => Promise.resolve({ should: "not happen" }),
     );
     assert.fail("should have thrown");
   } catch (err) {
     assert.ok(err instanceof ArcjetDeniedError, "should throw ArcjetDeniedError, not unavailable");
     assert.ok(!(err instanceof ArcjetGuardUnavailableError), "should not be unavailable error");
   }
-});
-
-test("AC4.11: policy.onDeny is NOT invoked on unavailable signals", async () => {
-  const guardError = new Error("guard API error");
-  const { client } = stubClient(guardError);
-  let onDenyCallCount = 0;
-
-  try {
-    await guardAction(
-      client,
-      createAgentContext(),
-      {
-        action: "test.action",
-        rules: [fakeRule],
-      },
-      // oxlint-disable-next-line eslint/require-await -- callback must be async to match function signature
-      async () => {
-        return { should: "not happen" };
-      },
-    );
-    assert.fail("should have thrown");
-  } catch {
-    // Expected — ArcjetGuardUnavailableError
-  }
-
-  // If we had hooked onDeny somehow, it would not have been called.
-  // This test documents that unavailable errors bypass onDeny entirely.
-  assert.equal(onDenyCallCount, 0, "onDeny callback never called");
 });

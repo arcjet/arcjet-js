@@ -1,5 +1,4 @@
-import type { ArcjetMetadata } from "../metadata.ts";
-import type { DecisionAllow, DecisionDeny, RuleWithInput } from "../types.ts";
+import type { ArcjetMetadata, DecisionAllow, DecisionDeny, RuleWithInput } from "../types.ts";
 
 import { captureEvent } from "./capture.ts";
 import type { ArcjetAgentClient } from "./capture.ts";

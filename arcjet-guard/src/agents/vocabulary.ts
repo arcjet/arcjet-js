@@ -14,8 +14,8 @@ import type { ArcjetMetadata } from "../types.ts";
  * for audit, policy decisions, and observability. Values are suggestions where
  * noted; at runtime, any string is accepted. Arcjet's guard enforces server-side
  * limits on the number of keys, key length, and value serialization size, so
- * large or deeply nested maps may be dropped server-side — see
- * `arcjet-guard/README.md` for current limits.
+ * large or deeply nested maps may be dropped server-side — see the Metadata
+ * section of the `@arcjet/guard` README for current limits.
  *
  * Thread via `securityMetadata()` or merge directly into `ArcjetAgentContext.metadata`.
  */
@@ -48,7 +48,7 @@ export interface SecurityMetadataFields {
   /**
    * Whether the action can be reversed (suggested: reversible, compensable, irreversible).
    */
-  reversibility?: "reversible" | "compensable" | "irreversible";
+  reversibility?: string;
 
   /**
    * Resource identifier affected by this action.
@@ -60,15 +60,15 @@ export interface SecurityMetadataFields {
  * Maps each field to its guard wire key. Every key is its own name except
  * `dataClass`, which becomes the hyphenated `data-class`.
  */
-const WIRE_KEYS = {
-  user: "user",
-  agent: "agent",
-  workflow: "workflow",
-  dataClass: "data-class",
-  destination: "destination",
-  reversibility: "reversibility",
-  resource: "resource",
-} as const satisfies Record<keyof SecurityMetadataFields, string>;
+const WIRE_KEYS = new Map<keyof SecurityMetadataFields, string>([
+  ["user", "user"],
+  ["agent", "agent"],
+  ["workflow", "workflow"],
+  ["dataClass", "data-class"],
+  ["destination", "destination"],
+  ["reversibility", "reversibility"],
+  ["resource", "resource"],
+]);
 
 /**
  * Map security metadata fields to their wire keys for Arcjet guard evaluation.
@@ -100,20 +100,10 @@ export function securityMetadata(
 ): ArcjetMetadata {
   const result: Record<string, string> = {};
 
-  const keys: (keyof SecurityMetadataFields)[] = [
-    "user",
-    "agent",
-    "workflow",
-    "dataClass",
-    "destination",
-    "reversibility",
-    "resource",
-  ];
-
-  for (const key of keys) {
-    const value = fields[key];
+  for (const [field, wireKey] of WIRE_KEYS) {
+    const value = fields[field];
     if (value !== undefined) {
-      result[WIRE_KEYS[key]] = value;
+      result[wireKey] = value;
     }
   }
 
