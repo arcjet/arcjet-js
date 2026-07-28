@@ -38,7 +38,11 @@ Ask only what you cannot infer from the code; suggest defaults.
 
 Core rules, agent helpers, and the v7 integration are optional-peer safe.
 Install `@arcjet/guard` (required), `ai` and `@ai-sdk/provider-utils`
-(optional, needed only for `@arcjet/guard/vercel-ai/v7`):
+(optional, needed only for `@arcjet/guard/vercel-ai/v7`). Always use explicit
+versions: `@arcjet/guard/vercel-ai/v7` resolves, but `@arcjet/guard/vercel-ai`
+does not — omitting the version is deliberate (it prevents silent API breaking
+changes when a new major version is supported). Attempting to import from an
+unversioned path throws `ERR_PACKAGE_PATH_NOT_EXPORTED`.
 
 ```sh
 npm install @arcjet/guard ai @ai-sdk/provider-utils
@@ -90,7 +94,10 @@ const tools = {
   lookupOrder: guardTool(arcjet, lookupOrderTool, {
     action: "order.looked-up", // "resource.verb", past tense
     rules: ({ orderNumber }) => [lookupLimit({ key: `order:${orderNumber}`, requested: 1 })],
-    metadata: (input) => securityMetadata({ resource: `order:${input.orderNumber}` }),
+    metadata: (input) => securityMetadata({
+      resource: `order:${input.orderNumber}`,
+      user: { id: userId, role: "customer" },
+    }),
   }),
 };
 ```
@@ -103,11 +110,11 @@ const tools = {
   denial result (`reason: "DENIED"`, `retryable: false`) it can read and adapt
   to. Reshape it with `onDeny`.
 - Guard policy unavailability: if the guard cannot be evaluated (e.g. Arcjet
-  API unreachable), the default is `onGuardError: "deny"` — the tool blocks.
-  For read-only operations like lookups, set `onGuardError: "allow"` if
-  availability matters more than enforcement: the model receives
-  `reason: "ERROR"` with `retryable: true` and a fixed `retryAfterSeconds: 5`
-  backoff hint.
+  API unreachable), the default is `onGuardError: "deny"` — the tool is blocked
+  and the model receives `reason: "ERROR"` with `retryable: true` and a fixed
+  `retryAfterSeconds: 5` backoff hint. For read-only operations like lookups,
+  set `onGuardError: "allow"` if availability matters more than enforcement: the
+  tool executes normally and the model receives its ordinary output.
 - Pilot limitation: `guardTool` throws if the tool already declares its
   own `contextSchema`.
 - **Alternative form:** calling `guardAction` directly inside the tool's
@@ -159,7 +166,12 @@ await guardAction(
   },
   async () => {
     // Example: calling an external service (e.g. GitHub API client)
-    return await externalServiceClient.pulls.createReview(...);
+    return await externalServiceClient.pulls.createReview({
+      owner: repoOwner,
+      repo: repoName,
+      pull_number: prNumber,
+      body: reviewText,
+    });
   },
 );
 
@@ -169,15 +181,16 @@ captureAction(arcjet, ctx, {
 });
 ```
 
-`guardAction` throws `ArcjetGuardUnavailableError` (carrying the decision or
-cause) on DENY — decide with the human whether to catch-and-skip or let it
-abort. Note: `ArcjetGuardUnavailableError` is distinct from `ArcjetDeniedError`
-(policy denial) so a policy outage can be alerted on separately from a policy
-denial. The error carries `cause` (the guard call threw) or `decision` (a
-decision failed open), making the two distinguishable in a handler. The
-fail-closed tool result carries a fixed `retryAfterSeconds: 5` backoff hint.
-The capture `outcome` on that path is `"unavailable"`, not `"denied"`, so an
-operator can query a policy outage separately from a policy denial.
+`guardAction` throws `ArcjetDeniedError` (carrying the decision) on DENY and
+`ArcjetGuardUnavailableError` (carrying the decision or cause) when the guard
+policy could not be evaluated — decide with the human whether to catch-and-skip
+or let it abort. The two error types are distinct so a policy outage can be
+alerted on separately from a policy denial. `ArcjetGuardUnavailableError` carries
+`cause` (the guard call threw) or `decision` (a decision failed open), making the
+two distinguishable in a handler. The fail-closed tool result carries a fixed
+`retryAfterSeconds: 5` backoff hint. The capture `outcome` on that path is
+`"unavailable"`, not `"denied"`, so an operator can query a policy outage
+separately from a policy denial.
 
 ## Metadata vocabulary
 
