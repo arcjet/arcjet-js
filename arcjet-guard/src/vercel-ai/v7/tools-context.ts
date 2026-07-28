@@ -23,10 +23,11 @@ import type { ArcjetAgentContext } from "../../agents/context.ts";
  *
  * const arcjetClient = launchArcjet({ key: process.env.ARCJET_KEY! });
  * const ctx = createAgentContext();
+ * const emailLimit = tokenBucket({ refillRate: 5, intervalSeconds: 60, maxTokens: 5 });
  * const protectedTools = {
  *   sendEmail: guardTool(arcjetClient, sendEmailTool, {
  *     action: "email.sent",
- *     rules: [tokenBucket({ refillRate: 5, intervalSeconds: 60, maxTokens: 5 })],
+ *     rules: [emailLimit({ key: userId, requested: 1 })],
  *   }),
  * };
  * const result = await generateText({
