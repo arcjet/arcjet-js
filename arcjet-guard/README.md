@@ -553,10 +553,9 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   ```
 
 - **Don't wrap `launchArcjet()` in a helper function.** This defeats
-  connection reuse:
+  connection reuse. Bad — creates a new client every call:
 
   ```ts
-  // Bad — creates a new client (and connection) every call
   function getArcjet() {
     return launchArcjet({ key: process.env.ARCJET_KEY! });
   }
@@ -564,8 +563,11 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
     label: "tools.chat",
     rules: [tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 })],
   });
+  ```
 
-  // Good — reuses the client
+  Good — reuses the client:
+
+  ```ts
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
   const decision = await arcjet.guard({
     label: "tools.chat",
@@ -678,6 +680,7 @@ available:
 
   const result = await generateText({
     // ...
+    tools,
     toolsContext: aiToolsContext(ctx, tools),
   });
   ```
@@ -765,15 +768,16 @@ injected `contextSchema`, which is convenient. Alternatively, call `guardAction`
 directly inside the tool's `execute` block:
 
 ```ts
+import { tool } from "ai";
+
 const tools = {
-  getData: {
+  getData: tool({
     description: "Fetch data",
     inputSchema: z.object({ id: z.string() }),
     execute: async ({ id }) => {
-      await guardAction(arcjet, ctx, { action: "data.fetched", rules: [dataLimit({ key: `user:${userId}`, requested: 1 })] }, () => fetchData(id));
-      return data;
+      return await guardAction(arcjet, ctx, { action: "data.fetched", rules: [dataLimit({ key: `user:${userId}`, requested: 1 })] }, () => fetchData(id));
     },
-  },
+  }),
 };
 ```
 
@@ -809,8 +813,8 @@ const tools = {
 ```
 
 This allows rules to vary based on the request — e.g. stricter limits for
-certain users or resources. The same pattern works with `guardAction` via the
-`rules` callback option.
+certain users or resources. `guardAction` takes a resolved `RuleWithInput[]`,
+so compute the rules at the call site and pass the array.
 
 ## Using the agent helpers
 
@@ -956,7 +960,7 @@ const result: ArcjetDenialResult = {
 To reshape what the model sees on denial, pass `onDeny` in the tool policy — it receives the `DecisionDeny` and its return value replaces the default `ArcjetDenialResult`:
 
 ```ts
-guardTool(arcjet, tool, {
+guardTool(arcjet, lookupOrderTool, {
   action: "order.looked-up",
   rules: () => [limit({ key: userId })],
   onDeny: (decision) => ({ error: `blocked: ${decision.reason}` }),
@@ -990,13 +994,17 @@ To add a new vendor integration (e.g. `vercel-eve/v1`):
 3. Add a new entry to the `exports` field in `package.json`:
    ```json
    "./vercel-eve/v1": {
-     "import": "./dist/vercel-eve/v1/index.js",
-     "types": "./dist/vercel-eve/v1/index.d.ts"
+     "types": "./dist/vercel-eve/v1/index.d.ts",
+     "import": "./dist/vercel-eve/v1/index.js"
    }
    ```
 4. Declare optional peers in `peerDependencies` and `peerDependenciesMeta` if needed (e.g. the EVE SDK).
 
 No changes to the shared layer, the build config, or the root export are required.
+
+## Example
+
+For a complete working example integrating `@arcjet/guard` with the Vercel AI SDK, see [examples/nextjs-ai-agent](../../examples/nextjs-ai-agent/), which demonstrates wrapping agent tools with guard checks, enforcing rules on application-invoked actions, and emitting audit events joined by correlation ID.
 
 ## Agent skill
 

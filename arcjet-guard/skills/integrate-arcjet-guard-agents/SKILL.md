@@ -85,7 +85,7 @@ Never stash it in module state or AsyncLocalStorage.
 ## Step 4: Wrap model-invoked tools
 
 ```ts
-import { guardTool } from "@arcjet/guard/vercel-ai/v7";
+import { guardTool, securityMetadata } from "@arcjet/guard/vercel-ai/v7";
 import { tokenBucket } from "@arcjet/guard";
 
 const lookupLimit = tokenBucket({ bucket: "lookups", refillRate: 5, intervalSeconds: 60, maxTokens: 10 });
@@ -213,7 +213,9 @@ alerted on separately from a policy denial. `ArcjetGuardUnavailableError` carrie
 two distinguishable in a handler. The fail-closed tool result carries a fixed
 `retryAfterSeconds: 5` backoff hint. The capture `outcome` on that path is
 `"unavailable"`, not `"denied"`, so an operator can query a policy outage
-separately from a policy denial.
+separately from a policy denial. The layering resolves a potential confusion: the
+core `@arcjet/guard` client still fails open by construction and *reports* it via
+`hasFailedOpen()`; these helpers *decide* to block on it.
 
 ## Metadata vocabulary
 
