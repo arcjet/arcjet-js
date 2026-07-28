@@ -560,11 +560,17 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   function getArcjet() {
     return launchArcjet({ key: process.env.ARCJET_KEY! });
   }
-  const decision = await getArcjet().guard({ ... });
+  const decision = await getArcjet().guard({
+    label: "tools.chat",
+    rules: [tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 })],
+  });
 
   // Good — reuses the client
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
-  const decision = await arcjet.guard({ ... });
+  const decision = await arcjet.guard({
+    label: "tools.chat",
+    rules: [tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 })],
+  });
   ```
 
 - **Start rules in `DRY_RUN` mode** to observe behavior before switching to
@@ -618,6 +624,7 @@ import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard"
 
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 const decision = await arcjet.guard({
+  label: "tools.chat",
   rules: [
     tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 }),
     detectPromptInjection()(userMessage),
@@ -644,7 +651,7 @@ const ctx = createAgentContext({
   metadata: securityMetadata({ user: userId }),
 });
 
-await guardAction(arcjet, ctx, { action: "data.updated", rules: [...] }, () => updateData());
+await guardAction(arcjet, ctx, { action: "data.updated", rules: [updateLimit({ key: userId })] }, () => updateData());
 captureAction(arcjet, ctx, { action: "audit.logged" });
 ```
 
@@ -666,7 +673,7 @@ available:
   } from "@arcjet/guard/vercel-ai/v7";
 
   const tools = {
-    getData: guardTool(arcjet, getDataTool, { action: "data.fetched", rules: [...] }),
+    getData: guardTool(arcjet, getDataTool, { action: "data.fetched", rules: [dataLimit({ key: userId, requested: 1 })] }),
   };
 
   const result = await generateText({
@@ -697,10 +704,11 @@ optional peers, so users importing only core guards are not forced to install
 unneeded packages:
 
 - **`@arcjet/guard`** (core) has no peer dependencies.
-- **`@arcjet/guard/agents`** and **`@arcjet/guard/vercel-ai/v7`** require `ai`
-  (`@ai-sdk/provider-utils` as well for v7). Both are optional peers — the
-  package will not be installed automatically, but the imports will fail
-  clearly if the peers are missing.
+- **`@arcjet/guard/vercel-ai/v7`** requires `ai` and `@ai-sdk/provider-utils`
+  (optional peers — the package will not be installed automatically, but the
+  imports will fail clearly if the peers are missing).
+- **`@arcjet/guard/agents`** has no peer dependencies and works in any Node.js
+  codebase.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -762,7 +770,7 @@ const tools = {
     description: "Fetch data",
     parameters: z.object({ id: z.string() }),
     execute: async ({ id }) => {
-      await guardAction(arcjet, ctx, { action: "data.fetched", rules: [...] }, () => fetchData(id));
+      await guardAction(arcjet, ctx, { action: "data.fetched", rules: [dataLimit({ key: `user:${userId}`, requested: 1 })] }, () => fetchData(id));
       return data;
     },
   },
@@ -895,6 +903,12 @@ captureAction(arcjet, ctx, {
 
 The `action` is the guard label: use `resource.verb` past tense (e.g. `order.looked-up`). Labels are validated server-side as slugs — lowercase letters, digits, dash, and dot only, starting and ending with a letter or digit. Underscores and uppercase are rejected.
 
+### Failure posture
+
+- **Guard errors** (API timeouts, network failures): Fail open — the tool or action still runs. A warning is logged when `ARCJET_LOG_LEVEL` is `debug`, `info`, or `warn`.
+- **Capture events**: Fire-and-forget; never throw. If the guard client lacks `experimental_capture()`, events silently skip with a gated warning. (Current limitation: `@arcjet/guard` does not yet ship `experimental_capture()`, so `captureAction()` calls are deferred until that capability is available. The example app documents this deferral.)
+- **Missing correlation ID**: Guard checks still run (uncorrelated). The first uncorrelated tool call always warns; further ones respect `ARCJET_LOG_LEVEL`.
+
 ### Which helper?
 
 | Scenario | Helper | Guard | Model Sees |
@@ -930,13 +944,13 @@ console.log(ctx.correlationId); // "01ARZ3NDEKTSV4RRFFQ69G5FAV"
 When a guard check denies a tool call, `guardTool` returns an `ArcjetDenialResult` object:
 
 ```ts
-{
+const result: ArcjetDenialResult = {
   arcjetDenied: true,
   reason: "RATE_LIMIT",
   message: "Arcjet denied this tool call (RATE_LIMIT). It may be retried after 30 seconds.",
   retryable: true,
   retryAfterSeconds: 30,
-}
+};
 ```
 
 To reshape what the model sees on denial, pass `onDeny` in the tool policy — it receives the `DecisionDeny` and its return value replaces the default `ArcjetDenialResult`:
@@ -975,13 +989,30 @@ To add a new vendor integration (e.g. `vercel-eve/v1`):
 2. Export your integration helpers — at minimum, a wrapper equivalent to `guardTool` and a context injector.
 3. Add a new entry to the `exports` field in `package.json`:
    ```json
-   "@arcjet/guard/vercel-eve/v1": {
-     "import": "./dist/vercel-eve/v1/index.js"
+   "./vercel-eve/v1": {
+     "import": "./dist/vercel-eve/v1/index.js",
+     "types": "./dist/vercel-eve/v1/index.d.ts"
    }
    ```
 4. Declare optional peers in `peerDependencies` and `peerDependenciesMeta` if needed (e.g. the EVE SDK).
 
 No changes to the shared layer, the build config, or the root export are required.
+
+## Agent skill
+
+For integration help in Claude Code or other AI coding agents, a skill file is packaged with `@arcjet/guard`:
+
+```bash
+# Extract the skill from node_modules into your Claude Code skills directory:
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-agents ~/.claude/skills/
+
+# Or symlink it instead:
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-agents ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-agents` to start an integration session. The skill guides you through wrapping tools with guard checks, enforcing rules on app-invoked actions, and emitting audit events joined by correlation ID.
+
+Note: `npx skills add arcjet/skills` refers to the separate Anthropic skills marketplace, not the packaged file.
 
 ## MCP server
 
