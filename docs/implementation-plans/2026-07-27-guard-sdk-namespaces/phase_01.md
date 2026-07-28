@@ -93,7 +93,7 @@ Established by investigation and by direct experiment — do not re-litigate the
 
 **Implementation:**
 
-Make four changes.
+Make six changes.
 
 **1. Add two `exports` entries** after the existing `./fetch` entry. Match the
 shape used by the existing single-segment subpaths (`types` + `import`, no
@@ -208,12 +208,16 @@ Two things about the shape of this block are load-bearing:
   becomes the block's, so a leaked `./vercel-ai`, a missing `skills/`, an unquoted
   glob, or a misplaced peer block all report exit 0 — the presence assertions
   become a console message nobody reads.
-- **The `cd arcjet-guard` is required.** `oxfmt` only inspects this file because
-  the nested `arcjet-guard/.oxfmtrc.json` is picked up from that directory,
-  overriding the root config's `arcjet-guard/**` ignore. Run the same command from
-  the repo root, or add `--disable-nested-config`, and it exits 2 with "All
-  matched files may have been excluded by ignore rules" — a vacuous pass. The
-  `on 1 files` in the output is the proof it looked at something.
+- **Run it from `arcjet-guard/`, as written.** Both the relative
+  `../node_modules/.bin/oxfmt` and the bare `package.json` argument depend on that
+  cwd, and so does which config wins: from here `arcjet-guard/.oxfmtrc.json` is the
+  effective config and it does not ignore `package.json`. Adding
+  `--disable-nested-config` while standing at the repo root leaves the root config
+  as the only authority, and its `arcjet-guard/**` ignore then excludes the file —
+  giving exit 2 and "All matched files may have been excluded by ignore rules",
+  which is a vacuous pass, not a clean one. That combination is how the repo-wide
+  `format:check` misses this package. The `on 1 files` in the output is the proof
+  the command looked at something.
 
 The presence assertions cannot see key order or formatting, which is why the
 `oxfmt --check` is here at all: no CI gate covers `arcjet-guard` formatting.
