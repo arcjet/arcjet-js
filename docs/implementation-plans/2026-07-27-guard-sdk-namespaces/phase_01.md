@@ -115,7 +115,13 @@ Do **not** add a `"./vercel-ai"` key and do **not** use a wildcard such as
 `"./vercel-ai/*"`. Their absence is what makes the unversioned path and
 unsupported majors fail — a deliberate, tested behaviour (AC1.5, AC1.6).
 
-**2. Add `peerDependencies`** (guard has none today, so this is a new block):
+**2. Add `peerDependencies`** (guard has none today, so this is a new block).
+Both this block and `peerDependenciesMeta` from step 3 go after `devDependencies`
+and before `engines`, in that order — the placement `oxfmt` produces and the one
+`sensitive-info-rampart` already uses. Getting this wrong leaves the file
+formatter-dirty without failing any CI gate, because `arcjet-guard/**` is in the
+root `.oxfmtrc.json` `ignorePatterns` and `guard.yml` runs only `lint` and
+`typecheck`; step 2 of the verification below is what catches it.
 
 ```json
 "peerDependencies": {
@@ -125,8 +131,8 @@ unsupported majors fail — a deliberate, tested behaviour (AC1.5, AC1.6).
 ```
 
 **3. Add `peerDependenciesMeta`** marking both optional, so consumers who never
-touch an AI SDK see no warning or error. Place this block after `devDependencies`
-and before `engines`, matching the pattern in sibling packages:
+touch an AI SDK see no warning or error. Use the expanded multi-line form, placed
+as described in step 2:
 
 ```json
 "peerDependenciesMeta": {
@@ -184,11 +190,18 @@ assert d['peerDependenciesMeta']['@ai-sdk/provider-utils']['optional'] is True
 assert 'skills/' in d['files'], 'skills/ not in files'
 tu = d['scripts']['test-unit']
 assert \"'src/**/*.test.ts'\" in tu, 'test-unit glob must be single-quoted'
+keys = list(d)
+assert keys.index('devDependencies') < keys.index('peerDependencies') < keys.index('peerDependenciesMeta') < keys.index('engines'), \
+    'peer blocks must sit between devDependencies and engines'
 print('ok')
 "
+../node_modules/.bin/oxfmt --check package.json
 ```
 
-Expected: `ok`
+Expected: `ok`, then `All matched files use the correct format.` with exit 0.
+The presence assertions above cannot see key order or formatting, so without the
+`oxfmt --check` line a misplaced or inline-formatted block passes this step and
+gets committed — no CI gate covers `arcjet-guard` formatting.
 
 **Step 3: Commit**
 
