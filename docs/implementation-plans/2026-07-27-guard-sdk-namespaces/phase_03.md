@@ -538,13 +538,23 @@ Expected: builds clean, both files present.
 
      ```bash
      cd /mnt/mac/Users/rei/Documents/arcjet-dev/framework-helper/arcjet-js
-     git diff main -- arcjet-guard/src/index.ts arcjet-guard/src/node.ts \
-                      arcjet-guard/src/fetch.ts arcjet-guard/src/bun.ts
+     git diff e4946df0 -- arcjet-guard/src/index.ts arcjet-guard/src/node.ts \
+                          arcjet-guard/src/fetch.ts arcjet-guard/src/bun.ts
      ```
 
      Expected: no output. Run this as a step in the task; it is a shell check, not
      a unit test. If it produces output, the root surface changed and AC1.1 fails —
      the design requires the root be untouched.
+
+     **Compare against `e4946df0`, the commit this execution started from, not
+     against `main`.** This branch already carries arcjet-js#6171 (`caedefa1`),
+     which `main` does not, and that commit legitimately adds `ArcjetMetadata` to
+     `src/index.ts`'s export list. Diffing against `main` therefore reports one
+     `+  ArcjetMetadata,` line that no phase of this plan introduced, and the check
+     can never come back empty. What AC1.1 actually requires is that *this
+     migration* leaves the root surface alone. If you do want the comparison
+     against `main`, that single line is the one expected difference and everything
+     else must still be empty.
 
 **Deferred to Phase 6 Task 1:** the *live* resolution checks. Verified during
 planning against a throwaway package that `pkg/vercel-ai`, `pkg/vercel-ai/v6`, and
@@ -595,10 +605,12 @@ Expected: all pass. Cumulative new tests for this phase: 1 (tools-context) + 25 
 - [ ] all 3 coupled test assertions updated to `"no ArcjetAgentContext"`
       (`guard-tool.test.ts`, `generate-text.test.ts`, `warn-missing-context.test.ts`)
 - [ ] `Symbol.for("arcjet:ai:protected-tool")` left unchanged (deliberate)
-- [ ] all four root entry files are byte-identical to `main` (AC1.1) — every
+- [ ] all four root entry files are untouched by this migration (AC1.1) — every
       pathspec must be repo-root-relative or it silently matches nothing:
-      `git diff main -- arcjet-guard/src/index.ts arcjet-guard/src/node.ts
-      arcjet-guard/src/fetch.ts arcjet-guard/src/bun.ts` is empty
+      `git diff e4946df0 -- arcjet-guard/src/index.ts arcjet-guard/src/node.ts
+      arcjet-guard/src/fetch.ts arcjet-guard/src/bun.ts` is empty. Against `main`
+      the same command reports one `+  ArcjetMetadata,` line, which comes from
+      arcjet-js#6171 already on this branch and not from any phase here
 - [ ] all migrated tests pass; `npm run test-unit` green **with a total count
       consistent with baseline + all migrated tests**
 - [ ] `npm run typecheck`, `npm run lint`, `npm run build` all green

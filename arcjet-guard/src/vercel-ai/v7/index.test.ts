@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-call,typescript/no-unsafe-member-access,typescript/strict-boolean-expressions,typescript/no-unsafe-assignment,typescript/no-unsafe-type-assertion -- error handling patterns in tests are safe */
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
@@ -6,8 +5,19 @@ import assert from "node:assert/strict";
 
 import * as v7Namespace from "./index.ts";
 import * as agentsBarrel from "../../agents/index.ts";
-// Import types to verify they are exported - typecheck will fail if these don't exist
-import type { GuardToolPolicy, ArcjetDenialResult } from "./guard-tool.ts";
+import type { Tool } from "ai";
+
+import type { ArcjetDenialResult, GuardToolPolicy } from "./index.ts";
+
+// `Object.keys` on a namespace import never lists type-only exports, so assert
+// them at type level instead: this stops compiling if the barrel drops one.
+function verifyTypeExports(): void {
+  const policy: GuardToolPolicy<Tool> | undefined = undefined;
+  const denial: ArcjetDenialResult | undefined = undefined;
+  void [policy, denial];
+}
+
+verifyTypeExports();
 
 /**
  * Comments, template literals and ordinary string literals, in one alternation.
@@ -95,9 +105,7 @@ test("AC1.4: shared exports have same function identity", () => {
   const sharedExports = ["guardAction", "captureAction", "securityMetadata", "createAgentContext", "ArcjetDeniedError"] as const;
 
   for (const exportName of sharedExports) {
-    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-assignment -- dynamic property access
     const v7Value = (v7Namespace as Record<string, unknown>)[exportName];
-    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-assignment -- dynamic property access
     const agentValue = (agentsBarrel as Record<string, unknown>)[exportName];
 
     assert.strictEqual(
@@ -108,10 +116,10 @@ test("AC1.4: shared exports have same function identity", () => {
   }
 
   // Verify namespace is a strict superset of agents barrel
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- Object.keys with namespace imports, then toSorted
-  const v7Keys = Object.keys(v7Namespace).toSorted();
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- Object.keys with namespace imports, then toSorted
-  const agentKeys = Object.keys(agentsBarrel).toSorted();
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
+  const v7Keys: string[] = Object.keys(v7Namespace).toSorted();
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
+  const agentKeys: string[] = Object.keys(agentsBarrel).toSorted();
 
   for (const key of agentKeys) {
     assert.ok(
@@ -138,7 +146,6 @@ test("AC1.2: agents barrel exports documented symbols", () => {
   ] as const;
 
   for (const symbol of requiredSymbols) {
-    // oxlint-disable-next-line typescript/no-unsafe-assignment -- dynamic property access
     const value = (agentsBarrel as Record<string, unknown>)[symbol];
     assert.ok(
       value !== undefined,
@@ -147,39 +154,57 @@ test("AC1.2: agents barrel exports documented symbols", () => {
   }
 });
 
+/**
+ * Read a JSON file as a plain record. `JSON.parse` is untyped by definition, so
+ * the boundary is asserted once here rather than at each call site.
+ */
+function readJsonObject(path: string): Record<string, unknown> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns any
+  return JSON.parse(readFileSync(path, "utf-8")) as Record<string, unknown>;
+}
+
+/**
+ * Read a nested object field, or undefined when the field is absent or not an
+ * object.
+ */
+function objectField(
+  source: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> | undefined {
+  const value = source[key];
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- guarded by the checks above
+    return value as Record<string, unknown>;
+  }
+  return undefined;
+}
+
 // AC1.5 and AC1.6: Export map verification (static check, no build required)
 test("AC1.5 and AC1.6: export map has correct subpaths", () => {
-  const packageJsonPath = resolve(import.meta.dirname, "../../../package.json");
-  let packageJson: Record<string, unknown>;
-
-  try {
-    const content = readFileSync(packageJsonPath, "utf-8");
-    packageJson = JSON.parse(content) as Record<string, unknown>;
-  } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    assert.fail(`Failed to read or parse package.json: ${message}`);
-  }
-
-  // oxlint-disable-next-line typescript/no-unsafe-member-access -- package.json is JSON parsed
-  const exportsMap = packageJson.exports as Record<string, unknown> | undefined;
+  const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
+  const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
 
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
   const exportKeys = Object.keys(exportsMap).toSorted();
 
   // AC1.5: ./vercel-ai (unversioned) must NOT exist
   assert.ok(
+    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     !exportKeys.includes("./vercel-ai"),
     'export map must not have "./vercel-ai" (unversioned alias prohibited)',
   );
 
   // AC1.6: ./vercel-ai/v6 must NOT exist
   assert.ok(
+    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     !exportKeys.includes("./vercel-ai/v6"),
     'export map must not have "./vercel-ai/v6" (unsupported major version)',
   );
 
   // AC1.6: No wildcard keys starting with ./vercel-ai/ except v7 literal
   for (const key of exportKeys) {
+    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     if (key.startsWith("./vercel-ai/")) {
       assert.equal(
         key,
@@ -191,12 +216,14 @@ test("AC1.5 and AC1.6: export map has correct subpaths", () => {
 
   // Must have ./vercel-ai/v7
   assert.ok(
+    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     exportKeys.includes("./vercel-ai/v7"),
     'export map must have "./vercel-ai/v7"',
   );
 
   // Must have ./agents
   assert.ok(
+    // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-member-access, typescript/strict-boolean-expressions -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
     exportKeys.includes("./agents"),
     'export map must have "./agents"',
   );
@@ -204,22 +231,13 @@ test("AC1.5 and AC1.6: export map has correct subpaths", () => {
 
 // AC1.1: Root surface unchanged (three checks)
 test("AC1.1: root export map keys and runtime conditions unchanged", () => {
-  const packageJsonPath = resolve(import.meta.dirname, "../../../package.json");
-  let packageJson: Record<string, unknown>;
-
-  try {
-    const content = readFileSync(packageJsonPath, "utf-8");
-    packageJson = JSON.parse(content) as Record<string, unknown>;
-  } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    assert.fail(`Failed to read or parse package.json: ${message}`);
-  }
-
-  // oxlint-disable-next-line typescript/no-unsafe-member-access -- package.json is JSON parsed
-  const exportsMap = packageJson.exports as Record<string, unknown> | undefined;
+  const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
+  const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
 
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
   const exportKeys = Object.keys(exportsMap).toSorted();
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
   const expectedRootKeys = [".", "./agents", "./bun", "./fetch", "./node", "./vercel-ai/v7"].toSorted();
 
   assert.deepEqual(
@@ -229,11 +247,12 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
   );
 
   // Check the . entry's runtime conditions
-  // oxlint-disable-next-line typescript/no-unsafe-member-access -- package.json is JSON parsed
-  const rootEntry = exportsMap["."] as Record<string, unknown> | undefined;
+  const rootEntry = objectField(exportsMap, ".");
   assert.ok(rootEntry, 'export map must have "." entry');
 
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
   const runtimeConditions = Object.keys(rootEntry).toSorted();
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint has no type for Array#toSorted, which unicorn/no-array-sort requires
   const expectedConditions = ["bun", "default", "deno", "edge-light", "node", "workerd"].toSorted();
 
   assert.deepEqual(
@@ -246,7 +265,6 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
 // AC1.1: Root barrel named exports are importable and are functions
 test("AC1.1: root barrel exports rule builders", async () => {
   // Use dynamic import to load the root barrel
-  // oxlint-disable-next-line typescript/no-unsafe-assignment -- dynamic import of index
   const rootBarrel = await import("../../index.ts");
 
   // The rule builders are exported directly from src/index.ts.
@@ -255,7 +273,6 @@ test("AC1.1: root barrel exports rule builders", async () => {
   const requiredFunctions = ["tokenBucket", "fixedWindow", "slidingWindow"] as const;
 
   for (const funcName of requiredFunctions) {
-    // oxlint-disable-next-line typescript/no-unsafe-member-access -- dynamic property access
     const func = (rootBarrel as Record<string, unknown>)[funcName];
     assert.equal(
       typeof func,
@@ -332,12 +349,10 @@ test("AC5.4: no old protectTool identifiers in src/vercel-ai/", () => {
             continue;
           }
 
-          // oxlint-disable-next-line typescript/no-unsafe-call -- test is a standard regex method
           if (new RegExp(`\\b${protectToolNeedle}\\b`).test(content)) {
             errors.push(`${filePath}: contains ${protectToolNeedle}`);
           }
 
-          // oxlint-disable-next-line typescript/no-unsafe-call -- test is a standard regex method
           if (new RegExp(`\\b${protectToolPolicyNeedle}\\b`).test(content)) {
             errors.push(`${filePath}: contains ${protectToolPolicyNeedle}`);
           }
