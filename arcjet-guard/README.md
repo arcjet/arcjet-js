@@ -604,6 +604,222 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   dashboard. Different configs sharing the same bucket name still get
   independent counters — a config hash is appended server-side.
 
+## SDK namespaces: core, agents, and integrations
+
+`@arcjet/guard` exposes three import layers, each for different use cases:
+
+### Core guard (`@arcjet/guard`)
+
+The fundamental client and rule builders. Use this to evaluate guards without
+any AI SDK integration:
+
+```ts
+import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+const decision = await arcjet.guard({
+  rules: [
+    tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 }),
+    detectPromptInjection()(userMessage),
+  ],
+});
+```
+
+### Agnostic helpers (`@arcjet/guard/agents`)
+
+Framework-agnostic helpers for context threading, guard wrapping, and audit
+capture — `createAgentContext`, `guardAction`, `captureAction`, and
+`securityMetadata`:
+
+```ts
+import {
+  createAgentContext,
+  guardAction,
+  captureAction,
+  securityMetadata,
+} from "@arcjet/guard/agents";
+
+const ctx = createAgentContext({
+  correlationId: requestId,
+  metadata: securityMetadata({ user: userId }),
+});
+
+await guardAction(arcjet, ctx, { action: "data.updated", rules: [...] }, () => updateData());
+captureAction(arcjet, ctx, { action: "audit.logged" });
+```
+
+### Vendor SDK integration (`@arcjet/guard/<vendor-sdk>/v<major>`)
+
+Vendor-specific wrappers that integrate with particular SDKs. Currently
+available:
+
+- **`@arcjet/guard/vercel-ai/v7`** — Vercel AI SDK v7 integration, re-exports
+  the agents layer plus `guardTool`, `aiToolsContext`, and utilities for tool
+  wrapping:
+
+  ```ts
+  import {
+    guardTool,
+    aiToolsContext,
+    guardAction,
+    securityMetadata,
+  } from "@arcjet/guard/vercel-ai/v7";
+
+  const tools = {
+    getData: guardTool(arcjet, getDataTool, { action: "data.fetched", rules: [...] }),
+  };
+
+  const result = await generateText({
+    // ...
+    toolsContext: aiToolsContext(ctx, tools),
+  });
+  ```
+
+- **`@arcjet/guard/vercel-eve/v1`** (planned) — Vercel EVE integration
+
+### The namespace convention
+
+New vendor integrations follow the pattern `@arcjet/guard/<vendor-sdk>/v<major>`:
+
+- **Vendor-prefixed**: The namespace names the SDK being integrated
+  (`vercel-ai`, `vercel-eve`, etc.), not the feature.
+- **Flat structure**: No nesting; a single level under `@arcjet/guard`.
+- **Explicit versions only**: `@arcjet/guard/vercel-ai/v7` resolves, but
+  `@arcjet/guard/vercel-ai` does not. Omitting the version is deliberate — with
+  a fast-moving SDK surface, an unversioned alias would silently change meaning
+  when a new major version is supported. Attempting to import from an unexported
+  path throws `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+
+### Optional peer dependencies
+
+The agents layer and vendor integrations declare their SDK dependencies as
+optional peers, so users importing only core guards are not forced to install
+unneeded packages:
+
+- **`@arcjet/guard`** (core) has no peer dependencies.
+- **`@arcjet/guard/agents`** and **`@arcjet/guard/vercel-ai/v7`** require `ai`
+  (`@ai-sdk/provider-utils` as well for v7). Both are optional peers — the
+  package will not be installed automatically, but the imports will fail
+  clearly if the peers are missing.
+
+**pnpm caveat**: pnpm does not reliably honour
+`peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
+`--strict-peer-dependencies` enabled. If `pnpm install` fails with missing
+peers, either install them explicitly or relax strict peer checking:
+
+```sh
+pnpm install ai @ai-sdk/provider-utils
+# or
+pnpm install --no-strict-peer-dependencies
+```
+
+### Why a separate `/agents` layer
+
+Importing `guardTool` loads the Vercel AI SDK as a dependency, so any consumer
+in a non-AI codebase that just wants `guardAction` and `captureAction` would be
+forced to install `ai` anyway. The `/agents` path provides those helpers and
+never reaches an AI SDK dependency, keeping your bundle clean.
+
+### `onGuardError`: handling evaluation failures
+
+When guard policy evaluation fails (e.g. the Arcjet API is unreachable), the
+SDK still allows the request to proceed — this is the platform's fail-open
+default. The agent-level helpers (`guardTool` and `guardAction`) deliberately
+flip this default, because they wrap consequential effects. Their `onGuardError`
+option controls what happens:
+
+- **Default: `"deny"`** — if the policy cannot be evaluated, the call is
+  blocked. For AI tool calls and application actions, this is the safe choice.
+  - `guardTool` returns `{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }` to the model.
+  - `guardAction` throws `ArcjetGuardUnavailableError`, which is deliberately
+    distinct from `ArcjetDeniedError` so a policy outage can be alerted on
+    separately from a policy denial. The error carries `cause` (the guard call
+    threw) or `decision` (a decision failed open), making the two
+    distinguishable in a handler.
+  - The capture `outcome` on that path is `"unavailable"`, not `"denied"`.
+  - The fail-closed tool result carries a fixed `retryAfterSeconds: 5` backoff
+    hint, not a prediction of when the policy becomes evaluable.
+
+- **Opt-out: `onGuardError: "allow"`** — if the policy cannot be evaluated,
+  proceed anyway. Use this for call sites where availability matters more than
+  enforcement — e.g. a read-only tool like an order lookup. During an Arcjet
+  incident, that call site is unaffected, but enforcement at other sites is
+  not.
+
+The layering resolves a potential confusion: the core `@arcjet/guard` client
+still fails open by construction and *reports* it via `hasFailedOpen()`; the
+agent-level helpers *decide* to block on it.
+
+### The explicit-call alternative
+
+`guardTool` extracts the context from the tool call automatically via the
+injected `contextSchema`, which is convenient. Alternatively, call `guardAction`
+directly inside the tool's `execute` block:
+
+```ts
+const tools = {
+  getData: {
+    description: "Fetch data",
+    parameters: z.object({ id: z.string() }),
+    execute: async ({ id }) => {
+      await guardAction(arcjet, ctx, { action: "data.fetched", rules: [...] }, () => fetchData(id));
+      return data;
+    },
+  },
+};
+```
+
+This form keeps control flow visible but requires threading the context in by
+hand. Both are supported; choose based on whether you prefer automatic context
+extraction or explicit control flow.
+
+### What `correlationId` is for
+
+The `correlationId` is a user-supplied string that joins every guard decision
+and capture event from one logical run **or session** into a single sequence
+in the Arcjet console, so the best value is an ID the app already has and can
+search by (request ID, job ID, ticket ID, review ID). If omitted, a ULID is
+generated. Using a consistent ID across multiple tool calls and actions within
+the same logical operation makes it easy to reconstruct the full context of
+what happened.
+
+### Rules derived from tool input
+
+When wrapping a tool, `rules` can be a static array or a callback that
+computes rules from the tool's parsed input:
+
+```ts
+const tools = {
+  lookupOrder: guardTool(arcjet, lookupOrderTool, {
+    action: "order.looked-up",
+    rules: ({ orderNumber }) => [
+      // Key the rate limit to the specific order being looked up
+      orderLimit({ key: `order:${orderNumber}`, requested: 1 }),
+    ],
+  }),
+};
+```
+
+This allows rules to vary based on the request — e.g. stricter limits for
+certain users or resources. The same pattern works with `guardAction` via the
+`rules` callback option.
+
+### Adding a new SDK namespace
+
+To add a new vendor integration (e.g. `vercel-eve/v1`):
+
+1. Create a new directory under `src/<vendor-sdk>/v<major>/` (e.g. `src/vercel-eve/v1/`).
+2. Export your integration helpers — at minimum, a wrapper equivalent to `guardTool` and a context injector.
+3. Add a new entry to the `exports` field in `package.json`:
+   ```json
+   "@arcjet/guard/vercel-eve/v1": {
+     "import": "./dist/vercel-eve/v1/index.js"
+   }
+   ```
+4. Declare optional peers in `peerDependencies` and `peerDependenciesMeta` if needed (e.g. the EVE SDK).
+
+No changes to the shared layer, the build config, or the root export are required.
+
 ## MCP server
 
 Connect your AI assistant to the Arcjet MCP server at
