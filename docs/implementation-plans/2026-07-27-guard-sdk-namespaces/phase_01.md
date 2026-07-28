@@ -125,12 +125,17 @@ unsupported majors fail — a deliberate, tested behaviour (AC1.5, AC1.6).
 ```
 
 **3. Add `peerDependenciesMeta`** marking both optional, so consumers who never
-touch an AI SDK see no warning or error:
+touch an AI SDK see no warning or error. Place this block after `devDependencies`
+and before `engines`, matching the pattern in sibling packages:
 
 ```json
 "peerDependenciesMeta": {
-  "@ai-sdk/provider-utils": { "optional": true },
-  "ai": { "optional": true }
+  "@ai-sdk/provider-utils": {
+    "optional": true
+  },
+  "ai": {
+    "optional": true
+  }
 }
 ```
 

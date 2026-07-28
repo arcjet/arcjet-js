@@ -73,14 +73,6 @@
       "import": "./dist/vercel-ai/v7/index.js"
     }
   },
-  "peerDependencies": {
-    "@ai-sdk/provider-utils": ">=5 <6",
-    "ai": ">=7 <8"
-  },
-  "peerDependenciesMeta": {
-    "@ai-sdk/provider-utils": { "optional": true },
-    "ai": { "optional": true }
-  },
   "publishConfig": {
     "access": "public"
   },
@@ -114,6 +106,18 @@
     "oxlint-tsgolint": "0.24.0",
     "tsdown": "0.22.7",
     "typescript": "7.0.2"
+  },
+  "peerDependencies": {
+    "@ai-sdk/provider-utils": ">=5 <6",
+    "ai": ">=7 <8"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/provider-utils": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0"
