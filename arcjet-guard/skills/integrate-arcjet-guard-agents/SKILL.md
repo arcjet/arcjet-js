@@ -207,15 +207,15 @@ captureAction(arcjet, ctx, {
 `guardAction` throws `ArcjetDeniedError` (carrying the decision) on DENY and
 `ArcjetGuardUnavailableError` (carrying the decision or cause) when the guard
 policy could not be evaluated — decide with the human whether to catch-and-skip
-or let it abort. The two error types are distinct so a policy outage can be
-alerted on separately from a policy denial. `ArcjetGuardUnavailableError` carries
+or let it abort. The two error types are distinct so an unavailable guard can be
+alerted on separately from a DENY decision. `ArcjetGuardUnavailableError` carries
 `cause` (the guard call threw) or `decision` (a decision failed open), making the
 two distinguishable in a handler. The fail-closed tool result carries a fixed
 `retryAfterSeconds: 5` backoff hint. The capture `outcome` on that path is
-`"unavailable"`, not `"denied"`, so an operator can query a policy outage
-separately from a policy denial. The layering resolves a potential confusion: the
-core `@arcjet/guard` client still fails open by construction and *reports* it via
-`hasFailedOpen()`; these helpers *decide* to block on it.
+`"unavailable"`, not `"denied"`, so an operator can query the two separately. The
+layering resolves a potential confusion: the core `@arcjet/guard` client still
+fails open by construction and *reports* it via `hasFailedOpen()`; these helpers
+*decide* to block on it.
 
 ## Metadata vocabulary
 

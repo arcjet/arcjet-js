@@ -85,11 +85,12 @@ async function stepRunAgent(input: SupportAgentInput) {
 
 async function stepUpdateTicket(input: SupportAgentInput, answer: string) {
   "use step";
-  // An unevaluable policy blocks the call by default (onGuardError: "deny").
-  // This is appropriate for a write that creates a ticket; see the lookupOrder
-  // tool for an example of onGuardError: "allow" (read-only availability-first).
-  // An explicit guardAction() call inside the execute block is also supported
-  // if you prefer visible control flow over automatic context injection.
+  // If the policy is not evaluated, the call is blocked by default
+  // (onGuardError: "deny"). This is appropriate for a write that creates a
+  // ticket; see the lookupOrder tool for an example of onGuardError: "allow"
+  // (read-only availability-first). An explicit guardAction() call inside the
+  // execute block is also supported if you prefer visible control flow over
+  // automatic context injection.
   await guardAction(
     arcjet,
     input.ctx,

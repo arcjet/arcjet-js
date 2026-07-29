@@ -743,13 +743,13 @@ option controls what happens:
   blocked. For AI tool calls and application actions, this is the safe choice.
   - `guardTool` returns `{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }` to the model.
   - `guardAction` throws `ArcjetGuardUnavailableError`, which is deliberately
-    distinct from `ArcjetDeniedError` so a policy outage can be alerted on
-    separately from a policy denial. The error carries `cause` (the guard call
+    distinct from `ArcjetDeniedError` so an unavailable guard can be alerted on
+    separately from a DENY decision. The error carries `cause` (the guard call
     threw) or `decision` (a decision failed open), making the two
     distinguishable in a handler.
   - The capture `outcome` on that path is `"unavailable"`, not `"denied"`.
   - The fail-closed tool result carries a fixed `retryAfterSeconds: 5` backoff
-    hint, not a prediction of when the policy becomes evaluable.
+    hint, not a prediction of when evaluation will succeed.
 
 - **Opt-out: `onGuardError: "allow"`** — if the policy cannot be evaluated,
   proceed anyway. Use this for call sites where availability matters more than
