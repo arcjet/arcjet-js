@@ -1,23 +1,22 @@
 # Human Test Plan — Pilot Framework Helper (`@arcjet/guard`)
 
-**Acceptance-criterion namespaces used in this document.** Two separate criterion
-sets apply to this code, and their numbers collide — `AC1.1` means different things
-in each. Every reference below is therefore scoped:
+**Acceptance-criterion namespaces used in this document.** Two criterion sets apply
+to this code and their numbers collide — `AC1.1` means something different in each.
+Every reference below is therefore scoped:
 
-- **`pilot-framework-helper.AC*`** — the 2026-07-23 pilot criteria. These cover
-  correlation context, tool protection, and the agent skill. Sections "Phase 5",
-  "Phase 6", and both end-to-end scenarios use this set.
-- **`guard-sdk-namespaces.AC*`** — the 2026-07-27 subpath-migration criteria. These
-  cover the export map, optional peers, and documentation. Sections "Doc-example
-  compile sweep" and "Runtime suite coverage" use this set.
+- **`pilot-framework-helper.AC*`** — correlation context, tool protection, and the
+  agent skill. Used by "Example app: live run", "Agent skill file", and both
+  end-to-end scenarios.
+- **`guard-sdk-namespaces.AC*`** — the export map, optional peers, and
+  documentation. Used by "Doc-example compile sweep" and "Runtime suite coverage".
 
-Numbers are unchanged from their source documents so external citations
-(e.g. arcjet/review#28, which cites `pilot-framework-helper.AC7.1`) stay valid.
+Numbers match their source criterion sets so external citations (e.g.
+arcjet/review#28, which cites `pilot-framework-helper.AC7.1`) resolve correctly.
 
 Automated coverage: `arcjet-guard/src/agents/*.test.ts` and
-`arcjet-guard/src/vercel-ai/v7/*.test.ts` (76 tests: 51 migrated + 25 net-new,
-inside a 426-test suite) plus the `nextjs-ai-agent` CI build. This plan covers the
-criteria that no automated gate can decide.
+`arcjet-guard/src/vercel-ai/v7/*.test.ts` (76 tests within a 426-test suite) plus
+the `nextjs-ai-agent` CI build. This plan covers the criteria that no automated
+gate can decide.
 
 ## Prerequisites
 
@@ -29,7 +28,7 @@ criteria that no automated gate can decide.
   `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` and a
   sample AI SDK v7 app prepared **outside** this repo.
 
-## Phase 5: Example App — Live Run (`pilot-framework-helper.AC5.2`)
+## Example app: live run (`pilot-framework-helper.AC5.2`)
 
 | Step | Action | Expected |
 |------|--------|----------|
@@ -47,9 +46,9 @@ criteria that no automated gate can decide.
 `pilot-framework-helper.AC5.2` is deferred until
 `@arcjet/guard` ships `experimental_capture()` (unmerged,
 `origin/quinn/experimental-capture`). Guard-**decision** correlation
-(steps 5–6) is verifiable now and is the pass condition for this cycle.
+(steps 5–6) is verifiable now and is the pass condition.
 
-## Phase 6: Agent Skill File (`pilot-framework-helper.AC6.1`)
+## Agent skill file: fresh-agent integration (`pilot-framework-helper.AC6.1`)
 
 | Step | Action | Expected |
 |------|--------|----------|
@@ -58,10 +57,11 @@ criteria that no automated gate can decide.
 | 3 | Observe the agent integrate: launch client, context at entry point, `guardTool` + `toolsContext`, `guardAction`/`captureAction`, denial line in the system prompt | Completes asking only clarifying questions; any correction of wrong API usage is a failure requiring a skill fix + re-run |
 | 4 | Export the transcript, reference it in the PR with a one-line verdict | Clean recorded transcript exists before merge |
 
-**Status:** the `pilot-framework-helper.AC6.1` fresh-agent run passed on
-2026-07-23 — verdict "completed with 4 clarifying questions, zero corrections".
-`SKILL.md` has since been rewritten for the subpath structure, so this run is
-**stale and must be repeated** before the criterion can be called green again.
+**Status: re-run required.** The most recent recorded run (2026-07-23, verdict
+"completed with 4 clarifying questions, zero corrections") was against an earlier
+`SKILL.md`. A recorded run only counts for the `SKILL.md` it was run against, so
+`pilot-framework-helper.AC6.1` is not green until this is repeated. Re-run
+whenever `SKILL.md` changes.
 
 ## End-to-End: Single-run correlation across decision types
 
@@ -70,7 +70,7 @@ guarded tool decision and a guarded external-action decision from one
 workflow run (the seam automated integration tests stub, exercised here
 against the real backend).
 
-Steps: Perform Phase 5 steps 3–6, then in the dashboard confirm that the
+Steps: Perform the live-run steps 3–6, then in the dashboard confirm that the
 tool decision (`order.looked-up`) and the external-action decision
 (`ticket.updated`) share the exact `correlationId` returned in the API
 response. Once `experimental_capture()` ships, re-run and confirm
@@ -82,7 +82,7 @@ Purpose: confirms the deny path is user-observable end to end
 (`pilot-framework-helper.AC2.2` / `pilot-framework-helper.AC2.9` in a live loop,
 not a mock).
 
-Steps: Phase 5 step 8 — drive `lookupOrder` past its token-bucket limit;
+Steps: live-run step 8 — drive `lookupOrder` past its token-bucket limit;
 verify the agent surfaces an apology/denial rather than the order data, and
 the dashboard shows a DENY `RATE_LIMIT` decision under the run's
 `correlationId`.
@@ -91,8 +91,8 @@ the dashboard shows a DENY `RATE_LIMIT` decision under the run's
 
 | Criterion | Why Manual | Steps |
 |-----------|------------|-------|
-| `pilot-framework-helper.AC5.2` | Needs a live dev Arcjet site + dashboard/MCP inspection no CI job or unit test can perform | Phase 5, steps 1–9 |
-| `pilot-framework-helper.AC6.1` | Success is skill-file quality judged from an observed fresh-agent transcript — not an automatable assertion | Phase 6, steps 1–4 — **re-run required**, the recorded pass predates the SKILL.md rewrite |
+| `pilot-framework-helper.AC5.2` | Needs a live dev Arcjet site + dashboard/MCP inspection no CI job or unit test can perform | live run, steps 1–9 |
+| `pilot-framework-helper.AC6.1` | Success is skill-file quality judged from an observed fresh-agent transcript — not an automatable assertion | fresh-agent integration, steps 1–4 — **re-run required**, the recorded pass predates the SKILL.md rewrite |
 | `guard-sdk-namespaces.AC8.2` | Whether a documentation example is *correct and useful* is a judgement call; the compile sweep proves only that it typechecks | Doc-example compile sweep, steps 1–4 |
 
 ## Traceability
@@ -109,8 +109,8 @@ All criteria in this table are in the **`pilot-framework-helper`** namespace.
 | `pilot-framework-helper.AC3.1`–`AC3.5` | `arcjet-guard/src/agents/guard-action.test.ts` | — |
 | `pilot-framework-helper.AC4.1`–`AC4.3` | `arcjet-guard/src/agents/vocabulary.test.ts` | — |
 | `pilot-framework-helper.AC5.1` | `reusable-examples.yml` CI matrix (`nextjs-ai-agent`) | — |
-| `pilot-framework-helper.AC5.2` | — | Phase 5, steps 1–9 |
-| `pilot-framework-helper.AC6.1` | — | Phase 6, steps 1–4 |
+| `pilot-framework-helper.AC5.2` | — | live run, steps 1–9 |
+| `pilot-framework-helper.AC6.1` | — | fresh-agent integration, steps 1–4 |
 
 **Known gap (documented, not a coverage failure):** capture-event delivery is
 unavailable until `@arcjet/guard` ships `experimental_capture()`. The library
@@ -119,17 +119,17 @@ README documents the deferral.
 
 ---
 
-# Subpath migration (`guard-sdk-namespaces`)
+# Subpath namespaces (`guard-sdk-namespaces`)
 
 These helpers ship as `@arcjet/guard` subpaths: `@arcjet/guard/agents` for the
 framework-agnostic layer and `@arcjet/guard/vercel-ai/v7` for the Vercel AI SDK
-layer. Nearly all of the migration's criteria are machine-checkable and run as
+layer. Nearly all of these criteria are machine-checkable and run as
 automated gates. Two need a record here.
 
 ## Doc-example compile sweep (`guard-sdk-namespaces.AC8.2`)
 
 Every documentation example must compile against the **installed** typings — not
-against a remembered API shape. This is the migration's one genuinely human
+against a remembered API shape. This is the one genuinely human
 criterion: the sweep proves a block typechecks, but only a reader can judge whether
 it teaches the right thing.
 
@@ -173,7 +173,7 @@ which leg ran where — a blanket "all green" hides an unrun leg.
 | fetch | local, `npm run test-runtime-fetch` | |
 | bun | local, `npm run test-runtime-bun` | needs `bun` on PATH |
 | cloudflare | local, `npm run test-runtime-cloudflare` | via the `miniflare` devDependency, under `node --test` |
-| **deno** | **CI only** | `deno` is not installed on the current dev machine. `.github/workflows/guard.yml`'s `runtime:` job runs `test-runtime-deno` on both `lts` and `latest` |
+| **deno** | **CI**, and locally only if installed | `deno` is not a repo devDependency, so it is usually absent locally. `.github/workflows/guard.yml`'s `runtime:` job runs `test-runtime-deno` on both `lts` and `latest` |
 
 When deno cannot run locally, cite the specific CI run and its two job
 conclusions — `Runtime (deno lts)` and `Runtime (deno latest)` — and confirm the
