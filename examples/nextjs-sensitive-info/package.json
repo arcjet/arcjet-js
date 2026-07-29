@@ -13,7 +13,7 @@
     "@arcjet/guard": "file:../../arcjet-guard",
     "@arcjet/next": "file:../../arcjet-next",
     "@arcjet/sensitive-info-rampart": "file:../../sensitive-info-rampart",
-    "next": "16.2.6",
+    "next": "16.2.12",
     "react": "^19",
     "react-dom": "^19"
   },
@@ -25,7 +25,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.2.12",
     "postcss": "^8.5.10",
     "tailwindcss": "^4",
     "typescript": "^5"
