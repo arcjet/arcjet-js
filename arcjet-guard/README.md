@@ -16,16 +16,17 @@
   </a>
 </p>
 
-[Arcjet][arcjet] is the runtime security platform that ships with your AI code.
-Guards provide rate limiting, prompt injection detection, sensitive information
-detection, and custom rules for AI tool calls and other backend operations.
-Every feature works on Node.js, Deno, Bun, and Cloudflare Workers.
+[Arcjet][arcjet] is the runtime security platform that ships in your AI code. Detect prompt injection, authorize agent tool calls, redact sensitive data, and block bots and abuse. Real-time security building blocks you call inside your app, before an action happens.
 
 This is the [Arcjet][arcjet] Guards SDK for **non-request protection** — use it
 for AI agent tool calls, MCP server handlers, queue workers, background jobs,
 and anything else that doesn't have an HTTP request object. If you're protecting
 HTTP routes, use a [framework SDK](https://github.com/arcjet/arcjet-js#sdks)
 like `@arcjet/next` or `@arcjet/node` instead.
+
+## Why Arcjet?
+
+Your app's AI features and agents take real actions, calling tools, reading data, hitting APIs. Arcjet runs inside that code and lets you enforce security on each action in real time, then audit what happened
 
 ## Getting started
 

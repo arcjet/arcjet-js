@@ -16,7 +16,7 @@
   </a>
 </p>
 
-[Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks.
+[Arcjet][arcjet] is the runtime security platform that ships in your AI code. Detect prompt injection, authorize agent tool calls, redact sensitive data, and block bots and abuse. Real-time security building blocks you call inside your app, before an action happens.
 
 This is the [Arcjet][arcjet] TypeScript and JavaScript SDK core. **Most users
 should install a framework SDK instead** (`@arcjet/next`, `@arcjet/node`,
@@ -27,6 +27,10 @@ yet supported. Every feature works with any JavaScript application.
 [npm package](https://www.npmjs.com/package/arcjet) |
 [GitHub source](https://github.com/arcjet/arcjet-js/tree/main/arcjet) |
 [Full docs][ts-sdk-docs]
+
+## Why Arcjet?
+
+Your app's AI features and agents take real actions, calling tools, reading data, hitting APIs. Arcjet runs inside that code and lets you enforce security on each action in real time, then audit what happened
 
 ## Rules
 

@@ -14,10 +14,13 @@
   </picture>
 </p>
 
-[Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks.
+[Arcjet][arcjet] is the runtime security platform that ships in your AI code. Detect prompt injection, authorize agent tool calls, redact sensitive data, and block bots and abuse. Real-time security building blocks you call inside your app, before an action happens.
 
-This is the monorepo containing various [Arcjet][arcjet] open source packages
-for JS.
+This is the monorepo containing various [Arcjet][arcjet] open source packages for JS.
+
+## Why Arcjet?
+
+Your app's AI features and agents take real actions, calling tools, reading data, hitting APIs. Arcjet runs inside that code and lets you enforce security on each action in real time, then audit what happened
 
 ## Which package do I need?
 
