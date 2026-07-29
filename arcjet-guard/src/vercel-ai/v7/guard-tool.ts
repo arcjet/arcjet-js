@@ -62,6 +62,18 @@ export interface GuardToolPolicy<T extends Tool> {
   onDeny?: (decision: DecisionDeny) => unknown;
 }
 
+/**
+ * Backoff hint returned to the model when the guard is unavailable.
+ *
+ * A rate-limit denial derives its hint from the denying rule's
+ * `resetAtUnixSeconds`. This path has nothing to derive from: the fail-open
+ * decision is synthesized locally with no rate-limit result, and several of the
+ * conditions that reach here receive no response at all. Five seconds paces a
+ * model's retry loop — long enough that a retry is not effectively immediate,
+ * short enough that the agent does not appear hung.
+ */
+const UNAVAILABLE_RETRY_AFTER_SECONDS = 5;
+
 const contextSchema = jsonSchema<ArcjetAgentContext | undefined>(
   {
     type: "object",
@@ -242,7 +254,7 @@ export function guardTool<T extends Tool>(
           reason: "ERROR",
           message: "Arcjet security check could not be completed; please retry later.",
           retryable: true,
-          retryAfterSeconds: 5,
+          retryAfterSeconds: UNAVAILABLE_RETRY_AFTER_SECONDS,
         }),
         // oxlint-disable-next-line typescript/no-unsafe-return -- tool output type inferred dynamically
         execute: () => originalExecute(input, options),
