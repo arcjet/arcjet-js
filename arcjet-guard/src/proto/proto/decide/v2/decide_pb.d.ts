@@ -728,6 +728,34 @@ export declare type ResultSlidingWindow = Message<"proto.decide.v2.ResultSliding
 export declare const ResultSlidingWindowSchema: GenMessage<ResultSlidingWindow>;
 
 /**
+ * Billing describes the metered usage charged for a single rule evaluation.
+ *
+ * @generated from message proto.decide.v2.Billing
+ */
+export declare type Billing = Message<"proto.decide.v2.Billing"> & {
+  /**
+   * The billing unit the count is expressed in, e.g. "tokens" or
+   * "text_units".
+   *
+   * @generated from field: string unit = 1;
+   */
+  unit: string;
+
+  /**
+   * The number of units charged for this rule evaluation.
+   *
+   * @generated from field: uint64 count = 2;
+   */
+  count: bigint;
+};
+
+/**
+ * Describes the message proto.decide.v2.Billing.
+ * Use `create(BillingSchema)` to create a new message.
+ */
+export declare const BillingSchema: GenMessage<Billing>;
+
+/**
  * ResultPromptInjection contains result details for a prompt injection
  * detection evaluation.
  *
@@ -747,6 +775,13 @@ export declare type ResultPromptInjection = Message<"proto.decide.v2.ResultPromp
    * @generated from field: bool detected = 2;
    */
   detected: boolean;
+
+  /**
+   * The billing charged for this evaluation (unit "tokens").
+   *
+   * @generated from field: proto.decide.v2.Billing billing = 3;
+   */
+  billing?: Billing;
 };
 
 /**
@@ -775,6 +810,13 @@ export declare type ResultModerateContent = Message<"proto.decide.v2.ResultModer
    * @generated from field: bool detected = 2;
    */
   detected: boolean;
+
+  /**
+   * The billing charged for this evaluation (unit "text_units").
+   *
+   * @generated from field: proto.decide.v2.Billing billing = 3;
+   */
+  billing?: Billing;
 };
 
 /**
@@ -1303,6 +1345,25 @@ export declare type CaptureEvent = Message<"proto.decide.v2.CaptureEvent"> & {
    * @generated from field: repeated proto.decide.v2.Warning local_warnings = 23;
    */
   localWarnings: Warning[];
+
+  /**
+   * Where this event came from, set by whatever produced it: "sdk" for an
+   * explicit capture() call, "otlp" for the OpenTelemetry conversion path.
+   * Open string rather than an enum because we don't know the full set of
+   * producers; consumers must tolerate values they don't recognize.
+   *
+   * Per event, not per request, because one request can carry events from more
+   * than one producer — an SDK that accepts capture() calls and also converts
+   * spans feeds both into the same queue.
+   *
+   * Customer-supplied, untrusted, and forgeable. Nothing downstream may grant
+   * trust on the basis of this field. Empty means unknown, which is NOT a
+   * synonym for "sdk": events sent by SDKs predating this field have none, and
+   * the server stores unknown as NULL rather than guessing.
+   *
+   * @generated from field: string source = 24;
+   */
+  source: string;
 };
 
 /**

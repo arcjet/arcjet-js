@@ -77,7 +77,7 @@
 import type { Transport } from "@connectrpc/connect";
 
 import { createGuardClient } from "./client.ts";
-import type { Decision, GuardOptions } from "./types.ts";
+import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
 export type {
   ArcjetMetadata,
   Conclusion,
@@ -136,6 +136,7 @@ export type {
   LocalCustomInput,
   CustomEvaluateResult,
   CustomEvaluateFn,
+  CaptureOptions,
   GuardOptions,
 } from "./types.ts";
 
@@ -193,6 +194,15 @@ export interface LaunchOptions {
 export interface ArcjetGuard {
   /** Evaluate a set of guard rules and return a decision. */
   guard(opts: GuardOptions): Promise<Decision>;
+
+  /**
+   * Record a fact about what the application did.
+   *
+   * Capture is best-effort visibility data. This method validates and enqueues
+   * synchronously, never throws into application code, and does not imply that
+   * the event was durably stored.
+   */
+  capture(opts: CaptureOptions): void;
 }
 
 /**
@@ -211,6 +221,9 @@ export function launchArcjetWithTransport(
   return {
     guard(opts: GuardOptions): Promise<Decision> {
       return client.guard(opts);
+    },
+    capture(opts: CaptureOptions): void {
+      client.capture(opts);
     },
   };
 }
