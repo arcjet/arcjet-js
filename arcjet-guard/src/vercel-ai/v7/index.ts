@@ -23,11 +23,9 @@
  * ```ts
  * import { launchArcjet, tokenBucket } from "@arcjet/guard";
  * import { guardTool, createAgentContext, aiToolsContext } from "@arcjet/guard/vercel-ai/v7";
- * import { openai } from "@ai-sdk/openai";
  * import { tool, jsonSchema, generateText } from "ai";
  *
  * const arcjetClient = launchArcjet({ key: process.env.ARCJET_KEY! });
- * const languageModel = openai("gpt-4");
  *
  * const searchWebTool = tool({
  *   description: "Search the web",
@@ -57,7 +55,7 @@
  *
  * const ctx = createAgentContext({ correlationId: "req-456" });
  * const result = await generateText({
- *   model: languageModel,
+ *   model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
  *   tools: protectedTools,
  *   toolsContext: aiToolsContext(ctx, protectedTools),
  *   messages: [{ role: "user", content: "Search for arcjet" }],
