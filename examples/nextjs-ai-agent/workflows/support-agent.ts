@@ -4,8 +4,8 @@ import {
   guardAction,
   guardTool,
   securityMetadata,
+  type ArcjetAgentContext,
 } from "@arcjet/guard/vercel-ai/v7";
-import type { ArcjetAgentContext } from "@arcjet/guard/vercel-ai/v7";
 import { slidingWindow, tokenBucket } from "@arcjet/guard";
 import { generateText, stepCountIs, tool } from "ai";
 import { z } from "zod";
