@@ -16,12 +16,16 @@
   </a>
 </p>
 
-[Arcjet][arcjet] is the runtime security platform that ships with your AI code. Stop bots and automated attacks from burning your AI budget, leaking data, or misusing tools with Arcjet's AI security building blocks. Every feature works with any SvelteKit application.
+[Arcjet][arcjet] is the runtime security platform that ships in your AI code. Detect prompt injection, authorize agent tool calls, redact sensitive data, and block bots and abuse. Real-time security building blocks you call inside your app, before an action happens.
 
 This is the [Arcjet][arcjet] SDK for [SvelteKit][sveltekit] **request protection** —
 use it to protect HTTP route handlers and API endpoints. If you need to protect
 AI agent tool calls, MCP server handlers, or background jobs (anything without
 an HTTP request), see [`@arcjet/guard`](https://github.com/arcjet/arcjet-js/tree/main/arcjet-guard).
+
+## Why Arcjet?
+
+Your app's AI features and agents take real actions, calling tools, reading data, hitting APIs. Arcjet runs inside that code and lets you enforce security on each action in real time, then audit what happened
 
 ## Getting started
 
