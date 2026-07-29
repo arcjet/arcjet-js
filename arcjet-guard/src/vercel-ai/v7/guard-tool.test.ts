@@ -706,6 +706,16 @@ test("Injected contextSchema: validates correlationId and metadata shapes", () =
     "non-object metadata is rejected",
   );
   assert.equal(
+    schema.validate({ correlationId: "abc", metadata: null }).success,
+    false,
+    "null metadata is rejected (typeof null === 'object')",
+  );
+  assert.equal(
+    schema.validate({ correlationId: "abc", metadata: [1, 2, 3] }).success,
+    false,
+    "array metadata is rejected",
+  );
+  assert.equal(
     schema.validate("nope").success,
     false,
     "non-object value is rejected",
