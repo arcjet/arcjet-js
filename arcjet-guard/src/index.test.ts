@@ -15,6 +15,7 @@ import {
   localDetectSensitiveInfo,
   defineCustomRule,
 } from "./index.ts";
+import type { DiagnosticLogger } from "./index.ts";
 import {
   DecideService,
   GuardResponseSchema,
@@ -26,6 +27,22 @@ import {
 } from "./proto/proto/decide/v2/decide_pb.js";
 
 describe("re-exports", () => {
+  test("DiagnosticLogger is nameable by consumers", () => {
+    // A compile-time assertion, not a runtime one: `DiagnosticLogger` is the
+    // type of `LaunchOptions.logger`, so a consumer must be able to name what
+    // they have to implement. It was previously used in the public option but
+    // never exported. If the export is dropped, this file stops typechecking —
+    // which the package's own lint pass runs.
+    const logger: DiagnosticLogger = {
+      warn(fields, message): void {
+        void fields;
+        void message;
+      },
+    };
+
+    assert.equal(typeof logger.warn, "function");
+  });
+
   test("rule factories are exported", () => {
     assert.equal(typeof tokenBucket, "function");
     assert.equal(typeof fixedWindow, "function");
