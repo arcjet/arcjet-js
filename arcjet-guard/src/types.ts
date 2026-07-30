@@ -1801,7 +1801,13 @@ export interface GuardOptions {
    * ```
    */
   correlationId?: string;
-  /** Maximum seconds to wait for the server response. */
+  /**
+   * Maximum seconds to wait for the server response. Defaults to 2.
+   *
+   * A deadline produces a fail-open decision, so lowering this trades rule
+   * coverage for latency: content moderation and prompt injection are the
+   * slowest rules and are the first to be dropped.
+   */
   timeoutSeconds?: number;
   /** Cancellation signal. */
   signal?: AbortSignal;

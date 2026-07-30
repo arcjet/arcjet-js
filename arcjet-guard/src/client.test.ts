@@ -50,7 +50,7 @@ import {
 function mockTransport(
   handler: (
     req: import("./proto/proto/decide/v2/decide_pb.js").GuardRequest,
-    context: { requestHeader: Headers },
+    context: { requestHeader: Headers; timeoutMs: () => number | undefined },
   ) => import("./proto/proto/decide/v2/decide_pb.js").GuardResponse,
 ): Transport {
   return createRouterTransport(({ service }) => {
@@ -1638,6 +1638,54 @@ describe("Cancellation via signal", () => {
         rules: [input],
         signal: controller.signal,
       }),
+    );
+  });
+});
+
+describe("Request deadline", () => {
+  const rule = tokenBucket({
+    bucket: "test",
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 100,
+  });
+
+  test("defaults to 2s when timeoutSeconds is unset", async () => {
+    let remainingMs: number | undefined;
+    const arcjet = guardWithMock((req, context) => {
+      remainingMs = context.timeoutMs();
+      return tokenBucketAllowResponse(req);
+    });
+
+    await arcjet.guard({
+      label: "test.deadline",
+      rules: [rule({ key: "user_1", requested: 1 })],
+    });
+
+    assert.notEqual(remainingMs, undefined, "handler should observe a deadline");
+    // The handler sees time *remaining*, so a few ms have already elapsed.
+    assert.ok(
+      remainingMs !== undefined && remainingMs > 1500 && remainingMs <= 2000,
+      `expected ~2000ms remaining, got ${remainingMs}`,
+    );
+  });
+
+  test("timeoutSeconds overrides the default", async () => {
+    let remainingMs: number | undefined;
+    const arcjet = guardWithMock((req, context) => {
+      remainingMs = context.timeoutMs();
+      return tokenBucketAllowResponse(req);
+    });
+
+    await arcjet.guard({
+      label: "test.deadline",
+      rules: [rule({ key: "user_1", requested: 1 })],
+      timeoutSeconds: 5,
+    });
+
+    assert.ok(
+      remainingMs !== undefined && remainingMs > 4500 && remainingMs <= 5000,
+      `expected ~5000ms remaining, got ${remainingMs}`,
     );
   });
 });
