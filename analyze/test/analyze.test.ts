@@ -295,15 +295,20 @@ test("generateFingerprint", async function (t) {
     assert.equal(result, "fp::2::30cc6b092efff7b35f658730073f40ceae0a724873e1ff175826fc57e1462149");
   });
 
-  await t.test("should fail", async function () {
-    await assert.rejects(
-      generateFingerprint(
-        exampleContext,
-        // Note: this is a broken cookie.
-        { cookies: "a", ip: "127.0.0.1" },
-      ),
-      /Failed to generate fingerprint/,
-    );
+  await t.test("should skip a malformed cookie rather than fail", async function () {
+    // A malformed cookie token is now skipped during request deserialization
+    // instead of failing fingerprint generation, so the bad cookie is simply
+    // dropped and the fingerprint matches the same request without it. See
+    // arcjet/arcjet#8618.
+    const withMalformedCookie = await generateFingerprint(exampleContext, {
+      cookies: "a",
+      ip: "127.0.0.1",
+    });
+    const withoutCookie = await generateFingerprint(exampleContext, {
+      ip: "127.0.0.1",
+    });
+
+    assert.equal(withMalformedCookie, withoutCookie);
   });
 });
 
