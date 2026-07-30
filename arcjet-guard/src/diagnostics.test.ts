@@ -4,7 +4,7 @@ import { describe, test } from "node:test";
 import { createDiagnosticHandler } from "./diagnostics.ts";
 
 describe("createDiagnosticHandler", () => {
-  test("console fallback logs once per code", (context) => {
+  test("the default logger reports each code once", (context) => {
     const messages: string[] = [];
     context.mock.method(console, "warn", (message: string) => {
       messages.push(message);
@@ -28,8 +28,15 @@ describe("createDiagnosticHandler", () => {
     });
 
     assert.equal(messages.length, 2);
-    assert.match(messages[0], /\[AJ3001\].*\(1 event\(s\)\)/);
-    assert.match(messages[1], /\[AJ3002\].*\(3 event\(s\)\)/);
+    // Rendered by `@arcjet/logger`, so the line carries the shared `✦Aj WARN`
+    // prefix and the code and count arrive as structured fields rather than
+    // being interpolated into the message text.
+    assert.match(messages[0], /^✦Aj WARN Capture queue is full/);
+    assert.match(messages[0], /code: "AJ3001"/);
+    assert.match(messages[0], /count: 1/);
+    assert.match(messages[1], /^✦Aj WARN Capture batch send failed/);
+    assert.match(messages[1], /code: "AJ3002"/);
+    assert.match(messages[1], /count: 3/);
   });
 
   test("sends every diagnostic to a caller-provided logger", () => {

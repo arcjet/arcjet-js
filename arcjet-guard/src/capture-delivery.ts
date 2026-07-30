@@ -222,26 +222,6 @@ function unrefTimer(timer: ReturnType<typeof setTimeout>): void {
   }
 }
 
-const VERCEL_REQUEST_CONTEXT = Symbol.for("@vercel/request-context");
-
-/** Discover Vercel's request-scoped `waitUntil` without a hard dependency. */
-function lookupWaitUntil(): WaitUntil | undefined {
-  const globalWithContext: typeof globalThis & {
-    [VERCEL_REQUEST_CONTEXT]?: unknown;
-  } = globalThis;
-  const provider = globalWithContext[VERCEL_REQUEST_CONTEXT];
-  if (!isContextProvider(provider)) {
-    return;
-  }
-  const context: unknown = provider.get();
-  if (isWaitUntilContext(context)) {
-    return (promise) => {
-      context.waitUntil(promise);
-    };
-  }
-  return undefined;
-}
-
 function hasUnref(value: unknown): value is { unref(): void } {
   return (
     value !== null &&
@@ -249,6 +229,42 @@ function hasUnref(value: unknown): value is { unref(): void } {
     "unref" in value &&
     typeof value.unref === "function"
   );
+}
+
+// The Symbol Vercel defines in their infrastructure to reach the request
+// Context, which can carry `waitUntil`.
+// https://github.com/vercel/vercel/blob/930d7fb892dc26f240f2b950d963931c45e1e661/packages/functions/src/get-context.ts#L6
+const SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
+
+/**
+ * Discover Vercel's request-scoped `waitUntil` without a hard dependency.
+ *
+ * Same logic as `lookupWaitUntil` in the `arcjet` package, which `report()`
+ * uses. It is duplicated rather than shared because that copy is private and
+ * `arcjet` is not a dependency of this package; moving this package under
+ * `arcjet` puts both in one module graph, which is the point to delete one.
+ *
+ * The two predicates below look like ceremony next to that copy's inline
+ * `typeof` checks, but they are load-bearing here: inline narrowing leaves
+ * `waitUntil` typed as `Function`, and this package's lint runs the type-aware
+ * rules, so calling it trips `no-unsafe-call`. The predicates are how this stays
+ * free of an unchecked cast on a value that came off `globalThis`.
+ */
+function lookupWaitUntil(): WaitUntil | undefined {
+  const fromSymbol: typeof globalThis & {
+    [SYMBOL_FOR_REQ_CONTEXT]?: unknown;
+  } = globalThis;
+  const provider = fromSymbol[SYMBOL_FOR_REQ_CONTEXT];
+  if (!isContextProvider(provider)) {
+    return undefined;
+  }
+  const vercelCtx: unknown = provider.get();
+  if (isWaitUntilContext(vercelCtx)) {
+    return (promise) => {
+      vercelCtx.waitUntil(promise);
+    };
+  }
+  return undefined;
 }
 
 function isContextProvider(value: unknown): value is { get(): unknown } {

@@ -1,4 +1,4 @@
-import type { Logger } from "@arcjet/logger";
+import { Logger } from "@arcjet/logger";
 
 /**
  * A local SDK diagnostic that cannot be reported over the wire.
@@ -24,38 +24,41 @@ export type DiagnosticHandler = (diagnostic: ArcjetDiagnostic) => void;
 /**
  * Build the diagnostics channel for one client.
  *
- * A caller-provided logger receives every diagnostic. The console fallback
- * logs once per code so repeated best-effort drops cannot flood application
- * logs.
+ * Diagnostics go through `@arcjet/logger`, so they are formatted and level-gated
+ * like every other Arcjet log line rather than written straight to the console.
+ *
+ * A caller-supplied logger receives every diagnostic, because the caller already
+ * controls filtering. The default logger instead reports each code once:
+ * `capture()` is called on a request path, so a persistent problem — a full
+ * queue under load, an unreachable API — would otherwise emit a line per event
+ * and turn a best-effort telemetry drop into a logging incident.
  */
 export function createDiagnosticHandler(logger?: DiagnosticLogger): DiagnosticHandler {
+  const deduplicate = logger === undefined;
   const logged = new Set<ArcjetDiagnostic["code"]>();
+  // Built on first use so a client that never reports a diagnostic — the
+  // expected case — does not construct a logger it will not use.
+  let sink = logger;
 
   return function diagnose(diagnostic: ArcjetDiagnostic): void {
     try {
-      if (logger) {
-        logger.warn(
-          {
-            code: diagnostic.code,
-            ...(diagnostic.count === undefined ? {} : { count: diagnostic.count }),
-          },
-          diagnostic.message,
-        );
-        return;
+      if (deduplicate) {
+        if (logged.has(diagnostic.code)) {
+          return;
+        }
+        logged.add(diagnostic.code);
       }
-      if (logged.has(diagnostic.code)) {
-        return;
-      }
-      logged.add(diagnostic.code);
-      console.warn(formatDiagnostic(diagnostic));
+      sink ??= new Logger({ level: "warn" });
+      sink.warn(
+        {
+          code: diagnostic.code,
+          ...(diagnostic.count === undefined ? {} : { count: diagnostic.count }),
+        },
+        diagnostic.message,
+      );
     } catch {
       // A diagnostics sink is observational and must never break application
       // control flow or the background delivery worker.
     }
   };
-}
-
-function formatDiagnostic(diagnostic: ArcjetDiagnostic): string {
-  const count = diagnostic.count === undefined ? "" : ` (${diagnostic.count} event(s))`;
-  return `✦Aj WARN [${diagnostic.code}] ${diagnostic.message}${count}`;
 }
