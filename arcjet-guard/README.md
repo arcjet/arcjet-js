@@ -406,8 +406,10 @@ diagnostic; without one, Arcjet logs once per code:
 const arcjet = launchArcjet({
   key: process.env.ARCJET_KEY!,
   logger: {
-    warn(message) {
-      applicationLogger.warn(message);
+    // `@arcjet/logger` shape: the merging object comes first, the message
+    // second. `fields` carries `{ code, count? }`.
+    warn(fields, message) {
+      applicationLogger.warn(fields, message);
     },
   },
 });

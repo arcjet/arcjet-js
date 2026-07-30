@@ -79,7 +79,11 @@ import type { Transport } from "@connectrpc/connect";
 import { createGuardClient } from "./client.ts";
 import type { DiagnosticLogger } from "./diagnostics.ts";
 import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
-export type { ArcjetDiagnostic } from "./diagnostics.ts";
+// The type of `LaunchOptions.logger`, so a consumer can name what they have
+// to implement. `ArcjetDiagnostic` is deliberately not exported: it is the
+// internal handler payload and appears in no public signature — the logger
+// receives `({ code, count? }, message)`.
+export type { DiagnosticLogger } from "./diagnostics.ts";
 export type {
   ArcjetMetadata,
   Conclusion,

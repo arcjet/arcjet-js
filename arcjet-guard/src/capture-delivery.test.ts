@@ -258,4 +258,152 @@ describe("createCaptureDelivery", () => {
     assert.deepEqual(sent, [["worker"]]);
     assert.deepEqual(local.values, []);
   });
+  // The default `getWaitUntil` is the Vercel request-context lookup, and it was
+  // the only uncovered code in this module. It decides immediate-send versus
+  // batching for a whole platform, so it needs exercising rather than being
+  // stubbed out by every test.
+  describe("Vercel request-context discovery", () => {
+    const SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
+
+    function withGlobalContext<T>(value: unknown, body: () => T): T {
+      // Widened by declaration rather than by assertion, matching how the
+      // source reaches the same symbol — an assertion here trips the
+      // type-aware lint rules this package runs.
+      const target: typeof globalThis & {
+        [SYMBOL_FOR_REQ_CONTEXT]?: unknown;
+      } = globalThis;
+      const had = SYMBOL_FOR_REQ_CONTEXT in target;
+      const previous = target[SYMBOL_FOR_REQ_CONTEXT];
+      target[SYMBOL_FOR_REQ_CONTEXT] = value;
+      try {
+        return body();
+      } finally {
+        if (had) {
+          target[SYMBOL_FOR_REQ_CONTEXT] = previous;
+        } else {
+          delete target[SYMBOL_FOR_REQ_CONTEXT];
+        }
+      }
+    }
+
+    test("discovers waitUntil and hands it the send promise", async () => {
+      const local = diagnostics();
+      const sent: string[][] = [];
+      const handed: Array<Promise<unknown>> = [];
+
+      await withGlobalContext(
+        {
+          get(): unknown {
+            return {
+              waitUntil(promise: Promise<unknown>): void {
+                handed.push(promise);
+              },
+            };
+          },
+        },
+        async () => {
+          const delivery = createCaptureDelivery({
+            // A long delay would hide a batching send; discovery must bypass it.
+            batchDelayMs: 60_000,
+            diagnose: local.diagnose,
+            send(events): Promise<void> {
+              sent.push(events.map((item) => item.action));
+              return Promise.resolve();
+            },
+          });
+
+          delivery.capture(event("vercel"));
+
+          assert.equal(handed.length, 1, "the platform hook should receive one promise");
+          await handed[0];
+        },
+      );
+
+      assert.deepEqual(sent, [["vercel"]]);
+      assert.deepEqual(local.values, []);
+    });
+
+    test("falls back to batching when the context has no waitUntil", async () => {
+      const local = diagnostics();
+      const sent: string[][] = [];
+
+      await withGlobalContext(
+        {
+          get(): unknown {
+            return {};
+          },
+        },
+        async () => {
+          const delivery = createCaptureDelivery({
+            batchDelayMs: 0,
+            diagnose: local.diagnose,
+            send(events): Promise<void> {
+              sent.push(events.map((item) => item.action));
+              return Promise.resolve();
+            },
+          });
+
+          delivery.capture(event("no-hook"));
+          await delivery.flush(1000);
+        },
+      );
+
+      assert.deepEqual(sent, [["no-hook"]]);
+    });
+
+    test("ignores a context provider that is not shaped as expected", async () => {
+      const local = diagnostics();
+      const sent: string[][] = [];
+
+      // A non-object, and an object whose `get` is not callable, must both be
+      // rejected without throwing into the caller.
+      for (const provider of [42, { get: "nope" }]) {
+        await withGlobalContext(provider, async () => {
+          const delivery = createCaptureDelivery({
+            batchDelayMs: 0,
+            diagnose: local.diagnose,
+            send(events): Promise<void> {
+              sent.push(events.map((item) => item.action));
+              return Promise.resolve();
+            },
+          });
+
+          delivery.capture(event("bad-provider"));
+          await delivery.flush(1000);
+        });
+      }
+
+      assert.deepEqual(sent, [["bad-provider"], ["bad-provider"]]);
+      assert.deepEqual(local.values, []);
+    });
+
+    test("a throwing context lookup does not reach the caller", async () => {
+      const local = diagnostics();
+      const sent: string[][] = [];
+
+      await withGlobalContext(
+        {
+          get(): unknown {
+            throw new Error("context exploded");
+          },
+        },
+        async () => {
+          const delivery = createCaptureDelivery({
+            batchDelayMs: 0,
+            diagnose: local.diagnose,
+            send(events): Promise<void> {
+              sent.push(events.map((item) => item.action));
+              return Promise.resolve();
+            },
+          });
+
+          // Must not throw: a platform context lookup is observational.
+          delivery.capture(event("throwing-context"));
+          await delivery.flush(1000);
+        },
+      );
+
+      assert.deepEqual(sent, [["throwing-context"]]);
+    });
+  });
 });
