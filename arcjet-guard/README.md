@@ -347,16 +347,23 @@ arcjet.capture({
 });
 ```
 
-Capture is best-effort and never blocks or throws into application code. Without
-a platform `waitUntil` hook, the SDK keeps a bounded in-memory queue, sends
-batches on size or delay, drops the newest event when the queue is full, and
-never retries a failed batch. Given a `waitUntil`, it starts the send
-immediately and hands the promise over.
+Capture is best-effort and never blocks or throws into application code. The SDK
+keeps a bounded in-memory queue, sends batches on size or delay, drops the newest
+event when the queue is full, and never retries a failed batch.
+
+A platform `waitUntil` hook does not change any of that. Events still batch; the
+hook is handed a promise that settles once they have been sent, so the runtime
+keeps the invocation alive long enough for the batch to go out.
 
 ### Serverless and edge runtimes
 
-A runtime that freezes between invocations can lose whatever is still batched,
-so hand the event's send to the platform. Pass `waitUntil` per call:
+A runtime that freezes or terminates between invocations can lose whatever is
+still batched, so it needs telling that background work is outstanding. That is
+all `waitUntil` does — it extends the invocation, it does not disable batching.
+Thirty tool calls in one agent turn stay one request, not thirty, which matters
+against a Worker's subrequest budget.
+
+Pass `waitUntil` per call:
 
 ```ts
 export default {

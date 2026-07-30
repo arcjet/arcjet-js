@@ -31,7 +31,11 @@ export type CaptureDeliveryOptions = {
 /** Bounded, send-once delivery for best-effort capture events. */
 export type CaptureDelivery = {
   /**
-   * Enqueue or hand off one event without blocking the caller.
+   * Enqueue one event without blocking the caller.
+   *
+   * A `waitUntil` — supplied here, or discovered — is handed a promise that
+   * settles when the queue has drained. It extends how long the invocation may
+   * run; it does not make the event skip batching.
    *
    * A caller-supplied `waitUntil` takes precedence over discovery, matching how
    * `report()` prefers `ArcjetContext.waitUntil` over its own lookup.
@@ -68,6 +72,7 @@ export function createCaptureDelivery(options: CaptureDeliveryOptions): CaptureD
   const pending = new Set<PendingBatch>();
   let buffered = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let settledWaiters: Array<() => void> = [];
 
   function clearTimer(): void {
     if (timer !== undefined) {
@@ -99,6 +104,7 @@ export function createCaptureDelivery(options: CaptureDeliveryOptions): CaptureD
         if (pending.delete(batch)) {
           buffered -= batch.count;
         }
+        notifyIfSettled();
       });
     batch = {
       count: events.length,
@@ -114,6 +120,40 @@ export function createCaptureDelivery(options: CaptureDeliveryOptions): CaptureD
     clearTimer();
     while (queue.length > 0) {
       startBatch(queue.splice(0, batchSize));
+    }
+  }
+
+  /**
+   * Resolve once nothing is queued and nothing is in flight.
+   *
+   * This is what a platform `waitUntil` is handed: it keeps the invocation alive
+   * until the events captured during it have actually been sent, without forcing
+   * them to be sent one request at a time.
+   *
+   * Implemented by waking waiters from the drain path rather than by polling.
+   * Re-checking through a resolved promise would build an unbroken microtask
+   * chain while the queue waits out its batch window, and macrotasks — including
+   * the batch timer that would have drained it — never get to run. That deadlocks
+   * rather than waits.
+   */
+  function whenSettled(): Promise<void> {
+    if (queue.length === 0 && pending.size === 0) {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve) => {
+      settledWaiters.push(resolve);
+    });
+  }
+
+  /** Wake anything waiting on `whenSettled` once the pipeline is empty. */
+  function notifyIfSettled(): void {
+    if (queue.length > 0 || pending.size > 0 || settledWaiters.length === 0) {
+      return;
+    }
+    const waiters = settledWaiters;
+    settledWaiters = [];
+    for (const resolve of waiters) {
+      resolve();
     }
   }
 
@@ -136,24 +176,34 @@ export function createCaptureDelivery(options: CaptureDeliveryOptions): CaptureD
       }
       buffered += 1;
 
-      const waitUntil =
-        typeof callWaitUntil === "function" ? callWaitUntil : safeWaitUntil(getWaitUntil);
-      if (waitUntil !== undefined) {
-        const promise = startBatch([event]).promise;
-        try {
-          waitUntil(promise);
-        } catch {
-          // The send already started. A broken platform hook must not make the
-          // event send twice or throw into application code.
-        }
-        return;
-      }
-
       queue.push(event);
       if (queue.length >= batchSize) {
         drainQueue();
       } else {
         schedule();
+      }
+
+      // A platform `waitUntil` extends how long this invocation may run. That is
+      // a lifetime concern, not a batching one, and conflating the two is a
+      // mistake worth naming: sending each event as its own request — which this
+      // used to do whenever a hook was present — costs one HTTP request per
+      // event on exactly the platforms that generate the most events. A single
+      // agent turn with thirty tool calls became thirty requests, against a
+      // Worker's subrequest budget.
+      //
+      // Handing over a promise that settles when the pipeline drains keeps both
+      // properties: events still batch, and the platform still keeps the
+      // invocation alive until they have actually been sent.
+      const waitUntil =
+        typeof callWaitUntil === "function" ? callWaitUntil : safeWaitUntil(getWaitUntil);
+      if (waitUntil !== undefined) {
+        try {
+          waitUntil(whenSettled());
+        } catch {
+          // A broken platform hook must not throw into application code. The
+          // event stays queued and is still sent by the batch timer, or by a
+          // later `flush()`.
+        }
       }
     },
 

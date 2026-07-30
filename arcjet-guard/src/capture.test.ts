@@ -272,7 +272,7 @@ describe("capture", () => {
     assert.match(diagnostics[0], /\[AJ3002\]/);
   });
 
-  test("a caller-supplied waitUntil sends immediately instead of batching", async () => {
+  test("a caller-supplied waitUntil receives a promise covering the send", async () => {
     const received: CaptureRequest[] = [];
     const transport = mockCaptureTransport((request) => {
       received.push(request);
@@ -291,9 +291,11 @@ describe("capture", () => {
       },
     });
 
-    // A batched event never reaches `waitUntil`, so receiving the send promise
-    // synchronously here is what proves the immediate path was taken.
+    // The hook is handed a promise synchronously so the runtime knows work is
+    // outstanding. It covers the batched send rather than replacing it, so
+    // nothing has been sent until it settles.
     assert.equal(pending.length, 1);
+    assert.equal(received.length, 0);
     await pending[0];
 
     assert.equal(received.length, 1);

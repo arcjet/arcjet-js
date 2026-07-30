@@ -177,12 +177,12 @@ describe("createCaptureDelivery", () => {
     ]);
   });
 
-  test("uses waitUntil for an immediate send instead of queueing", async () => {
+  test("hands waitUntil a promise that settles once the batch is sent", async () => {
     const sent: string[][] = [];
     const pending: Promise<unknown>[] = [];
     const local = diagnostics();
     const delivery = createCaptureDelivery({
-      batchDelayMs: 60_000,
+      batchDelayMs: 5,
       diagnose: local.diagnose,
       getWaitUntil(): (promise: Promise<unknown>) => void {
         return (promise) => {
@@ -195,11 +195,49 @@ describe("createCaptureDelivery", () => {
       },
     });
 
-    delivery.capture(event("immediate"));
+    delivery.capture(event("kept-alive"));
+
+    // The hook is handed the promise synchronously, but the send has not
+    // happened yet — the event is batching.
     assert.equal(pending.length, 1);
+    assert.deepEqual(sent, []);
+
     await pending[0];
 
-    assert.deepEqual(sent, [["immediate"]]);
+    assert.deepEqual(sent, [["kept-alive"]]);
+    assert.deepEqual(local.values, []);
+  });
+
+  test("waitUntil does not turn a burst into one request per event", async () => {
+    // The point of handing over a drain promise rather than a per-event send:
+    // on the platforms that supply a waitUntil, an agent turn with many tool
+    // calls used to cost one HTTP request each, against a subrequest budget.
+    const sent: string[][] = [];
+    const pending: Promise<unknown>[] = [];
+    const local = diagnostics();
+    const delivery = createCaptureDelivery({
+      batchDelayMs: 5,
+      batchSize: 50,
+      diagnose: local.diagnose,
+      getWaitUntil(): (promise: Promise<unknown>) => void {
+        return (promise) => {
+          pending.push(promise);
+        };
+      },
+      send(events): Promise<void> {
+        sent.push(events.map((item) => item.action));
+        return Promise.resolve();
+      },
+    });
+
+    for (let index = 0; index < 30; index++) {
+      delivery.capture(event(`tool.${index}`));
+    }
+
+    await Promise.all(pending);
+
+    assert.equal(sent.length, 1, `expected one request, got ${sent.length}`);
+    assert.equal(sent[0].length, 30);
     assert.deepEqual(local.values, []);
   });
 
@@ -209,7 +247,7 @@ describe("createCaptureDelivery", () => {
     const supplied: Promise<unknown>[] = [];
     const local = diagnostics();
     const delivery = createCaptureDelivery({
-      batchDelayMs: 60_000,
+      batchDelayMs: 5,
       diagnose: local.diagnose,
       getWaitUntil(): (promise: Promise<unknown>) => void {
         return (promise) => {
@@ -234,12 +272,12 @@ describe("createCaptureDelivery", () => {
     assert.deepEqual(local.values, []);
   });
 
-  test("sends immediately with a supplied waitUntil when none is discoverable", async () => {
+  test("uses a supplied waitUntil when none is discoverable", async () => {
     const sent: string[][] = [];
     const pending: Promise<unknown>[] = [];
     const local = diagnostics();
     const delivery = createCaptureDelivery({
-      batchDelayMs: 60_000,
+      batchDelayMs: 5,
       diagnose: local.diagnose,
       getWaitUntil: (): undefined => undefined,
       send(events): Promise<void> {
@@ -258,10 +296,32 @@ describe("createCaptureDelivery", () => {
     assert.deepEqual(sent, [["worker"]]);
     assert.deepEqual(local.values, []);
   });
-  // The default `getWaitUntil` is the Vercel request-context lookup, and it was
-  // the only uncovered code in this module. It decides immediate-send versus
-  // batching for a whole platform, so it needs exercising rather than being
-  // stubbed out by every test.
+
+  test("a broken waitUntil hook does not lose the event or throw", async () => {
+    const sent: string[][] = [];
+    const local = diagnostics();
+    const delivery = createCaptureDelivery({
+      batchDelayMs: 5,
+      diagnose: local.diagnose,
+      getWaitUntil(): (promise: Promise<unknown>) => void {
+        return () => {
+          throw new Error("platform hook exploded");
+        };
+      },
+      send(events): Promise<void> {
+        sent.push(events.map((item) => item.action));
+        return Promise.resolve();
+      },
+    });
+
+    // Must not throw into the caller, and the event must still be delivered by
+    // the ordinary batching path.
+    delivery.capture(event("survives"));
+    await delivery.flush(1000);
+
+    assert.deepEqual(sent, [["survives"]]);
+  });
+
   describe("Vercel request-context discovery", () => {
     const SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
 
@@ -303,8 +363,7 @@ describe("createCaptureDelivery", () => {
         },
         async () => {
           const delivery = createCaptureDelivery({
-            // A long delay would hide a batching send; discovery must bypass it.
-            batchDelayMs: 60_000,
+            batchDelayMs: 5,
             diagnose: local.diagnose,
             send(events): Promise<void> {
               sent.push(events.map((item) => item.action));
