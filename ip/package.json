@@ -53,7 +53,7 @@
     "typecheck": "tsc --noEmit",
     "generate": "npm run build && node scripts/verify-ranges.ts --write",
     "test-api": "node --test -- test/*.test.ts",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=100 --test-coverage-exclude \"test/**/*.{js,mjs,ts}\" --test-coverage-functions=100 --test-coverage-lines=100 -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=100 --test-coverage-exclude \"test/**/*.{js,mjs,mts,ts}\" --test-coverage-functions=100 --test-coverage-lines=100 -- test/*.test.ts",
     "test": "npm run build && npm run test-coverage",
     "verify-ranges": "npm run build && node scripts/verify-ranges.ts"
   },

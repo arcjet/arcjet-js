@@ -4,7 +4,7 @@ import { register } from "node:module";
 import test from "node:test";
 
 // SvelteKit resolves `$env/dynamic/private` during its own build, so importing the built module here needs it stubbed.
-register(new URL("./_shared/runtime-stub-hooks.mjs", import.meta.url));
+register(new URL("./_shared/runtime-stub-hooks.mts", import.meta.url));
 
 test("`@arcjet/sveltekit`: should expose the documented export paths", async function () {
   const manifest: unknown = JSON.parse(
@@ -71,23 +71,6 @@ test('`@arcjet/sveltekit`: should publish every value of "." as a value', async 
     [],
   );
 });
-
-/**
- * Every name an `export { … }` clause declares.
- *
- * Kind is deliberately not compared: a `.d.ts` exports an interface and a
- * function through the same clause, so it cannot say which is which. The
- * sibling `api-surface/` files say, and `tsc` checks them.
- */
-function exportedNames(source: string): Set<string> {
-  return new Set(
-    names(source)
-      .map((one) => one.name)
-      // `default` is covered by the value exports above, and the documented
-      // list does not name it.
-      .filter((name) => name !== "default"),
-  );
-}
 
 /** Every name an `export { … }` clause marks as type-only. */
 function typeOnlyNames(source: string): string[] {

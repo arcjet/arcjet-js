@@ -1,3 +1,5 @@
+import type { ResolveHook } from "node:module";
+
 // Bun provides the `bun` module, so importing this package's built output in a
 // Node test needs it stubbed. Only `env`, the one export the module reads, is
 // provided — anything else should fail loudly rather than look supported.
@@ -7,11 +9,10 @@
 
 const stub = "data:text/javascript,export const env = {};";
 
-/** @type {import("node:module").ResolveHook} */
-export function resolve(specifier, context, next) {
+export const resolve: ResolveHook = function (specifier, context, next) {
   if (specifier === "bun") {
     return { shortCircuit: true, url: stub };
   }
 
   return next(specifier, context);
-}
+};

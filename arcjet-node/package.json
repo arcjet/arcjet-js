@@ -57,7 +57,7 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
-    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=75 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,mjs,ts}\" --test-coverage-functions=90 --test-coverage-lines=75 -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=75 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,mjs,mts,ts}\" --test-coverage-functions=90 --test-coverage-lines=75 -- test/*.test.ts",
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
