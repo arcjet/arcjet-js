@@ -2,58 +2,49 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("`@nosecone/next` public API", async function (t) {
-  await t.test("should expose the documented export paths", async function () {
-    const manifest: unknown = JSON.parse(
-      await readFile(new URL("../package.json", import.meta.url), "utf8"),
-    );
-    assert.ok(manifest !== null && typeof manifest === "object" && "exports" in manifest);
-    const exportMap = manifest.exports;
-    assert.ok(exportMap !== null && typeof exportMap === "object");
+test("`@nosecone/next`: should expose the documented export paths", async function () {
+  const manifest: unknown = JSON.parse(
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
+  );
+  assert.ok(manifest !== null && typeof manifest === "object" && "exports" in manifest);
+  const exportMap = manifest.exports;
+  assert.ok(exportMap !== null && typeof exportMap === "object");
 
-    assert.deepEqual(new Set(Object.keys(exportMap)), new Set([".", "./package.json"]));
-  });
+  assert.deepEqual(new Set(Object.keys(exportMap)), new Set([".", "./package.json"]));
+});
 
-  await t.test('should expose the value exports of "."', async function () {
-    const module = await import("@nosecone/next");
+test('`@nosecone/next`: should expose the value exports of "."', async function () {
+  const module = await import("@nosecone/next");
 
-    assert.deepEqual(
-      new Set(Object.keys(module)),
-      new Set([
-        "createMiddleware",
-        "default",
-        "defaults",
-        "nonce",
-        "nosecone",
-        "withVercelToolbar",
-      ]),
-    );
-  });
+  assert.deepEqual(
+    new Set(Object.keys(module)),
+    new Set(["createMiddleware", "default", "defaults", "nonce", "nosecone", "withVercelToolbar"]),
+  );
+});
 
-  await t.test('should expose exactly the api surface of "."', async function () {
-    const [declaration, documented] = await Promise.all([
-      readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8"),
-      readFile(new URL("./api-surface/index.ts", import.meta.url), "utf8"),
-    ]);
+test('`@nosecone/next`: should expose exactly the api surface of "."', async function () {
+  const [declaration, documented] = await Promise.all([
+    readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8"),
+    readFile(new URL("./api-surface/index.ts", import.meta.url), "utf8"),
+  ]);
 
-    // Nothing implicit: an `export *` would publish whatever the module it
-    // points at happens to export, and the comparison below could not see it.
-    assert.doesNotMatch(declaration, /^export \*/m);
-    assert.deepEqual(exportedNames(declaration), exportedNames(documented));
-  });
+  // Nothing implicit: an `export *` would publish whatever the module it
+  // points at happens to export, and the comparison below could not see it.
+  assert.doesNotMatch(declaration, /^export \*/m);
+  assert.deepEqual(exportedNames(declaration), exportedNames(documented));
+});
 
-  await t.test('should publish every value of "." as a value', async function () {
-    const module = await import("@nosecone/next");
-    const declaration = await readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8");
+test('`@nosecone/next`: should publish every value of "." as a value', async function () {
+  const module = await import("@nosecone/next");
+  const declaration = await readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8");
 
-    // A name the declarations mark `type` is erased before it reaches a
-    // consumer, so they cannot call it, subclass it, or use `instanceof` on it
-    // -- however plainly it is there at run time.
-    assert.deepEqual(
-      typeOnlyNames(declaration).filter((name) => name in module),
-      [],
-    );
-  });
+  // A name the declarations mark `type` is erased before it reaches a
+  // consumer, so they cannot call it, subclass it, or use `instanceof` on it
+  // -- however plainly it is there at run time.
+  assert.deepEqual(
+    typeOnlyNames(declaration).filter((name) => name in module),
+    [],
+  );
 });
 
 /**

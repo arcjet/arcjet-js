@@ -1,77 +1,80 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { register } from "node:module";
 import test from "node:test";
 
-// Bun provides the `bun` module, so importing the built module here needs it stubbed.
-register(new URL("./_shared/runtime-stub-hooks.mjs", import.meta.url));
+// Bun provides the `bun` module, so Node needs it stubbed to import
+// the built module at all. These tests also run under Bun itself,
+// where the module is real and there are no loader hooks to register.
+if (!("Bun" in globalThis)) {
+  const { register } = await import("node:module");
 
-test("`@arcjet/bun` public API", async function (t) {
-  await t.test("should expose the documented export paths", async function () {
-    const manifest: unknown = JSON.parse(
-      await readFile(new URL("../package.json", import.meta.url), "utf8"),
-    );
-    assert.ok(manifest !== null && typeof manifest === "object" && "exports" in manifest);
-    const exportMap = manifest.exports;
-    assert.ok(exportMap !== null && typeof exportMap === "object");
+  register(new URL("./_shared/runtime-stub-hooks.mjs", import.meta.url));
+}
 
-    assert.deepEqual(new Set(Object.keys(exportMap)), new Set([".", "./package.json"]));
-  });
+test("`@arcjet/bun`: should expose the documented export paths", async function () {
+  const manifest: unknown = JSON.parse(
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
+  );
+  assert.ok(manifest !== null && typeof manifest === "object" && "exports" in manifest);
+  const exportMap = manifest.exports;
+  assert.ok(exportMap !== null && typeof exportMap === "object");
 
-  await t.test('should expose the value exports of "."', async function () {
-    const module = await import("@arcjet/bun");
+  assert.deepEqual(new Set(Object.keys(exportMap)), new Set([".", "./package.json"]));
+});
 
-    assert.deepEqual(
-      new Set(Object.keys(module)),
-      new Set([
-        "ArcjetAllowDecision",
-        "ArcjetBotReason",
-        "ArcjetChallengeDecision",
-        "ArcjetDecision",
-        "ArcjetDenyDecision",
-        "ArcjetEdgeRuleReason",
-        "ArcjetEmailReason",
-        "ArcjetErrorDecision",
-        "ArcjetErrorReason",
-        "ArcjetFilterReason",
-        "ArcjetIpDetails",
-        "ArcjetPromptInjectionReason",
-        "ArcjetRateLimitReason",
-        "ArcjetReason",
-        "ArcjetRuleResult",
-        "ArcjetSensitiveInfoReason",
-        "ArcjetShieldReason",
-        "botCategories",
-        "cloudflare",
-        "createRemoteClient",
-        "default",
-        "detectBot",
-        "detectPromptInjection",
-        "experimental_detectPromptInjection",
-        "filter",
-        "fixedWindow",
-        "protectSignup",
-        "sensitiveInfo",
-        "shield",
-        "slidingWindow",
-        "tokenBucket",
-        "validateEmail",
-      ]),
-    );
-  });
+test('`@arcjet/bun`: should expose the value exports of "."', async function () {
+  const module = await import("@arcjet/bun");
 
-  await t.test('should publish every value of "." as a value', async function () {
-    const module = await import("@arcjet/bun");
-    const declaration = await readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8");
+  assert.deepEqual(
+    new Set(Object.keys(module)),
+    new Set([
+      "ArcjetAllowDecision",
+      "ArcjetBotReason",
+      "ArcjetChallengeDecision",
+      "ArcjetDecision",
+      "ArcjetDenyDecision",
+      "ArcjetEdgeRuleReason",
+      "ArcjetEmailReason",
+      "ArcjetErrorDecision",
+      "ArcjetErrorReason",
+      "ArcjetFilterReason",
+      "ArcjetIpDetails",
+      "ArcjetPromptInjectionReason",
+      "ArcjetRateLimitReason",
+      "ArcjetReason",
+      "ArcjetRuleResult",
+      "ArcjetSensitiveInfoReason",
+      "ArcjetShieldReason",
+      "botCategories",
+      "cloudflare",
+      "createRemoteClient",
+      "default",
+      "detectBot",
+      "detectPromptInjection",
+      "experimental_detectPromptInjection",
+      "filter",
+      "fixedWindow",
+      "protectSignup",
+      "sensitiveInfo",
+      "shield",
+      "slidingWindow",
+      "tokenBucket",
+      "validateEmail",
+    ]),
+  );
+});
 
-    // A name the declarations mark `type` is erased before it reaches a
-    // consumer, so they cannot call it, subclass it, or use `instanceof` on it
-    // -- however plainly it is there at run time.
-    assert.deepEqual(
-      typeOnlyNames(declaration).filter((name) => name in module),
-      [],
-    );
-  });
+test('`@arcjet/bun`: should publish every value of "." as a value', async function () {
+  const module = await import("@arcjet/bun");
+  const declaration = await readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8");
+
+  // A name the declarations mark `type` is erased before it reaches a
+  // consumer, so they cannot call it, subclass it, or use `instanceof` on it
+  // -- however plainly it is there at run time.
+  assert.deepEqual(
+    typeOnlyNames(declaration).filter((name) => name in module),
+    [],
+  );
 });
 
 /**

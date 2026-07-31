@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("`@arcjet/guard` public API", async function (t) {
-  await t.test("should expose the documented export paths", async function () {
+test("`@arcjet/guard`: should expose the documented export paths", async function () {
     const manifest: unknown = JSON.parse(
       await readFile(new URL("../package.json", import.meta.url), "utf8"),
     );
@@ -22,7 +21,7 @@ test("`@arcjet/guard` public API", async function (t) {
     );
   });
 
-  await t.test('should expose the value exports of "."', async function () {
+test('`@arcjet/guard`: should expose the value exports of "."', async function () {
     const module = await import("@arcjet/guard");
 
     assert.deepEqual(
@@ -43,7 +42,7 @@ test("`@arcjet/guard` public API", async function (t) {
     );
   });
 
-  await t.test('should expose exactly the api surface of "."', async function () {
+test('`@arcjet/guard`: should expose exactly the api surface of "."', async function () {
     const [declaration, documented] = await Promise.all([
       readFile(new URL("../dist/node.d.ts", import.meta.url), "utf8"),
       readFile(new URL("./api-surface/index.ts", import.meta.url), "utf8"),
@@ -55,7 +54,7 @@ test("`@arcjet/guard` public API", async function (t) {
     assert.deepEqual(exportedNames(declaration), exportedNames(documented));
   });
 
-  await t.test('should publish every value of "." as a value', async function () {
+test('`@arcjet/guard`: should publish every value of "." as a value', async function () {
     const module = await import("@arcjet/guard");
     const declaration = await readFile(new URL("../dist/node.d.ts", import.meta.url), "utf8");
 
@@ -68,7 +67,7 @@ test("`@arcjet/guard` public API", async function (t) {
     );
   });
 
-  await t.test('should expose the value exports of "./bun"', async function () {
+test('`@arcjet/guard`: should expose the value exports of "./bun"', async function () {
     const module = await import("@arcjet/guard/bun");
 
     assert.deepEqual(
@@ -89,7 +88,7 @@ test("`@arcjet/guard` public API", async function (t) {
     );
   });
 
-  await t.test('should expose exactly the api surface of "./bun"', async function () {
+test('`@arcjet/guard`: should expose exactly the api surface of "./bun"', async function () {
     const [declaration, documented] = await Promise.all([
       readFile(new URL("../dist/bun.d.ts", import.meta.url), "utf8"),
       readFile(new URL("./api-surface/bun.ts", import.meta.url), "utf8"),
@@ -101,7 +100,7 @@ test("`@arcjet/guard` public API", async function (t) {
     assert.deepEqual(exportedNames(declaration), exportedNames(documented));
   });
 
-  await t.test('should publish every value of "./bun" as a value', async function () {
+test('`@arcjet/guard`: should publish every value of "./bun" as a value', async function () {
     const module = await import("@arcjet/guard/bun");
     const declaration = await readFile(new URL("../dist/bun.d.ts", import.meta.url), "utf8");
 
@@ -114,7 +113,7 @@ test("`@arcjet/guard` public API", async function (t) {
     );
   });
 
-  await t.test('should expose the value exports of "./fetch"', async function () {
+test('`@arcjet/guard`: should expose the value exports of "./fetch"', async function () {
     const module = await import("@arcjet/guard/fetch");
 
     assert.deepEqual(
@@ -135,7 +134,7 @@ test("`@arcjet/guard` public API", async function (t) {
     );
   });
 
-  await t.test('should expose exactly the api surface of "./fetch"', async function () {
+test('`@arcjet/guard`: should expose exactly the api surface of "./fetch"', async function () {
     const [declaration, documented] = await Promise.all([
       readFile(new URL("../dist/fetch.d.ts", import.meta.url), "utf8"),
       readFile(new URL("./api-surface/fetch.ts", import.meta.url), "utf8"),
@@ -147,7 +146,7 @@ test("`@arcjet/guard` public API", async function (t) {
     assert.deepEqual(exportedNames(declaration), exportedNames(documented));
   });
 
-  await t.test('should publish every value of "./fetch" as a value', async function () {
+test('`@arcjet/guard`: should publish every value of "./fetch" as a value', async function () {
     const module = await import("@arcjet/guard/fetch");
     const declaration = await readFile(new URL("../dist/fetch.d.ts", import.meta.url), "utf8");
 
@@ -160,7 +159,7 @@ test("`@arcjet/guard` public API", async function (t) {
     );
   });
 
-  await t.test('should expose "./node" as an alias of "."', async function () {
+test('`@arcjet/guard`: should expose "./node" as an alias of "."', async function () {
     // The same module, not a copy of it: one set of module state behind both
     // entrypoints, so `instanceof` holds across them.
     assert.equal(
@@ -168,7 +167,6 @@ test("`@arcjet/guard` public API", async function (t) {
       await import("@arcjet/guard"),
     );
   });
-});
 
 /**
  * Every name an `export { … }` clause declares.
