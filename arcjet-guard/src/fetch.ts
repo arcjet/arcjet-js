@@ -94,6 +94,7 @@ export {
   type RuleWithConfig,
   type CaptureOptions,
   type GuardOptions,
+  type DiagnosticLogger,
   type LaunchOptions,
   type ArcjetGuard,
 

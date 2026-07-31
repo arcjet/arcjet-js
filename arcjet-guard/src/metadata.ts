@@ -48,8 +48,8 @@ export type ArcjetMetadata = Record<string, unknown>;
  * A client-side validation warning reported to the server in `local_warnings`.
  */
 export interface LocalWarning {
-  /** Machine-readable code (currently always `"AJ1017"`). */
-  code: string;
+  /** Machine-readable code. */
+  code: "AJ1001" | "AJ1017";
   /**
    * Human-readable description. Names only the offending keys, never the
    * values, and only after escaping and length-bounding them — warnings are

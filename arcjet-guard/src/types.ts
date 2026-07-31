@@ -1719,6 +1719,29 @@ export interface CaptureOptions {
    * it first (`{ ...instance }`) or convert it yourself.
    */
   metadata?: ArcjetMetadata;
+  /**
+   * A platform hook that keeps the current invocation alive until the event has
+   * been sent, such as a Cloudflare `ExecutionContext.waitUntil`.
+   *
+   * Supplying this sends the event immediately instead of batching it. Without
+   * it, Arcjet discovers Vercel's request context when present and otherwise
+   * batches — and a runtime that freezes between invocations loses whatever is
+   * still buffered unless `flush()` is called.
+   *
+   * @example
+   * ```ts
+   * export default {
+   *   async fetch(request, env, ctx) {
+   *     capture({
+   *       action: "refund.issued",
+   *       waitUntil: (promise) => ctx.waitUntil(promise),
+   *     });
+   *     return new Response("ok");
+   *   },
+   * };
+   * ```
+   */
+  waitUntil?: (promise: Promise<unknown>) => void;
 }
 
 /** Options for a `.guard()` call. */
