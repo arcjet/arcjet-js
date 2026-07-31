@@ -46,7 +46,7 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
-    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test --test-coverage-exclude \"dist/**/*.{js,ts}\" -- test/*.test.ts",
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
