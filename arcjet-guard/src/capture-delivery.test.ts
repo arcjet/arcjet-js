@@ -202,6 +202,13 @@ describe("createCaptureDelivery", () => {
     assert.equal(pending.length, 1);
     assert.deepEqual(sent, []);
 
+        // Drain via flush() rather than waiting on the batch timer. The timer is
+    // unref'd so it cannot hold the process open, which means on Node 22 the
+    // event loop can drain before it fires — the promise then never settles and
+    // the test dies with "Promise resolution is still pending". flush() makes
+    // the drain deterministic while still proving the handed promise settles
+    // once the pipeline is empty.
+    await delivery.flush(1000);
     await pending[0];
 
     assert.deepEqual(sent, [["kept-alive"]]);
@@ -234,6 +241,13 @@ describe("createCaptureDelivery", () => {
       delivery.capture(event(`tool.${index}`));
     }
 
+        // Drain via flush() rather than waiting on the batch timer. The timer is
+    // unref'd so it cannot hold the process open, which means on Node 22 the
+    // event loop can drain before it fires — the promise then never settles and
+    // the test dies with "Promise resolution is still pending". flush() makes
+    // the drain deterministic while still proving the handed promise settles
+    // once the pipeline is empty.
+    await delivery.flush(1000);
     await Promise.all(pending);
 
     assert.equal(sent.length, 1, `expected one request, got ${sent.length}`);
@@ -266,6 +280,13 @@ describe("createCaptureDelivery", () => {
 
     assert.equal(supplied.length, 1);
     assert.equal(discovered.length, 0);
+        // Drain via flush() rather than waiting on the batch timer. The timer is
+    // unref'd so it cannot hold the process open, which means on Node 22 the
+    // event loop can drain before it fires — the promise then never settles and
+    // the test dies with "Promise resolution is still pending". flush() makes
+    // the drain deterministic while still proving the handed promise settles
+    // once the pipeline is empty.
+    await delivery.flush(1000);
     await supplied[0];
 
     assert.deepEqual(sent, [["supplied"]]);
@@ -291,6 +312,13 @@ describe("createCaptureDelivery", () => {
     });
 
     assert.equal(pending.length, 1);
+        // Drain via flush() rather than waiting on the batch timer. The timer is
+    // unref'd so it cannot hold the process open, which means on Node 22 the
+    // event loop can drain before it fires — the promise then never settles and
+    // the test dies with "Promise resolution is still pending". flush() makes
+    // the drain deterministic while still proving the handed promise settles
+    // once the pipeline is empty.
+    await delivery.flush(1000);
     await pending[0];
 
     assert.deepEqual(sent, [["worker"]]);
@@ -374,6 +402,9 @@ describe("createCaptureDelivery", () => {
           delivery.capture(event("vercel"));
 
           assert.equal(handed.length, 1, "the platform hook should receive one promise");
+          // See the note above: drained via flush() so an unref'd timer cannot
+          // leave this pending when the loop drains on Node 22.
+          await delivery.flush(1000);
           await handed[0];
         },
       );

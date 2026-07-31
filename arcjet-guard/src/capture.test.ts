@@ -296,6 +296,9 @@ describe("capture", () => {
     // nothing has been sent until it settles.
     assert.equal(pending.length, 1);
     assert.equal(received.length, 0);
+    // Drained via flush(): the batch timer is unref'd, so on Node 22 the event
+    // loop can drain before it fires and this would stay pending forever.
+    await arcjet.flush(1000);
     await pending[0];
 
     assert.equal(received.length, 1);
@@ -363,5 +366,36 @@ describe("capture", () => {
 
     assert.equal(received.length, 1);
     assert.equal(received[0].events[0].action, "refund.issued");
+  });
+
+  test("flush releases diagnostics the channel was holding back", async () => {
+    // Coalescing means a burst of drops reports only its first event until
+    // something releases the rest. flush() is that something — without the
+    // wiring, the accumulated total would never be reported in practice.
+    const lines: string[] = [];
+    const transport = mockCaptureTransport(() => create(CaptureResponseSchema, {}));
+    const arcjet: ArcjetGuard = launchArcjetWithTransport({
+      key: "ajkey_test",
+      transport,
+    });
+
+    const original = console.warn;
+    console.warn = (message: string): void => {
+      lines.push(message);
+    };
+    try {
+      // Four invalid events: the first is reported, three are held.
+      for (let index = 0; index < 4; index++) {
+        arcjet.capture({ action: "" });
+      }
+      assert.equal(lines.length, 1, `expected one line, got ${lines.length}`);
+
+      await arcjet.flush(1000);
+    } finally {
+      console.warn = original;
+    }
+
+    assert.equal(lines.length, 2, "flush should release the held count");
+    assert.match(lines[1], /count: 3$/m);
   });
 });

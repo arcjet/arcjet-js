@@ -85,7 +85,12 @@ export function createGuardClient(options: GuardClientOptions): {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
   const client = createConnectClient(DecideService, transport);
-  const diagnose = createDiagnosticHandler(options.logger);
+  // Spread rather than `{ logger: options.logger }`: under
+  // `exactOptionalPropertyTypes` an explicit `undefined` is not assignable to an
+  // optional property.
+  const diagnose = createDiagnosticHandler(
+    options.logger === undefined ? {} : { logger: options.logger },
+  );
   const delivery = createCaptureDelivery({
     ...options.captureDelivery,
     diagnose,
@@ -286,8 +291,11 @@ export function createGuardClient(options: GuardClientOptions): {
     },
 
     /** Drain buffered capture events within a deadline. */
-    flush(timeoutMs?: number): Promise<void> {
-      return delivery.flush(timeoutMs);
+    async flush(timeoutMs?: number): Promise<void> {
+      await delivery.flush(timeoutMs);
+      // Release counts the diagnostics channel is holding back. Without this a
+      // burst of drops that stops reports only its first event.
+      diagnose.drain();
     },
   };
 }
