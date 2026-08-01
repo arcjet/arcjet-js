@@ -14,5 +14,8 @@
     "@astrojs/node": "^10.0.5",
     "astro": "^6.1.4",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "sharp": "^0.35.0"
   }
 }
