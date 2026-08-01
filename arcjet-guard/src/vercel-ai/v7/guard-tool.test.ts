@@ -1,13 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { DecisionDeny } from "../../types.ts";
 import type { Tool } from "ai";
 import { tool, jsonSchema } from "ai";
 
-import { guardTool } from "./guard-tool.ts";
-import type { ArcjetDenialResult } from "./guard-tool.ts";
-import { createAgentContext } from "../../agents/context.ts";
 import { setLogLevel } from "../../../test/_shared/log-level.ts";
 import { recorded, asDenial } from "../../../test/_shared/source-scan.ts";
 import {
@@ -20,6 +16,11 @@ import {
   decisionDenyPromptInjectionWithReset,
   fakeRule,
 } from "../../../test/_shared/stub-client.ts";
+import { createAgentContext } from "../../agents/context.ts";
+import { policyInput } from "../../policy-input.ts";
+import type { DecisionDeny } from "../../types.ts";
+import { guardTool } from "./guard-tool.ts";
+import type { ArcjetDenialResult } from "./guard-tool.ts";
 
 /**
  * Stub DENY decision (RATE_LIMIT without resetAtUnixSeconds).
@@ -97,6 +98,50 @@ test("AC2.1: ALLOW decision → original execute called, result returned unchang
   assert.equal(guardCalls.length, 1, "guard should be called once");
 });
 
+test("resolves actor and typed inputs from parsed tool input", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const { tool: testTool } = createTestTool();
+  const wrapped = guardTool(client, testTool, {
+    action: "test.action",
+    actor: async (input) => `actor-${input.id}`,
+    inputs: async (input) => ({ id: policyInput.server.string(input.id) }),
+  });
+
+  assert.ok(wrapped.execute !== undefined);
+  await wrapped.execute(
+    { id: "one" },
+    { toolCallId: "t1", messages: [], context: createAgentContext() },
+  );
+
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const { tool: testTool, executeCalls } = createTestTool();
+  const wrapped = guardTool(client, testTool, {
+    action: "test.action",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+
+  assert.ok(wrapped.execute !== undefined);
+  const result = asDenial<ArcjetDenialResult>(
+    await wrapped.execute(
+      { id: "one" },
+      { toolCallId: "t1", messages: [], context: createAgentContext() },
+    ),
+  );
+
+  assert.equal(result.reason, "ERROR");
+  assert.equal(guardCalls.length, 0);
+  assert.equal(executeCalls.length, 0);
+});
+
 test("AC2.2: DENY decision → execute never called, ArcjetDenialResult returned", async () => {
   const resetAt = Math.floor(Date.now() / 1000) + 30;
   const { client, guardCalls } = stubClient(decisionDenyRateLimit(resetAt));
@@ -121,10 +166,7 @@ test("AC2.2: DENY decision → execute never called, ArcjetDenialResult returned
   assert.equal(executeCalls.length, 0, "original execute should not be called");
   assert.strictEqual(result.arcjetDenied, true);
   assert.equal(result.reason, "RATE_LIMIT");
-  assert.ok(
-    result.message.length > 0,
-    "message should be non-empty",
-  );
+  assert.ok(result.message.length > 0, "message should be non-empty");
   assert.strictEqual(result.retryable, true);
   assert.ok(
     typeof result.retryAfterSeconds === "number" &&
@@ -187,11 +229,14 @@ test("AC2.4: ALLOW + successful execute → capture called with success outcome"
     metadata: { key: "value" },
   });
 
-  await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: ctx,
-  });
+  await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: ctx,
+    },
+  );
 
   assert.equal(captureCalls.length, 1, "capture should be called once");
   const captureCall = recorded(captureCalls[0]);
@@ -216,11 +261,14 @@ test("AC2.5: DENY → capture called with denied outcome and decisionId", async 
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  });
+  await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    },
+  );
 
   assert.equal(captureCalls.length, 1, "capture should be called once on denial");
   const captureCall = recorded(captureCalls[0]);
@@ -250,11 +298,14 @@ test("AC2.6: guard throws → execute runs, warning emitted", async () => {
 
     assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-    const result = await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    });
+    const result = await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    );
 
     assert.equal(executeCalls.length, 1, "execute should run on guard error");
     assert.strictEqual(result, sentinel);
@@ -291,11 +342,14 @@ test("AC2.6: guard resolves fail-open ALLOW → execute runs, fail-open warning"
 
     assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-    const result = await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    });
+    const result = await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    );
 
     assert.equal(executeCalls.length, 1, "execute should run on fail-open");
     assert.strictEqual(result, sentinel);
@@ -323,11 +377,14 @@ test("AC2.7: DENY + onDeny hook → denial reshaped", async () => {
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  });
+  const result = await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    },
+  );
 
   assert.deepEqual(result, { blocked: "RATE_LIMIT" }, "onDeny should reshape the denial");
 });
@@ -356,11 +413,14 @@ test("AC2.8: execute throws → error propagates, capture with error outcome", a
   assert.ok(wrappedThrowingTool.execute, "wrapped tool must have an execute function");
 
   try {
-    await wrappedThrowingTool.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    });
+    await wrappedThrowingTool.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    );
     assert.fail("should have thrown");
   } catch (e) {
     assert.strictEqual(e, testError, "same error should propagate");
@@ -384,11 +444,14 @@ test("non-RATE_LIMIT DENY (PROMPT_INJECTION) → retryable=false, no retryAfterS
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
   const result = asDenial<ArcjetDenialResult>(
-    await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    }),
+    await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    ),
   );
 
   assert.equal(executeCalls.length, 0, "execute should not be called on DENY");
@@ -422,11 +485,14 @@ test("non-RATE_LIMIT DENY with a co-occurring rate-limit result → no retryAfte
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
   const result = asDenial<ArcjetDenialResult>(
-    await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    }),
+    await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    ),
   );
 
   assert.strictEqual(result.retryable, false, "non-rate-limit denials are not retryable");
@@ -449,11 +515,14 @@ test("RATE_LIMIT DENY without resetAtUnixSeconds → retryable=true, no retryAft
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
   const result = asDenial<ArcjetDenialResult>(
-    await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    }),
+    await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    ),
   );
 
   assert.equal(executeCalls.length, 0, "execute should not be called on DENY");
@@ -481,11 +550,14 @@ test("AC1.7: explicit correlationId override", async () => {
 
   const ctx = createAgentContext({ correlationId: "ctx-1" });
 
-  await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: ctx,
-  });
+  await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: ctx,
+    },
+  );
 
   assert.equal(recorded(guardCalls[0]).correlationId, "explicit-1");
   assert.equal(recorded(captureCalls[0]).correlationId, "explicit-1");
@@ -502,11 +574,14 @@ test("No rules → guard still called with [], execute runs, capture carries the
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  });
+  const result = await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    },
+  );
 
   assert.equal(guardCalls.length, 1, "omitting rules must still reach guard()");
   assert.deepEqual(
@@ -536,11 +611,14 @@ test("Empty rules array → guard still called with []", async () => {
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  });
+  const result = await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    },
+  );
 
   assert.equal(guardCalls.length, 1, "an empty rules array must still reach guard()");
   assert.deepEqual(recorded(guardCalls[0]).rules, []);
@@ -559,11 +637,14 @@ test("A rules callback returning [] still reaches guard()", async () => {
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  });
+  await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    },
+  );
 
   assert.equal(guardCalls.length, 1, "a callback returning [] must still reach guard()");
   assert.deepEqual(recorded(guardCalls[0]).rules, []);
@@ -585,11 +666,14 @@ test("A throwing capture() does not fail the tool call", async () => {
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  const result = await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  });
+  const result = await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    },
+  );
 
   assert.equal(executeCalls.length, 1, "the tool must still run");
   assert.strictEqual(result, sentinel);
@@ -614,11 +698,14 @@ test("AC1.6: no context → warning, guard check runs uncorrelated", async () =>
 
     assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-    await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    });
+    await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    );
 
     assert.strictEqual(recorded(guardCalls[0]).correlationId, undefined);
     assert.ok(
@@ -729,16 +816,8 @@ test("Injected contextSchema: validates correlationId and metadata shapes", () =
     false,
     "array metadata is rejected",
   );
-  assert.equal(
-    schema.validate("nope").success,
-    false,
-    "non-object value is rejected",
-  );
-  assert.equal(
-    schema.validate(null).success,
-    false,
-    "null value is rejected",
-  );
+  assert.equal(schema.validate("nope").success, false, "non-object value is rejected");
+  assert.equal(schema.validate(null).success, false, "null value is rejected");
 });
 
 test("Policy rules as a function: applied per input", async () => {
@@ -757,21 +836,27 @@ test("Policy rules as a function: applied per input", async () => {
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
   // First call: the callback returns a rule
-  await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: undefined,
-  });
+  await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: undefined,
+    },
+  );
   assert.equal(guardCalls.length, 1, "first call should invoke guard");
   assert.deepEqual(recorded(guardCalls[0]).rules, [fakeRule]);
 
   // Second call: the callback returns []. The submitted set differs; whether
   // guard is called does not.
-  await wrapped.execute({ id: "skip" }, {
-    toolCallId: "t2",
-    messages: [],
-    context: undefined,
-  });
+  await wrapped.execute(
+    { id: "skip" },
+    {
+      toolCallId: "t2",
+      messages: [],
+      context: undefined,
+    },
+  );
   assert.equal(guardCalls.length, 2, "an empty result from the callback still invokes guard");
   assert.deepEqual(recorded(guardCalls[1]).rules, []);
   assert.deepEqual(ruleCalls, [{ id: "input1" }, { id: "skip" }]);
@@ -798,11 +883,14 @@ test("Policy metadata as a function: applied per input, merged after context", a
     metadata: { context_key: "context_val" },
   });
 
-  await wrapped.execute({ id: "input1" }, {
-    toolCallId: "t1",
-    messages: [],
-    context: ctx,
-  });
+  await wrapped.execute(
+    { id: "input1" },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: ctx,
+    },
+  );
 
   assert.equal(metadataCalls.length, 1);
   const guardCall = recorded(guardCalls[0]);
@@ -831,14 +919,21 @@ test("AC4.11: guard throws with default onGuardError: 'deny' → execute not cal
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
   const result = asDenial<ArcjetDenialResult>(
-    await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    }),
+    await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    ),
   );
 
-  assert.equal(executeCalls.length, 0, "execute should not be called when guard throws with deny mode");
+  assert.equal(
+    executeCalls.length,
+    0,
+    "execute should not be called when guard throws with deny mode",
+  );
   assert.equal(onDenyCalls.length, 0, "onDeny should not be called for unavailable signal");
   assert.strictEqual(result.arcjetDenied, true);
   assert.strictEqual(result.reason, "ERROR");
@@ -864,11 +959,14 @@ test("AC4.3: a real DENY carrying reason ERROR is not retryable and has no backo
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
   const result = asDenial<ArcjetDenialResult>(
-    await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    }),
+    await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    ),
   );
 
   // A server-issued DENY can carry reason "ERROR". It is a real denial, so it
@@ -901,14 +999,21 @@ test("AC4.11: guard fails open with default onGuardError: 'deny' → execute not
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
   const result = asDenial<ArcjetDenialResult>(
-    await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    }),
+    await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    ),
   );
 
-  assert.equal(executeCalls.length, 0, "execute should not be called when decision fails open with deny mode");
+  assert.equal(
+    executeCalls.length,
+    0,
+    "execute should not be called when decision fails open with deny mode",
+  );
   assert.equal(onDenyCalls.length, 0, "onDeny should not be called for unavailable signal");
   assert.equal(captureCalls.length, 1, "capture should fire once with unavailable");
   const captureCall = recorded(captureCalls[0]);
@@ -946,11 +1051,14 @@ test("AC4.11: guard throws with onGuardError: 'allow' → execute runs, warning 
 
     assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-    const result = await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    });
+    const result = await wrapped.execute(
+      { id: "input1" },
+      {
+        toolCallId: "t1",
+        messages: [],
+        context: undefined,
+      },
+    );
 
     assert.equal(executeCalls.length, 1, "execute should run with allow mode");
     assert.strictEqual(result, sentinel);

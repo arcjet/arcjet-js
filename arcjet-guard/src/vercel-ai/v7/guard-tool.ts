@@ -1,13 +1,14 @@
-import type { DecisionDeny, RuleWithInput, ArcjetMetadata } from "../../types.ts";
 import { jsonSchema } from "ai";
 import type { InferToolInput, InferToolOutput, Tool } from "ai";
 
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { ArcjetAgentContext } from "../../agents/context.ts";
+import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { OnGuardError } from "../../agents/guard-action.ts";
+import type { PolicyInputMap } from "../../policy-input.ts";
+import type { DecisionDeny, RuleWithInput, ArcjetMetadata } from "../../types.ts";
 
 /**
  * Structured tool result returned to the model when a call is denied.
@@ -51,6 +52,20 @@ export interface GuardToolPolicy<T extends Tool> {
    * call, which still costs a round trip and returns a decision.
    */
   rules?: RuleWithInput[] | ((input: InferToolInput<T>) => RuleWithInput[]);
+  /** Trusted actor identity, or a resolver over parsed input and trusted context. */
+  actor?:
+    | string
+    | ((
+        input: InferToolInput<T>,
+        context: ArcjetAgentContext | undefined,
+      ) => string | Promise<string>);
+  /** Typed remote-policy inputs, or a resolver over parsed tool input. */
+  inputs?:
+    | PolicyInputMap
+    | ((
+        input: InferToolInput<T>,
+        context: ArcjetAgentContext | undefined,
+      ) => PolicyInputMap | Promise<PolicyInputMap>);
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: InferToolInput<T>) => ArcjetMetadata);
   /** Explicit correlation ID; overrides the context's when set. */
@@ -250,6 +265,16 @@ export function guardTool<T extends Tool>(
         rules,
         correlationId,
         metadata,
+        resolvePolicy: async () => ({
+          ...(policy.actor !== undefined && {
+            actor:
+              typeof policy.actor === "function" ? await policy.actor(input, ctx) : policy.actor,
+          }),
+          ...(policy.inputs !== undefined && {
+            inputs:
+              typeof policy.inputs === "function" ? await policy.inputs(input, ctx) : policy.inputs,
+          }),
+        }),
         ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),
         onDeny: (decision) =>
           policy.onDeny === undefined ? denialResult(decision) : policy.onDeny(decision),

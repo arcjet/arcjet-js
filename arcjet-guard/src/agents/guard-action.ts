@@ -1,5 +1,5 @@
+import type { PolicyInputMap } from "../policy-input.ts";
 import type { ArcjetMetadata, DecisionAllow, DecisionDeny, RuleWithInput } from "../types.ts";
-
 import { captureEvent } from "./capture.ts";
 import type { ArcjetAgentClient } from "./capture.ts";
 import type { ArcjetAgentContext } from "./context.ts";
@@ -72,11 +72,11 @@ export class ArcjetGuardUnavailableError extends Error {
   readonly action: string;
   readonly decision?: DecisionAllow;
 
-  constructor(
-    action: string,
-    init: { cause: unknown } | { decision: DecisionAllow },
-  ) {
-    super(`policy for "${action}" could not be evaluated`, "cause" in init ? { cause: init.cause } : {});
+  constructor(action: string, init: { cause: unknown } | { decision: DecisionAllow }) {
+    super(
+      `policy for "${action}" could not be evaluated`,
+      "cause" in init ? { cause: init.cause } : {},
+    );
     this.name = "ArcjetGuardUnavailableError";
     this.action = action;
     if ("decision" in init) {
@@ -113,6 +113,10 @@ export interface GuardActionPolicy {
    * decision.
    */
   rules?: RuleWithInput[];
+  /** Opaque identity asserted by trusted application code. */
+  actor?: string;
+  /** Explicitly typed remote-policy inputs. */
+  inputs?: PolicyInputMap;
   /** Metadata merged over the context's. */
   metadata?: ArcjetMetadata;
   /**
@@ -175,6 +179,8 @@ export async function guardAction<T>(
   return runGuarded(client, {
     action: policy.action,
     rules: policy.rules,
+    ...(policy.actor !== undefined && { actor: policy.actor }),
+    ...(policy.inputs !== undefined && { inputs: policy.inputs }),
     correlationId: ctx.correlationId,
     metadata: { ...ctx.metadata, ...policy.metadata },
     onDeny: (decision) => {

@@ -1,5 +1,11 @@
-import type { ArcjetMetadata, Decision, DecisionAllow, DecisionDeny, RuleWithInput } from "../types.ts";
-
+import type { PolicyInputMap } from "../policy-input.ts";
+import type {
+  ArcjetMetadata,
+  Decision,
+  DecisionAllow,
+  DecisionDeny,
+  RuleWithInput,
+} from "../types.ts";
 import { captureEvent, shouldWarn } from "./capture.ts";
 import type { ArcjetAgentClient } from "./capture.ts";
 
@@ -29,11 +35,14 @@ export async function runGuarded<T>(
     rules: RuleWithInput[] | undefined;
     correlationId: string | undefined;
     metadata: ArcjetMetadata;
+    actor?: string;
+    inputs?: PolicyInputMap;
+    resolvePolicy?: () => Promise<{ actor?: string; inputs?: PolicyInputMap }>;
     onDeny: (decision: DecisionDeny) => T;
     onUnavailable: (
       unavailable:
         | { kind: "threw"; error: unknown }
-        | { kind: "failed-open"; decision: DecisionAllow }
+        | { kind: "failed-open"; decision: DecisionAllow },
     ) => T;
     execute: () => Promise<T>;
     onGuardError?: "allow" | "deny";
@@ -44,6 +53,9 @@ export async function runGuarded<T>(
     rules,
     correlationId,
     metadata,
+    actor,
+    inputs,
+    resolvePolicy,
     onDeny,
     onUnavailable,
     execute,
@@ -59,11 +71,19 @@ export async function runGuarded<T>(
   let decisionId: string | undefined;
   let decision: Decision | undefined;
   try {
+    const resolved = resolvePolicy === undefined ? { actor, inputs } : await resolvePolicy();
     // Always called, even with no rules. An empty set is not the same as no
     // call: it still produces a decision, which is what makes this call site
     // reachable by policy configured outside the code, and gives a
     // capture-only call a `decisionId` to correlate against.
-    decision = await client.guard({ label: action, rules: rules ?? [], ...correlation, metadata });
+    decision = await client.guard({
+      label: action,
+      rules: rules ?? [],
+      ...correlation,
+      metadata,
+      ...(resolved.actor !== undefined && { actor: resolved.actor }),
+      ...(resolved.inputs !== undefined && { inputs: resolved.inputs }),
+    });
   } catch (error) {
     // Signal (a): the guard call itself threw. Rare — the client converts
     // transport failures into decisions rather than throwing.
