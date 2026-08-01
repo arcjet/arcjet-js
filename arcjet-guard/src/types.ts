@@ -27,6 +27,7 @@ export type Reason =
   | "PROMPT_INJECTION"
   | "MODERATE_CONTENT"
   | "SENSITIVE_INFO"
+  | "INPUT_CONSTRAINT"
   | "CUSTOM"
   | "ERROR"
   | "NOT_RUN"
@@ -460,6 +461,7 @@ export type DecisionDeny = DecisionBase & {
 /** A guard decision — either `"ALLOW"` or `"DENY"`. */
 export type Decision = DecisionAllow | DecisionDeny;
 
+import type { PolicyInputMap } from "./policy-input.ts";
 import type { symbolArcjetInternal } from "./symbol.ts";
 
 /** @internal */
@@ -1776,7 +1778,11 @@ export interface GuardOptions {
    * pass one only when the call site is worth recording or is expected to be
    * governed server-side.
    */
-  rules: RuleWithInput[];
+  rules?: RuleWithInput[];
+  /** Opaque identity asserted by trusted application code. */
+  actor?: string;
+  /** Explicitly typed values made available to remotely configured policy. */
+  inputs?: PolicyInputMap;
   /**
    * Request-level metadata for correlation and analytics. Sent as a
    * separate field from per-rule metadata — there is no merging or

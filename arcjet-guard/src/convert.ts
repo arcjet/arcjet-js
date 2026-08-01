@@ -15,6 +15,7 @@ import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metada
 import {
   type Billing as ProtoBilling,
   type GuardRule,
+  type GuardPolicyEvaluation,
   type GuardRuleResult as ProtoGuardRuleResult,
   type GuardRuleSubmission,
   type GuardResponse as ProtoGuardResponse,
@@ -34,6 +35,7 @@ import {
   ResultErrorSchema,
   EntityListSchema,
   GuardConclusion,
+  GuardPolicyStatus,
   GuardReason,
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
@@ -148,7 +150,7 @@ const knownEntityTypes = new Set<string>([
 ]);
 
 /** Type guard: whether `value` is a declared {@link SensitiveInfoEntityType}. */
-function isSensitiveInfoEntityType(value: string): value is SensitiveInfoEntityType {
+export function isSensitiveInfoEntityType(value: string): value is SensitiveInfoEntityType {
   return knownEntityTypes.has(value);
 }
 
@@ -262,6 +264,8 @@ export function reasonFromProto(r: GuardReason): Reason {
       return "MODERATE_CONTENT";
     case GuardReason.SENSITIVE_INFO:
       return "SENSITIVE_INFO";
+    case GuardReason.INPUT_CONSTRAINT:
+      return "INPUT_CONSTRAINT";
     case GuardReason.CUSTOM:
       return "CUSTOM";
     case GuardReason.ERROR:
@@ -701,6 +705,7 @@ export function decisionMembers(
   conclusion: Conclusion,
   results: readonly RuleResult[],
   warnings: readonly Warning[],
+  additionalErrors: readonly RuleResultError[] = [],
 ): {
   warnings: readonly Warning[];
   errorResults: () => readonly RuleResultError[];
@@ -708,7 +713,10 @@ export function decisionMembers(
   hasError: () => boolean;
 } {
   // Compute once; both accessors close over the same array.
-  const errored = results.filter((r): r is RuleResultError => r.type === "RULE_ERROR");
+  const errored = [
+    ...results.filter((r): r is RuleResultError => r.type === "RULE_ERROR"),
+    ...additionalErrors,
+  ];
   const errorResults = (): readonly RuleResultError[] => errored;
   return {
     warnings,
@@ -772,6 +780,7 @@ export function decisionFromProto(
   }
 
   const results: readonly RuleResult[] = internalResults;
+  const policyErrors = policyErrorsFromProto(proto.policyEvaluation);
 
   const conclusion = conclusionFromProto(proto.conclusion);
   const reason = reasonFromProto(proto.reason);
@@ -782,7 +791,7 @@ export function decisionFromProto(
       reason,
       id: proto.id,
       results,
-      ...decisionMembers("DENY", results, warnings),
+      ...decisionMembers("DENY", results, warnings, policyErrors),
       [symbolArcjetInternal]: { results: internalResults },
     };
     return d;
@@ -792,8 +801,38 @@ export function decisionFromProto(
     conclusion: "ALLOW" as const,
     id: proto.id,
     results,
-    ...decisionMembers("ALLOW", results, warnings),
+    ...decisionMembers("ALLOW", results, warnings, policyErrors),
     [symbolArcjetInternal]: { results: internalResults },
   };
   return d;
+}
+
+function policyErrorsFromProto(evaluation: GuardPolicyEvaluation | undefined): RuleResultError[] {
+  if (evaluation === undefined) return [];
+  let message: string | undefined;
+  switch (evaluation.status) {
+    case GuardPolicyStatus.INCOMPLETE:
+      message = "Remote Guard policy could not be fully evaluated";
+      break;
+    case GuardPolicyStatus.UNAVAILABLE:
+      message = "Remote Guard policy is unavailable";
+      break;
+    case GuardPolicyStatus.EXPIRED:
+      message = "Remote Guard policy has expired";
+      break;
+    case GuardPolicyStatus.UNSPECIFIED:
+    case GuardPolicyStatus.NOT_CONFIGURED:
+    case GuardPolicyStatus.APPLIED:
+      return [];
+  }
+  return [
+    {
+      conclusion: "ALLOW",
+      reason: "ERROR",
+      type: "RULE_ERROR",
+      warnings: [],
+      code: "REMOTE_POLICY_UNAVAILABLE",
+      message,
+    },
+  ];
 }

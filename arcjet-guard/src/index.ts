@@ -150,6 +150,8 @@ export type {
   CaptureOptions,
   GuardOptions,
 } from "./types.ts";
+export { policyInput } from "./policy-input.ts";
+export type { PolicyInput, PolicyInputMap } from "./policy-input.ts";
 
 export {
   tokenBucket,

@@ -1,3 +1,4 @@
+/* oxlint-disable import/max-dependencies -- The RPC client composes request concerns. */
 /**
  * Guard RPC client for `@arcjet/guard`.
  *
@@ -41,6 +42,7 @@ import {
   type GuardResponse,
   WarningSchema,
 } from "./proto/proto/decide/v2/decide_pb.js";
+import { policyCapabilities, RemotePolicyRuntime } from "./remote-policy.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
   CaptureOptions,
@@ -103,6 +105,9 @@ export function createGuardClient(options: GuardClientOptions): {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
   const client = createConnectClient(DecideService, transport);
+  const remotePolicy = new RemotePolicyRuntime(key, userAgent, (request, callOptions) =>
+    client.getGuardPolicy(request, callOptions),
+  );
   // Spread rather than `{ logger: options.logger }`: under
   // `exactOptionalPropertyTypes` an explicit `undefined` is not assignable to an
   // optional property.
@@ -157,7 +162,7 @@ export function createGuardClient(options: GuardClientOptions): {
         // they are flattened in rule order afterwards. Pushing into one shared
         // array would order warnings by whichever conversion finished first.
         const converted = await Promise.all(
-          opts.rules.map(async function (rule: RuleWithInput, ruleIndex: number) {
+          (opts.rules ?? []).map(async function (rule: RuleWithInput, ruleIndex: number) {
             const ruleWarnings: LocalWarning[] = [];
             const submission = await ruleToProto(rule, opts.signal, {
               ruleIndex,
@@ -185,6 +190,15 @@ export function createGuardClient(options: GuardClientOptions): {
       const localEvalDurationMs = BigInt(Math.round(performance.now() - startMs));
       const sentAtUnixMs = BigInt(Date.now());
 
+      let preparedPolicy;
+      try {
+        preparedPolicy = await remotePolicy.prepare(opts.label, opts.inputs, opts.signal);
+      } catch (cause: unknown) {
+        opts.signal?.throwIfAborted();
+        const message = cause instanceof Error ? cause.message : "Policy input preparation failed";
+        return failOpen(message, toWarnings(warnings));
+      }
+
       // Trim to the SDK ceiling across every metadata map on the request — the
       // envelope plus one per rule — so an oversized blob cannot push the request
       // past the 1 MiB protocol limit and get it rejected. A rejected request is
@@ -208,6 +222,11 @@ export function createGuardClient(options: GuardClientOptions): {
         localWarnings: warnings.map((warning) => create(WarningSchema, warning)),
         ruleSubmissions: protoRules,
         correlationId: opts.correlationId ?? "",
+        ...(opts.actor !== undefined && { actor: opts.actor }),
+        policyInputs: preparedPolicy.inputs,
+        localPolicyRevision: preparedPolicy.revision,
+        localPolicyResults: preparedPolicy.results,
+        policyCapabilities,
       });
 
       const timeoutMs =
@@ -231,6 +250,21 @@ export function createGuardClient(options: GuardClientOptions): {
       let response: GuardResponse;
       try {
         response = await client.guard(guardRequest, callOptions);
+        const policyEvaluation = response.decision?.policyEvaluation;
+        const shouldRefresh =
+          opts.inputs !== undefined &&
+          Object.values(opts.inputs).some((input) => input.exposure === "LOCAL") &&
+          (policyEvaluation?.refreshRequired === true ||
+            (preparedPolicy.revision !== "" &&
+              policyEvaluation?.revision !== "" &&
+              policyEvaluation?.revision !== preparedPolicy.revision));
+        if (shouldRefresh) {
+          preparedPolicy = await remotePolicy.prepare(opts.label, opts.inputs, opts.signal, true);
+          guardRequest.policyInputs = preparedPolicy.inputs;
+          guardRequest.localPolicyRevision = preparedPolicy.revision;
+          guardRequest.localPolicyResults = preparedPolicy.results;
+          response = await client.guard(guardRequest, callOptions);
+        }
       } catch (cause: unknown) {
         opts.signal?.throwIfAborted();
 
@@ -246,7 +280,7 @@ export function createGuardClient(options: GuardClientOptions): {
       opts.signal?.throwIfAborted();
 
       try {
-        return decisionFromProto(response, opts.rules, toWarnings(warnings));
+        return decisionFromProto(response, opts.rules ?? [], toWarnings(warnings));
       } catch (cause: unknown) {
         const message = cause instanceof Error ? cause.message : "Failed to parse server response";
         return failOpen(message, toWarnings(warnings));
