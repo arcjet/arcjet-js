@@ -65,7 +65,7 @@ export interface ArcjetAgentContext {
  * @example
  * ```ts
  * import { launchArcjet, tokenBucket } from "@arcjet/guard";
- * import { createAgentContext, guardAction } from "@arcjet/guard/agents";
+ * import { createAgentContext, guardAction } from "@arcjet/guard/vercel-ai/v7";
  *
  * const client = launchArcjet({ key: process.env.ARCJET_KEY! });
  * const limit = tokenBucket({ refillRate: 5, intervalSeconds: 60, maxTokens: 5 });

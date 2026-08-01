@@ -9,9 +9,9 @@ metadata:
 
 # Integrate Arcjet Guard into a Vercel AI SDK app
 
-`@arcjet/guard` with the agents layer and Vercel AI v7 namespace wraps the
-app's existing Arcjet client. It never talks to the Arcjet API itself. Three
-surfaces, one decision rule:
+`@arcjet/guard`'s Vercel AI v7 namespace wraps the app's existing Arcjet
+client. It never talks to the Arcjet API itself. Three surfaces, one decision
+rule:
 
 - **Model-invoked** (the LLM decides to call a tool) → `guardTool()`
 - **App-invoked** (your code performs a risky action) → `guardAction()`
@@ -36,12 +36,12 @@ Ask only what you cannot infer from the code; suggest defaults.
 
 ## Step 1: Install and find the guard client
 
-Core rules, agent helpers, and the v7 integration are optional-peer safe.
-Install `@arcjet/guard` (required), `ai` and `@ai-sdk/provider-utils`
-(optional, needed only for `@arcjet/guard/vercel-ai/v7`). Always use explicit
-versions: `@arcjet/guard/vercel-ai/v7` resolves, but `@arcjet/guard/vercel-ai`
-does not — omitting the version is deliberate (it prevents silent API breaking
-changes when a new major version is supported). Attempting to import from an
+Install `@arcjet/guard` (required), plus `ai` and `@ai-sdk/provider-utils`
+(optional peers, needed only for `@arcjet/guard/vercel-ai/v7`). Every agent
+helper lives on that one path. Always use explicit versions:
+`@arcjet/guard/vercel-ai/v7` resolves, but `@arcjet/guard/vercel-ai` does not —
+omitting the version is deliberate (it prevents silent API breaking changes
+when a new major version is supported). Attempting to import from an
 unversioned path throws `ERR_PACKAGE_PATH_NOT_EXPORTED`.
 
 ```sh
@@ -60,7 +60,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 In the HTTP route / job handler / webhook that starts the run:
 
 ```ts
-import { createAgentContext, securityMetadata } from "@arcjet/guard/agents";
+import { createAgentContext, securityMetadata } from "@arcjet/guard/vercel-ai/v7";
 
 const ctx = createAgentContext({
   correlationId: existingRunId, // omit to auto-generate a ULID
@@ -164,7 +164,7 @@ import {
   ArcjetGuardUnavailableError,
   captureAction,
   guardAction,
-} from "@arcjet/guard/agents";
+} from "@arcjet/guard/vercel-ai/v7";
 
 try {
   await guardAction(

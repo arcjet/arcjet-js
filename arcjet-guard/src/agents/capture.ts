@@ -1,7 +1,7 @@
 import type { CaptureOptions, Decision, GuardOptions } from "../types.ts";
 
 /**
- * The guard client surface `@arcjet/guard/agents` needs, typed structurally.
+ * The guard client surface the agent helpers need, typed structurally.
  *
  * `launchArcjet()` from `@arcjet/guard` returns a superset of this. Both
  * methods are required: the helpers ship from the same package version as the

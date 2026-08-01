@@ -4,16 +4,17 @@
  * Vercel AI SDK v7 namespace for Arcjet Guards.
  *
  * This module provides AI SDK–specific guard helpers (`guardTool`,
- * `aiToolsContext`) and re-exports the framework-agnostic shared layer
- * (`@arcjet/guard/agents`). Importing from here avoids multiple import paths.
+ * `aiToolsContext`) plus the framework-agnostic layer it builds on, so a
+ * Vercel AI SDK app needs one import path and no notion of layering.
  *
  * **Requires the optional peer dependencies:**
  * - `ai@^7.0.36`
  * - `@ai-sdk/provider-utils@^5.0.12`
  *
- * **Re-exports:** Everything from `@arcjet/guard/agents` (context, metadata,
- * guard and capture functions, error types) plus the Vercel AI–specific
- * `guardTool` and `aiToolsContext` helpers.
+ * **Exports:** `guardTool` and `aiToolsContext`, plus the agnostic helpers —
+ * context, metadata vocabulary, `guardAction`, `captureAction`, and the error
+ * types. The agnostic layer has no export map entry of its own; this is the
+ * only path to it.
  *
  * **Note:** There is deliberately no unversioned `@arcjet/guard/vercel-ai`
  * alias. Version the import path (`/v7`) to support future major versions

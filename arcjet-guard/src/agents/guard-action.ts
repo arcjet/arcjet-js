@@ -13,7 +13,7 @@ import { runGuarded } from "./guarded.ts";
  * @example
  * ```ts
  * import { launchArcjet, tokenBucket } from "@arcjet/guard";
- * import { guardAction, ArcjetDeniedError, createAgentContext } from "@arcjet/guard/agents";
+ * import { guardAction, ArcjetDeniedError, createAgentContext } from "@arcjet/guard/vercel-ai/v7";
  *
  * const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
  * const ctx = createAgentContext({ correlationId: "workflow-123" });
@@ -144,7 +144,7 @@ export interface GuardActionPolicy {
  * @example
  * ```ts
  * import { launchArcjet, fixedWindow } from "@arcjet/guard";
- * import { guardAction, createAgentContext } from "@arcjet/guard/agents";
+ * import { guardAction, createAgentContext } from "@arcjet/guard/vercel-ai/v7";
  *
  * const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
  * const limit = fixedWindow({ maxRequests: 10, windowSeconds: 60 });

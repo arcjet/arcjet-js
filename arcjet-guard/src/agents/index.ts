@@ -1,20 +1,16 @@
 /**
  * @packageDocumentation
  *
- * Framework-agnostic guard helpers: context, metadata vocabulary, and guard/capture
- * functions usable with no AI SDK installed. For AI SDK–specific wrappers
- * (Vercel AI SDK), see `@arcjet/guard/vercel-ai/v7`.
+ * Framework-agnostic guard helpers: context, metadata vocabulary, and
+ * guard/capture functions that never reach an AI SDK.
  *
- * Import from `@arcjet/guard/agents`:
- *
- * ```ts
- * import {
- *   createAgentContext,
- *   guardAction,
- *   captureAction,
- *   ArcjetDeniedError,
- * } from "@arcjet/guard/agents";
- * ```
+ * @internal This barrel has no export map entry. Every symbol below reaches
+ * users re-exported from a vendor namespace — today only
+ * `@arcjet/guard/vercel-ai/v7`. The layer stays agnostic so that a second
+ * vendor namespace costs nothing, and so it can be promoted into the root
+ * export once more than one SDK has exercised it; until then a public
+ * `@arcjet/guard/agents` would be a surface with one caller and no evidence
+ * behind it.
  */
 
 export { createAgentContext } from "./context.ts";

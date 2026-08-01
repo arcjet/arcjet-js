@@ -96,7 +96,7 @@ const WIRE_KEY_ENTRIES = Object.entries(WIRE_KEYS) as ReadonlyArray<
  *
  * @example
  * ```ts
- * import { createAgentContext, securityMetadata } from "@arcjet/guard/agents";
+ * import { createAgentContext, securityMetadata } from "@arcjet/guard/vercel-ai/v7";
  *
  * const ctx = createAgentContext({
  *   correlationId: "req_12345",

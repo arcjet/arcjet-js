@@ -612,9 +612,9 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   dashboard. Different configs sharing the same bucket name still get
   independent counters — a config hash is appended server-side.
 
-## SDK namespaces: core, agents, and integrations
+## SDK namespaces: core and integrations
 
-`@arcjet/guard` exposes three import layers, each for different use cases:
+`@arcjet/guard` exposes two import layers:
 
 ### Core guard (`@arcjet/guard`)
 
@@ -634,45 +634,30 @@ const decision = await arcjet.guard({
 });
 ```
 
-### Agnostic helpers (`@arcjet/guard/agents`)
-
-Framework-agnostic helpers for context threading, guard wrapping, and audit
-capture — `createAgentContext`, `guardAction`, `captureAction`, and
-`securityMetadata`:
-
-```ts
-import {
-  createAgentContext,
-  guardAction,
-  captureAction,
-  securityMetadata,
-} from "@arcjet/guard/agents";
-
-const ctx = createAgentContext({
-  correlationId: requestId,
-  metadata: securityMetadata({ user: userId }),
-});
-
-await guardAction(arcjet, ctx, { action: "data.updated", rules: [updateLimit({ key: userId })] }, () => updateData());
-captureAction(arcjet, ctx, { action: "audit.logged" });
-```
-
 ### Vendor SDK integration (`@arcjet/guard/<vendor-sdk>/v<major>`)
 
-Vendor-specific wrappers that integrate with particular SDKs. Currently
-available:
+Vendor-specific wrappers that integrate with particular SDKs, plus every agent
+helper. Currently available:
 
-- **`@arcjet/guard/vercel-ai/v7`** — Vercel AI SDK v7 integration, re-exports
-  the agents layer plus `guardTool`, `aiToolsContext`, and utilities for tool
-  wrapping:
+- **`@arcjet/guard/vercel-ai/v7`** — Vercel AI SDK v7 integration. Exports
+  `guardTool` and `aiToolsContext` for tool wrapping, alongside the helpers
+  that are not tied to any SDK — `createAgentContext`, `guardAction`,
+  `captureAction`, and `securityMetadata`:
 
   ```ts
   import {
     guardTool,
     aiToolsContext,
+    createAgentContext,
     guardAction,
+    captureAction,
     securityMetadata,
   } from "@arcjet/guard/vercel-ai/v7";
+
+  const ctx = createAgentContext({
+    correlationId: requestId,
+    metadata: securityMetadata({ user: userId }),
+  });
 
   const tools = {
     getData: guardTool(arcjet, getDataTool, { action: "data.fetched", rules: [dataLimit({ key: userId, requested: 1 })] }),
@@ -683,6 +668,9 @@ available:
     tools,
     toolsContext: aiToolsContext(ctx, tools),
   });
+
+  await guardAction(arcjet, ctx, { action: "data.updated", rules: [updateLimit({ key: userId })] }, () => updateData());
+  captureAction(arcjet, ctx, { action: "audit.logged" });
   ```
 
 - **`@arcjet/guard/vercel-eve/v1`** (planned) — Vercel EVE integration
@@ -702,16 +690,13 @@ New vendor integrations follow the pattern `@arcjet/guard/<vendor-sdk>/v<major>`
 
 ### Optional peer dependencies
 
-The agents layer and vendor integrations declare their SDK dependencies as
-optional peers, so users importing only core guards are not forced to install
-unneeded packages:
+Vendor integrations declare their SDK dependencies as optional peers, so users
+importing only core guards are not forced to install unneeded packages:
 
 - **`@arcjet/guard`** (core) has no peer dependencies.
 - **`@arcjet/guard/vercel-ai/v7`** requires `ai` and `@ai-sdk/provider-utils`
   (optional peers — the package will not be installed automatically, but the
   imports will fail clearly if the peers are missing).
-- **`@arcjet/guard/agents`** has no peer dependencies and works in any Node.js
-  codebase.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -724,12 +709,18 @@ pnpm install ai @ai-sdk/provider-utils
 pnpm install --no-strict-peer-dependencies
 ```
 
-### Why a separate `/agents` layer
+### Where the SDK-agnostic helpers live
 
-Importing `guardTool` loads the Vercel AI SDK as a dependency, so any consumer
-in a non-AI codebase that just wants `guardAction` and `captureAction` would be
-forced to install `ai` anyway. The `/agents` path provides those helpers and
-never reaches an AI SDK dependency, keeping your bundle clean.
+`createAgentContext`, `guardAction`, `captureAction`, and `securityMetadata`
+are not tied to any AI SDK, and internally they are kept that way — nothing
+they import reaches `ai`. They are nonetheless published only on the vendor
+namespace, so there is one path to learn and no layering to reason about.
+
+The cost is that a non-AI codebase wanting only `guardAction` still installs
+the `ai` peer. That is deliberate for now: a dedicated agnostic subpath would
+be a public surface justified by a single integration. Once a second vendor
+namespace exists to prove the shape, these belong in the root `@arcjet/guard`
+export rather than a subpath of their own.
 
 ### `onGuardError`: handling evaluation failures
 
@@ -827,14 +818,12 @@ Here's a complete example protecting both an AI tool call and an app-invoked act
 import { launchArcjet, tokenBucket } from "@arcjet/guard";
 import { tool, jsonSchema, generateText } from "ai";
 import {
+  aiToolsContext,
+  captureAction,
   createAgentContext,
   guardAction,
-  captureAction,
-  securityMetadata,
-} from "@arcjet/guard/agents";
-import {
   guardTool,
-  aiToolsContext,
+  securityMetadata,
 } from "@arcjet/guard/vercel-ai/v7";
 
 // 1. Launch the guard client once (at module scope)

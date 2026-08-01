@@ -1,4 +1,4 @@
-import { createAgentContext, securityMetadata } from "@arcjet/guard/agents";
+import { createAgentContext, securityMetadata } from "@arcjet/guard/vercel-ai/v7";
 import { start } from "workflow/api";
 import { NextResponse } from "next/server";
 import { supportAgentWorkflow } from "@/workflows/support-agent";

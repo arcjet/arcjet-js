@@ -113,9 +113,9 @@ the client's `capture()` and that a throwing one cannot fail the wrapped call.
 
 # Subpath namespaces (`guard-sdk-namespaces`)
 
-These helpers ship as `@arcjet/guard` subpaths: `@arcjet/guard/agents` for the
-framework-agnostic layer and `@arcjet/guard/vercel-ai/v7` for the Vercel AI SDK
-layer. Nearly all of these criteria are machine-checkable and run as
+These helpers ship on one `@arcjet/guard` subpath, `@arcjet/guard/vercel-ai/v7`.
+The framework-agnostic layer under `src/agents/` backs it but has no export map
+entry of its own. Nearly all of these criteria are machine-checkable and run as
 automated gates. Two need a record here.
 
 ## Doc-example compile sweep (`guard-sdk-namespaces.AC8.2`)
@@ -125,13 +125,12 @@ against a remembered API shape. This is the one genuinely human
 criterion: the sweep proves a block typechecks, but only a reader can judge whether
 it teaches the right thing.
 
-**Sources — all nine, not a subset:**
+**Sources — all eight, not a subset:**
 
 | File | Blocks |
 |---|---|
 | `arcjet-guard/README.md` | all TS code blocks |
 | `arcjet-guard/skills/integrate-arcjet-guard-agents/SKILL.md` | all TS code blocks |
-| `arcjet-guard/src/agents/index.ts` | `@packageDocumentation` |
 | `arcjet-guard/src/agents/context.ts` | 1 `@example` |
 | `arcjet-guard/src/agents/vocabulary.ts` | 1 `@example` |
 | `arcjet-guard/src/agents/guard-action.ts` | **3** `@example` |
@@ -146,7 +145,7 @@ will report clean while leaving them unchecked.
 
 | Step | Action | Expected |
 |------|--------|----------|
-| 1 | Extract every TS block from the nine sources into standalone files in a `mktemp -d` scratch directory | 39 blocks (25 README + 5 SKILL + 9 JSDoc) |
+| 1 | Extract every TS block from the eight sources into standalone files in a `mktemp -d` scratch directory | 42 blocks (29 README + 5 SKILL + 8 JSDoc). Count the README's indented fences too — six sit inside list items |
 | 2 | Run `tsc --noEmit` over them with `arcjet-guard`'s own settings — strict, `exactOptionalPropertyTypes`, `erasableSyntaxOnly`, `verbatimModuleSyntax`, `moduleResolution: bundler`, es2023 — resolving against the built `dist/` | Zero structural failures. Undeclared narrative placeholders (`userId`, `ctx`, `languageModel`) and `TS4111` on `process.env` are expected snippet artifacts, not defects |
 | 3 | Check import layering by eye: `securityMetadata` never imported from the `@arcjet/guard` root, `launchArcjet` never from a subpath, every imported name a real export of the path named | No layer violations |
 | 4 | Read each block as a user would: is it the shortest correct way to do the thing it claims? | Judgement call — this is the part no gate can make |

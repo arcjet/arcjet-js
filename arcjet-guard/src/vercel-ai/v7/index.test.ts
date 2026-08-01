@@ -69,8 +69,9 @@ test("AC1.4: shared exports have same function identity", () => {
   );
 });
 
-// AC1.2: Agents barrel exports the documented symbols
-test("AC1.2: agents barrel exports documented symbols", () => {
+// AC1.2: The agnostic helpers reach users through this namespace and no other,
+// so the public path is what must carry them.
+test("AC1.2: v7 namespace exports the agnostic helpers", () => {
   const requiredSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -80,10 +81,10 @@ test("AC1.2: agents barrel exports documented symbols", () => {
   ] as const;
 
   for (const symbol of requiredSymbols) {
-    const value = (agentsBarrel as Record<string, unknown>)[symbol];
+    const value = (v7Namespace as Record<string, unknown>)[symbol];
     assert.ok(
       value !== undefined,
-      `agents barrel must export ${symbol}`,
+      `@arcjet/guard/vercel-ai/v7 must export ${symbol}`,
     );
   }
 });
@@ -150,10 +151,12 @@ test("AC1.5 and AC1.6: export map has correct subpaths", () => {
     'export map must have "./vercel-ai/v7"',
   );
 
-  // Must have ./agents
+  // ./agents must NOT exist. The agnostic layer is internal: it reaches users
+  // only through a vendor namespace until it has been proven against more than
+  // one SDK, at which point it belongs in the root rather than a subpath.
   assert.ok(
-    exportKeys.includes("./agents"),
-    'export map must have "./agents"',
+    !exportKeys.includes("./agents"),
+    'export map must not have "./agents" (the agnostic layer is internal)',
   );
 });
 
@@ -164,7 +167,7 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
   assert.ok(exportsMap, "package.json must have an exports field");
 
   const exportKeys = sortedKeys(exportsMap);
-  const expectedRootKeys = [".", "./agents", "./bun", "./fetch", "./node", "./vercel-ai/v7"];
+  const expectedRootKeys = [".", "./bun", "./fetch", "./node", "./vercel-ai/v7"];
 
   assert.deepEqual(
     exportKeys,

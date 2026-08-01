@@ -59,8 +59,11 @@ test("exports the correct runtime values (AC5.1)", () => {
   assert.deepEqual(exportedNames, expectedRuntimeNames, "runtime exports must match expected list exactly");
 });
 
-// AC2.1: Walk the transitive import graph from src/agents/index.ts
-// to verify no module imports 'ai' or '@ai-sdk/*'
+// AC2.1: Walk the transitive import graph from src/agents/index.ts to verify no
+// module imports 'ai' or '@ai-sdk/*'. The layer is internal, so this no longer
+// protects a public AI-SDK-free import path — it keeps the layer portable, which
+// is the precondition for a second vendor namespace and for promoting it into
+// the root export later.
 test("no AI SDK coupling (AC2.1)", () => {
   const moduleDir = import.meta.dirname;
 
