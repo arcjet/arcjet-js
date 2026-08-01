@@ -88,7 +88,7 @@ This example protects an AI tool call with token bucket rate limiting and
 prompt injection detection.
 
 ```ts
-import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard";
+import { launchArcjet, tokenBucket, detectPromptInjection, policyInput } from "@arcjet/guard";
 
 // Create the Arcjet client once at module scope
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
@@ -121,6 +121,21 @@ if (decision.conclusion === "DENY") {
 if (decision.hasFailedOpen()) {
   console.warn("Allowed only because evaluation failed open", decision.errorResults());
 }
+
+// Remotely configured policies use explicit typed inputs. SERVER values are
+// evaluated and retained by Arcjet; LOCAL values remain in SDK memory.
+const policyDecision = await arcjet.guard({
+  label: "email.sent",
+  actor: userId,
+  inputs: {
+    recipient: policyInput.server.string(to),
+    subject: policyInput.local.string(subject),
+  },
+});
+
+// Remote results are keyed by policy/rule identity and remain separate from
+// positional SDK rule results.
+console.log(policyDecision.policyEvaluation, policyDecision.policyResults);
 
 // Decision-level diagnostics (e.g. an invalid metadata key that was stripped).
 // Warnings never change the conclusion.
@@ -812,6 +827,7 @@ helper. Currently available:
     captureAction,
     securityMetadata,
   } from "@arcjet/guard/vercel-ai/v7";
+  import { policyInput } from "@arcjet/guard";
 
   const ctx = createAgentContext({
     correlationId: requestId,
@@ -819,7 +835,12 @@ helper. Currently available:
   });
 
   const tools = {
-    getData: guardTool(arcjet, getDataTool, { action: "data.fetched", rules: [dataLimit({ key: userId, requested: 1 })] }),
+    getData: guardTool(arcjet, getDataTool, {
+      action: "data.fetched",
+      actor: (_input, context) => String(context?.metadata?.userId),
+      inputs: (input) => ({ query: policyInput.server.string(input.query) }),
+      rules: [dataLimit({ key: userId, requested: 1 })],
+    }),
   };
 
   const result = await generateText({
