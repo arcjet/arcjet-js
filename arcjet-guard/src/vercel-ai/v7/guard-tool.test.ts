@@ -103,8 +103,8 @@ test("resolves actor and typed inputs from parsed tool input", async () => {
   const { tool: testTool } = createTestTool();
   const wrapped = guardTool(client, testTool, {
     action: "test.action",
-    actor: async (input) => `actor-${input.id}`,
-    inputs: async (input) => ({ id: policyInput.server.string(input.id) }),
+    actor: (input) => `actor-${input.id}`,
+    inputs: (input) => ({ id: policyInput.server.string(input.id) }),
   });
 
   assert.ok(wrapped.execute !== undefined);
