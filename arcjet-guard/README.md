@@ -673,20 +673,20 @@ helper. Currently available:
   captureAction(arcjet, ctx, { action: "audit.logged" });
   ```
 
-- **`@arcjet/guard/vercel-eve/v1`** (planned) — Vercel EVE integration
+### Naming and versions
 
-### The namespace convention
+Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
+integrated, then its major version.
 
-New vendor integrations follow the pattern `@arcjet/guard/<vendor-sdk>/v<major>`:
+**The version is always explicit.** `@arcjet/guard/vercel-ai/v7` resolves;
+`@arcjet/guard/vercel-ai` deliberately does not. Against a fast-moving SDK
+surface an unversioned alias would silently change meaning the moment a new
+major is supported, turning an upgrade you did not ask for into a runtime
+surprise. Importing an unexported path throws `ERR_PACKAGE_PATH_NOT_EXPORTED`,
+so a wrong path fails at resolution rather than somewhere further in.
 
-- **Vendor-prefixed**: The namespace names the SDK being integrated
-  (`vercel-ai`, `vercel-eve`, etc.), not the feature.
-- **Flat structure**: No nesting; a single level under `@arcjet/guard`.
-- **Explicit versions only**: `@arcjet/guard/vercel-ai/v7` resolves, but
-  `@arcjet/guard/vercel-ai` does not. Omitting the version is deliberate — with
-  a fast-moving SDK surface, an unversioned alias would silently change meaning
-  when a new major version is supported. Attempting to import from an unexported
-  path throws `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+Supporting a new major is additive — a future `/v8` can ship alongside `/v7`,
+so you migrate on your own schedule.
 
 ### Optional peer dependencies
 
@@ -981,23 +981,6 @@ Use `securityMetadata()` keys consistently across your app:
 | `destination` | Where effects are sent | `"github"`, `"slack"`, `"email"` |
 | `reversibility` | Whether the action can be undone | `"reversible"`, `"compensable"`, `"irreversible"` |
 | `resource` | What's being acted on | `"order:12345"`, `"repo:owner/name"` |
-
-### Adding a new SDK namespace
-
-To add a new vendor integration (e.g. `vercel-eve/v1`):
-
-1. Create a new directory under `src/<vendor-sdk>/v<major>/` (e.g. `src/vercel-eve/v1/`).
-2. Export your integration helpers — at minimum, a wrapper equivalent to `guardTool` and a context injector.
-3. Add a new entry to the `exports` field in `package.json`:
-   ```json
-   "./vercel-eve/v1": {
-     "types": "./dist/vercel-eve/v1/index.d.ts",
-     "import": "./dist/vercel-eve/v1/index.js"
-   }
-   ```
-4. Declare optional peers in `peerDependencies` and `peerDependenciesMeta` if needed (e.g. the EVE SDK).
-
-No changes to the shared layer, the build config, or the root export are required.
 
 ## Example
 

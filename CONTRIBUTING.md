@@ -43,6 +43,72 @@ publish pipeline before they can ship. See [Adding a new
 package](#adding-a-new-package) for the full checklist. We can help you make
 these changes if you need it.
 
+## SDK integration namespaces
+
+`@arcjet/guard` integrates with third-party SDKs through subpath exports rather
+than separate packages, one per vendor SDK major:
+`@arcjet/guard/<vendor-sdk>/v<major>`. `vercel-ai/v7` is the first.
+
+Three properties of that shape are deliberate, and worth knowing before you
+change them:
+
+- **Vendor-prefixed**, naming the SDK being integrated rather than the feature.
+  A feature-named namespace such as `/ai` assumes there is only ever one AI SDK
+  worth integrating, and leaves nowhere to put a second vendor whose model of
+  the same feature differs. Vercel EVE is the next planned namespace
+  (`vercel-eve/v1`) and is already a counterexample: it is filesystem-first,
+  with one `defineTool` per file and no author-controlled call site, so a
+  wrapper equivalent to `guardTool` may not even be expressible the same way.
+- **Flat** — a single level under `@arcjet/guard`, no further nesting.
+- **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
+  does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would
+  change meaning under a consumer the moment a new major ships, which is the
+  exact failure the version segment exists to prevent. Its absence is asserted
+  by a test, not left to convention.
+
+Two more constraints hold the layout together. The helpers that are not tied to
+any AI SDK live in `src/agents/` and must stay that way: ESM resolves the whole
+reachable import graph, so anything re-exporting a vendor-coupled function pulls
+that vendor's SDK in even if it is never called. A test walks the transitive
+import graph to enforce it. That layer has no `exports` entry of its own — it
+reaches users only re-exported from a vendor namespace — because a public path
+is a compatibility commitment and one integration is not enough evidence to make
+it. Vendor SDKs are declared as **optional** peer dependencies, so guard users
+who never touch an AI SDK are unaffected.
+
+### Adding a new integration namespace
+
+1. Create `arcjet-guard/src/<vendor-sdk>/v<major>/` (e.g. `src/vercel-eve/v1/`).
+2. Export the integration helpers — at minimum a wrapper equivalent to
+   `guardTool` and a way to get context to it.
+3. Re-export the shared layer with `export * from "../../agents/index.ts"`.
+   Re-export it rather than wrapping it: wrappers break `===` identity across
+   namespaces and give every shared symbol a second implementation to keep in
+   sync.
+4. Add an `exports` entry in `arcjet-guard/package.json`:
+
+   ```json
+   "./vercel-eve/v1": {
+     "types": "./dist/vercel-eve/v1/index.d.ts",
+     "import": "./dist/vercel-eve/v1/index.js"
+   }
+   ```
+
+5. If the SDK is a new dependency, declare it in `peerDependencies` and mark it
+   optional in `peerDependenciesMeta`.
+
+No changes to the shared layer, the build config, or the root export are
+required — `tsdown` runs with `unbundle: true`, so a new directory under `src/`
+is picked up with its structure preserved.
+
+> [!NOTE]
+> pnpm does not reliably honour `peerDependenciesMeta.*.optional`
+> ([pnpm#5152](https://github.com/pnpm/pnpm/issues/5152),
+> [pnpm#8142](https://github.com/pnpm/pnpm/issues/8142)), particularly under
+> `--strict-peer-dependencies`. This is documented for users in the
+> `@arcjet/guard` README rather than worked around, because the workaround
+> would mean giving up optional peers for everyone.
+
 ## Examples
 
 Examples should be scaffolded using the scaffolding tool recommended by the
