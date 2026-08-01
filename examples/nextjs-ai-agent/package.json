@@ -11,7 +11,7 @@
   "dependencies": {
     "@arcjet/guard": "file:../../arcjet-guard",
     "ai": "^7.0.36",
-    "next": "16.2.6",
+    "next": "16.2.12",
     "react": "^19",
     "react-dom": "^19",
     "workflow": "^4.6.1",
