@@ -13,6 +13,9 @@ import type {
   OnGuardError,
   SecurityMetadataFields,
 } from "./index.ts";
+// Type-only, so the barrel's import graph is untouched and the AI SDK coupling
+// scan below is unaffected.
+import type { ArcjetGuard } from "../index.ts";
 import { extractImportSpecifiers, collectTsFiles, sortedKeys } from "../../test/_shared/source-scan.ts";
 
 // Verify type exports exist - test will fail at typecheck if these types don't exist
@@ -30,6 +33,15 @@ function verifyTypeExports(): void {
 
 // Ensure the verification function is called
 verifyTypeExports();
+
+// `ArcjetAgentClient` is structural, so nothing otherwise ties it to the client
+// `launchArcjet()` actually returns: renaming a method on `ArcjetGuard` would
+// leave every helper compiling against a shape no real client has. This fails
+// typecheck the moment the two drift.
+function verifyRealClientSatisfiesAgentClient(guard: ArcjetGuard): ArcjetAgentClient {
+  return guard;
+}
+void verifyRealClientSatisfiesAgentClient;
 
 // AC5.1: Verify the barrel exports exactly the expected runtime values
 // Type-only exports (ArcjetAgentContext, etc.) are verified separately via imports

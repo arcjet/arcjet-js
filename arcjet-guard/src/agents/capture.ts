@@ -1,39 +1,17 @@
-import type { ArcjetMetadata, Decision, GuardOptions } from "../types.ts";
-
-/**
- * Options for `experimental_capture()` on guard clients that provide it.
- * Mirrors the in-flight `@arcjet/guard` CaptureOptions shape.
- *
- * Used by `captureAction()` to record an observational fact (something the
- * application did) without invoking the guard. Never throws; fire-and-forget.
- */
-export interface CaptureOptions {
-  /** The fact itself, `"resource.verb"` past tense (e.g. `"review.submitted"`). */
-  action: string;
-  /** Opaque identifier joining this event to related decisions/events. */
-  correlationId?: string;
-  /** Join key referencing the guard decision this event relates to. */
-  decisionId?: string;
-  /** When the action occurred; defaults to the time of the call. */
-  occurredAt?: Date;
-  /** Arbitrary key-value metadata, same caps as guard metadata. */
-  metadata?: ArcjetMetadata;
-}
+import type { CaptureOptions, Decision, GuardOptions } from "../types.ts";
 
 /**
  * The guard client surface `@arcjet/guard/agents` needs, typed structurally.
  *
- * This is the interface that `launchArcjet()` from `@arcjet/guard` returns.
- * `@arcjet/guard/agents` calls `guard()` to run guard checks and optionally calls
- * `experimental_capture()` to record events (when available). The client is
- * passed to `guardTool()`, `guardAction()`, and `captureAction()`.
- *
- * `experimental_capture` is optional: when the client lacks it, capture calls
- * become no-ops (with a gated warning).
+ * `launchArcjet()` from `@arcjet/guard` returns a superset of this. Both
+ * methods are required: the helpers ship from the same package version as the
+ * client, so a client without `capture()` cannot occur. Typing it structurally
+ * rather than importing the client type keeps a caller free to substitute their
+ * own object.
  */
 export interface ArcjetAgentClient {
   guard(opts: GuardOptions): Promise<Decision>;
-  experimental_capture?(opts: CaptureOptions): void;
+  capture(opts: CaptureOptions): void;
 }
 
 /**
@@ -46,22 +24,16 @@ export function shouldWarn(): boolean {
 }
 
 /**
- * Fire-and-forget capture. Never throws. No-ops (with a gated warning) when
- * the client predates `experimental_capture()`.
+ * Fire-and-forget capture. Never throws.
+ *
+ * `@arcjet/guard`'s own `capture()` already guarantees this, but the client is
+ * typed structurally, so a caller-supplied one need not — and a capture must
+ * never take down the tool call or action it is recording.
  */
 export function captureEvent(client: ArcjetAgentClient, opts: CaptureOptions): void {
-  if (typeof client.experimental_capture === "function") {
-    try {
-      client.experimental_capture(opts);
-    } catch {
-      // capture must never take the caller down.
-    }
-    return;
-  }
-  if (shouldWarn()) {
-    console.warn(
-      "@arcjet/guard: this guard client does not support experimental_capture(); event not recorded:",
-      opts.action,
-    );
+  try {
+    client.capture(opts);
+  } catch {
+    // capture must never take the caller down.
   }
 }

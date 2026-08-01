@@ -32,4 +32,7 @@ export type {
   GuardActionPolicy,
   OnGuardError,
 } from "./guard-action.ts";
-export type { ArcjetAgentClient, CaptureOptions } from "./capture.ts";
+export type { ArcjetAgentClient } from "./capture.ts";
+// Re-exported from the root so a caller building a `captureAction()` payload
+// does not need a second import.
+export type { CaptureOptions } from "../types.ts";

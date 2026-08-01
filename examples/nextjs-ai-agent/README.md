@@ -75,13 +75,12 @@ receive a structured denial and apologize instead of retrying.
 
 The `tsconfig.json` sets `"jsx": "react-jsx"` because Next.js automatically rewrites this to `react-jsx` on every build using the React automatic JSX runtime. The file is kept at `react-jsx` rather than `preserve` to keep builds idempotent and avoid unnecessary git diffs.
 
-## Capture events note
+## Capture events
 
 This example calls `captureAction()` and guarded tools/actions to record capture events
-(`order.looked-up`, `ticket.updated`, `notification.sent`), but this requires
-a version of `@arcjet/guard` that ships `experimental_capture()`. Until that version is
-published, only guard decisions appear in the dashboard, and `@arcjet/guard` logs a warning at the
-`warn` level (set `ARCJET_LOG_LEVEL=warn` to see it).
+(`order.looked-up`, `ticket.updated`, `notification.sent`). They appear in the dashboard
+alongside the guard decisions, all sharing the same correlation ID.
 
-Once `@arcjet/guard` ships `experimental_capture()`, re-run this example to see capture events
-alongside decisions, all sharing the same correlation ID.
+Capture is fire-and-forget: events are batched and sent in the background, so a few seconds
+can pass before one shows up. Set `ARCJET_LOG_LEVEL=warn` to see the diagnostics if an event
+is dropped.

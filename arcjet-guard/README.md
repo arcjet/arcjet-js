@@ -911,7 +911,7 @@ The `action` is the guard label: use `resource.verb` past tense (e.g. `order.loo
 ### Failure posture
 
 - **Guard errors** (API timeouts, network failures): Fail **closed** by default. Both unavailability signals — the `guard()` call throwing, and a decision whose `hasFailedOpen()` is true — block the call: `guardTool` returns `reason: "ERROR"` with `retryable: true` and `retryAfterSeconds: 5`, and `guardAction` throws `ArcjetGuardUnavailableError`. Set `onGuardError: "allow"` to opt back into fail-open, where the tool or action still runs. A warning is logged either way when `ARCJET_LOG_LEVEL` is `debug`, `info`, or `warn`.
-- **Capture events**: Fire-and-forget; never throw. If the guard client lacks `experimental_capture()`, events silently skip with a gated warning. (Current limitation: `@arcjet/guard` does not yet ship `experimental_capture()`, so `captureAction()` calls are deferred until that capability is available. The example app documents this deferral.)
+- **Capture events**: Fire-and-forget; never throw. They go through the client's [`capture()`](#capture), so a capture failure is diagnosed rather than raised, and it never fails the tool call or action it is recording.
 - **Missing correlation ID**: Guard checks still run (uncorrelated). The first uncorrelated tool call always warns; further ones respect `ARCJET_LOG_LEVEL`.
 
 ### Which helper?

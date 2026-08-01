@@ -540,45 +540,29 @@ test("Capture-only mode: empty rules array → guard skipped", async () => {
   assert.strictEqual(result, sentinel);
 });
 
-test("Missing capture support: client without experimental_capture → warning only", async () => {
+test("A throwing capture() does not fail the tool call", async () => {
   const { client } = stubClient(decisionAllow());
-  // Remove experimental_capture to simulate an old client
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- deleting test fixture property by dynamic key
-  delete (client as unknown as Record<string, unknown>).experimental_capture;
-
-  const { tool: testTool } = createTestTool();
-
-  const originalWarn = console.warn;
-  const warnCalls: unknown[] = [];
-  console.warn = (...args: unknown[]): void => {
-    warnCalls.push(args);
+  client.capture = (): void => {
+    throw new Error("capture failed");
   };
 
-  const restoreLogLevel = setLogLevel("warn");
-  try {
-    const wrapped = guardTool(client, testTool, {
-      action: "test.action",
-      rules: [fakeRule],
-    });
+  const { tool: testTool, executeCalls, sentinel } = createTestTool();
 
-    assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
+  const wrapped = guardTool(client, testTool, {
+    action: "test.action",
+    rules: [fakeRule],
+  });
 
-    await wrapped.execute({ id: "input1" }, {
-      toolCallId: "t1",
-      messages: [],
-      context: undefined,
-    });
+  assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-    assert.ok(
-      warnCalls.some((call) =>
-        JSON.stringify(call).includes("does not support experimental_capture"),
-      ),
-      "warning should mention capture unavailability",
-    );
-  } finally {
-    console.warn = originalWarn;
-    restoreLogLevel();
-  }
+  const result = await wrapped.execute({ id: "input1" }, {
+    toolCallId: "t1",
+    messages: [],
+    context: undefined,
+  });
+
+  assert.equal(executeCalls.length, 1, "the tool must still run");
+  assert.strictEqual(result, sentinel);
 });
 
 test("AC1.6: no context → warning, guard check runs uncorrelated", async () => {

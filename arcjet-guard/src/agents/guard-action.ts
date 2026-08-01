@@ -132,7 +132,7 @@ export interface GuardActionPolicy {
  * "allow"`, both signals fail open: `fn` still runs, with a warning gated on
  * `ARCJET_LOG_LEVEL`.
  *
- * @param client - Guard client with optional `experimental_capture()` method
+ * @param client - Guard client from `launchArcjet()`
  * @param ctx - Security context with correlation ID and metadata
  * @param policy - Execution policy: `action` (required), `rules`, `metadata`, `onGuardError`
  * @param fn - Async function to execute on ALLOW; never called on DENY or (by default) when unavailable
@@ -199,7 +199,7 @@ export interface CaptureActionOptions {
 }
 
 /**
- * Observe-only sugar over `experimental_capture()`: records that the
+ * Observe-only sugar over the client's `capture()`: records that the
  * application did something, correlated to the run. Fire-and-forget; never
  * throws.
  *
@@ -207,7 +207,7 @@ export interface CaptureActionOptions {
  * fact about what the application did. No `outcome` metadata is added (that's
  * only for guarded executions).
  *
- * @param client - Guard client with optional `experimental_capture()` method
+ * @param client - Guard client from `launchArcjet()`
  * @param ctx - Security context with correlation ID and metadata
  * @param opts - Capture options: `action` (required), `metadata` (optional)
  *

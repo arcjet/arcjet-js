@@ -14,14 +14,14 @@ Numbers match their source criterion sets so external citations (e.g.
 arcjet/review#28, which cites `pilot-framework-helper.AC7.1`) resolve correctly.
 
 Automated coverage: `arcjet-guard/src/agents/*.test.ts` and
-`arcjet-guard/src/vercel-ai/v7/*.test.ts` (76 tests within a 428-test suite) plus
+`arcjet-guard/src/vercel-ai/v7/*.test.ts` (72 tests within a 460-test suite) plus
 the `nextjs-ai-agent` CI build. This plan covers the criteria that no automated
 gate can decide.
 
 ## Prerequisites
 
 - Node 22, repo installed and built: from repo root `npm ci && npm run build`.
-- `arcjet-guard` automated gate green: `cd arcjet-guard && npm run test-unit` → 428 pass, 0 fail.
+- `arcjet-guard` automated gate green: `cd arcjet-guard && npm run test-unit` → 460 pass, 0 fail.
 - For `pilot-framework-helper.AC5.2`: a **dev Arcjet site** (`ARCJET_KEY` from
   app.arcjet.com) and an `AI_GATEWAY_API_KEY` (Vercel AI Gateway).
 - For `pilot-framework-helper.AC6.1`: a copy of
@@ -38,15 +38,9 @@ gate can decide.
 | 4 | Open `http://localhost:3000`, ask "What's the status of order 42?" | Agent responds with an order status; API response includes `runId` and `correlationId` — record both |
 | 5 | `npx workflow inspect runs` | The run for `runId` shows as completing (route → workflow → tool → action steps) |
 | 6 | Open the Arcjet dashboard (or MCP `list-guards`), filter by the recorded `correlationId` | Two guard decisions visible — `order.looked-up` and `ticket.updated` — both carrying that same `correlationId` |
-| 7 | Confirm capture-events behavior | With current `@arcjet/guard` (no `experimental_capture()`), a `warn`-level log appears and capture events are absent — documented deferral, not a failure |
+| 7 | Confirm capture-events behavior | The `notification.sent` capture event appears under the same `correlationId`. Capture is batched, so allow a few seconds and call `flush()` or reload before concluding it is missing |
 | 8 | Ask ~11 order questions within 60s | After the token-bucket limit, `lookupOrder` is denied; the model receives a structured denial and apologizes instead of retrying |
 | 9 | Record the observed `correlationId` in the PR description as evidence | Evidence captured |
-
-**Deferral note:** the capture-**events** portion of
-`pilot-framework-helper.AC5.2` is deferred until
-`@arcjet/guard` ships `experimental_capture()` (unmerged,
-`origin/quinn/experimental-capture`). Guard-**decision** correlation
-(steps 5–6) is verifiable now and is the pass condition.
 
 ## Agent skill file: fresh-agent integration (`pilot-framework-helper.AC6.1`)
 
@@ -73,8 +67,7 @@ against the real backend).
 Steps: Perform the live-run steps 3–6, then in the dashboard confirm that the
 tool decision (`order.looked-up`) and the external-action decision
 (`ticket.updated`) share the exact `correlationId` returned in the API
-response. Once `experimental_capture()` ships, re-run and confirm
-`notification.sent` capture events carry the same ID.
+response, and that the `notification.sent` capture event carries the same ID.
 
 ## End-to-End: Rate-limit denial visible to the model
 
@@ -112,10 +105,9 @@ All criteria in this table are in the **`pilot-framework-helper`** namespace.
 | `pilot-framework-helper.AC5.2` | — | live run, steps 1–9 |
 | `pilot-framework-helper.AC6.1` | — | fresh-agent integration, steps 1–4 |
 
-**Known gap (documented, not a coverage failure):** capture-event delivery is
-unavailable until `@arcjet/guard` ships `experimental_capture()`. The library
-warns and skips capture; tests assert the warning path, and the example
-README documents the deferral.
+Capture-event delivery itself is covered by `@arcjet/guard`'s own
+`capture-delivery.test.ts`; the agents layer only asserts that it forwards to
+the client's `capture()` and that a throwing one cannot fail the wrapped call.
 
 ---
 

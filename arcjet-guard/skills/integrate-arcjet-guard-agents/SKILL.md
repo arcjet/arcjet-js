@@ -251,10 +251,9 @@ could not encode (`undefined`, a function, a `BigInt`, a circular reference).
 1. `tsc --noEmit` (or the app's typecheck) passes.
 2. Run the app with `ARCJET_LOG_LEVEL=warn`; exercise the agent.
 3. Confirm in the Arcjet dashboard (or MCP `list-guards`) that the run's
-   decisions share the expected correlation ID.
+   decisions and capture events share the expected correlation ID.
 4. Trip a rate limit deliberately; confirm the model receives the denial
    and does not loop on retries.
 
-Note: capture events require a `@arcjet/guard` version that ships
-`experimental_capture()`; on older versions the AI integration skips them
-with a warning — guard decisions still correlate.
+Note: capture is fire-and-forget and batched, so events can lag the decisions
+they accompany by a few seconds. A dropped event is diagnosed, never thrown.

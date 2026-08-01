@@ -155,7 +155,7 @@ function warnMissingToolsContext(action: string): void {
  * carry correlation and metadata, so a tool that declares its own
  * `contextSchema` cannot be wrapped.
  *
- * @param client - Guard client with optional `experimental_capture()` method
+ * @param client - Guard client from `launchArcjet()`
  * @param tool - The tool to wrap; must have an `execute` function and no `contextSchema`
  * @param policy - Execution policy: `action` (required), `rules`, `metadata`, `correlationId` override, `onGuardError`, `onDeny` hook
  * @returns A tool with protected `execute`, injected `contextSchema`, and context type `ArcjetAgentContext | undefined`

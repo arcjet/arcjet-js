@@ -32,10 +32,7 @@ export function stubClient(decision: Decision | Error): {
       if (decision instanceof Error) return Promise.reject(decision);
       return Promise.resolve(decision);
     },
-    // `experimental_capture` is not on guard's client type yet, so the stub is
-    // typed structurally and `captureEvent` feature-detects it at runtime. Both
-    // collapse into the real client type once capture lands.
-    experimental_capture(opts: unknown): void {
+    capture(opts: unknown): void {
       captureCalls.push(opts);
     },
   };
