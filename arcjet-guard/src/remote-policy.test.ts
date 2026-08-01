@@ -3,11 +3,23 @@ import { test } from "node:test";
 
 import { create } from "@bufbuild/protobuf";
 
+import { decisionFromProto } from "./convert.ts";
 import { policyInput } from "./policy-input.ts";
 import {
+  GuardConclusion,
+  GuardDecisionSchema,
   GetGuardPolicyResponseSchema,
+  GuardPolicyEvaluationSchema,
+  GuardPolicyRuleResultSchema,
+  GuardPolicyStatus,
+  GuardResponseSchema,
+  GuardRuleExecution,
+  GuardRuleMode,
+  GuardRuleSource,
+  GuardRuleType,
   GuardLocalPolicyProjectionSchema,
   GuardPolicyLookupStatus,
+  ResultStringConstraintSchema,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { localStringDigest, RemotePolicyRuntime } from "./remote-policy.ts";
 
@@ -73,4 +85,40 @@ test("concurrent local inputs coalesce projection retrieval and never put raw va
     assert.equal(representation.value.valueSha256.length, 32);
     assert.equal(JSON.stringify(representation.value).includes("secret subject"), false);
   }
+});
+
+test("remote policy status and keyed results stay separate from SDK results", () => {
+  const response = create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      id: "gdec_policy",
+      conclusion: GuardConclusion.DENY,
+      policyEvaluation: create(GuardPolicyEvaluationSchema, {
+        revision: "revision-1",
+        status: GuardPolicyStatus.APPLIED,
+      }),
+      policyRuleResults: [
+        create(GuardPolicyRuleResultSchema, {
+          policyId: "policy-1",
+          policyRevision: "revision-1",
+          ruleId: "allowed-recipient",
+          type: GuardRuleType.ALLOWED_STRING_VALUES,
+          mode: GuardRuleMode.LIVE,
+          execution: GuardRuleExecution.SERVER,
+          source: GuardRuleSource.REMOTE,
+          result: {
+            case: "allowedStringValues",
+            value: create(ResultStringConstraintSchema, {
+              conclusion: GuardConclusion.DENY,
+            }),
+          },
+        }),
+      ],
+    }),
+  });
+
+  const decision = decisionFromProto(response, []);
+  assert.deepEqual(decision.results, []);
+  assert.equal(decision.policyEvaluation?.status, "APPLIED");
+  assert.equal(decision.policyResults?.[0]?.ruleId, "allowed-recipient");
+  assert.equal(decision.policyResults?.[0]?.result.reason, "INPUT_CONSTRAINT");
 });

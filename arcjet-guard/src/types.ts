@@ -391,6 +391,14 @@ export type RuleResultUnknown = {
   readonly warnings: readonly Warning[];
 };
 
+/** Result from a remotely configured typed input constraint. */
+export type RuleResultInputConstraint = {
+  readonly conclusion: Conclusion;
+  readonly reason: "INPUT_CONSTRAINT";
+  readonly type: "ALLOWED_STRING_VALUES" | "DENIED_STRING_VALUES" | "STRING_LENGTH";
+  readonly warnings: readonly Warning[];
+};
+
 /** Union of all possible rule result types. */
 export type RuleResult =
   | RuleResultTokenBucket
@@ -402,12 +410,41 @@ export type RuleResult =
   | RuleResultCustom
   | RuleResultNotRun
   | RuleResultError
+  | RuleResultInputConstraint
   | RuleResultUnknown;
+
+/** Remote-policy selection and completeness reported by Guard. */
+export type PolicyEvaluation = {
+  readonly revision: string;
+  readonly status:
+    | "NOT_CONFIGURED"
+    | "APPLIED"
+    | "INCOMPLETE"
+    | "UNAVAILABLE"
+    | "EXPIRED"
+    | "UNKNOWN";
+  readonly refreshRequired: boolean;
+};
+
+/** A keyed result from remotely configured policy, separate from positional SDK results. */
+export type PolicyRuleResult = {
+  readonly policyId: string;
+  readonly policyRevision: string;
+  readonly ruleId: string;
+  readonly mode: Mode;
+  readonly execution: "SDK" | "SERVER" | "UNKNOWN";
+  readonly source: "REMOTE";
+  readonly result: RuleResult;
+};
 
 /** Base shape shared by all decisions. */
 export type DecisionBase = {
   /** Per-rule results, one per submission, in submission order. */
   readonly results: readonly RuleResult[];
+  /** Remote-policy status; absent when the server predates policy support. */
+  readonly policyEvaluation?: PolicyEvaluation;
+  /** Keyed remote-policy results. Never mixed with positional SDK results. */
+  readonly policyResults?: readonly PolicyRuleResult[];
   /** Server-generated unique identifier (TypeID, prefix `"gdec"`). */
   readonly id: string;
   /**

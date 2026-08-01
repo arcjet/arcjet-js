@@ -16,6 +16,7 @@ import {
   type Billing as ProtoBilling,
   type GuardRule,
   type GuardPolicyEvaluation,
+  type GuardPolicyRuleResult as ProtoGuardPolicyRuleResult,
   type GuardRuleResult as ProtoGuardRuleResult,
   type GuardRuleSubmission,
   type GuardResponse as ProtoGuardResponse,
@@ -38,6 +39,7 @@ import {
   GuardPolicyStatus,
   GuardReason,
   GuardRuleMode,
+  GuardRuleExecution,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
@@ -49,6 +51,8 @@ import type {
   Reason,
   RuleResult,
   RuleResultError,
+  PolicyEvaluation,
+  PolicyRuleResult,
   RuleWithInput,
   SensitiveInfoBackend,
   SensitiveInfoEntityType,
@@ -411,6 +415,92 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
       };
     }
   }
+}
+
+function policyResultFromProto(pr: ProtoGuardPolicyRuleResult): PolicyRuleResult {
+  const warnings: readonly Warning[] = [];
+  let result: RuleResult;
+  switch (pr.result.case) {
+    case "promptInjection":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "PROMPT_INJECTION",
+        type: "PROMPT_INJECTION",
+        warnings,
+      };
+      break;
+    case "localSensitiveInfo":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "SENSITIVE_INFO",
+        type: "SENSITIVE_INFO",
+        warnings,
+        detectedEntityTypes: pr.result.value.detectedEntityTypes,
+      };
+      break;
+    case "allowedStringValues":
+    case "deniedStringValues":
+    case "stringLength":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "INPUT_CONSTRAINT",
+        type:
+          pr.result.case === "allowedStringValues"
+            ? "ALLOWED_STRING_VALUES"
+            : pr.result.case === "deniedStringValues"
+              ? "DENIED_STRING_VALUES"
+              : "STRING_LENGTH",
+        warnings,
+      };
+      break;
+    case "error":
+      result = {
+        conclusion: "ALLOW",
+        reason: "ERROR",
+        type: "RULE_ERROR",
+        warnings,
+        message: pr.result.value.message || "Unknown error",
+        code: pr.result.value.code || "UNKNOWN",
+      };
+      break;
+    case "notRun":
+      result = { conclusion: "ALLOW", reason: "NOT_RUN", type: "NOT_RUN", warnings };
+      break;
+    case undefined:
+      result = { conclusion: "ALLOW", reason: "UNKNOWN", type: "UNKNOWN", warnings };
+  }
+  return {
+    policyId: pr.policyId,
+    policyRevision: pr.policyRevision,
+    ruleId: pr.ruleId,
+    mode: pr.mode === GuardRuleMode.DRY_RUN ? "DRY_RUN" : "LIVE",
+    execution:
+      pr.execution === GuardRuleExecution.SDK
+        ? "SDK"
+        : pr.execution === GuardRuleExecution.SERVER
+          ? "SERVER"
+          : "UNKNOWN",
+    source: "REMOTE",
+    result,
+  };
+}
+
+function policyEvaluationFromProto(
+  evaluation: GuardPolicyEvaluation | undefined,
+): PolicyEvaluation | undefined {
+  if (evaluation === undefined) return undefined;
+  const statuses: Record<number, PolicyEvaluation["status"]> = {
+    [GuardPolicyStatus.NOT_CONFIGURED]: "NOT_CONFIGURED",
+    [GuardPolicyStatus.APPLIED]: "APPLIED",
+    [GuardPolicyStatus.INCOMPLETE]: "INCOMPLETE",
+    [GuardPolicyStatus.UNAVAILABLE]: "UNAVAILABLE",
+    [GuardPolicyStatus.EXPIRED]: "EXPIRED",
+  };
+  return {
+    revision: evaluation.revision,
+    status: statuses[evaluation.status] ?? "UNKNOWN",
+    refreshRequired: evaluation.refreshRequired,
+  };
 }
 
 /**
@@ -781,6 +871,8 @@ export function decisionFromProto(
 
   const results: readonly RuleResult[] = internalResults;
   const policyErrors = policyErrorsFromProto(proto.policyEvaluation);
+  const policyEvaluation = policyEvaluationFromProto(proto.policyEvaluation);
+  const policyResults = proto.policyRuleResults.map(policyResultFromProto);
 
   const conclusion = conclusionFromProto(proto.conclusion);
   const reason = reasonFromProto(proto.reason);
@@ -791,6 +883,8 @@ export function decisionFromProto(
       reason,
       id: proto.id,
       results,
+      ...(policyEvaluation !== undefined && { policyEvaluation }),
+      policyResults,
       ...decisionMembers("DENY", results, warnings, policyErrors),
       [symbolArcjetInternal]: { results: internalResults },
     };
@@ -801,6 +895,8 @@ export function decisionFromProto(
     conclusion: "ALLOW" as const,
     id: proto.id,
     results,
+    ...(policyEvaluation !== undefined && { policyEvaluation }),
+    policyResults,
     ...decisionMembers("ALLOW", results, warnings, policyErrors),
     [symbolArcjetInternal]: { results: internalResults },
   };
