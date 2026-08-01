@@ -1754,7 +1754,16 @@ export interface GuardOptions {
    * letter or digit. Max 256 bytes.
    */
   label: string;
-  /** The rule submissions to evaluate — at least one is required. */
+  /**
+   * The rule submissions to evaluate.
+   *
+   * May be empty. An empty set still reaches Arcjet and returns an ALLOW
+   * decision with a real id, carrying an `AJ1002` warning to record that
+   * nothing was submitted — it is not treated as a failure, and
+   * `hasFailedOpen()` is false. Sending an empty set costs a round trip, so
+   * pass one only when the call site is worth recording or is expected to be
+   * governed server-side.
+   */
   rules: RuleWithInput[];
   /**
    * Request-level metadata for correlation and analytics. Sent as a

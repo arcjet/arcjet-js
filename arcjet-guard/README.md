@@ -907,9 +907,16 @@ The `action` is the guard label: use `resource.verb` past tense (e.g. `order.loo
 
 | Scenario | Helper | Guard | Model Sees |
 |----------|--------|-------|-----------|
-| LLM decided to call a tool | `guardTool()` | Yes (if rules provided) | `ArcjetDenialResult` on DENY |
-| Your app invokes an action | `guardAction()` | Yes (if rules provided) | Throws `ArcjetDeniedError` on DENY |
+| LLM decided to call a tool | `guardTool()` | Always | `ArcjetDenialResult` on DENY |
+| Your app invokes an action | `guardAction()` | Always | Throws `ArcjetDeniedError` on DENY |
 | Record that something happened | `captureAction()` | No | — (fire-and-forget) |
+
+`guardTool` and `guardAction` call `guard()` on every invocation, including when
+`rules` is omitted or resolves to `[]`. Submitting no rules is not the same as
+skipping the call: Arcjet still returns a decision, so the event is correlatable
+by `decisionId` and the call site stays reachable by policy configured outside
+your code. It does cost a round trip — reach for `captureAction()` when you want
+a record and no decision.
 
 ### Threading context through boundaries
 

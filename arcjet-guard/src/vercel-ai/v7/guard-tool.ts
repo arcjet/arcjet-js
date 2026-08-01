@@ -39,13 +39,17 @@ export interface ArcjetDenialResult {
  * **Constraints:**
  * - The tool must not declare its own `contextSchema` (that slot carries the `ArcjetAgentContext`).
  * - The `action` is required and is the guard label and capture action.
- * - `rules` may be omitted for capture-only wrapping (no guard, just audit).
+ * - `rules` may be omitted to submit none. The guard call still happens.
  * - Metadata is merged on top of the context's and can depend on input.
  */
 export interface GuardToolPolicy<T extends Tool> {
   /** Guard label and capture action: `"resource.verb"`, past tense. */
   action: string;
-  /** Rules to evaluate; omit (or return `[]`) for capture-only wrapping. */
+  /**
+   * Rules to evaluate, static or computed from the tool's input. Omitting
+   * this, or returning `[]`, submits no rules — it does not skip the guard
+   * call, which still costs a round trip and returns a decision.
+   */
   rules?: RuleWithInput[] | ((input: InferToolInput<T>) => RuleWithInput[]);
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: InferToolInput<T>) => ArcjetMetadata);
@@ -141,10 +145,10 @@ function warnMissingToolsContext(action: string): void {
 /**
  * Wraps an AI SDK tool with guard-gated execution and event capture.
  *
- * Runs `guard()` before the tool when `policy.rules` are present; on DENY the
- * tool never executes and the model receives an `ArcjetDenialResult` (or the
- * result of `policy.onDeny`). On ALLOW — or when no rules are given
- * (capture-only) — the tool runs and the outcome is captured.
+ * Always runs `guard()` before the tool, submitting `policy.rules` or none; on
+ * DENY the tool never executes and the model receives an `ArcjetDenialResult`
+ * (or the result of `policy.onDeny`). On ALLOW — which is what submitting no
+ * rules returns — the tool runs and the outcome is captured.
  *
  * Guard API errors behavior depends on `policy.onGuardError` (defaults to `"deny"`):
  * - `"deny"` (default): Tool does not execute; the model receives an `ArcjetDenialResult`
@@ -223,7 +227,7 @@ export function guardTool<T extends Tool>(
     ...tool,
     [arcjetProtectedTool]: true,
     contextSchema,
-    // oxlint-disable-next-line eslint/require-await -- runGuarded returns immediately when there are no rules (capture-only mode); this wrapping layer is always async to match the tool interface contract and simplify error handling
+    // oxlint-disable-next-line eslint/require-await -- declared async to match the tool interface contract, but runGuarded's promise is returned rather than awaited
     async execute(input: InferToolInput<T>, options: never) {
       // `options.context` was validated by contextSchema above.
       const opts = options as {

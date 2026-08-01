@@ -70,6 +70,29 @@ export function createMockTransport(handler: MockHandler): Transport {
   });
 }
 
+/**
+ * Build the response the server gives a request carrying zero rule
+ * submissions: an empty ALLOW plus the `AJ1002` response error
+ * (`arcjet-decide/internal/guard/request.go`). Deliberately not a rule error —
+ * submitting nothing is recoverable, not an evaluation failure, so
+ * `hasFailedOpen()` must stay false.
+ */
+export function noRulesAllow(): GuardResponse {
+  return create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      id: "gdec_norules",
+      conclusion: GuardConclusion.ALLOW,
+      ruleResults: [],
+    }),
+    errors: [
+      create(ResultErrorSchema, {
+        code: "AJ1002",
+        message: "no rule submissions provided; returning empty ALLOW decision",
+      }),
+    ],
+  });
+}
+
 /** Build an ALLOW response for a token bucket rule. */
 export function tokenBucketAllow(req: GuardRequest): GuardResponse {
   const sub = firstSubmission(req);

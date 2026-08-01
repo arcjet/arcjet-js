@@ -124,10 +124,14 @@ export function createGuardClient(options: GuardClientOptions): {
      *
      */
     async guard(opts: GuardOptions): Promise<Decision> {
-      if (opts.rules.length === 0) {
-        return failOpen("guard() requires at least one rule");
-      }
-
+      // No local short-circuit on an empty rule set. The server accepts zero
+      // submissions and answers with an empty ALLOW plus an `AJ1002` response
+      // error, which arrives as a decision-level warning — so the decision
+      // carries a real id and `hasFailedOpen()` stays false. Answering locally
+      // instead would synthesize a fail-open decision, and a caller that treats
+      // a failed-open decision as "policy not evaluated" would read that as an
+      // outage. It also keeps the call site reachable by server-side policy
+      // that needs no client-supplied rule.
       opts.signal?.throwIfAborted();
 
       // Metadata keys the SDK could not encode. These are reported to the server

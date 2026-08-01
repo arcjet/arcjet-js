@@ -491,7 +491,7 @@ test("AC1.7: explicit correlationId override", async () => {
   assert.equal(recorded(captureCalls[0]).correlationId, "explicit-1");
 });
 
-test("Capture-only mode: no rules → guard skipped, execute runs, capture fires", async () => {
+test("No rules → guard still called with [], execute runs, capture carries the decisionId", async () => {
   const { client, guardCalls, captureCalls } = stubClient(decisionAllow());
   const { tool: testTool, executeCalls, sentinel } = createTestTool();
 
@@ -508,17 +508,24 @@ test("Capture-only mode: no rules → guard skipped, execute runs, capture fires
     context: undefined,
   });
 
-  assert.equal(guardCalls.length, 0, "guard should not be called in capture-only mode");
+  assert.equal(guardCalls.length, 1, "omitting rules must still reach guard()");
+  assert.deepEqual(
+    recorded(guardCalls[0]).rules,
+    [],
+    "omitted rules must be submitted as an empty set",
+  );
   assert.equal(executeCalls.length, 1, "execute should run");
   assert.strictEqual(result, sentinel);
   assert.equal(captureCalls.length, 1, "capture should fire");
   const captureCall = recorded(captureCalls[0]);
-  assert.strictEqual(captureCall.decisionId, undefined, "no decisionId in capture-only");
+  // The decision is real now, so a no-rules tool call is correlatable — it was
+  // not when the engine skipped the call and there was no decision to point at.
+  assert.equal(captureCall.decisionId, "gdec_allow1", "capture must carry the decision id");
   const metadata = recorded(captureCall.metadata);
   assert.equal(metadata.outcome, "success");
 });
 
-test("Capture-only mode: empty rules array → guard skipped", async () => {
+test("Empty rules array → guard still called with []", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const { tool: testTool, executeCalls, sentinel } = createTestTool();
 
@@ -535,9 +542,32 @@ test("Capture-only mode: empty rules array → guard skipped", async () => {
     context: undefined,
   });
 
-  assert.equal(guardCalls.length, 0, "guard should not be called with empty rules");
+  assert.equal(guardCalls.length, 1, "an empty rules array must still reach guard()");
+  assert.deepEqual(recorded(guardCalls[0]).rules, []);
   assert.equal(executeCalls.length, 1);
   assert.strictEqual(result, sentinel);
+});
+
+test("A rules callback returning [] still reaches guard()", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const { tool: testTool, executeCalls } = createTestTool();
+
+  const wrapped = guardTool(client, testTool, {
+    action: "test.action",
+    rules: () => [],
+  });
+
+  assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
+
+  await wrapped.execute({ id: "input1" }, {
+    toolCallId: "t1",
+    messages: [],
+    context: undefined,
+  });
+
+  assert.equal(guardCalls.length, 1, "a callback returning [] must still reach guard()");
+  assert.deepEqual(recorded(guardCalls[0]).rules, []);
+  assert.equal(executeCalls.length, 1);
 });
 
 test("A throwing capture() does not fail the tool call", async () => {
@@ -726,21 +756,25 @@ test("Policy rules as a function: applied per input", async () => {
 
   assert.ok(wrapped.execute !== undefined, "wrapped tool must have an execute function");
 
-  // First call with rules
+  // First call: the callback returns a rule
   await wrapped.execute({ id: "input1" }, {
     toolCallId: "t1",
     messages: [],
     context: undefined,
   });
   assert.equal(guardCalls.length, 1, "first call should invoke guard");
+  assert.deepEqual(recorded(guardCalls[0]).rules, [fakeRule]);
 
-  // Second call without rules (empty array)
+  // Second call: the callback returns []. The submitted set differs; whether
+  // guard is called does not.
   await wrapped.execute({ id: "skip" }, {
     toolCallId: "t2",
     messages: [],
     context: undefined,
   });
-  assert.equal(guardCalls.length, 1, "second call should not invoke guard (empty rules)");
+  assert.equal(guardCalls.length, 2, "an empty result from the callback still invokes guard");
+  assert.deepEqual(recorded(guardCalls[1]).rules, []);
+  assert.deepEqual(ruleCalls, [{ id: "input1" }, { id: "skip" }]);
 });
 
 test("Policy metadata as a function: applied per input, merged after context", async () => {

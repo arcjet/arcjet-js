@@ -100,13 +100,18 @@ export type OnGuardError = "allow" | "deny";
  *
  * Specifies the guard action name, optional rules to evaluate, and additional
  * metadata to merge with the request context. Rules can be rate limits, custom
- * checks, or other guards. Omit `rules` for capture-only instrumentation
- * (record the action without enforcing any checks).
+ * checks, or other guards. Omit `rules` to submit none: the guard call still
+ * happens, so the action is recorded and remains reachable by policy
+ * configured outside the code, but nothing local is enforced.
  */
 export interface GuardActionPolicy {
   /** Guard label and capture action: `"resource.verb"`, past tense. */
   action: string;
-  /** Rules to evaluate; omit for capture-only behavior. */
+  /**
+   * Rules to evaluate. Omitting this, or passing `[]`, submits no rules — it
+   * does not skip the guard call, which still costs a round trip and returns a
+   * decision.
+   */
   rules?: RuleWithInput[];
   /** Metadata merged over the context's. */
   metadata?: ArcjetMetadata;
@@ -124,9 +129,9 @@ export interface GuardActionPolicy {
  * `ArcjetGuardUnavailableError` when guard is unavailable (depending on
  * `policy.onGuardError`).
  *
- * Runs `guard()` when `policy.rules` are present; on DENY it throws
- * `ArcjetDeniedError` without running `fn`. On ALLOW — or when no rules are
- * given (capture-only) — `fn` runs and the outcome is captured. With the default
+ * Always runs `guard()`, submitting `policy.rules` or none; on DENY it throws
+ * `ArcjetDeniedError` without running `fn`. On ALLOW — which is what submitting
+ * no rules returns — `fn` runs and the outcome is captured. With the default
  * `onGuardError: "deny"`, guard API errors and failed-open decisions throw
  * `ArcjetGuardUnavailableError` without running `fn`. With `onGuardError:
  * "allow"`, both signals fail open: `fn` still runs, with a warning gated on

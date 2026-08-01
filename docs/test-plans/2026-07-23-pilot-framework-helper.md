@@ -14,14 +14,14 @@ Numbers match their source criterion sets so external citations (e.g.
 arcjet/review#28, which cites `pilot-framework-helper.AC7.1`) resolve correctly.
 
 Automated coverage: `arcjet-guard/src/agents/*.test.ts` and
-`arcjet-guard/src/vercel-ai/v7/*.test.ts` (72 tests within a 460-test suite) plus
+`arcjet-guard/src/vercel-ai/v7/*.test.ts` (74 tests within a 462-test suite) plus
 the `nextjs-ai-agent` CI build. This plan covers the criteria that no automated
 gate can decide.
 
 ## Prerequisites
 
 - Node 22, repo installed and built: from repo root `npm ci && npm run build`.
-- `arcjet-guard` automated gate green: `cd arcjet-guard && npm run test-unit` → 460 pass, 0 fail.
+- `arcjet-guard` automated gate green: `cd arcjet-guard && npm run test-unit` → 462 pass, 0 fail.
 - For `pilot-framework-helper.AC5.2`: a **dev Arcjet site** (`ARCJET_KEY` from
   app.arcjet.com) and an `AI_GATEWAY_API_KEY` (Vercel AI Gateway).
 - For `pilot-framework-helper.AC6.1`: a copy of

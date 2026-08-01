@@ -26,7 +26,8 @@ Ask only what you cannot infer from the code; suggest defaults.
 
 1. Which tool calls / actions are **risky** (external side effects,
    irreversible, spends money, sends messages)? Those get rules. Purely
-   informational ones get capture-only wrapping (no `rules`).
+   informational ones can be wrapped with no `rules` (recorded, nothing
+   enforced locally) or left to `captureAction()`.
 2. What **limits**? (e.g. "10 lookups/min per user" → `tokenBucket`;
    "5 posts/min" → `slidingWindow`.)
 3. Who is the **user** for metadata — an opaque user/tenant/installation ID
@@ -104,7 +105,10 @@ const tools = {
 };
 ```
 
-- Omit `rules` for capture-only wrapping (audit without enforcement).
+- Omit `rules` to submit none. The guard call still happens, so the decision is
+  correlatable and the call site stays reachable by policy configured outside
+  the code — but it costs a round trip. Use `captureAction()` instead when you
+  want a record and no decision.
 - `rules` may be a callback over the tool's parsed input, computed from the
   data being acted on — here, keying the rate limit on the specific order
   being looked up.

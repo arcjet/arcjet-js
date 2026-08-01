@@ -9,6 +9,8 @@ import {
 } from "./guard-action.ts";
 import { createAgentContext } from "./context.ts";
 import { setLogLevel } from "../../test/_shared/log-level.ts";
+import { createMockTransport, noRulesAllow } from "../../test/_shared/mock-handlers.ts";
+import { launchArcjetWithTransport } from "../index.ts";
 import {
   stubClient,
   decisionAllow,
@@ -248,7 +250,7 @@ test("AC4.4: guard resolves fail-open ALLOW, onGuardError: 'allow' → fn runs, 
   }
 });
 
-test("Capture-only mode: no rules → guard never called, fn runs, capture fires without decisionId", async () => {
+test("No rules → guard still called with [], fn runs, capture carries the decisionId", async () => {
   const { client, guardCalls, captureCalls } = stubClient(decisionAllow());
   const sentinel = { result: "success" };
   let fnCallCount = 0;
@@ -263,19 +265,25 @@ test("Capture-only mode: no rules → guard never called, fn runs, capture fires
     },
   );
 
-  assert.equal(guardCalls.length, 0, "guard should not be called in capture-only mode");
+  assert.equal(guardCalls.length, 1, "omitting rules must still reach guard()");
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting the submitted guard payload
+  const guardCall = guardCalls[0] as Record<string, unknown>;
+  assert.deepEqual(guardCall.rules, [], "omitted rules must be submitted as an empty set");
+  assert.equal(guardCall.label, "test.action");
   assert.equal(fnCallCount, 1, "fn should run");
   assert.strictEqual(result, sentinel);
   assert.equal(captureCalls.length, 1, "capture should fire");
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured values
   const captureCall = captureCalls[0] as Record<string, unknown>;
-  assert.strictEqual(captureCall.decisionId, undefined, "no decisionId in capture-only");
+  // The decision is real now, so a no-rules call is correlatable — it was not
+  // when the engine skipped the call and there was no decision to point at.
+  assert.equal(captureCall.decisionId, "gdec_allow1", "capture must carry the decision id");
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured metadata
   const metadata = captureCall.metadata as Record<string, unknown>;
   assert.equal(metadata.outcome, "success");
 });
 
-test("Capture-only mode: empty rules array → guard never called", async () => {
+test("Empty rules array → guard still called with []", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const sentinel = { result: "success" };
   let fnCallCount = 0;
@@ -283,14 +291,17 @@ test("Capture-only mode: empty rules array → guard never called", async () => 
   const result = await guardAction(
     client,
     createAgentContext(),
-    { action: "test.action", rules: [] }, // Empty rules array
+    { action: "test.action", rules: [] },
     () => {
       fnCallCount++;
       return Promise.resolve(sentinel);
     },
   );
 
-  assert.equal(guardCalls.length, 0, "guard should not be called with empty rules");
+  assert.equal(guardCalls.length, 1, "an empty rules array must still reach guard()");
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting the submitted guard payload
+  const guardCall = guardCalls[0] as Record<string, unknown>;
+  assert.deepEqual(guardCall.rules, []);
   assert.equal(fnCallCount, 1, "fn should run");
   assert.strictEqual(result, sentinel);
 });
@@ -439,4 +450,40 @@ test("AC4.11: real DENY with onGuardError: 'deny' still throws ArcjetDeniedError
     assert.ok(err instanceof ArcjetDeniedError, "should throw ArcjetDeniedError, not unavailable");
     assert.ok(!(err instanceof ArcjetGuardUnavailableError), "should not be unavailable error");
   }
+});
+
+test("End to end against a real client: no rules does not read as an unavailable guard", async () => {
+  // The two halves of this change are unit-tested apart, and apart they both
+  // pass while combining into the opposite behaviour: if the engine always
+  // calls guard() but the client answers an empty rule set locally, that
+  // synthesized decision has hasFailedOpen() === true, so the default
+  // onGuardError: "deny" would block every no-rules call. Wire the real client
+  // to a transport that answers the way the server does and pin the outcome.
+  let reachedTransport = false;
+  const arcjet = launchArcjetWithTransport({
+    key: "ajkey_dummy",
+    transport: createMockTransport(() => {
+      reachedTransport = true;
+      return noRulesAllow();
+    }),
+  });
+
+  const sentinel = { result: "success" };
+  let fnCallCount = 0;
+
+  const result = await guardAction(
+    arcjet,
+    createAgentContext({ correlationId: "corr-e2e" }),
+    { action: "test.action" },
+    () => {
+      fnCallCount++;
+      return Promise.resolve(sentinel);
+    },
+  );
+
+  assert.equal(reachedTransport, true, "the guard call must reach the wire");
+  assert.equal(fnCallCount, 1, "fn must run — a no-rules call is not an unavailable guard");
+  assert.strictEqual(result, sentinel);
+
+  await arcjet.flush();
 });
