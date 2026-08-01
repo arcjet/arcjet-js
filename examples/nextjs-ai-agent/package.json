@@ -22,5 +22,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "typescript": "^5"
+  },
+  "overrides": {
+    "sharp": "^0.35.0"
   }
 }
