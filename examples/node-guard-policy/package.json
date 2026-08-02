@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file-if-exists=.env.local index.js",
+    "start": "node --env-file-if-exists=.env.local index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@arcjet/guard": "file:../../arcjet-guard",
-    "@arcjet/sensitive-info-rampart": "file:../../sensitive-info-rampart"
+    "@arcjet/sensitive-info-rampart": "file:../../sensitive-info-rampart",
+    "ai": "^7.0.36",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^24.10.9",

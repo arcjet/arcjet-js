@@ -1,8 +1,10 @@
 # Arcjet Guard remote policy with Node.js
 
-This advanced demo shows how an injected message can make a financial adviser
-email the right information on behalf of the wrong client. The server—not the
-browser—maps each trusted actor/client ID to its allowed recipients.
+This advanced TypeScript demo uses the Vercel AI SDK to show how an injected
+message can make a financial adviser email the right information on behalf of
+the wrong client. The server—not the browser—maps each trusted actor/client ID
+to its account data and allowed recipients. The AI generates the attempted
+recipient and email body; Arcjet checks both before the simulated send.
 
 ## Policy configuration
 
@@ -23,9 +25,9 @@ Add these rules:
    while denying every other detected entity type.
 
 The current architecture evaluates prompt injection server-side, so the incoming
-message is intentionally a server input. The browser submits only client,
-recipient, incoming message, and body; an allowlist supplied or altered in a
-browser request is never trusted.
+message is intentionally a server input. The browser submits only the selected
+client and incoming message. Actor, account data, and allowed recipients remain
+server-owned.
 
 ## Run
 
@@ -37,7 +39,7 @@ npm run build --workspace @arcjet/guard
 cd examples/node-guard-policy
 npm ci
 cp .env.local.example .env.local
-# Set ARCJET_KEY in .env.local
+# Set ARCJET_KEY and AI_GATEWAY_API_KEY in .env.local
 npm start
 ```
 

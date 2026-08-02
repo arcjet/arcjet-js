@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "checkJs": true,
     "lib": ["dom", "esnext"],
     "module": "node16",
     "skipLibCheck": true,
     "types": ["node"],
     "strict": true
   },
-  "include": ["index.js"]
+  "include": ["index.ts"]
 }
