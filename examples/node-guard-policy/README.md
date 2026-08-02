@@ -1,15 +1,18 @@
 # Arcjet Guard remote policy with Node.js
 
-This advanced TypeScript demo uses the Vercel AI SDK to show how an injected
-message can make a financial adviser email the right information on behalf of
-the wrong client. The server—not the browser—maps each trusted actor/client ID
-to its account data and allowed recipients. The AI generates the attempted
-recipient and email body; Arcjet checks both before the simulated send.
+This advanced TypeScript demo uses the Vercel AI SDK to model a financial
+adviser with two tools. `getClientMessages` is an unguarded read tool that
+returns a support thread containing an indirect prompt injection. `sendEmail`
+is wrapped with `guardTool`, so Arcjet evaluates the model-selected recipient
+and body before the simulated email side effect can run.
+
+The server—not the browser—maps each trusted actor/client ID to its support
+thread and allowed recipients. The browser submits only the selected client.
 
 ## Policy configuration
 
-Create a Guard policy labelled `email` (or set `GUARD_POLICY_LABEL`) with these
-inputs:
+Create a Guard policy labelled `email.sent` (or set `GUARD_POLICY_LABEL`) with
+these inputs:
 
 - `recipient`: server string
 - `allowed_recipients`: server string list
@@ -24,10 +27,9 @@ Add these rules:
 3. **Sensitive info** on `body`, allowing Email address, Given name, and Surname
    while denying every other detected entity type.
 
-The current architecture evaluates prompt injection server-side, so the incoming
-message is intentionally a server input. The browser submits only the selected
-client and incoming message. Actor, account data, and allowed recipients remain
-server-owned.
+The current architecture evaluates prompt injection server-side, so the
+retrieved thread is intentionally a server input. Actor, support data, and
+allowed recipients remain server-owned.
 
 ## Run
 
@@ -43,14 +45,16 @@ cp .env.local.example .env.local
 npm start
 ```
 
-Open <http://localhost:3000>. The form displays the overall decision and the
-type and conclusion of every policy result.
+Open <http://localhost:3000>. The plain browser form intentionally has no custom
+CSS or assets. Its trace shows the model reading the support thread, choosing
+`sendEmail`, and receiving either the tool result or Arcjet's denial result.
 
 ## Demo sequence
 
-1. In the Console, put all three rules in **DRY_RUN**. Select Client A and send to
-   `advisor-backup@gmail.com`. The aggregate result is ALLOW (email simulated as
-   sent), while per-rule results preserve would-have-blocked evidence.
+1. In the Console, put all three rules in **DRY_RUN**. Select Client A. The model
+   reads the injected thread and autonomously calls `sendEmail` for
+   `advisor-backup@gmail.com`. The email is simulated as sent while the
+   would-have-blocked evidence is preserved.
 2. Switch all three rules to **LIVE** and retry Client A. The email is not sent:
    the trusted allowlist excludes the backup address, the incoming message is
    hostile, and the body contains disallowed sensitive information.
