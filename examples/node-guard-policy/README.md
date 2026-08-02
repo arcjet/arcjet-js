@@ -1,7 +1,31 @@
 # Arcjet Guard remote policy with Node.js
 
-This example evaluates the remotely configured `email` policy with two typed
-inputs: a server-visible recipient and a body that remains in local SDK memory.
+This advanced demo shows how an injected message can make a financial adviser
+email the right information on behalf of the wrong client. The server—not the
+browser—maps each trusted actor/client ID to its allowed recipients.
+
+## Policy configuration
+
+Create a Guard policy labelled `email` (or set `GUARD_POLICY_LABEL`) with these
+inputs:
+
+- `recipient`: server string
+- `allowed_recipients`: server string list
+- `body`: local string
+- `incoming_message`: server string
+
+Add these rules:
+
+1. **Allowed-list membership** requiring `recipient` to be a member of
+   `allowed_recipients`.
+2. **Prompt injection** on `incoming_message`.
+3. **Sensitive info** on `body`, allowing Email address, Given name, and Surname
+   while denying every other detected entity type.
+
+The current architecture evaluates prompt injection server-side, so the incoming
+message is intentionally a server input. The browser submits only client,
+recipient, incoming message, and body; an allowlist supplied or altered in a
+browser request is never trusted.
 
 ## Run
 
@@ -18,4 +42,21 @@ npm start
 ```
 
 Open <http://localhost:3000>. The form displays the overall decision and the
-results of both remote-policy rules.
+type and conclusion of every policy result.
+
+## Demo sequence
+
+1. In the Console, put all three rules in **DRY_RUN**. Select Client A and send to
+   `advisor-backup@gmail.com`. The aggregate result is ALLOW (email simulated as
+   sent), while per-rule results preserve would-have-blocked evidence.
+2. Switch all three rules to **LIVE** and retry Client A. The email is not sent:
+   the trusted allowlist excludes the backup address, the incoming message is
+   hostile, and the body contains disallowed sensitive information.
+3. Review the decision in the Console to show the trusted `client-a` actor and
+   the evidence from each rule.
+4. To isolate the actor-dependent rule, keep membership **LIVE**, return the two
+   content rules to **DRY_RUN**, select Client B, and retry without changing the
+   recipient or application. Client B's trusted list includes the address, so
+   the simulated email is sent.
+5. Tighten either content rule to **LIVE** and retry to demonstrate that policy
+   changes take effect without an application deploy.

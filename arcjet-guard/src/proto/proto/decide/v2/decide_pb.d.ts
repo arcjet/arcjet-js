@@ -853,6 +853,29 @@ export declare type ResultStringConstraint = Message<"proto.decide.v2.ResultStri
 export declare const ResultStringConstraintSchema: GenMessage<ResultStringConstraint>;
 
 /**
+ * ResultStringListMembership reports exact membership in a server string list.
+ *
+ * @generated from message proto.decide.v2.ResultStringListMembership
+ */
+export declare type ResultStringListMembership = Message<"proto.decide.v2.ResultStringListMembership"> & {
+  /**
+   * @generated from field: proto.decide.v2.GuardConclusion conclusion = 1;
+   */
+  conclusion: GuardConclusion;
+
+  /**
+   * @generated from field: bool matched = 2;
+   */
+  matched: boolean;
+};
+
+/**
+ * Describes the message proto.decide.v2.ResultStringListMembership.
+ * Use `create(ResultStringListMembershipSchema)` to create a new message.
+ */
+export declare const ResultStringListMembershipSchema: GenMessage<ResultStringListMembership>;
+
+/**
  * ResultLocalSensitiveInfo contains result details for a sensitive information
  * detection evaluation.
  *
@@ -1289,6 +1312,12 @@ export declare type GuardPolicyRuleResult = Message<"proto.decide.v2.GuardPolicy
      */
     value: ResultStringConstraint;
     case: "stringLength";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultStringListMembership string_list_membership = 18;
+     */
+    value: ResultStringListMembership;
+    case: "stringListMembership";
   } | {
     /**
      * @generated from field: proto.decide.v2.ResultLocalSensitiveInfo local_sensitive_info = 20;
@@ -2251,6 +2280,11 @@ export enum GuardRuleType {
    * @generated from enum value: GUARD_RULE_TYPE_STRING_LENGTH = 17;
    */
   STRING_LENGTH = 17,
+
+  /**
+   * @generated from enum value: GUARD_RULE_TYPE_STRING_LIST_MEMBERSHIP = 18;
+   */
+  STRING_LIST_MEMBERSHIP = 18,
 
   /**
    * Sensitive information detection (evaluated locally by the SDK).

@@ -466,6 +466,15 @@ function policyResultFromProto(pr: ProtoGuardPolicyRuleResult): PolicyRuleResult
         warnings,
       };
       break;
+    case "stringListMembership":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "INPUT_CONSTRAINT",
+        type: "STRING_LIST_MEMBERSHIP",
+        matched: pr.result.value.matched,
+        warnings,
+      };
+      break;
     case "error":
       result = {
         conclusion: "ALLOW",

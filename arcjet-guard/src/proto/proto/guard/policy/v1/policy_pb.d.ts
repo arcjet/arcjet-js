@@ -177,6 +177,12 @@ export declare type GuardPolicyRule = Message<"proto.guard.policy.v1.GuardPolicy
     case: "promptInjection";
   } | {
     /**
+     * @generated from field: proto.guard.policy.v1.GuardPolicyStringListMembership string_list_membership = 14;
+     */
+    value: GuardPolicyStringListMembership;
+    case: "stringListMembership";
+  } | {
+    /**
      * @generated from field: proto.guard.policy.v1.GuardPolicyLocalSensitiveInfo local_sensitive_info = 20;
      */
     value: GuardPolicyLocalSensitiveInfo;
@@ -311,6 +317,30 @@ export declare type GuardPolicyPromptInjection = Message<"proto.guard.policy.v1.
  * Use `create(GuardPolicyPromptInjectionSchema)` to create a new message.
  */
 export declare const GuardPolicyPromptInjectionSchema: GenMessage<GuardPolicyPromptInjection>;
+
+/**
+ * GuardPolicyStringListMembership allows a SERVER STRING input only when it is
+ * exactly equal to an element of a distinct SERVER STRING_LIST input.
+ *
+ * @generated from message proto.guard.policy.v1.GuardPolicyStringListMembership
+ */
+export declare type GuardPolicyStringListMembership = Message<"proto.guard.policy.v1.GuardPolicyStringListMembership"> & {
+  /**
+   * @generated from field: string string_input_name = 1;
+   */
+  stringInputName: string;
+
+  /**
+   * @generated from field: string string_list_input_name = 2;
+   */
+  stringListInputName: string;
+};
+
+/**
+ * Describes the message proto.guard.policy.v1.GuardPolicyStringListMembership.
+ * Use `create(GuardPolicyStringListMembershipSchema)` to create a new message.
+ */
+export declare const GuardPolicyStringListMembershipSchema: GenMessage<GuardPolicyStringListMembership>;
 
 /**
  * GuardPolicyEntityList wraps sensitive-information entity names.

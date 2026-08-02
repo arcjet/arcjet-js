@@ -21,6 +21,7 @@ import {
   GuardLocalPolicyProjectionSchema,
   GuardPolicyLookupStatus,
   ResultStringConstraintSchema,
+  ResultStringListMembershipSchema,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { localStringDigest, RemotePolicyRuntime } from "./remote-policy.ts";
 
@@ -237,9 +238,7 @@ test("remote policy status and keyed results stay separate from SDK results", ()
   );
 });
 
-function convertStringMatchOperator(
-  matchOperator: GuardStringMatchOperator,
-): string | undefined {
+function convertStringMatchOperator(matchOperator: GuardStringMatchOperator): string | undefined {
   const response = create(GuardResponseSchema, {
     decision: create(GuardDecisionSchema, {
       policyRuleResults: [
@@ -264,4 +263,27 @@ test("legacy and unknown string match operators decode safely", () => {
   assert.equal(convertStringMatchOperator(GuardStringMatchOperator.EXACT), "EXACT");
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- exercise an unknown wire enum value
   assert.equal(convertStringMatchOperator(99 as GuardStringMatchOperator), "UNKNOWN");
+});
+
+test("string-list membership results expose exact match evidence", () => {
+  const response = create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      policyRuleResults: [
+        create(GuardPolicyRuleResultSchema, {
+          result: {
+            case: "stringListMembership",
+            value: create(ResultStringListMembershipSchema, {
+              conclusion: GuardConclusion.DENY,
+              matched: false,
+            }),
+          },
+        }),
+      ],
+    }),
+  });
+
+  const result = decisionFromProto(response, []).policyResults?.[0]?.result;
+  assert.equal(result?.reason, "INPUT_CONSTRAINT");
+  assert.equal(result?.type, "STRING_LIST_MEMBERSHIP");
+  if (result?.type === "STRING_LIST_MEMBERSHIP") assert.equal(result.matched, false);
 });
