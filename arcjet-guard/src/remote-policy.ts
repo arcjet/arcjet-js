@@ -28,12 +28,16 @@ type FetchPolicy = (
   options: { headers: Record<string, string>; signal?: AbortSignal },
 ) => Promise<GetGuardPolicyResponse>;
 
-type Snapshot = {
-  policy: GuardLocalPolicyProjection;
+type CacheResult = {
   refreshAt: number;
-};
+} & (
+  | { status: "AVAILABLE"; policy: GuardLocalPolicyProjection }
+  | { status: "NOT_CONFIGURED" }
+  | { status: "UNAVAILABLE" }
+);
 
 const policyRefreshIntervalMs = 5 * 60 * 1000;
+const policyUnavailableRetryIntervalMs = 5 * 1000;
 
 export type PreparedPolicy = {
   inputs: Record<string, ProtoPolicyInput>;
@@ -42,8 +46,8 @@ export type PreparedPolicy = {
 };
 
 export class RemotePolicyRuntime {
-  readonly #snapshots = new Map<string, Snapshot>();
-  readonly #fetches = new Map<string, Promise<Snapshot | undefined>>();
+  readonly #results = new Map<string, CacheResult>();
+  readonly #fetches = new Map<string, Promise<CacheResult>>();
   readonly #key: string;
   readonly #userAgent: string;
   readonly #fetchPolicy: FetchPolicy;
@@ -62,7 +66,8 @@ export class RemotePolicyRuntime {
   ): Promise<PreparedPolicy> {
     const entries = Object.entries(inputMap ?? {});
     const hasLocal = entries.some(([, input]) => input.exposure === "LOCAL");
-    const snapshot = hasLocal ? await this.#getSnapshot(label, signal, forceRefresh) : undefined;
+    const cached = hasLocal ? await this.#getResult(label, signal, forceRefresh) : undefined;
+    const snapshot = cached?.status === "AVAILABLE" ? cached.policy : undefined;
     const inputs: Record<string, ProtoPolicyInput> = {};
     const localValues = new Map<string, { value: string; digest: Uint8Array }>();
 
@@ -89,7 +94,7 @@ export class RemotePolicyRuntime {
 
     if (snapshot === undefined) return { inputs, revision: "", results: [] };
     const results = await Promise.all(
-      snapshot.policy.sensitiveInfoRules.map(async (rule) => {
+      snapshot.sensitiveInfoRules.map(async (rule) => {
         const local = localValues.get(rule.inputName);
         if (local === undefined) return null;
         const config = sensitiveInfoConfig(rule.entityFilter);
@@ -98,8 +103,8 @@ export class RemotePolicyRuntime {
         if (body?.case !== "localSensitiveInfo") return null;
         const result = body.value.localResult;
         return create(GuardLocalPolicyResultSchema, {
-          policyId: snapshot.policy.policyId,
-          policyRevision: snapshot.policy.revision,
+          policyId: snapshot.policyId,
+          policyRevision: snapshot.revision,
           ruleId: rule.ruleId,
           inputName: rule.inputName,
           valueSha256: local.digest,
@@ -120,19 +125,19 @@ export class RemotePolicyRuntime {
     );
     return {
       inputs,
-      revision: snapshot.policy.revision,
+      revision: snapshot.revision,
       results: results.filter((result): result is GuardLocalPolicyResult => result !== null),
     };
   }
 
   // oxlint-disable-next-line eslint/require-await -- Cached branches return values; fetch branches return promises.
-  async #getSnapshot(
+  async #getResult(
     label: string,
     signal: AbortSignal | undefined,
     forceRefresh: boolean,
-  ): Promise<Snapshot | undefined> {
+  ): Promise<CacheResult> {
     const now = performance.now();
-    const cached = this.#snapshots.get(label);
+    const cached = this.#results.get(label);
     if (!forceRefresh && cached !== undefined && now < cached.refreshAt) return cached;
 
     const existing = this.#fetches.get(label);
@@ -145,8 +150,8 @@ export class RemotePolicyRuntime {
   async #fetch(
     label: string,
     signal: AbortSignal | undefined,
-    cached: Snapshot | undefined,
-  ): Promise<Snapshot | undefined> {
+    cached: CacheResult | undefined,
+  ): Promise<CacheResult> {
     try {
       const request = create(GetGuardPolicyRequestSchema, {
         userAgent: this.#userAgent,
@@ -159,32 +164,38 @@ export class RemotePolicyRuntime {
       if (signal !== undefined) options.signal = signal;
       const response = await this.#fetchPolicy(request, options);
       if (response.status === GuardPolicyLookupStatus.NOT_CONFIGURED) {
-        this.#snapshots.delete(label);
-        return undefined;
+        const result = Object.freeze({
+          status: "NOT_CONFIGURED" as const,
+          refreshAt: performance.now() + policyRefreshIntervalMs,
+        });
+        this.#results.set(label, result);
+        return result;
       }
       if (response.status !== GuardPolicyLookupStatus.AVAILABLE || response.policy === undefined) {
         return this.#retain(label, cached);
       }
       const receivedAt = performance.now();
-      const snapshot = Object.freeze({
+      const result = Object.freeze({
+        status: "AVAILABLE" as const,
         policy: response.policy,
         refreshAt: receivedAt + policyRefreshIntervalMs,
       });
-      this.#snapshots.set(label, snapshot);
-      return snapshot;
+      this.#results.set(label, result);
+      return result;
     } catch {
       return this.#retain(label, cached);
     }
   }
 
-  #retain(label: string, cached: Snapshot | undefined): Snapshot | undefined {
-    if (cached === undefined) return undefined;
-    const snapshot = Object.freeze({
-      policy: cached.policy,
-      refreshAt: performance.now() + policyRefreshIntervalMs,
+  #retain(label: string, cached: CacheResult | undefined): CacheResult {
+    const result = Object.freeze({
+      ...(cached ?? { status: "UNAVAILABLE" as const }),
+      refreshAt:
+        performance.now() +
+        (cached === undefined ? policyUnavailableRetryIntervalMs : policyRefreshIntervalMs),
     });
-    this.#snapshots.set(label, snapshot);
-    return snapshot;
+    this.#results.set(label, result);
+    return result;
   }
 }
 

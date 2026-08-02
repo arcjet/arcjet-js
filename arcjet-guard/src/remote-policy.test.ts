@@ -83,7 +83,9 @@ test("concurrent local inputs coalesce projection retrieval and never put raw va
   }
 });
 
-test("retains the last successful projection when forced refresh is unavailable", async () => {
+test("transient failure retains an available projection and backs off for five minutes", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
   let fetches = 0;
   const runtime = new RemotePolicyRuntime("key", "agent", () => {
     fetches++;
@@ -99,14 +101,24 @@ test("retains the last successful projection when forced refresh is unavailable"
   const signal = new AbortController().signal;
 
   const first = await runtime.prepare("email.sent", inputs, signal);
+  now += 5 * 60 * 1000;
   const stale = await runtime.prepare("email.sent", inputs, signal, true);
+  now += 5 * 60 * 1000 - 1;
+  const retained = await runtime.prepare("email.sent", inputs, signal);
 
   assert.equal(fetches, 2);
   assert.equal(first.revision, "revision-1");
   assert.equal(stale.revision, "revision-1");
+  assert.equal(retained.revision, "revision-1");
+
+  now++;
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "revision-1");
+  assert.equal(fetches, 3);
 });
 
-test("successful NOT_CONFIGURED clears the last successful projection", async () => {
+test("NOT_CONFIGURED clears an available projection and is cached for five minutes", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
   let fetches = 0;
   const runtime = new RemotePolicyRuntime("key", "agent", () => {
     fetches++;
@@ -127,8 +139,59 @@ test("successful NOT_CONFIGURED clears the last successful projection", async ()
 
   assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "revision-1");
   assert.equal((await runtime.prepare("email.sent", inputs, signal, true)).revision, "");
-  assert.equal((await runtime.prepare("email.sent", inputs, signal, true)).revision, "");
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "");
+  now += 5 * 60 * 1000 - 1;
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "");
+  assert.equal(fetches, 2);
+
+  now++;
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "");
   assert.equal(fetches, 3);
+});
+
+test("force refresh bypasses the cache cadence", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    return Promise.resolve(
+      create(GetGuardPolicyResponseSchema, {
+        status: GuardPolicyLookupStatus.NOT_CONFIGURED,
+      }),
+    );
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  await runtime.prepare("email.sent", inputs, signal);
+  now++;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 1);
+
+  await runtime.prepare("email.sent", inputs, signal, true);
+  assert.equal(fetches, 2);
+});
+
+test("an initial transient failure has a bounded retry backoff", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    return Promise.reject(new Error("unavailable"));
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  await runtime.prepare("email.sent", inputs, signal);
+  now += 4_999;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 1);
+
+  now++;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 2);
 });
 
 test("remote policy status and keyed results stay separate from SDK results", () => {
