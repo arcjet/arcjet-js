@@ -836,6 +836,14 @@ export declare type ResultStringConstraint = Message<"proto.decide.v2.ResultStri
    * @generated from field: proto.decide.v2.GuardConclusion conclusion = 1;
    */
   conclusion: GuardConclusion;
+
+  /**
+   * Set for allowed and denied string-value rules. Unspecified is retained
+   * for string-length results and for exact-match responses from old servers.
+   *
+   * @generated from field: proto.decide.v2.GuardStringMatchOperator match_operator = 2;
+   */
+  matchOperator: GuardStringMatchOperator;
 };
 
 /**
@@ -871,6 +879,14 @@ export declare type ResultLocalSensitiveInfo = Message<"proto.decide.v2.ResultLo
    * @generated from field: repeated string detected_entity_types = 3;
    */
   detectedEntityTypes: string[];
+
+  /**
+   * Safe locations of detected entities. Contains only type and offsets;
+   * matched input values must never cross the SDK boundary.
+   *
+   * @generated from field: repeated proto.decide.v2.GuardSensitiveInfoEntity detected_entities = 4;
+   */
+  detectedEntities: GuardSensitiveInfoEntity[];
 };
 
 /**
@@ -878,6 +894,32 @@ export declare type ResultLocalSensitiveInfo = Message<"proto.decide.v2.ResultLo
  * Use `create(ResultLocalSensitiveInfoSchema)` to create a new message.
  */
 export declare const ResultLocalSensitiveInfoSchema: GenMessage<ResultLocalSensitiveInfo>;
+
+/**
+ * @generated from message proto.decide.v2.GuardSensitiveInfoEntity
+ */
+export declare type GuardSensitiveInfoEntity = Message<"proto.decide.v2.GuardSensitiveInfoEntity"> & {
+  /**
+   * @generated from field: string type = 1;
+   */
+  type: string;
+
+  /**
+   * @generated from field: uint32 start = 2;
+   */
+  start: number;
+
+  /**
+   * @generated from field: uint32 end = 3;
+   */
+  end: number;
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardSensitiveInfoEntity.
+ * Use `create(GuardSensitiveInfoEntitySchema)` to create a new message.
+ */
+export declare const GuardSensitiveInfoEntitySchema: GenMessage<GuardSensitiveInfoEntity>;
 
 /**
  * ResultLocalCustom contains result details for a custom local rule evaluation.
@@ -2317,6 +2359,35 @@ export enum GuardRuleExecution {
  * Describes the enum proto.decide.v2.GuardRuleExecution.
  */
 export declare const GuardRuleExecutionSchema: GenEnum<GuardRuleExecution>;
+
+/**
+ * GuardStringMatchOperator identifies how a remote-policy string constraint
+ * compared its input. Unspecified responses from older servers mean EXACT for
+ * allowed and denied string-value results.
+ *
+ * @generated from enum proto.decide.v2.GuardStringMatchOperator
+ */
+export enum GuardStringMatchOperator {
+  /**
+   * @generated from enum value: GUARD_STRING_MATCH_OPERATOR_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: GUARD_STRING_MATCH_OPERATOR_EXACT = 1;
+   */
+  EXACT = 1,
+
+  /**
+   * @generated from enum value: GUARD_STRING_MATCH_OPERATOR_EMAIL_DOMAIN = 2;
+   */
+  EMAIL_DOMAIN = 2,
+}
+
+/**
+ * Describes the enum proto.decide.v2.GuardStringMatchOperator.
+ */
+export declare const GuardStringMatchOperatorSchema: GenEnum<GuardStringMatchOperator>;
 
 /**
  * GuardPolicyInputKind is the declared wire type of a remote-policy input.

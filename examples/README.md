@@ -2,6 +2,9 @@
 
 This directory contains examples of how to use Arcjet.
 
+The [`node-guard-policy`](node-guard-policy) example demonstrates a remotely
+configured Guard policy with server and local inputs.
+
 ## Example app
 
 Try an Arcjet protected Next.js app live at

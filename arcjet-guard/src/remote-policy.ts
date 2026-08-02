@@ -19,7 +19,7 @@ import {
   type GuardPolicyServerInput,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { localDetectSensitiveInfo } from "./rules.ts";
-import type { LocalDetectSensitiveInfoConfig } from "./types.ts";
+import type { LocalDetectSensitiveInfoConfig, SensitiveInfoBackend } from "./types.ts";
 
 export const policyCapabilities: string[] = ["guard-policy-v1", "local-sensitive-info-v1"];
 
@@ -51,11 +51,18 @@ export class RemotePolicyRuntime {
   readonly #key: string;
   readonly #userAgent: string;
   readonly #fetchPolicy: FetchPolicy;
+  readonly #sensitiveInfoBackend: SensitiveInfoBackend | undefined;
 
-  constructor(key: string, userAgent: string, fetchPolicy: FetchPolicy) {
+  constructor(
+    key: string,
+    userAgent: string,
+    fetchPolicy: FetchPolicy,
+    sensitiveInfoBackend?: SensitiveInfoBackend,
+  ) {
     this.#key = key;
     this.#userAgent = userAgent;
     this.#fetchPolicy = fetchPolicy;
+    this.#sensitiveInfoBackend = sensitiveInfoBackend;
   }
 
   async prepare(
@@ -97,7 +104,7 @@ export class RemotePolicyRuntime {
       snapshot.sensitiveInfoRules.map(async (rule) => {
         const local = localValues.get(rule.inputName);
         if (local === undefined) return null;
-        const config = sensitiveInfoConfig(rule.entityFilter);
+        const config = sensitiveInfoConfig(rule.entityFilter, this.#sensitiveInfoBackend);
         const submission = await ruleToProto(localDetectSensitiveInfo(config)(local.value), signal);
         const body = submission.rule?.rule;
         if (body?.case !== "localSensitiveInfo") return null;
@@ -201,17 +208,18 @@ export class RemotePolicyRuntime {
 
 function sensitiveInfoConfig(
   filter: GuardLocalPolicyProjection["sensitiveInfoRules"][number]["entityFilter"],
+  backend: SensitiveInfoBackend | undefined,
 ): LocalDetectSensitiveInfoConfig {
   // Policy entity names share the SDK's documented entity vocabulary and are
   // validated by the server-side policy compiler before projection.
   const entities = filter.value?.entities.filter(isSensitiveInfoEntityType) ?? [];
   if (filter.case === "entitiesAllow") {
-    return { allow: entities };
+    return { allow: entities, ...(backend === undefined ? {} : { backend }) };
   }
   if (filter.case === "entitiesDeny") {
-    return { deny: entities };
+    return { deny: entities, ...(backend === undefined ? {} : { backend }) };
   }
-  return {};
+  return backend === undefined ? {} : { backend };
 }
 
 function serverInput(name: string, input: PolicyInput): ProtoPolicyInput {

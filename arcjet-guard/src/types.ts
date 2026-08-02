@@ -392,10 +392,14 @@ export type RuleResultUnknown = {
 };
 
 /** Result from a remotely configured typed input constraint. */
+export type StringMatchOperator = "EXACT" | "EMAIL_DOMAIN" | "UNKNOWN";
+
 export type RuleResultInputConstraint = {
   readonly conclusion: Conclusion;
   readonly reason: "INPUT_CONSTRAINT";
   readonly type: "ALLOWED_STRING_VALUES" | "DENIED_STRING_VALUES" | "STRING_LENGTH";
+  /** Match semantics for allowed/denied values. Absent for string length. */
+  readonly matchOperator?: StringMatchOperator;
   readonly warnings: readonly Warning[];
 };
 

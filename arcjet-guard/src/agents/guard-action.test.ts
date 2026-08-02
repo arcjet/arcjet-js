@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import { setLogLevel } from "../../test/_shared/log-level.ts";
 import { createMockTransport, noRulesAllow } from "../../test/_shared/mock-handlers.ts";
+import { recorded } from "../../test/_shared/source-scan.ts";
 import {
   stubClient,
   decisionAllow,
@@ -51,8 +52,8 @@ test("passes actor and typed policy inputs to guard", async () => {
     () => Promise.resolve("done"),
   );
 
-  assert.equal(guardCalls[0]?.actor, "user-1");
-  assert.strictEqual(guardCalls[0]?.inputs, inputs);
+  assert.equal(recorded(guardCalls[0]).actor, "user-1");
+  assert.strictEqual(recorded(guardCalls[0]).inputs, inputs);
 });
 
 test("AC4.8: DENY decision → ArcjetDeniedError thrown, fn never called", async () => {

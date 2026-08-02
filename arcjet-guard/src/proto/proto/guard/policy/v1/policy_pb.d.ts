@@ -224,6 +224,11 @@ export declare type GuardPolicyAllowedStringValues = Message<"proto.guard.policy
    * @generated from field: proto.guard.policy.v1.GuardPolicyStringValues values = 2;
    */
   values?: GuardPolicyStringValues;
+
+  /**
+   * @generated from field: proto.guard.policy.v1.GuardPolicyStringMatchOperator match_operator = 3;
+   */
+  matchOperator: GuardPolicyStringMatchOperator;
 };
 
 /**
@@ -247,6 +252,11 @@ export declare type GuardPolicyDeniedStringValues = Message<"proto.guard.policy.
    * @generated from field: proto.guard.policy.v1.GuardPolicyStringValues values = 2;
    */
   values?: GuardPolicyStringValues;
+
+  /**
+   * @generated from field: proto.guard.policy.v1.GuardPolicyStringMatchOperator match_operator = 3;
+   */
+  matchOperator: GuardPolicyStringMatchOperator;
 };
 
 /**
@@ -484,4 +494,33 @@ export enum GuardPolicyRuleExecution {
  * Describes the enum proto.guard.policy.v1.GuardPolicyRuleExecution.
  */
 export declare const GuardPolicyRuleExecutionSchema: GenEnum<GuardPolicyRuleExecution>;
+
+/**
+ * GuardPolicyStringMatchOperator controls how a configured string value is
+ * compared with a SERVER STRING input. Unspecified preserves the v1 legacy
+ * behavior and is interpreted as an exact match.
+ *
+ * @generated from enum proto.guard.policy.v1.GuardPolicyStringMatchOperator
+ */
+export enum GuardPolicyStringMatchOperator {
+  /**
+   * @generated from enum value: GUARD_POLICY_STRING_MATCH_OPERATOR_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_STRING_MATCH_OPERATOR_EXACT = 1;
+   */
+  EXACT = 1,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_STRING_MATCH_OPERATOR_EMAIL_DOMAIN = 2;
+   */
+  EMAIL_DOMAIN = 2,
+}
+
+/**
+ * Describes the enum proto.guard.policy.v1.GuardPolicyStringMatchOperator.
+ */
+export declare const GuardPolicyStringMatchOperatorSchema: GenEnum<GuardPolicyStringMatchOperator>;
 

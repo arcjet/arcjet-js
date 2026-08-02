@@ -17,6 +17,7 @@ import {
   GuardRuleMode,
   GuardRuleSource,
   GuardRuleType,
+  GuardStringMatchOperator,
   GuardLocalPolicyProjectionSchema,
   GuardPolicyLookupStatus,
   ResultStringConstraintSchema,
@@ -216,6 +217,7 @@ test("remote policy status and keyed results stay separate from SDK results", ()
             case: "allowedStringValues",
             value: create(ResultStringConstraintSchema, {
               conclusion: GuardConclusion.DENY,
+              matchOperator: GuardStringMatchOperator.EMAIL_DOMAIN,
             }),
           },
         }),
@@ -228,4 +230,38 @@ test("remote policy status and keyed results stay separate from SDK results", ()
   assert.equal(decision.policyEvaluation?.status, "APPLIED");
   assert.equal(decision.policyResults?.[0]?.ruleId, "allowed-recipient");
   assert.equal(decision.policyResults?.[0]?.result.reason, "INPUT_CONSTRAINT");
+  const result = decision.policyResults?.[0]?.result;
+  assert.equal(
+    result?.type === "ALLOWED_STRING_VALUES" ? result.matchOperator : undefined,
+    "EMAIL_DOMAIN",
+  );
+});
+
+function convertStringMatchOperator(
+  matchOperator: GuardStringMatchOperator,
+): string | undefined {
+  const response = create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      policyRuleResults: [
+        create(GuardPolicyRuleResultSchema, {
+          result: {
+            case: "deniedStringValues",
+            value: create(ResultStringConstraintSchema, {
+              conclusion: GuardConclusion.ALLOW,
+              matchOperator,
+            }),
+          },
+        }),
+      ],
+    }),
+  });
+  const result = decisionFromProto(response, []).policyResults?.[0]?.result;
+  return result?.type === "DENIED_STRING_VALUES" ? result.matchOperator : undefined;
+}
+
+test("legacy and unknown string match operators decode safely", () => {
+  assert.equal(convertStringMatchOperator(GuardStringMatchOperator.UNSPECIFIED), "EXACT");
+  assert.equal(convertStringMatchOperator(GuardStringMatchOperator.EXACT), "EXACT");
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- exercise an unknown wire enum value
+  assert.equal(convertStringMatchOperator(99 as GuardStringMatchOperator), "UNKNOWN");
 });

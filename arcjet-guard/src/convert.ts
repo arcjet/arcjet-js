@@ -32,6 +32,7 @@ import {
   RuleLocalSensitiveInfoSchema,
   RuleLocalCustomSchema,
   ResultLocalSensitiveInfoSchema,
+  GuardSensitiveInfoEntitySchema,
   ResultLocalCustomSchema,
   ResultErrorSchema,
   EntityListSchema,
@@ -40,6 +41,7 @@ import {
   GuardReason,
   GuardRuleMode,
   GuardRuleExecution,
+  GuardStringMatchOperator,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
@@ -450,6 +452,17 @@ function policyResultFromProto(pr: ProtoGuardPolicyRuleResult): PolicyRuleResult
             : pr.result.case === "deniedStringValues"
               ? "DENIED_STRING_VALUES"
               : "STRING_LENGTH",
+        ...(pr.result.case === "stringLength"
+          ? {}
+          : {
+              matchOperator:
+                pr.result.value.matchOperator === GuardStringMatchOperator.EMAIL_DOMAIN
+                  ? ("EMAIL_DOMAIN" as const)
+                  : pr.result.value.matchOperator === GuardStringMatchOperator.UNSPECIFIED ||
+                      pr.result.value.matchOperator === GuardStringMatchOperator.EXACT
+                    ? ("EXACT" as const)
+                    : ("UNKNOWN" as const),
+            }),
         warnings,
       };
       break;
@@ -656,6 +669,18 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
             conclusion: result.denied.length > 0 ? GuardConclusion.DENY : GuardConclusion.ALLOW,
             detected: result.denied.length > 0 || result.allowed.length > 0,
             detectedEntityTypes: deniedTypes,
+            detectedEntities: result.denied
+              .map((entity) => {
+                const type = entityToString(entity.identifiedType);
+                return type === undefined
+                  ? undefined
+                  : create(GuardSensitiveInfoEntitySchema, {
+                      type,
+                      start: entity.start,
+                      end: entity.end,
+                    });
+              })
+              .filter((entity) => entity !== undefined),
           }),
         };
       } catch (err: unknown) {

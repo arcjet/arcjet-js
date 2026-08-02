@@ -51,6 +51,7 @@ import type {
   InternalDecision,
   InternalResult,
   RuleWithInput,
+  SensitiveInfoBackend,
   Warning,
 } from "./types.ts";
 import { userAgent as defaultUserAgent } from "./version.ts";
@@ -86,6 +87,8 @@ export interface GuardClientOptions {
   userAgent?: string;
   /** Local diagnostics sink. */
   logger?: DiagnosticLogger;
+  /** Alternative local sensitive-info backend for remotely configured policies. */
+  sensitiveInfoBackend?: SensitiveInfoBackend;
   /** @internal Capture delivery controls used by deterministic tests. */
   captureDelivery?: Omit<CaptureDeliveryOptions, "send" | "diagnose">;
 }
@@ -105,8 +108,11 @@ export function createGuardClient(options: GuardClientOptions): {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
   const client = createConnectClient(DecideService, transport);
-  const remotePolicy = new RemotePolicyRuntime(key, userAgent, (request, callOptions) =>
-    client.getGuardPolicy(request, callOptions),
+  const remotePolicy = new RemotePolicyRuntime(
+    key,
+    userAgent,
+    (request, callOptions) => client.getGuardPolicy(request, callOptions),
+    options.sensitiveInfoBackend,
   );
   // Spread rather than `{ logger: options.logger }`: under
   // `exactOptionalPropertyTypes` an explicit `undefined` is not assignable to an

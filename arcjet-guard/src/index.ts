@@ -82,7 +82,12 @@ import {
   type DiagnosticHandler,
   type DiagnosticLogger,
 } from "./diagnostics.ts";
-import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
+import type {
+  CaptureOptions,
+  Decision,
+  GuardOptions,
+  SensitiveInfoBackend,
+} from "./types.ts";
 // The type of `LaunchOptions.logger`, so a consumer can name what they have
 // to implement. `ArcjetDiagnostic` is deliberately not exported: it is the
 // internal handler payload and appears in no public signature — the logger
@@ -107,6 +112,7 @@ export type {
   RuleResultError,
   RuleResultUnknown,
   RuleResultInputConstraint,
+  StringMatchOperator,
   PolicyEvaluation,
   PolicyRuleResult,
   Decision,
@@ -210,6 +216,9 @@ export interface LaunchOptions {
    */
   baseUrl?: string;
 
+  /** Alternative local sensitive-info backend used by remotely configured policies. */
+  sensitiveInfoBackend?: SensitiveInfoBackend;
+
   /**
    * Receives every local SDK diagnostic.
    *
@@ -253,6 +262,9 @@ export function launchArcjetWithTransport(
     key: options.key,
     transport: options.transport,
     ...(options.logger === undefined ? {} : { logger: options.logger }),
+    ...(options.sensitiveInfoBackend === undefined
+      ? {}
+      : { sensitiveInfoBackend: options.sensitiveInfoBackend }),
   });
 
   // The diagnostics channel rides along under a symbol so registration can

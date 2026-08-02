@@ -42,10 +42,7 @@ import {
   defineCustomRule,
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
-import type {
-  SensitiveInfoBackend,
-  SensitiveInfoBackendOptions,
-} from "./types.ts";
+import type { SensitiveInfoBackend, SensitiveInfoBackendOptions } from "./types.ts";
 
 describe("conclusionFromProto", () => {
   test("ALLOW maps to 'ALLOW'", () => {
@@ -637,6 +634,19 @@ describe("ruleToProto", () => {
         assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.DENY);
         assert.equal(proto.rule.rule.value.localResult.value.detected, true);
         assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, ["EMAIL"]);
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntities, [
+          {
+            $typeName: "proto.decide.v2.GuardSensitiveInfoEntity",
+            type: "EMAIL",
+            start: 12,
+            end: 23,
+          },
+        ]);
+        assert.equal(
+          "value" in proto.rule.rule.value.localResult.value.detectedEntities[0],
+          false,
+          "the matched sensitive value must never be sent to Decide",
+        );
       }
     }
   });
@@ -763,7 +773,11 @@ describe("ruleToProto", () => {
             // A valid declared type is kept...
             { start: 0, end: 4, identifiedType: { tag: "custom" as const, val: "GIVEN_NAME" } },
             // ...but an arbitrary string from a misbehaving backend is dropped.
-            { start: 5, end: 9, identifiedType: { tag: "custom" as const, val: "NOT_A_REAL_TYPE" } },
+            {
+              start: 5,
+              end: 9,
+              identifiedType: { tag: "custom" as const, val: "NOT_A_REAL_TYPE" },
+            },
           ],
         });
       },
