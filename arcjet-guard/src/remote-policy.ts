@@ -31,8 +31,9 @@ type FetchPolicy = (
 type Snapshot = {
   policy: GuardLocalPolicyProjection;
   refreshAt: number;
-  validUntil: number;
 };
+
+const policyRefreshIntervalMs = 5 * 60 * 1000;
 
 export type PreparedPolicy = {
   inputs: Record<string, ProtoPolicyInput>;
@@ -133,16 +134,19 @@ export class RemotePolicyRuntime {
     const now = performance.now();
     const cached = this.#snapshots.get(label);
     if (!forceRefresh && cached !== undefined && now < cached.refreshAt) return cached;
-    if (cached !== undefined && now >= cached.validUntil) this.#snapshots.delete(label);
 
     const existing = this.#fetches.get(label);
     if (existing !== undefined) return existing;
-    const pending = this.#fetch(label, signal).finally(() => this.#fetches.delete(label));
+    const pending = this.#fetch(label, signal, cached).finally(() => this.#fetches.delete(label));
     this.#fetches.set(label, pending);
     return pending;
   }
 
-  async #fetch(label: string, signal: AbortSignal | undefined): Promise<Snapshot | undefined> {
+  async #fetch(
+    label: string,
+    signal: AbortSignal | undefined,
+    cached: Snapshot | undefined,
+  ): Promise<Snapshot | undefined> {
     try {
       const request = create(GetGuardPolicyRequestSchema, {
         userAgent: this.#userAgent,
@@ -154,24 +158,33 @@ export class RemotePolicyRuntime {
       };
       if (signal !== undefined) options.signal = signal;
       const response = await this.#fetchPolicy(request, options);
-      if (response.status !== GuardPolicyLookupStatus.AVAILABLE || response.policy === undefined) {
+      if (response.status === GuardPolicyLookupStatus.NOT_CONFIGURED) {
+        this.#snapshots.delete(label);
         return undefined;
       }
+      if (response.status !== GuardPolicyLookupStatus.AVAILABLE || response.policy === undefined) {
+        return this.#retain(label, cached);
+      }
       const receivedAt = performance.now();
-      const serverTime = response.serverTimeUnixMs;
-      const refreshIn = Number(response.policy.refreshAfterUnixMs - serverTime);
-      const validFor = Number(response.policy.validUntilUnixMs - serverTime);
-      if (validFor <= 0) return undefined;
       const snapshot = Object.freeze({
         policy: response.policy,
-        refreshAt: receivedAt + Math.max(0, refreshIn),
-        validUntil: receivedAt + validFor,
+        refreshAt: receivedAt + policyRefreshIntervalMs,
       });
       this.#snapshots.set(label, snapshot);
       return snapshot;
     } catch {
-      return undefined;
+      return this.#retain(label, cached);
     }
+  }
+
+  #retain(label: string, cached: Snapshot | undefined): Snapshot | undefined {
+    if (cached === undefined) return undefined;
+    const snapshot = Object.freeze({
+      policy: cached.policy,
+      refreshAt: performance.now() + policyRefreshIntervalMs,
+    });
+    this.#snapshots.set(label, snapshot);
+    return snapshot;
   }
 }
 

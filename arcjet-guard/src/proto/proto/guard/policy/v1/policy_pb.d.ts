@@ -33,20 +33,6 @@ export declare type GuardPolicyBundle = Message<"proto.guard.policy.v1.GuardPoli
   revision: string;
 
   /**
-   * Time after which an SDK or isolate should refresh this snapshot.
-   *
-   * @generated from field: uint64 refresh_after_unix_ms = 3;
-   */
-  refreshAfterUnixMs: bigint;
-
-  /**
-   * Hard deadline after which this snapshot must not be used.
-   *
-   * @generated from field: uint64 valid_until_unix_ms = 4;
-   */
-  validUntilUnixMs: bigint;
-
-  /**
    * Policies keyed by exact label. The compiler rejects duplicate labels.
    *
    * @generated from field: repeated proto.guard.policy.v1.GuardPolicy policies = 10;

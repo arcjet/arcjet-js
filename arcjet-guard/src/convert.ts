@@ -494,7 +494,6 @@ function policyEvaluationFromProto(
     [GuardPolicyStatus.APPLIED]: "APPLIED",
     [GuardPolicyStatus.INCOMPLETE]: "INCOMPLETE",
     [GuardPolicyStatus.UNAVAILABLE]: "UNAVAILABLE",
-    [GuardPolicyStatus.EXPIRED]: "EXPIRED",
   };
   return {
     revision: evaluation.revision,
@@ -912,9 +911,6 @@ function policyErrorsFromProto(evaluation: GuardPolicyEvaluation | undefined): R
       break;
     case GuardPolicyStatus.UNAVAILABLE:
       message = "Remote Guard policy is unavailable";
-      break;
-    case GuardPolicyStatus.EXPIRED:
-      message = "Remote Guard policy has expired";
       break;
     case GuardPolicyStatus.UNSPECIFIED:
     case GuardPolicyStatus.NOT_CONFIGURED:

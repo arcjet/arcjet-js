@@ -52,19 +52,15 @@ test("server inputs do not fetch a local projection", async () => {
 
 test("concurrent local inputs coalesce projection retrieval and never put raw values on wire", async () => {
   let fetches = 0;
-  const now = BigInt(Date.now());
   const runtime = new RemotePolicyRuntime("key", "agent", async () => {
     fetches++;
     await Promise.resolve();
     return create(GetGuardPolicyResponseSchema, {
       status: GuardPolicyLookupStatus.AVAILABLE,
-      serverTimeUnixMs: now,
       policy: create(GuardLocalPolicyProjectionSchema, {
         policyId: "policy-1",
         revision: "revision-1",
         label: "email.sent",
-        refreshAfterUnixMs: now + 60_000n,
-        validUntilUnixMs: now + 120_000n,
       }),
     });
   });
@@ -85,6 +81,54 @@ test("concurrent local inputs coalesce projection retrieval and never put raw va
     assert.equal(representation.value.valueSha256.length, 32);
     assert.equal(JSON.stringify(representation.value).includes("secret subject"), false);
   }
+});
+
+test("retains the last successful projection when forced refresh is unavailable", async () => {
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    if (fetches > 1) return Promise.reject(new Error("unavailable"));
+    return Promise.resolve(
+      create(GetGuardPolicyResponseSchema, {
+        status: GuardPolicyLookupStatus.AVAILABLE,
+        policy: create(GuardLocalPolicyProjectionSchema, { revision: "revision-1" }),
+      }),
+    );
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  const first = await runtime.prepare("email.sent", inputs, signal);
+  const stale = await runtime.prepare("email.sent", inputs, signal, true);
+
+  assert.equal(fetches, 2);
+  assert.equal(first.revision, "revision-1");
+  assert.equal(stale.revision, "revision-1");
+});
+
+test("successful NOT_CONFIGURED clears the last successful projection", async () => {
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    return Promise.resolve(
+      create(GetGuardPolicyResponseSchema, {
+        status:
+          fetches === 1
+            ? GuardPolicyLookupStatus.AVAILABLE
+            : GuardPolicyLookupStatus.NOT_CONFIGURED,
+        ...(fetches === 1 && {
+          policy: create(GuardLocalPolicyProjectionSchema, { revision: "revision-1" }),
+        }),
+      }),
+    );
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "revision-1");
+  assert.equal((await runtime.prepare("email.sent", inputs, signal, true)).revision, "");
+  assert.equal((await runtime.prepare("email.sent", inputs, signal, true)).revision, "");
+  assert.equal(fetches, 3);
 });
 
 test("remote policy status and keyed results stay separate from SDK results", () => {

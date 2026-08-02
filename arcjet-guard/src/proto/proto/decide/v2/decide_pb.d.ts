@@ -1841,16 +1841,6 @@ export declare type GuardLocalPolicyProjection = Message<"proto.decide.v2.GuardL
    * @generated from field: repeated proto.decide.v2.GuardLocalSensitiveInfoRule sensitive_info_rules = 11;
    */
   sensitiveInfoRules: GuardLocalSensitiveInfoRule[];
-
-  /**
-   * @generated from field: uint64 refresh_after_unix_ms = 20;
-   */
-  refreshAfterUnixMs: bigint;
-
-  /**
-   * @generated from field: uint64 valid_until_unix_ms = 21;
-   */
-  validUntilUnixMs: bigint;
 };
 
 /**
@@ -1861,8 +1851,7 @@ export declare const GuardLocalPolicyProjectionSchema: GenMessage<GuardLocalPoli
 
 /**
  * GetGuardPolicyResponse returns policy status and, when configured, the
- * SDK-local projection. Server time lets SDKs derive monotonic validity
- * deadlines without trusting their wall clock.
+ * SDK-local projection.
  *
  * @generated from message proto.decide.v2.GetGuardPolicyResponse
  */
@@ -2403,11 +2392,6 @@ export enum GuardPolicyStatus {
    * @generated from enum value: GUARD_POLICY_STATUS_UNAVAILABLE = 4;
    */
   UNAVAILABLE = 4,
-
-  /**
-   * @generated from enum value: GUARD_POLICY_STATUS_EXPIRED = 5;
-   */
-  EXPIRED = 5,
 }
 
 /**
@@ -2441,11 +2425,6 @@ export enum GuardPolicyLookupStatus {
    * @generated from enum value: GUARD_POLICY_LOOKUP_STATUS_UNAVAILABLE = 3;
    */
   UNAVAILABLE = 3,
-
-  /**
-   * @generated from enum value: GUARD_POLICY_LOOKUP_STATUS_EXPIRED = 4;
-   */
-  EXPIRED = 4,
 }
 
 /**

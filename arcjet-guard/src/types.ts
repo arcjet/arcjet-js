@@ -416,13 +416,7 @@ export type RuleResult =
 /** Remote-policy selection and completeness reported by Guard. */
 export type PolicyEvaluation = {
   readonly revision: string;
-  readonly status:
-    | "NOT_CONFIGURED"
-    | "APPLIED"
-    | "INCOMPLETE"
-    | "UNAVAILABLE"
-    | "EXPIRED"
-    | "UNKNOWN";
+  readonly status: "NOT_CONFIGURED" | "APPLIED" | "INCOMPLETE" | "UNAVAILABLE" | "UNKNOWN";
   readonly refreshRequired: boolean;
 };
 
