@@ -1820,7 +1820,10 @@ export interface GuardOptions {
    * governed server-side.
    */
   rules?: RuleWithInput[];
-  /** Opaque identity asserted by trusted application code. */
+  /**
+   * Opaque identity asserted by trusted application code. Derive this from an
+   * authenticated server-side identity; never pass user-controlled input.
+   */
   actor?: string;
   /** Explicitly typed values made available to remotely configured policy. */
   inputs?: PolicyInputMap;

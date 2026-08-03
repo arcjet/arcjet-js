@@ -613,8 +613,11 @@ describe("ruleToProto", () => {
       if (proto.rule.rule.value.localResult.case === "resultComputed") {
         // EMAIL is allowed so no denied entities → ALLOW
         assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.ALLOW);
-        assert.equal(proto.rule.rule.value.localResult.value.detected, false);
+        // Detection is independent from enforcement: allowed entities still
+        // set the wire-level detection bit, but do not appear in deny evidence.
+        assert.equal(proto.rule.rule.value.localResult.value.detected, true);
         assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, []);
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntities, []);
       }
       assert.ok(proto.rule.rule.value.resultDurationMs !== undefined);
     }

@@ -28,7 +28,14 @@ type PolicyInputFactory = {
     number(value: number): PolicyInput;
     stringList(value: readonly string[]): PolicyInput;
   };
-  readonly local: { string(value: string): PolicyInput };
+  readonly local: {
+    /**
+     * Keep a string local while sending a stable SHA-256 digest for policy
+     * correlation. The digest is correlation data, not anonymization or a
+     * privacy guarantee: low-entropy or enumerable values can be guessed.
+     */
+    string(value: string): PolicyInput;
+  };
 };
 
 function server(

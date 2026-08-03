@@ -85,6 +85,28 @@ test("concurrent local inputs coalesce projection retrieval and never put raw va
   }
 });
 
+test("coalesced projection waiters observe their own cancellation", async () => {
+  let release: (() => void) | undefined;
+  const runtime = new RemotePolicyRuntime("key", "agent", async (_request, options) => {
+    assert.equal(options.signal, undefined);
+    await new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    return create(GetGuardPolicyResponseSchema, {
+      status: GuardPolicyLookupStatus.NOT_CONFIGURED,
+    });
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const firstController = new AbortController();
+  const first = runtime.prepare("email.sent", inputs, firstController.signal);
+  const second = runtime.prepare("email.sent", inputs, new AbortController().signal);
+
+  firstController.abort(new Error("caller cancelled"));
+  await assert.rejects(first, /caller cancelled/);
+  release?.();
+  assert.equal((await second).revision, "");
+});
+
 test("transient failure retains an available projection and backs off for five minutes", async (t) => {
   let now = 1_000;
   t.mock.method(performance, "now", () => now);
@@ -178,6 +200,7 @@ test("force refresh bypasses the cache cadence", async (t) => {
 test("an initial transient failure has a bounded retry backoff", async (t) => {
   let now = 1_000;
   t.mock.method(performance, "now", () => now);
+  t.mock.method(Math, "random", () => 0.5);
   let fetches = 0;
   const runtime = new RemotePolicyRuntime("key", "agent", () => {
     fetches++;
@@ -192,6 +215,27 @@ test("an initial transient failure has a bounded retry backoff", async (t) => {
   assert.equal(fetches, 1);
 
   now++;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 2);
+});
+
+test("initial transient retry is jittered across instances", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
+  t.mock.method(Math, "random", () => 1);
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    return Promise.reject(new Error("unavailable"));
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  await runtime.prepare("email.sent", inputs, signal);
+  now += 5_999;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 1);
+  now += 2;
   await runtime.prepare("email.sent", inputs, signal);
   assert.equal(fetches, 2);
 });

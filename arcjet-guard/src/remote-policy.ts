@@ -38,6 +38,7 @@ type CacheResult = {
 
 const policyRefreshIntervalMs = 5 * 60 * 1000;
 const policyUnavailableRetryIntervalMs = 5 * 1000;
+const policyUnavailableJitterRatio = 0.2;
 
 export type PreparedPolicy = {
   inputs: Record<string, ProtoPolicyInput>;
@@ -148,10 +149,15 @@ export class RemotePolicyRuntime {
     if (!forceRefresh && cached !== undefined && now < cached.refreshAt) return cached;
 
     const existing = this.#fetches.get(label);
-    if (existing !== undefined) return existing;
-    const pending = this.#fetch(label, signal, cached).finally(() => this.#fetches.delete(label));
+    if (existing !== undefined) return waitFor(existing, signal);
+    // Projection retrieval is shared across requests. Do not let the first
+    // request's cancellation abort the fleet-wide cached operation; each
+    // waiter still observes its own signal through `waitFor`.
+    const pending = this.#fetch(label, undefined, cached).finally(() =>
+      this.#fetches.delete(label),
+    );
     this.#fetches.set(label, pending);
-    return pending;
+    return waitFor(pending, signal);
   }
 
   async #fetch(
@@ -199,11 +205,35 @@ export class RemotePolicyRuntime {
       ...(cached ?? { status: "UNAVAILABLE" as const }),
       refreshAt:
         performance.now() +
-        (cached === undefined ? policyUnavailableRetryIntervalMs : policyRefreshIntervalMs),
+        (cached === undefined
+          ? jitter(policyUnavailableRetryIntervalMs, policyUnavailableJitterRatio)
+          : policyRefreshIntervalMs),
     });
     this.#results.set(label, result);
     return result;
   }
+}
+
+function jitter(intervalMs: number, ratio: number): number {
+  return intervalMs * (1 - ratio + Math.random() * ratio * 2);
+}
+
+function waitFor<T>(promise: Promise<T>, signal: AbortSignal | undefined): Promise<T> {
+  if (signal === undefined) return promise;
+  if (signal.aborted) return Promise.reject(abortReason(signal));
+  return new Promise((resolve, reject) => {
+    const abort = (): void => {
+      reject(abortReason(signal));
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    void promise.then(resolve, reject).finally(() => {
+      signal.removeEventListener("abort", abort);
+    });
+  });
+}
+
+function abortReason(signal: AbortSignal): Error {
+  return signal.reason instanceof Error ? signal.reason : new Error("The operation was aborted");
 }
 
 function sensitiveInfoConfig(

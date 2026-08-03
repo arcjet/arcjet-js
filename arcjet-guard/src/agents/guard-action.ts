@@ -113,7 +113,10 @@ export interface GuardActionPolicy {
    * decision.
    */
   rules?: RuleWithInput[];
-  /** Opaque identity asserted by trusted application code. */
+  /**
+   * Opaque identity asserted by trusted application code. Derive this from an
+   * authenticated server-side identity; never pass user-controlled input.
+   */
   actor?: string;
   /** Explicitly typed remote-policy inputs. */
   inputs?: PolicyInputMap;

@@ -52,7 +52,11 @@ export interface GuardToolPolicy<T extends Tool> {
    * call, which still costs a round trip and returns a decision.
    */
   rules?: RuleWithInput[] | ((input: InferToolInput<T>) => RuleWithInput[]);
-  /** Trusted actor identity, or a resolver over parsed input and trusted context. */
+  /**
+   * Trusted actor identity, or a resolver over parsed input and trusted
+   * context. Derive it from authenticated server-side context; never trust a
+   * model-produced tool input as the actor identity.
+   */
   actor?:
     | string
     | ((
