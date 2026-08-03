@@ -30,10 +30,10 @@ export interface RampartOptions extends ModelOptions {
    * {@linkcode defaultRecognizers}).
    *
    * These handle structured, validatable types — email addresses, URLs, IP
-   * addresses, phone numbers, SSNs, and Luhn-valid card numbers — which are more
-   * reliable with patterns than with the model. They are also the supported
-   * extension point for custom detection with this backend: add a recognizer to
-   * detect additional spans.
+   * addresses, SSNs, and Luhn-valid card numbers — which are more reliable with
+   * patterns than with the model. They are also the supported extension point
+   * for custom detection with this backend: add a recognizer to detect
+   * additional spans.
    *
    * Pass `[]` to disable deterministic recognition and rely on the model alone.
    */
@@ -122,7 +122,6 @@ function mergeSpans(groups: ReadonlyArray<ReadonlyArray<DetectedSpan>>): Detecte
  * - `"EMAIL"`
  * - `"URL"`
  * - `"IP_ADDRESS"`
- * - `"PHONE_NUMBER"`
  * - `"SSN"`
  * - `"CREDIT_CARD_NUMBER"`
  *

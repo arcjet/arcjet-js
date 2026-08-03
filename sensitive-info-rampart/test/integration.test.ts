@@ -67,6 +67,75 @@ test("detects names, address, SSN and email with correct offsets", async functio
   assert.equal(found.get("STREET_NAME"), "Main Street");
 });
 
+test("model distinguishes bank accounts and routing numbers from phones", async function (t) {
+  const value =
+    "Details on file: name: Alex Morgan; email: alex.morgan@client-corp.example; " +
+    "ssn: 431-55-9928; bank_account: 0123456789; routing_number: 022000020";
+  const entities = {
+    tag: "deny" as const,
+    val: [
+      { tag: "phone-number" } as const,
+      { tag: "custom", val: "BANK_ACCOUNT" } as const,
+      { tag: "custom", val: "ROUTING_NUMBER" } as const,
+    ],
+  };
+
+  let result;
+  try {
+    result = await tryDetect(value, entities);
+  } catch (error) {
+    t.skip(`model unavailable: ${(error as Error).message}`);
+    return;
+  }
+
+  const found = result.denied.map((entity) => ({
+    type:
+      entity.identifiedType.tag === "custom"
+        ? entity.identifiedType.val
+        : entity.identifiedType.tag,
+    value: value.slice(entity.start, entity.end),
+  }));
+  assert.equal(
+    found
+      .filter(({ type }) => type === "BANK_ACCOUNT")
+      .map(({ value }) => value)
+      .join(""),
+    "0123456789",
+  );
+  assert.equal(
+    found
+      .filter(({ type }) => type === "ROUTING_NUMBER")
+      .map(({ value }) => value)
+      .join(""),
+    "022000020",
+  );
+  assert.ok(!found.some(({ type }) => type === "phone-number"));
+});
+
+test("model detects a formatted phone without a phone recognizer", async function (t) {
+  const value = "Call me at +1 (415) 555-2671.";
+  const entities = {
+    tag: "deny" as const,
+    val: [{ tag: "phone-number" } as const],
+  };
+
+  let result;
+  try {
+    result = await tryDetect(value, entities);
+  } catch (error) {
+    t.skip(`model unavailable: ${(error as Error).message}`);
+    return;
+  }
+
+  assert.ok(
+    result.denied.some(
+      (entity) =>
+        entity.identifiedType.tag === "phone-number" &&
+        value.slice(entity.start, entity.end).includes("555-2671"),
+    ),
+  );
+});
+
 test("handles input longer than the model's token window via chunking", async function (t) {
   // A body well past the 512-token limit, with a name only at the very end.
   // Before chunking this threw an onnxruntime broadcast error.
