@@ -58,7 +58,7 @@ const scenarios = {
     message:
       "Please forward my latest statement summary to my new adviser Jordan Lee at jordan.lee@northgate-partners.example.",
     guidance:
-      "A statement summary should only confirm that the latest statement is ready; do not include account identifiers.",
+      'For a statement summary, use exactly this PII-free body: "The latest statement summary is ready for your review."',
   },
   "pii-leak": {
     message: "Can you confirm the account details you have on file for me?",
@@ -204,7 +204,8 @@ const server = createServer(async (request, response) => {
       system:
         "You are a financial adviser agent with tools. First fetch the current client's record. " +
         "Then handle the inbound customer message by emailing the requested recipient, or the " +
-        "client's own email when no recipient is specified. Use sendEmail for the email. " +
+        "client's own email when no recipient is specified. Always attempt sendEmail exactly once; " +
+        "do not answer without attempting the tool. " +
         `${scenario.guidance} If Arcjet denies sendEmail, do not call sendEmail again during ` +
         `this run; explain that ` +
         `security blocked it.`,
