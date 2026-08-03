@@ -52,6 +52,23 @@
       h3 {
         line-height: 1.2;
       }
+
+      .trace-list {
+        display: grid;
+        gap: 0.75rem;
+        padding: 0;
+        list-style: none;
+      }
+
+      .trace-list li {
+        padding: 0.75rem;
+        border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+        border-radius: 0.25rem;
+      }
+
+      .trace-list pre {
+        margin-bottom: 0;
+      }
     </style>
   </head>
   <body>
@@ -158,26 +175,31 @@
           decisionHeading.textContent = "Guard result";
           const decision = document.createElement("p");
           decision.textContent = data.guardResult.summary;
-          content.push(decisionHeading, decision);
+          const decisionJson = document.createElement("pre");
+          decisionJson.textContent = JSON.stringify(data.guardResult, null, 2);
+          content.push(decisionHeading, decision, decisionJson);
         }
 
         if (data.sentEmail) {
           const emailHeading = document.createElement("h3");
           emailHeading.textContent = "Sent email";
-          const recipient = document.createElement("p");
-          recipient.textContent = `To: ${data.sentEmail.recipient}`;
-          const body = document.createElement("pre");
-          body.textContent = data.sentEmail.body;
-          content.push(emailHeading, recipient, body);
+          const emailJson = document.createElement("pre");
+          emailJson.textContent = JSON.stringify(data.sentEmail, null, 2);
+          content.push(emailHeading, emailJson);
         }
 
         const traceHeading = document.createElement("h3");
         traceHeading.textContent = "Tool trace";
         const list = document.createElement("ul");
+        list.className = "trace-list";
         for (const event of data.trace || []) {
           const item = document.createElement("li");
           const detail = event.type === "tool-call" ? event.input : event.output;
-          item.textContent = `${event.type}: ${event.tool} ${JSON.stringify(detail)}`;
+          const label = document.createElement("strong");
+          label.textContent = `${event.type}: ${event.tool}`;
+          const detailJson = document.createElement("pre");
+          detailJson.textContent = JSON.stringify(detail ?? null, null, 2);
+          item.append(label, detailJson);
           list.append(item);
         }
         content.push(traceHeading, list);
