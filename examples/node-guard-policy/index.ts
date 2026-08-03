@@ -20,6 +20,13 @@ const arcjet = launchArcjet({
   sensitiveInfoBackend: rampart(),
 });
 
+const models = {
+  "gpt-4o-mini": { label: "GPT-4o mini (2024)", gatewayId: "openai/gpt-4o-mini" },
+  "gpt-5-mini": { label: "GPT-5 mini (2025)", gatewayId: "openai/gpt-5-mini" },
+  "gpt-5.6-sol": { label: "GPT-5.6 Sol (latest)", gatewayId: "openai/gpt-5.6-sol" },
+} as const;
+const defaultModel = "gpt-4o-mini" satisfies keyof typeof models;
+
 const clients = {
   "client-a": {
     actor: "client-a",
@@ -121,6 +128,10 @@ const server = createServer(async (request, response) => {
   if (request.method === "GET" && request.url === "/context") {
     sendJson(response, 200, {
       clients,
+      models: Object.fromEntries(
+        Object.entries(models).map(([id, model]) => [id, { label: model.label }]),
+      ),
+      defaultModel,
       scenarios: Object.fromEntries(
         Object.entries(scenarios).map(([name, scenario]) => [name, { message: scenario.message }]),
       ),
@@ -147,10 +158,18 @@ const server = createServer(async (request, response) => {
     }
     if (!Object.hasOwn(clients, input.client)) throw new TypeError("Unknown client");
     if (!Object.hasOwn(scenarios, input.scenario)) throw new TypeError("Unknown scenario");
+    const requestedModel =
+      "model" in input && typeof input.model === "string" ? input.model : defaultModel;
+    if (!Object.hasOwn(models, requestedModel)) throw new TypeError("Unknown model");
     if (!process.env.AI_GATEWAY_API_KEY) throw new Error("AI_GATEWAY_API_KEY is required");
 
     const trustedClient = clients[input.client as keyof typeof clients];
     const scenario = scenarios[input.scenario as Scenario];
+    const selectedModel = models[requestedModel as keyof typeof models];
+    const requiredToolAttempt =
+      input.scenario === "injection"
+        ? ""
+        : "Always attempt sendEmail exactly once; do not answer without attempting the tool. ";
     let sentEmail: { recipient: string; body: string } | undefined;
 
     const getClientRecord = tool({
@@ -210,12 +229,11 @@ const server = createServer(async (request, response) => {
       }),
     });
     const generated = await generateText({
-      model: "openai/gpt-4o-mini",
+      model: selectedModel.gatewayId,
       system:
         "You are a financial adviser agent with tools. First fetch the current client's record. " +
         "Then handle the inbound customer message by emailing the requested recipient, or the " +
-        "client's own email when no recipient is specified. Always attempt sendEmail exactly once; " +
-        "do not answer without attempting the tool. " +
+        `client's own email when no recipient is specified. ${requiredToolAttempt}` +
         `${scenario.guidance} If Arcjet denies sendEmail, do not call sendEmail again during ` +
         `this run; explain that ` +
         `security blocked it.`,
@@ -248,6 +266,7 @@ const server = createServer(async (request, response) => {
       message: generated.text,
       sentEmail,
       guardResult,
+      model: requestedModel,
       correlationId: context.correlationId,
       trace,
     });

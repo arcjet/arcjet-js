@@ -7,8 +7,9 @@ the current actor's structured financial record. `sendEmail` is wrapped with
 the simulated email side effect can run.
 
 The server—not the browser—maps each trusted actor/client ID to its financial
-record and allowed recipients. The browser submits only the selected client and
-scenario; it cannot supply an actor, record, or allow-list.
+record and allowed recipients. The browser submits the selected client,
+scenario, and an allow-listed model ID; it cannot supply an actor, record, or
+recipient allow-list.
 
 ## Policy configuration
 
@@ -54,10 +55,10 @@ cp .env.local.example .env.local
 npm start
 ```
 
-Open <http://localhost:3000>. The plain browser form intentionally has no custom
-CSS or assets. Its trace shows the model fetching the client record, choosing
-`sendEmail`, and receiving the aggregate conclusion, every denying rule, and
-any detected sensitive-info entity types.
+Open <http://localhost:3000>. The browser uses only minimal inline system
+styling and no external assets. Its trace shows the model fetching the client
+record, choosing `sendEmail`, and receiving the aggregate conclusion, every
+denying rule, and any detected sensitive-info entity types.
 
 ## Demo sequence
 
@@ -69,9 +70,18 @@ Run each scenario for either client:
   recipient is allowed for Client B.
 - **Sensitive information leak** uses the client's allowed address, isolating
   the sensitive-info control when the model echoes account details.
-- **Layered defense** attempts an external recipient and account-data
-  exfiltration. Membership and sensitive-info provide deterministic backstops;
-  prompt-injection detection may add another denial reason.
+- **Layered defense** contains an injected request for an external recipient
+  and account-data exfiltration. When a model follows it, membership and
+  sensitive-info provide deterministic backstops; prompt-injection detection
+  may add another denial reason.
+
+The layered-defense scenario also exposes a model selector. Start with
+**GPT-4o mini**, which reliably demonstrates the injected external send reaching
+the guarded tool. Then compare **GPT-5 mini** and the latest **GPT-5.6 Sol**:
+newer models may ignore the injected destination or sanitize the body before
+calling the tool. Model behavior is nondeterministic, which is the point of the
+comparison; Arcjet remains the deterministic enforcement boundary whenever a
+model attempts an unsafe action.
 
 Keep all rules in **LIVE** for this matrix. Review each decision in the Console
 to show the trusted actor and per-rule evidence, then change and publish the

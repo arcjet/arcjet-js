@@ -82,6 +82,16 @@
             </select>
           </label>
         </p>
+        <p id="model-field" hidden>
+          <label>
+            Model<br />
+            <select name="model">
+              <option value="gpt-4o-mini">GPT-4o mini (2024)</option>
+              <option value="gpt-5-mini">GPT-5 mini (2025)</option>
+              <option value="gpt-5.6-sol">GPT-5.6 Sol (latest)</option>
+            </select>
+          </label>
+        </p>
         <section id="scenario-details" aria-live="polite">
           <h2>Run context</h2>
           <h3>Inbound customer message (untrusted)</h3>
@@ -101,6 +111,7 @@
       const inboundMessage = document.querySelector("#inbound-message");
       const clientRecord = document.querySelector("#client-record");
       const allowedRecipients = document.querySelector("#allowed-recipients");
+      const modelField = document.querySelector("#model-field");
       let demoContext;
 
       function showScenarioDetails() {
@@ -108,6 +119,7 @@
         const fields = new FormData(form);
         const client = demoContext.clients[fields.get("client")];
         const scenario = demoContext.scenarios[fields.get("scenario")];
+        modelField.hidden = fields.get("scenario") !== "injection";
         inboundMessage.textContent = scenario.message;
         clientRecord.textContent = JSON.stringify(
           {
@@ -136,7 +148,13 @@
         heading.textContent = data.sentEmail ? "Email sent (simulated)" : "No email sent";
         const description = document.createElement("p");
         description.textContent = data.message || "The agent did not return a response.";
-        const content = [heading, description];
+        const content = [heading];
+        if (data.model) {
+          const model = document.createElement("p");
+          model.textContent = `Model: ${demoContext?.models[data.model]?.label || data.model}`;
+          content.push(model);
+        }
+        content.push(description);
 
         if (data.guardResult) {
           const decisionHeading = document.createElement("h3");
@@ -183,6 +201,7 @@
             body: JSON.stringify({
               client: fields.get("client"),
               scenario: fields.get("scenario"),
+              model: fields.get("model"),
             }),
           });
           showResult(await response.json());
