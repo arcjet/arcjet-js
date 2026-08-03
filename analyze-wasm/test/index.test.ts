@@ -52,9 +52,10 @@ test("@arcjet/analyze-wasm", async function (t) {
 
   await t.test("should emit Windows-compatible paths", async function () {
     const paths = await fs.readdir(new URL("../dist/", import.meta.url), { recursive: true });
-    assert.ok(
-      paths.every((path) => path.split(/[\\/]/).every((segment) => !segment.endsWith("."))),
+    const invalidPaths = paths.filter((path) =>
+      path.split(/[\\/]/).some((segment) => segment.endsWith(".")),
     );
+    assert.deepEqual(invalidPaths, [], `Windows-invalid paths: ${invalidPaths.join(", ")}`);
   });
 
   await t.test("should expose the public api on `wasm`", async function () {
