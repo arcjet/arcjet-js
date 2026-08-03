@@ -62,8 +62,9 @@ export function base64Wasm() {
           ? path.resolve(path.dirname(importer), clean)
           : path.resolve(clean);
         // Keep the virtual id relative so the emitted chunk name does not leak
-        // an absolute build path into published output.
-        const id = `\0${clean.replace(/\.wasm$/, ".js")}`;
+        // an absolute build path into published output. Strip the leading `./`
+        // because rolldown emits it as a Windows-invalid `_.` path segment.
+        const id = `\0${clean.replace(/^\.\//, "").replace(/\.wasm$/, ".js")}`;
         idToWasmPath.set(id, absWasm);
         return id;
       }

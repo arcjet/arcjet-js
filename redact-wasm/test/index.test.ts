@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs/promises";
 import test from "node:test";
 
 import { initializeWasm } from "../dist/index.js";
@@ -9,6 +10,14 @@ assert.ok(wasm);
 test("@arcjet/redact-wasm", async function (t) {
   await t.test("should expose the public api", async function () {
     assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), ["initializeWasm"]);
+  });
+
+  await t.test("should emit Windows-compatible paths", async function () {
+    const paths = await fs.readdir(new URL("../dist/", import.meta.url), { recursive: true });
+    const invalidPaths = paths.filter((path) =>
+      path.split(/[\\/]/).some((segment) => segment.endsWith(".")),
+    );
+    assert.deepEqual(invalidPaths, [], `Windows-invalid paths: ${invalidPaths.join(", ")}`);
   });
 });
 
