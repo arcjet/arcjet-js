@@ -142,10 +142,9 @@ export const creditCardRecognizer: Recognizer = (value) =>
  * deterministic redaction layer. Structured, validatable types are handled here
  * rather than by the model, which is more reliable for them.
  *
- * They are ordered most-specific first. Overlap resolution happens later in the
- * backend (longer spans win; equal-length ties keep the earlier-listed
- * recognizer), so this order only breaks ties — for example a Luhn-valid card
- * over the looser phone matcher when they match the same text.
+ * Phone numbers are intentionally left to the NER model because their digit
+ * shape overlaps with bank accounts, routing numbers, and other identifiers.
+ * A pattern cannot validate which semantic type the digits represent.
  */
 export const defaultRecognizers: ReadonlyArray<Recognizer> = [
   creditCardRecognizer,
@@ -153,7 +152,6 @@ export const defaultRecognizers: ReadonlyArray<Recognizer> = [
   emailRecognizer,
   urlRecognizer,
   ipAddressRecognizer,
-  phoneRecognizer,
 ];
 
 /**

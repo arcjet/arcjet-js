@@ -159,10 +159,18 @@ test("native types use their analyze tag, others are custom", async function () 
 
 test("maps each native type to its analyze tag", async function () {
   const { context } = fakeContext();
-  // One recognizer per native type, so every native branch of the
-  // string -> tagged-union conversion is exercised.
   const value = "192.168.1.1 +1 (415) 555-2671 a@b.com 4111 1111 1111 1111";
-  const backend = rampart({ runModel: stubModel([]) });
+  const phone = "+1 (415) 555-2671";
+  const phoneStart = value.indexOf(phone);
+  const backend = rampart({
+    runModel: stubModel([
+      {
+        start: phoneStart,
+        end: phoneStart + phone.length,
+        type: "PHONE_NUMBER",
+      },
+    ]),
+  });
 
   const result = await backend.detect(
     context,
