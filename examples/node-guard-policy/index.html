@@ -17,8 +17,19 @@
           <label>
             Client<br />
             <select name="client" required>
-              <option value="client-a">Client A (backup adviser not allowed)</option>
-              <option value="client-b">Client B (backup adviser allowed)</option>
+              <option value="client-a">Client A — Alex Morgan</option>
+              <option value="client-b">Client B — Jamie Taylor</option>
+            </select>
+          </label>
+        </p>
+        <p>
+          <label>
+            Scenario<br />
+            <select name="scenario" required>
+              <option value="benign">Benign request</option>
+              <option value="wrong-recipient">Wrong recipient</option>
+              <option value="pii-leak">Sensitive information leak</option>
+              <option value="injection">Layered defense</option>
             </select>
           </label>
         </p>
@@ -36,6 +47,14 @@
         const description = document.createElement("p");
         description.textContent = data.message || "The agent did not return a response.";
         const content = [heading, description];
+
+        if (data.guardResult) {
+          const decisionHeading = document.createElement("h3");
+          decisionHeading.textContent = "Guard result";
+          const decision = document.createElement("p");
+          decision.textContent = data.guardResult.summary;
+          content.push(decisionHeading, decision);
+        }
 
         if (data.sentEmail) {
           const emailHeading = document.createElement("h3");
@@ -73,6 +92,7 @@
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               client: fields.get("client"),
+              scenario: fields.get("scenario"),
             }),
           });
           showResult(await response.json());

@@ -576,7 +576,7 @@ describe("In-memory server: sensitive info", () => {
         if (value.localResult.case === "resultComputed") {
           // Email is allowed so conclusion is ALLOW
           assert.equal(value.localResult.value.conclusion, GuardConclusion.ALLOW);
-          assert.equal(value.localResult.value.detected, true);
+          assert.equal(value.localResult.value.detected, false);
           // detectedEntityTypes only lists denied entities
           assert.deepEqual(value.localResult.value.detectedEntityTypes, []);
         }

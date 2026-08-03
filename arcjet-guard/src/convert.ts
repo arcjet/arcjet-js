@@ -669,14 +669,18 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
         });
         resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
 
-        const deniedTypes = result.denied
-          .map((d) => entityToString(d.identifiedType))
-          .filter((t): t is SensitiveInfoEntityType => t !== undefined);
+        const deniedTypes = [
+          ...new Set(
+            result.denied
+              .map((d) => entityToString(d.identifiedType))
+              .filter((t): t is SensitiveInfoEntityType => t !== undefined),
+          ),
+        ];
         localResult = {
           case: "resultComputed" as const,
           value: create(ResultLocalSensitiveInfoSchema, {
             conclusion: result.denied.length > 0 ? GuardConclusion.DENY : GuardConclusion.ALLOW,
-            detected: result.denied.length > 0 || result.allowed.length > 0,
+            detected: result.denied.length > 0,
             detectedEntityTypes: deniedTypes,
             detectedEntities: result.denied
               .map((entity) => {

@@ -613,7 +613,7 @@ describe("ruleToProto", () => {
       if (proto.rule.rule.value.localResult.case === "resultComputed") {
         // EMAIL is allowed so no denied entities → ALLOW
         assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.ALLOW);
-        assert.equal(proto.rule.rule.value.localResult.value.detected, true);
+        assert.equal(proto.rule.rule.value.localResult.value.detected, false);
         assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, []);
       }
       assert.ok(proto.rule.rule.value.resultDurationMs !== undefined);
@@ -706,6 +706,31 @@ describe("ruleToProto", () => {
         assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, [
           "GIVEN_NAME",
         ]);
+      }
+    }
+  });
+
+  test("deduplicates repeated denied entity types", async () => {
+    const backend: SensitiveInfoBackend = {
+      detect() {
+        return Promise.resolve({
+          allowed: [],
+          denied: [
+            { start: 0, end: 11, identifiedType: { tag: "custom", val: "SSN" } },
+            { start: 16, end: 27, identifiedType: { tag: "custom", val: "SSN" } },
+          ],
+        });
+      },
+    };
+    const rule = localDetectSensitiveInfo({ deny: ["SSN"], backend });
+    const proto = await ruleToProto(rule("431-55-9928 and 623-84-1157"));
+
+    assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+    if (proto.rule?.rule.case === "localSensitiveInfo") {
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+      if (proto.rule.rule.value.localResult.case === "resultComputed") {
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, ["SSN"]);
+        assert.equal(proto.rule.rule.value.localResult.value.detectedEntities.length, 2);
       }
     }
   });
