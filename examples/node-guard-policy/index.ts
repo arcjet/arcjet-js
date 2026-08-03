@@ -21,11 +21,13 @@ const arcjet = launchArcjet({
 });
 
 const models = {
+  "gpt-4o": { label: "GPT-4o (2024)", gatewayId: "openai/gpt-4o" },
   "gpt-4o-mini": { label: "GPT-4o mini (2024)", gatewayId: "openai/gpt-4o-mini" },
   "gpt-5-mini": { label: "GPT-5 mini (2025)", gatewayId: "openai/gpt-5-mini" },
   "gpt-5.6-sol": { label: "GPT-5.6 Sol (latest)", gatewayId: "openai/gpt-5.6-sol" },
 } as const;
-const defaultModel = "gpt-4o-mini" satisfies keyof typeof models;
+const defaultModel = "gpt-4o" satisfies keyof typeof models;
+const defaultInjectionModel = "gpt-4o-mini" satisfies keyof typeof models;
 
 const clients = {
   "client-a": {
@@ -134,6 +136,7 @@ const server = createServer(async (request, response) => {
         Object.entries(models).map(([id, model]) => [id, { label: model.label }]),
       ),
       defaultModel,
+      defaultInjectionModel,
       scenarios: Object.fromEntries(
         Object.entries(scenarios).map(([name, scenario]) => [name, { message: scenario.message }]),
       ),
@@ -161,13 +164,14 @@ const server = createServer(async (request, response) => {
     if (!Object.hasOwn(clients, input.client)) throw new TypeError("Unknown client");
     if (!Object.hasOwn(scenarios, input.scenario)) throw new TypeError("Unknown scenario");
     const requestedModel =
-      "model" in input && typeof input.model === "string" ? input.model : defaultModel;
+      "model" in input && typeof input.model === "string" ? input.model : defaultInjectionModel;
     if (!Object.hasOwn(models, requestedModel)) throw new TypeError("Unknown model");
     if (!process.env.AI_GATEWAY_API_KEY) throw new Error("AI_GATEWAY_API_KEY is required");
 
     const trustedClient = clients[input.client as keyof typeof clients];
     const scenario = scenarios[input.scenario as Scenario];
-    const selectedModel = models[requestedModel as keyof typeof models];
+    const modelId = input.scenario === "injection" ? requestedModel : defaultModel;
+    const selectedModel = models[modelId as keyof typeof models];
     const requiredToolAttempt =
       input.scenario === "injection"
         ? ""
@@ -265,7 +269,7 @@ const server = createServer(async (request, response) => {
       message: generated.text,
       sentEmail,
       guardResult,
-      model: requestedModel,
+      model: modelId,
       correlationId: context.correlationId,
       trace,
     });

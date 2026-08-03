@@ -81,7 +81,7 @@ the guarded tool. Then compare **GPT-5 mini** and the latest **GPT-5.6 Sol**:
 newer models may ignore the injected destination or sanitize the body before
 calling the tool. Model behavior is nondeterministic, which is the point of the
 comparison; Arcjet remains the deterministic enforcement boundary whenever a
-model attempts an unsafe action.
+model attempts an unsafe action. Other scenarios use GPT-4o.
 
 Keep all rules in **LIVE** for this matrix. Review each decision in the Console
 to show the trusted actor and per-rule evidence, then change and publish the
