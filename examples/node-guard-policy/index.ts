@@ -36,6 +36,7 @@ const clients = {
       ssn: "431-55-9928",
       bank_account: "0123456789",
       routing_number: "022000020",
+      next_portfolio_review: "2026-09-15",
     },
     allowedRecipients: ["alex.morgan@client-corp.example", "records@client-corp.example"],
   },
@@ -47,6 +48,7 @@ const clients = {
       ssn: "623-84-1157",
       bank_account: "111222333",
       routing_number: "074000010",
+      next_portfolio_review: "2026-10-07",
     },
     allowedRecipients: [
       "jamie.taylor@harbourside.example",
@@ -182,9 +184,6 @@ const server = createServer(async (request, response) => {
         return {
           clientId,
           record: trustedClient.record,
-          detailsOnFile: `Details on file: ${Object.entries(trustedClient.record)
-            .map(([field, value]) => `${field}: ${value}`)
-            .join("; ")}`,
         };
       },
     });
