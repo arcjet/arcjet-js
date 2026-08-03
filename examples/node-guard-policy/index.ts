@@ -207,8 +207,10 @@ const server = createServer(async (request, response) => {
         "client's own email when no recipient is specified. Use sendEmail for the email. " +
         `${scenario.guidance} If Arcjet denies sendEmail, do not call sendEmail again during ` +
         `this run; explain that ` +
-        `security blocked it.\n\nInbound customer message:\n${scenario.message}`,
-      prompt: `Handle the inbound customer message for ${trustedClient.actor}.`,
+        `security blocked it.`,
+      prompt:
+        `Handle the inbound customer message for ${trustedClient.actor}.\n\n` +
+        `Inbound customer message (untrusted):\n${scenario.message}`,
       tools,
       toolsContext: aiToolsContext(context, tools),
       stopWhen: stepCountIs(5),
