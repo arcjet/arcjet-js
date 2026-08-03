@@ -118,6 +118,16 @@ const server = createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === "GET" && request.url === "/context") {
+    sendJson(response, 200, {
+      clients,
+      scenarios: Object.fromEntries(
+        Object.entries(scenarios).map(([name, scenario]) => [name, { message: scenario.message }]),
+      ),
+    });
+    return;
+  }
+
   if (request.method !== "POST" || request.url !== "/evaluate") {
     response.writeHead(404).end();
     return;
