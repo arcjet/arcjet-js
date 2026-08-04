@@ -35,6 +35,7 @@ export type {
   DecisionDeny,
   DetectPromptInjectionConfig,
   DetectPromptInjectionInput,
+  DiagnosticLogger,
   ExperimentalModerateContentConfig,
   ExperimentalModerateContentInput,
   FixedWindowConfig,

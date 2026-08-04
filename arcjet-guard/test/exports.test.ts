@@ -17,6 +17,7 @@ test("`@arcjet/guard`: should expose the documented export paths", async functio
         "./bun",
         "./fetch",
         "./node",
+        "./vercel-ai/v7",
       ]),
     );
   });
@@ -149,6 +150,49 @@ test('`@arcjet/guard`: should expose exactly the api surface of "./fetch"', asyn
 test('`@arcjet/guard`: should publish every value of "./fetch" as a value', async function () {
     const module = await import("@arcjet/guard/fetch");
     const declaration = await readFile(new URL("../dist/fetch.d.ts", import.meta.url), "utf8");
+
+    // A name the declarations mark `type` is erased before it reaches a
+    // consumer, so they cannot call it, subclass it, or use `instanceof` on it
+    // -- however plainly it is there at run time.
+    assert.deepEqual(
+      typeOnlyNames(declaration).filter((name) => name in module),
+      [],
+    );
+  });
+
+test('`@arcjet/guard`: should expose the value exports of "./vercel-ai/v7"', async function () {
+    const module = await import("@arcjet/guard/vercel-ai/v7");
+
+    assert.deepEqual(
+      new Set(Object.keys(module)),
+      new Set([
+        "ArcjetDeniedError",
+        "ArcjetGuardUnavailableError",
+        "aiToolsContext",
+        "captureAction",
+        "createAgentContext",
+        "guardAction",
+        "guardTool",
+        "securityMetadata",
+      ]),
+    );
+  });
+
+test('`@arcjet/guard`: should expose exactly the api surface of "./vercel-ai/v7"', async function () {
+    const [declaration, documented] = await Promise.all([
+      readFile(new URL("../dist/vercel-ai/v7/index.d.ts", import.meta.url), "utf8"),
+      readFile(new URL("./api-surface/vercel-ai-v7.ts", import.meta.url), "utf8"),
+    ]);
+
+    // Nothing implicit: an `export *` would publish whatever the module it
+    // points at happens to export, and the comparison below could not see it.
+    assert.doesNotMatch(declaration, /^export \*/m);
+    assert.deepEqual(exportedNames(declaration), exportedNames(documented));
+  });
+
+test('`@arcjet/guard`: should publish every value of "./vercel-ai/v7" as a value', async function () {
+    const module = await import("@arcjet/guard/vercel-ai/v7");
+    const declaration = await readFile(new URL("../dist/vercel-ai/v7/index.d.ts", import.meta.url), "utf8");
 
     // A name the declarations mark `type` is erased before it reaches a
     // consumer, so they cannot call it, subclass it, or use `instanceof` on it
