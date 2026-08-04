@@ -19,7 +19,8 @@
     "directory": "arcjet-guard"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "skills/"
   ],
   "type": "module",
   "main": "./dist/index.js",
@@ -62,6 +63,10 @@
     "./fetch": {
       "types": "./dist/fetch.d.ts",
       "import": "./dist/fetch.js"
+    },
+    "./vercel-ai/v7": {
+      "types": "./dist/vercel-ai/v7/index.d.ts",
+      "import": "./dist/vercel-ai/v7/index.js"
     }
   },
   "publishConfig": {
@@ -74,7 +79,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test": "npm run build && npm run lint && npm run test-unit",
-    "test-unit": "node --test --experimental-test-coverage --test-coverage-include=src/** --test-coverage-exclude=src/**/*.test.ts src/**/*.test.ts",
+    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts'",
     "test-runtime-node": "npm run build && node --test test/runtime/node.test.ts",
     "test-runtime-fetch": "npm run build && node --test test/runtime/fetch.test.ts",
     "test-runtime-deno": "npm run build && deno test --no-check --allow-all test/runtime/deno.test.ts",
@@ -90,11 +95,25 @@
     "@connectrpc/connect-web": "2.1.2"
   },
   "devDependencies": {
+    "@ai-sdk/provider-utils": "5.0.12",
     "@types/node": "22.20.1",
+    "ai": "7.0.36",
     "miniflare": "4.20260708.1",
     "oxlint-tsgolint": "0.24.0",
     "tsdown": "0.22.7",
     "typescript": "7.0.2"
+  },
+  "peerDependencies": {
+    "@ai-sdk/provider-utils": ">=5 <6",
+    "ai": ">=7 <8"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/provider-utils": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0"

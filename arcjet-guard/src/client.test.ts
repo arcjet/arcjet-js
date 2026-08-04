@@ -50,7 +50,7 @@ import {
 function mockTransport(
   handler: (
     req: import("./proto/proto/decide/v2/decide_pb.js").GuardRequest,
-    context: { requestHeader: Headers },
+    context: { requestHeader: Headers; timeoutMs: () => number | undefined },
   ) => import("./proto/proto/decide/v2/decide_pb.js").GuardResponse,
 ): Transport {
   return createRouterTransport(({ service }) => {
@@ -1368,20 +1368,47 @@ describe("In-memory server: DRY_RUN mode", () => {
   });
 });
 describe("In-memory server: error handling", () => {
-  test("empty rules returns fail-open ALLOW", async () => {
-    const arcjet = guardWithMock(() => {
-      throw new Error("should not be called");
+  test("empty rules reaches the server and returns a real ALLOW, not a fail-open one", async () => {
+    let reachedServer = false;
+    let receivedSubmissions = -1;
+
+    // Mirrors the server's zero-submission path: an empty ALLOW carrying the
+    // AJ1002 response error (arcjet-decide/internal/guard/request.go).
+    const arcjet = guardWithMock((req) => {
+      reachedServer = true;
+      receivedSubmissions = req.ruleSubmissions.length;
+      return create(GuardResponseSchema, {
+        decision: create(GuardDecisionSchema, {
+          id: "gdec_norules",
+          conclusion: GuardConclusion.ALLOW,
+          ruleResults: [],
+        }),
+        errors: [
+          create(ResultErrorSchema, {
+            code: "AJ1002",
+            message: "no rule submissions provided; returning empty ALLOW decision",
+          }),
+        ],
+      });
     });
 
     const decision = await arcjet.guard({ label: "test", rules: [] });
+
+    assert.equal(reachedServer, true, "an empty rule set must not be answered locally");
+    assert.equal(receivedSubmissions, 0);
     assert.equal(decision.conclusion, "ALLOW");
+    // The distinction this change exists for: submitting nothing is not an
+    // evaluation failure, so a fail-closed caller gating on hasFailedOpen()
+    // must not treat it as one.
+    assert.equal(decision.hasFailedOpen(), false);
+    assert.equal(decision.errorResults().length, 0);
+    // A real, correlatable id — the local short-circuit produced "".
+    assert.equal(decision.id, "gdec_norules");
+    // AJ1002 arrives as a decision-level warning, not a rule error.
+    assert.equal(decision.warnings.length, 1);
+    assert.equal(decision.warnings[0]?.code, "AJ1002");
     // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
-    assert.equal(decision.hasError(), true);
-    // No rules means a synthetic error result: the decision failed open.
-    assert.equal(decision.hasFailedOpen(), true);
-    assert.equal(decision.errorResults().length, 1);
-    // No request-level diagnostics.
-    assert.equal(decision.warnings.length, 0);
+    assert.equal(decision.hasError(), true, "hasError() unions warnings, so it stays true");
   });
 
   test("server error returns fail-open ALLOW with error result", async () => {
@@ -1638,6 +1665,54 @@ describe("Cancellation via signal", () => {
         rules: [input],
         signal: controller.signal,
       }),
+    );
+  });
+});
+
+describe("Request deadline", () => {
+  const rule = tokenBucket({
+    bucket: "test",
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 100,
+  });
+
+  test("defaults to 2s when timeoutSeconds is unset", async () => {
+    let remainingMs: number | undefined;
+    const arcjet = guardWithMock((req, context) => {
+      remainingMs = context.timeoutMs();
+      return tokenBucketAllowResponse(req);
+    });
+
+    await arcjet.guard({
+      label: "test.deadline",
+      rules: [rule({ key: "user_1", requested: 1 })],
+    });
+
+    assert.notEqual(remainingMs, undefined, "handler should observe a deadline");
+    // The handler sees time *remaining*, so a few ms have already elapsed.
+    assert.ok(
+      remainingMs !== undefined && remainingMs > 1500 && remainingMs <= 2000,
+      `expected ~2000ms remaining, got ${remainingMs}`,
+    );
+  });
+
+  test("timeoutSeconds overrides the default", async () => {
+    let remainingMs: number | undefined;
+    const arcjet = guardWithMock((req, context) => {
+      remainingMs = context.timeoutMs();
+      return tokenBucketAllowResponse(req);
+    });
+
+    await arcjet.guard({
+      label: "test.deadline",
+      rules: [rule({ key: "user_1", requested: 1 })],
+      timeoutSeconds: 5,
+    });
+
+    assert.ok(
+      remainingMs !== undefined && remainingMs > 4500 && remainingMs <= 5000,
+      `expected ~5000ms remaining, got ${remainingMs}`,
     );
   });
 });

@@ -553,18 +553,26 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   ```
 
 - **Don't wrap `launchArcjet()` in a helper function.** This defeats
-  connection reuse:
+  connection reuse. Bad — creates a new client every call:
 
   ```ts
-  // Bad — creates a new client (and connection) every call
   function getArcjet() {
     return launchArcjet({ key: process.env.ARCJET_KEY! });
   }
-  const decision = await getArcjet().guard({ ... });
+  const decision = await getArcjet().guard({
+    label: "tools.chat",
+    rules: [tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 })],
+  });
+  ```
 
-  // Good — reuses the client
+  Good — reuses the client:
+
+  ```ts
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
-  const decision = await arcjet.guard({ ... });
+  const decision = await arcjet.guard({
+    label: "tools.chat",
+    rules: [tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 })],
+  });
   ```
 
 - **Start rules in `DRY_RUN` mode** to observe behavior before switching to
@@ -603,6 +611,396 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
 - **Use `bucket`** on rate limit rules to name your counters in the
   dashboard. Different configs sharing the same bucket name still get
   independent counters — a config hash is appended server-side.
+
+## SDK namespaces: core and integrations
+
+`@arcjet/guard` exposes two import layers:
+
+### Core guard (`@arcjet/guard`)
+
+The fundamental client and rule builders. Use this to evaluate guards without
+any AI SDK integration:
+
+```ts
+import { launchArcjet, tokenBucket, detectPromptInjection } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+const decision = await arcjet.guard({
+  label: "tools.chat",
+  rules: [
+    tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 }),
+    detectPromptInjection()(userMessage),
+  ],
+});
+```
+
+### Vendor SDK integration (`@arcjet/guard/<vendor-sdk>/v<major>`)
+
+Vendor-specific wrappers that integrate with particular SDKs, plus every agent
+helper. Currently available:
+
+- **`@arcjet/guard/vercel-ai/v7`** — Vercel AI SDK v7 integration. Exports
+  `guardTool` and `aiToolsContext` for tool wrapping, alongside the helpers
+  that are not tied to any SDK — `createAgentContext`, `guardAction`,
+  `captureAction`, and `securityMetadata`:
+
+  ```ts
+  import {
+    guardTool,
+    aiToolsContext,
+    createAgentContext,
+    guardAction,
+    captureAction,
+    securityMetadata,
+  } from "@arcjet/guard/vercel-ai/v7";
+
+  const ctx = createAgentContext({
+    correlationId: requestId,
+    metadata: securityMetadata({ user: userId }),
+  });
+
+  const tools = {
+    getData: guardTool(arcjet, getDataTool, { action: "data.fetched", rules: [dataLimit({ key: userId, requested: 1 })] }),
+  };
+
+  const result = await generateText({
+    // ...
+    tools,
+    toolsContext: aiToolsContext(ctx, tools),
+  });
+
+  await guardAction(arcjet, ctx, { action: "data.updated", rules: [updateLimit({ key: userId })] }, () => updateData());
+  captureAction(arcjet, ctx, { action: "audit.logged" });
+  ```
+
+### Naming and versions
+
+Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
+integrated, then its major version.
+
+**The version is always explicit.** `@arcjet/guard/vercel-ai/v7` resolves;
+`@arcjet/guard/vercel-ai` deliberately does not. Against a fast-moving SDK
+surface an unversioned alias would silently change meaning the moment a new
+major is supported, turning an upgrade you did not ask for into a runtime
+surprise. Importing an unexported path throws `ERR_PACKAGE_PATH_NOT_EXPORTED`,
+so a wrong path fails at resolution rather than somewhere further in.
+
+Supporting a new major is additive — a future `/v8` can ship alongside `/v7`,
+so you migrate on your own schedule.
+
+### Optional peer dependencies
+
+Vendor integrations declare their SDK dependencies as optional peers, so users
+importing only core guards are not forced to install unneeded packages:
+
+- **`@arcjet/guard`** (core) has no peer dependencies.
+- **`@arcjet/guard/vercel-ai/v7`** requires `ai` and `@ai-sdk/provider-utils`
+  (optional peers — the package will not be installed automatically, but the
+  imports will fail clearly if the peers are missing).
+
+**pnpm caveat**: pnpm does not reliably honour
+`peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
+`--strict-peer-dependencies` enabled. If `pnpm install` fails with missing
+peers, either install them explicitly or relax strict peer checking:
+
+```sh
+pnpm install ai @ai-sdk/provider-utils
+# or
+pnpm install --no-strict-peer-dependencies
+```
+
+### Where the SDK-agnostic helpers live
+
+`createAgentContext`, `guardAction`, `captureAction`, and `securityMetadata`
+are not tied to any AI SDK, and internally they are kept that way — nothing
+they import reaches `ai`. They are nonetheless published only on the vendor
+namespace, so there is one path to learn and no layering to reason about.
+
+The cost is that a non-AI codebase wanting only `guardAction` still installs
+the `ai` peer. That is deliberate for now: a dedicated agnostic subpath would
+be a public surface justified by a single integration. Once a second vendor
+namespace exists to prove the shape, these belong in the root `@arcjet/guard`
+export rather than a subpath of their own.
+
+### `onGuardError`: handling evaluation failures
+
+When guard policy evaluation fails (e.g. the Arcjet API is unreachable), the
+SDK still allows the request to proceed — this is the platform's fail-open
+default. The agent-level helpers (`guardTool` and `guardAction`) deliberately
+flip this default, because they wrap consequential effects. Their `onGuardError`
+option controls what happens:
+
+- **Default: `"deny"`** — if the policy cannot be evaluated, the call is
+  blocked. For AI tool calls and application actions, this is the safe choice.
+  - `guardTool` returns `{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }` to the model.
+  - `guardAction` throws `ArcjetGuardUnavailableError`, which is deliberately
+    distinct from `ArcjetDeniedError` so an unavailable guard can be alerted on
+    separately from a DENY decision. The error carries `cause` (the guard call
+    threw) or `decision` (a decision failed open), making the two
+    distinguishable in a handler.
+  - The capture `outcome` on that path is `"unavailable"`, not `"denied"`.
+  - The fail-closed tool result carries a fixed `retryAfterSeconds: 5` backoff
+    hint, not a prediction of when evaluation will succeed.
+
+- **Opt-out: `onGuardError: "allow"`** — if the policy cannot be evaluated,
+  proceed anyway. Use this for call sites where availability matters more than
+  enforcement — e.g. a read-only tool like an order lookup. During an Arcjet
+  incident, that call site is unaffected, but enforcement at other sites is
+  not.
+
+The layering resolves a potential confusion: the core `@arcjet/guard` client
+still fails open by construction and *reports* it via `hasFailedOpen()`; the
+agent-level helpers *decide* to block on it.
+
+### The explicit-call alternative
+
+`guardTool` extracts the context from the tool call automatically via the
+injected `contextSchema`, which is convenient. Alternatively, call `guardAction`
+directly inside the tool's `execute` block:
+
+```ts
+import { tool } from "ai";
+import { z } from "zod";
+
+const tools = {
+  getData: tool({
+    description: "Fetch data",
+    inputSchema: z.object({ id: z.string() }),
+    execute: async ({ id }) => {
+      return await guardAction(arcjet, ctx, { action: "data.fetched", rules: [dataLimit({ key: `user:${userId}`, requested: 1 })] }, () => fetchData(id));
+    },
+  }),
+};
+```
+
+This form keeps control flow visible but requires threading the context in by
+hand. Both are supported; choose based on whether you prefer automatic context
+extraction or explicit control flow.
+
+### What `correlationId` is for
+
+The `correlationId` is a user-supplied string that joins every guard decision
+and capture event from one logical run **or session** into a single sequence
+in the Arcjet console, so the best value is an ID the app already has and can
+search by (request ID, job ID, ticket ID, review ID). If omitted, a ULID is
+generated. Using a consistent ID across multiple tool calls and actions within
+the same logical operation makes it easy to reconstruct the full context of
+what happened.
+
+### Rules derived from tool input
+
+When wrapping a tool, `rules` can be a static array or a callback that
+computes rules from the tool's parsed input:
+
+```ts
+const tools = {
+  lookupOrder: guardTool(arcjet, lookupOrderTool, {
+    action: "order.looked-up",
+    rules: ({ orderNumber }) => [
+      // Key the rate limit to the specific order being looked up
+      orderLimit({ key: `order:${orderNumber}`, requested: 1 }),
+    ],
+  }),
+};
+```
+
+This allows rules to vary based on the request — e.g. stricter limits for
+certain users or resources. `guardAction` takes a resolved `RuleWithInput[]`,
+so compute the rules at the call site and pass the array.
+
+## Using the agent helpers
+
+### End-to-end example
+
+Here's a complete example protecting both an AI tool call and an app-invoked action:
+
+```ts
+import { launchArcjet, tokenBucket } from "@arcjet/guard";
+import { tool, jsonSchema, generateText } from "ai";
+import {
+  aiToolsContext,
+  captureAction,
+  createAgentContext,
+  guardAction,
+  guardTool,
+  securityMetadata,
+} from "@arcjet/guard/vercel-ai/v7";
+
+// 1. Launch the guard client once (at module scope)
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+// 2. Create security context (at request entry point)
+const ctx = createAgentContext({
+  correlationId: existingRunId, // omit to auto-generate
+  metadata: securityMetadata({ agent: "support", user: userId }),
+});
+
+// 3. Wrap a tool with rate limiting
+const emailLimit = tokenBucket({
+  bucket: "emails",
+  refillRate: 5,
+  intervalSeconds: 60,
+  maxTokens: 10,
+});
+
+const sendEmail = guardTool(
+  arcjet,
+  tool({
+    description: "Send an email",
+    inputSchema: jsonSchema<{ to: string; subject: string }>({
+      type: "object",
+      properties: { to: { type: "string" }, subject: { type: "string" } },
+      required: ["to", "subject"],
+    }),
+    execute: async ({ to, subject }) => ({ sent: true }),
+  }),
+  {
+    action: "email.sent",
+    rules: () => [emailLimit({ key: userId, requested: 1 })],
+  },
+);
+
+// 4. Pass context to AI SDK tools
+const tools = { sendEmail };
+const result = await generateText({
+  model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
+  instructions:
+    "If a tool is denied by Arcjet, explain to the user instead of retrying.",
+  tools,
+  toolsContext: aiToolsContext(ctx, tools),
+  prompt: userMessage, // User input or conversation context
+});
+
+// 5. Protect an app-invoked action (e.g., external API call)
+const commentLimit = tokenBucket({
+  refillRate: 10,
+  intervalSeconds: 60,
+  maxTokens: 20,
+});
+
+await guardAction(
+  arcjet,
+  ctx,
+  {
+    action: "github.pr-commented",
+    rules: [commentLimit({ key: userId })],
+  },
+  () => github.createComment({ body: result.text }),
+);
+
+// 6. Capture observational events
+captureAction(arcjet, ctx, {
+  action: "notification.sent",
+  metadata: { destination: "slack" },
+});
+```
+
+The `action` is the guard label: use `resource.verb` past tense (e.g. `order.looked-up`). Labels are validated server-side as slugs — lowercase letters, digits, dash, and dot only, starting and ending with a letter or digit. Underscores and uppercase are rejected.
+
+### Failure posture
+
+- **Guard errors** (API timeouts, network failures): Fail **closed** by default. Both unavailability signals — the `guard()` call throwing, and a decision whose `hasFailedOpen()` is true — block the call: `guardTool` returns `reason: "ERROR"` with `retryable: true` and `retryAfterSeconds: 5`, and `guardAction` throws `ArcjetGuardUnavailableError`. Set `onGuardError: "allow"` to opt back into fail-open, where the tool or action still runs. A warning is logged either way when `ARCJET_LOG_LEVEL` is `debug`, `info`, or `warn`.
+- **Capture events**: Fire-and-forget; never throw. They go through the client's [`capture()`](#capture), so a capture failure is diagnosed rather than raised, and it never fails the tool call or action it is recording.
+- **Missing correlation ID**: Guard checks still run (uncorrelated). The first uncorrelated tool call always warns; further ones respect `ARCJET_LOG_LEVEL`.
+
+### Which helper?
+
+| Scenario | Helper | Guard | Model Sees |
+|----------|--------|-------|-----------|
+| LLM decided to call a tool | `guardTool()` | Always | `ArcjetDenialResult` on DENY |
+| Your app invokes an action | `guardAction()` | Always | Throws `ArcjetDeniedError` on DENY |
+| Record that something happened | `captureAction()` | No | — (fire-and-forget) |
+
+`guardTool` and `guardAction` call `guard()` on every invocation, including when
+`rules` is omitted or resolves to `[]`. Submitting no rules is not the same as
+skipping the call: Arcjet still returns a decision, so the event is correlatable
+by `decisionId` and the call site stays reachable by policy configured outside
+your code. It does cost a round trip — reach for `captureAction()` when you want
+a record and no decision.
+
+### Threading context through boundaries
+
+The context is a plain JSON-serializable object: thread it explicitly through function calls and workflow/queue inputs (never use module state or `AsyncLocalStorage`). Each correlation ID is 1–256 printable ASCII characters; auto-generated ones are ULIDs.
+
+Thread an existing run identifier (request/job/review ID) so Arcjet data joins your own systems:
+
+```ts
+const ctx = createAgentContext({ correlationId: requestId });
+await workflow({ question, arcjet: ctx });
+```
+
+Or omit `correlationId` to auto-generate a ULID:
+
+```ts
+const ctx = createAgentContext();
+console.log(ctx.correlationId); // "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+```
+
+`guardAction` and `captureAction` take the context directly. Tools can't — the model calls them, so their context arrives through the AI SDK's `toolsContext` channel instead: `aiToolsContext(ctx, tools)` builds that map, which is why `guardTool` itself never takes `ctx`.
+
+> **Don't forget `toolsContext`.** The injected context type includes `undefined`, so the compiler will not flag a missing `toolsContext: aiToolsContext(ctx, tools)` at the `generateText` call. Omit it and guard checks run uncorrelated: the first uncorrelated call always warns, but further ones are silent unless `ARCJET_LOG_LEVEL` is set. Run once with `ARCJET_LOG_LEVEL=warn` and confirm the correlation ID reaches the dashboard.
+
+### Denial responses
+
+When a guard check denies a tool call, `guardTool` returns an `ArcjetDenialResult` object:
+
+```ts
+const result: ArcjetDenialResult = {
+  arcjetDenied: true,
+  reason: "RATE_LIMIT",
+  message: "Arcjet denied this tool call (RATE_LIMIT). It may be retried after 30 seconds.",
+  retryable: true,
+  retryAfterSeconds: 30,
+};
+```
+
+To reshape what the model sees on denial, pass `onDeny` in the tool policy — it receives the `DecisionDeny` and its return value replaces the default `ArcjetDenialResult`:
+
+```ts
+guardTool(arcjet, lookupOrderTool, {
+  action: "order.looked-up",
+  rules: () => [limit({ key: userId })],
+  onDeny: (decision) => ({ error: `blocked: ${decision.reason}` }),
+});
+```
+
+When a guard check denies an action, `guardAction` throws `ArcjetDeniedError` carrying the decision. Recommended system prompt line for tools:
+
+> If a tool call is denied by security policy, do not retry it; explain the denial to the user or try a different approach.
+
+### Security metadata vocabulary
+
+Use `securityMetadata()` keys consistently across your app:
+
+| Key | Meaning | Example |
+|-----|---------|---------|
+| `user` | Whose authority (opaque ID, not PII) | `"user_alice"`, `"org_123"` |
+| `agent` | Type or identity of the AI actor | `"support-agent"`, `"code-reviewer"` |
+| `workflow` | Process name this request belongs to | `"support-request"`, `"pr-review"` |
+| `dataClass` | Data sensitivity level | `"public"`, `"confidential"`, `"regulated"` |
+| `destination` | Where effects are sent | `"github"`, `"slack"`, `"email"` |
+| `reversibility` | Whether the action can be undone | `"reversible"`, `"compensable"`, `"irreversible"` |
+| `resource` | What's being acted on | `"order:12345"`, `"repo:owner/name"` |
+
+## Example
+
+For a complete working example integrating `@arcjet/guard` with the Vercel AI SDK, see [examples/nextjs-ai-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-ai-agent), which demonstrates wrapping agent tools with guard checks, enforcing rules on application-invoked actions, and emitting audit events joined by correlation ID.
+
+## Agent skill
+
+For integration help in Claude Code or other AI coding agents, a skill file is packaged with `@arcjet/guard`:
+
+```bash
+# Extract the skill from node_modules into your Claude Code skills directory:
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-agents ~/.claude/skills/
+
+# Or symlink it instead:
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-agents ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-agents` to start an integration session. The skill guides you through wrapping tools with guard checks, enforcing rules on app-invoked actions, and emitting audit events joined by correlation ID.
+
+Note: `npx skills add arcjet/skills` refers to the separate Anthropic skills marketplace, not the packaged file.
 
 ## MCP server
 

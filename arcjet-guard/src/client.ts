@@ -58,6 +58,16 @@ import { userAgent as defaultUserAgent } from "./version.ts";
  */
 const CAPTURE_SOURCE_SDK = "sdk";
 
+/**
+ * Deadline for a `guard()` call when `timeoutSeconds` is not set.
+ *
+ * Sized for the slowest rules rather than the fastest: content moderation and
+ * prompt injection take materially longer than a rate-limit check, and a
+ * deadline yields a fail-open decision, so a tight default drops those rules
+ * instead of evaluating them.
+ */
+const DEFAULT_TIMEOUT_MS = 2000;
+
 /** Options for creating a guard client. */
 export interface GuardClientOptions {
   /** Arcjet key. */
@@ -114,10 +124,14 @@ export function createGuardClient(options: GuardClientOptions): {
      *
      */
     async guard(opts: GuardOptions): Promise<Decision> {
-      if (opts.rules.length === 0) {
-        return failOpen("guard() requires at least one rule");
-      }
-
+      // No local short-circuit on an empty rule set. The server accepts zero
+      // submissions and answers with an empty ALLOW plus an `AJ1002` response
+      // error, which arrives as a decision-level warning — so the decision
+      // carries a real id and `hasFailedOpen()` stays false. Answering locally
+      // instead would synthesize a fail-open decision, and a caller that treats
+      // a failed-open decision as "policy not evaluated" would read that as an
+      // outage. It also keeps the call site reachable by server-side policy
+      // that needs no client-supplied rule.
       opts.signal?.throwIfAborted();
 
       // Metadata keys the SDK could not encode. These are reported to the server
@@ -191,7 +205,7 @@ export function createGuardClient(options: GuardClientOptions): {
       const timeoutMs =
         opts.timeoutSeconds !== undefined && opts.timeoutSeconds !== 0
           ? opts.timeoutSeconds * 1000
-          : 1000;
+          : DEFAULT_TIMEOUT_MS;
 
       const callOptions: {
         headers: Record<string, string>;
