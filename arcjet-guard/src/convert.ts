@@ -680,9 +680,10 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
           case: "resultComputed" as const,
           value: create(ResultLocalSensitiveInfoSchema, {
             conclusion: result.denied.length > 0 ? GuardConclusion.DENY : GuardConclusion.ALLOW,
-            // `detected` reports whether the detector found any sensitive
-            // entity. The conclusion and evidence remain denied-only.
-            detected: result.denied.length > 0 || result.allowed.length > 0,
+            // `detected`, like the evidence below, reports only recognized
+            // denied entities. Allowed findings remain private and do not
+            // affect the projected result.
+            detected: deniedTypes.length > 0,
             detectedEntityTypes: deniedTypes,
             detectedEntities: result.denied
               .map((entity) => {
