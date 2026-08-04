@@ -94,9 +94,13 @@ jobs:
           # Every package version must equal the tag being published (the
           # workspace releases in lockstep via linked-versions).
           expected="${EXPECTED#v}"
+          # `npm pkg get` prints a plain-text table unless asked for `--json`,
+          # and under `--workspaces` it keys each workspace to an object of the
+          # requested fields, so the value is read as `.value.version` rather
+          # than as the version string itself.
           # The jq program is single-quoted on purpose.
           # shellcheck disable=SC2016
-          mismatched="$(npm pkg get version --workspaces | jq -r --arg v "$expected" 'to_entries[] | select(.value != $v) | "\(.key)@\(.value)"')"
+          mismatched="$(npm pkg get version --workspaces --json | jq -r --arg v "$expected" 'to_entries[] | select(.value.version != $v) | "\(.key)@\(.value.version)"')"
           if [ -n "$mismatched" ]; then
             echo "$mismatched"
             echo "::error::These package versions do not match tag '$EXPECTED'; dispatch the workflow on the tag that matches the versions being published."
@@ -111,7 +115,7 @@ jobs:
           # anything else (1.7.0-rc.1, 2.0.0-beta.0, ...) must go to a
           # pre-release channel such as `rc`. Runs before the approval gate
           # so an invalid request fails without asking a human.
-          invalid="$(npm pkg get version --workspaces | jq -r 'to_entries[] | select(.value | test("^[0-9]+\\.[0-9]+\\.[0-9]+$") | not) | "\(.key)@\(.value)"')"
+          invalid="$(npm pkg get version --workspaces --json | jq -r 'to_entries[] | select(.value.version | test("^[0-9]+\\.[0-9]+\\.[0-9]+$") | not) | "\(.key)@\(.value.version)"')"
           if [ -n "$invalid" ]; then
             echo "$invalid"
             echo "::error::These versions do not look like stable releases; re-run with a pre-release dist-tag (e.g. 'rc') instead of 'latest'."
@@ -124,7 +128,7 @@ jobs:
         run: |
           # The jq program is single-quoted on purpose.
           # shellcheck disable=SC2016
-          versions="$(npm pkg get version --workspaces | jq -r 'to_entries[] | "\(.key)@\(.value)"')"
+          versions="$(npm pkg get version --workspaces --json | jq -r 'to_entries[] | "\(.key)@\(.value.version)"')"
           {
             echo "## Publish request"
             echo "- npm dist-tag: \`$DIST_TAG\`"
@@ -249,8 +253,10 @@ jobs:
           # run. Confirm every published package's requested dist-tag now
           # resolves to this version so that failure mode fails the job.
           version="${EXPECTED#v}"
-          # `.[]` yields the name value regardless of how npm keys the object.
-          names="$(npm pkg get name --workspaces | jq -r '.[]')"
+          # `.[].name` yields the name value regardless of how npm keys the
+          # object. As in preflight, `--json` is required for JSON output and
+          # each workspace's value is an object of the requested fields.
+          names="$(npm pkg get name --workspaces --json | jq -r '.[].name')"
           failed=""
           for pkg in $names; do
             # A just-written dist-tag can briefly lag the publish call, so
