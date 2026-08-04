@@ -60,7 +60,9 @@
     "prepublishOnly": "npm run build",
     "test-api": "node --test -- test/*.test.ts",
     "test-coverage": "node --experimental-test-coverage --test --test-coverage-branches=80 --test-coverage-exclude \"../{analyze-wasm,analyze,arcjet,cache,duration,env,headers,ip,logger,protocol,runtime,sprintf,stable-hash,transport}/**/*.{js,ts}\" --test-coverage-exclude \"test/**/*.{js,mjs,mts,ts}\" --test-coverage-functions=100 --test-coverage-lines=90 -- test/*.test.ts",
-    "test": "npm run build && npm run test-coverage"
+    "test": "npm run build && npm run api-report && npm run test-coverage",
+    "api-report": "api-extractor run --config config/api-extractor.index.json",
+    "api-report:update": "api-extractor run --local --config config/api-extractor.index.json"
   },
   "dependencies": {
     "@arcjet/env": "1.9.1",
@@ -73,6 +75,7 @@
   },
   "devDependencies": {
     "@arcjet/cache": "1.9.1",
+    "@microsoft/api-extractor": "7.58.12",
     "@types/node": "22.20.1",
     "fastify": "5.10.0",
     "tsdown": "0.22.7",

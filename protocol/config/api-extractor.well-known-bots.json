@@ -1,0 +1,7 @@
+{
+  "extends": "../../api-extractor-base.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/well-known-bots.d.ts",
+  "apiReport": {
+    "reportFileName": "well-known-bots.api.md"
+  }
+}

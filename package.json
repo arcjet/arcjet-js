@@ -16,6 +16,7 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.58.12",
     "oxfmt": "0.59.0",
     "oxlint": "1.74.0",
     "turbo": "2.10.5"

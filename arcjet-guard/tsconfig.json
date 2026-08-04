@@ -39,8 +39,7 @@
     "verbatimModuleSyntax": true
   },
   "include": [
-    "src/**/*.ts",
-    "test/api-surface/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules/",

@@ -1,0 +1,7 @@
+{
+  "extends": "../../api-extractor-base.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/edge-light.d.ts",
+  "apiReport": {
+    "reportFileName": "edge-light.api.md"
+  }
+}

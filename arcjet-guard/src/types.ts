@@ -65,7 +65,7 @@ export type Warning = {
  *
  * The remaining types are detected only when a {@link SensitiveInfoBackend}
  * that supports them is configured via
- * {@link LocalDetectSensitiveInfoConfigAllow.backend | `backend`}, such as
+ * the `backend` option, such as
  * `@arcjet/sensitive-info-rampart`. Listing one of them without such a backend
  * is a configuration error — {@link localDetectSensitiveInfo} throws rather
  * than accepting a rule that can never match:
@@ -1711,7 +1711,7 @@ export interface CaptureOptions {
    *
    * Values may be any JSON-serializable value, including nested objects and
    * arrays. The same limits and warning behavior as
-   * {@link GuardOptions.metadata} apply.
+   * `GuardOptions.metadata` apply.
    *
    * This must be a plain object. A class instance is dropped and reported as a
    * warning even when it would serialize cleanly, because accepting arbitrary
@@ -1793,7 +1793,7 @@ export interface GuardOptions {
    * workflow, agent run, or multi-step task (for example a web request that
    * kicks off a chain of tool calls).
    *
-   * Unlike {@link GuardOptions.metadata}, this is a dedicated, indexable field
+   * Unlike `GuardOptions.metadata`, this is a dedicated, indexable field
    * with a stable name. It does not affect the decision; it is stored alongside
    * the recorded decision so a chain of actions can be reconstructed.
    *

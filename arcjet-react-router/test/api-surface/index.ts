@@ -2,9 +2,11 @@
  * Every name `@arcjet/react-router` exports, listed so that `tsc` fails if one is removed,
  * renamed, or changes between a value and a type.
  *
- * Type-only exports are erased before anything runs, so the sibling
- * `exports.test.ts` cannot see them; a re-export names them without
- * instantiating them, which keeps generic exports out of the way.
+ * This entrypoint's declarations end in an `export *`, which API Extractor
+ * records verbatim rather than expanding, so `etc/` cannot say what the surface
+ * actually is. This list can, and does — including the names that arrive through
+ * the star. It exists to hold the surface still while the star is removed, and
+ * should go with it.
  *
  * This file is type checked and never executed.
  *

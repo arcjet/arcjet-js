@@ -1,0 +1,7 @@
+{
+  "extends": "../../api-extractor-base.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/convert.d.ts",
+  "apiReport": {
+    "reportFileName": "convert.api.md"
+  }
+}
