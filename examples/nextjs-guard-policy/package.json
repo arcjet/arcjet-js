@@ -1,0 +1,30 @@
+{
+  "name": "example-nextjs-guard-policy",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/provider-utils": "5.0.12",
+    "@arcjet/guard": "file:../../arcjet-guard",
+    "@arcjet/sensitive-info-rampart": "file:../../sensitive-info-rampart",
+    "ai": "7.0.36",
+    "next": "16.2.12",
+    "react": "^19",
+    "react-dom": "^19",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.9",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "sharp": "^0.35.0"
+  }
+}
