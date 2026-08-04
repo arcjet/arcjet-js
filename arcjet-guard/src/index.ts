@@ -77,7 +77,11 @@
 import type { Transport } from "@connectrpc/connect";
 
 import { createGuardClient } from "./client.ts";
-import type { DiagnosticLogger } from "./diagnostics.ts";
+import {
+  symbolArcjetDiagnostics,
+  type DiagnosticHandler,
+  type DiagnosticLogger,
+} from "./diagnostics.ts";
 import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
 // The type of `LaunchOptions.logger`, so a consumer can name what they have
 // to implement. `ArcjetDiagnostic` is deliberately not exported: it is the
@@ -155,6 +159,11 @@ export {
   localDetectSensitiveInfo,
   defineCustomRule,
 } from "./rules.ts";
+
+// Optional registration, and the free calls it enables. Nothing here takes
+// effect until an application calls `registerArcjet()` — `launchArcjet()`
+// itself touches no global state.
+export { registerArcjet, unregisterArcjet, guard, capture, flush } from "./registry.ts";
 
 /**
  * Options for `launchArcjet()`.
@@ -240,7 +249,10 @@ export function launchArcjetWithTransport(
     ...(options.logger === undefined ? {} : { logger: options.logger }),
   });
 
-  return {
+  // The diagnostics channel rides along under a symbol so registration can
+  // report a second `registerArcjet()` on the logger this client was launched
+  // with. It stays off `ArcjetGuard`, so it is not public API.
+  const launched: ArcjetGuard & { [symbolArcjetDiagnostics]: DiagnosticHandler } = {
     guard(opts: GuardOptions): Promise<Decision> {
       return client.guard(opts);
     },
@@ -250,7 +262,10 @@ export function launchArcjetWithTransport(
     flush(timeoutMs?: number): Promise<void> {
       return client.flush(timeoutMs);
     },
+    [symbolArcjetDiagnostics]: client[symbolArcjetDiagnostics],
   };
+
+  return launched;
 }
 
 /**

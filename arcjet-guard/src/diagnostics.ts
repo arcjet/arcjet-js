@@ -9,7 +9,7 @@ import { Logger } from "@arcjet/logger";
  */
 export type ArcjetDiagnostic = {
   /** Stable machine-readable code. */
-  code: "AJ1001" | "AJ1017" | "AJ3000" | "AJ3001" | "AJ3002" | "AJ3003";
+  code: "AJ1001" | "AJ1017" | "AJ3000" | "AJ3001" | "AJ3002" | "AJ3003" | "AJ3004" | "AJ3005";
   /** Static human-readable description. */
   message: string;
   /** Number of events affected, when relevant. */
@@ -20,6 +20,22 @@ export type ArcjetDiagnostic = {
 export type DiagnosticLogger = Pick<Logger, "warn">;
 
 export type DiagnosticHandler = (diagnostic: ArcjetDiagnostic) => void;
+
+/**
+ * Where a client keeps its diagnostics channel so the registry can reach it.
+ *
+ * A client's logger is captured inside `createGuardClient` and appears nowhere
+ * on the public `ArcjetGuard` surface. Registration needs it anyway: when a
+ * second client tries to register, the warning belongs to the application that
+ * registered *first*, on the logger it configured — not on whatever sink the
+ * late registrant brought with it.
+ *
+ * A symbol rather than a property so it stays invisible to `Object.keys` and
+ * cannot collide with anything on a caller-supplied object.
+ *
+ * @internal
+ */
+export const symbolArcjetDiagnostics: unique symbol = Symbol.for("arcjet.guard.diagnostics");
 
 /** A handler that holds counts back and can be asked to release them. */
 export type CoalescingDiagnosticHandler = DiagnosticHandler & {

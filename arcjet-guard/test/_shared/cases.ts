@@ -11,7 +11,14 @@
 
 import assert from "node:assert/strict";
 
-import type { ArcjetGuard, launchArcjetWithTransport } from "../../src/index.ts";
+import type {
+  ArcjetGuard,
+  capture as freeCapture,
+  guard as freeGuard,
+  launchArcjetWithTransport,
+  registerArcjet as register,
+  unregisterArcjet as unregister,
+} from "../../src/index.ts";
 import type {
   tokenBucket,
   fixedWindow,
@@ -47,6 +54,10 @@ export interface GuardSurface {
   detectPromptInjection: typeof detectPromptInjection;
   localDetectSensitiveInfo: typeof localDetectSensitiveInfo;
   defineCustomRule: typeof defineCustomRule;
+  registerArcjet: typeof register;
+  unregisterArcjet: typeof unregister;
+  guard: typeof freeGuard;
+  capture: typeof freeCapture;
 }
 
 /** A single test case. */
@@ -544,6 +555,56 @@ export const cases: TestCase[] = [
 
       assert.equal(capturedConfig["flag"], "on");
       assert.equal(capturedInput["value"], "test-value");
+    },
+  },
+  {
+    // Registration writes to a `Symbol.for` slot on `globalThis`, so this has
+    // to hold on every runtime rather than only on Node.
+    name: "registration routes the free calls to the registered client",
+    async run(s) {
+      const arcjet = guard(s, tokenBucketAllow);
+      const rule = s.tokenBucket({
+        bucket: "test",
+        refillRate: 10,
+        intervalSeconds: 60,
+        maxTokens: 100,
+      });
+
+      s.registerArcjet(arcjet);
+      try {
+        const decision = await s.guard({ label: "test", rules: [rule({ key: "user_1" })] });
+
+        assert.equal(decision.conclusion, "ALLOW");
+        assert.equal(decision.hasFailedOpen(), false);
+        // Never throws, even though nothing here can observe delivery.
+        s.capture({ action: "runtime.checked" });
+      } finally {
+        s.unregisterArcjet();
+      }
+    },
+  },
+  {
+    name: "the free guard() fails open when nothing is registered",
+    async run(s) {
+      s.unregisterArcjet();
+
+      const decision = await s.guard({ label: "test", rules: [] });
+
+      // Both halves matter: a plain ALLOW would pass the first assertion while
+      // being a silent bypass.
+      assert.equal(decision.conclusion, "ALLOW");
+      assert.equal(decision.hasFailedOpen(), true);
+    },
+  },
+  {
+    name: "launching a client registers nothing",
+    async run(s) {
+      s.unregisterArcjet();
+      guard(s, tokenBucketAllow);
+
+      const decision = await s.guard({ label: "test", rules: [] });
+
+      assert.equal(decision.hasFailedOpen(), true);
     },
   },
 ];

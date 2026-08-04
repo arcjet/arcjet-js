@@ -22,6 +22,10 @@ import {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 } from "@arcjet/guard";
 import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
 
@@ -37,6 +41,10 @@ const surface: GuardSurface = {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 };
 
 describe("In-memory shared cases (Bun entrypoint)", () => {

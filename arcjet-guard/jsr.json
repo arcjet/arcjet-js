@@ -5,7 +5,8 @@
   "exports": {
     ".": "./src/fetch.ts",
     "./node": "./src/node.ts",
-    "./fetch": "./src/fetch.ts"
+    "./fetch": "./src/fetch.ts",
+    "./testing": "./src/testing.ts"
   },
   "publish": {
     "include": ["src/**/*.ts", "src/**/*.js", "package.json", "LICENSE", "README.md"]

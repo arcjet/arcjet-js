@@ -38,6 +38,10 @@ import {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 } from "@arcjet/guard/fetch";
 
 import { cases } from "../_shared/cases.ts";
@@ -52,6 +56,10 @@ const surface: GuardSurface = {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 };
 
 describe("In-memory shared cases (Fetch entrypoint)", () => {

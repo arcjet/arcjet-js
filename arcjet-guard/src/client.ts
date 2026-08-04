@@ -20,7 +20,12 @@ import {
   type WaitUntil,
 } from "./capture-delivery.ts";
 import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
-import { createDiagnosticHandler, type DiagnosticLogger } from "./diagnostics.ts";
+import {
+  createDiagnosticHandler,
+  symbolArcjetDiagnostics,
+  type DiagnosticHandler,
+  type DiagnosticLogger,
+} from "./diagnostics.ts";
 import {
   type ArcjetMetadata,
   type LocalWarning,
@@ -29,6 +34,7 @@ import {
 } from "./metadata.ts";
 import {
   DecideService,
+  type CaptureEvent,
   CaptureEventSchema,
   CaptureRequestSchema,
   GuardRequestSchema,
@@ -91,6 +97,8 @@ export function createGuardClient(options: GuardClientOptions): {
   guard(opts: GuardOptions): Promise<Decision>;
   capture(opts: CaptureOptions): void;
   flush(timeoutMs?: number): Promise<void>;
+  /** @internal The client's diagnostics channel, for the registry. */
+  [symbolArcjetDiagnostics]: DiagnosticHandler;
 } {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
@@ -252,45 +260,10 @@ export function createGuardClient(options: GuardClientOptions): {
       // are inspected, so the entire normalization path stays inside this
       // boundary.
       try {
-        const normalized = normalizeCaptureOptions(opts);
-        if (normalized === undefined) {
-          diagnose({
-            code: "AJ3000",
-            message: "Capture input was invalid; the event was dropped",
-            count: 1,
-          });
+        const event = normalizeCaptureEvent(opts, diagnose);
+        if (event === undefined) {
           return;
         }
-
-        const occurredAtUnixMs =
-          normalized.occurredAt === undefined
-            ? BigInt(Date.now())
-            : BigInt(normalized.occurredAt.getTime());
-        const encoded = encodeMetadata(normalized.metadata);
-        const warnings = [
-          ...normalized.localWarnings,
-          ...encoded.localWarnings,
-          ...enforceMetadataBudget([encoded.metadataJson]),
-        ];
-        for (const warning of warnings) {
-          diagnose(warning);
-        }
-
-        const event = create(CaptureEventSchema, {
-          occurredAtUnixMs,
-          correlationId: normalized.correlationId ?? "",
-          decisionId: normalized.decisionId ?? "",
-          action: normalized.action,
-          metadataJson: encoded.metadataJson,
-          localWarnings: warnings.map((warning) => create(WarningSchema, warning)),
-          // Where the event came from. This method is the explicit-call path, so
-          // it is always "sdk"; a future span-conversion path sets "otlp". Not a
-          // caller option on purpose — the producer decides, not the caller.
-          //
-          // The server never defaults this, so sending nothing would leave the
-          // event's origin unknown rather than merely unstated.
-          source: CAPTURE_SOURCE_SDK,
-        });
 
         // Read outside the normalization above so a throwing getter costs the
         // delivery hint rather than the whole event.
@@ -311,7 +284,80 @@ export function createGuardClient(options: GuardClientOptions): {
       // burst of drops that stops reports only its first event.
       diagnose.drain();
     },
+
+    [symbolArcjetDiagnostics]: diagnose,
   };
+}
+
+/**
+ * Build the wire event for a `capture()` call, reporting anything dropped.
+ *
+ * Shared by the real client and the test client so a test asserts against the
+ * event that would actually have been sent — same validation, same metadata
+ * encoding, same warnings — rather than against the caller's raw input. A test
+ * client that recorded the input instead would pass on a `capture()` the real
+ * client drops.
+ *
+ * Returns `undefined` when the event is unusable, having already diagnosed it.
+ * Never throws: the whole path runs inside the boundary, because plain
+ * JavaScript callers can bypass the types and getters can throw while values
+ * are read.
+ *
+ * @internal Not part of the public API. Unreachable outside the package: the
+ * `exports` map lists no path that resolves here.
+ */
+export function normalizeCaptureEvent(
+  value: unknown,
+  diagnose: DiagnosticHandler,
+): CaptureEvent | undefined {
+  try {
+    const normalized = normalizeCaptureOptions(value);
+    if (normalized === undefined) {
+      diagnose({
+        code: "AJ3000",
+        message: "Capture input was invalid; the event was dropped",
+        count: 1,
+      });
+      return;
+    }
+
+    const occurredAtUnixMs =
+      normalized.occurredAt === undefined
+        ? BigInt(Date.now())
+        : BigInt(normalized.occurredAt.getTime());
+    const encoded = encodeMetadata(normalized.metadata);
+    const warnings = [
+      ...normalized.localWarnings,
+      ...encoded.localWarnings,
+      ...enforceMetadataBudget([encoded.metadataJson]),
+    ];
+    for (const warning of warnings) {
+      diagnose(warning);
+    }
+
+    return create(CaptureEventSchema, {
+      occurredAtUnixMs,
+      correlationId: normalized.correlationId ?? "",
+      decisionId: normalized.decisionId ?? "",
+      action: normalized.action,
+      metadataJson: encoded.metadataJson,
+      localWarnings: warnings.map((warning) => create(WarningSchema, warning)),
+      // Where the event came from. This is the explicit-call path, so it is
+      // always "sdk"; a future span-conversion path sets "otlp". Not a caller
+      // option on purpose — the producer decides, not the caller.
+      //
+      // The server never defaults this, so sending nothing would leave the
+      // event's origin unknown rather than merely unstated.
+      source: CAPTURE_SOURCE_SDK,
+    });
+  } catch {
+    diagnose({
+      code: "AJ3000",
+      message: "Capture input was invalid; the event was dropped",
+      count: 1,
+    });
+    return undefined;
+  }
 }
 
 /**
@@ -466,6 +512,25 @@ function toWarnings(localWarnings: readonly LocalWarning[]): readonly Warning[] 
     code: warning.code,
     message: warning.message,
   }));
+}
+
+/**
+ * Synthesize the fail-open ALLOW returned when a guard could not be evaluated.
+ *
+ * Shared with the registry so `guard()` with nothing registered degrades the
+ * same way a transport failure does: an ALLOW carrying an error result, so
+ * `hasFailedOpen()` reports true. Returning a plain ALLOW instead would be a
+ * silent bypass — indistinguishable from a guard that ran and permitted the
+ * call.
+ *
+ * @internal Not part of the public API. Unreachable outside the package: the
+ * `exports` map lists no path that resolves here.
+ */
+export function createFailOpenDecision(
+  message: string,
+  warnings: readonly Warning[] = [],
+): Decision {
+  return failOpen(message, warnings);
 }
 
 function failOpen(message: string, warnings: readonly Warning[] = []): Decision {

@@ -23,6 +23,10 @@ import {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 } from "@arcjet/guard";
 import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
 
@@ -44,6 +48,10 @@ const surface: GuardSurface = {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 };
 
 describe("In-memory shared cases (Node entrypoint)", () => {
@@ -185,5 +193,50 @@ describe("Runtime: guard HTTP/2 transport factory (keep-alive + recycling)", () 
     const result = input.result(decision);
     assert.ok(result);
     assert.equal(result.remainingTokens, 95);
+  });
+});
+
+describe("Package boundary: the exports map is the public API", () => {
+  test("@arcjet/guard/testing resolves to the test client", async () => {
+    const testing: Record<string, unknown> = await import("@arcjet/guard/testing");
+
+    assert.equal(typeof testing.registerTestClient, "function");
+  });
+
+  test("the registered test client receives the free calls", async () => {
+    const { registerTestClient } = await import("@arcjet/guard/testing");
+    const { capture: freeCapture } = await import("@arcjet/guard");
+
+    const arcjet = registerTestClient();
+    try {
+      freeCapture({ action: "runtime.checked" });
+
+      assert.equal(arcjet.captures[0]?.action, "runtime.checked");
+    } finally {
+      arcjet.unregister();
+    }
+  });
+
+  test("internal modules are unreachable through the package boundary", async () => {
+    // The seams the registry and test client share with the client — the
+    // fail-open decision, capture normalization, the diagnostics symbol — are
+    // `@internal`. `stripInternal` is not enabled, so the tag alone documents
+    // rather than enforces; encapsulation is what actually holds, and this is
+    // the check that proves it against the built package.
+    for (const specifier of [
+      "@arcjet/guard/registry",
+      "@arcjet/guard/client",
+      "@arcjet/guard/diagnostics",
+      "@arcjet/guard/symbol",
+    ]) {
+      await assert.rejects(
+        () => import(specifier),
+        (error: NodeJS.ErrnoException) => {
+          assert.equal(error.code, "ERR_PACKAGE_PATH_NOT_EXPORTED");
+          return true;
+        },
+        `${specifier} must not resolve`,
+      );
+    }
   });
 });

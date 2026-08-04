@@ -427,6 +427,126 @@ cannot encode is reported locally as `AJ1017` and also travels with that event i
 `local_warnings`. A queue-full event or failed batch never reaches the server, so
 those drops can only be reported locally.
 
+## Registering a client (optional)
+
+Passing the client explicitly is the recommended path, and everything above does
+exactly that. Registration is a shortcut for the case it cannot cover: code too
+deep in an application to be handed a client, where `capture()` is often most
+useful.
+
+`launchArcjet()` never touches global state. Registering is always a separate,
+explicit call:
+
+```ts
+// instrumentation.ts, or whatever runs at startup
+import { launchArcjet, registerArcjet } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+registerArcjet(arcjet); // now, and only now, something is global
+```
+
+`guard()`, `capture()` and `flush()` are then importable on their own, and reach
+the registered client:
+
+```ts
+// deep in application code — nothing was passed down here
+import { capture } from "@arcjet/guard";
+
+export async function refund(id: string): Promise<void> {
+  await issueRefund(id);
+  capture({ action: "refund.issued", metadata: { invoice: id } });
+}
+```
+
+### What happens with nothing registered
+
+`guard()` returns a fail-open `ALLOW` carrying an error result, so
+`decision.hasFailedOpen()` is `true`. It does not throw — these functions behave
+exactly like the client methods they forward to, and the never-throw contract
+holds.
+
+```ts
+const decision = await guard({ label: "refund", rules: [limit(input)] });
+
+if (decision.hasFailedOpen()) {
+  // No rule was evaluated. Treat this as "policy did not run", not as a pass.
+}
+```
+
+`capture()` drops the event, and `flush()` resolves immediately. Both report
+`AJ3005` locally. This is the one failure the SDK cannot report well: with no
+client there is no configured logger either, so it can only reach the default
+sink.
+
+### Registering twice, and unregistering
+
+Registration is guarded. A second client does not displace the first — the
+attempt is reported as `AJ3004` on the **incumbent's** logger, so a library or a
+stray second `launchArcjet()` cannot quietly redirect an application's telemetry
+to a different key. Registering the client that is already registered is a
+silent no-op.
+
+```ts
+registerArcjet(a); // registered: a
+registerArcjet(b); // warns; a stays registered
+unregisterArcjet(); // nothing registered
+```
+
+`unregisterArcjet()` takes no argument and clears whatever is there. That
+asymmetry is deliberate: requiring the client back would mean every teardown has
+to keep hold of it, which is the problem registration exists to avoid. The cost
+is that anything calling it clears the application's client and every free call
+afterwards fails open — so **libraries should not call it**. Libraries take a
+client explicitly. That is a convention, not something the SDK enforces.
+
+An explicitly passed client always wins; the registered one is only consulted
+when none was passed.
+
+### Testing
+
+`@arcjet/guard/testing` registers an in-memory client that records calls and
+talks to nothing:
+
+```ts
+import { registerTestClient } from "@arcjet/guard/testing";
+import { refund } from "./refund.ts";
+
+test("refund captures an event", () => {
+  const arcjet = registerTestClient();
+  try {
+    refund("inv_1");
+
+    assert.equal(arcjet.captures[0]?.action, "refund.issued");
+  } finally {
+    arcjet.unregister();
+  }
+});
+```
+
+It throws if a client is already registered, which surfaces a leak from an
+earlier test rather than letting this one assert against the wrong recorder.
+
+Captures are recorded synchronously, so assertions need no waiting, and they go
+through the same validation and metadata encoding as a real `capture()` — a call
+the real client would drop is not recorded here either.
+
+The client also implements `Symbol.dispose`, so `using` replaces the `finally`:
+
+```ts
+using arcjet = registerTestClient();
+```
+
+Note that the `using` *syntax* needs Node.js 24 or compilation through
+TypeScript; Node.js 22 defines `Symbol.dispose` but cannot parse `using`. Call
+`unregister()` directly if you are targeting Node.js 22 without a compile step.
+
+`guard()` on the test client records the call and returns a fail-open `ALLOW`,
+because no rule actually ran. It is not a mock server and does not let you stub
+per-rule verdicts. One consequence worth knowing: helpers that fail closed on a
+failed-open decision — `guardTool`, `guardAction` — will therefore **deny**
+against this client.
+
 ## Metadata
 
 `guard()` and every rule accept `metadata`: an object of string keys mapped to
@@ -614,7 +734,8 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
 
 ## SDK namespaces: core and integrations
 
-`@arcjet/guard` exposes two import layers:
+`@arcjet/guard` exposes two import layers, plus `@arcjet/guard/testing` for the
+in-memory test client:
 
 ### Core guard (`@arcjet/guard`)
 

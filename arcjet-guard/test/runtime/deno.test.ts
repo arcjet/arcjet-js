@@ -21,6 +21,10 @@ import {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 } from "../../src/index.ts";
 import { userAgent } from "../../src/version.ts";
 import { cases } from "../_shared/cases.ts";
@@ -34,6 +38,10 @@ const surface: GuardSurface = {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 };
 
 // Run all shared in-memory cases
