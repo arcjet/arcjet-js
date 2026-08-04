@@ -11,4 +11,4 @@
  * @packageDocumentation
  */
 
-export { ArcjetHeaders } from "../../src/index";
+export { ArcjetHeaders } from "../../src/exports/index";

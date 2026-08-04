@@ -1,16 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 
-import arcjet, {
-  type ArcjetCacheEntry,
-  type Primitive,
+import {
   ArcjetAllowDecision,
+  type ArcjetCacheEntry,
   ArcjetRateLimitReason,
   ArcjetReason,
-  fixedWindow,
-  slidingWindow,
-  tokenBucket,
-} from "../dist/index.js";
+} from "@arcjet/protocol";
+
+import arcjet, { fixedWindow, type Primitive, slidingWindow, tokenBucket } from "../dist/index.js";
 
 type Assert<T extends true> = T;
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for

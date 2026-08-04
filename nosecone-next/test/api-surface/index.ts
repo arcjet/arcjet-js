@@ -11,6 +11,12 @@
  * @packageDocumentation
  */
 
-export { createMiddleware, defaults, nonce, nosecone, withVercelToolbar } from "../../src/index";
+export {
+  createMiddleware,
+  defaults,
+  nonce,
+  nosecone,
+  withVercelToolbar,
+} from "../../src/exports/index";
 
-export type { NoseconeOptions, Options } from "../../src/index";
+export type { NoseconeOptions, Options } from "../../src/exports/index";

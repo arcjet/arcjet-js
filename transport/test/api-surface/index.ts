@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { createTransport } from "../../src/index";
+export { createTransport } from "../../src/exports/index";
 
-export type { ProxyEnvironment, TransportLogger, TransportOptions } from "../../src/index";
+export type { ProxyEnvironment, TransportLogger, TransportOptions } from "../../src/exports/index";

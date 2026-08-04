@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { readBody, readBodyWeb } from "../../src/index";
+export { readBody, readBodyWeb } from "../../src/exports/index";
 
-export type { ReadBodyOpts, ReadableStreamLike } from "../../src/index";
+export type { ReadBodyOpts, ReadableStreamLike } from "../../src/exports/index";

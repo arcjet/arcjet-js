@@ -2,18 +2,17 @@ import assert from "node:assert/strict";
 import { test, mock } from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
-import { ArcjetDenyDecision } from "@arcjet/protocol";
-
-import arcjet, {
+import {
+  ArcjetAllowDecision,
   type ArcjetCacheEntry,
   type ArcjetContext,
-  type ArcjetRequestDetails,
+  ArcjetDenyDecision,
   type ArcjetPromptInjectionDetectionRule,
-  ArcjetAllowDecision,
   ArcjetPromptInjectionReason,
-  detectPromptInjection,
-  sensitiveInfo,
-} from "../dist/index.js";
+  type ArcjetRequestDetails,
+} from "@arcjet/protocol";
+
+import arcjet, { detectPromptInjection, sensitiveInfo } from "../dist/index.js";
 
 test("detectPromptInjection", async function (t) {
   await t.test("should use defaults when no options provided", async function () {

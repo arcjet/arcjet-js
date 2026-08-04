@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { setRateLimitHeaders } from "../../src/index";
+export { setRateLimitHeaders } from "../../src/exports/index";
 
-export type { ArcjetCanDecorate } from "../../src/index";
+export type { ArcjetCanDecorate } from "../../src/exports/index";

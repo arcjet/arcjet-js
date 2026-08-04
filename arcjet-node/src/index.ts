@@ -26,9 +26,6 @@ import { createTransport } from "@arcjet/transport";
 /** SDK version. Updated by the release process. */
 const VERSION = "1.9.1"; // x-release-please-version
 
-// Re-export all named exports from the generic SDK
-export * from "arcjet";
-
 // An object with getters that access the `process.env.SOMEVAR` values directly.
 // This allows bundlers to replace the dot-notation access with string literals
 // while still allowing dynamic access in runtime environments.

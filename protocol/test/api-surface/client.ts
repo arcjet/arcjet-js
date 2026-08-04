@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { createClient, decideTimeout } from "../../src/client";
+export { createClient, decideTimeout } from "../../src/exports/client";
 
-export type { Client, ClientOptions } from "../../src/client";
+export type { Client, ClientOptions } from "../../src/exports/client";

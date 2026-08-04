@@ -2,58 +2,21 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
-
-import arcjet, {
+import {
   type ArcjetCacheEntry,
   type ArcjetContext,
   type ArcjetLogger,
-  type ArcjetRule,
   ArcjetReason,
-  createRemoteClient,
+  type ArcjetRule,
   detectBot,
   filter,
   sensitiveInfo,
   validateEmail,
-} from "../dist/index.js";
+} from "arcjet";
 
-test("@arcjet/react-router", async function (t) {
-  await t.test("should expose the public api", async function () {
-    assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
-      "ArcjetAllowDecision",
-      "ArcjetBotReason",
-      "ArcjetChallengeDecision",
-      "ArcjetDecision",
-      "ArcjetDenyDecision",
-      "ArcjetEdgeRuleReason",
-      "ArcjetEmailReason",
-      "ArcjetErrorDecision",
-      "ArcjetErrorReason",
-      "ArcjetFilterReason",
-      "ArcjetIpDetails",
-      "ArcjetPromptInjectionReason",
-      "ArcjetRateLimitReason",
-      "ArcjetReason",
-      "ArcjetRuleResult",
-      "ArcjetSensitiveInfoReason",
-      "ArcjetShieldReason",
-      "botCategories",
-      "cloudflare",
-      "createRemoteClient",
-      "default",
-      "detectBot",
-      "detectPromptInjection",
-      "experimental_detectPromptInjection",
-      "filter",
-      "fixedWindow",
-      "protectSignup",
-      "sensitiveInfo",
-      "shield",
-      "slidingWindow",
-      "tokenBucket",
-      "validateEmail",
-    ]);
-  });
-});
+import arcjet, { createRemoteClient } from "../dist/index.js";
+
+test("@arcjet/react-router", async function (t) {});
 
 test("`createRemoteClient`", async function (t) {
   await t.test("should create a client", async function () {

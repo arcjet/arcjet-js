@@ -19,6 +19,6 @@ export {
   string,
   stringSliceOrdered,
   uint32,
-} from "../../src/index";
+} from "../../src/exports/index";
 
-export type { FieldHasher, StringWriter } from "../../src/index";
+export type { FieldHasher, StringWriter } from "../../src/exports/index";

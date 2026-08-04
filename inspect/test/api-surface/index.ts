@@ -11,4 +11,4 @@
  * @packageDocumentation
  */
 
-export { isMissingUserAgent, isSpoofedBot, isVerifiedBot } from "../../src/index";
+export { isMissingUserAgent, isSpoofedBot, isVerifiedBot } from "../../src/exports/index";

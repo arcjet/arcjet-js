@@ -11,6 +11,10 @@
  * @packageDocumentation
  */
 
-export { createHook, csp, defaults, nosecone, withVercelToolbar } from "../../src/index";
+export { createHook, csp, defaults, nosecone, withVercelToolbar } from "../../src/exports/index";
 
-export type { ContentSecurityPolicyConfig, NoseconeOptions, Options } from "../../src/index";
+export type {
+  ContentSecurityPolicyConfig,
+  NoseconeOptions,
+  Options,
+} from "../../src/exports/index";

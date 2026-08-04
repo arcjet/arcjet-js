@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 
-import { type ArcjetCacheEntry, ArcjetShieldReason, shield } from "../dist/index.js";
+import { type ArcjetCacheEntry, ArcjetShieldReason } from "@arcjet/protocol";
+
+import { shield } from "../dist/index.js";
 
 class TestCache {
   get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(async () => [undefined, 0]);

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("`@arcjet/ip`: should expose the documented export paths", async function () {
@@ -27,7 +27,7 @@ test('`@arcjet/ip`: should expose the value exports of "."', async function () {
 
 test('`@arcjet/ip`: should expose exactly the api surface of "."', async function () {
   const [declaration, documented] = await Promise.all([
-    readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8"),
+    readFile(new URL("../dist/exports/index.d.ts", import.meta.url), "utf8"),
     readFile(new URL("./api-surface/index.ts", import.meta.url), "utf8"),
   ]);
 
@@ -39,7 +39,10 @@ test('`@arcjet/ip`: should expose exactly the api surface of "."', async functio
 
 test('`@arcjet/ip`: should publish every value of "." as a value', async function () {
   const module = await import("@arcjet/ip");
-  const declaration = await readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8");
+  const declaration = await readFile(
+    new URL("../dist/exports/index.d.ts", import.meta.url),
+    "utf8",
+  );
 
   // A name the declarations mark `type` is erased before it reaches a
   // consumer, so they cannot call it, subclass it, or use `instanceof` on it
@@ -61,7 +64,7 @@ test('`@arcjet/ip`: should expose the value exports of "./cloudflare"', async fu
 
 test('`@arcjet/ip`: should expose exactly the api surface of "./cloudflare"', async function () {
   const [declaration, documented] = await Promise.all([
-    readFile(new URL("../dist/cloudflare.d.ts", import.meta.url), "utf8"),
+    readFile(new URL("../dist/exports/cloudflare.d.ts", import.meta.url), "utf8"),
     readFile(new URL("./api-surface/cloudflare.ts", import.meta.url), "utf8"),
   ]);
 
@@ -73,7 +76,10 @@ test('`@arcjet/ip`: should expose exactly the api surface of "./cloudflare"', as
 
 test('`@arcjet/ip`: should publish every value of "./cloudflare" as a value', async function () {
   const module = await import("@arcjet/ip/cloudflare");
-  const declaration = await readFile(new URL("../dist/cloudflare.d.ts", import.meta.url), "utf8");
+  const declaration = await readFile(
+    new URL("../dist/exports/cloudflare.d.ts", import.meta.url),
+    "utf8",
+  );
 
   // A name the declarations mark `type` is erased before it reaches a
   // consumer, so they cannot call it, subclass it, or use `instanceof` on it
@@ -82,6 +88,20 @@ test('`@arcjet/ip`: should publish every value of "./cloudflare" as a value', as
     typeOnlyNames(declaration).filter((name) => name in module),
     [],
   );
+});
+
+test("`@arcjet/ip`: should not republish another package's internals", async function () {
+  const directory = new URL("../src/exports/", import.meta.url);
+  const files = await readdir(directory, { recursive: true });
+
+  for (const file of files.filter((name) => name.endsWith(".ts"))) {
+    const source = await readFile(new URL(file, directory), "utf8");
+
+    // An `/internal` entrypoint carries no compatibility guarantee, so
+    // nothing a consumer can reach may be built out of one. See
+    // `docs/PUBLIC_API.md`.
+    assert.doesNotMatch(source, /from "(?!\.)[^"]*\/internal(?:\/[^"]*)?"/);
+  }
 });
 
 test('`@arcjet/ip`: should expose "./cloudflare.js" as an alias of "./cloudflare"', async function () {

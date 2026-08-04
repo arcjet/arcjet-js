@@ -2,16 +2,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
-import type { Client } from "@arcjet/protocol/client.js";
-
-import arcjet, {
+import {
+  ArcjetAllowDecision,
   type ArcjetCacheEntry,
   type ArcjetContext,
-  type ArcjetRequest,
-  ArcjetAllowDecision,
   ArcjetReason,
-  protectSignup,
-} from "../dist/index.js";
+} from "@arcjet/protocol";
+import type { Client } from "@arcjet/protocol/client.js";
+
+import arcjet, { type ArcjetRequest, protectSignup } from "../dist/index.js";
 
 const exampleKey = "ajkey_yourkey";
 

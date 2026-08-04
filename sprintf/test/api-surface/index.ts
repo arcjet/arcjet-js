@@ -11,4 +11,4 @@
  * @packageDocumentation
  */
 
-export { sprintf } from "../../src/index";
+export { sprintf } from "../../src/exports/index";

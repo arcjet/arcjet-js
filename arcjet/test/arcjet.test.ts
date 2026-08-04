@@ -3,18 +3,18 @@ import test from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
 import { ArcjetHeaders } from "@arcjet/headers";
-import type { Client } from "@arcjet/protocol/client.js";
-
-import arcjet, {
+import {
+  ArcjetAllowDecision,
   type ArcjetConclusion,
   type ArcjetContext,
-  type ArcjetRequest,
-  type ArcjetRule,
-  ArcjetAllowDecision,
   ArcjetDenyDecision,
   ArcjetReason,
+  type ArcjetRule,
   ArcjetRuleResult,
-} from "../dist/index.js";
+} from "@arcjet/protocol";
+import type { Client } from "@arcjet/protocol/client.js";
+
+import arcjet, { type ArcjetRequest } from "../dist/index.js";
 
 const exampleKey = "ajkey_yourkey";
 

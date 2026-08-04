@@ -28,4 +28,4 @@ export {
   ArcjetRuleStateToProtocol,
   ArcjetRuleToProtocol,
   ArcjetStackToProtocol,
-} from "../../src/convert";
+} from "../../src/exports/convert";

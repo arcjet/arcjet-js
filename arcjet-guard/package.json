@@ -23,50 +23,50 @@
     "skills/"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/exports/node.js",
+  "types": "./dist/exports/node.d.ts",
   "exports": {
     ".": {
       "bun": {
-        "types": "./dist/bun.d.ts",
-        "import": "./dist/bun.js"
+        "types": "./dist/exports/bun.d.ts",
+        "import": "./dist/exports/bun.js"
       },
       "edge-light": {
-        "types": "./dist/fetch.d.ts",
-        "import": "./dist/fetch.js"
+        "types": "./dist/exports/fetch.d.ts",
+        "import": "./dist/exports/fetch.js"
       },
       "workerd": {
-        "types": "./dist/fetch.d.ts",
-        "import": "./dist/fetch.js"
+        "types": "./dist/exports/fetch.d.ts",
+        "import": "./dist/exports/fetch.js"
       },
       "deno": {
-        "types": "./dist/fetch.d.ts",
-        "import": "./dist/fetch.js"
+        "types": "./dist/exports/fetch.d.ts",
+        "import": "./dist/exports/fetch.js"
       },
       "node": {
-        "types": "./dist/node.d.ts",
-        "import": "./dist/node.js"
+        "types": "./dist/exports/node.d.ts",
+        "import": "./dist/exports/node.js"
       },
       "default": {
-        "types": "./dist/fetch.d.ts",
-        "import": "./dist/fetch.js"
+        "types": "./dist/exports/fetch.d.ts",
+        "import": "./dist/exports/fetch.js"
       }
     },
     "./node": {
-      "types": "./dist/node.d.ts",
-      "import": "./dist/node.js"
+      "types": "./dist/exports/node.d.ts",
+      "import": "./dist/exports/node.js"
     },
     "./bun": {
-      "types": "./dist/bun.d.ts",
-      "import": "./dist/bun.js"
+      "types": "./dist/exports/bun.d.ts",
+      "import": "./dist/exports/bun.js"
     },
     "./fetch": {
-      "types": "./dist/fetch.d.ts",
-      "import": "./dist/fetch.js"
+      "types": "./dist/exports/fetch.d.ts",
+      "import": "./dist/exports/fetch.js"
     },
     "./vercel-ai/v7": {
-      "types": "./dist/vercel-ai/v7/index.d.ts",
-      "import": "./dist/vercel-ai/v7/index.js"
+      "types": "./dist/exports/vercel-ai/v7/index.d.ts",
+      "import": "./dist/exports/vercel-ai/v7/index.js"
     }
   },
   "publishConfig": {

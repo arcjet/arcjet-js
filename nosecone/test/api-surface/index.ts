@@ -37,7 +37,7 @@ export {
   defaults,
   nosecone,
   withVercelToolbar,
-} from "../../src/index";
+} from "../../src/exports/index";
 
 export type {
   ActionSource,
@@ -64,4 +64,4 @@ export type {
   Source,
   StaticOrDynamic,
   StrictTransportSecurityConfig,
-} from "../../src/index";
+} from "../../src/exports/index";

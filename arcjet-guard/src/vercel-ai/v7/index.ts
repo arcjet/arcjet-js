@@ -67,4 +67,21 @@
 export { guardTool } from "./guard-tool.ts";
 export type { ArcjetDenialResult, GuardToolPolicy } from "./guard-tool.ts";
 export { aiToolsContext } from "./tools-context.ts";
-export * from "../../agents/index.ts";
+export {
+  ArcjetDeniedError,
+  ArcjetGuardUnavailableError,
+  captureAction,
+  createAgentContext,
+  guardAction,
+  securityMetadata,
+} from "../../agents/index.ts";
+
+export type {
+  ArcjetAgentClient,
+  ArcjetAgentContext,
+  CaptureActionOptions,
+  CaptureOptions,
+  GuardActionPolicy,
+  OnGuardError,
+  SecurityMetadataFields,
+} from "../../agents/index.ts";

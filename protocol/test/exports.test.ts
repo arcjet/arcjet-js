@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("`@arcjet/protocol`: should expose the documented export paths", async function () {
@@ -58,7 +58,7 @@ test('`@arcjet/protocol`: should expose the value exports of "."', async functio
 
 test('`@arcjet/protocol`: should expose exactly the api surface of "."', async function () {
   const [declaration, documented] = await Promise.all([
-    readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8"),
+    readFile(new URL("../dist/exports/index.d.ts", import.meta.url), "utf8"),
     readFile(new URL("./api-surface/index.ts", import.meta.url), "utf8"),
   ]);
 
@@ -70,7 +70,10 @@ test('`@arcjet/protocol`: should expose exactly the api surface of "."', async f
 
 test('`@arcjet/protocol`: should publish every value of "." as a value', async function () {
   const module = await import("@arcjet/protocol");
-  const declaration = await readFile(new URL("../dist/index.d.ts", import.meta.url), "utf8");
+  const declaration = await readFile(
+    new URL("../dist/exports/index.d.ts", import.meta.url),
+    "utf8",
+  );
 
   // A name the declarations mark `type` is erased before it reaches a
   // consumer, so they cannot call it, subclass it, or use `instanceof` on it
@@ -89,7 +92,7 @@ test('`@arcjet/protocol`: should expose the value exports of "./client"', async 
 
 test('`@arcjet/protocol`: should expose exactly the api surface of "./client"', async function () {
   const [declaration, documented] = await Promise.all([
-    readFile(new URL("../dist/client.d.ts", import.meta.url), "utf8"),
+    readFile(new URL("../dist/exports/client.d.ts", import.meta.url), "utf8"),
     readFile(new URL("./api-surface/client.ts", import.meta.url), "utf8"),
   ]);
 
@@ -101,7 +104,10 @@ test('`@arcjet/protocol`: should expose exactly the api surface of "./client"', 
 
 test('`@arcjet/protocol`: should publish every value of "./client" as a value', async function () {
   const module = await import("@arcjet/protocol/client");
-  const declaration = await readFile(new URL("../dist/client.d.ts", import.meta.url), "utf8");
+  const declaration = await readFile(
+    new URL("../dist/exports/client.d.ts", import.meta.url),
+    "utf8",
+  );
 
   // A name the declarations mark `type` is erased before it reaches a
   // consumer, so they cannot call it, subclass it, or use `instanceof` on it
@@ -140,7 +146,7 @@ test('`@arcjet/protocol`: should expose the value exports of "./convert"', async
 
 test('`@arcjet/protocol`: should expose exactly the api surface of "./convert"', async function () {
   const [declaration, documented] = await Promise.all([
-    readFile(new URL("../dist/convert.d.ts", import.meta.url), "utf8"),
+    readFile(new URL("../dist/exports/convert.d.ts", import.meta.url), "utf8"),
     readFile(new URL("./api-surface/convert.ts", import.meta.url), "utf8"),
   ]);
 
@@ -152,7 +158,10 @@ test('`@arcjet/protocol`: should expose exactly the api surface of "./convert"',
 
 test('`@arcjet/protocol`: should publish every value of "./convert" as a value', async function () {
   const module = await import("@arcjet/protocol/convert");
-  const declaration = await readFile(new URL("../dist/convert.d.ts", import.meta.url), "utf8");
+  const declaration = await readFile(
+    new URL("../dist/exports/convert.d.ts", import.meta.url),
+    "utf8",
+  );
 
   // A name the declarations mark `type` is erased before it reaches a
   // consumer, so they cannot call it, subclass it, or use `instanceof` on it
@@ -171,7 +180,7 @@ test('`@arcjet/protocol`: should expose the value exports of "./well-known-bots"
 
 test('`@arcjet/protocol`: should expose exactly the api surface of "./well-known-bots"', async function () {
   const [declaration, documented] = await Promise.all([
-    readFile(new URL("../dist/well-known-bots.d.ts", import.meta.url), "utf8"),
+    readFile(new URL("../dist/exports/well-known-bots.d.ts", import.meta.url), "utf8"),
     readFile(new URL("./api-surface/well-known-bots.ts", import.meta.url), "utf8"),
   ]);
 
@@ -184,7 +193,7 @@ test('`@arcjet/protocol`: should expose exactly the api surface of "./well-known
 test('`@arcjet/protocol`: should publish every value of "./well-known-bots" as a value', async function () {
   const module = await import("@arcjet/protocol/well-known-bots");
   const declaration = await readFile(
-    new URL("../dist/well-known-bots.d.ts", import.meta.url),
+    new URL("../dist/exports/well-known-bots.d.ts", import.meta.url),
     "utf8",
   );
 
@@ -208,7 +217,7 @@ test('`@arcjet/protocol`: should expose the value exports of "./typeid"', async 
 
 test('`@arcjet/protocol`: should expose exactly the api surface of "./typeid"', async function () {
   const [declaration, documented] = await Promise.all([
-    readFile(new URL("../dist/typeid.d.ts", import.meta.url), "utf8"),
+    readFile(new URL("../dist/exports/typeid.d.ts", import.meta.url), "utf8"),
     readFile(new URL("./api-surface/typeid.ts", import.meta.url), "utf8"),
   ]);
 
@@ -220,7 +229,10 @@ test('`@arcjet/protocol`: should expose exactly the api surface of "./typeid"', 
 
 test('`@arcjet/protocol`: should publish every value of "./typeid" as a value', async function () {
   const module = await import("@arcjet/protocol/typeid");
-  const declaration = await readFile(new URL("../dist/typeid.d.ts", import.meta.url), "utf8");
+  const declaration = await readFile(
+    new URL("../dist/exports/typeid.d.ts", import.meta.url),
+    "utf8",
+  );
 
   // A name the declarations mark `type` is erased before it reaches a
   // consumer, so they cannot call it, subclass it, or use `instanceof` on it
@@ -229,6 +241,20 @@ test('`@arcjet/protocol`: should publish every value of "./typeid" as a value', 
     typeOnlyNames(declaration).filter((name) => name in module),
     [],
   );
+});
+
+test("`@arcjet/protocol`: should not republish another package's internals", async function () {
+  const directory = new URL("../src/exports/", import.meta.url);
+  const files = await readdir(directory, { recursive: true });
+
+  for (const file of files.filter((name) => name.endsWith(".ts"))) {
+    const source = await readFile(new URL(file, directory), "utf8");
+
+    // An `/internal` entrypoint carries no compatibility guarantee, so
+    // nothing a consumer can reach may be built out of one. See
+    // `docs/PUBLIC_API.md`.
+    assert.doesNotMatch(source, /from "(?!\.)[^"]*\/internal(?:\/[^"]*)?"/);
+  }
 });
 
 test('`@arcjet/protocol`: should expose "./client.js" as an alias of "./client"', async function () {

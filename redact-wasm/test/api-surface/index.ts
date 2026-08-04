@@ -11,10 +11,10 @@
  * @packageDocumentation
  */
 
-export { initializeWasm } from "../../src/index";
+export { initializeWasm } from "../../src/exports/index";
 
 export type {
   RedactSensitiveInfoConfig,
   RedactedSensitiveInfoEntity,
   SensitiveInfoEntity,
-} from "../../src/index";
+} from "../../src/exports/index";

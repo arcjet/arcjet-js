@@ -11,4 +11,4 @@
  * @packageDocumentation
  */
 
-export { parse } from "../../src/index";
+export { parse } from "../../src/exports/index";

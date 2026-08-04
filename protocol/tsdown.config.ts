@@ -21,7 +21,7 @@ const externalizeProto = {
 };
 
 export default defineConfig({
-  entry: ["src/*.ts"],
+  entry: ["src/*.ts", "src/exports/**/*.ts"],
   format: "esm",
   platform: "neutral",
   deps: { neverBundle: [/^node:/, /^astro:/, "bun", "$env/dynamic/private"] },

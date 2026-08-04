@@ -55,8 +55,6 @@ import type { Client } from "@arcjet/protocol/client.js";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
 
-export * from "@arcjet/protocol";
-
 function assert(condition: boolean, msg: string): asserts condition {
   if (!condition) {
     throw new Error(msg);

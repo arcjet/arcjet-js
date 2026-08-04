@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { redact } from "../../src/index";
+export { redact } from "../../src/exports/index";
 
-export type { ArcjetSensitiveInfoType, RedactOptions } from "../../src/index";
+export type { ArcjetSensitiveInfoType, RedactOptions } from "../../src/exports/index";

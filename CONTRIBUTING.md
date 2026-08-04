@@ -109,6 +109,94 @@ is picked up with its structure preserved.
 > `@arcjet/guard` README rather than worked around, because the workaround
 > would mean giving up optional peers for everyone.
 
+## Public API
+
+Every published package keeps its public API in `src/exports/`. One file per
+published entrypoint, naming every export. Everything else under `src/` is
+implementation.
+
+```
+arcjet-node/
+  src/
+    exports/
+      index.ts     <- the public API of `@arcjet/node`
+    index.ts       <- implementation
+    request.ts     <- implementation
+```
+
+The export map points at the built form of those files and nothing else.
+
+A module that says `export * from "arcjet"` publishes whatever that package
+happens to export, today and in every future version. Nobody decided to publish
+those names, and nothing fails when the set changes. Naming them instead means
+the public API is a list somebody wrote, a reviewer can read in one file, and a
+test can compare against.
+
+There are no `export *` re-exports left in this repository's sources. Add one
+under `src/exports/` and the package's export test fails the moment it widens
+the surface, because the test compares the built declarations against the list
+rather than against the star.
+
+### Adding an export
+
+1. Add it to the relevant `src/exports/*.ts` file.
+2. Add it to `test/api-surface/*.ts`, which `tsc` checks and never runs. That is
+   the only place a type-only export is visible to a test, because types are
+   erased before anything executes.
+3. Run the package's tests. `test/exports.test.ts` compares the built
+   declarations against that list and reports what is missing.
+
+Per-runtime entrypoints (`edge-light`, `workerd`, `bun`, `deno`) each get their
+own file under `src/exports/`. They are not obliged to publish the same names —
+`@arcjet/redact-wasm` does not — but any difference should be deliberate and
+written down in the file that causes it.
+
+### Sharing implementation between packages
+
+Sometimes a package here needs something another package does not publish. **Do
+not widen the public API to make that work.** A name added for one internal
+caller is a name every consumer can then depend on, and removing it later is a
+breaking change nobody meant to make.
+
+Declare a separate entrypoint instead — `"./internal"`, built from
+`src/exports/internal.ts` — and give it the guarantee it does not have:
+
+```ts
+/**
+ * Implementation shared with other Arcjet packages.
+ *
+ * Not part of the public API. Anything here may change or disappear in any
+ * release, including a patch. Nothing outside this repository should import
+ * it, and nothing under a public entrypoint may re-export from it.
+ *
+ * @internal
+ * @packageDocumentation
+ */
+```
+
+Mark the individual exports `@internal` as well, so the tag survives into
+generated documentation.
+
+Two rules hold this together, both enforced by each package's
+`test/exports.test.ts`:
+
+- A public entrypoint may not re-export from another package's `/internal`
+  entrypoint. Internals do not become public by being passed along.
+- An `/internal` entrypoint is still pinned by the export tests, so its surface
+  cannot drift unnoticed. It simply is not promised to anyone.
+
+No package needs one yet. The pattern is written down so that the first one that
+does has somewhere to go other than the public API.
+
+`@arcjet/astro` and `@arcjet/nuxt` are a known exception: they serve
+`src/internal.ts` as a framework virtual module (`#arcjet`) rather than through
+the export map, reading `dist/internal.js` and `dist/internal.d.ts` off disk and
+injecting them into the user's project. Despite the name, that surface is
+public. It lists its exports explicitly for the same reason everything else
+does, but it does not live under `src/exports/` and the export tests do not
+cover it. Moving it is worth doing separately, since the integration's file
+lookup and the injected declaration path both depend on where it sits.
+
 ## Examples
 
 Examples should be scaffolded using the scaffolding tool recommended by the
@@ -220,3 +308,6 @@ released, or a release run will fail:
    hand (`npm publish --workspace @arcjet/<name>`), then configure
    [trusted publishing](#npm-trusted-publishing) for it.
 4. After that, it publishes automatically alongside everything else.
+
+Give it a `src/exports/` entrypoint and the tests that pin it, as described in
+[Public API](#public-api).

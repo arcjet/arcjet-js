@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
+import { ArcjetBotReason, type ArcjetCacheEntry } from "@arcjet/protocol";
 
-import { type ArcjetCacheEntry, ArcjetBotReason, detectBot } from "../dist/index.js";
+import { detectBot } from "../dist/index.js";
 
 describe("Primitive > detectBot", () => {
   test("should throw w/o `options`", async function () {

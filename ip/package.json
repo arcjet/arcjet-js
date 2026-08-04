@@ -28,20 +28,20 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/exports/index.js",
+  "types": "./dist/exports/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/exports/index.d.ts",
+      "default": "./dist/exports/index.js"
     },
     "./cloudflare": {
-      "types": "./dist/cloudflare.d.ts",
-      "default": "./dist/cloudflare.js"
+      "types": "./dist/exports/cloudflare.d.ts",
+      "default": "./dist/exports/cloudflare.js"
     },
     "./cloudflare.js": {
-      "types": "./dist/cloudflare.d.ts",
-      "default": "./dist/cloudflare.js"
+      "types": "./dist/exports/cloudflare.d.ts",
+      "default": "./dist/exports/cloudflare.js"
     },
     "./package.json": "./package.json"
   },

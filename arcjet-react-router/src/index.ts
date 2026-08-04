@@ -22,8 +22,6 @@ import arcjetCore, {
 
 /** SDK version. Updated by the release process. */
 const VERSION = "1.9.1"; // x-release-please-version
-
-export * from "arcjet";
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
 

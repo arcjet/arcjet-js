@@ -28,21 +28,21 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/exports/index.js",
+  "types": "./dist/exports/index.d.ts",
   "exports": {
     ".": {
       "edge-light": {
-        "types": "./dist/edge-light.d.ts",
-        "default": "./dist/edge-light.js"
+        "types": "./dist/exports/edge-light.d.ts",
+        "default": "./dist/exports/edge-light.js"
       },
       "workerd": {
-        "types": "./dist/workerd.d.ts",
-        "default": "./dist/workerd.js"
+        "types": "./dist/exports/workerd.d.ts",
+        "default": "./dist/exports/workerd.js"
       },
       "default": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
+        "types": "./dist/exports/index.d.ts",
+        "default": "./dist/exports/index.js"
       }
     },
     "./package.json": "./package.json"

@@ -11,7 +11,7 @@
  * @packageDocumentation
  */
 
-export { initializeWasm } from "../../src/index";
+export { initializeWasm } from "../../src/exports/index";
 
 export type {
   BotConfig,
@@ -25,4 +25,4 @@ export type {
   SensitiveInfoEntities,
   SensitiveInfoEntity,
   SensitiveInfoResult,
-} from "../../src/index";
+} from "../../src/exports/index";

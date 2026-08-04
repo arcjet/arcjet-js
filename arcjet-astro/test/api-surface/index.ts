@@ -25,6 +25,6 @@ export {
   slidingWindow,
   tokenBucket,
   validateEmail,
-} from "../../src/index";
+} from "../../src/exports/index";
 
-export type { ArcjetOptions, ProxyService, RemoteClientOptions } from "../../src/index";
+export type { ArcjetOptions, ProxyService, RemoteClientOptions } from "../../src/exports/index";

@@ -2,16 +2,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
-import { ArcjetDenyDecision, ArcjetReason } from "@arcjet/protocol";
-
-import arcjet, {
+import {
+  ArcjetAllowDecision,
   type ArcjetCacheEntry,
   type ArcjetContext,
-  type ArcjetRequestDetails,
-  ArcjetAllowDecision,
+  ArcjetDenyDecision,
   ArcjetErrorReason,
-  filter,
-} from "../dist/index.js";
+  ArcjetReason,
+  type ArcjetRequestDetails,
+} from "@arcjet/protocol";
+
+import arcjet, { filter } from "../dist/index.js";
 
 test("filter", async function (t) {
   await t.test("should throw w/o `options`", async function () {

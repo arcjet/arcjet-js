@@ -28,44 +28,44 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/exports/index.js",
+  "types": "./dist/exports/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/exports/index.d.ts",
+      "default": "./dist/exports/index.js"
     },
     "./client": {
-      "types": "./dist/client.d.ts",
-      "default": "./dist/client.js"
+      "types": "./dist/exports/client.d.ts",
+      "default": "./dist/exports/client.js"
     },
     "./client.js": {
-      "types": "./dist/client.d.ts",
-      "default": "./dist/client.js"
+      "types": "./dist/exports/client.d.ts",
+      "default": "./dist/exports/client.js"
     },
     "./convert": {
-      "types": "./dist/convert.d.ts",
-      "default": "./dist/convert.js"
+      "types": "./dist/exports/convert.d.ts",
+      "default": "./dist/exports/convert.js"
     },
     "./convert.js": {
-      "types": "./dist/convert.d.ts",
-      "default": "./dist/convert.js"
+      "types": "./dist/exports/convert.d.ts",
+      "default": "./dist/exports/convert.js"
     },
     "./well-known-bots": {
-      "types": "./dist/well-known-bots.d.ts",
-      "default": "./dist/well-known-bots.js"
+      "types": "./dist/exports/well-known-bots.d.ts",
+      "default": "./dist/exports/well-known-bots.js"
     },
     "./well-known-bots.js": {
-      "types": "./dist/well-known-bots.d.ts",
-      "default": "./dist/well-known-bots.js"
+      "types": "./dist/exports/well-known-bots.d.ts",
+      "default": "./dist/exports/well-known-bots.js"
     },
     "./typeid": {
-      "types": "./dist/typeid.d.ts",
-      "default": "./dist/typeid.js"
+      "types": "./dist/exports/typeid.d.ts",
+      "default": "./dist/exports/typeid.js"
     },
     "./typeid.js": {
-      "types": "./dist/typeid.d.ts",
-      "default": "./dist/typeid.js"
+      "types": "./dist/exports/typeid.d.ts",
+      "default": "./dist/exports/typeid.js"
     },
     "./proto/*": "./dist/proto/*",
     "./package.json": "./package.json"

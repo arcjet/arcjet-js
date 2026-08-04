@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["src/*.ts"],
+  entry: ["src/*.ts", "src/exports/**/*.ts"],
   format: "esm",
   platform: "neutral",
   // Externalize Node builtins. Package dependencies (such as

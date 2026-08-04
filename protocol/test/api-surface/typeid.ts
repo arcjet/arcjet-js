@@ -11,4 +11,4 @@
  * @packageDocumentation
  */
 
-export { CROCKFORD_ALPHABET, typeid, uuidV7Bytes } from "../../src/typeid";
+export { CROCKFORD_ALPHABET, typeid, uuidV7Bytes } from "../../src/exports/typeid";

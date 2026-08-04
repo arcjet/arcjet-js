@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { baseUrl, isDevelopment, logLevel, platform } from "../../src/index";
+export { baseUrl, isDevelopment, logLevel, platform } from "../../src/exports/index";
 
-export type { Env, Platform } from "../../src/index";
+export type { Env, Platform } from "../../src/exports/index";

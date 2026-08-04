@@ -43,7 +43,7 @@ export {
   slidingWindow,
   tokenBucket,
   validateEmail,
-} from "../../src/index";
+} from "../../src/exports/index";
 
 export type {
   Arcjet,
@@ -105,4 +105,4 @@ export type {
   SlidingWindowRateLimitOptions,
   TokenBucketRateLimitOptions,
   categories,
-} from "../../src/index";
+} from "../../src/exports/index";

@@ -2,17 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
+import {
+  ArcjetAllowDecision,
+  type ArcjetContext,
+  ArcjetReason,
+  type ArcjetRule,
+  ArcjetRuleResult,
+} from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
 
-import arcjet, {
-  type ArcjetContext,
-  type ArcjetRequest,
-  type ArcjetRule,
-  type Arcjet,
-  ArcjetAllowDecision,
-  ArcjetReason,
-  ArcjetRuleResult,
-} from "../dist/index.js";
+import arcjet, { type Arcjet, type ArcjetRequest } from "../dist/index.js";
 
 type Assert<T extends true> = T;
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for

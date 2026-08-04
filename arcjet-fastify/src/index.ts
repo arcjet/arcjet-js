@@ -24,11 +24,6 @@ import arcjetCore from "arcjet";
 
 /** SDK version. Updated by the release process. */
 const VERSION = "1.9.1"; // x-release-please-version
-
-// TODO(@wooorm-arcjet): using `export all` will leak things in the public API,
-// resulting in unneeded breaking changes,
-// we must be explicit about what is exported.
-export * from "arcjet";
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
 

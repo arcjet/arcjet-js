@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { MemoryCache } from "../../src/index";
+export { MemoryCache } from "../../src/exports/index";
 
-export type { Cache } from "../../src/index";
+export type { Cache } from "../../src/exports/index";

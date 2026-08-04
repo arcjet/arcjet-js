@@ -11,7 +11,7 @@
  * @packageDocumentation
  */
 
-export { cloudflare, findIp, parseProxies, parseProxy } from "../../src/index";
+export { cloudflare, findIp, parseProxies, parseProxy } from "../../src/exports/index";
 
 export type {
   Cidr,
@@ -23,4 +23,4 @@ export type {
   Platform,
   ProxyService,
   RequestLike,
-} from "../../src/index";
+} from "../../src/exports/index";

@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { Logger } from "../../src/index";
+export { Logger } from "../../src/exports/index";
 
-export type { LogLevel, LoggerOptions, Options } from "../../src/index";
+export type { LogLevel, LoggerOptions, Options } from "../../src/exports/index";

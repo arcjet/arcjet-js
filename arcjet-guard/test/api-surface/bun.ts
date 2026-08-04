@@ -23,7 +23,7 @@ export {
   localDetectSensitiveInfo,
   slidingWindow,
   tokenBucket,
-} from "../../src/bun";
+} from "../../src/exports/bun";
 
 export type {
   ArcjetGuard,
@@ -70,4 +70,4 @@ export type {
   SlidingWindowInput,
   TokenBucketConfig,
   TokenBucketInput,
-} from "../../src/bun";
+} from "../../src/exports/bun";

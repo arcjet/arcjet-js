@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { runtime } from "../../src/index";
+export { runtime } from "../../src/exports/index";
 
-export type { Runtime } from "../../src/index";
+export type { Runtime } from "../../src/exports/index";

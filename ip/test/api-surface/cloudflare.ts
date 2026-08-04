@@ -11,6 +11,10 @@
  * @packageDocumentation
  */
 
-export { cloudflare, cloudflareIpv4Ranges, cloudflareIpv6Ranges } from "../../src/cloudflare";
+export {
+  cloudflare,
+  cloudflareIpv4Ranges,
+  cloudflareIpv6Ranges,
+} from "../../src/exports/cloudflare";
 
-export type { CloudflareOptions } from "../../src/cloudflare";
+export type { CloudflareOptions } from "../../src/exports/cloudflare";

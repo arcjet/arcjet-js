@@ -20,7 +20,7 @@ export {
   guardAction,
   guardTool,
   securityMetadata,
-} from "../../src/vercel-ai/v7/index";
+} from "../../src/exports/vercel-ai/v7/index";
 
 export type {
   ArcjetAgentClient,
@@ -32,4 +32,4 @@ export type {
   GuardToolPolicy,
   OnGuardError,
   SecurityMetadataFields,
-} from "../../src/vercel-ai/v7/index";
+} from "../../src/exports/vercel-ai/v7/index";

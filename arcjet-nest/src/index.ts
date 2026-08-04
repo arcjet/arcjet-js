@@ -41,9 +41,6 @@ import type {
 /** SDK version. Updated by the release process. */
 const VERSION = "1.9.1"; // x-release-please-version
 
-// Re-export all named exports from the generic SDK
-export * from "arcjet";
-
 let warnedForAutomaticBodyRead = false;
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for

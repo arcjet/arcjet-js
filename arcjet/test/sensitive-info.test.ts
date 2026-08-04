@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import { describe, test, mock } from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
-
-import arcjet, {
-  type ArcjetCacheEntry,
+import {
   ArcjetAllowDecision,
+  type ArcjetCacheEntry,
   ArcjetReason,
   ArcjetSensitiveInfoReason,
-  sensitiveInfo,
-} from "../dist/index.js";
+} from "@arcjet/protocol";
+
+import arcjet, { sensitiveInfo } from "../dist/index.js";
 
 class TestCache {
   get = mock.fn<() => Promise<[ArcjetCacheEntry | undefined, number]>>(async () => [undefined, 0]);

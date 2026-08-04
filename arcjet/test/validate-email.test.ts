@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
-
 import {
   type ArcjetCacheEntry,
   type ArcjetContext,
   type ArcjetRequestDetails,
-  validateEmail,
-} from "../dist/index.js";
+} from "@arcjet/protocol";
+
+import { validateEmail } from "../dist/index.js";
 
 test("`validateEmail`", async function (t) {
   await t.test("should throw w/o `options`", async function () {

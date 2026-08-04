@@ -17,7 +17,7 @@ export {
   generateFingerprint,
   isValidEmail,
   matchFilters,
-} from "../../src/index";
+} from "../../src/exports/index";
 
 export type {
   AnalyzeRequest,
@@ -29,4 +29,4 @@ export type {
   SensitiveInfoEntities,
   SensitiveInfoEntity,
   SensitiveInfoResult,
-} from "../../src/index";
+} from "../../src/exports/index";

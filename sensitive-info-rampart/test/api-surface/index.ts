@@ -11,7 +11,7 @@
  * @packageDocumentation
  */
 
-export { defaultRecognizers, rampart, rampartEntities } from "../../src/index";
+export { defaultRecognizers, rampart, rampartEntities } from "../../src/exports/index";
 
 export type {
   DetectedSpan,
@@ -20,4 +20,4 @@ export type {
   RampartOptions,
   RawToken,
   Recognizer,
-} from "../../src/index";
+} from "../../src/exports/index";

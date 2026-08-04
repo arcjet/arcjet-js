@@ -11,6 +11,6 @@
  * @packageDocumentation
  */
 
-export { categories } from "../../src/well-known-bots";
+export { categories } from "../../src/exports/well-known-bots";
 
-export type { ArcjetBotCategory, ArcjetWellKnownBot } from "../../src/well-known-bots";
+export type { ArcjetBotCategory, ArcjetWellKnownBot } from "../../src/exports/well-known-bots";

@@ -30,7 +30,7 @@ export {
   ArcjetSensitiveInfoReason,
   ArcjetShieldReason,
   botCategories,
-} from "../../src/index";
+} from "../../src/exports/index";
 
 export type {
   ArcjetBotCategory,
@@ -60,4 +60,4 @@ export type {
   ArcjetTokenBucketRateLimitRule,
   ArcjetWellKnownBot,
   categories,
-} from "../../src/index";
+} from "../../src/exports/index";
