@@ -46,24 +46,40 @@ function denialOutput(decision: DecisionDeny) {
 }
 
 export async function POST(request: Request) {
+  let input: unknown;
   try {
-    const input: unknown = await request.json();
-    if (
-      typeof input !== "object" ||
-      input === null ||
-      !("client" in input) ||
-      typeof input.client !== "string" ||
-      !("scenario" in input) ||
-      typeof input.scenario !== "string"
-    ) {
-      throw new TypeError("Client and scenario must be strings");
-    }
-    if (!Object.hasOwn(clients, input.client)) throw new TypeError("Unknown client");
-    if (!Object.hasOwn(scenarios, input.scenario)) throw new TypeError("Unknown scenario");
+    input = await request.json();
+  } catch {
+    return NextResponse.json({ message: "Invalid JSON body" }, { status: 400 });
+  }
 
-    const requestedModel =
-      "model" in input && typeof input.model === "string" ? input.model : defaultInjectionModel;
-    if (!Object.hasOwn(models, requestedModel)) throw new TypeError("Unknown model");
+  if (
+    typeof input !== "object" ||
+    input === null ||
+    !("client" in input) ||
+    typeof input.client !== "string" ||
+    !("scenario" in input) ||
+    typeof input.scenario !== "string"
+  ) {
+    return NextResponse.json(
+      { message: "Client and scenario must be strings" },
+      { status: 400 },
+    );
+  }
+  if (!Object.hasOwn(clients, input.client)) {
+    return NextResponse.json({ message: "Unknown client" }, { status: 400 });
+  }
+  if (!Object.hasOwn(scenarios, input.scenario)) {
+    return NextResponse.json({ message: "Unknown scenario" }, { status: 400 });
+  }
+
+  const requestedModel =
+    "model" in input && typeof input.model === "string" ? input.model : defaultInjectionModel;
+  if (!Object.hasOwn(models, requestedModel)) {
+    return NextResponse.json({ message: "Unknown model" }, { status: 400 });
+  }
+
+  try {
     if (!process.env.AI_GATEWAY_API_KEY) throw new Error("AI_GATEWAY_API_KEY is required");
 
     const trustedClient = clients[input.client as ClientId];
@@ -170,9 +186,7 @@ export async function POST(request: Request) {
       trace,
     });
   } catch (error) {
-    return NextResponse.json(
-      { message: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 },
-    );
+    console.error("Agent evaluation failed", error);
+    return NextResponse.json({ message: "Evaluation failed" }, { status: 500 });
   }
 }

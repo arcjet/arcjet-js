@@ -10,6 +10,7 @@ export const defaultInjectionModel = "gpt-4o-mini" satisfies keyof typeof models
 
 export const clients = {
   "client-a": {
+    label: "Client A — Alex Morgan",
     actor: "client-a",
     record: {
       name: "Alex Morgan",
@@ -22,6 +23,7 @@ export const clients = {
     allowedRecipients: ["alex.morgan@client-corp.example", "records@client-corp.example"],
   },
   "client-b": {
+    label: "Client B — Jamie Taylor",
     actor: "client-b",
     record: {
       name: "Jamie Taylor",

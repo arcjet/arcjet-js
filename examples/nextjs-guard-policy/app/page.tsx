@@ -6,6 +6,7 @@ interface DemoContext {
   clients: Record<
     string,
     {
+      label: string;
       actor: string;
       record: Record<string, string>;
       allowedRecipients: readonly string[];
@@ -36,7 +37,7 @@ export default function Home() {
   const [context, setContext] = useState<DemoContext>();
   const [client, setClient] = useState("client-a");
   const [scenario, setScenario] = useState("benign");
-  const [model, setModel] = useState("gpt-4o-mini");
+  const [model, setModel] = useState("");
   const [result, setResult] = useState<Evaluation>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
@@ -93,8 +94,15 @@ export default function Home() {
           <label>
             Client<br />
             <select value={client} onChange={(event) => setClient(event.target.value)} required>
-              <option value="client-a">Client A — Alex Morgan</option>
-              <option value="client-b">Client B — Jamie Taylor</option>
+              {context === undefined ? (
+                <option value="client-a">Loading…</option>
+              ) : (
+                Object.entries(context.clients).map(([id, value]) => (
+                  <option key={id} value={id}>
+                    {value.label}
+                  </option>
+                ))
+              )}
             </select>
           </label>
         </p>

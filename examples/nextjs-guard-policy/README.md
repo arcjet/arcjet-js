@@ -11,6 +11,13 @@ record and allowed recipients. The browser submits the selected client,
 scenario, and an allow-listed model ID; it cannot supply an actor, record, or
 recipient allow-list.
 
+> [!WARNING]
+> This is a local policy-matrix demo, not a production authentication pattern.
+> The selected client is an untrusted fixture selector, not an authenticated
+> identity. Production code must derive `actor` from an authenticated
+> server-side session, and any hosted version must add authentication and/or
+> rate limiting before calling the model.
+
 ## Policy configuration
 
 Create a Guard policy labelled `email.sent` (or set `GUARD_POLICY_LABEL`) with
@@ -38,8 +45,15 @@ and [BILL](https://developer.bill.com/docs/sandbox-bank-account-setup) sandbox
 documentation.
 
 The current architecture evaluates prompt injection server-side, so the
-inbound message is intentionally a server input. Actor, client record, and
-allowed recipients remain server-owned.
+inbound message is intentionally a server input. Fixture records and allowed
+recipients remain server-owned even though the browser selects which fixture to
+exercise.
+
+All people, records, and identifiers in this example are synthetic demo
+fixtures. The context endpoint and tool trace intentionally expose their raw
+values to make policy evaluation visible. Production APIs must instead return
+display-safe data and redact or omit tool inputs, tool results, prompts, and
+sensitive values.
 
 ## Run
 
