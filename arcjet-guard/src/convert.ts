@@ -11,6 +11,7 @@
 import { detectSensitiveInfo, type SensitiveInfoEntity } from "@arcjet/analyze";
 import { create } from "@bufbuild/protobuf";
 
+import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metadata.ts";
 import {
   type GuardRule,
   type GuardRuleResult as ProtoGuardRuleResult,
@@ -35,7 +36,6 @@ import {
   GuardReason,
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
-import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metadata.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
   Conclusion,
@@ -333,20 +333,24 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
       };
     }
     case "promptInjection": {
+      const v = pr.result.value;
       return {
-        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        conclusion: conclusionFromProto(v.conclusion),
         reason: "PROMPT_INJECTION",
         type: "PROMPT_INJECTION",
         warnings,
+        billing: v.billing ? { unit: v.billing.unit, count: v.billing.count } : undefined,
       };
     }
     case "moderateContent": {
+      const v = pr.result.value;
       return {
-        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        conclusion: conclusionFromProto(v.conclusion),
         reason: "MODERATE_CONTENT",
         type: "MODERATE_CONTENT",
         warnings,
-        detected: pr.result.value.detected,
+        detected: v.detected,
+        billing: v.billing ? { unit: v.billing.unit, count: v.billing.count } : undefined,
       };
     }
     case "localSensitiveInfo": {

@@ -17,6 +17,7 @@ import {
   GuardResponseSchema,
   GuardDecisionSchema,
   GuardRuleResultSchema,
+  BillingSchema,
   ResultTokenBucketSchema,
   ResultFixedWindowSchema,
   ResultSlidingWindowSchema,
@@ -229,6 +230,10 @@ describe("resultFromProto", () => {
         value: create(ResultPromptInjectionSchema, {
           conclusion: GuardConclusion.DENY,
           detected: true,
+          billing: create(BillingSchema, {
+            unit: "tokens",
+            count: 18_446_744_073_709_551_615n,
+          }),
         }),
       },
     });
@@ -237,6 +242,12 @@ describe("resultFromProto", () => {
     assert.equal(result.type, "PROMPT_INJECTION");
     assert.equal(result.reason, "PROMPT_INJECTION");
     assert.equal(result.conclusion, "DENY");
+    if (result.type === "PROMPT_INJECTION") {
+      assert.deepEqual(result.billing, {
+        unit: "tokens",
+        count: 18_446_744_073_709_551_615n,
+      });
+    }
   });
 
   test("moderateContent result", () => {
@@ -248,6 +259,7 @@ describe("resultFromProto", () => {
         value: create(ResultModerateContentSchema, {
           conclusion: GuardConclusion.DENY,
           detected: true,
+          billing: create(BillingSchema, { unit: "text_units", count: 456n }),
         }),
       },
     });
@@ -258,6 +270,39 @@ describe("resultFromProto", () => {
     assert.equal(result.conclusion, "DENY");
     if (result.type === "MODERATE_CONTENT") {
       assert.equal(result.detected, true);
+      assert.deepEqual(result.billing, { unit: "text_units", count: 456n });
+    }
+  });
+
+  test("billing preserves an explicitly present empty message", () => {
+    const pr = create(GuardRuleResultSchema, {
+      result: {
+        case: "promptInjection",
+        value: create(ResultPromptInjectionSchema, {
+          billing: create(BillingSchema),
+        }),
+      },
+    });
+
+    const result = resultFromProto(pr);
+    assert.equal(result.type, "PROMPT_INJECTION");
+    if (result.type === "PROMPT_INJECTION") {
+      assert.deepEqual(result.billing, { unit: "", count: 0n });
+    }
+  });
+
+  test("billing is undefined when absent", () => {
+    const pr = create(GuardRuleResultSchema, {
+      result: {
+        case: "promptInjection",
+        value: create(ResultPromptInjectionSchema),
+      },
+    });
+
+    const result = resultFromProto(pr);
+    assert.equal(result.type, "PROMPT_INJECTION");
+    if (result.type === "PROMPT_INJECTION") {
+      assert.equal(result.billing, undefined);
     }
   });
 

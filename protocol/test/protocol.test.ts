@@ -23,6 +23,7 @@ test("@arcjet/protocol", async function (t) {
       "ArcjetRuleResult",
       "ArcjetSensitiveInfoReason",
       "ArcjetShieldReason",
+      "ArcjetThreatIntelligence",
       "botCategories",
     ]);
   });

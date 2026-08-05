@@ -563,6 +563,11 @@ if (decision.ip.isVpn() || decision.ip.isProxy() || decision.ip.isTor()) {
 
 // Access geolocation and network details
 console.log(decision.ip.country, decision.ip.city, decision.ip.asn);
+
+// Threat intelligence is undefined when it is unavailable.
+if (decision.ip.threat?.riskLevel === "high") {
+  console.log(decision.ip.threat.activities, decision.ip.threat.reputation);
+}
 ```
 
 ### Custom characteristics

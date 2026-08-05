@@ -412,6 +412,8 @@ decision.ip.isTor(); // Tor exit node IP
 decision.ip.country; // ISO 3166-1 alpha-2 country code
 decision.ip.city; // City name
 decision.ip.asn; // Autonomous system number
+decision.ip.threat?.riskLevel; // Threat assessment, or undefined when unavailable
+decision.ip.threat?.activities; // Observed malicious behaviors
 
 // Per-rule results (array, one entry per rule)
 decision.results; // ArcjetRuleResult[]

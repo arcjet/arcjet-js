@@ -268,6 +268,14 @@ export type RuleResultSlidingWindow = {
   readonly intervalSeconds: number;
 };
 
+/** Usage charged for a Guard rule evaluation. */
+export type Billing = {
+  /** Billing unit, such as `tokens` or `text_units`. */
+  readonly unit: string;
+  /** Number of units charged. */
+  readonly count: bigint;
+};
+
 /** Result from a prompt injection detection evaluation. */
 export type RuleResultPromptInjection = {
   /** Whether the request was allowed or denied by this rule. */
@@ -278,6 +286,8 @@ export type RuleResultPromptInjection = {
   readonly type: "PROMPT_INJECTION";
   /** Per-rule warnings. Informational; never changes the conclusion. */
   readonly warnings: readonly Warning[];
+  /** Usage charged for this evaluation, when reported by the service. */
+  readonly billing?: Billing | undefined;
 };
 
 /**
@@ -296,6 +306,8 @@ export type RuleResultModerateContent = {
   readonly warnings: readonly Warning[];
   /** Whether harmful content was detected in the input text. */
   readonly detected: boolean;
+  /** Usage charged for this evaluation, when reported by the service. */
+  readonly billing?: Billing | undefined;
 };
 
 /** Result from a sensitive information detection evaluation. */
