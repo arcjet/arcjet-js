@@ -474,14 +474,24 @@ if (decision.hasFailedOpen()) {
 }
 ```
 
-`capture()` drops the event, and `flush()` resolves immediately. Both report
-`AJ3005` locally. This is the one failure the SDK cannot report well: with no
-client there is no configured logger either, so it can only reach the default
-sink.
+`capture()` drops the event silently, and `flush()` resolves immediately.
+Nothing is logged: the client that would have carried a logger is the thing
+that is missing, so the only available sink would be an unconfigurable console
+warning on a request path — noise an application cannot turn off. The decision
+returned by `guard()` is the observable signal, and making the `capture()` case
+observable is planned as an opt-in on the call itself.
 
 ### Registering twice, and unregistering
 
-Registration is guarded. A second client does not displace the first — the
+Registration is version-checked. The slot is shared by every copy of
+`@arcjet/guard` in the process, so a registration is only used by the exact
+build that wrote it — the stored value is a live object whose internals are
+guaranteed within one build and not across them. A copy that finds a
+registration from another version leaves it alone and fails open, exactly as if
+nothing were registered, and reports `AJ3006` on its own logger. Two versions
+in one process therefore do not share a client.
+
+Registration is also guarded. A second client does not displace the first — the
 attempt is reported as `AJ3004` on the **incumbent's** logger, so a library or a
 stray second `launchArcjet()` cannot quietly redirect an application's telemetry
 to a different key. Registering the client that is already registered is a
@@ -537,9 +547,15 @@ The client also implements `Symbol.dispose`, so `using` replaces the `finally`:
 using arcjet = registerTestClient();
 ```
 
-Note that the `using` *syntax* needs Node.js 24 or compilation through
-TypeScript; Node.js 22 defines `Symbol.dispose` but cannot parse `using`. Call
-`unregister()` directly if you are targeting Node.js 22 without a compile step.
+`unregister()` and `[Symbol.dispose]` are the same function under two names, so
+neither can drift from the other.
+
+Two caveats, both on the consuming project rather than on this package. The
+`using` *syntax* needs Node.js 24 to run natively or compilation through
+TypeScript — Node.js 22 defines `Symbol.dispose` but cannot parse `using`. And
+because `[Symbol.dispose]` appears in the published types, a project compiling
+with `skipLibCheck: false` needs `esnext.disposable` in its `lib` even if it
+never writes `using`; `unregister()` is unaffected either way.
 
 `guard()` on the test client records the call and returns a fail-open `ALLOW`,
 because no rule actually ran. It is not a mock server and does not let you stub

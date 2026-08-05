@@ -12,9 +12,9 @@
     "isolatedDeclarations": true,
     "isolatedModules": true,
     // `esnext.disposable` types `Symbol.dispose`, which the test client
-    // implements. Types only: it changes no emit and raises no runtime floor.
-    // Node.js 22.21 already defines `Symbol.dispose` — it is the `using`
-    // *syntax* that needs Node.js 24, and nothing in this package uses it.
+    // implements so `using` works. Types only: no emit change, no runtime
+    // floor change. Node.js 22.21 defines `Symbol.dispose` already — it is the
+    // `using` syntax that needs Node.js 24.
     "lib": ["es2023", "esnext.disposable", "webworker"],
     "module": "es2022",
     "moduleDetection": "force",

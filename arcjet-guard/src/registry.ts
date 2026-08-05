@@ -13,7 +13,6 @@
 
 import { createFailOpenDecision } from "./client.ts";
 import {
-  createDiagnosticHandler,
   symbolArcjetDiagnostics,
   type ArcjetDiagnostic,
   type DiagnosticHandler,
@@ -21,9 +20,10 @@ import {
 import type { ArcjetGuard } from "./index.ts";
 import { symbolArcjetClient } from "./symbol.ts";
 import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
+import { VERSION } from "./version.ts";
 
 type GlobalWithArcjet = typeof globalThis & {
-  [symbolArcjetClient]?: ArcjetGuard;
+  [symbolArcjetClient]?: unknown;
 };
 
 type ClientWithDiagnostics = ArcjetGuard & {
@@ -31,13 +31,36 @@ type ClientWithDiagnostics = ArcjetGuard & {
 };
 
 /**
- * Where a diagnostic goes when no registered client can take it.
+ * What actually goes in the global slot.
  *
- * Module-scoped so it coalesces across calls: `capture()` sits on request
- * paths, and an application that forgot to register would otherwise emit a
- * line per event.
+ * The client is wrapped rather than stored bare so the version travels with
+ * it, and so registering never has to mutate an object the caller owns.
  */
-const fallbackDiagnostics = createDiagnosticHandler();
+type Registration = {
+  version: string;
+  client: ArcjetGuard;
+};
+
+/**
+ * Whether a registration was written by this exact build of the SDK.
+ *
+ * `Symbol.for` is realm-wide, so the slot is shared by every copy of
+ * `@arcjet/guard` in the process — including copies at other versions, which
+ * is the normal outcome of one dependency pinning a different range than
+ * another. What is stored is a live object, and its usable surface is more
+ * than the three public methods: the diagnostics symbol, the decision shape,
+ * and the internal symbols on it are only guaranteed within a single build.
+ *
+ * So the check is exact string equality, not a range. A copy that finds a
+ * registration it did not write treats it as absent and fails open, which is
+ * the same degradation as nothing being registered at all. The cost is that
+ * two versions in one process do not share a client — each keeps whatever it
+ * registered, and the one that lost the race fails open rather than calling
+ * into a shape it cannot verify.
+ */
+function isCurrentVersion(registration: Registration): boolean {
+  return registration.version === VERSION;
+}
 
 /**
  * Register a client for the free {@link guard}, {@link capture} and
@@ -58,22 +81,46 @@ const fallbackDiagnostics = createDiagnosticHandler();
  * ```
  */
 export function registerArcjet(client: ArcjetGuard): void {
-  const globalWithArcjet: GlobalWithArcjet = globalThis;
-  const incumbent = globalWithArcjet[symbolArcjetClient];
-
-  if (incumbent === undefined) {
-    globalWithArcjet[symbolArcjetClient] = client;
+  // Plain JavaScript callers can bypass the types, and a value that is not a
+  // client would turn every later free call into a TypeError thrown into
+  // application code. Refusing it here keeps the slot holding only things the
+  // free calls can actually invoke.
+  if (!isClient(client)) {
     return;
   }
 
-  if (incumbent === client) {
+  const globalWithArcjet: GlobalWithArcjet = globalThis;
+  const existing = readRegistration();
+
+  if (existing === undefined) {
+    globalWithArcjet[symbolArcjetClient] = { version: VERSION, client };
+    return;
+  }
+
+  if (!isCurrentVersion(existing)) {
+    // A different build of the SDK owns the slot. Displacing it would break
+    // that copy's free calls, so the incumbent stays and this copy degrades to
+    // failing open — the same outcome as nothing being registered.
+    //
+    // Reported on the *registrant's* channel, unlike the same-version case
+    // below. The incumbent belongs to a build whose internals this one cannot
+    // verify, so its diagnostics channel is exactly what must not be called.
+    diagnose(client, {
+      code: "AJ3006",
+      message:
+        "An Arcjet client from a different SDK version is registered; the existing one was kept",
+    });
+    return;
+  }
+
+  if (existing.client === client) {
     return;
   }
 
   // Reported on the incumbent's logger, not the late registrant's: the
   // application that registered first configured that sink, and it is the one
   // whose telemetry an unnoticed second registration would have redirected.
-  diagnose(incumbent, {
+  diagnose(existing.client, {
     code: "AJ3004",
     message: "An Arcjet client is already registered; the existing one was kept",
   });
@@ -121,7 +168,9 @@ export function guard(options: GuardOptions): Promise<Decision> {
     return client.guard(options);
   }
 
-  diagnoseMissingClient();
+  // The decision is the report. It carries an error result, so
+  // `hasFailedOpen()` is true and a caller that inspects it sees that no policy
+  // ran — which is a better signal than a log line nobody configured.
   return Promise.resolve(
     createFailOpenDecision("guard() was called with no registered Arcjet client"),
   );
@@ -130,10 +179,15 @@ export function guard(options: GuardOptions): Promise<Decision> {
 /**
  * Record a fact about what the application did, through the registered client.
  *
- * With nothing registered the event is dropped and diagnosed. Capture is
- * best-effort telemetry, which is what makes dropping acceptable — the
- * diagnostic is the only way to hear about it, since a dropped event never
- * reaches the server and so has no response to carry a warning back on.
+ * With nothing registered the event is dropped silently. Capture is best-effort
+ * telemetry, which is what makes dropping acceptable, and this path has no
+ * configured logger to report to — the client that would have carried one is
+ * the thing that is missing.
+ *
+ * Silence is the deliberate choice over an unconfigurable console warning,
+ * which would be noise on a request path with no way to turn it off. Making
+ * this observable is a future opt-in on the call itself, so an application that
+ * wants to hear about it can ask.
  *
  * @example
  * ```ts
@@ -150,10 +204,7 @@ export function capture(options: CaptureOptions): void {
   const client = registeredClient();
   if (client !== undefined) {
     client.capture(options);
-    return;
   }
-
-  diagnoseMissingClient();
 }
 
 /**
@@ -167,7 +218,6 @@ export function flush(timeoutMs?: number): Promise<void> {
     return client.flush(timeoutMs);
   }
 
-  diagnoseMissingClient();
   return Promise.resolve();
 }
 
@@ -186,14 +236,17 @@ export function flush(timeoutMs?: number): Promise<void> {
  */
 export function registerArcjetForTesting(client: ArcjetGuard): void {
   const globalWithArcjet: GlobalWithArcjet = globalThis;
-  if (globalWithArcjet[symbolArcjetClient] !== undefined) {
+  // `in` rather than a validated read: anything at all in the slot — including
+  // a record this build cannot parse — means an earlier test left something
+  // behind, which is what this is here to catch.
+  if (symbolArcjetClient in globalWithArcjet) {
     throw new Error(
       "An Arcjet client is already registered. Call unregisterArcjet() first — " +
         "an earlier test probably left one behind.",
     );
   }
 
-  globalWithArcjet[symbolArcjetClient] = client;
+  globalWithArcjet[symbolArcjetClient] = { version: VERSION, client };
 }
 
 /**
@@ -203,30 +256,75 @@ export function registerArcjetForTesting(client: ArcjetGuard): void {
  * `exports` map lists no path that resolves here.
  */
 export function registeredClient(): ArcjetGuard | undefined {
-  const globalWithArcjet: GlobalWithArcjet = globalThis;
-  return globalWithArcjet[symbolArcjetClient];
+  const registration = readRegistration();
+  if (registration === undefined || !isCurrentVersion(registration)) {
+    return undefined;
+  }
+
+  return registration.client;
 }
 
 /**
- * Report that a free call found nothing registered.
+ * Read and validate whatever is in the global slot.
  *
- * This is the one failure the SDK cannot report well: with no client there is
- * no configured logger either, so it can only reach the coalescing fallback.
+ * Validated on the way out, not only on the way in. The slot lives on
+ * `globalThis` under a well-known symbol, so anything in the process can write
+ * to it — a `null`, a half-built value, or a record from a version whose shape
+ * this build cannot vouch for. Any of those reaching a call site would surface
+ * as a TypeError thrown from `capture()` deep in application code, which is
+ * what the never-throw contract exists to prevent.
+ *
+ * Returns the record regardless of version so callers can tell "nothing is
+ * registered" from "another version registered", which need different
+ * handling: the first is a free slot, the second is somebody else's.
  */
-function diagnoseMissingClient(): void {
-  fallbackDiagnostics({
-    code: "AJ3005",
-    message: "No Arcjet client is registered; the call failed open",
-  });
+function readRegistration(): Registration | undefined {
+  const globalWithArcjet: GlobalWithArcjet = globalThis;
+  const candidate = globalWithArcjet[symbolArcjetClient];
+
+  if (typeof candidate !== "object" || candidate === null) {
+    return undefined;
+  }
+
+  const registration = candidate as Partial<Registration>;
+  if (typeof registration.version !== "string" || !isClient(registration.client)) {
+    return undefined;
+  }
+
+  return { version: registration.version, client: registration.client };
 }
 
+/**
+ * Whether a value can actually serve the free calls.
+ *
+ * Structural rather than an instance check, because the test client and
+ * hand-rolled fakes are legitimate registrations and none of them are built by
+ * `launchArcjet()`.
+ */
+function isClient(value: unknown): value is ArcjetGuard {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as Partial<ArcjetGuard>;
+  return (
+    typeof candidate.guard === "function" &&
+    typeof candidate.capture === "function" &&
+    typeof candidate.flush === "function"
+  );
+}
+
+/**
+ * Report a diagnostic on a client's own channel.
+ *
+ * Drops it when the client has no channel. There is deliberately no fallback
+ * sink: an unconfigurable console warning is noise an application cannot turn
+ * off, and every client built by `launchArcjet()` carries a channel.
+ */
 function diagnose(client: ArcjetGuard, diagnostic: ArcjetDiagnostic): void {
   if (hasDiagnostics(client)) {
     client[symbolArcjetDiagnostics](diagnostic);
-    return;
   }
-
-  fallbackDiagnostics(diagnostic);
 }
 
 /**

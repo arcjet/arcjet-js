@@ -61,7 +61,7 @@ describe("registerTestClient", () => {
     const arcjet = registerTestClient();
 
     // Called directly rather than through `using`: Node.js 22 defines
-    // Symbol.dispose but does not parse the `using` syntax, and this suite runs
+    // Symbol.dispose but cannot parse the `using` syntax, and this suite runs
     // on the package's minimum Node.
     arcjet[Symbol.dispose]();
 
