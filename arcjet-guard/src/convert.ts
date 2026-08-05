@@ -13,6 +13,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metadata.ts";
 import {
+  type Billing as ProtoBilling,
   type GuardRule,
   type GuardRuleResult as ProtoGuardRuleResult,
   type GuardRuleSubmission,
@@ -38,6 +39,7 @@ import {
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
+  Billing,
   Conclusion,
   Decision,
   InternalDecision,
@@ -67,6 +69,10 @@ const noopLog = {
   warn(): void {},
   error(): void {},
 };
+
+function billingFromProto(billing?: ProtoBilling): Billing | undefined {
+  return billing ? { unit: billing.unit, count: billing.count } : undefined;
+}
 
 /** Minimal context for `@arcjet/analyze` — only `log` is used for sensitive info. */
 const analyzeContext = { log: noopLog, characteristics: [] as string[] };
@@ -339,7 +345,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         reason: "PROMPT_INJECTION",
         type: "PROMPT_INJECTION",
         warnings,
-        billing: v.billing ? { unit: v.billing.unit, count: v.billing.count } : undefined,
+        billing: billingFromProto(v.billing),
       };
     }
     case "moderateContent": {
@@ -350,7 +356,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         type: "MODERATE_CONTENT",
         warnings,
         detected: v.detected,
-        billing: v.billing ? { unit: v.billing.unit, count: v.billing.count } : undefined,
+        billing: billingFromProto(v.billing),
       };
     }
     case "localSensitiveInfo": {

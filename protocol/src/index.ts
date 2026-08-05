@@ -811,6 +811,7 @@ export class ArcjetThreatIntelligence {
   activities: readonly string[];
   entities: readonly string[];
   entityName?: string | undefined;
+  /** Threat-intelligence service identity, which may differ from the IP network service. */
   service?: string | undefined;
   backgroundNoise: number;
 
@@ -942,7 +943,8 @@ export class ArcjetIpDetails {
    */
   asnCountry?: string | undefined;
   /**
-   * Name of service the IP address belongs to.
+   * Network service the IP address belongs to, which may differ from the
+   * threat-intelligence service identity in `threat.service`.
    */
   service?: string | undefined;
 
