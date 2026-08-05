@@ -1,6 +1,6 @@
 {
   "extends": "../tsconfig.base.json",
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "test/api-surface/**/*.ts", "test/_shared/**/*.mts"],
   "compilerOptions": {
     "types": ["node", "bun-types"]
   }

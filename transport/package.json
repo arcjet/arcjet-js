@@ -65,7 +65,9 @@
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
     "test-runtime-bun": "npm run build && HTTPS_PROXY=http://127.0.0.1:49219 bun test test/runtime/proxy.bun.test.ts",
     "test-runtime-deno": "npm run build && HTTPS_PROXY=http://127.0.0.1:49219 deno test --allow-all --no-check test/runtime/proxy.deno.test.ts",
-    "test": "npm run build && npm run test-coverage"
+    "test": "npm run build && npm run api-report && npm run test-coverage",
+    "api-report": "api-extractor run --config config/api-extractor.bun.json && api-extractor run --config config/api-extractor.deno.json && api-extractor run --config config/api-extractor.edge-light.json && api-extractor run --config config/api-extractor.index.json && api-extractor run --config config/api-extractor.workerd.json",
+    "api-report:update": "api-extractor run --local --config config/api-extractor.bun.json && api-extractor run --local --config config/api-extractor.deno.json && api-extractor run --local --config config/api-extractor.edge-light.json && api-extractor run --local --config config/api-extractor.index.json && api-extractor run --local --config config/api-extractor.workerd.json"
   },
   "dependencies": {
     "@arcjet/env": "1.9.1",
@@ -76,6 +78,7 @@
     "@connectrpc/connect-web": "2.1.2"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "7.58.12",
     "@types/node": "22.20.1",
     "tsdown": "0.22.7",
     "typescript": "7.0.2"

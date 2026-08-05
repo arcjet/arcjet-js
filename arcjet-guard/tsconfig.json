@@ -11,7 +11,10 @@
     "incremental": false,
     "isolatedDeclarations": true,
     "isolatedModules": true,
-    "lib": ["es2023", "webworker"],
+    "lib": [
+      "es2023",
+      "webworker"
+    ],
     "module": "es2022",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
@@ -30,9 +33,17 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2023",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "verbatimModuleSyntax": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules/", "test/", "src/**/*.test.ts"]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules/",
+    "test/runtime/",
+    "src/**/*.test.ts"
+  ]
 }

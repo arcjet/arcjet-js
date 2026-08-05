@@ -78,13 +78,15 @@
     "lint": "oxlint --tsconfig=tsconfig.lint.json",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "test": "npm run build && npm run lint && npm run test-unit",
-    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts'",
+    "test": "npm run build && npm run api-report && npm run lint && npm run test-unit",
+    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/exports.test.ts'",
     "test-runtime-node": "npm run build && node --test test/runtime/node.test.ts",
     "test-runtime-fetch": "npm run build && node --test test/runtime/fetch.test.ts",
     "test-runtime-deno": "npm run build && deno test --no-check --allow-all test/runtime/deno.test.ts",
     "test-runtime-bun": "npm run build && bun test test/runtime/bun.test.ts",
-    "test-runtime-cloudflare": "npm run build && node --test test/runtime/cloudflare/cloudflare.test.ts"
+    "test-runtime-cloudflare": "npm run build && node --test test/runtime/cloudflare/cloudflare.test.ts",
+    "api-report": "api-extractor run --config config/api-extractor.bun.json && api-extractor run --config config/api-extractor.fetch.json && api-extractor run --config config/api-extractor.node.json && api-extractor run --config config/api-extractor.vercel-ai-v7.json",
+    "api-report:update": "api-extractor run --local --config config/api-extractor.bun.json && api-extractor run --local --config config/api-extractor.fetch.json && api-extractor run --local --config config/api-extractor.node.json && api-extractor run --local --config config/api-extractor.vercel-ai-v7.json"
   },
   "dependencies": {
     "@arcjet/analyze": "1.9.1",
@@ -96,6 +98,7 @@
   },
   "devDependencies": {
     "@ai-sdk/provider-utils": "5.0.12",
+    "@microsoft/api-extractor": "7.58.12",
     "@types/node": "22.20.1",
     "ai": "7.0.36",
     "miniflare": "4.20260708.1",

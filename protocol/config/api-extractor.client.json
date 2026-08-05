@@ -1,0 +1,7 @@
+{
+  "extends": "../../api-extractor-base.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/client.d.ts",
+  "apiReport": {
+    "reportFileName": "client.api.md"
+  }
+}

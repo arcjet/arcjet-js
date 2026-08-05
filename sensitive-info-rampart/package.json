@@ -49,13 +49,16 @@
     "typecheck": "tsc --noEmit",
     "test-api": "node --test -- test/*.test.ts",
     "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
-    "test": "npm run build && npm run test-coverage"
+    "test": "npm run build && npm run api-report && npm run test-coverage",
+    "api-report": "api-extractor run --config config/api-extractor.index.json",
+    "api-report:update": "api-extractor run --local --config config/api-extractor.index.json"
   },
   "dependencies": {
     "@huggingface/transformers": "4.2.0"
   },
   "devDependencies": {
     "@arcjet/analyze": "1.9.1",
+    "@microsoft/api-extractor": "7.58.12",
     "@types/node": "22.20.1",
     "arcjet": "1.9.1",
     "tsdown": "0.22.7",

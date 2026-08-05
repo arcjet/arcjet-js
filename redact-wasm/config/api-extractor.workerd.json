@@ -1,0 +1,7 @@
+{
+  "extends": "../../api-extractor-base.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/workerd.d.ts",
+  "apiReport": {
+    "reportFileName": "workerd.api.md"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "extends": "../../api-extractor-base.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/deno.d.ts",
+  "apiReport": {
+    "reportFileName": "deno.api.md"
+  }
+}

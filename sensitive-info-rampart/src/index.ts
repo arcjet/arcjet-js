@@ -95,7 +95,7 @@ function mergeSpans(groups: ReadonlyArray<ReadonlyArray<DetectedSpan>>): Detecte
  * package, so no data leaves your environment. The model is loaded once on first
  * use and reused for every subsequent request.
  *
- * Supported sensitive info types (all built-in {@link ArcjetSensitiveInfoType}
+ * Supported sensitive info types (all built-in `ArcjetSensitiveInfoType`
  * values, so they can be listed in `allow`/`deny` directly, or all at once via
  * {@link rampartEntities}):
  *

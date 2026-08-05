@@ -1,0 +1,7 @@
+{
+  "extends": "../../api-extractor-base.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/vercel-ai/v7/index.d.ts",
+  "apiReport": {
+    "reportFileName": "vercel-ai-v7.api.md"
+  }
+}

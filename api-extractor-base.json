@@ -1,0 +1,46 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+
+  "apiReport": {
+    "enabled": true,
+
+    // API Extractor calls this `etc/` by default, after the Rush convention.
+    // These files are the committed record of what a package promises, and get
+    // read in review, so they are named for what they hold.
+    "reportFolder": "<projectFolder>/public-api/",
+
+    // Scratch space for the comparison. Out of the way, and already ignored.
+    "reportTempFolder": "<projectFolder>/node_modules/.cache/api-extractor/"
+  },
+
+  "docModel": { "enabled": false },
+  "dtsRollup": { "enabled": false },
+  "tsdocMetadata": { "enabled": false },
+
+  "compiler": { "tsconfigFilePath": "<projectFolder>/tsconfig.json" },
+
+  "messages": {
+    "extractorMessageReporting": {
+      "default": { "logLevel": "warning" },
+
+      // Release tags (`@public`, `@beta`, `@alpha`) are not a convention here
+      // yet. Everything a package exports is public until we say otherwise, so
+      // requiring the tag on every export would be noise rather than signal.
+      "ae-missing-release-tag": { "logLevel": "none" },
+
+      // A broken `@link` in a published doc comment is part of what we ship, so
+      // it is reported — and `api-extractor run` exits non-zero on a warning, so
+      // reporting it is enough to fail CI.
+      //
+      // Resolution is per entrypoint: where one types module serves several,
+      // a reference has to resolve from every entrypoint that publishes the
+      // type holding it, not just from the one it was written against.
+      "ae-unresolved-link": { "logLevel": "warning" }
+    },
+
+    // TSDoc's own strictness disagrees with the comment style used across this
+    // repository — `@param` with the name on the following line, `@linkcode`.
+    // The report is about the API surface, not comment formatting.
+    "tsdocMessageReporting": { "default": { "logLevel": "none" } }
+  }
+}
