@@ -73,6 +73,7 @@
 export {
   // Types
   type Conclusion,
+  type Billing,
   type Reason,
   type Mode,
   type RuleResult,

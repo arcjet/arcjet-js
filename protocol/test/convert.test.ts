@@ -58,6 +58,7 @@ import {
   RuleSchema,
   RuleState,
   SDKStack,
+  ThreatIntelligenceSchema,
 } from "../dist/proto/decide/v1alpha1/decide_pb.js";
 
 test("convert", async (t) => {
@@ -919,26 +920,39 @@ test("convert", async (t) => {
     await t.test("should create an arcjet decision w/ an IP detail proto (full)", () => {
       const latitude = 40.7127;
       const longitude = 74.0059;
+      const ipDetails = create(IpDetailsSchema, {
+        asnCountry: "a",
+        asnDomain: "b",
+        asnName: "c",
+        asnType: "d",
+        asn: "e",
+        city: "f",
+        continentName: "g",
+        continent: "h",
+        countryName: "i",
+        country: "j",
+        latitude,
+        longitude,
+        postalCode: "k",
+        region: "l",
+        service: "m",
+        timezone: "America/New_York",
+        threat: create(ThreatIntelligenceSchema, {
+          riskLevel: "high",
+          confidence: "high",
+          reputation: "malicious",
+          isSafe: false,
+          networkTypes: ["hosting", "proxy"],
+          activities: ["scanning"],
+          entities: ["scanner"],
+          entityName: "example-scanner",
+          service: "example-cloud",
+          backgroundNoise: 42,
+        }),
+      });
       const decision = ArcjetDecisionFromProtocol(
         create(DecisionSchema, {
-          ipDetails: create(IpDetailsSchema, {
-            asnCountry: "a",
-            asnDomain: "b",
-            asnName: "c",
-            asnType: "d",
-            asn: "e",
-            city: "f",
-            continentName: "g",
-            continent: "h",
-            countryName: "i",
-            country: "j",
-            latitude,
-            longitude,
-            postalCode: "k",
-            region: "l",
-            service: "m",
-            timezone: "America/New_York",
-          }),
+          ipDetails,
         }),
       );
 
@@ -960,6 +974,17 @@ test("convert", async (t) => {
         region: "l",
         service: "m",
         timezone: "America/New_York",
+        threat: {
+          activities: ["scanning"],
+          confidence: "high",
+          entities: ["scanner"],
+          entityName: "example-scanner",
+          isSafe: false,
+          networkTypes: ["hosting", "proxy"],
+          reputation: "malicious",
+          riskLevel: "high",
+          service: "example-cloud",
+        },
       });
     });
 
@@ -969,6 +994,29 @@ test("convert", async (t) => {
       );
 
       assert.deepEqual(JSON.parse(JSON.stringify(decision.ip)), {});
+      assert.equal(decision.ip.threat, undefined);
+    });
+
+    await t.test("should preserve a present empty threat message", () => {
+      const decision = ArcjetDecisionFromProtocol(
+        create(DecisionSchema, {
+          ipDetails: create(IpDetailsSchema, {
+            threat: create(ThreatIntelligenceSchema),
+          }),
+        }),
+      );
+
+      assert.deepEqual(JSON.parse(JSON.stringify(decision.ip.threat)), {
+        riskLevel: "",
+        confidence: "",
+        reputation: "",
+        isSafe: false,
+        networkTypes: [],
+        activities: [],
+        entities: [],
+      });
+      assert.equal(decision.ip.threat?.entityName, undefined);
+      assert.equal(decision.ip.threat?.service, undefined);
     });
   });
 

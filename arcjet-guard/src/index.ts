@@ -86,6 +86,7 @@ import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
 export type { DiagnosticLogger } from "./diagnostics.ts";
 export type {
   ArcjetMetadata,
+  Billing,
   Conclusion,
   Reason,
   Mode,

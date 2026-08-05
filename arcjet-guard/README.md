@@ -243,6 +243,11 @@ if (decision.conclusion === "DENY" && decision.reason === "PROMPT_INJECTION") {
   throw new Error("Prompt injection detected — please rephrase your message");
 }
 
+const result = piRule.result(decision);
+// Billing is undefined when the service does not report usage. Prompt
+// injection uses model tokens; content moderation uses text_units.
+console.log(result?.billing?.unit, result?.billing?.count);
+
 // Forward to your AI model...
 ```
 

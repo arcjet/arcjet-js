@@ -187,6 +187,15 @@ export declare type IpDetails = Message<"proto.decide.v1alpha1.IpDetails"> & {
    * @generated from field: map<string, string> bots = 24;
    */
   bots: { [key: string]: string };
+
+  /**
+   * Threat is the Arcjet threat intelligence assessment for the IP address,
+   * derived from upstream reputation data. Only populated when threat
+   * intelligence is available for the IP.
+   *
+   * @generated from field: proto.decide.v1alpha1.ThreatIntelligence threat = 25;
+   */
+  threat?: ThreatIntelligence;
 };
 
 /**
@@ -194,6 +203,95 @@ export declare type IpDetails = Message<"proto.decide.v1alpha1.IpDetails"> & {
  * Use `create(IpDetailsSchema)` to create a new message.
  */
 export declare const IpDetailsSchema: GenMessage<IpDetails>;
+
+/**
+ * ThreatIntelligence is the Arcjet threat assessment for an IP address,
+ * abstracted from the underlying data providers. Fields carry the raw
+ * taxonomy keys (e.g. risk_level "high", activities "brute_force").
+ *
+ * @generated from message proto.decide.v1alpha1.ThreatIntelligence
+ */
+export declare type ThreatIntelligence = Message<"proto.decide.v1alpha1.ThreatIntelligence"> & {
+  /**
+   * The overall risk assessment: none, low, medium, high, or critical.
+   *
+   * @generated from field: string risk_level = 1;
+   */
+  riskLevel: string;
+
+  /**
+   * Confidence in the overall assessment: low, medium, or high.
+   *
+   * @generated from field: string confidence = 2;
+   */
+  confidence: string;
+
+  /**
+   * The upstream reputation of the IP: malicious, suspicious, known, safe,
+   * benign, or unknown.
+   *
+   * @generated from field: string reputation = 3;
+   */
+  reputation: string;
+
+  /**
+   * Whether the IP is identified as trusted infrastructure and should not be
+   * flagged as a threat.
+   *
+   * @generated from field: bool is_safe = 4;
+   */
+  isSafe: boolean;
+
+  /**
+   * The kinds of network the IP belongs to, e.g. hosting, vpn, proxy, tor.
+   *
+   * @generated from field: repeated string network_types = 5;
+   */
+  networkTypes: string[];
+
+  /**
+   * Observed malicious behaviors, e.g. brute_force, scanning, botnet.
+   *
+   * @generated from field: repeated string activities = 6;
+   */
+  activities: string[];
+
+  /**
+   * The kinds of automated entity the IP represents, e.g. crawler,
+   * ai_crawler, scanner.
+   *
+   * @generated from field: repeated string entities = 7;
+   */
+  entities: string[];
+
+  /**
+   * A specific entity name (e.g. crawler name), if identified.
+   *
+   * @generated from field: string entity_name = 8;
+   */
+  entityName: string;
+
+  /**
+   * A known service name (e.g. cloud provider), if identified.
+   *
+   * @generated from field: string service = 9;
+   */
+  service: string;
+
+  /**
+   * How much internet-wide noise originates from this IP (0 = none, higher =
+   * more).
+   *
+   * @generated from field: int32 background_noise = 10;
+   */
+  backgroundNoise: number;
+};
+
+/**
+ * Describes the message proto.decide.v1alpha1.ThreatIntelligence.
+ * Use `create(ThreatIntelligenceSchema)` to create a new message.
+ */
+export declare const ThreatIntelligenceSchema: GenMessage<ThreatIntelligence>;
 
 /**
  * The reason for the decision. This is populated based on the selected rules

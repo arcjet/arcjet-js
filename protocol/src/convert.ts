@@ -35,6 +35,7 @@ import {
   ArcjetRuleResult,
   ArcjetSensitiveInfoReason,
   ArcjetShieldReason,
+  ArcjetThreatIntelligence,
 } from "./index.js";
 import {
   type Decision,
@@ -462,6 +463,8 @@ export function ArcjetIpDetailsFromProtocol(ipDetails?: IpDetails): ArcjetIpDeta
   // A default value from the Decide service means we don't have data for the
   // field so we translate to `undefined`. Some fields have interconnected logic
   // that determines if the default value can be provided to users.
+  const threat = ipDetails.threat;
+
   return new ArcjetIpDetails({
     // If we have a non-0 latitude, or a 0 latitude with a non-0 accuracy radius
     // then we have a latitude from the Decide service
@@ -495,6 +498,13 @@ export function ArcjetIpDetailsFromProtocol(ipDetails?: IpDetails): ArcjetIpDeta
     isTor: ipDetails.isTor,
     isRelay: ipDetails.isRelay,
     isAbuser: ipDetails.isAbuser,
+    threat: threat
+      ? new ArcjetThreatIntelligence({
+          ...threat,
+          entityName: threat.entityName !== "" ? threat.entityName : undefined,
+          service: threat.service !== "" ? threat.service : undefined,
+        })
+      : undefined,
   });
 }
 

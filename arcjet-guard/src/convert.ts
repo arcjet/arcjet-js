@@ -11,7 +11,9 @@
 import { detectSensitiveInfo, type SensitiveInfoEntity } from "@arcjet/analyze";
 import { create } from "@bufbuild/protobuf";
 
+import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metadata.ts";
 import {
+  type Billing as ProtoBilling,
   type GuardRule,
   type GuardRuleResult as ProtoGuardRuleResult,
   type GuardRuleSubmission,
@@ -35,9 +37,9 @@ import {
   GuardReason,
   GuardRuleMode,
 } from "./proto/proto/decide/v2/decide_pb.js";
-import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metadata.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
+  Billing,
   Conclusion,
   Decision,
   InternalDecision,
@@ -67,6 +69,10 @@ const noopLog = {
   warn(): void {},
   error(): void {},
 };
+
+function billingFromProto(billing?: ProtoBilling): Billing | undefined {
+  return billing ? { unit: billing.unit, count: billing.count } : undefined;
+}
 
 /** Minimal context for `@arcjet/analyze` — only `log` is used for sensitive info. */
 const analyzeContext = { log: noopLog, characteristics: [] as string[] };
@@ -333,20 +339,24 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
       };
     }
     case "promptInjection": {
+      const v = pr.result.value;
       return {
-        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        conclusion: conclusionFromProto(v.conclusion),
         reason: "PROMPT_INJECTION",
         type: "PROMPT_INJECTION",
         warnings,
+        billing: billingFromProto(v.billing),
       };
     }
     case "moderateContent": {
+      const v = pr.result.value;
       return {
-        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        conclusion: conclusionFromProto(v.conclusion),
         reason: "MODERATE_CONTENT",
         type: "MODERATE_CONTENT",
         warnings,
-        detected: pr.result.value.detected,
+        detected: v.detected,
+        billing: billingFromProto(v.billing),
       };
     }
     case "localSensitiveInfo": {

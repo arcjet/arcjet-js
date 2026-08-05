@@ -800,6 +800,44 @@ export class ArcjetRuleResult {
 }
 
 /**
+ * Arcjet threat intelligence assessment for an IP address.
+ */
+export class ArcjetThreatIntelligence {
+  riskLevel: string;
+  confidence: string;
+  reputation: string;
+  isSafe: boolean;
+  networkTypes: readonly string[];
+  activities: readonly string[];
+  entities: readonly string[];
+  entityName?: string | undefined;
+  /** Threat-intelligence service identity, which may differ from the IP network service. */
+  service?: string | undefined;
+
+  constructor(init: {
+    riskLevel: string;
+    confidence: string;
+    reputation: string;
+    isSafe: boolean;
+    networkTypes: readonly string[];
+    activities: readonly string[];
+    entities: readonly string[];
+    entityName?: string | undefined;
+    service?: string | undefined;
+  }) {
+    this.riskLevel = init.riskLevel;
+    this.confidence = init.confidence;
+    this.reputation = init.reputation;
+    this.isSafe = init.isSafe;
+    this.networkTypes = init.networkTypes;
+    this.activities = init.activities;
+    this.entities = init.entities;
+    this.entityName = init.entityName;
+    this.service = init.service;
+  }
+}
+
+/**
  * Configuration for `ArcjetIpDetails`.
  */
 interface ArcjetIpDetailsInit {
@@ -826,12 +864,15 @@ interface ArcjetIpDetailsInit {
   isTor?: boolean | undefined;
   isRelay?: boolean | undefined;
   isAbuser?: boolean | undefined;
+  threat?: ArcjetThreatIntelligence | undefined;
 }
 
 /**
  * Info about an IP address.
  */
 export class ArcjetIpDetails {
+  /** Arcjet threat intelligence assessment, when available. */
+  threat?: ArcjetThreatIntelligence | undefined;
   /**
    * Estimated latitude of the IP address within the `accuracyRadius` margin
    * of error.
@@ -899,7 +940,8 @@ export class ArcjetIpDetails {
    */
   asnCountry?: string | undefined;
   /**
-   * Name of service the IP address belongs to.
+   * Network service the IP address belongs to, which may differ from the
+   * threat-intelligence service identity in `threat.service`.
    */
   service?: string | undefined;
 
@@ -929,6 +971,7 @@ export class ArcjetIpDetails {
     this.asnType = init.asnType;
     this.asnCountry = init.asnCountry;
     this.service = init.service;
+    this.threat = init.threat;
     // TypeScript creates symbols on the class when using `private` or `#`
     // identifiers for tracking these properties. We don't want to end up with
     // the same issues as Next.js with private symbols so we use
