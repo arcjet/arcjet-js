@@ -65,8 +65,8 @@
       "import": "./dist/fetch.js"
     },
     "./testing": {
-      "types": "./dist/testing.d.ts",
-      "import": "./dist/testing.js"
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
     },
     "./vercel-ai/v7": {
       "types": "./dist/vercel-ai/v7/index.d.ts",

@@ -3,11 +3,12 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, test } from "node:test";
 
-import { createFailOpenDecision } from "./client.ts";
-import type { ArcjetGuard } from "./index.ts";
-import { capture, guard, registerArcjet, registeredClient, unregisterArcjet } from "./registry.ts";
-import { registerTestClient } from "./testing.ts";
-import type { ArcjetMetadata, Decision } from "./types.ts";
+import { createFailOpenDecision } from "../client.ts";
+import type { ArcjetGuard } from "../index.ts";
+import { registeredClient } from "../registration-slot.ts";
+import { capture, guard, registerArcjet, unregisterArcjet } from "../registry.ts";
+import type { ArcjetMetadata, Decision } from "../types.ts";
+import { registerTestClient } from "./index.ts";
 
 /** A client that does nothing, only to occupy the registration slot. */
 const occupant: ArcjetGuard = {
@@ -167,7 +168,7 @@ describe("recording captures", () => {
 
 function exportsMap(): Record<string, unknown> {
   const packageJson: unknown = JSON.parse(
-    readFileSync(resolve(import.meta.dirname, "../package.json"), "utf8"),
+    readFileSync(resolve(import.meta.dirname, "../../package.json"), "utf8"),
   );
   assert.ok(packageJson !== null && typeof packageJson === "object");
   const map = (packageJson as { exports?: Record<string, unknown> }).exports;
@@ -178,8 +179,8 @@ function exportsMap(): Record<string, unknown> {
 describe("the ./testing subpath", () => {
   test("is declared, and points at the built test client", () => {
     assert.deepEqual(exportsMap()["./testing"], {
-      types: "./dist/testing.d.ts",
-      import: "./dist/testing.js",
+      types: "./dist/testing/index.d.ts",
+      import: "./dist/testing/index.js",
     });
   });
 
@@ -191,6 +192,8 @@ describe("the ./testing subpath", () => {
     const targets = JSON.stringify(exportsMap());
 
     assert.doesNotMatch(targets, /dist\/registry\./);
+    assert.doesNotMatch(targets, /dist\/registration-slot\./);
+    assert.doesNotMatch(targets, /dist\/testing\/register\./);
     assert.doesNotMatch(targets, /dist\/client\./);
     assert.doesNotMatch(targets, /dist\/diagnostics\./);
     assert.doesNotMatch(targets, /dist\/symbol\./);

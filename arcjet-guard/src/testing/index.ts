@@ -13,11 +13,12 @@
  * @packageDocumentation
  */
 
-import { normalizeCaptureEvent, createFailOpenDecision } from "./client.ts";
-import { symbolArcjetDiagnostics, type DiagnosticHandler } from "./diagnostics.ts";
-import type { ArcjetGuard } from "./index.ts";
-import { registerArcjetForTesting, unregisterArcjet } from "./registry.ts";
-import type { ArcjetMetadata, CaptureOptions, Decision, GuardOptions, Warning } from "./types.ts";
+import { normalizeCaptureEvent, createFailOpenDecision } from "../client.ts";
+import { symbolArcjetDiagnostics, type DiagnosticHandler } from "../diagnostics.ts";
+import type { ArcjetGuard } from "../index.ts";
+import { unregisterArcjet } from "../registry.ts";
+import type { ArcjetMetadata, CaptureOptions, Decision, GuardOptions, Warning } from "../types.ts";
+import { registerArcjetForTesting } from "./register.ts";
 
 /**
  * Diagnostics are dropped rather than logged.

@@ -18,49 +18,19 @@ import {
   type DiagnosticHandler,
 } from "./diagnostics.ts";
 import type { ArcjetGuard } from "./index.ts";
-import { symbolArcjetClient } from "./symbol.ts";
+import {
+  clearRegistration,
+  isClient,
+  isCurrentVersion,
+  readRegistration,
+  registeredClient,
+  writeRegistration,
+} from "./registration-slot.ts";
 import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
-import { VERSION } from "./version.ts";
-
-type GlobalWithArcjet = typeof globalThis & {
-  [symbolArcjetClient]?: unknown;
-};
 
 type ClientWithDiagnostics = ArcjetGuard & {
   [symbolArcjetDiagnostics]: DiagnosticHandler;
 };
-
-/**
- * What actually goes in the global slot.
- *
- * The client is wrapped rather than stored bare so the version travels with
- * it, and so registering never has to mutate an object the caller owns.
- */
-type Registration = {
-  version: string;
-  client: ArcjetGuard;
-};
-
-/**
- * Whether a registration was written by this exact build of the SDK.
- *
- * `Symbol.for` is realm-wide, so the slot is shared by every copy of
- * `@arcjet/guard` in the process — including copies at other versions, which
- * is the normal outcome of one dependency pinning a different range than
- * another. What is stored is a live object, and its usable surface is more
- * than the three public methods: the diagnostics symbol, the decision shape,
- * and the internal symbols on it are only guaranteed within a single build.
- *
- * So the check is exact string equality, not a range. A copy that finds a
- * registration it did not write treats it as absent and fails open, which is
- * the same degradation as nothing being registered at all. The cost is that
- * two versions in one process do not share a client — each keeps whatever it
- * registered, and the one that lost the race fails open rather than calling
- * into a shape it cannot verify.
- */
-function isCurrentVersion(registration: Registration): boolean {
-  return registration.version === VERSION;
-}
 
 /**
  * Register a client for the free {@link guard}, {@link capture} and
@@ -89,11 +59,10 @@ export function registerArcjet(client: ArcjetGuard): void {
     return;
   }
 
-  const globalWithArcjet: GlobalWithArcjet = globalThis;
   const existing = readRegistration();
 
   if (existing === undefined) {
-    globalWithArcjet[symbolArcjetClient] = { version: VERSION, client };
+    writeRegistration(client);
     return;
   }
 
@@ -139,9 +108,7 @@ export function registerArcjet(client: ArcjetGuard): void {
  * a client explicitly. That is a convention, not something enforced here.
  */
 export function unregisterArcjet(): void {
-  const globalWithArcjet: GlobalWithArcjet = globalThis;
-  // oxlint-disable-next-line typescript/no-dynamic-delete -- clearing the slot
-  delete globalWithArcjet[symbolArcjetClient];
+  clearRegistration();
 }
 
 /**
@@ -219,99 +186,6 @@ export function flush(timeoutMs?: number): Promise<void> {
   }
 
   return Promise.resolve();
-}
-
-/**
- * Register a client, refusing to displace or silently share with an incumbent.
- *
- * The test client uses this instead of {@link registerArcjet} because the
- * failure modes invert under test. In an application a second registration
- * should be survivable, so it warns and carries on. In a test suite a client
- * left registered by an earlier test is a leak that makes the current test
- * assert against the wrong recorder — quietly, and usually somewhere else. So
- * this throws.
- *
- * @internal Not part of the public API. Unreachable outside the package: the
- * `exports` map lists no path that resolves here.
- */
-export function registerArcjetForTesting(client: ArcjetGuard): void {
-  const globalWithArcjet: GlobalWithArcjet = globalThis;
-  // `in` rather than a validated read: anything at all in the slot — including
-  // a record this build cannot parse — means an earlier test left something
-  // behind, which is what this is here to catch.
-  if (symbolArcjetClient in globalWithArcjet) {
-    throw new Error(
-      "An Arcjet client is already registered. Call unregisterArcjet() first — " +
-        "an earlier test probably left one behind.",
-    );
-  }
-
-  globalWithArcjet[symbolArcjetClient] = { version: VERSION, client };
-}
-
-/**
- * The currently registered client, if any.
- *
- * @internal Not part of the public API. Unreachable outside the package: the
- * `exports` map lists no path that resolves here.
- */
-export function registeredClient(): ArcjetGuard | undefined {
-  const registration = readRegistration();
-  if (registration === undefined || !isCurrentVersion(registration)) {
-    return undefined;
-  }
-
-  return registration.client;
-}
-
-/**
- * Read and validate whatever is in the global slot.
- *
- * Validated on the way out, not only on the way in. The slot lives on
- * `globalThis` under a well-known symbol, so anything in the process can write
- * to it — a `null`, a half-built value, or a record from a version whose shape
- * this build cannot vouch for. Any of those reaching a call site would surface
- * as a TypeError thrown from `capture()` deep in application code, which is
- * what the never-throw contract exists to prevent.
- *
- * Returns the record regardless of version so callers can tell "nothing is
- * registered" from "another version registered", which need different
- * handling: the first is a free slot, the second is somebody else's.
- */
-function readRegistration(): Registration | undefined {
-  const globalWithArcjet: GlobalWithArcjet = globalThis;
-  const candidate = globalWithArcjet[symbolArcjetClient];
-
-  if (typeof candidate !== "object" || candidate === null) {
-    return undefined;
-  }
-
-  const registration = candidate as Partial<Registration>;
-  if (typeof registration.version !== "string" || !isClient(registration.client)) {
-    return undefined;
-  }
-
-  return { version: registration.version, client: registration.client };
-}
-
-/**
- * Whether a value can actually serve the free calls.
- *
- * Structural rather than an instance check, because the test client and
- * hand-rolled fakes are legitimate registrations and none of them are built by
- * `launchArcjet()`.
- */
-function isClient(value: unknown): value is ArcjetGuard {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-
-  const candidate = value as Partial<ArcjetGuard>;
-  return (
-    typeof candidate.guard === "function" &&
-    typeof candidate.capture === "function" &&
-    typeof candidate.flush === "function"
-  );
 }
 
 /**

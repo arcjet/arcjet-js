@@ -522,10 +522,32 @@ talks to nothing:
 import { registerTestClient } from "@arcjet/guard/testing";
 import { refund } from "./refund.ts";
 
-test("refund captures an event", () => {
+test("refund captures an event", async () => {
+  using arcjet = registerTestClient();
+
+  await refund("inv_1");
+
+  assert.equal(arcjet.captures[0]?.action, "refund.issued");
+});
+```
+
+`using` unregisters the client at the end of the block, including when the test
+fails part-way through. Note the `await`: the capture happens wherever the code
+under test reaches it, so a test that forgets to await an async function asserts
+before the event exists.
+
+<details>
+<summary>Without <code>using</code> — Node.js 22, or no TypeScript compile step</summary>
+
+The `using` *syntax* needs Node.js 24 to run natively, or compilation through
+TypeScript. Node.js 22 defines `Symbol.dispose` but cannot parse `using`. Call
+`unregister()` from a `finally` instead:
+
+```ts
+test("refund captures an event", async () => {
   const arcjet = registerTestClient();
   try {
-    refund("inv_1");
+    await refund("inv_1");
 
     assert.equal(arcjet.captures[0]?.action, "refund.issued");
   } finally {
@@ -534,28 +556,23 @@ test("refund captures an event", () => {
 });
 ```
 
+`unregister()` and `[Symbol.dispose]` are the same function under two names, so
+neither can drift from the other. It is safe to call twice, so it also works
+from an `afterEach`.
+
+One related caveat: because `[Symbol.dispose]` appears in the published types, a
+project compiling with `skipLibCheck: false` needs `esnext.disposable` in its
+`lib` even if it never writes `using`. `unregister()` is unaffected either way.
+
+</details>
+
 It throws if a client is already registered, which surfaces a leak from an
 earlier test rather than letting this one assert against the wrong recorder.
 
-Captures are recorded synchronously, so assertions need no waiting, and they go
-through the same validation and metadata encoding as a real `capture()` — a call
-the real client would drop is not recorded here either.
-
-The client also implements `Symbol.dispose`, so `using` replaces the `finally`:
-
-```ts
-using arcjet = registerTestClient();
-```
-
-`unregister()` and `[Symbol.dispose]` are the same function under two names, so
-neither can drift from the other.
-
-Two caveats, both on the consuming project rather than on this package. The
-`using` *syntax* needs Node.js 24 to run natively or compilation through
-TypeScript — Node.js 22 defines `Symbol.dispose` but cannot parse `using`. And
-because `[Symbol.dispose]` appears in the published types, a project compiling
-with `skipLibCheck: false` needs `esnext.disposable` in its `lib` even if it
-never writes `using`; `unregister()` is unaffected either way.
+Each recorded capture goes through the same validation and metadata encoding as
+a real `capture()`, so a call the real client would drop is not recorded here
+either. Recording itself is synchronous — once the code under test reaches
+`capture()`, the event is there with no flushing or waiting.
 
 `guard()` on the test client records the call and returns a fail-open `ALLOW`,
 because no rule actually ran. It is not a mock server and does not let you stub
