@@ -25,6 +25,7 @@ test("@arcjet/nuxt (api)", async function (t) {
       "ArcjetRuleResult",
       "ArcjetSensitiveInfoReason",
       "ArcjetShieldReason",
+      "ArcjetThreatIntelligence",
       "botCategories",
       "cloudflare",
       "createRemoteClient",
