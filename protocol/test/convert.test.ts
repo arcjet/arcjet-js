@@ -976,7 +976,6 @@ test("convert", async (t) => {
         timezone: "America/New_York",
         threat: {
           activities: ["scanning"],
-          backgroundNoise: 42,
           confidence: "high",
           entities: ["scanner"],
           entityName: "example-scanner",
@@ -1015,7 +1014,6 @@ test("convert", async (t) => {
         networkTypes: [],
         activities: [],
         entities: [],
-        backgroundNoise: 0,
       });
       assert.equal(decision.ip.threat?.entityName, undefined);
       assert.equal(decision.ip.threat?.service, undefined);

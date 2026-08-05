@@ -813,7 +813,6 @@ export class ArcjetThreatIntelligence {
   entityName?: string | undefined;
   /** Threat-intelligence service identity, which may differ from the IP network service. */
   service?: string | undefined;
-  backgroundNoise: number;
 
   constructor(init: {
     riskLevel: string;
@@ -825,7 +824,6 @@ export class ArcjetThreatIntelligence {
     entities: readonly string[];
     entityName?: string | undefined;
     service?: string | undefined;
-    backgroundNoise: number;
   }) {
     this.riskLevel = init.riskLevel;
     this.confidence = init.confidence;
@@ -836,7 +834,6 @@ export class ArcjetThreatIntelligence {
     this.entities = init.entities;
     this.entityName = init.entityName;
     this.service = init.service;
-    this.backgroundNoise = init.backgroundNoise;
   }
 }
 
