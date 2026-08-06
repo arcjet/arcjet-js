@@ -174,6 +174,16 @@ function runFixtureDrivenEveImportTest(): void {
         content: 'import { someExport } from "eve";\nvoid someExport;',
         shouldFail: true,
       },
+      {
+        name: "detects dynamic import of eve in expression position",
+        content: 'export async function loadEve() {\n  return import("eve");\n}',
+        shouldFail: true,
+      },
+      {
+        name: "does not match dynamic-import text inside a string literal",
+        content: "const code = 'import(\"eve\")';\nvoid code;",
+        shouldFail: false,
+      },
     ];
 
     for (const fixtureTest of fixtureTests) {

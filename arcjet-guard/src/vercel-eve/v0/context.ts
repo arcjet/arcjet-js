@@ -20,26 +20,38 @@ import type { ArcjetMetadata } from "../../types.ts";
  * @example
  * ```ts
  * import { launchArcjet, detectPromptInjection } from "@arcjet/guard";
+ * import { ArcjetDeniedError, guardAction } from "@arcjet/guard/vercel-eve/v0";
  * import { eveAgentContext } from "./context.ts";
  * import type { SessionContext } from "eve/context";
  *
- * export async function modelResponse(ctx: SessionContext, userMessage: string, model: { invoke(msg: string): Promise<string> }) {
- *   // Thread Eve's session context into the guard as an ArcjetAgentContext.
+ * const client = launchArcjet({ key: process.env["ARCJET_KEY"]! });
+ *
+ * export async function modelResponse(
+ *   ctx: SessionContext,
+ *   userMessage: string,
+ *   model: { invoke(message: string): Promise<string> },
+ * ): Promise<{ message: string } | { error: string }> {
+ *   // Thread Eve's session context into the guard as an ArcjetAgentContext,
+ *   // so the decision lands on the conversation's Sequence.
  *   const agentCtx = eveAgentContext(ctx);
  *
- *   const client = launchArcjet({ key: process.env["ARCJET_KEY"]! });
- *   const decision = await client.guard({
- *     label: "model.response",
- *     rules: [detectPromptInjection()(userMessage)],
- *     correlationId: agentCtx.correlationId,
- *     metadata: agentCtx.metadata,
- *   });
- *
- *   if (decision.conclusion === "DENY") {
- *     return { error: "Request blocked by security policy" };
+ *   try {
+ *     const message = await guardAction(
+ *       client,
+ *       agentCtx,
+ *       {
+ *         action: "model.responded",
+ *         rules: [detectPromptInjection()(userMessage)],
+ *       },
+ *       () => model.invoke(userMessage),
+ *     );
+ *     return { message };
+ *   } catch (error) {
+ *     if (error instanceof ArcjetDeniedError) {
+ *       return { error: "Request blocked by security policy" };
+ *     }
+ *     throw error;
  *   }
- *
- *   return { message: await model.invoke(userMessage) };
  * }
  * ```
  *

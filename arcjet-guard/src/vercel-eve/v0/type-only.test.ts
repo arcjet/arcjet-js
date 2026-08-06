@@ -67,8 +67,31 @@ test("type-only import scanner works on fixtures", () => {
       shouldBeTypeOnly: false,
     },
     {
+      name: "detects dynamic import of eve in expression position",
+      content: 'export async function loadEve() {\n  return import("eve");\n}',
+      shouldHaveEveImport: true,
+      shouldBeTypeOnly: false,
+    },
+    {
+      name: "detects awaited dynamic import of eve mid-statement",
+      content: 'const tools = await import("eve/tools");\nvoid tools;',
+      shouldHaveEveImport: true,
+      shouldBeTypeOnly: false,
+    },
+    {
+      name: "detects dynamic require of eve mid-statement",
+      content: 'const eve = require("eve");\nvoid eve;',
+      shouldHaveEveImport: true,
+      shouldBeTypeOnly: false,
+    },
+    {
       name: "does not match import in string literal",
       content: "const code = 'import(\"eve\")'; \nvoid code;",
+      shouldHaveEveImport: false,
+    },
+    {
+      name: "does not match a property access named import",
+      content: 'declare const mock: { import(name: string): unknown };\nmock.import("eve");',
       shouldHaveEveImport: false,
     },
   ];

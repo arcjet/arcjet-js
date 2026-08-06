@@ -32,18 +32,59 @@ export function stripCommentsAndTemplates(source: string): string {
 }
 
 /**
+ * Spans of ordinary string literals in stripped content. After
+ * `stripCommentsAndTemplates` runs, comments are spaces and template literals
+ * are `` ` ``-pairs, so re-tokenizing yields exactly the surviving
+ * string-literal spans. Dynamic-import matching discards any match whose
+ * keyword falls inside one: a real `import("x")` keyword sits outside every
+ * literal, while the same text inside a string is data, not an import.
+ */
+function stringLiteralSpans(cleanContent: string): Array<[number, number]> {
+  const spans: Array<[number, number]> = [];
+  for (const match of cleanContent.matchAll(COMMENT_OR_STRING)) {
+    const token = match[0];
+    if ((token.startsWith('"') || token.startsWith("'")) && match.index !== undefined) {
+      spans.push([match.index, match.index + token.length]);
+    }
+  }
+  return spans;
+}
+
+/**
+ * Dynamic `import("x")` and `require("x")` specifiers.
+ *
+ * Matched in expression position anywhere in a line — `return import("eve")`
+ * inside a function body counts — not just at line start, because a dynamic
+ * import is a runtime load wherever it appears. Matches whose keyword lies
+ * inside a string literal are discarded (see {@link stringLiteralSpans}), and
+ * the lookbehind rejects property accesses such as `mock.import("x")`.
+ */
+function dynamicImportSpecifiers(cleanContent: string): string[] {
+  const specifiers: string[] = [];
+  const spans = stringLiteralSpans(cleanContent);
+  const dynamicImportRegex = /(?<![.\w$])(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/g;
+
+  let match: RegExpExecArray | null;
+  while ((match = dynamicImportRegex.exec(cleanContent)) !== null) {
+    const index = match.index;
+    const specifier = match[1];
+    if (specifier !== undefined && !spans.some(([start, end]) => index >= start && index < end)) {
+      specifiers.push(specifier);
+    }
+  }
+
+  return specifiers;
+}
+
+/**
  * Parse import/export statements from a file and extract specifiers.
  * Matches patterns like:
  * - import { x } from "./foo.ts"
  * - export { x } from "./bar.ts"
  * - export type { T } from "./baz.ts"
  * - import "ai" (bare side-effect import)
- * - import("ai") (dynamic import)
- * - require("ai") (dynamic require)
- *
- * Note: Dynamic imports via import() and require() are also detected, anchored
- * to line start like static imports to avoid matching import/require strings in
- * literals and comments, ensuring AC2.1 compliance without false positives.
+ * - import("ai") (dynamic import, in expression position anywhere in a line)
+ * - require("ai") (dynamic require, likewise)
  */
 export function extractImportSpecifiers(content: string): string[] {
   const specifiers: string[] = [];
@@ -56,8 +97,6 @@ export function extractImportSpecifiers(content: string): string[] {
   const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
   // Match bare side-effect imports: import "package"
   const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
-  // Match dynamic imports: import("package") or require("package"), anchored to line start
-  const dynamicImportRegex = /^[ \t]*(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/gm;
 
   let match: RegExpExecArray | null;
 
@@ -77,13 +116,7 @@ export function extractImportSpecifiers(content: string): string[] {
     }
   }
 
-  // Check dynamic imports and requires
-  while ((match = dynamicImportRegex.exec(cleanContent)) !== null) {
-    const specifier = match[1];
-    if (specifier !== undefined) {
-      specifiers.push(specifier);
-    }
-  }
+  specifiers.push(...dynamicImportSpecifiers(cleanContent));
 
   return specifiers;
 }
@@ -128,8 +161,9 @@ export function collectTsFiles(dir: string): string[] {
  * Inline type modifiers (`import { type X, y } from "eve"`) count as a VALUE
  * import: the statement still emits, because `y` is a value.
  *
- * Dynamic imports via `import("...")` and `require("...")` are always classified
- * as non-type-only because they always emit at runtime.
+ * Dynamic `import("...")` and `require("...")` calls are matched in expression
+ * position anywhere in a line and always classified as value imports — a
+ * dynamic import emits at runtime wherever it appears.
  */
 export function extractTypedImportSpecifiers(
   content: string,
@@ -155,8 +189,6 @@ export function extractTypedImportSpecifiers(
   const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
   // Match bare side-effect imports: import "package"
   const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
-  // Match dynamic imports and requires: import("package") or require("package"), anchored to line start
-  const dynamicImportRegex = /^[ \t]*(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/gm;
 
   // Check import...from patterns (but skip those already matched as type-only)
   while ((match = importFromRegex.exec(cleanContent)) !== null) {
@@ -182,12 +214,9 @@ export function extractTypedImportSpecifiers(
     }
   }
 
-  // Check dynamic imports and requires (always non-type-only because they emit at runtime)
-  while ((match = dynamicImportRegex.exec(cleanContent)) !== null) {
-    const specifier = match[1];
-    if (specifier !== undefined) {
-      specifiers.push({ specifier, typeOnly: false });
-    }
+  // Dynamic imports and requires always emit at runtime, so they are value imports
+  for (const specifier of dynamicImportSpecifiers(cleanContent)) {
+    specifiers.push({ specifier, typeOnly: false });
   }
 
   return specifiers;
