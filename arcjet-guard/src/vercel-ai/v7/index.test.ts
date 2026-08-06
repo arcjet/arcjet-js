@@ -170,7 +170,15 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
   // "./testing" is the in-memory client for application tests. Deliberately a
   // single entry rather than a runtime-conditional one: it has no transport, so
   // there is nothing for a condition to select.
-  const expectedRootKeys = [".", "./bun", "./fetch", "./node", "./testing", "./vercel-ai/v7"];
+  const expectedRootKeys = [
+    ".",
+    "./bun",
+    "./fetch",
+    "./node",
+    "./testing",
+    "./vercel-ai/v7",
+    "./vercel-eve/v0",
+  ];
 
   assert.deepEqual(
     exportKeys,
