@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { tmpdir } from "node:os";
 
 import * as agents from "./index.ts";
 import type {
@@ -93,12 +94,12 @@ test("no AI SDK coupling (AC2.1)", () => {
       return;
     }
 
-    // Check for forbidden AI SDK imports
+    // Check for forbidden imports (AI SDK and Eve)
     const importSpecifiers = extractImportSpecifiers(content);
     for (const spec of importSpecifiers) {
-      // Check for 'ai' package or '@ai-sdk/*' scoped packages
+      // Check for 'ai' package, '@ai-sdk/*' scoped packages, and 'eve' or 'eve/*'
       // Must match the actual import specifier, not JSDoc prose or identifiers
-      if (spec === "ai" || spec.startsWith("@ai-sdk/")) {
+      if (spec === "ai" || spec.startsWith("@ai-sdk/") || spec === "eve" || spec.startsWith("eve/")) {
         errors.push(`File ${absolutePath} imports forbidden package: "${spec}"`);
       }
 
@@ -127,7 +128,108 @@ test("no AI SDK coupling (AC2.1)", () => {
   walkImportGraph(resolve(moduleDir, "index.ts"));
 
   assert.equal(errors.length, 0, `AI SDK coupling found:\n${errors.join("\n")}`);
+
+  // Fixture-driven assertion: verify the scanner fires when it encounters eve imports.
+  // A boundary test that has never been observed failing may be scanning nothing.
+  runFixtureDrivenEveImportTest();
 });
+
+function runFixtureDrivenEveImportTest(): void {
+  const tempDir = mkdtempSync(resolve(tmpdir(), "arcjet-eve-boundary-"));
+  try {
+    const fixtureTests = [
+      {
+        name: "detects value import of eve",
+        content: 'import { defineTool } from "eve/tools";\nvoid defineTool;',
+        shouldFail: true,
+      },
+      {
+        name: "detects type-only import of eve (forbidden in agnostic layer)",
+        content: 'import type { ToolDefinition } from "eve/tools";\nvoid 0;',
+        shouldFail: true,
+      },
+      {
+        name: "detects mixed type and value import",
+        content: 'import { type ToolDefinition, defineTool } from "eve/tools";\nvoid defineTool;',
+        shouldFail: true,
+      },
+      {
+        name: "detects export type of eve (forbidden in agnostic layer)",
+        content: 'export type { Approval } from "eve/tools";',
+        shouldFail: true,
+      },
+      {
+        name: "does not match specifiers containing eve (false positive prevention)",
+        content: 'import { handler } from "./eventsource.ts";\nvoid handler;',
+        shouldFail: false,
+      },
+      {
+        name: "detects bare import of eve",
+        content: 'import { someExport } from "eve";\nvoid someExport;',
+        shouldFail: true,
+      },
+    ];
+
+    for (const fixtureTest of fixtureTests) {
+      const fixturePath = resolve(tempDir, "fixture.ts");
+      writeFileSync(fixturePath, fixtureTest.content);
+
+      const fixtureVisited = new Set<string>();
+      const fixtureErrors: string[] = [];
+
+      fixtureWalkImportGraph(fixturePath, fixtureVisited, fixtureErrors, fixtureTest.name);
+
+      if (fixtureTest.shouldFail) {
+        assert.ok(fixtureErrors.length > 0, `Expected scanner to detect eve import in: ${fixtureTest.name}`);
+      } else {
+        assert.equal(fixtureErrors.length, 0, `Expected scanner to NOT detect eve import in: ${fixtureTest.name}`);
+      }
+    }
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+function fixtureWalkImportGraph(
+  filePath: string,
+  visited: Set<string>,
+  errors: string[],
+  testName: string,
+): void {
+  const absolutePath = resolve(filePath);
+  if (visited.has(absolutePath)) {
+    return;
+  }
+  visited.add(absolutePath);
+
+  let content: string;
+  try {
+    content = readFileSync(absolutePath, "utf-8");
+  } catch {
+    return;
+  }
+
+  const importSpecifiers = extractImportSpecifiers(content);
+  for (const spec of importSpecifiers) {
+    if (spec === "ai" || spec.startsWith("@ai-sdk/") || spec === "eve" || spec.startsWith("eve/")) {
+      errors.push(`${testName}: ${spec}`);
+    }
+    if (spec.startsWith(".")) {
+      const specDir = resolve(absolutePath, "..");
+      let resolvedPath = resolve(specDir, spec);
+      if (!resolvedPath.endsWith(".ts") && !resolvedPath.endsWith(".d.ts")) {
+        const withTs = `${resolvedPath}.ts`;
+        try {
+          readFileSync(withTs, "utf-8");
+          resolvedPath = withTs;
+        } catch {
+          // Continue
+        }
+      }
+      fixtureWalkImportGraph(resolvedPath, visited, errors, testName);
+    }
+  }
+}
 
 // AC5.2 (partial): No forbidden context identifiers
 test("no old context identifiers (AC5.2)", () => {
