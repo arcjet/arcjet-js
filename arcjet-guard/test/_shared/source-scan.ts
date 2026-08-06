@@ -39,11 +39,13 @@ export function stripCommentsAndTemplates(source: string): string {
  * keyword falls inside one: a real `import("x")` keyword sits outside every
  * literal, while the same text inside a string is data, not an import.
  *
- * The tokenizer does not model regex literals, so a quote inside one (such as
- * `/"/`) opens a phantom span that runs to the next quote. Spans can therefore
- * be over-broad but never under-broad, which is why they gate only the
- * expression-position matcher below — the line-anchored matcher stays
- * unfiltered so a phantom span can never suppress a match it catches.
+ * The tokenizer does not model regex literals, so an unbalanced quote inside
+ * one (such as `/"/`) opens a phantom span that runs to the next quote. A
+ * desynchronized span can be either over- or under-broad, but both failure
+ * modes cost at most a spurious detection — never a missed import — which is
+ * why spans gate only the expression-position matcher below; the line-anchored
+ * matcher stays unfiltered so a phantom span can never suppress a match it
+ * catches.
  */
 function stringLiteralSpans(cleanContent: string): Array<[number, number]> {
   const spans: Array<[number, number]> = [];
@@ -67,7 +69,9 @@ function stringLiteralSpans(cleanContent: string): Array<[number, number]> {
  * {@link stringLiteralSpans} so import text inside a string is not read as an
  * import, and its lookbehind rejects property accesses such as
  * `mock.import("x")`. An expression-position import on a line desynchronized
- * by a preceding regex-literal quote is the one form neither matcher sees.
+ * by a preceding unbalanced regex-literal quote (one that pairs with a later
+ * quote; `/a "b" c/` is balanced and harmless) is the one form neither
+ * matcher sees.
  */
 function dynamicImportSpecifiers(cleanContent: string): string[] {
   // Keyed by the match's end offset — both matchers consume through the
