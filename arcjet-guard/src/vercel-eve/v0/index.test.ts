@@ -37,9 +37,9 @@ function objectField(
   return undefined;
 }
 
-// AC1.2: The agnostic helpers reach users through this namespace and no other,
+// The agnostic helpers reach users through this namespace and no other,
 // so the public path is what must carry them.
-test("AC1.2: eve namespace exports the agnostic helpers", () => {
+test("eve namespace exports the agnostic helpers", () => {
   const requiredSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -63,7 +63,7 @@ test("Eve namespace re-exports exactly the agents barrel with same identity", ()
   assert.deepEqual(
     sortedKeys(eveNamespace),
     sortedKeys(agentsBarrel),
-    "eve namespace must re-export exactly the agents barrel in phase 1",
+    "eve namespace must re-export exactly the agents barrel while it has no own exports",
   );
 
   const eveKeys = Object.keys(eveNamespace);
