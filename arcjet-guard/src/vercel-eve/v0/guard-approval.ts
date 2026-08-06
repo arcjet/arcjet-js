@@ -48,31 +48,28 @@ export interface GuardApprovalPolicy<TInput = Record<string, unknown>> {
  * ```ts
  * import { launchArcjet, tokenBucket } from "@arcjet/guard";
  * import { guardApproval } from "@arcjet/guard/vercel-eve/v0";
+ * import { defineOpenAPIConnection } from "eve/connections";
+ * import type { OpenAPIConnectionDefinition } from "eve/connections";
  *
- * const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+ * const arcjet = launchArcjet({ key: process.env["ARCJET_KEY"]! });
+ * const callLimit = tokenBucket({ refillRate: 5, intervalSeconds: 60, maxTokens: 5 });
  *
- * const policy = {
- *   action: "weather.fetched",
- *   rules: [tokenBucket({ refillRate: 5, intervalSeconds: 60, maxTokens: 5 })],
- *   onAllow: "user-approval", // require a human to approve this call
- * };
+ * // A connection's tools have no local `execute` to wrap, so the approval
+ * // gate is the only enforcement point that reaches them. `onAllow` still
+ * // requires a human after the policy passes — Eve allows one `approval`
+ * // function per connection, so there is nowhere to compose `once()` or
+ * // `always()` from `eve/tools/approval` alongside this.
+ * const weather: OpenAPIConnectionDefinition = defineOpenAPIConnection({
+ *   description: "Weather API",
+ *   spec: "https://api.example.com/openapi.json",
+ *   approval: guardApproval(arcjet, {
+ *     action: "weather.fetched",
+ *     rules: (ctx) => [callLimit({ key: ctx.session.id, requested: 1 })],
+ *     onAllow: "user-approval",
+ *   }),
+ * });
  *
- * const approval = guardApproval(arcjet, policy);
- *
- * // Use on a connection's approval handler:
- * const conn: OpenAPIConnectionDefinition = {
- *   type: "openapi",
- *   name: "weather",
- *   url: "https://api.openweathermap.org/data/2.5",
- *   approval: approval,
- * };
- *
- * // Or on a tool's approval:
- * const tool: ToolDefinition = {
- *   name: "get_weather",
- *   approval: approval,
- *   // ... rest of tool config
- * };
+ * export default weather;
  * ```
  */
 export function guardApproval<TInput = Record<string, unknown>>(
