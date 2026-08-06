@@ -184,6 +184,11 @@ function runFixtureDrivenEveImportTest(): void {
         content: "const code = 'import(\"eve\")';\nvoid code;",
         shouldFail: false,
       },
+      {
+        name: "regex literal with a quote does not hide a following dynamic import",
+        content: 'const re = /"/;\nimport("eve");\nvoid re;',
+        shouldFail: true,
+      },
     ];
 
     for (const fixtureTest of fixtureTests) {

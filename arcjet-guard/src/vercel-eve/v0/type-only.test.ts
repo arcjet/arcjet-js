@@ -94,6 +94,12 @@ test("type-only import scanner works on fixtures", () => {
       content: 'declare const mock: { import(name: string): unknown };\nmock.import("eve");',
       shouldHaveEveImport: false,
     },
+    {
+      name: "regex literal with a quote does not hide a following dynamic import",
+      content: 'const re = /"/;\nimport("eve");\nvoid re;',
+      shouldHaveEveImport: true,
+      shouldBeTypeOnly: false,
+    },
   ];
 
   for (const fixture of fixtures) {

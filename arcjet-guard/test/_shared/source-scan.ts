@@ -34,10 +34,16 @@ export function stripCommentsAndTemplates(source: string): string {
 /**
  * Spans of ordinary string literals in stripped content. After
  * `stripCommentsAndTemplates` runs, comments are spaces and template literals
- * are `` ` ``-pairs, so re-tokenizing yields exactly the surviving
- * string-literal spans. Dynamic-import matching discards any match whose
+ * are `` ` ``-pairs, so re-tokenizing yields the surviving string-literal
+ * spans. Expression-position dynamic-import matching discards any match whose
  * keyword falls inside one: a real `import("x")` keyword sits outside every
  * literal, while the same text inside a string is data, not an import.
+ *
+ * The tokenizer does not model regex literals, so a quote inside one (such as
+ * `/"/`) opens a phantom span that runs to the next quote. Spans can therefore
+ * be over-broad but never under-broad, which is why they gate only the
+ * expression-position matcher below — the line-anchored matcher stays
+ * unfiltered so a phantom span can never suppress a match it catches.
  */
 function stringLiteralSpans(cleanContent: string): Array<[number, number]> {
   const spans: Array<[number, number]> = [];
@@ -53,27 +59,42 @@ function stringLiteralSpans(cleanContent: string): Array<[number, number]> {
 /**
  * Dynamic `import("x")` and `require("x")` specifiers.
  *
- * Matched in expression position anywhere in a line — `return import("eve")`
- * inside a function body counts — not just at line start, because a dynamic
- * import is a runtime load wherever it appears. Matches whose keyword lies
- * inside a string literal are discarded (see {@link stringLiteralSpans}), and
- * the lookbehind rejects property accesses such as `mock.import("x")`.
+ * Two matchers, unioned by match end offset. The line-anchored matcher runs
+ * unfiltered, so tokenizer desync from a regex literal containing a quote can
+ * never hide a line-start dynamic import. The expression-position matcher —
+ * `return import("eve")` inside a function body counts, because a dynamic
+ * import is a runtime load wherever it appears — is additionally gated on
+ * {@link stringLiteralSpans} so import text inside a string is not read as an
+ * import, and its lookbehind rejects property accesses such as
+ * `mock.import("x")`. An expression-position import on a line desynchronized
+ * by a preceding regex-literal quote is the one form neither matcher sees.
  */
 function dynamicImportSpecifiers(cleanContent: string): string[] {
-  const specifiers: string[] = [];
-  const spans = stringLiteralSpans(cleanContent);
-  const dynamicImportRegex = /(?<![.\w$])(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/g;
-
+  // Keyed by the match's end offset — both matchers consume through the
+  // closing paren, so the same occurrence dedupes even though the anchored
+  // match starts at the line's leading whitespace.
+  const found = new Map<number, string>();
   let match: RegExpExecArray | null;
-  while ((match = dynamicImportRegex.exec(cleanContent)) !== null) {
-    const index = match.index;
+
+  const anchoredRegex = /^[ \t]*(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/gm;
+  while ((match = anchoredRegex.exec(cleanContent)) !== null) {
     const specifier = match[1];
-    if (specifier !== undefined && !spans.some(([start, end]) => index >= start && index < end)) {
-      specifiers.push(specifier);
+    if (specifier !== undefined) {
+      found.set(match.index + match[0].length, specifier);
     }
   }
 
-  return specifiers;
+  const spans = stringLiteralSpans(cleanContent);
+  const expressionRegex = /(?<![.\w$])(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/g;
+  while ((match = expressionRegex.exec(cleanContent)) !== null) {
+    const keyword = match.index;
+    const specifier = match[1];
+    if (specifier !== undefined && !spans.some(([start, end]) => keyword >= start && keyword < end)) {
+      found.set(match.index + match[0].length, specifier);
+    }
+  }
+
+  return [...found.values()];
 }
 
 /**
