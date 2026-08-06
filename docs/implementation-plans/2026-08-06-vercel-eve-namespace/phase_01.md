@@ -31,6 +31,7 @@ This phase implements and tests:
 - `arcjet-guard/src/agents/` is **internal**: it has no `exports` entry and must never get one. Every agnostic symbol reaches users re-exported from a vendor namespace.
 - Guard's source imports siblings with a `.ts` extension (`./context.ts`), not `.js`. `rewriteRelativeImportExtensions` fixes them on emit.
 - Tests are co-located as `src/**/*.test.ts` and import **source**, never `dist/`.
+- **The `renovate.json` rule for `eve` is already in place** (added 2026-08-06, last entry in `packageRules` so it wins over the devDependencies and patch automerge rules): `automerge: false` and `allowedVersions: "<1"`. Do not add it again, and do not "simplify" it by moving it earlier in the array — order is what makes it effective. If you find yourself wanting to relax it because a bump is noisy, that is the rule working.
 - `arcjet-guard/src/vercel-ai/v7/index.test.ts` contains an **exact** `deepEqual` over the export-map key set, and it breaks in this phase. That is by design: it is the test that would otherwise let an accidental export slip in. The namespace key-count assertion in the same file (`v7Keys.length === agentKeys.length + 2`, line ~65) does **not** break — it counts v7's own two extra exports and a sibling namespace does not affect it.
 
 ---

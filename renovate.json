@@ -46,6 +46,13 @@
       "matchManagers": ["npm"],
       "matchPackageNames": ["@bytecodealliance/jco"],
       "allowedVersions": "<=1.5.0"
+    },
+    {
+      "description": "Never automerge Eve. It is pre-1.0 (30 minor lines in under a year) so a minor release may break, and `@arcjet/guard/vercel-eve/v0` types against `ToolDefinition`, `ApprovalContext`, `ApprovalStatus`, `SessionContext` and `HookEventMap`. A green typecheck is necessary but not sufficient: the namespace also depends on two `Symbol.for` brands `defineTool` stamps, on the definition-source key staying non-enumerable and configurable, and on stream-event payload fields — runtime contracts a typecheck cannot see. Keep the range below 1.0; `vercel-eve/v1` is added deliberately, not by a bump. This rule is last in `packageRules` so it wins over the devDependencies and patch automerge rules above.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["eve"],
+      "automerge": false,
+      "allowedVersions": "<1"
     }
   ],
   "lockFileMaintenance": {

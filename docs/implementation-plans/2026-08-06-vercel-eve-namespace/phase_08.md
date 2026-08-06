@@ -196,7 +196,9 @@ Write it around what a reviewer needs to decide, not around a file list:
 
 **Step 2: Linear**
 
-Update the tracking issue to describe the delivered surface. If it was written expecting `vercel-eve/v1`, retitle it.
+The work is tracked by **ENG-1011** ("Ship the Vercel Eve namespace as @arcjet/guard/vercel-eve/v0") in the **Vercel Eve Framework Helper** project, which also holds ENG-1012 (bump toto's Eve), ENG-1014 (the toto adoption, blocked by 1011 and 1012), and three follow-ups: ENG-1013 (promote the agnostic layer to the root export — the ADR's deferred decision, whose trigger this work fires), ENG-1015 (an Eve extension package), ENG-1016 (add `v1` at Eve's GA).
+
+Update ENG-1011 to describe the surface as it shipped, and move it to `In Review`. If any behaviour landed differently from its description — in particular the `outputSchema` finding from Phase 4 Task 1, which decides whether `onDeny: "result"` exists — correct the issue rather than leaving the plan's prediction standing as the record.
 
 **Step 3: Remove the planning documents**
 
