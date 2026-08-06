@@ -1,9 +1,9 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 
-import type { DecisionDeny } from "../../types.ts";
 import {
   decisionDenyRateLimit,
+  decisionDenyRateLimitNoReset,
   decisionDenyPromptInjection,
   decisionDenyPromptInjectionWithReset,
   decisionDenyError,
@@ -27,21 +27,7 @@ describe("vercel-eve/v0/denial", () => {
     });
 
     test("RATE_LIMIT without retry-after hint (no resetAtUnixSeconds)", () => {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of DecisionDeny
-      const decision = {
-        conclusion: "DENY",
-        reason: "RATE_LIMIT",
-        id: "gdec_deny_no_reset",
-        results: [
-          {
-            conclusion: "DENY",
-            reason: "RATE_LIMIT",
-            type: "TOKEN_BUCKET",
-          },
-        ],
-        warnings: [],
-        hasFailedOpen: () => false,
-      } as unknown as DecisionDeny;
+      const decision = decisionDenyRateLimitNoReset();
 
       const reason = deniedReason(decision);
 

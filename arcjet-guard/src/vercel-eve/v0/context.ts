@@ -1,8 +1,8 @@
 import type { SessionContext } from "eve/context";
 
 import type { ArcjetAgentContext } from "../../agents/context.ts";
-import type { ArcjetMetadata } from "../../types.ts";
 import { correlationIdProblem } from "../../agents/context.ts";
+import type { ArcjetMetadata } from "../../types.ts";
 import { ulid } from "../../agents/ulid.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 
@@ -20,16 +20,17 @@ import { shouldWarn } from "../../agents/capture.ts";
  * @example
  * ```ts
  * import { eveAgentContext } from "@arcjet/guard/vercel-eve/v0";
+ * import { launchArcjet, detectPromptInjection } from "@arcjet/guard";
  * import type { SessionContext } from "eve/context";
  *
- * export async function modelResponse(ctx: SessionContext, userMessage: string) {
+ * export async function modelResponse(ctx: SessionContext, userMessage: string, model: { invoke(msg: string): Promise<string> }) {
  *   // Thread Eve's session context into the guard as an ArcjetAgentContext.
  *   const agentCtx = eveAgentContext(ctx);
  *
- *   const client = launchArcjet({ key: process.env.ARCJET_KEY! });
+ *   const client = launchArcjet({ key: process.env["ARCJET_KEY"]! });
  *   const decision = await client.guard({
  *     ctx: agentCtx,
- *     rules: [promptInjection()],
+ *     rules: [detectPromptInjection()],
  *   });
  *
  *   if (decision.isDenied()) {

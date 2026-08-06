@@ -41,8 +41,13 @@ test("type-only import scanner works on fixtures", () => {
       shouldBeTypeOnly: true,
     },
     {
-      name: "does not match specifiers containing eve (false positive prevention)",
+      name: "does not match specifiers containing eve (false positive prevention: file path)",
       content: 'import { handler } from "./eventsource.ts";\nvoid handler;',
+      shouldHaveEveImport: false,
+    },
+    {
+      name: "does not match specifiers containing eve (false positive prevention: bare package)",
+      content: 'import { handler } from "eve-helpers";\nvoid handler;',
       shouldHaveEveImport: false,
     },
     {

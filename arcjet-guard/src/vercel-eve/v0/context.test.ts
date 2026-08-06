@@ -74,7 +74,7 @@ test("AC3.3a: rejects empty session id, generates ULID, records in metadata", ()
   const result = eveAgentContext(ctx as any);
 
   // Should have generated a ULID (26 Crockford base32 chars)
-  assert.match(result.correlationId, /^[0-9A-Z]{26}$/);
+  assert.match(result.correlationId, /^[0-9A-HJKMNP-TV-Z]{26}$/);
 
   // Should record the rejected value in metadata
   assert.ok(result.metadata);
@@ -95,16 +95,16 @@ test("AC3.3b: rejects session id over 256 chars, generates ULID, records in meta
   const result = eveAgentContext(ctx as any);
 
   // Should have generated a ULID
-  assert.match(result.correlationId, /^[0-9A-Z]{26}$/);
+  assert.match(result.correlationId, /^[0-9A-HJKMNP-TV-Z]{26}$/);
 
   // Should record the rejected value
   assert.ok(result.metadata);
   assert.equal(result.metadata["eve.session"], longId);
 });
 
-test("AC3.3c: rejects session id with non-printable chars, generates ULID, records in metadata", () => {
-  // Use a control character (tab = 0x09) which is outside valid range
-  const badId = String.fromCodePoint(0x09);
+test("AC3.3c: rejects session id containing non-printable chars, generates ULID, records in metadata", () => {
+  // Use a NUL character (0x00) embedded in an otherwise-valid id
+  const badId = `ses_${String.fromCodePoint(0)}_abc`;
   const ctx: MockSessionContext = {
     session: {
       id: badId,
@@ -117,7 +117,7 @@ test("AC3.3c: rejects session id with non-printable chars, generates ULID, recor
   const result = eveAgentContext(ctx as any);
 
   // Should have generated a ULID
-  assert.match(result.correlationId, /^[0-9A-Z]{26}$/);
+  assert.match(result.correlationId, /^[0-9A-HJKMNP-TV-Z]{26}$/);
 
   // Should record the rejected value
   assert.ok(result.metadata);
@@ -223,8 +223,10 @@ test("AC3.4: user omitted when auth.current is null", () => {
   // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
   const result = eveAgentContext(ctx as any);
 
+  // Metadata must be defined (eve.session is always present)
+  assert.ok(result.metadata);
   // Must use 'in' operator, not === undefined, per AC3.4
-  assert.ok(result.metadata === undefined || !("user" in result.metadata));
+  assert.equal("user" in result.metadata, false);
 });
 
 test("AC3.4: user must be checked with 'in' operator, not === undefined", () => {
@@ -239,9 +241,9 @@ test("AC3.4: user must be checked with 'in' operator, not === undefined", () => 
   // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
   const result = eveAgentContext(ctx as any);
 
-  if (result.metadata) {
-    assert.equal("user" in result.metadata, false);
-  }
+  // Metadata must be defined (eve.session is always present)
+  assert.ok(result.metadata);
+  assert.equal("user" in result.metadata, false);
 });
 
 test("AC3.5: eve.session always included", () => {
@@ -274,6 +276,22 @@ test("AC3.5: eve.turn included", () => {
 
   assert.ok(result.metadata);
   assert.equal(result.metadata["eve.turn"], "turn_xyz");
+});
+
+test("AC3.5: eve.turn omitted when turn is absent", () => {
+  const ctx: MockSessionContext = {
+    session: {
+      id: "ses_abc",
+      auth: { current: null, initiator: null },
+      turn: { id: "", sequence: 1 }, // empty turn id
+    },
+  };
+
+  // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
+  const result = eveAgentContext(ctx as any);
+
+  assert.ok(result.metadata);
+  assert.ok(!("eve.turn" in result.metadata), "eve.turn should be omitted when id is empty");
 });
 
 test("AC3.5: eve.parent-session only for delegated sessions", () => {
@@ -409,13 +427,10 @@ function collectDerivedKeys(metadata: Record<string, unknown> | undefined, keys:
   if (!metadata) return;
 
   for (const key of Object.keys(metadata)) {
-    // Collect keys that look like they come from eveAgentContext:
-    // - Start with "eve" (eve.*, or any eve-prefixed key)
-    // - Are exactly "user"
-    // This catches any derived keys, including incorrectly-named ones like "eve session"
-    if (key.startsWith("eve") || key === "user") {
-      keys.add(key);
-    }
+    // Collect all keys unconditionally. The three eveAgentContext shapes
+    // (root session, delegated session, auth.current null) produce only derived keys,
+    // and every key in each returned metadata is derived by construction.
+    keys.add(key);
   }
 }
 
@@ -437,22 +452,26 @@ test("AC3.6: encoder round-trip with no AJ1017 warnings (smoke test)", () => {
   // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
   const result = eveAgentContext(ctx as any);
 
-  if (result.metadata) {
-    const { metadataJson, localWarnings } = encodeMetadata(result.metadata);
+  // Metadata must be defined (has derived keys)
+  assert.ok(result.metadata);
 
-    // Smoke test: no AJ1017 warnings for derived keys
-    assert.equal(
-      localWarnings.length,
-      0,
-      "Encoder round-trip should produce no warnings for derived metadata",
-    );
+  const { metadataJson, localWarnings } = encodeMetadata(result.metadata);
 
-    // All derived keys should survive the round-trip
-    assert.ok(metadataJson["eve.session"]);
-    assert.ok(metadataJson["eve.turn"]);
-    assert.ok(metadataJson["eve.parent-session"]);
-    assert.ok(metadataJson.user);
-  }
+  // Smoke test: no AJ1017 warnings for derived keys. This cannot fail on a key name
+  // and is here to catch an unrepresentable value (a BigInt or non-finite number
+  // arriving through init.metadata), not to validate names. The character-class
+  // assertion above is the load-bearing half.
+  assert.equal(
+    localWarnings.length,
+    0,
+    "Encoder round-trip should produce no warnings for derived metadata",
+  );
+
+  // All derived keys should survive the round-trip
+  assert.ok(metadataJson["eve.session"]);
+  assert.ok(metadataJson["eve.turn"]);
+  assert.ok(metadataJson["eve.parent-session"]);
+  assert.ok(metadataJson.user);
 });
 
 test("missing session falls back to generated ULID without throwing", () => {
@@ -465,23 +484,7 @@ test("missing session falls back to generated ULID without throwing", () => {
   const result = eveAgentContext(ctx);
 
   // Should generate a ULID, not throw
-  assert.match(result.correlationId, /^[0-9A-Z]{26}$/);
-});
-
-test("AC3.5: omit metadata when it would be empty", () => {
-  // A session with just the required fields should still produce eve.session
-  // so metadata is never empty. But test the concept.
-  const ctx: MockSessionContext = {
-    session: {
-      id: "ses_123",
-      auth: { current: null, initiator: null },
-      turn: { id: "turn_123", sequence: 1 },
-    },
-  };
-
-  // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
-  const result = eveAgentContext(ctx as any);
-
-  // Metadata should NOT be omitted because eve.session is always present
-  assert.ok(result.metadata);
+  assert.match(result.correlationId, /^[0-9A-HJKMNP-TV-Z]{26}$/);
+  // Metadata should be omitted (no derived keys produced)
+  assert.equal(result.metadata, undefined);
 });

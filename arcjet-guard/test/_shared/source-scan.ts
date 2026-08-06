@@ -38,6 +38,12 @@ export function stripCommentsAndTemplates(source: string): string {
  * - export { x } from "./bar.ts"
  * - export type { T } from "./baz.ts"
  * - import "ai" (bare side-effect import)
+ * - import("ai") (dynamic import)
+ * - require("ai") (dynamic require)
+ *
+ * Note: Dynamic imports via import() and require() are also detected. This
+ * is a known limitation that was added to close the boundary when static
+ * scanning proved insufficient.
  */
 export function extractImportSpecifiers(content: string): string[] {
   const specifiers: string[] = [];
@@ -50,6 +56,8 @@ export function extractImportSpecifiers(content: string): string[] {
   const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
   // Match bare side-effect imports: import "package"
   const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
+  // Match dynamic imports: import("package") or require("package")
+  const dynamicImportRegex = /(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/gm;
 
   let match: RegExpExecArray | null;
 
@@ -63,6 +71,14 @@ export function extractImportSpecifiers(content: string): string[] {
 
   // Check bare imports
   while ((match = bareImportRegex.exec(cleanContent)) !== null) {
+    const specifier = match[1];
+    if (specifier !== undefined) {
+      specifiers.push(specifier);
+    }
+  }
+
+  // Check dynamic imports and requires
+  while ((match = dynamicImportRegex.exec(cleanContent)) !== null) {
     const specifier = match[1];
     if (specifier !== undefined) {
       specifiers.push(specifier);
