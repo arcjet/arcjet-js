@@ -14,7 +14,7 @@ const CORRELATION_ID_RE: RegExp = /^[ -~]{1,256}$/;
  * The `typeof` check comes first because `RegExp.test()` coerces its argument,
  * so a number would otherwise satisfy the pattern.
  */
-function correlationIdProblem(value: unknown): string | undefined {
+export function correlationIdProblem(value: unknown): string | undefined {
   if (typeof value === "string") {
     if (CORRELATION_ID_RE.test(value)) {
       return undefined;
