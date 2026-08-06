@@ -1,12 +1,12 @@
+// oxlint-disable eslint/explicit-function-return-type -- test infrastructure
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { DecisionAllow, DecisionDeny } from "../../types.ts";
+import type { DecisionAllow } from "../../types.ts";
 import type { ArcjetMetadata } from "../../types.ts";
 import {
   decisionAllow,
   decisionDenyPromptInjection,
-  decisionDenyRateLimit,
   decisionFailOpenAllow,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
@@ -18,7 +18,6 @@ test("AC4.6 + AC4.8: guard threw, failing closed → onUnavailable called, one c
   const { client, captureCalls } = stubClient(error);
 
   let onUnavailableCalls = 0;
-  let onUnavailableTriggered = false;
   const result = await runGate(client, {
     action: "test.action",
     rules: undefined,
@@ -27,7 +26,6 @@ test("AC4.6 + AC4.8: guard threw, failing closed → onUnavailable called, one c
     onAllow: () => "allowed",
     onDeny: () => "denied",
     onUnavailable: () => {
-      onUnavailableTriggered = true;
       onUnavailableCalls++;
       return "unavailable";
     },

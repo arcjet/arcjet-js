@@ -58,17 +58,11 @@ test("eve namespace exports the agnostic helpers", () => {
 });
 
 // Proxy identity — shared exports have same function identity
-test("Eve namespace re-exports exactly the agents barrel with same identity", () => {
-  // Verify the sorted key sets are exactly equal (no superset, no subset)
-  assert.deepEqual(
-    sortedKeys(eveNamespace),
-    sortedKeys(agentsBarrel),
-    "eve namespace must re-export exactly the agents barrel while it has no own exports",
-  );
-
+test("Eve namespace is a strict superset of the agents barrel with same identity for shared exports", () => {
   const eveKeys = Object.keys(eveNamespace);
   const agentKeys = Object.keys(agentsBarrel);
 
+  // Verify all agents barrel keys are present in eve namespace
   for (const key of agentKeys) {
     assert.ok(
       eveKeys.includes(key),
@@ -85,6 +79,14 @@ test("Eve namespace re-exports exactly the agents barrel with same identity", ()
       `${key} must be the same object identity from both imports`,
     );
   }
+
+  // eve has exactly the agents keys plus guardApproval (1 addition)
+  // GuardApprovalPolicy is type-only and does not appear at runtime
+  assert.equal(
+    eveKeys.length,
+    agentKeys.length + 1,
+    `eve namespace must have agents barrel exports plus guardApproval (eve has ${eveKeys.length}, agents has ${agentKeys.length}, expected ${agentKeys.length + 1})`,
+  );
 });
 
 // AC1.3: Ensure no unversioned or other-versioned vercel-eve keys exist
