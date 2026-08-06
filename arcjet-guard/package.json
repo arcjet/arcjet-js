@@ -103,7 +103,7 @@
     "@connectrpc/connect-web": "2.1.2"
   },
   "devDependencies": {
-    "@ai-sdk/provider-utils": "5.0.12",
+    "@ai-sdk/provider-utils": "5.0.13",
     "@types/node": "22.20.1",
     "ai": "7.0.38",
     "eve": "0.31.0",
