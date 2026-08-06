@@ -345,6 +345,9 @@ test("AC3.5: empty metadata omitted (matches createAgentContext behavior)", () =
 });
 
 test("AC3.6: derived metadata keys match /^[A-Za-z0-9._-]+$/", () => {
+  // Collect derived keys from three shapes so any future additions are covered
+  const collectedDerivedKeys = new Set<string>();
+
   // Test root session
   const rootCtx: MockSessionContext = {
     session: {
@@ -356,7 +359,7 @@ test("AC3.6: derived metadata keys match /^[A-Za-z0-9._-]+$/", () => {
 
   // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
   const rootResult = eveAgentContext(rootCtx as any);
-  assertMetadataKeysValid(rootResult.metadata);
+  collectDerivedKeys(rootResult.metadata, collectedDerivedKeys);
 
   // Test delegated session
   const delegatedCtx: MockSessionContext = {
@@ -375,7 +378,7 @@ test("AC3.6: derived metadata keys match /^[A-Za-z0-9._-]+$/", () => {
 
   // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
   const delegatedResult = eveAgentContext(delegatedCtx as any);
-  assertMetadataKeysValid(delegatedResult.metadata);
+  collectDerivedKeys(delegatedResult.metadata, collectedDerivedKeys);
 
   // Test with null auth
   const nullAuthCtx: MockSessionContext = {
@@ -388,26 +391,30 @@ test("AC3.6: derived metadata keys match /^[A-Za-z0-9._-]+$/", () => {
 
   // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
   const nullAuthResult = eveAgentContext(nullAuthCtx as any);
-  assertMetadataKeysValid(nullAuthResult.metadata);
-});
-
-function assertMetadataKeysValid(metadata: Record<string, unknown> | undefined): void {
-  if (!metadata) return;
+  collectDerivedKeys(nullAuthResult.metadata, collectedDerivedKeys);
 
   // Per AC3.6: derived keys must match /^[A-Za-z0-9._-]+$/
   // This is the load-bearing character-class assertion.
   const validKeyPattern = /^[A-Za-z0-9._-]+$/;
 
-  const eveKeys = ["eve.session", "eve.turn", "eve.parent-session"];
-  const otherDerivedKeys = ["user"];
+  for (const key of collectedDerivedKeys) {
+    assert.ok(
+      validKeyPattern.test(key),
+      `Derived key "${key}" must match /^[A-Za-z0-9._-]+$/ (from README Metadata section)`,
+    );
+  }
+});
+
+function collectDerivedKeys(metadata: Record<string, unknown> | undefined, keys: Set<string>): void {
+  if (!metadata) return;
 
   for (const key of Object.keys(metadata)) {
-    // Only check derived keys, not caller-supplied ones
-    if (eveKeys.includes(key) || otherDerivedKeys.includes(key)) {
-      assert.ok(
-        validKeyPattern.test(key),
-        `Derived key "${key}" must match /^[A-Za-z0-9._-]+$/ (from README Metadata section)`,
-      );
+    // Collect keys that look like they come from eveAgentContext:
+    // - Start with "eve" (eve.*, or any eve-prefixed key)
+    // - Are exactly "user"
+    // This catches any derived keys, including incorrectly-named ones like "eve session"
+    if (key.startsWith("eve") || key === "user") {
+      keys.add(key);
     }
   }
 }
