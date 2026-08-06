@@ -37,16 +37,42 @@ function objectField(
   return undefined;
 }
 
+// AC1.2: The agnostic helpers reach users through this namespace and no other,
+// so the public path is what must carry them.
+test("AC1.2: eve namespace exports the agnostic helpers", () => {
+  const requiredSymbols = [
+    "createAgentContext",
+    "securityMetadata",
+    "guardAction",
+    "captureAction",
+    "ArcjetDeniedError",
+  ] as const;
+
+  for (const symbol of requiredSymbols) {
+    const value = (eveNamespace as Record<string, unknown>)[symbol];
+    assert.ok(
+      value !== undefined,
+      `@arcjet/guard/vercel-eve/v0 must export ${symbol}`,
+    );
+  }
+});
+
 // Proxy identity — shared exports have same function identity
-test("Proxy identity: eveNamespace is a superset of agents barrel with same identity", () => {
-  // Verify namespace is a strict superset of agents barrel
+test("Eve namespace re-exports exactly the agents barrel with same identity", () => {
+  // Verify the sorted key sets are exactly equal (no superset, no subset)
+  assert.deepEqual(
+    sortedKeys(eveNamespace),
+    sortedKeys(agentsBarrel),
+    "eve namespace must re-export exactly the agents barrel in phase 1",
+  );
+
   const eveKeys = Object.keys(eveNamespace);
   const agentKeys = Object.keys(agentsBarrel);
 
   for (const key of agentKeys) {
     assert.ok(
       eveKeys.includes(key),
-      `agents barrel key "${key}" must be present in eve namespace (superset requirement)`,
+      `agents barrel key "${key}" must be present in eve namespace`,
     );
 
     // Verify the exported value is the exact same object, not a wrapper
