@@ -297,5 +297,5 @@ Expected: the typecheck is the real assertion. If any of the three `const` decla
 - The assignability test compiles against the installed `eve` typings for all three slots.
 - No capture emitted by this phase carries `outcome: "success"` or `"error"`.
 - The warning strings distinguish fail-closed from fail-open, asserted in both directions.
-- `guardApproval` carries a JSDoc `@example` that compiles, mirroring `src/vercel-ai/v7/`. Show it on a connection's `approval`, which is the shape with no AI SDK analogue.
+- `guardApproval` carries a JSDoc `@example`, mirroring `src/vercel-ai/v7/`. Show it on a connection's `approval`, which is the shape with no AI SDK analogue. Its *compilation* is verified in Phase 6 Task 6, which extracts every `@example` in the namespace and compares the count against the export count — it cannot be checked here, because the helper is not on the barrel until Phase 5 and the extraction target `examples/eve-agent` does not exist until Phase 6. Do not sign this off by eyeball as "compiles".
 - Build, both typechecks, lint and unit tests with coverage pass.

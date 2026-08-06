@@ -198,7 +198,13 @@ Write it around what a reviewer needs to decide, not around a file list:
 
 The work is tracked by **ENG-1011** ("Ship the Vercel Eve namespace as @arcjet/guard/vercel-eve/v0") in the **Vercel Eve Framework Helper** project, which also holds ENG-1012 (bump toto's Eve), ENG-1014 (the toto adoption, blocked by 1011 and 1012), and three follow-ups: ENG-1013 (promote the agnostic layer to the root export — the ADR's deferred decision, whose trigger this work fires), ENG-1015 (an Eve extension package), ENG-1016 (add `v1` at Eve's GA).
 
-Update ENG-1011 to describe the surface as it shipped, and move it to `In Review`. If any behaviour landed differently from its description — in particular the `outputSchema` finding from Phase 4 Task 1, which decides whether `onDeny: "result"` exists — correct the issue rather than leaving the plan's prediction standing as the record.
+Update ENG-1011 to describe the surface as it shipped, and move it to `In Review`.
+
+**ENG-1012 and ENG-1014 are Phase 7's work, so move them too** if Phase 7 has run: Phase 7 Task 1 performs ENG-1012's Eve bump, and Tasks 2–7 perform ENG-1014's adoption. Leaving them in `Backlog` after the commits have landed makes the board lie about what is done.
+
+Note what ENG-1014's `blockedBy` on ENG-1011 and ENG-1012 means: it blocks **merge**, not start. Phase 7 deliberately runs before Phase 8 against an unreleased namespace — Task 0 Step 3 exists to choose how toto consumes it — so the toto work can be written and tested while ENG-1011 is still open. What it cannot do is land before an `@arcjet/guard` carrying `vercel-eve/v0` is published.
+
+Apply the same rule to all three: if any behaviour landed differently from the issue's description — in particular the `outputSchema` finding from Phase 4 Task 1, which decides whether `onDeny: "result"` exists at all — correct the issue rather than leaving the plan's prediction standing as the record.
 
 **Step 3: Remove the planning documents**
 

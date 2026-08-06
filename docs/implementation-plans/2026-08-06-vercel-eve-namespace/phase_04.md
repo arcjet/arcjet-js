@@ -278,5 +278,5 @@ npm run lint --workspace @arcjet/guard
 - `guardTool` satisfies AC5.1–AC5.5, including the spread negative control and both legs of the unavailable discriminant.
 - `guardInbound` satisfies AC5.6–AC5.9, including the no-generated-correlation-id rule.
 - No inbound text reaches metadata.
-- `guardTool` and `guardInbound` each carry a JSDoc `@example` that compiles, mirroring `src/vercel-ai/v7/`. `guardInbound`'s should show the channel-handler shape, since that is where its explicit `correlationId` earns its keep.
+- `guardTool` and `guardInbound` each carry a JSDoc `@example`, mirroring `src/vercel-ai/v7/`. `guardInbound`'s should show the channel-handler shape, since that is where its explicit `correlationId` earns its keep. Their *compilation* is verified in Phase 6 Task 6, which extracts every `@example` in the namespace and compares the count against the export count — it cannot be checked here, because the helpers are not on the barrel until Phase 5 and the extraction target `examples/eve-agent` does not exist until Phase 6. Do not sign this off by eyeball as "compiles".
 - Build, both typechecks, lint and unit tests with coverage pass.

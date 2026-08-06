@@ -356,6 +356,6 @@ Expected: four hunks — the three path references plus the Glossary addition (d
 
 - `examples/eve-agent` typechecks and `eve build` succeeds on Node 24, with all four helpers exercised — including `defineHook(arcjetHooks(...))` and a `guardTool`-wrapped `defineTool` default export, which is the real test of Phases 4 and 5's interop assumptions.
 - The `eve-agent` CI job runs on Node 24 (confirmed from the job log) and passes.
-- Every code block in the README, the skill, the JSDoc and the example has been extracted and typechecked, not eyeballed — with the JSDoc `@example` count enumerated from `grep -rn "@example" arcjet-guard/src/vercel-eve/v0/` and reported as a number.
+- Every code block in the README, the skill, the JSDoc and the example has been extracted and typechecked, not eyeballed — with the JSDoc `@example` count enumerated from `grep -rn "@example" arcjet-guard/src/vercel-eve/v0/` and **compared against the export count (six or more), not merely reported**. A bare number is how five undocumented helpers pass this gate.
 - The ADR names `v0` at all three path references, records which of its Eve predictions held, and carries a new note that the superseded design plan's sandbox guard-surface claim did not hold — with a diff containing only the intended hunks and zero `vercel-ai` lines touched.
 - One coding-agent transcript recorded for AC7.5, with any skill weaknesses it exposed fixed.
