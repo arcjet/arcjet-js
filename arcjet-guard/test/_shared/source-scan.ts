@@ -100,6 +100,71 @@ export function collectTsFiles(dir: string): string[] {
 }
 
 /**
+ * Extract import/export specifiers along with whether the statement was
+ * type-only.
+ *
+ * `import type { X } from "eve"` and `export type { X } from "eve"` are erased
+ * at compile time; a plain `import { x } from "eve"` is not. The vercel-eve
+ * namespace is required to use only the former, so the two must be told apart —
+ * which `extractImportSpecifiers` deliberately does not do (the agnostic-layer
+ * boundary forbids both forms and never needed the distinction).
+ *
+ * Inline type modifiers (`import { type X, y } from "eve"`) count as a VALUE
+ * import: the statement still emits, because `y` is a value.
+ */
+export function extractTypedImportSpecifiers(
+  content: string,
+): Array<{ specifier: string; typeOnly: boolean }> {
+  const specifiers: Array<{ specifier: string; typeOnly: boolean }> = [];
+
+  const cleanContent = stripCommentsAndTemplates(content);
+
+  // Match import/export statements anchored to line start.
+  // First try type-only form: `import type { ... } from "..."`
+  const typeOnlyRegex = /^[ \t]*(import|export)\s+type\b[^;=]*?from\s+["']([^"']+)["']/gm;
+  let match: RegExpExecArray | null;
+
+  // Check type-only imports
+  while ((match = typeOnlyRegex.exec(cleanContent)) !== null) {
+    const specifier = match[2];
+    if (specifier !== undefined) {
+      specifiers.push({ specifier, typeOnly: true });
+    }
+  }
+
+  // Now match general import/export statements
+  const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
+  // Match bare side-effect imports: import "package"
+  const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
+
+  // Check import...from patterns (but skip those already matched as type-only)
+  while ((match = importFromRegex.exec(cleanContent)) !== null) {
+    const specifier = match[1];
+    if (specifier !== undefined) {
+      // Check if this match was already captured as type-only by looking at the full line
+      const lineStart = cleanContent.lastIndexOf("\n", match.index) + 1;
+      const lineEnd = cleanContent.indexOf("\n", match.index);
+      const line = cleanContent.slice(lineStart, lineEnd < 0 ? undefined : lineEnd);
+
+      // If the line starts with "import type" or "export type", skip it (already added above)
+      if (!line.trim().startsWith("import type") && !line.trim().startsWith("export type")) {
+        specifiers.push({ specifier, typeOnly: false });
+      }
+    }
+  }
+
+  // Check bare imports
+  while ((match = bareImportRegex.exec(cleanContent)) !== null) {
+    const specifier = match[1];
+    if (specifier !== undefined) {
+      specifiers.push({ specifier, typeOnly: false });
+    }
+  }
+
+  return specifiers;
+}
+
+/**
  * Sort object keys using Array#toSorted().
  *
  * oxlint's type-aware checker has no signature for Array#toSorted(), which
