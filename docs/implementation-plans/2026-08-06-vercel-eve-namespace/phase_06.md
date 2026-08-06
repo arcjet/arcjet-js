@@ -329,6 +329,8 @@ Then, per reference:
   3. *"This convention is intended to accommodate it, and is the first real test of that"* — **held, with a caveat worth recording**. The namespace needed no build-config change, no export-map machinery beyond one literal key, and no change to the agnostic layer's *shape* — but it did take two deliberate shared-layer extractions (`retryAfterSeconds`, and exporting `correlationIdProblem`) rather than the none the ADR's consequences section implies.
 
   Then add what the investigation found that the entry did not anticipate: `approval` is present on OpenAPI and MCP connections as well as authored tools, which makes it the widest gate; and hooks are observe-only and cannot enforce at all, so the channel handler is the only pre-turn gate.
+
+  **Add the reciprocal cross-reference** to `2026-08-06-eve-guard-surfaces.md`, the ADR recording where an Eve agent can and cannot be guarded. It already links to this ADR and states that the link will be made from this side, so leaving it one-directional is the loose end.
 - **Alternative 3, line 138** — mentions Eve as a counterexample to a feature-named `/ai` namespace, with **no** path string. Leave it unchanged.
 - **Glossary, line 289**, "Vercel Eve" → keep the description, add that the integration ships at `vercel-eve/v0`.
 

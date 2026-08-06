@@ -210,18 +210,16 @@ Apply the same rule to all three: if any behaviour landed differently from the i
 
 The previous two features removed their design and implementation plans as the final commit (`chore: remove pilot framework helper planning documents`, `chore: remove guard SDK namespaces planning documents`). Follow that.
 
-Before deleting, check whether anything durable in these documents belongs somewhere that survives. Two candidates:
+The durable findings have **already been extracted** — this is a verification step, not an authoring one.
 
-1. **The Eve surface investigation** — that hooks are observe-only, that `approval` covers connections, that `defineTool` stamps one enumerable and one non-enumerable symbol, that `defineDynamic` execute functions are compiler-hoisted, that `subagent.completed` carries no child session id, and that `eve/sandbox` exposes no per-command enforcement point. That is the kind of finding that gets re-derived expensively. It belongs in an ADR in `../arcjet/docs/adrs/` or in the skill, not in a deleted plan.
+1. **The Eve surface investigation** lives in `../arcjet/docs/adrs/2026-08-06-eve-guard-surfaces.md` (written 2026-08-06, status `draft`): hooks observe-only, `approval` covering connections, `defineTool`'s two stamped symbols and why a wrapper must copy property descriptors rather than spread, `defineDynamic`'s compiler-hoisted `execute`, session-derived correlation, the type-only rule and its Node-24 cause, and the correction that Eve exposes no sandbox-command enforcement point.
 
-   Include *why* the descriptor-preserving copy in `guardTool` is safe, because the mechanism is not obvious from the code. Verified in `eve/dist/src/public/tool-result-narrowing.js` and `eve/dist/src/runtime/resolve-tool.js`:
+   **Reconcile it against what actually shipped before deleting these plans.** It was written from the plan's predictions, so check at least: the `outputSchema` finding from Phase 4 Task 1, which decides whether `onDeny: "result"` exists at all; whether `subagent.completed` still lacks a child session id at the version Phase 1 pinned; and whether its decisions 6 and 7 — the two that describe current Eve *internals* rather than documented contracts — still hold. Correct the ADR where they do not.
 
-   - The definition-source key is `Symbol.for("eve.definition-source-key")`; the registry it indexes is on `globalThis` under `Symbol.for("eve.definition-source-registry")`.
-   - `toolResultFrom` matches by the key's **string value**, not by object identity — so copying the property carries the identity across, and a spread (which drops the non-enumerable property) silently stops matching.
-   - At resolve time Eve **re-stamps** the loaded export with `tool-source:${sourceId}` and registers that alongside the `tool:${description}` fallback, warning on a fallback collision. The re-stamp is why the copied property must stay `configurable: true` — `Object.getOwnPropertyDescriptors` preserves that, but a hand-rolled `Object.defineProperty` with the default `configurable: false` would make Eve's re-stamp throw.
-2. **The `v0` reasoning** — already going into the ADR in Phase 6 Task 7, so covered.
+   Move it from `draft` to `accepted` only with the decision-makers' agreement, not as a tidy-up.
+2. **The `v0` reasoning** — goes into the subpath ADR in Phase 6 Task 7, so covered.
 
-Do the extraction before the deletion, not after.
+Anything else in these plans you find yourself wanting to keep is a signal it was never plan content. Move it before the deletion, not after.
 
 **Step 4: Record the pre-deletion SHA**
 
