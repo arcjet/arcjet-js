@@ -131,3 +131,26 @@ export function asDenial<TResult>(value: unknown): TResult {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the SDK types results as the tool's output union
   return value as TResult;
 }
+
+/**
+ * Expected root export keys in arcjet-guard/package.json exports map.
+ * Shared by both vercel-ai/v7 and vercel-eve/v0 test files.
+ */
+export const EXPECTED_ROOT_KEYS = [
+  ".",
+  "./bun",
+  "./fetch",
+  "./node",
+  // The in-memory client for application tests. Deliberately a single entry
+  // rather than a runtime-conditional one: it has no transport, so there is
+  // nothing for a condition to select.
+  "./testing",
+  "./vercel-ai/v7",
+  "./vercel-eve/v0",
+] as const;
+
+/**
+ * Expected runtime conditions in arcjet-guard/package.json exports["."] entry.
+ * Shared by both vercel-ai/v7 and vercel-eve/v0 test files.
+ */
+export const EXPECTED_CONDITIONS = ["bun", "default", "deno", "edge-light", "node", "workerd"] as const;

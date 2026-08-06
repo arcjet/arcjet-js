@@ -59,12 +59,8 @@ test("AC1.5: eve is an optional peer and not a dependency", () => {
 
   // Static assertion 3: eve is NOT in dependencies
   const dependencies = objectField(packageJson, "dependencies");
-  assert.ok(dependencies !== undefined, "package.json must have a dependencies field (may be empty)");
-
-  const eveInDeps = dependencies !== undefined && "eve" in dependencies;
-  assert.equal(
-    eveInDeps,
-    false,
+  assert.ok(
+    !(dependencies && "eve" in dependencies),
     "eve must not be in dependencies (it is a peer only)",
   );
 });

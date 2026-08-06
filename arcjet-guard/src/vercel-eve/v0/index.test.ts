@@ -3,7 +3,14 @@ import { resolve } from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { sortedKeys } from "../../../test/_shared/source-scan.ts";
+import * as eveNamespace from "./index.ts";
+import * as agentsBarrel from "../../agents/index.ts";
+
+import {
+  sortedKeys,
+  EXPECTED_ROOT_KEYS,
+  EXPECTED_CONDITIONS,
+} from "../../../test/_shared/source-scan.ts";
 
 /**
  * Read a JSON file as a plain record. `JSON.parse` is untyped by definition, so
@@ -29,6 +36,30 @@ function objectField(
   }
   return undefined;
 }
+
+// Proxy identity — shared exports have same function identity
+test("Proxy identity: eveNamespace is a superset of agents barrel with same identity", () => {
+  // Verify namespace is a strict superset of agents barrel
+  const eveKeys = Object.keys(eveNamespace);
+  const agentKeys = Object.keys(agentsBarrel);
+
+  for (const key of agentKeys) {
+    assert.ok(
+      eveKeys.includes(key),
+      `agents barrel key "${key}" must be present in eve namespace (superset requirement)`,
+    );
+
+    // Verify the exported value is the exact same object, not a wrapper
+    const eveValue = (eveNamespace as Record<string, unknown>)[key];
+    const agentValue = (agentsBarrel as Record<string, unknown>)[key];
+
+    assert.strictEqual(
+      eveValue,
+      agentValue,
+      `${key} must be the same object identity from both imports`,
+    );
+  }
+});
 
 // AC1.3: Ensure no unversioned or other-versioned vercel-eve keys exist
 test("AC1.3: export map has no unversioned ./vercel-eve or unsupported ./vercel-eve/v1", () => {
@@ -69,19 +100,10 @@ test("AC1.4: root export map keys and runtime conditions are correct", () => {
   assert.ok(exportsMap, "package.json must have an exports field");
 
   const exportKeys = sortedKeys(exportsMap);
-  const expectedRootKeys = [
-    ".",
-    "./bun",
-    "./fetch",
-    "./node",
-    "./testing",
-    "./vercel-ai/v7",
-    "./vercel-eve/v0",
-  ];
 
   assert.deepEqual(
     exportKeys,
-    expectedRootKeys,
+    EXPECTED_ROOT_KEYS,
     "root export map keys must exactly match expected set (no additions, no removals)",
   );
 
@@ -90,11 +112,10 @@ test("AC1.4: root export map keys and runtime conditions are correct", () => {
   assert.ok(rootEntry, 'export map must have "." entry');
 
   const runtimeConditions = sortedKeys(rootEntry);
-  const expectedConditions = ["bun", "default", "deno", "edge-light", "node", "workerd"];
 
   assert.deepEqual(
     runtimeConditions,
-    expectedConditions,
+    EXPECTED_CONDITIONS,
     "root . entry runtime conditions must exactly match expected set",
   );
 });
