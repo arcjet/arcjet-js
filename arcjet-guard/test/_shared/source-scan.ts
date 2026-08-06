@@ -41,9 +41,9 @@ export function stripCommentsAndTemplates(source: string): string {
  * - import("ai") (dynamic import)
  * - require("ai") (dynamic require)
  *
- * Note: Dynamic imports via import() and require() are also detected. This
- * is a known limitation that was added to close the boundary when static
- * scanning proved insufficient.
+ * Note: Dynamic imports via import() and require() are also detected, anchored
+ * to line start like static imports to avoid matching import/require strings in
+ * literals and comments, ensuring AC2.1 compliance without false positives.
  */
 export function extractImportSpecifiers(content: string): string[] {
   const specifiers: string[] = [];
@@ -56,8 +56,8 @@ export function extractImportSpecifiers(content: string): string[] {
   const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
   // Match bare side-effect imports: import "package"
   const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
-  // Match dynamic imports: import("package") or require("package")
-  const dynamicImportRegex = /(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/gm;
+  // Match dynamic imports: import("package") or require("package"), anchored to line start
+  const dynamicImportRegex = /^[ \t]*(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/gm;
 
   let match: RegExpExecArray | null;
 
@@ -127,6 +127,9 @@ export function collectTsFiles(dir: string): string[] {
  *
  * Inline type modifiers (`import { type X, y } from "eve"`) count as a VALUE
  * import: the statement still emits, because `y` is a value.
+ *
+ * Dynamic imports via `import("...")` and `require("...")` are always classified
+ * as non-type-only because they always emit at runtime.
  */
 export function extractTypedImportSpecifiers(
   content: string,
@@ -152,6 +155,8 @@ export function extractTypedImportSpecifiers(
   const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
   // Match bare side-effect imports: import "package"
   const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
+  // Match dynamic imports and requires: import("package") or require("package"), anchored to line start
+  const dynamicImportRegex = /^[ \t]*(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/gm;
 
   // Check import...from patterns (but skip those already matched as type-only)
   while ((match = importFromRegex.exec(cleanContent)) !== null) {
@@ -171,6 +176,14 @@ export function extractTypedImportSpecifiers(
 
   // Check bare imports
   while ((match = bareImportRegex.exec(cleanContent)) !== null) {
+    const specifier = match[1];
+    if (specifier !== undefined) {
+      specifiers.push({ specifier, typeOnly: false });
+    }
+  }
+
+  // Check dynamic imports and requires (always non-type-only because they emit at runtime)
+  while ((match = dynamicImportRegex.exec(cleanContent)) !== null) {
     const specifier = match[1];
     if (specifier !== undefined) {
       specifiers.push({ specifier, typeOnly: false });
@@ -234,4 +247,11 @@ export const EXPECTED_ROOT_KEYS = [
  * Expected runtime conditions in arcjet-guard/package.json exports["."] entry.
  * Shared by both vercel-ai/v7 and vercel-eve/v0 test files.
  */
-export const EXPECTED_CONDITIONS = ["bun", "default", "deno", "edge-light", "node", "workerd"] as const;
+export const EXPECTED_CONDITIONS = [
+  "bun",
+  "default",
+  "deno",
+  "edge-light",
+  "node",
+  "workerd",
+] as const;

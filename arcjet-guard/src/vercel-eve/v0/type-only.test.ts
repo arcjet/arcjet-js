@@ -1,12 +1,10 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
-import { resolve } from "node:path";
 import { tmpdir } from "node:os";
-import {
-  extractTypedImportSpecifiers,
-  collectTsFiles,
-} from "../../../test/_shared/source-scan.ts";
+import { resolve } from "node:path";
+import { test } from "node:test";
+
+import { extractTypedImportSpecifiers, collectTsFiles } from "../../../test/_shared/source-scan.ts";
 
 // AC2.1: Verify the type-only import scan itself (fixture-driven)
 test("type-only import scanner works on fixtures", () => {
@@ -56,6 +54,23 @@ test("type-only import scanner works on fixtures", () => {
       shouldHaveEveImport: true,
       shouldBeTypeOnly: false,
     },
+    {
+      name: "detects dynamic import of eve at line start",
+      content: 'import("eve").then(() => {});\nvoid 0;',
+      shouldHaveEveImport: true,
+      shouldBeTypeOnly: false,
+    },
+    {
+      name: "detects dynamic require of eve at line start",
+      content: 'require("eve");\nvoid 0;',
+      shouldHaveEveImport: true,
+      shouldBeTypeOnly: false,
+    },
+    {
+      name: "does not match import in string literal",
+      content: "const code = 'import(\"eve\")'; \nvoid code;",
+      shouldHaveEveImport: false,
+    },
   ];
 
   for (const fixture of fixtures) {
@@ -102,9 +117,7 @@ test("AC2.1: all eve imports in vercel-eve namespace are type-only", () => {
     for (const imp of imports) {
       // Check for eve imports (bare or subpath)
       if ((imp.specifier === "eve" || imp.specifier.startsWith("eve/")) && !imp.typeOnly) {
-        errors.push(
-          `${filePath}: value import of "${imp.specifier}" found; must be type-only`,
-        );
+        errors.push(`${filePath}: value import of "${imp.specifier}" found; must be type-only`);
       }
     }
   }
@@ -125,9 +138,7 @@ test("scanner detects value imports when temporarily added", () => {
     // Write a file with a value import
     writeFileSync(testFile, 'import { defineTool } from "eve/tools";\nvoid defineTool;');
 
-    const imports = extractTypedImportSpecifiers(
-      readFileSync(testFile, "utf-8"),
-    );
+    const imports = extractTypedImportSpecifiers(readFileSync(testFile, "utf-8"));
 
     const eveImports = imports.filter(
       (imp) => imp.specifier === "eve" || imp.specifier.startsWith("eve/"),

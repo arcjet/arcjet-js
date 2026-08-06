@@ -1,10 +1,10 @@
 import type { SessionContext } from "eve/context";
 
+import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentContext } from "../../agents/context.ts";
 import { correlationIdProblem } from "../../agents/context.ts";
-import type { ArcjetMetadata } from "../../types.ts";
 import { ulid } from "../../agents/ulid.ts";
-import { shouldWarn } from "../../agents/capture.ts";
+import type { ArcjetMetadata } from "../../types.ts";
 
 /**
  * Derive an ArcjetAgentContext from an Eve SessionContext.
@@ -19,8 +19,8 @@ import { shouldWarn } from "../../agents/capture.ts";
  *
  * @example
  * ```ts
- * import { eveAgentContext } from "@arcjet/guard/vercel-eve/v0";
  * import { launchArcjet, detectPromptInjection } from "@arcjet/guard";
+ * import { eveAgentContext } from "./context.ts";
  * import type { SessionContext } from "eve/context";
  *
  * export async function modelResponse(ctx: SessionContext, userMessage: string, model: { invoke(msg: string): Promise<string> }) {
@@ -29,11 +29,13 @@ import { shouldWarn } from "../../agents/capture.ts";
  *
  *   const client = launchArcjet({ key: process.env["ARCJET_KEY"]! });
  *   const decision = await client.guard({
- *     ctx: agentCtx,
- *     rules: [detectPromptInjection()],
+ *     label: "model.response",
+ *     rules: [detectPromptInjection()(userMessage)],
+ *     correlationId: agentCtx.correlationId,
+ *     metadata: agentCtx.metadata,
  *   });
  *
- *   if (decision.isDenied()) {
+ *   if (decision.conclusion === "DENY") {
  *     return { error: "Request blocked by security policy" };
  *   }
  *

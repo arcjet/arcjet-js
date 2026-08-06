@@ -1,5 +1,6 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
+import { test } from "node:test";
+
 import { encodeMetadata } from "../../metadata.ts";
 import { eveAgentContext } from "./context.ts";
 
@@ -154,7 +155,11 @@ test("AC3.3: warning fires with ARCJET_LOG_LEVEL=warn", () => {
       console.warn = originalWarn;
     }
   } finally {
-    process.env.ARCJET_LOG_LEVEL = oldEnv;
+    if (oldEnv === undefined) {
+      delete process.env.ARCJET_LOG_LEVEL;
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldEnv;
+    }
   }
 });
 
@@ -188,7 +193,11 @@ test("AC3.3: no warning without ARCJET_LOG_LEVEL", () => {
       console.warn = originalWarn;
     }
   } finally {
-    process.env.ARCJET_LOG_LEVEL = oldEnv;
+    if (oldEnv === undefined) {
+      delete process.env.ARCJET_LOG_LEVEL;
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldEnv;
+    }
   }
 });
 
@@ -226,23 +235,6 @@ test("AC3.4: user omitted when auth.current is null", () => {
   // Metadata must be defined (eve.session is always present)
   assert.ok(result.metadata);
   // Must use 'in' operator, not === undefined, per AC3.4
-  assert.equal("user" in result.metadata, false);
-});
-
-test("AC3.4: user must be checked with 'in' operator, not === undefined", () => {
-  const ctx: MockSessionContext = {
-    session: {
-      id: "ses_123",
-      auth: { current: null, initiator: null },
-      turn: { id: "turn_123", sequence: 1 },
-    },
-  };
-
-  // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
-  const result = eveAgentContext(ctx as any);
-
-  // Metadata must be defined (eve.session is always present)
-  assert.ok(result.metadata);
   assert.equal("user" in result.metadata, false);
 });
 
@@ -345,7 +337,7 @@ test("AC3.5: caller metadata overrides derived keys", () => {
   assert.equal(result.metadata["eve.turn"], "override_turn");
 });
 
-test("AC3.5: empty metadata omitted (matches createAgentContext behavior)", () => {
+test("AC3.5: metadata with eve.session always included", () => {
   const ctx: MockSessionContext = {
     session: {
       id: "ses_abc",
@@ -357,7 +349,7 @@ test("AC3.5: empty metadata omitted (matches createAgentContext behavior)", () =
   // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
   const result = eveAgentContext(ctx as any);
 
-  // Metadata should be present (has eve.* keys)
+  // Metadata should be present (has eve.session key)
   assert.ok(result.metadata);
   assert.ok("eve.session" in result.metadata);
 });
@@ -423,7 +415,10 @@ test("AC3.6: derived metadata keys match /^[A-Za-z0-9._-]+$/", () => {
   }
 });
 
-function collectDerivedKeys(metadata: Record<string, unknown> | undefined, keys: Set<string>): void {
+function collectDerivedKeys(
+  metadata: Record<string, unknown> | undefined,
+  keys: Set<string>,
+): void {
   if (!metadata) return;
 
   for (const key of Object.keys(metadata)) {
